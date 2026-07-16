@@ -2,6 +2,24 @@
 
 Instructions for AI agents working in this repository.
 
+## Goals — read first
+
+This project is **process-first**. It exists as much to practice disciplined
+AI-assisted development as to build the app. Two goals rank above speed of
+delivery:
+
+1. **Documentation and implementation never drift apart.** The docs in
+   `docs/` are the source of truth for design intent. Code that contradicts
+   them is a bug in one or the other — resolve it in the same PR, never leave
+   it.
+2. **Professional quality bar.** Architecture, code, tests, and commits are
+   held to production-grade standards even though this is not a production
+   app. When choosing between a shortcut and the practice a senior team would
+   follow, follow the practice — or write an ADR explaining the deliberate
+   exception.
+
+If a request conflicts with these goals, say so before proceeding.
+
 ## Project
 
 Kalia is a craft beer store: Next.js frontend (BFF pattern) + Spring Boot
@@ -22,8 +40,13 @@ modulith backend. Read before making changes:
 - Test-first: write or update tests with the code; all suites green before
   a PR. Verify changes by actually running them (e.g. `docker compose up`,
   hitting the endpoint), not just by compiling.
-- Update `docs/` (architecture, roadmap, ADRs) in the same PR when behavior
-  or design changes; tick off completed roadmap tasks.
+- **Doc-sync gate (part of definition of done):** before opening a PR,
+  re-read the sections of `docs/architecture.md`, `docs/roadmap.md`, and any
+  ADRs the change touches. Update them in the same PR, or state explicitly in
+  the PR description that they were checked and remain accurate. A PR without
+  this is incomplete.
+- Tick off completed roadmap tasks in `docs/roadmap.md` as part of the PR
+  that completes them.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
 
