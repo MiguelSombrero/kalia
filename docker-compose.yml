@@ -1,0 +1,22 @@
+name: kalia
+
+services:
+  postgres:
+    image: postgres:18.4
+    environment:
+      POSTGRES_DB: kalia
+      POSTGRES_USER: kalia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
+    ports:
+      # Bound to localhost only: the database is never exposed beyond the dev machine.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kalia -d kalia"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:
