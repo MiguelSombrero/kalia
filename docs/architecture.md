@@ -189,7 +189,7 @@ Not implemented until its own iteration ([ADR-0005](adr/0005-defer-auth-mock-pay
 | Layer | Tooling | What |
 |---|---|---|
 | Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
-| Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`) |
+| Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
 | E2E | Playwright against docker-compose stack | Critical journeys: search → detail → basket → order → mock payment |
