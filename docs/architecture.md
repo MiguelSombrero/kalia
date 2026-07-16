@@ -107,8 +107,14 @@ money is not.
   keys between modules — cross-module references are by id only.
 - Spring Data JPA with rich domain entities where behavior exists; plain
   records/projections for read models.
-- Flyway migrations per module directory; seed data (~50–100 beers) ships as
-  versioned migrations for deterministic dev/test environments.
+- Flyway migrations per module directory (plus `common/` for cross-module
+  infrastructure); versions are globally unique across directories. Seed data
+  (~50–100 beers) ships as versioned migrations for deterministic dev/test
+  environments.
+- Spring Modulith's event publication registry uses the JDBC flavor (not JPA),
+  so framework infrastructure stays out of the persistence unit; its
+  `event_publication` table lives in the `public` schema, created by Flyway
+  from Modulith's own DDL.
 
 ### Data model sketch (iteration 1–4)
 
