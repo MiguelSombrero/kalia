@@ -1,7 +1,7 @@
 # Kalia backend
 
-Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `cart`,
-`ordering`, `payment`, `identity`) arrive iteration by iteration — see
+Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`,
+`cellar`; store modules if chosen later) arrive iteration by iteration — see
 [docs/roadmap.md](../docs/roadmap.md) and
 [docs/architecture.md](../docs/architecture.md).
 

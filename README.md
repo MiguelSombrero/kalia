@@ -1,28 +1,43 @@
 # Kalia
 
-Kalia is a comprehensive craft beer management app and online beer store.
+## Vision
 
-> **Status:** design phase — no application code yet. The architecture and an
-> iterative implementation plan are documented; implementation proceeds one
-> issue at a time. See [docs/roadmap.md](docs/roadmap.md) for what gets built
-> and in which order.
+Kalia is a comprehensive craft beer management app and online beer store. With Kalia beer enthusiasts can search for beers, maintain their personal beer cellar, review beers and order beers online. Main use cases for Kalia is:
+
+- User can browse and search for beers by different criteria like name, brewery, country, style, alcohol content (ABV), and price
+- User can add beers to the personal beer cellar. This is the catalog of beers user owns. With beer cellar user can easily observe the beers age, quantity and other relevant info for beer enthusiast 
+- User can review beers. This could be integration to some other beer review service, because there already have many good alternatives (Pint Please, Untappd, ...). Decided for later.
+- User can order beers online. This could be some integration or search engine for other beer stores - like Trivago for beers. If user wants to buy Sierra Nevada Bigfoot, for example, Kalia could list all the shops that have the beer, cheapest store first. Decided for later.
+
+## Goal
+
+Kalia is developed with AI agents focusing on the development process rather than fast-to-market. The main goals for this project is to (1) create solid agentic development process which ensures the quality of the product (no drift between documentation and implementation, comprehensive tests etc.); (2) production-grade standards for architecture, design and code.
+
+My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
+
+> **Status:** walking skeleton phase — backend scaffolding is merged,
+> frontend skeleton and CI are next. Implementation proceeds one issue at a
+> time. See [docs/roadmap.md](docs/roadmap.md) for what gets built and in
+> which order.
 
 ## What Kalia does
 
-A customer can:
+In roadmap order, a user can:
 
-- Browse and search craft beers by name, brewery, style, alcohol content (ABV), and price
-- View beer details (brewery, style, ABV, description, price)
-- Add beers to a shopping basket — also without signing in
-- Place an order for the basket
-- Pay the order via a payment provider (mocked at first, real PSP integration later)
-- Sign in to keep a persistent basket and see order history *(later iteration)*
+- Browse and search craft beers by name, brewery, country, style, alcohol content (ABV), and price — no account needed
+- View beer details (brewery, country, style, ABV, description, price)
+- Sign in with Keycloak *(iteration 2)*
+- Maintain a personal beer cellar: the beers they own, with quantity, vintage/age, purchase info and notes *(iteration 3)*
 
-Planned for later (tracked in the [roadmap](docs/roadmap.md)):
+Planned for later (tracked in the [roadmap](docs/roadmap.md); the open
+decisions are recorded in [ADR-0006](docs/adr/0006-cellar-first.md)):
 
-- Inventory / stock management
-- Admin UI for managing the beer catalog
-- Ratings and reviews
+- Order beers online — either Kalia's own store flow (basket → order →
+  payment, mocked provider first) or a price-comparison aggregator over
+  other beer stores ("Trivago for beers"); *decided later*
+- Beer reviews — own reviews or integration with an existing service
+  (Untappd, Pint Please, …); *decided later*
+- Inventory / stock management, admin UI for the catalog
 - Recommendations ("if you liked this IPA…")
 
 ## Architecture
@@ -40,13 +55,14 @@ flowchart LR
     Next -.->|sessions, later| Redis[(Redis)]
     Next -.->|auth, later| KC[Keycloak]
     Spring -.->|token validation, later| KC
-    Spring -.->|PaymentProvider port| PSP[Payment provider<br/>mock first]
+    Spring -.->|PaymentProvider port, if own store| PSP[Payment provider<br/>mock first]
 ```
 
 The backend is a single deployable split into Spring Modulith modules
-(`catalog`, `cart`, `ordering`, `payment`, `identity`) with enforced
-boundaries, keeping a later extraction to microservices possible without
-paying the distributed-systems cost now.
+(`catalog`, `identity`, `cellar`; later `cart`, `ordering`, `payment` if the
+own-store variant is chosen) with enforced boundaries, keeping a later
+extraction to microservices possible without paying the distributed-systems
+cost now.
 
 Full design: [docs/architecture.md](docs/architecture.md) ·
 Decision records: [docs/adr/](docs/adr/)
@@ -60,15 +76,15 @@ Main technologies used in this project — update as the project evolves!
 - Java 25, Spring Boot 4.1.0 with Spring Modulith 2.1.0 (later possibility to migrate to microservices)
 - PostgreSQL 18.4 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests
-- Keycloak 26.7.x (authentication — *introduced in a later iteration*)
+- Keycloak 26.7.x (authentication — *introduced in iteration 2*)
 
 ### Frontend
 
 - Next.js 16.2.x (App Router), React, TypeScript 7.x
 - Tailwind CSS (styling)
 - Vitest + React Testing Library (unit/component tests), Playwright (E2E)
-- Redis 8.8.x (server-side session store — *introduced with authentication*)
-- Keycloak 26.7.x (authentication — *introduced in a later iteration*)
+- Redis 8.8.x (server-side session store — *introduced in iteration 2*)
+- Keycloak 26.7.x (authentication — *introduced in iteration 2*)
 
 ### Local infrastructure
 
@@ -81,10 +97,9 @@ kalia/
 ├── backend/          # Spring Boot modulith
 │   └── src/main/java/fi/kalia/
 │       ├── catalog/  # beers, breweries, search
-│       ├── cart/     # shopping baskets
-│       ├── ordering/ # orders and their lifecycle
-│       ├── payment/  # PaymentProvider port + adapters (mock first)
-│       └── identity/ # Keycloak integration (later)
+│       ├── identity/ # Keycloak integration (iteration 2)
+│       ├── cellar/   # personal beer cellar (iteration 3)
+│       └── ...       # cart/ordering/payment if own store is chosen (backlog)
 ├── frontend/         # Next.js app (BFF + UI)
 ├── docs/
 │   ├── architecture.md
@@ -96,8 +111,9 @@ kalia/
 ## Development approach
 
 - **Iterative:** features land as small, end-to-end vertical slices
-  (see [roadmap](docs/roadmap.md)). Authentication and real payments are
-  deliberately deferred; payments start behind a mocked provider port.
+  (see [roadmap](docs/roadmap.md)). The enthusiast features (catalog, cellar)
+  come first; the store flow waits in the backlog for the own-store vs.
+  aggregator decision.
 - **Test-driven:** tests are written with (or before) the code — unit tests
   for domain logic, Testcontainers-backed integration tests for APIs and
   persistence, Playwright for critical user flows.

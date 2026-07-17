@@ -5,6 +5,11 @@ to be **one issue / one PR**: implemented test-first, reviewed, and merged
 before the next begins. Update this file as iterations complete or plans
 change.
 
+Priorities follow the beer-enthusiast side of the vision first
+([ADR-0006](adr/0006-cellar-first.md)): catalog → authentication → personal
+beer cellar. The store flow (basket, ordering, payment) lives in the backlog
+until the own-store vs. store-aggregator decision is made.
+
 **Definition of done (every issue):**
 
 - tests written and green; change verified by actually running it
@@ -29,56 +34,52 @@ Goal: empty but *running* end-to-end stack with CI-able test suites.
 Goal: a visitor can browse and search real (seeded) beers.
 
 1. [ ] `catalog` module: schema + Flyway migrations for `brewery` and `beer`, seed data (~50–100 beers)
-2. [ ] `GET /api/v1/beers` with filtering (query, style, breweryId, minAbv/maxAbv) + pagination/sorting; `GET /api/v1/beers/{id}`; `GET /api/v1/breweries`
+2. [ ] `GET /api/v1/beers` with filtering (query, style, breweryId, country, minAbv/maxAbv) + pagination/sorting; `GET /api/v1/beers/{id}`; `GET /api/v1/breweries`
 3. [ ] Frontend catalog page: beer list with search box and filters driven by URL search params (server components via BFF)
 4. [ ] Frontend beer detail page
 5. [ ] Playwright E2E: search for a beer → open its detail page
 
-**Done when:** a user can find "Westvleteren" by name or filter IPAs between 6–8 % ABV, and open beer details.
+**Done when:** a user can find "Westvleteren" by name or filter Belgian quads between 9–12 % ABV, and open beer details.
 
-## Iteration 2 — Shopping basket
+## Iteration 2 — Authentication (Keycloak)
 
-Goal: anonymous visitor can maintain a basket.
-
-1. [ ] `cart` module: schema, cart + items with price snapshots, quantity rules (max per item, no unknown beers)
-2. [ ] Cart REST API (`POST /carts`, `GET /carts/{id}`, `PUT /carts/{id}/items/{beerId}`)
-3. [ ] BFF: `cartId` httpOnly cookie issuance and forwarding
-4. [ ] Frontend: add-to-basket on list/detail, basket page with quantity editing and totals
-5. [ ] Playwright E2E: add two beers, change quantity, remove one, totals correct
-
-## Iteration 3 — Ordering
-
-Goal: basket becomes an order.
-
-1. [ ] `ordering` module: schema, order placement from cart (item/price snapshots), order state machine (`PLACED`, `PAYMENT_PENDING`, `PAID`, `PAYMENT_FAILED`, `CANCELLED`) as unit-tested domain logic
-2. [ ] `POST /api/v1/orders` + `GET /api/v1/orders/{id}`; publishes `OrderPlaced` event; cart is closed on successful placement
-3. [ ] Frontend checkout page (contact info form with Zod validation) and order confirmation page
-4. [ ] Playwright E2E: basket → place order → confirmation
-
-## Iteration 4 — Payment (mocked provider)
-
-Goal: full purchase flow with real order lifecycle, fake money.
-
-1. [ ] `payment` module: `PaymentProvider` port, payment entity, `MockPaymentProvider` (configurable success/failure/delay)
-2. [ ] Event flow: consume `OrderPlaced` → charge via port → publish `PaymentSucceeded`/`PaymentFailed`; `ordering` updates status (integration-tested with `@ApplicationModuleTest`)
-3. [ ] Frontend: payment step (mock provider UI: "pay" / "fail" buttons), order status on confirmation page
-4. [ ] Playwright E2E: happy path to `PAID` and failure path to `PAYMENT_FAILED` with retry
-
-## Iteration 5 — Authentication (Keycloak)
-
-Goal: users can sign in; baskets and orders attach to them.
+Goal: users can sign in; personal features become possible.
 
 1. [ ] Keycloak + Redis in docker-compose, realm export committed
-2. [ ] Next.js: OIDC code+PKCE flow, Redis-backed session, sign-in/out UI
-3. [ ] Spring Boot as OAuth2 resource server; `identity` module; cart/order APIs accept authenticated user, anonymous endpoints stay for guests
-4. [ ] Anonymous cart merge into user cart at sign-in
-5. [ ] Order history page for signed-in users
+2. [ ] Next.js: OIDC Authorization Code + PKCE flow, Redis-backed session, sign-in/out UI
+3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
+4. [ ] Playwright E2E: sign in, see own name in the UI, sign out
 
-## Iteration 6+ — Backlog (unordered)
+**Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
 
-- Real PSP sandbox adapter (Paytrail or Stripe) behind the existing port
-- Inventory: stock reservations at order placement, extract `inventory` module
+## Iteration 3 — Personal beer cellar
+
+Goal: a signed-in beer enthusiast maintains the catalog of beers they own.
+
+1. [ ] `cellar` module: schema + migrations (owned beers: beer reference, quantity, vintage/bottled year, purchase date and price, notes), domain rules as unit-tested logic
+2. [ ] Cellar REST API (authenticated): list own cellar, add beer from catalog, update quantity/details, remove
+3. [ ] Frontend: cellar page (list with age, quantity, details), add-to-cellar from beer list/detail pages
+4. [ ] Playwright E2E: sign in → add a beer to cellar → edit quantity → remove it
+
+**Done when:** a signed-in user can add a beer from the catalog to their cellar and see its age and quantity; another user cannot see it.
+
+## Iteration 4+ — Backlog (unordered)
+
+Store flow — **pending decision** (own store vs. aggregator over other beer
+stores, "Trivago for beers"; needs an ADR before implementation):
+
+- Own store variant: `cart` module (ADR-0004), `ordering` with order state
+  machine and `OrderPlaced` events, `payment` behind a `PaymentProvider` port
+  with a mock adapter first (ADR-0005), checkout UI, real PSP later
+- Aggregator variant: price/availability search across external beer stores,
+  linking out to the cheapest shop
+
+Other backlog items:
+
+- Beer reviews — **pending decision**: own reviews vs. integration with an
+  existing service (Untappd, Pint Please, …)
+- Inventory / stock management (if own store is built)
 - Admin UI + role-based access for catalog management
-- Ratings & reviews; recommendations
+- Recommendations ("if you liked this IPA…")
 - Observability: structured logs, metrics, tracing
 - Deployment target + IaC; age-verification/compliance if the store turns real
