@@ -12,14 +12,14 @@ Requires the database from the repo root:
 ```bash
 docker compose up -d          # from repo root
 cd backend
-./mvnw spring-boot:run
+mvn spring-boot:run
 curl localhost:8080/actuator/health
 ```
 
 ## Test
 
 ```bash
-./mvnw test                   # needs Docker running (Testcontainers)
+mvn test                      # needs Docker running (Testcontainers)
 ```
 
 Test suites:
