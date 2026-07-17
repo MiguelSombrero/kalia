@@ -20,10 +20,16 @@ delivery:
 
 If a request conflicts with these goals, say so before proceeding.
 
+**Roles:** MiguelSombrero is the product owner — sets vision and goals,
+makes architecture decisions, guides design, reviews code; he does not code.
+AI agents produce all documentation and code.
+
 ## Project
 
-Kalia is a craft beer store: Next.js frontend (BFF pattern) + Spring Boot
-modulith backend. Read before making changes:
+Kalia is a craft beer management app and online beer store: Next.js frontend
+(BFF pattern) + Spring Boot modulith backend. Enthusiast features (catalog,
+personal cellar) come first; the store flow is a backlog decision. Read
+before making changes:
 
 - [docs/architecture.md](docs/architecture.md) — module boundaries, API
   conventions, persistence rules, testing strategy

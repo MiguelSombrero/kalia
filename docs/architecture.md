@@ -6,19 +6,26 @@ change; record significant decisions as ADRs in [adr/](adr/).*
 
 ## 1. Context and goals
 
-Kalia is an online craft beer store: customers browse and search a beer
-catalog, fill a shopping basket, place orders, and pay. It is primarily a
-learning/portfolio project, so the design optimizes for **architectural
-clarity, testability, and iterative delivery** over premature scale.
+Kalia is a craft beer management app and online beer store, serving beer
+enthusiasts first: browse and search a beer catalog, maintain a personal
+beer cellar, and later review and order beers. Whether ordering becomes
+Kalia's own store or an aggregator over other stores is deliberately
+undecided ([ADR-0006](adr/0006-cellar-first.md)). The project is developed
+process-first by AI agents: the product owner sets vision and goals, makes
+architecture decisions and reviews; agents implement all documentation and
+code. The design optimizes for **architectural clarity, testability, and
+iterative delivery** over premature scale.
 
 ### Functional requirements (initial scope)
 
-- Search/filter beers by name, brewery, style, ABV, price
+- Search/filter beers by name, brewery, country, style, ABV, price
 - Beer detail view
-- Shopping basket (works anonymously)
-- Order placement from a basket
-- Payment via a provider abstraction (mock adapter first)
-- Later: sign-in (Keycloak), persistent baskets, order history, admin catalog
+- Sign-in (Keycloak); browsing stays anonymous
+- Personal beer cellar: the signed-in user's owned beers with quantity,
+  vintage, purchase info, notes
+- Later (backlog, decisions pending): ordering (own store flow with basket,
+  orders and mocked payments — or an external-store aggregator), reviews
+  (own or via integration such as Untappd/Pint Please), admin catalog
   management, inventory
 
 ### Non-functional requirements
@@ -46,17 +53,16 @@ flowchart LR
     subgraph Backend["backend/ (Spring Boot modulith)"]
         API[REST API /api/v1]
         CAT[catalog]
-        CART[cart]
-        ORD[ordering]
-        PAY[payment]
-        IDN[identity - later]
+        CEL[cellar]
+        IDN[identity]
+        STORE[cart / ordering / payment<br/>backlog - pending store decision]
     end
     Browser --> UI
     UI --> RH
     RH -->|REST, JSON| API
-    API --> CAT & CART & ORD & PAY
-    CAT & CART & ORD & PAY --> PG[(PostgreSQL)]
-    PAY -->|port/adapter| MOCK[Mock PSP adapter]
+    API --> CAT & CEL & IDN
+    API -.-> STORE
+    CAT & CEL --> PG[(PostgreSQL)]
 ```
 
 Key properties:
@@ -67,9 +73,11 @@ Key properties:
   non-issue.
 - **Modulith** ([ADR-0002](adr/0002-spring-modulith.md)): one deployable, one
   database, but hard module boundaries verified by Spring Modulith tests.
-- **Anonymous-first**: before auth exists, the basket is keyed by a `cartId`
-  (UUID) stored in an httpOnly cookie set by the BFF. When Keycloak lands, the
-  anonymous cart is merged into the user's cart at sign-in.
+- **Anonymous browsing, authenticated personal features**: the catalog needs
+  no account; the cellar (and any future store flow) requires sign-in.
+  Authentication arrives early (iteration 2) because the cellar is per-user
+  data. The anonymous-cart cookie + merge design (ADR-0004) applies only if
+  the own-store variant is later chosen.
 
 ## 3. Backend modules
 
@@ -80,13 +88,14 @@ application events; cross-module *reads* via the public API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
-| `catalog` | Beers, breweries, styles; search & filtering; (initially also a simple `stockQuantity` — extract an `inventory` module only when stock logic grows) | — |
-| `cart` | Basket lifecycle: create, add/remove/update items, price snapshotting | `catalog` (read: beer existence & price) |
-| `ordering` | Turning a cart into an order; order lifecycle (`PLACED → PAYMENT_PENDING → PAID / PAYMENT_FAILED → …`) | `cart` (read), publishes/consumes events |
-| `payment` | `PaymentProvider` port + adapters; payment records | consumes `OrderPlaced`, publishes `PaymentSucceeded` / `PaymentFailed` |
-| `identity` | Keycloak/OIDC integration, current-user resolution *(later iteration)* | — |
+| `catalog` | Beers, breweries, styles; search & filtering | — |
+| `identity` | Keycloak/OIDC integration, current-user resolution *(iteration 2)* | — |
+| `cellar` | The signed-in user's owned beers: quantity, vintage, purchase info, notes *(iteration 3)* | `catalog` (read: beer existence), `identity` (current user) |
+| `cart` | Basket lifecycle: create, add/remove/update items, price snapshotting *(backlog — own-store variant only)* | `catalog` (read: beer existence & price) |
+| `ordering` | Turning a cart into an order; order lifecycle (`PLACED → PAYMENT_PENDING → PAID / PAYMENT_FAILED → …`) *(backlog — own-store variant only)* | `cart` (read), publishes/consumes events |
+| `payment` | `PaymentProvider` port + adapters; payment records *(backlog — own-store variant only)* | consumes `OrderPlaced`, publishes `PaymentSucceeded` / `PaymentFailed` |
 
-Event flow for checkout (target state):
+Event flow for checkout (own-store variant, if chosen):
 
 ```
 cart --(POST /orders)--> ordering: order PLACED, publishes OrderPlaced
@@ -120,7 +129,10 @@ money is not.
 
 ```
 catalog.brewery(id, name, country, city)
-catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, stock_quantity, created_at)
+catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, created_at)
+cellar.cellar_item(id, user_id, beer_id, quantity, vintage_year, purchase_date, purchase_price_cents, notes, created_at, updated_at)
+
+-- backlog (own-store variant only):
 cart.cart(id, created_at, updated_at)
 cart.cart_item(id, cart_id, beer_id, quantity, unit_price_cents)  -- price snapshot
 ordering.order(id, cart_id, status, total_cents, currency, placed_at)
@@ -136,14 +148,17 @@ if style metadata appears. Prices are integer cents to avoid floating point.
 REST, JSON, versioned under `/api/v1`. Illustrative endpoints:
 
 ```
-GET  /api/v1/beers?query=&style=&breweryId=&minAbv=&maxAbv=&page=&size=&sort=
-GET  /api/v1/beers/{id}
-GET  /api/v1/breweries
-POST /api/v1/carts                      -> creates cart, returns id
-GET  /api/v1/carts/{id}
-PUT  /api/v1/carts/{id}/items/{beerId}  -> set quantity (0 removes)
-POST /api/v1/orders                     -> { cartId } -> places order
-GET  /api/v1/orders/{id}
+GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
+GET    /api/v1/beers/{id}
+GET    /api/v1/breweries
+
+# authenticated (iteration 3)
+GET    /api/v1/cellar                    -> current user's cellar items
+POST   /api/v1/cellar/items              -> { beerId, quantity, ... } add to cellar
+PUT    /api/v1/cellar/items/{id}         -> update quantity/details
+DELETE /api/v1/cellar/items/{id}
+
+# backlog (own-store variant only): /api/v1/carts, /api/v1/orders
 ```
 
 Conventions:
@@ -159,30 +174,31 @@ Conventions:
 ## 5. Frontend design
 
 - **App Router**, server components by default; client components only where
-  interactivity requires (search input, basket interactions).
-- Route handlers under `app/api/*` form the BFF: they attach the cart cookie /
-  (later) auth token and forward to Spring Boot. A single thin `apiClient`
-  wrapper owns the backend base URL and error mapping.
+  interactivity requires (search input, cellar interactions).
+- Route handlers under `app/api/*` form the BFF: they attach the session's
+  auth token (from iteration 2 on) and forward to Spring Boot. A single thin
+  `apiClient` wrapper owns the backend base URL and error mapping.
 - Styling with Tailwind CSS; no component library until a real need appears.
 - Validation of user input at the boundary with Zod where forms appear
-  (checkout); catalog pages are read-only and skip it.
+  (cellar item details); catalog pages are read-only and skip it.
 - State: server components + URL search params for catalog filters (shareable
-  URLs, no client state library). Basket state comes from the backend via the
+  URLs, no client state library). Cellar state comes from the backend via the
   BFF; no Redux/Zustand unless proven necessary.
 
-## 6. Authentication (deferred by design)
+## 6. Authentication (iteration 2)
 
-Not implemented until its own iteration ([ADR-0005](adr/0005-defer-auth-mock-payments.md)):
+Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-first.md)):
 
-- Anonymous flows use the `cartId` httpOnly cookie only.
-- When introduced: Keycloak via OIDC Authorization Code + PKCE handled by the
-  Next.js server (Auth.js or hand-rolled OIDC client), session persisted in
-  Redis, access token attached to backend calls by the BFF. Spring Boot
-  becomes an OAuth2 resource server validating JWTs; `identity` module maps
-  tokens to users. Anonymous cart merges into the user cart at sign-in.
-- Until then the backend API is unauthenticated and must not be exposed
-  publicly (docker-compose keeps it on the internal network; only Next.js is
-  published).
+- Keycloak via OIDC Authorization Code + PKCE handled by the Next.js server
+  (Auth.js or hand-rolled OIDC client), session persisted in Redis, access
+  token attached to backend calls by the BFF. Spring Boot becomes an OAuth2
+  resource server validating JWTs; the `identity` module maps tokens to
+  users.
+- Catalog endpoints stay public; cellar (and any future store) endpoints
+  require authentication.
+- Until iteration 2 lands, the backend API is unauthenticated and must not
+  be exposed publicly (docker-compose keeps it on the internal network; only
+  Next.js is published).
 
 ## 7. Testing strategy
 
@@ -192,7 +208,7 @@ Not implemented until its own iteration ([ADR-0005](adr/0005-defer-auth-mock-pay
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
-| E2E | Playwright against docker-compose stack | Critical journeys: search → detail → basket → order → mock payment |
+| E2E | Playwright against docker-compose stack | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
 
 Definition of done for every issue: tests written, all suites green, docs
 updated if behavior or architecture changed.
@@ -204,9 +220,9 @@ updated if behavior or architecture changed.
   services later. Cost: discipline required at boundaries.
 - **BFF over direct API calls**: an extra hop and a bit of proxy code, in
   exchange for no tokens in the browser and no CORS surface.
-- **Backend-owned cart over session cart**: slightly more upfront work, but
-  pricing/stock rules stay in the domain and nothing migrates later
-  ([ADR-0004](adr/0004-backend-cart.md)).
+- **Backend-owned cart over session cart** (deferred with the store flow):
+  slightly more upfront work, but pricing/stock rules stay in the domain and
+  nothing migrates later ([ADR-0004](adr/0004-backend-cart.md)).
 - **Seed data over admin UI/import**: deterministic environments now; admin
   CRUD becomes a later iteration instead of a prerequisite.
 - **No caching / no Redis on the backend yet**: PostgreSQL with indexes is
@@ -216,10 +232,14 @@ updated if behavior or architecture changed.
 
 Things intentionally *not* designed now, with the trigger that reopens them:
 
-- **Inventory module** — extract from `catalog` when reservations/stock
-  workflows appear.
-- **Real PSP adapter** (e.g. Paytrail/Stripe sandbox) — when the mocked flow
-  is stable end-to-end.
+- **Own store vs. store aggregator** ("Trivago for beers") — decide with an
+  ADR before any store-flow implementation starts.
+- **Reviews: own vs. integration** (Untappd, Pint Please, …) — decide with
+  an ADR when reviews reach the top of the backlog.
+- **Inventory module** — only relevant if the own-store variant is chosen
+  and stock workflows appear.
+- **Real PSP adapter** (e.g. Paytrail/Stripe sandbox) — own-store variant
+  only, when the mocked flow is stable end-to-end.
 - **Search engine** (pg full-text is fine; OpenSearch only if faceted search
   outgrows it).
 - **Observability** (structured logging first; metrics/tracing when deployed

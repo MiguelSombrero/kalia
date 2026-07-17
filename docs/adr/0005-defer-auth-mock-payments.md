@@ -1,6 +1,8 @@
 # ADR-0005: Defer authentication; mock the payment provider
 
-- **Status:** accepted
+- **Status:** partially superseded by [ADR-0006](0006-cellar-first.md) —
+  auth is no longer deferred (now iteration 2); the mocked-payment stance
+  stands if the own-store flow is built
 - **Date:** 2026-07-15
 
 ## Context
