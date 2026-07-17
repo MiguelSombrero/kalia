@@ -57,7 +57,7 @@ Main technologies used in this project — update as the project evolves!
 
 ### Backend
 
-- Java 25, Spring Boot 4.1.x with Spring Modulith (later possibility to migrate to microservices)
+- Java 25, Spring Boot 4.1.0 with Spring Modulith 2.1.0 (later possibility to migrate to microservices)
 - PostgreSQL 18.4 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests
 - Keycloak 26.7.x (authentication — *introduced in a later iteration*)

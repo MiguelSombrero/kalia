@@ -107,8 +107,14 @@ money is not.
   keys between modules — cross-module references are by id only.
 - Spring Data JPA with rich domain entities where behavior exists; plain
   records/projections for read models.
-- Flyway migrations per module directory; seed data (~50–100 beers) ships as
-  versioned migrations for deterministic dev/test environments.
+- Flyway migrations per module directory (plus `common/` for cross-module
+  infrastructure); versions are globally unique across directories. Seed data
+  (~50–100 beers) ships as versioned migrations for deterministic dev/test
+  environments.
+- Spring Modulith's event publication registry uses the JDBC flavor (not JPA),
+  so framework infrastructure stays out of the persistence unit; its
+  `event_publication` table lives in the `public` schema, created by Flyway
+  from Modulith's own DDL.
 
 ### Data model sketch (iteration 1–4)
 
@@ -183,7 +189,7 @@ Not implemented until its own iteration ([ADR-0005](adr/0005-defer-auth-mock-pay
 | Layer | Tooling | What |
 |---|---|---|
 | Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
-| Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`) |
+| Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
 | E2E | Playwright against docker-compose stack | Critical journeys: search → detail → basket → order → mock payment |

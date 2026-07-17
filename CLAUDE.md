@@ -49,6 +49,15 @@ modulith backend. Read before making changes:
   that completes them.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
+- **New dependencies: ask, don't research.** When a task introduces a new
+  dependency (library, starter, plugin, Docker image, GitHub Action), do not
+  spend time hunting registries for the latest version. List the new
+  dependencies and ask the user which versions to use — batched in one
+  question per task. Exceptions: versions already pinned in README/docs or
+  this file, and versions already confirmed from authoritative output (build
+  errors, repository metadata, generator output) — propose those for
+  confirmation instead. Record chosen versions in the README tech stack
+  section so they become the pinned reference.
 
 ## Repository layout
 
