@@ -7,7 +7,10 @@ Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`,
 
 ## Run locally
 
-Requires the database from the repo root:
+Full stack in containers: `docker compose up --build` from the repo root
+(note: the API is not published to the host; only the frontend is).
+
+For development with hot reload, run natively against the compose database:
 
 ```bash
 docker compose up -d          # from repo root

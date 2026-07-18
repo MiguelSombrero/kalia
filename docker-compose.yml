@@ -1,6 +1,30 @@
 name: kalia
 
 services:
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kalia
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # No published port: only the frontend is exposed (docs/architecture.md §6);
+    # the API is reachable from other services as http://backend:8080.
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/8080' "]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
   postgres:
     image: postgres:18.4
     environment:
