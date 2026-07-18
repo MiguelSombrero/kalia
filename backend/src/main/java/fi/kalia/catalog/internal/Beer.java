@@ -11,10 +11,15 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.util.Assert;
 
 @Entity
 @Table(name = "beer", schema = "catalog")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Beer {
 
 	@Id
@@ -38,10 +43,6 @@ public class Beer {
 
 	private Instant createdAt;
 
-	protected Beer() {
-		// JPA
-	}
-
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
 			String description, Money price) {
 		this.brewery = brewery;
@@ -62,38 +63,6 @@ public class Beer {
 		Assert.isTrue(abv.signum() >= 0, "abv must not be negative");
 		Assert.notNull(price, "price must not be null");
 		return new Beer(brewery, name, style, abv, description, price);
-	}
-
-	public UUID getId() {
-		return id;
-	}
-
-	public Brewery getBrewery() {
-		return brewery;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getStyle() {
-		return style;
-	}
-
-	public BigDecimal getAbv() {
-		return abv;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public Money getPrice() {
-		return price;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
 	}
 
 }

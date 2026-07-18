@@ -6,10 +6,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.util.Assert;
 
 @Entity
 @Table(name = "brewery", schema = "catalog")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Brewery {
 
 	@Id
@@ -24,10 +29,6 @@ public class Brewery {
 
 	private Instant createdAt;
 
-	protected Brewery() {
-		// JPA
-	}
-
 	private Brewery(String name, String country, String city) {
 		this.name = name;
 		this.country = country;
@@ -39,26 +40,6 @@ public class Brewery {
 		Assert.hasText(name, "name must not be blank");
 		Assert.hasText(country, "country must not be blank");
 		return new Brewery(name, country, city);
-	}
-
-	public UUID getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public String getCity() {
-		return city;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
 	}
 
 }
