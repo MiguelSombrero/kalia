@@ -1,5 +1,7 @@
 # Kalia
 
+[![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
+
 ## Vision
 
 Kalia is a comprehensive craft beer management app and online beer store. With Kalia beer enthusiasts can search for beers, maintain their personal beer cellar, review beers and order beers online. Main use cases for Kalia is:
@@ -15,10 +17,10 @@ Kalia is developed with AI agents focusing on the development process rather tha
 
 My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
 
-> **Status:** walking skeleton phase — backend scaffolding is merged,
-> frontend skeleton and CI are next. Implementation proceeds one issue at a
-> time. See [docs/roadmap.md](docs/roadmap.md) for what gets built and in
-> which order.
+> **Status:** walking skeleton (iteration 0) complete — backend and frontend
+> scaffolding plus CI are in place; the beer catalog (iteration 1) is next.
+> Implementation proceeds one issue at a time. See
+> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
 
 ## What Kalia does
 
@@ -91,6 +93,11 @@ Main technologies used in this project — update as the project evolves!
 ### Local infrastructure
 
 - Docker Compose: PostgreSQL now; Keycloak and Redis added when auth lands
+
+### CI
+
+- GitHub Actions (build + test both apps on every push), SHA-pinned:
+  actions/checkout v7.0.0, actions/setup-java v5.6.0, actions/setup-node v7.0.0
 
 ## Repository layout (planned)
 
