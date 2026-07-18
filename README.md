@@ -80,9 +80,11 @@ Main technologies used in this project — update as the project evolves!
 
 ### Frontend
 
-- Next.js 16.2.x (App Router), React, TypeScript 7.x
-- Tailwind CSS (styling)
-- Vitest + React Testing Library (unit/component tests), Playwright (E2E)
+- Next.js 16.2.10 (App Router), React 19.2.4, TypeScript 5.9.3 (TS 7 not yet
+  supported by the Next toolchain — revisit when it is)
+- Tailwind CSS 4.3.3 (styling)
+- Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
+  Playwright (E2E — *introduced with the first E2E task*)
 - Redis 8.8.x (server-side session store — *introduced in iteration 2*)
 - Keycloak 26.7.x (authentication — *introduced in iteration 2*)
 
