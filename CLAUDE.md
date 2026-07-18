@@ -53,6 +53,12 @@ before making changes:
   this is incomplete.
 - Tick off completed roadmap tasks in `docs/roadmap.md` as part of the PR
   that completes them.
+- **Iteration DoD gate:** never declare an iteration complete because its
+  last task is ticked. Re-read the iteration's "Done when" in
+  `docs/roadmap.md` and verify each criterion by actually running it; if
+  any is unmet, add tasks to the iteration to close the gap. Apply the same
+  coverage check when planning an iteration: tasks must collectively
+  guarantee the "Done when", otherwise fix the tasks or the criteria.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
 - **New dependencies: ask, don't research.** When a task introduces a new

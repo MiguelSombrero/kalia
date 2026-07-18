@@ -18,6 +18,13 @@ until the own-store vs. store-aggregator decision is made.
   same PR — or explicitly confirmed accurate in the PR description
 - completed task ticked off in this file
 
+**Iteration DoD gate:** an iteration is complete only when its **"Done
+when"** criteria are verified *by running them*, criterion by criterion —
+not when its last task is ticked. If a criterion is unmet, add tasks to the
+iteration until it is. The same check runs at planning time: an iteration's
+tasks must collectively cover its "Done when", or one of the two must be
+fixed.
+
 ## Iteration 0 — Walking skeleton (scaffolding)
 
 Goal: empty but *running* end-to-end stack with CI-able test suites.
@@ -26,8 +33,9 @@ Goal: empty but *running* end-to-end stack with CI-able test suites.
 2. [x] Spring Boot 4.1 skeleton: Maven, Spring Modulith, Flyway wired, health endpoint, `ApplicationModules.verify()` test, Testcontainers smoke test
 3. [x] Next.js 16 skeleton: TypeScript, Tailwind, Vitest + RTL configured, one trivial passing test, placeholder home page
 4. [x] GitHub Actions: build + test both apps on push
+5. [ ] Dockerfiles for backend and frontend; `docker compose up` starts the full stack (PostgreSQL + backend + frontend)
 
-**Done when:** `docker compose up` + both dev servers start; all test suites run green locally and in CI.
+**Done when:** a single `docker compose up` brings up database, backend and frontend, and the app answers on localhost; all test suites run green locally and in CI.
 
 ## Iteration 1 — Beer catalog: browse & search
 

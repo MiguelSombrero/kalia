@@ -17,8 +17,9 @@ Kalia is developed with AI agents focusing on the development process rather tha
 
 My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
 
-> **Status:** walking skeleton (iteration 0) complete — backend and frontend
-> scaffolding plus CI are in place; the beer catalog (iteration 1) is next.
+> **Status:** walking skeleton (iteration 0) nearly complete — backend and
+> frontend scaffolding plus CI are in place; one task remains (full stack
+> via `docker compose up`) before the beer catalog (iteration 1) begins.
 > Implementation proceeds one issue at a time. See
 > [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
 
