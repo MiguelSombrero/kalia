@@ -10,5 +10,8 @@
 .env
 .env.local
 
+# Generated build output (e.g. Spring Modulith metadata export)
+build/
+
 # Logs
 *.log
