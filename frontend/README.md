@@ -8,8 +8,12 @@ API — see [docs/architecture.md](../docs/architecture.md).
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:3000 (hot reload)
 ```
+
+Or the full stack in containers: `docker compose up --build` from the repo
+root. The production image uses Next.js standalone output
+(`next.config.ts`).
 
 ## Test and checks
 

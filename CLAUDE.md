@@ -76,8 +76,9 @@ before making changes:
 - `backend/` — Spring Boot modulith (Java, Maven)
 - `frontend/` — Next.js (TypeScript)
 - `docs/` — architecture, roadmap, ADRs
-- `docker-compose.yml` — local infrastructure (PostgreSQL; Keycloak/Redis
-  arrive with the auth iteration)
+- `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend;
+  Keycloak/Redis arrive with the auth iteration). Only the frontend is
+  published; the backend API stays internal.
 - `.github/workflows/ci.yml` — build + test both apps on every push
 
 ## Environment notes

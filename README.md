@@ -17,11 +17,21 @@ Kalia is developed with AI agents focusing on the development process rather tha
 
 My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
 
-> **Status:** walking skeleton (iteration 0) nearly complete — backend and
-> frontend scaffolding plus CI are in place; one task remains (full stack
-> via `docker compose up`) before the beer catalog (iteration 1) begins.
-> Implementation proceeds one issue at a time. See
-> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
+> **Status:** walking skeleton (iteration 0) complete — full stack starts
+> with one `docker compose up`, suites green locally and in CI. The beer
+> catalog (iteration 1) is next. Implementation proceeds one issue at a
+> time. See [docs/roadmap.md](docs/roadmap.md) for what gets built and in
+> which order.
+
+## Run locally
+
+```bash
+docker compose up --build   # frontend at http://localhost:3000
+```
+
+Only the frontend is published; the backend API stays on the compose-internal
+network. For development with hot reload, run the apps natively — see
+[backend/README.md](backend/README.md) and [frontend/README.md](frontend/README.md).
 
 ## What Kalia does
 
@@ -93,7 +103,10 @@ Main technologies used in this project — update as the project evolves!
 
 ### Local infrastructure
 
-- Docker Compose: PostgreSQL now; Keycloak and Redis added when auth lands
+- Docker Compose: full stack (PostgreSQL + backend + frontend); Keycloak and
+  Redis added when auth lands
+- Base images: maven:3.9-eclipse-temurin-25 (backend build),
+  eclipse-temurin:25-jre (backend runtime), node:24-alpine (frontend)
 
 ### CI
 
