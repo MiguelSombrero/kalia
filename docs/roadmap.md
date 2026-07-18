@@ -24,7 +24,7 @@ Goal: empty but *running* end-to-end stack with CI-able test suites.
 
 1. [x] Monorepo layout: `backend/`, `frontend/`, `docs/`, root `docker-compose.yml` with PostgreSQL
 2. [x] Spring Boot 4.1 skeleton: Maven, Spring Modulith, Flyway wired, health endpoint, `ApplicationModules.verify()` test, Testcontainers smoke test
-3. [ ] Next.js 16 skeleton: TypeScript, Tailwind, Vitest + RTL configured, one trivial passing test, placeholder home page
+3. [x] Next.js 16 skeleton: TypeScript, Tailwind, Vitest + RTL configured, one trivial passing test, placeholder home page
 4. [ ] GitHub Actions: build + test both apps on push
 
 **Done when:** `docker compose up` + both dev servers start; all test suites run green locally and in CI.
