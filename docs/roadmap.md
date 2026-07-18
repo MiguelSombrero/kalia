@@ -41,7 +41,7 @@ Goal: empty but *running* end-to-end stack with CI-able test suites.
 
 Goal: a visitor can browse and search real (seeded) beers.
 
-1. [ ] `catalog` module: schema + Flyway migrations for `brewery` and `beer`, seed data (~50–100 beers)
+1. [x] `catalog` module: schema + Flyway migrations for `brewery` and `beer`, seed data (~50–100 beers)
 2. [ ] `GET /api/v1/beers` with filtering (query, style, breweryId, country, minAbv/maxAbv) + pagination/sorting; `GET /api/v1/beers/{id}`; `GET /api/v1/breweries`
 3. [ ] Frontend catalog page: beer list with search box and filters driven by URL search params (server components via BFF)
 4. [ ] Frontend beer detail page
