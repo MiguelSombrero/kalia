@@ -17,7 +17,12 @@ docker compose up -d          # from repo root
 cd backend
 mvn spring-boot:run
 curl localhost:8080/actuator/health
+curl localhost:8080/api/v1/beers?query=westvleteren
 ```
+
+API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and `/swagger-ui.html`.
+In the full compose stack these are reachable only from the internal
+network, like the rest of the API.
 
 ## Test
 

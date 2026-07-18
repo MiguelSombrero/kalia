@@ -168,8 +168,9 @@ Conventions:
 - Errors: RFC 9457 `application/problem+json` via Spring's
   `ProblemDetail`; validation errors list field violations.
 - DTOs at the API boundary — JPA entities never serialize directly.
-- OpenAPI spec generated (springdoc) once endpoints exist; the frontend may
-  later generate its TypeScript client from it.
+- OpenAPI spec generated with springdoc (`/v3/api-docs`, Swagger UI at
+  `/swagger-ui.html`, reachable only inside the compose network); the
+  frontend may later generate its TypeScript client from it.
 
 ## 5. Frontend design
 
