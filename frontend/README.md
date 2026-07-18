@@ -22,6 +22,12 @@ npm run build      # production build (includes type checking)
 
 ## Conventions
 
+- **Feature-based package structure**: code is organized by feature, not by
+  technical type — `features/catalog/`, `features/cellar/`, … each holding
+  its own components, hooks and API access. Route files under `app/` stay
+  thin and delegate to the feature folder; truly shared code goes to
+  `components/` or `lib/` only once more than one feature uses it. Mirrors
+  the backend's module-per-subdomain structure.
 - Server components by default; `'use client'` only where interactivity
   requires it.
 - Component tests live next to the component (`page.test.tsx` beside

@@ -175,6 +175,11 @@ Conventions:
 
 - **App Router**, server components by default; client components only where
   interactivity requires (search input, cellar interactions).
+- **Feature-based package structure**: `features/<feature>/` (catalog,
+  cellar, …) owns that feature's components, hooks and API access; `app/`
+  route files stay thin and delegate. Shared code moves to `components/` /
+  `lib/` only once used by multiple features. Mirrors the backend's
+  module-per-subdomain boundaries.
 - Route handlers under `app/api/*` form the BFF: they attach the session's
   auth token (from iteration 2 on) and forward to Spring Boot. A single thin
   `apiClient` wrapper owns the backend base URL and error mapping.
