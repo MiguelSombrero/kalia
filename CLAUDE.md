@@ -72,6 +72,7 @@ before making changes:
 - `docs/` — architecture, roadmap, ADRs
 - `docker-compose.yml` — local infrastructure (PostgreSQL; Keycloak/Redis
   arrive with the auth iteration)
+- `.github/workflows/ci.yml` — build + test both apps on every push
 
 ## Environment notes
 
