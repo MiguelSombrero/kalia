@@ -45,3 +45,12 @@ Flyway owns the schema (`ddl-auto=validate`). Locations under
 
 Version numbers (`V001`, `V002`, …) are **globally unique across all
 directories** — take the next free number regardless of directory.
+
+## Code conventions
+
+- **Lombok for boilerplate, not for domain semantics.** Use class-level
+  `@Getter` and `@NoArgsConstructor(access = PROTECTED)` (the JPA
+  constructor) on entities. Do **not** use `@Setter`, `@Data` or `@Builder`
+  on entities — state changes go through factory methods and behavior
+  methods that enforce invariants (rich domain model).
+- Value objects and DTOs are Java records, which need no Lombok.

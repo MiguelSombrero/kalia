@@ -128,7 +128,7 @@ money is not.
 ### Data model sketch (iteration 1–4)
 
 ```
-catalog.brewery(id, name, country, city)
+catalog.brewery(id, name, country, city, created_at)
 catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, created_at)
 cellar.cellar_item(id, user_id, beer_id, quantity, vintage_year, purchase_date, purchase_price_cents, notes, created_at, updated_at)
 
