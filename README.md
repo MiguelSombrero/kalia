@@ -90,6 +90,7 @@ Main technologies used in this project — update as the project evolves!
 - PostgreSQL 18.4 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests
 - Lombok 1.18.46 (boilerplate reduction — see backend/README.md conventions)
+- springdoc-openapi 3.0.3 (OpenAPI spec + Swagger UI)
 - Keycloak 26.7.x (authentication — *introduced in iteration 2*)
 
 ### Frontend

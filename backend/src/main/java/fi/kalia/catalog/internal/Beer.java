@@ -14,6 +14,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 @Entity
@@ -36,7 +37,7 @@ public class Beer {
 
 	private BigDecimal abv;
 
-	private String description;
+	private @Nullable String description;
 
 	@Embedded
 	private Money price;
@@ -44,7 +45,7 @@ public class Beer {
 	private Instant createdAt;
 
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
-			String description, Money price) {
+			@Nullable String description, Money price) {
 		this.brewery = brewery;
 		this.name = name;
 		this.style = style;
@@ -55,7 +56,7 @@ public class Beer {
 	}
 
 	public static Beer create(Brewery brewery, String name, String style,
-			BigDecimal abv, String description, Money price) {
+			BigDecimal abv, @Nullable String description, Money price) {
 		Assert.notNull(brewery, "brewery must not be null");
 		Assert.hasText(name, "name must not be blank");
 		Assert.hasText(style, "style must not be blank");

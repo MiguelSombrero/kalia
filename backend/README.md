@@ -17,7 +17,12 @@ docker compose up -d          # from repo root
 cd backend
 mvn spring-boot:run
 curl localhost:8080/actuator/health
+curl localhost:8080/api/v1/beers?query=westvleteren
 ```
+
+API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and `/swagger-ui.html`.
+In the full compose stack these are reachable only from the internal
+network, like the rest of the API.
 
 ## Test
 
@@ -54,3 +59,31 @@ directories** — take the next free number regardless of directory.
   on entities — state changes go through factory methods and behavior
   methods that enforce invariants (rich domain model).
 - Value objects and DTOs are Java records, which need no Lombok.
+- **JSpecify nullability.** Every package has a `package-info.java` with
+  `@NullMarked` (Spring Framework 7 itself is null-marked). Types are
+  non-null by default; anything that may be null is annotated
+  `@org.jspecify.annotations.Nullable` — fields, record components,
+  parameters and returns alike. New packages must add the marker.
+
+## Error-handling convention
+
+`ProblemDetail.detail` carries only messages from exception types
+**explicitly designed as API responses** (e.g. `BeerNotFoundException`,
+`InvalidSearchParameterException`) — their messages are written for API
+consumers and contain nothing internal. Never map broad exception types
+(`IllegalArgumentException`, `RuntimeException`) to responses: a library
+exception caught by such a handler would leak internal messages. Everything
+unexpected falls through to Spring Boot's defaults — 500 problem+json
+without a message (`server.error.include-message=never`), logged
+server-side.
+
+## Testing conventions
+
+- **Aim for ≥ 80 % coverage of the backend — through valuable tests, not
+  coverage theater.** Test domain logic, filtering/sorting, mappings and
+  error paths; do not test trivial code (plain getters, dumb DTOs,
+  framework wiring).
+- Test behavior against real collaborators where practical: specifications
+  and repositories run against PostgreSQL via Testcontainers
+  (`@DataJpaTest`), the API via `@SpringBootTest` + `RestTestClient`.
+  Mock-heavy unit tests that assert implementation calls are a smell.

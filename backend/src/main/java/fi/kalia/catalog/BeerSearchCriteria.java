@@ -1,0 +1,13 @@
+package fi.kalia.catalog;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Every criterion is optional; null means "do not filter by this".
+ */
+public record BeerSearchCriteria(@Nullable String query, @Nullable String style,
+		@Nullable UUID breweryId, @Nullable String country,
+		@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
+}
