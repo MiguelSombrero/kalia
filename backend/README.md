@@ -65,6 +65,18 @@ directories** — take the next free number regardless of directory.
   `@org.jspecify.annotations.Nullable` — fields, record components,
   parameters and returns alike. New packages must add the marker.
 
+## Error-handling convention
+
+`ProblemDetail.detail` carries only messages from exception types
+**explicitly designed as API responses** (e.g. `BeerNotFoundException`,
+`InvalidSearchParameterException`) — their messages are written for API
+consumers and contain nothing internal. Never map broad exception types
+(`IllegalArgumentException`, `RuntimeException`) to responses: a library
+exception caught by such a handler would leak internal messages. Everything
+unexpected falls through to Spring Boot's defaults — 500 problem+json
+without a message (`server.error.include-message=never`), logged
+server-side.
+
 ## Testing conventions
 
 - **Aim for ≥ 80 % coverage of the backend — through valuable tests, not

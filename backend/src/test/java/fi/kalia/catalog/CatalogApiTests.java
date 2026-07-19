@@ -130,6 +130,17 @@ class CatalogApiTests {
 	}
 
 	@Test
+	void unsupportedSortPropertyYieldsProblemJson400WithGuidance() {
+		client.get().uri("/api/v1/beers?sort=price,desc")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.detail"))
+						.contains("Unsupported sort property 'price'"));
+	}
+
+	@Test
 	void listsBreweriesSortedByName() {
 		client.get().uri("/api/v1/breweries")
 				.exchange()

@@ -166,7 +166,10 @@ Conventions:
 - Pagination: `page`/`size` params, response envelope with `content`,
   `totalElements`, `totalPages`, `page`.
 - Errors: RFC 9457 `application/problem+json` via Spring's
-  `ProblemDetail`; validation errors list field violations.
+  `ProblemDetail`; validation errors list field violations. `detail` only
+  ever carries messages from exception types designed as API responses;
+  unexpected exceptions return message-less problems and are logged
+  (see backend/README.md error-handling convention).
 - DTOs at the API boundary — JPA entities never serialize directly.
 - OpenAPI spec generated with springdoc (`/v3/api-docs`, Swagger UI at
   `/swagger-ui.html`, reachable only inside the compose network); the

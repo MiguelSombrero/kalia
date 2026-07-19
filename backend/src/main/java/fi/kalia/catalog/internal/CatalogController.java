@@ -64,7 +64,7 @@ class CatalogController {
 		String[] parts = sort.split(",");
 		String property = parts[0].trim();
 		if (!SORTABLE.contains(property)) {
-			throw new IllegalArgumentException(
+			throw new InvalidSearchParameterException(
 					"Unsupported sort property '%s'; use one of %s".formatted(property, SORTABLE));
 		}
 		Sort.Direction direction = parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc")
