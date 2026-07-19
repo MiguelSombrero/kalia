@@ -59,3 +59,19 @@ directories** — take the next free number regardless of directory.
   on entities — state changes go through factory methods and behavior
   methods that enforce invariants (rich domain model).
 - Value objects and DTOs are Java records, which need no Lombok.
+- **JSpecify nullability.** Every package has a `package-info.java` with
+  `@NullMarked` (Spring Framework 7 itself is null-marked). Types are
+  non-null by default; anything that may be null is annotated
+  `@org.jspecify.annotations.Nullable` — fields, record components,
+  parameters and returns alike. New packages must add the marker.
+
+## Testing conventions
+
+- **Aim for ≥ 80 % coverage of the backend — through valuable tests, not
+  coverage theater.** Test domain logic, filtering/sorting, mappings and
+  error paths; do not test trivial code (plain getters, dumb DTOs,
+  framework wiring).
+- Test behavior against real collaborators where practical: specifications
+  and repositories run against PostgreSQL via Testcontainers
+  (`@DataJpaTest`), the API via `@SpringBootTest` + `RestTestClient`.
+  Mock-heavy unit tests that assert implementation calls are a smell.

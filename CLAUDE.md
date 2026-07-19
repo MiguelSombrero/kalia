@@ -59,6 +59,14 @@ before making changes:
   any is unmet, add tasks to the iteration to close the gap. Apply the same
   coverage check when planning an iteration: tasks must collectively
   guarantee the "Done when", otherwise fix the tasks or the criteria.
+- **Code review is a dialogue.** Analyze every review comment critically —
+  architecture, security, code quality, API design, testability — before
+  acting. Agreeing: implement and reply with what changed. Disagreeing:
+  reply in the review thread with the concern and a concrete alternative,
+  and make **no code changes** until the discussion settles. If the product
+  owner's decision stands after discussion, implement it. Conventions that
+  emerge from review decisions get documented (CLAUDE.md, backend/frontend
+  README, or docs/) in the same PR.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
 - **New dependencies: ask, don't research.** When a task introduces a new

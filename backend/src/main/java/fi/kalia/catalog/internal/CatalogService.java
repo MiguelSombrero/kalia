@@ -5,8 +5,8 @@ import fi.kalia.catalog.BeerSearchCriteria;
 import fi.kalia.catalog.BeerSummaryDto;
 import fi.kalia.catalog.BreweryDto;
 import fi.kalia.catalog.BreweryRefDto;
+import fi.kalia.catalog.MoneyDto;
 import fi.kalia.catalog.PageDto;
-import fi.kalia.catalog.PriceDto;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +48,7 @@ class CatalogService {
 
 	private static BeerSummaryDto toSummary(Beer beer) {
 		return new BeerSummaryDto(beer.getId(), beer.getName(), beer.getStyle(), beer.getAbv(),
-				new PriceDto(beer.getPrice().cents(), beer.getPrice().currency()),
+				new MoneyDto(beer.getPrice().cents(), beer.getPrice().currency()),
 				new BreweryRefDto(beer.getBrewery().getId(), beer.getBrewery().getName()));
 	}
 
@@ -56,7 +56,7 @@ class CatalogService {
 		Brewery brewery = beer.getBrewery();
 		return new BeerDetailsDto(beer.getId(), beer.getName(), beer.getStyle(), beer.getAbv(),
 				beer.getDescription(),
-				new PriceDto(beer.getPrice().cents(), beer.getPrice().currency()),
+				new MoneyDto(beer.getPrice().cents(), beer.getPrice().currency()),
 				new BreweryDto(brewery.getId(), brewery.getName(), brewery.getCountry(), brewery.getCity()));
 	}
 
