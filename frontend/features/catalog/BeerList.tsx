@@ -23,10 +23,14 @@ export function BeerList({ beers }: { beers: BeerSummary[] }) {
       {beers.map((beer) => (
         <li
           key={beer.id}
-          className="rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+          className="relative rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
         >
           <div className="flex items-baseline justify-between gap-2">
-            <h2 className="font-semibold">{beer.name}</h2>
+            <h2 className="font-semibold">
+              <Link href={`/beers/${beer.id}`} className="after:absolute after:inset-0">
+                {beer.name}
+              </Link>
+            </h2>
             <span className="shrink-0 text-sm font-medium">{formatPrice(beer.price)}</span>
           </div>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{beer.brewery.name}</p>
