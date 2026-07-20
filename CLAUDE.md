@@ -46,6 +46,16 @@ before making changes:
 - Test-first: write or update tests with the code; all suites green before
   a PR. Verify changes by actually running them (e.g. `docker compose up`,
   hitting the endpoint), not just by compiling.
+- **Open the PR automatically once a task is done** — don't wait for an
+  explicit "create the PR" instruction. "Done" means: tests green, changes
+  verified by running them, doc-sync check complete, roadmap task ticked.
+  Push the branch and run `gh pr create` with a description covering what
+  changed, why, and anything worth a reviewer's attention, the moment those
+  conditions hold. The PR is the review gate, not its creation — opening one
+  doesn't merge anything or touch `dev`; merging stays the product owner's
+  explicit action on GitHub. This does not relax any other gate (doc-sync,
+  iteration DoD, dependency confirmation, review-comment discipline) — a
+  task isn't "done" if those are unmet, so the PR doesn't open until they are.
 - **Doc-sync gate (part of definition of done):** before opening a PR,
   re-read the sections of `docs/architecture.md`, `docs/roadmap.md`, and any
   ADRs the change touches. Update them in the same PR, or state explicitly in
