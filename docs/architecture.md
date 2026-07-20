@@ -76,7 +76,7 @@ Key properties:
   database, but hard module boundaries verified by Spring Modulith tests.
 - **Anonymous browsing, authenticated personal features**: the catalog needs
   no account; the cellar (and any future store flow) requires sign-in.
-  Authentication arrives early (iteration 2) because the cellar is per-user
+  Authentication arrives in its own early iteration because the cellar is per-user
   data. The anonymous-cart cookie + merge design (ADR-0004) applies only if
   the own-store variant is later chosen.
 
@@ -90,8 +90,8 @@ application events; cross-module *reads* via the public API.
 | Module | Responsibility | Depends on |
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering | — |
-| `identity` | Keycloak/OIDC integration, current-user resolution *(iteration 2)* | — |
-| `cellar` | The signed-in user's owned beers: quantity, vintage, purchase info, notes *(iteration 3)* | `catalog` (read: beer existence), `identity` (current user) |
+| `identity` | Keycloak/OIDC integration, current-user resolution *(auth iteration)* | — |
+| `cellar` | The signed-in user's owned beers: quantity, vintage, purchase info, notes *(cellar iteration)* | `catalog` (read: beer existence), `identity` (current user) |
 | `cart` | Basket lifecycle: create, add/remove/update items, price snapshotting *(backlog — own-store variant only)* | `catalog` (read: beer existence & price) |
 | `ordering` | Turning a cart into an order; order lifecycle (`PLACED → PAYMENT_PENDING → PAID / PAYMENT_FAILED → …`) *(backlog — own-store variant only)* | `cart` (read), publishes/consumes events |
 | `payment` | `PaymentProvider` port + adapters; payment records *(backlog — own-store variant only)* | consumes `OrderPlaced`, publishes `PaymentSucceeded` / `PaymentFailed` |
@@ -126,7 +126,7 @@ money is not.
   `event_publication` table lives in the `public` schema, created by Flyway
   from Modulith's own DDL.
 
-### Data model sketch (iteration 1–4)
+### Data model sketch
 
 ```
 catalog.brewery(id, name, country, city, created_at)
@@ -153,7 +153,7 @@ GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&siz
 GET    /api/v1/beers/{id}
 GET    /api/v1/breweries
 
-# authenticated (iteration 3)
+# authenticated (cellar iteration)
 GET    /api/v1/cellar                    -> current user's cellar items
 POST   /api/v1/cellar/items              -> { beerId, quantity, ... } add to cellar
 PUT    /api/v1/cellar/items/{id}         -> update quantity/details
@@ -186,7 +186,7 @@ Conventions:
   `lib/` only once used by multiple features. Mirrors the backend's
   module-per-subdomain boundaries.
 - Route handlers under `app/api/*` form the BFF: they attach the session's
-  auth token (from iteration 2 on) and forward to Spring Boot. A single thin
+  auth token (from the auth iteration on) and forward to Spring Boot. A single thin
   `apiClient` wrapper owns the backend base URL and error mapping.
 - Styling with Tailwind CSS; no component library until a real need appears.
 - Validation of user input at the boundary with Zod where forms appear
@@ -195,7 +195,7 @@ Conventions:
   URLs, no client state library). Cellar state comes from the backend via the
   BFF; no Redux/Zustand unless proven necessary.
 
-## 6. Authentication (iteration 2)
+## 6. Authentication (own iteration, before the cellar)
 
 Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-first.md)):
 
@@ -206,7 +206,7 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   users.
 - Catalog endpoints stay public; cellar (and any future store) endpoints
   require authentication.
-- Until iteration 2 lands, the backend API is unauthenticated and must not
+- Until the auth iteration lands, the backend API is unauthenticated and must not
   be exposed publicly (docker-compose keeps it on the internal network; only
   Next.js is published).
 

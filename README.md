@@ -39,8 +39,8 @@ In roadmap order, a user can:
 
 - Browse and search craft beers by name, brewery, country, style, alcohol content (ABV), and price — no account needed
 - View beer details (brewery, country, style, ABV, description, price)
-- Sign in with Keycloak *(iteration 2)*
-- Maintain a personal beer cellar: the beers they own, with quantity, vintage/age, purchase info and notes *(iteration 3)*
+- Sign in with Keycloak *(auth iteration)*
+- Maintain a personal beer cellar: the beers they own, with quantity, vintage/age, purchase info and notes *(cellar iteration)*
 
 Planned for later (tracked in the [roadmap](docs/roadmap.md); the open
 decisions are recorded in [ADR-0006](docs/adr/0006-cellar-first.md)):
@@ -91,7 +91,7 @@ Main technologies used in this project — update as the project evolves!
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests
 - Lombok 1.18.46 (boilerplate reduction — see backend/README.md conventions)
 - springdoc-openapi 3.0.3 (OpenAPI spec + Swagger UI)
-- Keycloak 26.7.x (authentication — *introduced in iteration 2*)
+- Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
 
 ### Frontend
 
@@ -100,8 +100,8 @@ Main technologies used in this project — update as the project evolves!
 - Tailwind CSS 4.3.3 (styling)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright (E2E — *introduced with the first E2E task*)
-- Redis 8.8.x (server-side session store — *introduced in iteration 2*)
-- Keycloak 26.7.x (authentication — *introduced in iteration 2*)
+- Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
+- Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
 
 ### Local infrastructure
 
@@ -122,8 +122,8 @@ kalia/
 ├── backend/          # Spring Boot modulith
 │   └── src/main/java/fi/kalia/
 │       ├── catalog/  # beers, breweries, search
-│       ├── identity/ # Keycloak integration (iteration 2)
-│       ├── cellar/   # personal beer cellar (iteration 3)
+│       ├── identity/ # Keycloak integration (auth iteration)
+│       ├── cellar/   # personal beer cellar (cellar iteration)
 │       └── ...       # cart/ordering/payment if own store is chosen (backlog)
 ├── frontend/         # Next.js app (BFF + UI)
 ├── docs/
