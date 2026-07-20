@@ -17,6 +17,23 @@ export interface BeerSummary {
   brewery: BreweryRef;
 }
 
+export interface Brewery {
+  id: string;
+  name: string;
+  country: string;
+  city: string | null;
+}
+
+export interface BeerDetails {
+  id: string;
+  name: string;
+  style: string;
+  abv: number;
+  description: string | null;
+  price: MoneyDto;
+  brewery: Brewery;
+}
+
 export interface BeerPage {
   content: BeerSummary[];
   totalElements: number;

@@ -16,7 +16,10 @@ describe("BeerList", () => {
   it("renders beer name, brewery, style, abv and formatted price", () => {
     render(<BeerList beers={[westvleteren12]} />);
 
-    expect(screen.getByText("Westvleteren 12")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Westvleteren 12" })).toHaveAttribute(
+      "href",
+      "/beers/b1",
+    );
     expect(screen.getByText("Brouwerij Westvleteren")).toBeInTheDocument();
     expect(screen.getByText(/Quadrupel/)).toBeInTheDocument();
     expect(screen.getByText(/10\.2\s?%/)).toBeInTheDocument();
