@@ -22,7 +22,14 @@ npm test           # Vitest + React Testing Library (single run)
 npm run test:watch # watch mode
 npm run lint       # ESLint
 npm run build      # production build (includes type checking)
+npm run test:e2e   # Playwright — starts the full docker compose stack if
+                    # it isn't already running (needs Docker)
 ```
+
+Playwright reuses an already-running stack when found, otherwise it starts
+one and does not reliably stop it afterwards — run `docker compose down`
+from the repo root when you're done testing locally. Not an issue in CI:
+the runner is discarded after the job.
 
 ## Conventions
 

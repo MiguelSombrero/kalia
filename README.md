@@ -99,7 +99,7 @@ Main technologies used in this project — update as the project evolves!
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4.3.3 (styling)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
-  Playwright (E2E — *introduced with the first E2E task*)
+  Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
 

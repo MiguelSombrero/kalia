@@ -218,7 +218,19 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
-| E2E | Playwright against docker-compose stack | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
+
+E2E specs live under `frontend/e2e/`, not at the repo root, even though they
+exercise the whole stack (compose-run backend + Postgres are the fixture
+behind every page visited): the tooling that runs them (Node/Playwright)
+already lives in `frontend/`, and there is no root `package.json` /
+workspaces setup to host a separate `e2e/` package without duplicating
+devDependency pinning (Playwright, TypeScript, ESLint) across two lockfiles.
+This mirrors backend integration tests, which need a real Postgres fixture
+but live in `backend/src/test` for the same reason — the test *tooling's*
+home decides placement, not the fixture's scope. Revisit if a second
+frontend client appears, or the repo adopts npm workspaces for another
+reason — either would justify a dedicated `e2e/` package.
 
 Definition of done for every issue: tests written, all suites green, docs
 updated if behavior or architecture changed.
@@ -258,6 +270,9 @@ Things intentionally *not* designed now, with the trigger that reopens them:
   any real-customer use.
 - **CI/CD & deployment** — GitHub Actions build+test early; deployment target
   chosen when something is worth deploying.
+- **Root-level `e2e/` package** — E2E specs stay under `frontend/e2e/` for
+  now (see §7); revisit when a second frontend client appears or the repo
+  adopts npm workspaces for another reason.
 
 ## 10. Architecture decision records
 
