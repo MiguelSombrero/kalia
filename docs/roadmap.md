@@ -6,9 +6,10 @@ before the next begins. Update this file as iterations complete or plans
 change.
 
 Priorities follow the beer-enthusiast side of the vision first
-([ADR-0006](adr/0006-cellar-first.md)): catalog → authentication → personal
-beer cellar. The store flow (basket, ordering, payment) lives in the backlog
-until the own-store vs. store-aggregator decision is made.
+([ADR-0006](adr/0006-cellar-first.md)): catalog → frontend standards →
+authentication → personal beer cellar. The store flow (basket, ordering,
+payment) lives in the backlog until the own-store vs. store-aggregator
+decision is made.
 
 **Definition of done (every issue):**
 
@@ -51,7 +52,25 @@ Goal: a visitor can browse and search real (seeded) beers.
 
 **Done when:** a user can find "Westvleteren" by name or filter Belgian quads between 9–12 % ABV, and open beer details.
 
-## Iteration 2 — Authentication (Keycloak)
+## Iteration 2 — Frontend standards & UI design
+
+Goal: set the standards for UI design and development — architecture
+decisions, conventions, localization, accessibility and a professional look —
+so later features are easier to add and consistent by default.
+
+1. [ ] Decision: TanStack Query for API calls; document the decision
+2. [ ] Decision: Zustand for client application state — user selections only, never API data (that belongs to TanStack Query); document the decision
+3. [ ] Decision: react-hook-form + Zod for forms and validation; document the decision
+4. [ ] Convention: prefer arrow functions over explicit function declarations; document and enforce via ESLint
+5. [ ] i18next localization with Finnish and English translations; migrate all existing UI text to i18next
+6. [ ] OpenAPI-generated API clients: the backend's OpenAPI spec becomes the source of truth for its APIs. Select the tool **with the product owner** (candidate: [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli), challengeable) and agree the workflow (spec file copied to frontend vs. generated against a running backend)
+7. [ ] Accessibility per [WCAG 2.1 level AA](https://www.w3.org/WAI/WCAG21/Understanding/conformance): retrofit existing components (aria attributes, roles, focus handling); automate accessibility testing where possible; from here on every new component/page ships accessible. Ask the product owner when something is unclear
+8. [ ] UI design: preliminary design for Kalia — minimalistic and hipstery feel; consult the product owner on colors, fonts and functionality; centralize the look in themes/design tokens; keep a future design-system extraction possible. Outcome: a professional, production-grade look
+9. [ ] Standard loading, error and empty states: Next.js `loading.tsx`/`error.tsx` conventions plus shared UI patterns, applied to the catalog pages *(added by agent: without a standard, every feature invents its own)*
+
+**Done when:** decisions 1–6 are documented and the existing code migrated to them; catalog pages pass automated WCAG 2.1 AA checks; the UI implements the new design with both Finnish and English translations; all suites green.
+
+## Iteration 3 — Authentication (Keycloak)
 
 Goal: users can sign in; personal features become possible.
 
@@ -62,7 +81,7 @@ Goal: users can sign in; personal features become possible.
 
 **Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
 
-## Iteration 3 — Personal beer cellar
+## Iteration 4 — Personal beer cellar
 
 Goal: a signed-in beer enthusiast maintains the catalog of beers they own.
 
@@ -73,7 +92,7 @@ Goal: a signed-in beer enthusiast maintains the catalog of beers they own.
 
 **Done when:** a signed-in user can add a beer from the catalog to their cellar and see its age and quantity; another user cannot see it.
 
-## Iteration 4+ — Backlog (unordered)
+## Iteration 5+ — Backlog (unordered)
 
 Store flow — **pending decision** (own store vs. aggregator over other beer
 stores, "Trivago for beers"; needs an ADR before implementation):

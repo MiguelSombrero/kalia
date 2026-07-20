@@ -3,6 +3,12 @@
 - **Status:** accepted
 - **Date:** 2026-07-17
 
+*Note (2026-07-19): the iteration numbers below reflect the roadmap as it
+stood at decision time. A frontend-standards iteration was later inserted
+before authentication; [docs/roadmap.md](../roadmap.md) is the source of
+truth for current numbering. The ordering decided here (auth before cellar,
+store flow in backlog) is unchanged.*
+
 ## Context
 
 The project vision was clarified (README, 2026-07-17): Kalia serves beer
