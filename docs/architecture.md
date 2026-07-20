@@ -218,7 +218,7 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
-| E2E | Playwright against docker-compose stack | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
 
 Definition of done for every issue: tests written, all suites green, docs
 updated if behavior or architecture changed.

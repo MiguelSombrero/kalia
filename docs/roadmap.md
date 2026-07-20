@@ -46,7 +46,7 @@ Goal: a visitor can browse and search real (seeded) beers.
 2. [x] `GET /api/v1/beers` with filtering (query, style, breweryId, country, minAbv/maxAbv) + pagination/sorting; `GET /api/v1/beers/{id}`; `GET /api/v1/breweries`
 3. [x] Frontend catalog page: beer list with search box and filters driven by URL search params (server components via BFF)
 4. [x] Frontend beer detail page
-5. [ ] Playwright E2E: search for a beer → open its detail page
+5. [x] Playwright E2E: search for a beer → open its detail page
 6. [ ] SpringDoc OpenAPI documentation for the API and schemas (`@Tag`, `@Operation`, `@Parameter`, `@Schema`); expose Swagger UI in docker compose and reconcile docs/architecture.md so the exposure model and this decision do not contradict
 7. [ ] Backend test infrastructure: JaCoCo Maven plugin (measure the ≥ 80 % aim in CI); test-naming convention — unit tests `*Test`, integration tests `*IT` — with maven-surefire-plugin running units and maven-failsafe-plugin running integrations; rename existing test classes accordingly
 
