@@ -1,8 +1,9 @@
 # Kalia — Architecture
 
-*Last updated: 2026-07-15. This document describes the target architecture and
+*Last updated: 2026-07-19. This document describes the target architecture and
 the parts of it that are deliberately deferred. Update it when decisions
-change; record significant decisions as ADRs in [adr/](adr/).*
+change; record significant decisions as ADRs in [adr/](adr/) and index them
+in [§10](#10-architecture-decision-records).*
 
 ## 1. Context and goals
 
@@ -257,3 +258,18 @@ Things intentionally *not* designed now, with the trigger that reopens them:
   any real-customer use.
 - **CI/CD & deployment** — GitHub Actions build+test early; deployment target
   chosen when something is worth deploying.
+
+## 10. Architecture decision records
+
+All decisions live in [adr/](adr/); this table is the index. Add a row when
+adding an ADR, and update the status column when a later ADR changes an
+earlier one.
+
+| Id | Title | Status | Date |
+|---|---|---|---|
+| [ADR-0001](adr/0001-monorepo.md) | Monorepo for frontend and backend | accepted | 2026-07-15 |
+| [ADR-0002](adr/0002-spring-modulith.md) | Spring Modulith backend, not microservices | accepted | 2026-07-15 |
+| [ADR-0003](adr/0003-bff-pattern.md) | Backend-for-frontend (BFF) pattern | accepted | 2026-07-15 |
+| [ADR-0004](adr/0004-backend-cart.md) | Cart is a backend domain module | accepted — implementation deferred with the store flow ([ADR-0006](adr/0006-cellar-first.md)) | 2026-07-15 |
+| [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | partially superseded by [ADR-0006](adr/0006-cellar-first.md) — auth no longer deferred; mocked-payment stance stands | 2026-07-15 |
+| [ADR-0006](adr/0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
