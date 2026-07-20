@@ -5,6 +5,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
+    // globals lets React Testing Library register its afterEach cleanup
+    globals: true,
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
   },

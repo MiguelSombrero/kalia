@@ -43,7 +43,7 @@ Goal: a visitor can browse and search real (seeded) beers.
 
 1. [x] `catalog` module: schema + Flyway migrations for `brewery` and `beer`, seed data (~50–100 beers)
 2. [x] `GET /api/v1/beers` with filtering (query, style, breweryId, country, minAbv/maxAbv) + pagination/sorting; `GET /api/v1/beers/{id}`; `GET /api/v1/breweries`
-3. [ ] Frontend catalog page: beer list with search box and filters driven by URL search params (server components via BFF)
+3. [x] Frontend catalog page: beer list with search box and filters driven by URL search params (server components via BFF)
 4. [ ] Frontend beer detail page
 5. [ ] Playwright E2E: search for a beer → open its detail page
 6. [ ] SpringDoc OpenAPI documentation for the API and schemas (`@Tag`, `@Operation`, `@Parameter`, `@Schema`); expose Swagger UI in docker compose and reconcile docs/architecture.md so the exposure model and this decision do not contradict
