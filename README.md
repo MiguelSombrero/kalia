@@ -29,9 +29,12 @@ My, MiguelSombrero, role is to set the projects goal and vision, make architectu
 docker compose up --build   # frontend at http://localhost:3000
 ```
 
-Only the frontend is published; the backend API stays on the compose-internal
-network. For development with hot reload, run the apps natively — see
-[backend/README.md](backend/README.md) and [frontend/README.md](frontend/README.md).
+The frontend is published at `:3000`; the backend is also published, at
+`:8080` (localhost only) for direct API access and Swagger UI — see
+[backend/README.md](backend/README.md). Both bindings are localhost-only,
+never reachable beyond the dev machine. For development with hot reload,
+run the apps natively — see [backend/README.md](backend/README.md) and
+[frontend/README.md](frontend/README.md).
 
 ## What Kalia does
 

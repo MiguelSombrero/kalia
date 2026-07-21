@@ -95,8 +95,9 @@ before making changes:
 - `frontend/` — Next.js (TypeScript)
 - `docs/` — architecture, roadmap, ADRs
 - `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend;
-  Keycloak/Redis arrive with the auth iteration). Only the frontend is
-  published; the backend API stays internal.
+  Keycloak/Redis arrive with the auth iteration). Frontend (`:3000`) and
+  backend (`:8080`, for direct API access and Swagger UI) are both
+  published, localhost-only.
 - `.github/workflows/ci.yml` — build + test both apps on every push
 
 ## Environment notes
