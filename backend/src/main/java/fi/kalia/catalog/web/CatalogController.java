@@ -1,10 +1,8 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.web;
 
-import fi.kalia.catalog.BeerDetailsDto;
-import fi.kalia.catalog.BeerSearchCriteria;
-import fi.kalia.catalog.BeerSummaryDto;
-import fi.kalia.catalog.BreweryDto;
-import fi.kalia.catalog.PageDto;
+import fi.kalia.catalog.application.CatalogService;
+import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.catalog.domain.BeerSearchCriteria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,21 +57,20 @@ class CatalogController {
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
 			@RequestParam(defaultValue = "name,asc") String sort) {
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-		return catalog.searchBeers(
-				new BeerSearchCriteria(query, style, breweryId, country, minAbv, maxAbv),
-				pageable);
+		BeerSearchCriteria criteria = new BeerSearchCriteria(query, style, breweryId, country, minAbv, maxAbv);
+		return PageDto.from(catalog.searchBeers(criteria, pageable).map(BeerSummaryDto::from));
 	}
 
 	@GetMapping("/beers/{id}")
 	@Operation(summary = "Get beer details", description = "Full details for a single beer, including its brewery.")
 	BeerDetailsDto getBeer(@Parameter(description = "Beer id") @PathVariable UUID id) {
-		return catalog.getBeer(id);
+		return BeerDetailsDto.from(catalog.getBeer(id));
 	}
 
 	@GetMapping("/breweries")
 	@Operation(summary = "List breweries", description = "All breweries, sorted by name.")
 	List<BreweryDto> listBreweries() {
-		return catalog.listBreweries();
+		return catalog.listBreweries().stream().map(BreweryDto::from).toList();
 	}
 
 	private static Sort parseSort(String sort) {

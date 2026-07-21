@@ -1,4 +1,4 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

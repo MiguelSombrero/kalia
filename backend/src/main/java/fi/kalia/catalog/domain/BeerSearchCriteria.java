@@ -1,4 +1,4 @@
-package fi.kalia.catalog;
+package fi.kalia.catalog.domain;
 
 import java.math.BigDecimal;
 import java.util.UUID;

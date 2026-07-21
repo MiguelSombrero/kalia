@@ -17,10 +17,11 @@ Kalia is developed with AI agents focusing on the development process rather tha
 
 My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
 
-> **Status:** walking skeleton (iteration 0) complete — full stack starts
-> with one `docker compose up`, suites green locally and in CI. The beer
-> catalog (iteration 1) is next. Implementation proceeds one issue at a
-> time. See [docs/roadmap.md](docs/roadmap.md) for what gets built and in
+> **Status:** iterations 0–1 complete — a visitor can browse and search the
+> seeded beer catalog end to end (verified: find "Westvleteren" by name,
+> filter Belgian quads 9–12 % ABV, open beer details). Next: frontend
+> standards & UI design (iteration 2). Implementation proceeds one issue at
+> a time. See [docs/roadmap.md](docs/roadmap.md) for what gets built and in
 > which order.
 
 ## Run locally
@@ -93,7 +94,7 @@ Main technologies used in this project — update as the project evolves!
 - PostgreSQL 18.4 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests;
   surefire/failsafe 3.5.6 (unit `*Test` / integration `*IT` split), JaCoCo
-  0.8.15 (merged coverage report)
+  0.8.15 (merged coverage report), ArchUnit 1.4.2 (package-structure rules)
 - Lombok 1.18.46 (boilerplate reduction — see backend/README.md conventions)
 - springdoc-openapi 3.0.3 (OpenAPI spec + Swagger UI)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)

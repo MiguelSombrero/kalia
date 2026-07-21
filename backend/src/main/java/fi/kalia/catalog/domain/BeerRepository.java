@@ -1,5 +1,6 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.domain;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,10 +9,16 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificationExecutor<Beer> {
+public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificationExecutor<Beer> {
 
 	@Override
 	@EntityGraph(attributePaths = "brewery")
 	Page<Beer> findAll(Specification<Beer> spec, Pageable pageable);
+
+	// Brewery is loaded eagerly because entity-to-DTO mapping happens at the
+	// web boundary, outside the service transaction (ADR-0007).
+	@Override
+	@EntityGraph(attributePaths = "brewery")
+	Optional<Beer> findById(UUID id);
 
 }
