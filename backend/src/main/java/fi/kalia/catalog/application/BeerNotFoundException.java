@@ -1,8 +1,8 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.application;
 
 import java.util.UUID;
 
-class BeerNotFoundException extends RuntimeException {
+public class BeerNotFoundException extends RuntimeException {
 
 	BeerNotFoundException(UUID id) {
 		super("Beer %s does not exist".formatted(id));

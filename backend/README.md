@@ -67,6 +67,15 @@ directories** — take the next free number regardless of directory.
 
 ## Code conventions
 
+- **Package structure per module (ADR-0007):** DDD-lite layers as direct
+  subpackages — `domain` (entities, value objects, repositories,
+  specifications), `application` (use-case services + API-response
+  exceptions), `web` (controllers, advice, HTTP DTOs, boundary mapping).
+  Dependency direction web → application → domain, never inward-out;
+  enforced by `ArchitectureTest` (ArchUnit). The module root package is the
+  inter-module API and stays empty until a consumer exists. Entity→DTO
+  mapping lives in `web` (static `from(...)` factories on the DTOs), so
+  repositories eager-load relations the boundary needs (entity graphs).
 - **Lombok for boilerplate, not for domain semantics.** Use class-level
   `@Getter` and `@NoArgsConstructor(access = PROTECTED)` (the JPA
   constructor) on entities. Do **not** use `@Setter`, `@Data` or `@Builder`

@@ -1,9 +1,8 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fi.kalia.TestcontainersConfiguration;
-import fi.kalia.catalog.BeerSearchCriteria;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;

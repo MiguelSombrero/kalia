@@ -1,5 +1,7 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.web;
 
+import fi.kalia.catalog.application.BeerNotFoundException;
+import fi.kalia.catalog.application.InvalidSearchParameterException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;

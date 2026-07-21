@@ -1,5 +1,6 @@
-package fi.kalia.catalog;
+package fi.kalia.catalog.web;
 
+import fi.kalia.catalog.domain.Beer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -14,4 +15,11 @@ public record BeerDetailsDto(
 		@Nullable String description,
 		MoneyDto price,
 		BreweryDto brewery) {
+
+	static BeerDetailsDto from(Beer beer) {
+		return new BeerDetailsDto(beer.getId(), beer.getName(), beer.getStyle(), beer.getAbv(),
+				beer.getDescription(), MoneyDto.from(beer.getPrice()),
+				BreweryDto.from(beer.getBrewery()));
+	}
+
 }

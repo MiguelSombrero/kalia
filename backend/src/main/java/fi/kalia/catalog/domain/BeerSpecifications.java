@@ -1,17 +1,16 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.domain;
 
-import fi.kalia.catalog.BeerSearchCriteria;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
-final class BeerSpecifications {
+public final class BeerSpecifications {
 
 	private BeerSpecifications() {
 	}
 
-	static Specification<Beer> matching(BeerSearchCriteria criteria) {
+	public static Specification<Beer> matching(BeerSearchCriteria criteria) {
 		return (root, query, cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
 			if (criteria.query() != null && !criteria.query().isBlank()) {

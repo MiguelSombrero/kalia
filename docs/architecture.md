@@ -82,10 +82,23 @@ Key properties:
 
 ## 3. Backend modules
 
-Base package `fi.kalia`, one Spring Modulith module per subdomain. Modules
-expose a small public API (Java interfaces + DTOs in the module root package);
-everything else is module-internal. Cross-module *writes* happen via
-application events; cross-module *reads* via the public API.
+Base package `fi.kalia`, one Spring Modulith module per subdomain. Inside
+each module, DDD-lite layers as direct subpackages — all Modulith-internal
+by default ([ADR-0007](adr/0007-backend-package-structure.md)):
+
+- `domain` — rich JPA entities as the domain model (documented exception to
+  framework-free purity), value objects, repositories, specifications
+- `application` — use-case services; exceptions designed as API responses
+- `web` — controllers, ProblemDetail advice, HTTP DTOs (with `@Schema`) and
+  entity→DTO mapping at the boundary
+
+Dependency direction **web → application → domain**, never inward-out —
+enforced by ArchUnit (`ArchitectureTest`) alongside Spring Modulith's
+module-boundary verification (`ModularityTest`). The module root package is
+reserved for the **inter-module API** and stays empty until the module's
+first consumer arrives. Full ports/adapters ceremony is deferred to modules
+whose domain earns it (payment, ordering). Cross-module *writes* happen via
+application events; cross-module *reads* via the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
@@ -298,3 +311,4 @@ earlier one.
 | [ADR-0004](adr/0004-backend-cart.md) | Cart is a backend domain module | accepted — implementation deferred with the store flow ([ADR-0006](adr/0006-cellar-first.md)) | 2026-07-15 |
 | [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | partially superseded by [ADR-0006](adr/0006-cellar-first.md) — auth no longer deferred; mocked-payment stance stands | 2026-07-15 |
 | [ADR-0006](adr/0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
+| [ADR-0007](adr/0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |

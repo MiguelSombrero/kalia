@@ -1,4 +1,4 @@
-package fi.kalia.catalog.internal;
+package fi.kalia.catalog.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

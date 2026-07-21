@@ -1,4 +1,4 @@
-package fi.kalia.catalog;
+package fi.kalia.catalog.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,5 +1,6 @@
-package fi.kalia.catalog;
+package fi.kalia.catalog.web;
 
+import fi.kalia.catalog.domain.Money;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -11,4 +12,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record MoneyDto(
 		@Schema(description = "Amount in minor units (cents)") int cents,
 		@Schema(description = "ISO-4217 currency code") String currency) {
+
+	static MoneyDto from(Money money) {
+		return new MoneyDto(money.cents(), money.currency());
+	}
+
 }
