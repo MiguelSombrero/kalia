@@ -41,6 +41,12 @@ the runner is discarded after the job.
   the backend's module-per-subdomain structure.
 - Server components by default; `'use client'` only where interactivity
   requires it.
+- **Client-component data goes through TanStack Query (ADR-0008).** Reads
+  use `useQuery`, mutations `useMutation` — never hand-rolled
+  `fetch` + `useState`/`useEffect` plumbing. The app-wide `QueryClient`
+  lives in `app/providers.tsx` (default `staleTime` 60 s; override per
+  query). Server components are unaffected and keep fetching on the server.
+  `@tanstack/eslint-plugin-query` enforces correct usage.
 - Component tests live next to the component (`page.test.tsx` beside
   `page.tsx`).
 - Note `AGENTS.md`: this Next.js version may differ from an agent's training

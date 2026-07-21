@@ -207,8 +207,10 @@ Conventions:
 - Validation of user input at the boundary with Zod where forms appear
   (cellar item details); catalog pages are read-only and skip it.
 - State: server components + URL search params for catalog filters (shareable
-  URLs, no client state library). Cellar state comes from the backend via the
-  BFF; no Redux/Zustand unless proven necessary.
+  URLs). Client components fetch and mutate API data exclusively through
+  TanStack Query ([ADR-0008](adr/0008-tanstack-query.md)) — server
+  components keep fetching directly on the server. Client-side UI state is
+  a separate concern (Zustand decision, iteration 2 task 2).
 
 ## 6. Authentication (own iteration, before the cellar)
 
@@ -312,3 +314,4 @@ earlier one.
 | [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | partially superseded by [ADR-0006](adr/0006-cellar-first.md) — auth no longer deferred; mocked-payment stance stands | 2026-07-15 |
 | [ADR-0006](adr/0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
 | [ADR-0007](adr/0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |
+| [ADR-0008](adr/0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |
