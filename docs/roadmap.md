@@ -60,7 +60,7 @@ decisions, conventions, localization, accessibility and a professional look —
 so later features are easier to add and consistent by default.
 
 1. [x] Decision: TanStack Query for API calls (scoped to client components — ADR-0008); document the decision
-2. [ ] Decision: Zustand for client application state — user selections only, never API data (that belongs to TanStack Query); document the decision
+2. [x] Decision: Zustand for client application state — user selections only, never API data (that belongs to TanStack Query); document the decision (ADR-0009)
 3. [ ] Decision: react-hook-form + Zod for forms and validation; document the decision
 4. [ ] Convention: prefer arrow functions over explicit function declarations; document and enforce via ESLint
 5. [ ] i18next localization with Finnish and English translations; migrate all existing UI text to i18next

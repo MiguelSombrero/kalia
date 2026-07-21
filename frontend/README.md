@@ -47,6 +47,11 @@ the runner is discarded after the job.
   lives in `app/providers.tsx` (default `staleTime` 60 s; override per
   query). Server components are unaffected and keep fetching on the server.
   `@tanstack/eslint-plugin-query` enforces correct usage.
+- **Client UI state goes in feature-scoped Zustand stores (ADR-0009):**
+  `features/<feature>/store.ts`, subscribed via selectors. Never API data
+  (TanStack Query's job), never state that should survive a share/reload
+  (the URL's job); plain `useState` stays correct for single-component
+  state.
 - Component tests live next to the component (`page.test.tsx` beside
   `page.tsx`).
 - Note `AGENTS.md`: this Next.js version may differ from an agent's training

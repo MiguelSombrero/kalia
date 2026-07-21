@@ -206,11 +206,13 @@ Conventions:
 - Styling with Tailwind CSS; no component library until a real need appears.
 - Validation of user input at the boundary with Zod where forms appear
   (cellar item details); catalog pages are read-only and skip it.
-- State: server components + URL search params for catalog filters (shareable
-  URLs). Client components fetch and mutate API data exclusively through
-  TanStack Query ([ADR-0008](adr/0008-tanstack-query.md)) — server
-  components keep fetching directly on the server. Client-side UI state is
-  a separate concern (Zustand decision, iteration 2 task 2).
+- State has three homes, by kind ([ADR-0008](adr/0008-tanstack-query.md),
+  [ADR-0009](adr/0009-zustand-ui-state.md)): server data lives in TanStack
+  Query (client components; server components keep fetching directly on the
+  server), shareable/navigational state lives in URL search params (catalog
+  filters, pagination), and ephemeral client UI state lives in
+  feature-scoped Zustand stores — which never hold API data or duplicate
+  URL state.
 
 ## 6. Authentication (own iteration, before the cellar)
 
@@ -315,3 +317,4 @@ earlier one.
 | [ADR-0006](adr/0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
 | [ADR-0007](adr/0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |
 | [ADR-0008](adr/0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |
+| [ADR-0009](adr/0009-zustand-ui-state.md) | Zustand for client UI state | accepted | 2026-07-21 |

@@ -105,6 +105,7 @@ Main technologies used in this project — update as the project evolves!
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4.3.3 (styling)
 - TanStack Query 5.101.3 (client-component data layer — see ADR-0008)
+- Zustand 5.0.14 (client UI state — see ADR-0009)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
