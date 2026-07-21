@@ -1,16 +1,26 @@
 import Link from "next/link";
+import { getTranslation } from "@/i18n/server";
+import type { Locale } from "@/i18n/settings";
 import { formatPrice } from "./formatPrice";
 import type { BeerSummary } from "./types";
 
-export const BeerList = ({ beers }: { beers: BeerSummary[] }) => {
+export const BeerList = async ({
+  locale,
+  beers,
+}: {
+  locale: Locale;
+  beers: BeerSummary[];
+}) => {
+  const { t } = await getTranslation(locale);
+
   if (beers.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-        <p className="text-lg font-medium">No beers match your search.</p>
+        <p className="text-lg font-medium">{t("catalog.empty.title")}</p>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Try loosening a filter, or{" "}
-          <Link href="/beers" className="font-medium underline underline-offset-2">
-            clear all filters
+          {t("catalog.empty.hintPrefix")}{" "}
+          <Link href={`/${locale}/beers`} className="font-medium underline underline-offset-2">
+            {t("catalog.empty.clearLink")}
           </Link>
           .
         </p>
@@ -27,11 +37,11 @@ export const BeerList = ({ beers }: { beers: BeerSummary[] }) => {
         >
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="font-semibold">
-              <Link href={`/beers/${beer.id}`} className="after:absolute after:inset-0">
+              <Link href={`/${locale}/beers/${beer.id}`} className="after:absolute after:inset-0">
                 {beer.name}
               </Link>
             </h2>
-            <span className="shrink-0 text-sm font-medium">{formatPrice(beer.price)}</span>
+            <span className="shrink-0 text-sm font-medium">{formatPrice(beer.price, locale)}</span>
           </div>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{beer.brewery.name}</p>
           <p className="mt-2 text-sm">

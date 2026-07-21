@@ -216,6 +216,13 @@ Conventions:
   filters, pagination), and ephemeral client UI state lives in
   feature-scoped Zustand stores — which never hold API data or duplicate
   URL state.
+- **Localization** ([ADR-0011](adr/0011-i18next-localization.md)):
+  English + Finnish via i18next, locale-prefixed URLs
+  (`app/[locale]/...`, e.g. `/en/beers`, `/fi/beers/{id}`). Server
+  components translate via `i18n/server.ts`'s `getTranslation(locale)`;
+  `proxy.ts` (Next 16's renamed `middleware.ts`) redirects locale-less
+  requests based on `Accept-Language`. A minimal `LocaleSwitcher`
+  (`features/i18n/`) covers the current need; full design is task 8's job.
 
 ## 6. Authentication (own iteration, before the cellar)
 
@@ -241,7 +248,7 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
-| Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
+| Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend). Async Server Components with async children cannot be rendered by RTL outside Next's RSC runtime (confirmed by testing it — the render suspends indefinitely under jsdom); test each async component directly (`render(await Component(props))`, no unresolved async descendants) and test pages composing async children on their own logic (param parsing, `generateMetadata`) rather than the rendered tree — full composition is E2E's job |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
 
 Backend test naming: unit tests end in `*Test` (surefire, `test` phase, no
@@ -322,3 +329,4 @@ earlier one.
 | [ADR-0008](adr/0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |
 | [ADR-0009](adr/0009-zustand-ui-state.md) | Zustand for client UI state | accepted | 2026-07-21 |
 | [ADR-0010](adr/0010-react-hook-form-zod.md) | react-hook-form + Zod for forms and validation | accepted | 2026-07-21 |
+| [ADR-0011](adr/0011-i18next-localization.md) | i18next localization (English + Finnish) | accepted | 2026-07-21 |

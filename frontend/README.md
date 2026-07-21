@@ -8,7 +8,7 @@ API — see [docs/architecture.md](../docs/architecture.md).
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000 (hot reload)
+npm run dev        # http://localhost:3000 (hot reload) — redirects to /en or /fi
 ```
 
 Or the full stack in containers: `docker compose up --build` from the repo
@@ -60,7 +60,22 @@ the runner is discarded after the job.
   (TanStack Query's job), never state that should survive a share/reload
   (the URL's job); plain `useState` stays correct for single-component
   state.
+- **Localization via i18next (ADR-0011):** every route lives under
+  `app/[locale]/...`. Server components translate with
+  `getTranslation(locale)` from `i18n/server.ts`; translation strings live
+  in `i18n/locales/{en,fi}/common.json`. `proxy.ts` redirects locale-less
+  requests based on `Accept-Language`. `react-i18next` is installed but not
+  wired — no client component needs translations yet; wire it (provider +
+  resource hydration) when one does.
 - Component tests live next to the component (`page.test.tsx` beside
-  `page.tsx`).
+  `page.tsx`). **Async Server Components with async children cannot be
+  rendered by React Testing Library** (confirmed by testing it — `render()`
+  suspends indefinitely under jsdom outside Next's RSC runtime): test each
+  async component directly and in isolation (`render(await Component(props))`,
+  no unresolved async descendants), and test pages that compose async
+  children on their own logic only (`generateMetadata`, param parsing) —
+  full composition is Playwright's job.
 - Note `AGENTS.md`: this Next.js version may differ from an agent's training
-  data — check `node_modules/next/dist/docs/` before relying on memory.
+  data — check `node_modules/next/dist/docs/` before relying on memory. It
+  already caught one real breaking change: `middleware.ts` is renamed to
+  `proxy.ts` in Next.js 16.

@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "Kalia",
+    "tagline": "Käsityöoluiden hallintaa olutharrastajille.",
+    "browseCatalog": "Selaa oluttarjontaa"
+  },
+  "catalog": {
+    "title": "Oluttarjonta",
+    "pageTitle": "Oluttarjonta — Kalia",
+    "filters": {
+      "searchLabel": "Haku",
+      "searchPlaceholder": "Oluen nimi…",
+      "styleLabel": "Tyyli",
+      "stylePlaceholder": "esim. IPA",
+      "countryLabel": "Maa",
+      "countryPlaceholder": "esim. Belgia",
+      "minAbvLabel": "Alkoholi väh. %",
+      "maxAbvLabel": "Alkoholi enint. %",
+      "sortLabel": "Järjestä",
+      "sortNameAsc": "Nimi (A–Ö)",
+      "sortNameDesc": "Nimi (Ö–A)",
+      "sortAbvAsc": "Alkoholi (matala → korkea)",
+      "sortAbvDesc": "Alkoholi (korkea → matala)",
+      "sortStyleAsc": "Tyyli (A–Ö)",
+      "submit": "Hae"
+    },
+    "empty": {
+      "title": "Hakuehdoilla ei löytynyt oluita.",
+      "hintPrefix": "Kokeile löysätä suodatinta tai",
+      "clearLink": "tyhjennä kaikki suodattimet"
+    },
+    "pagination": {
+      "label": "Sivutus",
+      "summary_one": "Sivu {{page}} / {{totalPages}} ({{count}} olut)",
+      "summary_other": "Sivu {{page}} / {{totalPages}} ({{count}} olutta)",
+      "previous": "← Edellinen",
+      "next": "Seuraava →"
+    }
+  },
+  "beer": {
+    "backToCatalog": "← Takaisin tarjontaan",
+    "style": "Tyyli",
+    "abv": "Alkoholi",
+    "price": "Hinta"
+  },
+  "notFound": {
+    "pageTitle": "Olutta ei löytynyt — Kalia",
+    "title": "Olutta ei löytynyt",
+    "message": "Tätä olutta ei ole olemassa — ehkä se on jo juotu.",
+    "backLink": "Takaisin tarjontaan"
+  }
+}
