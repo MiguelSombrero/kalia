@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function BeerNotFound() {
+const BeerNotFound = () => {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-2 p-6 text-center">
       <h1 className="text-3xl font-bold tracking-tight">Beer not found</h1>
@@ -12,4 +12,6 @@ export default function BeerNotFound() {
       </Link>
     </main>
   );
-}
+};
+
+export default BeerNotFound;

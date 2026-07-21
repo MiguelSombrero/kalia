@@ -41,6 +41,9 @@ the runner is discarded after the job.
   the backend's module-per-subdomain structure.
 - Server components by default; `'use client'` only where interactivity
   requires it.
+- **Arrow functions, not function declarations/expressions** — including
+  page/layout/route exports (`const Home = () => { … }; export default
+  Home;`). Enforced by ESLint (`no-restricted-syntax` in `eslint.config.mjs`).
 - **Client-component data goes through TanStack Query (ADR-0008).** Reads
   use `useQuery`, mutations `useMutation` — never hand-rolled
   `fetch` + `useState`/`useEffect` plumbing. The app-wide `QueryClient`

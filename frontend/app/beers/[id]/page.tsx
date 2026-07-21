@@ -6,14 +6,14 @@ import { BeerDetailsCard } from "@/features/catalog/BeerDetailsCard";
 
 type Props = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
   const beer = await getBeer((await params).id);
   return {
     title: beer ? `${beer.name} — Kalia` : "Beer not found — Kalia",
   };
-}
+};
 
-export default async function BeerPage({ params }: Props) {
+const BeerPage = async ({ params }: Props) => {
   const { id } = await params;
   const beer = await getBeer(id);
   if (!beer) {
@@ -31,4 +31,6 @@ export default async function BeerPage({ params }: Props) {
       <BeerDetailsCard beer={beer} />
     </main>
   );
-}
+};
+
+export default BeerPage;

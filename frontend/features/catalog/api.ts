@@ -11,7 +11,7 @@ const PARAM_KEYS = [
   "sort",
 ] as const;
 
-export function buildBeerSearchParams(params: BeerSearchParams): URLSearchParams {
+export const buildBeerSearchParams = (params: BeerSearchParams): URLSearchParams => {
   const searchParams = new URLSearchParams();
   for (const key of PARAM_KEYS) {
     const value = params[key];
@@ -20,26 +20,26 @@ export function buildBeerSearchParams(params: BeerSearchParams): URLSearchParams
     }
   }
   return searchParams;
-}
+};
 
-function backendUrl(): string {
+const backendUrl = (): string => {
   return process.env.BACKEND_URL ?? "http://localhost:8080";
-}
+};
 
-export async function searchBeers(params: BeerSearchParams): Promise<BeerPage> {
+export const searchBeers = async (params: BeerSearchParams): Promise<BeerPage> => {
   const qs = buildBeerSearchParams(params).toString();
   const response = await fetch(`${backendUrl()}/api/v1/beers${qs ? `?${qs}` : ""}`);
   if (!response.ok) {
     throw new Error(`Beer search failed with status ${response.status}`);
   }
   return response.json();
-}
+};
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Resolves to null when no beer exists for the id — including malformed ids
  *  from user-typed URLs, which the backend would reject with a 400. */
-export async function getBeer(id: string): Promise<BeerDetails | null> {
+export const getBeer = async (id: string): Promise<BeerDetails | null> => {
   if (!UUID_PATTERN.test(id)) {
     return null;
   }
@@ -51,4 +51,4 @@ export async function getBeer(id: string): Promise<BeerDetails | null> {
     throw new Error(`Beer lookup failed with status ${response.status}`);
   }
   return response.json();
-}
+};

@@ -8,7 +8,7 @@ const inputClasses =
  * results shareable and works without client-side JavaScript. Submitting
  * also drops the page param, restarting from the first page.
  */
-export function SearchFilters({ params }: { params: BeerSearchParams }) {
+export const SearchFilters = ({ params }: { params: BeerSearchParams }) => {
   return (
     <form role="search" action="/beers" method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
       <div className="lg:col-span-2">
@@ -100,4 +100,4 @@ export function SearchFilters({ params }: { params: BeerSearchParams }) {
       </div>
     </form>
   );
-}
+};

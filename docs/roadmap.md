@@ -62,7 +62,7 @@ so later features are easier to add and consistent by default.
 1. [x] Decision: TanStack Query for API calls (scoped to client components — ADR-0008); document the decision
 2. [x] Decision: Zustand for client application state — user selections only, never API data (that belongs to TanStack Query); document the decision (ADR-0009)
 3. [x] Decision: react-hook-form + Zod for forms and validation; document the decision (ADR-0010)
-4. [ ] Convention: prefer arrow functions over explicit function declarations; document and enforce via ESLint
+4. [x] Convention: prefer arrow functions over explicit function declarations; document and enforce via ESLint
 5. [ ] i18next localization with Finnish and English translations; migrate all existing UI text to i18next
 6. [ ] OpenAPI-generated API clients: the backend's OpenAPI spec becomes the source of truth for its APIs. Select the tool **with the product owner** (candidate: [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator-cli), challengeable) and agree the workflow (spec file copied to frontend vs. generated against a running backend)
 7. [ ] Accessibility per [WCAG 2.1 level AA](https://www.w3.org/WAI/WCAG21/Understanding/conformance): retrofit existing components (aria attributes, roles, focus handling); automate accessibility testing where possible; from here on every new component/page ships accessible. Ask the product owner when something is unclear
