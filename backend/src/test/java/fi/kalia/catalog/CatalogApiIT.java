@@ -16,7 +16,7 @@ import com.jayway.jsonpath.JsonPath;
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-class CatalogApiTests {
+class CatalogApiIT {
 
 	@Autowired
 	private RestTestClient client;

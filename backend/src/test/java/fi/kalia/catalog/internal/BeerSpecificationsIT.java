@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
-class BeerSpecificationsTests {
+class BeerSpecificationsIT {
 
 	@Autowired
 	private BeerRepository beers;

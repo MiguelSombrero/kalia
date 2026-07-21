@@ -91,7 +91,9 @@ Main technologies used in this project — update as the project evolves!
 
 - Java 25, Spring Boot 4.1.0 with Spring Modulith 2.1.0 (later possibility to migrate to microservices)
 - PostgreSQL 18.4 (data persistence), Flyway (migrations & seed data)
-- Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests
+- Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests;
+  surefire/failsafe 3.5.6 (unit `*Test` / integration `*IT` split), JaCoCo
+  0.8.15 (merged coverage report)
 - Lombok 1.18.46 (boilerplate reduction — see backend/README.md conventions)
 - springdoc-openapi 3.0.3 (OpenAPI spec + Swagger UI)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
