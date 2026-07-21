@@ -2,12 +2,12 @@ import Link from "next/link";
 import { buildBeerSearchParams } from "./api";
 import type { BeerPage, BeerSearchParams } from "./types";
 
-function pageHref(params: BeerSearchParams, page: number): string {
+const pageHref = (params: BeerSearchParams, page: number): string => {
   const searchParams = buildBeerSearchParams({ ...params, page: String(page) });
   return `/beers?${searchParams.toString()}`;
-}
+};
 
-export function Pagination({ params, result }: { params: BeerSearchParams; result: BeerPage }) {
+export const Pagination = ({ params, result }: { params: BeerSearchParams; result: BeerPage }) => {
   if (result.totalPages <= 1) {
     return null;
   }
@@ -34,4 +34,4 @@ export function Pagination({ params, result }: { params: BeerSearchParams; resul
       </div>
     </nav>
   );
-}
+};

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { formatPrice } from "./formatPrice";
 import type { BeerSummary } from "./types";
 
-export function BeerList({ beers }: { beers: BeerSummary[] }) {
+export const BeerList = ({ beers }: { beers: BeerSummary[] }) => {
   if (beers.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
@@ -44,4 +44,4 @@ export function BeerList({ beers }: { beers: BeerSummary[] }) {
       ))}
     </ul>
   );
-}
+};

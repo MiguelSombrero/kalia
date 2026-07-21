@@ -1,11 +1,11 @@
 import { formatPrice } from "./formatPrice";
 import type { BeerDetails } from "./types";
 
-function breweryLocation(city: string | null, country: string): string {
+const breweryLocation = (city: string | null, country: string): string => {
   return city ? `${city}, ${country}` : country;
-}
+};
 
-export function BeerDetailsCard({ beer }: { beer: BeerDetails }) {
+export const BeerDetailsCard = ({ beer }: { beer: BeerDetails }) => {
   return (
     <article className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -35,4 +35,4 @@ export function BeerDetailsCard({ beer }: { beer: BeerDetails }) {
       )}
     </article>
   );
-}
+};

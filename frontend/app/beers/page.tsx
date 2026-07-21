@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
 
-function first(value: string | string[] | undefined): string | undefined {
+const first = (value: string | string[] | undefined): string | undefined => {
   return Array.isArray(value) ? value[0] : value;
-}
+};
 
-function toBeerSearchParams(raw: RawSearchParams): BeerSearchParams {
+const toBeerSearchParams = (raw: RawSearchParams): BeerSearchParams => {
   return {
     query: first(raw.query),
     style: first(raw.style),
@@ -26,13 +26,13 @@ function toBeerSearchParams(raw: RawSearchParams): BeerSearchParams {
     size: first(raw.size),
     sort: first(raw.sort),
   };
-}
+};
 
-export default async function BeersPage({
+const BeersPage = async ({
   searchParams,
 }: {
   searchParams: Promise<RawSearchParams>;
-}) {
+}) => {
   const params = toBeerSearchParams(await searchParams);
   const result = await searchBeers(params);
 
@@ -44,4 +44,6 @@ export default async function BeersPage({
       <Pagination params={params} result={result} />
     </main>
   );
-}
+};
+
+export default BeersPage;

@@ -9,7 +9,7 @@ import { useState, type ReactNode } from "react";
  * the mandatory data layer for client components (ADR-0008) — server
  * components keep fetching directly on the server and never touch this.
  */
-export function Providers({ children }: { children: ReactNode }) {
+export const Providers = ({ children }: { children: ReactNode }) => {
   // useState keeps one QueryClient per browser session without sharing it
   // across requests during SSR.
   const [queryClient] = useState(
@@ -32,4 +32,4 @@ export function Providers({ children }: { children: ReactNode }) {
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
-}
+};
