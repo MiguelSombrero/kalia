@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-class KaliaApplicationTests {
+class KaliaApplicationIT {
 
 	@Autowired
 	private RestTestClient restTestClient;

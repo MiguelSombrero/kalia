@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
-class CatalogPersistenceTests {
+class CatalogPersistenceIT {
 
 	@Autowired
 	private BeerRepository beers;

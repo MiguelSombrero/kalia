@@ -224,6 +224,12 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend) |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
 
+Backend test naming: unit tests end in `*Test` (surefire, `test` phase, no
+Docker), integration tests in `*IT` (failsafe, `verify` phase,
+Testcontainers). JaCoCo merges both into one coverage report on
+`mvn verify`; the ≥ 80 % aim is measured in CI, not gated
+(backend/README.md testing conventions).
+
 E2E specs live under `frontend/e2e/`, not at the repo root, even though they
 exercise the whole stack (compose-run backend + Postgres are the fixture
 behind every page visited): the tooling that runs them (Node/Playwright)

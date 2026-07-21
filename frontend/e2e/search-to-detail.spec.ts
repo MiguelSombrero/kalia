@@ -2,7 +2,7 @@
 // tooling lives, but the suite exercises the whole stack: the compose-run
 // backend and Postgres are the fixture behind every page these tests visit.
 // Assertions only ever check rendered DOM (headings, links, text) — the
-// backend's own JSON contract is covered separately by CatalogApiTests.
+// backend's own JSON contract is covered separately by CatalogApiIT.
 // See docs/architecture.md §7 and §9 for the placement rationale and the
 // trigger for revisiting it.
 import { expect, test } from "@playwright/test";

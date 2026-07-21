@@ -29,14 +29,26 @@ backend is run in the compose stack or natively.
 ## Test
 
 ```bash
-mvn test                      # needs Docker running (Testcontainers)
+mvn test                      # unit tests only (*Test) — fast, no Docker
+mvn verify                    # + integration tests (*IT, Testcontainers —
+                              #   needs Docker) + merged JaCoCo report
 ```
 
-Test suites:
+Naming convention: **unit tests end in `*Test`** (run by surefire in the
+`test` phase), **integration tests end in `*IT`** (run by failsafe in the
+`verify` phase). Anything booting a Spring context or a Testcontainer is an
+integration test.
 
-- `ModularityTests` — Spring Modulith `ApplicationModules.verify()`; fails on
+Coverage: JaCoCo merges unit + integration data into
+`target/site/jacoco-merged/` on `mvn verify`; CI prints the instruction
+coverage in the job log. The ≥ 80 % aim is measured, not gated — see
+Testing conventions below.
+
+Notable suites:
+
+- `ModularityTest` — Spring Modulith `ApplicationModules.verify()`; fails on
   illegal cross-module dependencies
-- `KaliaApplicationTests` — boots the full context against a PostgreSQL 18.4
+- `KaliaApplicationIT` — boots the full context against a PostgreSQL 18.4
   Testcontainer: health endpoint reports UP, Flyway migrations create the
   module schemas
 

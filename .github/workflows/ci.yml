@@ -23,9 +23,24 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
-      # Testcontainers uses the Docker daemon preinstalled on ubuntu-latest
+      # Testcontainers uses the Docker daemon preinstalled on ubuntu-latest.
+      # verify runs surefire (*Test units), failsafe (*IT integrations) and
+      # the merged JaCoCo report.
       - name: Build and test
         run: mvn -B verify
+      - name: Coverage summary
+        run: |
+          python3 - <<'EOF'
+          import csv
+          covered = missed = 0
+          with open('target/site/jacoco-merged/jacoco.csv') as f:
+              for row in csv.DictReader(f):
+                  covered += int(row['INSTRUCTION_COVERED']); missed += int(row['INSTRUCTION_MISSED'])
+          total = covered + missed
+          pct = 100 * covered / total
+          aim = ' (aim: >= 80 %, see backend/README.md)' if pct < 80 else ''
+          print(f'Instruction coverage: {pct:.1f}% ({covered}/{total}){aim}')
+          EOF
 
   frontend:
     name: Frontend (npm)
