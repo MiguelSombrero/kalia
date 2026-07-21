@@ -47,6 +47,11 @@ the runner is discarded after the job.
   lives in `app/providers.tsx` (default `staleTime` 60 s; override per
   query). Server components are unaffected and keep fetching on the server.
   `@tanstack/eslint-plugin-query` enforces correct usage.
+- **Stateful forms use react-hook-form + Zod (ADR-0010):** the Zod schema
+  (colocated in `features/<feature>/`) is the source of truth, wired via
+  `@hookform/resolvers`; no hand-rolled validation in components. Rule of
+  thumb: submitting navigates → native GET form (like `SearchFilters`);
+  submitting mutates or validates → this stack.
 - **Client UI state goes in feature-scoped Zustand stores (ADR-0009):**
   `features/<feature>/store.ts`, subscribed via selectors. Never API data
   (TanStack Query's job), never state that should survive a share/reload

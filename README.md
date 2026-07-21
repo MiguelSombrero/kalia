@@ -106,6 +106,8 @@ Main technologies used in this project — update as the project evolves!
 - Tailwind CSS 4.3.3 (styling)
 - TanStack Query 5.101.3 (client-component data layer — see ADR-0008)
 - Zustand 5.0.14 (client UI state — see ADR-0009)
+- react-hook-form 7.82.0 + Zod 4.4.3 (+ @hookform/resolvers 5.4.0) for
+  stateful forms and validation (ADR-0010)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
