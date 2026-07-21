@@ -204,8 +204,11 @@ Conventions:
   auth token (from the auth iteration on) and forward to Spring Boot. A single thin
   `apiClient` wrapper owns the backend base URL and error mapping.
 - Styling with Tailwind CSS; no component library until a real need appears.
-- Validation of user input at the boundary with Zod where forms appear
-  (cellar item details); catalog pages are read-only and skip it.
+- Forms: react-hook-form + Zod for stateful, validated forms — the Zod
+  schema is the source of truth, connected via `@hookform/resolvers`
+  ([ADR-0010](adr/0010-react-hook-form-zod.md)). URL-driven GET
+  search/filter forms (catalog `SearchFilters`) stay native server-component
+  forms: navigate → native, mutate/validate → react-hook-form.
 - State has three homes, by kind ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md)): server data lives in TanStack
   Query (client components; server components keep fetching directly on the
@@ -318,3 +321,4 @@ earlier one.
 | [ADR-0007](adr/0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |
 | [ADR-0008](adr/0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |
 | [ADR-0009](adr/0009-zustand-ui-state.md) | Zustand for client UI state | accepted | 2026-07-21 |
+| [ADR-0010](adr/0010-react-hook-form-zod.md) | react-hook-form + Zod for forms and validation | accepted | 2026-07-21 |
