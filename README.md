@@ -104,6 +104,7 @@ Main technologies used in this project — update as the project evolves!
 - Next.js 16.2.10 (App Router), React 19.2.4, TypeScript 5.9.3 (TS 7 not yet
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4.3.3 (styling)
+- TanStack Query 5.101.3 (client-component data layer — see ADR-0008)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
