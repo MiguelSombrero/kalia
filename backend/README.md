@@ -7,8 +7,10 @@ Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`,
 
 ## Run locally
 
-Full stack in containers: `docker compose up --build` from the repo root
-(note: the API is not published to the host; only the frontend is).
+Full stack in containers: `docker compose up --build` from the repo root.
+The backend is published at `localhost:8080` (loopback only — see
+[docs/architecture.md](../docs/architecture.md) §6; it stays unauthenticated
+until the auth iteration, so this must never become a non-loopback binding).
 
 For development with hot reload, run natively against the compose database:
 
@@ -20,9 +22,9 @@ curl localhost:8080/actuator/health
 curl localhost:8080/api/v1/beers?query=westvleteren
 ```
 
-API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and `/swagger-ui.html`.
-In the full compose stack these are reachable only from the internal
-network, like the rest of the API.
+API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and Swagger UI at
+`/swagger-ui/index.html` — both reachable at `localhost:8080` whether the
+backend is run in the compose stack or natively.
 
 ## Test
 
@@ -64,6 +66,12 @@ directories** — take the next free number regardless of directory.
   non-null by default; anything that may be null is annotated
   `@org.jspecify.annotations.Nullable` — fields, record components,
   parameters and returns alike. New packages must add the marker.
+- **SpringDoc annotations on every public endpoint.** `@Tag` on the
+  controller class (one tag per module's API surface); `@Operation`
+  (summary + description) on every handler method; `@Parameter` on every
+  `@RequestParam`/`@PathVariable`. DTOs carry type- and component-level
+  `@Schema` descriptions. New endpoints and DTOs must ship annotated —
+  undocumented API surface is a gap, not a later task.
 
 ## Error-handling convention
 

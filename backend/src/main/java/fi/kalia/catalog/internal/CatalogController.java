@@ -5,6 +5,9 @@ import fi.kalia.catalog.BeerSearchCriteria;
 import fi.kalia.catalog.BeerSummaryDto;
 import fi.kalia.catalog.BreweryDto;
 import fi.kalia.catalog.PageDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "Catalog", description = "Search and browse the beer catalog")
 class CatalogController {
 
 	private static final Set<String> SORTABLE = Set.of("name", "style", "abv");
@@ -34,15 +38,25 @@ class CatalogController {
 	private final CatalogService catalog;
 
 	@GetMapping("/beers")
+	@Operation(summary = "Search beers", description = "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics.")
 	PageDto<BeerSummaryDto> searchBeers(
+			@Parameter(description = "Case-insensitive substring match on beer name")
 			@RequestParam(required = false) String query,
+			@Parameter(description = "Exact, case-insensitive style match (e.g. \"IPA\")")
 			@RequestParam(required = false) String style,
+			@Parameter(description = "Restrict to one brewery")
 			@RequestParam(required = false) UUID breweryId,
+			@Parameter(description = "Exact, case-insensitive match on the brewery's country")
 			@RequestParam(required = false) String country,
+			@Parameter(description = "Inclusive lower ABV bound, percent")
 			@RequestParam(required = false) @DecimalMin("0") BigDecimal minAbv,
+			@Parameter(description = "Inclusive upper ABV bound, percent")
 			@RequestParam(required = false) @DecimalMin("0") BigDecimal maxAbv,
+			@Parameter(description = "Zero-based page index")
 			@RequestParam(defaultValue = "0") @Min(0) int page,
+			@Parameter(description = "Page size, 1-100")
 			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
 			@RequestParam(defaultValue = "name,asc") String sort) {
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
 		return catalog.searchBeers(
@@ -51,11 +65,13 @@ class CatalogController {
 	}
 
 	@GetMapping("/beers/{id}")
-	BeerDetailsDto getBeer(@PathVariable UUID id) {
+	@Operation(summary = "Get beer details", description = "Full details for a single beer, including its brewery.")
+	BeerDetailsDto getBeer(@Parameter(description = "Beer id") @PathVariable UUID id) {
 		return catalog.getBeer(id);
 	}
 
 	@GetMapping("/breweries")
+	@Operation(summary = "List breweries", description = "All breweries, sorted by name.")
 	List<BreweryDto> listBreweries() {
 		return catalog.listBreweries();
 	}

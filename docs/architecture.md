@@ -173,8 +173,10 @@ Conventions:
   (see backend/README.md error-handling convention).
 - DTOs at the API boundary — JPA entities never serialize directly.
 - OpenAPI spec generated with springdoc (`/v3/api-docs`, Swagger UI at
-  `/swagger-ui.html`, reachable only inside the compose network); the
-  frontend may later generate its TypeScript client from it.
+  `/swagger-ui/index.html`, reachable at `localhost:8080` on the dev
+  machine — see [§6](#6-authentication-own-iteration-before-the-cellar)).
+  Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`.
+  The frontend may later generate its TypeScript client from the spec.
 
 ## 5. Frontend design
 
@@ -206,9 +208,11 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   users.
 - Catalog endpoints stay public; cellar (and any future store) endpoints
   require authentication.
-- Until the auth iteration lands, the backend API is unauthenticated and must not
-  be exposed publicly (docker-compose keeps it on the internal network; only
-  Next.js is published).
+- Until the auth iteration lands, the backend API is unauthenticated.
+  docker-compose publishes it on `127.0.0.1:8080` — for direct API access
+  and Swagger UI on the dev machine — never beyond it; it must not be
+  published on a non-loopback address or reachable over the network before
+  auth lands.
 
 ## 7. Testing strategy
 
