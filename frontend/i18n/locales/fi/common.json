@@ -2,11 +2,11 @@
   "app": {
     "name": "Kalia",
     "tagline": "Käsityöoluiden hallintaa olutharrastajille.",
-    "browseCatalog": "Selaa oluttarjontaa"
+    "browseCatalog": "Selaa oluita"
   },
   "catalog": {
-    "title": "Oluttarjonta",
-    "pageTitle": "Oluttarjonta — Kalia",
+    "title": "Oluet",
+    "pageTitle": "Oluet - Kalia",
     "filters": {
       "searchLabel": "Haku",
       "searchPlaceholder": "Oluen nimi…",

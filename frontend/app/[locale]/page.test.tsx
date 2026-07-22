@@ -21,7 +21,7 @@ describe("Home", () => {
     render(ui);
 
     expect(screen.getByText("Käsityöoluiden hallintaa olutharrastajille.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Selaa oluttarjontaa" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Selaa oluita" })).toHaveAttribute(
       "href",
       "/fi/beers",
     );

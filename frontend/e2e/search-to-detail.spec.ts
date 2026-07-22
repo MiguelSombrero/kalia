@@ -56,7 +56,7 @@ test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) =
 test("searches and opens a beer detail page in Finnish", async ({ page }) => {
   await page.goto("/fi/beers");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Oluttarjonta" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Oluet" })).toBeVisible();
   await page.getByLabel("Haku").fill("Westvleteren");
   await page.getByRole("button", { name: "Hae" }).click();
   await expect(page).toHaveURL(/query=Westvleteren/);

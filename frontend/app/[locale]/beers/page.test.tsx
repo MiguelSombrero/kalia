@@ -55,6 +55,6 @@ describe("generateMetadata", () => {
         params: Promise.resolve({ locale: "fi" }),
         searchParams: Promise.resolve({}),
       }),
-    ).resolves.toEqual({ title: "Oluttarjonta — Kalia" });
+    ).resolves.toEqual({ title: "Oluet - Kalia" });
   });
 });
