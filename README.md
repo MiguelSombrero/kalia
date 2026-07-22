@@ -42,6 +42,7 @@ run the apps natively — see [backend/README.md](backend/README.md) and
 In roadmap order, a user can:
 
 - Browse and search craft beers by name, brewery, country, style, alcohol content (ABV), and price — no account needed
+- Use Kalia in English or Finnish (`/en`, `/fi`; auto-detected on first visit, switchable anytime)
 - View beer details (brewery, country, style, ABV, description, price)
 - Sign in with Keycloak *(auth iteration)*
 - Maintain a personal beer cellar: the beers they own, with quantity, vintage/age, purchase info and notes *(cellar iteration)*
@@ -108,6 +109,9 @@ Main technologies used in this project — update as the project evolves!
 - Zustand 5.0.14 (client UI state — see ADR-0009)
 - react-hook-form 7.82.0 + Zod 4.4.3 (+ @hookform/resolvers 5.4.0) for
   stateful forms and validation (ADR-0010)
+- i18next 26.3.6 + i18next-resources-to-backend 1.2.1 (server-side
+  localization, English + Finnish), react-i18next 17.0.10 (installed,
+  not yet wired — see ADR-0011)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)

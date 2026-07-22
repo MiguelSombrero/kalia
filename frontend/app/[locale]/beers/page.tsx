@@ -4,10 +4,8 @@ import { BeerList } from "@/features/catalog/BeerList";
 import { Pagination } from "@/features/catalog/Pagination";
 import { SearchFilters } from "@/features/catalog/SearchFilters";
 import type { BeerSearchParams } from "@/features/catalog/types";
-
-export const metadata: Metadata = {
-  title: "Beer catalog — Kalia",
-};
+import { getTranslation } from "@/i18n/server";
+import { toLocale } from "@/i18n/settings";
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
 
@@ -28,20 +26,29 @@ const toBeerSearchParams = (raw: RawSearchParams): BeerSearchParams => {
   };
 };
 
-const BeersPage = async ({
-  searchParams,
-}: {
+type Props = {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<RawSearchParams>;
-}) => {
-  const params = toBeerSearchParams(await searchParams);
-  const result = await searchBeers(params);
+};
+
+export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
+  const locale = toLocale((await params).locale);
+  const { t } = await getTranslation(locale);
+  return { title: t("catalog.pageTitle") };
+};
+
+const BeersPage = async ({ params, searchParams }: Props) => {
+  const locale = toLocale((await params).locale);
+  const beerParams = toBeerSearchParams(await searchParams);
+  const result = await searchBeers(beerParams);
+  const { t } = await getTranslation(locale);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 sm:p-8">
-      <h1 className="text-3xl font-bold tracking-tight">Beer catalog</h1>
-      <SearchFilters params={params} />
-      <BeerList beers={result.content} />
-      <Pagination params={params} result={result} />
+      <h1 className="text-3xl font-bold tracking-tight">{t("catalog.title")}</h1>
+      <SearchFilters locale={locale} params={beerParams} />
+      <BeerList locale={locale} beers={result.content} />
+      <Pagination locale={locale} params={beerParams} result={result} />
     </main>
   );
 };

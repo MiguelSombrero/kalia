@@ -13,12 +13,12 @@ const westvleteren12: BeerSummary = {
 };
 
 describe("BeerList", () => {
-  it("renders beer name, brewery, style, abv and formatted price", () => {
-    render(<BeerList beers={[westvleteren12]} />);
+  it("renders beer name, brewery, style, abv and formatted price", async () => {
+    render(await BeerList({ locale: "en", beers: [westvleteren12] }));
 
     expect(screen.getByRole("link", { name: "Westvleteren 12" })).toHaveAttribute(
       "href",
-      "/beers/b1",
+      "/en/beers/b1",
     );
     expect(screen.getByText("Brouwerij Westvleteren")).toBeInTheDocument();
     expect(screen.getByText(/Quadrupel/)).toBeInTheDocument();
@@ -26,10 +26,30 @@ describe("BeerList", () => {
     expect(screen.getByText("€12.50")).toBeInTheDocument();
   });
 
-  it("shows an empty state with a way back when nothing matches", () => {
-    render(<BeerList beers={[]} />);
+  it("shows an empty state with a way back when nothing matches", async () => {
+    render(await BeerList({ locale: "en", beers: [] }));
 
     expect(screen.getByText(/no beers match/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /clear/i })).toHaveAttribute("href", "/beers");
+    expect(screen.getByRole("link", { name: /clear/i })).toHaveAttribute("href", "/en/beers");
+  });
+
+  it("renders in Finnish with locale-prefixed links", async () => {
+    render(await BeerList({ locale: "fi", beers: [westvleteren12] }));
+
+    expect(screen.getByRole("link", { name: "Westvleteren 12" })).toHaveAttribute(
+      "href",
+      "/fi/beers/b1",
+    );
+    expect(screen.getByText(/12,50\s€/)).toBeInTheDocument();
+  });
+
+  it("shows the Finnish empty state", async () => {
+    render(await BeerList({ locale: "fi", beers: [] }));
+
+    expect(screen.getByText("Hakuehdoilla ei löytynyt oluita.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "tyhjennä kaikki suodattimet" })).toHaveAttribute(
+      "href",
+      "/fi/beers",
+    );
   });
 });

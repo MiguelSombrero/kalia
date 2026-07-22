@@ -7,8 +7,14 @@
 // trigger for revisiting it.
 import { expect, test } from "@playwright/test";
 
+test("root redirects to the English catalog by default", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/en$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Kalia" })).toBeVisible();
+});
+
 test("search for a beer by name and open its detail page", async ({ page }) => {
-  await page.goto("/beers");
+  await page.goto("/en/beers");
 
   await page.getByLabel("Search").fill("Westvleteren");
   await page.getByRole("button", { name: "Search" }).click();
@@ -18,7 +24,7 @@ test("search for a beer by name and open its detail page", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Westvleteren 8", exact: true })).toBeVisible();
 
   await page.getByRole("link", { name: "Westvleteren 12", exact: true }).click();
-  await expect(page).toHaveURL(/\/beers\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+$/);
 
   await expect(page.getByRole("heading", { level: 1, name: "Westvleteren 12" })).toBeVisible();
   await expect(page.getByText("Brouwerij Westvleteren", { exact: false })).toBeVisible();
@@ -27,7 +33,7 @@ test("search for a beer by name and open its detail page", async ({ page }) => {
 });
 
 test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) => {
-  await page.goto("/beers");
+  await page.goto("/en/beers");
 
   await page.getByLabel("Style").fill("Quadrupel");
   await page.getByLabel("Country").fill("Belgium");
@@ -45,4 +51,26 @@ test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) =
 
   await expect(page.getByRole("heading", { level: 1, name: "Rochefort 10" })).toBeVisible();
   await expect(page.getByText("11.3 %")).toBeVisible();
+});
+
+test("searches and opens a beer detail page in Finnish", async ({ page }) => {
+  await page.goto("/fi/beers");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Oluet" })).toBeVisible();
+  await page.getByLabel("Haku").fill("Westvleteren");
+  await page.getByRole("button", { name: "Hae" }).click();
+  await expect(page).toHaveURL(/query=Westvleteren/);
+
+  await page.getByRole("link", { name: "Westvleteren 12", exact: true }).click();
+  await expect(page).toHaveURL(/\/fi\/beers\/[0-9a-f-]+$/);
+
+  await expect(page.getByRole("heading", { level: 1, name: "Westvleteren 12" })).toBeVisible();
+  await expect(page.getByText("Tyyli")).toBeVisible();
+  await expect(page.getByText("Alkoholi")).toBeVisible();
+  await expect(page.getByText(/12,50\s€/)).toBeVisible();
+
+  await page.getByRole("link", { name: "FI" }).waitFor();
+  await page.getByRole("link", { name: "EN" }).click();
+  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+$/);
+  await expect(page.getByText("Style")).toBeVisible();
 });

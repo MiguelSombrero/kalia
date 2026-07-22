@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 import { SearchFilters } from "./SearchFilters";
 
 describe("SearchFilters", () => {
-  it("renders labeled filter controls prefilled from current params", () => {
+  it("renders labeled filter controls prefilled from current params", async () => {
     render(
-      <SearchFilters
-        params={{ query: "ipa", style: "IPA", country: "Finland", minAbv: "4", maxAbv: "8" }}
-      />,
+      await SearchFilters({
+        locale: "en",
+        params: { query: "ipa", style: "IPA", country: "Finland", minAbv: "4", maxAbv: "8" },
+      }),
     );
 
     expect(screen.getByLabelText(/search/i)).toHaveValue("ipa");
@@ -18,11 +19,20 @@ describe("SearchFilters", () => {
     expect(screen.getByRole("button", { name: /search/i })).toBeInTheDocument();
   });
 
-  it("submits as GET to /beers so the URL carries the filters", () => {
-    render(<SearchFilters params={{}} />);
+  it("submits as GET to the locale-prefixed catalog URL", async () => {
+    render(await SearchFilters({ locale: "en", params: {} }));
 
     const form = screen.getByRole("search");
-    expect(form).toHaveAttribute("action", "/beers");
+    expect(form).toHaveAttribute("action", "/en/beers");
     expect(form).toHaveAttribute("method", "get");
+  });
+
+  it("renders Finnish labels and submits to the Finnish catalog URL", async () => {
+    render(await SearchFilters({ locale: "fi", params: {} }));
+
+    expect(screen.getByLabelText("Haku")).toBeInTheDocument();
+    expect(screen.getByLabelText("Tyyli")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hae" })).toBeInTheDocument();
+    expect(screen.getByRole("search")).toHaveAttribute("action", "/fi/beers");
   });
 });

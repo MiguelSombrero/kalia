@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "Kalia",
+    "tagline": "Craft beer management for enthusiasts.",
+    "browseCatalog": "Browse the beer catalog"
+  },
+  "catalog": {
+    "title": "Beer catalog",
+    "pageTitle": "Beer catalog — Kalia",
+    "filters": {
+      "searchLabel": "Search",
+      "searchPlaceholder": "Beer name…",
+      "styleLabel": "Style",
+      "stylePlaceholder": "e.g. IPA",
+      "countryLabel": "Country",
+      "countryPlaceholder": "e.g. Belgium",
+      "minAbvLabel": "Min ABV %",
+      "maxAbvLabel": "Max ABV %",
+      "sortLabel": "Sort by",
+      "sortNameAsc": "Name (A–Z)",
+      "sortNameDesc": "Name (Z–A)",
+      "sortAbvAsc": "ABV (low → high)",
+      "sortAbvDesc": "ABV (high → low)",
+      "sortStyleAsc": "Style (A–Z)",
+      "submit": "Search"
+    },
+    "empty": {
+      "title": "No beers match your search.",
+      "hintPrefix": "Try loosening a filter, or",
+      "clearLink": "clear all filters"
+    },
+    "pagination": {
+      "label": "Pagination",
+      "summary_one": "Page {{page}} of {{totalPages}} ({{count}} beer)",
+      "summary_other": "Page {{page}} of {{totalPages}} ({{count}} beers)",
+      "previous": "← Previous",
+      "next": "Next →"
+    }
+  },
+  "beer": {
+    "backToCatalog": "← Back to catalog",
+    "style": "Style",
+    "abv": "ABV",
+    "price": "Price"
+  },
+  "notFound": {
+    "pageTitle": "Beer not found — Kalia",
+    "title": "Beer not found",
+    "message": "This beer does not exist — maybe it was drunk already.",
+    "backLink": "Back to the catalog"
+  }
+}

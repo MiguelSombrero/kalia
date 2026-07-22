@@ -1,3 +1,5 @@
+import { getTranslation } from "@/i18n/server";
+import type { Locale } from "@/i18n/settings";
 import type { BeerSearchParams } from "./types";
 
 const inputClasses =
@@ -6,53 +8,67 @@ const inputClasses =
 /**
  * Plain GET form: submitting writes the filters into the URL, which keeps
  * results shareable and works without client-side JavaScript. Submitting
- * also drops the page param, restarting from the first page.
+ * also drops the page param, restarting from the first page. Stays native
+ * per ADR-0010 — nothing here needs react-hook-form/Zod.
  */
-export const SearchFilters = ({ params }: { params: BeerSearchParams }) => {
+export const SearchFilters = async ({
+  locale,
+  params,
+}: {
+  locale: Locale;
+  params: BeerSearchParams;
+}) => {
+  const { t } = await getTranslation(locale);
+
   return (
-    <form role="search" action="/beers" method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+    <form
+      role="search"
+      action={`/${locale}/beers`}
+      method="get"
+      className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6"
+    >
       <div className="lg:col-span-2">
         <label htmlFor="query" className="mb-1 block text-sm font-medium">
-          Search
+          {t("catalog.filters.searchLabel")}
         </label>
         <input
           id="query"
           name="query"
           type="search"
-          placeholder="Beer name…"
+          placeholder={t("catalog.filters.searchPlaceholder")}
           defaultValue={params.query ?? ""}
           className={inputClasses}
         />
       </div>
       <div>
         <label htmlFor="style" className="mb-1 block text-sm font-medium">
-          Style
+          {t("catalog.filters.styleLabel")}
         </label>
         <input
           id="style"
           name="style"
           type="text"
-          placeholder="e.g. IPA"
+          placeholder={t("catalog.filters.stylePlaceholder")}
           defaultValue={params.style ?? ""}
           className={inputClasses}
         />
       </div>
       <div>
         <label htmlFor="country" className="mb-1 block text-sm font-medium">
-          Country
+          {t("catalog.filters.countryLabel")}
         </label>
         <input
           id="country"
           name="country"
           type="text"
-          placeholder="e.g. Belgium"
+          placeholder={t("catalog.filters.countryPlaceholder")}
           defaultValue={params.country ?? ""}
           className={inputClasses}
         />
       </div>
       <div>
         <label htmlFor="minAbv" className="mb-1 block text-sm font-medium">
-          Min ABV %
+          {t("catalog.filters.minAbvLabel")}
         </label>
         <input
           id="minAbv"
@@ -66,7 +82,7 @@ export const SearchFilters = ({ params }: { params: BeerSearchParams }) => {
       </div>
       <div>
         <label htmlFor="maxAbv" className="mb-1 block text-sm font-medium">
-          Max ABV %
+          {t("catalog.filters.maxAbvLabel")}
         </label>
         <input
           id="maxAbv"
@@ -81,21 +97,21 @@ export const SearchFilters = ({ params }: { params: BeerSearchParams }) => {
       <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-6">
         <div className="grow-0">
           <label htmlFor="sort" className="mb-1 block text-sm font-medium">
-            Sort by
+            {t("catalog.filters.sortLabel")}
           </label>
           <select id="sort" name="sort" defaultValue={params.sort ?? "name,asc"} className={inputClasses}>
-            <option value="name,asc">Name (A–Z)</option>
-            <option value="name,desc">Name (Z–A)</option>
-            <option value="abv,asc">ABV (low → high)</option>
-            <option value="abv,desc">ABV (high → low)</option>
-            <option value="style,asc">Style (A–Z)</option>
+            <option value="name,asc">{t("catalog.filters.sortNameAsc")}</option>
+            <option value="name,desc">{t("catalog.filters.sortNameDesc")}</option>
+            <option value="abv,asc">{t("catalog.filters.sortAbvAsc")}</option>
+            <option value="abv,desc">{t("catalog.filters.sortAbvDesc")}</option>
+            <option value="style,asc">{t("catalog.filters.sortStyleAsc")}</option>
           </select>
         </div>
         <button
           type="submit"
           className="rounded-md bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
         >
-          Search
+          {t("catalog.filters.submit")}
         </button>
       </div>
     </form>
