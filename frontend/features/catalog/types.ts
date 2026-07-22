@@ -1,45 +1,14 @@
-export interface MoneyDto {
-  cents: number;
-  currency: string;
-}
-
-export interface BreweryRef {
-  id: string;
-  name: string;
-}
-
-export interface BeerSummary {
-  id: string;
-  name: string;
-  style: string;
-  abv: number;
-  price: MoneyDto;
-  brewery: BreweryRef;
-}
-
-export interface Brewery {
-  id: string;
-  name: string;
-  country: string;
-  city: string | null;
-}
-
-export interface BeerDetails {
-  id: string;
-  name: string;
-  style: string;
-  abv: number;
-  description: string | null;
-  price: MoneyDto;
-  brewery: Brewery;
-}
-
-export interface BeerPage {
-  content: BeerSummary[];
-  totalElements: number;
-  totalPages: number;
-  page: number;
-}
+// Re-exports of orval-generated types (from the backend's OpenAPI spec,
+// ADR-0012) under this feature's existing names — the generated shapes
+// are the source of truth; consumers of this module are unaffected.
+export type {
+  MoneyDto,
+  BreweryRefDto as BreweryRef,
+  BeerSummaryDto as BeerSummary,
+  BreweryDto as Brewery,
+  BeerDetailsDto as BeerDetails,
+  PageDtoBeerSummaryDto as BeerPage,
+} from "@/lib/api/generated/models";
 
 /** URL search param values as they arrive from the page — all optional strings. */
 export interface BeerSearchParams {

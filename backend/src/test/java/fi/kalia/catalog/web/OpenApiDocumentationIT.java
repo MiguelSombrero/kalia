@@ -40,6 +40,27 @@ class OpenApiDocumentationIT {
 	}
 
 	@Test
+	void beerSummarySchemaMarksNonNullableFieldsRequired() {
+		String body = client.get().uri("/v3/api-docs")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+
+		List<String> required = JsonPath.read(body, "$.components.schemas.BeerSummaryDto.required");
+		// price/brewery are nested objects, not primitives - springdoc does not
+		// infer "required" from Java non-nullability alone (verified by running:
+		// every field defaulted to optional before requiredMode was added
+		// explicitly). description is the one @Nullable field on the beer DTOs
+		// and must stay out of this list.
+		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "price", "brewery");
+
+		List<String> detailsRequired =
+				JsonPath.read(body, "$.components.schemas.BeerDetailsDto.required");
+		assertThat(detailsRequired).doesNotContain("description");
+	}
+
+	@Test
 	void swaggerUiIsServed() {
 		client.get().uri("/swagger-ui/index.html")
 				.exchange()

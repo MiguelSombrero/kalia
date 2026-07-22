@@ -54,7 +54,10 @@ describe("getBeer", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(getBeer(beerId)).resolves.toEqual(westvleteren12);
-    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(`/api/v1/beers/${beerId}`));
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/v1/beers/${beerId}`),
+      expect.anything(),
+    );
   });
 
   it("returns null when the backend answers 404", async () => {

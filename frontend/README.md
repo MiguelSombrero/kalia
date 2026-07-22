@@ -24,7 +24,12 @@ npm run lint       # ESLint
 npm run build      # production build (includes type checking)
 npm run test:e2e   # Playwright — starts the full docker compose stack if
                     # it isn't already running (needs Docker)
+npm run generate:api  # regenerate lib/api/generated/ from a live backend
+                       # (docker compose up -d backend postgres first)
 ```
+
+Regenerated output must be committed — CI's `api-client-drift` job
+regenerates and diffs, failing the build on drift (ADR-0012).
 
 Playwright reuses an already-running stack when found, otherwise it starts
 one and does not reliably stop it afterwards — run `docker compose down`
@@ -60,6 +65,12 @@ the runner is discarded after the job.
   (TanStack Query's job), never state that should survive a share/reload
   (the URL's job); plain `useState` stays correct for single-component
   state.
+- **API client generated from the backend's OpenAPI spec (ADR-0012):**
+  `lib/api/generated/` (orval, committed, regenerated via `npm run
+  generate:api`) is never imported directly outside `features/<feature>/`.
+  Each feature's `api.ts` wraps the generated client behind its own stable
+  function signatures — `types.ts` re-exports the generated model types
+  under the feature's existing names.
 - **Localization via i18next (ADR-0011):** every route lives under
   `app/[locale]/...`. Server components translate with
   `getTranslation(locale)` from `i18n/server.ts`; translation strings live

@@ -10,8 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Schema(description = "A monetary amount")
 public record MoneyDto(
-		@Schema(description = "Amount in minor units (cents)") int cents,
-		@Schema(description = "ISO-4217 currency code") String currency) {
+		@Schema(description = "Amount in minor units (cents)", requiredMode = Schema.RequiredMode.REQUIRED) int cents,
+		@Schema(description = "ISO-4217 currency code", requiredMode = Schema.RequiredMode.REQUIRED) String currency) {
 
 	static MoneyDto from(Money money) {
 		return new MoneyDto(money.cents(), money.currency());

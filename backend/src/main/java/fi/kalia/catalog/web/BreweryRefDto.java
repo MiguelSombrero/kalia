@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
 @Schema(description = "Brief reference to a brewery, as embedded in a beer summary")
-public record BreweryRefDto(UUID id, String name) {
+public record BreweryRefDto(
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name) {
 
 	static BreweryRefDto from(Brewery brewery) {
 		return new BreweryRefDto(brewery.getId(), brewery.getName());

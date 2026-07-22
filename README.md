@@ -112,6 +112,8 @@ Main technologies used in this project — update as the project evolves!
 - i18next 26.3.6 + i18next-resources-to-backend 1.2.1 (server-side
   localization, English + Finnish), react-i18next 17.0.10 (installed,
   not yet wired — see ADR-0011)
+- orval 8.22.0 (API client generated from the backend's OpenAPI spec,
+  committed + CI drift check — see ADR-0012)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
