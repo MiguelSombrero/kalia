@@ -89,6 +89,58 @@ before making changes:
   confirmation instead. Record chosen versions in the README tech stack
   section so they become the pinned reference.
 
+## Quality checks
+
+Beyond per-task review, two structured checks watch code and documentation
+quality on different cadences — each matched to what it can actually judge
+at that granularity:
+
+- **Per-PR, automated (security + code quality).**
+  [`.github/workflows/claude-code-review.yml`](.github/workflows/claude-code-review.yml)
+  runs Claude Code's review action (`anthropics/claude-code-action`) on
+  every PR push, scoped to security vulnerabilities and code quality
+  (smells, duplication, maintainability, readability) — diff-local concerns
+  a single PR can be judged on. Findings post as inline PR review comments.
+  Requires the product owner to install the Claude GitHub App
+  (`/install-github-app`) and add an `ANTHROPIC_API_KEY` repository secret;
+  the workflow does nothing until that's done.
+
+  Architecture and documentation are deliberately out of scope here — they
+  need whole-codebase context a diff doesn't have (see below).
+
+  **Acting on findings:** for each comment worth acting on, the product
+  owner marks it **fix now** (the AI agent implements it in the current PR,
+  same as any other review-comment dialogue) or **new task** (the AI agent
+  turns it into a backlog item instead of touching the PR). Not every
+  finding needs a task — many are just fixed on the spot.
+
+- **Per-iteration-boundary, on request (architecture + documentation, +
+  security from iteration 3 onward).**
+  Before the first task of a new iteration, the product owner asks an AI
+  agent to run a quality sweep (not automatic — this stays a deliberate,
+  PO-initiated step, not routine per-task overhead). The agent spins one
+  subagent per dimension in parallel:
+  - *architecture-quality*: re-reads `docs/architecture.md` and every ADR
+    against current code; flags drift, module-boundary violations, or
+    decisions that need revisiting.
+  - *documentation-quality*: audits all of `docs/` and the READMEs for
+    staleness and duplication — a fresh, independent pass, distinct from
+    the doc-sync gate above (which is the same agent self-checking only
+    what it just touched in one task).
+  - *security* (from iteration 3/Keycloak onward): whole-system review
+    beyond diff scope, e.g. end-to-end auth flow soundness.
+
+  Output: a categorized task list — **HAVE TO** / **SHOULD** / **NICE TO**
+  fix — appended to `docs/roadmap.md`'s "Iteration 5+ — Backlog" under
+  "Quality backlog". The product owner prioritizes these into iteration
+  tasks like any other backlog item.
+
+Not adopted: a full four-dimension subagent review on every single task
+before every PR. It would duplicate the per-PR action for security/code
+quality, and architecture/documentation need more context than one small
+task provides — running them that often would be noisy and re-litigate
+settled decisions, against the "smallest reviewable change" cadence above.
+
 ## Repository layout
 
 - `backend/` — Spring Boot modulith (Java, Maven)
@@ -99,6 +151,8 @@ before making changes:
   backend (`:8080`, for direct API access and Swagger UI) are both
   published, localhost-only.
 - `.github/workflows/ci.yml` — build + test both apps on every push
+- `.github/workflows/claude-code-review.yml` — automated per-PR security +
+  code quality review (see Quality checks above)
 
 ## Environment notes
 
