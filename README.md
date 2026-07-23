@@ -102,7 +102,7 @@ Main technologies used in this project — update as the project evolves!
 
 ### Frontend
 
-- Next.js 16.2.10 (App Router), React 19.2.4, TypeScript 5.9.3 (TS 7 not yet
+- Next.js 16.2.11 (App Router), React 19.2.4, TypeScript 5.9.3 (TS 7 not yet
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4.3.3 (styling)
 - TanStack Query 5.101.3 (client-component data layer — see ADR-0008)
@@ -116,6 +116,11 @@ Main technologies used in this project — update as the project evolves!
   committed + CI drift check — see ADR-0012)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
+- `package.json` `overrides` pin `js-yaml` ^4.3.0, `postcss` ^8.5.10 and
+  `sharp` ^0.35.0: orval 8.22.0 and next 16.2.11 (as published) still bundle
+  vulnerable versions of these, so npm can't resolve a fix within their own
+  dependency ranges — remove each override once the upstream package bumps
+  it themselves and `npm audit` stays clean without the override
 - eslint-plugin-jsx-a11y 6.10.2, jest-axe 10.0.0 (+ @types/jest-axe 3.5.9),
   @axe-core/playwright 4.12.1 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
