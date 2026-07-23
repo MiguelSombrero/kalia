@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { BeerDetailsCard } from "./BeerDetailsCard";
 import type { BeerDetails } from "./types";
@@ -15,7 +16,7 @@ const westvleteren12: BeerDetails = {
 
 describe("BeerDetailsCard", () => {
   it("renders name, brewery with location, style, abv, price and description", async () => {
-    render(await BeerDetailsCard({ locale: "en", beer: westvleteren12 }));
+    const { container } = render(await BeerDetailsCard({ locale: "en", beer: westvleteren12 }));
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Westvleteren 12" }),
@@ -26,6 +27,7 @@ describe("BeerDetailsCard", () => {
     expect(screen.getByText(/10\.2\s?%/)).toBeInTheDocument();
     expect(screen.getByText("€12.50")).toBeInTheDocument();
     expect(screen.getByText(/dried fruit/)).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("omits the city when the brewery has none and skips a missing description", async () => {
@@ -34,8 +36,8 @@ describe("BeerDetailsCard", () => {
         locale: "en",
         beer: {
           ...westvleteren12,
-          description: null,
-          brewery: { ...westvleteren12.brewery, city: null },
+          description: undefined,
+          brewery: { ...westvleteren12.brewery, city: undefined },
         },
       }),
     );

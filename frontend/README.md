@@ -90,3 +90,13 @@ the runner is discarded after the job.
   data — check `node_modules/next/dist/docs/` before relying on memory. It
   already caught one real breaking change: `middleware.ts` is renamed to
   `proxy.ts` in Next.js 16.
+- **Every component/page ships accessible to WCAG 2.1 AA from here on
+  (iteration 2 task 7).** New component tests that do a full `render(...)`
+  add an `axe()` assertion: `import { axe } from "jest-axe";` then
+  `expect(await axe(container)).toHaveNoViolations();` (matcher registered
+  once in `vitest.setup.ts`). `eslint-plugin-jsx-a11y`'s recommended
+  ruleset lints ARIA/roles/labels at commit time. Catalog-page E2E specs
+  scan real rendered pages with `@axe-core/playwright`, tagged
+  `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`. All three ride the existing
+  `npm run lint`/`npm test`/`npm run test:e2e` — no separate a11y command
+  or CI job.

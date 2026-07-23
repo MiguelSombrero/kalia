@@ -229,6 +229,15 @@ Conventions:
   `proxy.ts` (Next 16's renamed `middleware.ts`) redirects locale-less
   requests based on `Accept-Language`. A minimal `LocaleSwitcher`
   (`features/i18n/`) covers the current need; full design is task 8's job.
+- **Accessibility, WCAG 2.1 AA** (iteration 2 task 7): native semantic
+  HTML/ARIA, with explicit `:focus-visible` styling and a skip-to-content
+  link since the app has no custom interactive widgets to retrofit.
+  Enforced going forward at three layers: `eslint-plugin-jsx-a11y`
+  (recommended ruleset, lint time), `jest-axe` assertions on rendered
+  component output (unit-test time), `@axe-core/playwright` scans of full
+  catalog pages tagged `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` (E2E time,
+  against the real containerized stack). All three ride the existing
+  `frontend`/`e2e` CI jobs — no separate a11y gate exists to forget.
 
 ## 6. Authentication (own iteration, before the cellar)
 
@@ -254,8 +263,8 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
-| Frontend unit/component | Vitest + React Testing Library | Components, BFF route handlers (mock backend). Async Server Components with async children cannot be rendered by RTL outside Next's RSC runtime (confirmed by testing it — the render suspends indefinitely under jsdom); test each async component directly (`render(await Component(props))`, no unresolved async descendants) and test pages composing async children on their own logic (param parsing, `generateMetadata`) rather than the rendered tree — full composition is E2E's job |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built) |
+| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend), and a WCAG 2.1 AA `axe()` check on every component test that does a full `render(...)`. Async Server Components with async children cannot be rendered by RTL outside Next's RSC runtime (confirmed by testing it — the render suspends indefinitely under jsdom); test each async component directly (`render(await Component(props))`, no unresolved async descendants) and test pages composing async children on their own logic (param parsing, `generateMetadata`) rather than the rendered tree — full composition is E2E's job |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built). `@axe-core/playwright` scans (WCAG 2.1 A/AA tags) run alongside these on every already-visited page state — no separate a11y-only spec |
 
 Backend test naming: unit tests end in `*Test` (surefire, `test` phase, no
 Docker), integration tests in `*IT` (failsafe, `verify` phase,
