@@ -34,5 +34,9 @@ jobs:
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # Temporary, for diagnosing an immediate is_error:true failure
+          # with no detail (313ms, $0 cost - errors before real work
+          # starts). Remove once root-caused.
+          show_full_output: true
           claude_args: |
             --append-system-prompt "Scope this review to security vulnerabilities and code quality only (smells, duplication, maintainability, readability, testability). Do not comment on architecture fit or documentation completeness/accuracy - those are covered by a separate periodic review process (see CLAUDE.md Quality checks)."
