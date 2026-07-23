@@ -36,6 +36,10 @@ before making changes:
 - [docs/roadmap.md](docs/roadmap.md) — what to build and in which order
 - [docs/adr/](docs/adr/) — decisions already made; don't relitigate them
   silently, propose a new ADR instead
+- [backend/README.md](backend/README.md) — run/test commands, Lombok/
+  JSpecify/ArchUnit conventions, testing naming (`*Test`/`*IT`)
+- [frontend/README.md](frontend/README.md) — run/test commands,
+  feature-package conventions, TanStack Query/Zustand/i18next usage
 
 ## Workflow
 
