@@ -126,6 +126,18 @@ the product owner. Output is a MUST/SHOULD/COULD-categorized task list
 appended to `docs/roadmap.md`'s "Quality backlog", opened as its own PR
 for review like any other change.
 
+**Lifting findings into an iteration:** the product owner reviews the
+backlog and tells an AI agent which findings to promote — by ID
+(`MUST-1`, `SHOULD-3`, ...), a range, or a one-off description for
+anything not yet in the backlog. Findings marked `[needs decision]` get
+resolved in that conversation before they're written up as a task, not
+silently guessed at. Each lifted task keeps a backreference to its origin
+(e.g. "(Quality backlog 2026-07-23, MUST-3)") so the history isn't lost
+once it's off the backlog — the date matters because IDs reset each
+sweep, so `MUST-3` alone isn't unique across sweeps. The finding is
+removed from the Quality backlog in the same PR that adds it as a real
+task.
+
 Not adopted: a full four-dimension subagent review on every single task
 before every PR. Architecture and documentation need more context than one
 small task provides — running them that often would be noisy and
