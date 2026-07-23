@@ -1,0 +1,33 @@
+{
+  "skill_name": "quality-sweep",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Run a full quality sweep of the Kalia codebase (architecture, documentation, code-quality, security) and produce a MoSCoW-categorized backlog and PR description.",
+      "expected_output": "A findings report grouped by MUST/SHOULD/COULD, each finding with a concrete file reference and one-sentence rationale, covering all four dimensions, plus a PR title/description that lists the findings inline rather than deferring to the diff.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Findings are categorized using MUST/SHOULD/COULD (MoSCoW) headers",
+          "type": "format"
+        },
+        {
+          "text": "Each finding has a concrete file reference (file:line where applicable)",
+          "type": "format"
+        },
+        {
+          "text": "The proposed PR description lists findings directly rather than saying 'see the diff'",
+          "type": "format"
+        },
+        {
+          "text": "No fabricated/invented findings when the underlying issue doesn't actually exist in the code",
+          "type": "content"
+        },
+        {
+          "text": "All four dimensions (architecture, documentation, code-quality, security) are represented, not just a subset",
+          "type": "coverage"
+        }
+      ]
+    }
+  ]
+}
