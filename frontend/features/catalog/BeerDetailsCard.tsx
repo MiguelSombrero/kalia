@@ -3,7 +3,7 @@ import type { Locale } from "@/i18n/settings";
 import { formatPrice } from "./formatPrice";
 import type { BeerDetails } from "./types";
 
-const breweryLocation = (city: string | null, country: string): string => {
+const breweryLocation = (city: string | undefined, country: string): string => {
   return city ? `${city}, ${country}` : country;
 };
 

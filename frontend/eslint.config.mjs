@@ -34,6 +34,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // orval-generated API client (ADR-0012) - "Do not edit manually", and
+    // its TanStack Query hook style doesn't match our conventions.
+    "lib/api/generated/**",
   ]),
 ]);
 

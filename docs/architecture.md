@@ -216,6 +216,12 @@ Conventions:
   filters, pagination), and ephemeral client UI state lives in
   feature-scoped Zustand stores — which never hold API data or duplicate
   URL state.
+- **API client generated from the backend's OpenAPI spec**
+  ([ADR-0012](adr/0012-orval-api-client.md)): orval generates types and
+  TanStack Query hooks into `lib/api/generated/` (committed; CI regenerates
+  and diffs to catch drift). Feature modules (`features/catalog/`) wrap the
+  generated client behind their existing function signatures — consumers
+  never import from `lib/api/generated/` directly.
 - **Localization** ([ADR-0011](adr/0011-i18next-localization.md)):
   English + Finnish via i18next, locale-prefixed URLs
   (`app/[locale]/...`, e.g. `/en/beers`, `/fi/beers/{id}`). Server
@@ -330,3 +336,4 @@ earlier one.
 | [ADR-0009](adr/0009-zustand-ui-state.md) | Zustand for client UI state | accepted | 2026-07-21 |
 | [ADR-0010](adr/0010-react-hook-form-zod.md) | react-hook-form + Zod for forms and validation | accepted | 2026-07-21 |
 | [ADR-0011](adr/0011-i18next-localization.md) | i18next localization (English + Finnish) | accepted | 2026-07-21 |
+| [ADR-0012](adr/0012-orval-api-client.md) | orval-generated API client from the backend's OpenAPI spec | accepted | 2026-07-22 |

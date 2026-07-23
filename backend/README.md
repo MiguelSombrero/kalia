@@ -93,6 +93,20 @@ directories** — take the next free number regardless of directory.
   `@RequestParam`/`@PathVariable`. DTOs carry type- and component-level
   `@Schema` descriptions. New endpoints and DTOs must ship annotated —
   undocumented API surface is a gap, not a later task.
+- **Every non-`@Nullable` DTO field needs `@Schema(requiredMode =
+  Schema.RequiredMode.REQUIRED)`.** springdoc does not infer `required`
+  from Java non-nullability, `@Nullable`'s absence, or even primitives —
+  every field defaults to optional in the generated schema otherwise
+  (confirmed by running it). The frontend's generated API client
+  ([ADR-0012](../docs/adr/0012-orval-api-client.md)) is only as accurate
+  as this annotation is complete.
+- **Null fields are omitted from JSON responses**
+  (`spring.jackson.default-property-inclusion=non_null`), not serialized as
+  `"field": null`. This makes "optional" mean the same thing in the OpenAPI
+  schema, the generated frontend types (`city?: string`, not `city?: string
+  | null`), and the actual wire format — verified directly with `@JsonTest`
+  (`DtoSerializationIT`), since seed data alone doesn't exercise every
+  null case.
 
 ## Error-handling convention
 

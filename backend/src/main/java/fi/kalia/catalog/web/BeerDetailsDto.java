@@ -8,13 +8,13 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Full details for a single beer")
 public record BeerDetailsDto(
-		UUID id,
-		String name,
-		String style,
-		@Schema(description = "Alcohol by volume, percent") BigDecimal abv,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String style,
+		@Schema(description = "Alcohol by volume, percent", requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal abv,
 		@Nullable String description,
-		MoneyDto price,
-		BreweryDto brewery) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) MoneyDto price,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) BreweryDto brewery) {
 
 	static BeerDetailsDto from(Beer beer) {
 		return new BeerDetailsDto(beer.getId(), beer.getName(), beer.getStyle(), beer.getAbv(),

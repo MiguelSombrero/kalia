@@ -6,7 +6,11 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 @Schema(description = "A brewery")
-public record BreweryDto(UUID id, String name, String country, @Nullable String city) {
+public record BreweryDto(
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String country,
+		@Nullable String city) {
 
 	static BreweryDto from(Brewery brewery) {
 		return new BreweryDto(brewery.getId(), brewery.getName(), brewery.getCountry(),

@@ -7,12 +7,12 @@ import java.util.UUID;
 
 @Schema(description = "A beer as it appears in search results")
 public record BeerSummaryDto(
-		UUID id,
-		String name,
-		String style,
-		@Schema(description = "Alcohol by volume, percent") BigDecimal abv,
-		MoneyDto price,
-		BreweryRefDto brewery) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String style,
+		@Schema(description = "Alcohol by volume, percent", requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal abv,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) MoneyDto price,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) BreweryRefDto brewery) {
 
 	static BeerSummaryDto from(Beer beer) {
 		return new BeerSummaryDto(beer.getId(), beer.getName(), beer.getStyle(), beer.getAbv(),
