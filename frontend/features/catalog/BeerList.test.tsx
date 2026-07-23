@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { BeerList } from "./BeerList";
 import type { BeerSummary } from "./types";
@@ -14,7 +15,7 @@ const westvleteren12: BeerSummary = {
 
 describe("BeerList", () => {
   it("renders beer name, brewery, style, abv and formatted price", async () => {
-    render(await BeerList({ locale: "en", beers: [westvleteren12] }));
+    const { container } = render(await BeerList({ locale: "en", beers: [westvleteren12] }));
 
     expect(screen.getByRole("link", { name: "Westvleteren 12" })).toHaveAttribute(
       "href",
@@ -24,6 +25,7 @@ describe("BeerList", () => {
     expect(screen.getByText(/Quadrupel/)).toBeInTheDocument();
     expect(screen.getByText(/10\.2\s?%/)).toBeInTheDocument();
     expect(screen.getByText("€12.50")).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("shows an empty state with a way back when nothing matches", async () => {

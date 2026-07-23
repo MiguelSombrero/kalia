@@ -33,11 +33,17 @@ export const BeerList = async ({
       {beers.map((beer) => (
         <li
           key={beer.id}
-          className="relative rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+          className="relative rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus-ring dark:border-zinc-800 dark:hover:border-zinc-600"
         >
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="font-semibold">
-              <Link href={`/${locale}/beers/${beer.id}`} className="after:absolute after:inset-0">
+              {/* Stretched link makes the whole card clickable; the ring on
+                  the <li> above (focus-within) is what's visible, not this
+                  anchor's own small text box. */}
+              <Link
+                href={`/${locale}/beers/${beer.id}`}
+                className="after:absolute after:inset-0 focus-visible:outline-none"
+              >
                 {beer.name}
               </Link>
             </h2>

@@ -1,4 +1,7 @@
 {
+  "a11y": {
+    "skipToContent": "Siirry sisältöön"
+  },
   "app": {
     "name": "Kalia",
     "tagline": "Käsityöoluiden hallintaa olutharrastajille.",

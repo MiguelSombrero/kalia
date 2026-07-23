@@ -1,4 +1,7 @@
 {
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
   "app": {
     "name": "Kalia",
     "tagline": "Craft beer management for enthusiasts.",

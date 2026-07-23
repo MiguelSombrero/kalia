@@ -116,6 +116,9 @@ Main technologies used in this project — update as the project evolves!
   committed + CI drift check — see ADR-0012)
 - Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
   Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
+- eslint-plugin-jsx-a11y 6.10.2, jest-axe 10.0.0 (+ @types/jest-axe 3.5.9),
+  @axe-core/playwright 4.12.1 — WCAG 2.1 AA enforcement at lint/unit/E2E
+  time (iteration 2 task 7)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
 
