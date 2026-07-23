@@ -92,12 +92,24 @@ Collect all findings from all four subagents. Categorize each MoSCoW-style:
 - **SHOULD** — a real improvement, not urgent
 - **COULD** — a nice-to-have, low-impact polish item
 
+For each finding, also judge its readiness: **ready** (the fix is
+unambiguous — no competing approaches, no new behavior to define, could go
+straight into a task as written) or **needs decision** (a genuine choice
+only the product owner can make — e.g. two valid remediation paths, or a
+documented-but-unbuilt feature that could be built or have the doc
+reworded instead). Don't guess at how a "needs decision" item should
+resolve — just flag it.
+
 Edit `docs/roadmap.md`'s "### Quality backlog" subsection (under
 "## Iteration 5+ — Backlog") to list the findings under their category,
-each with a one-line description and file reference. Replace the "Empty
-until the first sweep runs" placeholder text only if something was
-actually found — if a sweep genuinely finds nothing, leave it as-is and
-say so in the PR description instead of inventing findings to fill it.
+numbered within this sweep (`MUST-1`, `MUST-2`, `SHOULD-1`, ...) so the
+product owner can reference them tersely later ("lift MUST-1..3") instead
+of quoting full text. Mark each "needs decision" finding inline
+(`**[needs decision]**`) right after its number. Each finding still needs
+a one-line description and file reference. Replace the "Empty until the
+first sweep runs" placeholder text only if something was actually found —
+if a sweep genuinely finds nothing, leave it as-is and say so in the PR
+description instead of inventing findings to fill it.
 
 ## 3. Open a PR
 
