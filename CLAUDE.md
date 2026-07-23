@@ -61,6 +61,16 @@ before making changes:
   ADRs the change touches. Update them in the same PR, or state explicitly in
   the PR description that they were checked and remain accurate. A PR without
   this is incomplete.
+- **Code-review gate (part of definition of done):** before opening a PR,
+  run `/code-review` on the diff — locally, in-session, no separate service
+  or billing involved. For each finding worth acting on, mark it **fix now**
+  (implement it in the current PR) or **new task** (turn it into a backlog
+  item instead); not every finding needs a task. Covers diff-local security
+  (injection, XSS, auth flaws, secrets), performance (N+1s, complexity,
+  leaks), correctness (edge cases, race conditions, error handling), and
+  maintainability (smells, duplication, naming, test coverage) — see
+  "Quality checks" below for the broader, whole-codebase checks this alone
+  doesn't cover.
 - Tick off completed roadmap tasks in `docs/roadmap.md` as part of the PR
   that completes them.
 - **Iteration DoD gate:** never declare an iteration complete because its
@@ -91,31 +101,12 @@ before making changes:
 
 ## Quality checks
 
-Beyond per-task review, two structured checks watch code and documentation
-quality on different cadences — each matched to what it can actually judge
-at that granularity:
+Beyond the per-PR code-review gate above (diff-scoped, self-run), one more
+structured check watches the codebase and docs at a coarser grain than any
+single PR can judge:
 
-- **Per-PR, automated (security + code quality).**
-  [`.github/workflows/claude-code-review.yml`](.github/workflows/claude-code-review.yml)
-  runs Claude Code's review action (`anthropics/claude-code-action`) on
-  every PR push, scoped to security vulnerabilities and code quality
-  (smells, duplication, maintainability, readability) — diff-local concerns
-  a single PR can be judged on. Findings post as inline PR review comments.
-  Requires the product owner to install the Claude GitHub App
-  (`/install-github-app`) and add an `ANTHROPIC_API_KEY` repository secret;
-  the workflow does nothing until that's done.
-
-  Architecture and documentation are deliberately out of scope here — they
-  need whole-codebase context a diff doesn't have (see below).
-
-  **Acting on findings:** for each comment worth acting on, the product
-  owner marks it **fix now** (the AI agent implements it in the current PR,
-  same as any other review-comment dialogue) or **new task** (the AI agent
-  turns it into a backlog item instead of touching the PR). Not every
-  finding needs a task — many are just fixed on the spot.
-
-- **Per-iteration-boundary, on request (architecture + documentation, +
-  security from iteration 3 onward).**
+- **Per-iteration-boundary, on request (architecture + documentation +
+  code-quality, + security from iteration 3 onward).**
   Before the first task of a new iteration, the product owner asks an AI
   agent to run a quality sweep (not automatic — this stays a deliberate,
   PO-initiated step, not routine per-task overhead). The agent spins one
@@ -127,8 +118,16 @@ at that granularity:
     staleness and duplication — a fresh, independent pass, distinct from
     the doc-sync gate above (which is the same agent self-checking only
     what it just touched in one task).
+  - *code-quality*: a whole-codebase pass for the same dimensions the
+    per-PR code-review gate checks per diff (security smells, performance,
+    correctness, maintainability) — done here across everything at once to
+    catch drift that accumulates gradually across many small PRs, not just
+    within one.
   - *security* (from iteration 3/Keycloak onward): whole-system review
-    beyond diff scope, e.g. end-to-end auth flow soundness.
+    beyond diff scope, e.g. end-to-end auth flow soundness — a different,
+    deeper check than code-quality's per-diff-style security-smell pass;
+    deferred because there's no meaningful attack surface before auth
+    exists.
 
   Output: a categorized task list — **MUST** / **SHOULD** / **COULD**
   (MoSCoW) — appended to `docs/roadmap.md`'s "Iteration 5+ — Backlog" under
@@ -136,10 +135,10 @@ at that granularity:
   tasks like any other backlog item.
 
 Not adopted: a full four-dimension subagent review on every single task
-before every PR. It would duplicate the per-PR action for security/code
-quality, and architecture/documentation need more context than one small
-task provides — running them that often would be noisy and re-litigate
-settled decisions, against the "smallest reviewable change" cadence above.
+before every PR. Architecture and documentation need more context than one
+small task provides — running them that often would be noisy and
+re-litigate settled decisions, against the "smallest reviewable change"
+cadence above.
 
 ## Repository layout
 
@@ -151,8 +150,6 @@ settled decisions, against the "smallest reviewable change" cadence above.
   backend (`:8080`, for direct API access and Swagger UI) are both
   published, localhost-only.
 - `.github/workflows/ci.yml` — build + test both apps on every push
-- `.github/workflows/claude-code-review.yml` — automated per-PR security +
-  code quality review (see Quality checks above)
 
 ## Environment notes
 
