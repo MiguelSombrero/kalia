@@ -101,38 +101,17 @@ before making changes:
 
 ## Quality checks
 
-Beyond the per-PR code-review gate above (diff-scoped, self-run), one more
-structured check watches the codebase and docs at a coarser grain than any
-single PR can judge:
-
-- **Per-iteration-boundary, on request (architecture + documentation +
-  code-quality, + security from iteration 3 onward).**
-  Before the first task of a new iteration, the product owner asks an AI
-  agent to run a quality sweep (not automatic — this stays a deliberate,
-  PO-initiated step, not routine per-task overhead). The agent spins one
-  subagent per dimension in parallel:
-  - *architecture-quality*: re-reads `docs/architecture.md` and every ADR
-    against current code; flags drift, module-boundary violations, or
-    decisions that need revisiting.
-  - *documentation-quality*: audits all of `docs/` and the READMEs for
-    staleness and duplication — a fresh, independent pass, distinct from
-    the doc-sync gate above (which is the same agent self-checking only
-    what it just touched in one task).
-  - *code-quality*: a whole-codebase pass for the same dimensions the
-    per-PR code-review gate checks per diff (security smells, performance,
-    correctness, maintainability) — done here across everything at once to
-    catch drift that accumulates gradually across many small PRs, not just
-    within one.
-  - *security* (from iteration 3/Keycloak onward): whole-system review
-    beyond diff scope, e.g. end-to-end auth flow soundness — a different,
-    deeper check than code-quality's per-diff-style security-smell pass;
-    deferred because there's no meaningful attack surface before auth
-    exists.
-
-  Output: a categorized task list — **MUST** / **SHOULD** / **COULD**
-  (MoSCoW) — appended to `docs/roadmap.md`'s "Iteration 5+ — Backlog" under
-  "Quality backlog". The product owner prioritizes these into iteration
-  tasks like any other backlog item.
+Beyond the per-PR code-review gate above (diff-scoped, self-run), the
+`/quality-sweep` skill (`.claude/skills/quality-sweep/SKILL.md`) runs a
+periodic, whole-codebase check — architecture, documentation, code
+quality, and security — at a coarser grain than any single PR can judge.
+Product-owner-initiated only, never something an AI agent triggers itself:
+run it before the first task of a new iteration, or whenever else it's
+wanted. **An AI agent should proactively suggest running it at the start
+of a new iteration's first task** — surfacing the option, not deciding for
+the product owner. Output is a MUST/SHOULD/COULD-categorized task list
+appended to `docs/roadmap.md`'s "Quality backlog", opened as its own PR
+for review like any other change.
 
 Not adopted: a full four-dimension subagent review on every single task
 before every PR. Architecture and documentation need more context than one
@@ -150,6 +129,8 @@ cadence above.
   backend (`:8080`, for direct API access and Swagger UI) are both
   published, localhost-only.
 - `.github/workflows/ci.yml` — build + test both apps on every push
+- `.claude/skills/quality-sweep/SKILL.md` — periodic quality sweep (see
+  Quality checks above)
 
 ## Environment notes
 
