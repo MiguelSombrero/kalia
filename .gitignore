@@ -15,3 +15,6 @@ build/
 
 # Logs
 *.log
+
+# Brainstorming visual companion (superpowers skill)
+.superpowers/
