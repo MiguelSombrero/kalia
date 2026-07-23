@@ -121,6 +121,9 @@ Main technologies used in this project — update as the project evolves!
   vulnerable versions of these, so npm can't resolve a fix within their own
   dependency ranges — remove each override once the upstream package bumps
   it themselves and `npm audit` stays clean without the override
+- eslint-plugin-jsx-a11y 6.10.2, jest-axe 10.0.0 (+ @types/jest-axe 3.5.9),
+  @axe-core/playwright 4.12.1 — WCAG 2.1 AA enforcement at lint/unit/E2E
+  time (iteration 2 task 7)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
 

@@ -22,11 +22,21 @@ jobs:
     name: Security + code quality review
     runs-on: ubuntu-latest
     steps:
+      # Required even though this job never reads app code directly: the
+      # action restores CLAUDE.md and other trusted config files from
+      # origin/dev (PR head is untrusted) via `git fetch`, which fails with
+      # "not a git repository" if nothing has checked one out first
+      # (confirmed by running it).
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # Temporary, for diagnosing an immediate is_error:true failure
+          # with no detail (313ms, $0 cost - errors before real work
+          # starts). Remove once root-caused.
+          show_full_output: true
           claude_args: |
             --append-system-prompt "Scope this review to security vulnerabilities and code quality only (smells, duplication, maintainability, readability, testability). Do not comment on architecture fit or documentation completeness/accuracy - those are covered by a separate periodic review process (see CLAUDE.md Quality checks)."
