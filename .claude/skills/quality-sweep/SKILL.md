@@ -24,13 +24,35 @@ references, a one-sentence rationale per finding, and explicitly instruct
 "this is an audit — report findings only, do not fix anything."
 
 **architecture-quality**
-Compare `docs/architecture.md` and every file under `docs/adr/` against
-the current codebase. Flag: drift between documented and actual module
-boundaries or API conventions; violations of documented dependency rules
-(e.g. ArchUnit-enforced layering); decisions that look outdated given how
-the code has actually evolved (check `docs/architecture.md` §8 "Trade-offs
-made explicit" and §9 "Revisit list" for standing decisions and their
-stated trigger conditions — flag any whose trigger has been met).
+Two passes, not one — drift-checking alone misses designs that are
+perfectly doc-compliant but still bad, and decisions that were sound once
+but no longer are:
+
+*Drift:* compare `docs/architecture.md` and every file under `docs/adr/`
+against the current codebase. Flag drift between documented and actual
+module boundaries or API conventions, and violations of documented
+dependency rules (e.g. ArchUnit-enforced layering).
+
+*Quality, independent of drift:* evaluate the architecture on its own
+merits, not just whether it matches the docs. Module/layer coupling and
+cohesion; whether dependencies point in a sound direction, not merely a
+documented one; whether cross-module boundaries respect real
+encapsulation (a module reaching into another's internals instead of its
+published API is a violation even if no doc forbids it); "program to
+interfaces, not implementations" and similar principles applied at the
+architecture grain — how the big pieces relate to each other. (The same
+principles applied *inside* one class or component — a class doing too
+much, coupling to a concrete type instead of an interface within a single
+component — are a code-quality finding, not this one; this dimension
+stops at the module/layer boundary.)
+
+*Challenge the decisions, not just check them:* read `docs/architecture.md`
+§8 "Trade-offs made explicit" and §9 "Revisit list", and for each one, ask
+whether it's still a sound choice given how the system has actually grown
+— flag it even if its stated revisit trigger hasn't fired, if you can show
+it's now hurting maintainability, scalability, security, or another
+"-ility." A stated trigger is a floor for when a decision must be
+revisited, not a ceiling on when it may be questioned.
 
 **documentation-quality**
 Audit every file under `docs/` and every `README.md` in the repo for
@@ -44,7 +66,12 @@ Audit the whole codebase (`backend/src`, `frontend/`) for: security smells
 performance issues (N+1 queries, unbounded loops, algorithmic complexity,
 resource leaks), correctness risks (unhandled edge cases, error handling
 gaps, race conditions), and maintainability issues (duplication, unclear
-naming, missing test coverage for non-trivial logic).
+naming, missing test coverage for non-trivial logic, and class/method-level
+design smells — a class doing too much, coupling to a concrete
+implementation where an interface would decouple it, deep inheritance
+where composition would serve better). This is SOLID-style scrutiny
+*inside* one class or component; the same principles applied *across*
+modules or layers are architecture-quality's job, not this one.
 
 **security**
 Whole-system security review beyond what a single diff can show — e.g.
