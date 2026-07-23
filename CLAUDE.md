@@ -75,6 +75,15 @@ before making changes:
   maintainability (smells, duplication, naming, test coverage) — see
   "Quality checks" below for the broader, whole-codebase checks this alone
   doesn't cover.
+- **Beyond the gates above, proactively reach for other available Claude
+  Code skills when they'd genuinely help** — architecture review, design
+  critique, accessibility audits, and similar — don't wait to be asked.
+  Skills are self-triggering by design (their own description is the
+  signal); this is a reminder to act on that, not a list to maintain here.
+  Unlike `/code-review` (bundled, always available), most other skills are
+  marketplace plugins tied to whoever's running the session — don't
+  hardcode specific plugin names as required steps, since they may not be
+  installed for a future session or contributor.
 - Tick off completed roadmap tasks in `docs/roadmap.md` as part of the PR
   that completes them.
 - **Iteration DoD gate:** never declare an iteration complete because its
