@@ -133,8 +133,6 @@ Main technologies used in this project — update as the project evolves!
 
 - GitHub Actions (build + test both apps on every push), SHA-pinned:
   actions/checkout v7.0.0, actions/setup-java v5.6.0, actions/setup-node v7.0.0
-- `claude-code-review.yml`: automated per-PR security + code quality review
-  (`anthropics/claude-code-action@v1`) — see CLAUDE.md "Quality checks"
 
 ## Repository layout (planned)
 
