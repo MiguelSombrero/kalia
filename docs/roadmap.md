@@ -99,8 +99,39 @@ Goal: a signed-in beer enthusiast maintains the catalog of beers they own.
 
 Findings from periodic architecture and documentation sweeps (plus security,
 from iteration 3 onward) land here, categorized **MUST** / **SHOULD** /
-**COULD** (MoSCoW) — see CLAUDE.md "Quality checks". Empty until the first
-sweep runs.
+**COULD** (MoSCoW) — see CLAUDE.md "Quality checks".
+
+**Sweep — 2026-07-23** (architecture · documentation · code-quality · security, full codebase)
+
+**MUST**
+
+- `README.md:20-24` status blurb says iterations 0–1 are complete and iteration 2 is "next," but 7 of iteration 2's 9 tasks are already checked off in `docs/roadmap.md:62-68` — reads as if iteration 2 hasn't started when it's nearly done.
+- `docs/architecture.md:52,203-205,266` describe Next.js route handlers under `app/api/*` as an already-built BFF proxy layer ("route handlers... attach the session's auth token... and forward to Spring Boot"), but no such route handlers exist anywhere under `frontend/app` — server components call the backend directly through `frontend/lib/api/mutator.ts`.
+- `frontend/lib/api/mutator.ts:11-18` — `kaliaFetch` calls `JSON.parse(text)` unguarded on any non-204/205/304 response; a non-empty, non-JSON error body (e.g. an HTML 502/504 page from an intermediary) throws an uncaught `SyntaxError` instead of the intended `Beer search failed with status N` error. Untested edge case.
+
+**SHOULD**
+
+- `backend/src/main/resources/application.properties:6` and `docker-compose.yml:8,33` — the dev Postgres password falls back to the hardcoded literal `kalia` with no warning against reusing this config beyond localhost.
+- `frontend/next.config.ts` / `frontend/proxy.ts` — no security response headers (CSP, X-Frame-Options, etc.) are configured yet; low risk today, but relevant once iteration 3 introduces session cookies and a sign-in UI.
+- `backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:50-52` — `minAbv`/`maxAbv` have no upper bound and no cross-field `minAbv <= maxAbv` check, and free-text `query`/`style`/`country` have no `@Size` cap; an inverted range silently returns an empty page instead of a helpful 400.
+- `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java:17-29` vs. `V003__catalog_schema.sql:23-24` — the name filter uses a leading-wildcard `LIKE '%...%'` (never index-usable), and style/country filters compare `lower(column)` against a plain (non-functional) index; invisible at current seed scale (~54 rows), will degrade as the catalog grows.
+- `frontend/features/catalog/api.ts:31-46` — `searchBeers` has no direct unit test for its status check or numeric-string coercions; only covered indirectly through page-level tests.
+- `docs/architecture.md:3` "Last updated" banner is stale (says 2026-07-19; the file was substantively edited through 2026-07-23), and `README.md:101,128` states the Keycloak version twice — both currently accurate but at risk of silently drifting apart since there's no single source of truth.
+- No automated dependency-vulnerability scanning in CI: no Dependabot config, no `npm audit` gate, no Maven vulnerability check anywhere in `.github/workflows/ci.yml` or repo root. `frontend/package.json` already carries hand-maintained `overrides` for `js-yaml`/`postcss`/`sharp` due to known-vulnerable transitive deps — proof this class of issue is real, currently only caught manually.
+- Backend's actuator web exposure relies entirely on undeclared Spring Boot defaults (`management.endpoints.web.exposure.include` is unset in `application.properties`) — current health-only behavior is correct but implicit; a future unrelated change could silently widen it with nothing catching the drift.
+
+**COULD**
+
+- `README.md` tech-stack table vs. `docs/adr/0008-tanstack-query.md` through `0012-orval-api-client.md` — dependency versions are duplicated between the README and each ADR; currently consistent, but a structural drift risk.
+- WCAG 2.1 AA enforcement mechanism is described near-identically in three places: `frontend/README.md` and two sections of `docs/architecture.md`.
+- DDD-lite package-structure convention is restated in full in three places: `docs/adr/0007-backend-package-structure.md`, `docs/architecture.md` §3, and `backend/README.md`.
+- `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java:18` — LIKE-wildcard metacharacters (`%`/`_`) in user search input aren't escaped; not an injection risk, just an untested match-semantics edge case.
+- `backend/src/main/java/fi/kalia/catalog/application/CatalogService.java:35-40` — `listBreweries()` loads and sorts the whole brewery table in Java on every call, with no pagination contract on `/api/v1/breweries`; fine at current scale (~20 rows).
+- `frontend/features/i18n/LocaleSwitcher.tsx:21` — uses an unvalidated type assertion (`pathname.split("/")[1] as Locale`) instead of the `isLocale`/`toLocale` validation used elsewhere in the codebase.
+- `backend/src/test/java/fi/kalia/catalog/domain/BeerSpecificationsIT.java` / `CatalogApiIT` — missing coverage for `minAbv > maxAbv` (contradictory range) and for sorting by `style`.
+- `docker-compose.yml`'s backend healthcheck is a bare `/dev/tcp` port-open probe, while the `api-client-drift` CI job correctly polls `/actuator/health` — the two disagree on what "healthy" means for the same service.
+
+No architectural violations, no HIGH/CRITICAL security vulnerabilities, no injection/XSS surface, and no secrets in the repo were found. All 12 ADRs still accurately reflect current code; ArchUnit/Modulith layering matches `docs/architecture.md` §3 exactly.
 
 Store flow — **pending decision** (own store vs. aggregator over other beer
 stores, "Trivago for beers"; needs an ADR before implementation):
