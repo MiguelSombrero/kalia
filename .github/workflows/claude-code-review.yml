@@ -22,6 +22,12 @@ jobs:
     name: Security + code quality review
     runs-on: ubuntu-latest
     steps:
+      # Required even though this job never reads app code directly: the
+      # action restores CLAUDE.md and other trusted config files from
+      # origin/dev (PR head is untrusted) via `git fetch`, which fails with
+      # "not a git repository" if nothing has checked one out first
+      # (confirmed by running it).
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
