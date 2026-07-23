@@ -130,8 +130,8 @@ at that granularity:
   - *security* (from iteration 3/Keycloak onward): whole-system review
     beyond diff scope, e.g. end-to-end auth flow soundness.
 
-  Output: a categorized task list — **HAVE TO** / **SHOULD** / **NICE TO**
-  fix — appended to `docs/roadmap.md`'s "Iteration 5+ — Backlog" under
+  Output: a categorized task list — **MUST** / **SHOULD** / **COULD**
+  (MoSCoW) — appended to `docs/roadmap.md`'s "Iteration 5+ — Backlog" under
   "Quality backlog". The product owner prioritizes these into iteration
   tasks like any other backlog item.
 

@@ -98,8 +98,8 @@ Goal: a signed-in beer enthusiast maintains the catalog of beers they own.
 ### Quality backlog
 
 Findings from periodic architecture and documentation sweeps (plus security,
-from iteration 3 onward) land here, categorized **HAVE TO** / **SHOULD** /
-**NICE TO** fix — see CLAUDE.md "Quality checks". Empty until the first
+from iteration 3 onward) land here, categorized **MUST** / **SHOULD** /
+**COULD** (MoSCoW) — see CLAUDE.md "Quality checks". Empty until the first
 sweep runs.
 
 Store flow — **pending decision** (own store vs. aggregator over other beer
