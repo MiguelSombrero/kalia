@@ -169,7 +169,7 @@ cadence above.
 
 - `backend/` — Spring Boot modulith (Java, Maven)
 - `frontend/` — Next.js (TypeScript)
-- `docs/` — architecture, roadmap, ADRs
+- `docs/` — architecture, roadmap, per-iteration tasks, ADRs
 - `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend;
   Keycloak/Redis arrive with the auth iteration). Frontend (`:3000`) and
   backend (`:8080`, for direct API access and Swagger UI) are both

@@ -109,7 +109,9 @@ right after its number. Each finding still needs a one-line description
 and file reference. Use a plain date heading with no punctuation beyond
 the date itself (e.g. `## Sweep 2026-08-01`, not `## Sweep — 2026-08-01`)
 so the heading's auto-generated anchor stays predictable for later
-cross-links from lifted tasks.
+cross-links from lifted tasks. If a sweep genuinely finds nothing, add no
+section and say so in the PR description rather than inventing findings
+to fill one.
 
 ## 3. Open a PR
 
