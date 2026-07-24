@@ -12,4 +12,10 @@ describe("Skeleton", () => {
     expect(skeleton.className).toBe("animate-pulse rounded-md bg-border/60 h-4 w-32");
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("keeps aria-hidden=true even if a caller tries to override it", () => {
+    render(<Skeleton data-testid="skeleton" aria-hidden="false" />);
+
+    expect(screen.getByTestId("skeleton")).toHaveAttribute("aria-hidden", "true");
+  });
 });
