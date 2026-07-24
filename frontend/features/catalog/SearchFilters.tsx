@@ -1,4 +1,4 @@
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import type { BeerSearchParams } from "./types";
@@ -108,9 +108,7 @@ export const SearchFilters = async ({
             <option value="style,asc">{t("catalog.filters.sortStyleAsc")}</option>
           </select>
         </div>
-        <button type="submit" className={buttonVariants("primary")}>
-          {t("catalog.filters.submit")}
-        </button>
+        <Button type="submit">{t("catalog.filters.submit")}</Button>
       </div>
     </form>
   );

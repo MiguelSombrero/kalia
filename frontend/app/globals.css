@@ -17,9 +17,10 @@
   /* Semantic aliases — components reference these, never the primitives
      above, so a future re-theme only touches this block.
      Contrast (WCAG 2.1 AA, re-verified at runtime by @axe-core/playwright):
-     foreground on background/surface ~14.8:1 (needs 4.5:1); white on
-     primary ~5.9:1 (needs 4.5:1); foreground on accent ~13:1; primary as
-     a focus-ring/non-text indicator ~5.9:1 (needs 3:1). */
+     foreground on background ~13.43:1 (needs 4.5:1); foreground on surface
+     ~14.79:1 (needs 4.5:1); white on primary ~5.9:1 (needs 4.5:1);
+     foreground on accent ~13:1; primary as a focus-ring/non-text indicator
+     ~5.9:1 (needs 3:1). */
   --background: var(--cream-50);
   --surface: #ffffff;
   --foreground: var(--charcoal-900);
