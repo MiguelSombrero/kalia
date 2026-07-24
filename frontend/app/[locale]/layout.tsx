@@ -48,7 +48,7 @@ const RootLayout = async ({ children, params }: Props) => {
         >
           {t("a11y.skipToContent")}
         </a>
-        <Providers>
+        <Providers locale={locale}>
           <header className="flex justify-end p-4">
             <LocaleSwitcher />
           </header>

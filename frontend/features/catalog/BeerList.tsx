@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cardVariants } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
@@ -18,16 +19,13 @@ export const BeerList = async ({
 
   if (beers.length === 0) {
     return (
-      <div className={cn(cardVariants, "border-dashed p-12 text-center")}>
-        <p className="text-lg font-medium text-foreground">{t("catalog.empty.title")}</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("catalog.empty.hintPrefix")}{" "}
-          <Link href={`/${locale}/beers`} className="font-medium underline underline-offset-2">
-            {t("catalog.empty.clearLink")}
-          </Link>
-          .
-        </p>
-      </div>
+      <EmptyState title={t("catalog.empty.title")}>
+        {t("catalog.empty.hintPrefix")}{" "}
+        <Link href={`/${locale}/beers`} className="font-medium underline underline-offset-2">
+          {t("catalog.empty.clearLink")}
+        </Link>
+        .
+      </EmptyState>
     );
   }
 

@@ -10,6 +10,7 @@
   "catalog": {
     "title": "Oluet",
     "pageTitle": "Oluet - Kalia",
+    "loading": "Ladataan oluita…",
     "filters": {
       "searchLabel": "Haku",
       "searchPlaceholder": "Oluen nimi…",
@@ -51,5 +52,10 @@
     "title": "Olutta ei löytynyt",
     "message": "Tätä olutta ei ole olemassa — ehkä se on jo juotu.",
     "backLink": "Takaisin tarjontaan"
+  },
+  "error": {
+    "title": "Jokin meni pieleen",
+    "message": "Odottamaton virhe tapahtui. Yritä uudelleen.",
+    "retry": "Yritä uudelleen"
   }
 }
