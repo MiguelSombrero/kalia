@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
 import { LocaleSwitcher } from "@/features/i18n/LocaleSwitcher";
 import { Providers } from "../providers";
 import "../globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -39,23 +39,22 @@ const RootLayout = async ({ children, params }: Props) => {
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-zinc-900 focus:outline focus:outline-2 focus:outline-focus-ring dark:focus:bg-zinc-900 dark:focus:text-zinc-100"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-2 focus:text-foreground focus:outline focus:outline-2 focus:outline-focus-ring"
         >
           {t("a11y.skipToContent")}
         </a>
         <Providers>
-          <header className="flex justify-end p-2">
+          <header className="flex justify-end p-4">
             <LocaleSwitcher />
           </header>
           {/* Plain wrapper, not <main> — every page under {children} already
               renders its own <main>; this just gives the skip link a
-              focusable target (WCAG technique SCR28). Focus-ring styling
-              here is a placeholder pending task 8's design tokens. */}
+              focusable target (WCAG technique SCR28). */}
           <div id="main-content" tabIndex={-1} className="focus:outline-none">
             {children}
           </div>
