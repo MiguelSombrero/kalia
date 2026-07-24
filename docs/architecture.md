@@ -316,8 +316,9 @@ Things intentionally *not* designed now, with the trigger that reopens them:
   only, when the mocked flow is stable end-to-end.
 - **Search engine** (pg full-text is fine; OpenSearch only if faceted search
   outgrows it).
-- **Observability** (structured logging first; metrics/tracing when deployed
-  somewhere real).
+- **Observability** — basic logging and exception-handling conventions are
+  tracked as Iteration 2.5 (`docs/roadmap.md`); full metrics/tracing stay
+  deferred until deployed somewhere real.
 - **Compliance** (age verification, alcohol-sale regulation, GDPR) — before
   any real-customer use.
 - **CI/CD & deployment** — GitHub Actions build+test early; deployment target

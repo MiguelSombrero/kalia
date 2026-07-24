@@ -71,6 +71,41 @@ so later features are easier to add and consistent by default.
 
 **Done when:** decisions 1–6 are documented and the existing code migrated to them; catalog pages pass automated WCAG 2.1 AA checks; the UI implements the new design with both Finnish and English translations; all suites green.
 
+## Iteration 2.5 — Production-readiness foundations
+
+Goal: establish the backend and frontend conventions for exception
+handling, logging, configuration and security that later iterations build
+on, instead of retrofitting them once Auth (session cookies, secrets) and
+Cellar (first mutating endpoints) land.
+
+**Backend**
+
+1. [ ] Decision: structured logging conventions — SLF4J usage baseline, log levels per environment, what's logged when an exception falls through to the default handler, no secrets/PII in logs; document as an ADR
+2. [ ] Decision: shared exception-handling strategy beyond `catalog`'s module-scoped advice — field-level detail for Bean Validation failures (`MethodArgumentNotValidException`/`ConstraintViolationException`), malformed-JSON/405 handling, and where module-neutral advice can live without breaking ADR-0007's ArchUnit placement rule **[needs decision]**; document as an ADR
+3. [ ] Decision: configuration/profile strategy — split `application.properties` into base + `dev`/`test`/`prod` profiles, how secrets differ per profile; document as an ADR
+4. [ ] Explicit actuator endpoint exposure (`management.endpoints.web.exposure.include`) instead of relying on undeclared defaults *(Quality backlog 2026-07-23, SHOULD-8)*
+5. [ ] Input-validation hardening as an applied convention: `minAbv <= maxAbv` cross-field check, an upper bound on ABV params, and `@Size` caps on free-text `query`/`style`/`country` *(Quality backlog 2026-07-23, SHOULD-3)*
+
+**Frontend**
+
+6. [ ] Harden `kaliaFetch`: guard `JSON.parse` against non-JSON error bodies *(Quality backlog 2026-07-23, MUST-3)*, add a request timeout, and introduce a typed `ApiError` distinguishing network/timeout/HTTP-status/parse failures — feeds the error-state work in task 9 above
+7. [ ] Decision: security response headers (CSP, X-Frame-Options, Referrer-Policy, HSTS, Permissions-Policy) via `next.config.ts` `headers()` *(Quality backlog 2026-07-23, SHOULD-2)*; document as an ADR
+8. [ ] Decision: environment-variable validation — fail fast on misconfigured/missing env vars instead of silent fallback defaults; document as an ADR
+9. [ ] Client-side logging convention: a thin logger wrapper replacing ad hoc `console.*` calls, so a real monitoring tool can be swapped in later without touching call sites
+
+**Cross-cutting**
+
+10. [ ] Dependency-vulnerability scanning in CI: a Maven check (e.g. OWASP dependency-check) alongside an `npm audit` gate *(Quality backlog 2026-07-23, SHOULD-7)*
+
+**Done when:** an unhandled backend exception is logged server-side with no
+internal detail leaked to the client; an invalid ABV range or malformed
+request returns a 400 with field-level detail; actuator exposes only the
+intended endpoints; dev/test/prod each run off their own profile with no
+hardcoded secrets; a non-JSON backend error response no longer crashes the
+frontend and renders a friendly, accessible error state instead; every
+response carries the agreed security headers; CI fails on a known-vulnerable
+dependency in either app.
+
 ## Iteration 3 — Authentication (Keycloak)
 
 Goal: users can sign in; personal features become possible.
@@ -110,18 +145,13 @@ untagged is ready to implement as written.
 
 - **MUST-1** `README.md:20-24` status blurb says iterations 0–1 are complete and iteration 2 is "next," but 7 of iteration 2's 9 tasks are already checked off in `docs/roadmap.md:62-68` — reads as if iteration 2 hasn't started when it's nearly done.
 - **MUST-2** **[needs decision]** `docs/architecture.md:52,203-205,266` describe Next.js route handlers under `app/api/*` as an already-built BFF proxy layer ("route handlers... attach the session's auth token... and forward to Spring Boot"), but no such route handlers exist anywhere under `frontend/app` — server components call the backend directly through `frontend/lib/api/mutator.ts`. Needs a call: build the described proxy layer now, or reword the doc to match the current direct-call approach?
-- **MUST-3** `frontend/lib/api/mutator.ts:11-18` — `kaliaFetch` calls `JSON.parse(text)` unguarded on any non-204/205/304 response; a non-empty, non-JSON error body (e.g. an HTML 502/504 page from an intermediary) throws an uncaught `SyntaxError` instead of the intended `Beer search failed with status N` error. Untested edge case.
 
 **SHOULD**
 
 - **SHOULD-1** `backend/src/main/resources/application.properties:6` and `docker-compose.yml:8,33` — the dev Postgres password falls back to the hardcoded literal `kalia` with no warning against reusing this config beyond localhost.
-- **SHOULD-2** `frontend/next.config.ts` / `frontend/proxy.ts` — no security response headers (CSP, X-Frame-Options, etc.) are configured yet; low risk today, but relevant once iteration 3 introduces session cookies and a sign-in UI.
-- **SHOULD-3** `backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:50-52` — `minAbv`/`maxAbv` have no upper bound and no cross-field `minAbv <= maxAbv` check, and free-text `query`/`style`/`country` have no `@Size` cap; an inverted range silently returns an empty page instead of a helpful 400.
 - **SHOULD-4** `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java:17-29` vs. `V003__catalog_schema.sql:23-24` — the name filter uses a leading-wildcard `LIKE '%...%'` (never index-usable), and style/country filters compare `lower(column)` against a plain (non-functional) index; invisible at current seed scale (~54 rows), will degrade as the catalog grows.
 - **SHOULD-5** `frontend/features/catalog/api.ts:31-46` — `searchBeers` has no direct unit test for its status check or numeric-string coercions; only covered indirectly through page-level tests.
 - **SHOULD-6** `docs/architecture.md:3` "Last updated" banner is stale (says 2026-07-19; the file was substantively edited through 2026-07-23), and `README.md:101,128` states the Keycloak version twice — both currently accurate but at risk of silently drifting apart since there's no single source of truth.
-- **SHOULD-7** No automated dependency-vulnerability scanning in CI: no Dependabot config, no `npm audit` gate, no Maven vulnerability check anywhere in `.github/workflows/ci.yml` or repo root. `frontend/package.json` already carries hand-maintained `overrides` for `js-yaml`/`postcss`/`sharp` due to known-vulnerable transitive deps — proof this class of issue is real, currently only caught manually.
-- **SHOULD-8** Backend's actuator web exposure relies entirely on undeclared Spring Boot defaults (`management.endpoints.web.exposure.include` is unset in `application.properties`) — current health-only behavior is correct but implicit; a future unrelated change could silently widen it with nothing catching the drift.
 
 **COULD**
 
