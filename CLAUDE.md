@@ -112,6 +112,12 @@ before making changes:
   README, or docs/) in the same PR.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
+- **Code comments document the function/component itself** — its purpose,
+  non-obvious behavior, or an invariant a future reader needs — never why
+  a change was made, which task/PR/review comment prompted it, or what it
+  used to look like. That history belongs in the commit message and PR
+  description, which are built to hold it; a code comment outlives them
+  and just becomes stale narration.
 - **New dependencies: ask, don't research.** When a task introduces a new
   dependency (library, starter, plugin, Docker image, GitHub Action), do not
   spend time hunting registries for the latest version. List the new
