@@ -45,7 +45,9 @@ const BeersPage = async ({ params, searchParams }: Props) => {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 sm:p-8">
-      <h1 className="text-3xl font-bold tracking-tight">{t("catalog.title")}</h1>
+      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+        {t("catalog.title")}
+      </h1>
       <SearchFilters locale={locale} params={beerParams} />
       <BeerList locale={locale} beers={result.content} />
       <Pagination locale={locale} params={beerParams} result={result} />
