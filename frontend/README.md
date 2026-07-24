@@ -113,3 +113,20 @@ the runner is discarded after the job.
   design-system extraction. No new dependency: variant selection is a
   hand-rolled `cn()` helper (`lib/cn.ts`), not `clsx`/`tailwind-merge`/
   `class-variance-authority`.
+- **Loading, error and empty states (iteration 2 task 9):** `loading.tsx`
+  wraps each catalog route (list and detail), each rendering a shape-
+  matched skeleton (`features/catalog/BeerListSkeleton.tsx`,
+  `BeerDetailsSkeleton.tsx`) built from the generic `Skeleton` primitive
+  in `components/ui/` — sized placeholder blocks only, no variants.
+  `loading.tsx`/`not-found.tsx` receive no route params (Next.js
+  convention), so both recover the locale from the `x-pathname` header
+  `proxy.ts` sets on every request. A single `app/[locale]/error.tsx`
+  error boundary — an ancestor of every route since there's no separate
+  root `app/layout.tsx` — covers uncaught exceptions app-wide, using Next
+  16's `unstable_retry()` API. `error.tsx` is the first Client Component
+  needing translations, so `react-i18next` (previously installed but
+  unwired) is now wired through `app/providers.tsx`, seeded with the
+  current locale's resources synchronously (no dynamic-import flash).
+  `EmptyState` (also in `components/ui/`) generalizes the "no results"
+  pattern `BeerList` already had — the shape any future feature's empty
+  state should reuse rather than reinvent.
