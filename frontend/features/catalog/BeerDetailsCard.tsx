@@ -1,5 +1,7 @@
+import { cardVariants } from "@/components/ui/card";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { cn } from "@/lib/cn";
 import { formatPrice } from "./formatPrice";
 import type { BeerDetails } from "./types";
 
@@ -19,29 +21,29 @@ export const BeerDetailsCard = async ({
   return (
     <article className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">{beer.name}</h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          {beer.name}
+        </h1>
+        <p className="text-muted-foreground">
           {beer.brewery.name} — {breweryLocation(beer.brewery.city, beer.brewery.country)}
         </p>
       </header>
-      <dl className="flex flex-wrap gap-x-10 gap-y-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <dl className={cn(cardVariants, "flex flex-wrap gap-x-10 gap-y-4 p-4")}>
         <div>
-          <dt className="text-sm text-zinc-600 dark:text-zinc-400">{t("beer.style")}</dt>
-          <dd className="mt-1 font-medium">{beer.style}</dd>
+          <dt className="text-sm text-muted-foreground">{t("beer.style")}</dt>
+          <dd className="mt-1 font-medium text-foreground">{beer.style}</dd>
         </div>
         <div>
-          <dt className="text-sm text-zinc-600 dark:text-zinc-400">{t("beer.abv")}</dt>
-          <dd className="mt-1 font-medium">{beer.abv} %</dd>
+          <dt className="text-sm text-muted-foreground">{t("beer.abv")}</dt>
+          <dd className="mt-1 font-medium text-foreground">{beer.abv} %</dd>
         </div>
         <div>
-          <dt className="text-sm text-zinc-600 dark:text-zinc-400">{t("beer.price")}</dt>
-          <dd className="mt-1 font-medium">{formatPrice(beer.price, locale)}</dd>
+          <dt className="text-sm text-muted-foreground">{t("beer.price")}</dt>
+          <dd className="mt-1 font-medium text-foreground">{formatPrice(beer.price, locale)}</dd>
         </div>
       </dl>
       {beer.description && (
-        <p className="max-w-prose leading-relaxed text-zinc-700 dark:text-zinc-300">
-          {beer.description}
-        </p>
+        <p className="max-w-prose leading-relaxed text-foreground">{beer.description}</p>
       )}
     </article>
   );

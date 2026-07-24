@@ -30,7 +30,7 @@ const BeerPage = async ({ params }: Props) => {
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 sm:p-8">
       <Link
         href={`/${locale}/beers`}
-        className="text-sm text-zinc-600 underline underline-offset-2 dark:text-zinc-400"
+        className="text-sm text-muted-foreground underline underline-offset-2"
       >
         {t("beer.backToCatalog")}
       </Link>
