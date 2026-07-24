@@ -1,6 +1,6 @@
 ---
 name: quality-sweep
-description: Runs a periodic, whole-codebase quality audit (architecture, documentation, code-quality, security) and appends a MoSCoW-categorized task list to docs/roadmap.md's Quality backlog, opened as a PR. Product-owner-initiated only.
+description: Runs a periodic, whole-codebase quality audit (architecture, documentation, code-quality, security) and appends a MoSCoW-categorized task list to docs/tasks/quality-backlog.md, opened as a PR. Product-owner-initiated only.
 disable-model-invocation: true
 context: fork
 agent: general-purpose
@@ -100,22 +100,22 @@ documented-but-unbuilt feature that could be built or have the doc
 reworded instead). Don't guess at how a "needs decision" item should
 resolve — just flag it.
 
-Edit `docs/roadmap.md`'s "### Quality backlog" subsection (under
-"## Iteration 5+ — Backlog") to list the findings under their category,
-numbered within this sweep (`MUST-1`, `MUST-2`, `SHOULD-1`, ...) so the
-product owner can reference them tersely later ("lift MUST-1..3") instead
-of quoting full text. Mark each "needs decision" finding inline
-(`**[needs decision]**`) right after its number. Each finding still needs
-a one-line description and file reference. Replace the "Empty until the
-first sweep runs" placeholder text only if something was actually found —
-if a sweep genuinely finds nothing, leave it as-is and say so in the PR
-description instead of inventing findings to fill it.
+Edit `docs/tasks/quality-backlog.md` to add a new `## Sweep <date>`
+section listing the findings under their category, numbered within this
+sweep (`MUST-1`, `MUST-2`, `SHOULD-1`, ...) so the product owner can
+reference them tersely later ("lift MUST-1..3") instead of quoting full
+text. Mark each "needs decision" finding inline (`**[needs decision]**`)
+right after its number. Each finding still needs a one-line description
+and file reference. Use a plain date heading with no punctuation beyond
+the date itself (e.g. `## Sweep 2026-08-01`, not `## Sweep — 2026-08-01`)
+so the heading's auto-generated anchor stays predictable for later
+cross-links from lifted tasks.
 
 ## 3. Open a PR
 
 Branch `docs/quality-sweep-<date>` off up-to-date `dev`. Commit the
-`docs/roadmap.md` change. Push and open a PR whose description lists
-every finding directly (not just "see the diff") so the product owner can
-react without opening the file — this PR is the primary way they see the
-sweep's output. Follow the standing auto-PR workflow (`CLAUDE.md`
-"Workflow").
+`docs/tasks/quality-backlog.md` change. Push and open a PR whose
+description lists every finding directly (not just "see the diff") so the
+product owner can react without opening the file — this PR is the primary
+way they see the sweep's output. Follow the standing auto-PR workflow
+(`CLAUDE.md` "Workflow").
