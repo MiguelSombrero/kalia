@@ -1,33 +1,59 @@
+/* frontend/app/globals.css */
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Contrast-checked (WCAG 1.4.11, >=3:1 non-text): ~5.17:1 on light
-     --background, ~3.83:1 on dark --background below. Placeholder pending
-     task 8's design tokens. */
-  --focus-ring: #2563eb;
+  /* Primitives — warm 1950s pastel palette (iteration 2 task 8). Full
+     palette kept even where a shade (mint-100, coral-700) has no current
+     consumer, matching how Tailwind itself ships full color scales. */
+  --cream-50: #faf3e9;
+  --mint-600: #2f6f5e;
+  --mint-100: #eaf5f1;
+  --coral-700: #a8503f;
+  --coral-100: #fbeae5;
+  --charcoal-900: #2b2725;
+  --charcoal-500: #5a5450;
+  --border-200: #ede4d6;
+
+  /* Semantic aliases — components reference these, never the primitives
+     above, so a future re-theme only touches this block.
+     Contrast (WCAG 2.1 AA, re-verified at runtime by @axe-core/playwright):
+     foreground on background/surface ~14.8:1 (needs 4.5:1); white on
+     primary ~5.9:1 (needs 4.5:1); foreground on accent ~13:1; primary as
+     a focus-ring/non-text indicator ~5.9:1 (needs 3:1). */
+  --background: var(--cream-50);
+  --surface: #ffffff;
+  --foreground: var(--charcoal-900);
+  --muted-foreground: var(--charcoal-500);
+  --border: var(--border-200);
+  --primary: var(--mint-600);
+  --primary-foreground: #ffffff;
+  --accent: var(--coral-100);
+  --accent-foreground: var(--charcoal-900);
+  --focus-ring: var(--mint-600);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-focus-ring: var(--focus-ring);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* --font-fraunces / --font-inter come from next/font/google in
+     app/[locale]/layout.tsx (Task 6); the generic fallback keeps builds
+     and renders working before that lands. */
+  --font-display: var(--font-fraunces, serif);
+  --font-sans: var(--font-inter, sans-serif);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
 }
 
 :focus-visible {
