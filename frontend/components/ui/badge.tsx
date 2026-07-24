@@ -8,17 +8,15 @@ const variantClasses: Record<BadgeVariant, string> = {
   accent: "bg-accent text-accent-foreground",
 };
 
+export const badgeVariants = (variant: BadgeVariant = "neutral"): string => {
+  return cn(
+    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+    variantClasses[variant],
+  );
+};
+
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & { variant?: BadgeVariant };
 
 export const Badge = ({ variant = "neutral", className, ...props }: BadgeProps) => {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        variantClasses[variant],
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <span className={cn(badgeVariants(variant), className)} {...props} />;
 };
