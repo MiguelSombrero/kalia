@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { resolveLocaleFromAcceptLanguage } from "./resolveLocale";
+import { describe, expect, it, vi } from "vitest";
+
+const { headers } = vi.hoisted(() => ({ headers: vi.fn() }));
+vi.mock("next/headers", () => ({ headers }));
+
+import { resolveLocaleFromAcceptLanguage, resolveLocaleFromHeaders } from "./resolveLocale";
 
 describe("resolveLocaleFromAcceptLanguage", () => {
   it("picks a supported locale from a weighted header", () => {
@@ -17,5 +21,25 @@ describe("resolveLocaleFromAcceptLanguage", () => {
 
   it("falls back to the default locale for a missing header", () => {
     expect(resolveLocaleFromAcceptLanguage(null)).toBe("en");
+  });
+});
+
+describe("resolveLocaleFromHeaders", () => {
+  it("recovers the locale from the x-pathname header", async () => {
+    headers.mockResolvedValue(new Headers({ "x-pathname": "/fi/beers/abc" }));
+
+    expect(await resolveLocaleFromHeaders()).toBe("fi");
+  });
+
+  it("falls back to the default locale when the header is missing", async () => {
+    headers.mockResolvedValue(new Headers());
+
+    expect(await resolveLocaleFromHeaders()).toBe("en");
+  });
+
+  it("falls back to the default locale for an unsupported locale segment", async () => {
+    headers.mockResolvedValue(new Headers({ "x-pathname": "/de/beers" }));
+
+    expect(await resolveLocaleFromHeaders()).toBe("en");
   });
 });
