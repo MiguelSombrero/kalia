@@ -100,3 +100,16 @@ the runner is discarded after the job.
   `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`. All three ride the existing
   `npm run lint`/`npm test`/`npm run test:e2e` — no separate a11y command
   or CI job.
+- **Design tokens & shared UI primitives (iteration 2 task 8):** the color
+  palette and typography are centralized as CSS custom properties in
+  `app/globals.css`, in two layers — raw primitives (e.g. `--mint-600`)
+  and semantic aliases (e.g. `--color-primary`) that components actually
+  reference — mapped into Tailwind v4 utilities via the file's `@theme
+  inline` block (CSS-first, no `tailwind.config.ts`). Fraunces (display/
+  headings) and Inter (body/UI) are loaded via `next/font/google` in
+  `app/[locale]/layout.tsx`. Light-mode only — no dark theme. Three small
+  shared primitives live in `components/ui/`: `Button`/`buttonVariants`,
+  `Badge`, and `Card`/`cardVariants` — the seam for a possible future
+  design-system extraction. No new dependency: variant selection is a
+  hand-rolled `cn()` helper (`lib/cn.ts`), not `clsx`/`tailwind-merge`/
+  `class-variance-authority`.
