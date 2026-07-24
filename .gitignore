@@ -15,3 +15,10 @@ build/
 
 # Logs
 *.log
+
+# AI-agent working docs (superpowers skill: brainstorming companion,
+# specs, implementation plans) — process scratch, not project
+# documentation. Durable design decisions belong in docs/ (ADRs,
+# architecture.md, README convention bullets), not here.
+.superpowers/
+docs/superpowers/

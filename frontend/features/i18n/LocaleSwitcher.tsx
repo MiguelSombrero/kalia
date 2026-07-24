@@ -30,8 +30,8 @@ export const LocaleSwitcher = () => {
           aria-label={localeNames[locale]}
           className={
             locale === currentLocale
-              ? "font-semibold underline underline-offset-2"
-              : "text-zinc-600 hover:underline dark:text-zinc-400"
+              ? "font-semibold text-foreground underline underline-offset-2"
+              : "text-muted-foreground hover:underline"
           }
         >
           {locale.toUpperCase()}

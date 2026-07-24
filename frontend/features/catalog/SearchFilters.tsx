@@ -1,9 +1,10 @@
+import { Button } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import type { BeerSearchParams } from "./types";
 
 const inputClasses =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900";
+  "w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-foreground";
 
 /**
  * Plain GET form: submitting writes the filters into the URL, which keeps
@@ -107,12 +108,7 @@ export const SearchFilters = async ({
             <option value="style,asc">{t("catalog.filters.sortStyleAsc")}</option>
           </select>
         </div>
-        <button
-          type="submit"
-          className="rounded-md bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-        >
-          {t("catalog.filters.submit")}
-        </button>
+        <Button type="submit">{t("catalog.filters.submit")}</Button>
       </div>
     </form>
   );
