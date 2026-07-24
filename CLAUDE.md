@@ -47,6 +47,16 @@ before making changes:
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
+- **Parallel sessions: one git worktree each, never a shared checkout.**
+  Two AI-agent sessions running `git` commands against the same working
+  directory race on its single `HEAD`/index — a `checkout` from one session
+  can interleave with a `commit` from the other and misattribute the commit
+  to the wrong branch. Before starting a session whose task doesn't depend
+  on another session's in-flight work, give it its own worktree:
+  `git worktree add ../kalia-<topic> -b <branch> dev`, point that session's
+  working directory at the new path, and `git worktree remove` it once its
+  PR merges. Worktrees share one object database, so this costs no extra
+  clone — only isolation.
 - Test-first: write or update tests with the code; all suites green before
   a PR. Verify changes by actually running them (e.g. `docker compose up`,
   hitting the endpoint), not just by compiling.
@@ -161,5 +171,9 @@ cadence above.
 
 - `gh` relies on `GITHUB_TOKEN` exported in `~/.zshrc`; in non-interactive
   shells run it as `zsh -ic 'gh …'`.
+- Each worktree runs `docker compose up` independently and will collide on
+  ports 3000/8080/5432 if two are brought up at once — give a concurrently-
+  running worktree its own `-p <project>` and port overrides, or only run
+  the stack in one worktree at a time.
 - Docker Desktop may need starting: `open -a Docker`, then wait for
   `docker info` to succeed.
