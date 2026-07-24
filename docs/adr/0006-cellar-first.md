@@ -3,11 +3,12 @@
 - **Status:** accepted
 - **Date:** 2026-07-17
 
-*Note (2026-07-19): the iteration numbers below reflect the roadmap as it
-stood at decision time. A frontend-standards iteration was later inserted
-before authentication; [docs/roadmap.md](../roadmap.md) is the source of
-truth for current numbering. The ordering decided here (auth before cellar,
-store flow in backlog) is unchanged.*
+*Note (2026-07-24): this decision is stated in terms of ordering, not
+specific iteration numbers, since the roadmap has already been reshuffled
+twice since this ADR was written (a frontend-standards iteration inserted
+before authentication in 2026-07-19; a production-readiness iteration
+inserted before authentication again in 2026-07-24) — see
+[docs/roadmap.md](../roadmap.md) for current numbering.*
 
 ## Context
 
@@ -21,10 +22,10 @@ ordering → mocked payment) as iterations 2–4, with authentication last.
 
 ## Decision
 
-- **Iteration 2 becomes authentication** (Keycloak, Redis-backed BFF
+- **Authentication comes before the cellar** (Keycloak, Redis-backed BFF
   sessions, backend as OAuth2 resource server) — pulled forward because the
   cellar is per-user data.
-- **Iteration 3 becomes the personal beer cellar** (`cellar` module):
+- **The personal beer cellar** (`cellar` module) follows authentication:
   a signed-in user's owned beers with quantity, vintage, purchase info and
   notes.
 - **The store flow moves to the backlog** until the own-store vs. aggregator

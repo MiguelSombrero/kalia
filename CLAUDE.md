@@ -33,7 +33,9 @@ before making changes:
 
 - [docs/architecture.md](docs/architecture.md) — module boundaries, API
   conventions, persistence rules, testing strategy
-- [docs/roadmap.md](docs/roadmap.md) — what to build and in which order
+- [docs/roadmap.md](docs/roadmap.md) — iteration index and status; detailed
+  per-iteration task lists, the backlog, and the Quality backlog live under
+  [docs/tasks/](docs/tasks/)
 - [docs/adr/](docs/adr/) — decisions already made; don't relitigate them
   silently, propose a new ADR instead
 - [backend/README.md](backend/README.md) — run/test commands, Lombok/
@@ -71,10 +73,10 @@ before making changes:
   iteration DoD, dependency confirmation, review-comment discipline) — a
   task isn't "done" if those are unmet, so the PR doesn't open until they are.
 - **Doc-sync gate (part of definition of done):** before opening a PR,
-  re-read the sections of `docs/architecture.md`, `docs/roadmap.md`, and any
-  ADRs the change touches. Update them in the same PR, or state explicitly in
-  the PR description that they were checked and remain accurate. A PR without
-  this is incomplete.
+  re-read the sections of `docs/architecture.md`, the relevant
+  `docs/tasks/iteration-N.md` file, and any ADRs the change touches. Update
+  them in the same PR, or state explicitly in the PR description that they
+  were checked and remain accurate. A PR without this is incomplete.
 - **Code-review gate (part of definition of done):** before opening a PR,
   run `/code-review` on the diff — locally, in-session, no separate service
   or billing involved. For each finding worth acting on, mark it **fix now**
@@ -94,14 +96,17 @@ before making changes:
   marketplace plugins tied to whoever's running the session — don't
   hardcode specific plugin names as required steps, since they may not be
   installed for a future session or contributor.
-- Tick off completed roadmap tasks in `docs/roadmap.md` as part of the PR
-  that completes them.
+- Tick off completed tasks in the iteration's `docs/tasks/iteration-N.md`
+  file as part of the PR that completes them, and update that iteration's
+  Status in `docs/roadmap.md`'s index table if the whole iteration is now
+  done.
 - **Iteration DoD gate:** never declare an iteration complete because its
-  last task is ticked. Re-read the iteration's "Done when" in
-  `docs/roadmap.md` and verify each criterion by actually running it; if
-  any is unmet, add tasks to the iteration to close the gap. Apply the same
-  coverage check when planning an iteration: tasks must collectively
-  guarantee the "Done when", otherwise fix the tasks or the criteria.
+  last task is ticked. Re-read the iteration's "Done when" in its
+  `docs/tasks/iteration-N.md` file and verify each criterion by actually
+  running it; if any is unmet, add tasks to the iteration to close the gap.
+  Apply the same coverage check when planning an iteration: tasks must
+  collectively guarantee the "Done when", otherwise fix the tasks or the
+  criteria.
 - **Code review is a dialogue.** Analyze every review comment critically —
   architecture, security, code quality, API design, testability — before
   acting. Agreeing: implement and reply with what changed. Disagreeing:
@@ -139,8 +144,8 @@ run it before the first task of a new iteration, or whenever else it's
 wanted. **An AI agent should proactively suggest running it at the start
 of a new iteration's first task** — surfacing the option, not deciding for
 the product owner. Output is a MUST/SHOULD/COULD-categorized task list
-appended to `docs/roadmap.md`'s "Quality backlog", opened as its own PR
-for review like any other change.
+appended to `docs/tasks/quality-backlog.md`, opened as its own PR for
+review like any other change.
 
 **Lifting findings into an iteration:** the product owner reviews the
 backlog and tells an AI agent which findings to promote — by ID
@@ -164,7 +169,7 @@ cadence above.
 
 - `backend/` — Spring Boot modulith (Java, Maven)
 - `frontend/` — Next.js (TypeScript)
-- `docs/` — architecture, roadmap, ADRs
+- `docs/` — architecture, roadmap, per-iteration tasks, ADRs
 - `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend;
   Keycloak/Redis arrive with the auth iteration). Frontend (`:3000`) and
   backend (`:8080`, for direct API access and Swagger UI) are both

@@ -17,12 +17,13 @@ Kalia is developed with AI agents focusing on the development process rather tha
 
 My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
 
-> **Status:** iterations 0–1 complete — a visitor can browse and search the
+> **Status:** iterations 0–2 complete — a visitor can browse and search the
 > seeded beer catalog end to end (verified: find "Westvleteren" by name,
-> filter Belgian quads 9–12 % ABV, open beer details). Next: frontend
-> standards & UI design (iteration 2). Implementation proceeds one issue at
-> a time. See [docs/roadmap.md](docs/roadmap.md) for what gets built and in
-> which order.
+> filter Belgian quads 9–12 % ABV, open beer details), and the UI has its
+> own design system (tokens, shared primitives, loading/error/empty
+> states, WCAG 2.1 AA). Next: production-readiness foundations
+> (iteration 3). Implementation proceeds one issue at a time. See
+> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
 
 ## Run locally
 
@@ -153,6 +154,7 @@ kalia/
 ├── docs/
 │   ├── architecture.md
 │   ├── roadmap.md
+│   ├── tasks/        # per-iteration task lists, backlog, quality backlog
 │   └── adr/          # architecture decision records
 └── docker-compose.yml
 ```
