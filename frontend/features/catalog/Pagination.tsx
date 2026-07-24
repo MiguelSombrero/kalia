@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { buildBeerSearchParams } from "./api";
@@ -23,12 +24,11 @@ export const Pagination = async ({
   }
 
   const { t } = await getTranslation(locale);
-  const linkClasses =
-    "rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:border-zinc-500 dark:border-zinc-700 dark:hover:border-zinc-500";
+  const linkClasses = buttonVariants("outline");
 
   return (
     <nav aria-label={t("catalog.pagination.label")} className="flex items-center justify-between">
-      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+      <span className="text-sm text-muted-foreground">
         {t("catalog.pagination.summary", {
           page: result.page + 1,
           totalPages: result.totalPages,
