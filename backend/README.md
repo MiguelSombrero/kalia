@@ -120,6 +120,15 @@ unexpected falls through to Spring Boot's defaults — 500 problem+json
 without a message (`server.error.include-message=never`), logged
 server-side.
 
+Business exceptions stay in each module's own `<module>.web` advice
+(e.g. `CatalogExceptionHandler`). Generic, module-neutral concerns —
+field-level Bean Validation detail, malformed JSON, 405 — are handled
+once, in `fi.kalia.web.GlobalExceptionHandler`, the one other location
+`ArchitectureTest` permits `@RestControllerAdvice` to live in. The two
+never overlap: a handler for the same exception type in both places is a
+Spring startup error, not just a style violation. Full rationale:
+[ADR-0014](../docs/adr/0014-shared-exception-handling.md).
+
 ## Logging conventions
 
 SLF4J via Lombok's `@Slf4j`, parameterized logging only (`log.warn("Beer
