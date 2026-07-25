@@ -51,18 +51,31 @@ nothing in the file marks which settings are meant to vary.
   belt-and-braces; two framework behaviours were measured and make the
   obvious alternatives useless:
   - Spring's configuration-properties **binder resolves placeholders
-    leniently**. An unset `${POSTGRES_PASSWORD}` binds as that literal
-    string rather than failing, so "no default" alone buys nothing.
-  - **Flyway opens its connection before any application bean is
-    constructed.** A `@Component` with `@PostConstruct` was tried first and
-    lost the race — startup still failed with
+    leniently**. An unset `${POSTGRES_PASSWORD}` binds as the literal
+    text `${POSTGRES_PASSWORD}` rather than failing (measured), so "no
+    default" alone buys nothing. This also rules out the more idiomatic
+    `@ConfigurationProperties` + `@Validated` approach: that literal is
+    neither null nor blank, so `@NotNull` and `@NotBlank` are satisfied
+    and validation stays silent. `@Value` *is* strict and does throw, but
+    see the timing problem below.
+  - **Database-touching infrastructure beans are constructed before any
+    application bean.** A `@Component` with `@PostConstruct` was tried
+    first and lost the race — startup still failed with
     `FATAL: password authentication failed for user "kalia"`, pointing an
-    operator at a credential mismatch instead of absent configuration.
+    operator at a credential mismatch instead of absent configuration. A
+    `@ConfigurationProperties` bean loses the same race: with Flyway
+    disabled to get further, Spring Modulith's `databaseSchemaInitializer`
+    connects next. It is a queue of such beans, not one culprit.
 
   Validating in `main()` is the earliest point that is guaranteed to run,
   needs no framework machinery, and is directly unit-testable. It reads OS
   environment variables, which is the documented contract for supplying
-  this configuration.
+  this configuration. `EnvironmentPostProcessor` is the one Spring-native
+  hook early enough to work, and was rejected only because it also runs
+  for every test context — every `@SpringBootTest` would then need the
+  secret supplied, reintroducing test-only configuration this approach
+  avoids. Every production entry point (`java -jar`, `mvn spring-boot:run`)
+  goes through `main()`, so the coverage is equivalent.
 - **`docker-compose.yml` speaks the application's env contract**
   (`DATABASE_JDBC_URL`, `POSTGRES_PASSWORD`, `LOG_LEVEL`, `SPRINGDOC_ENABLED`)
   rather than Spring property names, and is the local development
