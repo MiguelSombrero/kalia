@@ -46,6 +46,32 @@ before making changes:
 ## Workflow
 
 - Work proceeds **one roadmap task at a time**, smallest reviewable change.
+- **Match process weight to the task — default to working directly.**
+  Nearly every `docs/tasks` item is a single- or few-file change: settle
+  any open decision with the product owner, implement it directly, run
+  `/code-review`, open the PR. Heavier machinery has to earn its place:
+  - **Direct + `/code-review`** — the default, and the right answer for
+    most roadmap tasks.
+  - **A design-exploration skill** (e.g. `/feature-dev`) — for a genuinely
+    new subsystem whose design is still open and where comparing
+    alternatives pays, such as an iteration introducing a new module.
+    Its cost is roughly flat regardless of task size.
+  - **Subagent-driven execution** (e.g.
+    `/superpowers:subagent-driven-development`) — only when a change spans
+    enough files that one context would overflow. Its cost scales with
+    the number of plan tasks, making it the worst fit for many small ones.
+
+  Measured on this repo: subagent-driven execution burned ~1.1M tokens
+  across eleven dispatches to produce ~60 lines of Java and an ADR, and
+  >1M more on a docs-only file split; comparable work done directly runs
+  ~100K. Those review layers check the diff against the spec, so they
+  catch drift between the two but share the spec's blind spots — the two
+  worst defects in that work (a dropped RFC-required header, and an ADR
+  whose central premise was false) surfaced in the product owner's review
+  and by running the code, not in any review layer. A written spec and
+  plan are part of that cost: their main consumer is subagents, so when
+  implementing directly, skip them and let the brainstorming dialogue and
+  the resulting ADR carry the decision.
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
@@ -89,7 +115,9 @@ before making changes:
   doesn't cover.
 - **Beyond the gates above, proactively reach for other available Claude
   Code skills when they'd genuinely help** — architecture review, design
-  critique, accessibility audits, and similar — don't wait to be asked.
+  critique, accessibility audits, and similar — don't wait to be asked,
+  but weigh each against the process-weight rule above: "genuinely help"
+  means this task needs it, not that the skill exists and looks thorough.
   Skills are self-triggering by design (their own description is the
   signal); this is a reminder to act on that, not a list to maintain here.
   Unlike `/code-review` (bundled, always available), most other skills are
