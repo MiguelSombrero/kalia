@@ -82,9 +82,13 @@ Key properties:
 
 ## 3. Backend modules
 
-Base package `fi.kalia`, one Spring Modulith module per subdomain. Inside
-each module, DDD-lite layers as direct subpackages — all Modulith-internal
-by default ([ADR-0007](adr/0007-backend-package-structure.md)):
+Base package `fi.kalia`, one Spring Modulith module per subdomain — with
+one sanctioned exception: `fi.kalia.web` holds shared, module-neutral
+exception-handling advice with no subdomain of its own
+([ADR-0014](adr/0014-shared-exception-handling.md)). Inside each
+subdomain module, DDD-lite layers as direct subpackages — all
+Modulith-internal by default
+([ADR-0007](adr/0007-backend-package-structure.md)):
 
 - `domain` — rich JPA entities as the domain model (documented exception to
   framework-free purity), value objects, repositories, specifications

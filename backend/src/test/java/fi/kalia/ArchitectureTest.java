@@ -41,8 +41,9 @@ class ArchitectureTest {
 	static final ArchRule controllersAndAdviceLiveInWeb = classes()
 			.that().areAnnotatedWith(RestController.class)
 			.or().areAnnotatedWith(RestControllerAdvice.class)
-			.should().resideInAPackage("fi.kalia.*.web..")
-			.because("HTTP is a web-layer concern (ADR-0007)");
+			.should().resideInAnyPackage("fi.kalia.*.web..", "fi.kalia.web..")
+			.because("HTTP is a web-layer concern (ADR-0007); module-neutral "
+					+ "advice lives in the one sanctioned fi.kalia.web location (ADR-0014)");
 
 	@ArchTest
 	static final ArchRule entitiesLiveInDomain = classes()

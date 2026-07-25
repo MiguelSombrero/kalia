@@ -120,6 +120,28 @@ unexpected falls through to Spring Boot's defaults — 500 problem+json
 without a message (`server.error.include-message=never`), logged
 server-side.
 
+Business exceptions stay in each module's own `<module>.web` advice
+(e.g. `CatalogExceptionHandler`). Generic Spring MVC exceptions are
+handled by Spring Boot's own `ProblemDetailsExceptionHandler` and left
+alone — **don't add a handler for one without first measuring what Boot
+already returns.** The single exception is Bean Validation:
+`fi.kalia.web.GlobalExceptionHandler` (the one other location
+`ArchitectureTest` permits `@RestControllerAdvice` to live in) overrides
+`HandlerMethodValidationException` and `MethodArgumentNotValidException`
+purely to add the field-level `errors: [{field, message}]` array Boot
+omits — it reports only a bare `"Validation failure"`. Note that a
+handler returning `ProblemDetail` carries no response headers, so
+overriding an exception whose Boot handling sets one (405 sets the
+RFC-required `Allow`) silently loses it.
+
+Module advice and `GlobalExceptionHandler` must never handle the same
+type — a convention to keep by discipline, since Spring won't catch it
+for you: two advice beans handling one exception type resolve silently
+by `@Order` precedence, not a startup error, and `GlobalExceptionHandler`
+runs at `Ordered.HIGHEST_PRECEDENCE`, so it would silently win any
+accidental overlap rather than fail loudly. Full rationale:
+[ADR-0014](../docs/adr/0014-shared-exception-handling.md).
+
 ## Logging conventions
 
 SLF4J via Lombok's `@Slf4j`, parameterized logging only (`log.warn("Beer
