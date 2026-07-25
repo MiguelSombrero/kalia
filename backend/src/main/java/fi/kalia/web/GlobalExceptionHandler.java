@@ -9,7 +9,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -42,6 +44,24 @@ class GlobalExceptionHandler {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
 		problem.setProperty("errors", errors);
 		return problem;
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+		List<FieldErrorDto> errors = e.getFieldErrors().stream()
+				.map(fe -> new FieldErrorDto(fe.getField(),
+						Objects.requireNonNullElse(fe.getDefaultMessage(), "invalid value")))
+				.toList();
+		log.warn("Request body validation failed: {}", errors);
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
+		problem.setProperty("errors", errors);
+		return problem;
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	ProblemDetail handleMessageNotReadable(HttpMessageNotReadableException e) {
+		log.warn("Malformed request body");
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed request body");
 	}
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
