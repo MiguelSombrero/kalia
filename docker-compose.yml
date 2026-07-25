@@ -4,8 +4,13 @@ services:
   backend:
     build: ./backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kalia
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
+      # The app's own env contract (ADR-0015), not Spring property names
+      DATABASE_JDBC_URL: jdbc:postgresql://postgres:5432/kalia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
+      # This stack is the local development environment: verbose logs
+      # (ADR-0013) and Swagger UI, both off by default elsewhere
+      LOG_LEVEL: DEBUG
+      SPRINGDOC_ENABLED: "true"
     depends_on:
       postgres:
         condition: service_healthy

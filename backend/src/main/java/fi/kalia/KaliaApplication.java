@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class KaliaApplication {
 
 	public static void main(String[] args) {
+		RequiredConfigurationValidator.verify(System::getenv);
 		SpringApplication.run(KaliaApplication.class, args);
 	}
 

@@ -9,7 +9,7 @@ Cellar (first mutating endpoints) land.
 
 1. [x] Decision: structured logging conventions — SLF4J usage baseline, log levels per environment, what's logged when an exception falls through to the default handler, no secrets/PII in logs; document as an ADR
 2. [x] Decision: shared exception-handling strategy beyond `catalog`'s module-scoped advice — field-level detail for Bean Validation failures (`MethodArgumentNotValidException`/`ConstraintViolationException`), malformed-JSON/405 handling, and where module-neutral advice can live without breaking ADR-0007's ArchUnit placement rule **[needs decision]**; document as an ADR
-3. [ ] Decision: configuration/profile strategy — split `application.properties` into base + `dev`/`test`/`prod` profiles, how secrets differ per profile; document as an ADR
+3. [x] Decision: configuration/profile strategy — split `application.properties` into base + `dev`/`test`/`prod` profiles, how secrets differ per profile; document as an ADR *(resolved against profiles — see [ADR-0015](../adr/0015-configuration-strategy.md))*
 4. [ ] Explicit actuator endpoint exposure (`management.endpoints.web.exposure.include`) instead of relying on undeclared defaults *(Quality backlog 2026-07-23, SHOULD-8)*
 5. [ ] Input-validation hardening as an applied convention: `minAbv <= maxAbv` cross-field check, an upper bound on ABV params, and `@Size` caps on free-text `query`/`style`/`country` *(Quality backlog 2026-07-23, SHOULD-3)*
 
@@ -27,8 +27,11 @@ Cellar (first mutating endpoints) land.
 **Done when:** an unhandled backend exception is logged server-side with no
 internal detail leaked to the client; an invalid ABV range or malformed
 request returns a 400 with field-level detail; actuator exposes only the
-intended endpoints; dev/test/prod each run off their own profile with no
-hardcoded secrets; a non-JSON backend error response no longer crashes the
+intended endpoints; each environment is configured without hardcoded
+secrets, and a missing required secret aborts startup naming it
+([ADR-0015](../adr/0015-configuration-strategy.md) replaced the
+profile-based wording this criterion originally used); a non-JSON backend
+error response no longer crashes the
 frontend and renders a friendly, accessible error state instead; every
 response carries the agreed security headers; CI fails on a known-vulnerable
 dependency in either app.

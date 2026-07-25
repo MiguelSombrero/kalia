@@ -71,12 +71,14 @@ defers full metrics/tracing).
   that's deferred alongside the rest of real observability infra
   (`docs/architecture.md` §9), since without correlation IDs even a
   centralized version can't stitch lines back into one request.
-- **Per-environment level policy** (encoded once task 3 splits
-  `application.properties` into profiles): `dev` — `fi.kalia` at `DEBUG`;
-  `test` — `fi.kalia` at `WARN`, keeping test output quiet; `prod` —
-  `fi.kalia` at `INFO`. Until profiles exist, the single
-  `application.properties` carries the `prod`-safe baseline:
-  `logging.level.fi.kalia=INFO`.
+- **Per-environment level policy**: `dev` — `fi.kalia` at `DEBUG`; `test` —
+  `fi.kalia` at `WARN`, keeping test output quiet; `prod` — `fi.kalia` at
+  `INFO`. This ADR originally expected task 3 to deliver that by splitting
+  `application.properties` into profiles; [ADR-0015](0015-configuration-strategy.md)
+  rejected profiles, so the policy is delivered by a `LOG_LEVEL`
+  environment variable instead — `INFO` as the safe default in
+  `application.properties`, `DEBUG` set in `docker-compose.yml`, `WARN` set
+  in the failsafe configuration. The levels themselves are unchanged.
 
 ## Consequences
 
@@ -84,7 +86,8 @@ defers full metrics/tracing).
   no class in the codebase logs anything yet. The first real logging call
   lands naturally in task 2 (shared exception-handling strategy), driven
   by actual need rather than retrofitted here.
-- Task 3 (configuration/profile strategy) inherits the per-environment
-  levels above as a known requirement when it splits profiles.
+- Task 3 (configuration strategy) inherited the per-environment levels
+  above as a known requirement; it delivered them via `LOG_LEVEL` rather
+  than profiles ([ADR-0015](0015-configuration-strategy.md)).
 - Convention documented in `backend/README.md`'s "Logging conventions"
   section for day-to-day reference; this ADR is the record of why.
