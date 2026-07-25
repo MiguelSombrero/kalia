@@ -29,6 +29,19 @@ no shared code, duplicating generic handling in every module.
   advice for business ones) and avoids both the forever-growing
   subclass tax of option 2 and the duplication option 3 exists to
   prevent.
+- **Explicit precedence over Spring Boot's own default advice**: Spring
+  Boot auto-registers `ProblemDetailsExceptionHandler`
+  (`spring.mvc.problemdetails.enabled=true`) as a `@ControllerAdvice`
+  targeting these same four exception types, with no `@Order` of its own
+  (defaults to `Ordered.LOWEST_PRECEDENCE`). Without an explicit,
+  higher-precedence `@Order` on `GlobalExceptionHandler`, Spring's
+  `ExceptionHandlerExceptionResolver` resolves advice-bean ties by trying
+  beans in `@Order` sequence and stopping at the first match — Boot's
+  default would win every time, and `GlobalExceptionHandler`'s handlers
+  would silently never run (no error; requests would just fall back to
+  Spring's generic ProblemDetail text with no field-level detail).
+  `@Order(Ordered.HIGHEST_PRECEDENCE)` on the class is therefore required,
+  not optional styling — removing it breaks the feature silently.
 - **ArchUnit rule widened**: `controllersAndAdviceLiveInWeb` now accepts
   `fi.kalia.*.web..` (any module's own web package, unchanged) OR
   `fi.kalia.web..` (this one sanctioned shared location) — the two
