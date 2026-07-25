@@ -120,6 +120,25 @@ unexpected falls through to Spring Boot's defaults — 500 problem+json
 without a message (`server.error.include-message=never`), logged
 server-side.
 
+## Logging conventions
+
+SLF4J via Lombok's `@Slf4j`, parameterized logging only (`log.warn("Beer
+{} not found", id)`, never string concatenation). Level follows what's
+being logged, not the mechanism that produced it: `ERROR` for genuine
+unexpected failures (including anything falling through to the default
+exception handler, always with the stack trace); `WARN` for anticipated
+conditions the app already recovered from — an exception type designed as
+an API response (see above) is `WARN` at most, never `ERROR`, since it
+isn't a failure; `INFO` for application lifecycle events, not routine
+per-request logging (no correlation-ID infra yet to stitch request lines
+together); `DEBUG` for diagnostics, off by default. Log once, at the
+point an exception is finally decided — not at every layer that catches
+and rethrows it. Never log full request/response bodies, tokens, or
+passwords; log an identifier instead of a full domain object. No manual
+controller entry/exit logging — that belongs in one centralized mechanism
+if request-level visibility is ever needed, not scattered per-method
+statements. Full rationale: [ADR-0013](../docs/adr/0013-logging-conventions.md).
+
 ## Testing conventions
 
 - **Aim for ≥ 80 % coverage of the backend — through valuable tests, not
