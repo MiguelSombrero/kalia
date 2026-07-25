@@ -41,6 +41,7 @@ default is the value that fails safest if nobody sets it.
 | `DATABASE_USERNAME` | `kalia` | |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests (ADR-0013) |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
+| `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; a monitored deployment can widen it (e.g. `health,metrics,prometheus`) |
 
 Adding a setting that must not have a default means adding it to
 `RequiredConfigurationValidator.REQUIRED` as well as the properties file —
