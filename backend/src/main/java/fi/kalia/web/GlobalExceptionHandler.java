@@ -2,36 +2,34 @@ package fi.kalia.web;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 /**
- * Handles generic Spring MVC exceptions no module owns: Bean Validation
- * failures, malformed requests, unsupported methods. Never handles a
- * type a module's own advice handles — see backend/README.md's
- * error-handling convention and ADR-0014.
+ * Adds field-level detail to Bean Validation failures: Spring Boot's own
+ * handling reports them as a bare {@code "Validation failure"} naming
+ * neither the offending field nor the constraint. Every other generic MVC
+ * exception is deliberately left to Boot's defaults, which already return
+ * problem+json — see backend/README.md's error-handling convention and
+ * ADR-0014. Never handles a type a module's own advice handles.
  */
+// Boot's ProblemDetailsExceptionHandler (spring.mvc.problemdetails.enabled=true)
+// targets these same exception types with no @Order of its own (defaults to
+// LOWEST_PRECEDENCE) - without this class outranking it, it wins the resulting
+// tie and these handlers never run.
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 class GlobalExceptionHandler {
 
-	// Spring Boot's own ProblemDetailsExceptionHandler (spring.mvc.problemdetails.enabled=true)
-	// targets these same exception types with no @Order of its own (defaults to
-	// LOWEST_PRECEDENCE) - without this, it wins the resulting tie and this class's
-	// handlers never run.
-
+	/** Query and path parameter constraints (Spring's native validation path). */
 	@ExceptionHandler(HandlerMethodValidationException.class)
 	ProblemDetail handleHandlerMethodValidation(HandlerMethodValidationException e) {
 		List<FieldErrorDto> errors = e.getParameterValidationResults().stream()
@@ -41,11 +39,10 @@ class GlobalExceptionHandler {
 								result.getResolvableErrors().getFirst().getDefaultMessage(), "invalid value")))
 				.toList();
 		log.warn("Request parameter validation failed: {}", errors);
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
-		problem.setProperty("errors", errors);
-		return problem;
+		return validationFailed(errors);
 	}
 
+	/** {@code @Valid @RequestBody} field constraints. */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
 		List<FieldErrorDto> errors = e.getFieldErrors().stream()
@@ -53,24 +50,13 @@ class GlobalExceptionHandler {
 						Objects.requireNonNullElse(fe.getDefaultMessage(), "invalid value")))
 				.toList();
 		log.warn("Request body validation failed: {}", errors);
+		return validationFailed(errors);
+	}
+
+	private static ProblemDetail validationFailed(List<FieldErrorDto> errors) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
 		problem.setProperty("errors", errors);
 		return problem;
-	}
-
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	ProblemDetail handleMessageNotReadable(HttpMessageNotReadableException e) {
-		log.warn("Malformed request body");
-		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed request body");
-	}
-
-	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-	ProblemDetail handleMethodNotAllowed(HttpRequestMethodNotSupportedException e) {
-		Set<HttpMethod> supported = e.getSupportedHttpMethods();
-		String supportedText = supported == null ? "none" : supported.toString();
-		log.warn("Unsupported method {} on this endpoint; supported: {}", e.getMethod(), supportedText);
-		return ProblemDetail.forStatusAndDetail(HttpStatus.METHOD_NOT_ALLOWED,
-				"Method '%s' not supported; supported methods: %s".formatted(e.getMethod(), supportedText));
 	}
 
 }
