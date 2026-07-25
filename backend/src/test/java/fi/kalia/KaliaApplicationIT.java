@@ -32,6 +32,27 @@ class KaliaApplicationIT {
 	}
 
 	@Test
+	void healthEndpointHidesComponentDetail() {
+		restTestClient.get().uri("/actuator/health")
+				.exchange()
+				.expectBody(String.class)
+				.value(body -> assertThat(body).doesNotContain("components").doesNotContain("PostgreSQL"));
+	}
+
+	/**
+	 * Exposure is declared, not inherited: only health is published, so a
+	 * dependency upgrade cannot widen the actuator surface unnoticed.
+	 */
+	@Test
+	void unexposedActuatorEndpointsAreNotReachable() {
+		for (String endpoint : List.of("env", "beans", "configprops", "loggers", "mappings")) {
+			restTestClient.get().uri("/actuator/" + endpoint)
+					.exchange()
+					.expectStatus().isNotFound();
+		}
+	}
+
+	@Test
 	void flywayCreatesModuleSchemas() {
 		List<String> schemas = jdbcTemplate.queryForList(
 				"SELECT schema_name FROM information_schema.schemata", String.class);
