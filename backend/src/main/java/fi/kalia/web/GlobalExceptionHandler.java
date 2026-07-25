@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -19,8 +21,14 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
  * error-handling convention and ADR-0014.
  */
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 class GlobalExceptionHandler {
+
+	// Spring Boot's own ProblemDetailsExceptionHandler (spring.mvc.problemdetails.enabled=true)
+	// targets these same exception types with no @Order of its own (defaults to
+	// LOWEST_PRECEDENCE) - without this, it wins the resulting tie and this class's
+	// handlers never run.
 
 	@ExceptionHandler(HandlerMethodValidationException.class)
 	ProblemDetail handleHandlerMethodValidation(HandlerMethodValidationException e) {
