@@ -17,14 +17,35 @@ For development with hot reload, run natively against the compose database:
 ```bash
 docker compose up -d          # from repo root
 cd backend
-mvn spring-boot:run
+POSTGRES_PASSWORD=kalia SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
 curl localhost:8080/actuator/health
 curl localhost:8080/api/v1/beers?query=westvleteren
 ```
 
 API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and Swagger UI at
-`/swagger-ui/index.html` — both reachable at `localhost:8080` whether the
-backend is run in the compose stack or natively.
+`/swagger-ui/index.html`, both at `localhost:8080`. The compose stack
+enables them; running natively needs `SPRINGDOC_ENABLED=true` as above,
+since they are off unless a deployment opts in.
+
+## Configuration
+
+One `application.properties`, no Spring profiles
+([ADR-0015](../docs/adr/0015-configuration-strategy.md)). Everything that
+varies per environment is a `${ENV_VAR:default}` placeholder, and each
+default is the value that fails safest if nobody sets it.
+
+| Variable | Default | Notes |
+|---|---|---|
+| `POSTGRES_PASSWORD` | **none — required** | Startup aborts with the variable named if unset |
+| `DATABASE_JDBC_URL` | `jdbc:postgresql://localhost:5432/kalia` | localhost, so a misconfigured deploy fails loudly rather than reaching a real database |
+| `DATABASE_USERNAME` | `kalia` | |
+| `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests (ADR-0013) |
+| `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
+
+Adding a setting that must not have a default means adding it to
+`RequiredConfigurationValidator.REQUIRED` as well as the properties file —
+that check runs in `main()` because Spring's binder resolves placeholders
+leniently and Flyway connects before any application bean is built.
 
 ## Test
 

@@ -191,6 +191,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<!-- The test environment supplies its own configuration through
+					     the same mechanism every other environment uses (ADR-0015);
+					     there is no test profile. The datasource needs nothing here:
+					     Testcontainers' @ServiceConnection replaces it wholesale. -->
+					<systemPropertyVariables>
+						<logging.level.fi.kalia>WARN</logging.level.fi.kalia>
+						<springdoc.api-docs.enabled>true</springdoc.api-docs.enabled>
+						<springdoc.swagger-ui.enabled>true</springdoc.swagger-ui.enabled>
+					</systemPropertyVariables>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
