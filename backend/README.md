@@ -125,9 +125,12 @@ Business exceptions stay in each module's own `<module>.web` advice
 field-level Bean Validation detail, malformed JSON, 405 — are handled
 once, in `fi.kalia.web.GlobalExceptionHandler`, the one other location
 `ArchitectureTest` permits `@RestControllerAdvice` to live in. The two
-never overlap: a handler for the same exception type in both places is a
-Spring startup error, not just a style violation. Full rationale:
-[ADR-0014](../docs/adr/0014-shared-exception-handling.md).
+must never overlap by convention — Spring won't catch it for you
+if they do: two advice beans handling the same exception type resolve
+silently by `@Order` precedence, not a startup error, and
+`GlobalExceptionHandler` runs at `Ordered.HIGHEST_PRECEDENCE`, so it
+would silently win any accidental overlap rather than fail loudly. Full
+rationale: [ADR-0014](../docs/adr/0014-shared-exception-handling.md).
 
 ## Logging conventions
 

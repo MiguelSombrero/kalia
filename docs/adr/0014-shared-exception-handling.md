@@ -47,11 +47,21 @@ no shared code, duplicating generic handling in every module.
   `fi.kalia.web..` (this one sanctioned shared location) — the two
   patterns are disjoint, so nothing else is loosened.
 - **No-overlap rule**: `GlobalExceptionHandler` never handles a type any
-  module's own advice also handles — Spring throws an ambiguous-mapping
-  error at runtime if two advice beans register for the same exception
-  type, so this is a hard constraint, not style. Business exceptions
-  ("designed as API responses") always stay in the owning module's own
-  advice.
+  module's own advice also handles. This is a convention to maintain by
+  discipline, not something Spring enforces: two advice beans handling
+  the same exception type do not produce a startup error — Spring
+  resolves the tie silently by `@Order` (first bean in order with a
+  matching handler wins; only two equally-specific handlers *within the
+  same advice class* trigger an ambiguous-mapping error). This branch's
+  own central bug is proof: `GlobalExceptionHandler` and Spring Boot's
+  `ProblemDetailsExceptionHandler` both targeted the same four exception
+  types with no error, and the tie resolved silently by precedence until
+  diagnosed. Because `GlobalExceptionHandler` runs at
+  `Ordered.HIGHEST_PRECEDENCE`, an accidental future overlap with a
+  module's own advice would resolve the same way — `GlobalExceptionHandler`
+  would silently win, masking rather than surfacing the mistake. Business
+  exceptions ("designed as API responses") always stay in the owning
+  module's own advice.
 - **No catch-all**: `GlobalExceptionHandler` has no fallback handler for
   arbitrary exceptions — that would repeat the anti-pattern the existing
   error-handling convention already warns against. Anything else still
