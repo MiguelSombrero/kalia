@@ -26,7 +26,7 @@ Cellar (first mutating endpoints) land.
 
 **Bugs**
 
-11. [ ] Catalog pagination does nothing: clicking Previous/Next leaves the user on the same page *(reported 2026-07-26 against `dev`, reproduced at commit `197c11a`)*
+11. [x] Catalog pagination does nothing: clicking Previous/Next leaves the user on the same page *(reported 2026-07-26 against `dev`, reproduced at commit `197c11a`)*
 
     **Reproduce:** `docker compose up`, open `/en/beers`, click "Next →".
     The URL stays `/en/beers`, the summary stays "Page 1 of 3", and the
