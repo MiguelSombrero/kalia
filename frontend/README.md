@@ -140,6 +140,16 @@ the runner is discarded after the job.
   error boundary and stack traces both require. Non-2xx statuses are *not*
   raised by `kaliaFetch` — the caller decides what a status means, and a 404
   from `getBeer` is "no such beer", not a failure.
+- **Query-only navigation uses plain anchors, not `next/link`
+  (iteration 3 task 11).** Client-side navigation that changes only the
+  query string did not commit on the catalog route: clicking Previous/Next
+  left the URL and the list untouched, in production builds only, since
+  automatic prefetching does not run in `next dev`. `prefetch={false}` was
+  measured as an unreliable remedy. A full page load is what `SearchFilters`
+  already does — it is a native GET form, which is why filtering and sorting
+  never showed the symptom — so pagination now matches it. Changing the
+  pathname (a beer card, the locale switcher) is unaffected and should keep
+  using `next/link`.
 - **`kaliaFetch` never passes an `AbortSignal` of its own.** Next.js drops a
   request from per-render memoization as soon as a signal is present
   (`next/dist/docs/01-app/03-api-reference/04-functions/fetch.md`), and the

@@ -89,3 +89,35 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+$/);
   await expect(page.getByText("Style")).toBeVisible();
 });
+
+/**
+ * Behavioural cover for pagination, which had no end-to-end test when it
+ * broke (iteration 3 task 11).
+ *
+ * Deliberately NOT claimed as the regression guard for that bug: Playwright's
+ * Chromium does not trigger the prefetch that caused it, and this test was
+ * measured passing three times out of three against a build with the bug
+ * present. The guard that does hold is in Pagination.test.tsx, which asserts
+ * prefetching stays disabled. This test covers that paging works at all.
+ */
+test("pages forward and back through the catalog", async ({ page }) => {
+  await page.goto("/en/beers");
+  await expect(page.getByText("Page 1 of 3")).toBeVisible();
+  const firstOnPageOne = await page.locator("main a[href^='/en/beers/']").first().innerText();
+
+  await page.getByRole("link", { name: "Next" }).click();
+
+  // The URL not changing was the reported symptom.
+  await expect(page).toHaveURL(/[?&]page=1\b/);
+  await expect(page.getByText("Page 2 of 3")).toBeVisible();
+  const firstOnPageTwo = await page.locator("main a[href^='/en/beers/']").first().innerText();
+  expect(firstOnPageTwo).not.toEqual(firstOnPageOne);
+
+  await page.getByRole("link", { name: "Previous" }).click();
+
+  await expect(page).toHaveURL(/[?&]page=0\b/);
+  await expect(page.getByText("Page 1 of 3")).toBeVisible();
+  expect(await page.locator("main a[href^='/en/beers/']").first().innerText()).toEqual(
+    firstOnPageOne,
+  );
+});
