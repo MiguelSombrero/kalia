@@ -150,6 +150,14 @@ the runner is discarded after the job.
   never showed the symptom — so pagination now matches it. Changing the
   pathname (a beer card, the locale switcher) is unaffected and should keep
   using `next/link`.
+- **Security response headers (ADR-0016):** CSP, `X-Frame-Options`,
+  `Referrer-Policy`, HSTS and `Permissions-Policy` are set once, app-wide,
+  in `next.config.ts`'s `headers()` — no-nonce CSP with `'unsafe-inline'`
+  for scripts/styles, chosen to keep static rendering rather than force
+  every page dynamic. Adding a new external origin (a script, a font, an
+  image host) means adding it to `cspHeader` in the same PR, or the browser
+  silently blocks it — verify with the browser console, not just a
+  successful build.
 - **`kaliaFetch` never passes an `AbortSignal` of its own.** Next.js drops a
   request from per-render memoization as soon as a signal is present
   (`next/dist/docs/01-app/03-api-reference/04-functions/fetch.md`), and the
