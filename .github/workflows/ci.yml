@@ -9,9 +9,77 @@ on:
 permissions:
   contents: read
 
+# Pushing a follow-up commit makes the previous run's result irrelevant, so
+# cancel it rather than let both race to completion.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  changes:
+    name: Detect changed areas
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Needed to diff against the base branch rather than one commit.
+          fetch-depth: 0
+      - id: filter
+        name: Decide which suites this push can affect
+        # Fails open on purpose: anything this cannot classify with certainty
+        # (a push to dev, a first push with no merge base, a shared root file
+        # like docker-compose.yml or this workflow) runs everything. A missed
+        # run is a broken merge; a redundant run costs a few free minutes.
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "dev" ] || [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "on ${GITHUB_REF_NAME}: running everything"
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          base=$(git merge-base origin/dev HEAD 2>/dev/null || true)
+          if [ -z "$base" ] || [ "$base" = "$(git rev-parse HEAD)" ]; then
+            echo "no usable merge base with origin/dev: running everything"
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed=$(git diff --name-only "$base" HEAD)
+          echo "Changed files:"
+          echo "$changed" | sed 's/^/  /'
+
+          # Files outside backend/ and frontend/ that either suite depends on.
+          # docker-compose.yml builds and wires both; this workflow defines
+          # how they run.
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/)' || true)
+
+          # Written as `if` blocks rather than `cmd && var=true`: steps run
+          # under `bash -e`, where a grep that legitimately matches nothing
+          # is a non-zero exit, and whether that aborts the script depends on
+          # subtleties of how `-e` treats `&&` lists. `if` conditions are
+          # explicitly exempt.
+          backend=false
+          frontend=false
+          if [ -n "$shared" ]; then
+            backend=true
+            frontend=true
+          fi
+          if echo "$changed" | grep -q '^backend/'; then backend=true; fi
+          if echo "$changed" | grep -q '^frontend/'; then frontend=true; fi
+
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "Result: backend=$backend frontend=$frontend"
+
   backend:
     name: Backend (Maven)
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -64,6 +132,8 @@ jobs:
 
   frontend:
     name: Frontend (npm)
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -86,10 +156,13 @@ jobs:
 
   api-client-drift:
     name: API client drift check
-    # Gated behind backend (fail fast); catches the exact drift this task
-    # exists to prevent - generated code committed to the repo that no
-    # longer matches the backend's actual OpenAPI spec (ADR-0012).
-    needs: [backend]
+    # Watches both sides deliberately: the drift this catches (ADR-0012) is
+    # generated code that no longer matches the backend's spec, which a
+    # backend-only filter would miss when the generated files themselves are
+    # edited. Not gated behind the backend job — it builds the backend image
+    # itself, so waiting only delays the answer without changing it.
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -116,9 +189,12 @@ jobs:
 
   e2e:
     name: E2E (Playwright)
-    # Gated behind the cheap checks (fail fast); this job is the slowest —
-    # full docker compose build + container startup + browser tests.
-    needs: [backend, frontend]
+    # The slowest job, so it starts as soon as the change areas are known
+    # rather than queueing behind the cheap ones. It would fail anyway if
+    # they fail, and on a public repo the redundant minutes are free — while
+    # the serial wait was paid on every green run, which is most of them.
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
