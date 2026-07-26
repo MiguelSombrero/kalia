@@ -16,6 +16,8 @@ const REQUEST_TIMEOUT_MS = 10_000;
  * such beer", not a failure. Only losing the request or the body raises.
  */
 export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise<T> => {
+  // Fallback is for npm run dev only; production requiring this is enforced
+  // in instrumentation.ts, not here (ADR-0018).
   const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8080";
 
   let response: Response;

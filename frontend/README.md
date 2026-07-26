@@ -15,6 +15,16 @@ Or the full stack in containers: `docker compose up --build` from the repo
 root. The production image uses Next.js standalone output
 (`next.config.ts`).
 
+## Configuration
+
+| Variable | Default | Notes |
+|---|---|---|
+| `BACKEND_URL` | `http://localhost:8080` | Required in production — enforced at server startup (`instrumentation.ts`), see [ADR-0018](../docs/adr/0018-frontend-env-var-validation.md). The default is for `npm run dev`; `docker-compose.yml` always sets it explicitly |
+
+Adding a variable that must be set in production means adding it to
+`verifyRequiredConfiguration`'s `REQUIRED_IN_PRODUCTION`
+(`lib/config/requiredConfiguration.ts`).
+
 ## Test and checks
 
 ```bash
