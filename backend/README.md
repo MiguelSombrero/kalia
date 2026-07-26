@@ -129,6 +129,16 @@ directories** — take the next free number regardless of directory.
   | null`), and the actual wire format — verified directly with `@JsonTest`
   (`DtoSerializationIT`), since seed data alone doesn't exercise every
   null case.
+- **Every request parameter is bounded.** Numeric params carry both ends of
+  their range (`@DecimalMin`/`@DecimalMax`, `@Min`/`@Max`) and free text
+  carries `@Size`, so no caller can hand the database an unbounded or
+  nonsensical value. Bounds are named constants with a comment saying why
+  that number — a bound nobody can justify gets changed by the next person
+  who finds it inconvenient. Constraints spanning two parameters can't be
+  expressed as an annotation on either one: check those in the handler and
+  throw the module's API-response exception (see `requireOrderedAbvRange`
+  in `CatalogController`), which reports through `detail` rather than the
+  field-level `errors` array, since the violation belongs to the pair.
 
 ## Error-handling convention
 

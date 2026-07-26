@@ -141,6 +141,63 @@ class CatalogApiIT {
 	}
 
 	@Test
+	void abvAboveTheHundredPercentCapYieldsFieldLevelError() {
+		client.get().uri("/api/v1/beers?maxAbv=101")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((String) JsonPath.read(body, "$.detail")).isEqualTo("Validation failed");
+					assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("maxAbv");
+				});
+	}
+
+	@Test
+	void overlongFreeTextFilterYieldsFieldLevelError() {
+		client.get().uri("/api/v1/beers?query=" + "a".repeat(101))
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((String) JsonPath.read(body, "$.detail")).isEqualTo("Validation failed");
+					assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("query");
+				});
+	}
+
+	@Test
+	void freeTextFilterAtTheLengthCapIsAccepted() {
+		client.get().uri("/api/v1/beers?query=" + "a".repeat(100))
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((int) JsonPath.read(body, "$.totalElements")).isZero());
+	}
+
+	/**
+	 * The pair, not either bound, is at fault, so this reports through detail
+	 * rather than the errors array that single-parameter constraints produce.
+	 */
+	@Test
+	void invertedAbvRangeYieldsProblemJson400WithGuidance() {
+		client.get().uri("/api/v1/beers?minAbv=9&maxAbv=5")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.detail"))
+						.contains("minAbv (9)").contains("maxAbv (5)"));
+	}
+
+	@Test
+	void equalAbvBoundsAreAccepted() {
+		client.get().uri("/api/v1/beers?minAbv=9&maxAbv=9")
+				.exchange()
+				.expectStatus().isOk();
+	}
+
+	@Test
 	void listsBreweriesSortedByName() {
 		client.get().uri("/api/v1/breweries")
 				.exchange()

@@ -6,14 +6,17 @@ import fi.kalia.catalog.domain.BeerSearchCriteria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,29 +36,44 @@ class CatalogController {
 
 	private static final Set<String> SORTABLE = Set.of("name", "style", "abv");
 
+	/**
+	 * ABV is a percentage, so anything above 100 is meaningless as a filter
+	 * bound regardless of what the column could physically hold.
+	 */
+	private static final String MAX_ABV = "100";
+
+	/**
+	 * Free-text filters are search terms, not content: the longest official
+	 * country name runs to 56 characters, and style names are far shorter, so
+	 * this bounds the input without truncating anything a caller would send.
+	 * The columns themselves are unbounded {@code text}.
+	 */
+	private static final int MAX_FILTER_LENGTH = 100;
+
 	private final CatalogService catalog;
 
 	@GetMapping("/beers")
 	@Operation(summary = "Search beers", description = "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics.")
 	PageDto<BeerSummaryDto> searchBeers(
-			@Parameter(description = "Case-insensitive substring match on beer name")
-			@RequestParam(required = false) String query,
-			@Parameter(description = "Exact, case-insensitive style match (e.g. \"IPA\")")
-			@RequestParam(required = false) String style,
+			@Parameter(description = "Case-insensitive substring match on beer name, at most " + MAX_FILTER_LENGTH + " characters")
+			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String query,
+			@Parameter(description = "Exact, case-insensitive style match (e.g. \"IPA\"), at most " + MAX_FILTER_LENGTH + " characters")
+			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String style,
 			@Parameter(description = "Restrict to one brewery")
 			@RequestParam(required = false) UUID breweryId,
-			@Parameter(description = "Exact, case-insensitive match on the brewery's country")
-			@RequestParam(required = false) String country,
-			@Parameter(description = "Inclusive lower ABV bound, percent")
-			@RequestParam(required = false) @DecimalMin("0") BigDecimal minAbv,
-			@Parameter(description = "Inclusive upper ABV bound, percent")
-			@RequestParam(required = false) @DecimalMin("0") BigDecimal maxAbv,
+			@Parameter(description = "Exact, case-insensitive match on the brewery's country, at most " + MAX_FILTER_LENGTH + " characters")
+			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String country,
+			@Parameter(description = "Inclusive lower ABV bound, percent (0-" + MAX_ABV + ")")
+			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal minAbv,
+			@Parameter(description = "Inclusive upper ABV bound, percent (0-" + MAX_ABV + ")")
+			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal maxAbv,
 			@Parameter(description = "Zero-based page index")
 			@RequestParam(defaultValue = "0") @Min(0) int page,
 			@Parameter(description = "Page size, 1-100")
 			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
 			@RequestParam(defaultValue = "name,asc") String sort) {
+		requireOrderedAbvRange(minAbv, maxAbv);
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
 		BeerSearchCriteria criteria = new BeerSearchCriteria(query, style, breweryId, country, minAbv, maxAbv);
 		return PageDto.from(catalog.searchBeers(criteria, pageable).map(BeerSummaryDto::from));
@@ -71,6 +89,20 @@ class CatalogController {
 	@Operation(summary = "List breweries", description = "All breweries, sorted by name.")
 	List<BreweryDto> listBreweries() {
 		return catalog.listBreweries().stream().map(BreweryDto::from).toList();
+	}
+
+	/**
+	 * A constraint spanning two parameters cannot be expressed as an annotation
+	 * on either one, so it is checked here. The violation belongs to the pair
+	 * rather than to either bound, so it is reported through
+	 * {@code ProblemDetail.detail} instead of the field-level {@code errors}
+	 * array that single-parameter constraints produce.
+	 */
+	private static void requireOrderedAbvRange(@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
+		if (minAbv != null && maxAbv != null && minAbv.compareTo(maxAbv) > 0) {
+			throw new InvalidSearchParameterException(
+					"minAbv (%s) must not be greater than maxAbv (%s)".formatted(minAbv, maxAbv));
+		}
 	}
 
 	private static Sort parseSort(String sort) {

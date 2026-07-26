@@ -7,11 +7,15 @@
 
 export type SearchBeersParams = {
 /**
- * Case-insensitive substring match on beer name
+ * Case-insensitive substring match on beer name, at most 100 characters
+ * @minLength 0
+ * @maxLength 100
  */
 query?: string;
 /**
- * Exact, case-insensitive style match (e.g. "IPA")
+ * Exact, case-insensitive style match (e.g. "IPA"), at most 100 characters
+ * @minLength 0
+ * @maxLength 100
  */
 style?: string;
 /**
@@ -19,17 +23,21 @@ style?: string;
  */
 breweryId?: string;
 /**
- * Exact, case-insensitive match on the brewery's country
+ * Exact, case-insensitive match on the brewery's country, at most 100 characters
+ * @minLength 0
+ * @maxLength 100
  */
 country?: string;
 /**
- * Inclusive lower ABV bound, percent
+ * Inclusive lower ABV bound, percent (0-100)
  * @minimum 0
+ * @maximum 100
  */
 minAbv?: number;
 /**
- * Inclusive upper ABV bound, percent
+ * Inclusive upper ABV bound, percent (0-100)
  * @minimum 0
+ * @maximum 100
  */
 maxAbv?: number;
 /**
