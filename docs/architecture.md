@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-07-19. This document describes the target architecture and
+*Last updated: 2026-07-26. This document describes the target architecture and
 the parts of it that are deliberately deferred. Update it when decisions
 change; record significant decisions as ADRs in [adr/](adr/) and index them
 in [§10](#10-architecture-decision-records).*
@@ -335,15 +335,22 @@ Things intentionally *not* designed now, with the trigger that reopens them:
 
 All decisions live in [adr/](adr/); this table is the index. Add a row when
 adding an ADR, and update the status column when a later ADR changes an
-earlier one.
+earlier one. New ADRs follow [template.md](adr/template.md); the format and
+the rules behind it are
+[ADR-0019](adr/0019-adr-format-and-conventions.md).
+
+The status column holds the vocabulary token only. What superseded or amended
+a decision is recorded in that ADR's own `Supersedes` / `Superseded-by` /
+`Amended` fields, so it lives in exactly one place — the two copies of that
+prose had already drifted apart before this rule existed.
 
 | Id | Title | Status | Date |
 |---|---|---|---|
 | [ADR-0001](adr/0001-monorepo.md) | Monorepo for frontend and backend | accepted | 2026-07-15 |
 | [ADR-0002](adr/0002-spring-modulith.md) | Spring Modulith backend, not microservices | accepted | 2026-07-15 |
 | [ADR-0003](adr/0003-bff-pattern.md) | Backend-for-frontend (BFF) pattern | accepted | 2026-07-15 |
-| [ADR-0004](adr/0004-backend-cart.md) | Cart is a backend domain module | accepted — implementation deferred with the store flow ([ADR-0006](adr/0006-cellar-first.md)) | 2026-07-15 |
-| [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | partially superseded by [ADR-0006](adr/0006-cellar-first.md) — auth no longer deferred; mocked-payment stance stands | 2026-07-15 |
+| [ADR-0004](adr/0004-backend-cart.md) | Cart is a backend domain module | accepted | 2026-07-15 |
+| [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | partially-superseded | 2026-07-15 |
 | [ADR-0006](adr/0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
 | [ADR-0007](adr/0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |
 | [ADR-0008](adr/0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |
@@ -351,7 +358,10 @@ earlier one.
 | [ADR-0010](adr/0010-react-hook-form-zod.md) | react-hook-form + Zod for forms and validation | accepted | 2026-07-21 |
 | [ADR-0011](adr/0011-i18next-localization.md) | i18next localization (English + Finnish) | accepted | 2026-07-21 |
 | [ADR-0012](adr/0012-orval-api-client.md) | orval-generated API client from the backend's OpenAPI spec | accepted | 2026-07-22 |
-| [ADR-0013](adr/0013-logging-conventions.md) | Structured logging conventions | accepted — per-environment levels now delivered by `LOG_LEVEL` ([ADR-0015](adr/0015-configuration-strategy.md)), not profiles | 2026-07-24 |
+| [ADR-0013](adr/0013-logging-conventions.md) | Structured logging conventions | accepted | 2026-07-24 |
 | [ADR-0014](adr/0014-shared-exception-handling.md) | Shared, module-neutral exception-handling strategy | accepted | 2026-07-25 |
 | [ADR-0015](adr/0015-configuration-strategy.md) | Environment-variable configuration, not Spring profiles | accepted | 2026-07-25 |
-| [ADR-0016](adr/0016-security-response-headers.md) | Security response headers via `next.config.ts` (no-nonce CSP) | accepted | 2026-07-26 |
+| [ADR-0016](adr/0016-security-response-headers.md) | Security response headers via `next.config.ts` | accepted | 2026-07-26 |
+| [ADR-0017](adr/0017-code-comment-policy.md) | Code comments carry only what the repo cannot | accepted | 2026-07-26 |
+| [ADR-0018](adr/0018-frontend-env-var-validation.md) | Frontend environment-variable validation via `instrumentation.ts` | accepted | 2026-07-26 |
+| [ADR-0019](adr/0019-adr-format-and-conventions.md) | A fixed ADR structure, with alternatives and costs given their own sections | accepted | 2026-07-26 |

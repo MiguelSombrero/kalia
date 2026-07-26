@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-24
+- **Amended:** 2026-07-25 by [ADR-0015](0015-configuration-strategy.md) —
+  per-environment log levels are delivered by a `LOG_LEVEL` environment
+  variable, not by Spring profiles
 
 ## Context
 
