@@ -12,10 +12,7 @@ const localeHref = (locale: Locale, pathname: string): string => {
 
 const localeNames: Record<Locale, string> = { en: "English", fi: "Suomi" };
 
-/**
- * Minimal by design (iteration 2 task 5) — full placement/styling is task 8's
- * job. Locale codes (EN/FI) are intentionally not translated.
- */
+/** Locale codes (EN/FI) are intentionally not translated. */
 export const LocaleSwitcher = () => {
   const pathname = usePathname();
   const currentLocale = pathname.split("/")[1] as Locale;

@@ -10,12 +10,10 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 
 /**
- * Nulls are serialized literally by default (no global Jackson
- * default-property-inclusion configured), which would make the OpenAPI
- * "optional" contract — and the generated frontend types (city?: string,
- * no key present when absent) — unsound: a present "city": null would not
- * match "absent key". Verifies the actual configured ObjectMapper omits
- * null fields entirely, matching that contract.
+ * Jackson serializes nulls literally unless configured otherwise, and a
+ * present {@code "city": null} does not match the {@code city?: string}
+ * the generated frontend types promise. Verifies the configured
+ * ObjectMapper omits null fields entirely.
  */
 @JsonTest
 class DtoSerializationIT {

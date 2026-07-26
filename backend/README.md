@@ -89,6 +89,14 @@ directories** — take the next free number regardless of directory.
 
 ## Code conventions
 
+- **Code comments carry only what the repo cannot (ADR-0017).** A comment
+  earns its place if it holds a fact not present anywhere in the repository
+  and not derivable by reading it: external framework behavior, an
+  empirical measurement, or a warning that a locally-correct edit is
+  globally wrong. Anything already settled in an ADR is a one-line pointer
+  to that ADR, never a paraphrase. If breaking the invariant fails a test
+  or the build, the test is the guard; if it fails silently or only in
+  production builds, the comment is mandatory and opens with "do not".
 - **Package structure per module (ADR-0007):** DDD-lite layers as direct
   subpackages — `domain` (entities, value objects, repositories,
   specifications), `application` (use-case services + API-response

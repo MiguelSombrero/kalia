@@ -1,6 +1,4 @@
-// Re-exports of orval-generated types (from the backend's OpenAPI spec,
-// ADR-0012) under this feature's existing names — the generated shapes
-// are the source of truth; consumers of this module are unaffected.
+// Re-exports of orval-generated types (ADR-0012) under this feature's names.
 export type {
   MoneyDto,
   BreweryRefDto as BreweryRef,

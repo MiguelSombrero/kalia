@@ -145,12 +145,23 @@ before making changes:
   README, or docs/) in the same PR.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
-- **Code comments document the function/component itself** — its purpose,
-  non-obvious behavior, or an invariant a future reader needs — never why
-  a change was made, which task/PR/review comment prompted it, or what it
-  used to look like. That history belongs in the commit message and PR
-  description, which are built to hold it; a code comment outlives them
-  and just becomes stale narration.
+- **Code comments carry only what the repo cannot** ([ADR-0017](docs/adr/0017-code-comment-policy.md)).
+  A comment earns its place only if it holds information not present
+  anywhere in the repository and not derivable by reading it: external
+  framework/library behavior, an empirical measurement, or a warning that
+  a locally-correct edit is globally wrong. Everything else is a pointer —
+  one line naming the ADR or doc section, never a paraphrase of it, since
+  nothing guards a comment against the ADR it duplicates. Let the
+  enforcement mechanism set the weight: if breaking the invariant fails a
+  test, an ArchUnit rule or the build, that is the guard (comment at most
+  one line, preferably pointing at the test); if it fails silently or only
+  in production builds, the comment is mandatory and opens with "do not".
+  Never narrate process — no task/PR/review references, no "used to be".
+  That history belongs in the commit message and PR description, which are
+  built to hold it; a code comment outlives them and becomes stale
+  narration. Comments explaining why a test asserts something apparently
+  pointless are load-bearing and stay: they stop a cleanup pass from
+  deleting a guard.
 - **New dependencies: ask, don't research.** When a task introduces a new
   dependency (library, starter, plugin, Docker image, GitHub Action), do not
   spend time hunting registries for the latest version. List the new

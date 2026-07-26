@@ -1,8 +1,6 @@
 /**
- * Catalog module. This root package is the module's inter-module API and is
- * intentionally empty of types until the first consumer (cellar) arrives —
- * see ADR-0007. HTTP concerns live in {@code web}, use cases in
- * {@code application}, the model in {@code domain}.
+ * Catalog module. This root package is the inter-module API and stays empty
+ * of types until the first consumer arrives (ADR-0007).
  */
 @NullMarked
 package fi.kalia.catalog;

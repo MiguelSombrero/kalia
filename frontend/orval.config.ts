@@ -1,9 +1,7 @@
 import { defineConfig } from "orval";
 
-// Generates against a live backend (docker compose) rather than a committed
-// spec file — a static file is exactly the kind of thing that goes stale
-// silently, which cuts against this project's whole premise (ADR-0012).
-// Output is committed; CI regenerates and diffs to catch drift.
+// Generates against a live backend (docker compose), not a committed spec
+// file (ADR-0012). Output is committed; CI regenerates and diffs for drift.
 export default defineConfig({
   kalia: {
     input: {

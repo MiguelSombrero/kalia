@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Import;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Specification behavior against the real database and seed data — mocking
- * the JPA Criteria API would only assert implementation calls, not filtering.
+ * Runs against the real database and seed data: mocking the JPA Criteria API
+ * would assert implementation calls rather than filtering behavior.
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)

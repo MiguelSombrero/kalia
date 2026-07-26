@@ -10,16 +10,12 @@ import fiCommon from "@/i18n/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
 
 /**
- * Client-side providers, mounted once in the root layout. TanStack Query is
- * the mandatory data layer for client components (ADR-0008) — server
- * components keep fetching directly on the server and never touch this.
+ * Client-side providers, mounted once in the root layout (ADR-0008). The
+ * i18next instance is the client counterpart to i18n/server.ts.
  *
- * The i18next instance here is the client counterpart to i18n/server.ts —
- * needed by any Client Component that translates (first consumer:
- * app/[locale]/error.tsx, since error boundaries get no route params).
- * Resources are imported statically (not the server's dynamic-import
- * backend) so init() completes synchronously — no flash of untranslated
- * keys while a small JSON file streams in.
+ * Resources are imported statically rather than through the server's
+ * dynamic-import backend so that init() completes synchronously — otherwise
+ * untranslated keys flash while the JSON streams in.
  */
 export const Providers = ({ children, locale }: { children: ReactNode; locale: Locale }) => {
   // useState keeps one QueryClient per browser session without sharing it
@@ -29,8 +25,6 @@ export const Providers = ({ children, locale }: { children: ReactNode; locale: L
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Server data rarely changes mid-interaction here; avoid refetch
-            // storms on focus/mount. Override per-query where freshness matters.
             staleTime: 60_000,
           },
         },

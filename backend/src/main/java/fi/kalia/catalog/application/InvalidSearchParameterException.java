@@ -1,9 +1,8 @@
 package fi.kalia.catalog.application;
 
 /**
- * Thrown for search parameters our API contract rejects. Its message is
- * written for API consumers and is exposed as ProblemDetail.detail —
- * see the error-handling convention in backend/README.md.
+ * Thrown for search parameters the API contract rejects. Its message is
+ * written for API consumers and is exposed as {@code ProblemDetail.detail}.
  */
 public class InvalidSearchParameterException extends RuntimeException {
 

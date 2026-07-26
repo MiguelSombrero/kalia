@@ -3,8 +3,8 @@ import resourcesToBackend from "i18next-resources-to-backend";
 import { defaultNamespace, getOptions, type Locale } from "./settings";
 
 /**
- * Server components have no shared React context, so each call gets its own
- * i18next instance (createInstance()) rather than a module-level singleton —
+ * Each call gets its own i18next instance, not a module-level singleton:
+ * server components share no React context, and a singleton would not be
  * safe under concurrent requests.
  */
 export const getTranslation = async (locale: Locale, namespace: string = defaultNamespace) => {

@@ -175,10 +175,6 @@ class CatalogApiIT {
 				.value(body -> assertThat((int) JsonPath.read(body, "$.totalElements")).isZero());
 	}
 
-	/**
-	 * The pair, not either bound, is at fault, so this reports through detail
-	 * rather than the errors array that single-parameter constraints produce.
-	 */
 	@Test
 	void invertedAbvRangeYieldsProblemJson400WithGuidance() {
 		client.get().uri("/api/v1/beers?minAbv=9&maxAbv=5")

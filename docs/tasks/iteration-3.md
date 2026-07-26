@@ -24,6 +24,8 @@ Cellar (first mutating endpoints) land.
 
 10. [ ] Dependency-vulnerability scanning in CI: a Maven check (e.g. OWASP dependency-check) alongside an `npm audit` gate *(Quality backlog 2026-07-23, SHOULD-7)*
 
+12. [x] Decision: code-comment policy — whether comment verbosity actually helps AI agents, and what a comment must carry to earn its place; document as an ADR and apply it as a cleanup sweep across both apps *(product-owner review 2026-07-26)*
+
 **Bugs**
 
 11. [x] Catalog pagination does nothing: clicking Previous/Next leaves the user on the same page *(reported 2026-07-26 against `dev`, reproduced at commit `197c11a`)*
@@ -78,4 +80,6 @@ profile-based wording this criterion originally used); a non-JSON backend
 error response no longer crashes the
 frontend and renders a friendly, accessible error state instead; every
 response carries the agreed security headers; CI fails on a known-vulnerable
-dependency in either app.
+dependency in either app; code comments across both apps follow a documented
+policy rather than accumulating by habit
+([ADR-0017](../adr/0017-code-comment-policy.md)).

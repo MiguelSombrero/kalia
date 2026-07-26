@@ -2,9 +2,8 @@ import { headers } from "next/headers";
 import { defaultLocale, isLocale, locales, type Locale } from "./settings";
 
 /**
- * Picks the best supported locale from an Accept-Language header, in
- * weighted preference order. Extracted from proxy.ts so the parsing logic
- * is unit-testable without a NextRequest.
+ * Picks the best supported locale from an Accept-Language header, in weighted
+ * preference order.
  */
 export const resolveLocaleFromAcceptLanguage = (header: string | null): Locale => {
   if (!header) {
@@ -28,10 +27,9 @@ export const resolveLocaleFromAcceptLanguage = (header: string | null): Locale =
 };
 
 /**
- * Recovers the current locale from the x-pathname header proxy.ts sets on
- * every locale-prefixed request. Special files (loading.tsx, not-found.tsx,
- * error boundaries) receive no route params from Next.js, so this is their
- * only way to know which locale they're rendering for.
+ * Recovers the locale from the x-pathname header proxy.ts sets. Next.js
+ * passes no route params to special files (loading.tsx, not-found.tsx, error
+ * boundaries), so this is their only way to know which locale they render.
  */
 export const resolveLocaleFromHeaders = async (): Promise<Locale> => {
   const requestHeaders = await headers();

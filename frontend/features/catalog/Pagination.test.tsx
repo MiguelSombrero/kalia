@@ -35,10 +35,10 @@ describe("Pagination", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  // Guard for iteration 3 task 11. It asserts an implementation detail on
-  // purpose: swapping these anchors back to next/link makes clicking them do
-  // nothing at all, in production builds only, which no test running against
-  // a dev server or a rendered DOM can see. See Pagination.tsx for why.
+  // Asserts an implementation detail on purpose — do not delete. Swapping
+  // these anchors back to next/link breaks pagination in production builds
+  // only, which no test against a dev server or a rendered DOM can see.
+  // See Pagination.tsx.
   it("uses plain anchors, since next/link does not navigate on query-only changes", async () => {
     const types = findElementTypes(await Pagination({ locale: "en", params: {}, result: midPage }));
 

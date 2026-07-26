@@ -1,15 +1,10 @@
-// These specs live under frontend/ because that's where the Node/Playwright
-// tooling lives, but the suite exercises the whole stack: the compose-run
-// backend and Postgres are the fixture behind every page these tests visit.
-// Assertions only ever check rendered DOM (headings, links, text) — the
-// backend's own JSON contract is covered separately by CatalogApiIT.
-// See docs/architecture.md §7 and §9 for the placement rationale and the
-// trigger for revisiting it.
+// Lives under frontend/ but exercises the whole stack: the compose-run
+// backend and Postgres are the fixture behind every page visited here
+// (docs/architecture.md §7, §9).
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-// WCAG 2.1 AA scan (iteration 2, task 7) — same tag scope on every call,
-// scoped to A/AA per the roadmap task's literal target.
+// Same A/AA tag scope on every call.
 const scanForA11yViolations = (page: import("@playwright/test").Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
@@ -91,14 +86,10 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
 });
 
 /**
- * Behavioural cover for pagination, which had no end-to-end test when it
- * broke (iteration 3 task 11).
- *
- * Deliberately NOT claimed as the regression guard for that bug: Playwright's
- * Chromium does not trigger the prefetch that caused it, and this test was
- * measured passing three times out of three against a build with the bug
- * present. The guard that does hold is in Pagination.test.tsx, which asserts
- * prefetching stays disabled. This test covers that paging works at all.
+ * Covers that paging works at all. Not a regression guard for the
+ * client-navigation bug — Playwright's Chromium does not trigger the
+ * prefetch that caused it, and this test was measured passing against a
+ * build with the bug present. That guard is in Pagination.test.tsx.
  */
 test("pages forward and back through the catalog", async ({ page }) => {
   await page.goto("/en/beers");
@@ -107,7 +98,6 @@ test("pages forward and back through the catalog", async ({ page }) => {
 
   await page.getByRole("link", { name: "Next" }).click();
 
-  // The URL not changing was the reported symptom.
   await expect(page).toHaveURL(/[?&]page=1\b/);
   await expect(page.getByText("Page 2 of 3")).toBeVisible();
   const firstOnPageTwo = await page.locator("main a[href^='/en/beers/']").first().innerText();

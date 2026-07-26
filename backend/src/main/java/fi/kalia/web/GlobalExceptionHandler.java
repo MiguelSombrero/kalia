@@ -13,17 +13,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 /**
- * Adds field-level detail to Bean Validation failures: Spring Boot's own
- * handling reports them as a bare {@code "Validation failure"} naming
- * neither the offending field nor the constraint. Every other generic MVC
- * exception is deliberately left to Boot's defaults, which already return
- * problem+json — see backend/README.md's error-handling convention and
- * ADR-0014. Never handles a type a module's own advice handles.
+ * Adds field-level detail to Bean Validation failures. Every other generic
+ * MVC exception is deliberately left to Spring Boot's defaults (ADR-0014).
  */
-// Boot's ProblemDetailsExceptionHandler (spring.mvc.problemdetails.enabled=true)
-// targets these same exception types with no @Order of its own (defaults to
-// LOWEST_PRECEDENCE) - without this class outranking it, it wins the resulting
-// tie and these handlers never run.
+// Do not remove the @Order: Boot's own ProblemDetailsExceptionHandler targets
+// these same exception types at LOWEST_PRECEDENCE, and without this class
+// outranking it, it wins the tie and these handlers silently never run.
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j

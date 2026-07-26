@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Only exception types designed as API responses are handled here, so only
- * curated messages ever reach ProblemDetail.detail. Anything unexpected
- * falls through to Spring Boot's default handling: a 500 problem response
- * without a message, logged server-side. Convention: backend/README.md.
+ * Handles only this module's exceptions designed as API responses, so only
+ * curated messages reach {@code ProblemDetail.detail} (ADR-0014).
  */
 @RestControllerAdvice
 class CatalogExceptionHandler {

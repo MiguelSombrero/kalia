@@ -7,10 +7,8 @@ const inputClasses =
   "w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-foreground";
 
 /**
- * Plain GET form: submitting writes the filters into the URL, which keeps
- * results shareable and works without client-side JavaScript. Submitting
- * also drops the page param, restarting from the first page. Stays native
- * per ADR-0010 — nothing here needs react-hook-form/Zod.
+ * Plain GET form, deliberately native rather than react-hook-form/Zod
+ * (ADR-0010). Submitting drops the page param, restarting from page one.
  */
 export const SearchFilters = async ({
   locale,

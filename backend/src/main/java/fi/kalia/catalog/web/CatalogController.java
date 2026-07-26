@@ -36,17 +36,13 @@ class CatalogController {
 
 	private static final Set<String> SORTABLE = Set.of("name", "style", "abv");
 
-	/**
-	 * ABV is a percentage, so anything above 100 is meaningless as a filter
-	 * bound regardless of what the column could physically hold.
-	 */
+	/** ABV is a percentage; a bound above 100 is meaningless. */
 	private static final String MAX_ABV = "100";
 
 	/**
-	 * Free-text filters are search terms, not content: the longest official
-	 * country name runs to 56 characters, and style names are far shorter, so
-	 * this bounds the input without truncating anything a caller would send.
-	 * The columns themselves are unbounded {@code text}.
+	 * Bounds search terms without truncating real input — the longest official
+	 * country name runs to 56 characters. The columns are unbounded
+	 * {@code text}, so this is an input cap only.
 	 */
 	private static final int MAX_FILTER_LENGTH = 100;
 
@@ -93,10 +89,9 @@ class CatalogController {
 
 	/**
 	 * A constraint spanning two parameters cannot be expressed as an annotation
-	 * on either one, so it is checked here. The violation belongs to the pair
-	 * rather than to either bound, so it is reported through
-	 * {@code ProblemDetail.detail} instead of the field-level {@code errors}
-	 * array that single-parameter constraints produce.
+	 * on either one. The violation belongs to the pair, so it is reported
+	 * through {@code ProblemDetail.detail} rather than the field-level
+	 * {@code errors} array single-parameter constraints produce.
 	 */
 	private static void requireOrderedAbvRange(@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
 		if (minAbv != null && maxAbv != null && minAbv.compareTo(maxAbv) > 0) {
