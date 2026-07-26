@@ -1,11 +1,6 @@
 import { BeerListSkeleton } from "@/features/catalog/BeerListSkeleton";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 
-/**
- * loading.tsx receives no props (Next.js convention) — the locale is
- * recovered from the x-pathname header proxy.ts sets on every request,
- * same mechanism not-found.tsx uses.
- */
 const BeersLoading = async () => {
   const locale = await resolveLocaleFromHeaders();
 

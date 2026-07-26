@@ -39,10 +39,7 @@ class KaliaApplicationIT {
 				.value(body -> assertThat(body).doesNotContain("components").doesNotContain("PostgreSQL"));
 	}
 
-	/**
-	 * Exposure is declared, not inherited: only health is published, so a
-	 * dependency upgrade cannot widen the actuator surface unnoticed.
-	 */
+	/** Pins the declared exposure so an upgrade cannot widen it unnoticed. */
 	@Test
 	void unexposedActuatorEndpointsAreNotReachable() {
 		for (String endpoint : List.of("env", "beans", "configprops", "loggers", "mappings")) {

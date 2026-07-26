@@ -48,11 +48,9 @@ class OpenApiDocumentationIT {
 				.returnResult().getResponseBody();
 
 		List<String> required = JsonPath.read(body, "$.components.schemas.BeerSummaryDto.required");
-		// price/brewery are nested objects, not primitives - springdoc does not
-		// infer "required" from Java non-nullability alone (verified by running:
-		// every field defaulted to optional before requiredMode was added
-		// explicitly). description is the one @Nullable field on the beer DTOs
-		// and must stay out of this list.
+		// springdoc does not infer "required" from Java non-nullability alone:
+		// every field defaulted to optional until requiredMode was set
+		// explicitly. description is @Nullable and must stay out of this list.
 		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "price", "brewery");
 
 		List<String> detailsRequired =

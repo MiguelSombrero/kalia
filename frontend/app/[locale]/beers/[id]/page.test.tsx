@@ -19,11 +19,8 @@ vi.mock("@/features/catalog/api", () => ({
 
 import BeerPage, { generateMetadata } from "./page";
 
-// BeerPage composes BeerDetailsCard, an async Server Component — React
-// suspends indefinitely if you render() such a tree outside Next's RSC
-// runtime (see app/[locale]/beers/page.test.tsx). BeerDetailsCard's own
-// translated rendering is covered by its dedicated test; this file covers
-// BeerPage's own logic: fetching, not-found, and metadata, in both locales.
+// Do not render the full tree here — see app/[locale]/beers/page.test.tsx.
+// This file covers BeerPage's own logic: fetching, not-found and metadata.
 describe("BeerPage", () => {
   it("does not trigger not-found for a known beer", async () => {
     await expect(

@@ -16,10 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Enforces the DDD-lite module layout (ADR-0007): domain / application / web
- * layers inside each Spring Modulith module, hexagonal dependency direction
- * web → application → domain. Module *boundaries* are verified separately by
- * {@link ModularityTest}; these rules govern the inside of a module.
+ * Enforces the DDD-lite module layout and dependency direction (ADR-0007).
+ * Module *boundaries* are verified separately by {@link ModularityTest};
+ * these rules govern the inside of a module.
  */
 @AnalyzeClasses(packages = "fi.kalia", importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {

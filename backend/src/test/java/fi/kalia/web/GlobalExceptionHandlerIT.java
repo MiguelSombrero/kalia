@@ -15,12 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
- * Covers both halves of the error-handling convention: the validation
- * failures GlobalExceptionHandler enriches with field-level detail, and
- * the generic exceptions it deliberately leaves to Spring Boot. Uses
- * /api/v1/beers (a catalog endpoint) incidentally, only because it's the
- * one real endpoint that exists today — this suite's subject is the
- * shared advice, not catalog.
+ * Covers both halves of ADR-0014: the validation failures
+ * GlobalExceptionHandler enriches, and the generic exceptions it leaves to
+ * Spring Boot. The catalog endpoint is used only because it is the one real
+ * endpoint that exists; the subject here is the shared advice.
  */
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -79,10 +77,8 @@ class GlobalExceptionHandlerIT {
 	}
 
 	/**
-	 * Malformed JSON is deliberately left to Spring Boot: its 400
-	 * problem+json is equivalent, and no field-level detail is possible
-	 * when nothing parsed. Asserts the status contract, not Boot's
-	 * wording, which is not ours to pin.
+	 * Malformed JSON is deliberately left to Spring Boot. Asserts the status
+	 * contract, not Boot's wording, which is not ours to pin.
 	 */
 	@Test
 	void malformedJsonYieldsProblemJson400WithoutFieldDetail() {

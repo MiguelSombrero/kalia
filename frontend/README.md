@@ -100,6 +100,14 @@ the runner is discarded after the job.
   `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`. All three ride the existing
   `npm run lint`/`npm test`/`npm run test:e2e` — no separate a11y command
   or CI job.
+- **Code comments carry only what the repo cannot (ADR-0017).** A comment
+  earns its place if it holds a fact not present anywhere in the repository
+  and not derivable by reading it: external framework behavior, an
+  empirical measurement, or a warning that a locally-correct edit is
+  globally wrong. Anything already settled in an ADR is a one-line pointer
+  to that ADR, never a paraphrase. If breaking the invariant fails a test
+  or the build, the test is the guard; if it fails silently or only in
+  production builds, the comment is mandatory and opens with "do not".
 - **Design tokens & shared UI primitives (iteration 2 task 8):** the color
   palette and typography are centralized as CSS custom properties in
   `app/globals.css`, in two layers — raw primitives (e.g. `--mint-600`)

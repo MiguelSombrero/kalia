@@ -13,12 +13,10 @@ vi.mock("@/features/catalog/api", () => ({
 import { searchBeers } from "@/features/catalog/api";
 import BeersPage, { generateMetadata } from "./page";
 
-// BeersPage composes SearchFilters/BeerList/Pagination, which are themselves
-// async Server Components — React (correctly) suspends indefinitely if you
-// try to render() such a tree outside Next's RSC runtime, so this file tests
-// BeersPage's own logic (param parsing, metadata) rather than rendering the
-// full tree. The composed page is covered by each child's own unit test
-// (rendered directly, no unresolved async descendants) and by Playwright E2E.
+// Do not render the full tree here: React suspends indefinitely on async
+// Server Components outside Next's RSC runtime, and BeersPage composes three
+// of them. This file covers BeersPage's own logic (param parsing, metadata);
+// the children have their own tests and E2E cover.
 describe("BeersPage", () => {
   it("parses raw search params (including array values) before calling searchBeers", async () => {
     await BeersPage({

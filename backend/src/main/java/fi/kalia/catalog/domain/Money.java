@@ -3,9 +3,7 @@ package fi.kalia.catalog.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-/**
- * Monetary amount as integer cents to avoid floating point (docs/architecture.md §3).
- */
+/** Integer cents, never floating point (docs/architecture.md §3). */
 @Embeddable
 public record Money(
 		@Column(name = "price_cents") int cents,

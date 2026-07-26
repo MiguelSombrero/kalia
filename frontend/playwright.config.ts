@@ -11,17 +11,13 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
   },
-  // Chromium only: architecture.md doesn't require cross-browser coverage
-  // yet, and a single engine keeps CI runs fast.
+  // Chromium only: no cross-browser requirement yet (docs/architecture.md).
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
   ],
   webServer: {
-    // Starts the full stack if nothing already answers at `url` (reused
-    // otherwise). Verified: Playwright does not reliably stop this stack
-    // after the run in every environment — harmless on CI's ephemeral
-    // runner, but locally run `docker compose down` when done, same as any
-    // other compose session (see frontend/README.md).
+    // Playwright does not reliably stop this stack after the run — harmless
+    // on CI's ephemeral runner, but run `docker compose down` locally.
     command: "docker compose up --build",
     cwd: path.resolve(__dirname, ".."),
     url: "http://localhost:3000",

@@ -10,24 +10,13 @@ const pageHref = (locale: Locale, params: BeerSearchParams, page: number): strin
 };
 
 /**
- * These are plain anchors, not `next/link` — do not "upgrade" them.
- *
- * With `<Link>`, clicking Previous/Next did nothing at all: the URL never
- * changed and the list never moved (iteration 3 task 11). Client-side
- * navigation that changes only the query string did not commit on this
- * route, while pathname changes (a beer card, the locale switcher) worked
- * fine. The router fetched the correct RSC payload and then discarded the
- * transition. Only production builds were affected, because automatic
- * prefetching does not run in `next dev`.
- *
- * `prefetch={false}` was measured as an unreliable remedy — the first click
- * still failed — so this does not depend on prefetch behaviour at all. A
- * full page load is also what `SearchFilters` already does: it is a native
- * GET form, which is precisely why filtering and sorting never showed this
- * symptom. Pagination is the same interaction — put query params in the URL,
- * re-render the list — so it now works the same way.
+ * Do not "upgrade" these plain anchors to `next/link`. With `<Link>`,
+ * clicking Previous/Next does nothing at all — App Router client navigation
+ * that changes only the query string never commits on this route — and the
+ * breakage appears in production builds only, since `next dev` runs no
+ * automatic prefetch. `prefetch={false}` was measured as an unreliable
+ * remedy. `Pagination.test.tsx` guards this.
  */
-
 export const Pagination = async ({
   locale,
   params,

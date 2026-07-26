@@ -2,10 +2,6 @@ import Link from "next/link";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { getTranslation } from "@/i18n/server";
 
-/**
- * not-found.tsx receives no props (Next.js convention) — the locale is
- * recovered from the x-pathname header proxy.ts sets on every request.
- */
 const BeerNotFound = async () => {
   const locale = await resolveLocaleFromHeaders();
   const { t } = await getTranslation(locale);
