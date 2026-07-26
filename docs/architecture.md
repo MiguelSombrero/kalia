@@ -354,3 +354,4 @@ earlier one.
 | [ADR-0013](adr/0013-logging-conventions.md) | Structured logging conventions | accepted — per-environment levels now delivered by `LOG_LEVEL` ([ADR-0015](adr/0015-configuration-strategy.md)), not profiles | 2026-07-24 |
 | [ADR-0014](adr/0014-shared-exception-handling.md) | Shared, module-neutral exception-handling strategy | accepted | 2026-07-25 |
 | [ADR-0015](adr/0015-configuration-strategy.md) | Environment-variable configuration, not Spring profiles | accepted | 2026-07-25 |
+| [ADR-0016](adr/0016-security-response-headers.md) | Security response headers via `next.config.ts` (no-nonce CSP) | accepted | 2026-07-26 |
