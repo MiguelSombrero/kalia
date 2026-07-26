@@ -26,7 +26,7 @@ Cellar (first mutating endpoints) land.
 
 12. [x] Decision: code-comment policy — whether comment verbosity actually helps AI agents, and what a comment must carry to earn its place; document as an ADR and apply it as a cleanup sweep across both apps *(product-owner review 2026-07-26)*
 
-13. [ ] Decision: ADR format and conventions — the corpus grew without a template, so the Decision section often holds a specification rather than the decision, rejected options have no reliable home, and half the ADRs record no cost; document as an ADR with a template, repair the stale index, and restructure the ADRs whose Decision section fails its reader *(product-owner review 2026-07-26)*
+13. [x] Decision: ADR format and conventions — the corpus grew without a template, so the Decision section often holds a specification rather than the decision, rejected options have no reliable home, and half the ADRs record no cost; document as an ADR with a template, repair the stale index, and restructure the ADRs whose Decision section fails its reader *(product-owner review 2026-07-26)*
 
 **Bugs**
 
