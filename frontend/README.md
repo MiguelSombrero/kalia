@@ -130,3 +130,21 @@ the runner is discarded after the job.
   `EmptyState` (also in `components/ui/`) generalizes the "no results"
   pattern `BeerList` already had — the shape any future feature's empty
   state should reuse rather than reinvent.
+- **API failures are typed (iteration 3 task 6):** everything that can go
+  wrong with a backend call is raised as an `ApiError`
+  (`lib/api/api-error.ts`) tagged `network`, `timeout`, `http` or `parse`,
+  so callers branch on `isApiError(e) && e.kind === …` rather than parsing
+  a message. It is built by decorating an `Error` rather than subclassing,
+  because a class constructor is a function expression and the arrow-function
+  convention above bans those; it stays a real `Error`, which the Next.js
+  error boundary and stack traces both require. Non-2xx statuses are *not*
+  raised by `kaliaFetch` — the caller decides what a status means, and a 404
+  from `getBeer` is "no such beer", not a failure.
+- **`kaliaFetch` never passes an `AbortSignal` of its own.** Next.js drops a
+  request from per-render memoization as soon as a signal is present
+  (`next/dist/docs/01-app/03-api-reference/04-functions/fetch.md`), and the
+  beer detail route fetches the same beer twice per render — once in
+  `generateMetadata`, once in the page. The 10 s timeout is therefore a raced
+  timer, which bounds the wait but abandons rather than cancels the request.
+  A caller's own signal is passed through untouched, so TanStack Query
+  cancellation still works.

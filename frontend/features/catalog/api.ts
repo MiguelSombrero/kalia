@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/api/api-error";
 import {
   getBeer as generatedGetBeer,
   searchBeers as generatedSearchBeers,
@@ -39,8 +40,9 @@ export const searchBeers = async (params: BeerSearchParams): Promise<BeerPage> =
     size: params.size ? Number(params.size) : undefined,
     sort: params.sort || undefined,
   });
-  if (Number(response.status) !== 200) {
-    throw new Error(`Beer search failed with status ${response.status}`);
+  const status = Number(response.status);
+  if (status !== 200) {
+    throw apiError("http", `Beer search failed with status ${status}`, { status });
   }
   return response.data;
 };
@@ -59,7 +61,7 @@ export const getBeer = async (id: string): Promise<BeerDetails | null> => {
     return null;
   }
   if (status !== 200) {
-    throw new Error(`Beer lookup failed with status ${response.status}`);
+    throw apiError("http", `Beer lookup failed with status ${status}`, { status });
   }
   return response.data;
 };
