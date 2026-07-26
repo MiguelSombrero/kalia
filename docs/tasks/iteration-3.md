@@ -24,6 +24,50 @@ Cellar (first mutating endpoints) land.
 
 10. [ ] Dependency-vulnerability scanning in CI: a Maven check (e.g. OWASP dependency-check) alongside an `npm audit` gate *(Quality backlog 2026-07-23, SHOULD-7)*
 
+**Bugs**
+
+11. [ ] Catalog pagination does nothing: clicking Previous/Next leaves the user on the same page *(reported 2026-07-26 against `dev`, reproduced at commit `197c11a`)*
+
+    **Reproduce:** `docker compose up`, open `/en/beers`, click "Next →".
+    The URL stays `/en/beers`, the summary stays "Page 1 of 3", and the
+    listed beers do not change. Same from `?page=1` clicking either
+    direction.
+
+    **Not the cause** — each verified while reproducing:
+    - The backend paginates correctly: `/api/v1/beers?page=1&size=3`
+      returns `page: 1` and different beers than `page=0`.
+    - Server rendering is correct: loading `/en/beers?page=1` directly
+      renders "Page 2 of 3" with different beers.
+    - The links are correct: `Next →` has `href="/en/beers?page=1"`, and
+      from `?page=1` the two links are `?page=0` and `?page=2`.
+    - The RSC payload is correct: `GET /en/beers?page=1` with an `RSC: 1`
+      header returns 200 and a payload containing "Page 2 of 3".
+    - Not a mis-aimed click: a programmatic `.click()` on the anchor
+      behaves identically, and `elementFromPoint` confirms the anchor is
+      the topmost element at its own centre.
+    - No console error, and no `loading.tsx` skeleton appears, so the
+      transition never starts rather than starting and failing.
+
+    **What is actually broken:** client-side navigation that changes *only*
+    the query string is a no-op. Navigation that changes the pathname works
+    — a beer card (`/en/beers/{id}`) and the locale switcher
+    (`/en/beers` → `/fi/beers`) both navigate normally in the same session.
+    The router fetches the right RSC payload and then never commits the
+    transition.
+
+    Search/filter/sort are unaffected because `SearchFilters` is a native
+    GET form, which triggers a full page load rather than client routing —
+    which is why only pagination shows the symptom.
+
+    **Still unknown:** the precise mechanism inside the App Router (client
+    router cache keying, or `<Link>` behaviour for same-segment
+    navigations). Start there, and read
+    `node_modules/next/dist/docs` first per `frontend/AGENTS.md` — this
+    Next.js version differs from what a model is likely to assume. Whatever
+    the fix, it needs a regression test: the current
+    `Pagination.test.tsx` asserts the rendered `href`s, which are correct,
+    so it cannot catch this.
+
 **Done when:** an unhandled backend exception is logged server-side with no
 internal detail leaked to the client; an invalid ABV range or malformed
 request returns a 400 with field-level detail; actuator exposes only the
