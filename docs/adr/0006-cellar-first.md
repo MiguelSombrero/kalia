@@ -2,13 +2,13 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-17
-
-*Note (2026-07-24): this decision is stated in terms of ordering, not
-specific iteration numbers, since the roadmap has already been reshuffled
-twice since this ADR was written (a frontend-standards iteration inserted
-before authentication in 2026-07-19; a production-readiness iteration
-inserted before authentication again in 2026-07-24) — see
-[docs/roadmap.md](../roadmap.md) for current numbering.*
+- **Supersedes:** [ADR-0005](0005-defer-auth-mock-payments.md) (partial) —
+  authentication is no longer deferred; the mocked-payment stance stands
+- **Amended:** 2026-07-24 — restated in terms of ordering rather than specific
+  iteration numbers, the roadmap having been reshuffled twice since (a
+  frontend-standards iteration inserted before authentication on 2026-07-19; a
+  production-readiness iteration inserted before authentication again on
+  2026-07-24). See [docs/roadmap.md](../roadmap.md) for current numbering.
 
 ## Context
 

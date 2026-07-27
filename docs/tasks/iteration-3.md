@@ -26,6 +26,8 @@ Cellar (first mutating endpoints) land.
 
 12. [x] Decision: code-comment policy — whether comment verbosity actually helps AI agents, and what a comment must carry to earn its place; document as an ADR and apply it as a cleanup sweep across both apps *(product-owner review 2026-07-26)*
 
+13. [ ] Decision: ADR format and conventions — the corpus grew without a template, so the Decision section often holds a specification rather than the decision, rejected options have no reliable home, and half the ADRs record no cost; document as an ADR with a template, repair the stale index, and restructure the ADRs whose Decision section fails its reader *(product-owner review 2026-07-26)*
+
 **Bugs**
 
 11. [x] Catalog pagination does nothing: clicking Previous/Next leaves the user on the same page *(reported 2026-07-26 against `dev`, reproduced at commit `197c11a`)*
@@ -85,4 +87,10 @@ frontend and renders a friendly, accessible error state instead; every
 response carries the agreed security headers; CI fails on a known-vulnerable
 dependency in either app; code comments across both apps follow a documented
 policy rather than accumulating by habit
-([ADR-0017](../adr/0017-code-comment-policy.md)).
+([ADR-0017](../adr/0017-code-comment-policy.md)); a documented ADR template
+exists, every ADR has an index row whose title and status match its own file,
+and the ADRs whose Decision section stated a specification rather than the
+decision have been restructured to state it
+([ADR-0019](../adr/0019-adr-format-and-conventions.md) — which deliberately
+leaves the remaining ADRs on the older shape, so "every ADR conforms" is not
+the criterion).

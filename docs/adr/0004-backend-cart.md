@@ -1,8 +1,9 @@
 # ADR-0004: Cart is a backend domain module
 
-- **Status:** accepted — implementation deferred with the store flow, see
-  [ADR-0006](0006-cellar-first.md)
+- **Status:** accepted
 - **Date:** 2026-07-15
+- **Amended:** 2026-07-17 by [ADR-0006](0006-cellar-first.md) — implementation
+  deferred with the store flow; the decision itself stands
 
 ## Context
 

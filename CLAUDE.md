@@ -37,7 +37,8 @@ before making changes:
   per-iteration task lists, the backlog, and the Quality backlog live under
   [docs/tasks/](docs/tasks/)
 - [docs/adr/](docs/adr/) — decisions already made; don't relitigate them
-  silently, propose a new ADR instead
+  silently, propose a new ADR instead. New ones follow
+  [docs/adr/template.md](docs/adr/template.md)
 - [backend/README.md](backend/README.md) — run/test commands, Lombok/
   JSpecify/ArchUnit conventions, testing naming (`*Test`/`*IT`)
 - [frontend/README.md](frontend/README.md) — run/test commands,
@@ -162,6 +163,20 @@ before making changes:
   narration. Comments explaining why a test asserts something apparently
   pointless are load-bearing and stay: they stop a cleanup pass from
   deleting a guard.
+- **ADRs follow [template.md](docs/adr/template.md)**
+  ([ADR-0019](docs/adr/0019-adr-format-and-conventions.md)). Five sections:
+  Context, Decision, Alternatives considered, Consequences, and an optional
+  Evidence. The Decision section opens with one self-contained sentence
+  naming what was decided — a reader who jumps to that heading must find the
+  verdict in its first line, not a specification of files and function calls.
+  Context states the problem only; measurements go in Evidence, rejected
+  options in Alternatives considered, and "none, because X was the only
+  realistic option" is a required entry there rather than an empty section.
+  Consequences must record at least one Bad or Neutral entry. `Status` holds
+  a vocabulary token; supersession detail goes in `Supersedes` /
+  `Superseded-by` / `Amended` fields, never in the index, which carries no
+  prose. Amend rather than rewrite an accepted ADR — it records what was
+  believed when written, and that is most of its value.
 - **New dependencies: ask, don't research.** When a task introduces a new
   dependency (library, starter, plugin, Docker image, GitHub Action), do not
   spend time hunting registries for the latest version. List the new
