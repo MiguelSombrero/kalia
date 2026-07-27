@@ -176,6 +176,12 @@ the runner is discarded after the job.
   image host) means adding it to `cspHeader` in the same PR, or the browser
   silently blocks it — verify with the browser console, not just a
   successful build.
+- **Client and server logging goes through `lib/logger.ts` (iteration 3 task
+  9), never `console.*` directly** — enforced by ESLint's `no-console` rule
+  (only `lib/logger.ts` itself is exempt). It's a thin pass-through today
+  (`logger.error(...)` → `console.error(...)`), the seam for routing to a
+  real monitoring tool (Sentry, Datadog RUM, ...) later without touching
+  call sites.
 - **`kaliaFetch` never passes an `AbortSignal` of its own.** Next.js drops a
   request from per-render memoization as soon as a signal is present
   (`next/dist/docs/01-app/03-api-reference/04-functions/fetch.md`), and the
