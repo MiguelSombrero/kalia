@@ -35,7 +35,15 @@ const files = readdirSync(ADR_DIR)
   .filter((f) => /^\d{4}-.*\.md$/.test(f))
   .sort();
 const archText = readFileSync(ARCH, "utf8");
-const archLines = archText.split("\n");
+// Scoped to §10 only: architecture.md now also links ADR files from other
+// sections (e.g. the §7 testing-strategy table), which would otherwise
+// false-match as an index row for the wrong reason.
+const indexStart = archText.indexOf("## 10. Architecture decision records");
+if (indexStart === -1) {
+  console.log("FAIL: could not find '## 10. Architecture decision records' in " + ARCH);
+  process.exit(1);
+}
+const archLines = archText.slice(indexStart).split("\n");
 
 console.log(`Checking ${files.length} ADRs in docs/adr/ against docs/architecture.md's index\n`);
 

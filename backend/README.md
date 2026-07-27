@@ -63,6 +63,10 @@ Coverage: JaCoCo merges unit + integration data into
 coverage in the job log. The ≥ 80 % aim is measured, not gated — see
 Testing conventions below.
 
+CI also scans `pom.xml` and the built image for known CVEs and fails on a
+`HIGH`/`CRITICAL` finding with a fix available
+([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)).
+
 Notable suites:
 
 - `ModularityTest` — Spring Modulith `ApplicationModules.verify()`; fails on

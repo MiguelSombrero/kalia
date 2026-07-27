@@ -265,6 +265,7 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
+| Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend), and a WCAG 2.1 AA `axe()` check on every component test that does a full `render(...)`. How to test async Server Components — RTL cannot render them — is a trap documented in [frontend/README.md](../frontend/README.md) |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built). `@axe-core/playwright` scans (WCAG 2.1 A/AA tags) run alongside these on every already-visited page state — no separate a11y-only spec |
 
@@ -370,3 +371,4 @@ keep a `Bad`/`Neutral` consequence — see the "ADR index check" job in
 | [ADR-0021](adr/0021-design-tokens-ui-primitives.md) | Two-layer CSS design tokens and three shared UI primitives, no new dependency | accepted | 2026-07-27 |
 | [ADR-0022](adr/0022-loading-error-empty-states.md) | Shape-matched loading skeletons, one error boundary at the locale root | accepted | 2026-07-27 |
 | [ADR-0023](adr/0023-typed-api-failures.md) | API failures are a tagged `ApiError`, and a non-2xx status is not one | accepted | 2026-07-27 |
+| [ADR-0024](adr/0024-dependency-vulnerability-scanning.md) | Trivy scans dependencies and images in CI; Dependabot opens the fixes | accepted | 2026-07-27 |

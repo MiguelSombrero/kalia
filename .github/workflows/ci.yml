@@ -201,6 +201,47 @@ jobs:
       - name: Fail if the committed client has drifted from the live spec
         run: git diff --exit-code -- lib/api/generated
 
+  vulnerability-scan:
+    name: Dependency & image vulnerability scan
+    # Watches both sides deliberately, same reasoning as api-client-drift:
+    # dependency manifests and Dockerfiles live in backend/ and frontend/
+    # respectively, and a change to either can introduce a new CVE.
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Scan dependency manifests (pom.xml, package-lock.json)
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      # Manifest scanning alone misses OS-level packages in the base images
+      # (eclipse-temurin, node:24-alpine) — building and scanning the actual
+      # images is what ADR-0024 chose Trivy for over an ecosystem-native pair
+      # of tools, each of which only sees its own manifest.
+      - name: Build images
+        run: docker compose build backend frontend
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: kalia-backend
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: kalia-frontend
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
   e2e:
     name: E2E (Playwright)
     # The slowest job, so it starts as soon as the change areas are known

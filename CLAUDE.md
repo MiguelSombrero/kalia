@@ -240,7 +240,11 @@ cadence above.
   Keycloak/Redis arrive with the auth iteration). Frontend (`:3000`) and
   backend (`:8080`, for direct API access and Swagger UI) are both
   published, localhost-only.
-- `.github/workflows/ci.yml` — build + test both apps on every push
+- `.github/workflows/ci.yml` — build + test both apps on every push;
+  also scans dependencies and images for known CVEs
+  ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md))
+- `.github/dependabot.yml` — weekly update PRs for Maven, npm and GitHub
+  Actions dependencies
 - `.claude/skills/quality-sweep/SKILL.md` — periodic quality sweep (see
   Quality checks above)
 

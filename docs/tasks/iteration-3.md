@@ -22,7 +22,7 @@ Cellar (first mutating endpoints) land.
 
 **Cross-cutting**
 
-10. [ ] Dependency-vulnerability scanning in CI: a Maven check (e.g. OWASP dependency-check) alongside an `npm audit` gate *(Quality backlog 2026-07-23, SHOULD-7)*
+10. [x] Dependency-vulnerability scanning in CI: a Maven check (e.g. OWASP dependency-check) alongside an `npm audit` gate *(Quality backlog 2026-07-23, SHOULD-7)* *(resolved via Trivy + Dependabot — see [ADR-0024](../adr/0024-dependency-vulnerability-scanning.md))*
 
 12. [x] Decision: code-comment policy — whether comment verbosity actually helps AI agents, and what a comment must carry to earn its place; document as an ADR and apply it as a cleanup sweep across both apps *(product-owner review 2026-07-26)*
 
