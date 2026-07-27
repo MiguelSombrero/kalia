@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-26
+- **Amended:** 2026-07-27 — `scripts/check-adrs.mjs` now enforces the index
+  and status checks in CI; see the updated Consequences entry
 
 ## Context
 
@@ -127,9 +129,15 @@ section that does not state its decision, and the next ADR copies it.
   recorded. Supplying one means inventing content rather than relocating it,
   which is a larger liberty to take with an accepted record than reformatting
   is. The rule prevents recurrence; it does not repair these.
-- Neutral, because nothing enforces any of this yet. The index has already
-  gone stale twice in eighteen additions, so the convention rests on the
-  doc-sync gate in `CLAUDE.md` noticing — the same mechanism that missed it.
+- Neutral, because most of this still rests on the doc-sync gate in
+  `CLAUDE.md` noticing, the same mechanism that missed the index twice in
+  eighteen additions. `scripts/check-adrs.mjs`, added in CI 2026-07-27, now
+  catches an index row going missing or drifting from its file (title,
+  status) and — for ADRs that have adopted `Alternatives considered` — a
+  Consequences section with no `Bad,`/`Neutral,` entry. It does not check
+  that the Decision section actually opens with the verdict, which is a
+  semantic property the original ADR-0018 problem turned on and no
+  mechanical check here verifies.
 - **Revisit trigger:** if an ADR is written after this and still lands with an
   empty or absent `Alternatives considered`, the section is not carrying its
   weight and the gap belongs in a mechanical check rather than a written rule

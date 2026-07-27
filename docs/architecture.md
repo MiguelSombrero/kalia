@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-07-26. This document describes the target architecture and
+*Last updated: 2026-07-27. This document describes the target architecture and
 the parts of it that are deliberately deferred. Update it when decisions
 change; record significant decisions as ADRs in [adr/](adr/) and index them
 in [§10](#10-architecture-decision-records).*
@@ -343,6 +343,11 @@ The status column holds the vocabulary token only. What superseded or amended
 a decision is recorded in that ADR's own `Supersedes` / `Superseded-by` /
 `Amended` fields, so it lives in exactly one place — the two copies of that
 prose had already drifted apart before this rule existed.
+
+CI runs `scripts/check-adrs.mjs` on every push, verifying that every ADR has
+a matching index row (title and status) and that ADRs following the template
+keep a `Bad`/`Neutral` consequence — see the "ADR index check" job in
+[ci.yml](../.github/workflows/ci.yml).
 
 | Id | Title | Status | Date |
 |---|---|---|---|
