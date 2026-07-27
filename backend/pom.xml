@@ -84,7 +84,7 @@
 			<!-- Overrides the Spring Boot 4.1.0 BOM's 42.7.11, which carries
 			     CVE-2026-54291 (SCRAM-SHA-256-PLUS downgrade); fixed in 42.7.12.
 			     Remove the override once the parent BOM catches up. -->
-			<version>42.7.12</version>
+			<version>42.7.13</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
