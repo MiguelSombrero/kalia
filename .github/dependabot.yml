@@ -10,6 +10,14 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    groups:
+      # react and react-dom must stay on the exact same version — React
+      # fails fast at runtime otherwise — but Dependabot updates each
+      # package independently by default. Grouping forces them into one PR.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
