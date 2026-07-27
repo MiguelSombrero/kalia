@@ -18,7 +18,7 @@ Cellar (first mutating endpoints) land.
 6. [x] Harden `kaliaFetch`: guard `JSON.parse` against non-JSON error bodies *(Quality backlog 2026-07-23, MUST-3)*, add a request timeout, and introduce a typed `ApiError` distinguishing network/timeout/HTTP-status/parse failures — feeds the error-state work in [iteration 2 task 9](iteration-2.md)
 7. [x] Decision: security response headers (CSP, X-Frame-Options, Referrer-Policy, HSTS, Permissions-Policy) via `next.config.ts` `headers()` *(Quality backlog 2026-07-23, SHOULD-2)*; document as an ADR
 8. [x] Decision: environment-variable validation — fail fast on misconfigured/missing env vars instead of silent fallback defaults; document as an ADR *(resolved via `instrumentation.ts` — see [ADR-0018](../adr/0018-frontend-env-var-validation.md))*
-9. [ ] Client-side logging convention: a thin logger wrapper replacing ad hoc `console.*` calls, so a real monitoring tool can be swapped in later without touching call sites
+9. [x] Client-side logging convention: a thin logger wrapper replacing ad hoc `console.*` calls, so a real monitoring tool can be swapped in later without touching call sites
 
 **Cross-cutting**
 

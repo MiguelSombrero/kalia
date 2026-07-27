@@ -36,6 +36,15 @@ const eslintConfig = defineConfig([
           message: "Prefer arrow functions over function expressions (frontend convention).",
         },
       ],
+      // Convention (iteration 3, task 9): call sites go through lib/logger.ts
+      // instead of console.* directly — see frontend/README.md.
+      "no-console": "error",
+    },
+  },
+  {
+    files: ["lib/logger.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   // Override default ignores of eslint-config-next.
