@@ -33,12 +33,12 @@ and a single `app/[locale]/error.tsx` is the app-wide error boundary.**
   is the effective root, `app/[locale]/error.tsx` is already an ancestor of
   the home page, the catalog list and the detail page. A second,
   catalog-scoped boundary would add a file and catch nothing extra.
-- **Skeletons are shape-matched, not generic.** `BeerListSkeleton` mirrors
-  the real grid (heading bar, filter bar, ~6 card blocks);
-  `BeerDetailsSkeleton` mirrors the detail layout (back link, heading,
-  subtitle, stat panel, two description lines). One spinner for both was
-  rejected — the skeleton's job is to hold the page's shape so content does
-  not jump when it arrives.
+- **Skeletons are shape-matched, not generic.**
+  `features/catalog/BeerListSkeleton.tsx` mirrors the real grid (heading bar,
+  filter bar, ~6 card blocks); `BeerDetailsSkeleton.tsx` mirrors the detail
+  layout (back link, heading, subtitle, stat panel, two description lines).
+  One spinner for both was rejected — the skeleton's job is to hold the
+  page's shape so content does not jump when it arrives.
 - **Two generic primitives join `components/ui/`:** `Skeleton` (a single
   pulsing box, no variants — callers size it via `className`) and
   `EmptyState` (required `title` plus a `children` slot, in the dashed-card

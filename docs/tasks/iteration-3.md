@@ -28,7 +28,7 @@ Cellar (first mutating endpoints) land.
 
 13. [x] Decision: ADR format and conventions — the corpus grew without a template, so the Decision section often holds a specification rather than the decision, rejected options have no reliable home, and half the ADRs record no cost; document as an ADR with a template, repair the stale index, and restructure the ADRs whose Decision section fails its reader *(product-owner review 2026-07-26)*
 
-14. [ ] Decision: documentation roles — both READMEs' convention sections grew to ~74% of each file by restating rules that already live in ADRs and `docs/architecture.md`, producing two live contradictions; decide which document owns which kind of fact, write ADRs for the conventions that outgrew the README's one-line bar, and reduce every duplicate mention to a pointer *(product-owner review 2026-07-27)*
+14. [x] Decision: documentation roles — both READMEs' convention sections grew to ~74% of each file by restating rules that already live in ADRs and `docs/architecture.md`, producing two live contradictions; decide which document owns which kind of fact, write ADRs for the conventions that outgrew the README's one-line bar, and reduce every duplicate mention to a pointer *(product-owner review 2026-07-27)*
 
 **Bugs**
 

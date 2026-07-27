@@ -48,139 +48,89 @@ the runner is discarded after the job.
 
 ## Conventions
 
-- **Feature-based package structure**: code is organized by feature, not by
-  technical type — `features/catalog/`, `features/cellar/`, … each holding
-  its own components, hooks and API access. Route files under `app/` stay
-  thin and delegate to the feature folder; truly shared code goes to
-  `components/` or `lib/` only once more than one feature uses it. Mirrors
-  the backend's module-per-subdomain structure.
-- Server components by default; `'use client'` only where interactivity
-  requires it.
-- **Arrow functions, not function declarations/expressions** — including
-  page/layout/route exports (`const Home = () => { … }; export default
-  Home;`). Enforced by ESLint (`no-restricted-syntax` in `eslint.config.mjs`).
-- **Client-component data goes through TanStack Query (ADR-0008).** Reads
-  use `useQuery`, mutations `useMutation` — never hand-rolled
-  `fetch` + `useState`/`useEffect` plumbing. The app-wide `QueryClient`
-  lives in `app/providers.tsx` (default `staleTime` 60 s; override per
-  query). Server components are unaffected and keep fetching on the server.
-  `@tanstack/eslint-plugin-query` enforces correct usage.
-- **Stateful forms use react-hook-form + Zod (ADR-0010):** the Zod schema
-  (colocated in `features/<feature>/`) is the source of truth, wired via
-  `@hookform/resolvers`; no hand-rolled validation in components. Rule of
-  thumb: submitting navigates → native GET form (like `SearchFilters`);
-  submitting mutates or validates → this stack.
-- **Client UI state goes in feature-scoped Zustand stores (ADR-0009):**
-  `features/<feature>/store.ts`, subscribed via selectors. Never API data
-  (TanStack Query's job), never state that should survive a share/reload
-  (the URL's job); plain `useState` stays correct for single-component
-  state.
-- **API client generated from the backend's OpenAPI spec (ADR-0012):**
-  `lib/api/generated/` (orval, committed, regenerated via `npm run
-  generate:api`) is never imported directly outside `features/<feature>/`.
-  Each feature's `api.ts` wraps the generated client behind its own stable
-  function signatures — `types.ts` re-exports the generated model types
-  under the feature's existing names.
-- **Localization via i18next (ADR-0011):** every route lives under
-  `app/[locale]/...`. Server components translate with
-  `getTranslation(locale)` from `i18n/server.ts`; translation strings live
-  in `i18n/locales/{en,fi}/common.json`. `proxy.ts` redirects locale-less
-  requests based on `Accept-Language`. `react-i18next` is installed but not
-  wired — no client component needs translations yet; wire it (provider +
-  resource hydration) when one does.
-- Component tests live next to the component (`page.test.tsx` beside
-  `page.tsx`). **Async Server Components with async children cannot be
-  rendered by React Testing Library** (confirmed by testing it — `render()`
-  suspends indefinitely under jsdom outside Next's RSC runtime): test each
-  async component directly and in isolation (`render(await Component(props))`,
-  no unresolved async descendants), and test pages that compose async
-  children on their own logic only (`generateMetadata`, param parsing) —
-  full composition is Playwright's job.
-- Note `AGENTS.md`: this Next.js version may differ from an agent's training
-  data — check `node_modules/next/dist/docs/` before relying on memory. It
-  already caught one real breaking change: `middleware.ts` is renamed to
-  `proxy.ts` in Next.js 16.
-- **Every component/page ships accessible to WCAG 2.1 AA from here on
-  (iteration 2 task 7).** New component tests that do a full `render(...)`
-  add an `axe()` assertion: `import { axe } from "jest-axe";` then
+Rules for writing code here; each links to the ADR holding the reasoning.
+Why the rationale lives there and not here:
+[ADR-0020](../docs/adr/0020-documentation-roles.md).
+
+**Structure**
+
+- **Feature-based packages**: `features/<feature>/` owns its components, hooks
+  and API access; `app/` route files stay thin and delegate. Shared code moves
+  to `components/` or `lib/` only once a second feature uses it.
+- Server components by default; `'use client'` only where interactivity needs it.
+- **Arrow functions, never function declarations or expressions** — including
+  page/layout/route exports. Enforced by ESLint (`eslint.config.mjs`).
+
+**Data and state**
+
+- **Client-component data goes through TanStack Query** — `useQuery`/`useMutation`,
+  never hand-rolled `fetch` + `useState` ([ADR-0008](../docs/adr/0008-tanstack-query.md)).
+- **Client UI state goes in feature-scoped Zustand stores**, never API data or
+  state that should survive a reload ([ADR-0009](../docs/adr/0009-zustand-ui-state.md)).
+- **Stateful forms use react-hook-form + Zod.** Submitting navigates → native
+  GET form; submitting mutates or validates → this stack
+  ([ADR-0010](../docs/adr/0010-react-hook-form-zod.md)).
+- **The generated API client** (`lib/api/generated/`) is never imported outside
+  `features/<feature>/`; each feature's `api.ts` wraps it
+  ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+- **API failures are a tagged `ApiError`** — branch on `e.kind`, never a
+  message. A non-2xx status is *not* raised: a 404 from `getBeer` means "no
+  such beer" ([ADR-0023](../docs/adr/0023-typed-api-failures.md)).
+
+**UI**
+
+- **Localization is i18next**, every route under `app/[locale]/…`; strings in
+  `i18n/locales/{en,fi}/common.json` ([ADR-0011](../docs/adr/0011-i18next-localization.md)).
+- **Design tokens are two-layer**: components reference the semantic layer
+  (`--color-primary`), never raw primitives (`--mint-600`). Shared primitives
+  live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).
+- **Loading/error/empty states have a fixed shape**: `loading.tsx` per route
+  with a shape-matched skeleton, one `app/[locale]/error.tsx` app-wide,
+  `EmptyState` for no-results ([ADR-0022](../docs/adr/0022-loading-error-empty-states.md)).
+
+**Testing**
+
+- Component tests live next to the component (`page.test.tsx` beside `page.tsx`).
+- Every full `render(...)` adds `import { axe } from "jest-axe";` then
   `expect(await axe(container)).toHaveNoViolations();` (matcher registered
-  once in `vitest.setup.ts`). `eslint-plugin-jsx-a11y`'s recommended
-  ruleset lints ARIA/roles/labels at commit time. Catalog-page E2E specs
-  scan real rendered pages with `@axe-core/playwright`, tagged
-  `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`. All three ride the existing
-  `npm run lint`/`npm test`/`npm run test:e2e` — no separate a11y command
-  or CI job.
-- **Code comments carry only what the repo cannot (ADR-0017).** A comment
-  earns its place if it holds a fact not present anywhere in the repository
-  and not derivable by reading it: external framework behavior, an
-  empirical measurement, or a warning that a locally-correct edit is
-  globally wrong. Anything already settled in an ADR is a one-line pointer
-  to that ADR, never a paraphrase. If breaking the invariant fails a test
-  or the build, the test is the guard; if it fails silently or only in
-  production builds, the comment is mandatory and opens with "do not".
-- **Design tokens & shared UI primitives (iteration 2 task 8):** the color
-  palette and typography are centralized as CSS custom properties in
-  `app/globals.css`, in two layers — raw primitives (e.g. `--mint-600`)
-  and semantic aliases (e.g. `--color-primary`) that components actually
-  reference — mapped into Tailwind v4 utilities via the file's `@theme
-  inline` block (CSS-first, no `tailwind.config.ts`). Fraunces (display/
-  headings) and Inter (body/UI) are loaded via `next/font/google` in
-  `app/[locale]/layout.tsx`. Light-mode only — no dark theme. Three small
-  shared primitives live in `components/ui/`: `Button`/`buttonVariants`,
-  `Badge`, and `Card`/`cardVariants` — the seam for a possible future
-  design-system extraction. No new dependency: variant selection is a
-  hand-rolled `cn()` helper (`lib/cn.ts`), not `clsx`/`tailwind-merge`/
-  `class-variance-authority`.
-- **Loading, error and empty states (iteration 2 task 9):** `loading.tsx`
-  wraps each catalog route (list and detail), each rendering a shape-
-  matched skeleton (`features/catalog/BeerListSkeleton.tsx`,
-  `BeerDetailsSkeleton.tsx`) built from the generic `Skeleton` primitive
-  in `components/ui/` — sized placeholder blocks only, no variants.
-  `loading.tsx`/`not-found.tsx` receive no route params (Next.js
-  convention), so both recover the locale from the `x-pathname` header
-  `proxy.ts` sets on every request. A single `app/[locale]/error.tsx`
-  error boundary — an ancestor of every route since there's no separate
-  root `app/layout.tsx` — covers uncaught exceptions app-wide, using Next
-  16's `unstable_retry()` API. `error.tsx` is the first Client Component
-  needing translations, so `react-i18next` (previously installed but
-  unwired) is now wired through `app/providers.tsx`, seeded with the
-  current locale's resources synchronously (no dynamic-import flash).
-  `EmptyState` (also in `components/ui/`) generalizes the "no results"
-  pattern `BeerList` already had — the shape any future feature's empty
-  state should reuse rather than reinvent.
-- **API failures are typed (iteration 3 task 6):** everything that can go
-  wrong with a backend call is raised as an `ApiError`
-  (`lib/api/api-error.ts`) tagged `network`, `timeout`, `http` or `parse`,
-  so callers branch on `isApiError(e) && e.kind === …` rather than parsing
-  a message. It is built by decorating an `Error` rather than subclassing,
-  because a class constructor is a function expression and the arrow-function
-  convention above bans those; it stays a real `Error`, which the Next.js
-  error boundary and stack traces both require. Non-2xx statuses are *not*
-  raised by `kaliaFetch` — the caller decides what a status means, and a 404
-  from `getBeer` is "no such beer", not a failure.
-- **Query-only navigation uses plain anchors, not `next/link`
-  (iteration 3 task 11).** Client-side navigation that changes only the
-  query string did not commit on the catalog route: clicking Previous/Next
-  left the URL and the list untouched, in production builds only, since
-  automatic prefetching does not run in `next dev`. `prefetch={false}` was
-  measured as an unreliable remedy. A full page load is what `SearchFilters`
-  already does — it is a native GET form, which is why filtering and sorting
-  never showed the symptom — so pagination now matches it. Changing the
-  pathname (a beer card, the locale switcher) is unaffected and should keep
-  using `next/link`.
-- **Security response headers (ADR-0016):** CSP, `X-Frame-Options`,
-  `Referrer-Policy`, HSTS and `Permissions-Policy` are set once, app-wide,
-  in `next.config.ts`'s `headers()` — no-nonce CSP with `'unsafe-inline'`
-  for scripts/styles, chosen to keep static rendering rather than force
-  every page dynamic. Adding a new external origin (a script, a font, an
-  image host) means adding it to `cspHeader` in the same PR, or the browser
-  silently blocks it — verify with the browser console, not just a
-  successful build.
+  once in `vitest.setup.ts`). WCAG 2.1 AA is the bar, enforced at three
+  layers: `eslint-plugin-jsx-a11y` at lint time, `jest-axe` here, and
+  `@axe-core/playwright` scanning real pages tagged
+  `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` at E2E time. All three ride the
+  existing lint/test/e2e commands — there is no separate a11y gate to forget.
+
+**Traps — do not "fix" these**
+
+Each fails *silently*, or only in production builds, so the warning stays here
+rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
+
+- **Async Server Components with async children cannot be rendered by React
+  Testing Library** — `render()` suspends indefinitely under jsdom rather than
+  failing. Test each async component directly (`render(await Component(props))`,
+  no unresolved async descendants); test pages that compose them on their own
+  logic only (`generateMetadata`, param parsing). Composition is Playwright's job.
+- **Query-only navigation uses plain anchors, not `next/link`.** Navigation
+  changing only the query string did not commit on the catalog route —
+  Previous/Next left the URL and list untouched, **in production builds only**,
+  since automatic prefetching does not run in `next dev`. `prefetch={false}`
+  was measured as an unreliable remedy. Changing the *pathname* is unaffected
+  and should keep `next/link`.
 - **`kaliaFetch` never passes an `AbortSignal` of its own.** Next.js drops a
   request from per-render memoization as soon as a signal is present
   (`next/dist/docs/01-app/03-api-reference/04-functions/fetch.md`), and the
-  beer detail route fetches the same beer twice per render — once in
-  `generateMetadata`, once in the page. The 10 s timeout is therefore a raced
-  timer, which bounds the wait but abandons rather than cancels the request.
-  A caller's own signal is passed through untouched, so TanStack Query
-  cancellation still works.
+  detail route fetches the same beer twice per render — `generateMetadata` and
+  the page. The 10 s timeout is therefore a raced timer: it bounds the wait but
+  abandons rather than cancels. A caller's own signal passes through untouched,
+  so TanStack Query cancellation still works.
+- **Adding an external origin** (script, font, image host) means adding it to
+  `cspHeader` in `next.config.ts` in the same PR, or the browser silently
+  blocks it. Verify in the browser console, not just a successful build
+  ([ADR-0016](../docs/adr/0016-security-response-headers.md)).
+
+**Other**
+
+- Code comments carry only what the repo cannot — full policy in
+  [CLAUDE.md](../CLAUDE.md) ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
+- This Next.js version may differ from an agent's training data; check
+  `node_modules/next/dist/docs/` before relying on memory — see
+  [AGENTS.md](AGENTS.md), which already caught `middleware.ts` → `proxy.ts`.

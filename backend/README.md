@@ -29,24 +29,21 @@ since they are off unless a deployment opts in.
 
 ## Configuration
 
-One `application.properties`, no Spring profiles
-([ADR-0015](../docs/adr/0015-configuration-strategy.md)). Everything that
-varies per environment is a `${ENV_VAR:default}` placeholder, and each
-default is the value that fails safest if nobody sets it.
+One `application.properties`, no Spring profiles; every environment-varying
+value is a `${ENV_VAR:default}` placeholder whose default fails safest
+([ADR-0015](../docs/adr/0015-configuration-strategy.md)).
 
 | Variable | Default | Notes |
 |---|---|---|
 | `POSTGRES_PASSWORD` | **none — required** | Startup aborts with the variable named if unset |
 | `DATABASE_JDBC_URL` | `jdbc:postgresql://localhost:5432/kalia` | localhost, so a misconfigured deploy fails loudly rather than reaching a real database |
 | `DATABASE_USERNAME` | `kalia` | |
-| `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests (ADR-0013) |
+| `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
 | `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; a monitored deployment can widen it (e.g. `health,metrics,prometheus`) |
 
 Adding a setting that must not have a default means adding it to
-`RequiredConfigurationValidator.REQUIRED` as well as the properties file —
-that check runs in `main()` because Spring's binder resolves placeholders
-leniently and Flyway connects before any application bean is built.
+`RequiredConfigurationValidator.REQUIRED` as well as the properties file.
 
 ## Test
 
@@ -89,117 +86,97 @@ directories** — take the next free number regardless of directory.
 
 ## Code conventions
 
-- **Code comments carry only what the repo cannot (ADR-0017).** A comment
-  earns its place if it holds a fact not present anywhere in the repository
-  and not derivable by reading it: external framework behavior, an
-  empirical measurement, or a warning that a locally-correct edit is
-  globally wrong. Anything already settled in an ADR is a one-line pointer
-  to that ADR, never a paraphrase. If breaking the invariant fails a test
-  or the build, the test is the guard; if it fails silently or only in
-  production builds, the comment is mandatory and opens with "do not".
-- **Package structure per module (ADR-0007):** DDD-lite layers as direct
-  subpackages — `domain` (entities, value objects, repositories,
-  specifications), `application` (use-case services + API-response
-  exceptions), `web` (controllers, advice, HTTP DTOs, boundary mapping).
-  Dependency direction web → application → domain, never inward-out;
-  enforced by `ArchitectureTest` (ArchUnit). The module root package is the
-  inter-module API and stays empty until a consumer exists. Entity→DTO
-  mapping lives in `web` (static `from(...)` factories on the DTOs), so
-  repositories eager-load relations the boundary needs (entity graphs).
-- **Lombok for boilerplate, not for domain semantics.** Use class-level
-  `@Getter` and `@NoArgsConstructor(access = PROTECTED)` (the JPA
-  constructor) on entities. Do **not** use `@Setter`, `@Data` or `@Builder`
-  on entities — state changes go through factory methods and behavior
-  methods that enforce invariants (rich domain model).
+Rules for writing code here; each links to the ADR holding the reasoning —
+see [ADR-0020](../docs/adr/0020-documentation-roles.md) for why the rationale
+lives there rather than in this file.
+
+- **Package structure per module**: `domain` / `application` / `web` as direct
+  subpackages, dependency direction web → application → domain, never
+  inward-out. The module root package is the inter-module API and stays empty
+  until a consumer exists. Enforced by `ArchitectureTest`
+  ([ADR-0007](../docs/adr/0007-backend-package-structure.md)).
+- **Entity→DTO mapping lives in `web`**, as static `from(...)` factories on
+  the DTOs — so repositories must eager-load the relations the boundary needs
+  (entity graphs), since mapping runs outside the service transaction.
+- **Lombok for boilerplate, not for domain semantics.** Class-level `@Getter`
+  and `@NoArgsConstructor(access = PROTECTED)` (the JPA constructor) on
+  entities. Never `@Setter`, `@Data` or `@Builder` on an entity — state
+  changes go through factory and behavior methods that enforce invariants.
 - Value objects and DTOs are Java records, which need no Lombok.
 - **JSpecify nullability.** Every package has a `package-info.java` with
-  `@NullMarked` (Spring Framework 7 itself is null-marked). Types are
-  non-null by default; anything that may be null is annotated
-  `@org.jspecify.annotations.Nullable` — fields, record components,
+  `@NullMarked`; types are non-null by default and anything nullable is
+  annotated `@org.jspecify.annotations.Nullable` — fields, record components,
   parameters and returns alike. New packages must add the marker.
-- **SpringDoc annotations on every public endpoint.** `@Tag` on the
-  controller class (one tag per module's API surface); `@Operation`
-  (summary + description) on every handler method; `@Parameter` on every
-  `@RequestParam`/`@PathVariable`. DTOs carry type- and component-level
-  `@Schema` descriptions. New endpoints and DTOs must ship annotated —
-  undocumented API surface is a gap, not a later task.
-- **Every non-`@Nullable` DTO field needs `@Schema(requiredMode =
-  Schema.RequiredMode.REQUIRED)`.** springdoc does not infer `required`
-  from Java non-nullability, `@Nullable`'s absence, or even primitives —
-  every field defaults to optional in the generated schema otherwise
-  (confirmed by running it). The frontend's generated API client
-  ([ADR-0012](../docs/adr/0012-orval-api-client.md)) is only as accurate
-  as this annotation is complete.
-- **Null fields are omitted from JSON responses**
-  (`spring.jackson.default-property-inclusion=non_null`), not serialized as
-  `"field": null`. This makes "optional" mean the same thing in the OpenAPI
-  schema, the generated frontend types (`city?: string`, not `city?: string
-  | null`), and the actual wire format — verified directly with `@JsonTest`
-  (`DtoSerializationIT`), since seed data alone doesn't exercise every
-  null case.
+- **SpringDoc annotations on every public endpoint.** `@Tag` on the controller
+  class, `@Operation` on every handler, `@Parameter` on every
+  `@RequestParam`/`@PathVariable`, `@Schema` descriptions on DTOs. New
+  endpoints and DTOs ship annotated — undocumented API surface is a gap, not
+  a later task.
 - **Every request parameter is bounded.** Numeric params carry both ends of
   their range (`@DecimalMin`/`@DecimalMax`, `@Min`/`@Max`) and free text
   carries `@Size`, so no caller can hand the database an unbounded or
-  nonsensical value. Bounds are named constants with a comment saying why
-  that number — a bound nobody can justify gets changed by the next person
-  who finds it inconvenient. Constraints spanning two parameters can't be
-  expressed as an annotation on either one: check those in the handler and
-  throw the module's API-response exception (see `requireOrderedAbvRange`
-  in `CatalogController`), which reports through `detail` rather than the
+  nonsensical value. Bounds are named constants with a comment saying why that
+  number — a bound nobody can justify gets changed by the next person who
+  finds it inconvenient. A constraint spanning two parameters can't be an
+  annotation on either: check it in the handler and throw the module's
+  API-response exception (see `requireOrderedAbvRange` in
+  `CatalogController`), which reports through `detail` rather than the
   field-level `errors` array, since the violation belongs to the pair.
+- Code comments carry only what the repo cannot — full policy in
+  [CLAUDE.md](../CLAUDE.md)
+  ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
+
+**Traps — do not "fix" these**
+
+Each fails silently rather than at build time, so the warning stays here
+rather than behind a link.
+
+- **Every non-`@Nullable` DTO field needs
+  `@Schema(requiredMode = Schema.RequiredMode.REQUIRED)`.** springdoc infers
+  `required` from nothing — not non-nullability, not primitives — so without
+  it the field silently becomes optional in the generated schema, and the
+  frontend's client is wrong ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+- **Null fields must stay omitted from JSON**
+  (`spring.jackson.default-property-inclusion=non_null`), never `"field":
+  null` — that is what keeps `city?: string` sound across the schema, the
+  generated types and the wire. `DtoSerializationIT` pins it.
+- **Don't add a handler for a generic Spring MVC exception without first
+  measuring what Boot already returns.** A `ProblemDetail` return carries no
+  response headers, so overriding an exception whose Boot handling sets one
+  (405 sets the RFC-required `Allow`) silently drops it
+  ([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
+- **Module advice and `GlobalExceptionHandler` must never handle the same
+  type.** Two advice beans on one exception type is not a startup error —
+  Spring resolves it silently by `@Order`, and `GlobalExceptionHandler` runs
+  at `Ordered.HIGHEST_PRECEDENCE`, so it wins and masks the mistake.
 
 ## Error-handling convention
 
-`ProblemDetail.detail` carries only messages from exception types
-**explicitly designed as API responses** (e.g. `BeerNotFoundException`,
+`ProblemDetail.detail` carries only messages from exception types **explicitly
+designed as API responses** (e.g. `BeerNotFoundException`,
 `InvalidSearchParameterException`) — their messages are written for API
-consumers and contain nothing internal. Never map broad exception types
+consumers and contain nothing internal. **Never map broad exception types**
 (`IllegalArgumentException`, `RuntimeException`) to responses: a library
 exception caught by such a handler would leak internal messages. Everything
-unexpected falls through to Spring Boot's defaults — 500 problem+json
-without a message (`server.error.include-message=never`), logged
-server-side.
+unexpected falls through to Spring Boot's defaults — 500 problem+json without
+a message (`server.error.include-message=never`), logged server-side.
 
-Business exceptions stay in each module's own `<module>.web` advice
-(e.g. `CatalogExceptionHandler`). Generic Spring MVC exceptions are
-handled by Spring Boot's own `ProblemDetailsExceptionHandler` and left
-alone — **don't add a handler for one without first measuring what Boot
-already returns.** The single exception is Bean Validation:
-`fi.kalia.web.GlobalExceptionHandler` (the one other location
-`ArchitectureTest` permits `@RestControllerAdvice` to live in) overrides
-`HandlerMethodValidationException` and `MethodArgumentNotValidException`
-purely to add the field-level `errors: [{field, message}]` array Boot
-omits — it reports only a bare `"Validation failure"`. Note that a
-handler returning `ProblemDetail` carries no response headers, so
-overriding an exception whose Boot handling sets one (405 sets the
-RFC-required `Allow`) silently loses it.
-
-Module advice and `GlobalExceptionHandler` must never handle the same
-type — a convention to keep by discipline, since Spring won't catch it
-for you: two advice beans handling one exception type resolve silently
-by `@Order` precedence, not a startup error, and `GlobalExceptionHandler`
-runs at `Ordered.HIGHEST_PRECEDENCE`, so it would silently win any
-accidental overlap rather than fail loudly. Full rationale:
-[ADR-0014](../docs/adr/0014-shared-exception-handling.md).
+Business exceptions live in each module's own `<module>.web` advice; the one
+shared advice, `fi.kalia.web.GlobalExceptionHandler`, handles only the two
+Bean Validation exceptions where Boot omits field-level detail
+([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
 
 ## Logging conventions
 
-SLF4J via Lombok's `@Slf4j`, parameterized logging only (`log.warn("Beer
-{} not found", id)`, never string concatenation). Level follows what's
-being logged, not the mechanism that produced it: `ERROR` for genuine
-unexpected failures (including anything falling through to the default
-exception handler, always with the stack trace); `WARN` for anticipated
-conditions the app already recovered from — an exception type designed as
-an API response (see above) is `WARN` at most, never `ERROR`, since it
-isn't a failure; `INFO` for application lifecycle events, not routine
-per-request logging (no correlation-ID infra yet to stitch request lines
-together); `DEBUG` for diagnostics, off by default. Log once, at the
-point an exception is finally decided — not at every layer that catches
-and rethrows it. Never log full request/response bodies, tokens, or
-passwords; log an identifier instead of a full domain object. No manual
-controller entry/exit logging — that belongs in one centralized mechanism
-if request-level visibility is ever needed, not scattered per-method
-statements. Full rationale: [ADR-0013](../docs/adr/0013-logging-conventions.md).
+SLF4J via Lombok's `@Slf4j`, parameterized only (`log.warn("Beer {} not
+found", id)`, never concatenation). Level follows what is being logged, not
+the mechanism that produced it: `ERROR` for genuine unexpected failures with
+the stack trace, `WARN` for anticipated conditions already recovered from
+(an exception designed as an API response is `WARN` at most, never `ERROR`),
+`INFO` for lifecycle events, `DEBUG` for diagnostics. Log once, where the
+exception is finally decided. Never log request/response bodies, tokens or
+passwords — log an identifier, not a full domain object. No manual controller
+entry/exit logging ([ADR-0013](../docs/adr/0013-logging-conventions.md)).
 
 ## Testing conventions
 

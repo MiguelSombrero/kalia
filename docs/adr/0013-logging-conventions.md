@@ -5,6 +5,10 @@
 - **Amended:** 2026-07-25 by [ADR-0015](0015-configuration-strategy.md) —
   per-environment log levels are delivered by a `LOG_LEVEL` environment
   variable, not by Spring profiles
+- **Amended:** 2026-07-27 by [ADR-0020](0020-documentation-roles.md) — this
+  ADR is now the only full statement of the convention; `backend/README.md`
+  keeps a summary and a link, not the restatement the Consequences below
+  originally described
 
 ## Context
 
@@ -92,5 +96,7 @@ defers full metrics/tracing).
 - Task 3 (configuration strategy) inherited the per-environment levels
   above as a known requirement; it delivered them via `LOG_LEVEL` rather
   than profiles ([ADR-0015](0015-configuration-strategy.md)).
-- Convention documented in `backend/README.md`'s "Logging conventions"
-  section for day-to-day reference; this ADR is the record of why.
+- `backend/README.md`'s "Logging conventions" section summarizes the rules
+  for day-to-day reference and links here; this ADR is the full statement and
+  the record of why. It originally carried a full restatement instead — see
+  the `Amended` field above.
