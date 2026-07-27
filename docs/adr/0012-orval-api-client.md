@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-22
+- **Amended:** 2026-07-27 by [ADR-0023](0023-typed-api-failures.md) — the
+  client-side half of the typed-error gap below is now closed; the OpenAPI
+  spec still does not document non-200 responses
 
 ## Context
 

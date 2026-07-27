@@ -177,6 +177,18 @@ before making changes:
   `Superseded-by` / `Amended` fields, never in the index, which carries no
   prose. Amend rather than rewrite an accepted ADR — it records what was
   believed when written, and that is most of its value.
+- **Each documented fact has one home** ([ADR-0020](docs/adr/0020-documentation-roles.md)).
+  ADRs record *why* — the problem, the options weighed, what it cost.
+  `docs/architecture.md` records *shape* — module map, layer direction, data
+  flow. READMEs record *how* — the commands and day-to-day rules for that
+  codebase, short enough to catch at a glance. Every other mention is a
+  one-line pointer with a link, never a paraphrase. Two exceptions: this file
+  may restate anything that applies to every edit, since it is the only
+  document loaded unconditionally and a pointer here is one an agent never
+  follows; and a rule whose violation fails *silently* keeps its warning
+  inline wherever an editor meets it, per ADR-0017's enforcement test. When a
+  README rule outgrows one line and has no ADR, that is the signal to write
+  the ADR — not to let the section grow.
 - **New dependencies: ask, don't research.** When a task introduces a new
   dependency (library, starter, plugin, Docker image, GitHub Action), do not
   spend time hunting registries for the latest version. List the new
