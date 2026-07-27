@@ -60,6 +60,11 @@ Why the rationale lives there and not here:
 - Server components by default; `'use client'` only where interactivity needs it.
 - **Arrow functions, never function declarations or expressions** — including
   page/layout/route exports. Enforced by ESLint (`eslint.config.mjs`).
+- **Logging goes through `lib/logger.ts`, never `console.*` directly** —
+  enforced by ESLint's `no-console` rule, which exempts only `lib/logger.ts`
+  itself. A thin pass-through today (`logger.error(...)` →
+  `console.error(...)`); the seam for routing to a real monitoring tool later
+  without touching call sites.
 
 **Data and state**
 

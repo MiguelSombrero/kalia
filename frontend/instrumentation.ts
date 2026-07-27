@@ -1,4 +1,5 @@
 import { verifyRequiredConfiguration } from "@/lib/config/requiredConfiguration";
+import { logger } from "@/lib/logger";
 
 export const register = () => {
   // Next.js also invokes register() for the edge runtime that runs proxy.ts
@@ -17,7 +18,7 @@ export const register = () => {
     // (measured on next@16.2.10): it logs the error and answers every
     // request with a 500 instead. process.exit is what actually achieves
     // fail-fast here (ADR-0018).
-    console.error(error instanceof Error ? error.message : error);
+    logger.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
 };
