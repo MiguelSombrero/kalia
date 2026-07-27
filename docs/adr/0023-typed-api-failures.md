@@ -31,7 +31,8 @@ reasoning previously lived only in a ten-line `frontend/README.md` bullet.
 **Every failure inside `kaliaFetch` is raised as an `ApiError` carrying a
 `kind` tag, and an HTTP error status is deliberately not one of them.**
 
-- **Four kinds:** `network`, `timeout`, `http`, `parse`. Callers branch on
+- **Four kinds**, defined with the constructor and guard in
+  `lib/api/api-error.ts`: `network`, `timeout`, `http`, `parse`. Callers branch on
   `isApiError(e) && e.kind === …` rather than reading a message. `status` is
   present for `http` and `parse`, absent for `network` and `timeout`.
 - **Built by decoration, not subclassing.** `apiError()` returns

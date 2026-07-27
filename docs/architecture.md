@@ -88,21 +88,19 @@ exception-handling advice with no subdomain of its own
 ([ADR-0014](adr/0014-shared-exception-handling.md)). Inside each
 subdomain module, DDD-lite layers as direct subpackages — all
 Modulith-internal by default
-([ADR-0007](adr/0007-backend-package-structure.md)):
+([ADR-0007](adr/0007-backend-package-structure.md)): `domain` (rich JPA
+entities, value objects, repositories), `application` (use-case services),
+`web` (controllers, advice, HTTP DTOs and boundary mapping), with dependency
+direction **web → application → domain** — enforced by ArchUnit
+(`ArchitectureTest`) alongside Spring Modulith's module-boundary verification
+(`ModularityTest`). What goes in each layer:
+[backend/README.md](../backend/README.md) code conventions.
 
-- `domain` — rich JPA entities as the domain model (documented exception to
-  framework-free purity), value objects, repositories, specifications
-- `application` — use-case services; exceptions designed as API responses
-- `web` — controllers, ProblemDetail advice, HTTP DTOs (with `@Schema`) and
-  entity→DTO mapping at the boundary
-
-Dependency direction **web → application → domain**, never inward-out —
-enforced by ArchUnit (`ArchitectureTest`) alongside Spring Modulith's
-module-boundary verification (`ModularityTest`). The module root package is
-reserved for the **inter-module API** and stays empty until the module's
-first consumer arrives. Full ports/adapters ceremony is deferred to modules
-whose domain earns it (payment, ordering). Cross-module *writes* happen via
-application events; cross-module *reads* via the root-package API.
+The module root package is reserved for the **inter-module API** and stays
+empty until the module's first consumer arrives. Full ports/adapters ceremony
+is deferred to modules whose domain earns it (payment, ordering). Cross-module
+*writes* happen via application events; cross-module *reads* via the
+root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
@@ -134,8 +132,9 @@ money is not.
   keys between modules — cross-module references are by id only.
 - Spring Data JPA with rich domain entities where behavior exists; plain
   records/projections for read models.
-- Flyway migrations per module directory (plus `common/` for cross-module
-  infrastructure); versions are globally unique across directories. Seed data
+- Flyway owns the schema, with migrations per module directory plus `common/`
+  for cross-module infrastructure (layout and version-numbering rules:
+  [backend/README.md](../backend/README.md) database migrations). Seed data
   (~50–100 beers) ships as versioned migrations for deterministic dev/test
   environments.
 - Spring Modulith's event publication registry uses the JDBC flavor (not JPA),
@@ -197,51 +196,50 @@ Conventions:
 
 ## 5. Frontend design
 
+The shape of the frontend. Day-to-day rules for writing it live in
+[frontend/README.md](../frontend/README.md) conventions.
+
 - **App Router**, server components by default; client components only where
   interactivity requires (search input, cellar interactions).
 - **Feature-based package structure**: `features/<feature>/` (catalog,
   cellar, …) owns that feature's components, hooks and API access; `app/`
-  route files stay thin and delegate. Shared code moves to `components/` /
-  `lib/` only once used by multiple features. Mirrors the backend's
+  route files stay thin and delegate. Mirrors the backend's
   module-per-subdomain boundaries.
 - Route handlers under `app/api/*` form the BFF: they attach the session's
   auth token (from the auth iteration on) and forward to Spring Boot. A single thin
   `apiClient` wrapper owns the backend base URL and error mapping.
-- Styling with Tailwind CSS; no component library until a real need appears.
-- Forms: react-hook-form + Zod for stateful, validated forms — the Zod
-  schema is the source of truth, connected via `@hookform/resolvers`
-  ([ADR-0010](adr/0010-react-hook-form-zod.md)). URL-driven GET
-  search/filter forms (catalog `SearchFilters`) stay native server-component
-  forms: navigate → native, mutate/validate → react-hook-form.
-- State has three homes, by kind ([ADR-0008](adr/0008-tanstack-query.md),
-  [ADR-0009](adr/0009-zustand-ui-state.md)): server data lives in TanStack
-  Query (client components; server components keep fetching directly on the
-  server), shareable/navigational state lives in URL search params (catalog
-  filters, pagination), and ephemeral client UI state lives in
-  feature-scoped Zustand stores — which never hold API data or duplicate
-  URL state.
+- **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
+  [ADR-0009](adr/0009-zustand-ui-state.md),
+  [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
+  shareable/navigational state in URL search params (catalog filters,
+  pagination), ephemeral UI state in feature-scoped Zustand stores. Forms
+  follow the same split — navigate → native GET form, mutate/validate →
+  react-hook-form + Zod.
 - **API client generated from the backend's OpenAPI spec**
-  ([ADR-0012](adr/0012-orval-api-client.md)): orval generates types and
-  TanStack Query hooks into `lib/api/generated/` (committed; CI regenerates
-  and diffs to catch drift). Feature modules (`features/catalog/`) wrap the
-  generated client behind their existing function signatures — consumers
-  never import from `lib/api/generated/` directly.
+  ([ADR-0012](adr/0012-orval-api-client.md)) into `lib/api/generated/`
+  (committed; CI regenerates and diffs to catch drift), wrapped by each
+  feature rather than imported directly. Runtime failures surface as a tagged
+  `ApiError` ([ADR-0023](adr/0023-typed-api-failures.md)).
 - **Localization** ([ADR-0011](adr/0011-i18next-localization.md)):
   English + Finnish via i18next, locale-prefixed URLs
-  (`app/[locale]/...`, e.g. `/en/beers`, `/fi/beers/{id}`). Server
-  components translate via `i18n/server.ts`'s `getTranslation(locale)`;
-  `proxy.ts` (Next 16's renamed `middleware.ts`) redirects locale-less
-  requests based on `Accept-Language`. A minimal `LocaleSwitcher`
-  (`features/i18n/`) covers the current need; full design is task 8's job.
-- **Accessibility, WCAG 2.1 AA** (iteration 2 task 7): native semantic
-  HTML/ARIA, with explicit `:focus-visible` styling and a skip-to-content
-  link since the app has no custom interactive widgets to retrofit.
-  Enforced going forward at three layers: `eslint-plugin-jsx-a11y`
-  (recommended ruleset, lint time), `jest-axe` assertions on rendered
-  component output (unit-test time), `@axe-core/playwright` scans of full
-  catalog pages tagged `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` (E2E time,
-  against the real containerized stack). All three ride the existing
-  `frontend`/`e2e` CI jobs — no separate a11y gate exists to forget.
+  (`app/[locale]/...`, e.g. `/en/beers`, `/fi/beers/{id}`). `proxy.ts`
+  (Next 16's renamed `middleware.ts`) redirects locale-less requests based on
+  `Accept-Language`.
+- **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
+  Tailwind CSS with a two-layer CSS custom-property system, light mode only,
+  and a small set of shared primitives in `components/ui/` — the seam for a
+  possible future design-system extraction. No third-party component library.
+- **Loading, error and empty states have a standard shape**
+  ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
+  route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
+  covering every route.
+- **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
+  `:focus-visible` styling and a skip-to-content link, since the app has no
+  custom interactive widgets to retrofit. Enforced at three layers — lint,
+  unit test and E2E — all riding the existing `frontend`/`e2e` CI jobs, so no
+  separate a11y gate exists to forget. The mechanics are in
+  [§7](#7-testing-strategy) and
+  [frontend/README.md](../frontend/README.md).
 
 ## 6. Authentication (own iteration, before the cellar)
 
@@ -267,14 +265,12 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 | Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
-| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend), and a WCAG 2.1 AA `axe()` check on every component test that does a full `render(...)`. Async Server Components with async children cannot be rendered by RTL outside Next's RSC runtime (confirmed by testing it — the render suspends indefinitely under jsdom); test each async component directly (`render(await Component(props))`, no unresolved async descendants) and test pages composing async children on their own logic (param parsing, `generateMetadata`) rather than the rendered tree — full composition is E2E's job |
+| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend), and a WCAG 2.1 AA `axe()` check on every component test that does a full `render(...)`. How to test async Server Components — RTL cannot render them — is a trap documented in [frontend/README.md](../frontend/README.md) |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built). `@axe-core/playwright` scans (WCAG 2.1 A/AA tags) run alongside these on every already-visited page state — no separate a11y-only spec |
 
-Backend test naming: unit tests end in `*Test` (surefire, `test` phase, no
-Docker), integration tests in `*IT` (failsafe, `verify` phase,
-Testcontainers). JaCoCo merges both into one coverage report on
-`mvn verify`; the ≥ 80 % aim is measured in CI, not gated
-(backend/README.md testing conventions).
+Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
+is worth testing at all: [backend/README.md](../backend/README.md). Coverage
+is measured in CI, not gated.
 
 E2E specs live under `frontend/e2e/`, not at the repo root, even though they
 exercise the whole stack (compose-run backend + Postgres are the fixture

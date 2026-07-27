@@ -2,6 +2,11 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-27
+- **Amended:** 2026-07-27 — the shared logging wrapper rejected below was
+  built the same day as `lib/logger.ts`, once `instrumentation.ts` became a
+  second call site and triggered the revisit condition this ADR named. The
+  `console.error` statements here describe what was true when written; the
+  boundary now calls `logger.error`
 
 ## Context
 
@@ -33,12 +38,12 @@ and a single `app/[locale]/error.tsx` is the app-wide error boundary.**
   is the effective root, `app/[locale]/error.tsx` is already an ancestor of
   the home page, the catalog list and the detail page. A second,
   catalog-scoped boundary would add a file and catch nothing extra.
-- **Skeletons are shape-matched, not generic.** `BeerListSkeleton` mirrors
-  the real grid (heading bar, filter bar, ~6 card blocks);
-  `BeerDetailsSkeleton` mirrors the detail layout (back link, heading,
-  subtitle, stat panel, two description lines). One spinner for both was
-  rejected — the skeleton's job is to hold the page's shape so content does
-  not jump when it arrives.
+- **Skeletons are shape-matched, not generic.**
+  `features/catalog/BeerListSkeleton.tsx` mirrors the real grid (heading bar,
+  filter bar, ~6 card blocks); `BeerDetailsSkeleton.tsx` mirrors the detail
+  layout (back link, heading, subtitle, stat panel, two description lines).
+  One spinner for both was rejected — the skeleton's job is to hold the
+  page's shape so content does not jump when it arrives.
 - **Two generic primitives join `components/ui/`:** `Skeleton` (a single
   pulsing box, no variants — callers size it via `className`) and
   `EmptyState` (required `title` plus a `children` slot, in the dashed-card
@@ -119,9 +124,11 @@ established alternative pattern in the codebase to follow.
   the component against a stub rather than the real translation wiring — and
   as the first client component to consume it, that choice becomes the
   reference for the next one.
-- Neutral, because client-side errors reach `console.error` and nowhere else.
+- Neutral, because client-side errors reach the console and nowhere else.
   That is correct while no monitoring exists, and is the first thing the
-  Observability backlog item will need to change.
+  Observability backlog item will need to change. (Since amended: the call
+  now goes through `lib/logger.ts`, so the routing seam exists even though
+  the destination has not changed.)
 - **Revisit trigger:** the second client-side error path, or any real
   monitoring destination — either reopens the shared-logging question that
   YAGNI settles here.
