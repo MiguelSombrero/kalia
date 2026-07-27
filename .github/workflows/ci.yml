@@ -76,6 +76,20 @@ jobs:
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
           echo "Result: backend=$backend frontend=$frontend"
 
+  adr-index-check:
+    name: ADR index check
+    # No backend/frontend build tooling involved, so this runs unconditionally
+    # rather than behind the changes filter above — docs/ isn't classified by
+    # that filter at all, and the check itself costs a few seconds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Verify ADR index and structure (see ADR-0019)
+        run: node scripts/check-adrs.mjs
+
   backend:
     name: Backend (Maven)
     needs: [changes]
