@@ -34,7 +34,7 @@ collectively cover its "Done when", or one of the two must be fixed.
 | [0 — Walking skeleton](tasks/iteration-0.md) | Running end-to-end stack with CI-able test suites | ✅ Done |
 | [1 — Beer catalog: browse & search](tasks/iteration-1.md) | Visitor can browse and search real (seeded) beers | ✅ Done |
 | [2 — Frontend standards & UI design](tasks/iteration-2.md) | Conventions, localization, accessibility, a professional look | ✅ Done |
-| [3 — Production-readiness foundations](tasks/iteration-3.md) | Logging, exception-handling, config and security conventions | 🚧 In progress |
+| [3 — Production-readiness foundations](tasks/iteration-3.md) | Logging, exception-handling, config and security conventions | ✅ Done |
 | [4 — Authentication](tasks/iteration-4.md) | Users can sign in via Keycloak | ⬜ Todo |
 | [5 — Personal beer cellar](tasks/iteration-5.md) | Signed-in users maintain the beers they own | ⬜ Todo |
 

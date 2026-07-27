@@ -1,0 +1,16 @@
+# Update-PR half of ADR-0024 — the vulnerability-scan CI job is the gate;
+# this is what fixes findings before they ever reach it.
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

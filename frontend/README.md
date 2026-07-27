@@ -41,6 +41,10 @@ npm run generate:api  # regenerate lib/api/generated/ from a live backend
 Regenerated output must be committed — CI's `api-client-drift` job
 regenerates and diffs, failing the build on drift (ADR-0012).
 
+CI also scans `package-lock.json` and the built image for known CVEs and
+fails on a `HIGH`/`CRITICAL` finding with a fix available
+([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)).
+
 Playwright reuses an already-running stack when found, otherwise it starts
 one and does not reliably stop it afterwards — run `docker compose down`
 from the repo root when you're done testing locally. Not an issue in CI:

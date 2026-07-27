@@ -1,0 +1,32 @@
+# Suppressions for ADR-0024's vulnerability-scan CI job. Each entry needs a
+# reason and a 30-day expiry (the waiver policy, see ADR-0024): an
+# unreviewed, permanent ignore is how a real finding quietly stops being
+# checked, and a short window costs little — worst case, someone spends two
+# minutes confirming it's still unfixed and bumping the date. Expiring
+# forces a revisit — either the fix has landed and the line becomes dead
+# weight to delete, or it hasn't and the gate goes red again until someone
+# looks.
+
+# --- Backend image: eclipse-temurin's Ubuntu 26.04 base bundles Canonical's
+# Pebble init tool at /usr/bin/pebble. backend/Dockerfile's ENTRYPOINT execs
+# `java -jar app.jar` directly, so pebble is never invoked — these are CVEs
+# in a binary this image ships but never runs. No pom.xml dependency exists
+# to bump; the fix has to come from a rebuilt base image.
+CVE-2026-25681 exp:2026-08-26
+CVE-2026-27136 exp:2026-08-26
+CVE-2026-33814 exp:2026-08-26
+CVE-2026-39821 exp:2026-08-26
+CVE-2026-39822 exp:2026-08-26
+
+# --- Frontend image: Next.js 16.2.11 (latest stable; no newer release exists
+# yet) vendors its own internal copies of these packages under
+# next/dist/compiled/ for its own build/telemetry tooling — independent of
+# this project's package-lock.json, which already resolves patched versions
+# of all three (checked directly: no vulnerable copy exists anywhere outside
+# Next's vendored bundle). Not reachable via this app's own request handling.
+# Revisit when a Next.js release past 16.2.11 updates its vendored copies.
+CVE-2026-13149 exp:2026-08-26
+CVE-2026-14257 exp:2026-08-26
+CVE-2026-59873 exp:2026-08-26
+CVE-2026-59874 exp:2026-08-26
+CVE-2026-12151 exp:2026-08-26
