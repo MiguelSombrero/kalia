@@ -56,5 +56,38 @@ services:
       timeout: 3s
       retries: 10
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    # start-dev: no external DB needed, state is ephemeral by design (the
+    # realm below is reimported fresh on every start, see docs/tasks/iteration-4.md)
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/kalia-realm.json:ro
+    ports:
+      # Bound to localhost only, same convention as the other services.
+      # 8081, not 8080: the backend already publishes 8080 on the host.
+      - "127.0.0.1:8081:8080"
+    healthcheck:
+      # The Keycloak image ships no curl/wget; /dev/tcp is bash's own probe.
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  valkey:
+    image: valkey/valkey:9.1.1-alpine
+    ports:
+      # Bound to localhost only, same convention as the other services.
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   postgres-data:

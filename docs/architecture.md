@@ -246,10 +246,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
 Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-first.md)):
 
 - Keycloak via OIDC Authorization Code + PKCE handled by the Next.js server
-  (Auth.js or hand-rolled OIDC client), session persisted in Redis, access
-  token attached to backend calls by the BFF. Spring Boot becomes an OAuth2
-  resource server validating JWTs; the `identity` module maps tokens to
-  users.
+  (Auth.js or hand-rolled OIDC client), session persisted in Valkey (a
+  Redis-API-compatible cache), access token attached to backend calls by
+  the BFF. Spring Boot becomes an OAuth2 resource server validating JWTs;
+  the `identity` module maps tokens to users.
 - Catalog endpoints stay public; cellar (and any future store) endpoints
   require authentication.
 - Until the auth iteration lands, the backend API is unauthenticated.

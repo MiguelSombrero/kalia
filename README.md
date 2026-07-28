@@ -17,13 +17,15 @@ Kalia is developed with AI agents focusing on the development process rather tha
 
 My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
 
-> **Status:** iterations 0–2 complete — a visitor can browse and search the
+> **Status:** iterations 0–3 complete — a visitor can browse and search the
 > seeded beer catalog end to end (verified: find "Westvleteren" by name,
-> filter Belgian quads 9–12 % ABV, open beer details), and the UI has its
-> own design system (tokens, shared primitives, loading/error/empty
-> states, WCAG 2.1 AA). Next: production-readiness foundations
-> (iteration 3). Implementation proceeds one issue at a time. See
-> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
+> filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
+> design system (tokens, shared primitives, loading/error/empty states,
+> WCAG 2.1 AA), and production-readiness foundations (logging, exception
+> handling, config, security headers, dependency scanning) are in place.
+> Next: authentication via Keycloak (iteration 4). Implementation proceeds
+> one issue at a time. See [docs/roadmap.md](docs/roadmap.md) for what gets
+> built and in which order.
 
 ## Run locally
 
@@ -33,9 +35,14 @@ docker compose up --build   # frontend at http://localhost:3000
 
 The frontend is published at `:3000`; the backend is also published, at
 `:8080` (localhost only) for direct API access and Swagger UI — see
-[backend/README.md](backend/README.md). Both bindings are localhost-only,
-never reachable beyond the dev machine. For development with hot reload,
-run the apps natively — see [backend/README.md](backend/README.md) and
+[backend/README.md](backend/README.md). Keycloak's admin console is at
+`:8081` (admin/admin, dev-only credentials) and Valkey at `:6379`. All
+bindings are localhost-only, never reachable beyond the dev machine. The
+`kalia-frontend` client secret in
+[keycloak/realm-export.json](keycloak/realm-export.json) is likewise a
+fixed dev-only value — never reuse it outside local development. For
+development with hot reload, run the apps natively — see
+[backend/README.md](backend/README.md) and
 [frontend/README.md](frontend/README.md).
 
 ## What Kalia does
@@ -71,7 +78,7 @@ flowchart LR
     Browser -->|HTML / fetch| Next[Next.js frontend<br/>BFF]
     Next -->|REST /api/v1| Spring[Spring Boot modulith]
     Spring --> PG[(PostgreSQL)]
-    Next -.->|sessions, later| Redis[(Redis)]
+    Next -.->|sessions, later| Valkey[(Valkey)]
     Next -.->|auth, later| KC[Keycloak]
     Spring -.->|token validation, later| KC
     Spring -.->|PaymentProvider port, if own store| PSP[Payment provider<br/>mock first]
@@ -106,7 +113,7 @@ this section as the project evolves!
 - Lombok (boilerplate reduction, version managed by Spring Boot's dependency
   BOM — see backend/README.md conventions)
 - springdoc-openapi 3.0 (OpenAPI spec + Swagger UI)
-- Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
+- Keycloak 26.7 (authentication — *introduced in the auth iteration*)
 
 ### Frontend
 
@@ -133,13 +140,14 @@ this section as the project evolves!
 - eslint-plugin-jsx-a11y 6.10, jest-axe 10.0 (+ @types/jest-axe 3.5),
   @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
-- Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
-- Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
+- Valkey 9.1 (server-side session store, Redis-API-compatible —
+  *introduced in the auth iteration*)
+- Keycloak 26.7 (authentication — *introduced in the auth iteration*)
 
 ### Local infrastructure
 
-- Docker Compose: full stack (PostgreSQL + backend + frontend); Keycloak and
-  Redis added when auth lands
+- Docker Compose: full stack (PostgreSQL + backend + frontend + Keycloak +
+  Valkey)
 - Base images: maven:3.9-eclipse-temurin-25 (backend build),
   eclipse-temurin:25-jre (backend runtime), node:24-alpine (frontend)
 

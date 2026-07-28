@@ -2,8 +2,8 @@
 
 Goal: users can sign in; personal features become possible.
 
-1. [ ] Keycloak + Redis in docker-compose, realm export committed
-2. [ ] Next.js: OIDC Authorization Code + PKCE flow, Redis-backed session, sign-in/out UI
+1. [x] Keycloak + Valkey in docker-compose, realm export committed
+2. [ ] Next.js: OIDC Authorization Code + PKCE flow, Valkey-backed session, sign-in/out UI
 3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
 4. [ ] Playwright E2E: sign in, see own name in the UI, sign out
 
