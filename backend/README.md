@@ -71,9 +71,9 @@ Notable suites:
 
 - `ModularityTest` — Spring Modulith `ApplicationModules.verify()`; fails on
   illegal cross-module dependencies
-- `KaliaApplicationIT` — boots the full context against a PostgreSQL 18.4
-  Testcontainer: health endpoint reports UP, Flyway migrations create the
-  module schemas
+- `KaliaApplicationIT` — boots the full context against a PostgreSQL
+  Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
+  reports UP, Flyway migrations create the module schemas
 
 ## Database migrations
 
