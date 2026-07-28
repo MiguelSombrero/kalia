@@ -33,10 +33,33 @@ services:
     build: ./frontend
     environment:
       BACKEND_URL: http://backend:8080
+      # The container listens on 0.0.0.0, which Auth.js would otherwise put
+      # straight into redirect/form-action URLs it builds — that's not the
+      # host the browser can reach, and our CSP's form-action 'self' then
+      # silently blocks the mismatched-origin submission.
+      AUTH_URL: http://localhost:3000
+      AUTH_SECRET: ${AUTH_SECRET:-kalia-dev-auth-secret}
+      AUTH_KEYCLOAK_ID: kalia-frontend
+      AUTH_KEYCLOAK_SECRET: kalia-dev-secret
+      # Keycloak's one public, canonical identity (matches KC_HOSTNAME
+      # below) — every token/discovery-document/callback `iss` it issues
+      # names this, so it's what Auth.js must validate against, even
+      # though the frontend container can't actually dial it directly
+      # (see AUTH_KEYCLOAK_INTERNAL_ORIGIN and auth.ts's customFetch).
+      AUTH_KEYCLOAK_ISSUER: http://localhost:8081/realms/kalia
+      # Where the frontend container actually reaches Keycloak — its
+      # published port is loopback-only on the host, unreachable from
+      # inside another container.
+      AUTH_KEYCLOAK_INTERNAL_ORIGIN: http://keycloak:8080
+      VALKEY_URL: redis://valkey:6379
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
       backend:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      valkey:
         condition: service_healthy
 
   postgres:
@@ -65,6 +88,14 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
       KC_HEALTH_ENABLED: "true"
+      # Fixed to the public address, not request-derived: Keycloak stamps
+      # whichever hostname received a given request into the `iss` it
+      # returns for that request, so without this, the browser (reaching
+      # Keycloak via 127.0.0.1:8081) and the frontend container (reaching
+      # it as keycloak:8080) would get inconsistent self-reported
+      # identities — confirmed live: "unexpected iss (issuer) response
+      # parameter value". Must match AUTH_KEYCLOAK_ISSUER above.
+      KC_HOSTNAME: http://localhost:8081
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/kalia-realm.json:ro
     ports:

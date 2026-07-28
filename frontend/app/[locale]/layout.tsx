@@ -3,6 +3,7 @@ import { Fraunces, Inter } from "next/font/google";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
 import { LocaleSwitcher } from "@/features/i18n/LocaleSwitcher";
+import { AuthStatus } from "@/features/auth/AuthStatus";
 import { Providers } from "../providers";
 import "../globals.css";
 
@@ -49,7 +50,8 @@ const RootLayout = async ({ children, params }: Props) => {
           {t("a11y.skipToContent")}
         </a>
         <Providers locale={locale}>
-          <header className="flex justify-end p-4">
+          <header className="flex items-center justify-end gap-4 p-4 text-sm">
+            <AuthStatus locale={locale} />
             <LocaleSwitcher />
           </header>
           {/* Plain wrapper, not <main> — every page under {children} already

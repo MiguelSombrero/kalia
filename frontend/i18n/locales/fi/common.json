@@ -57,5 +57,10 @@
     "title": "Jokin meni pieleen",
     "message": "Odottamaton virhe tapahtui. Yritä uudelleen.",
     "retry": "Yritä uudelleen"
+  },
+  "auth": {
+    "signIn": "Kirjaudu sisään",
+    "signOut": "Kirjaudu ulos",
+    "helloUser": "Hei, {{name}}"
   }
 }

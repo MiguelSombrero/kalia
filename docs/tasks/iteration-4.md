@@ -3,17 +3,24 @@
 Goal: users can sign in; personal features become possible.
 
 1. [x] Keycloak + Valkey in docker-compose, realm export committed
-2. [ ] Next.js: OIDC Authorization Code + PKCE flow, Valkey-backed session, sign-in/out UI
+2. [x] Next.js: OIDC Authorization Code + PKCE flow, Valkey-backed session, sign-in/out UI
 
-   Also closes Quality backlog 2026-07-23 MUST-2: `docs/architecture.md`
-   describes `app/api/*` route handlers as an already-built BFF proxy
-   layer, but none exist yet. Landing the first real route handler here
-   (the OIDC callback) should either make that doc true, or the doc's
-   wording needs tightening to match what actually ships.
+   Closed Quality backlog MUST-1: `app/api/auth/[...nextauth]/route.ts`
+   and `app/api/auth/federated-signout/route.ts` are now real `app/api/*`
+   route handlers, and `docs/architecture.md` §5/§6 updated to match.
+   Design decisions (Auth.js + a custom Valkey adapter, not a hand-rolled
+   client; the internal/public Keycloak-address split) recorded in
+   [ADR-0025](../adr/0025-authjs-valkey-adapter.md). No silent token
+   refresh yet — see task 8.
 3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
 4. [ ] Playwright E2E: sign in, see own name in the UI, sign out
 
 **Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
+
+8. [ ] Silent token refresh: renew the access token via the refresh token
+   before it expires, extending the session instead of requiring sign-in
+   again. Deferred out of task 2 by product-owner decision — task 2's
+   session TTL simply tracks the access token's lifetime for now.
 
 ## Maintenance (lifted from the quality backlog)
 

@@ -1,4 +1,13 @@
-const REQUIRED_IN_PRODUCTION = ["BACKEND_URL"] as const;
+const REQUIRED_IN_PRODUCTION = [
+  "BACKEND_URL",
+  "AUTH_URL",
+  "AUTH_SECRET",
+  "AUTH_KEYCLOAK_ID",
+  "AUTH_KEYCLOAK_SECRET",
+  "AUTH_KEYCLOAK_ISSUER",
+  "AUTH_KEYCLOAK_INTERNAL_ORIGIN",
+  "VALKEY_URL",
+] as const;
 
 /** ADR-0018. No-op outside `NODE_ENV=production`, where the dev-only localhost fallbacks apply. */
 export const verifyRequiredConfiguration = (env: Record<string, string | undefined>): void => {

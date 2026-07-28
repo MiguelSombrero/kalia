@@ -20,6 +20,20 @@ root. The production image uses Next.js standalone output
 | Variable | Default | Notes |
 |---|---|---|
 | `BACKEND_URL` | `http://localhost:8080` | Required in production — enforced at server startup (`instrumentation.ts`), see [ADR-0018](../docs/adr/0018-frontend-env-var-validation.md). The default is for `npm run dev`; `docker-compose.yml` always sets it explicitly |
+| `AUTH_URL` | — | The app's own browser-facing URL. Required — without it, Auth.js infers it from the container's `0.0.0.0` bind address instead of the real one (see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)) |
+| `AUTH_SECRET` | — | Auth.js session-signing secret. Required |
+| `AUTH_KEYCLOAK_ID` / `AUTH_KEYCLOAK_SECRET` | — | Keycloak client credentials. Required |
+| `AUTH_KEYCLOAK_ISSUER` | — | Keycloak's **public**, browser-facing realm URL — must match Keycloak's own `KC_HOSTNAME`. Required — see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) for why this can't be the internal Docker Compose address |
+| `AUTH_KEYCLOAK_INTERNAL_ORIGIN` | — | Where this container actually reaches Keycloak; requests to `AUTH_KEYCLOAK_ISSUER` are transparently redirected here (`lib/auth/internalKeycloakFetch.ts`). Required |
+| `VALKEY_URL` | `redis://localhost:6379` | Session store for the Auth.js adapter (`lib/auth/valkeyAdapter.ts`). Required in production |
+
+The five `AUTH_KEYCLOAK_*`/`AUTH_URL`/`VALKEY_URL` values above are set by
+`docker-compose.yml` for the containerized stack. Running `npm run dev`
+natively against that same dockerized Keycloak needs its own `.env.local`
+— and since a native process has no container network split, set
+`AUTH_KEYCLOAK_INTERNAL_ORIGIN` to the **same** value as
+`AUTH_KEYCLOAK_ISSUER`'s origin (`http://localhost:8081`), not Keycloak's
+internal Docker Compose address.
 
 Adding a variable that must be set in production means adding it to
 `verifyRequiredConfiguration`'s `REQUIRED_IN_PRODUCTION`
@@ -85,6 +99,16 @@ Why the rationale lives there and not here:
 - **API failures are a tagged `ApiError`** — branch on `e.kind`, never a
   message. A non-2xx status is *not* raised: a 404 from `getBeer` means "no
   such beer" ([ADR-0023](../docs/adr/0023-typed-api-failures.md)).
+
+**Auth**
+
+- **Sessions are Auth.js's `"database"` strategy, backed by a hand-written
+  Valkey adapter** (`lib/auth/valkeyAdapter.ts`) — never add a second
+  session mechanism or switch to the `"jwt"` strategy without reading
+  [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) first.
+- **Sign-out goes through `app/api/auth/federated-signout`, never
+  Auth.js's own `signOut()` directly** — the custom route also ends
+  Keycloak's SSO session, which `signOut()` alone does not do.
 
 **UI**
 
