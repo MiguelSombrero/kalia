@@ -88,42 +88,47 @@ Decision records: [docs/adr/](docs/adr/)
 
 ## Tech stack
 
-Main technologies used in this project — update as the project evolves!
+Main technologies used in this project, at major.minor precision — exact
+pins drift with every dependency bump and already have a canonical home:
+`backend/pom.xml`, `frontend/package.json` and `.github/workflows/ci.yml`.
+Update this section as the project evolves!
 
 ### Backend
 
-- Java 25, Spring Boot 4.1.0 with Spring Modulith 2.1.0 (later possibility to migrate to microservices)
-- PostgreSQL 18.4 (data persistence), Flyway (migrations & seed data)
+- Java 25, Spring Boot 4.1 with Spring Modulith 2.1 (later possibility to migrate to microservices)
+- PostgreSQL 18 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests;
-  surefire/failsafe 3.5.6 (unit `*Test` / integration `*IT` split), JaCoCo
-  0.8.15 (merged coverage report), ArchUnit 1.4.2 (package-structure rules)
-- Lombok 1.18.46 (boilerplate reduction — see backend/README.md conventions)
-- springdoc-openapi 3.0.3 (OpenAPI spec + Swagger UI)
+  surefire/failsafe (Spring Boot-managed defaults; unit `*Test` /
+  integration `*IT` split), JaCoCo 0.8 (merged coverage report), ArchUnit 1.4
+  (package-structure rules)
+- Lombok (boilerplate reduction, version managed by Spring Boot's dependency
+  BOM — see backend/README.md conventions)
+- springdoc-openapi 3.0 (OpenAPI spec + Swagger UI)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
 
 ### Frontend
 
-- Next.js 16.2.11 (App Router), React 19.2.4, TypeScript 5.9.3 (TS 7 not yet
+- Next.js 16.2 (App Router), React 19.2, TypeScript 5.9 (TS 7 not yet
   supported by the Next toolchain — revisit when it is)
-- Tailwind CSS 4.3.3 (styling)
-- TanStack Query 5.101.3 (client-component data layer — see ADR-0008)
-- Zustand 5.0.14 (client UI state — see ADR-0009)
-- react-hook-form 7.82.0 + Zod 4.4.3 (+ @hookform/resolvers 5.4.0) for
+- Tailwind CSS 4 (styling)
+- TanStack Query 5.101 (client-component data layer — see ADR-0008)
+- Zustand 5.0 (client UI state — see ADR-0009)
+- react-hook-form 7.82 + Zod 4.4 (+ @hookform/resolvers 5.5) for
   stateful forms and validation (ADR-0010)
-- i18next 26.3.6 + i18next-resources-to-backend 1.2.1 (server-side
-  localization, English + Finnish), react-i18next 17.0.10 (installed,
+- i18next 26.3 + i18next-resources-to-backend 1.2 (server-side
+  localization, English + Finnish), react-i18next 17.0 (installed,
   not yet wired — see ADR-0011)
-- orval 8.22.0 (API client generated from the backend's OpenAPI spec,
+- orval 8.23 (API client generated from the backend's OpenAPI spec,
   committed + CI drift check — see ADR-0012)
-- Vitest 4.1.10 + React Testing Library 16.3.2 (unit/component tests),
-  Playwright 1.61.1 (E2E, chromium only, against the docker compose stack)
+- Vitest 4.1 + React Testing Library 16.3 (unit/component tests),
+  Playwright 1.62 (E2E, chromium only, against the docker compose stack)
 - `package.json` `overrides` pin `js-yaml` ^4.3.0, `postcss` ^8.5.10 and
-  `sharp` ^0.35.0: orval 8.22.0 and next 16.2.11 (as published) still bundle
+  `sharp` ^0.35.0: orval 8.23.0 and next 16.2.11 (as published) still bundle
   vulnerable versions of these, so npm can't resolve a fix within their own
   dependency ranges — remove each override once the upstream package bumps
   it themselves and `npm audit` stays clean without the override
-- eslint-plugin-jsx-a11y 6.10.2, jest-axe 10.0.0 (+ @types/jest-axe 3.5.9),
-  @axe-core/playwright 4.12.1 — WCAG 2.1 AA enforcement at lint/unit/E2E
+- eslint-plugin-jsx-a11y 6.10, jest-axe 10.0 (+ @types/jest-axe 3.5),
+  @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
 - Redis 8.8.x (server-side session store — *introduced in the auth iteration*)
 - Keycloak 26.7.x (authentication — *introduced in the auth iteration*)
@@ -138,7 +143,7 @@ Main technologies used in this project — update as the project evolves!
 ### CI
 
 - GitHub Actions (build + test both apps on every push), SHA-pinned:
-  actions/checkout v7.0.0, actions/setup-java v5.6.0, actions/setup-node v7.0.0
+  actions/checkout v7.0, actions/setup-java v5.6, actions/setup-node v7.0
 
 ## Repository layout (planned)
 
