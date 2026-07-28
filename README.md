@@ -89,9 +89,11 @@ Decision records: [docs/adr/](docs/adr/)
 ## Tech stack
 
 Main technologies used in this project, at major.minor precision — exact
-pins drift with every dependency bump and already have a canonical home:
-`backend/pom.xml`, `frontend/package.json` and `.github/workflows/ci.yml`.
-Update this section as the project evolves!
+pins drift with every dependency bump, so check `backend/pom.xml`,
+`frontend/package.json` and `.github/workflows/ci.yml` for what's actually
+running (a few, like Lombok, are pinned only indirectly via Spring Boot's
+dependency BOM and won't show an explicit version there either). Update
+this section as the project evolves!
 
 ### Backend
 
@@ -122,11 +124,12 @@ Update this section as the project evolves!
   committed + CI drift check — see ADR-0012)
 - Vitest 4.1 + React Testing Library 16.3 (unit/component tests),
   Playwright 1.62 (E2E, chromium only, against the docker compose stack)
-- `package.json` `overrides` pin `js-yaml` ^4.3.0, `postcss` ^8.5.10 and
-  `sharp` ^0.35.0: orval 8.23.0 and next 16.2.11 (as published) still bundle
-  vulnerable versions of these, so npm can't resolve a fix within their own
-  dependency ranges — remove each override once the upstream package bumps
-  it themselves and `npm audit` stays clean without the override
+- `package.json` `overrides` pin `postcss` ^8.5.10 and `sharp` ^0.35.0:
+  next 16.2.11 (as published) still bundles vulnerable versions of these, so
+  npm can't resolve a fix within its own dependency range — remove each
+  override once next bumps it themselves and `npm audit` stays clean without
+  the override (the same `js-yaml` override was removed once orval 8.23.0
+  bundled the fix itself)
 - eslint-plugin-jsx-a11y 6.10, jest-axe 10.0 (+ @types/jest-axe 3.5),
   @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
