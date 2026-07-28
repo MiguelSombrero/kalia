@@ -84,7 +84,7 @@ system exists), it's fine to report that as the finding — don't skip this
 dimension in advance of running it; let the subagent itself conclude
 there's nothing to report if that's true.
 
-## 2. Categorize and write the backlog
+## 2. Categorize and merge into the backlog
 
 Collect all findings from all four subagents. Categorize each MoSCoW-style:
 
@@ -100,24 +100,45 @@ documented-but-unbuilt feature that could be built or have the doc
 reworded instead). Don't guess at how a "needs decision" item should
 resolve — just flag it.
 
-Edit `docs/tasks/quality-backlog.md` to add a new `## Sweep <date>`
-section listing the findings under their category, numbered within this
-sweep (`MUST-1`, `MUST-2`, `SHOULD-1`, ...) so the product owner can
-reference them tersely later ("lift MUST-1..3") instead of quoting full
-text. Mark each "needs decision" finding inline (`**[needs decision]**`)
-right after its number. Each finding still needs a one-line description
-and file reference. Use a plain date heading with no punctuation beyond
-the date itself (e.g. `## Sweep 2026-08-01`, not `## Sweep — 2026-08-01`)
-so the heading's auto-generated anchor stays predictable for later
-cross-links from lifted tasks. If a sweep genuinely finds nothing, add no
-section and say so in the PR description rather than inventing findings
-to fill one.
+`docs/tasks/quality-backlog.md` groups findings by severity only (MUST /
+SHOULD / COULD), never by sweep date — a finding lives at one permanent ID
+for its whole life, so the same issue is never listed twice just because
+two sweeps both found it. Read the current file in full before writing
+anything, then for each new finding:
+
+- **Matches an existing entry** (same underlying issue — same file/area
+  and same root cause, even if the wording differs): update that entry in
+  place — bump its `*(confirmed <date>)*` to today, and revise the
+  description only if the details materially changed (a new line number,
+  a concrete repro that didn't exist before, a changed severity). Keep its
+  ID. Do not add a second entry for the same issue.
+- **No longer reproducible** even though nothing else in this sweep
+  explicitly fixed it: move it to the "Retired" section with a one-line
+  resolution note, same as an explicitly-confirmed fix.
+- **Genuinely new**: append it to the end of its MUST/SHOULD/COULD section
+  with the next unused ID in that category — one past the highest ID ever
+  issued there, counting both the live list and the "Retired" section (an
+  ID is permanent and never reused once assigned, even after the finding
+  it named is resolved or lifted).
+
+Do **not** bump the confirmed-date of an entry this sweep's subagents
+didn't happen to re-find — an old date just means "not independently
+re-verified this time," not that the finding is stale or needs attention;
+forcing every entry's date to today every sweep would reintroduce the
+same all-entries-touched noise this format exists to avoid.
+
+Mark each "needs decision" finding inline (`**[needs decision]**`) right
+after its confirmed-date. Each finding still needs a one-line description
+and file reference. If a sweep genuinely finds nothing new and nothing to
+reconfirm, make no changes to the file and say so in the PR description
+rather than inventing findings to fill one.
 
 ## 3. Open a PR
 
 Branch `docs/quality-sweep-<date>` off up-to-date `dev`. Commit the
 `docs/tasks/quality-backlog.md` change. Push and open a PR whose
-description lists every finding directly (not just "see the diff") so the
-product owner can react without opening the file — this PR is the primary
-way they see the sweep's output. Follow the standing auto-PR workflow
-(`CLAUDE.md` "Workflow").
+description lists every new or updated finding directly (not just "see the
+diff") so the product owner can react without opening the file — this PR
+is the primary way they see the sweep's output. For an updated (not new)
+finding, say briefly what changed (confirmed-date only, or the description
+too). Follow the standing auto-PR workflow (`CLAUDE.md` "Workflow").

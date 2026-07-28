@@ -209,9 +209,13 @@ Product-owner-initiated only, never something an AI agent triggers itself:
 run it before the first task of a new iteration, or whenever else it's
 wanted. **An AI agent should proactively suggest running it at the start
 of a new iteration's first task** — surfacing the option, not deciding for
-the product owner. Output is a MUST/SHOULD/COULD-categorized task list
-appended to `docs/tasks/quality-backlog.md`, opened as its own PR for
-review like any other change.
+the product owner. Findings are merged into
+`docs/tasks/quality-backlog.md`, grouped by MUST/SHOULD/COULD only, never
+by sweep date: each finding holds a permanent ID and a confirmed-date, and
+a sweep that rediscovers an already-listed finding updates that entry in
+place (confirmed-date, and description if details changed) instead of
+adding a duplicate — see the file's own header and the skill for the
+mechanics. Opened as its own PR for review like any other change.
 
 **Lifting findings into an iteration:** the product owner reviews the
 backlog and tells an AI agent which findings to promote — by ID
@@ -219,11 +223,12 @@ backlog and tells an AI agent which findings to promote — by ID
 anything not yet in the backlog. Findings marked `[needs decision]` get
 resolved in that conversation before they're written up as a task, not
 silently guessed at. Each lifted task keeps a backreference to its origin
-(e.g. "(Quality backlog 2026-07-23, MUST-3)") so the history isn't lost
-once it's off the backlog — the date matters because IDs reset each
-sweep, so `MUST-3` alone isn't unique across sweeps. The finding is
-removed from the Quality backlog in the same PR that adds it as a real
-task.
+(e.g. "(Quality backlog SHOULD-3)") so the history isn't lost once it's
+off the backlog — IDs are permanent and never reused, so the ID alone is
+enough without a date. The finding moves to the backlog's "Retired"
+section (noting where it was lifted to) in the same PR that adds it as a
+real task, rather than being deleted outright — deleting it would let a
+later sweep reissue its ID for an unrelated finding.
 
 Not adopted: a full four-dimension subagent review on every single task
 before every PR. Architecture and documentation need more context than one
