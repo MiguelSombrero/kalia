@@ -33,6 +33,11 @@ Adapter interface against Valkey via `ioredis`.**
   validation. The only hand-written piece is the Adapter: a small, fully
   unit-tested storage layer (`valkeyAdapter.test.ts`) implementing a fixed,
   documented interface, not the OAuth protocol itself.
+- The stored account's tokens are **refreshed on every sign-in**, via an
+  `events.signIn` hook that re-runs the adapter's `linkAccount` upsert.
+  Auth.js links an account only once and its Adapter interface has no
+  `updateAccount`, so without this the tokens stay frozen at the user's
+  first-ever sign-in — see Evidence for what that broke.
 - Session data — user, linked Keycloak account (including tokens), and the
   session record itself — lives in Valkey under an `auth:*` key prefix.
   Session keys carry a native Valkey expiry matching Auth.js's own session
@@ -185,6 +190,25 @@ Measured against `next-auth@5.0.0-beta.32`, `@auth/core` (bundled),
   session silently survived, letting the next sign-in skip the credential
   prompt. **Not reproducible with `curl`, which does not enforce CSP** —
   which is how it initially escaped verification.
+- **Auth.js never updates a linked account, so stored tokens freeze at the
+  first sign-in.** On the returning-user path, `@auth/core`'s
+  `lib/actions/callback/handle-login.js` finds the account via
+  `getUserByAccount`, creates a session and returns — it does not re-call
+  `linkAccount`, and the Adapter interface has no `updateAccount` for it to
+  call. Observed directly: the `id_token` held in Valkey was still,
+  byte-for-byte (same `jti`, `iat`, `sid`), the one issued to a browser
+  session hours earlier, across several intervening fresh sign-ins. The
+  visible symptom was Keycloak answering logout with its "Do you want to log
+  out?" confirmation page, because the `id_token_hint` named a Keycloak
+  session that no longer existed. `events.signIn` fires on every sign-in and
+  does receive the fresh account, so re-running `linkAccount` there fixes it.
+  Note this would also have handed the *resource server* (task 3) a stale
+  `access_token`, so it is not a logout-only defect.
+- **Keycloak accepts an *expired* `id_token_hint`.** Tested by shortening the
+  client's `id.token.lifespan` to 10s, signing in, waiting past expiry, then
+  calling the end-session endpoint: Keycloak still answered `302` to
+  `post_logout_redirect_uri` with no confirmation page. So token *expiry* is
+  not what triggers the confirmation — an unrecognised session is.
 - **`headers()` in `next.config.ts` is build-time, not per-request.** Built
   with `CSP_PROBE_ORIGIN=http://buildtime.example` interpolated into
   `form-action`, then the standalone server was started with

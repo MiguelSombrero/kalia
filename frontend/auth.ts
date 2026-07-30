@@ -50,4 +50,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       user: { ...session.user, id: user.id },
     }),
   },
+  events: {
+    // Do not remove: without this the stored tokens are frozen at the user's
+    // very first sign-in, forever. Auth.js calls the adapter's linkAccount
+    // only when an account is first linked — on every later sign-in the
+    // returning-user path in @auth/core's handle-login.js creates a session
+    // and returns without touching the account, and the Adapter interface has
+    // no updateAccount for it to call. Nothing fails loudly: sign-in still
+    // works, so the staleness only surfaces later as an id_token_hint that
+    // names a long-dead Keycloak session (which makes Keycloak fall back to
+    // its "Do you want to log out?" page) and, once the resource server
+    // lands, as an expired access_token on backend calls.
+    signIn: async ({ user, account }) => {
+      // "credentials" is the one provider type the Adapter's account model
+      // does not cover; this app has no such provider, so it cannot occur.
+      if (!account || !user.id || account.type === "credentials") {
+        return;
+      }
+      await valkeyAdapter.linkAccount?.({ ...account, type: account.type, userId: user.id });
+    },
+  },
 });
