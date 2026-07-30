@@ -11,8 +11,9 @@ Goal: users can sign in; personal features become possible.
    custom Valkey adapter, not a hand-rolled client; the internal/public
    Keycloak-address split; sign-out as a Server Action so the CSP's
    `form-action 'self'` can stay strict) recorded in
-   [ADR-0025](../adr/0025-authjs-valkey-adapter.md). No silent token
-   refresh yet — see task 8.
+   [ADR-0025](../adr/0025-authjs-valkey-adapter.md). Two follow-ups left
+   deliberately out: silent token refresh (task 8) and per-session rather
+   than per-user token storage (task 9).
 3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
 4. [x] Playwright E2E: sign in, see own name in the UI, sign out
    (`frontend/e2e/sign-in-out.spec.ts`). Two of the three specs are
@@ -20,12 +21,35 @@ Goal: users can sign in; personal features become possible.
    fail against the build that had the bug — the CSP-blocked sign-out, and
    the stale `id_token_hint` that made Keycloak ask to confirm the logout.
 
-**Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
-
 8. [ ] Silent token refresh: renew the access token via the refresh token
    before it expires, extending the session instead of requiring sign-in
    again. Deferred out of task 2 by product-owner decision — task 2's
    session TTL simply tracks the access token's lifetime for now.
+9. [ ] Key the stored Keycloak tokens per session, not per user.
+   `frontend/lib/auth/valkeyAdapter.ts` keeps one record per user
+   (`auth:account:{userId}`), so it always holds only the most recent
+   sign-in's tokens — that overwrite is deliberate, being the `events.signIn`
+   hook task 2 added to stop tokens freezing at the first-ever sign-in. The
+   cost is multi-device: with the same user signed in twice, signing out on
+   one device sends the *other's* `id_token_hint`, ending the wrong Keycloak
+   SSO session and leaving the signing-out browser still authenticated at
+   the identity provider. This bears on this iteration's "a user can sign in
+   and out" rather than being polish — sign-out stops being a reliable
+   sign-out as soon as a second device exists. Likely shape: store the
+   provider token set keyed by the Auth.js session token and have
+   `signOutEverywhere` (`frontend/features/auth/actions.ts`) read the set
+   belonging to the session being ended; `getStoredAccountByUserId` is
+   already an out-of-interface extension and is the natural place to change.
+   Worth checking at the same time whether OIDC Back-Channel Logout should
+   invalidate local sessions when Keycloak ends an SSO session, since today
+   a Keycloak-side logout leaves Kalia's session records alive until their
+   TTL. Evidence this is real, not theoretical:
+   `frontend/e2e/sign-in-out.spec.ts` is forced to run `mode: "serial"`
+   because concurrent sign-ins clobber each other's tokens — drop that
+   constraint if this fix removes the need for it.
+   *(Found while adding task 4's E2E coverage.)*
+
+**Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
 
 ## Maintenance (lifted from the quality backlog)
 
