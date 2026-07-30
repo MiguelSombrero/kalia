@@ -35,7 +35,9 @@ before making changes:
   conventions, persistence rules, testing strategy
 - [docs/roadmap.md](docs/roadmap.md) — iteration index and status; detailed
   per-iteration task lists, the backlog, and the Quality backlog live under
-  [docs/tasks/](docs/tasks/)
+  [docs/tasks/](docs/tasks/). From iteration 5 on, tasks are one file each,
+  written to [docs/tasks/template.md](docs/tasks/template.md) before work
+  starts
 - [docs/adr/](docs/adr/) — decisions already made; don't relitigate them
   silently, propose a new ADR instead. New ones follow
   [docs/adr/template.md](docs/adr/template.md)
@@ -69,10 +71,23 @@ before making changes:
   catch drift between the two but share the spec's blind spots — the two
   worst defects in that work (a dropped RFC-required header, and an ADR
   whose central premise was false) surfaced in the product owner's review
-  and by running the code, not in any review layer. A written spec and
-  plan are part of that cost: their main consumer is subagents, so when
-  implementing directly, skip them and let the brainstorming dialogue and
-  the resulting ADR carry the decision.
+  and by running the code, not in any review layer. A written *implementation
+  plan* is part of that cost: its main consumer is subagents, so when
+  implementing directly, skip it and let the brainstorming dialogue and the
+  resulting ADR carry the decision.
+
+  That does not exempt the task file, which is a different artifact: the
+  *request* (why, scope, constraints, acceptance criteria), not the plan for
+  building it. It is written before the work, it is what the product owner
+  agrees to, and it is cheap — [ADR-0026](docs/adr/0026-task-file-format.md)
+  records why skipping it proved expensive. Skip the plan, never the task.
+- **Refine the task before starting it.** From iteration 5 on, a task is a
+  file under `docs/tasks/iteration-N/` following
+  [the template](docs/tasks/template.md). Bring its `Open questions` to the
+  product owner and resolve them *before* writing code — that section must be
+  `**None.**` before the task leaves `refined`, and `scripts/check-tasks.mjs`
+  enforces it. Acceptance criteria state how each outcome is verified, and at
+  least one is an automated test, so tests are never a task of their own.
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
@@ -100,10 +115,13 @@ before making changes:
   iteration DoD, dependency confirmation, review-comment discipline) — a
   task isn't "done" if those are unmet, so the PR doesn't open until they are.
 - **Doc-sync gate (part of definition of done):** before opening a PR,
-  re-read the sections of `docs/architecture.md`, the relevant
-  `docs/tasks/iteration-N.md` file, and any ADRs the change touches. Update
-  them in the same PR, or state explicitly in the PR description that they
-  were checked and remain accurate. A PR without this is incomplete.
+  re-read the sections of `docs/architecture.md`, the task file and its
+  iteration index, and any ADRs the change touches. Update them in the same
+  PR, or state explicitly in the PR description that they were checked and
+  remain accurate. A PR without this is incomplete. The task file itself is
+  the exception: it records what was *asked for*, so it is frozen at
+  completion apart from its status — what shipped belongs in the ADR,
+  `docs/architecture.md` and the READMEs.
 - **Code-review gate (part of definition of done):** before opening a PR,
   run `/code-review` on the diff — locally, in-session, no separate service
   or billing involved. For each finding worth acting on, mark it **fix now**
@@ -125,13 +143,15 @@ before making changes:
   marketplace plugins tied to whoever's running the session — don't
   hardcode specific plugin names as required steps, since they may not be
   installed for a future session or contributor.
-- Tick off completed tasks in the iteration's `docs/tasks/iteration-N.md`
-  file as part of the PR that completes them, and update that iteration's
-  Status in `docs/roadmap.md`'s index table if the whole iteration is now
-  done.
+- Check off every acceptance criterion and set the task's status to `done`,
+  in both the task file and its iteration index, as part of the PR that
+  completes it — a criterion that cannot honestly be checked means the task
+  isn't done. Update that iteration's Status in `docs/roadmap.md`'s index
+  table when the whole iteration is done. (Iterations 0–4 predate the task
+  files: there, tick the task in `docs/tasks/iteration-N.md`.)
 - **Iteration DoD gate:** never declare an iteration complete because its
-  last task is ticked. Re-read the iteration's "Done when" in its
-  `docs/tasks/iteration-N.md` file and verify each criterion by actually
+  last task is ticked. Re-read the iteration's "Done when" in its index and
+  verify each criterion by actually
   running it; if any is unmet, add tasks to the iteration to close the gap.
   Apply the same coverage check when planning an iteration: tasks must
   collectively guarantee the "Done when", otherwise fix the tasks or the
