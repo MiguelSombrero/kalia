@@ -14,7 +14,11 @@ Goal: users can sign in; personal features become possible.
    [ADR-0025](../adr/0025-authjs-valkey-adapter.md). No silent token
    refresh yet — see task 8.
 3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
-4. [ ] Playwright E2E: sign in, see own name in the UI, sign out
+4. [x] Playwright E2E: sign in, see own name in the UI, sign out
+   (`frontend/e2e/sign-in-out.spec.ts`). Two of the three specs are
+   regression guards for bugs found in review, and each was verified to
+   fail against the build that had the bug — the CSP-blocked sign-out, and
+   the stale `id_token_hint` that made Keycloak ask to confirm the logout.
 
 **Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
 
