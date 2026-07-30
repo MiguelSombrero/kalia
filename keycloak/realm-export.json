@@ -20,5 +20,22 @@
         "post.logout.redirect.uris": "http://localhost:3000/*"
       }
     }
+  ],
+  "users": [
+    {
+      "username": "testuser",
+      "enabled": true,
+      "email": "testuser@example.com",
+      "emailVerified": true,
+      "firstName": "Test",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "testuser123",
+          "temporary": false
+        }
+      ]
+    }
   ]
 }

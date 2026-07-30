@@ -40,8 +40,10 @@ The frontend is published at `:3000`; the backend is also published, at
 bindings are localhost-only, never reachable beyond the dev machine. The
 `kalia-frontend` client secret in
 [keycloak/realm-export.json](keycloak/realm-export.json) is likewise a
-fixed dev-only value — never reuse it outside local development. For
-development with hot reload, run the apps natively — see
+fixed dev-only value — never reuse it outside local development. To sign
+in to Kalia itself (not the Keycloak admin console), use the seeded dev
+account `testuser` / `testuser123`, also defined in that same realm
+export. For development with hot reload, run the apps natively — see
 [backend/README.md](backend/README.md) and
 [frontend/README.md](frontend/README.md).
 
