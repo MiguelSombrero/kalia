@@ -2,6 +2,12 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-26
+- **Amended:** 2026-07-30 by [ADR-0025](0025-authjs-valkey-adapter.md) — two
+  measured properties of this mechanism, unchanged decision: `headers()` here
+  is evaluated at build time, so no directive can be driven by a runtime
+  environment variable; and `form-action 'self'` blocks a same-origin form
+  whose route answers with a cross-origin redirect, which is why the auth
+  flow navigates via Server Actions rather than form posts
 
 ## Context
 

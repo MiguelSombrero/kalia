@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-07-27. This document describes the target architecture and
+*Last updated: 2026-07-28. This document describes the target architecture and
 the parts of it that are deliberately deferred. Update it when decisions
 change; record significant decisions as ADRs in [adr/](adr/) and index them
 in [§10](#10-architecture-decision-records).*
@@ -205,9 +205,14 @@ The shape of the frontend. Day-to-day rules for writing it live in
   cellar, …) owns that feature's components, hooks and API access; `app/`
   route files stay thin and delegate. Mirrors the backend's
   module-per-subdomain boundaries.
-- Route handlers under `app/api/*` form the BFF: they attach the session's
-  auth token (from the auth iteration on) and forward to Spring Boot. A single thin
-  `apiClient` wrapper owns the backend base URL and error mapping.
+- `app/api/auth/[...nextauth]` is the app's one route handler, Auth.js's own
+  OIDC endpoints (§6); sign-in and sign-out are Server Actions rather than
+  posts to route handlers, so the CSP's `form-action 'self'` can stay strict
+  ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
+  server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
+  thin wrapper that owns the backend base URL and error mapping; it attaches
+  the session's access token to backend calls once the resource server (§6,
+  iteration 4 task 3) can consume it.
 - **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
@@ -245,18 +250,20 @@ The shape of the frontend. Day-to-day rules for writing it live in
 
 Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-first.md)):
 
-- Keycloak via OIDC Authorization Code + PKCE handled by the Next.js server
-  (Auth.js or hand-rolled OIDC client), session persisted in Valkey (a
-  Redis-API-compatible cache), access token attached to backend calls by
-  the BFF. Spring Boot becomes an OAuth2 resource server validating JWTs;
-  the `identity` module maps tokens to users.
+- Keycloak via OIDC Authorization Code + PKCE, handled by the Next.js
+  server using Auth.js with a hand-written Adapter backing sessions onto
+  Valkey (a Redis-API-compatible cache) — [ADR-0025](adr/0025-authjs-valkey-adapter.md)
+  records why, including the internal/public Keycloak-address split this
+  docker-compose stack requires. Signing in and out (including full
+  Keycloak SSO logout) is built (iteration 4 task 2); access token
+  attachment to backend calls and the backend resource server are not yet
+  (task 3).
 - Catalog endpoints stay public; cellar (and any future store) endpoints
   require authentication.
-- Until the auth iteration lands, the backend API is unauthenticated.
-  docker-compose publishes it on `127.0.0.1:8080` — for direct API access
-  and Swagger UI on the dev machine — never beyond it; it must not be
-  published on a non-loopback address or reachable over the network before
-  auth lands.
+- Until task 3 lands, the backend API is unauthenticated. docker-compose
+  publishes it on `127.0.0.1:8080` — for direct API access and Swagger UI
+  on the dev machine — never beyond it; it must not be published on a
+  non-loopback address or reachable over the network before then.
 
 ## 7. Testing strategy
 
@@ -372,3 +379,4 @@ keep a `Bad`/`Neutral` consequence — see the "ADR index check" job in
 | [ADR-0022](adr/0022-loading-error-empty-states.md) | Shape-matched loading skeletons, one error boundary at the locale root | accepted | 2026-07-27 |
 | [ADR-0023](adr/0023-typed-api-failures.md) | API failures are a tagged `ApiError`, and a non-2xx status is not one | accepted | 2026-07-27 |
 | [ADR-0024](adr/0024-dependency-vulnerability-scanning.md) | Trivy scans dependencies and images in CI; Dependabot opens the fixes | accepted | 2026-07-27 |
+| [ADR-0025](adr/0025-authjs-valkey-adapter.md) | Auth.js with a custom Valkey adapter for Keycloak authentication | accepted | 2026-07-28 |

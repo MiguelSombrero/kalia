@@ -40,8 +40,10 @@ The frontend is published at `:3000`; the backend is also published, at
 bindings are localhost-only, never reachable beyond the dev machine. The
 `kalia-frontend` client secret in
 [keycloak/realm-export.json](keycloak/realm-export.json) is likewise a
-fixed dev-only value — never reuse it outside local development. For
-development with hot reload, run the apps natively — see
+fixed dev-only value — never reuse it outside local development. To sign
+in to Kalia itself (not the Keycloak admin console), use the seeded dev
+account `testuser` / `testuser123`, also defined in that same realm
+export. For development with hot reload, run the apps natively — see
 [backend/README.md](backend/README.md) and
 [frontend/README.md](frontend/README.md).
 
@@ -78,8 +80,8 @@ flowchart LR
     Browser -->|HTML / fetch| Next[Next.js frontend<br/>BFF]
     Next -->|REST /api/v1| Spring[Spring Boot modulith]
     Spring --> PG[(PostgreSQL)]
-    Next -.->|sessions, later| Valkey[(Valkey)]
-    Next -.->|auth, later| KC[Keycloak]
+    Next -->|sessions| Valkey[(Valkey)]
+    Next -->|auth| KC[Keycloak]
     Spring -.->|token validation, later| KC
     Spring -.->|PaymentProvider port, if own store| PSP[Payment provider<br/>mock first]
 ```
@@ -140,9 +142,11 @@ this section as the project evolves!
 - eslint-plugin-jsx-a11y 6.10, jest-axe 10.0 (+ @types/jest-axe 3.5),
   @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
-- Valkey 9.1 (server-side session store, Redis-API-compatible —
-  *introduced in the auth iteration*)
-- Keycloak 26.7 (authentication — *introduced in the auth iteration*)
+- next-auth 5.0.0-beta.32 (Auth.js — OIDC Authorization Code + PKCE client
+  and session strategy, backed by a custom Valkey adapter — see ADR-0025)
+- ioredis 5.11 (Valkey client used by the Auth.js adapter)
+- Valkey 9.1 (server-side session store, Redis-API-compatible — ADR-0025)
+- Keycloak 26.7 (authentication)
 
 ### Local infrastructure
 

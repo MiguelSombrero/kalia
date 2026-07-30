@@ -29,7 +29,7 @@ they're already cross-referenced from merged PRs and
 
 ## MUST
 
-- **MUST-1** *(confirmed 2026-07-27)* **[needs decision]** `docs/architecture.md:52,203-205,266` describe Next.js route handlers under `app/api/*` as an already-built BFF proxy layer ("route handlers... attach the session's auth token... and forward to Spring Boot"), but no such route handlers exist anywhere under `frontend/app` — server components call the backend directly through `frontend/lib/api/mutator.ts`. Not lifted as its own task: `docs/tasks/iteration-4.md` task 2 (the Next.js OIDC flow) will build the first real `app/api/*` route handler, which naturally resolves this — task 2 carries a closing-condition note to either make the doc true or tighten its wording.
+_(none currently open)_
 
 ## SHOULD
 
@@ -72,3 +72,4 @@ live section they came from.
 - ~~2026-07-27 MUST-2~~ (react-i18next "not yet wired" stale claim) — lifted into iteration-4 task 5.
 - ~~2026-07-27 COULD-10~~ (Redis/Valkey §8 wording) — lifted into iteration-4 task 5.
 - ~~2026-07-27 COULD-11~~ (stale SearchFilters client-component example) — lifted into iteration-4 task 5.
+- ~~MUST-1~~ (`app/api/*` route handlers described as an already-built BFF proxy layer when none existed) — resolved by iteration-4 task 2: `app/api/auth/[...nextauth]/route.ts` is now a real `app/api/*` route handler, and `docs/architecture.md` §5/§6 updated to describe what actually exists.
