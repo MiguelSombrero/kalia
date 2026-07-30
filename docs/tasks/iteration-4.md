@@ -5,11 +5,12 @@ Goal: users can sign in; personal features become possible.
 1. [x] Keycloak + Valkey in docker-compose, realm export committed
 2. [x] Next.js: OIDC Authorization Code + PKCE flow, Valkey-backed session, sign-in/out UI
 
-   Closed Quality backlog MUST-1: `app/api/auth/[...nextauth]/route.ts`
-   and `app/api/auth/federated-signout/route.ts` are now real `app/api/*`
-   route handlers, and `docs/architecture.md` §5/§6 updated to match.
-   Design decisions (Auth.js + a custom Valkey adapter, not a hand-rolled
-   client; the internal/public Keycloak-address split) recorded in
+   Closed Quality backlog MUST-1: `app/api/auth/[...nextauth]/route.ts` is
+   now a real `app/api/*` route handler, and `docs/architecture.md` §5/§6
+   updated to describe what actually exists. Design decisions (Auth.js + a
+   custom Valkey adapter, not a hand-rolled client; the internal/public
+   Keycloak-address split; sign-out as a Server Action so the CSP's
+   `form-action 'self'` can stay strict) recorded in
    [ADR-0025](../adr/0025-authjs-valkey-adapter.md). No silent token
    refresh yet — see task 8.
 3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public

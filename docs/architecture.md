@@ -205,13 +205,14 @@ The shape of the frontend. Day-to-day rules for writing it live in
   cellar, …) owns that feature's components, hooks and API access; `app/`
   route files stay thin and delegate. Mirrors the backend's
   module-per-subdomain boundaries.
-- Route handlers under `app/api/auth/*` handle the OIDC sign-in/callback/
-  sign-out flow (§6) — the first `app/api/*` routes in the app. Catalog data
-  still flows through server components calling `kaliaFetch`
-  (`lib/api/mutator.ts`) directly, the thin wrapper that owns the backend
-  base URL and error mapping; it attaches the session's access token to
-  backend calls once the resource server (§6, iteration 4 task 3) can
-  consume it.
+- `app/api/auth/[...nextauth]` is the app's one route handler, Auth.js's own
+  OIDC endpoints (§6); sign-in and sign-out are Server Actions rather than
+  posts to route handlers, so the CSP's `form-action 'self'` can stay strict
+  ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
+  server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
+  thin wrapper that owns the backend base URL and error mapping; it attaches
+  the session's access token to backend calls once the resource server (§6,
+  iteration 4 task 3) can consume it.
 - **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,

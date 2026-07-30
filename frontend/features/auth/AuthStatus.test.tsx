@@ -3,7 +3,10 @@ import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
-vi.mock("@/auth", () => ({ auth, signIn: vi.fn() }));
+vi.mock("@/auth", () => ({ auth }));
+// The actions are "use server" glue; what they do is covered by
+// endSessionUrl.test.ts and by running the flow in a browser.
+vi.mock("./actions", () => ({ startSignIn: vi.fn(), signOutEverywhere: vi.fn() }));
 
 import { AuthStatus } from "./AuthStatus";
 
@@ -13,6 +16,7 @@ describe("AuthStatus", () => {
     const { container } = render(await AuthStatus({ locale: "en" }));
 
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -21,11 +25,7 @@ describe("AuthStatus", () => {
     const { container } = render(await AuthStatus({ locale: "en" }));
 
     expect(screen.getByText("Hi, Ada Lovelace")).toBeInTheDocument();
-    const signOutButton = screen.getByRole("button", { name: "Sign out" });
-    expect(signOutButton.closest("form")).toHaveAttribute(
-      "action",
-      "/api/auth/federated-signout",
-    );
+    expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 

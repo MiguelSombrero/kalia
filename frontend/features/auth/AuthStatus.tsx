@@ -1,13 +1,9 @@
-import { auth, signIn } from "@/auth";
+import { auth } from "@/auth";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { signOutEverywhere, startSignIn } from "./actions";
 
 type Props = { locale: Locale };
-
-const startSignIn = async () => {
-  "use server";
-  await signIn("keycloak");
-};
 
 /** Server component: reads the session directly, no client-side session context needed. */
 export const AuthStatus = async ({ locale }: Props) => {
@@ -26,11 +22,7 @@ export const AuthStatus = async ({ locale }: Props) => {
 
   const name = session.user.name ?? session.user.email ?? "";
   return (
-    <form
-      action="/api/auth/federated-signout"
-      method="POST"
-      className="flex items-center gap-2"
-    >
+    <form action={signOutEverywhere} className="flex items-center gap-2">
       <span className="text-muted-foreground">{t("auth.helloUser", { name })}</span>
       <button type="submit" className="text-muted-foreground hover:underline">
         {t("auth.signOut")}

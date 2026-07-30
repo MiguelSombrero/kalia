@@ -106,9 +106,9 @@ Why the rationale lives there and not here:
   Valkey adapter** (`lib/auth/valkeyAdapter.ts`) — never add a second
   session mechanism or switch to the `"jwt"` strategy without reading
   [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) first.
-- **Sign-out goes through `app/api/auth/federated-signout`, never
-  Auth.js's own `signOut()` directly** — the custom route also ends
-  Keycloak's SSO session, which `signOut()` alone does not do.
+- **Sign-out goes through the `signOutEverywhere` Server Action
+  (`features/auth/actions.ts`), never Auth.js's own `signOut()` directly** —
+  it also ends Keycloak's SSO session, which `signOut()` alone does not do.
 
 **UI**
 
@@ -159,6 +159,19 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   `cspHeader` in `next.config.ts` in the same PR, or the browser silently
   blocks it. Verify in the browser console, not just a successful build
   ([ADR-0016](../docs/adr/0016-security-response-headers.md)).
+- **Never navigate to another origin with a real `<form>`** — `form-action
+  'self'` blocks it, *including* when the form posts to our own route and
+  that route answers with a cross-origin redirect. Use a Server Action and
+  `redirect()`, whose navigation the client router performs instead (that is
+  why sign-out is `signOutEverywhere`, not a route handler —
+  [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)). **`curl` does not
+  enforce CSP and will happily follow the redirect**, so this only reproduces
+  in a browser — check the console, not just the response headers.
+- **`headers()` in `next.config.ts` is baked in at build time**, not read per
+  request: a `process.env` value there is frozen to whatever was set during
+  `next build`, so the CSP cannot be driven by a runtime environment
+  variable. Measured, see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)'s
+  Evidence.
 
 **Other**
 

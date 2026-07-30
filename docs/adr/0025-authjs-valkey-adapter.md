@@ -48,10 +48,16 @@ Adapter interface against Valkey via `ioredis`.**
   Compose origin via Auth.js's `[customFetch]` provider option
   (`frontend/lib/auth/internalKeycloakFetch.ts`) — only where the bytes are
   sent changes; the issuer identity Auth.js validates against does not.
-- Sign-out is a custom route (`app/api/auth/federated-signout/route.ts`),
-  not Auth.js's default `signOut()`: it also redirects the browser through
-  Keycloak's `end_session_endpoint` so Keycloak's own SSO cookie is cleared,
-  not just Kalia's session.
+- Sign-out is a **Server Action** (`signOutEverywhere`), not Auth.js's
+  default `signOut()` and not a route handler: it clears the local session
+  and *then* navigates the browser through Keycloak's `end_session_endpoint`
+  so Keycloak's own SSO cookie is cleared too, not just Kalia's session.
+  It must be a Server Action rather than a form posting to a route handler
+  because the CSP's `form-action 'self'`
+  ([ADR-0016](0016-security-response-headers.md)) blocks a form navigation
+  that ends up cross-origin — including via a same-origin route's redirect.
+  A Server Action's redirect is performed by the client router, which that
+  directive does not govern. Sign-in already worked for exactly this reason.
 
 ## Alternatives considered
 
@@ -89,6 +95,19 @@ URL it generates for the browser too, including its own login page's form
 `action` — confirmed live, this broke sign-in outright, not just the
 callback.
 
+**Widen the CSP to `form-action 'self' <keycloak-origin>` and keep sign-out
+as a form posting to a route handler.** This is what
+`frontend/README.md`'s own trap note prescribes for a newly-added external
+origin, and unlike the Server Action it would also work with JavaScript
+disabled. Rejected on two counts. It weakens a directive that is otherwise
+exactly right — with the Server Action, our forms genuinely never navigate
+cross-origin, so `'self'` is the honest value. And it cannot be driven by
+an environment variable: `headers()` in `next.config.ts` is evaluated at
+build time (measured, see Evidence), so the Keycloak origin would have to
+be a Docker build argument, binding each built image to one Keycloak
+address and breaking the one-image-many-environments property. Accepted
+cost: auth now requires JavaScript — see Consequences.
+
 ## Consequences
 
 - Good, because the OAuth-protocol-sensitive code is Auth.js's, reviewed and
@@ -107,8 +126,13 @@ callback.
   this ADR is the record of why it looks the way it does.
 - Bad, because Auth.js does not support federated (RP-initiated) logout out
   of the box (documented in its own `next-auth/adapters.d.ts` as a known
-  gap), requiring the custom `federated-signout` route rather than relying
+  gap), requiring the custom `signOutEverywhere` action rather than relying
   on `signOut()` alone.
+- Bad, because signing in and out now both require JavaScript: each is a
+  Server Action whose redirect the client router performs, and the no-JS
+  fallback (a real form navigation) is precisely what `form-action 'self'`
+  blocks. Catalog browsing is unaffected — it uses native GET forms and
+  plain links, and still works with JS disabled.
 - **Revisit trigger:** if Auth.js ships an official adapter for a
   self-hosted Redis-protocol server, or once `next-auth` v5 reaches a stable
   release, re-check whether either changes this decision's cost side.
@@ -149,3 +173,21 @@ Measured against `next-auth@5.0.0-beta.32`, `@auth/core` (bundled),
   returned its own HTML logout-confirmation page (`<title>Logging out</title>`)
   instead of redirecting through `post_logout_redirect_uri`, even with a
   valid `id_token_hint` for an active session.
+- **`form-action 'self'` blocks a same-origin form whose route redirects
+  cross-origin.** With sign-out as a `<form method="POST">` targeting a
+  route handler that answered `303` to Keycloak, the browser reported
+  *"Sending form data to 'http://localhost:3000/api/auth/federated-signout'
+  violates the following Content Security Policy directive: form-action
+  'self'"* and blocked it — naming the same-origin URL, not the
+  cross-origin redirect target that actually triggered it. The local
+  session was already deleted by then, so a second click appeared to
+  "work" (the fallback redirect to `/` is same-origin) while Keycloak's SSO
+  session silently survived, letting the next sign-in skip the credential
+  prompt. **Not reproducible with `curl`, which does not enforce CSP** —
+  which is how it initially escaped verification.
+- **`headers()` in `next.config.ts` is build-time, not per-request.** Built
+  with `CSP_PROBE_ORIGIN=http://buildtime.example` interpolated into
+  `form-action`, then the standalone server was started with
+  `CSP_PROBE_ORIGIN=http://runtime.example`. The served header read
+  `form-action 'self' http://buildtime.example`, and the value was found
+  baked into `.next/routes-manifest.json`; the runtime value was ignored.
