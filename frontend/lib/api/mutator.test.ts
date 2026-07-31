@@ -1,12 +1,75 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { auth } from "@/auth";
+import { getStoredAccountByUserId } from "@/lib/auth/valkeyAdapter";
 import { isApiError } from "./api-error";
 import { kaliaFetch } from "./mutator";
+
+vi.mock("@/lib/auth/valkeyAdapter", () => ({ getStoredAccountByUserId: vi.fn() }));
+
+/** The RequestInit kaliaFetch handed to fetch on its first call. */
+const initOf = (fetchMock: { mock: { calls: unknown[] } }): RequestInit =>
+  (fetchMock.mock.calls[0] as [string, RequestInit])[1];
+
+const givenSignedInWithToken = (accessToken: string | undefined) => {
+  vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as never);
+  vi.mocked(getStoredAccountByUserId).mockResolvedValue({
+    access_token: accessToken,
+    expires_at: Math.floor(Date.now() / 1000) + 300,
+  } as never);
+};
 
 describe("kaliaFetch", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
     vi.useRealTimers();
+    vi.mocked(auth).mockResolvedValue(null as never);
+  });
+
+  it("attaches the signed-in caller's access token as a bearer header", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    givenSignedInWithToken("token-abc");
+
+    await kaliaFetch("/api/v1/me", { method: "GET" });
+
+    const headers = new Headers(initOf(fetchMock).headers);
+    expect(headers.get("Authorization")).toBe("Bearer token-abc");
+  });
+
+  it("sends no Authorization header when nobody is signed in", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await kaliaFetch("/api/v1/beers", { method: "GET" });
+
+    // Byte-for-byte the anonymous request the public catalog always sent:
+    // an empty Authorization header would make the backend reject it.
+    expect(initOf(fetchMock)).not.toHaveProperty("headers");
+  });
+
+  it("sends no Authorization header when the session has no stored token", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    givenSignedInWithToken(undefined);
+
+    await kaliaFetch("/api/v1/beers", { method: "GET" });
+
+    expect(initOf(fetchMock)).not.toHaveProperty("headers");
+  });
+
+  it("leaves a caller-supplied Authorization header alone", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    givenSignedInWithToken("token-abc");
+
+    await kaliaFetch("/api/v1/me", {
+      method: "GET",
+      headers: { Authorization: "Bearer caller-supplied" },
+    });
+
+    const headers = new Headers(initOf(fetchMock).headers);
+    expect(headers.get("Authorization")).toBe("Bearer caller-supplied");
   });
 
   it("prefixes the backend URL and parses the JSON body", async () => {

@@ -43,8 +43,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     // The default session callback strips the user down to name/email/image
-    // (@auth/core/lib/init.js); cellar (iteration 5) needs a stable
-    // per-user id to key cellar_item.user_id on.
+    // (@auth/core/lib/init.js). The id is kept because server code needs it to
+    // look up this session's stored tokens; it is this app's own session key,
+    // never a cross-system user id — per-user data keys on the token's `sub`
+    // (ADR-0028).
     session: ({ session, user }) => ({
       ...session,
       user: { ...session.user, id: user.id },

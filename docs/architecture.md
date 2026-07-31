@@ -105,7 +105,7 @@ root-package API.
 | Module | Responsibility | Depends on |
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering | — |
-| `identity` | Keycloak/OIDC integration, current-user resolution *(auth iteration)* | — |
+| `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned beers: quantity, vintage, purchase info, notes *(cellar iteration)* | `catalog` (read: beer existence), `identity` (current user) |
 | `cart` | Basket lifecycle: create, add/remove/update items, price snapshotting *(backlog — own-store variant only)* | `catalog` (read: beer existence & price) |
 | `ordering` | Turning a cart into an order; order lifecycle (`PLACED → PAYMENT_PENDING → PAID / PAYMENT_FAILED → …`) *(backlog — own-store variant only)* | `cart` (read), publishes/consumes events |
@@ -169,6 +169,9 @@ GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&siz
 GET    /api/v1/beers/{id}
 GET    /api/v1/breweries
 
+# authenticated
+GET    /api/v1/me                        -> the caller behind the bearer token
+
 # authenticated (cellar iteration)
 GET    /api/v1/cellar                    -> current user's cellar items
 POST   /api/v1/cellar/items              -> { beerId, quantity, ... } add to cellar
@@ -182,6 +185,11 @@ Conventions:
 
 - Pagination: `page`/`size` params, response envelope with `content`,
   `totalElements`, `totalPages`, `page`.
+- Authentication: bearer token, default deny — every route needs one except
+  the catalog reads above, `/actuator/health` and the API docs
+  ([ADR-0028](adr/0028-resource-server-and-current-user.md)). A path whose
+  user is implied by the credential is top-level (`/me`, `/cellar`), never
+  `/users/{id}/…`.
 - Errors: RFC 9457 `application/problem+json` via Spring's
   `ProblemDetail`; validation errors list field violations. `detail` only
   ever carries messages from exception types designed as API responses;
@@ -210,9 +218,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   posts to route handlers, so the CSP's `form-action 'self'` can stay strict
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
   server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
-  thin wrapper that owns the backend base URL and error mapping; it attaches
-  the session's access token to backend calls once the resource server (§6,
-  iteration 4 task 3) can consume it.
+  thin wrapper that owns the backend base URL and error mapping, and attaches
+  the signed-in caller's access token — withholding an expired one, which the
+  backend would reject even on a public route
+  ([ADR-0028](adr/0028-resource-server-and-current-user.md)).
 - **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
@@ -255,15 +264,22 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   Valkey (a Redis-API-compatible cache) — [ADR-0025](adr/0025-authjs-valkey-adapter.md)
   records why, including the internal/public Keycloak-address split this
   docker-compose stack requires. Signing in and out (including full
-  Keycloak SSO logout) is built (iteration 4 task 2); access token
-  attachment to backend calls and the backend resource server are not yet
-  (task 3).
+  Keycloak SSO logout) is built (iteration 4 task 2).
+- **The backend is an OAuth2 resource server**
+  ([ADR-0028](adr/0028-resource-server-and-current-user.md)): it validates
+  each bearer token's signature, issuer and `kalia-backend` audience, and the
+  `identity` module maps the token's `sub` to the current user — the
+  canonical per-user key every module uses. The BFF attaches the session's
+  access token in `lib/api/mutator.ts`, withholding an expired one.
 - Catalog endpoints stay public; cellar (and any future store) endpoints
-  require authentication.
-- Until task 3 lands, the backend API is unauthenticated. docker-compose
-  publishes it on `127.0.0.1:8080` — for direct API access and Swagger UI
-  on the dev machine — never beyond it; it must not be published on a
-  non-loopback address or reachable over the network before then.
+  require authentication. The filter chain denies by default, so a new
+  endpoint is protected unless it is deliberately listed as public.
+- The API is still published on `127.0.0.1:8080` only, for direct access and
+  Swagger UI on the dev machine. Authentication makes that a defence in
+  depth rather than the only one, but the loopback binding stays until a
+  deployment story exists.
+- Access tokens are not renewed yet (task 8), so a session outlives the
+  token it holds.
 
 ## 7. Testing strategy
 
@@ -384,3 +400,4 @@ does the same for task files against their iteration index
 | [ADR-0025](adr/0025-authjs-valkey-adapter.md) | Auth.js with a custom Valkey adapter for Keycloak authentication | accepted | 2026-07-28 |
 | [ADR-0026](adr/0026-task-file-format.md) | One file per task, with acceptance criteria that include tests | accepted | 2026-07-30 |
 | [ADR-0027](adr/0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
+| [ADR-0028](adr/0028-resource-server-and-current-user.md) | The backend is an OAuth2 resource server, and the token's subject is the user | accepted | 2026-07-31 |

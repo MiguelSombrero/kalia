@@ -9,6 +9,7 @@ export * from './beerDetailsDto';
 export * from './beerSummaryDto';
 export * from './breweryDto';
 export * from './breweryRefDto';
+export * from './currentUserDto';
 export * from './moneyDto';
 export * from './pageDtoBeerSummaryDto';
 export * from './searchBeersParams';

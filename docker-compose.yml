@@ -11,6 +11,15 @@ services:
       # (ADR-0013) and Swagger UI, both off by default elsewhere
       LOG_LEVEL: DEBUG
       SPRINGDOC_ENABLED: "true"
+      # Two addresses for one Keycloak, the same split ADR-0025 records for
+      # the frontend: the issuer is the identity stamped into every token
+      # (KC_HOSTNAME below), while the JWKS fetch must dial the compose
+      # network name because that public address is loopback-only on the
+      # host. No depends_on for keycloak: the key set is fetched on the
+      # first bearer token, not at startup, so the backend stays healthy
+      # while Keycloak is still booting.
+      KEYCLOAK_ISSUER_URI: http://localhost:8081/realms/kalia
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/kalia/protocol/openid-connect/certs
     depends_on:
       postgres:
         condition: service_healthy

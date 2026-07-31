@@ -40,7 +40,10 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 | `DATABASE_USERNAME` | `kalia` | |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
-| `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; a monitored deployment can widen it (e.g. `health,metrics,prometheus`) |
+| `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; a monitored deployment can widen it (e.g. `health,metrics,prometheus`). Everything but `health` also needs a token |
+| `KEYCLOAK_ISSUER_URI` | `http://localhost:8081/realms/kalia` | The `iss` every accepted token must carry |
+| `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Where signing keys are fetched. A *different address* from the issuer under docker-compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
+| `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud` claim; rejects tokens minted for another client of the realm |
 
 Adding a setting that must not have a default means adding it to
 `RequiredConfigurationValidator.REQUIRED` as well as the properties file.
@@ -142,6 +145,11 @@ lives there rather than in this file.
   API-response exception (see `requireOrderedAbvRange` in
   `CatalogController`), which reports through `detail` rather than the
   field-level `errors` array, since the violation belongs to the pair.
+- **Endpoints are protected unless listed as public.** `SecurityConfig`
+  (`fi.kalia.identity.web`) permits the catalog reads, `/actuator/health` and
+  the API docs; everything else needs a bearer token. A service that needs the
+  caller injects `CurrentUserService` rather than taking a principal parameter
+  ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)).
 - Code comments carry only what the repo cannot — full policy in
   [CLAUDE.md](../CLAUDE.md)
   ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
