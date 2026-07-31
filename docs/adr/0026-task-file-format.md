@@ -40,9 +40,13 @@ automated test; the iteration file becomes an index.**
   At least one must be an automated test, so tests belong to the task that
   creates the behaviour and a standalone "write the tests" task never exists.
 - **Tasks are refined just in time** — immediately before work starts, not at
-  iteration planning. `Open questions` must be resolved before a task leaves
-  `refined`, which is the gate the ad-hoc clarifying rounds were standing in
-  for.
+  iteration planning. A task is created as `needs-refinement` and **only the
+  product owner moves it to `refined`**; an agent does not start a task that
+  is not. That status transition is the gate the ad-hoc clarifying rounds
+  were standing in for, and it happens in a diff, so the approval is visible
+  in the PR that made it. `Open questions` must be answered by then — but the
+  gate is the status, because "no open questions" is satisfied as easily by
+  an author who never looked as by one who looked and found none.
 - **Identifiers are permanent and never reused**, including for dropped tasks,
   matching the convention `docs/tasks/quality-backlog.md` adopted after sweep-
   scoped numbering collided.
@@ -80,6 +84,16 @@ running offline cannot read one. The repo is the source of truth.
 evidence: the ADR index drifted silently until `check-adrs.mjs` existed, and
 `CLAUDE.md` already holds that the enforcement mechanism sets a rule's weight.
 
+**Gate the work on `Open questions` being empty, with no `needs-refinement`
+status.** The first draft of this ADR. Rejected in review: it gates on a
+proxy rather than the thing wanted. "No open questions" is what an author
+writes both when they have resolved everything and when they never thought to
+ask, and the second is the failure the format exists to prevent. It also left
+no state meaning "written but not yet agreed" — a task file sprang into
+existence already marked ready. The draft refuted itself: task 03 of iteration
+5 was written with `**None.**` and the product owner immediately raised a real
+question about it (see Evidence).
+
 ## Consequences
 
 - Good, because the questions that were being discovered mid-implementation
@@ -100,6 +114,10 @@ evidence: the ADR index drifted silently until `check-adrs.mjs` existed, and
   tell a criterion that would fail today from one that cannot fail; that stays
   a review question, as `check-adrs.mjs` likewise cannot tell whether a
   Decision section opens with the decision.
+- Neutral, because no script can verify *who* moved a task to `refined` — it
+  cannot see who wrote a line. The PR containing that change is what carries
+  the approval, which is the same enforcement level as every other convention
+  here.
 - **Revisit trigger:** if a task file is written and its `Acceptance criteria`
   are all unfalsifiable restatements of the title, the section is not carrying
   its weight and the gap belongs in review guidance or a sharper check rather
@@ -130,10 +148,21 @@ Measured over `docs/tasks/` and the repo's cross-references on 2026-07-30.
   iteration renamed to 3.
 - **Fourteen references point at `docs/tasks/iteration-N.md`**, which is why
   the index keeps that exact path.
-- **The checker was verified to fail, not assumed to.** Eleven violations were
-  introduced one at a time and each produced a distinct failure: unknown
+- **The proxy gate failed on its first use, in the PR proposing it.** Task 03
+  of iteration 5 was written with `Open questions: **None.**` and passed the
+  checker. Reviewing it, the product owner immediately raised one that
+  mattered — how the cellar page should look, and their wish to take part in
+  that decision. Two more tasks turned out to be hiding questions just as
+  real once looked for again: whether vintage year is optional and whether
+  quantity may reach zero (task 01), and what becomes of a cellar entry whose
+  beer leaves the catalog (task 02). An empty `Open questions` had meant only
+  that its author had not asked.
+- **The checker was verified to fail, not assumed to.** Thirteen violations
+  were introduced one at a time and each produced a distinct failure: unknown
   heading, headings out of canonical order, non-vocabulary status, missing
   required section, no acceptance checkbox, no test-shaped criterion, `done`
-  with unchecked criteria, non-`refined` status with an unresolved open
-  question, task file with no index row, index row with no file, and index
-  title or status disagreeing with the file.
+  with unchecked criteria, `refined` and `in-progress` each with an
+  unresolved open question, task file with no index row, index row with no
+  file, and index title or status disagreeing with the file. `dropped` and
+  `needs-refinement` were confirmed to remain exempt from the open-questions
+  rule.

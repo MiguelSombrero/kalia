@@ -15,7 +15,11 @@
 //   - every task needs at least one acceptance criterion, and at least one
 //     of them has to be an automated test;
 //   - a task cannot be `done` with an unchecked criterion;
-//   - a task cannot leave `refined` while it still has an open question.
+//   - a task agreed with the product owner (`refined` onward) cannot still
+//     hold an unanswered question. The gate on *starting* work is the status
+//     itself — a task begins at `needs-refinement` and only the product owner
+//     moves it on — which no script can verify, since it cannot see who wrote
+//     the line; the PR that changes it is what does.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -24,7 +28,11 @@ import { dirname, resolve } from "node:path";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TASKS_DIR = resolve(ROOT, "docs/tasks");
 
-const STATUS_TOKENS = ["refined", "in-progress", "done", "dropped"];
+const STATUS_TOKENS = ["needs-refinement", "refined", "in-progress", "done", "dropped"];
+// `needs-refinement` is where a task starts and is allowed to hold open
+// questions; `dropped` is abandoned. Everything between them has been agreed
+// with the product owner, so a dangling question there is a contradiction.
+const RESOLVED_STATUSES = ["refined", "in-progress", "done"];
 const CANONICAL_ORDER = [
   "Why",
   "Scope",
@@ -127,9 +135,7 @@ for (const iteration of iterations) {
     }
 
     const open = sectionOf(text, "Open questions");
-    // "None." is how the template says an author looked and found nothing;
-    // anything else is an unanswered question, which may not enter work.
-    if (open && status && status !== "refined" && status !== "dropped") {
+    if (open && RESOLVED_STATUSES.includes(status)) {
       const body = open.replace(/^## Open questions/, "").trim();
       if (!/^\*\*None\.\*\*/.test(body)) {
         fail(name, `Status is "${status}" but Open questions is not resolved to '**None.**'`);

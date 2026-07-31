@@ -11,9 +11,9 @@ age and quantity; another user cannot see it.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-5/01-cellar-module-and-schema.md) | `cellar` module, schema and domain rules | refined |
-| [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | refined |
-| [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | refined |
+| [01](iteration-5/01-cellar-module-and-schema.md) | `cellar` module, schema and domain rules | needs-refinement |
+| [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | needs-refinement |
+| [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | needs-refinement |
 
 Depends on [iteration 4](iteration-4.md) task 3: the cellar cannot resolve a
 current user until the backend is a resource server.

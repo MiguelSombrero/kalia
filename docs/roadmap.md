@@ -7,10 +7,11 @@ before the next begins. Detailed task lists live under
 iteration follows.
 
 From iteration 5 on, each task is its own file under
-`docs/tasks/iteration-N/`, written to [the template](tasks/template.md)
-before work starts and carrying its own acceptance criteria
-([ADR-0026](adr/0026-task-file-format.md)). Iterations 0–4 keep the older
-single-file form.
+`docs/tasks/iteration-N/`, written to [the template](tasks/template.md) and
+carrying its own acceptance criteria
+([ADR-0026](adr/0026-task-file-format.md)). A task starts at
+`needs-refinement` and only the product owner moves it to `refined`; nothing
+is picked up before that. Iterations 0–4 keep the older single-file form.
 
 Priorities follow the beer-enthusiast side of the vision first
 ([ADR-0006](adr/0006-cellar-first.md)): catalog → frontend standards →

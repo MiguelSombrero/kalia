@@ -50,19 +50,34 @@ summary of the tasks — the outcome their sum has to produce.
   the ID; a dropped task keeps its file and row with status `dropped`, exactly
   as retired findings keep their IDs in
   [quality-backlog.md](quality-backlog.md).
+- Status uses the same vocabulary as the task files, so the table doubles as
+  the answer to "what is ready to pick up" — anything still
+  `needs-refinement` is not.
 
 ## The task file — `iteration-N/NN-slug.md`
 
 ```markdown
 # Task NN: Title
 
-- **Status:** refined | in-progress | done | dropped
+- **Status:** needs-refinement | refined | in-progress | done | dropped
 - **Iteration:** [N](../iteration-N.md)
 - **PR:** #123
 ```
 
 `Status` is a vocabulary token, nothing else. `PR` is added when the pull
 request opens and is the link from intent to what actually shipped.
+
+**A new task file is created as `needs-refinement`, and only the product
+owner moves it to `refined`.** That transition is the gate on starting work:
+it says a person has read the task and agrees it is ready, and because it
+happens in a diff, it is visible in the PR that made it. An agent does not
+set `refined` on its own behalf, and does not start a task that is not
+`refined`.
+
+The status carries the gate rather than the `Open questions` section,
+because "no open questions" is satisfied just as easily by an author who
+looked and found none as by one who never looked — and the second is the
+failure this whole format exists to prevent.
 
 The sections below are `##` headings *in the task file*; they appear here as
 `###` only because this document carries both templates. They must appear in
@@ -107,14 +122,19 @@ free hand from one whose author did not look.
 
 ### Open questions
 
-Anything that must be settled with the product owner before work starts.
+Anything that must be settled with the product owner before work starts —
+the agenda for the refinement conversation, written while the task is still
+`needs-refinement`.
 
-**This section gates the work.** A task cannot move past `refined` while it
-still holds an open question — the checker enforces that. This is the whole
-point of refining tasks: the questions get asked before implementation, not
-discovered halfway through it.
+Ask about anything the product owner would want an opinion on, not only what
+blocks the code: interface and interaction choices, wording a user will read,
+what happens in the cases nobody has described yet. A question that turns out
+to have an obvious answer costs one line; the one that was never asked costs
+a rewrite.
 
-`**None.**` once they are all resolved.
+`**None.**` only once they are answered. The checker requires it from
+`refined` onward — but the gate on starting work is the **status**, not this
+section, for the reason given above.
 
 ### Acceptance criteria
 

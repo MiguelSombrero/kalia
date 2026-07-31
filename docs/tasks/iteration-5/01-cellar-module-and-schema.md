@@ -1,6 +1,6 @@
 # Task 01: `cellar` module, schema and domain rules
 
-- **Status:** refined
+- **Status:** needs-refinement
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -45,7 +45,16 @@ rather than validation scattered over a controller.
 
 ## Open questions
 
-**None.**
+1. **Is vintage year optional?** Plenty of beers carry no bottling year, and
+   `architecture.md` §4 does not say. If it is optional, "age" in task 03 has
+   to render something sensible for a bottle that has none.
+2. **Is quantity 0 a legal state**, meaning "I drank the last one but want to
+   keep the entry", or does removing the last bottle remove the entry? This
+   decides whether the domain rule is `quantity > 0` or `quantity >= 0`, and
+   whether task 03 needs a distinct "drunk it" action.
+3. **May the same beer appear twice in one cellar** — say two vintages of the
+   same beer? If yes, `(user_id, beer_id)` is not unique and vintage becomes
+   part of the identity of an entry.
 
 ## Acceptance criteria
 

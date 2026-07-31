@@ -81,13 +81,18 @@ before making changes:
   building it. It is written before the work, it is what the product owner
   agrees to, and it is cheap — [ADR-0026](docs/adr/0026-task-file-format.md)
   records why skipping it proved expensive. Skip the plan, never the task.
-- **Refine the task before starting it.** From iteration 5 on, a task is a
-  file under `docs/tasks/iteration-N/` following
-  [the template](docs/tasks/template.md). Bring its `Open questions` to the
-  product owner and resolve them *before* writing code — that section must be
-  `**None.**` before the task leaves `refined`, and `scripts/check-tasks.mjs`
-  enforces it. Acceptance criteria state how each outcome is verified, and at
-  least one is an automated test, so tests are never a task of their own.
+- **Never start a task that is not `refined`.** From iteration 5 on, a task is
+  a file under `docs/tasks/iteration-N/` following
+  [the template](docs/tasks/template.md). A new one is created as
+  `needs-refinement`, and **only the product owner moves it to `refined`** —
+  never an agent on its own behalf. Getting there means writing down every
+  question worth their opinion, including interface and wording choices they
+  may want a say in, having that conversation, and recording the answers as
+  constraints. `Open questions` must read `**None.**` from `refined` onward
+  and `scripts/check-tasks.mjs` enforces that, but the status is the gate:
+  an empty question list proves nothing about whether anyone looked.
+  Acceptance criteria state how each outcome is verified, and at least one is
+  an automated test, so tests are never a task of their own.
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.

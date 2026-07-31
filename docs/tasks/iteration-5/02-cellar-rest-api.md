@@ -1,6 +1,6 @@
 # Task 02: Cellar REST API, scoped to the signed-in user
 
-- **Status:** refined
+- **Status:** needs-refinement
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -47,7 +47,18 @@ rows.
 
 ## Open questions
 
-**None.**
+1. **What happens to a cellar entry whose beer leaves the catalog?** The
+   catalog is seeded today and nothing deletes from it, so this is currently
+   theoretical — but the answer decides whether the foreign key is
+   `ON DELETE RESTRICT` (a beer cannot be removed while someone owns it) or
+   the API tolerates a dangling reference.
+2. **Is the cellar list paginated?** The catalog endpoint is. A cellar is
+   realistically far smaller, so the simpler answer is no — but that is a
+   contract worth choosing deliberately rather than by omission, since adding
+   pagination later changes the response shape.
+3. **Does another user's item id return 404 or 403?** 404 leaks nothing about
+   what exists; 403 is more honest to a legitimate caller. Task 01/02's
+   isolation test asserts whichever is chosen.
 
 ## Acceptance criteria
 

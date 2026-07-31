@@ -1,6 +1,6 @@
 # Task 03: Cellar page and add-to-cellar from the catalog
 
-- **Status:** refined
+- **Status:** needs-refinement
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -47,7 +47,28 @@ has.
 
 ## Open questions
 
-**None.**
+The product owner wants to take part in the UI/UX decisions here, so these
+are for that conversation rather than for an agent to settle.
+
+1. **How is a cellar entry presented?** The catalog uses a list of linked
+   cards. The cellar carries more per beer — quantity, age, purchase price,
+   notes — which suits a table, but a table is the weaker shape on a phone.
+   Same visual language as the catalog, or a deliberately different one?
+2. **What is on the row, and what is behind a click?** Candidates for the
+   summary line: name, brewery, style, ABV, quantity, age. Everything else
+   (purchase date and price, notes) could live on a detail or expandable row.
+3. **How is age shown** — "2019 vintage", "6 years", or both? And what does a
+   bottle with no vintage year show?
+4. **Default order**, and whether sorting or grouping is needed at all in the
+   first version: recently added, name, age, or brewery?
+5. **Where does add-to-cellar sit** on the beer list and the beer detail page,
+   and what does it do when the beer is already in the cellar — increment the
+   quantity, or say so and offer the cellar?
+6. **What does a signed-out visitor see** on `/cellar`: a sign-in prompt on
+   the page, or a redirect to sign-in and back?
+
+An answer of "your call" to any of these is a fine answer and turns into a
+constraint above.
 
 ## Acceptance criteria
 
