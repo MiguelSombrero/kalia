@@ -46,41 +46,40 @@ before making changes:
 - [frontend/README.md](frontend/README.md) — run/test commands,
   feature-package conventions, TanStack Query/Zustand/i18next usage
 
+## Commands
+
+From the repository root — the parentheses matter, a bare `cd` persists into
+the next command and breaks the one after it:
+
+```bash
+(cd backend  && mvn test)          # unit tests (*Test) — fast, no Docker
+(cd backend  && mvn verify)        # + integration tests (*IT) — needs Docker
+(cd frontend && npm test)          # vitest
+(cd frontend && npm run test:e2e)  # playwright — needs the stack up
+node scripts/check-adrs.mjs        # ADR ↔ architecture.md index
+node scripts/check-tasks.mjs       # task files ↔ iteration index
+```
+
+Two things that fail silently if you skip them:
+
+- **Use `mvn clean` after any `pom.xml` or plugin change** — an incremental
+  build can report success against stale compiled output.
+- `mvn verify 2>&1 | grep -E "Tests run:|ERROR|FAIL|BUILD"` cuts a green run
+  from ~285 lines to ~13 while keeping every `Tests run:` count, but it drops
+  assertion detail. **Re-run it unfiltered before diagnosing a failure.**
+
 ## Workflow
 
 - Work proceeds **one roadmap task at a time**, smallest reviewable change.
-- **Match process weight to the task — default to working directly.**
-  Nearly every `docs/tasks` item is a single- or few-file change: settle
-  any open decision with the product owner, implement it directly, run
-  `/code-review`, open the PR. Heavier machinery has to earn its place:
-  - **Direct + `/code-review`** — the default, and the right answer for
-    most roadmap tasks.
-  - **A design-exploration skill** (e.g. `/feature-dev`) — for a genuinely
-    new subsystem whose design is still open and where comparing
-    alternatives pays, such as an iteration introducing a new module.
-    Its cost is roughly flat regardless of task size.
-  - **Subagent-driven execution** (e.g.
-    `/superpowers:subagent-driven-development`) — only when a change spans
-    enough files that one context would overflow. Its cost scales with
-    the number of plan tasks, making it the worst fit for many small ones.
-
-  Measured on this repo: subagent-driven execution burned ~1.1M tokens
-  across eleven dispatches to produce ~60 lines of Java and an ADR, and
-  >1M more on a docs-only file split; comparable work done directly runs
-  ~100K. Those review layers check the diff against the spec, so they
-  catch drift between the two but share the spec's blind spots — the two
-  worst defects in that work (a dropped RFC-required header, and an ADR
-  whose central premise was false) surfaced in the product owner's review
-  and by running the code, not in any review layer. A written *implementation
-  plan* is part of that cost: its main consumer is subagents, so when
-  implementing directly, skip it and let the brainstorming dialogue and the
-  resulting ADR carry the decision.
-
-  That does not exempt the task file, which is a different artifact: the
-  *request* (why, scope, constraints, acceptance criteria), not the plan for
-  building it. It is written before the work, it is what the product owner
-  agrees to, and it is cheap — [ADR-0026](docs/adr/0026-task-file-format.md)
-  records why skipping it proved expensive. Skip the plan, never the task.
+- **Match process weight to the task — implement directly by default**
+  ([ADR-0027](docs/adr/0027-process-weight.md)). Nearly every `docs/tasks`
+  item is a single- or few-file change: settle any open decision with the
+  product owner, implement it, run `/code-review`, open the PR. Reach past
+  that only for the two conditions the ADR names — a design-exploration
+  skill (e.g. `/feature-dev`) for a genuinely new subsystem whose design is
+  still open, subagent-driven execution only when a change spans enough
+  files that one context would overflow. Skip the implementation plan; never
+  skip the task file ([ADR-0026](docs/adr/0026-task-file-format.md)).
 - **Never start a task that is not `refined`.** From iteration 5 on, a task is
   a file under `docs/tasks/iteration-N/` following
   [the template](docs/tasks/template.md). A new one is created as
@@ -188,32 +187,23 @@ before making changes:
   narration. Comments explaining why a test asserts something apparently
   pointless are load-bearing and stay: they stop a cleanup pass from
   deleting a guard.
-- **ADRs follow [template.md](docs/adr/template.md)**
-  ([ADR-0019](docs/adr/0019-adr-format-and-conventions.md)). Five sections:
-  Context, Decision, Alternatives considered, Consequences, and an optional
-  Evidence. The Decision section opens with one self-contained sentence
-  naming what was decided — a reader who jumps to that heading must find the
-  verdict in its first line, not a specification of files and function calls.
-  Context states the problem only; measurements go in Evidence, rejected
-  options in Alternatives considered, and "none, because X was the only
-  realistic option" is a required entry there rather than an empty section.
-  Consequences must record at least one Bad or Neutral entry. `Status` holds
-  a vocabulary token; supersession detail goes in `Supersedes` /
-  `Superseded-by` / `Amended` fields, never in the index, which carries no
-  prose. Amend rather than rewrite an accepted ADR — it records what was
-  believed when written, and that is most of its value.
-- **Each documented fact has one home** ([ADR-0020](docs/adr/0020-documentation-roles.md)).
-  ADRs record *why* — the problem, the options weighed, what it cost.
-  `docs/architecture.md` records *shape* — module map, layer direction, data
-  flow. READMEs record *how* — the commands and day-to-day rules for that
-  codebase, short enough to catch at a glance. Every other mention is a
-  one-line pointer with a link, never a paraphrase. Two exceptions: this file
-  may restate anything that applies to every edit, since it is the only
-  document loaded unconditionally and a pointer here is one an agent never
-  follows; and a rule whose violation fails *silently* keeps its warning
-  inline wherever an editor meets it, per ADR-0017's enforcement test. When a
-  README rule outgrows one line and has no ADR, that is the signal to write
-  the ADR — not to let the section grow.
+- **ADRs follow [template.md](docs/adr/template.md)** — five sections
+  (Context, Decision, Alternatives considered, Consequences, optional
+  Evidence), Decision opening with one self-contained sentence naming the
+  verdict, at least one Bad or Neutral consequence, and an accepted ADR
+  amended rather than rewritten. `scripts/check-adrs.mjs` enforces the
+  mechanical parts. See
+  [ADR-0019](docs/adr/0019-adr-format-and-conventions.md).
+- **Each documented fact has one home** — ADRs record *why*,
+  `docs/architecture.md` records *shape*, READMEs record *how*; every other
+  mention is a one-line pointer with a link. Two exceptions: this file may
+  restate anything that applies to every edit, since it is the only document
+  loaded unconditionally and a pointer here is one an agent never follows;
+  and **a rule whose violation fails silently keeps its warning inline
+  wherever an editor meets it** — compressing that class of rule into a link
+  is a regression dressed as tidying. When a README rule outgrows one line
+  and has no ADR, write the ADR. See
+  [ADR-0020](docs/adr/0020-documentation-roles.md).
 - **New dependencies: ask, don't research.** When a task introduces a new
   dependency (library, starter, plugin, Docker image, GitHub Action), do not
   spend time hunting registries for the latest version. List the new
@@ -230,36 +220,21 @@ Beyond the per-PR code-review gate above (diff-scoped, self-run), the
 `/quality-sweep` skill (`.claude/skills/quality-sweep/SKILL.md`) runs a
 periodic, whole-codebase check — architecture, documentation, code
 quality, and security — at a coarser grain than any single PR can judge.
-Product-owner-initiated only, never something an AI agent triggers itself:
-run it before the first task of a new iteration, or whenever else it's
-wanted. **An AI agent should proactively suggest running it at the start
-of a new iteration's first task** — surfacing the option, not deciding for
-the product owner. Findings are merged into
-`docs/tasks/quality-backlog.md`, grouped by MUST/SHOULD/COULD only, never
-by sweep date: each finding holds a permanent ID and a confirmed-date, and
-a sweep that rediscovers an already-listed finding updates that entry in
-place (confirmed-date, and description if details changed) instead of
-adding a duplicate — see the file's own header and the skill for the
-mechanics. Opened as its own PR for review like any other change.
 
-**Lifting findings into an iteration:** the product owner reviews the
-backlog and tells an AI agent which findings to promote — by ID
-(`MUST-1`, `SHOULD-3`, ...), a range, or a one-off description for
-anything not yet in the backlog. Findings marked `[needs decision]` get
-resolved in that conversation before they're written up as a task, not
-silently guessed at. Each lifted task keeps a backreference to its origin
-(e.g. "(Quality backlog SHOULD-3)") so the history isn't lost once it's
-off the backlog — IDs are permanent and never reused, so the ID alone is
-enough without a date. The finding moves to the backlog's "Retired"
-section (noting where it was lifted to) in the same PR that adds it as a
-real task, rather than being deleted outright — deleting it would let a
-later sweep reissue its ID for an unrelated finding.
+**Product-owner-initiated only, never something an AI agent triggers
+itself.** An AI agent should proactively *suggest* running it at the start
+of a new iteration's first task — surfacing the option, not deciding for
+the product owner. Lifting a finding out of the backlog into an iteration
+is likewise the product owner's instruction, never an agent's own call.
 
-Not adopted: a full four-dimension subagent review on every single task
-before every PR. Architecture and documentation need more context than one
-small task provides — running them that often would be noisy and
-re-litigate settled decisions, against the "smallest reviewable change"
-cadence above.
+Findings land in [docs/tasks/quality-backlog.md](docs/tasks/quality-backlog.md),
+whose header holds the mechanics — severity grouping, permanent IDs,
+confirmed-dates, retirement, and how a finding is lifted into a task.
+
+Not adopted: a full four-dimension subagent review on every task before
+every PR. Architecture and documentation need more context than one small
+task provides, so running them that often would be noisy and re-litigate
+settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
 
 ## Repository layout
 

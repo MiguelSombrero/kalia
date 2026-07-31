@@ -1,8 +1,10 @@
 # Quality backlog
 
 Findings from periodic `/quality-sweep` runs land here, grouped only by
-severity — **MUST** / **SHOULD** / **COULD** (MoSCoW), never by sweep date
-— see CLAUDE.md "Quality checks". Each finding gets a permanent ID within
+severity — **MUST** / **SHOULD** / **COULD** (MoSCoW), never by sweep
+date. A sweep is opened as its own PR and reviewed like any other change;
+who may start one, and when, is in CLAUDE.md "Quality checks". Each
+finding gets a permanent ID within
 its category (`MUST-1`, `SHOULD-1`, ...) that is never reused, even after
 the finding is resolved or lifted — retired IDs move to the "Retired"
 section below rather than being deleted, so a later sweep never
@@ -18,6 +20,18 @@ time."
 A `**[needs decision]**` tag means the finding needs product-owner input
 before it's a well-scoped task; anything untagged is ready to implement as
 written.
+
+**Lifting a finding into an iteration.** The product owner reviews the
+backlog and tells an AI agent which findings to promote — by ID (`MUST-1`,
+`SHOULD-3`, ...), a range, or a one-off description for anything not yet
+listed here. A `[needs decision]` finding is resolved in that conversation
+before it is written up as a task, never silently guessed at. The lifted
+task keeps a backreference to its origin (e.g. "(Quality backlog
+SHOULD-3)") so the history survives leaving this file — IDs are permanent,
+so the ID alone is enough without a date. In the same PR that adds the
+task, the finding moves to "Retired" below noting where it went, rather
+than being deleted: deleting it would let a later sweep reissue its ID for
+an unrelated finding.
 
 *The findings below predate this format (adopted 2026-07-28) and were
 carried over from the last two dated sweeps (2026-07-23, 2026-07-27) under
@@ -37,7 +51,7 @@ _(none currently open)_
 - **SHOULD-2** *(confirmed 2026-07-23)* `frontend/features/catalog/api.ts:31-46` — `searchBeers` has no direct unit test for its status check or numeric-string coercions; only covered indirectly through page-level tests.
 - **SHOULD-3** *(confirmed 2026-07-27)* **[needs decision]** `backend/src/main/resources/db/migration/common/V001__create_module_schemas.sql:4-6` pre-creates `cart`/`ordering`/`payment` schemas, which is itself the "own store" outcome of the store-model choice `docs/architecture.md` §9 calls deliberately undecided (ADR-0006). Not urgent — nothing is built on these schemas yet — but the empty schemas lower the path-of-least-resistance cost of building the own-store cart directly, ahead of the ADR §9 says is required first. Needs a call: rename/drop the schemas until the decision is made, or accept the bias as harmless per ADR-0006's rationale.
 - **SHOULD-4** *(confirmed 2026-07-27)* `docs/adr/0013-logging-conventions.md`'s 2026-07-27 Amended note says `backend/README.md` "keeps a summary and a link, not the restatement" of the logging conventions, but `backend/README.md:173-183` still fully restates them.
-- **SHOULD-5** *(confirmed 2026-07-27)* `docs/roadmap.md:23-28` and `CLAUDE.md:132-137` restate the "Iteration DoD gate" rule near-verbatim in both places; `docs/roadmap.md` isn't one of ADR-0020's sanctioned homes for this kind of rule.
+- **SHOULD-5** *(confirmed 2026-07-27)* `docs/roadmap.md:23-28` and `CLAUDE.md:153-159` restate the "Iteration DoD gate" rule near-verbatim in both places; `docs/roadmap.md` isn't one of ADR-0020's sanctioned homes for this kind of rule.
 - **SHOULD-6** *(confirmed 2026-07-27)* `backend/README.md`'s bounded-parameter and Lombok bullets carry unlinked multi-line "why" rationale that, per ADR-0020, should have graduated to an ADR rather than living in the README.
 
 ## COULD

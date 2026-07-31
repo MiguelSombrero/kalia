@@ -51,12 +51,28 @@ Adding a setting that must not have a default means adding it to
 mvn test                      # unit tests only (*Test) — fast, no Docker
 mvn verify                    # + integration tests (*IT, Testcontainers —
                               #   needs Docker) + merged JaCoCo report
+mvn clean verify              # after any pom.xml or plugin change
 ```
 
 Naming convention: **unit tests end in `*Test`** (run by surefire in the
 `test` phase), **integration tests end in `*IT`** (run by failsafe in the
 `verify` phase). Anything booting a Spring context or a Testcontainer is an
 integration test.
+
+Use `clean` after changing `pom.xml` or a plugin: an incremental build can
+report success against stale `target/classes` output.
+
+`mvn verify` prints ~285 lines, mostly Spring context startup. To keep a
+green run cheap for an AI-agent session, filter it — this keeps every
+`Tests run:` count, so the run is still evidence:
+
+```bash
+mvn verify 2>&1 | grep -E "Tests run:|ERROR|FAIL|BUILD"
+```
+
+Triage only, not lossless: it names a failing test and its line but drops
+the assertion detail. **On a failure, re-run unfiltered** (or read
+`target/failsafe-reports/`) before diagnosing anything.
 
 Coverage: JaCoCo merges unit + integration data into
 `target/site/jacoco-merged/` on `mvn verify`; CI prints the instruction
