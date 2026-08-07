@@ -109,6 +109,13 @@ Why the rationale lives there and not here:
 - **Sign-out goes through the `signOutEverywhere` Server Action
   (`features/auth/actions.ts`), never Auth.js's own `signOut()` directly** —
   it also ends Keycloak's SSO session, which `signOut()` alone does not do.
+- **`kaliaFetch` attaches the bearer token; callers never do.** It withholds
+  an expired one on purpose — the backend answers 401 to a bad token even on
+  a public route, so sending one breaks anonymous catalog browsing for a
+  signed-in user ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)).
+- **`session.user.id` is this app's session key, not a cross-system user id.**
+  Per-user data keys on the access token's `sub`, which the backend reads
+  itself.
 
 **UI**
 

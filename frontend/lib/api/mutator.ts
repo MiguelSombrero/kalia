@@ -1,3 +1,4 @@
+import { currentAccessToken } from "./accessToken";
 import { apiError, isApiError } from "./api-error";
 
 /**
@@ -19,10 +20,11 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
   // Fallback is for npm run dev only; production requiring this is enforced
   // in instrumentation.ts, not here (ADR-0018).
   const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8080";
+  const request = await withAccessToken(options);
 
   let response: Response;
   try {
-    response = await withTimeout(fetch(`${backendUrl}${url}`, options), url);
+    response = await withTimeout(fetch(`${backendUrl}${url}`, request), url);
   } catch (cause) {
     // A caller-initiated abort is cancellation, not failure: TanStack Query
     // recognises the original AbortError and would treat a wrapper as a real
@@ -68,6 +70,28 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
     status: response.status,
     headers: response.headers,
   } as T;
+};
+
+/**
+ * Adds the caller's bearer token, which the backend needs on everything but
+ * the catalog (ADR-0028). Returns `options` untouched when nobody is signed
+ * in, so an anonymous request is byte-for-byte what it was before tokens
+ * existed rather than one carrying an empty Authorization header.
+ *
+ * A caller-supplied Authorization header wins: nothing sets one today, and
+ * silently overwriting it would be the harder failure to diagnose.
+ */
+const withAccessToken = async (options: RequestInit): Promise<RequestInit> => {
+  const headers = new Headers(options.headers);
+  if (headers.has("Authorization")) {
+    return options;
+  }
+  const token = await currentAccessToken();
+  if (!token) {
+    return options;
+  }
+  headers.set("Authorization", `Bearer ${token}`);
+  return { ...options, headers };
 };
 
 /**

@@ -14,7 +14,21 @@ Goal: users can sign in; personal features become possible.
    [ADR-0025](../adr/0025-authjs-valkey-adapter.md). Two follow-ups left
    deliberately out: silent token refresh (task 8) and per-session rather
    than per-user token storage (task 9).
-3. [ ] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
+3. [x] Spring Boot as OAuth2 resource server; `identity` module resolves the current user; catalog endpoints stay public
+
+   The filter chain denies by default; the catalog reads, `/actuator/health`
+   and the API docs are the permitted set. Tokens are checked for signature,
+   issuer and a `kalia-backend` audience — a new realm client plus an audience
+   mapper, since tokens previously carried no audience any resource server
+   could check. `GET /api/v1/me` returns the caller, giving the iteration's
+   "the backend knows who is calling" something to verify against. The
+   Keycloak `sub` is the canonical per-user key, so `cellar_item.user_id`
+   (iteration 5) keys on it rather than on the frontend's Auth.js session id.
+   Recorded in [ADR-0028](../adr/0028-resource-server-and-current-user.md).
+   Found while verifying: an invalid bearer token makes Spring Security answer
+   401 even on a `permitAll` route, so the BFF withholds expired tokens —
+   without that, browsing broke for any signed-in user five minutes after
+   sign-in. That workaround is task 8's to remove.
 4. [x] Playwright E2E: sign in, see own name in the UI, sign out
    (`frontend/e2e/sign-in-out.spec.ts`). Two of the three specs are
    regression guards for bugs found in review, and each was verified to
@@ -25,6 +39,11 @@ Goal: users can sign in; personal features become possible.
    before it expires, extending the session instead of requiring sign-in
    again. Deferred out of task 2 by product-owner decision — task 2's
    session TTL simply tracks the access token's lifetime for now.
+   Task 3 raised the stakes: the realm's `accessTokenLifespan` is 300 seconds
+   while the Auth.js session outlives it, so today a signed-in user loses
+   access to protected endpoints five minutes after signing in.
+   `lib/api/accessToken.ts` withholds the expired token so public browsing
+   keeps working; delete that workaround, and its tests, when refresh lands.
 9. [ ] Key the stored Keycloak tokens per session, not per user.
    `frontend/lib/auth/valkeyAdapter.ts` keeps one record per user
    (`auth:account:{userId}`), so it always holds only the most recent
