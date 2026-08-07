@@ -1,8 +1,8 @@
 import type { AdapterAccount } from "next-auth/adapters";
-import { auth } from "@/auth";
 import { endLocalSession } from "@/lib/auth/endLocalSession";
 import { refreshAccessToken } from "@/lib/auth/refreshAccessToken";
-import { getStoredAccountByUserId, putStoredAccount } from "@/lib/auth/valkeyAdapter";
+import { currentSessionToken } from "@/lib/auth/sessionCookie";
+import { getSessionAccount, updateSessionAccount } from "@/lib/auth/valkeyAdapter";
 
 /**
  * Renews this far ahead of expiry, so a token that would die in flight is
@@ -21,18 +21,20 @@ const EXPIRY_LEEWAY_SECONDS = 10;
  * curl against the running stack.
  */
 export const currentAccessToken = async (): Promise<string | undefined> => {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const sessionToken = await currentSessionToken();
+  if (!sessionToken) {
     return undefined;
   }
-  const account = await getStoredAccountByUserId(session.user.id);
+  // The token set belongs to this session, not to the user (ADR-0030): a
+  // second device's tokens must never answer for this one's.
+  const account = await getSessionAccount(sessionToken);
   if (!account?.access_token) {
     return undefined;
   }
   if (!hasExpired(account.expires_at)) {
     return account.access_token;
   }
-  return renew(account);
+  return renew(sessionToken, account);
 };
 
 /**
@@ -42,7 +44,10 @@ export const currentAccessToken = async (): Promise<string | undefined> => {
  * keycloak/realm-export.json), so parallel calls each get a valid set and the
  * last write wins. Enabling rotation there would make this need a lock.
  */
-const renew = async (account: AdapterAccount): Promise<string | undefined> => {
+const renew = async (
+  sessionToken: string,
+  account: AdapterAccount,
+): Promise<string | undefined> => {
   if (!account.refresh_token) {
     return undefined;
   }
@@ -56,11 +61,11 @@ const renew = async (account: AdapterAccount): Promise<string | undefined> => {
   }
 
   if (outcome.status === "rejected") {
-    await endLocalSession();
+    await endLocalSession(sessionToken);
     return undefined;
   }
 
-  await putStoredAccount({
+  await updateSessionAccount(sessionToken, {
     ...account,
     access_token: outcome.accessToken,
     // Keycloak returns a new id_token here too. Keeping it current matters

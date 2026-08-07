@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-07
+- **Amended:** 2026-08-07 by [ADR-0030](0030-per-session-token-storage.md) —
+  renewal reads and writes the token set of the caller's session rather than
+  the user's, and Back-Channel Logout moved to iteration 4 task 10
 
 ## Context
 

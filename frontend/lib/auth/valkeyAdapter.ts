@@ -1,11 +1,12 @@
 import type { Adapter, AdapterAccount, AdapterSession, AdapterUser } from "next-auth/adapters";
+import { rememberCreatedSession } from "./signInContext";
 import { valkeyClient } from "./valkeyClient";
 
 const userKey = (userId: string) => `auth:user:${userId}`;
-const accountKey = (userId: string) => `auth:account:${userId}`;
 const accountIndexKey = (provider: string, providerAccountId: string) =>
   `auth:account-index:${provider}:${providerAccountId}`;
 const sessionKey = (sessionToken: string) => `auth:session:${sessionToken}`;
+const sessionAccountKey = (sessionToken: string) => `auth:session-account:${sessionToken}`;
 const emailIndexKey = (email: string) => `auth:user-by-email:${email}`;
 
 // Valkey/JSON has no Date type — every stored record keeps date fields as
@@ -39,31 +40,56 @@ const readUser = async (userId: string): Promise<AdapterUser | null> => {
 };
 
 /**
- * Outside the standard Adapter interface: federated (Keycloak) sign-out
- * needs the stored id_token before the session/account are deleted, keyed
- * by user id rather than by provider (app/api/auth/federated-signout).
+ * The Keycloak token set belonging to one Auth.js session (ADR-0030), or null
+ * once the session is gone. Outside the standard Adapter interface, which has
+ * no per-session notion of an account at all.
  */
-export const getStoredAccountByUserId = async (userId: string): Promise<AdapterAccount | null> => {
-  const raw = await valkeyClient.get(accountKey(userId));
+export const getSessionAccount = async (sessionToken: string): Promise<AdapterAccount | null> => {
+  const raw = await valkeyClient.get(sessionAccountKey(sessionToken));
   return raw ? (JSON.parse(raw) as AdapterAccount) : null;
 };
 
 /**
- * Outside the standard Adapter interface, and the same upsert `linkAccount`
- * performs. The Adapter has no `updateAccount`, so writing a token set back —
- * on re-sign-in (auth.ts's `events.signIn`) or after a silent refresh
- * (lib/api/accessToken.ts) — goes through this.
+ * Files a freshly-issued token set under the session it was issued for
+ * (auth.ts's `events.signIn`). The record expires with its session, so a
+ * signed-out or lapsed session leaves no tokens behind.
  */
-export const putStoredAccount = async (account: AdapterAccount): Promise<void> => {
-  await valkeyClient.set(accountKey(account.userId), JSON.stringify(account));
+export const putSessionAccount = async (
+  sessionToken: string,
+  account: AdapterAccount,
+  expires: Date,
+): Promise<void> => {
   await valkeyClient.set(
-    accountIndexKey(account.provider, account.providerAccountId),
-    account.userId,
+    sessionAccountKey(sessionToken),
+    JSON.stringify(account),
+    "PXAT",
+    expires.getTime(),
   );
 };
 
 /**
+ * Writes a renewed token set back over the session's existing one
+ * (lib/api/accessToken.ts). KEEPTTL, not a fresh expiry: the record's lifetime
+ * is the session's, and a renewed access token must not extend it.
+ *
+ * Do not drop the XX. Without it a SET recreates a key that expired or was
+ * deleted while the renewal was in flight with Keycloak — and KEEPTTL on a
+ * key that does not exist leaves it with no expiry at all, stranding a live
+ * refresh token for a session nobody can reach.
+ */
+export const updateSessionAccount = async (
+  sessionToken: string,
+  account: AdapterAccount,
+): Promise<void> => {
+  await valkeyClient.set(sessionAccountKey(sessionToken), JSON.stringify(account), "KEEPTTL", "XX");
+};
+
+/**
  * Auth.js database-session adapter backed by Valkey (docs/adr/0003-bff-pattern.md).
+ * The provider's token set is not part of it: those are stored per session
+ * rather than per user (ADR-0030), which the Adapter interface has no notion
+ * of, so `linkAccount` records only the lookup index and auth.ts's
+ * `events.signIn` files the tokens once the session exists.
  * getUserByEmail is implemented even though this is an OAuth-only setup with
  * no Email provider: Auth.js's own runtime assertion (@auth/core's
  * lib/utils/assert.js sessionMethods) requires it unconditionally for the
@@ -108,15 +134,14 @@ export const valkeyAdapter: Adapter = {
     return updated;
   },
 
-  linkAccount: putStoredAccount,
-
-  getAccount: async (providerAccountId, provider) => {
-    const userId = await valkeyClient.get(accountIndexKey(provider, providerAccountId));
-    if (!userId) {
-      return null;
-    }
-    const raw = await valkeyClient.get(accountKey(userId));
-    return raw ? (JSON.parse(raw) as AdapterAccount) : null;
+  // Records only the index `getUserByAccount` reads. Auth.js calls this before
+  // the session exists (@auth/core's lib/actions/callback/handle-login.js), so
+  // it is not a place tokens can be filed under one.
+  linkAccount: async (account) => {
+    await valkeyClient.set(
+      accountIndexKey(account.provider, account.providerAccountId),
+      account.userId,
+    );
   },
 
   createSession: async (session) => {
@@ -127,6 +152,7 @@ export const valkeyAdapter: Adapter = {
       "PXAT",
       session.expires.getTime(),
     );
+    rememberCreatedSession(session);
     return session;
   },
 
@@ -157,7 +183,9 @@ export const valkeyAdapter: Adapter = {
 
   deleteSession: async (sessionToken) => {
     const raw = await valkeyClient.get(sessionKey(sessionToken));
-    await valkeyClient.del(sessionKey(sessionToken));
+    // One call, so the tokens can never outlive the session record: signing
+    // out on one device must not leave a usable refresh token behind (ADR-0030).
+    await valkeyClient.del(sessionKey(sessionToken), sessionAccountKey(sessionToken));
     return raw ? fromStoredSession(JSON.parse(raw) as StoredSession) : undefined;
   },
 };

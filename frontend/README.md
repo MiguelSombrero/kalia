@@ -106,18 +106,28 @@ Why the rationale lives there and not here:
   Valkey adapter** (`lib/auth/valkeyAdapter.ts`) — never add a second
   session mechanism or switch to the `"jwt"` strategy without reading
   [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) first.
-- **Sign-out goes through the `signOutEverywhere` Server Action
+- **Sign-out goes through the `federatedSignOut` Server Action
   (`features/auth/actions.ts`), never Auth.js's own `signOut()` directly** —
   it also ends Keycloak's SSO session, which `signOut()` alone does not do.
+  It ends *this* browser's session only; another device stays signed in.
+- **Keycloak tokens are stored per session, keyed by the Auth.js session
+  token** (`lib/auth/valkeyAdapter.ts`), never per user
+  ([ADR-0030](../docs/adr/0030-per-session-token-storage.md)). Server code
+  reaches them via `currentSessionToken()` — `auth()` does not expose the
+  session token. **Do not export Auth.js's `handlers` directly from
+  `app/api/auth/[...nextauth]/route.ts`**: they are wrapped in
+  `withSignInContext`, which is what lets the issued tokens be filed under the
+  session just created. Unwrapping it fails silently — sign-in still succeeds,
+  and only later does the session turn out to reach no protected endpoint.
 - **`kaliaFetch` attaches the bearer token; callers never do.** An expired one
   is renewed first, and if it cannot be, no token is sent at all rather than a
   bad one — the backend answers 401 to a bad token even on a public route, so
   sending one breaks anonymous catalog browsing for a signed-in user
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
   [ADR-0029](../docs/adr/0029-silent-token-refresh.md)).
-- **`session.user.id` is this app's session key, not a cross-system user id.**
-  Per-user data keys on the access token's `sub`, which the backend reads
-  itself.
+- **Per-user data keys on the access token's `sub`**, which the backend reads
+  itself ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) —
+  never on an Auth.js user or session id, which are this app's own.
 
 **UI**
 
@@ -172,7 +182,7 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   'self'` blocks it, *including* when the form posts to our own route and
   that route answers with a cross-origin redirect. Use a Server Action and
   `redirect()`, whose navigation the client router performs instead (that is
-  why sign-out is `signOutEverywhere`, not a route handler —
+  why sign-out is `federatedSignOut`, not a route handler —
   [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)). **`curl` does not
   enforce CSP and will happily follow the redirect**, so this only reproduces
   in a browser — check the console, not just the response headers.

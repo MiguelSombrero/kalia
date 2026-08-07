@@ -2,7 +2,8 @@ import { customFetch } from "@auth/core";
 import NextAuth from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
 import { createInternalKeycloakFetch } from "@/lib/auth/internalKeycloakFetch";
-import { putStoredAccount, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
+import { createdSession } from "@/lib/auth/signInContext";
+import { putSessionAccount, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
 
 /**
  * `issuer` must be Keycloak's one canonical, public identity — the value
@@ -53,35 +54,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       [customFetch]: fetchViaInternalKeycloak,
     }),
   ],
-  callbacks: {
-    // The default session callback strips the user down to name/email/image
-    // (@auth/core/lib/init.js). The id is kept because server code needs it to
-    // look up this session's stored tokens; it is this app's own session key,
-    // never a cross-system user id — per-user data keys on the token's `sub`
-    // (ADR-0028).
-    session: ({ session, user }) => ({
-      ...session,
-      user: { ...session.user, id: user.id },
-    }),
-  },
   events: {
-    // Do not remove: without this the stored tokens are frozen at the user's
-    // very first sign-in, forever. Auth.js calls the adapter's linkAccount
-    // only when an account is first linked — on every later sign-in the
-    // returning-user path in @auth/core's handle-login.js creates a session
-    // and returns without touching the account, and the Adapter interface has
-    // no updateAccount for it to call. Nothing fails loudly: sign-in still
-    // works, so the staleness only surfaces later as an id_token_hint that
-    // names a long-dead Keycloak session (which makes Keycloak fall back to
-    // its "Do you want to log out?" page) and, once the resource server
-    // lands, as an expired access_token on backend calls.
+    // Do not remove: this is the only point at which Auth.js hands the
+    // provider's token set to the application. The adapter's linkAccount runs
+    // once per account ever and before any session exists, the returning-user
+    // path in @auth/core's handle-login.js never touches the account again,
+    // and the Adapter interface has no updateAccount. Nothing fails loudly if
+    // this goes — sign-in still succeeds, and only later does the session turn
+    // out to reach no protected endpoint and to sign out of Keycloak without a
+    // usable id_token_hint.
     signIn: async ({ user, account }) => {
       // "credentials" is the one provider type the Adapter's account model
       // does not cover; this app has no such provider, so it cannot occur.
       if (!account || !user.id || account.type === "credentials") {
         return;
       }
-      await putStoredAccount({ ...account, type: account.type, userId: user.id });
+      const session = createdSession();
+      // Auth.js reused an existing session instead of creating one: an
+      // already-signed-in user signing in again. That session keeps the tokens
+      // it already has, which the lazy renewal in lib/api/accessToken.ts keeps
+      // current (ADR-0029) — overwriting them here is neither needed nor
+      // possible, since nothing in this event identifies the session.
+      if (!session) {
+        return;
+      }
+      await putSessionAccount(
+        session.sessionToken,
+        { ...account, type: account.type, userId: user.id },
+        session.expires,
+      );
     },
   },
 });

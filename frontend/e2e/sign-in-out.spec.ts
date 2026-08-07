@@ -3,17 +3,22 @@
 // (docs/architecture.md §6, §7). Credentials are the dev-only account seeded
 // in keycloak/realm-export.json.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import Redis from "ioredis";
 
 const USERNAME = "testuser";
 const PASSWORD = "testuser123";
 
-// Serial, not parallel: these share server-side state two ways. Keycloak's
-// SSO session is global to the realm user, and the stored Keycloak account —
-// which holds the id_token a sign-out sends as its hint — is one record per
-// user, so concurrent sign-ins would overwrite each other's tokens and make
-// the assertions below flap.
+// Serial, not parallel. Half of the original reason is gone: the stored
+// Keycloak token set is now one record per session (ADR-0030), so concurrent
+// sign-ins no longer overwrite each other's tokens — which is what the
+// multi-device test below exists to prove. What still flaps is the realm user
+// itself. Measured on this suite: parallel fails 3 of 5 against the pre-ADR-0030
+// build and 1-2 of 6 after it, always one of the tests that cycles sign-in and
+// sign-out, and always with the browser landing back on Kalia still rendered
+// signed in. Sequential sign-ins on two devices are fine; overlapping
+// authentication flows for one realm user are not. Giving each spec its own
+// seeded user is the way to drop this, and is not this task's.
 test.describe.configure({ mode: "serial" });
 
 /**
@@ -33,19 +38,27 @@ const collectCspViolations = async (page: Page) => {
 };
 
 /**
- * Reads and rewrites the stored Keycloak token set directly, which is how the
- * refresh tests below reach an expiry that would otherwise take five minutes
- * of wall clock (the realm's `accessTokenLifespan`, keycloak/realm-export.json).
- * There is exactly one account record because the realm seeds one user.
+ * Reads and rewrites the token set stored for one browser's session, which is
+ * how the refresh tests below reach an expiry that would otherwise take five
+ * minutes of wall clock (the realm's `accessTokenLifespan`,
+ * keycloak/realm-export.json). Addressed by the page's own session cookie:
+ * records are keyed per session (ADR-0030), so several may exist at once even
+ * though the realm seeds a single user.
  */
-const storedAccount = async () => {
+const storedAccount = async (page: Page) => {
+  const cookies = await page.context().cookies();
+  const sessionToken = cookies.find((cookie) => cookie.name === "authjs.session-token")?.value;
+  expect(sessionToken, "the page carries no Auth.js session cookie").toBeTruthy();
+
   const valkey = new Redis("redis://localhost:6379");
-  const [key] = await valkey.keys("auth:account:*");
+  const key = `auth:session-account:${sessionToken}`;
   const read = async () => JSON.parse((await valkey.get(key))!) as Record<string, unknown>;
   return {
     read,
+    // KEEPTTL, or the patch itself would strip the expiry the record is
+    // supposed to carry and quietly test something production never does.
     patch: async (fields: Record<string, unknown>) =>
-      valkey.set(key, JSON.stringify({ ...(await read()), ...fields })),
+      valkey.set(key, JSON.stringify({ ...(await read()), ...fields }), "KEEPTTL"),
     close: () => valkey.quit(),
   };
 };
@@ -141,7 +154,7 @@ test("renews an expired access token instead of dropping it", async ({ page, req
   await page.goto("/en");
   await signIn(page);
 
-  const account = await storedAccount();
+  const account = await storedAccount(page);
   const before = await account.read();
   await account.patch({ expires_at: Math.floor(Date.now() / 1000) - 1 });
 
@@ -164,6 +177,63 @@ test("renews an expired access token instead of dropping it", async ({ page, req
 });
 
 /**
+ * Iteration 4 task 9. The stored token set used to be one record per user, so
+ * the second device's sign-in overwrote the first's. Signing out then sent the
+ * *other* device's `id_token_hint`: Keycloak ended the wrong SSO session, and
+ * the browser that had just clicked "Sign out" was still authenticated at the
+ * identity provider — its next "Sign in" would sail through with no credential
+ * prompt. Two separate browser contexts are the point; one cannot reproduce
+ * it. Verified to fail against the build that had the bug.
+ */
+test("signing out on one device leaves the other's session intact", async ({
+  browser,
+  request,
+}) => {
+  const contexts: BrowserContext[] = [];
+  const signedInPage = async () => {
+    const context = await browser.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    await page.goto("/en");
+    await signIn(page);
+    return page;
+  };
+
+  const laptop = await signedInPage();
+  const phone = await signedInPage();
+
+  await laptop.getByRole("button", { name: "Sign out" }).click();
+  await expect(laptop.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  // The laptop's own Keycloak SSO session is the one that ended, so it is
+  // asked for credentials again rather than being signed straight back in.
+  await laptop.getByRole("button", { name: "Sign in" }).click();
+  await expect(
+    laptop.locator("#username"),
+    "the laptop stayed authenticated at Keycloak, so the wrong session was ended",
+  ).toBeVisible();
+
+  // The phone never signed out, and its tokens are still its own and usable.
+  await phone.reload();
+  await expect(phone.getByText("Hi, Test User")).toBeVisible();
+  const account = await storedAccount(phone);
+  const stillValid = await account.read();
+  await account.close();
+  const me = await request.get("http://localhost:8080/api/v1/me", {
+    headers: { Authorization: `Bearer ${stillValid.access_token as string}` },
+  });
+  expect(me.status(), "the phone's access token died with the laptop's sign-out").toBe(200);
+
+  // And the phone can still sign itself out cleanly — its id_token_hint names
+  // a session Keycloak still recognises, so no confirmation page.
+  await phone.getByRole("button", { name: "Sign out" }).click();
+  await expect(phone.getByText("Do you want to log out?")).toHaveCount(0);
+  await expect(phone.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  await Promise.all(contexts.map((context) => context.close()));
+});
+
+/**
  * The security half of task 8: once Keycloak says the grant is gone, the
  * local session must go with it rather than presenting a signed-in user who
  * can reach nothing. A corrupt refresh token is the deterministic way to
@@ -173,7 +243,7 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
   await page.goto("/en");
   await signIn(page);
 
-  const account = await storedAccount();
+  const account = await storedAccount(page);
   await account.patch({
     expires_at: Math.floor(Date.now() / 1000) - 1,
     refresh_token: "no-longer-a-valid-grant",
