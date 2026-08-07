@@ -72,7 +72,7 @@ Goal: users can sign in; personal features become possible.
 
 ## Maintenance (lifted from the quality backlog)
 
-5. [ ] Fix stale/contradictory documentation surfaced by the 2026-07-23 and
+5. [x] Fix stale/contradictory documentation surfaced by the 2026-07-23 and
    2026-07-27 quality sweeps: `README.md` and `docs/adr/0011-i18next-localization.md`
    both still claim `react-i18next` is "installed but not yet wired," but
    `frontend/app/providers.tsx` wires a real `I18nextProvider` (fix the

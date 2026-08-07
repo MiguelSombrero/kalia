@@ -115,7 +115,8 @@ this section as the project evolves!
 - Lombok (boilerplate reduction, version managed by Spring Boot's dependency
   BOM — see backend/README.md conventions)
 - springdoc-openapi 3.0 (OpenAPI spec + Swagger UI)
-- Keycloak 26.7 (authentication — *introduced in the auth iteration*)
+- spring-boot-starter-security-oauth2-resource-server (JWT validation against
+  Keycloak, version managed by Spring Boot's dependency BOM — see ADR-0028)
 
 ### Frontend
 
@@ -127,8 +128,8 @@ this section as the project evolves!
 - react-hook-form 7.82 + Zod 4.4 (+ @hookform/resolvers 5.5) for
   stateful forms and validation (ADR-0010)
 - i18next 26.3 + i18next-resources-to-backend 1.2 (server-side
-  localization, English + Finnish), react-i18next 17.0 (installed,
-  not yet wired — see ADR-0011)
+  localization, English + Finnish), react-i18next 17.0 (the client-component
+  bridge, mounted in `app/providers.tsx` — see ADR-0011)
 - orval 8.23 (API client generated from the backend's OpenAPI spec,
   committed + CI drift check — see ADR-0012)
 - Vitest 4.1 + React Testing Library 16.3 (unit/component tests),
@@ -146,10 +147,11 @@ this section as the project evolves!
   and session strategy, backed by a custom Valkey adapter — see ADR-0025)
 - ioredis 5.11 (Valkey client used by the Auth.js adapter)
 - Valkey 9.1 (server-side session store, Redis-API-compatible — ADR-0025)
-- Keycloak 26.7 (authentication)
 
 ### Local infrastructure
 
+- Keycloak 26.7 (identity provider — OIDC for the frontend, JWT issuer for
+  the backend; pinned in `docker-compose.yml`)
 - Docker Compose: full stack (PostgreSQL + backend + frontend + Keycloak +
   Valkey)
 - Base images: maven:3.9-eclipse-temurin-25 (backend build),
