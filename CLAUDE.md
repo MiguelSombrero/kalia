@@ -38,8 +38,9 @@ before making changes:
   [docs/tasks/](docs/tasks/). From iteration 5 on, tasks are one file each,
   written to [docs/tasks/template.md](docs/tasks/template.md) before work
   starts
-- [docs/adr/](docs/adr/) — decisions already made; don't relitigate them
-  silently, propose a new ADR instead. New ones follow
+- [docs/adr/](docs/adr/) — decisions already made, grouped by subject in
+  [its README](docs/adr/README.md); don't relitigate them silently, propose a
+  new ADR instead. New ones follow
   [docs/adr/template.md](docs/adr/template.md)
 - [backend/README.md](backend/README.md) — run/test commands, Lombok/
   JSpecify/ArchUnit conventions, testing naming (`*Test`/`*IT`)
@@ -56,7 +57,7 @@ the next command and breaks the one after it:
 (cd backend  && mvn verify)        # + integration tests (*IT) — needs Docker
 (cd frontend && npm test)          # vitest
 (cd frontend && npm run test:e2e)  # playwright — needs the stack up
-node scripts/check-adrs.mjs        # ADR ↔ architecture.md index
+node scripts/check-adrs.mjs        # ADR ↔ architecture.md §10 + adr/README.md
 node scripts/check-tasks.mjs       # task files ↔ iteration index
 ```
 
@@ -194,6 +195,11 @@ Two things that fail silently if you skip them:
   amended rather than rewritten. `scripts/check-adrs.mjs` enforces the
   mechanical parts. See
   [ADR-0019](docs/adr/0019-adr-format-and-conventions.md).
+- **A decision earns an ADR when a credible alternative was rejected and the
+  reason would not survive in the code, `docs/architecture.md` or a README** —
+  and decisions on one subject stay separate documents, since
+  [docs/adr/README.md](docs/adr/README.md) groups them by theme. See
+  [ADR-0031](docs/adr/0031-when-a-decision-earns-an-adr.md).
 - **Each documented fact has one home** — ADRs record *why*,
   `docs/architecture.md` records *shape*, READMEs record *how*; every other
   mention is a one-line pointer with a link. Two exceptions: this file may
