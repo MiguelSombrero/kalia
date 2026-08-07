@@ -208,10 +208,11 @@ The shape of the frontend. Day-to-day rules for writing it live in
 [frontend/README.md](../frontend/README.md) conventions.
 
 - **App Router**, server components by default; client components only where
-  interactivity requires — today the locale switcher, the error boundary's
-  retry, and the provider mount. Search is deliberately not one of them: the
-  catalog's filters are a native GET form, so `SearchFilters` stays a server
-  component ([ADR-0010](adr/0010-react-hook-form-zod.md)).
+  the browser is genuinely needed — event handlers, React state, or context.
+  Search is the case worth naming, because it looks like an exception and
+  isn't: the catalog's filters are a native GET form, so `SearchFilters`
+  stays a server component ([ADR-0010](adr/0010-react-hook-form-zod.md)).
+  A form that only navigates does not need the client.
 - **Feature-based package structure**: `features/<feature>/` (catalog,
   cellar, …) owns that feature's components, hooks and API access; `app/`
   route files stay thin and delegate. Mirrors the backend's
