@@ -9,16 +9,11 @@ import Redis from "ioredis";
 const USERNAME = "testuser";
 const PASSWORD = "testuser123";
 
-// Serial, not parallel. Half of the original reason is gone: the stored
-// Keycloak token set is now one record per session (ADR-0030), so concurrent
-// sign-ins no longer overwrite each other's tokens — which is what the
-// multi-device test below exists to prove. What still flaps is the realm user
-// itself. Measured on this suite: parallel fails 3 of 5 against the pre-ADR-0030
-// build and 1-2 of 6 after it, always one of the tests that cycles sign-in and
-// sign-out, and always with the browser landing back on Kalia still rendered
-// signed in. Sequential sign-ins on two devices are fine; overlapping
-// authentication flows for one realm user are not. Giving each spec its own
-// seeded user is the way to drop this, and is not this task's.
+// Do not make these parallel while every spec signs in as the same realm user.
+// Measured: 1-2 of 6 specs then fail, always one that cycles sign-in and
+// sign-out, always with the browser landing back on Kalia still rendered signed
+// in. Sequential sign-ins on two devices are fine; overlapping authentication
+// flows for one realm user are not. Seed a user per spec first.
 test.describe.configure({ mode: "serial" });
 
 /**
@@ -94,11 +89,11 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
 });
 
 /**
- * Regression guard: sign-out used to be a form POST to a route handler that
- * answered with a cross-origin redirect to Keycloak, which `form-action
- * 'self'` blocks. The navigation never happened, so the header still showed
- * "Sign out" after the click even though the session was already gone — hence
- * the single-click assertion here. Verified to fail against that build.
+ * One click is the assertion. `form-action 'self'` blocks a form navigation
+ * that ends up cross-origin, including via a same-origin route's redirect, and
+ * a blocked sign-out has already deleted the local session — so a second click
+ * completes and the flow looks fine while Keycloak's SSO session survives
+ * (ADR-0025). Only the click count catches that.
  */
 test("signing out takes one click and is not blocked by the CSP", async ({ page }) => {
   const cspViolations = await collectCspViolations(page);
@@ -112,12 +107,11 @@ test("signing out takes one click and is not blocked by the CSP", async ({ page 
 });
 
 /**
- * Regression guard: Auth.js links an account only once, so the stored tokens
- * used to freeze at the first sign-in. From the second sign-out on, the
- * `id_token_hint` named a Keycloak session that no longer existed, and
- * Keycloak answered with its own "Do you want to log out?" confirmation page
- * instead of completing the logout. Two cycles are the point — one passes
- * even with the bug present. Verified to fail against that build.
+ * Two cycles are the point — a single one passes even when the stored tokens
+ * are stale, because staleness only shows from the second sign-out on: the
+ * `id_token_hint` then names a Keycloak session that no longer exists, and
+ * Keycloak answers with its own "Do you want to log out?" page instead of
+ * completing the logout (ADR-0025).
  */
 test("signs in and out twice without Keycloak asking to confirm the logout", async ({ page }) => {
   await page.goto("/en");
@@ -146,9 +140,10 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
 });
 
 /**
- * Iteration 4 task 8. Before silent refresh, `lib/api/accessToken.ts`
- * withheld an expired token so public browsing kept working, and every
- * protected call went out anonymous five minutes after sign-in.
+ * The renewed token is sent to the real backend rather than merely compared as
+ * a string: withholding an expired token also keeps browsing working, so only
+ * a call the resource server accepts distinguishes renewal from that
+ * (ADR-0029).
  */
 test("renews an expired access token instead of dropping it", async ({ page, request }) => {
   await page.goto("/en");
@@ -177,13 +172,9 @@ test("renews an expired access token instead of dropping it", async ({ page, req
 });
 
 /**
- * Iteration 4 task 9. The stored token set used to be one record per user, so
- * the second device's sign-in overwrote the first's. Signing out then sent the
- * *other* device's `id_token_hint`: Keycloak ended the wrong SSO session, and
- * the browser that had just clicked "Sign out" was still authenticated at the
- * identity provider — its next "Sign in" would sail through with no credential
- * prompt. Two separate browser contexts are the point; one cannot reproduce
- * it. Verified to fail against the build that had the bug.
+ * Two browser contexts are the point — a single one cannot detect tokens
+ * shared between sessions, so collapsing this into one page deletes the guard
+ * without failing (ADR-0030).
  */
 test("signing out on one device leaves the other's session intact", async ({
   browser,
@@ -234,10 +225,10 @@ test("signing out on one device leaves the other's session intact", async ({
 });
 
 /**
- * The security half of task 8: once Keycloak says the grant is gone, the
- * local session must go with it rather than presenting a signed-in user who
- * can reach nothing. A corrupt refresh token is the deterministic way to
- * provoke the `invalid_grant` that an idle-timed-out SSO session produces.
+ * A corrupt refresh token is the deterministic way to provoke the
+ * `invalid_grant` an idle-timed-out SSO session produces, which is the one
+ * failure that must end the local session rather than leaving a signed-in user
+ * who can reach nothing (ADR-0029).
  */
 test("ends the local session when Keycloak rejects the refresh token", async ({ page }) => {
   await page.goto("/en");

@@ -85,9 +85,8 @@ describe("valkeyAdapter", () => {
     ).resolves.toEqual(user);
   });
 
-  // Load-bearing: linkAccount runs once per account ever, so anything it wrote
-  // would outlive every session that follows — the per-user storage ADR-0030
-  // removed.
+  // Load-bearing: linkAccount runs once per account ever, so any token it
+  // wrote would outlive every session that follows (ADR-0030).
   it("linkAccount stores no tokens, only the lookup index", async () => {
     const user = await valkeyAdapter.createUser!(newUserInput());
     await valkeyAdapter.linkAccount!({ ...account, userId: user.id });
@@ -157,9 +156,9 @@ describe("the session's Keycloak token set", () => {
     await expect(getSessionAccount("never-signed-in")).resolves.toBeNull();
   });
 
-  // The multi-device defect this storage model exists to fix: with one record
-  // per user, the second sign-in overwrote the first, and signing out on one
-  // device sent the other device's id_token_hint.
+  // Load-bearing: one user signed in twice is the case the whole keying exists
+  // for, and sign-out reads this record for the id_token_hint it sends, so a
+  // shared record ends the wrong Keycloak session (ADR-0030).
   it("keeps two devices' tokens apart for the same user", async () => {
     const laptop = { ...account, userId: "user-1", id_token: "laptop-id-token" };
     const phone = { ...account, userId: "user-1", id_token: "phone-id-token" };

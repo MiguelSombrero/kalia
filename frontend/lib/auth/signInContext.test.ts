@@ -25,8 +25,9 @@ describe("withSignInContext", () => {
     expect(seen).toBeUndefined();
   });
 
-  // Load-bearing: two browsers signing in at once run through the same module,
-  // and the whole point of ADR-0030 is that their tokens do not mix.
+  // Load-bearing: two browsers signing in at once share this one module-level
+  // store, and a leak between them files one browser's tokens under the
+  // other's session (ADR-0030).
   it("keeps concurrent sign-ins from seeing each other's session", async () => {
     const signInAs = (sessionToken: string, delayMs: number) =>
       withSignInContext(async () => {
