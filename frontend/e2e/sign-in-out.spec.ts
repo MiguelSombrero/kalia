@@ -3,7 +3,7 @@
 // (docs/architecture.md §6, §7). Credentials are the dev-only account seeded
 // in keycloak/realm-export.json.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
 import Redis from "ioredis";
 
 const USERNAME = "testuser";
@@ -56,6 +56,46 @@ const storedAccount = async (page: Page) => {
       valkey.set(key, JSON.stringify({ ...(await read()), ...fields }), "KEEPTTL"),
     close: () => valkey.quit(),
   };
+};
+
+/**
+ * Ends `testuser`'s Keycloak SSO session from the identity-provider side —
+ * an admin revoking a session, or another RP's own logout, would look the
+ * same to Kalia — so Back-Channel Logout (ADR-0031) is the only thing that
+ * can end the matching Kalia session; nothing in this flow visits Kalia at
+ * all before the assertion in the test that calls this.
+ */
+const endKeycloakSessionViaAdmin = async (request: APIRequestContext) => {
+  const adminUsername = process.env.KEYCLOAK_ADMIN ?? "admin";
+  const adminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
+
+  const tokenResponse = await request.post(
+    "http://localhost:8081/realms/master/protocol/openid-connect/token",
+    {
+      form: {
+        grant_type: "password",
+        client_id: "admin-cli",
+        username: adminUsername,
+        password: adminPassword,
+      },
+    },
+  );
+  expect(tokenResponse.ok(), "could not obtain a Keycloak admin token").toBeTruthy();
+  const { access_token: adminToken } = (await tokenResponse.json()) as { access_token: string };
+  const adminHeaders = { Authorization: `Bearer ${adminToken}` };
+
+  const usersResponse = await request.get("http://localhost:8081/admin/realms/kalia/users", {
+    headers: adminHeaders,
+    params: { username: USERNAME, exact: "true" },
+  });
+  const [user] = (await usersResponse.json()) as { id: string }[];
+  expect(user, `${USERNAME} has no Keycloak session to end`).toBeTruthy();
+
+  const logoutResponse = await request.post(
+    `http://localhost:8081/admin/realms/kalia/users/${user.id}/logout`,
+    { headers: adminHeaders },
+  );
+  expect(logoutResponse.ok(), "the admin logout call itself failed").toBeTruthy();
 };
 
 const scanForA11yViolations = (page: Page) =>
@@ -248,5 +288,27 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
   await page.goto("/en");
 
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByText("Hi, Test User")).toHaveCount(0);
+});
+
+/**
+ * The defect ADR-0031 fixes: previously nothing told Kalia a Keycloak-side
+ * logout had happened, so the local session lived on regardless — this test
+ * is a regression guard for that, verified to fail without the realm's
+ * `backchannel.logout.url` attribute wired up (keycloak/realm-export.json).
+ * Keycloak calls the backchannel logout endpoint as part of processing the
+ * admin request below, but the exact timing relative to that call returning
+ * isn't a contract this test should assume, hence the retry.
+ */
+test("Keycloak ending the SSO session ends the matching Kalia session", async ({ page, request }) => {
+  await page.goto("/en");
+  await signIn(page);
+
+  await endKeycloakSessionViaAdmin(request);
+
+  await expect(async () => {
+    await page.goto("/en");
+    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  }).toPass({ timeout: 15_000 });
   await expect(page.getByText("Hi, Test User")).toHaveCount(0);
 });

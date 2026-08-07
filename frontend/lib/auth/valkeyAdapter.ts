@@ -8,6 +8,8 @@ const accountIndexKey = (provider: string, providerAccountId: string) =>
 const sessionKey = (sessionToken: string) => `auth:session:${sessionToken}`;
 const sessionAccountKey = (sessionToken: string) => `auth:session-account:${sessionToken}`;
 const emailIndexKey = (email: string) => `auth:user-by-email:${email}`;
+const sidIndexKey = (sid: string) => `auth:sid-index:${sid}`;
+const sessionSidKey = (sessionToken: string) => `auth:session-sid:${sessionToken}`;
 
 // Valkey/JSON has no Date type — every stored record keeps date fields as
 // ISO strings and converts back to Date on the way out.
@@ -83,6 +85,27 @@ export const updateSessionAccount = async (
 ): Promise<void> => {
   await valkeyClient.set(sessionAccountKey(sessionToken), JSON.stringify(account), "KEEPTTL", "XX");
 };
+
+/**
+ * Indexes a session by the Keycloak SSO session id (`sid`) carried in its
+ * id_token, so a Back-Channel Logout token — which names a `sid`, not an
+ * Auth.js session token — can find the session to end (ADR-0031). Both
+ * directions are written: the forward index is what the logout endpoint
+ * reads, the reverse is what lets `deleteSession` remove its own forward
+ * entry without decoding a token again.
+ */
+export const putSessionSid = async (
+  sessionToken: string,
+  sid: string,
+  expires: Date,
+): Promise<void> => {
+  await valkeyClient.set(sidIndexKey(sid), sessionToken, "PXAT", expires.getTime());
+  await valkeyClient.set(sessionSidKey(sessionToken), sid, "PXAT", expires.getTime());
+};
+
+/** The session belonging to a Keycloak SSO session id, or null if none is known. */
+export const getSessionTokenBySid = async (sid: string): Promise<string | null> =>
+  valkeyClient.get(sidIndexKey(sid));
 
 /**
  * Auth.js database-session adapter backed by Valkey (docs/adr/0003-bff-pattern.md).
@@ -183,9 +206,16 @@ export const valkeyAdapter: Adapter = {
 
   deleteSession: async (sessionToken) => {
     const raw = await valkeyClient.get(sessionKey(sessionToken));
+    const sid = await valkeyClient.get(sessionSidKey(sessionToken));
     // One call, so the tokens can never outlive the session record: signing
     // out on one device must not leave a usable refresh token behind (ADR-0030).
-    await valkeyClient.del(sessionKey(sessionToken), sessionAccountKey(sessionToken));
+    // The sid index is cleaned up alongside it, or a Back-Channel Logout
+    // token naming this sid would find a session that no longer exists.
+    const keys = [sessionKey(sessionToken), sessionAccountKey(sessionToken), sessionSidKey(sessionToken)];
+    if (sid) {
+      keys.push(sidIndexKey(sid));
+    }
+    await valkeyClient.del(...keys);
     return raw ? fromStoredSession(JSON.parse(raw) as StoredSession) : undefined;
   },
 };

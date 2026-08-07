@@ -95,7 +95,7 @@ Goal: users can sign in; personal features become possible.
    Overlapping authentication flows for a single realm user are the other half,
    and giving each spec its own seeded user is what would remove it.
    Back-Channel Logout is task 10, by product-owner decision.
-10. [ ] OIDC Back-Channel Logout: let Keycloak tell Kalia that an SSO session
+10. [x] OIDC Back-Channel Logout: let Keycloak tell Kalia that an SSO session
     has ended, and invalidate the matching local session. Today the propagation
     runs one way only — Kalia's sign-out ends the Keycloak session, but a
     Keycloak-side logout (admin console, session revocation, another client's
@@ -113,6 +113,21 @@ Goal: users can sign in; personal features become possible.
     the security-sensitive part, alongside the realm client attributes
     (`backchannel.logout.url`, `backchannel.logout.session.required`) that turn
     it on. Needs a session index by `sid` to find what to delete.
+
+    Landed as [ADR-0031](../adr/0031-backchannel-logout.md): a new
+    `POST /api/auth/backchannel-logout` validates the Logout Token against
+    Keycloak's own JWKS (signature, issuer, audience, the backchannel-logout
+    `events` claim, no `nonce`) and requires `sid` rather than accepting `sub`
+    as a fallback — the realm's `backchannel.logout.session.required: true`
+    is what guarantees Keycloak sends one. `sub` was rejected on the same
+    per-device grounds ADR-0030 already established: ending every session for
+    a user would undo that ADR's precision for this one caller. The `sid`
+    index is written once, in the `events.signIn` hook ADR-0030 already uses,
+    by decoding `sid` out of the id_token already in hand. Verified against
+    the running stack, not just unit tests: an E2E spec ends `testuser`'s
+    Keycloak SSO session via the admin API and confirms the Kalia session
+    ends with it, and was checked to fail without the realm's
+    `backchannel.logout.url` attribute set.
 
 **Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
 

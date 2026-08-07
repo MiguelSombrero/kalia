@@ -2,8 +2,9 @@ import { customFetch } from "@auth/core";
 import NextAuth from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
 import { createInternalKeycloakFetch } from "@/lib/auth/internalKeycloakFetch";
+import { sidFromIdToken } from "@/lib/auth/sessionId";
 import { createdSession } from "@/lib/auth/signInContext";
-import { putSessionAccount, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
+import { putSessionAccount, putSessionSid, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
 
 /**
  * `issuer` must be Keycloak's one canonical, public identity — the value
@@ -83,6 +84,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         { ...account, type: account.type, userId: user.id },
         session.expires,
       );
+      // Indexes the session by its Keycloak SSO session id, so a
+      // Back-Channel Logout token — which names a sid, not this session's
+      // token — can find it (ADR-0031). Absent only if Keycloak were
+      // configured without backchannel.logout.session.required, which the
+      // realm export pins on.
+      const sid = account.id_token ? sidFromIdToken(account.id_token) : undefined;
+      if (sid) {
+        await putSessionSid(session.sessionToken, sid, session.expires);
+      }
     },
   },
 });
