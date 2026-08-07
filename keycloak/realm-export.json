@@ -2,6 +2,10 @@
   "realm": "kalia",
   "enabled": true,
   "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "revokeRefreshToken": false,
   "clients": [
     {
       "clientId": "kalia-frontend",

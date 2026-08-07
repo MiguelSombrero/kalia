@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-31
+- **Amended:** 2026-08-07 by [ADR-0029](0029-silent-token-refresh.md) — expired
+  tokens are now renewed rather than withheld, retiring the workaround below
 
 ## Context
 
@@ -55,6 +57,13 @@ canonical user identifier.**
 
 Silent token refresh stays out (iteration 4 task 8), so a caller's access to
 protected endpoints ends when the token does.
+
+> **Amended 2026-08-07 by [ADR-0029](0029-silent-token-refresh.md).** Refresh
+> has landed: the BFF renews an expired token rather than withholding it, so
+> the paragraph above and the expired-token workaround it describes no longer
+> apply. What still holds unchanged is *why* the workaround existed — an
+> invalid bearer token 401s even a public route — which is now the reason a
+> renewal that fails must send no token at all.
 
 ## Alternatives considered
 
