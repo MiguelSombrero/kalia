@@ -2,6 +2,12 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-21
+- **Amended:** 2026-07-24 — the client bridge this ADR deferred was built the
+  same iteration, once the shared error boundary
+  ([ADR-0022](0022-loading-error-empty-states.md)) became the first client
+  component holding translated text and triggered the condition named below.
+  `react-i18next` is wired: `app/providers.tsx` mounts an `I18nextProvider`
+  over an instance built with `initReactI18next`
 
 ## Context
 
@@ -37,6 +43,10 @@ grammar and number formatting, not only string translation.**
   [ADR-0010](0010-react-hook-form-zod.md); the client bridge
   (`I18nextProvider`, resource hydration from the server-resolved
   instance) is added when the first client component needs it.
+  (Since amended: that component arrived and the bridge is built. It
+  imports the locale JSON statically rather than hydrating from the
+  server-resolved instance, so `init()` completes synchronously and no
+  untranslated keys flash while resources stream in.)
 - **`en` is the default locale**, and locale-less requests are redirected to
   `/{locale}` by hand-parsing the `Accept-Language` header rather than taking
   a dependency for it. The parsing logic is extracted to

@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-07-28. This document describes the target architecture and
+*Last updated: 2026-08-07. This document describes the target architecture and
 the parts of it that are deliberately deferred. Update it when decisions
 change; record significant decisions as ADRs in [adr/](adr/) and index them
 in [§10](#10-architecture-decision-records).*
@@ -208,7 +208,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
 [frontend/README.md](../frontend/README.md) conventions.
 
 - **App Router**, server components by default; client components only where
-  interactivity requires (search input, cellar interactions).
+  interactivity requires — today the locale switcher, the error boundary's
+  retry, and the provider mount. Search is deliberately not one of them: the
+  catalog's filters are a native GET form, so `SearchFilters` stays a server
+  component ([ADR-0010](adr/0010-react-hook-form-zod.md)).
 - **Feature-based package structure**: `features/<feature>/` (catalog,
   cellar, …) owns that feature's components, hooks and API access; `app/`
   route files stay thin and delegate. Mirrors the backend's
@@ -261,7 +264,7 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 
 - Keycloak via OIDC Authorization Code + PKCE, handled by the Next.js
   server using Auth.js with a hand-written Adapter backing sessions onto
-  Valkey (a Redis-API-compatible cache) — [ADR-0025](adr/0025-authjs-valkey-adapter.md)
+  Valkey (a Redis-API-compatible key-value store) — [ADR-0025](adr/0025-authjs-valkey-adapter.md)
   records why, including the internal/public Keycloak-address split this
   docker-compose stack requires. Signing in and out (including full
   Keycloak SSO logout) is built (iteration 4 task 2).
@@ -323,8 +326,11 @@ updated if behavior or architecture changed.
   nothing migrates later ([ADR-0004](adr/0004-backend-cart.md)).
 - **Seed data over admin UI/import**: deterministic environments now; admin
   CRUD becomes a later iteration instead of a prerequisite.
-- **No caching / no Redis on the backend yet**: PostgreSQL with indexes is
-  plenty at this scale; add caching only after measuring.
+- **No backend read-caching yet**: PostgreSQL with indexes is plenty at this
+  scale; add caching only after measuring. This is about the backend's own
+  reads — the Valkey in this stack is the frontend's session store
+  ([§6](#6-authentication-own-iteration-before-the-cellar)), not a cache the
+  backend consults.
 
 ## 9. Revisit list
 
