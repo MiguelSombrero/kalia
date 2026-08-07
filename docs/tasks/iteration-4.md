@@ -175,7 +175,7 @@ Goal: users can sign in; personal features become possible.
    security ([ADR-0028](../adr/0028-resource-server-and-current-user.md),
    amended). Verified by mutation — a stray chain in `catalog` fails three
    rules; removing `@Bean` from `SecurityConfig` fails two.
-7. [ ] Backend hardening: escape `%`/`_` wildcard metacharacters in user
+7. [x] Backend hardening: escape `%`/`_` wildcard metacharacters in user
    search input before building the `LIKE` pattern in
    `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java`
    (concrete repro: seed data contains `'Gueuze 100% Lambic Bio'`, so
@@ -186,3 +186,12 @@ Goal: users can sign in; personal features become possible.
    secrets.
    *(Quality backlog 2026-07-27 SHOULD-2, superseding 2026-07-23 COULD-4;
    2026-07-23 SHOULD-1)*
+
+   `BeerSpecifications.matching` now escapes `\`, `%` and `_` in the query
+   before wrapping it in `%...%`, and passes that escape character to
+   `CriteriaBuilder.like`. `BeerSpecificationsIT` gained two regression
+   tests, verified to fail against the unescaped build: a literal `10%`
+   over-matched `Rochefort 10` and both `100%`-named beers (all merely
+   contain `10`), and a lone `_` matched all 54 seed beers (any single
+   character). `README.md`'s existing dev-secrets note now also covers the
+   Postgres password.
