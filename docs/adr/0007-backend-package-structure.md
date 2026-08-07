@@ -2,12 +2,12 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-21
-- **Amended:** 2026-08-07 — the rules below moved from `ArchitectureTest` into
-  `ArchitectureRules`, built around a base package instead of hard-coding
-  `fi.kalia`, so they can also be run against a deliberately violating
-  fixture. Until then a compliant codebase was the only thing they had ever
-  been run against, where a rule matching no classes passes exactly like a
-  rule that holds (iteration 4 task 6)
+- **Amended:** 2026-08-07 — the two `noClasses()` layering rules below are now
+  also run against a deliberately violating fixture, and take a base package
+  so they can reach it. They are the rules no production class triggers, so a
+  wrong condition in them was indistinguishable from a satisfied one; the
+  placement rules need no such fixture, since real entities and controllers
+  exercise them every run (iteration 4 task 6)
 
 ## Context
 

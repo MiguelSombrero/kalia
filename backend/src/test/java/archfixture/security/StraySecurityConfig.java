@@ -8,10 +8,9 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * The mistake the security guard exists to catch: a module other than
  * {@code identity} installing its own filter chain, which neither validates a
- * bearer token nor denies by default. Violates all three of
- * {@code theResourceServerChainIsDeclaredByIdentity},
- * {@code theResourceServerChainValidatesBearerTokens} and
- * {@code onlyIdentityConfiguresWebSecurity}.
+ * bearer token nor denies by default. This is the only thing
+ * {@code onlyIdentityConfiguresWebSecurity} can be tested against — no
+ * production class will ever trigger it.
  *
  * <p>Do not let any Spring context scan this package. Nothing scans it today
  * — it sits outside the application's base package — but this really is a
