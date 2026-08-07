@@ -133,7 +133,7 @@ Goal: users can sign in; personal features become possible.
    is itself a server component per ADR-0010.
    *(Quality backlog 2026-07-27 MUST-2; 2026-07-23 SHOULD-6; 2026-07-27
    COULD-10, COULD-11)*
-6. [ ] Harden the ArchUnit/Modulith test suite ahead of new modules: add a
+6. [x] Harden the ArchUnit/Modulith test suite ahead of new modules: add a
    deliberately-violating test fixture proving `ArchitectureTest` /
    `ModularityTest` actually fail on a real violation (today's rules are
    only exercised against a compliant one-module codebase); add a
@@ -143,6 +143,26 @@ Goal: users can sign in; personal features become possible.
    `identity` module — the first real second module the suite will ever
    see.
    *(Quality backlog 2026-07-27 SHOULD-3, SHOULD-4)*
+
+   The fixture lives in `backend/src/test/java/archfixture/` and breaks every
+   rule at once; each meta-test asserts the failure *names the offending
+   type*, which is what makes it a proof rather than a "something threw".
+   Two constraints shaped it. It cannot live under `fi.kalia` — Spring's
+   component scan and Hibernate's entity scan cover test classes there, so a
+   fixture `@Entity` would fail schema validation in every `@SpringBootTest`
+   — which is why the rules moved into `ArchitectureRules` and take a base
+   package ([ADR-0007](../adr/0007-backend-package-structure.md), amended).
+   Only the base package varies; the pattern shape around it is shared, so
+   the typo that makes a rule match nothing is exactly what the fixture
+   catches. The guard is unconditional rather than keyed to a list of
+   protected modules, by product-owner decision: the chain must exist, live
+   in `identity` and configure `oauth2ResourceServer`, and no other module
+   may configure web security ([ADR-0028](../adr/0028-resource-server-and-current-user.md),
+   amended). Deleting the chain trips `allowEmptyShould(false)` — the one
+   failure mode no violating class can stand in for. Each direction was
+   verified by mutation: a stray chain in `catalog` fails three rules, a
+   chain with no `@Bean` fails two, and a typo in a package pattern fails the
+   fixture test that would otherwise have hidden it.
 7. [ ] Backend hardening: escape `%`/`_` wildcard metacharacters in user
    search input before building the `LIKE` pattern in
    `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java`

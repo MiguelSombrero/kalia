@@ -1,68 +1,63 @@
 package fi.kalia;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
-import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS;
-import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_USE_FIELD_INJECTION;
-import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING;
-
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import jakarta.persistence.Entity;
-import org.springframework.data.repository.Repository;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Enforces the DDD-lite module layout and dependency direction (ADR-0007).
- * Module *boundaries* are verified separately by {@link ModularityTest};
- * these rules govern the inside of a module.
+ * Enforces the DDD-lite module layout and dependency direction (ADR-0007)
+ * and the one-resource-server-chain invariant (ADR-0028), against production
+ * code. Module *boundaries* are verified separately by {@link ModularityTest}.
+ *
+ * <p>The rules themselves live in {@link ArchitectureRules}, where
+ * {@link ArchitectureRulesRejectViolationsTest} can also point them at a
+ * codebase that breaks them — a passing run here says nothing on its own
+ * about whether a rule would catch anything.
  */
-@AnalyzeClasses(packages = "fi.kalia", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = ArchitectureRules.BASE_PACKAGE,
+		importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
 	@ArchTest
-	static final ArchRule domainDependsOnNoOuterLayer = noClasses()
-			.that().resideInAPackage("fi.kalia.*.domain..")
-			.should().dependOnClassesThat()
-			.resideInAnyPackage("fi.kalia.*.application..", "fi.kalia.*.web..")
-			.because("domain is the innermost layer (ADR-0007)");
+	static final ArchRule domainDependsOnNoOuterLayer =
+			ArchitectureRules.domainDependsOnNoOuterLayer(ArchitectureRules.BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule applicationDoesNotDependOnWeb = noClasses()
-			.that().resideInAPackage("fi.kalia.*.application..")
-			.should().dependOnClassesThat().resideInAPackage("fi.kalia.*.web..")
-			.because("dependencies point inward: web → application → domain (ADR-0007)");
+	static final ArchRule applicationDoesNotDependOnWeb =
+			ArchitectureRules.applicationDoesNotDependOnWeb(ArchitectureRules.BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule controllersAndAdviceLiveInWeb = classes()
-			.that().areAnnotatedWith(RestController.class)
-			.or().areAnnotatedWith(RestControllerAdvice.class)
-			.should().resideInAnyPackage("fi.kalia.*.web..", "fi.kalia.web..")
-			.because("HTTP is a web-layer concern (ADR-0007); module-neutral "
-					+ "advice lives in the one sanctioned fi.kalia.web location (ADR-0014)");
+	static final ArchRule controllersAndAdviceLiveInWeb =
+			ArchitectureRules.controllersAndAdviceLiveInWeb(ArchitectureRules.BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule entitiesLiveInDomain = classes()
-			.that().areAnnotatedWith(Entity.class)
-			.should().resideInAPackage("fi.kalia.*.domain..")
-			.because("JPA entities are the domain model (ADR-0007)");
+	static final ArchRule entitiesLiveInDomain =
+			ArchitectureRules.entitiesLiveInDomain(ArchitectureRules.BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule repositoriesLiveInDomain = classes()
-			.that().areAssignableTo(Repository.class)
-			.should().resideInAPackage("fi.kalia.*.domain..")
-			.because("repositories belong to the domain layer (ADR-0007)");
+	static final ArchRule repositoriesLiveInDomain =
+			ArchitectureRules.repositoriesLiveInDomain(ArchitectureRules.BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule noFieldInjection = NO_CLASSES_SHOULD_USE_FIELD_INJECTION;
+	static final ArchRule theResourceServerChainIsDeclaredByIdentity =
+			ArchitectureRules.theResourceServerChainIsDeclaredByIdentity(ArchitectureRules.BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule noStandardStreams = NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS;
+	static final ArchRule theResourceServerChainValidatesBearerTokens =
+			ArchitectureRules.theResourceServerChainValidatesBearerTokens();
 
 	@ArchTest
-	static final ArchRule noJavaUtilLogging = NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING;
+	static final ArchRule onlyIdentityConfiguresWebSecurity =
+			ArchitectureRules.onlyIdentityConfiguresWebSecurity(ArchitectureRules.BASE_PACKAGE);
+
+	@ArchTest
+	static final ArchRule noFieldInjection = ArchitectureRules.noFieldInjection();
+
+	@ArchTest
+	static final ArchRule noStandardStreams = ArchitectureRules.noStandardStreams();
+
+	@ArchTest
+	static final ArchRule noJavaUtilLogging = ArchitectureRules.noJavaUtilLogging();
 
 }

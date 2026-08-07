@@ -90,6 +90,20 @@ Notable suites:
 
 - `ModularityTest` — Spring Modulith `ApplicationModules.verify()`; fails on
   illegal cross-module dependencies
+- `ArchitectureTest` — the ArchUnit rules, defined in `ArchitectureRules`:
+  layer placement and dependency direction
+  ([ADR-0007](../docs/adr/0007-backend-package-structure.md)), and the guard
+  that keeps the one resource-server filter chain in `identity`
+  ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) —
+  a module bringing its own security configuration, or the chain going
+  missing, fails the build
+- `ArchitectureRulesRejectViolationsTest` and `ModularityTest`'s
+  `rejectsAModuleReachingIntoAnothersInternals` — run those same rules
+  against `src/test/java/archfixture/`, a tree that breaks every one of them,
+  and assert each failure names the offending fixture type. Add a rule, add
+  its violation here: against compliant code a rule that selects nothing
+  passes exactly like a rule that holds. The fixture stays outside `fi.kalia`
+  for a reason its package documentation spells out
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas
