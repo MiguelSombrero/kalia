@@ -97,4 +97,20 @@ class BeerSpecificationsIT {
 				.containsExactlyInAnyOrder("Westvleteren 12", "Rochefort 10", "St. Bernardus Abt 12");
 	}
 
+	@Test
+	void percentInQueryIsTreatedAsLiteralNotWildcard() {
+		// "Gueuze 100% Lambic Bio" contains "10" but not the literal substring
+		// "10%" (it's "100%"), and "Rochefort 10" contains "10" but no "%" at
+		// all. An unescaped "%" turns the query into a wildcard, so both
+		// beers wrongly match; escaped, neither does.
+		assertThat(search("10%", null, null, null, null, null)).isEmpty();
+	}
+
+	@Test
+	void underscoreInQueryIsTreatedAsLiteralNotWildcard() {
+		// No seed beer name contains a literal underscore. An unescaped "_"
+		// matches any single character, so this wrongly matches every beer.
+		assertThat(search("_", null, null, null, null, null)).isEmpty();
+	}
+
 }
