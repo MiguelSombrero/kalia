@@ -133,7 +133,7 @@ Goal: users can sign in; personal features become possible.
    is itself a server component per ADR-0010.
    *(Quality backlog 2026-07-27 MUST-2; 2026-07-23 SHOULD-6; 2026-07-27
    COULD-10, COULD-11)*
-6. [ ] Harden the ArchUnit/Modulith test suite ahead of new modules: add a
+6. [x] Harden the ArchUnit/Modulith test suite ahead of new modules: add a
    deliberately-violating test fixture proving `ArchitectureTest` /
    `ModularityTest` actually fail on a real violation (today's rules are
    only exercised against a compliant one-module codebase); add a
@@ -143,6 +143,38 @@ Goal: users can sign in; personal features become possible.
    `identity` module — the first real second module the suite will ever
    see.
    *(Quality backlog 2026-07-27 SHOULD-3, SHOULD-4)*
+
+   Delivered narrower than written, after the product owner pushed back on
+   whether a fixture proving the rules bite is really worth building — a fair
+   challenge, since for most rules it amounts to testing ArchUnit. The line
+   settled on: **a fixture is worth it only for a rule no production class
+   ever triggers.** `entitiesLiveInDomain` is exercised every run, because
+   `Beer` is an `@Entity`, so mistyping its pattern fails `ArchitectureTest`
+   loudly and a fixture adds nothing. A `noClasses()` rule passes precisely
+   when its condition was never evaluated against a candidate, so a wrong
+   condition and a satisfied one are indistinguishable. That is the same
+   distinction as existential vs. universal claims, and it is why ordinary
+   tests need no negative twin.
+
+   Measured, not argued: mistyping `domainDependsOnNoOuterLayer`'s
+   forbidden-package list leaves `ArchitectureTest` green at 11/11 and fails
+   only the fixture test. So three rules get a fixture (the two layering
+   `noClasses()` rules, which take a base package to reach it, and
+   `onlyIdentityConfiguresWebSecurity`), and a fourth test pins the
+   `allowEmptyShould(false)` that turns a deleted filter chain into a build
+   failure. Dropped as framework-testing: fixtures for the placement rules,
+   for ArchUnit's own `GeneralCodingRules` constants, and for Spring
+   Modulith's `verify()` — the Modulith half of this task's brief, judged not
+   worth its cost. `archfixture` stays outside `fi.kalia` because Spring's
+   component scan would otherwise register `StraySecurityConfig`, a chain
+   permitting every request, into every `@SpringBootTest`.
+
+   The security guard is not a meta-test and is unconditional by
+   product-owner decision: the chain must exist, live in `identity` and
+   configure `oauth2ResourceServer`, and no other module may configure web
+   security ([ADR-0028](../adr/0028-resource-server-and-current-user.md),
+   amended). Verified by mutation — a stray chain in `catalog` fails three
+   rules; removing `@Bean` from `SecurityConfig` fails two.
 7. [x] Backend hardening: escape `%`/`_` wildcard metacharacters in user
    search input before building the `LIKE` pattern in
    `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java`
