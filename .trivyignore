@@ -18,15 +18,11 @@ CVE-2026-33814 exp:2026-08-26
 CVE-2026-39821 exp:2026-08-26
 CVE-2026-39822 exp:2026-08-26
 
-# --- Frontend image: Next.js 16.2.11 (latest stable; no newer release exists
-# yet) vendors its own internal copies of these packages under
-# next/dist/compiled/ for its own build/telemetry tooling — independent of
-# this project's package-lock.json, which already resolves patched versions
-# of all three (checked directly: no vulnerable copy exists anywhere outside
-# Next's vendored bundle). Not reachable via this app's own request handling.
-# Revisit when a Next.js release past 16.2.11 updates its vendored copies.
-CVE-2026-13149 exp:2026-08-26
-CVE-2026-14257 exp:2026-08-26
-CVE-2026-59873 exp:2026-08-26
-CVE-2026-59874 exp:2026-08-26
-CVE-2026-12151 exp:2026-08-26
+# --- Frontend image: nothing to waive. Every Node-package CVE this image
+# reported came from npm's own bundled dependency tree in the node:24-alpine
+# base, not from package-lock.json; frontend/Dockerfile now deletes the
+# package managers from the runtime stage, which the standalone server never
+# invokes. The image scans clean with no suppressions at all — if a frontend
+# entry is ever needed here again, check the reported PkgPath first, because
+# a path under /usr/local/lib/node_modules means the removal regressed
+# rather than that a new waiver is warranted.
