@@ -79,6 +79,41 @@ class IdentityApiIT {
 		client.get().uri("/api/v1/breweries").exchange().expectStatus().isOk();
 	}
 
+	/**
+	 * The premise behind disabling CSRF protection: a CSRF attack needs the
+	 * browser to attach a credential by itself, and this API issues nothing it
+	 * could attach. If a change here starts setting a cookie — a session, a
+	 * form login — this fails, and `SecurityConfig.csrf(...)` has to be
+	 * reconsidered before the failure is "fixed" (ADR-0028).
+	 */
+	@Test
+	void issuesNoCookieSoCsrfCannotApply() {
+		givenTokenFor(SUBJECT);
+
+		client.get().uri("/api/v1/me")
+				.header("Authorization", "Bearer any-value-the-decoder-is-mocked")
+				.exchange()
+				.expectStatus().isOk()
+				.expectHeader().doesNotExist("Set-Cookie");
+
+		client.get().uri("/api/v1/beers?size=1")
+				.exchange()
+				.expectStatus().isOk()
+				.expectHeader().doesNotExist("Set-Cookie");
+	}
+
+	/**
+	 * A sub-resource of a public beer is not itself public. Pins the single
+	 * star in `/api/v1/beers/*`: widening it to `/**` would make every path
+	 * below a beer anonymous the day one is added.
+	 */
+	@Test
+	void doesNotExtendCatalogAccessToSubResourcesOfABeer() {
+		client.get().uri("/api/v1/beers/8f14e45f-ceea-467a-9a3c-1b2d4f6a8c90/reviews")
+				.exchange()
+				.expectStatus().isUnauthorized();
+	}
+
 	@Test
 	void leavesTheHealthEndpointPublic() {
 		// docker-compose and CI both gate readiness on this without a token.

@@ -39,6 +39,11 @@ canonical user identifier.**
   `CurrentUser.id`, and per-user data keys on it. The backend therefore trusts
   only the signed token, never a value the frontend supplies.
   `preferred_username` is display-only: Keycloak lets it change.
+- **No CSRF token, and no session.** A CSRF attack needs the browser to
+  attach a credential on its own; this API accepts only an `Authorization`
+  header, issues no cookie and keeps no session, so a cross-site request
+  reaches it with no credential at all. The premise is what makes this safe,
+  not the configuration flag, so a test pins it rather than a comment alone.
 - **`GET /api/v1/me`** returns the current user. It gives the iteration's
   "the backend knows who is calling" something to be verified against, and it
   is the shape the cellar endpoints will reuse. `/me` follows this API's
@@ -103,9 +108,15 @@ have demonstrated it.
 - Neutral, because `CurrentUser.id` is a `UUID`, which is Keycloak's subject
   format and not OIDC's requirement — `sub` is a string in the spec. A
   different identity provider would need the type widened.
+- Neutral, because CSRF protection is off, which static analysis flags on
+  sight (CodeQL `java/spring-disabled-csrf-protection`). The finding is a
+  false positive only for as long as this API stays cookie-free and
+  sessionless — `issuesNoCookieSoCsrfCannotApply` is what keeps that
+  checkable rather than remembered.
 - **Revisit trigger:** a second backend client, a non-Keycloak identity
-  provider, or task 8 landing refresh — the last removes the expired-token
-  workaround's reason to exist.
+  provider, anything here authenticating by cookie or creating a session, or
+  task 8 landing refresh — the last removes the expired-token workaround's
+  reason to exist.
 
 ## Evidence
 

@@ -45,20 +45,33 @@ class SecurityConfig {
 		return http
 				.authorizeHttpRequests(requests -> requests
 						// Browsing needs no account (docs/architecture.md §6).
+						// Do not widen "/api/v1/beers/*" to "/**": a single star
+						// stops at one segment, so a sub-resource added later
+						// (/api/v1/beers/{id}/reviews) is authenticated by
+						// default rather than silently public. The bare path
+						// needs its own entry — "/*" does not match it.
 						.requestMatchers(HttpMethod.GET, "/api/v1/beers", "/api/v1/beers/*",
 								"/api/v1/breweries")
 						.permitAll()
-						.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-						.requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**",
-								"/swagger-ui.html")
+						// "/**" matches the bare path too, so "/actuator/health"
+						// and "/v3/api-docs" need no entry of their own.
+						// "/swagger-ui.html" does: it is not under /swagger-ui/.
+						.requestMatchers("/actuator/health/**").permitAll()
+						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.permitAll()
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-				// A bearer-token API holds no server-side session and is not
-				// reachable from a browser form, so there is no session for CSRF
-				// to protect and no cookie for a cross-site post to ride on.
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				// Do not enable CSRF protection here without first re-reading
+				// why it is off. A CSRF attack needs the browser to attach a
+				// credential by itself; this API accepts only an Authorization
+				// header, issues no cookie and keeps no session, so a
+				// cross-site request arrives with no credential at all. That
+				// premise, not this call, is what makes it safe — and it stops
+				// holding the moment anything here authenticates by cookie or
+				// creates a session. `issuesNoCookieSoCsrfCannotApply` in
+				// IdentityApiIT fails if that changes (ADR-0028).
 				.csrf(csrf -> csrf.disable())
 				.build();
 	}
