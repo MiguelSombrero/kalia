@@ -4,6 +4,12 @@
 - **Date:** 2026-07-31
 - **Amended:** 2026-08-07 by [ADR-0029](0029-silent-token-refresh.md) — expired
   tokens are now renewed rather than withheld, retiring the workaround below
+- **Amended:** 2026-08-07 — "opening an endpoint is a visible edit to
+  `SecurityConfig`" is now enforced rather than relied on: ArchUnit requires
+  the filter chain to exist, to live in `identity`, and to configure
+  `oauth2ResourceServer`, and forbids any other module from configuring web
+  security. Deleting or shadowing the chain fails the build instead of
+  quietly opening every endpoint (iteration 4 task 6)
 
 ## Context
 
