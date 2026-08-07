@@ -35,7 +35,7 @@ Goal: users can sign in; personal features become possible.
    fail against the build that had the bug — the CSP-blocked sign-out, and
    the stale `id_token_hint` that made Keycloak ask to confirm the logout.
 
-8. [ ] Silent token refresh: renew the access token via the refresh token
+8. [x] Silent token refresh: renew the access token via the refresh token
    before it expires, extending the session instead of requiring sign-in
    again. Deferred out of task 2 by product-owner decision — task 2's
    session TTL simply tracks the access token's lifetime for now.
@@ -44,6 +44,18 @@ Goal: users can sign in; personal features become possible.
    access to protected endpoints five minutes after signing in.
    `lib/api/accessToken.ts` withholds the expired token so public browsing
    keeps working; delete that workaround, and its tests, when refresh lands.
+
+   Landed as [ADR-0029](../adr/0029-silent-token-refresh.md): renewal is lazy,
+   at the one point every backend call already passes through, and the
+   withholding workaround is gone. The decision worth recording beyond that is
+   the split by failure kind — `invalid_grant` ends the local session because
+   the grant behind it is gone, while an unreachable Keycloak leaves it alone,
+   since treating a restart as a mass sign-out would be the worse failure.
+   Sessions are now capped to the realm's SSO session lifetime, and the
+   realm's token/session lifetimes are pinned in `keycloak/realm-export.json`
+   at the values its defaults were already producing. Back-Channel Logout —
+   the proactive counterpart, which would make `invalid_grant` the rare path
+   rather than the common one — stays with task 9, where it was already noted.
 9. [ ] Key the stored Keycloak tokens per session, not per user.
    `frontend/lib/auth/valkeyAdapter.ts` keeps one record per user
    (`auth:account:{userId}`), so it always holds only the most recent

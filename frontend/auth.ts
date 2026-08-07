@@ -2,7 +2,7 @@ import { customFetch } from "@auth/core";
 import NextAuth from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
 import { createInternalKeycloakFetch } from "@/lib/auth/internalKeycloakFetch";
-import { valkeyAdapter } from "@/lib/auth/valkeyAdapter";
+import { putStoredAccount, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
 
 /**
  * `issuer` must be Keycloak's one canonical, public identity — the value
@@ -29,7 +29,19 @@ const fetchViaInternalKeycloak = createInternalKeycloakFetch(
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: valkeyAdapter,
-  session: { strategy: "database" },
+  // Both values mirror the realm's ssoSessionMaxLifespan
+  // (keycloak/realm-export.json), so a Kalia session cannot outlive the
+  // Keycloak SSO session behind it; Auth.js's own defaults are 30 days and
+  // 24 hours (@auth/core's lib/init.js).
+  //
+  // Do not raise maxAge above updateAge expecting a sliding session. Auth.js
+  // re-dates a session only once `expires - maxAge + updateAge` has passed
+  // (@auth/core's lib/actions/session.js), so equal values mean it is never
+  // re-dated and the session expires a fixed 10 hours after sign-in — which is
+  // the intent, matching Keycloak's own absolute maximum. Idleness is not
+  // measured here at all; a session idle past the realm's 30 minutes dies at
+  // its next request, when the refresh fails (lib/api/accessToken.ts, ADR-0029).
+  session: { strategy: "database", maxAge: 10 * 60 * 60, updateAge: 10 * 60 * 60 },
   // Required when self-hosting off Vercel: without it, Auth.js rejects
   // every request's Host header as untrusted (errors.authjs.dev#untrustedhost).
   trustHost: true,
@@ -69,7 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!account || !user.id || account.type === "credentials") {
         return;
       }
-      await valkeyAdapter.linkAccount?.({ ...account, type: account.type, userId: user.id });
+      await putStoredAccount({ ...account, type: account.type, userId: user.id });
     },
   },
 });

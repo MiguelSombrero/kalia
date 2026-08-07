@@ -278,8 +278,14 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   Swagger UI on the dev machine. Authentication makes that a defence in
   depth rather than the only one, but the loopback binding stays until a
   deployment story exists.
-- Access tokens are not renewed yet (task 8), so a session outlives the
-  token it holds.
+- **Access tokens are renewed silently**
+  ([ADR-0029](adr/0029-silent-token-refresh.md)): the BFF trades the stored
+  refresh token for a fresh set when a request needs one and the held token
+  has expired. A refusal Keycloak marks `invalid_grant` ends the local session
+  too, since the grant behind it is gone; any other failure leaves the session
+  alone and costs only that request its token. The session is capped to the
+  realm's SSO session lifetime, and the realm's token/session lifetimes are
+  pinned in `keycloak/realm-export.json` rather than inherited.
 
 ## 7. Testing strategy
 
@@ -401,3 +407,4 @@ does the same for task files against their iteration index
 | [ADR-0026](adr/0026-task-file-format.md) | One file per task, with acceptance criteria that include tests | accepted | 2026-07-30 |
 | [ADR-0027](adr/0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
 | [ADR-0028](adr/0028-resource-server-and-current-user.md) | The backend is an OAuth2 resource server, and the token's subject is the user | accepted | 2026-07-31 |
+| [ADR-0029](adr/0029-silent-token-refresh.md) | Renew access tokens lazily, and end the session when the grant is gone | accepted | 2026-08-07 |

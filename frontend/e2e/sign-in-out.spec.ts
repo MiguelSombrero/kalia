@@ -4,6 +4,7 @@
 // in keycloak/realm-export.json.
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import Redis from "ioredis";
 
 const USERNAME = "testuser";
 const PASSWORD = "testuser123";
@@ -29,6 +30,24 @@ const collectCspViolations = async (page: Page) => {
     });
   });
   return () => page.evaluate(() => (window as unknown as { __cspViolations: string[] }).__cspViolations ?? []);
+};
+
+/**
+ * Reads and rewrites the stored Keycloak token set directly, which is how the
+ * refresh tests below reach an expiry that would otherwise take five minutes
+ * of wall clock (the realm's `accessTokenLifespan`, keycloak/realm-export.json).
+ * There is exactly one account record because the realm seeds one user.
+ */
+const storedAccount = async () => {
+  const valkey = new Redis("redis://localhost:6379");
+  const [key] = await valkey.keys("auth:account:*");
+  const read = async () => JSON.parse((await valkey.get(key))!) as Record<string, unknown>;
+  return {
+    read,
+    patch: async (fields: Record<string, unknown>) =>
+      valkey.set(key, JSON.stringify({ ...(await read()), ...fields })),
+    close: () => valkey.quit(),
+  };
 };
 
 const scanForA11yViolations = (page: Page) =>
@@ -111,4 +130,62 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
     ).toBeVisible();
     await page.goto("/en");
   }
+});
+
+/**
+ * Iteration 4 task 8. Before silent refresh, `lib/api/accessToken.ts`
+ * withheld an expired token so public browsing kept working, and every
+ * protected call went out anonymous five minutes after sign-in.
+ */
+test("renews an expired access token instead of dropping it", async ({ page, request }) => {
+  await page.goto("/en");
+  await signIn(page);
+
+  const account = await storedAccount();
+  const before = await account.read();
+  await account.patch({ expires_at: Math.floor(Date.now() / 1000) - 1 });
+
+  // A page that actually calls the backend, so the token is fetched.
+  await page.goto("/en/beers");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  const after = await account.read();
+  await account.close();
+
+  expect(after.access_token, "the expired token was not replaced").not.toBe(before.access_token);
+  expect(after.expires_at as number).toBeGreaterThan(Math.floor(Date.now() / 1000));
+
+  // Not just "a new string": the renewed token must satisfy the resource
+  // server's signature, issuer and audience checks (ADR-0028).
+  const me = await request.get("http://localhost:8080/api/v1/me", {
+    headers: { Authorization: `Bearer ${after.access_token as string}` },
+  });
+  expect(me.status(), "the backend rejected the renewed token").toBe(200);
+});
+
+/**
+ * The security half of task 8: once Keycloak says the grant is gone, the
+ * local session must go with it rather than presenting a signed-in user who
+ * can reach nothing. A corrupt refresh token is the deterministic way to
+ * provoke the `invalid_grant` that an idle-timed-out SSO session produces.
+ */
+test("ends the local session when Keycloak rejects the refresh token", async ({ page }) => {
+  await page.goto("/en");
+  await signIn(page);
+
+  const account = await storedAccount();
+  await account.patch({
+    expires_at: Math.floor(Date.now() / 1000) - 1,
+    refresh_token: "no-longer-a-valid-grant",
+  });
+  await account.close();
+
+  // First load spends the dead refresh token and deletes the session record;
+  // the cookie cannot be cleared mid-render, so the second load is the one
+  // that renders signed-out (lib/auth/endLocalSession.ts).
+  await page.goto("/en/beers");
+  await page.goto("/en");
+
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByText("Hi, Test User")).toHaveCount(0);
 });

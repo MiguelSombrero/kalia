@@ -49,6 +49,20 @@ export const getStoredAccountByUserId = async (userId: string): Promise<AdapterA
 };
 
 /**
+ * Outside the standard Adapter interface, and the same upsert `linkAccount`
+ * performs. The Adapter has no `updateAccount`, so writing a token set back —
+ * on re-sign-in (auth.ts's `events.signIn`) or after a silent refresh
+ * (lib/api/accessToken.ts) — goes through this.
+ */
+export const putStoredAccount = async (account: AdapterAccount): Promise<void> => {
+  await valkeyClient.set(accountKey(account.userId), JSON.stringify(account));
+  await valkeyClient.set(
+    accountIndexKey(account.provider, account.providerAccountId),
+    account.userId,
+  );
+};
+
+/**
  * Auth.js database-session adapter backed by Valkey (docs/adr/0003-bff-pattern.md).
  * getUserByEmail is implemented even though this is an OAuth-only setup with
  * no Email provider: Auth.js's own runtime assertion (@auth/core's
@@ -94,13 +108,7 @@ export const valkeyAdapter: Adapter = {
     return updated;
   },
 
-  linkAccount: async (account) => {
-    await valkeyClient.set(accountKey(account.userId), JSON.stringify(account));
-    await valkeyClient.set(
-      accountIndexKey(account.provider, account.providerAccountId),
-      account.userId,
-    );
-  },
+  linkAccount: putStoredAccount,
 
   getAccount: async (providerAccountId, provider) => {
     const userId = await valkeyClient.get(accountIndexKey(provider, providerAccountId));

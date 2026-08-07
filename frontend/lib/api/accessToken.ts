@@ -1,23 +1,24 @@
+import type { AdapterAccount } from "next-auth/adapters";
 import { auth } from "@/auth";
-import { getStoredAccountByUserId } from "@/lib/auth/valkeyAdapter";
+import { endLocalSession } from "@/lib/auth/endLocalSession";
+import { refreshAccessToken } from "@/lib/auth/refreshAccessToken";
+import { getStoredAccountByUserId, putStoredAccount } from "@/lib/auth/valkeyAdapter";
 
 /**
- * Treats a token expiring within this window as already expired, so one that
- * dies in flight is not sent.
+ * Renews this far ahead of expiry, so a token that would die in flight is
+ * replaced rather than sent.
  */
 const EXPIRY_LEEWAY_SECONDS = 10;
 
 /**
- * The signed-in user's Keycloak access token, or undefined when there is no
- * usable one — the normal case for the public catalog (ADR-0028).
+ * The signed-in user's Keycloak access token, renewing it first when it has
+ * expired, or `undefined` when there is no usable one — the normal case for
+ * the public catalog (ADR-0028).
  *
- * Do not drop the expiry check. Keycloak's access tokens live 300 seconds
- * (measured against the realm's `accessTokenLifespan`) while the Auth.js
- * session lives far longer, and nothing renews them until iteration 4 task 8
- * adds silent refresh. Sending an expired token is worse than sending none:
- * Spring Security authenticates a bearer token before it checks whether the
- * route is public, so an expired one turns even the anonymous catalog into a
- * 401 — verified by curl against the running stack.
+ * Do not send an expired token instead of nothing. Spring Security
+ * authenticates a bearer token before it checks whether the route is public,
+ * so an expired one turns even the anonymous catalog into a 401 — verified by
+ * curl against the running stack.
  */
 export const currentAccessToken = async (): Promise<string | undefined> => {
   const session = await auth();
@@ -28,10 +29,50 @@ export const currentAccessToken = async (): Promise<string | undefined> => {
   if (!account?.access_token) {
     return undefined;
   }
-  if (hasExpired(account.expires_at)) {
+  if (!hasExpired(account.expires_at)) {
+    return account.access_token;
+  }
+  return renew(account);
+};
+
+/**
+ * Trades the stored refresh token for a fresh set and writes it back
+ * (ADR-0029). Concurrent renewals are left to race: Keycloak's realm allows
+ * refresh-token reuse (`revokeRefreshToken: false`, pinned in
+ * keycloak/realm-export.json), so parallel calls each get a valid set and the
+ * last write wins. Enabling rotation there would make this need a lock.
+ */
+const renew = async (account: AdapterAccount): Promise<string | undefined> => {
+  if (!account.refresh_token) {
     return undefined;
   }
-  return account.access_token;
+
+  const outcome = await refreshAccessToken(account.refresh_token);
+
+  if (outcome.status === "unavailable") {
+    // Keycloak unreachable or answering oddly. The session may well still be
+    // good, so it is left alone and only this request goes without a token.
+    return undefined;
+  }
+
+  if (outcome.status === "rejected") {
+    await endLocalSession();
+    return undefined;
+  }
+
+  await putStoredAccount({
+    ...account,
+    access_token: outcome.accessToken,
+    // Keycloak returns a new id_token here too. Keeping it current matters
+    // beyond this call: sign-out sends it as `id_token_hint`, and a stale one
+    // makes Keycloak fall back to its "Do you want to log out?" page
+    // (guarded by frontend/e2e/sign-in-out.spec.ts).
+    id_token: outcome.idToken ?? account.id_token,
+    refresh_token: outcome.refreshToken ?? account.refresh_token,
+    expires_at: outcome.expiresAt,
+  });
+
+  return outcome.accessToken;
 };
 
 /** An account with no recorded expiry is treated as usable, not as expired. */
