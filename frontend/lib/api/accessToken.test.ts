@@ -1,20 +1,23 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { auth } from "@/auth";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { endLocalSession } from "@/lib/auth/endLocalSession";
 import { refreshAccessToken } from "@/lib/auth/refreshAccessToken";
-import { getStoredAccountByUserId, putStoredAccount } from "@/lib/auth/valkeyAdapter";
+import { currentSessionToken } from "@/lib/auth/sessionCookie";
+import { getSessionAccount, updateSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { currentAccessToken } from "./accessToken";
 
 vi.mock("@/lib/auth/valkeyAdapter", () => ({
-  getStoredAccountByUserId: vi.fn(),
-  putStoredAccount: vi.fn(),
+  getSessionAccount: vi.fn(),
+  updateSessionAccount: vi.fn(),
 }));
 vi.mock("@/lib/auth/refreshAccessToken", () => ({ refreshAccessToken: vi.fn() }));
 vi.mock("@/lib/auth/endLocalSession", () => ({ endLocalSession: vi.fn() }));
+vi.mock("@/lib/auth/sessionCookie", () => ({ currentSessionToken: vi.fn() }));
+
+const SESSION_TOKEN = "session-abc";
 
 const signedInWith = (account: Record<string, unknown> | null) => {
-  vi.mocked(auth).mockResolvedValue({ user: { id: "user-1" } } as never);
-  vi.mocked(getStoredAccountByUserId).mockResolvedValue(account as never);
+  vi.mocked(currentSessionToken).mockResolvedValue(SESSION_TOKEN);
+  vi.mocked(getSessionAccount).mockResolvedValue(account as never);
 };
 
 const inSeconds = (offset: number) => Math.floor(Date.now() / 1000) + offset;
@@ -33,10 +36,9 @@ const expiredAccount = {
 describe("currentAccessToken", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.mocked(auth).mockResolvedValue(null as never);
+    // clearAllMocks drops recorded calls but keeps implementations, so an
+    // earlier test's signed-in caller would leak into the anonymous ones.
+    vi.mocked(currentSessionToken).mockResolvedValue(undefined);
   });
 
   it("returns the stored token for a signed-in caller", async () => {
@@ -44,6 +46,14 @@ describe("currentAccessToken", () => {
 
     await expect(currentAccessToken()).resolves.toBe("token-abc");
     expect(refreshAccessToken).not.toHaveBeenCalled();
+  });
+
+  it("looks the token set up by session, never by user", async () => {
+    signedInWith({ access_token: "token-abc", expires_at: inSeconds(300) });
+
+    await currentAccessToken();
+
+    expect(getSessionAccount).toHaveBeenCalledWith(SESSION_TOKEN);
   });
 
   it("returns nothing when nobody is signed in", async () => {
@@ -103,7 +113,7 @@ describe("currentAccessToken", () => {
 
       await currentAccessToken();
 
-      expect(putStoredAccount).toHaveBeenCalledWith({
+      expect(updateSessionAccount).toHaveBeenCalledWith(SESSION_TOKEN, {
         ...expiredAccount,
         access_token: "fresh-access",
         refresh_token: "fresh-refresh",
@@ -124,7 +134,8 @@ describe("currentAccessToken", () => {
 
       await currentAccessToken();
 
-      expect(putStoredAccount).toHaveBeenCalledWith(
+      expect(updateSessionAccount).toHaveBeenCalledWith(
+        SESSION_TOKEN,
         expect.objectContaining({ refresh_token: "the-refresh", id_token: "stale-id" }),
       );
     });
@@ -134,8 +145,8 @@ describe("currentAccessToken", () => {
       vi.mocked(refreshAccessToken).mockResolvedValue({ status: "rejected" });
 
       await expect(currentAccessToken()).resolves.toBeUndefined();
-      expect(endLocalSession).toHaveBeenCalled();
-      expect(putStoredAccount).not.toHaveBeenCalled();
+      expect(endLocalSession).toHaveBeenCalledWith(SESSION_TOKEN);
+      expect(updateSessionAccount).not.toHaveBeenCalled();
     });
 
     // Load-bearing: a Keycloak restart must not sign every user out. Only a
@@ -146,7 +157,7 @@ describe("currentAccessToken", () => {
 
       await expect(currentAccessToken()).resolves.toBeUndefined();
       expect(endLocalSession).not.toHaveBeenCalled();
-      expect(putStoredAccount).not.toHaveBeenCalled();
+      expect(updateSessionAccount).not.toHaveBeenCalled();
     });
 
     it("withholds the token when there is no refresh token to renew with", async () => {

@@ -1,8 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth, signIn, signOut } from "@/auth";
-import { getStoredAccountByUserId } from "@/lib/auth/valkeyAdapter";
+import { signIn, signOut } from "@/auth";
+import { currentSessionToken } from "@/lib/auth/sessionCookie";
+import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { keycloakEndSessionUrl } from "./endSessionUrl";
 
 export const startSignIn = async () => {
@@ -10,6 +11,12 @@ export const startSignIn = async () => {
 };
 
 /**
+ * Signs out of Kalia and, through Keycloak's `end_session_endpoint`, of the
+ * Keycloak SSO session behind it — this browser's, and only this browser's.
+ * The `id_token_hint` names the session being ended, so it has to be the one
+ * belonging to *this* Auth.js session rather than the user's latest sign-in
+ * anywhere (ADR-0030).
+ *
  * Do not turn this back into a plain form POST to a route handler. Auth.js has
  * no federated (RP-initiated) logout of its own — its `signOut()` clears only
  * this app's session, leaving Keycloak's SSO cookie alive so the next sign-in
@@ -21,11 +28,9 @@ export const startSignIn = async () => {
  * where the form-POST version failed and this one does not — curl does not
  * enforce CSP and will not reproduce it.
  */
-export const signOutEverywhere = async () => {
-  const session = await auth();
-  const idToken = session?.user?.id
-    ? (await getStoredAccountByUserId(session.user.id))?.id_token
-    : undefined;
+export const federatedSignOut = async () => {
+  const sessionToken = await currentSessionToken();
+  const idToken = sessionToken ? (await getSessionAccount(sessionToken))?.id_token : undefined;
 
   await signOut({ redirect: false });
 

@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-28
+- **Amended:** 2026-08-07 by [ADR-0030](0030-per-session-token-storage.md) —
+  the token set is stored per session rather than per user, and the sign-out
+  Server Action this ADR calls `signOutEverywhere` is now `federatedSignOut`
 
 ## Context
 

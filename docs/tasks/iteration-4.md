@@ -56,7 +56,7 @@ Goal: users can sign in; personal features become possible.
    at the values its defaults were already producing. Back-Channel Logout —
    the proactive counterpart, which would make `invalid_grant` the rare path
    rather than the common one — stays with task 9, where it was already noted.
-9. [ ] Key the stored Keycloak tokens per session, not per user.
+9. [x] Key the stored Keycloak tokens per session, not per user.
    `frontend/lib/auth/valkeyAdapter.ts` keeps one record per user
    (`auth:account:{userId}`), so it always holds only the most recent
    sign-in's tokens — that overwrite is deliberate, being the `events.signIn`
@@ -79,6 +79,40 @@ Goal: users can sign in; personal features become possible.
    because concurrent sign-ins clobber each other's tokens — drop that
    constraint if this fix removes the need for it.
    *(Found while adding task 4's E2E coverage.)*
+
+   Landed as [ADR-0030](../adr/0030-per-session-token-storage.md). The shape is
+   the one this task guessed at, with one thing it did not: Auth.js hands the
+   session and the tokens to two different callbacks and neither sees the
+   other, so the two are joined by a request-scoped `AsyncLocalStorage` entered
+   around the auth route handlers. `getStoredAccountByUserId` is gone rather
+   than changed — a per-user lookup is the defect, so it should not remain
+   available. `signOutEverywhere` is renamed `federatedSignOut`: sign-out ends
+   this device's session only, by product-owner decision, and the old name read
+   as "all devices".
+   The E2E `mode: "serial"` **stays**, and the answer to this task's question is
+   no: measured, parallel fails 3 of 5 specs against the old build and 1–2 of 6
+   against the new one, so token clobbering was only half of that reason.
+   Overlapping authentication flows for a single realm user are the other half,
+   and giving each spec its own seeded user is what would remove it.
+   Back-Channel Logout is task 10, by product-owner decision.
+10. [ ] OIDC Back-Channel Logout: let Keycloak tell Kalia that an SSO session
+    has ended, and invalidate the matching local session. Today the propagation
+    runs one way only — Kalia's sign-out ends the Keycloak session, but a
+    Keycloak-side logout (admin console, session revocation, another client's
+    RP-initiated logout) leaves Kalia's session record alive until its TTL,
+    which [ADR-0029](../adr/0029-silent-token-refresh.md) caps at the realm's
+    10-hour SSO maximum. That ADR names this as the proactive counterpart to
+    its reactive `invalid_grant` handling, and its revisit trigger.
+    Split out of task 9 by product-owner decision, and dependent on it: the
+    per-session token storage [ADR-0030](../adr/0030-per-session-token-storage.md)
+    introduced is the prerequisite, since a logout token identifies the session
+    to end by `sid`/`sub` and there was previously no per-session record to
+    match against. Note this adds an *unauthenticated public* endpoint that
+    accepts a JWT from Keycloak — validating the logout token (signature,
+    issuer, audience, the `events` claim, and that it is not an ID token) is
+    the security-sensitive part, alongside the realm client attributes
+    (`backchannel.logout.url`, `backchannel.logout.session.required`) that turn
+    it on. Needs a session index by `sid` to find what to delete.
 
 **Done when:** a user can sign in and out; the backend knows who is calling on protected endpoints; browsing needs no account.
 

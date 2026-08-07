@@ -6,7 +6,7 @@ const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
 vi.mock("@/auth", () => ({ auth }));
 // The actions are "use server" glue; what they do is covered by
 // endSessionUrl.test.ts and by running the flow in a browser.
-vi.mock("./actions", () => ({ startSignIn: vi.fn(), signOutEverywhere: vi.fn() }));
+vi.mock("./actions", () => ({ startSignIn: vi.fn(), federatedSignOut: vi.fn() }));
 
 import { AuthStatus } from "./AuthStatus";
 

@@ -223,9 +223,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
   server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
   thin wrapper that owns the backend base URL and error mapping, and attaches
-  the signed-in caller's access token — withholding an expired one, which the
-  backend would reject even on a public route
-  ([ADR-0028](adr/0028-resource-server-and-current-user.md)).
+  the access token belonging to the caller's own session, renewing it first if
+  it has expired ([ADR-0028](adr/0028-resource-server-and-current-user.md),
+  [ADR-0029](adr/0029-silent-token-refresh.md),
+  [ADR-0030](adr/0030-per-session-token-storage.md)).
 - **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
@@ -274,7 +275,7 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   each bearer token's signature, issuer and `kalia-backend` audience, and the
   `identity` module maps the token's `sub` to the current user — the
   canonical per-user key every module uses. The BFF attaches the session's
-  access token in `lib/api/mutator.ts`, withholding an expired one.
+  access token in `lib/api/mutator.ts`.
 - Catalog endpoints stay public; cellar (and any future store) endpoints
   require authentication. The filter chain denies by default, so a new
   endpoint is protected unless it is deliberately listed as public.
@@ -290,6 +291,12 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   alone and costs only that request its token. The session is capped to the
   realm's SSO session lifetime, and the realm's token/session lifetimes are
   pinned in `keycloak/realm-export.json` rather than inherited.
+- **Keycloak tokens are stored per session, not per user**
+  ([ADR-0030](adr/0030-per-session-token-storage.md)): each Auth.js session
+  holds its own token set, keyed by its session token, expiring and deleted
+  with it. So signing out on one device ends that device's Keycloak SSO session
+  and leaves any other device signed in — with one record per user, sign-out
+  sent the other device's `id_token_hint` and ended the wrong session.
 
 ## 7. Testing strategy
 
@@ -415,3 +422,4 @@ does the same for task files against their iteration index
 | [ADR-0027](adr/0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
 | [ADR-0028](adr/0028-resource-server-and-current-user.md) | The backend is an OAuth2 resource server, and the token's subject is the user | accepted | 2026-07-31 |
 | [ADR-0029](adr/0029-silent-token-refresh.md) | Renew access tokens lazily, and end the session when the grant is gone | accepted | 2026-08-07 |
+| [ADR-0030](adr/0030-per-session-token-storage.md) | Store the Keycloak token set per session, not per user | accepted | 2026-08-07 |

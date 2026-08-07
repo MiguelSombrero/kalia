@@ -7,19 +7,28 @@ const { store, valkeyClient } = vi.hoisted(() => {
     store,
     valkeyClient: {
       get: vi.fn(async (key: string) => store.get(key) ?? null),
-      // Extra args (PXAT + timestamp) are accepted by callers but ignored
-      // here — this fake has no real expiry, only key presence.
-      set: vi.fn(async (key: string, value: string) => {
+      // No real expiry, only key presence — so PXAT/KEEPTTL are ignored. XX is
+      // not: refusing to create a missing key is a guarantee the adapter leans
+      // on, so the fake honours it rather than letting a test pass on shape.
+      set: vi.fn(async (key: string, value: string, ...options: unknown[]) => {
+        if (options.includes("XX") && !store.has(key)) {
+          return null;
+        }
         store.set(key, value);
         return "OK";
       }),
-      del: vi.fn(async (key: string) => (store.delete(key) ? 1 : 0)),
+      del: vi.fn(async (...keys: string[]) => keys.filter((key) => store.delete(key)).length),
     },
   };
 });
 vi.mock("./valkeyClient", () => ({ valkeyClient }));
 
-import { getStoredAccountByUserId, valkeyAdapter } from "./valkeyAdapter";
+import {
+  getSessionAccount,
+  putSessionAccount,
+  updateSessionAccount,
+  valkeyAdapter,
+} from "./valkeyAdapter";
 
 // createUser's real callers (Auth.js) never pass an id — the adapter always
 // generates its own and ignores whatever's here, so the value is a marker.
@@ -76,13 +85,13 @@ describe("valkeyAdapter", () => {
     ).resolves.toEqual(user);
   });
 
-  it("getStoredAccountByUserId returns the linked account's tokens", async () => {
+  // Load-bearing: linkAccount runs once per account ever, so any token it
+  // wrote would outlive every session that follows (ADR-0030).
+  it("linkAccount stores no tokens, only the lookup index", async () => {
     const user = await valkeyAdapter.createUser!(newUserInput());
     await valkeyAdapter.linkAccount!({ ...account, userId: user.id });
 
-    await expect(getStoredAccountByUserId(user.id)).resolves.toMatchObject({
-      id_token: "id-token",
-    });
+    expect([...store.values()].join("|")).not.toContain("id-token");
   });
 
   it("creates and reads back a session, joined with its user", async () => {
@@ -124,5 +133,94 @@ describe("valkeyAdapter", () => {
 
     expect(deleted).toEqual({ sessionToken: "tok-3", userId: user.id, expires });
     await expect(valkeyAdapter.getSessionAndUser!("tok-3")).resolves.toBeNull();
+  });
+});
+
+describe("the session's Keycloak token set", () => {
+  const expires = () => new Date(Date.now() + 60_000);
+
+  it("round-trips under the session it was issued for, expiring with it", async () => {
+    const expiry = expires();
+    await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expiry);
+
+    await expect(getSessionAccount("tok-1")).resolves.toMatchObject({ id_token: "id-token" });
+    expect(valkeyClient.set).toHaveBeenCalledWith(
+      "auth:session-account:tok-1",
+      expect.any(String),
+      "PXAT",
+      expiry.getTime(),
+    );
+  });
+
+  it("is null for a session that has none", async () => {
+    await expect(getSessionAccount("never-signed-in")).resolves.toBeNull();
+  });
+
+  // Load-bearing: one user signed in twice is the case the whole keying exists
+  // for, and sign-out reads this record for the id_token_hint it sends, so a
+  // shared record ends the wrong Keycloak session (ADR-0030).
+  it("keeps two devices' tokens apart for the same user", async () => {
+    const laptop = { ...account, userId: "user-1", id_token: "laptop-id-token" };
+    const phone = { ...account, userId: "user-1", id_token: "phone-id-token" };
+
+    await putSessionAccount("tok-laptop", laptop, expires());
+    await putSessionAccount("tok-phone", phone, expires());
+
+    await expect(getSessionAccount("tok-laptop")).resolves.toMatchObject({
+      id_token: "laptop-id-token",
+    });
+    await expect(getSessionAccount("tok-phone")).resolves.toMatchObject({
+      id_token: "phone-id-token",
+    });
+  });
+
+  it("dies with its session, leaving the other device signed in", async () => {
+    const user = await valkeyAdapter.createUser!(newUserInput());
+    await valkeyAdapter.createSession!({
+      sessionToken: "tok-laptop",
+      userId: user.id,
+      expires: expires(),
+    });
+    await putSessionAccount("tok-laptop", { ...account, userId: user.id }, expires());
+    await putSessionAccount("tok-phone", { ...account, userId: user.id }, expires());
+
+    await valkeyAdapter.deleteSession!("tok-laptop");
+
+    await expect(getSessionAccount("tok-laptop")).resolves.toBeNull();
+    await expect(getSessionAccount("tok-phone")).resolves.not.toBeNull();
+  });
+
+  // Load-bearing: a renewed access token must not push the record's expiry
+  // past the session it belongs to, which is what a plain SET would do.
+  it("keeps the record's expiry when a renewed set is written back", async () => {
+    const expiry = expires();
+    await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expiry);
+    valkeyClient.set.mockClear();
+
+    await updateSessionAccount("tok-1", {
+      ...account,
+      userId: "user-1",
+      access_token: "renewed",
+    });
+
+    expect(valkeyClient.set).toHaveBeenCalledWith(
+      "auth:session-account:tok-1",
+      expect.any(String),
+      "KEEPTTL",
+      "XX",
+    );
+    await expect(getSessionAccount("tok-1")).resolves.toMatchObject({ access_token: "renewed" });
+  });
+
+  // Load-bearing: a renewal is a round trip to Keycloak, so the session can
+  // end while it is in flight. Recreating the record here would leave a live
+  // refresh token under a key with no expiry, for a session nobody can reach.
+  it("does not resurrect the record when the session ended mid-renewal", async () => {
+    await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expires());
+    await valkeyAdapter.deleteSession!("tok-1");
+
+    await updateSessionAccount("tok-1", { ...account, userId: "user-1", access_token: "renewed" });
+
+    await expect(getSessionAccount("tok-1")).resolves.toBeNull();
   });
 });
