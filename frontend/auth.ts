@@ -52,6 +52,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_KEYCLOAK_ID,
       clientSecret: process.env.AUTH_KEYCLOAK_SECRET,
       issuer: process.env.AUTH_KEYCLOAK_ISSUER,
+      // Safe only because Keycloak is the sole provider: see ADR-0033.
+      allowDangerousEmailAccountLinking: true,
       [customFetch]: fetchViaInternalKeycloak,
     }),
   ],
