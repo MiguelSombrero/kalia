@@ -57,7 +57,20 @@ regenerates and diffs, failing the build on drift (ADR-0012).
 
 CI also scans `package-lock.json` and the built image for known CVEs and
 fails on a `HIGH`/`CRITICAL` finding with a fix available
-([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)).
+([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)). A finding
+is fixed in place on whatever branch is open (CLAUDE.md). Most findings are a
+transitive dependency's resolved version — bump only `package-lock.json`, not
+`package.json`: `npm update <package> --package-lock-only`, then check
+`git diff --stat` touches only that package's entry. A local npm version
+that differs from whichever produced the lockfile can otherwise pull in
+unrelated normalization noise (dropped `libc` fields, added `dev: true`
+flags) alongside the real fix, and `npm install <package>@<version>` instead
+of `npm update` will silently promote a transitive dependency to a direct one
+in `package.json`. If the diff isn't narrowly the flagged package's `version`/
+`resolved`/`integrity` fields, hand-edit those three fields instead of trusting
+the tool's output. Confirm the fix locally before pushing:
+`trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed package-lock.json`
+from `frontend/`, matching CI's `vulnerability-scan.yml` exactly.
 
 Playwright reuses an already-running stack when found, otherwise it starts
 one and does not reliably stop it afterwards — run `docker compose down`
