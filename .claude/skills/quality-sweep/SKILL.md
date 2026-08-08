@@ -46,9 +46,10 @@ much, coupling to a concrete type instead of an interface within a single
 component — are a code-quality finding, not this one; this dimension
 stops at the module/layer boundary.)
 
-*Challenge the decisions, not just check them:* read `docs/architecture.md`
-§8 "Trade-offs made explicit" and §9 "Revisit list", and for each one, ask
-whether it's still a sound choice given how the system has actually grown
+*Challenge the decisions, not just check them:* read `docs/architecture.md`'s
+"Trade-offs made explicit" section and `docs/tasks/backlog.md`, and for each
+deliberate choice or deferral, ask whether it's still sound given how the
+system has actually grown
 — flag it even if its stated revisit trigger hasn't fired, if you can show
 it's now hurting maintainability, scalability, security, or another
 "-ility." A stated trigger is a floor for when a decision must be
