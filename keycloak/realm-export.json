@@ -21,7 +21,10 @@
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:3000/*"
+        "post.logout.redirect.uris": "http://localhost:3000/*",
+        "backchannel.logout.url": "http://frontend:3000/api/auth/backchannel-logout",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
       },
       "protocolMappers": [
         {

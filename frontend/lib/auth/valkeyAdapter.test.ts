@@ -25,7 +25,9 @@ vi.mock("./valkeyClient", () => ({ valkeyClient }));
 
 import {
   getSessionAccount,
+  getSessionTokenBySid,
   putSessionAccount,
+  putSessionSid,
   updateSessionAccount,
   valkeyAdapter,
 } from "./valkeyAdapter";
@@ -222,5 +224,41 @@ describe("the session's Keycloak token set", () => {
     await updateSessionAccount("tok-1", { ...account, userId: "user-1", access_token: "renewed" });
 
     await expect(getSessionAccount("tok-1")).resolves.toBeNull();
+  });
+});
+
+describe("the session's sid index", () => {
+  const expires = () => new Date(Date.now() + 60_000);
+
+  it("finds the session token belonging to a Keycloak SSO session id", async () => {
+    await putSessionSid("tok-1", "sso-session-1", expires());
+
+    await expect(getSessionTokenBySid("sso-session-1")).resolves.toBe("tok-1");
+  });
+
+  it("is null for an sid nothing was ever filed under", async () => {
+    await expect(getSessionTokenBySid("never-seen")).resolves.toBeNull();
+  });
+
+  // Load-bearing: a Back-Channel Logout token naming this sid after the
+  // session ended must find nothing, or it would look like the notification
+  // was ignored (ADR-0031).
+  it("deleteSession removes the sid index along with the session", async () => {
+    const user = await valkeyAdapter.createUser!(newUserInput());
+    await valkeyAdapter.createSession!({ sessionToken: "tok-1", userId: user.id, expires: expires() });
+    await putSessionSid("tok-1", "sso-session-1", expires());
+
+    await valkeyAdapter.deleteSession!("tok-1");
+
+    await expect(getSessionTokenBySid("sso-session-1")).resolves.toBeNull();
+  });
+
+  it("deleteSession does not fail for a session with no sid on record", async () => {
+    const user = await valkeyAdapter.createUser!(newUserInput());
+    await valkeyAdapter.createSession!({ sessionToken: "tok-1", userId: user.id, expires: expires() });
+
+    await expect(valkeyAdapter.deleteSession!("tok-1")).resolves.toMatchObject({
+      sessionToken: "tok-1",
+    });
   });
 });
