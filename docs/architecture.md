@@ -299,6 +299,15 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   with it. So signing out on one device ends that device's Keycloak SSO session
   and leaves any other device signed in — with one record per user, sign-out
   sent the other device's `id_token_hint` and ended the wrong session.
+- **Keycloak can also tell Kalia a session ended, the other direction**
+  ([ADR-0031](adr/0031-backchannel-logout.md)): an unauthenticated
+  `POST /api/auth/backchannel-logout` receives OIDC Back-Channel Logout
+  tokens, validates each against Keycloak's own JWKS (signature, issuer,
+  audience, the backchannel-logout event claim, no `nonce`), and ends the
+  local session whose Keycloak SSO session id (`sid`) matches — closing the
+  gap ADR-0029 left, where an identity-provider-side logout (admin revoke,
+  another RP's own logout) previously left the Kalia session alive until its
+  own expiry.
 
 ## 7. Testing strategy
 
@@ -382,7 +391,7 @@ when adding an ADR, and update the status column when a later ADR changes an
 earlier one. New ADRs follow [template.md](adr/template.md); the format and
 the rules behind it are
 [ADR-0019](adr/0019-adr-format-and-conventions.md), and what earns an ADR in
-the first place is [ADR-0031](adr/0031-when-a-decision-earns-an-adr.md).
+the first place is [ADR-0032](adr/0032-when-a-decision-earns-an-adr.md).
 
 The index is split in two because the two sets grow for different reasons:
 decisions about the product, and decisions about how the project works on
@@ -433,12 +442,13 @@ does the same for task files against their iteration index
 | [ADR-0028](adr/0028-resource-server-and-current-user.md) | The backend is an OAuth2 resource server, and the token's subject is the user | accepted | 2026-07-31 |
 | [ADR-0029](adr/0029-silent-token-refresh.md) | Renew access tokens lazily, and end the session when the grant is gone | accepted | 2026-08-07 |
 | [ADR-0030](adr/0030-per-session-token-storage.md) | Store the Keycloak token set per session, not per user | accepted | 2026-08-07 |
+| [ADR-0031](adr/0031-backchannel-logout.md) | Validate Keycloak's Back-Channel Logout token and end the matching session by sid | accepted | 2026-08-07 |
 
 ### Engineering process and documentation
 
 How the project works on itself. Kept separate because it grows for its own
 reasons and its rate is worth watching independently
-([ADR-0031](adr/0031-when-a-decision-earns-an-adr.md)).
+([ADR-0032](adr/0032-when-a-decision-earns-an-adr.md)).
 
 | Id | Title | Status | Date |
 |---|---|---|---|
@@ -447,4 +457,4 @@ reasons and its rate is worth watching independently
 | [ADR-0020](adr/0020-documentation-roles.md) | Each documented fact has one home — ADR why, architecture shape, README how | accepted | 2026-07-27 |
 | [ADR-0026](adr/0026-task-file-format.md) | One file per task, with acceptance criteria that include tests | accepted | 2026-07-30 |
 | [ADR-0027](adr/0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
-| [ADR-0031](adr/0031-when-a-decision-earns-an-adr.md) | An ADR is earned by a rejected alternative, not by a decision's size | accepted | 2026-08-07 |
+| [ADR-0032](adr/0032-when-a-decision-earns-an-adr.md) | An ADR is earned by a rejected alternative, not by a decision's size | accepted | 2026-08-07 |

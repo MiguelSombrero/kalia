@@ -66,6 +66,14 @@ are for that conversation rather than for an agent to settle.
    quantity, or say so and offer the cellar?
 6. **What does a signed-out visitor see** on `/cellar`: a sign-in prompt on
    the page, or a redirect to sign-in and back?
+7. **Should this task's scope split?** As written, it bundles five "firsts"
+   in one PR: the first real TanStack Query use, the first Zustand store (if
+   this UI needs one), the first stateful react-hook-form + Zod form, the
+   first cross-feature dependency (the add-to-cellar affordance reaching into
+   `catalog`), and the first authenticated UI. A frontend-modularity review
+   flagged this convergence as the iteration's largest risk. Splitting some of
+   it into a preceding task is possible but shrinks this task's Scope and
+   Non-goals accordingly — worth deciding before refinement, not during it.
 
 An answer of "your call" to any of these is a fine answer and turns into a
 constraint above.

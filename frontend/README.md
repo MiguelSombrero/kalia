@@ -128,6 +128,15 @@ Why the rationale lives there and not here:
 - **Per-user data keys on the access token's `sub`**, which the backend reads
   itself ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) —
   never on an Auth.js user or session id, which are this app's own.
+- **`POST /api/auth/backchannel-logout` is intentionally unauthenticated** —
+  Keycloak calls it server-to-server with no session cookie, and the Logout
+  Token's own signature (verified against Keycloak's JWKS,
+  `lib/auth/backchannelLogoutToken.ts`) is what stands in for one. It ends
+  the session matching the token's `sid` only, never falling back to `sub`:
+  that would silently widen a single-session logout into signing the user out
+  everywhere, undoing [ADR-0030](../docs/adr/0030-per-session-token-storage.md)'s
+  per-device precision for this one caller
+  ([ADR-0031](../docs/adr/0031-backchannel-logout.md)).
 
 **UI**
 
@@ -150,6 +159,14 @@ Why the rationale lives there and not here:
   `@axe-core/playwright` scanning real pages tagged
   `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` at E2E time. All three ride the
   existing lint/test/e2e commands — there is no separate a11y gate to forget.
+- **`jose`'s `SignJWT`/`sign()` throws under this project's default Vitest
+  environment** (`jsdom`, set in `vitest.config.ts`): `TypeError: payload
+  must be an instance of Uint8Array`, from jose's own check on the payload it
+  just encoded — jsdom's `Uint8Array` is a different realm from Node's.
+  `jwtVerify`/`decodeJwt` are unaffected; only *producing* a token to test
+  against needs it. A test file that signs one overrides the environment
+  per-file with a `// @vitest-environment node` docblock above its imports
+  (see `lib/auth/backchannelLogoutToken.test.ts`).
 
 **Traps — do not "fix" these**
 

@@ -8,7 +8,7 @@ was rejected to get there ([ADR-0020](0020-documentation-roles.md)). For the
 - **Format:** [template.md](template.md), with the rules in
   [ADR-0019](0019-adr-format-and-conventions.md).
 - **When a decision earns an ADR at all:**
-  [ADR-0031](0031-when-a-decision-earns-an-adr.md) — a credible alternative
+  [ADR-0032](0032-when-a-decision-earns-an-adr.md) — a credible alternative
   was rejected, and the reason would not survive in the code,
   `architecture.md` or a README.
 - **The authoritative index** — title, status and date for every ADR — is
@@ -71,9 +71,9 @@ What gets built, in what order, and what is deliberately deferred.
 
 ## Authentication and identity
 
-Four independent decisions, in the order they were made — later ones fix
+Five independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
-([ADR-0031](0031-when-a-decision-earns-an-adr.md)). For the design as a whole
+([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
 [docs/architecture.md §6](../architecture.md#6-authentication-own-iteration-before-the-cellar).
 
@@ -86,8 +86,9 @@ in one place, read
   `invalid_grant` — and only `invalid_grant` — ends the local session.
 - [ADR-0030](0030-per-session-token-storage.md) — a token set belongs to one
   session, not one user, so sign-out ends the right device's SSO session.
-
-*OIDC Back-Channel Logout is iteration 4 task 10 and will join this group.*
+- [ADR-0031](0031-backchannel-logout.md) — Keycloak tells Kalia a session
+  ended too: an unauthenticated endpoint validates the Logout Token's
+  signature and ends the local session matching its `sid`.
 
 ## Configuration, security and operations
 
@@ -104,7 +105,7 @@ in one place, read
 
 How the project works on itself. This project is process-first by design
 (`CLAUDE.md`), so these are on-mission rather than overhead — but they are the
-category with no external limit on its growth, which is what ADR-0031 exists
+category with no external limit on its growth, which is what ADR-0032 exists
 to bound.
 
 - [ADR-0017](0017-code-comment-policy.md) — a comment earns its place only by
@@ -117,5 +118,5 @@ to bound.
   criteria that include tests.
 - [ADR-0027](0027-process-weight.md) — implement directly by default; heavier
   process must earn its place against the task.
-- [ADR-0031](0031-when-a-decision-earns-an-adr.md) — when a decision earns an
+- [ADR-0032](0032-when-a-decision-earns-an-adr.md) — when a decision earns an
   ADR, and why related decisions are grouped by this index rather than merged.

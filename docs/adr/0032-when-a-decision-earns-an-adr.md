@@ -1,4 +1,4 @@
-# ADR-0031: An ADR is earned by a rejected alternative, not by a decision's size
+# ADR-0032: An ADR is earned by a rejected alternative, not by a decision's size
 
 - **Status:** accepted
 - **Date:** 2026-08-07

@@ -199,7 +199,7 @@ Two things that fail silently if you skip them:
   reason would not survive in the code, `docs/architecture.md` or a README** —
   and decisions on one subject stay separate documents, since
   [docs/adr/README.md](docs/adr/README.md) groups them by theme. See
-  [ADR-0031](docs/adr/0031-when-a-decision-earns-an-adr.md).
+  [ADR-0032](docs/adr/0032-when-a-decision-earns-an-adr.md).
 - **Each documented fact has one home** — ADRs record *why*,
   `docs/architecture.md` records *shape*, READMEs record *how*; every other
   mention is a one-line pointer with a link. Two exceptions: this file may
