@@ -12,6 +12,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 
 | ID | Task | Status |
 |---|---|---|
+| [08](iteration-5/08-clear-backend-image-trivy-waivers.md) | Clear the backend image's expiring Trivy waivers | needs-refinement |
 | [01](iteration-5/01-cellar-module-and-schema.md) | `cellar` module, schema and domain rules | needs-refinement |
 | [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | needs-refinement |
 | [04](iteration-5/04-functional-modules-adr.md) | Correct ADR-0023 and record the functional-modules convention | needs-refinement |
@@ -24,6 +25,13 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | ID | Task | Status |
 |---|---|---|
 | [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | needs-refinement |
+
+Task 08 leads, ahead of the cellar work, because its deadline is external: the
+`.trivyignore` waivers it removes expire **2026-08-26**, and the vulnerability
+scan is deliberately diff-agnostic
+([ADR-0024](../adr/0024-dependency-vulnerability-scanning.md)), so past that
+date it fails on every open pull request rather than only on the one at fault.
+It is maintenance work in an iteration about the cellar, and it is first anyway.
 
 Depends on [iteration 4](iteration-4.md) task 3: the cellar cannot resolve a
 current user until the backend is a resource server.
