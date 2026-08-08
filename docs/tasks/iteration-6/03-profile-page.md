@@ -87,8 +87,11 @@ constraint above.
       confirmed to fail against an optimistic update that does not roll back
 - [ ] A signed-out visitor is invited to sign in rather than shown an error or
       an empty profile — component test
-- [ ] Playwright covers sign in → make cellar public → confirm it reads as
-      public → make it private again
+- [ ] Playwright covers the control itself and stops there: sign in → toggle
+      to public → **reload** → it is still public → toggle back. The reload is
+      the part worth the browser, because a toggle that updates only local
+      state passes every component test. The journey through a stranger's view
+      belongs to [task 04](04-public-cellar-page.md)
 - [ ] Every rendered state passes `axe` with no violations, in both locales —
       `jest-axe` in component tests and `@axe-core/playwright` on the pages
       the E2E visits
@@ -96,4 +99,6 @@ constraint above.
 
 ## Notes
 
-**None.**
+The iteration's end-to-end journey spec belongs to
+[task 04](04-public-cellar-page.md), not here — this task's browser coverage
+stops at the visibility control.
