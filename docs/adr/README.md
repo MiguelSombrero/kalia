@@ -71,7 +71,7 @@ What gets built, in what order, and what is deliberately deferred.
 
 ## Authentication and identity
 
-Five independent decisions, in the order they were made — later ones fix
+Six independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
 ([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
@@ -89,6 +89,9 @@ in one place, read
 - [ADR-0031](0031-backchannel-logout.md) — Keycloak tells Kalia a session
   ended too: an unauthenticated endpoint validates the Logout Token's
   signature and ends the local session matching its `sid`.
+- [ADR-0033](0033-keycloak-account-relinking.md) — a stale account index
+  (Keycloak's `sub` changed, e.g. on a dev realm reimport) re-links by email
+  instead of locking the user out, since Keycloak is the only provider.
 
 ## Configuration, security and operations
 

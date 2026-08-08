@@ -308,6 +308,13 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   gap ADR-0029 left, where an identity-provider-side logout (admin revoke,
   another RP's own logout) previously left the Kalia session alive until its
   own expiry.
+- **A stale account index re-links by email rather than locking the user
+  out** ([ADR-0033](adr/0033-keycloak-account-relinking.md)): if Keycloak's
+  `sub` for a returning user changes — the dev stack's realm reimports on
+  every restart, and a deleted-and-recreated Keycloak user would do the same
+  in production — Auth.js's `allowDangerousEmailAccountLinking` links the
+  sign-in to the existing user by email instead of throwing
+  `OAuthAccountNotLinked`, safe only because Keycloak is the sole provider.
 
 ## 7. Testing strategy
 
@@ -443,6 +450,7 @@ does the same for task files against their iteration index
 | [ADR-0029](adr/0029-silent-token-refresh.md) | Renew access tokens lazily, and end the session when the grant is gone | accepted | 2026-08-07 |
 | [ADR-0030](adr/0030-per-session-token-storage.md) | Store the Keycloak token set per session, not per user | accepted | 2026-08-07 |
 | [ADR-0031](adr/0031-backchannel-logout.md) | Validate Keycloak's Back-Channel Logout token and end the matching session by sid | accepted | 2026-08-07 |
+| [ADR-0033](adr/0033-keycloak-account-relinking.md) | Allow email-based Keycloak account re-linking, since it is the only provider | accepted | 2026-08-08 |
 
 ### Engineering process and documentation
 
