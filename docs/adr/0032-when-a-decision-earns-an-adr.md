@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-07
+- **Amended:** 2026-08-08 — added the second test below: a decision earns an
+  ADR only when it binds work *now*
 
 ## Context
 
@@ -77,6 +79,36 @@ This changes nothing already written. No ADR is merged, renumbered, or
 rewritten, and ADRs 0001–0010 keep the shape ADR-0019 deliberately left them
 in.
 
+> **Amended 2026-08-08 — the second test.** The rule above says *what* earns an
+> ADR and is silent on *when*. Add: **a decision earns an ADR only when it binds
+> work now. A possibility being carried is a backlog item.**
+>
+> Both tests must pass. A rejected alternative on work nobody has committed to
+> is a design sketch, and filing it as an ADR gives it authority it has not
+> earned — the document then reads as settled to every later author, including
+> an agent loading it without its neighbours.
+>
+> The evidence is [ADR-0004](0004-backend-cart.md) and
+> [ADR-0005](0005-defer-auth-mock-payments.md), deprecated the day after this
+> ADR was written. Both designed a store flow that was never built and, once
+> the vision changed on 2026-08-08, never will be. Neither was idle while it
+> waited: ADR-0004 put three empty schemas in PostgreSQL and a `STORE` node in
+> `docs/architecture.md`'s diagram, so for three weeks the system looked like
+> one that was going to sell beer. That is the specific harm — not the file
+> count this ADR was written about, but a speculative decision quietly becoming
+> a constraint.
+>
+> The test cuts the other way too, and that is the point of stating it: the
+> right response to deprecating those two was *not* a third ADR recording that
+> the own store was rejected. Nothing is being built on that rejection. It is a
+> backlog line.
+>
+> This does not license deferring a decision that binds work now merely because
+> the work is unstarted. The trigger is whether an ADR-shaped question stands
+> in front of a task someone is about to do — the brand/bottle split in
+> iteration 5 earns one; how beers might one day be priced across shops does
+> not.
+
 ## Alternatives considered
 
 **Merge ADRs by subject, starting with the authentication cluster.** The
@@ -149,7 +181,7 @@ prescribes.
   place. This is the same deliberate inconsistency ADR-0019 accepted for the
   same reason — rewriting sound records costs more than it returns.
 - Neutral, because an ADR is now listed in two indexes, `docs/adr/README.md`
-  and `docs/architecture.md` §10. They carry different content — grouping and
+  and `docs/architecture.md` §9. They carry different content — grouping and
   a gloss against title, status and date — so neither restates the other, but
   it is a second place to update and `check-adrs.mjs` covers both because of
   it.

@@ -20,15 +20,19 @@ delivery:
 
 If a request conflicts with these goals, say so before proceeding.
 
-**Roles:** MiguelSombrero is the product owner — sets vision and goals,
-makes architecture decisions, guides design, reviews code; he does not code.
-AI agents produce all documentation and code.
+**Roles:** MiguelSombrero is the product owner — sets vision and goals, owns
+every architecture and design decision, reviews code and merges PRs; does not
+code. AI agents produce all documentation and code, acting as scrum master,
+architect, developer and reviewer. An agent advises on architecture and lays
+out trade-offs; it does not decide. Full descriptions:
+[README.md](README.md).
 
 ## Project
 
-Kalia is a craft beer management app and online beer store: Next.js frontend
-(BFF pattern) + Spring Boot modulith backend. Enthusiast features (catalog,
-personal cellar) come first; the store flow is a backlog decision. Read
+Kalia is a social platform for beer enthusiasts built around the beer cellar:
+Next.js frontend (BFF pattern) + Spring Boot modulith backend. The catalog
+enables the cellar, the cellar is the product, and a profile and activity feed
+make it social. Kalia never collects beer reviews and does not sell beer. Read
 before making changes:
 
 - [docs/architecture.md](docs/architecture.md) — module boundaries, API
@@ -57,7 +61,7 @@ the next command and breaks the one after it:
 (cd backend  && mvn verify)        # + integration tests (*IT) — needs Docker
 (cd frontend && npm test)          # vitest
 (cd frontend && npm run test:e2e)  # playwright — needs the stack up
-node scripts/check-adrs.mjs        # ADR ↔ architecture.md §10 + adr/README.md
+node scripts/check-adrs.mjs        # ADR ↔ architecture.md §9 + adr/README.md
 node scripts/check-tasks.mjs       # task files ↔ iteration index
 ```
 

@@ -1,33 +1,37 @@
 # Kalia — Architecture
 
-*Last updated: 2026-08-07. This document describes the target architecture and
-the parts of it that are deliberately deferred. Update it when decisions
-change; record significant decisions as ADRs in [adr/](adr/) and index them
-in [§10](#10-architecture-decision-records).*
+*Last updated: 2026-08-08. This document describes **what is built**, plus the
+iteration currently being built — nothing beyond it. What might come next lives
+in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
+chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
+it in the same PR as the change it describes; record significant decisions as
+ADRs in [adr/](adr/) and index them in
+[§9](#9-architecture-decision-records).*
 
 ## 1. Context and goals
 
-Kalia is a craft beer management app and online beer store, serving beer
-enthusiasts first: browse and search a beer catalog, maintain a personal
-beer cellar, and later review and order beers. Whether ordering becomes
-Kalia's own store or an aggregator over other stores is deliberately
-undecided ([ADR-0006](adr/0006-cellar-first.md)). The project is developed
-process-first by AI agents: the product owner sets vision and goals, makes
-architecture decisions and reviews; agents implement all documentation and
-code. The design optimizes for **architectural clarity, testability, and
-iterative delivery** over premature scale.
+Kalia is a social platform for beer enthusiasts built around the beer cellar:
+find a beer in the catalog, record the bottles of it you own, and — as the
+[vision](../README.md) is built out — share that cellar and see what others are
+putting in theirs. The project is developed process-first by AI agents: the
+product owner sets vision and goals, owns every architecture and design
+decision and reviews; agents implement all documentation and code
+([README.md roles](../README.md)). The design optimizes for **architectural
+clarity, testability, and iterative delivery** over premature scale.
 
-### Functional requirements (initial scope)
+### Functional requirements
+
+Built:
 
 - Search/filter beers by name, brewery, country, style, ABV, price
 - Beer detail view
-- Sign-in (Keycloak); browsing stays anonymous
-- Personal beer cellar: the signed-in user's owned beers with quantity,
-  vintage, purchase info, notes
-- Later (backlog, decisions pending): ordering (own store flow with basket,
-  orders and mocked payments — or an external-store aggregator), reviews
-  (own or via integration such as Untappd/Pint Please), admin catalog
-  management, inventory
+- Sign-in and sign-out (Keycloak); browsing stays anonymous
+
+Being built (iteration 5):
+
+- Personal beer cellar: the signed-in user's owned bottles, each carrying its
+  own brewed and best-before dates, grouped by the catalog beer they are
+  bottles of
 
 ### Non-functional requirements
 
@@ -36,8 +40,8 @@ iterative delivery** over premature scale.
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
 | Latency | Catalog search should feel instant (<300 ms server time) with proper indexing; no caching layer until measurements demand it |
-| Security | No secrets in the browser (BFF pattern); standard input validation; auth added in its own iteration |
-| Compliance | Real-world alcohol-sale regulation and GDPR are out of scope for now; noted in [§9](#9-revisit-list) so they aren't forgotten if the project turns real |
+| Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
+| Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
 
 ## 2. High-level design
@@ -56,13 +60,11 @@ flowchart LR
         CAT[catalog]
         CEL[cellar]
         IDN[identity]
-        STORE[cart / ordering / payment<br/>backlog - pending store decision]
     end
     Browser --> UI
     UI --> RH
     RH -->|REST, JSON| API
     API --> CAT & CEL & IDN
-    API -.-> STORE
     CAT & CEL --> PG[(PostgreSQL)]
 ```
 
@@ -75,10 +77,9 @@ Key properties:
 - **Modulith** ([ADR-0002](adr/0002-spring-modulith.md)): one deployable, one
   database, but hard module boundaries verified by Spring Modulith tests.
 - **Anonymous browsing, authenticated personal features**: the catalog needs
-  no account; the cellar (and any future store flow) requires sign-in.
-  Authentication arrives in its own early iteration because the cellar is per-user
-  data. The anonymous-cart cookie + merge design (ADR-0004) applies only if
-  the own-store variant is later chosen.
+  no account; the cellar requires sign-in. Authentication was built before the
+  cellar because the cellar is per-user data
+  ([ADR-0006](adr/0006-cellar-first.md)).
 
 ## 3. Backend modules
 
@@ -98,38 +99,21 @@ direction **web → application → domain** — enforced by ArchUnit
 
 The module root package is reserved for the **inter-module API** and stays
 empty until the module's first consumer arrives. Full ports/adapters ceremony
-is deferred to modules whose domain earns it (payment, ordering). Cross-module
-*writes* happen via application events; cross-module *reads* via the
-root-package API.
+is deferred to modules whose domain earns it. Cross-module *writes* happen via
+application events; cross-module *reads* via the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering | — |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
-| `cellar` | The signed-in user's owned beers: quantity, vintage, purchase info, notes *(cellar iteration)* | `catalog` (read: beer existence), `identity` (current user) |
-| `cart` | Basket lifecycle: create, add/remove/update items, price snapshotting *(backlog — own-store variant only)* | `catalog` (read: beer existence & price) |
-| `ordering` | Turning a cart into an order; order lifecycle (`PLACED → PAYMENT_PENDING → PAID / PAYMENT_FAILED → …`) *(backlog — own-store variant only)* | `cart` (read), publishes/consumes events |
-| `payment` | `PaymentProvider` port + adapters; payment records *(backlog — own-store variant only)* | consumes `OrderPlaced`, publishes `PaymentSucceeded` / `PaymentFailed` |
-
-Event flow for checkout (own-store variant, if chosen):
-
-```
-cart --(POST /orders)--> ordering: order PLACED, publishes OrderPlaced
-payment: consumes OrderPlaced, calls PaymentProvider (mock), publishes PaymentSucceeded|PaymentFailed
-ordering: consumes result, order → PAID | PAYMENT_FAILED
-```
-
-The mock payment adapter ([ADR-0005](adr/0005-defer-auth-mock-payments.md))
-implements the same `PaymentProvider` interface a real PSP adapter will,
-including simulated failures, so the ordering flow is real even while the
-money is not.
+| `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)* | `catalog` (read: beer existence), `identity` (current user) |
 
 ### Persistence
 
-- Single PostgreSQL database; **one schema per module** (`catalog`, `cart`,
-  `ordering`, `payment`) so module boundaries are visible in the data layer
-  and a future service extraction has clean seams. No cross-schema foreign
-  keys between modules — cross-module references are by id only.
+- Single PostgreSQL database; **one schema per module** so module boundaries
+  are visible in the data layer and a future service extraction has clean
+  seams. No cross-schema foreign keys between modules — cross-module references
+  are by id only.
 - Spring Data JPA with rich domain entities where behavior exists; plain
   records/projections for read models.
 - Flyway owns the schema, with migrations per module directory plus `common/`
@@ -147,22 +131,25 @@ money is not.
 ```
 catalog.brewery(id, name, country, city, created_at)
 catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, created_at)
-cellar.cellar_item(id, user_id, beer_id, quantity, vintage_year, purchase_date, purchase_price_cents, notes, created_at, updated_at)
-
--- backlog (own-store variant only):
-cart.cart(id, created_at, updated_at)
-cart.cart_item(id, cart_id, beer_id, quantity, unit_price_cents)  -- price snapshot
-ordering.order(id, cart_id, status, total_cents, currency, placed_at)
-ordering.order_item(id, order_id, beer_id, name_snapshot, quantity, unit_price_cents)
-payment.payment(id, order_id, provider, status, amount_cents, created_at)
 ```
 
 `style` starts as an indexed text column; normalize into its own table only
 if style metadata appears. Prices are integer cents to avoid floating point.
 
+**The cellar is two levels, not one** — the shape iteration 5 is building. A
+catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle* of
+it, with its own brewed and best-before dates. A cellar that collapses those
+into one row with a quantity cannot tell a 2026 bottle from a 2024 one, which
+is the whole point of cellaring beer. So `cellar` holds one entry per
+(user, catalog beer), owning the individual bottles beneath it; quantity is
+derived by counting them, never stored. Column-level details — which dates are
+optional, what else a bottle carries — are settled in
+[iteration 5 task 01](tasks/iteration-5/01-cellar-module-and-schema.md) and
+land here when it does.
+
 ## 4. API design
 
-REST, JSON, versioned under `/api/v1`. Illustrative endpoints:
+REST, JSON, versioned under `/api/v1`. Built:
 
 ```
 GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
@@ -171,15 +158,13 @@ GET    /api/v1/breweries
 
 # authenticated
 GET    /api/v1/me                        -> the caller behind the bearer token
-
-# authenticated (cellar iteration)
-GET    /api/v1/cellar                    -> current user's cellar items
-POST   /api/v1/cellar/items              -> { beerId, quantity, ... } add to cellar
-PUT    /api/v1/cellar/items/{id}         -> update quantity/details
-DELETE /api/v1/cellar/items/{id}
-
-# backlog (own-store variant only): /api/v1/carts, /api/v1/orders
 ```
+
+The cellar's endpoints (iteration 5) are two-level, following the data model in
+[§3](#3-backend-modules): the collection under `/api/v1/cellar` is one entry per
+beer, and a bottle is addressed beneath its entry. Their exact shape is
+[task 02](tasks/iteration-5/02-cellar-rest-api.md)'s to settle and lands here
+with it.
 
 Conventions:
 
@@ -198,7 +183,7 @@ Conventions:
 - DTOs at the API boundary — JPA entities never serialize directly.
 - OpenAPI spec generated with springdoc (`/v3/api-docs`, Swagger UI at
   `/swagger-ui/index.html`, reachable at `localhost:8080` on the dev
-  machine — see [§6](#6-authentication-own-iteration-before-the-cellar)).
+  machine — see [§6](#6-authentication-and-identity)).
   Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`.
   The frontend may later generate its TypeScript client from the spec.
 
@@ -260,9 +245,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   [§7](#7-testing-strategy) and
   [frontend/README.md](../frontend/README.md).
 
-## 6. Authentication (own iteration, before the cellar)
+## 6. Authentication and identity
 
-Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-first.md)):
+Built in its own iteration ahead of the cellar, because the cellar is per-user
+data ([ADR-0006](adr/0006-cellar-first.md)):
 
 - Keycloak via OIDC Authorization Code + PKCE, handled by the Next.js
   server using Auth.js with a hand-written Adapter backing sessions onto
@@ -276,8 +262,8 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
   `identity` module maps the token's `sub` to the current user — the
   canonical per-user key every module uses. The BFF attaches the session's
   access token in `lib/api/mutator.ts`.
-- Catalog endpoints stay public; cellar (and any future store) endpoints
-  require authentication. The filter chain denies by default, so a new
+- Catalog endpoints stay public; cellar endpoints require authentication. The
+  filter chain denies by default, so a new
   endpoint is protected unless it is deliberately listed as public. ArchUnit
   keeps that chain in place: it must exist, live in `identity`, and configure
   `oauth2ResourceServer`, and no other module may configure web security.
@@ -320,14 +306,14 @@ Pulled forward because the cellar is per-user data ([ADR-0006](adr/0006-cellar-f
 
 | Layer | Tooling | What |
 |---|---|---|
-| Backend unit | JUnit 5 | Domain logic (pricing, order state machine) without Spring context |
+| Backend unit | JUnit 5 | Domain logic without a Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), plus the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)) |
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend), and a WCAG 2.1 AA `axe()` check on every component test that does a full `render(...)`. How to test async Server Components — RTL cannot render them — is a trap documented in [frontend/README.md](../frontend/README.md) |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove (store journeys if/when built). `@axe-core/playwright` scans (WCAG 2.1 A/AA tags) run alongside these on every already-visited page state — no separate a11y-only spec |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove. `@axe-core/playwright` scans (WCAG 2.1 A/AA tags) run alongside these on every already-visited page state — no separate a11y-only spec |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -355,43 +341,16 @@ updated if behavior or architecture changed.
   services later. Cost: discipline required at boundaries.
 - **BFF over direct API calls**: an extra hop and a bit of proxy code, in
   exchange for no tokens in the browser and no CORS surface.
-- **Backend-owned cart over session cart** (deferred with the store flow):
-  slightly more upfront work, but pricing/stock rules stay in the domain and
-  nothing migrates later ([ADR-0004](adr/0004-backend-cart.md)).
-- **Seed data over admin UI/import**: deterministic environments now; admin
-  CRUD becomes a later iteration instead of a prerequisite.
+- **Seed data over admin UI/import**: deterministic environments now, at the
+  cost of a catalog that cannot grow without a migration — the ceiling
+  iteration 8 removes.
 - **No backend read-caching yet**: PostgreSQL with indexes is plenty at this
   scale; add caching only after measuring. This is about the backend's own
   reads — the Valkey in this stack is the frontend's session store
-  ([§6](#6-authentication-own-iteration-before-the-cellar)), not a cache the
+  ([§6](#6-authentication-and-identity)), not a cache the
   backend consults.
 
-## 9. Revisit list
-
-Things intentionally *not* designed now, with the trigger that reopens them:
-
-- **Own store vs. store aggregator** ("Trivago for beers") — decide with an
-  ADR before any store-flow implementation starts.
-- **Reviews: own vs. integration** (Untappd, Pint Please, …) — decide with
-  an ADR when reviews reach the top of the backlog.
-- **Inventory module** — only relevant if the own-store variant is chosen
-  and stock workflows appear.
-- **Real PSP adapter** (e.g. Paytrail/Stripe sandbox) — own-store variant
-  only, when the mocked flow is stable end-to-end.
-- **Search engine** (pg full-text is fine; OpenSearch only if faceted search
-  outgrows it).
-- **Observability** — basic logging and exception-handling conventions are
-  tracked as Iteration 3 (`docs/tasks/iteration-3.md`); full metrics/tracing
-  stay deferred until deployed somewhere real.
-- **Compliance** (age verification, alcohol-sale regulation, GDPR) — before
-  any real-customer use.
-- **CI/CD & deployment** — GitHub Actions build+test early; deployment target
-  chosen when something is worth deploying.
-- **Root-level `e2e/` package** — E2E specs stay under `frontend/e2e/` for
-  now (see §7); revisit when a second frontend client appears or the repo
-  adopts npm workspaces for another reason.
-
-## 10. Architecture decision records
+## 9. Architecture decision records
 
 All decisions live in [adr/](adr/); the tables below are the index. Add a row
 when adding an ADR, and update the status column when a later ADR changes an
@@ -427,8 +386,8 @@ does the same for task files against their iteration index
 | [ADR-0001](adr/0001-monorepo.md) | Monorepo for frontend and backend | accepted | 2026-07-15 |
 | [ADR-0002](adr/0002-spring-modulith.md) | Spring Modulith backend, not microservices | accepted | 2026-07-15 |
 | [ADR-0003](adr/0003-bff-pattern.md) | Backend-for-frontend (BFF) pattern | accepted | 2026-07-15 |
-| [ADR-0004](adr/0004-backend-cart.md) | Cart is a backend domain module | accepted | 2026-07-15 |
-| [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | partially-superseded | 2026-07-15 |
+| [ADR-0004](adr/0004-backend-cart.md) | Cart is a backend domain module | deprecated | 2026-07-15 |
+| [ADR-0005](adr/0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | deprecated | 2026-07-15 |
 | [ADR-0006](adr/0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
 | [ADR-0007](adr/0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |
 | [ADR-0008](adr/0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |

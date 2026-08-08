@@ -2,24 +2,32 @@
 
 Unscheduled work — not yet assigned to an iteration.
 
-Store flow — **pending decision** (own store vs. aggregator over other beer
-stores, "Trivago for beers"; needs an ADR before implementation):
+Product ideas the [vision](../../README.md) names but nothing is being built
+on. None of these is a decision anyone is making yet, which is why none of them
+has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
 
-- Own store variant: `cart` module (ADR-0004), `ordering` with order state
-  machine and `OrderPlaced` events, `payment` behind a `PaymentProvider` port
-  with a mock adapter first (ADR-0005), checkout UI, real PSP later
-- Aggregator variant: price/availability search across external beer stores,
-  linking out to the cheapest shop
-
-Other backlog items:
-
-- Beer reviews — **pending decision**: own reviews vs. integration with an
-  existing service (Untappd, Pint Please, …)
-- Inventory / stock management (if own store is built)
-- Admin UI + role-based access for catalog management
+- **Beer ratings, sourced from elsewhere.** A 1–5 average from an existing beer
+  platform (Untappd, Pint Please, …), shown on a beer. Kalia never collects
+  reviews itself — that boundary is settled and is in the vision. Which source,
+  and whether one is available on acceptable terms, is not.
+- **Where to buy.** A beer's page listing shops that stock it, and what they
+  charge. Entirely dependent on whether beer retailers publish usable APIs;
+  distant. Kalia links out and does not sell — there is no basket, no checkout
+  and no payment in this idea.
+- **Likes and comments on feed events**, once the feed
+  ([iteration 7](iteration-7.md)) exists.
 - Recommendations ("if you liked this IPA…")
+- Following other users, so a feed can be personal rather than global
+- Admin UI + role-based access for catalog management
+
+Engineering work:
+
 - Observability: structured logs, metrics, tracing
-- Deployment target + IaC; age-verification/compliance if the store turns real
+- Deployment target + IaC
+- GDPR: account deletion, data export, and the consent story — becomes real
+  the moment anyone but the author uses this
+- Search engine — PostgreSQL full-text is fine at this size; OpenSearch only if
+  faceted search outgrows it
 - **A failing token refresh is silent.** `frontend/lib/auth/refreshAccessToken.ts`
   returns `unavailable` and the caller sends no token, so a Keycloak outage
   looks exactly like ordinary anonymous browsing — nothing logs, nothing

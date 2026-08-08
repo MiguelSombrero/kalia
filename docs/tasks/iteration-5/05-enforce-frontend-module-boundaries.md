@@ -83,5 +83,5 @@ frontend's already-documented import rules: `app/` may import `features/`,
 
 Surfaced by a frontend-modularity review the product owner requested
 (2026-08-07). The backend's quality backlog makes the identical argument for
-itself (`COULD-7`: close a layering shortcut "before `cellar`/`cart` copy the
-same pattern") — this task is that argument applied to the frontend.
+itself (`COULD-7`: close a layering shortcut before the modules after `catalog`
+copy the same pattern) — this task is that argument applied to the frontend.

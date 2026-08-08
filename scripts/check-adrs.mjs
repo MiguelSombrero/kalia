@@ -5,8 +5,9 @@
 // without an npm install.
 //
 // Two tiers of check:
-//   - Universal, on every ADR: a row exists in docs/architecture.md §10 with
-//     matching title and status, the ADR is also listed in the grouped index
+//   - Universal, on every ADR: a row exists in docs/architecture.md's ADR
+//     index with matching title and status, the ADR is also listed in the
+//     grouped index
 //     docs/adr/README.md, Status is a vocabulary token, and whichever of the
 //     five canonical headings are present appear in canonical order with no
 //     unknown heading interspersed.
@@ -37,12 +38,14 @@ const files = readdirSync(ADR_DIR)
   .filter((f) => /^\d{4}-.*\.md$/.test(f))
   .sort();
 const archText = readFileSync(ARCH, "utf8");
-// Scoped to §10 only: architecture.md now also links ADR files from other
-// sections (e.g. the §7 testing-strategy table), which would otherwise
-// false-match as an index row for the wrong reason.
-const indexStart = archText.indexOf("## 10. Architecture decision records");
+// Scoped to the ADR-index section only: architecture.md also links ADR files
+// from other sections (e.g. the §7 testing-strategy table), which would
+// otherwise false-match as an index row for the wrong reason. Matched without
+// its section number, which has changed once already.
+const INDEX_HEADING = /^## \d+\. Architecture decision records$/m;
+const indexStart = archText.search(INDEX_HEADING);
 if (indexStart === -1) {
-  console.log("FAIL: could not find '## 10. Architecture decision records' in " + ARCH);
+  console.log("FAIL: could not find the 'N. Architecture decision records' heading in " + ARCH);
   process.exit(1);
 }
 const archLines = archText.slice(indexStart).split("\n");
@@ -71,7 +74,7 @@ for (const file of files) {
 
   const row = archLines.find((l) => l.startsWith("|") && l.includes(`adr/${file})`));
   if (!row) {
-    fail(file, `no index row in docs/architecture.md §10 (looked for a link to adr/${file})`);
+    fail(file, `no row in docs/architecture.md's ADR index (looked for a link to adr/${file})`);
   } else {
     const cells = row.split("|").map((c) => c.trim());
     // | [ADR-nnnn](adr/file.md) | Title | Status | Date |

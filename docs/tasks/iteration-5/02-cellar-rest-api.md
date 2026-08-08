@@ -17,17 +17,19 @@ this format, where no single task owned it.
 
 ## Scope
 
-The four authenticated endpoints already specified in
-[architecture.md §4](../../architecture.md): list the current user's cellar,
-add a beer from the catalog, update quantity/details, remove an item. Every
-one resolves the caller through `identity` and operates only on that user's
-rows.
+Authenticated HTTP access to the two-level cellar [task 01](01-cellar-module-and-schema.md)
+builds: list the current user's cellar as entries, read one entry's bottles,
+add a bottle of a catalog beer, update a bottle's details, remove a bottle.
+Every one resolves the caller through `identity` and operates only on that
+user's rows.
 
 ## Non-goals
 
 - UI — [task 03](03-cellar-frontend.md).
-- Sharing, public cellars, or any cross-user read. Not planned; if it is ever
-  wanted it is a new decision, not an extension of this task.
+- Reading someone else's cellar. Public cellars are real and coming, but they
+  are a visibility model this task has no input for —
+  [iteration 6](../iteration-6.md) owns them. Until then every cellar endpoint
+  answers for the caller and nobody else.
 
 ## Constraints
 
@@ -44,30 +46,45 @@ rows.
   silently if got wrong.
 - Catalog endpoints stay public; only these require authentication
   ([architecture.md §6](../../architecture.md)).
+- The settled endpoint contract lands in
+  [architecture.md §4](../../architecture.md) in this task's PR — it names the
+  cellar's shape but deliberately leaves the URLs to this task.
 
 ## Open questions
 
-1. **What happens to a cellar entry whose beer leaves the catalog?** The
-   catalog is seeded today and nothing deletes from it, so this is currently
-   theoretical — but the answer decides whether the foreign key is
-   `ON DELETE RESTRICT` (a beer cannot be removed while someone owns it) or
-   the API tolerates a dangling reference.
-2. **Is the cellar list paginated?** The catalog endpoint is. A cellar is
+1. **What is the URL shape for a bottle?** Nested under its entry
+   (`/api/v1/cellar/entries/{entryId}/bottles/{id}`) makes the containment
+   explicit and the isolation check obvious; flat (`/api/v1/cellar/bottles/{id}`)
+   is shorter and needs no entry id the client may not have. The choice is
+   permanent in a way the response body is not.
+2. **Does listing the cellar include each entry's bottles, or only a count?**
+   Embedding them is one request for the page task 03 builds; a count plus a
+   second call keeps the list response small. This decides whether the cellar
+   page can render without a second round trip.
+3. **What happens to a cellar entry whose beer leaves the catalog?** The
+   catalog is seeded today and nothing deletes from it — but once
+   [iteration 8](../iteration-8.md) lets users add beers, something eventually
+   will. The answer decides whether the foreign key is `ON DELETE RESTRICT` (a
+   beer cannot be removed while someone owns it) or the API tolerates a
+   dangling reference.
+4. **Is the cellar list paginated?** The catalog endpoint is. A cellar is
    realistically far smaller, so the simpler answer is no — but that is a
    contract worth choosing deliberately rather than by omission, since adding
    pagination later changes the response shape.
-3. **Does another user's item id return 404 or 403?** 404 leaks nothing about
-   what exists; 403 is more honest to a legitimate caller. Task 01/02's
+5. **Does another user's entry or bottle id return 404 or 403?** 404 leaks
+   nothing about what exists; 403 is more honest to a legitimate caller. The
    isolation test asserts whichever is chosen.
 
 ## Acceptance criteria
 
-- [ ] All four endpoints behave per `architecture.md` §4 — covered by `*IT`
+- [ ] Every endpoint behaves as the settled contract says — covered by `*IT`
       integration tests against a real database
 - [ ] **A request carrying user A's token cannot read, update or delete user
-      B's cellar item** — an integration test asserts this for each of the
-      three item-scoped endpoints, and each was confirmed to fail against an
+      B's cellar entry or bottle** — an integration test asserts this for each
+      item-scoped endpoint, and each was confirmed to fail against an
       implementation that trusts a caller-supplied user id
+- [ ] Adding a second bottle of a beer already in the cellar extends the
+      existing entry rather than creating a second one — integration test
 - [ ] An unauthenticated request to any cellar endpoint is rejected, while
       `/api/v1/beers` still answers anonymously — one test covering both, so
       locking down the cellar cannot silently lock down the catalog

@@ -63,7 +63,7 @@ The rules the template enforces:
   [ADR-0006](0006-cellar-first.md) already records that this roadmap's
   numbering has been reshuffled more than once, which is what makes a bare
   "iteration 3 task 8" a dangling reference in waiting.
-- **The index in `docs/architecture.md` §10 carries no prose.** Its title
+- **The index in `docs/architecture.md` §9 carries no prose.** Its title
   matches the file's H1 verbatim and its status cell holds the bare token.
   Explanation of a supersession lives in the ADR's own fields and nowhere
   else — the two copies of ADR-0004's status text had already drifted apart,
@@ -172,7 +172,7 @@ Consequences stayed at 3–5 bullets throughout. The section with no competing
 purpose absorbed the growth; the section carrying trade-offs never grew, which
 is the structural reason a dedicated Evidence section is worth its heading.
 
-**Index drift.** `docs/architecture.md` §10 instructs "Add a row when adding an
+**Index drift.** `docs/architecture.md` §9 instructs "Add a row when adding an
 ADR" and stopped at ADR-0016; ADR-0017 and ADR-0018 had no row despite both
 being committed and linked elsewhere. ADR-0016's indexed title carried a
 ` (no-nonce CSP)` suffix absent from its H1, and ADR-0004's status text

@@ -1,6 +1,6 @@
 # ADR-0005: Defer authentication; mock the payment provider
 
-- **Status:** partially-superseded
+- **Status:** deprecated
 - **Date:** 2026-07-15
 - **Superseded-by:** [ADR-0006](0006-cellar-first.md) (partial) — authentication
   is no longer deferred and now precedes the cellar; the mocked-payment stance
@@ -8,6 +8,17 @@
 - **Amended:** 2026-07-26 — restated in terms of ordering rather than specific
   iteration numbers, which had drifted, per
   [ADR-0006](0006-cellar-first.md)'s own amendment
+- **Amended:** 2026-08-08 — deprecated, see below
+
+> **Deprecated 2026-08-08.** Both halves are now spent. Authentication was
+> already un-deferred by [ADR-0006](0006-cellar-first.md) and shipped in
+> iteration 4, so the Context below — an unauthenticated backend reachable only
+> from the Next.js server — no longer describes the system. The payment half
+> went with the vision change (see [README.md](../../README.md)): Kalia does
+> not sell beer, so there is no provider to mock.
+>
+> Kept for the same reason as [ADR-0004](0004-backend-cart.md), whose
+> deprecation note carries the lesson both of them taught.
 
 ## Context
 
