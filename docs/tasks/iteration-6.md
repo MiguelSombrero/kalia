@@ -24,3 +24,9 @@ the cellar exists.
 This is the first iteration where getting it wrong exposes someone's data
 rather than merely breaking a page, so tasks 01 and 02 carry the visibility
 rule between them and task 02 owns proving it.
+
+The end-to-end journey in "Done when" is an acceptance criterion of
+[task 04](iteration-6/04-public-cellar-page.md), the last task it depends on —
+not a task of its own ([ADR-0026](../adr/0026-task-file-format.md)) and not
+shared with [task 03](iteration-6/03-profile-page.md), whose browser coverage
+stops at the visibility control.

@@ -67,15 +67,17 @@ the app already has, including the case where the cellar is not public.
 ## Acceptance criteria
 
 - [ ] A signed-out visitor opening a public cellar's link sees its beers and
-      bottles — component test, and Playwright covering the link end to end
-      without signing in
+      bottles — component test
 - [ ] A cellar that is not public renders the agreed state and exposes nothing
       about its contents — component test asserting the response's beers never
       reach the DOM
-- [ ] Playwright covers user A making their cellar public, then a visitor with
-      no session opening it, then A making it private and the same URL no
-      longer showing it — the full round trip, since a fixture-based test would
-      miss the transition
+- [ ] **Playwright covers the whole round trip in one spec**, which this task
+      owns: sign in as A → make the cellar public → sign out → open the URL
+      with no session and see the beers → sign back in → make it private → the
+      same URL no longer shows them. A real sign-out rather than a cleared
+      cookie, since a spec that only drops the session can pass against a page
+      still serving the owner's own cached data. A fixture of two fixed cellars
+      would miss the transitions entirely
 - [ ] Nothing the API withholds appears on the page — component test pinning
       the rendered fields against the public response shape
 - [ ] Every rendered state passes `axe` with no violations, in both locales
@@ -83,4 +85,9 @@ the app already has, including the case where the cellar is not public.
 
 ## Notes
 
-**None.**
+**This task owns iteration 6's end-to-end journey spec.**
+[Task 03](03-profile-page.md) covers the visibility control itself and stops
+there. Both files originally carried a criterion describing the same round
+trip, which meant either two overlapping specs or an argument in review about
+which one ticks it — the journey lands with the last task it depends on,
+because none of it is exercisable until this page exists.
