@@ -1,11 +1,12 @@
 # Iteration 5 — Personal beer cellar
 
-Goal: a signed-in beer enthusiast maintains the catalog of beers they own.
+Goal: a signed-in beer enthusiast records the individual bottles they own.
 
 ## Done when
 
-A signed-in user can add a beer from the catalog to their cellar and see its
-age and quantity; another user cannot see it.
+A signed-in user can add a bottle of a catalog beer to their cellar with the
+dates that bottle carries, see their cellar as one row per beer opening onto
+the individual bottles beneath it, and know that nobody else can see any of it.
 
 ## Tasks
 
@@ -17,6 +18,12 @@ age and quantity; another user cannot see it.
 | [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | needs-refinement |
 | [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | needs-refinement |
 | [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | needs-refinement |
+
+## Maintenance
+
+| ID | Task | Status |
+|---|---|---|
+| [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | needs-refinement |
 
 Depends on [iteration 4](iteration-4.md) task 3: the cellar cannot resolve a
 current user until the backend is a resource server.

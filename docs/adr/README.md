@@ -12,7 +12,7 @@ was rejected to get there ([ADR-0020](0020-documentation-roles.md)). For the
   was rejected, and the reason would not survive in the code,
   `architecture.md` or a README.
 - **The authoritative index** — title, status and date for every ADR — is
-  [docs/architecture.md §10](../architecture.md#10-architecture-decision-records).
+  [docs/architecture.md §9](../architecture.md#9-architecture-decision-records).
   This file groups the same set by subject so a related run of decisions can
   be read as one; it is deliberately not a second copy of the titles.
 
@@ -33,13 +33,19 @@ The shape of the system, decided at the start and not revisited since.
 
 What gets built, in what order, and what is deliberately deferred.
 
+Kalia's own store flow was designed here and then removed from the product
+entirely. Nothing replaces the two deprecated records — Kalia does not sell
+beer, and that is a [backlog](../tasks/backlog.md) line rather than a decision
+anyone is making. Read them for the lesson they carry, amended into
+[ADR-0032](0032-when-a-decision-earns-an-adr.md): an ADR written for work
+nobody has committed to becomes a constraint anyway.
+
 - [ADR-0004](0004-backend-cart.md) — the cart is a backend domain module, not
-  frontend session state. *(Implementation deferred with the store flow.)*
+  frontend session state. *(Deprecated: there is no cart.)*
 - [ADR-0005](0005-defer-auth-mock-payments.md) — defer auth, mock the payment
-  provider. *(Partially superseded by ADR-0006: auth is no longer deferred.)*
-- [ADR-0006](0006-cellar-first.md) — authentication then the personal cellar;
-  the store flow moves to the backlog until own-store vs. aggregator is
-  settled.
+  provider. *(Deprecated: auth shipped, and there are no payments.)*
+- [ADR-0006](0006-cellar-first.md) — authentication then the personal cellar.
+  *(Amended: the store and reviews questions it defers are closed.)*
 
 ## Backend structure and conventions
 
@@ -75,7 +81,7 @@ Five independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
 ([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
-[docs/architecture.md §6](../architecture.md#6-authentication-own-iteration-before-the-cellar).
+[docs/architecture.md §6](../architecture.md#6-authentication-and-identity).
 
 - [ADR-0025](0025-authjs-valkey-adapter.md) — Auth.js with a hand-written
   Valkey adapter for Keycloak OIDC, and the public/internal Keycloak address

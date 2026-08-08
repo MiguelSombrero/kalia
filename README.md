@@ -4,28 +4,66 @@
 
 ## Vision
 
-Kalia is a comprehensive craft beer management app and online beer store. With Kalia beer enthusiasts can search for beers, maintain their personal beer cellar, review beers and order beers online. Main use cases for Kalia is:
+Kalia is a social platform for beer enthusiasts, built around the beer cellar.
 
-- User can browse and search for beers by different criteria like name, brewery, country, style, alcohol content (ABV), and price
-- User can add beers to the personal beer cellar. This is the catalog of beers user owns. With beer cellar user can easily observe the beers age, quantity and other relevant info for beer enthusiast 
-- User can review beers. This could be integration to some other beer review service, because there already have many good alternatives (Pint Please, Untappd, ...). Decided for later.
-- User can order beers online. This could be some integration or search engine for other beer stores - like Trivago for beers. If user wants to buy Sierra Nevada Bigfoot, for example, Kalia could list all the shops that have the beer, cheapest store first. Decided for later.
+Enthusiasts age beer. A cellar is the record of what is down there: which
+beers, which bottles, when each was brewed and how long it has left. Kalia
+keeps that record, and makes it something you can share.
+
+Three things carry the product:
+
+- **The cellar** — the reason Kalia exists. A cellar holds *bottles*, not just
+  beers: an AleSmith IPA brewed in January 2026 is a different thing from one
+  brewed two years earlier, and a cellar that cannot tell them apart is a list,
+  not a cellar. Yours is private until you decide otherwise; a public cellar is
+  something anyone can browse.
+- **The catalog** — what makes the cellar possible, since you have to find a
+  beer before you can own it. It grows the way it has to: new beers appear
+  faster than any single source keeps up with, so the people using Kalia add
+  them.
+- **The feed** — what makes it social. Adding a beer to your cellar is news to
+  people who care about beer; the front page is where that shows up, and where
+  a public cellar gets found.
+
+And what Kalia deliberately is not. **It is not a beer review platform** —
+Untappd and Pint Please do that well and Kalia will not compete with them. A
+rating is a number Kalia *shows*, sourced from elsewhere, never one it collects.
+**It is not a beer shop** either; at most, some distant day, it may tell you
+where a beer can be bought and for how much.
 
 ## Goal
 
 Kalia is developed with AI agents focusing on the development process rather than fast-to-market. The main goals for this project is to (1) create solid agentic development process which ensures the quality of the product (no drift between documentation and implementation, comprehensive tests etc.); (2) production-grade standards for architecture, design and code.
 
-My, MiguelSombrero, role is to set the projects goal and vision, make architecture decisions, guide the design and review code. I do not code myself. I'm product owner which delegates all the work (documentation, coding) to the AI agents.
+## Roles
 
-> **Status:** iterations 0–3 complete — a visitor can browse and search the
+**MiguelSombrero — product owner.** Sets vision and goals, owns every
+architecture and design decision, prioritises and refines the backlog, reviews
+code and merges pull requests. Does not write code.
+
+**AI agents** produce all documentation and code, in four roles:
+
+- **Scrum master** — proposes iterations, distils the vision into scope, writes
+  task files and drives the refinement conversation. Never moves a task to
+  `refined` on its own behalf; that transition is the product owner's gate.
+- **Architect** — designs module boundaries and data models, proposes ADRs,
+  keeps [docs/architecture.md](docs/architecture.md) true. Lays out the
+  trade-offs and guides the product owner through them; the product owner
+  decides.
+- **Developer** — implements one refined task at a time, test-first, and opens
+  the pull request.
+- **Reviewer** — runs the code-review gate on every diff and the periodic
+  quality sweep, and treats review comments as a dialogue, not instructions.
+
+> **Status:** iterations 0–4 complete — a visitor can browse and search the
 > seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
 > design system (tokens, shared primitives, loading/error/empty states,
-> WCAG 2.1 AA), and production-readiness foundations (logging, exception
-> handling, config, security headers, dependency scanning) are in place.
-> Next: authentication via Keycloak (iteration 4). Implementation proceeds
-> one issue at a time. See [docs/roadmap.md](docs/roadmap.md) for what gets
-> built and in which order.
+> WCAG 2.1 AA), production-readiness foundations (logging, exception
+> handling, config, security headers, dependency scanning) are in place, and
+> users can sign in and out via Keycloak. Next: the personal beer cellar
+> (iteration 5). Implementation proceeds one issue at a time. See
+> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
 
 ## Run locally
 
@@ -56,19 +94,21 @@ In roadmap order, a user can:
 - Browse and search craft beers by name, brewery, country, style, alcohol content (ABV), and price — no account needed
 - Use Kalia in English or Finnish (`/en`, `/fi`; auto-detected on first visit, switchable anytime)
 - View beer details (brewery, country, style, ABV, description, price)
-- Sign in with Keycloak *(auth iteration)*
-- Maintain a personal beer cellar: the beers they own, with quantity, vintage/age, purchase info and notes *(cellar iteration)*
+- Sign in with Keycloak
+- Maintain a personal beer cellar: the bottles they own, each with its brewed
+  and best-before dates, grouped by beer *(iteration 5)*
 
-Planned for later (tracked in the [roadmap](docs/roadmap.md); the open
-decisions are recorded in [ADR-0006](docs/adr/0006-cellar-first.md)):
+Then:
 
-- Order beers online — either Kalia's own store flow (basket → order →
-  payment, mocked provider first) or a price-comparison aggregator over
-  other beer stores ("Trivago for beers"); *decided later*
-- Beer reviews — own reviews or integration with an existing service
-  (Untappd, Pint Please, …); *decided later*
-- Inventory / stock management, admin UI for the catalog
-- Recommendations ("if you liked this IPA…")
+- A user profile, and a cellar that is private by default but can be made
+  public and browsed by anyone *(iteration 6)*
+- A front-page feed of what people are adding to their cellars *(iteration 7)*
+- A catalog that grows past its seed data, with users adding the beers they
+  cannot find *(iteration 8)*
+
+Further out, in the [backlog](docs/tasks/backlog.md): beer ratings sourced from
+an external platform, likes and comments on feed events, and — dependent on
+whether beer shops publish usable APIs — showing where a beer can be bought.
 
 ## Architecture
 
@@ -84,15 +124,13 @@ flowchart LR
     Spring --> PG[(PostgreSQL)]
     Next -->|sessions| Valkey[(Valkey)]
     Next -->|auth| KC[Keycloak]
-    Spring -.->|token validation, later| KC
-    Spring -.->|PaymentProvider port, if own store| PSP[Payment provider<br/>mock first]
+    Spring -->|token validation| KC
 ```
 
 The backend is a single deployable split into Spring Modulith modules
-(`catalog`, `identity`, `cellar`; later `cart`, `ordering`, `payment` if the
-own-store variant is chosen) with enforced boundaries, keeping a later
-extraction to microservices possible without paying the distributed-systems
-cost now.
+(`catalog`, `identity`, and `cellar` as iteration 5 builds it) with enforced
+boundaries, keeping a later extraction to microservices possible without paying
+the distributed-systems cost now.
 
 Full design: [docs/architecture.md](docs/architecture.md) ·
 Decision records: [docs/adr/](docs/adr/)
@@ -171,9 +209,8 @@ kalia/
 ├── backend/          # Spring Boot modulith
 │   └── src/main/java/fi/kalia/
 │       ├── catalog/  # beers, breweries, search
-│       ├── identity/ # Keycloak integration (auth iteration)
-│       ├── cellar/   # personal beer cellar (cellar iteration)
-│       └── ...       # cart/ordering/payment if own store is chosen (backlog)
+│       ├── identity/ # Keycloak integration, current-user resolution
+│       └── cellar/   # personal beer cellar (iteration 5)
 ├── frontend/         # Next.js app (BFF + UI)
 ├── docs/
 │   ├── architecture.md
@@ -186,9 +223,8 @@ kalia/
 ## Development approach
 
 - **Iterative:** features land as small, end-to-end vertical slices
-  (see [roadmap](docs/roadmap.md)). The enthusiast features (catalog, cellar)
-  come first; the store flow waits in the backlog for the own-store vs.
-  aggregator decision.
+  (see [roadmap](docs/roadmap.md)) — the catalog first, because it is what the
+  cellar is built on, then the cellar, then what makes it social.
 - **Test-driven:** tests are written with (or before) the code — unit tests
   for domain logic, Testcontainers-backed integration tests for APIs and
   persistence, Playwright for critical user flows.

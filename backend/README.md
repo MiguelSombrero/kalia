@@ -1,7 +1,7 @@
 # Kalia backend
 
-Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`,
-`cellar`; store modules if chosen later) arrive iteration by iteration — see
+Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`, and
+`cellar` from iteration 5) arrive iteration by iteration — see
 [docs/roadmap.md](../docs/roadmap.md) and
 [docs/architecture.md](../docs/architecture.md).
 
@@ -9,8 +9,9 @@ Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`,
 
 Full stack in containers: `docker compose up --build` from the repo root.
 The backend is published at `localhost:8080` (loopback only — see
-[docs/architecture.md](../docs/architecture.md) §6; it stays unauthenticated
-until the auth iteration, so this must never become a non-loopback binding).
+[docs/architecture.md](../docs/architecture.md) §6. It is an OAuth2 resource
+server and denies by default, but the loopback binding stays until a deployment
+story exists, so treat it as defence in depth rather than surplus).
 
 For development with hot reload, run natively against the compose database:
 

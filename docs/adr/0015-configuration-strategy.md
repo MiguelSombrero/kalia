@@ -86,9 +86,9 @@ nothing in the file marks which settings are meant to vary.
   file on the classpath rather than merge with it). The datasource needs
   nothing there: Testcontainers' `@ServiceConnection` replaces it wholesale.
 - **Profiles are rejected for configuration only.** `@Profile` on *beans*
-  remains available for genuine behavioural variants — the mocked
-  `PaymentProvider` in `docs/architecture.md`'s backlog is a legitimate
-  future use. What this ADR rejects is profiles as the carrier of
+  remains available for genuine behavioural variants — a mocked adapter
+  standing in for an external service would be a legitimate future use. What
+  this ADR rejects is profiles as the carrier of
   per-environment configuration values.
 
 ## Consequences
