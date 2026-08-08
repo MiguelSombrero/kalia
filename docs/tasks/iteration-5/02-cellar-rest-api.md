@@ -56,11 +56,18 @@ user's rows.
    (`/api/v1/cellar/entries/{entryId}/bottles/{id}`) makes the containment
    explicit and the isolation check obvious; flat (`/api/v1/cellar/bottles/{id}`)
    is shorter and needs no entry id the client may not have. The choice is
-   permanent in a way the response body is not.
+   permanent in a way the response body is not. A client holding a bottle id
+   from a local cache without its entry id can address a flat URL and not a
+   nested one — a small point for flat, and one that only matters if
+   [task 01](01-cellar-module-and-schema.md) question 6 goes that way.
 2. **Does listing the cellar include each entry's bottles, or only a count?**
    Embedding them is one request for the page task 03 builds; a count plus a
    second call keeps the list response small. This decides whether the cellar
-   page can render without a second round trip.
+   page can render without a second round trip. Worth answering on the
+   resource's own terms rather than on what that one page needs: a different
+   client's screen will want a different split, and an endpoint shaped for one
+   caller cannot serve both without growing a second shape
+   ([backlog](../backlog.md) — mobile client).
 3. **What happens to a cellar entry whose beer leaves the catalog?** The
    catalog is seeded today and nothing deletes from it — but once
    [iteration 8](../iteration-8.md) lets users add beers, something eventually
@@ -70,10 +77,27 @@ user's rows.
 4. **Is the cellar list paginated?** The catalog endpoint is. A cellar is
    realistically far smaller, so the simpler answer is no — but that is a
    contract worth choosing deliberately rather than by omission, since adding
-   pagination later changes the response shape.
+   pagination later changes the response shape. If the answer is yes, whether
+   it reuses the catalog's `page`/`size` envelope or takes a cursor is part of
+   the same decision — the feed faces the identical choice and answers it
+   differently ([iteration 7 task 02](../iteration-7/02-feed-api.md) question 1).
 5. **Does another user's entry or bottle id return 404 or 403?** 404 leaks
    nothing about what exists; 403 is more honest to a legitimate caller. The
-   isolation test asserts whichever is chosen.
+   isolation test asserts whichever is chosen. Applying it uniformly across
+   every item-scoped endpoint matters more than the choice itself: a client
+   that has to learn two rules will get one of them wrong.
+6. **Does a `problem+json` response carry a stable, machine-readable
+   identity?** Today `ProblemDetail.forStatusAndDetail(...)` leaves `type` as
+   `about:blank` and puts an English sentence in `detail`, and nothing has
+   needed more — the frontend has its own strings and never renders `detail`.
+   Any client without those strings can only react to a specific failure by
+   matching that English text, which breaks silently on the next wording edit.
+   RFC 9457's `type` URI is the slot designed for this and an extension member
+   (`code`) is the other; both are a few lines per handler here and a
+   compatibility problem once anything depends on the current shape. The wider
+   question — whether this becomes a convention for every module's advice —
+   is bigger than one task, so the answer may be "yes, but not here"
+   ([backlog](../backlog.md) — mobile client).
 
 ## Acceptance criteria
 

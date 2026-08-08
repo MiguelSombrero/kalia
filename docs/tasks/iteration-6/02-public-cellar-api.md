@@ -54,7 +54,10 @@ identifier.
 2. **Does the public view show everything the owner sees?** Purchase price is
    the obvious candidate to withhold, and possibly notes. If anything is
    withheld, the public response is a different DTO, not a filtered one — worth
-   deciding now rather than discovering during review.
+   deciding now rather than discovering during review. A second consequence of
+   two DTOs: a client cannot render both views from one code path, so how far
+   the two shapes are allowed to diverge is part of the answer, not a detail
+   of it.
 3. **Should a public cellar be `noindex` to search engines?** Public to anyone
    with a link is not the same as public to Google, and the two are easy to
    conflate. This may land in [task 04](04-public-cellar-page.md) instead, but

@@ -170,6 +170,12 @@ Conventions:
 
 - Pagination: `page`/`size` params, response envelope with `content`,
   `totalElements`, `totalPages`, `page`.
+- **Endpoints are client-agnostic resources.** An endpoint's shape follows the
+  resource, not the screen that happens to consume it; assembling several
+  resources into one view is the client's job. Today the frontend is the only
+  caller and does exactly that, so this holds by circumstance — it is written
+  down because the cellar, profile and feed endpoints are each an opportunity
+  to shape a response around one Next.js page instead.
 - Authentication: bearer token, default deny — every route needs one except
   the catalog reads above, `/actuator/health` and the API docs
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)). A path whose

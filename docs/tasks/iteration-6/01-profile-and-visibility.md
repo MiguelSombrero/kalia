@@ -64,6 +64,15 @@ the app. Visibility defaults to private.
    iteration. Anything added here without a consumer is the mistake
    [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md) was amended
    about.
+6. **Can the identifier from question 2 change after it has been used?** A
+   public cellar's URL is the thing people paste to each other, so an
+   identifier that moves when a user renames themselves breaks every link
+   already shared. That is recoverable on the web — a redirect fixes it — and
+   less so anywhere the URL has been claimed by something that cannot be
+   redeployed to learn the new rule ([backlog](../backlog.md) — mobile client).
+   Either the identifier is immutable, or renaming leaves the old one
+   resolving, or shared links are accepted as breakable; the third is a
+   legitimate answer, just not one to arrive at by accident.
 
 ## Acceptance criteria
 
