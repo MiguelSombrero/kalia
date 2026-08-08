@@ -84,7 +84,12 @@ Testing conventions below.
 
 CI also scans `pom.xml` and the built image for known CVEs and fails on a
 `HIGH`/`CRITICAL` finding with a fix available
-([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)).
+([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)). A finding
+is fixed in place on whatever branch is open (CLAUDE.md), by bumping the
+flagged dependency to Trivy's named fixed version in `pom.xml` — confirm the
+fix locally before pushing with
+`trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed pom.xml`,
+matching CI's `vulnerability-scan.yml` exactly.
 
 Notable suites:
 

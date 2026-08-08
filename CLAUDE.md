@@ -213,6 +213,21 @@ Two things that fail silently if you skip them:
   errors, repository metadata, generator output) — propose those for
   confirmation instead. Record chosen versions in the README tech stack
   section so they become the pinned reference.
+- **A CI vulnerability-scan failure unrelated to your diff is still your
+  problem, and it gets fixed in place.** The scan is deliberately diff-agnostic
+  ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md)): any open
+  PR can go red on a CVE disclosed against something already in `dev`, with
+  nothing in that PR's own changes at fault. Fix it as its own commit on the
+  same branch — don't spin up a second PR just to unblock the first. This is
+  mechanical, and does not need to ask first, only when the fix stays inside
+  the vulnerable package's own already-declared semver range (a lockfile-only
+  bump, no code change). A fix that would cross that range, or bumps a
+  *direct* dependency past its pinned version, is a version choice under "new
+  dependencies" above instead — ask, don't push it unasked. Confirm the fix
+  actually clears the finding before pushing, ideally by reproducing CI's
+  exact Trivy invocation locally (`frontend/README.md`, `backend/README.md`)
+  — a bump that doesn't reach the flagged transitive package leaves the
+  finding red.
 
 ## Quality checks
 
