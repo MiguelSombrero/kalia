@@ -5,8 +5,9 @@
 // without an npm install.
 //
 // Two tiers of check:
-//   - Universal, on every ADR: an index row exists, its title and status
-//     match the file, Status is a vocabulary token, and whichever of the
+//   - Universal, on every ADR: a row exists in docs/architecture.md §10 with
+//     matching title and status, the ADR is also listed in the grouped index
+//     docs/adr/README.md, Status is a vocabulary token, and whichever of the
 //     five canonical headings are present appear in canonical order with no
 //     unknown heading interspersed.
 //   - Template-only, on ADRs that have adopted "## Alternatives considered"
@@ -24,6 +25,7 @@ import { dirname, resolve } from "node:path";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ADR_DIR = resolve(ROOT, "docs/adr");
 const ARCH = resolve(ROOT, "docs/architecture.md");
+const ADR_README = resolve(ADR_DIR, "README.md");
 
 const STATUS_TOKENS = ["proposed", "accepted", "superseded", "partially-superseded", "deprecated"];
 const CANONICAL_ORDER = ["Context", "Decision", "Alternatives considered", "Consequences", "Evidence"];
@@ -45,7 +47,14 @@ if (indexStart === -1) {
 }
 const archLines = archText.slice(indexStart).split("\n");
 
-console.log(`Checking ${files.length} ADRs in docs/adr/ against docs/architecture.md's index\n`);
+// The second index (ADR-0031): docs/adr/README.md groups the same ADRs by
+// subject. Only coverage is checked, not titles — README.md carries a gloss
+// rather than a copy of the title, so there is nothing there to drift.
+const readmeText = readFileSync(ADR_README, "utf8");
+
+console.log(
+  `Checking ${files.length} ADRs in docs/adr/ against docs/architecture.md's index and docs/adr/README.md\n`,
+);
 
 for (const file of files) {
   const text = readFileSync(resolve(ADR_DIR, file), "utf8");
@@ -76,6 +85,10 @@ for (const file of files) {
     }
   }
 
+  if (!readmeText.includes(`](${file})`)) {
+    fail(file, `not listed in docs/adr/README.md (looked for a link to ${file})`);
+  }
+
   const headings = [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
   const unknown = headings.filter((h) => !CANONICAL_ORDER.includes(h));
   if (unknown.length > 0) {
@@ -104,6 +117,16 @@ const rowIds = [...archText.matchAll(/\|\s*\[ADR-(\d{4})\]/g)].map((m) => m[1]);
 for (const rid of rowIds) {
   if (!files.some((f) => f.startsWith(rid))) {
     fail(`docs/architecture.md`, `index row for ADR-${rid} has no corresponding file in docs/adr/`);
+  }
+}
+
+// Same for the grouped index, which links files rather than tabulating ids.
+const readmeLinks = new Set(
+  [...readmeText.matchAll(/\]\((\d{4}-[^)]*\.md)\)/g)].map((m) => m[1]),
+);
+for (const link of readmeLinks) {
+  if (!files.includes(link)) {
+    fail("docs/adr/README.md", `links ${link}, which does not exist in docs/adr/`);
   }
 }
 

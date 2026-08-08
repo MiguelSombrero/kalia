@@ -386,11 +386,19 @@ Things intentionally *not* designed now, with the trigger that reopens them:
 
 ## 10. Architecture decision records
 
-All decisions live in [adr/](adr/); this table is the index. Add a row when
-adding an ADR, and update the status column when a later ADR changes an
+All decisions live in [adr/](adr/); the tables below are the index. Add a row
+when adding an ADR, and update the status column when a later ADR changes an
 earlier one. New ADRs follow [template.md](adr/template.md); the format and
 the rules behind it are
-[ADR-0019](adr/0019-adr-format-and-conventions.md).
+[ADR-0019](adr/0019-adr-format-and-conventions.md), and what earns an ADR in
+the first place is [ADR-0032](adr/0032-when-a-decision-earns-an-adr.md).
+
+The index is split in two because the two sets grow for different reasons:
+decisions about the product, and decisions about how the project works on
+itself. Splitting them keeps each rate visible on its own. For a subject-by-
+subject grouping — the authentication decisions as a set, say — see
+[adr/README.md](adr/README.md), which indexes the same ADRs by theme and
+carries a one-line gloss rather than a second copy of these titles.
 
 The status column holds the vocabulary token only. What superseded or amended
 a decision is recorded in that ADR's own `Supersedes` / `Superseded-by` /
@@ -398,11 +406,14 @@ a decision is recorded in that ADR's own `Supersedes` / `Superseded-by` /
 prose had already drifted apart before this rule existed.
 
 CI runs `scripts/check-adrs.mjs` on every push, verifying that every ADR has
-a matching index row (title and status) and that ADRs following the template
-keep a `Bad`/`Neutral` consequence — see the "ADR index check" job in
+a matching index row here (title and status), that it is also listed in
+[adr/README.md](adr/README.md), and that ADRs following the template keep a
+`Bad`/`Neutral` consequence — see the "ADR index check" job in
 [ci.yml](../.github/workflows/ci.yml). Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
 ([ADR-0026](adr/0026-task-file-format.md)).
+
+### Product and system architecture
 
 | Id | Title | Status | Date |
 |---|---|---|---|
@@ -422,18 +433,28 @@ does the same for task files against their iteration index
 | [ADR-0014](adr/0014-shared-exception-handling.md) | Shared, module-neutral exception-handling strategy | accepted | 2026-07-25 |
 | [ADR-0015](adr/0015-configuration-strategy.md) | Environment-variable configuration, not Spring profiles | accepted | 2026-07-25 |
 | [ADR-0016](adr/0016-security-response-headers.md) | Security response headers via `next.config.ts` | accepted | 2026-07-26 |
-| [ADR-0017](adr/0017-code-comment-policy.md) | Code comments carry only what the repo cannot | accepted | 2026-07-26 |
 | [ADR-0018](adr/0018-frontend-env-var-validation.md) | Frontend environment-variable validation via `instrumentation.ts` | accepted | 2026-07-26 |
-| [ADR-0019](adr/0019-adr-format-and-conventions.md) | A fixed ADR structure, with alternatives and costs given their own sections | accepted | 2026-07-26 |
-| [ADR-0020](adr/0020-documentation-roles.md) | Each documented fact has one home — ADR why, architecture shape, README how | accepted | 2026-07-27 |
 | [ADR-0021](adr/0021-design-tokens-ui-primitives.md) | Two-layer CSS design tokens and three shared UI primitives, no new dependency | accepted | 2026-07-27 |
 | [ADR-0022](adr/0022-loading-error-empty-states.md) | Shape-matched loading skeletons, one error boundary at the locale root | accepted | 2026-07-27 |
 | [ADR-0023](adr/0023-typed-api-failures.md) | API failures are a tagged `ApiError`, and a non-2xx status is not one | accepted | 2026-07-27 |
 | [ADR-0024](adr/0024-dependency-vulnerability-scanning.md) | Trivy scans dependencies and images in CI; Dependabot opens the fixes | accepted | 2026-07-27 |
 | [ADR-0025](adr/0025-authjs-valkey-adapter.md) | Auth.js with a custom Valkey adapter for Keycloak authentication | accepted | 2026-07-28 |
-| [ADR-0026](adr/0026-task-file-format.md) | One file per task, with acceptance criteria that include tests | accepted | 2026-07-30 |
-| [ADR-0027](adr/0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
 | [ADR-0028](adr/0028-resource-server-and-current-user.md) | The backend is an OAuth2 resource server, and the token's subject is the user | accepted | 2026-07-31 |
 | [ADR-0029](adr/0029-silent-token-refresh.md) | Renew access tokens lazily, and end the session when the grant is gone | accepted | 2026-08-07 |
 | [ADR-0030](adr/0030-per-session-token-storage.md) | Store the Keycloak token set per session, not per user | accepted | 2026-08-07 |
 | [ADR-0031](adr/0031-backchannel-logout.md) | Validate Keycloak's Back-Channel Logout token and end the matching session by sid | accepted | 2026-08-07 |
+
+### Engineering process and documentation
+
+How the project works on itself. Kept separate because it grows for its own
+reasons and its rate is worth watching independently
+([ADR-0032](adr/0032-when-a-decision-earns-an-adr.md)).
+
+| Id | Title | Status | Date |
+|---|---|---|---|
+| [ADR-0017](adr/0017-code-comment-policy.md) | Code comments carry only what the repo cannot | accepted | 2026-07-26 |
+| [ADR-0019](adr/0019-adr-format-and-conventions.md) | A fixed ADR structure, with alternatives and costs given their own sections | accepted | 2026-07-26 |
+| [ADR-0020](adr/0020-documentation-roles.md) | Each documented fact has one home — ADR why, architecture shape, README how | accepted | 2026-07-27 |
+| [ADR-0026](adr/0026-task-file-format.md) | One file per task, with acceptance criteria that include tests | accepted | 2026-07-30 |
+| [ADR-0027](adr/0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
+| [ADR-0032](adr/0032-when-a-decision-earns-an-adr.md) | An ADR is earned by a rejected alternative, not by a decision's size | accepted | 2026-08-07 |
