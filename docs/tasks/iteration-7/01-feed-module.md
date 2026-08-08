@@ -70,6 +70,15 @@ migrations, and the event flow from `cellar` to `feed`.
 5. **Does the event record a bottle's dates?** "Miguel added a 2019 AleSmith
    IPA" is a better line than "Miguel added an AleSmith IPA", and it is more
    about that person's cellar than the bare fact is.
+6. **Does the stored shape preclude a per-user feed later?** This iteration
+   builds one global feed and says so, and that is not being reopened. But
+   following other users is in the [backlog](../backlog.md), and a feed
+   delivered as a notification rather than a page is per-user by definition
+   ([backlog](../backlog.md) — mobile client). Nothing here needs to build
+   fan-out or a follow model; the question is only whether what gets stored
+   makes adding one an addition or a rewrite — which is mostly about whether an
+   event knows whose cellar it came from in a queryable way, rather than only
+   enough to render a line.
 
 ## Acceptance criteria
 

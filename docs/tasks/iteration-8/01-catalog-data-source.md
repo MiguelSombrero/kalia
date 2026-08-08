@@ -68,6 +68,17 @@ under the chosen model.
 5. **Are user-added beers visible to everyone immediately, or held for review?**
    Moderation is a product decision with a large implementation behind it, and
    an open catalog with no moderation is an open door.
+6. **Does the source carry barcodes (EAN/UPC), and is that a criterion for
+   choosing it?** Scanning the bottle in your hand is the one way of finding a
+   beer that a phone can offer and a browser cannot
+   ([backlog](../backlog.md) — mobile client), and it needs a barcode on the
+   beer. The reason this belongs in *this* task rather than
+   [task 02](02-add-beer-api.md): the column can be added by migration at any
+   time, but nobody goes back and re-scans beers that already exist, so a
+   source chosen without barcodes leaves the lookup permanently
+   half-covered. That makes barcode coverage a way of telling the three models
+   apart, not a field to specify later — and if the product owner does not want
+   scanning at all, saying so here closes the question for good.
 
 ## Acceptance criteria
 

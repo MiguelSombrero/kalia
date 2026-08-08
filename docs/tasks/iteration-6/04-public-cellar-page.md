@@ -63,6 +63,18 @@ the app already has, including the case where the cellar is not public.
    does, the difference tells a stranger the cellar exists.
 5. **What can a visitor do from here** — click through to a beer in the
    catalog, and anything else?
+6. **What is this page's URL, given it is the app's first genuinely shareable
+   link?** Every route today is under `app/[locale]/…`
+   ([ADR-0011](../../adr/0011-i18next-localization.md)), so a shared cellar is
+   `/en/…` or `/fi/…` — two URLs for one cellar, and the sharer's locale
+   travels to the recipient. That is tolerable for a page nobody links to and
+   less so for one whose whole purpose is being linked to. Options include
+   leaving it as-is, a locale-less canonical URL that redirects, or accepting
+   both and pointing `rel="canonical"` at one. The reason to settle it here
+   rather than later: anything that maps these URLs onto something else —
+   search results, a share preview, an installed app claiming the domain
+   ([backlog](../backlog.md) — mobile client) — has to be told the rule, and
+   changing the rule afterwards means telling all of them again.
 
 ## Acceptance criteria
 

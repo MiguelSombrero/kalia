@@ -66,6 +66,11 @@ rather than accumulated.
    because the original vision included a store, which it no longer does.
 6. **Is the contributor recorded?** Useful for moderation and attribution, and
    it makes catalog data personal data.
+7. **Is a barcode one of the fields?** Follows
+   [task 01](01-catalog-data-source.md) question 6. If the answer there is yes,
+   this task decides whether it is required, optional or unique — and a
+   barcode is a stronger answer to question 1 above than name-plus-brewery is,
+   since it identifies the product rather than the words used for it.
 
 ## Acceptance criteria
 

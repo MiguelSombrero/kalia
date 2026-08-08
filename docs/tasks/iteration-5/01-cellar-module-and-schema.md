@@ -73,6 +73,23 @@ the one-row-per-beer-with-a-quantity model `architecture.md` specified until
    bottle always added one at a time? This is a domain question before it is a
    UI one, because six identical bottles are either six rows or one row with a
    count, and the second contradicts the constraint above.
+5. **Do an entry and a bottle carry `created_at` and `updated_at`?** Nothing
+   needs them yet — the cellar has one client and it reads the whole thing
+   every time. They are what separates a future client that can ask "what
+   changed since I last looked" from one that must refetch everything, and a
+   conflicting edit that can be detected from one that silently overwrites.
+   `catalog.beer` has `created_at` and no `updated_at`, so this is also a
+   question about which convention the next module sets. Two columns now
+   against a migration and a contract change later
+   ([backlog](../backlog.md) — mobile client).
+6. **Does the caller supply a bottle's id, or does the server assign it?** Ids
+   are already `UUID`, so a client *can* generate one. Accepting it makes
+   creating a bottle idempotent — a retried request cannot produce a seventh
+   bottle — and it is the precondition for a client that records bottles while
+   offline. Server-assigned is simpler and is the right answer unless either of
+   those is wanted. The point of asking now is that it is a contract, not an
+   implementation detail: it is [task 02](02-cellar-rest-api.md)'s to expose but
+   this task's to make possible.
 
 ## Acceptance criteria
 

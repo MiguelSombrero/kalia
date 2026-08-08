@@ -49,7 +49,15 @@ line and link a public cellar.
 1. **Is the feed paginated, or a fixed recent-N?** A front page needs the most
    recent handful; infinite scrolling needs a cursor. Offset pagination over a
    feed that grows at the head is the classic wrong answer, so the choice
-   matters more than it looks.
+   matters more than it looks. Two things sharpen it. The cost of being wrong
+   is asymmetric: the catalog's `page`/`size` envelope can be changed in
+   lockstep with its single client, and a feed contract an independently
+   released client depends on cannot ([backlog](../backlog.md) — mobile
+   client). And if the answer is a cursor, the API then has **two** pagination
+   shapes — which is defensible, because a stable search result set and a feed
+   growing at the head are genuinely different problems, but it should be
+   recorded in [architecture.md §4](../../architecture.md) as a deliberate
+   split rather than left to look like an inconsistency someone should tidy.
 2. **How far back does the feed go?** Everything ever, or a window? Nothing
    currently deletes events.
 3. **What does a line carry?** Enough to render "X added a Y to their cellar"
