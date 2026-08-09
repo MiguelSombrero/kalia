@@ -14,7 +14,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 |---|---|---|
 | [08](iteration-5/08-clear-backend-image-trivy-waivers.md) | Clear the backend image's expiring Trivy waivers | needs-refinement |
 | [01](iteration-5/01-cellar-module-and-schema.md) | `cellar` module, schema and domain rules | done |
-| [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | needs-refinement |
+| [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | refined |
 | [04](iteration-5/04-functional-modules-adr.md) | Correct ADR-0023 and record the functional-modules convention | needs-refinement |
 | [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | needs-refinement |
 | [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | needs-refinement |

@@ -1,6 +1,6 @@
 # Task 02: Cellar REST API, scoped to the signed-in user
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -49,66 +49,65 @@ user's rows.
 - The settled endpoint contract lands in
   [architecture.md §4](../../architecture.md) in this task's PR — it names the
   cellar's shape but deliberately leaves the URLs to this task.
+- **Endpoints, settled in refinement:**
+  - `GET /api/v1/cellar` — the caller's entries, each carrying a derived
+    quantity, not its bottles.
+  - `GET /api/v1/cellar/entries/{entryId}/bottles` — one entry's bottles. The
+    one endpoint that nests under an entry, because it is the one genuinely
+    entry-scoped collection read.
+  - `POST /api/v1/cellar/bottles` — add a bottle; the body carries the catalog
+    `beerId` and creates the entry implicitly if the beer is not already in
+    the cellar.
+  - `PATCH /api/v1/cellar/bottles/{id}` / `DELETE /api/v1/cellar/bottles/{id}`
+    — update or remove a bottle, addressed by bottle id alone.
+  - Bottle ids alone address a bottle (no `entryId` in that URL): an
+    `entryId` in the path cannot be trusted any more than a caller-supplied
+    user id, so ownership is verified by joining `bottle → entry → user_id`
+    regardless of what the path claims — an untrusted `entryId` there would
+    only add a second, redundant "path entry doesn't match the bottle's real
+    entry" case for no isolation benefit.
+- The cellar list (`GET /api/v1/cellar`) is not paginated — a cellar is
+  realistically far smaller than the catalog.
+- An entry or bottle id belonging to another user returns 404, applied
+  uniformly across every item-scoped endpoint — never 403.
+- A cellar entry whose catalog beer has left the catalog is out of scope:
+  cross-schema foreign keys are already disallowed
+  ([architecture.md §3](../../architecture.md)), so `ON DELETE RESTRICT` isn't
+  implementable at the DB level, and nothing deletes catalog beers before
+  [iteration 8](../iteration-8.md). Revisit once catalog gains deletion.
+- `problem+json` responses carry `detail` text only in this task — no
+  machine-readable `type`/`code`. Whether that becomes a convention for every
+  module's advice is a separate decision, not this task's to make
+  ([backlog](../backlog.md) — mobile client).
+- Bottle ids are always server-assigned; `POST /api/v1/cellar/bottles` does
+  not accept a client-supplied id
+  ([task 01](01-cellar-module-and-schema.md)'s open call).
 
 ## Open questions
 
-1. **What is the URL shape for a bottle?** Nested under its entry
-   (`/api/v1/cellar/entries/{entryId}/bottles/{id}`) makes the containment
-   explicit and the isolation check obvious; flat (`/api/v1/cellar/bottles/{id}`)
-   is shorter and needs no entry id the client may not have. The choice is
-   permanent in a way the response body is not. A client holding a bottle id
-   from a local cache without its entry id can address a flat URL and not a
-   nested one — a small point for flat, and one that only matters if
-   [task 01](01-cellar-module-and-schema.md) question 6 goes that way.
-2. **Does listing the cellar include each entry's bottles, or only a count?**
-   Embedding them is one request for the page task 03 builds; a count plus a
-   second call keeps the list response small. This decides whether the cellar
-   page can render without a second round trip. Worth answering on the
-   resource's own terms rather than on what that one page needs: a different
-   client's screen will want a different split, and an endpoint shaped for one
-   caller cannot serve both without growing a second shape
-   ([backlog](../backlog.md) — mobile client).
-3. **What happens to a cellar entry whose beer leaves the catalog?** The
-   catalog is seeded today and nothing deletes from it — but once
-   [iteration 8](../iteration-8.md) lets users add beers, something eventually
-   will. The answer decides whether the foreign key is `ON DELETE RESTRICT` (a
-   beer cannot be removed while someone owns it) or the API tolerates a
-   dangling reference.
-4. **Is the cellar list paginated?** The catalog endpoint is. A cellar is
-   realistically far smaller, so the simpler answer is no — but that is a
-   contract worth choosing deliberately rather than by omission, since adding
-   pagination later changes the response shape. If the answer is yes, whether
-   it reuses the catalog's `page`/`size` envelope or takes a cursor is part of
-   the same decision — the feed faces the identical choice and answers it
-   differently ([iteration 7 task 02](../iteration-7/02-feed-api.md) question 1).
-5. **Does another user's entry or bottle id return 404 or 403?** 404 leaks
-   nothing about what exists; 403 is more honest to a legitimate caller. The
-   isolation test asserts whichever is chosen. Applying it uniformly across
-   every item-scoped endpoint matters more than the choice itself: a client
-   that has to learn two rules will get one of them wrong.
-6. **Does a `problem+json` response carry a stable, machine-readable
-   identity?** Today `ProblemDetail.forStatusAndDetail(...)` leaves `type` as
-   `about:blank` and puts an English sentence in `detail`, and nothing has
-   needed more — the frontend has its own strings and never renders `detail`.
-   Any client without those strings can only react to a specific failure by
-   matching that English text, which breaks silently on the next wording edit.
-   RFC 9457's `type` URI is the slot designed for this and an extension member
-   (`code`) is the other; both are a few lines per handler here and a
-   compatibility problem once anything depends on the current shape. The wider
-   question — whether this becomes a convention for every module's advice —
-   is bigger than one task, so the answer may be "yes, but not here"
-   ([backlog](../backlog.md) — mobile client).
+**None.**
 
 ## Acceptance criteria
 
-- [ ] Every endpoint behaves as the settled contract says — covered by `*IT`
-      integration tests against a real database
-- [ ] **A request carrying user A's token cannot read, update or delete user
-      B's cellar entry or bottle** — an integration test asserts this for each
-      item-scoped endpoint, and each was confirmed to fail against an
+- [ ] `GET /api/v1/cellar` returns the caller's entries, each with its derived
+      quantity and no bottle array — integration test, confirmed to fail
+      against an implementation that embeds bottles in the list
+- [ ] `GET /api/v1/cellar/entries/{entryId}/bottles` returns that entry's
+      bottles — integration test
+- [ ] `POST /api/v1/cellar/bottles` adds a bottle to a catalog beer; a second
+      bottle of a beer already in the cellar extends the existing entry
+      rather than creating a second one; an id sent in the request body is
+      ignored and the created bottle always gets a server-assigned id —
+      integration test
+- [ ] `PATCH /api/v1/cellar/bottles/{id}` updates a bottle's brewed date,
+      best-before date and container type, and the change persists —
+      integration test
+- [ ] `DELETE /api/v1/cellar/bottles/{id}` removes a bottle, and the entry's
+      derived quantity reflects the removal afterward — integration test
+- [ ] **A request carrying user A's token gets 404 — never 403 — for user B's
+      cellar entry or bottle**, for every item-scoped endpoint — integration
+      test asserting the exact status code, confirmed to fail against an
       implementation that trusts a caller-supplied user id
-- [ ] Adding a second bottle of a beer already in the cellar extends the
-      existing entry rather than creating a second one — integration test
 - [ ] An unauthenticated request to any cellar endpoint is rejected, while
       `/api/v1/beers` still answers anonymously — one test covering both, so
       locking down the cellar cannot silently lock down the catalog
