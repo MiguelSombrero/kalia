@@ -108,7 +108,10 @@ Why the rationale lives there and not here:
   ([ADR-0010](../docs/adr/0010-react-hook-form-zod.md)).
 - **The generated API client** (`lib/api/generated/`) is never imported outside
   `features/<feature>/`; each feature's `api.ts` wraps it
-  ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+  ([ADR-0012](../docs/adr/0012-orval-api-client.md)). It is also never edited
+  by hand — regenerate it with `npm run generate:api`. `.claude/settings.json`
+  denies agents `Edit` there, since a regeneration discards a hand-edit without
+  a word.
 - **API failures are a tagged `ApiError`** — branch on `e.kind`, never a
   message. A non-2xx status is *not* raised: a 404 from `getBeer` means "no
   such beer" ([ADR-0023](../docs/adr/0023-typed-api-failures.md)).

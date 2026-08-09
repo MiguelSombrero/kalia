@@ -19,6 +19,10 @@ build/
 # Local CLI state (e.g. gh device id) — per-machine, never shared
 .local/
 
+# Per-session agent worktrees (see CLAUDE.md "Parallel sessions") — a working
+# checkout each, never shared history
+.claude/worktrees/
+
 # AI-agent working docs (superpowers skill: brainstorming companion,
 # specs, implementation plans) — process scratch, not project
 # documentation. Durable design decisions belong in docs/ (ADRs,

@@ -129,3 +129,6 @@ to bound.
   process must earn its place against the task.
 - [ADR-0032](0032-when-a-decision-earns-an-adr.md) — when a decision earns an
   ADR, and why related decisions are grouped by this index rather than merged.
+- [ADR-0034](0034-agent-context-layout.md) — `backend/` and `frontend/` each
+  carry a `CLAUDE.md` importing their README, so the conventions load with the
+  subtree; and which monorepo optimizations this repository declines.

@@ -51,6 +51,15 @@ before making changes:
 - [frontend/README.md](frontend/README.md) — run/test commands,
   feature-package conventions, TanStack Query/Zustand/i18next usage
 
+Both READMEs load on their own once you touch their subtree — `backend/`
+and `frontend/` each carry a `CLAUDE.md` that imports theirs
+([ADR-0034](docs/adr/0034-agent-context-layout.md)). A nested file is *not*
+re-injected after `/compact`, so the one rule that must never be lost is
+repeated here: **this Next.js version postdates model training — check
+`frontend/node_modules/next/dist/docs/` before relying on memory about it.**
+Guessing fails silently rather than erroring (`middleware.ts` is `proxy.ts`
+here, and the app still builds).
+
 ## Commands
 
 From the repository root — the parentheses matter, a bare `cd` persists into
@@ -105,11 +114,16 @@ Two things that fail silently if you skip them:
   directory race on its single `HEAD`/index — a `checkout` from one session
   can interleave with a `commit` from the other and misattribute the commit
   to the wrong branch. Before starting a session whose task doesn't depend
-  on another session's in-flight work, give it its own worktree:
-  `git worktree add ../kalia-<topic> -b <branch> dev`, point that session's
-  working directory at the new path, and `git worktree remove` it once its
-  PR merges. Worktrees share one object database, so this costs no extra
-  clone — only isolation.
+  on another session's in-flight work, give it its own worktree. Claude Code
+  creates one under `.claude/worktrees/<name>/` — ask it to work in a
+  worktree, or start the session with `claude --worktree <name>`; branch off
+  `dev` there. `git worktree add` still works when you need the checkout
+  somewhere else. Either way, `git worktree remove` it once its PR merges.
+  Claude Code's periodic sweep will not do it for you: it skips any worktree
+  still holding uncommitted or unpushed work, which is every task worktree,
+  and never touches one a session was started in. A stale one costs ~640 MB
+  the moment `npm install` has run there. Worktrees share one object
+  database, so this costs no extra clone — only isolation.
 - Test-first: write or update tests with the code; all suites green before
   a PR. Verify changes by actually running them (e.g. `docker compose up`,
   hitting the endpoint), not just by compiling.
@@ -263,8 +277,9 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
 
 ## Repository layout
 
-- `backend/` — Spring Boot modulith (Java, Maven)
-- `frontend/` — Next.js (TypeScript)
+- `backend/` — Spring Boot modulith (Java, Maven). Its `CLAUDE.md` imports
+  `backend/README.md`, so those conventions load once you touch the subtree
+- `frontend/` — Next.js (TypeScript). Same, plus `frontend/AGENTS.md`
 - `docs/` — architecture, roadmap, per-iteration tasks, ADRs
 - `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend +
   Keycloak + Valkey). Frontend (`:3000`) and backend (`:8080`, for direct
@@ -276,6 +291,10 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   Actions dependencies
 - `.claude/skills/quality-sweep/SKILL.md` — periodic quality sweep (see
   Quality checks above)
+- `.claude/settings.json` — committed agent settings. Currently one
+  `permissions.deny` rule making the generated API client read-only
+  ([ADR-0012](docs/adr/0012-orval-api-client.md)). `settings.local.json`
+  beside it is per-machine and gitignored
 
 ## Environment notes
 
