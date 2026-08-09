@@ -79,10 +79,10 @@ moment one bottle from a batch is removed or edited on its own.
   about the app's scale today suggests that matters; worth remembering if
   per-user list rendering or storage ever becomes a question.
 - **Revisit trigger:** if bulk-add's UX in [task
-  03](../tasks/iteration-5/03-cellar-frontend.md) turns out to feel wrong even
-  as one action — e.g. if rendering 24 rows is itself the complaint — that is
-  a presentation-layer problem to solve at that layer, not a reason to reopen
-  this schema decision.
+  13](../tasks/iteration-5/13-add-bottle-to-cellar.md) turns out to feel wrong
+  even as one action — e.g. if rendering 24 rows is itself the complaint —
+  that is a presentation-layer problem to solve at that layer, not a reason
+  to reopen this schema decision.
 
 ## Evidence
 

@@ -25,7 +25,8 @@ user's rows.
 
 ## Non-goals
 
-- UI — [task 03](03-cellar-frontend.md).
+- UI — [task 11](11-cellar-page.md), [task 13](13-add-bottle-to-cellar.md),
+  [task 14](14-edit-remove-bottle.md).
 - Reading someone else's cellar. Public cellars are real and coming, but they
   are a visibility model this task has no input for —
   [iteration 6](../iteration-6.md) owns them. Until then every cellar endpoint

@@ -38,7 +38,7 @@ the app already has, including the case where the cellar is not public.
 - The feature package follows whatever
   [iteration 5 task 06](../iteration-5/06-feature-public-surfaces.md) settles
   for public surfaces, and reuses the cellar rendering
-  [iteration 5 task 03](../iteration-5/03-cellar-frontend.md) built rather than
+  [iteration 5 task 11](../iteration-5/11-cellar-page.md) built rather than
   duplicating it.
 - Loading, error and empty states follow
   [ADR-0022](../../adr/0022-loading-error-empty-states.md).

@@ -14,7 +14,7 @@ be changed without checking every call site across the app by hand. This
 turns from a tidiness concern into real risk once `cellar` exists as the
 second feature package and `app/` needs to compose across both, per the
 `app/`-composes direction already set for
-[task 03](03-cellar-frontend.md)'s cross-feature dependency.
+[task 13](13-add-bottle-to-cellar.md)'s cross-feature dependency.
 
 ## Scope
 
@@ -28,8 +28,8 @@ feature's internals from outside it.
 - Restructuring what lives inside a feature package — no observed problem
   this would fix.
 - Choosing the `catalog`/`cellar` composition contract itself — that is
-  [task 03](03-cellar-frontend.md)'s open question; this task only makes the
-  mechanism available for it to use.
+  [task 13](13-add-bottle-to-cellar.md)'s open question; this task only makes
+  the mechanism available for it to use.
 - The rest of the frontend's module-boundary enforcement (feature-to-feature,
   generated-client imports) — [task 05](05-enforce-frontend-module-boundaries.md).
 
@@ -54,7 +54,8 @@ feature's internals from outside it.
    what is public by intent versus by accident.
 2. Should this land ahead of `cellar` existing (on `catalog`/`auth`/`i18n`
    alone), or would the product owner rather see the pattern proven with two
-   feature packages at once, as part of [task 03](03-cellar-frontend.md)?
+   feature packages at once, as part of
+   [task 13](13-add-bottle-to-cellar.md)?
 
 ## Acceptance criteria
 

@@ -1,6 +1,6 @@
 # Task 03: Cellar page and add-to-cellar from the catalog
 
-- **Status:** needs-refinement
+- **Status:** dropped
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -112,3 +112,15 @@ constraint above.
 The E2E journey here is the one iteration 5 originally listed as a separate
 task; it belongs to the task that creates the behaviour
 ([ADR-0026](../../adr/0026-task-file-format.md)).
+
+**Split before refinement (2026-08-09).** Open question 8 above flagged that
+this task bundled five "firsts" — the first real TanStack Query use, the
+first Zustand store, the first stateful react-hook-form + Zod form, the
+first cross-feature dependency (catalog → cellar), and the first
+authenticated UI — plus navigation, which this task never scoped at all.
+A frontend-modularity review named that convergence the iteration's largest
+risk. Rather than refine it as written, the product owner had it split into
+[task 11](11-cellar-page.md) (cellar page), [task 12](12-cellar-navigation.md)
+(navigation), [task 13](13-add-bottle-to-cellar.md) (add-to-cellar) and
+[task 14](14-edit-remove-bottle.md) (edit/remove a bottle). This file is kept,
+`dropped`, as the historical record of the original request.

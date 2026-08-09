@@ -37,7 +37,8 @@ the one-row-per-beer-with-a-quantity model `architecture.md` specified until
 ## Non-goals
 
 - The REST API — [task 02](02-cellar-rest-api.md).
-- Any UI — [task 03](03-cellar-frontend.md).
+- Any UI — [task 11](11-cellar-page.md), [task 13](13-add-bottle-to-cellar.md),
+  [task 14](14-edit-remove-bottle.md).
 - Resolving the current user from a token: that is `identity`'s job, delivered
   by [iteration 4 task 3](../iteration-4.md).
 
