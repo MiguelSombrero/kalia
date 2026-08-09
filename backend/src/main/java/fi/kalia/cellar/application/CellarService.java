@@ -92,9 +92,19 @@ public class CellarService {
 		return bottles.saveAll(created);
 	}
 
+	/**
+	 * Deletes {@code bottle} explicitly rather than relying solely on
+	 * {@code Entry.removeBottle}'s orphan-removal cascade: on the common case
+	 * of a fresh request, {@code entry.getBottles()} is not yet loaded, and
+	 * Hibernate only cascades an orphan delete for a collection it already
+	 * initialized. Calling both is safe — Hibernate treats a second delete of
+	 * an entity already marked removed as a no-op, so this never issues two
+	 * {@code DELETE} statements.
+	 */
 	public void removeBottle(UUID userId, UUID bottleId) {
 		Bottle bottle = findOwnedBottle(userId, bottleId);
 		bottle.getEntry().removeBottle(bottle);
+		bottles.delete(bottle);
 	}
 
 	/**

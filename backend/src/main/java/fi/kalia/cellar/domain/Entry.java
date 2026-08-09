@@ -16,6 +16,7 @@ import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -74,8 +75,18 @@ public class Entry {
 				.toList();
 	}
 
+	/**
+	 * Do not call this alone to delete a bottle's row. On an uninitialized
+	 * {@code bottles} it is a no-op by design — touching the collection here
+	 * would load every bottle for this entry just to find the one to remove
+	 * — so deleting the row for real also requires the explicit repository
+	 * delete in {@link fi.kalia.cellar.application.CellarService#removeBottle},
+	 * which every current caller goes through.
+	 */
 	public void removeBottle(Bottle bottle) {
-		bottles.remove(bottle);
+		if (Hibernate.isInitialized(bottles)) {
+			bottles.remove(bottle);
+		}
 	}
 
 	void registerBottle(Bottle bottle) {
