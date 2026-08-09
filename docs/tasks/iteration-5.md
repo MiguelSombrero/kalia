@@ -19,6 +19,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | needs-refinement |
 | [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | needs-refinement |
 | [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | needs-refinement |
+| [09](iteration-5/09-bottle-beer-naming.md) | Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog` | needs-refinement |
 
 ## Maintenance
 
@@ -40,3 +41,8 @@ The Playwright journey this iteration originally listed as a fourth task now
 belongs to the task that creates the behaviour, per
 [ADR-0026](../adr/0026-task-file-format.md) — sign in → add → edit → remove is
 an acceptance criterion of task 03.
+
+Task 09 was raised in review of task 01 (PR #114): whether `cellar.Bottle`
+and `catalog.Beer` are named correctly relative to each other. Not a hard
+blocker on tasks 02/03, but resolving it before they name REST fields, DTOs
+and UI copy avoids naming those twice.
