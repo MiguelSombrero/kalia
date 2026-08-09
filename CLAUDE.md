@@ -53,7 +53,7 @@ before making changes:
 
 Both READMEs load on their own once you touch their subtree — `backend/`
 and `frontend/` each carry a `CLAUDE.md` that imports theirs
-([ADR-0034](docs/adr/0034-agent-context-layout.md)). A nested file is *not*
+([ADR-0035](docs/adr/0035-agent-context-layout.md)). A nested file is *not*
 re-injected after `/compact`, so the one rule that must never be lost is
 repeated here: **this Next.js version postdates model training — check
 `frontend/node_modules/next/dist/docs/` before relying on memory about it.**

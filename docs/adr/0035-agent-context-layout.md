@@ -1,4 +1,4 @@
-# ADR-0034: Per-directory CLAUDE.md files are pointers to their README, not copies of it
+# ADR-0035: Per-directory CLAUDE.md files are pointers to their README, not copies of it
 
 - **Status:** accepted
 - **Date:** 2026-08-09
