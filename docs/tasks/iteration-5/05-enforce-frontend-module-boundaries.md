@@ -35,7 +35,7 @@ frontend's already-documented import rules: `app/` may import `features/`,
 
 - Deciding *how* `catalog` and `cellar` compose across the boundary this task
   enforces — that belongs to
-  [iteration-5/03](03-cellar-frontend.md)'s refinement conversation.
+  [task 13](13-add-bottle-to-cellar.md)'s refinement conversation.
 - Giving features a public `index.ts` — [task 06](06-feature-public-surfaces.md).
 - Restructuring what lives inside a feature package (`api/`, `components/`,
   `hooks/` subfolders) — no observed problem this would fix.
@@ -63,9 +63,9 @@ frontend's already-documented import rules: `app/` may import `features/`,
 2. Should this rule set get its own ADR, or amend ADR-0012 (which already
    states the one rule this task enforces first)?
 3. Should this land as a merged prerequisite before
-   [task 03](03-cellar-frontend.md) starts, so the second feature package is
+   [task 11](11-cellar-page.md) starts, so the second feature package is
    created under an enforced boundary rather than retrofitted into one, or can
-   the two proceed in parallel since 03 is still `needs-refinement`?
+   the two proceed in parallel since 11 is still `needs-refinement`?
 
 ## Acceptance criteria
 
