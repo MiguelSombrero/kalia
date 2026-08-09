@@ -77,7 +77,7 @@ class KaliaApplicationIT {
 		List<String> schemas = jdbcTemplate.queryForList(
 				"SELECT schema_name FROM information_schema.schemata", String.class);
 
-		assertThat(schemas).contains("catalog", "cart", "ordering", "payment");
+		assertThat(schemas).contains("catalog", "cart", "ordering", "payment", "cellar");
 	}
 
 }

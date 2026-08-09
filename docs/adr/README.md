@@ -47,6 +47,12 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0006](0006-cellar-first.md) — authentication then the personal cellar.
   *(Amended: the store and reviews questions it defers are closed.)*
 
+## Cellar
+
+- [ADR-0034](0034-cellar-two-level-bottle-model.md) — the cellar holds one row
+  per bottle, owned by an entry per (user, catalog beer); quantity is always
+  derived, never a stored count.
+
 ## Backend structure and conventions
 
 - [ADR-0007](0007-backend-package-structure.md) — DDD-lite layers
