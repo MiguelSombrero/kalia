@@ -127,6 +127,11 @@ Flyway owns the schema (`ddl-auto=validate`). Locations under
 Version numbers (`V001`, `V002`, …) are **globally unique across all
 directories** — take the next free number regardless of directory.
 
+Forward-only: an applied migration is never edited, and undoing one is a new
+migration — except before Kalia's first deployment, where editing history
+directly is allowed under narrow conditions
+([ADR-0036](../docs/adr/0036-pre-deployment-migration-edits.md)).
+
 ## Code conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning —

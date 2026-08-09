@@ -61,6 +61,9 @@ nobody has committed to becomes a constraint anyway.
   calls, and what each level means.
 - [ADR-0014](0014-shared-exception-handling.md) — one shared advice handling
   only the two cases Spring Boot reports without field-level detail.
+- [ADR-0036](0036-pre-deployment-migration-edits.md) — before Kalia is
+  deployed anywhere, an applied Flyway migration may be edited directly
+  rather than reversed forward.
 
 ## Frontend structure and conventions
 
