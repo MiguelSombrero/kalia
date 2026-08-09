@@ -2,6 +2,24 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
+> **Status:** iterations 0–4 complete — a visitor can browse and search the
+> seeded beer catalog end to end (verified: find "Westvleteren" by name,
+> filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
+> design system (tokens, shared primitives, loading/error/empty states,
+> WCAG 2.1 AA), production-readiness foundations (logging, exception
+> handling, config, security headers, dependency scanning) are in place, and
+> users can sign in and out via Keycloak. Next: the personal beer cellar
+> (iteration 5). Implementation proceeds one issue at a time. See
+> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
+
+## Goal
+
+Kalia is hobby project developed with AI agents, focusing on the development process rather than fast-to-market. The main goals for this project is to:
+
+1. create solid agentic development process which ensures the quality of the product (no drift between documentation and implementation, comprehensive tests etc.)
+
+2. production-grade standards for architecture, design and code.
+
 ## Vision
 
 Kalia is a social platform for beer enthusiasts, built around the beer cellar.
@@ -12,7 +30,7 @@ keeps that record, and makes it something you can share.
 
 Three things carry the product:
 
-- **The cellar** — the reason Kalia exists. A cellar holds *bottles*, not just
+- **The cellar** — the reason Kalia exists. A cellar holds _bottles_, not just
   beers: an AleSmith IPA brewed in January 2026 is a different thing from one
   brewed two years earlier, and a cellar that cannot tell them apart is a list,
   not a cellar. Yours is private until you decide otherwise; a public cellar is
@@ -27,13 +45,9 @@ Three things carry the product:
 
 And what Kalia deliberately is not. **It is not a beer review platform** —
 Untappd and Pint Please do that well and Kalia will not compete with them. A
-rating is a number Kalia *shows*, sourced from elsewhere, never one it collects.
+rating is a number Kalia _shows_, sourced from elsewhere, never one it collects.
 **It is not a beer shop** either; at most, some distant day, it may tell you
 where a beer can be bought and for how much.
-
-## Goal
-
-Kalia is developed with AI agents focusing on the development process rather than fast-to-market. The main goals for this project is to (1) create solid agentic development process which ensures the quality of the product (no drift between documentation and implementation, comprehensive tests etc.); (2) production-grade standards for architecture, design and code.
 
 ## Roles
 
@@ -54,16 +68,6 @@ code and merges pull requests. Does not write code.
   the pull request.
 - **Reviewer** — runs the code-review gate on every diff and the periodic
   quality sweep, and treats review comments as a dialogue, not instructions.
-
-> **Status:** iterations 0–4 complete — a visitor can browse and search the
-> seeded beer catalog end to end (verified: find "Westvleteren" by name,
-> filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
-> design system (tokens, shared primitives, loading/error/empty states,
-> WCAG 2.1 AA), production-readiness foundations (logging, exception
-> handling, config, security headers, dependency scanning) are in place, and
-> users can sign in and out via Keycloak. Next: the personal beer cellar
-> (iteration 5). Implementation proceeds one issue at a time. See
-> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
 
 ## Run locally
 
@@ -96,15 +100,15 @@ In roadmap order, a user can:
 - View beer details (brewery, country, style, ABV, description, price)
 - Sign in with Keycloak
 - Maintain a personal beer cellar: the bottles they own, each with its brewed
-  and best-before dates, grouped by beer *(iteration 5)*
+  and best-before dates, grouped by beer _(iteration 5)_
 
 Then:
 
 - A user profile, and a cellar that is private by default but can be made
-  public and browsed by anyone *(iteration 6)*
-- A front-page feed of what people are adding to their cellars *(iteration 7)*
+  public and browsed by anyone _(iteration 6)_
+- A front-page feed of what people are adding to their cellars _(iteration 7)_
 - A catalog that grows past its seed data, with users adding the beers they
-  cannot find *(iteration 8)*
+  cannot find _(iteration 8)_
 
 Further out, in the [backlog](docs/tasks/backlog.md): beer ratings sourced from
 an external platform, likes and comments on feed events, and — dependent on
