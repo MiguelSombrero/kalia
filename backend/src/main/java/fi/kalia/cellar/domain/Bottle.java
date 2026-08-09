@@ -63,13 +63,26 @@ public class Bottle {
 			@Nullable LocalDate bestBeforeDate) {
 		Assert.notNull(entry, "entry must not be null");
 		Assert.notNull(containerType, "containerType must not be null");
+		requireValidDates(brewedDate, bestBeforeDate);
+		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate);
+		entry.registerBottle(bottle);
+		return bottle;
+	}
+
+	public void update(ContainerType containerType, @Nullable LocalDate brewedDate,
+			@Nullable LocalDate bestBeforeDate) {
+		Assert.notNull(containerType, "containerType must not be null");
+		requireValidDates(brewedDate, bestBeforeDate);
+		this.containerType = containerType;
+		this.brewedDate = brewedDate;
+		this.bestBeforeDate = bestBeforeDate;
+	}
+
+	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Assert.isTrue(brewedDate == null || !brewedDate.isAfter(LocalDate.now()),
 				"brewedDate must not be in the future");
 		Assert.isTrue(brewedDate == null || bestBeforeDate == null || bestBeforeDate.isAfter(brewedDate),
 				"bestBeforeDate must be after brewedDate");
-		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate);
-		entry.registerBottle(bottle);
-		return bottle;
 	}
 
 }

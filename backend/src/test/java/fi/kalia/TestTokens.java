@@ -29,4 +29,21 @@ public final class TestTokens {
 				.build();
 	}
 
+	/**
+	 * A second, distinct caller — for asserting that one user's token cannot
+	 * reach another's data.
+	 */
+	public static Jwt user(String subject, String username) {
+		return Jwt.withTokenValue("token")
+				.header("alg", "RS256")
+				.subject(subject)
+				.claim("aud", List.of("kalia-backend"))
+				.claim("preferred_username", username)
+				.claim("email", username + "@example.com")
+				.claim("name", username)
+				.issuedAt(Instant.now())
+				.expiresAt(Instant.now().plusSeconds(300))
+				.build();
+	}
+
 }
