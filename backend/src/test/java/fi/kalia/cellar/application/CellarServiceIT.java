@@ -12,18 +12,24 @@ import fi.kalia.cellar.domain.BottleRepository;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
+@TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 class CellarServiceIT {
 
 	@Autowired
@@ -34,6 +40,12 @@ class CellarServiceIT {
 
 	@Autowired
 	private BeerRepository beers;
+
+	@Autowired
+	private TestEntityManager testEntityManager;
+
+	@Autowired
+	private EntityManagerFactory entityManagerFactory;
 
 	private CellarService service;
 
@@ -82,6 +94,57 @@ class CellarServiceIT {
 		assertThat(afterRemoval.quantity()).isEqualTo(5);
 		assertThat(bottles.existsById(created.get(0).getId())).isFalse();
 		assertThat(bottles.existsById(created.get(1).getId())).isTrue();
+	}
+
+	/**
+	 * Clearing the persistence context between setup and the removal call
+	 * forces {@code bottle.getEntry()} to come back as an uninitialized
+	 * proxy, matching a fresh HTTP request — the scenario the stale
+	 * in-memory {@code entry.getBottles()} from bulk-add setup would hide.
+	 */
+	@Test
+	void removingABottleDoesNotLoadTheEntrysWholeBottleCollection() {
+		UUID userId = UUID.randomUUID();
+		List<Bottle> created = service.addBottles(userId, beerId, 6, ContainerType.BOTTLE, null, null);
+		UUID removedBottleId = created.get(0).getId();
+		testEntityManager.flush();
+		testEntityManager.clear();
+		Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+		statistics.clear();
+
+		service.removeBottle(userId, removedBottleId);
+		testEntityManager.flush();
+
+		assertThat(statistics.getCollectionLoadCount())
+				.as("removing one bottle by id should not load the whole bottles collection")
+				.isZero();
+		assertThat(statistics.getEntityDeleteCount())
+				.as("the explicit repository delete and the orphan-removal cascade must not both fire")
+				.isEqualTo(1);
+		assertThat(bottles.existsById(removedBottleId)).isFalse();
+	}
+
+	/**
+	 * The other branch of {@code Entry.removeBottle}'s {@code
+	 * Hibernate.isInitialized} check: here the collection is already loaded,
+	 * so both the orphan-removal cascade and the explicit repository delete
+	 * schedule a removal for the same row.
+	 */
+	@Test
+	void removingABottleFromAnAlreadyLoadedCollectionIssuesOnlyOneDelete() {
+		UUID userId = UUID.randomUUID();
+		List<Bottle> created = service.addBottles(userId, beerId, 3, ContainerType.BOTTLE, null, null);
+		Entry entry = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow();
+		assertThat(entry.quantity()).isEqualTo(3);
+		Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+		statistics.clear();
+
+		service.removeBottle(userId, created.get(0).getId());
+		testEntityManager.flush();
+
+		assertThat(statistics.getEntityDeleteCount())
+				.as("the orphan-removal cascade and the explicit repository delete must not both fire")
+				.isEqualTo(1);
 	}
 
 	@Test
