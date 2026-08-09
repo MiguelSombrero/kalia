@@ -17,6 +17,8 @@ export * from './currentUserDto';
 export * from './entryDto';
 export * from './moneyDto';
 export * from './pageDtoBeerSummaryDto';
+export * from './problemDetail';
+export * from './problemDetailProperties';
 export * from './searchBeersParams';
 export * from './updateBottleRequestDto';
 export * from './updateBottleRequestDtoContainerType';

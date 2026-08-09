@@ -54,6 +54,20 @@ class OpenApiDocumentationIT {
 				.containsExactlyInAnyOrder("id", "entryId", "containerType", "createdAt", "updatedAt");
 	}
 
+	@Test
+	void everyOperationDocumentsItsSuccessResponse() {
+		String body = apiDocs();
+
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar'].get.responses.200")).isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/entries/{entryId}/bottles'].get.responses.200"))
+				.isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles'].post.responses.201")).isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].patch.responses.200"))
+				.isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].delete.responses.204"))
+				.isNotNull();
+	}
+
 	private String apiDocs() {
 		return client.get().uri("/v3/api-docs")
 				.exchange()

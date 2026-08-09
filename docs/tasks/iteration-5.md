@@ -20,6 +20,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | needs-refinement |
 | [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | needs-refinement |
 | [09](iteration-5/09-bottle-beer-naming.md) | Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog` | needs-refinement |
+| [10](iteration-5/10-swagger-oauth2-authorization.md) | Swagger UI OAuth2 authorization for authenticated endpoints | needs-refinement |
 
 ## Maintenance
 
@@ -46,3 +47,7 @@ Task 09 was raised in review of task 01 (PR #114): whether `cellar.Bottle`
 and `catalog.Beer` are named correctly relative to each other. Not a hard
 blocker on tasks 02/03, but resolving it before they name REST fields, DTOs
 and UI copy avoids naming those twice.
+
+Task 10 was raised in review of task 02 (PR #120): Swagger UI has no way to
+obtain a token for the cellar's now-authenticated endpoints. Not a blocker on
+anything else in this iteration.

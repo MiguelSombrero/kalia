@@ -27,6 +27,7 @@ import type {
   AddBottleRequestDto,
   BottleDto,
   EntryDto,
+  ProblemDetail,
   UpdateBottleRequestDto
 } from '../models';
 
@@ -57,12 +58,29 @@ export type addBottleResponse201 = {
   status: 201
 }
 
+export type addBottleResponse400 = {
+  data: ProblemDetail
+  status: 400
+}
+
+export type addBottleResponse401 = {
+  data: void
+  status: 401
+}
+
+export type addBottleResponse404 = {
+  data: ProblemDetail
+  status: 404
+}
+
 export type addBottleResponseSuccess = (addBottleResponse201) & {
   headers: Headers;
 };
-;
+export type addBottleResponseError = (addBottleResponse400 | addBottleResponse401 | addBottleResponse404) & {
+  headers: Headers;
+};
 
-export type addBottleResponse = (addBottleResponseSuccess)
+export type addBottleResponse = (addBottleResponseSuccess | addBottleResponseError)
 
 export const getAddBottleUrl = () => {
 
@@ -91,7 +109,7 @@ export const addBottle = async (addBottleRequestDto: AddBottleRequestDto, option
 
 
 
-export const getAddBottleMutationOptions = <TError = unknown,
+export const getAddBottleMutationOptions = <TError = ProblemDetail | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottle>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof addBottle>>, TError,{data: AddBottleRequestDto}, TContext> => {
 
@@ -120,12 +138,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AddBottleMutationResult = NonNullable<Awaited<ReturnType<typeof addBottle>>>
     export type AddBottleMutationBody = AddBottleRequestDto
-    export type AddBottleMutationError = unknown
+    export type AddBottleMutationError = ProblemDetail | void
 
     /**
  * @summary Add a bottle
  */
-export const useAddBottle = <TError = unknown,
+export const useAddBottle = <TError = ProblemDetail | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottle>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof addBottle>>,
@@ -140,12 +158,24 @@ export const useAddBottle = <TError = unknown,
   status: 204
 }
 
+export type removeBottleResponse401 = {
+  data: void
+  status: 401
+}
+
+export type removeBottleResponse404 = {
+  data: ProblemDetail
+  status: 404
+}
+
 export type removeBottleResponseSuccess = (removeBottleResponse204) & {
   headers: Headers;
 };
-;
+export type removeBottleResponseError = (removeBottleResponse401 | removeBottleResponse404) & {
+  headers: Headers;
+};
 
-export type removeBottleResponse = (removeBottleResponseSuccess)
+export type removeBottleResponse = (removeBottleResponseSuccess | removeBottleResponseError)
 
 export const getRemoveBottleUrl = (id: string,) => {
 
@@ -174,7 +204,7 @@ export const removeBottle = async (id: string, options?: Parameters<typeof kalia
 
 
 
-export const getRemoveBottleMutationOptions = <TError = unknown,
+export const getRemoveBottleMutationOptions = <TError = void | ProblemDetail,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,{id: string}, TContext> => {
 
@@ -203,12 +233,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type RemoveBottleMutationResult = NonNullable<Awaited<ReturnType<typeof removeBottle>>>
 
-    export type RemoveBottleMutationError = unknown
+    export type RemoveBottleMutationError = void | ProblemDetail
 
     /**
  * @summary Remove a bottle
  */
-export const useRemoveBottle = <TError = unknown,
+export const useRemoveBottle = <TError = void | ProblemDetail,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof removeBottle>>,
@@ -223,12 +253,29 @@ export const useRemoveBottle = <TError = unknown,
   status: 200
 }
 
+export type updateBottleResponse400 = {
+  data: ProblemDetail
+  status: 400
+}
+
+export type updateBottleResponse401 = {
+  data: void
+  status: 401
+}
+
+export type updateBottleResponse404 = {
+  data: ProblemDetail
+  status: 404
+}
+
 export type updateBottleResponseSuccess = (updateBottleResponse200) & {
   headers: Headers;
 };
-;
+export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404) & {
+  headers: Headers;
+};
 
-export type updateBottleResponse = (updateBottleResponseSuccess)
+export type updateBottleResponse = (updateBottleResponseSuccess | updateBottleResponseError)
 
 export const getUpdateBottleUrl = (id: string,) => {
 
@@ -258,7 +305,7 @@ export const updateBottle = async (id: string,
 
 
 
-export const getUpdateBottleMutationOptions = <TError = unknown,
+export const getUpdateBottleMutationOptions = <TError = ProblemDetail | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,{id: string;data: UpdateBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,{id: string;data: UpdateBottleRequestDto}, TContext> => {
 
@@ -287,12 +334,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateBottleMutationResult = NonNullable<Awaited<ReturnType<typeof updateBottle>>>
     export type UpdateBottleMutationBody = UpdateBottleRequestDto
-    export type UpdateBottleMutationError = unknown
+    export type UpdateBottleMutationError = ProblemDetail | void
 
     /**
  * @summary Update a bottle
  */
-export const useUpdateBottle = <TError = unknown,
+export const useUpdateBottle = <TError = ProblemDetail | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,{id: string;data: UpdateBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateBottle>>,
@@ -307,12 +354,19 @@ export const useUpdateBottle = <TError = unknown,
   status: 200
 }
 
+export type listEntriesResponse401 = {
+  data: void
+  status: 401
+}
+
 export type listEntriesResponseSuccess = (listEntriesResponse200) & {
   headers: Headers;
 };
-;
+export type listEntriesResponseError = (listEntriesResponse401) & {
+  headers: Headers;
+};
 
-export type listEntriesResponse = (listEntriesResponseSuccess)
+export type listEntriesResponse = (listEntriesResponseSuccess | listEntriesResponseError)
 
 export const getListEntriesUrl = () => {
 
@@ -348,7 +402,7 @@ export const getListEntriesQueryKey = () => {
     }
 
 
-export const getListEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listEntries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listEntries>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -367,10 +421,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListEntriesQueryResult = NonNullable<Awaited<ReturnType<typeof listEntries>>>
-export type ListEntriesQueryError = unknown
+export type ListEntriesQueryError = void
 
 
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = unknown>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listEntries>>,
@@ -380,7 +434,7 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = unknown>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listEntries>>,
@@ -390,7 +444,7 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = unknown>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -398,7 +452,7 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
  * @summary List the caller's cellar
  */
 
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = unknown>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -420,12 +474,24 @@ export type listBottlesResponse200 = {
   status: 200
 }
 
+export type listBottlesResponse401 = {
+  data: void
+  status: 401
+}
+
+export type listBottlesResponse404 = {
+  data: ProblemDetail
+  status: 404
+}
+
 export type listBottlesResponseSuccess = (listBottlesResponse200) & {
   headers: Headers;
 };
-;
+export type listBottlesResponseError = (listBottlesResponse401 | listBottlesResponse404) & {
+  headers: Headers;
+};
 
-export type listBottlesResponse = (listBottlesResponseSuccess)
+export type listBottlesResponse = (listBottlesResponseSuccess | listBottlesResponseError)
 
 export const getListBottlesUrl = (entryId: string,) => {
 
@@ -461,7 +527,7 @@ export const getListBottlesQueryKey = (entryId: string,) => {
     }
 
 
-export const getListBottlesQueryOptions = <TData = Awaited<ReturnType<typeof listBottles>>, TError = unknown>(entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListBottlesQueryOptions = <TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -480,10 +546,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListBottlesQueryResult = NonNullable<Awaited<ReturnType<typeof listBottles>>>
-export type ListBottlesQueryError = unknown
+export type ListBottlesQueryError = void | ProblemDetail
 
 
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = unknown>(
+export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
  entryId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBottles>>,
@@ -493,7 +559,7 @@ export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = unknown>(
+export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
  entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBottles>>,
@@ -503,7 +569,7 @@ export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = unknown>(
+export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
  entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -511,7 +577,7 @@ export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, 
  * @summary List one entry's bottles
  */
 
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = unknown>(
+export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
  entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
