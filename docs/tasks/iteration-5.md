@@ -26,7 +26,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 
 | ID | Task | Status |
 |---|---|---|
-| [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | refined |
+| [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | done |
 
 Task 08 leads, ahead of the cellar work, because its deadline is external: the
 `.trivyignore` waivers it removes expire **2026-08-26**, and the vulnerability
