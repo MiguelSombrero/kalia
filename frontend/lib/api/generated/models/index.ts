@@ -5,11 +5,18 @@
  * OpenAPI spec version: v0
  */
 
+export * from './addBottleRequestDto';
+export * from './addBottleRequestDtoContainerType';
 export * from './beerDetailsDto';
 export * from './beerSummaryDto';
+export * from './bottleDto';
+export * from './bottleDtoContainerType';
 export * from './breweryDto';
 export * from './breweryRefDto';
 export * from './currentUserDto';
+export * from './entryDto';
 export * from './moneyDto';
 export * from './pageDtoBeerSummaryDto';
 export * from './searchBeersParams';
+export * from './updateBottleRequestDto';
+export * from './updateBottleRequestDtoContainerType';
