@@ -159,7 +159,15 @@ lives there rather than in this file.
   class, `@Operation` on every handler, `@Parameter` on every
   `@RequestParam`/`@PathVariable`, `@Schema` descriptions on DTOs. New
   endpoints and DTOs ship annotated — undocumented API surface is a gap, not
-  a later task.
+  a later task. Document each handler's response codes with `@ApiResponse`/
+  `@ApiResponses`; a response every handler in the controller shares (e.g.
+  401 on a controller where every route requires authentication) goes on the
+  class instead of repeating it per method.
+- **Text blocks (`"""`), not string concatenation, for a multiline string
+  literal** — including annotation values (`@Operation(description = """…""")`),
+  which accept a text block as a compile-time constant the same as any other
+  string literal. A trailing `\` at the end of a line suppresses that line's
+  newline, for a literal that should read as one continuous sentence.
 - **Every request parameter is bounded.** Numeric params carry both ends of
   their range (`@DecimalMin`/`@DecimalMax`, `@Min`/`@Max`) and free text
   carries `@Size`, so no caller can hand the database an unbounded or
@@ -202,6 +210,13 @@ rather than behind a link.
   type.** Two advice beans on one exception type is not a startup error —
   Spring resolves it silently by `@Order`, and `GlobalExceptionHandler` runs
   at `Ordered.HIGHEST_PRECEDENCE`, so it wins and masks the mistake.
+- **A handler with any `@ApiResponse` needs an explicit `@ResponseStatus`,
+  even one matching Spring's own default (`200`).** Without it, springdoc
+  stops synthesizing the success response from the return type the moment
+  any `@ApiResponse` applies to that operation — including one declared at
+  the class level — and silently drops the success response from
+  `/v3/api-docs` instead of adding to it. No compile error, no test failure
+  unless something asserts on the generated spec.
 
 ## Error-handling convention
 

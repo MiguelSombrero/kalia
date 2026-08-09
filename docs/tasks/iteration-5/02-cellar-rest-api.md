@@ -1,6 +1,6 @@
 # Task 02: Cellar REST API, scoped to the signed-in user
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -89,35 +89,35 @@ user's rows.
 
 ## Acceptance criteria
 
-- [ ] `GET /api/v1/cellar` returns the caller's entries, each with its derived
+- [x] `GET /api/v1/cellar` returns the caller's entries, each with its derived
       quantity and no bottle array — integration test, confirmed to fail
       against an implementation that embeds bottles in the list
-- [ ] `GET /api/v1/cellar/entries/{entryId}/bottles` returns that entry's
+- [x] `GET /api/v1/cellar/entries/{entryId}/bottles` returns that entry's
       bottles — integration test
-- [ ] `POST /api/v1/cellar/bottles` adds a bottle to a catalog beer; a second
+- [x] `POST /api/v1/cellar/bottles` adds a bottle to a catalog beer; a second
       bottle of a beer already in the cellar extends the existing entry
       rather than creating a second one; an id sent in the request body is
       ignored and the created bottle always gets a server-assigned id —
       integration test
-- [ ] `PATCH /api/v1/cellar/bottles/{id}` updates a bottle's brewed date,
+- [x] `PATCH /api/v1/cellar/bottles/{id}` updates a bottle's brewed date,
       best-before date and container type, and the change persists —
       integration test
-- [ ] `DELETE /api/v1/cellar/bottles/{id}` removes a bottle, and the entry's
+- [x] `DELETE /api/v1/cellar/bottles/{id}` removes a bottle, and the entry's
       derived quantity reflects the removal afterward — integration test
-- [ ] **A request carrying user A's token gets 404 — never 403 — for user B's
+- [x] **A request carrying user A's token gets 404 — never 403 — for user B's
       cellar entry or bottle**, for every item-scoped endpoint — integration
       test asserting the exact status code, confirmed to fail against an
       implementation that trusts a caller-supplied user id
-- [ ] An unauthenticated request to any cellar endpoint is rejected, while
+- [x] An unauthenticated request to any cellar endpoint is rejected, while
       `/api/v1/beers` still answers anonymously — one test covering both, so
       locking down the cellar cannot silently lock down the catalog
-- [ ] Adding a beer that does not exist in the catalog is refused with a
+- [x] Adding a beer that does not exist in the catalog is refused with a
       `problem+json` 400/404 rather than creating an orphan row — integration
       test
-- [ ] The generated OpenAPI client is regenerated and committed; the
+- [x] The generated OpenAPI client is regenerated and committed; the
       `api-client-drift` CI job passes
       ([ADR-0012](../../adr/0012-orval-api-client.md))
-- [ ] `mvn verify` green, module boundary tests unchanged
+- [x] `mvn verify` green, module boundary tests unchanged
 
 ## Notes
 

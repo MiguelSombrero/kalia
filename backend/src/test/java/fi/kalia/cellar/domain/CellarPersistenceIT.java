@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,51 @@ class CellarPersistenceIT {
 				"INSERT INTO cellar.bottle (entry_id, container_type) VALUES (?, ?)",
 				entry.getId(), "GROWLER"))
 				.isInstanceOf(DataAccessException.class);
+	}
+
+	@Test
+	void findByIdAndUserIdFindsNothingForAnotherUsersEntry() {
+		UUID owner = UUID.randomUUID();
+		Entry entry = entries.saveAndFlush(Entry.create(owner, UUID.randomUUID()));
+
+		assertThat(entries.findByIdAndUserId(entry.getId(), owner)).isPresent();
+		assertThat(entries.findByIdAndUserId(entry.getId(), UUID.randomUUID())).isEmpty();
+	}
+
+	@Test
+	void findSummariesByUserIdReportsDerivedQuantityWithoutLoadingBottles() {
+		UUID userId = UUID.randomUUID();
+		Entry withTwoBottles = entries.save(Entry.create(userId, UUID.randomUUID()));
+		Bottle.create(withTwoBottles, ContainerType.BOTTLE, null, null);
+		Bottle.create(withTwoBottles, ContainerType.CAN, null, null);
+		Entry empty = entries.save(Entry.create(userId, UUID.randomUUID()));
+		entries.saveAll(List.of(withTwoBottles, empty));
+		entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID())); // another user
+
+		List<EntrySummary> summaries = entries.findSummariesByUserId(userId);
+
+		assertThat(summaries).hasSize(2);
+		assertThat(summaries)
+				.filteredOn(s -> s.getId().equals(withTwoBottles.getId()))
+				.extracting(EntrySummary::getQuantity)
+				.containsExactly(2L);
+		assertThat(summaries)
+				.filteredOn(s -> s.getId().equals(empty.getId()))
+				.extracting(EntrySummary::getQuantity)
+				.containsExactly(0L);
+	}
+
+	@Test
+	void findByEntryIdOrderByCreatedAtReturnsOnlyThatEntrysBottles() {
+		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		Bottle first = bottles.saveAndFlush(Bottle.create(entry, ContainerType.BOTTLE, null, null));
+		Bottle second = bottles.saveAndFlush(Bottle.create(entry, ContainerType.CAN, null, null));
+		Entry otherEntry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		bottles.saveAndFlush(Bottle.create(otherEntry, ContainerType.KEG, null, null));
+
+		List<Bottle> result = bottles.findByEntryIdOrderByCreatedAt(entry.getId());
+
+		assertThat(result).containsExactly(first, second);
 	}
 
 }

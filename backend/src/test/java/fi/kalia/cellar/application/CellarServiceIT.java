@@ -12,7 +12,9 @@ import fi.kalia.cellar.domain.BottleRepository;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
+import fi.kalia.cellar.domain.EntrySummary;
 import jakarta.persistence.EntityManagerFactory;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.hibernate.SessionFactory;
@@ -163,6 +165,71 @@ class CellarServiceIT {
 		assertThatThrownBy(() -> service.removeBottle(UUID.randomUUID(), bottle.getId()))
 				.isInstanceOf(BottleNotFoundException.class);
 		assertThat(bottles.existsById(bottle.getId())).isTrue();
+	}
+
+	@Test
+	void listEntriesReportsOnlyTheCallersEntriesWithTheirDerivedQuantity() {
+		UUID owner = UUID.randomUUID();
+		service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		service.addBottle(owner, beerId, ContainerType.CAN, null, null);
+		service.addBottle(UUID.randomUUID(), beerId, ContainerType.KEG, null, null);
+
+		List<EntrySummary> summaries = service.listEntries(owner);
+
+		assertThat(summaries).hasSize(1);
+		assertThat(summaries.get(0).getQuantity()).isEqualTo(2);
+	}
+
+	@Test
+	void listBottlesReturnsAnEntrysBottles() {
+		UUID owner = UUID.randomUUID();
+		service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		Entry entry = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow();
+
+		List<Bottle> result = service.listBottles(owner, entry.getId());
+
+		assertThat(result).hasSize(1);
+	}
+
+	@Test
+	void refusesToListBottlesOfAnEntryOwnedBySomeoneElse() {
+		UUID owner = UUID.randomUUID();
+		service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		Entry entry = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow();
+
+		assertThatThrownBy(() -> service.listBottles(UUID.randomUUID(), entry.getId()))
+				.isInstanceOf(EntryNotFoundException.class);
+	}
+
+	@Test
+	void updateBottleReplacesItsFields() {
+		UUID owner = UUID.randomUUID();
+		Bottle bottle = service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		LocalDate brewed = LocalDate.now().minusMonths(2);
+
+		Bottle updated = service.updateBottle(owner, bottle.getId(), ContainerType.CAN, brewed, null);
+
+		assertThat(updated.getContainerType()).isEqualTo(ContainerType.CAN);
+		assertThat(updated.getBrewedDate()).isEqualTo(brewed);
+	}
+
+	@Test
+	void refusesToUpdateABottleOwnedBySomeoneElse() {
+		UUID owner = UUID.randomUUID();
+		Bottle bottle = service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+
+		assertThatThrownBy(() -> service.updateBottle(UUID.randomUUID(), bottle.getId(), ContainerType.CAN, null, null))
+				.isInstanceOf(BottleNotFoundException.class);
+	}
+
+	@Test
+	void translatesADomainDateViolationIntoACuratedException() {
+		UUID owner = UUID.randomUUID();
+		LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+		assertThatThrownBy(() -> service.addBottle(owner, beerId, ContainerType.BOTTLE, tomorrow, null))
+				.isInstanceOf(InvalidBottleException.class)
+				.hasMessageContaining("brewedDate");
 	}
 
 }

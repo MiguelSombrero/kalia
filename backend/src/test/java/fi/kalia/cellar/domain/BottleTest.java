@@ -93,4 +93,34 @@ class BottleTest {
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
+	@Test
+	void updateReplacesContainerTypeAndBothDates() {
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null);
+		LocalDate brewed = LocalDate.now().minusMonths(3);
+		LocalDate bestBefore = brewed.plusYears(1);
+
+		bottle.update(ContainerType.KEG, brewed, bestBefore);
+
+		assertThat(bottle.getContainerType()).isEqualTo(ContainerType.KEG);
+		assertThat(bottle.getBrewedDate()).isEqualTo(brewed);
+		assertThat(bottle.getBestBeforeDate()).isEqualTo(bestBefore);
+	}
+
+	@Test
+	void updateEnforcesTheSameDateInvariantsAsCreate() {
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null);
+		LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, tomorrow, null))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void updateRejectsANullContainerType() {
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null);
+
+		assertThatThrownBy(() -> bottle.update(null, null, null))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
 }

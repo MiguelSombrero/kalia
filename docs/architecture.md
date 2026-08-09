@@ -163,14 +163,24 @@ GET    /api/v1/beers/{id}
 GET    /api/v1/breweries
 
 # authenticated
-GET    /api/v1/me                        -> the caller behind the bearer token
+GET    /api/v1/me                                  -> the caller behind the bearer token
+GET    /api/v1/cellar                              -> the caller's entries, each with a derived quantity
+GET    /api/v1/cellar/entries/{entryId}/bottles     -> one entry's bottles
+POST   /api/v1/cellar/bottles                       -> add a bottle (body carries the catalog beerId)
+PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
+DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
 ```
 
 The cellar's endpoints (iteration 5) are two-level, following the data model in
-[§3](#3-backend-modules): the collection under `/api/v1/cellar` is one entry per
-beer, and a bottle is addressed beneath its entry. Their exact shape is
-[task 02](tasks/iteration-5/02-cellar-rest-api.md)'s to settle and lands here
-with it.
+[§3](#3-backend-modules): one entry per catalog beer under `/api/v1/cellar`, its
+bottles read separately per entry. A bottle is addressed by its own id
+everywhere else — `POST`, `PATCH`, `DELETE` — never nested under its entry: an
+`entryId` in that path could not be trusted any more than a caller-supplied
+user id, so it would buy no isolation guarantee, only a redundant "path entry
+doesn't match the bottle's real entry" case
+([task 02](tasks/iteration-5/02-cellar-rest-api.md)). The list is not
+paginated — a cellar is realistically far smaller than the catalog — and an
+entry or bottle belonging to another user answers 404, uniformly, never 403.
 
 Conventions:
 

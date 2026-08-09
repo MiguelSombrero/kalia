@@ -1,6 +1,6 @@
 # Task 07: Drop the empty `cart`, `ordering` and `payment` schemas
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -61,16 +61,16 @@ that currently requires them to exist. No new migration file.
 
 ## Acceptance criteria
 
-- [ ] `V001__create_module_schemas.sql` no longer creates `cart`, `ordering`
+- [x] `V001__create_module_schemas.sql` no longer creates `cart`, `ordering`
       or `payment`; migrating from scratch against an empty database creates
       only `catalog` and `cellar` (plus `public`) — verified by the
       Testcontainers-backed integration test suite migrating from scratch
-- [ ] `KaliaApplicationIT` asserts the schemas that exist and asserts these
+- [x] `KaliaApplicationIT` asserts the schemas that exist and asserts these
       three are **absent** — this negative assertion is the test that would
       catch a later migration reintroducing them
-- [ ] `mvn clean verify` is green — `clean` matters here since the migration
+- [x] `mvn clean verify` is green — `clean` matters here since the migration
       file changed
-- [ ] SHOULD-3 moves to Retired in
+- [x] SHOULD-3 moves to Retired in
       [quality-backlog.md](../quality-backlog.md) in this task's PR
 
 ## Notes
