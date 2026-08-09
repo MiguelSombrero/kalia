@@ -131,21 +131,27 @@ application events; cross-module *reads* via the root-package API.
 ```
 catalog.brewery(id, name, country, city, created_at)
 catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, created_at)
+cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
+cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 ```
 
 `style` starts as an indexed text column; normalize into its own table only
 if style metadata appears. Prices are integer cents to avoid floating point.
 
-**The cellar is two levels, not one** — the shape iteration 5 is building. A
-catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle* of
-it, with its own brewed and best-before dates. A cellar that collapses those
-into one row with a quantity cannot tell a 2026 bottle from a 2024 one, which
-is the whole point of cellaring beer. So `cellar` holds one entry per
-(user, catalog beer), owning the individual bottles beneath it; quantity is
-derived by counting them, never stored. Column-level details — which dates are
-optional, what else a bottle carries — are settled in
-[iteration 5 task 01](tasks/iteration-5/01-cellar-module-and-schema.md) and
-land here when it does.
+**The cellar is two levels, not one** ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
+A catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle*
+of it, with its own brewed and best-before dates and a container type
+(bottle/can/keg). A cellar that collapses those into one row with a quantity
+cannot tell a 2026 bottle from a 2024 one, which is the whole point of
+cellaring beer. So `cellar` holds one entry per (user, catalog beer), owning
+the individual bottles beneath it; quantity is always `COUNT(*)` over those
+rows, never a stored column — adding several bottles at once (a purchased
+case) is a bulk *operation* that still creates one row per bottle, not a
+batch row with a count. `user_id` and `beer_id` are cross-module references
+by id only, matching the persistence rule above. Both tables carry
+`created_at` and `updated_at`, the convention this module sets going forward;
+`catalog.beer` predates it and has only `created_at`. A bottle is removed by
+deleting its row — there is no "drunk" state yet.
 
 ## 4. API design
 
@@ -416,6 +422,7 @@ does the same for task files against their iteration index
 | [ADR-0030](adr/0030-per-session-token-storage.md) | Store the Keycloak token set per session, not per user | accepted | 2026-08-07 |
 | [ADR-0031](adr/0031-backchannel-logout.md) | Validate Keycloak's Back-Channel Logout token and end the matching session by sid | accepted | 2026-08-07 |
 | [ADR-0033](adr/0033-keycloak-account-relinking.md) | Allow email-based Keycloak account re-linking, since it is the only provider | accepted | 2026-08-08 |
+| [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) | Cellar holds one row per bottle, quantity always derived — never a stored count | accepted | 2026-08-09 |
 
 ### Engineering process and documentation
 

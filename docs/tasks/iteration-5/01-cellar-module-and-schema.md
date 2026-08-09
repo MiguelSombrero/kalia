@@ -1,6 +1,6 @@
 # Task 01: `cellar` module, schema and domain rules
 
-- **Status:** needs-refinement
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -55,61 +55,57 @@ the one-row-per-beer-with-a-quantity model `architecture.md` specified until
   alongside the rows it counts is a second source of truth that drifts
   silently.
 - Money stays in integer cents; no floating-point currency.
+- Brewed date and best-before date are both nullable, full-precision `date`
+  columns — no year-only or partial-date support in this task.
+- A bottle carries brewed date, best-before date, and container type
+  (bottle/can/keg); no purchase price or notes field. Photos are not in scope
+  — nothing in the roadmap adds beer images yet ([backlog](../backlog.md)).
+- No "drunk" state: removing a bottle is a hard delete. Revisit if iteration
+  7's feed wants bottle history.
+- Bulk add is in scope as an application-layer operation that creates several
+  bottles sharing the same dates and container type in one call. Quantity
+  stays derived — each created bottle is its own row, independently
+  removable and editable; nothing is stored as a count.
+- Entry and bottle both carry `created_at` and `updated_at`.
+- Bottle ids are server-assigned. Whether the REST API later accepts a
+  client-supplied id is [task 02](02-cellar-rest-api.md)'s call, not this
+  task's.
 
 ## Open questions
 
-1. **Are brewed date and best-before date both optional, and at what
-   precision?** Many bottles carry only a year, some carry neither, and a few
-   carry a full date. The answer decides the column type and what task 03 has
-   to render for a bottle that has neither.
-2. **What else does a bottle carry, and what belongs to the entry instead?**
-   Purchase date, purchase price, notes and container type (bottle/can/keg)
-   are all candidates. Anything per-bottle multiplies the form task 03 shows
-   when someone adds four of the same beer.
-3. **Can a bottle be marked drunk, or is it only deleted?** "Drunk" keeps a
-   history worth having later — the feed in iteration 7 could use it — but it
-   is a state machine this task would have to build now.
-4. **Is there a bulk add** — "I bought six of these, same dates" — or is a
-   bottle always added one at a time? This is a domain question before it is a
-   UI one, because six identical bottles are either six rows or one row with a
-   count, and the second contradicts the constraint above.
-5. **Do an entry and a bottle carry `created_at` and `updated_at`?** Nothing
-   needs them yet — the cellar has one client and it reads the whole thing
-   every time. They are what separates a future client that can ask "what
-   changed since I last looked" from one that must refetch everything, and a
-   conflicting edit that can be detected from one that silently overwrites.
-   `catalog.beer` has `created_at` and no `updated_at`, so this is also a
-   question about which convention the next module sets. Two columns now
-   against a migration and a contract change later
-   ([backlog](../backlog.md) — mobile client).
-6. **Does the caller supply a bottle's id, or does the server assign it?** Ids
-   are already `UUID`, so a client *can* generate one. Accepting it makes
-   creating a bottle idempotent — a retried request cannot produce a seventh
-   bottle — and it is the precondition for a client that records bottles while
-   offline. Server-assigned is simpler and is the right answer unless either of
-   those is wanted. The point of asking now is that it is a contract, not an
-   implementation detail: it is [task 02](02-cellar-rest-api.md)'s to expose but
-   this task's to make possible.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `cellar` exists as a Modulith module with `domain`/`application`/`web`
+- [x] `cellar` exists as a Modulith module with `domain`/`application`/`web`
       packages; `ModularityTest` and `ArchitectureTest` pass unchanged —
       they are the verification, no new assertions needed
-- [ ] Flyway migration creates the `cellar` schema and its two tables, and
+- [x] Flyway migration creates the `cellar` schema and its two tables, and
       applies cleanly against an empty database — verified by the
       Testcontainers-backed `*IT` suite starting from scratch
-- [ ] A bottle cannot be persisted with a brewed date in the future, or a
+- [x] A bottle cannot be persisted with a brewed date in the future, or a
       best-before date at or before its brewed date — unit tests (`*Test`)
       covering both boundaries, each confirmed to fail before the rule exists
-- [ ] A cellar entry reports the quantity its bottles imply, and removing a
+- [x] A cellar entry reports the quantity its bottles imply, and removing a
       bottle changes it without any stored counter being updated — unit test
       that would fail against an implementation holding a `quantity` column
-- [ ] The same beer can be held as several bottles with different dates, and
+- [x] The same beer can be held as several bottles with different dates, and
       they stay distinguishable — unit test
-- [ ] An ADR records the two-level model and the rejected flat alternative,
+- [x] A bottle can be persisted with a null brewed date, a null best-before
+      date, or both — unit test, distinct from the boundary-violation cases
+      above
+- [x] A bottle's container type is one of bottle/can/keg; any other value is
+      rejected — unit test, with the schema enforcing it too (checked by the
+      `*IT` suite)
+- [x] Adding several bottles in one call with shared dates and container type
+      produces that many independent rows; removing one leaves the rest and
+      the entry's derived quantity correct — unit test
+- [x] A newly persisted entry and bottle both have `created_at` and
+      `updated_at` set — verified by the Testcontainers-backed `*IT` suite
+      starting from an empty database
+- [x] An ADR records the two-level model and the rejected flat alternative,
       passing `node scripts/check-adrs.mjs`
-- [ ] `mvn clean test` and `mvn verify` are green; JaCoCo coverage does not
+- [x] `mvn clean test` and `mvn verify` are green; JaCoCo coverage does not
       drop
 
 ## Notes
