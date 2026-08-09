@@ -77,7 +77,16 @@ class KaliaApplicationIT {
 		List<String> schemas = jdbcTemplate.queryForList(
 				"SELECT schema_name FROM information_schema.schemata", String.class);
 
-		assertThat(schemas).contains("catalog", "cart", "ordering", "payment", "cellar");
+		assertThat(schemas).contains("catalog", "cellar");
+	}
+
+	/** The store never shipped (ADR-0004, ADR-0005); a later migration reintroducing these schemas should fail this test. */
+	@Test
+	void flywayDoesNotCreateStoreSchemas() {
+		List<String> schemas = jdbcTemplate.queryForList(
+				"SELECT schema_name FROM information_schema.schemata", String.class);
+
+		assertThat(schemas).doesNotContain("cart", "ordering", "payment");
 	}
 
 }
