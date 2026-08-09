@@ -1,6 +1,6 @@
 # Task 07: Drop the empty `cart`, `ordering` and `payment` schemas
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -25,47 +25,51 @@ retirement, which raised the same bias from the opposite direction.
 
 ## Scope
 
-A migration removing the three schemas, and the assertion in
-`KaliaApplicationIT` that currently requires them to exist.
+Editing `V001__create_module_schemas.sql` in place to remove the `cart`,
+`ordering` and `payment` lines, and the assertion in `KaliaApplicationIT`
+that currently requires them to exist. No new migration file.
 
 ## Non-goals
 
 - Touching `catalog`, or the `public` schema holding Spring Modulith's
   `event_publication` table.
-- The `cellar` schema — [task 01](01-cellar-module-and-schema.md) creates it.
-  This task and that one both edit Flyway's `common/` and module locations, so
-  whichever lands second rebases.
+- The `cellar` schema. [Task 01](01-cellar-module-and-schema.md) already
+  landed it as its own `V005__cellar_schema.sql`, so there is no longer a
+  shared file to rebase on — this task only touches `V001`.
 
 ## Constraints
 
-- Forward migration only, following the layout and version-numbering rules in
-  [backend/README.md](../../../backend/README.md). `V001` is applied history and
-  is never edited — a checksum change breaks every existing database.
-- `DROP SCHEMA` without `CASCADE`, so the migration fails loudly if anything
-  has been created in one of them since. The point is to remove three empty
-  schemas, not to delete whatever is in them.
+- Editing `V001` directly, rather than a new migration that reverses it,
+  follows [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md):
+  decided in this task's refinement, since Kalia has never been deployed
+  anywhere and forward-only would otherwise keep the rejected store schemas
+  permanently visible in migration history. Version numbering elsewhere still
+  follows [backend/README.md](../../../backend/README.md) — this is a named
+  exception, not a change to the general rule.
+- Anyone with an existing local `docker compose` Postgres volume must wipe it
+  (`docker compose down -v`) after this lands — Flyway rejects the changed
+  `V001` checksum against already-applied history. Say so in the PR
+  description; CI and Testcontainers-backed tests are unaffected (fresh
+  container per run).
 - [architecture.md §3](../../architecture.md) already states one schema per
   module and no longer lists these three; it needs no further edit, but
   re-check it in the PR.
 
 ## Open questions
 
-1. **Is a `DROP SCHEMA` migration the right instrument, or should V001 be
-   replaced via a baseline?** Dropping forward leaves a migration whose only
-   purpose is undoing an earlier one, which reads oddly in five years. A
-   baseline is cleaner to read and much riskier to apply. Recommendation is to
-   drop forward; worth a moment of the product owner's time because it sets the
-   precedent for every later removal.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A new Flyway migration drops `cart`, `ordering` and `payment`, and
-      applies cleanly against an empty database — verified by the
+- [ ] `V001__create_module_schemas.sql` no longer creates `cart`, `ordering`
+      or `payment`; migrating from scratch against an empty database creates
+      only `catalog` and `cellar` (plus `public`) — verified by the
       Testcontainers-backed integration test suite migrating from scratch
 - [ ] `KaliaApplicationIT` asserts the schemas that exist and asserts these
       three are **absent** — this negative assertion is the test that would
       catch a later migration reintroducing them
-- [ ] `mvn clean verify` is green
+- [ ] `mvn clean verify` is green — `clean` matters here since the migration
+      file changed
 - [ ] SHOULD-3 moves to Retired in
       [quality-backlog.md](../quality-backlog.md) in this task's PR
 
@@ -73,4 +77,6 @@ A migration removing the three schemas, and the assertion in
 
 Quality backlog **SHOULD-3**. The lesson these schemas taught is recorded in
 [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s 2026-08-08
-amendment, not here.
+amendment, not here. The instrument for removing them —
+editing `V001` instead of dropping forward — is recorded in
+[ADR-0036](../../adr/0036-pre-deployment-migration-edits.md).
