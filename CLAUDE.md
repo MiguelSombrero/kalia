@@ -106,6 +106,13 @@ Two things that fail silently if you skip them:
   an empty question list proves nothing about whether anyone looked.
   Acceptance criteria state how each outcome is verified, and at least one is
   an automated test, so tests are never a task of their own.
+- **Refine in one PR, implement in another.** The task-file edit that moves
+  a task to `refined` (recording the product owner's answers as constraints)
+  is its own PR, merged to `dev` before implementation starts — never a
+  commit on the same branch as the implementation it refines. This keeps the
+  refinement record reviewable on its own, independent of the code diff it
+  authorizes, and gives the product owner a clean point to merge the
+  decision before any code changes begin.
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
