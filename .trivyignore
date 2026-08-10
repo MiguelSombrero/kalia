@@ -7,17 +7,6 @@
 # weight to delete, or it hasn't and the gate goes red again until someone
 # looks.
 
-# --- Backend image: eclipse-temurin's Ubuntu 26.04 base bundles Canonical's
-# Pebble init tool at /usr/bin/pebble. backend/Dockerfile's ENTRYPOINT execs
-# `java -jar app.jar` directly, so pebble is never invoked — these are CVEs
-# in a binary this image ships but never runs. No pom.xml dependency exists
-# to bump; the fix has to come from a rebuilt base image.
-CVE-2026-25681 exp:2026-08-26
-CVE-2026-27136 exp:2026-08-26
-CVE-2026-33814 exp:2026-08-26
-CVE-2026-39821 exp:2026-08-26
-CVE-2026-39822 exp:2026-08-26
-
 # --- Frontend image: nothing to waive. Every Node-package CVE this image
 # reported came from npm's own bundled dependency tree in the node:24-alpine
 # base, not from package-lock.json; frontend/Dockerfile now deletes the

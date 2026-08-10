@@ -198,8 +198,13 @@ this section as the project evolves!
   the backend; pinned in `docker-compose.yml`)
 - Docker Compose: full stack (PostgreSQL + backend + frontend + Keycloak +
   Valkey)
-- Base images: maven:3.9-eclipse-temurin-25 (backend build),
-  eclipse-temurin:25-jre (backend runtime), node:24-alpine (frontend)
+- Base images: maven:3.9-eclipse-temurin-25-noble (backend build),
+  eclipse-temurin:25-jre-noble (backend runtime), node:24-alpine (frontend).
+  `-noble` (Ubuntu 24.04 LTS, supported to April 2029) over plain `-jre`
+  (Ubuntu 26.04) clears the five CVEs Canonical's Pebble init tool carried on
+  26.04 without touching the Java major — `eclipse-temurin:26-jre` also scans
+  clean but is a JDK version decision on its own merits, not a side effect of
+  a CVE deadline (iteration 5 task 08)
 
 ### CI
 
