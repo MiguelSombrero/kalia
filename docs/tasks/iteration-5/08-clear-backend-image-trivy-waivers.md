@@ -1,6 +1,6 @@
 # Task 08: Clear the backend image's expiring Trivy waivers
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -25,9 +25,9 @@ waiting. A base-image variant removes the finding outright.
 
 ## Scope
 
-Move the runtime stage to `eclipse-temurin:25-jre-noble`, delete the five
-backend waivers from `.trivyignore`, and update the pinned base image wherever
-the docs record it.
+Move the runtime stage to `eclipse-temurin:25-jre-noble` and the build stage
+to its matching `-noble` variant, delete the five backend waivers from
+`.trivyignore`, and update the pinned base image wherever the docs record it.
 
 ## Non-goals
 
@@ -63,30 +63,30 @@ the docs record it.
 - Verify by reproducing CI's exact Trivy invocation locally
   ([backend/README.md](../../../backend/README.md)) before pushing. A bump that
   does not reach the flagged package leaves the finding red.
+- **The build stage's `maven:3.9-eclipse-temurin-25` image moves to its
+  matching `-noble` variant alongside the runtime stage** — product-owner
+  decision, 2026-08-10. It is discarded at the end of the multi-stage build
+  and cannot affect the scan, but keeping both stages on the same Ubuntu base
+  is worth the consistency.
+- **The "why `-noble` and not `26-jre`" reasoning lives in
+  `backend/README.md`'s tech stack**, next to the pinned image tag —
+  product-owner decision, 2026-08-10. Not a new ADR or an ADR-0024 amendment:
+  this is a base-image tag choice, not a standalone architectural decision.
+- **`.trivyignore` stays even once the five backend entries are gone** —
+  product-owner decision, 2026-08-10. The frontend note is load-bearing and
+  stays exactly where a future scan-finding investigator will look first,
+  right next to where waivers go.
 
 ## Open questions
 
-1. **Does the build stage follow?** `maven:3.9-eclipse-temurin-25` is a
-   different image family and never ships — it is discarded at the end of the
-   multi-stage build, so it cannot affect the scan. Matching it for consistency
-   is defensible; leaving it alone is one less moving part.
-2. **Where does the "why `-noble` and not `26-jre`" reasoning live?**
-   `FROM eclipse-temurin:25-jre-noble` does not explain itself, and the next
-   person to see a newer tag will wonder. An ADR, an amendment to
-   [ADR-0024](../../adr/0024-dependency-vulnerability-scanning.md), or a README
-   line — the Constraints above already carry it, so the question is whether it
-   needs a more durable home than a completed task file.
-3. **What happens to `.trivyignore` once it holds only comments?** The frontend
-   note in it is load-bearing — it says a future finding with a PkgPath under
-   `/usr/local/lib/node_modules` means the package-manager removal regressed
-   rather than that a new waiver is warranted. Keep the file for that note, or
-   move the note into `frontend/README.md` and delete the file?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `backend/Dockerfile`'s runtime stage is `eclipse-temurin:25-jre-noble`,
-      and the five backend `CVE-...` lines are **removed** from `.trivyignore`
-      rather than re-dated
+- [ ] `backend/Dockerfile`'s runtime stage is `eclipse-temurin:25-jre-noble`
+      and its build stage is the matching `-noble` variant of
+      `maven:3.9-eclipse-temurin-25`, and the five backend `CVE-...` lines are
+      **removed** from `.trivyignore` rather than re-dated
 - [ ] CI's exact Trivy invocation, run locally against the built backend image
       with those entries already deleted, reports **0** HIGH/CRITICAL with a fix
       available — the deletion-first ordering is what makes this criterion able
@@ -95,8 +95,10 @@ the docs record it.
       installs on the new base — a port-open probe would pass without it, so
       this is checked against the healthcheck's own status
 - [ ] `mvn clean verify` is green on the new base image
-- [ ] The README tech stack names the new base image, and no doc still says
+- [ ] The README tech stack names the new base image and states why `-noble`
+      was chosen over `eclipse-temurin:26-jre`, and no doc still says
       `eclipse-temurin:25-jre`
+- [ ] `.trivyignore` still exists with only its frontend note remaining
 - [ ] SHOULD-7 is in the Retired section of
       [quality-backlog.md](../quality-backlog.md), pointing at this task
 - [ ] The CI vulnerability-scan job passes on the PR — the automated test that
