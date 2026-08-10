@@ -1,6 +1,6 @@
 # Task 08: Clear the backend image's expiring Trivy waivers
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -101,7 +101,7 @@ to its matching `-noble` variant, delete the five backend waivers from
 - [x] `.trivyignore` still exists with only its frontend note remaining
 - [x] SHOULD-7 is in the Retired section of
       [quality-backlog.md](../quality-backlog.md), pointing at this task
-- [ ] The CI vulnerability-scan job passes on the PR — the automated test that
+- [x] The CI vulnerability-scan job passes on the PR — the automated test that
       this actually cleared the finding rather than moved it
 
 ## Notes
