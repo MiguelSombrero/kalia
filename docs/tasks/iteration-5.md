@@ -16,7 +16,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | [01](iteration-5/01-cellar-module-and-schema.md) | `cellar` module, schema and domain rules | done |
 | [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | done |
 | [04](iteration-5/04-functional-modules-adr.md) | Correct ADR-0023 and record the functional-modules convention | needs-refinement |
-| [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | needs-refinement |
+| [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | refined |
 | [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | needs-refinement |
 | [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | dropped |
 | [11](iteration-5/11-cellar-page.md) | Cellar page for the signed-in user | needs-refinement |
@@ -60,3 +60,8 @@ fields, DTOs and UI copy avoids naming those twice.
 Task 10 was raised in review of task 02 (PR #120): Swagger UI has no way to
 obtain a token for the cellar's now-authenticated endpoints. Not a blocker on
 anything else in this iteration.
+
+Task 05 is a merged prerequisite for task 11 (product-owner decision,
+2026-08-11, recorded in task 05's Constraints): `cellar` becomes the
+frontend's second feature package in task 11, and it is created under an
+already-enforced import-boundary rule rather than retrofitted into one.
