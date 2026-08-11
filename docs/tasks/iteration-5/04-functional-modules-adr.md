@@ -1,6 +1,6 @@
 # Task 04: Correct ADR-0023 and record the functional-modules convention
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -35,6 +35,11 @@ for factory-function injection, replacing its module-level `valkeyClient`
 import with a parameter so `valkeyAdapter.test.ts` no longer needs
 `vi.mock("./valkeyClient")`.
 
+Also add an explicit `ClassDeclaration` selector to `no-restricted-syntax`
+(`frontend/eslint.config.mjs`), so the ban on classes is enforced directly
+rather than as a side effect of the function-style rule — closing the
+bodyless-class gap this task's review found.
+
 ## Non-goals
 
 - Reopening whether to allow classes at all — this task corrects and records
@@ -53,20 +58,21 @@ import with a parameter so `valkeyAdapter.test.ts` no longer needs
   ([ADR-0017](../../adr/0017-code-comment-policy.md)) — the same incorrect
   claim is repeated in a comment in `lib/api/api-error.ts` and must be fixed
   alongside the ADR, not left to drift from it again.
+- `no-restricted-syntax` gains an explicit `ClassDeclaration` selector
+  (product owner decision, 2026-08-11): the ban on classes becomes enforced
+  and complete rather than an incidental side effect of the function-style
+  rule, closing the bodyless-class gap the review found.
+- `@typescript-eslint/eslint-plugin` needs no new dependency for the
+  `type`-over-`interface` rule. It is already available transitively via
+  `eslint-config-next` → `typescript-eslint@8.64.0`, and its `@typescript-
+  eslint` plugin namespace is already registered in the flat config —
+  confirmed by running `@typescript-eslint/consistent-type-definitions`
+  against a probe file with only that rule added to `eslint.config.mjs`, no
+  other config changes.
 
 ## Open questions
 
-1. Should `no-restricted-syntax` gain an explicit `ClassDeclaration` selector,
-   making the ban intentional and complete? Today a bodyless class (no
-   constructor, no methods with bodies matching `FunctionExpression`) would
-   lint clean — adding the selector is a real behavior change, not just
-   documentation, and worth the product owner's sign-off.
-2. `@typescript-eslint/consistent-type-definitions` (for the `type`-over-
-   `interface` rule) needs `@typescript-eslint/eslint-plugin`. Is that already
-   available transitively via `eslint-config-next`'s TypeScript config, or
-   does it need adding as a new dependency? Per CLAUDE.md's "new dependencies:
-   ask, don't research," if it needs adding, list it here with a version for
-   the product owner rather than picking one.
+**None.**
 
 ## Acceptance criteria
 
@@ -85,6 +91,9 @@ import with a parameter so `valkeyAdapter.test.ts` no longer needs
       directly
 - [ ] `features/catalog/types.ts`'s `BeerSearchParams` changes from
       `interface` to `type`, the codebase's only hand-written `interface`
+- [ ] `no-restricted-syntax` in `frontend/eslint.config.mjs` gains an explicit
+      `ClassDeclaration` selector; re-running the bodyless-class probe file
+      confirms it is now flagged, reversing the earlier empirical result
 - [ ] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
