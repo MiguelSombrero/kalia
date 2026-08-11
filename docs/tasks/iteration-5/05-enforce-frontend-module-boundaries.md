@@ -1,6 +1,6 @@
 # Task 05: Enforce frontend module boundaries
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -49,23 +49,35 @@ frontend's already-documented import rules: `app/` may import `features/`,
 - `lib/api/generated/**` stays excluded from lint's own rules
   ([ADR-0012](../../adr/0012-orval-api-client.md)) — this task adds a rule
   about who may *import* it, not a rule the generated code itself must pass.
-- New dependencies are asked about, not researched (CLAUDE.md) — see open
-  question 1.
+- **Mechanism: `eslint-plugin-boundaries@7.2.0`** — product-owner decision,
+  2026-08-11. Neither candidate named in the original open question is
+  present today, even transitively: `npm ls eslint-plugin-import --all`
+  resolves empty, so both are genuinely new dependencies, not a choice
+  between "new" and "already there." `eslint-plugin-boundaries` was chosen
+  over `import/no-restricted-paths` (via `eslint-plugin-import` or its
+  flat-config-native fork, `eslint-plugin-import-x`) because it models the
+  four rules in Scope directly as named layers (`app`, `feature`,
+  `components-ui`, `lib`) with directional rules between them, rather than
+  as glob-pattern path zones. Version confirmed against the live npm
+  registry 2026-08-11 (`npm view eslint-plugin-boundaries version`); its
+  only peer dependency is `eslint>=6.0.0`, satisfied by this project's
+  ESLint 9. Record it in `frontend/README.md`'s tech stack alongside the
+  other pinned dependencies (CLAUDE.md new-dependencies rule).
+- **This rule set amends [ADR-0012](../../adr/0012-orval-api-client.md)**,
+  not a new ADR — product-owner decision, 2026-08-11. ADR-0012 already
+  states the generated-client-isolation rule this task enforces first;
+  extending it to cover the other three rules keeps one architectural
+  decision (frontend import boundaries, enforced by lint) in one document
+  rather than splitting a single `eslint.config.mjs` change across two ADRs.
+- **This task is a merged prerequisite for [task 11](11-cellar-page.md)** —
+  product-owner decision, 2026-08-11. `cellar` becomes the frontend's second
+  feature package there; it is created under an already-enforced boundary
+  rather than retrofitted into one after the fact. Task 11 is still
+  `needs-refinement`, so this costs no waiting.
 
 ## Open questions
 
-1. Which mechanism: `import/no-restricted-paths` (via `eslint-plugin-import`,
-   likely already present transitively through `eslint-config-next` — confirm
-   before treating it as a new dependency) or `eslint-plugin-boundaries`
-   (models layers more explicitly, but is a new, less-established
-   dependency)? If a new dependency is needed either way, list it here with a
-   version for the product owner.
-2. Should this rule set get its own ADR, or amend ADR-0012 (which already
-   states the one rule this task enforces first)?
-3. Should this land as a merged prerequisite before
-   [task 11](11-cellar-page.md) starts, so the second feature package is
-   created under an enforced boundary rather than retrofitted into one, or can
-   the two proceed in parallel since 11 is still `needs-refinement`?
+**None.**
 
 ## Acceptance criteria
 
@@ -75,8 +87,11 @@ frontend's already-documented import rules: `app/` may import `features/`,
       `npm run lint`, then removed — a rule never seen to fail has not been
       tested
 - [ ] `npm run lint` passes on the current tree with the new rules active
+- [ ] [ADR-0012](../../adr/0012-orval-api-client.md) carries a dated amendment
+      (per [docs/adr/template.md](../../adr/template.md)) stating all four
+      import-boundary rules, not only the generated-client one it already had
 - [ ] `frontend/README.md`'s Structure and Data-and-state bullets link to
-      wherever the rule is now recorded
+      ADR-0012
 - [ ] `npm test` and `npm run build` are unaffected and green
 
 ## Notes
