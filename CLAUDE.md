@@ -137,10 +137,11 @@ Two things that fail silently if you skip them:
 - **Open the PR automatically once a task is done** — don't wait for an
   explicit "create the PR" instruction. "Done" means: tests green, changes
   verified by running them, doc-sync check complete, roadmap task ticked.
-  Push the branch and run `gh pr create` with a description covering what
-  changed, why, and anything worth a reviewer's attention, the moment those
-  conditions hold. The PR is the review gate, not its creation — opening one
-  doesn't merge anything or touch `dev`; merging stays the product owner's
+  Push the branch and run `gh pr create`, following
+  [docs/PULL_REQUEST_TEMPLATE.md](docs/PULL_REQUEST_TEMPLATE.md) for what the
+  description covers, the moment those conditions hold. The PR is the review
+  gate, not its creation — opening one doesn't merge anything or touch `dev`;
+  merging stays the product owner's
   explicit action on GitHub. This does not relax any other gate (doc-sync,
   iteration DoD, dependency confirmation, review-comment discipline) — a
   task isn't "done" if those are unmet, so the PR doesn't open until they are.
