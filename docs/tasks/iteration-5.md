@@ -12,7 +12,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 
 | ID | Task | Status |
 |---|---|---|
-| [08](iteration-5/08-clear-backend-image-trivy-waivers.md) | Clear the backend image's expiring Trivy waivers | refined |
+| [08](iteration-5/08-clear-backend-image-trivy-waivers.md) | Clear the backend image's expiring Trivy waivers | done |
 | [01](iteration-5/01-cellar-module-and-schema.md) | `cellar` module, schema and domain rules | done |
 | [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | done |
 | [04](iteration-5/04-functional-modules-adr.md) | Correct ADR-0023 and record the functional-modules convention | needs-refinement |

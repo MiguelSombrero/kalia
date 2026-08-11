@@ -1,6 +1,6 @@
 # Task 08: Clear the backend image's expiring Trivy waivers
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -83,25 +83,25 @@ to its matching `-noble` variant, delete the five backend waivers from
 
 ## Acceptance criteria
 
-- [ ] `backend/Dockerfile`'s runtime stage is `eclipse-temurin:25-jre-noble`
+- [x] `backend/Dockerfile`'s runtime stage is `eclipse-temurin:25-jre-noble`
       and its build stage is the matching `-noble` variant of
       `maven:3.9-eclipse-temurin-25`, and the five backend `CVE-...` lines are
       **removed** from `.trivyignore` rather than re-dated
-- [ ] CI's exact Trivy invocation, run locally against the built backend image
+- [x] CI's exact Trivy invocation, run locally against the built backend image
       with those entries already deleted, reports **0** HIGH/CRITICAL with a fix
       available — the deletion-first ordering is what makes this criterion able
       to fail
-- [ ] `docker compose up` reaches backend `healthy`, proving `curl` still
+- [x] `docker compose up` reaches backend `healthy`, proving `curl` still
       installs on the new base — a port-open probe would pass without it, so
       this is checked against the healthcheck's own status
-- [ ] `mvn clean verify` is green on the new base image
-- [ ] The README tech stack names the new base image and states why `-noble`
+- [x] `mvn clean verify` is green on the new base image
+- [x] The README tech stack names the new base image and states why `-noble`
       was chosen over `eclipse-temurin:26-jre`, and no doc still says
       `eclipse-temurin:25-jre`
-- [ ] `.trivyignore` still exists with only its frontend note remaining
-- [ ] SHOULD-7 is in the Retired section of
+- [x] `.trivyignore` still exists with only its frontend note remaining
+- [x] SHOULD-7 is in the Retired section of
       [quality-backlog.md](../quality-backlog.md), pointing at this task
-- [ ] The CI vulnerability-scan job passes on the PR — the automated test that
+- [x] The CI vulnerability-scan job passes on the PR — the automated test that
       this actually cleared the finding rather than moved it
 
 ## Notes
