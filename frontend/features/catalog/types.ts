@@ -9,7 +9,7 @@ export type {
 } from "@/lib/api/generated/models";
 
 /** URL search param values as they arrive from the page — all optional strings. */
-export interface BeerSearchParams {
+export type BeerSearchParams = {
   query?: string;
   style?: string;
   country?: string;
@@ -18,4 +18,4 @@ export interface BeerSearchParams {
   page?: string;
   size?: string;
   sort?: string;
-}
+};

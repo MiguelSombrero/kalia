@@ -91,6 +91,12 @@ Why the rationale lives there and not here:
 - Server components by default; `'use client'` only where interactivity needs it.
 - **Arrow functions, never function declarations or expressions** — including
   page/layout/route exports. Enforced by ESLint (`eslint.config.mjs`).
+- **No hand-written classes; `type` over `interface`.** Discriminated unions
+  with type-guard predicates replace polymorphism, and factory functions
+  (`createX(dependency)`) replace constructors for dependency injection.
+  Enforced by ESLint (`no-restricted-syntax`'s `ClassDeclaration` selector,
+  `@typescript-eslint/consistent-type-definitions`) —
+  [ADR-0037](../docs/adr/0037-functional-modules.md).
 - **Logging goes through `lib/logger.ts`, never `console.*` directly** —
   enforced by ESLint's `no-console` rule, which exempts only `lib/logger.ts`
   itself. A thin pass-through today (`logger.error(...)` →

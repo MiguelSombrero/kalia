@@ -35,10 +35,19 @@ const eslintConfig = defineConfig([
           selector: "FunctionExpression",
           message: "Prefer arrow functions over function expressions (frontend convention).",
         },
+        // Convention (ADR-0037): no classes, enforced directly rather than as
+        // a side effect of the function-style rules above, which only reach
+        // a class's methods and miss a bodyless one.
+        {
+          selector: "ClassDeclaration",
+          message: "No classes: discriminated unions, type guards and factory functions instead (ADR-0037).",
+        },
       ],
       // Convention (iteration 3, task 9): call sites go through lib/logger.ts
       // instead of console.* directly — see frontend/README.md.
       "no-console": "error",
+      // Convention (ADR-0037): type over interface.
+      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
     },
   },
   {

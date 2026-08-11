@@ -9,10 +9,9 @@ export type ApiError = Error & {
 };
 
 /**
- * Decorates a real `Error` rather than subclassing: a class constructor is a
- * function expression, which this frontend avoids (frontend/README.md).
- * Staying an `Error` is load-bearing — the Next.js error boundary and stack
- * traces both depend on it.
+ * Decorates a real `Error` rather than subclassing: this frontend writes no
+ * classes (ADR-0037). Staying an `Error` is load-bearing — the Next.js error
+ * boundary and stack traces both depend on it.
  */
 export const apiError = (
   kind: ApiErrorKind,
