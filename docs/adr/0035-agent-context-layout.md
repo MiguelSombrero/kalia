@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-09
+- **Amended:** 2026-08-15 by
+  [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — the
+  `.claude/rules/` rejection below is scoped to area conventions, not to rules
+  that bind a file type across both subtrees
 
 ## Context
 
@@ -139,6 +143,29 @@ safe default in `application.properties` or compose
   current size and shape rather than in the mechanisms being unsound.
 - **Revisit trigger:** a third top-level application, or a README growing past
   the point where loading all of it on any file read is the cheaper option.
+
+> **Amended 2026-08-15.** The `.claude/rules/` rejection in Alternatives
+> considered stands for what it decided and is narrowed to it. That
+> alternative was to move `backend/README.md` and `frontend/README.md`'s
+> conventions into path-scoped rule files, and the rejection reason — that it
+> "moves conventions away from the code they govern and away from the README
+> that already documents them" — depends on there being a README that owns the
+> rule. Both READMEs keep their conventions, and the per-directory pointer
+> files are unchanged.
+>
+> It does not reach a rule that binds a **file type across both subtrees** and
+> that no README owns. The code-comment policy is that case:
+> [ADR-0020](0020-documentation-roles.md) reduced both READMEs to a link and
+> gave `CLAUDE.md` the full form, so there is no README to move it away from,
+> and it governs `.java` and `.ts` alike. `.claude/rules/code-comments.md` is
+> the first such file; the tests for when another qualifies are in
+> [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md).
+>
+> The Bad consequence above about nested `CLAUDE.md` files not surviving
+> `/compact` applies to path-scoped rules too, and was re-measured for them at
+> Claude Code 2.1.220 — see ADR-0039's Evidence. The `paths:` frontmatter this
+> turns on postdates the survey above, which is why it appears nowhere in the
+> alternatives.
 
 ## Evidence
 
