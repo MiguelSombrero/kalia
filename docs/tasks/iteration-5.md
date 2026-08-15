@@ -4,9 +4,11 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 
 ## Done when
 
-A signed-in user can add a bottle of a catalog beer to their cellar with the
-dates that bottle carries, see their cellar as one row per beer opening onto
-the individual bottles beneath it, and know that nobody else can see any of it.
+- **DW-1:** A signed-in user can add a bottle of a catalog beer to their
+  cellar with the dates that bottle carries.
+- **DW-2:** Their cellar shows as one row per beer, opening onto the
+  individual bottles beneath it.
+- **DW-3:** Nobody else can see any of it.
 
 ## Tasks
 
@@ -37,14 +39,16 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | ID | Task | Status |
 |---|---|---|
 | [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | done |
-| [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | refined |
+| [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | done |
 
 Tasks 15 and 16 come from
 [ADR-0038](../adr/0038-in-repo-spec-driven-process.md), and advance none of
 this iteration's `Done when` — the same way `## Maintenance` above does not.
-That is not incidental: those five tasks are the concrete case task 16's own
-second open question has to answer before its checker can tell a deliberate
-non-contributor from a gap in coverage.
+That is not incidental: it is the concrete case task 16 exists to handle, and
+each task file's own `- **Covers:**` line is now the record of which `DW-N`
+criteria it advances, checked by `scripts/check-tasks.mjs`
+([ADR-0026](../adr/0026-task-file-format.md)) — not this paragraph, so it
+does not carry a second, driftable copy of the same fact.
 
 Task 08 leads, ahead of the cellar work, because its deadline is external: the
 `.trivyignore` waivers it removes expire **2026-08-26**, and the vulnerability

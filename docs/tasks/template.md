@@ -28,6 +28,27 @@ Goal: one sentence, what a user can do afterwards that they could not before.
 The iteration's acceptance, stated as criteria that can be *run*. Not a
 summary of the tasks — the outcome their sum has to produce.
 
+May be enumerated instead of prose, one outcome per line:
+
+```markdown
+## Done when
+
+- **DW-1:** A signed-in user can add a bottle of a catalog beer to their
+  cellar with the dates it carries.
+- **DW-2:** Their cellar shows as one row per beer, opening onto the
+  individual bottles beneath it.
+```
+
+`DW-N` ids are unique within the iteration, permanent once assigned — a
+dropped criterion leaves a hole rather than a renumber, matching task ids
+below. Enumerating is optional per iteration
+([ADR-0026](../adr/0026-task-file-format.md)): once it happens,
+`scripts/check-tasks.mjs` requires every live task in that iteration to
+declare which `DW-N` it advances (`## The task file` below) and fails if a
+criterion is claimed by no live task or a task claims one that does not
+exist. An iteration left as prose is exempt, the same way an iteration with
+no `iteration-N/` directory at all is.
+
 ## Tasks
 
 | ID | Task | Status |
@@ -62,10 +83,19 @@ summary of the tasks — the outcome their sum has to produce.
 - **Status:** needs-refinement | refined | in-progress | done | dropped
 - **Iteration:** [N](../iteration-N.md)
 - **PR:** #123
+- **Covers:** DW-1, DW-3
 ```
 
 `Status` is a vocabulary token, nothing else. `PR` is added when the pull
 request opens and is the link from intent to what actually shipped.
+
+`Covers` names the `Done when` criteria (above) this task advances, or
+`none` for a task that by design advances no criterion — a maintenance or
+process task, say. It is required only once the task's iteration has
+enumerated `Done when` with `DW-N` ids; until then, omit it. `none` is
+stated explicitly rather than left implicit, so an unclaimed criterion means
+someone has to add or fix a task rather than a task quietly opting out by
+omission.
 
 **A new task file is created as `needs-refinement`, and only the product
 owner moves it to `refined`.** That transition is the gate on starting work:

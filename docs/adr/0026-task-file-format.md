@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-30
+- **Amended:** 2026-08-15 — an iteration's `## Done when` may enumerate
+  identified criteria, and a task declares which it advances, checked by
+  `scripts/check-tasks.mjs` (iteration 5 task 16)
 
 ## Context
 
@@ -54,6 +57,32 @@ automated test; the iteration file becomes an index.**
 
 `scripts/check-tasks.mjs` enforces the mechanical parts; `docs/tasks/template.md`
 is the normative skeleton.
+
+> **Amended 2026-08-15.** `CLAUDE.md`'s iteration definition-of-done gate says
+> an iteration's tasks "must collectively guarantee the 'Done when'" but
+> nothing checked it. Two additions close that, opt-in per iteration the same
+> way the rest of this ADR is:
+>
+> - **An iteration index's `## Done when` may enumerate criteria** as
+>   `- **DW-N:** <criterion>`, one per outcome, instead of prose — still
+>   stated as something that can be *run*, not a restatement of the task
+>   list. `DW-N` ids are unique within their iteration (not across the
+>   project) and permanent once assigned: a dropped criterion leaves a hole
+>   rather than triggering a renumber, the same rule this ADR already gives
+>   task ids.
+> - **A task file declares which criteria it advances** with a
+>   `- **Covers:** DW-1, DW-3` metadata line alongside `Status`/`Iteration`/
+>   `PR`, or `- **Covers:** none` for a task that by design advances none —
+>   explicit, rather than inferred from which heading or table it sits under.
+>
+> `scripts/check-tasks.mjs` enforces this only for an iteration whose
+> `Done when` already carries at least one `DW-N` id — an iteration with none
+> is exempt by construction, exactly as an iteration with no `iteration-N/`
+> directory already is. Once an iteration is enumerated: every live task
+> (any status but `dropped`) needs a `Covers` line; every id it names must
+> exist in that iteration's `Done when`; every `DW-N` id must be claimed by
+> at least one live task. A `dropped` task's claim does not count — its work
+> moved elsewhere, or it would hide a real gap.
 
 ## Alternatives considered
 
@@ -114,6 +143,11 @@ question about it (see Evidence).
   tell a criterion that would fail today from one that cannot fail; that stays
   a review question, as `check-adrs.mjs` likewise cannot tell whether a
   Decision section opens with the decision.
+
+  > **Amended 2026-08-15.** The same limit applies to coverage: a `Covers`
+  > line is a claim that a task advances a criterion, not proof it does.
+  > Whether the claim is honest stays a review question, exactly as
+  > acceptance criteria already are.
 - Neutral, because no script can verify *who* moved a task to `refined` — it
   cannot see who wrote a line. The PR containing that change is what carries
   the approval, which is the same enforcement level as every other convention
@@ -166,3 +200,15 @@ Measured over `docs/tasks/` and the repo's cross-references on 2026-07-30.
   file, and index title or status disagreeing with the file. `dropped` and
   `needs-refinement` were confirmed to remain exempt from the open-questions
   rule.
+
+> **Amended 2026-08-15.** The coverage rules were verified the same way —
+> introduced one at a time against the real tree, each producing a distinct
+> failure, then reverted: a criterion (`DW-4`, added to iteration 5's
+> `Done when`) claimed by no live task; a task (`09`) claiming a `DW-9` id
+> that does not exist; a live task (`10`) in an enumerated iteration with no
+> `Covers` line at all. A `dropped` task (`03`) with no `Covers` line was
+> confirmed to raise none of the three, in the same enumerated iteration.
+> `docs/tasks/iteration-6/`, `iteration-7/` and `iteration-8/` already exist
+> as templated directories with prose `Done when` and no `DW-N` ids — the
+> skip-if-unenumerated behavior was confirmed by running the checker against
+> the real tree, which raises nothing for any of the three.

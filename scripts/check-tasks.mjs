@@ -20,6 +20,16 @@
 //     itself — a task begins at `needs-refinement` and only the product owner
 //     moves it on — which no script can verify, since it cannot see who wrote
 //     the line; the PR that changes it is what does.
+//
+// Coverage (ADR-0026's 2026-08-15 amendment, iteration 5 task 16): an
+// iteration's `## Done when` may enumerate criteria as `- **DW-N:** ...`
+// instead of prose. It is opt-in per iteration, the same way the whole file
+// is opt-in per repo: an iteration with no `DW-N` id is exempt, exactly like
+// one with no `iteration-N/` directory. Once enumerated, every live task
+// (any status but `dropped`) must carry a `- **Covers:** ...` line naming
+// the ids it advances, or `none`; every id it names must exist; every `DW-N`
+// id must be claimed by at least one live task. A dropped task's claim does
+// not count — its work moved elsewhere, or it would hide a real gap.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -93,6 +103,13 @@ for (const iteration of iterations) {
 
   const rows = indexText.split("\n").filter((l) => l.startsWith("|") && l.includes(`${iteration}/`));
 
+  const doneWhenSection = sectionOf(indexText, "Done when");
+  const dwIds = doneWhenSection
+    ? [...doneWhenSection.matchAll(/^- \*\*(DW-\d+):\*\*/gm)].map((m) => m[1])
+    : [];
+  const enumerated = dwIds.length > 0;
+  const claimed = new Set();
+
   for (const file of taskFiles) {
     const name = `docs/tasks/${iteration}/${file}`;
     const text = readFileSync(resolve(TASKS_DIR, iteration, file), "utf8");
@@ -106,6 +123,21 @@ for (const iteration of iterations) {
     if (!status) fail(name, "no '- **Status:** ...' metadata line");
     else if (!STATUS_TOKENS.includes(status)) {
       fail(name, `Status "${status}" is not one of: ${STATUS_TOKENS.join(", ")}`);
+    }
+
+    if (enumerated && status !== "dropped") {
+      const covers = text.match(/^- \*\*Covers:\*\* (.+)$/m)?.[1]?.trim();
+      if (!covers) {
+        fail(name, `no '- **Covers:** ...' metadata line, required because ${indexName}'s Done when is enumerated`);
+      } else if (covers !== "none") {
+        for (const id of covers.split(",").map((s) => s.trim())) {
+          if (!dwIds.includes(id)) {
+            fail(name, `Covers claims "${id}", which is not a criterion in ${indexName}'s Done when`);
+          } else {
+            claimed.add(id);
+          }
+        }
+      }
     }
 
     const headings = [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
@@ -154,6 +186,14 @@ for (const iteration of iterations) {
       if (cells[2] !== title) fail(name, `index title "${cells[2]}" does not match H1 "${title}"`);
       if (status && cells[3] !== status) {
         fail(name, `index status "${cells[3]}" does not match file status "${status}"`);
+      }
+    }
+  }
+
+  if (enumerated) {
+    for (const id of dwIds) {
+      if (!claimed.has(id)) {
+        fail(indexName, `Done when criterion ${id} is claimed by no live task`);
       }
     }
   }
