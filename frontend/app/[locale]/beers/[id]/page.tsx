@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBeer } from "@/features/catalog/api";
-import { BeerDetailsCard } from "@/features/catalog/BeerDetailsCard";
+import { BeerDetailsCard, getBeer } from "@/features/catalog";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 

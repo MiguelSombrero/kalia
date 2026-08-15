@@ -93,6 +93,14 @@ Why the rationale lives there and not here:
   `auth.ts` count as `lib`). Enforced by ESLint (`eslint-plugin-boundaries` in
   `eslint.config.mjs`), which also rejects importing a folder no layer claims —
   [ADR-0012](../docs/adr/0012-orval-api-client.md).
+- **Each feature exposes a trimmed public surface through `features/<feature>/index.ts`** —
+  only the symbols a genuine external consumer needs, decided per symbol
+  against the current import graph rather than re-exporting every internal
+  path. An outside consumer imports only from that root; deep-importing a
+  feature's internals (e.g. `features/catalog/BeerList` instead of
+  `features/catalog`) is rejected by the same `eslint-plugin-boundaries` rule
+  above
+  ([task 06](../docs/tasks/iteration-5/06-feature-public-surfaces.md)).
 - Server components by default; `'use client'` only where interactivity needs it.
 - **Arrow functions, never function declarations or expressions** — including
   page/layout/route exports. Enforced by ESLint (`eslint.config.mjs`).

@@ -11,6 +11,9 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 // element without its deprecated `mode` option.
 const app = [{ element: { type: "app" } }, { file: { categories: "app-root" } }];
 const feature = { element: { type: "feature" } };
+// A feature's public surface (frontend/README.md's Structure bullet) — the
+// only part of `feature` an outside consumer may import.
+const featureIndex = { element: { type: "feature" }, file: { categories: "feature-index" } };
 const componentsUi = { element: { type: "components-ui" } };
 const lib = [{ element: { type: "lib" } }, { file: { categories: "lib-root" } }];
 const generatedApi = { element: { type: "generated-api" } };
@@ -85,6 +88,8 @@ const eslintConfig = defineConfig([
         { type: "app", pattern: "app", partialMatch: false },
       ],
       "boundaries/files": [
+        // The trimmed public surface a feature exposes to outside consumers.
+        { category: "feature-index", pattern: "features/*/index.ts" },
         // The only two files a feature may reach the generated client from.
         { category: "feature-api", pattern: "features/*/{api,types}.ts" },
         // Root-level modules the frameworks place outside any layer folder:
@@ -104,7 +109,10 @@ const eslintConfig = defineConfig([
           // new top-level folder has to be placed in a layer to be usable.
           checkUnknownLocals: true,
           policies: [
-            { from: app, allow: { to: [feature, componentsUi, ...lib] } },
+            // `feature` (whole folder) deliberately left out here: only its
+            // `index.ts` barrel is reachable from outside — a deep import
+            // into a feature's internals is what this rule forbids.
+            { from: app, allow: { to: [featureIndex, componentsUi, ...lib] } },
             // Imports within one feature are internal and never evaluated, so
             // leaving `feature` out here is what bans feature-to-feature.
             { from: feature, allow: { to: [componentsUi, ...lib] } },

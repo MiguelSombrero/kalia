@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import type { BeerPage } from "@/features/catalog/types";
 
 vi.mock("@/features/catalog/api", () => ({
-  searchBeers: vi.fn(async (): Promise<BeerPage> => ({
+  searchBeers: vi.fn(async () => ({
     content: [],
     totalElements: 0,
     totalPages: 0,
@@ -10,7 +9,7 @@ vi.mock("@/features/catalog/api", () => ({
   })),
 }));
 
-import { searchBeers } from "@/features/catalog/api";
+import { searchBeers } from "@/features/catalog";
 import BeersPage, { generateMetadata } from "./page";
 
 // Do not render the full tree here: React suspends indefinitely on async

@@ -1,4 +1,4 @@
-import { BeerDetailsSkeleton } from "@/features/catalog/BeerDetailsSkeleton";
+import { BeerDetailsSkeleton } from "./BeerDetailsSkeleton";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 
 const BeerLoading = async () => {
