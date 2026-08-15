@@ -1,6 +1,6 @@
 # Task 10: Swagger UI OAuth2 authorization for authenticated endpoints
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -36,25 +36,27 @@ token to every "Try it out" request against an authenticated endpoint.
   Swagger UI requests and displays a token, not what the backend accepts.
   ArchUnit's `onlyIdentityConfiguresWebSecurity` rule stays the guard for
   that ([ADR-0028](../../adr/0028-resource-server-and-current-user.md)).
+- Swagger UI gets its own Keycloak client, `kalia-swagger`: **public, no
+  secret**, Authorization Code with PKCE. `kalia-frontend`'s confidential
+  secret must not be exposed in Swagger UI's browser-visible OAuth config —
+  the same reasoning the [backlog](../backlog.md)'s mobile-client analysis
+  already applies to secret-less tool clients. Add the new client to
+  `keycloak/realm-export.json` with redirect URI
+  `http://localhost:8080/swagger-ui/oauth2-redirect.html`, rather than
+  extending `kalia-frontend`'s client (product-owner decision, 2026-08-15).
+- Flow is Authorization Code with PKCE, matching both the shape sketched in
+  the PR #120 review comment that raised this task and how Keycloak's realm
+  is already configured for `kalia-frontend` (product-owner decision,
+  2026-08-15).
+- The security scheme is marked required on every endpoint that requires a
+  bearer token today, not `cellar` alone — including `IdentityController`'s
+  `/me`. One consistent rule, no authenticated endpoint left without an
+  Authorize-button affordance in Swagger UI (product-owner decision,
+  2026-08-15).
 
 ## Open questions
 
-1. **Does Swagger UI get its own Keycloak client, or reuse
-   `kalia-frontend`'s?** A new `kalia-swagger` client needs its own redirect
-   URI (`http://localhost:8080/swagger-ui/oauth2-redirect.html`) added to
-   `keycloak/realm-export.json`; reusing `kalia-frontend` needs that redirect
-   URI added to its existing list instead. `kalia-frontend` is a confidential
-   client with a secret — is exposing that secret acceptable for a dev-only,
-   loopback-only tool, or does this warrant a public client with PKCE, the
-   way the [backlog](../backlog.md)'s mobile-client analysis recommends for
-   a similar reason?
-2. **Authorization Code with PKCE, or another flow?** The shape sketched in
-   the review comment that raised this used `authorizationCode`; confirm
-   that's still right given Keycloak's realm is Authorization-Code-only for
-   the frontend today.
-3. **Scope: `cellar` only, or every authenticated endpoint?** Should the
-   security scheme also mark `IdentityController`'s `/me` as requiring it, or
-   is per-module opt-in fine for now?
+**None.**
 
 ## Acceptance criteria
 
