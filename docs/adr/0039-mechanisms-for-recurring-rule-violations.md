@@ -141,9 +141,11 @@ install. A third sibling costs less than a plugin in each toolchain.
   in Evidence rather than assumed.
 - Good, because the repository's own stated position — that the enforcement
   mechanism sets a rule's weight — now applies to the rule that stated it.
-- Good, because `CLAUDE.md` loses seventeen lines from the section most
-  competing for attention, against a documented guideline of 200 lines that it
-  exceeds by half.
+- Good, because the code-comment bullet in `CLAUDE.md`'s `## Workflow` — the
+  section most competing for attention — drops from seventeen lines to six.
+  The file itself goes from 320 lines to 313, the difference being the four
+  lines `## Repository layout` gains to describe `.claude/rules/`. Against a
+  documented guideline of 200 lines, that is a dent rather than a fix.
 - Bad, because the rule is no longer unconditionally loaded. A session that
   creates a new source file without reading an existing one never sees it, and
   a session doing pure documentation work does not either. This is the cost of
@@ -209,7 +211,8 @@ could be proven rather than assumed. Before compaction the rule was loaded.
 still naming the file read before it. Immediately after compaction and before
 any new read, the rule was **not** loaded while root `CLAUDE.md` still was —
 the contrast [ADR-0035](0035-agent-context-layout.md) records for nested
-`CLAUDE.md` files. Reading one matching file afterwards reloaded it.
+`CLAUDE.md` files. Reading a non-matching file afterwards did **not** bring it back; reading one
+matching file did.
 
 **Coverage.** Every directory holding a hand-written `.ts`/`.tsx` file outside
 `node_modules` was enumerated and checked against the globs: `frontend`
