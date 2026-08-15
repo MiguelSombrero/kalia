@@ -1,6 +1,6 @@
 # Task 15: Give refinement a fixed ambiguity taxonomy
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -31,12 +31,13 @@ taxonomy as the missing half of that gate.
 Add a checklist of ambiguity categories to the guidance under
 `## Open questions` in [docs/tasks/template.md](../template.md), so writing a
 task means sweeping a fixed list rather than recalling one. The nine from
-ADR-0038's Evidence are the starting point: functional scope and behaviour;
-domain and data model; interaction and UX flow, including wording a user will
-read; non-functional attributes — performance, security, accessibility,
+ADR-0038's Evidence are the base: functional scope and behaviour; domain and
+data model; interaction and UX flow, including wording a user will read;
+non-functional attributes — performance, security, accessibility,
 localization; integrations and external dependencies; edge cases and failure
 handling; constraints and trade-offs; terminology consistency; completion
-signals.
+signals. A tenth, specific to this project, is added alongside them: module
+boundaries and which existing ADR, if any, an answer belongs in.
 
 Documentation only. No change to `scripts/check-tasks.mjs`, and no change to
 what a task file may contain.
@@ -63,29 +64,32 @@ what a task file may contain.
 - A task file is the request, not a design document
   ([ADR-0020](../../adr/0020-documentation-roles.md),
   [ADR-0026](../../adr/0026-task-file-format.md)). The taxonomy must not turn
-  `Open questions` into a form to be filled in nine times.
+  `Open questions` into a form to be filled in ten times.
 - `docs/tasks/template.md` describes both templates in prose rather than as
   skeletons to paste, and says why. Whatever is added has to read that way too.
+- The checklist is swept, not filled in: an author checks a task's
+  `Open questions` against the taxonomy and writes a question only for the
+  categories where sweeping surfaces one. No category needs an explicit
+  "nothing here" line — that would turn the section into the ten-times form
+  the constraint above already rules out.
+- All nine of ADR-0038's categories stay, unchanged, plus the tenth named in
+  Scope (module boundaries / which ADR an answer belongs in). None of the
+  nine are dropped, even the ones — accessibility, localization — that are
+  already settled by their own ADRs rather than decided per task; the
+  taxonomy stays the fixed, project-agnostic list ADR-0038 adopted, with one
+  addition rather than a curated subset.
+- The taxonomy lives only in `docs/tasks/template.md`, not summarised in
+  `CLAUDE.md`. `CLAUDE.md`'s licence to restate
+  ([ADR-0020](../../adr/0020-documentation-roles.md)) is for what applies to
+  every edit; refinement doesn't happen on every edit, so a ten-item list
+  there would be unconditionally-loaded weight without a matching benefit.
+- Applies to task files only. The iteration index's `Done when` is
+  [task 16](16-done-when-coverage-check.md)'s subject, not this one's — the
+  two changes stay on separate PRs.
 
 ## Open questions
 
-1. How prescriptive should the checklist be — categories an author sweeps and
-   mentions only where they found something, or categories each of which must
-   be answered in writing even when the answer is "nothing here"? The second
-   is more thorough and is exactly the "form filled in nine times" the
-   constraints above warn about.
-2. Are these the right nine for this project? Kalia has no external
-   integrations today, and accessibility and localization are already settled
-   conventions with their own ADRs rather than per-task questions — so at
-   least two categories may be dead weight, and something this project does
-   have (module boundaries, which ADR an answer belongs in) may be missing.
-3. Does the taxonomy live only in `docs/tasks/template.md`, or is it also
-   summarised in `CLAUDE.md`? `CLAUDE.md` is the only unconditionally loaded
-   document and is licensed to restate anything applying to every edit
-   ([ADR-0020](../../adr/0020-documentation-roles.md)), but a nine-item list
-   is a large restatement and refinement is not something every edit does.
-4. Should the same taxonomy apply to the *iteration* index's `Done when`, or
-   only to task files?
+**None.**
 
 ## Acceptance criteria
 

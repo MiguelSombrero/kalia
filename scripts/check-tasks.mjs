@@ -52,8 +52,11 @@ const fail = (file, msg) => { console.log(`  FAIL  ${file}: ${msg}`); failures++
 
 /** The slice of `text` under `## heading`, up to the next `## `. */
 const sectionOf = (text, heading) => {
-  const start = text.indexOf(`## ${heading}`);
-  if (start === -1) return null;
+  // Anchored to a line start so prose that names a heading in passing (e.g.
+  // "under `## Open questions`") can't be mistaken for the heading itself.
+  const match = new RegExp(`^## ${heading}$`, "m").exec(text);
+  if (!match) return null;
+  const start = match.index;
   const next = text.indexOf("\n## ", start + 1);
   return text.slice(start, next === -1 ? undefined : next);
 };
