@@ -147,3 +147,6 @@ to bound.
 - [ADR-0038](0038-in-repo-spec-driven-process.md) — why an external
   spec-driven toolkit was examined and declined, and the two ideas taken from
   it anyway.
+- [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — a rule agents
+  keep breaking earns a path-scoped rule file and a checker, not a firmer
+  restatement.

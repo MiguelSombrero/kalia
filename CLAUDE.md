@@ -201,23 +201,12 @@ Two things that fail silently if you skip them:
   README, or docs/) in the same PR.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
-- **Code comments carry only what the repo cannot** ([ADR-0017](docs/adr/0017-code-comment-policy.md)).
-  A comment earns its place only if it holds information not present
-  anywhere in the repository and not derivable by reading it: external
-  framework/library behavior, an empirical measurement, or a warning that
-  a locally-correct edit is globally wrong. Everything else is a pointer —
-  one line naming the ADR or doc section, never a paraphrase of it, since
-  nothing guards a comment against the ADR it duplicates. Let the
-  enforcement mechanism set the weight: if breaking the invariant fails a
-  test, an ArchUnit rule or the build, that is the guard (comment at most
-  one line, preferably pointing at the test); if it fails silently or only
-  in production builds, the comment is mandatory and opens with "do not".
-  Never narrate process — no task/PR/review references, no "used to be".
-  That history belongs in the commit message and PR description, which are
-  built to hold it; a code comment outlives them and becomes stale
-  narration. Comments explaining why a test asserts something apparently
-  pointless are load-bearing and stay: they stop a cleanup pass from
-  deleting a guard.
+- **Code comments carry only what the repo cannot.** The rule itself lives in
+  [`.claude/rules/code-comments.md`](.claude/rules/code-comments.md), which
+  Claude Code loads on its own when you read a backend or frontend source
+  file — it is not repeated here, because a path-scoped rule is not a pointer
+  an agent has to follow ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md)).
+  Why the policy is what it is: [ADR-0017](docs/adr/0017-code-comment-policy.md).
 - **ADRs follow [template.md](docs/adr/template.md)** — five sections
   (Context, Decision, Alternatives considered, Consequences, optional
   Evidence), Decision opening with one self-contained sentence naming the
@@ -301,6 +290,10 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md))
 - `.github/dependabot.yml` — weekly update PRs for Maven, npm and GitHub
   Actions dependencies
+- `.claude/rules/` — rules scoped to a file type by a `paths:` glob, loaded
+  when a matching file is read rather than every session. Currently one:
+  the code-comment policy
+  ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md))
 - `.claude/skills/quality-sweep/SKILL.md` — periodic quality sweep (see
   Quality checks above)
 - `.claude/settings.json` — committed agent settings. Currently one

@@ -40,7 +40,7 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 |---|---|---|
 | [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | done |
 | [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | done |
-| [17](iteration-5/17-localize-the-code-comment-rule.md) | Load the code-comment rule where the code is written | refined |
+| [17](iteration-5/17-localize-the-code-comment-rule.md) | Load the code-comment rule where the code is written | done |
 | [18](iteration-5/18-check-code-comments.md) | Check the code-comment policy mechanically | refined |
 | [19](iteration-5/19-separate-implementing-from-commenting.md) | Separate implementing from commenting | refined |
 | [20](iteration-5/20-resweep-code-comments.md) | Re-sweep the tree's comments to the policy | refined |
