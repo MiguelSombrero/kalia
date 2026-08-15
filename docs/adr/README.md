@@ -144,3 +144,6 @@ to bound.
 - [ADR-0035](0035-agent-context-layout.md) — `backend/` and `frontend/` each
   carry a `CLAUDE.md` importing their README, so the conventions load with the
   subtree; and which monorepo optimizations this repository declines.
+- [ADR-0038](0038-in-repo-spec-driven-process.md) — why an external
+  spec-driven toolkit was examined and declined, and the two ideas taken from
+  it anyway.
