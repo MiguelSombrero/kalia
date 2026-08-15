@@ -1,6 +1,6 @@
 # Task 05: Enforce frontend module boundaries
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -81,18 +81,18 @@ frontend's already-documented import rules: `app/` may import `features/`,
 
 ## Acceptance criteria
 
-- [ ] A temporary violating import for each rule (feature-to-feature; a deep
+- [x] A temporary violating import for each rule (feature-to-feature; a deep
       import into `lib/api/generated/` from outside a feature's `api.ts`/
       `types.ts`; `components/ui/` importing `features/`) is confirmed to fail
       `npm run lint`, then removed — a rule never seen to fail has not been
       tested
-- [ ] `npm run lint` passes on the current tree with the new rules active
-- [ ] [ADR-0012](../../adr/0012-orval-api-client.md) carries a dated amendment
+- [x] `npm run lint` passes on the current tree with the new rules active
+- [x] [ADR-0012](../../adr/0012-orval-api-client.md) carries a dated amendment
       (per [docs/adr/template.md](../../adr/template.md)) stating all four
       import-boundary rules, not only the generated-client one it already had
-- [ ] `frontend/README.md`'s Structure and Data-and-state bullets link to
+- [x] `frontend/README.md`'s Structure and Data-and-state bullets link to
       ADR-0012
-- [ ] `npm test` and `npm run build` are unaffected and green
+- [x] `npm test` and `npm run build` are unaffected and green
 
 ## Notes
 

@@ -74,6 +74,18 @@ Engineering work:
   an empty database (`docker compose down -v`) with an automated check that
   the imported realm's redirect URI matches the configured frontend origin —
   asserting the container started proves nothing.
+- **The frontend's import boundaries have no violating fixture**, unlike the
+  backend's ArchUnit rules, which are re-run against
+  `backend/src/test/java/archfixture/` for exactly this reason
+  (`docs/architecture.md` §7). A green `npm run lint` proves the layer config
+  in `frontend/eslint.config.mjs` parses, not that any rule still fires: a
+  mistyped element pattern or a reordered descriptor would pass silently
+  ([ADR-0012](../adr/0012-orval-api-client.md)). Every rule was verified by
+  hand when it was written (iteration 5 task 05), which is a one-time check,
+  not a guard. **The trap when fixing it:** a fixture tree that lint is
+  expected to *fail* on has to live somewhere `tsc`, Vitest and `next build`
+  all ignore, and the check has to assert the failure rather than run
+  `eslint` and pass on a zero exit code.
 
 ## Mobile client
 

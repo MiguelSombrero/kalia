@@ -5,6 +5,10 @@
 - **Amended:** 2026-07-27 by [ADR-0023](0023-typed-api-failures.md) — the
   client-side half of the typed-error gap below is now closed; the OpenAPI
   spec still does not document non-200 responses
+- **Amended:** 2026-08-15 — the generated client's isolation rule is now
+  enforced by ESLint rather than by convention, and this ADR now covers the
+  frontend's other three import-boundary rules, which had the same
+  prose-only status (iteration 5 task 05)
 
 ## Context
 
@@ -54,6 +58,26 @@ build whenever the two disagree.**
   pages) needed zero changes beyond one signature — `breweryLocation`'s
   `city` parameter, which the Jackson fix in Evidence made properly optional.
 
+> **Amended 2026-08-15.** The isolation the last bullet relies on — every
+> consumer reaching the generated client through its feature's `api.ts` and
+> `types.ts` — is now checked at lint time instead of being a rule people
+> remember. So are the frontend's three other import-boundary rules, which
+> were prose in `frontend/README.md` and nothing else. All four:
+>
+> - `app/` may import `features/`, `components/ui/` and `lib/`
+> - a feature never imports another feature
+> - `lib/api/generated/**` is reachable only from a feature's own `api.ts`
+>   and `types.ts`
+> - `components/ui/` may import `lib/` only
+>
+> `eslint-plugin-boundaries` states these as named layers with directional
+> rules between them in `frontend/eslint.config.mjs`, so `npm run lint` —
+> already a CI step — fails on a violation. Two things the prose above does
+> not imply, both decided here: `i18n/` and the root `auth.ts` are `lib`,
+> shared infrastructure rather than features, and importing a file that no
+> layer claims is itself a violation — a new top-level folder has to be
+> placed in a layer before application code may use it.
+
 ## Alternatives considered
 
 **`openapi-generator-cli`**, the product owner's proposal and the most
@@ -67,6 +91,16 @@ the client be regenerated without a running backend. Rejected because a
 checked-in copy of another system's contract is exactly the artifact that
 goes stale silently; the drift it would introduce is the drift this task
 exists to remove.
+
+> **Amended 2026-08-15.** For the enforcement added above, the alternative was
+> **`import/no-restricted-paths`**, from `eslint-plugin-import` or its
+> flat-config-native fork `eslint-plugin-import-x`. Neither package was
+> present, not even transitively (`npm ls eslint-plugin-import --all` resolved
+> empty), so both were equally new dependencies and the choice was purely
+> about how the rules read. Rejected because it expresses the four rules as
+> glob zones over paths, where `eslint-plugin-boundaries` expresses them as
+> named layers — and the layer names are what the next feature package has to
+> be placed into.
 
 ## Consequences
 
@@ -88,7 +122,31 @@ exists to remove.
   needs typed error responses rather than the current status-code check +
   throw.
 
+> **Amended 2026-08-15**, for the lint enforcement:
+>
+> - Good, because `cellar` arrives as the frontend's second feature package
+>   under a boundary that already holds, rather than one retrofitted after
+>   the first cross-feature import lands.
+> - Bad, because the folder layout is now stated twice — once as folders,
+>   once as layers in `eslint.config.mjs` — and moving a folder without
+>   updating the config silently drops it out of the model. The
+>   unknown-import rule limits the damage: code that imports the moved
+>   folder fails lint, even though the folder itself stops being governed.
+> - Neutral, because the two root-level modules the frameworks require
+>   outside any folder (`auth.ts`, and `proxy.ts`/`instrumentation.ts`) are
+>   classified by file pattern rather than as layer folders: the plugin can
+>   only make a *folder* a layer without its deprecated `mode` option.
+
 ## Evidence
+
+**Each import-boundary rule was verified by breaking it** (eslint-plugin-boundaries
+7.2.0), not only by observing a green run: a temporary import was added, `npm run
+lint` was confirmed to fail on it, and it was removed again. Nine violations were
+covered — every disallowed pair between the layers, plus an import of a folder no
+layer claims — and four allowed imports were confirmed to stay clean. The checks
+see more than a plain `import`: a cross-feature `export … from`, a dynamic
+`import()` and a relative `../auth/…` path (bypassing the `@/` alias) each failed
+the same way.
 
 **The drift job was verified in both directions**, not just observed passing:
 confirmed clean on a real regeneration, and confirmed it fails when a stale
