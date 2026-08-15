@@ -32,6 +32,20 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 |---|---|---|
 | [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | done |
 
+## Process
+
+| ID | Task | Status |
+|---|---|---|
+| [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | needs-refinement |
+| [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | needs-refinement |
+
+Tasks 15 and 16 come from
+[ADR-0038](../adr/0038-in-repo-spec-driven-process.md), and advance none of
+this iteration's `Done when` — the same way `## Maintenance` above does not.
+That is not incidental: those five tasks are the concrete case task 16's own
+second open question has to answer before its checker can tell a deliberate
+non-contributor from a gap in coverage.
+
 Task 08 leads, ahead of the cellar work, because its deadline is external: the
 `.trivyignore` waivers it removes expire **2026-08-26**, and the vulnerability
 scan is deliberately diff-agnostic
