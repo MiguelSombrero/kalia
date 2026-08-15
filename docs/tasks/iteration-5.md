@@ -24,7 +24,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | [13](iteration-5/13-add-bottle-to-cellar.md) | Add a bottle to the cellar from the catalog | needs-refinement |
 | [14](iteration-5/14-edit-remove-bottle.md) | Edit and remove a bottle from the cellar | needs-refinement |
 | [09](iteration-5/09-bottle-beer-naming.md) | Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog` | dropped |
-| [10](iteration-5/10-swagger-oauth2-authorization.md) | Swagger UI OAuth2 authorization for authenticated endpoints | needs-refinement |
+| [10](iteration-5/10-swagger-oauth2-authorization.md) | Swagger UI OAuth2 authorization for authenticated endpoints | refined |
 
 ## Maintenance
 
