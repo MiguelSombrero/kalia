@@ -186,7 +186,11 @@ Two things that fail silently if you skip them:
   running it; if any is unmet, add tasks to the iteration to close the gap.
   Apply the same coverage check when planning an iteration: tasks must
   collectively guarantee the "Done when", otherwise fix the tasks or the
-  criteria.
+  criteria. Where an iteration's "Done when" is enumerated with `DW-N` ids,
+  `node scripts/check-tasks.mjs` checks the claim mechanically — a criterion
+  no live task covers, or a task covering one that doesn't exist — but not
+  whether a claimed task actually delivers it
+  ([ADR-0026](docs/adr/0026-task-file-format.md)).
 - **Code review is a dialogue.** Analyze every review comment critically —
   architecture, security, code quality, API design, testability — before
   acting. Agreeing: implement and reply with what changed. Disagreeing:
