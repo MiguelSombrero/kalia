@@ -1,6 +1,6 @@
 # Task 15: Give refinement a fixed ambiguity taxonomy
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -93,20 +93,20 @@ what a task file may contain.
 
 ## Acceptance criteria
 
-- [ ] Applying the taxonomy to an existing `needs-refinement` task —
+- [x] Applying the taxonomy to an existing `needs-refinement` task —
       [06](06-feature-public-surfaces.md) or [11](11-cellar-page.md), chosen
       before the template is edited — surfaces at least one question that task
       does not currently list, and the question is quoted in the PR
       description. If it surfaces none, the taxonomy has not earned its place
       and the task fails rather than shipping.
-- [ ] `docs/tasks/template.md` gains the checklist under `## Open questions`,
+- [x] `docs/tasks/template.md` gains the checklist under `## Open questions`,
       introduces no new `##` heading, and keeps the prose form the rest of the
       document uses
-- [ ] The automated task-format test `node scripts/check-tasks.mjs` passes
+- [x] The automated task-format test `node scripts/check-tasks.mjs` passes
       against every task file in the repository, and was confirmed to still
       fail on an unknown heading by adding one to a scratch task file and
       removing it again
-- [ ] `node scripts/check-adrs.mjs` passes
+- [x] `node scripts/check-adrs.mjs` passes
 
 ## Notes
 

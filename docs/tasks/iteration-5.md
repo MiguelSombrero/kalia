@@ -36,7 +36,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 
 | ID | Task | Status |
 |---|---|---|
-| [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | refined |
+| [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | done |
 | [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | needs-refinement |
 
 Tasks 15 and 16 come from
