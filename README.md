@@ -187,6 +187,9 @@ this section as the project evolves!
 - eslint-plugin-jsx-a11y 6.10, jest-axe 10.0 (+ @types/jest-axe 3.5),
   @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
+- eslint-plugin-boundaries 7.2 (import boundaries between `app/`,
+  `features/`, `components/ui/` and `lib/`, checked by `npm run lint` —
+  see ADR-0012)
 - next-auth 5.0.0-beta.32 (Auth.js — OIDC Authorization Code + PKCE client
   and session strategy, backed by a custom Valkey adapter — see ADR-0025)
 - ioredis 5.11 (Valkey client used by the Auth.js adapter)

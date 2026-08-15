@@ -43,6 +43,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "eslint-plugin-boundaries": "7.2.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "jest-axe": "^11.0.0",
     "jsdom": "^30.0.1",

@@ -2,7 +2,18 @@ import pluginQuery from "@tanstack/eslint-plugin-query";
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import boundaries from "eslint-plugin-boundaries";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+
+// Selectors for the frontend's import layers (ADR-0012). Two of them carry a
+// second, file-category arm: Next.js and Auth.js require those modules at the
+// project root, and eslint-plugin-boundaries can only make a *folder* an
+// element without its deprecated `mode` option.
+const app = [{ element: { type: "app" } }, { file: { categories: "app-root" } }];
+const feature = { element: { type: "feature" } };
+const componentsUi = { element: { type: "components-ui" } };
+const lib = [{ element: { type: "lib" } }, { file: { categories: "lib-root" } }];
+const generatedApi = { element: { type: "generated-api" } };
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -54,6 +65,58 @@ const eslintConfig = defineConfig([
     files: ["lib/logger.ts"],
     rules: {
       "no-console": "off",
+    },
+  },
+  // Import boundaries between the frontend's layers — the rules
+  // frontend/README.md's Structure and Data-and-state bullets state in prose
+  // (ADR-0012).
+  {
+    plugins: { boundaries },
+    settings: {
+      "boundaries/elements": [
+        // Order matters: the generated client lives inside lib/, so its own
+        // descriptor has to come first to win the single match.
+        { type: "generated-api", pattern: "lib/api/generated", partialMatch: false },
+        // i18n/ is shared infrastructure like lib/, not a feature — features/i18n/
+        // is the feature package, i18n/ is the library it builds on.
+        { type: "lib", pattern: ["lib", "i18n"], partialMatch: false },
+        { type: "feature", pattern: "features/*", partialMatch: false, capture: ["featureName"] },
+        { type: "components-ui", pattern: "components/ui", partialMatch: false },
+        { type: "app", pattern: "app", partialMatch: false },
+      ],
+      "boundaries/files": [
+        // The only two files a feature may reach the generated client from.
+        { category: "feature-api", pattern: "features/*/{api,types}.ts" },
+        // Root-level modules the frameworks place outside any layer folder:
+        // the Auth.js config, and Next.js's proxy and instrumentation hooks.
+        { category: "lib-root", pattern: "auth.ts" },
+        { category: "app-root", pattern: "{proxy,instrumentation}.ts" },
+      ],
+    },
+    rules: {
+      "boundaries/dependencies": [
+        "error",
+        {
+          default: "disallow",
+          message:
+            "{{#if from.element.type}}{{from.element.type}}{{else}}{{from.file.categories}}{{/if}} must not import {{dependency.source}} — frontend import boundaries, see ADR-0012.",
+          // Reject imports of files no descriptor above classifies, so that a
+          // new top-level folder has to be placed in a layer to be usable.
+          checkUnknownLocals: true,
+          policies: [
+            { from: app, allow: { to: [feature, componentsUi, ...lib] } },
+            // Imports within one feature are internal and never evaluated, so
+            // leaving `feature` out here is what bans feature-to-feature.
+            { from: feature, allow: { to: [componentsUi, ...lib] } },
+            {
+              from: { element: { type: "feature" }, file: { categories: "feature-api" } },
+              allow: { to: generatedApi },
+            },
+            { from: componentsUi, allow: { to: lib } },
+            { from: lib, allow: { to: lib } },
+          ],
+        },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.

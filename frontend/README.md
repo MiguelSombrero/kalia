@@ -87,7 +87,12 @@ Why the rationale lives there and not here:
 
 - **Feature-based packages**: `features/<feature>/` owns its components, hooks
   and API access; `app/` route files stay thin and delegate. Shared code moves
-  to `components/` or `lib/` only once a second feature uses it.
+  to `components/` or `lib/` only once a second feature uses it. `app/` may
+  import `features/`, `components/ui/` and `lib/`; a feature never imports
+  another feature; `components/ui/` imports `lib/` only (`i18n/` and the root
+  `auth.ts` count as `lib`). Enforced by ESLint (`eslint-plugin-boundaries` in
+  `eslint.config.mjs`), which also rejects importing a folder no layer claims —
+  [ADR-0012](../docs/adr/0012-orval-api-client.md).
 - Server components by default; `'use client'` only where interactivity needs it.
 - **Arrow functions, never function declarations or expressions** — including
   page/layout/route exports. Enforced by ESLint (`eslint.config.mjs`).
@@ -112,8 +117,8 @@ Why the rationale lives there and not here:
 - **Stateful forms use react-hook-form + Zod.** Submitting navigates → native
   GET form; submitting mutates or validates → this stack
   ([ADR-0010](../docs/adr/0010-react-hook-form-zod.md)).
-- **The generated API client** (`lib/api/generated/`) is never imported outside
-  `features/<feature>/`; each feature's `api.ts` wraps it
+- **The generated API client** (`lib/api/generated/`) is reachable only from a
+  feature's own `api.ts` and `types.ts`, which wrap it — enforced by ESLint
   ([ADR-0012](../docs/adr/0012-orval-api-client.md)). It is also never edited
   by hand — regenerate it with `npm run generate:api`. `.claude/settings.json`
   denies agents `Edit` there, since a regeneration discards a hand-edit without

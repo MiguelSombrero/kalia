@@ -27,7 +27,8 @@ past its seed data. Everything further out is in
 - every acceptance criterion in the task file checked off, each verified the
   way the criterion says
 - tests written and green; change verified by actually running it
-- module boundaries verified (backend); lint/format clean
+- module boundaries verified (backend by Spring Modulith and ArchUnit,
+  frontend by ESLint); lint/format clean
 - **doc-sync check:** affected sections of `docs/` re-read and updated in the
   same PR — or explicitly confirmed accurate in the PR description
 - task status set to `done` in the task file and its iteration index

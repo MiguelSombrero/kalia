@@ -223,7 +223,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Feature-based package structure**: `features/<feature>/` (catalog,
   cellar, …) owns that feature's components, hooks and API access; `app/`
   route files stay thin and delegate. Mirrors the backend's
-  module-per-subdomain boundaries.
+  module-per-subdomain boundaries, down to being enforced rather than
+  agreed: `eslint.config.mjs` states the layers and the directions allowed
+  between them ([ADR-0012](adr/0012-orval-api-client.md)), the frontend's
+  counterpart to Spring Modulith's module verification.
 - `app/api/auth/[...nextauth]` is the app's one route handler, Auth.js's own
   OIDC endpoints (§6); sign-in and sign-out are Server Actions rather than
   posts to route handlers, so the CSP's `form-action 'self'` can stay strict
@@ -331,6 +334,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend unit | JUnit 5 | Domain logic without a Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
+| Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), plus the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)) |
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
