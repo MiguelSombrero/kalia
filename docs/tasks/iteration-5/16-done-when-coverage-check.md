@@ -1,6 +1,6 @@
 # Task 16: Check an iteration's `Done when` against the tasks meant to satisfy it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -71,41 +71,45 @@ accepted ADR is amended, not rewritten (`CLAUDE.md`,
   enumerating it must not turn it into a task list.
 - The checker's failure messages follow the existing style: one line per
   failure, naming the file and what is wrong.
+- A task declares coverage with a `- **Covers:** DW-1, DW-3` metadata line in
+  the task file, alongside `Status`/`Iteration`/`PR` — not an extra column in
+  the iteration index table, which would be a second copy of a fact the task
+  file already holds (product-owner decision, 2026-08-15).
+- A task that advances no criterion by design states so explicitly with
+  `- **Covers:** none`, rather than being exempted by which grouping heading
+  it sits under. Iteration 5 has four such tasks:
+  [07](07-drop-store-schemas.md) and
+  [08](08-clear-backend-image-trivy-waivers.md) under `## Maintenance`, and
+  tasks 15 and 16 under `## Process` (product-owner decision, 2026-08-15).
+- A `dropped` task's `Covers` claim does not count toward satisfying a
+  criterion. [03](03-cellar-frontend.md) is dropped and its work moved to
+  tasks 11–14, so those tasks carry its claims instead (product-owner
+  decision, 2026-08-15).
+- Iterations 6–8 are not retrofitted with enumerated criteria now; each gets
+  them when it is planned, the same partial-adoption pattern
+  [ADR-0019](../../adr/0019-adr-format-and-conventions.md) and this ADR chose
+  (product-owner decision, 2026-08-15).
+- Identifiers use the `DW-1`, `DW-2`… scheme, unique within an iteration (not
+  across the project) and permanent once assigned — a dropped criterion
+  leaves a hole rather than triggering a renumber, matching the task-ID and
+  `quality-backlog.md` convention (product-owner decision, 2026-08-15).
+- A templated iteration (one with an `iteration-N/` directory) whose
+  `## Done when` carries no identifiers is a checker **failure**, not a skip.
+  The exemption iterations 0–4 get is for lacking the directory entirely,
+  never for a templated iteration whose `Done when` was left unenumerated
+  (product-owner decision, 2026-08-15).
 
 ## Open questions
 
-1. Where does a task declare its coverage — a `- **Covers:** DW-1, DW-3`
-   metadata line in the task file, or an extra column in the iteration index
-   table? The metadata line keeps the claim with the task and has one home;
-   the index column is scannable and answers "what covers DW-2?" at a glance,
-   but is a second copy of a fact the task file also holds.
-2. What about tasks that advance no criterion by design? Iteration 5 has
-   four: [07](07-drop-store-schemas.md) and
-   [08](08-clear-backend-image-trivy-waivers.md) under `## Maintenance`, and
-   tasks 15 and 16 under `## Process`. Explicit `none`, or exemption by
-   grouping heading — and if by heading, that turns a presentational choice
-   into a semantic one.
-3. Does a `dropped` task's claim count toward coverage?
-   [03](03-cellar-frontend.md) is dropped and its work moved to tasks 11–14,
-   so counting it would hide a real gap. Presumed no — worth confirming.
-4. Are iterations 6–8 retrofitted now, or does each get enumerated criteria
-   when it is planned? Retrofitting means writing acceptance for iterations
-   nobody has scoped yet; deferring means the checker is inert until then.
-5. Identifier scheme and stability: `DW-1` or something else, unique within an
-   iteration or across the project, and may an iteration's criteria be
-   renumbered when one is added or dropped? (Permanence says no, which means
-   a dropped criterion leaves a hole.)
-6. Should the checker also fail an iteration whose `## Done when` carries no
-   identifiers at all, or treat that as "not yet adopted" and skip it — the
-   way an absent `iteration-N/` directory is skipped today?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `scripts/check-tasks.mjs` gains the coverage rules and each new failure
       mode is **verified to fail** by introducing it alone and observing a
       distinct message — a criterion claimed by no live task, a task claiming
-      a criterion that does not exist, and whichever of open question 6's two
-      behaviours is chosen — following the discipline
+      a criterion that does not exist, and a templated iteration whose
+      `Done when` carries no identifiers — following the discipline
       [ADR-0026](../../adr/0026-task-file-format.md)'s Evidence records for
       its own thirteen rules
 - [ ] The automated task-format test `node scripts/check-tasks.mjs` is green
@@ -113,8 +117,9 @@ accepted ADR is amended, not rewritten (`CLAUDE.md`,
       criteria claimed
 - [ ] Iteration 5's `## Done when` is enumerated into identified criteria that
       still read as outcomes to be run, not as a restatement of its task list
-- [ ] Every live iteration-5 task declares its coverage, and the tasks that
-      advance no criterion say so the way open question 2 settles
+- [ ] Every live iteration-5 task declares its coverage with a `- **Covers:**`
+      line, and the four tasks that advance no criterion by design (07, 08,
+      15, 16) write `- **Covers:** none`
 - [ ] [ADR-0026](../../adr/0026-task-file-format.md) is amended — not
       rewritten — with an `**Amended:**` metadata line, the new rule, and the
       honest limit that a claim is not proof; `node scripts/check-adrs.mjs`
