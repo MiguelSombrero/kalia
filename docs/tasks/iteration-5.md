@@ -17,7 +17,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | [02](iteration-5/02-cellar-rest-api.md) | Cellar REST API, scoped to the signed-in user | done |
 | [04](iteration-5/04-functional-modules-adr.md) | Correct ADR-0023 and record the functional-modules convention | done |
 | [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | done |
-| [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | needs-refinement |
+| [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | refined |
 | [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | dropped |
 | [11](iteration-5/11-cellar-page.md) | Cellar page for the signed-in user | needs-refinement |
 | [12](iteration-5/12-cellar-navigation.md) | Navigation between Home, Catalog and Cellar | needs-refinement |
@@ -31,6 +31,20 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | ID | Task | Status |
 |---|---|---|
 | [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | done |
+
+## Process
+
+| ID | Task | Status |
+|---|---|---|
+| [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | needs-refinement |
+| [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | needs-refinement |
+
+Tasks 15 and 16 come from
+[ADR-0038](../adr/0038-in-repo-spec-driven-process.md), and advance none of
+this iteration's `Done when` — the same way `## Maintenance` above does not.
+That is not incidental: those five tasks are the concrete case task 16's own
+second open question has to answer before its checker can tell a deliberate
+non-contributor from a gap in coverage.
 
 Task 08 leads, ahead of the cellar work, because its deadline is external: the
 `.trivyignore` waivers it removes expire **2026-08-26**, and the vulnerability
