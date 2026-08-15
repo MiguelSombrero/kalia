@@ -40,10 +40,17 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 |---|---|---|
 | [15](iteration-5/15-refinement-clarification-taxonomy.md) | Give refinement a fixed ambiguity taxonomy | done |
 | [16](iteration-5/16-done-when-coverage-check.md) | Check an iteration's `Done when` against the tasks meant to satisfy it | done |
+| [17](iteration-5/17-localize-the-code-comment-rule.md) | Load the code-comment rule where the code is written | refined |
+| [18](iteration-5/18-check-code-comments.md) | Check the code-comment policy mechanically | refined |
+| [19](iteration-5/19-separate-implementing-from-commenting.md) | Separate implementing from commenting | refined |
+| [20](iteration-5/20-resweep-code-comments.md) | Re-sweep the tree's comments to the policy | refined |
 
 Tasks 15 and 16 come from
-[ADR-0038](../adr/0038-in-repo-spec-driven-process.md), and advance none of
-this iteration's `Done when` — the same way `## Maintenance` above does not.
+[ADR-0038](../adr/0038-in-repo-spec-driven-process.md); tasks 17-20 come from
+the product owner's 2026-08-15 observation that agents keep violating
+[ADR-0017](../adr/0017-code-comment-policy.md) in review no matter how often
+it is raised. All six advance none of this iteration's `Done when` — the same
+way `## Maintenance` above does not.
 That is not incidental: it is the concrete case task 16 exists to handle, and
 each task file's own `- **Covers:**` line is now the record of which `DW-N`
 criteria it advances, checked by `scripts/check-tasks.mjs`
