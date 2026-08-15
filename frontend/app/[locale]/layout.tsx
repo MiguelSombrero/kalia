@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
-import { LocaleSwitcher } from "@/features/i18n/LocaleSwitcher";
-import { AuthStatus } from "@/features/auth/AuthStatus";
+import { LocaleSwitcher } from "@/features/i18n";
+import { AuthStatus } from "@/features/auth";
 import { Providers } from "../providers";
 import "../globals.css";
 

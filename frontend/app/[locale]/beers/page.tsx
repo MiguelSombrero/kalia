@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { searchBeers } from "@/features/catalog/api";
-import { BeerList } from "@/features/catalog/BeerList";
-import { Pagination } from "@/features/catalog/Pagination";
-import { SearchFilters } from "@/features/catalog/SearchFilters";
-import type { BeerSearchParams } from "@/features/catalog/types";
+import {
+  BeerList,
+  type BeerSearchParams,
+  Pagination,
+  searchBeers,
+  SearchFilters,
+} from "@/features/catalog";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 

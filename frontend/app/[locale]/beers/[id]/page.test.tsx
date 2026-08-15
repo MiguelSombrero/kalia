@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { BeerDetails } from "@/features/catalog/types";
 
-const westvleteren12: BeerDetails = {
+const westvleteren12 = {
   id: "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f",
   name: "Westvleteren 12",
   style: "Quadrupel",

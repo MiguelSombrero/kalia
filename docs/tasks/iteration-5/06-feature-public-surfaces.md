@@ -1,6 +1,6 @@
 # Task 06: Give feature packages a public surface
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -81,26 +81,26 @@ route folders under `app/`, since their only consumer is their route's
 
 ## Acceptance criteria
 
-- [ ] Each of `features/catalog`, `features/auth`, `features/i18n` has an
+- [x] Each of `features/catalog`, `features/auth`, `features/i18n` has an
       `index.ts` naming its trimmed public surface (per Constraints), and
       every external call site — `app/`, plus
       `lib/auth/refreshAccessToken.ts` for `auth` — imports only from the
       feature root — verified by `npm run build` and a search confirming no
       deep import path into a feature remains outside it
-- [ ] `BeerListSkeleton.tsx` and `BeerDetailsSkeleton.tsx`, with their
+- [x] `BeerListSkeleton.tsx` and `BeerDetailsSkeleton.tsx`, with their
       colocated tests, are relocated from `features/catalog` into
       `app/[locale]/beers/` and `app/[locale]/beers/[id]/` respectively, and
       each route's `loading.tsx` imports its skeleton from that new
       route-local path — verified by `npm run build` and `npm test`
-- [ ] A deep import added temporarily (e.g. `app/` importing
+- [x] A deep import added temporarily (e.g. `app/` importing
       `features/catalog/BeerList` directly rather than through the barrel) is
       confirmed to fail lint if task 05's enforcement has landed, or is
       recorded as a known gap in Notes if it has not
-- [ ] `npm test` passes — colocated tests import their sibling file directly
+- [x] `npm test` passes — colocated tests import their sibling file directly
       by relative path, so the `BeerListSkeleton`/`BeerDetailsSkeleton` tests
       need no content changes from their move, only their new location; this
       criterion confirms nothing else broke
-- [ ] `frontend/README.md`'s Structure section states the public-surface rule
+- [x] `frontend/README.md`'s Structure section states the public-surface rule
       with a link to this task's outcome
 
 ## Notes
