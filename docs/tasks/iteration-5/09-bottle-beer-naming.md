@@ -1,6 +1,6 @@
 # Task 09: Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog`
 
-- **Status:** needs-refinement
+- **Status:** dropped
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -89,3 +89,10 @@ keep their original wording — see its own Notes-equivalent framing in
 
 Raised in review on [PR #114](https://github.com/MiguelSombrero/kalia/pull/114)
 (task 01), discussion thread on `backend/src/main/java/fi/kalia/cellar/domain/Bottle.java`.
+
+**Dropped in refinement (2026-08-15).** Walked through the open questions
+with the product owner: `cellar.Bottle` stays, `catalog.Beer` stays, and the
+`Bottle`/`ContainerType.BOTTLE` overlap does not rise to a problem worth a
+rename that would touch REST paths, the OpenAPI schema, generated frontend
+types and seed data. This file is kept, `dropped`, as the historical record
+of the concern and the conversation that closed it.

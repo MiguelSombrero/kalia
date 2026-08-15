@@ -23,7 +23,7 @@ the individual bottles beneath it, and know that nobody else can see any of it.
 | [12](iteration-5/12-cellar-navigation.md) | Navigation between Home, Catalog and Cellar | needs-refinement |
 | [13](iteration-5/13-add-bottle-to-cellar.md) | Add a bottle to the cellar from the catalog | needs-refinement |
 | [14](iteration-5/14-edit-remove-bottle.md) | Edit and remove a bottle from the cellar | needs-refinement |
-| [09](iteration-5/09-bottle-beer-naming.md) | Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog` | needs-refinement |
+| [09](iteration-5/09-bottle-beer-naming.md) | Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog` | dropped |
 | [10](iteration-5/10-swagger-oauth2-authorization.md) | Swagger UI OAuth2 authorization for authenticated endpoints | needs-refinement |
 
 ## Maintenance
@@ -67,9 +67,10 @@ iteration's largest risk, so it was split into tasks 11–14 before
 refinement, and its file kept as `dropped` for history.
 
 Task 09 was raised in review of task 01 (PR #114): whether `cellar.Bottle`
-and `catalog.Beer` are named correctly relative to each other. Not a hard
-blocker on tasks 02, 11, 13 or 14, but resolving it before they name REST
-fields, DTOs and UI copy avoids naming those twice.
+and `catalog.Beer` are named correctly relative to each other. Refinement
+concluded neither name changes — see the task file's Notes — so tasks 02, 11,
+13 and 14 name REST fields, DTOs and UI copy against the existing
+`Bottle`/`Beer` names with no rename pending.
 
 Task 10 was raised in review of task 02 (PR #120): Swagger UI has no way to
 obtain a token for the cellar's now-authenticated endpoints. Not a blocker on
