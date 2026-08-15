@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-27
+- **Amended:** 2026-08-11 by [ADR-0037](0037-functional-modules.md) — corrected
+  the "Alternatives considered" reasoning against subclassing `Error`
 
 ## Context
 
@@ -50,10 +52,16 @@ reasoning previously lived only in a ten-line `frontend/README.md` bullet.
 ## Alternatives considered
 
 **Subclass `Error`.** The idiomatic answer in TypeScript, and it gives
-`instanceof ApiError` for free. Rejected on the arrow-function rule: a class
-declaration is exactly the construct the frontend's ESLint configuration
-bans. Reversing that rule for one type was weighed and judged the larger
-change — the convention holds across every file, and this is one module.
+`instanceof ApiError` for free. Rejected because this frontend writes no
+classes in hand-written code, a convention recorded in
+[ADR-0037](0037-functional-modules.md) — not, as first written here, a side
+effect of the arrow-function rule above. A class constructor is a function
+expression, so that rule catches a class *with* a constructor, but a bodyless
+class passed it untouched; empirically, the rule never reached the class
+declaration itself (evidence in ADR-0037). The rejection stands regardless:
+`apiError()` decorates a plain `Error` rather than constructing a subclass of
+one, which keeps the result usable by the Next.js error boundary and stack
+traces without a second construct alongside it.
 
 **A discriminated union of plain objects**, returned rather than thrown.
 Arguably cleaner, and it makes failure impossible to ignore at the type

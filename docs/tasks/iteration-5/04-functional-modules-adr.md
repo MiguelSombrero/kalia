@@ -1,6 +1,6 @@
 # Task 04: Correct ADR-0023 and record the functional-modules convention
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 
 ## Why
@@ -76,25 +76,25 @@ bodyless-class gap this task's review found.
 
 ## Acceptance criteria
 
-- [ ] `npx eslint` run against a probe file containing a class *with* a
+- [x] `npx eslint` run against a probe file containing a class *with* a
       constructor confirms it is flagged, and a bodyless class confirms it is
       not — this result is the amendment's evidence, recorded in the ADR
-- [ ] ADR-0023's "Alternatives considered" section states the real constraint
+- [x] ADR-0023's "Alternatives considered" section states the real constraint
       (must remain an `Error` for the Next.js error boundary) and drops the
       incorrect ESLint claim; `node scripts/check-adrs.mjs` passes
-- [ ] A new, accepted ADR records the functional-modules convention
+- [x] A new, accepted ADR records the functional-modules convention
       (discriminated unions/type guards, factory-function DI, `type` over
       `interface`), with `lib/auth/valkeyAdapter.ts` refactored to
       `createValkeyAdapter(client)` as its worked example
-- [ ] `lib/auth/valkeyAdapter.test.ts` no longer calls
+- [x] `lib/auth/valkeyAdapter.test.ts` no longer calls
       `vi.mock("./valkeyClient")` and passes by injecting the fake client
       directly
-- [ ] `features/catalog/types.ts`'s `BeerSearchParams` changes from
+- [x] `features/catalog/types.ts`'s `BeerSearchParams` changes from
       `interface` to `type`, the codebase's only hand-written `interface`
-- [ ] `no-restricted-syntax` in `frontend/eslint.config.mjs` gains an explicit
+- [x] `no-restricted-syntax` in `frontend/eslint.config.mjs` gains an explicit
       `ClassDeclaration` selector; re-running the bodyless-class probe file
       confirms it is now flagged, reversing the earlier empirical result
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

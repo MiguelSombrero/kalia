@@ -1,36 +1,31 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdapterUser } from "next-auth/adapters";
+import { createValkeyAdapter } from "./valkeyAdapter";
 
-const { store, valkeyClient } = vi.hoisted(() => {
-  const store = new Map<string, string>();
-  return {
-    store,
-    valkeyClient: {
-      get: vi.fn(async (key: string) => store.get(key) ?? null),
-      // No real expiry, only key presence — so PXAT/KEEPTTL are ignored. XX is
-      // not: refusing to create a missing key is a guarantee the adapter leans
-      // on, so the fake honours it rather than letting a test pass on shape.
-      set: vi.fn(async (key: string, value: string, ...options: unknown[]) => {
-        if (options.includes("XX") && !store.has(key)) {
-          return null;
-        }
-        store.set(key, value);
-        return "OK";
-      }),
-      del: vi.fn(async (...keys: string[]) => keys.filter((key) => store.delete(key)).length),
-    },
-  };
-});
-vi.mock("./valkeyClient", () => ({ valkeyClient }));
+const store = new Map<string, string>();
+const client = {
+  get: vi.fn(async (key: string) => store.get(key) ?? null),
+  // No real expiry, only key presence — so PXAT/KEEPTTL are ignored. XX is
+  // not: refusing to create a missing key is a guarantee the adapter leans
+  // on, so the fake honours it rather than letting a test pass on shape.
+  set: vi.fn(async (key: string, value: string, ...options: unknown[]) => {
+    if (options.includes("XX") && !store.has(key)) {
+      return null;
+    }
+    store.set(key, value);
+    return "OK";
+  }),
+  del: vi.fn(async (...keys: string[]) => keys.filter((key) => store.delete(key)).length),
+};
 
-import {
+const {
+  adapter: valkeyAdapter,
   getSessionAccount,
   getSessionTokenBySid,
   putSessionAccount,
   putSessionSid,
   updateSessionAccount,
-  valkeyAdapter,
-} from "./valkeyAdapter";
+} = createValkeyAdapter(client);
 
 // createUser's real callers (Auth.js) never pass an id — the adapter always
 // generates its own and ignores whatever's here, so the value is a marker.
@@ -146,7 +141,7 @@ describe("the session's Keycloak token set", () => {
     await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expiry);
 
     await expect(getSessionAccount("tok-1")).resolves.toMatchObject({ id_token: "id-token" });
-    expect(valkeyClient.set).toHaveBeenCalledWith(
+    expect(client.set).toHaveBeenCalledWith(
       "auth:session-account:tok-1",
       expect.any(String),
       "PXAT",
@@ -197,7 +192,7 @@ describe("the session's Keycloak token set", () => {
   it("keeps the record's expiry when a renewed set is written back", async () => {
     const expiry = expires();
     await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expiry);
-    valkeyClient.set.mockClear();
+    client.set.mockClear();
 
     await updateSessionAccount("tok-1", {
       ...account,
@@ -205,7 +200,7 @@ describe("the session's Keycloak token set", () => {
       access_token: "renewed",
     });
 
-    expect(valkeyClient.set).toHaveBeenCalledWith(
+    expect(client.set).toHaveBeenCalledWith(
       "auth:session-account:tok-1",
       expect.any(String),
       "KEEPTTL",

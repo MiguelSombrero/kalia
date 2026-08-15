@@ -83,6 +83,9 @@ nobody has committed to becomes a constraint anyway.
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a
   tagged `ApiError`; a non-2xx status deliberately is not one.
+- [ADR-0037](0037-functional-modules.md) — no hand-written classes:
+  discriminated unions and type guards over polymorphism, factory functions
+  over constructors for DI, `type` over `interface`.
 
 ## Authentication and identity
 
