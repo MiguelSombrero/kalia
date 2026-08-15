@@ -132,6 +132,19 @@ what happens in the cases nobody has described yet. A question that turns out
 to have an obvious answer costs one line; the one that was never asked costs
 a rewrite.
 
+Sweep this fixed list of ambiguity categories rather than relying on
+recalling one, and mention only the categories where sweeping actually
+surfaces a question — a category with nothing to ask gets no line, since the
+point is coverage of what to check, not a form answered ten times over:
+functional scope and behaviour; domain and data model; interaction and UX
+flow, including wording a user will read; non-functional attributes —
+performance, security, accessibility, localization; integrations and
+external dependencies; edge cases and failure handling; constraints and
+trade-offs; terminology consistency; completion signals; and module
+boundaries — which existing ADR, if any, an answer belongs in. The first nine
+are [ADR-0038](../adr/0038-in-repo-spec-driven-process.md)'s; the tenth is
+this project's own addition to that list.
+
 `**None.**` only once they are answered. The checker requires it from
 `refined` onward — but the gate on starting work is the **status**, not this
 section, for the reason given above.
