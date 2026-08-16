@@ -1,6 +1,6 @@
 # Task 11: Cellar page for the signed-in user
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** DW-2, DW-3
 
@@ -49,38 +49,34 @@ has. What a signed-out visitor sees at `/cellar`.
   whatever [task 05](05-enforce-frontend-module-boundaries.md) and
   [task 06](06-feature-public-surfaces.md) land for module boundaries and
   public surfaces, if either lands first.
+- One page, no separate per-beer route: each beer is a row that expands in
+  place to reveal its bottles. The exact visual treatment — cards in the
+  catalog's visual language, a lighter accordion style, or something between
+  — is deliberately left open: prototype a couple of options during
+  implementation and get product-owner sign-off before finalizing, rather
+  than locking a specific component shape here.
+- Beer row shows: name, brewery, style, ABV, bottle count (derived by
+  counting, per [task 01](01-cellar-module-and-schema.md)). No price and no
+  notes on either the beer or bottle row — task 01 has no notes field at
+  all, and price was intentionally not carried over from the catalog card.
+- Bottle row shows: brewed date, best-before date (both nullable per task
+  01), and container type. A bottle with neither date shows container type
+  only — no placeholder text.
+- Both dates render as relative time in both locales, e.g. "brewed 3 years
+  ago", "best before in 8 months" / "best before 2 months ago" once past.
+- Default order: beers alphabetically by name; bottles within a beer by
+  brewed date, oldest first. Best-before date does not drive ordering —
+  cellar-worthy beers commonly outlive it, so brewed date is the more
+  meaningful signal for an enthusiast than best-before.
+- Signed-out visitor at `/cellar`: the server component checks `auth()` and
+  renders an in-page sign-in prompt in place of the list. No redirect-based
+  route protection is introduced by this task.
+- Expand/collapse is local component state via plain `useState`, not
+  persisted across navigation. No Zustand store for this task.
 
 ## Open questions
 
-1. **How is a cellar entry presented?** The catalog uses a list of linked
-   cards. The cellar carries more per beer — bottle count, dates, purchase
-   price, notes — which suits a table, but a table is the weaker shape on a
-   phone. Same visual language as the catalog, or a deliberately different
-   one?
-2. **How do the two levels meet on screen?** An expandable row keeps
-   everything on one page; a separate page per beer gives the bottles room
-   but costs a navigation. This is the question the whole page hangs on.
-3. **What is on the beer row, and what is on a bottle row?** Candidates for
-   the beer line: name, brewery, style, ABV, how many bottles, the soonest
-   best-before among them. The bottle line is likely dates plus whatever
-   task 01 decides a bottle carries.
-4. **How are the dates shown** — "brewed 2024", "3 years old", "best before
-   in 8 months", or some combination? And what does a bottle with neither
-   date show?
-5. **Default order** of beers, and of bottles within a beer, and whether
-   sorting is needed at all in the first version: recently added, name,
-   age, or soonest best-before?
-6. **What does a signed-out visitor see** on `/cellar`: a sign-in prompt on
-   the page, or a redirect to sign-in and back? No route-protection
-   mechanism exists yet for any page in the app, so this task also decides
-   how that gate works.
-7. **Does this page need local UI state** (e.g. expanded/collapsed rows)?
-   If so, this is the frontend's first real Zustand use — or plain
-   `useState` may be enough. Worth the product owner's call only if it
-   affects UX, e.g. whether expand state should persist across navigation.
-
-An answer of "your call" to any of these is a fine answer and turns into a
-constraint above.
+**None.**
 
 ## Acceptance criteria
 
