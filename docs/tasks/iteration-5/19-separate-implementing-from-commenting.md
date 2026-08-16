@@ -1,6 +1,7 @@
 # Task 19: Separate implementing from commenting
 
 - **Status:** done
+- **PR:** #152
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
