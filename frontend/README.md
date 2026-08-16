@@ -251,6 +251,16 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   component that actually caused it. Route the call through a `"use server"`
   action in the feature's `actions.ts` instead
   ([ADR-0040](../docs/adr/0040-client-reads-via-server-actions.md)).
+- **A Server Action must be defined in the `"use server"` file that exports
+  it, never re-exported from a different `"use server"` file.** Sharing one
+  Server Action (e.g. `startSignIn`) between two features by defining it
+  once in a `lib/` module and re-exporting it from each feature's
+  `actions.ts` breaks Next's action-ID resolution: the client sends an ID
+  the server's manifest doesn't recognize, and the form submission fails at
+  runtime with `UnrecognizedActionError` — a real `POST` to the current
+  page, 404. No test, lint, or build catches this; only clicking the button
+  in a browser does. Duplicate the small action per feature instead
+  (matches the feature-isolation rule above, so it costs nothing extra).
 
 **Other**
 
