@@ -1,6 +1,6 @@
 # Task 18: Check the code-comment policy mechanically
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -139,7 +139,7 @@ part that is not.
 - [x] The script's header pins the counting method, and running it prints a
       repository-wide ratio that can be recomputed by hand from the stated
       method
-- [ ] A `comment-policy-check` job runs `node scripts/check-comments.mjs` in
+- [x] A `comment-policy-check` job runs `node scripts/check-comments.mjs` in
       [.github/workflows/ci.yml](../../../.github/workflows/ci.yml),
       unconditionally rather than behind the `changes` filter, and is
       confirmed green on the branch's own CI run
