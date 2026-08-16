@@ -1,6 +1,6 @@
 # Task 20: Re-sweep the tree's comments to the policy
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -100,20 +100,20 @@ The classes to cut are already identified, from an audit on 2026-08-15:
 
 ## Acceptance criteria
 
-- [ ] `node scripts/check-comments.mjs` reports a repository-wide hand-written
+- [x] `node scripts/check-comments.mjs` reports a repository-wide hand-written
       ratio at or below 0.09 by its own pinned method, with no hard failures
-- [ ] Every comment named in Constraints as surviving is verified still
+- [x] Every comment named in Constraints as surviving is verified still
       present, by an explicit grep for each rather than by inspection
-- [ ] No file in the hand-written tree carries more comment lines than code
+- [x] No file in the hand-written tree carries more comment lines than code
       lines, except any the sweep deliberately keeps — each such exception
       named in the pull request description with the ADR-0017 clause that
       protects it
-- [ ] `mvn clean verify` and `npm test` are green, and the full Playwright
+- [x] `mvn clean verify` and `npm test` are green, and the full Playwright
       suite passes — the evidence that a comment-only sweep changed no
       behavior, since a sweep that accidentally edits code would show here
-- [ ] `ArchitectureTest` and `ModularityTest` pass unchanged, confirming the
+- [x] `ArchitectureTest` and `ModularityTest` pass unchanged, confirming the
       `package-info.java` edits kept the annotations those files exist to hold
-- [ ] `node scripts/check-adrs.mjs` and `node scripts/check-tasks.mjs` are
+- [x] `node scripts/check-adrs.mjs` and `node scripts/check-tasks.mjs` are
       green, and the doc-sync gate is recorded in the pull request
 
 ## Notes

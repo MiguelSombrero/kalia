@@ -8,11 +8,8 @@ export type ApiError = Error & {
   status?: number;
 };
 
-/**
- * Decorates a real `Error` rather than subclassing: this frontend writes no
- * classes (ADR-0037). Staying an `Error` is load-bearing — the Next.js error
- * boundary and stack traces both depend on it.
- */
+// Decorates a real `Error` rather than subclassing (ADR-0037) — staying an
+// `Error` is load-bearing for the Next.js error boundary and stack traces.
 export const apiError = (
   kind: ApiErrorKind,
   message: string,
@@ -25,6 +22,5 @@ export const apiError = (
   });
 
 export const isApiError = (error: unknown): error is ApiError =>
-  // Both checks matter: the name alone would let any Error borrowing it
-  // through, and this guard promises callers a `kind` to branch on.
+  // Both checks matter: name alone would let any Error borrowing it through.
   error instanceof Error && error.name === "ApiError" && "kind" in error;

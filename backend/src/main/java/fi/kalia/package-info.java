@@ -1,6 +1,3 @@
-/**
- * Kalia application root.
- */
 @NullMarked
 package fi.kalia;
 

@@ -27,24 +27,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Every endpoint here resolves the caller through {@code identity} and
- * operates only on that user's rows. A bottle is addressed by its own id,
- * never nested under its entry: an {@code entryId} in that path could not be
- * trusted any more than a caller-supplied user id, so it would buy no
- * isolation guarantee — {@link fi.kalia.cellar.application.CellarService}
- * enforces ownership by querying on the caller's id regardless of what the
- * path claims. The one endpoint that nests is the entry-scoped bottles read,
- * the one genuinely entry-scoped collection.
- */
+// A bottle is addressed by its own id, never nested under its entry: an
+// entryId in the path couldn't be trusted any more than a caller-supplied
+// user id, so CellarService enforces ownership by the caller's id regardless.
 @RestController
 @RequestMapping("/api/v1/cellar")
 @RequiredArgsConstructor
 @Tag(name = "Cellar", description = "The signed-in caller's own cellar")
 @SecurityRequirement(name = "oauth2")
-// Do not drop `content = @Content()`: Spring Security's bearer-token entry
-// point answers 401 with headers only, and an omitted `content` here would
-// have springdoc default to the operation's own success schema instead.
+// Do not drop `content = @Content()`: without it, springdoc defaults this
+// 401 to the operation's own success schema instead (backend/README.md traps).
 @ApiResponse(responseCode = "401", description = "Missing or invalid bearer token", content = @Content())
 class CellarController {
 

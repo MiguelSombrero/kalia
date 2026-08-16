@@ -6,10 +6,8 @@ const log = (level: LogLevel, message: unknown, ...args: unknown[]): void => {
   console[level](message, ...args);
 };
 
-/**
- * Every call site's only dependency on `console` — swap the body for a real
- * monitoring client (Sentry, Datadog RUM, ...) without touching callers.
- */
+// Every call site's only dependency on `console` — swap for a real
+// monitoring client without touching callers.
 export const logger = {
   debug: (message: unknown, ...args: unknown[]) => log("debug", message, ...args),
   info: (message: unknown, ...args: unknown[]) => log("info", message, ...args),

@@ -9,12 +9,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/**
- * Handles only this module's exceptions designed as API responses, so only
- * curated messages reach {@code ProblemDetail.detail} (ADR-0014). Every
- * not-found case here — a missing beer, entry or bottle, or one belonging to
- * someone else — answers 404 uniformly.
- */
+// ADR-0014.
 @RestControllerAdvice
 class CellarExceptionHandler {
 

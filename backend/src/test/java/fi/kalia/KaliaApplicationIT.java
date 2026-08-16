@@ -46,12 +46,8 @@ class KaliaApplicationIT {
 				.value(body -> assertThat(body).doesNotContain("components").doesNotContain("PostgreSQL"));
 	}
 
-	/**
-	 * Pins the declared exposure so an upgrade cannot widen it unnoticed. The
-	 * request must be authenticated for this to prove anything: unauthenticated,
-	 * the filter chain answers 401 before routing, so a widened exposure would
-	 * look identical to a narrow one and the guard would silently stop guarding.
-	 */
+	// Pins the declared exposure so an upgrade can't widen it unnoticed.
+	// Must be authenticated, or 401 masks a widened exposure as a narrow one.
 	@Test
 	void unexposedActuatorEndpointsAreNotReachable() {
 		given(jwtDecoder.decode(anyString())).willReturn(TestTokens.testUser());
@@ -80,7 +76,7 @@ class KaliaApplicationIT {
 		assertThat(schemas).contains("catalog", "cellar");
 	}
 
-	/** The store never shipped (ADR-0004, ADR-0005); a later migration reintroducing these schemas should fail this test. */
+	// The store never shipped (ADR-0004, ADR-0005).
 	@Test
 	void flywayDoesNotCreateStoreSchemas() {
 		List<String> schemas = jdbcTemplate.queryForList(

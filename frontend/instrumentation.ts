@@ -2,11 +2,9 @@ import { verifyRequiredConfiguration } from "@/lib/config/requiredConfiguration"
 import { logger } from "@/lib/logger";
 
 export const register = () => {
-  // Next.js also invokes register() for the edge runtime that runs proxy.ts
-  // (confirmed: this file is bundled into its edge chunk). process.exit does
-  // not exist there, so this must stay Node-only, exactly as
-  // node_modules/next/dist/docs/01-app/02-guides/instrumentation.md's own
-  // "Importing runtime-specific code" example recommends.
+  // Next.js also invokes register() for the edge runtime (proxy.ts), where
+  // process.exit doesn't exist — stay Node-only, per
+  // node_modules/next/dist/docs/01-app/02-guides/instrumentation.md.
   if (process.env.NEXT_RUNTIME !== "nodejs") {
     return;
   }

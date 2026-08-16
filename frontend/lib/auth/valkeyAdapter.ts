@@ -2,11 +2,7 @@ import type { Adapter, AdapterAccount, AdapterSession, AdapterUser } from "next-
 import { rememberCreatedSession } from "./signInContext";
 import { valkeyClient } from "./valkeyClient";
 
-/**
- * The subset of ioredis's `Redis` this adapter calls, narrowed to exactly
- * the `set` call shapes used below — so a test double needs no more than
- * this to stand in for it (ADR-0037).
- */
+// The subset of ioredis's `Redis` this adapter calls (ADR-0037's DI convention).
 export type ValkeyClient = {
   get: (key: string) => Promise<string | null>;
   set(key: string, value: string): Promise<string | null>;
@@ -24,8 +20,7 @@ const emailIndexKey = (email: string) => `auth:user-by-email:${email}`;
 const sidIndexKey = (sid: string) => `auth:sid-index:${sid}`;
 const sessionSidKey = (sessionToken: string) => `auth:session-sid:${sessionToken}`;
 
-// Valkey/JSON has no Date type — every stored record keeps date fields as
-// ISO strings and converts back to Date on the way out.
+// Valkey/JSON has no Date type — records keep date fields as ISO strings.
 type StoredUser = Omit<AdapterUser, "emailVerified"> & { emailVerified: string | null };
 type StoredSession = Omit<AdapterSession, "expires"> & { expires: string };
 
@@ -49,34 +44,22 @@ const fromStoredSession = (stored: StoredSession): AdapterSession => ({
   expires: new Date(stored.expires),
 });
 
-/**
- * Builds the Valkey-backed Auth.js adapter plus the session-scoped helpers
- * outside its interface, all closing over the same injected `client` instead
- * of a module-level import — the factory-function DI convention (ADR-0037).
- * `createValkeyAdapter(valkeyClient)` below is the app's one production
- * instance; a test passes its own fake client instead.
- */
+// Closes over an injected client (ADR-0037); the production instance is
+// created below, a test passes its own fake client instead.
 export const createValkeyAdapter = (client: ValkeyClient) => {
   const readUser = async (userId: string): Promise<AdapterUser | null> => {
     const raw = await client.get(userKey(userId));
     return raw ? fromStoredUser(JSON.parse(raw) as StoredUser) : null;
   };
 
-  /**
-   * The Keycloak token set belonging to one Auth.js session (ADR-0030), or
-   * null once the session is gone. Outside the standard Adapter interface,
-   * which has no per-session notion of an account at all.
-   */
+  // Outside the standard Adapter interface, which has no per-session account (ADR-0030).
   const getSessionAccount = async (sessionToken: string): Promise<AdapterAccount | null> => {
     const raw = await client.get(sessionAccountKey(sessionToken));
     return raw ? (JSON.parse(raw) as AdapterAccount) : null;
   };
 
-  /**
-   * Files a freshly-issued token set under the session it was issued for
-   * (auth.ts's `events.signIn`). The record expires with its session, so a
-   * signed-out or lapsed session leaves no tokens behind.
-   */
+  // Filed under the session from auth.ts's events.signIn; expires with the
+  // session record, so a lapsed session leaves no tokens behind.
   const putSessionAccount = async (
     sessionToken: string,
     account: AdapterAccount,
@@ -85,53 +68,30 @@ export const createValkeyAdapter = (client: ValkeyClient) => {
     await client.set(sessionAccountKey(sessionToken), JSON.stringify(account), "PXAT", expires.getTime());
   };
 
-  /**
-   * Writes a renewed token set back over the session's existing one
-   * (lib/api/accessToken.ts). KEEPTTL, not a fresh expiry: the record's
-   * lifetime is the session's, and a renewed access token must not extend it.
-   *
-   * Do not drop the XX. Without it a SET recreates a key that expired or was
-   * deleted while the renewal was in flight with Keycloak — and KEEPTTL on a
-   * key that does not exist leaves it with no expiry at all, stranding a live
-   * refresh token for a session nobody can reach.
-   */
+  // Do not drop the XX: without it, a SET recreates a key that expired or
+  // was deleted mid-renewal, and KEEPTTL on a nonexistent key leaves it with
+  // no expiry at all — stranding a live refresh token nobody can reach.
   const updateSessionAccount = async (sessionToken: string, account: AdapterAccount): Promise<void> => {
     await client.set(sessionAccountKey(sessionToken), JSON.stringify(account), "KEEPTTL", "XX");
   };
 
-  /**
-   * Indexes a session by the Keycloak SSO session id (`sid`) carried in its
-   * id_token, so a Back-Channel Logout token — which names a `sid`, not an
-   * Auth.js session token — can find the session to end (ADR-0031). Both
-   * directions are written: the forward index is what the logout endpoint
-   * reads, the reverse is what lets `deleteSession` remove its own forward
-   * entry without decoding a token again.
-   */
+  // A Back-Channel Logout token names a `sid`, not an Auth.js session token
+  // (ADR-0031); both directions are written so `deleteSession` can clean up
+  // its forward entry without decoding a token again.
   const putSessionSid = async (sessionToken: string, sid: string, expires: Date): Promise<void> => {
     await client.set(sidIndexKey(sid), sessionToken, "PXAT", expires.getTime());
     await client.set(sessionSidKey(sessionToken), sid, "PXAT", expires.getTime());
   };
 
-  /** The session belonging to a Keycloak SSO session id, or null if none is known. */
   const getSessionTokenBySid = async (sid: string): Promise<string | null> =>
     client.get(sidIndexKey(sid));
 
-  /**
-   * Auth.js database-session adapter backed by Valkey (docs/adr/0003-bff-pattern.md).
-   * The provider's token set is not part of it: those are stored per session
-   * rather than per user (ADR-0030), which the Adapter interface has no notion
-   * of, so `linkAccount` records only the lookup index and auth.ts's
-   * `events.signIn` files the tokens once the session exists.
-   * getUserByEmail is implemented even though this is an OAuth-only setup with
-   * no Email provider: Auth.js's own runtime assertion (@auth/core's
-   * lib/utils/assert.js sessionMethods) requires it unconditionally for the
-   * "database" session strategy, regardless of provider type — confirmed by
-   * running the sign-in flow, since the adapter type docs' method-by-method
-   * "currently invoked" notes don't mention this. createVerificationToken/
-   * useVerificationToken (email sign-in), deleteUser/unlinkAccount (marked
-   * "not currently invoked" in that same file) and the WebAuthn authenticator
-   * methods are genuinely unused and stay omitted.
-   */
+  // Auth.js database-session adapter backed by Valkey (ADR-0030).
+  //
+  // getUserByEmail is implemented despite this being OAuth-only: @auth/core's
+  // lib/utils/assert.js requires it unconditionally for the "database"
+  // strategy regardless of provider — confirmed by running the sign-in flow,
+  // not documented in the adapter type's own "currently invoked" notes.
   const adapter: Adapter = {
     createUser: async (user) => {
       const created: AdapterUser = { ...user, id: crypto.randomUUID() };
@@ -166,10 +126,8 @@ export const createValkeyAdapter = (client: ValkeyClient) => {
       return updated;
     },
 
-    // Records only the index `getUserByAccount` reads. Auth.js calls this
-    // before the session exists (@auth/core's
-    // lib/actions/callback/handle-login.js), so it is not a place tokens can
-    // be filed under one.
+    // Auth.js calls this before the session exists (@auth/core's
+    // lib/actions/callback/handle-login.js), so tokens can't be filed here.
     linkAccount: async (account) => {
       await client.set(accountIndexKey(account.provider, account.providerAccountId), account.userId);
     },
@@ -214,11 +172,8 @@ export const createValkeyAdapter = (client: ValkeyClient) => {
     deleteSession: async (sessionToken) => {
       const raw = await client.get(sessionKey(sessionToken));
       const sid = await client.get(sessionSidKey(sessionToken));
-      // One call, so the tokens can never outlive the session record:
-      // signing out on one device must not leave a usable refresh token
-      // behind (ADR-0030). The sid index is cleaned up alongside it, or a
-      // Back-Channel Logout token naming this sid would find a session that
-      // no longer exists.
+      // One call, so tokens can't outlive the session (ADR-0030); the sid
+      // index goes too, or a stale logout token would find nothing to end.
       const keys = [
         sessionKey(sessionToken),
         sessionAccountKey(sessionToken),

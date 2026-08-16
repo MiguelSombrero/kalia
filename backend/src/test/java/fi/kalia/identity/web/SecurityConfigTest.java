@@ -9,11 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-/**
- * The bearer-token rules, exercised directly. An integration test cannot
- * reach them: {@code SecurityMockMvcRequestPostProcessors.jwt()} installs its
- * own decoder, so a token it builds is never validated.
- */
+// The bearer-token rules, exercised directly — an integration test can't
+// reach them since jwt()'s test post-processor installs its own decoder.
 class SecurityConfigTest {
 
 	private static final String ISSUER = "http://localhost:8081/realms/kalia";
@@ -37,8 +34,7 @@ class SecurityConfigTest {
 
 	@Test
 	void rejectsATokenCarryingNoAudienceAtAll() {
-		// The shape every token had before the realm gained its audience
-		// mapper, so this fails if that mapper is dropped from realm-export.json.
+		// Fails if the realm's audience mapper is dropped from realm-export.json.
 		assertThat(validate(token(ISSUER, null)).hasErrors()).isTrue();
 	}
 

@@ -30,11 +30,7 @@ public class CellarService {
 		return entries.findSummariesByUserId(userId);
 	}
 
-	/**
-	 * Takes {@code userId} for the same reason {@link #removeBottle} does: an
-	 * entry belonging to someone else must read as not found, never as
-	 * forbidden.
-	 */
+	/** Takes {@code userId} for the same reason {@link #removeBottle} does: an entry belonging to someone else must read as not found, never as forbidden. */
 	public List<Bottle> listBottles(UUID userId, UUID entryId) {
 		Entry entry = entries.findByIdAndUserId(entryId, userId)
 				.orElseThrow(() -> new EntryNotFoundException(entryId));
@@ -68,13 +64,8 @@ public class CellarService {
 		return bottle;
 	}
 
-	/**
-	 * Isolates the {@code catch} to the one call that can throw for a bottle
-	 * validation reason — {@link #addBottle} must not also catch whatever
-	 * {@code bottles.save(...)} itself could throw, or an unrelated
-	 * persistence-layer {@code IllegalArgumentException} would be misreported
-	 * as an invalid bottle (backend/README.md error-handling convention).
-	 */
+	// Isolated here, not in addBottle, so an unrelated persistence-layer
+	// IllegalArgumentException is never misreported as an invalid bottle.
 	private static Bottle createBottle(Entry entry, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		try {
@@ -92,41 +83,26 @@ public class CellarService {
 		return bottles.saveAll(created);
 	}
 
-	/**
-	 * Deletes {@code bottle} explicitly rather than relying solely on
-	 * {@code Entry.removeBottle}'s orphan-removal cascade: on the common case
-	 * of a fresh request, {@code entry.getBottles()} is not yet loaded, and
-	 * Hibernate only cascades an orphan delete for a collection it already
-	 * initialized. Calling both is safe — Hibernate treats a second delete of
-	 * an entity already marked removed as a no-op, so this never issues two
-	 * {@code DELETE} statements.
-	 */
+	// Deletes bottle explicitly, not just via Entry.removeBottle's cascade:
+	// on a fresh request entry.getBottles() isn't loaded, so Hibernate can't
+	// cascade it. Calling both is safe — deleting an already-removed entity
+	// is a no-op.
 	public void removeBottle(UUID userId, UUID bottleId) {
 		Bottle bottle = findOwnedBottle(userId, bottleId);
 		bottle.getEntry().removeBottle(bottle);
 		bottles.delete(bottle);
 	}
 
-	/**
-	 * Takes {@code userId} and reports a bottle owned by someone else as not
-	 * found rather than checking existence first: the alternative would let a
-	 * caller enumerate other users' bottle ids by the different error they get
-	 * back for "exists" versus "exists but isn't yours". Shared by
-	 * {@link #updateBottle} and {@link #removeBottle} so the isolation check
-	 * lives in exactly one place.
-	 */
+	// Reports another user's bottle as not found, not forbidden, so a caller
+	// can't enumerate ids by a different error. Shared to keep the check in one place.
 	private Bottle findOwnedBottle(UUID userId, UUID bottleId) {
 		return bottles.findById(bottleId)
 				.filter(b -> b.getEntry().getUserId().equals(userId))
 				.orElseThrow(() -> new BottleNotFoundException(bottleId));
 	}
 
-	/**
-	 * Checks the caller's existing entry before the catalog: an entry already
-	 * proves the beer exists, since nothing deletes catalog beers, saving a
-	 * query on the common case of adding another bottle of a beer the caller
-	 * already owns.
-	 */
+	// Checks the existing entry before the catalog: an entry already proves
+	// the beer exists, since nothing deletes catalog beers.
 	private Entry entryFor(UUID userId, UUID beerId) {
 		return entries.findByUserIdAndBeerId(userId, beerId)
 				.orElseGet(() -> {

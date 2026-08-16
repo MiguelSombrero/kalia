@@ -39,11 +39,7 @@ class CatalogController {
 	/** ABV is a percentage; a bound above 100 is meaningless. */
 	private static final String MAX_ABV = "100";
 
-	/**
-	 * Bounds search terms without truncating real input — the longest official
-	 * country name runs to 56 characters. The columns are unbounded
-	 * {@code text}, so this is an input cap only.
-	 */
+	/** Bounds search terms without truncating real input — the longest official country name runs to 56 characters. */
 	private static final int MAX_FILTER_LENGTH = 100;
 
 	private final CatalogService catalog;
@@ -87,12 +83,7 @@ class CatalogController {
 		return catalog.listBreweries().stream().map(BreweryDto::from).toList();
 	}
 
-	/**
-	 * A constraint spanning two parameters cannot be expressed as an annotation
-	 * on either one. The violation belongs to the pair, so it is reported
-	 * through {@code ProblemDetail.detail} rather than the field-level
-	 * {@code errors} array single-parameter constraints produce.
-	 */
+	// See backend/README.md's "Every request parameter is bounded" convention.
 	private static void requireOrderedAbvRange(@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
 		if (minAbv != null && maxAbv != null && minAbv.compareTo(maxAbv) > 0) {
 			throw new InvalidSearchParameterException(

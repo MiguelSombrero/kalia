@@ -7,10 +7,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/**
- * Handles only this module's exceptions designed as API responses, so only
- * curated messages reach {@code ProblemDetail.detail} (ADR-0014).
- */
+// ADR-0014.
 @RestControllerAdvice
 class CatalogExceptionHandler {
 

@@ -8,11 +8,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/**
- * No {@code id} field: bottle ids are always server-assigned.
- * {@code ignoreUnknown} means a client sending one anyway is ignored rather
- * than rejected.
- */
+// No id field: bottle ids are always server-assigned; ignoreUnknown means a
+// client sending one anyway is ignored, not rejected.
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "A bottle to add to the caller's cellar")
 public record AddBottleRequestDto(

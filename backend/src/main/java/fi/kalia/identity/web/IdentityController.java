@@ -18,9 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Identity", description = "The authenticated caller")
 @SecurityRequirement(name = "oauth2")
-// Do not drop `content = @Content()`: Spring Security's bearer-token entry
-// point answers 401 with headers only, and an omitted `content` here would
-// have springdoc default to the operation's own success schema instead.
+// Do not drop `content = @Content()`: without it, springdoc defaults this
+// 401 to the operation's own success schema instead (backend/README.md traps).
 @ApiResponse(responseCode = "401", description = "Missing or invalid bearer token", content = @Content())
 class IdentityController {
 

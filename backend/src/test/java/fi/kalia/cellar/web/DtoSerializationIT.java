@@ -10,12 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 
-/**
- * A present {@code "brewedDate": null} does not match the
- * {@code brewedDate?: string} the generated frontend types promise
- * (backend/README.md). Verifies the configured ObjectMapper omits null
- * fields entirely, the same trap catalog.web.DtoSerializationIT pins.
- */
+// Same trap catalog.web.DtoSerializationIT pins: a present "brewedDate":
+// null doesn't match the generated `brewedDate?: string` type.
 @JsonTest
 class DtoSerializationIT {
 

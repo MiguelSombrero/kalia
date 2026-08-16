@@ -18,10 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * The application's one security filter chain: which routes are public, and
- * how a bearer token is validated (ADR-0028).
- */
+// ADR-0028; guarded by ArchitectureTest.onlyIdentityConfiguresWebSecurity.
 @Configuration
 class SecurityConfig {
 
@@ -44,18 +41,12 @@ class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
 				.authorizeHttpRequests(requests -> requests
-						// Browsing needs no account (docs/architecture.md §6).
-						// Do not widen "/api/v1/beers/*" to "/**": a single star
-						// stops at one segment, so a sub-resource added later
-						// (/api/v1/beers/{id}/reviews) is authenticated by
-						// default rather than silently public. The bare path
-						// needs its own entry — "/*" does not match it.
+						// Do not widen "/api/v1/beers/*" to "/**": a later sub-resource
+						// would turn silently public instead of staying authenticated.
 						.requestMatchers(HttpMethod.GET, "/api/v1/beers", "/api/v1/beers/*",
 								"/api/v1/breweries")
 						.permitAll()
-						// "/**" matches the bare path too, so "/actuator/health"
-						// and "/v3/api-docs" need no entry of their own.
-						// "/swagger-ui.html" does: it is not under /swagger-ui/.
+						// "/swagger-ui.html" needs its own entry — it is not under /swagger-ui/.
 						.requestMatchers("/actuator/health/**").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.permitAll()
@@ -77,17 +68,11 @@ class SecurityConfig {
 	}
 
 	/**
-	 * Built from {@code jwk-set-uri} rather than {@code issuer-uri} because
-	 * the two are different addresses in this stack: Keycloak stamps one fixed
-	 * public {@code iss} into every token it issues (KC_HOSTNAME in
-	 * docker-compose.yml), but that address is published loopback-only on the
-	 * host and unreachable from inside the backend container, which must dial
-	 * {@code keycloak:8080}. Spring Boot's {@code issuer-uri} property does
-	 * both jobs at once and so cannot express the split — the same constraint
-	 * ADR-0025 records for the frontend.
-	 *
-	 * <p>Do not drop the explicit validator: choosing {@code jwk-set-uri} also
-	 * drops Boot's default issuer check, which the decoder does not add back.
+	 * Built from {@code jwk-set-uri}, not {@code issuer-uri}: Keycloak's fixed
+	 * public {@code iss} (KC_HOSTNAME) is unreachable from inside the backend
+	 * container, which must dial {@code keycloak:8080} instead — the same
+	 * split ADR-0025 records for the frontend. Do not drop the explicit
+	 * validator: {@code jwk-set-uri} also drops Boot's default issuer check.
 	 */
 	@Bean
 	JwtDecoder jwtDecoder() {
@@ -96,16 +81,9 @@ class SecurityConfig {
 		return decoder;
 	}
 
-	/**
-	 * Expiry, issuer and audience. Package-private and static so
-	 * {@code SecurityConfigTest} can exercise the rules against hand-built
-	 * tokens: the {@code jwt()} test post-processor replaces the decoder
-	 * outright, so an integration test never reaches these.
-	 *
-	 * <p>The audience entry rejects a token minted for a different client of
-	 * the same realm. Keycloak adds ours via the {@code kalia-backend-audience}
-	 * mapper on the {@code kalia-frontend} client (keycloak/realm-export.json).
-	 */
+	// Expiry, issuer and audience; guarded by SecurityConfigTest, which the
+	// integration tests can't reach since the jwt() post-processor replaces
+	// the decoder outright.
 	static OAuth2TokenValidator<Jwt> tokenValidator(String issuerUri, String audience) {
 		return new DelegatingOAuth2TokenValidator<>(List.of(
 				JwtValidators.createDefaultWithIssuer(issuerUri),

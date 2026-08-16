@@ -1,10 +1,6 @@
 import { headers } from "next/headers";
 import { defaultLocale, isLocale, locales, type Locale } from "./settings";
 
-/**
- * Picks the best supported locale from an Accept-Language header, in weighted
- * preference order.
- */
 export const resolveLocaleFromAcceptLanguage = (header: string | null): Locale => {
   if (!header) {
     return defaultLocale;
@@ -26,11 +22,8 @@ export const resolveLocaleFromAcceptLanguage = (header: string | null): Locale =
   return defaultLocale;
 };
 
-/**
- * Recovers the locale from the x-pathname header proxy.ts sets. Next.js
- * passes no route params to special files (loading.tsx, not-found.tsx, error
- * boundaries), so this is their only way to know which locale they render.
- */
+// Recovers the locale from the x-pathname header proxy.ts sets — special
+// files (loading.tsx, error boundaries) get no route params otherwise.
 export const resolveLocaleFromHeaders = async (): Promise<Locale> => {
   const requestHeaders = await headers();
   const pathnameLocale = requestHeaders.get("x-pathname")?.split("/")[1] ?? "";

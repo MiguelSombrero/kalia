@@ -29,11 +29,8 @@ class IdentityApiIT {
 	@Autowired
 	private RestTestClient client;
 
-	/**
-	 * Stands in for Keycloak so the suite needs no identity provider running.
-	 * The validation rules this bypasses are covered by
-	 * {@link SecurityConfigTest}.
-	 */
+	// Stands in for Keycloak; validation rules this bypasses are covered by
+	// SecurityConfigTest.
 	@MockitoBean
 	private JwtDecoder jwtDecoder;
 
@@ -79,13 +76,8 @@ class IdentityApiIT {
 		client.get().uri("/api/v1/breweries").exchange().expectStatus().isOk();
 	}
 
-	/**
-	 * The premise behind disabling CSRF protection: a CSRF attack needs the
-	 * browser to attach a credential by itself, and this API issues nothing it
-	 * could attach. If a change here starts setting a cookie — a session, a
-	 * form login — this fails, and `SecurityConfig.csrf(...)` has to be
-	 * reconsidered before the failure is "fixed" (ADR-0028).
-	 */
+	// Guards the CSRF-disable premise (SecurityConfig): if a change here starts
+	// setting a cookie, this fails, and csrf(...) needs reconsidering first.
 	@Test
 	void issuesNoCookieSoCsrfCannotApply() {
 		givenTokenFor(SUBJECT);
@@ -102,11 +94,8 @@ class IdentityApiIT {
 				.expectHeader().doesNotExist("Set-Cookie");
 	}
 
-	/**
-	 * A sub-resource of a public beer is not itself public. Pins the single
-	 * star in `/api/v1/beers/*`: widening it to `/**` would make every path
-	 * below a beer anonymous the day one is added.
-	 */
+	// Pins the single star in `/api/v1/beers/*`: widening it to `/**` would
+	// make every path below a beer anonymous the day one is added.
 	@Test
 	void doesNotExtendCatalogAccessToSubResourcesOfABeer() {
 		client.get().uri("/api/v1/beers/8f14e45f-ceea-467a-9a3c-1b2d4f6a8c90/reviews")
