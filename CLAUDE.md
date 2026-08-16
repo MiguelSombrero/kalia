@@ -72,6 +72,7 @@ the next command and breaks the one after it:
 (cd frontend && npm run test:e2e)  # playwright — needs the stack up
 node scripts/check-adrs.mjs        # ADR ↔ architecture.md §9 + adr/README.md
 node scripts/check-tasks.mjs       # task files ↔ iteration index
+node scripts/check-comments.mjs    # code-comment policy (ADR-0017): narration hard-fails, ratio/ADR-block advisory
 ```
 
 Two things that fail silently if you skip them:

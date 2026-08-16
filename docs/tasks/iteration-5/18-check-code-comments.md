@@ -1,6 +1,6 @@
 # Task 18: Check the code-comment policy mechanically
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -124,30 +124,30 @@ part that is not.
 
 ## Acceptance criteria
 
-- [ ] `scripts/check-comments.mjs` exists, is dependency-free plain Node, and
+- [x] `scripts/check-comments.mjs` exists, is dependency-free plain Node, and
       each hard-failing pattern is verified to fail by introducing it alone
       and observing a distinct message naming the file and line — one case per
       pattern in the hard tier
-- [ ] The advisory tier is verified **not** to fail the build: a file whose
+- [x] The advisory tier is verified **not** to fail the build: a file whose
       comments outnumber its code, and a multi-line ADR-naming block, are both
       reported and both exit zero — with
       `frontend/lib/auth/signInContext.ts` as the live case that must be
       reported and must not fail
-- [ ] The checker is green against the real tree, with the live narration
+- [x] The checker is green against the real tree, with the live narration
       violations in `CellarService.java`, `e2e/sign-in-out.spec.ts` and
       `lib/auth/valkeyAdapter.ts` fixed in this task
-- [ ] The script's header pins the counting method, and running it prints a
+- [x] The script's header pins the counting method, and running it prints a
       repository-wide ratio that can be recomputed by hand from the stated
       method
-- [ ] A `comment-policy-check` job runs `node scripts/check-comments.mjs` in
+- [x] A `comment-policy-check` job runs `node scripts/check-comments.mjs` in
       [.github/workflows/ci.yml](../../../.github/workflows/ci.yml),
       unconditionally rather than behind the `changes` filter, and is
       confirmed green on the branch's own CI run
-- [ ] `CLAUDE.md`'s Commands block lists the new checker beside the other two;
+- [x] `CLAUDE.md`'s Commands block lists the new checker beside the other two;
       [ADR-0017](../../adr/0017-code-comment-policy.md) is amended to record
       that its policy now has a guard, and
       `node scripts/check-adrs.mjs` passes
-- [ ] `mvn clean verify` and `npm test` stay green, confirming the narration
+- [x] `mvn clean verify` and `npm test` stay green, confirming the narration
       fixes changed comments only
 
 ## Notes

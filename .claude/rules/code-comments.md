@@ -23,8 +23,10 @@ anywhere in the repository and not derivable by reading it**:
 - a warning that a locally-correct edit is globally wrong.
 
 Everything else is a pointer: one line naming the ADR or doc section, never a
-paraphrase of it. Nothing guards a comment against the ADR it duplicates, and
-a stale comment is worse than an absent one — an agent trusts what is in front
+paraphrase of it. `scripts/check-comments.mjs` flags a multi-line ADR-naming
+block for review — advisory only, since judging whether it's actually a
+paraphrase stays a review call — and hard-fails process narration outright. A
+stale comment is worse than an absent one — an agent trusts what is in front
 of it and never opens the ADR.
 
 Apply the test by naming the fact. If you cannot say what a comment carries

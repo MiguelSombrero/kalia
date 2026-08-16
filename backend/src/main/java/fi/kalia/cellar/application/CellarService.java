@@ -123,9 +123,9 @@ public class CellarService {
 
 	/**
 	 * Checks the caller's existing entry before the catalog: an entry already
-	 * proves the beer exists, since nothing deletes catalog beers before
-	 * iteration 8, saving a query on the common case of adding another bottle
-	 * of a beer the caller already owns.
+	 * proves the beer exists, since nothing deletes catalog beers, saving a
+	 * query on the common case of adding another bottle of a beer the caller
+	 * already owns.
 	 */
 	private Entry entryFor(UUID userId, UUID beerId) {
 		return entries.findByUserIdAndBeerId(userId, beerId)

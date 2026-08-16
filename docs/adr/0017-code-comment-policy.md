@@ -6,6 +6,8 @@
   [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — the operative
   rules moved to `.claude/rules/code-comments.md`, which loads when a source
   file is read; this ADR keeps the reasoning and the census
+- **Amended:** 2026-08-15 — the policy gained a mechanism,
+  `scripts/check-comments.mjs` (iteration 5 task 18)
 
 ## Context
 
@@ -135,6 +137,19 @@ pointer: one line naming the ADR or doc section.
 - **Generated code is out of scope.** `lib/api/generated` is orval output;
   its comments come from the backend's OpenAPI annotations and are
   regenerated, never hand-edited.
+
+> **Amended 2026-08-15 (iteration 5 task 18).** The gap Context named —
+> "nothing checks a comment against the ADR it paraphrases" — is now partly
+> closed. `scripts/check-comments.mjs` hard-fails the decidable slice —
+> process narration (`task N`, `iteration N`, `PR #N`, `pull request`,
+> `used to be`, `formerly`, `renamed from`) — and reports, advisory only and
+> never failing the build, any comment block that names an ADR and runs more
+> than one line, plus the per-file and repository-wide comment ratio against
+> the 0.09 baseline above. Judging whether a comment actually paraphrases
+> the ADR it names, or whether a ratio outlier like `signInContext.ts` is
+> load-bearing rather than excess, stays a review call no script can make —
+> the checker's own header states that limit, and `/quality-sweep` covers it
+> at a coarser grain.
 
 ## Consequences
 
