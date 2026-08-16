@@ -85,6 +85,9 @@ Two things that fail silently if you skip them:
 
 ## Workflow
 
+- **The entry point for an implementation task is the `implement-task` skill**
+  (`.claude/skills/implement-task/SKILL.md`) — it orders the gates below into
+  one numbered procedure; the gates keep their meaning and their homes.
 - Work proceeds **one roadmap task at a time**, smallest reviewable change.
 - **Match process weight to the task — implement directly by default**
   ([ADR-0027](docs/adr/0027-process-weight.md)). Nearly every `docs/tasks`
@@ -297,6 +300,8 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md))
 - `.claude/skills/quality-sweep/SKILL.md` — periodic quality sweep (see
   Quality checks above)
+- `.claude/skills/implement-task/SKILL.md` — orders the implementation
+  lifecycle gates into one procedure (see Workflow above)
 - `.claude/settings.json` — committed agent settings. Currently one
   `permissions.deny` rule making the generated API client read-only
   ([ADR-0012](docs/adr/0012-orval-api-client.md)). `settings.local.json`
