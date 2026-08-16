@@ -21,7 +21,7 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 | [05](iteration-5/05-enforce-frontend-module-boundaries.md) | Enforce frontend module boundaries | done |
 | [06](iteration-5/06-feature-public-surfaces.md) | Give feature packages a public surface | done |
 | [03](iteration-5/03-cellar-frontend.md) | Cellar page and add-to-cellar from the catalog | dropped |
-| [11](iteration-5/11-cellar-page.md) | Cellar page for the signed-in user | needs-refinement |
+| [11](iteration-5/11-cellar-page.md) | Cellar page for the signed-in user | refined |
 | [12](iteration-5/12-cellar-navigation.md) | Navigation between Home, Catalog and Cellar | needs-refinement |
 | [13](iteration-5/13-add-bottle-to-cellar.md) | Add a bottle to the cellar from the catalog | needs-refinement |
 | [14](iteration-5/14-edit-remove-bottle.md) | Edit and remove a bottle from the cellar | needs-refinement |
