@@ -98,12 +98,8 @@ class CellarServiceIT {
 		assertThat(bottles.existsById(created.get(1).getId())).isTrue();
 	}
 
-	/**
-	 * Clearing the persistence context between setup and the removal call
-	 * forces {@code bottle.getEntry()} to come back as an uninitialized
-	 * proxy, matching a fresh HTTP request — the scenario the stale
-	 * in-memory {@code entry.getBottles()} from bulk-add setup would hide.
-	 */
+	// Clearing the persistence context forces bottle.getEntry() back as an
+	// uninitialized proxy, matching a fresh HTTP request.
 	@Test
 	void removingABottleDoesNotLoadTheEntrysWholeBottleCollection() {
 		UUID userId = UUID.randomUUID();
@@ -126,12 +122,8 @@ class CellarServiceIT {
 		assertThat(bottles.existsById(removedBottleId)).isFalse();
 	}
 
-	/**
-	 * The other branch of {@code Entry.removeBottle}'s {@code
-	 * Hibernate.isInitialized} check: here the collection is already loaded,
-	 * so both the orphan-removal cascade and the explicit repository delete
-	 * schedule a removal for the same row.
-	 */
+	// The other branch of Entry.removeBottle's isInitialized check: the
+	// collection is already loaded here.
 	@Test
 	void removingABottleFromAnAlreadyLoadedCollectionIssuesOnlyOneDelete() {
 		UUID userId = UUID.randomUUID();

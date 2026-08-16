@@ -19,12 +19,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-/**
- * Covers both halves of ADR-0014: the validation failures
- * GlobalExceptionHandler enriches, and the generic exceptions it leaves to
- * Spring Boot. The catalog endpoint is used only because it is the one real
- * endpoint that exists; the subject here is the shared advice.
- */
+// Covers both halves of ADR-0014: validation failures GlobalExceptionHandler
+// enriches, and generic exceptions left to Spring Boot.
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
@@ -33,11 +29,8 @@ class GlobalExceptionHandlerIT {
 	@Autowired
 	private RestTestClient client;
 
-	/**
-	 * Every route here but the catalog GET is authenticated since ADR-0028, so
-	 * these requests carry a token — otherwise the filter chain answers 401
-	 * and the exception handling under test is never reached.
-	 */
+	// Every route but the catalog GET is authenticated (ADR-0028) — without a
+	// token the filter chain answers 401 before this is reached.
 	@MockitoBean
 	private JwtDecoder jwtDecoder;
 
@@ -66,9 +59,8 @@ class GlobalExceptionHandlerIT {
 		client.post().uri("/test/validation-probe")
 				.header("Authorization", bearer())
 				.contentType(MediaType.APPLICATION_JSON)
-				// Raw bytes, not a String: passing a String body with
-				// application/json content-type gets Jackson-encoded as a
-				// quoted JSON string, not sent as this literal JSON object.
+				// Raw bytes: a String body here gets Jackson-encoded as a quoted
+				// JSON string instead of sent as this literal JSON object.
 				.body("{\"name\": \"\"}".getBytes(StandardCharsets.UTF_8))
 				.exchange()
 				.expectStatus().isBadRequest()
@@ -81,15 +73,10 @@ class GlobalExceptionHandlerIT {
 				});
 	}
 
-	/**
-	 * 405 is deliberately left to Spring Boot, whose handling returns the
-	 * {@code Allow} header RFC 9110 requires. A ProblemDetail-returning
-	 * handler here would carry no headers and silently drop it.
-	 *
-	 * <p>Authenticated on purpose: unauthenticated, the filter chain answers
-	 * 401 before Spring MVC ever decides the method is unsupported, and this
-	 * guard would pass without exercising the Allow contract at all.
-	 */
+	// 405 stays with Spring Boot's own handling, which returns the RFC-9110
+	// `Allow` header; a ProblemDetail handler here would drop it silently.
+	// Authenticated on purpose, or 401 would pass this without ever
+	// reaching the Allow contract.
 	@Test
 	void unsupportedMethodKeepsSpringBootsAllowHeader() {
 		client.post().uri("/api/v1/beers")
@@ -100,10 +87,7 @@ class GlobalExceptionHandlerIT {
 				.expectHeader().valueEquals("Allow", "GET");
 	}
 
-	/**
-	 * Malformed JSON is deliberately left to Spring Boot. Asserts the status
-	 * contract, not Boot's wording, which is not ours to pin.
-	 */
+	// Asserts the status contract, not Boot's own error wording.
 	@Test
 	void malformedJsonYieldsProblemJson400WithoutFieldDetail() {
 		client.post().uri("/test/validation-probe")

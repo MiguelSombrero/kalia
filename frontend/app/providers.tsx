@@ -9,17 +9,11 @@ import enCommon from "@/i18n/locales/en/common.json";
 import fiCommon from "@/i18n/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
 
-/**
- * Client-side providers, mounted once in the root layout (ADR-0008). The
- * i18next instance is the client counterpart to i18n/server.ts.
- *
- * Resources are imported statically rather than through the server's
- * dynamic-import backend so that init() completes synchronously — otherwise
- * untranslated keys flash while the JSON streams in.
- */
+// Mounted once in the root layout (ADR-0008). Resources are imported
+// statically so init() completes synchronously — otherwise untranslated
+// keys flash while the JSON streams in.
 export const Providers = ({ children, locale }: { children: ReactNode; locale: Locale }) => {
-  // useState keeps one QueryClient per browser session without sharing it
-  // across requests during SSR.
+  // useState avoids sharing one QueryClient across requests during SSR.
   const [queryClient] = useState(
     () =>
       new QueryClient({

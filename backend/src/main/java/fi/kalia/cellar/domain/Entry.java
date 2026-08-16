@@ -75,14 +75,9 @@ public class Entry {
 				.toList();
 	}
 
-	/**
-	 * Do not call this alone to delete a bottle's row. On an uninitialized
-	 * {@code bottles} it is a no-op by design — touching the collection here
-	 * would load every bottle for this entry just to find the one to remove
-	 * — so deleting the row for real also requires the explicit repository
-	 * delete in {@link fi.kalia.cellar.application.CellarService#removeBottle},
-	 * which every current caller goes through.
-	 */
+	// Do not call this alone to delete a bottle's row: on an uninitialized
+	// bottles it is a no-op by design, so deleting for real also needs the
+	// explicit repository delete in CellarService#removeBottle.
 	public void removeBottle(Bottle bottle) {
 		if (Hibernate.isInitialized(bottles)) {
 			bottles.remove(bottle);

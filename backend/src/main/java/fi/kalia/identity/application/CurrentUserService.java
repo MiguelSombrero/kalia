@@ -9,19 +9,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-/**
- * Resolves the caller of the current request from their access token
- * (ADR-0028). Reads the {@code SecurityContext} rather than taking the
- * principal as a parameter, so a service can ask who is calling without
- * every controller between it and the request threading the value through.
- */
+// Resolves the caller from the SecurityContext rather than a threaded
+// principal parameter (ADR-0028).
 @Service
 public class CurrentUserService {
 
-	/**
-	 * The current user, or empty when the request is anonymous — as every
-	 * request to a public endpoint (the whole catalog) is.
-	 */
 	public Optional<CurrentUser> find() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (!(authentication instanceof JwtAuthenticationToken token)) {
@@ -30,12 +22,9 @@ public class CurrentUserService {
 		return Optional.of(from(token.getToken()));
 	}
 
-	/**
-	 * The current user, failing when the request is anonymous. For code
-	 * reachable only behind an authenticated route: the filter chain has
-	 * already rejected anonymous callers with 401, so an empty context here
-	 * is a routing mistake, not a client error.
-	 */
+	// For code reachable only behind an authenticated route: an empty context
+	// here is a routing mistake, not a client error — the filter chain
+	// already rejected anonymous callers with 401.
 	public CurrentUser require() {
 		return find().orElseThrow(() -> new IllegalStateException(
 				"No authenticated user in the security context. A caller reached code that "

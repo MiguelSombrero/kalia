@@ -44,8 +44,7 @@ describe("kaliaFetch", () => {
 
     await kaliaFetch("/api/v1/beers", { method: "GET" });
 
-    // Byte-for-byte the anonymous request the public catalog always sent:
-    // an empty Authorization header would make the backend reject it.
+    // An empty Authorization header would make the backend reject this.
     expect(initOf(fetchMock)).not.toHaveProperty("headers");
   });
 

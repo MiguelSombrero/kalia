@@ -12,10 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
-/**
- * Adds field-level detail to Bean Validation failures. Every other generic
- * MVC exception is deliberately left to Spring Boot's defaults (ADR-0014).
- */
+// Adds field-level detail to Bean Validation failures; every other generic
+// MVC exception is left to Spring Boot's defaults (ADR-0014).
 // Do not remove the @Order: Boot's own ProblemDetailsExceptionHandler targets
 // these same exception types at LOWEST_PRECEDENCE, and without this class
 // outranking it, it wins the tie and these handlers silently never run.

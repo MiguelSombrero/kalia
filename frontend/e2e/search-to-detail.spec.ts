@@ -1,5 +1,4 @@
-// Lives under frontend/ but exercises the whole stack: the compose-run
-// backend and Postgres are the fixture behind every page visited here
+// Exercises the whole stack against compose-run backend and Postgres
 // (docs/architecture.md §7, §9).
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
@@ -85,12 +84,8 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
   await expect(page.getByText("Style")).toBeVisible();
 });
 
-/**
- * Covers that paging works at all. Not a regression guard for the
- * client-navigation bug — Playwright's Chromium does not trigger the
- * prefetch that caused it, and this test was measured passing against a
- * build with the bug present. That guard is in Pagination.test.tsx.
- */
+// Covers that paging works, not a regression guard: Playwright's Chromium
+// doesn't trigger the prefetch that caused the bug (guard is Pagination.test.tsx).
 test("pages forward and back through the catalog", async ({ page }) => {
   await page.goto("/en/beers");
   await expect(page.getByText("Page 1 of 3")).toBeVisible();

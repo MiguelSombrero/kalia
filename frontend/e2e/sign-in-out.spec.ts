@@ -1,7 +1,6 @@
-// Lives under frontend/ but exercises the whole stack: the compose-run
-// Keycloak and Valkey are the fixture behind every flow here
-// (docs/architecture.md §6, §7). Credentials are the dev-only account seeded
-// in keycloak/realm-export.json.
+// Exercises the whole stack against compose-run Keycloak and Valkey
+// (docs/architecture.md §6, §7); credentials are the dev-only account in
+// keycloak/realm-export.json.
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
 import Redis from "ioredis";
@@ -9,18 +8,12 @@ import Redis from "ioredis";
 const USERNAME = "testuser";
 const PASSWORD = "testuser123";
 
-// Do not make these parallel while every spec signs in as the same realm user.
-// Measured: 1-2 of 6 specs then fail, always one that cycles sign-in and
-// sign-out, always with the browser landing back on Kalia still rendered signed
-// in. Sequential sign-ins on two devices are fine; overlapping authentication
-// flows for one realm user are not. Seed a user per spec first.
+// Do not parallelize: measured 1-2 of 6 specs failing when run concurrently,
+// always cycling sign-in/sign-out, since all specs share one realm user.
 test.describe.configure({ mode: "serial" });
 
-/**
- * Records CSP violations the page reports, so a test can assert a flow was
- * not silently blocked. Re-registered per document, and a blocked navigation
- * leaves the document in place — which is exactly the case being guarded.
- */
+// Re-registered per document: a blocked navigation leaves the document in
+// place, which is the case this is guarding.
 const collectCspViolations = async (page: Page) => {
   await page.addInitScript(() => {
     const violations: string[] = [];
@@ -32,14 +25,8 @@ const collectCspViolations = async (page: Page) => {
   return () => page.evaluate(() => (window as unknown as { __cspViolations: string[] }).__cspViolations ?? []);
 };
 
-/**
- * Reads and rewrites the token set stored for one browser's session, which is
- * how the refresh tests below reach an expiry that would otherwise take five
- * minutes of wall clock (the realm's `accessTokenLifespan`,
- * keycloak/realm-export.json). Addressed by the page's own session cookie:
- * records are keyed per session (ADR-0030), so several may exist at once even
- * though the realm seeds a single user.
- */
+// Reads/rewrites the stored token set so refresh tests can force an expiry
+// instead of waiting out the real 5-minute lifespan (keycloak/realm-export.json).
 const storedAccount = async (page: Page) => {
   const cookies = await page.context().cookies();
   const sessionToken = cookies.find((cookie) => cookie.name === "authjs.session-token")?.value;
@@ -50,21 +37,15 @@ const storedAccount = async (page: Page) => {
   const read = async () => JSON.parse((await valkey.get(key))!) as Record<string, unknown>;
   return {
     read,
-    // KEEPTTL, or the patch itself would strip the expiry the record is
-    // supposed to carry and quietly test something production never does.
+    // KEEPTTL, or the patch would strip the expiry the record should carry.
     patch: async (fields: Record<string, unknown>) =>
       valkey.set(key, JSON.stringify({ ...(await read()), ...fields }), "KEEPTTL"),
     close: () => valkey.quit(),
   };
 };
 
-/**
- * Ends `testuser`'s Keycloak SSO session from the identity-provider side —
- * an admin revoking a session, or another RP's own logout, would look the
- * same to Kalia — so Back-Channel Logout (ADR-0031) is the only thing that
- * can end the matching Kalia session; nothing in this flow visits Kalia at
- * all before the assertion in the test that calls this.
- */
+// Ends the Keycloak SSO session from the IdP side, so only Back-Channel
+// Logout (ADR-0031) can end the matching Kalia session.
 const endKeycloakSessionViaAdmin = async (request: APIRequestContext) => {
   const adminUsername = process.env.KEYCLOAK_ADMIN ?? "admin";
   const adminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
@@ -101,7 +82,6 @@ const endKeycloakSessionViaAdmin = async (request: APIRequestContext) => {
 const scanForA11yViolations = (page: Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
-/** Clicks "Sign in", completes Keycloak's form, and waits for Kalia to render signed-in. */
 const signIn = async (page: Page) => {
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.locator("#username").waitFor();
@@ -128,13 +108,8 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
   expect((await scanForA11yViolations(page)).violations).toEqual([]);
 });
 
-/**
- * One click is the assertion. `form-action 'self'` blocks a form navigation
- * that ends up cross-origin, including via a same-origin route's redirect, and
- * a blocked sign-out has already deleted the local session — so a second click
- * completes and the flow looks fine while Keycloak's SSO session survives
- * (ADR-0025). Only the click count catches that.
- */
+// One click is the assertion: a blocked sign-out deletes the local session,
+// so a second click would look fine while Keycloak's session survives (ADR-0025).
 test("signing out takes one click and is not blocked by the CSP", async ({ page }) => {
   const cspViolations = await collectCspViolations(page);
   await page.goto("/en");
@@ -146,13 +121,8 @@ test("signing out takes one click and is not blocked by the CSP", async ({ page 
   expect(await cspViolations()).toEqual([]);
 });
 
-/**
- * Two cycles are the point — a single one passes even when the stored tokens
- * are stale, because staleness only shows from the second sign-out on: the
- * `id_token_hint` then names a Keycloak session that no longer exists, and
- * Keycloak answers with its own "Do you want to log out?" page instead of
- * completing the logout (ADR-0025).
- */
+// Two cycles: staleness only shows on the second sign-out, when a stale
+// `id_token_hint` makes Keycloak ask to confirm the logout (ADR-0025).
 test("signs in and out twice without Keycloak asking to confirm the logout", async ({ page }) => {
   await page.goto("/en");
 
@@ -168,8 +138,7 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
     await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(/localhost:3000/);
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
-    // The Keycloak SSO session must be gone too, or the next sign-in would
-    // skip the credential prompt instead of showing Keycloak's form.
+    // The Keycloak SSO session must be gone too, or this skips the prompt.
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(
       page.locator("#username"),
@@ -179,12 +148,8 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
   }
 });
 
-/**
- * The renewed token is sent to the real backend rather than merely compared as
- * a string: withholding an expired token also keeps browsing working, so only
- * a call the resource server accepts distinguishes renewal from that
- * (ADR-0029).
- */
+// Sent to the real backend, not compared as a string: withholding an expired
+// token also keeps browsing working, so only backend acceptance proves renewal (ADR-0029).
 test("renews an expired access token instead of dropping it", async ({ page, request }) => {
   await page.goto("/en");
   await signIn(page);
@@ -193,7 +158,7 @@ test("renews an expired access token instead of dropping it", async ({ page, req
   const before = await account.read();
   await account.patch({ expires_at: Math.floor(Date.now() / 1000) - 1 });
 
-  // A page that actually calls the backend, so the token is fetched.
+  // Calls the backend, so the token is actually fetched.
   await page.goto("/en/beers");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
@@ -203,19 +168,15 @@ test("renews an expired access token instead of dropping it", async ({ page, req
   expect(after.access_token, "the expired token was not replaced").not.toBe(before.access_token);
   expect(after.expires_at as number).toBeGreaterThan(Math.floor(Date.now() / 1000));
 
-  // Not just "a new string": the renewed token must satisfy the resource
-  // server's signature, issuer and audience checks (ADR-0028).
+  // Must pass the backend's signature/issuer/audience checks (ADR-0028).
   const me = await request.get("http://localhost:8080/api/v1/me", {
     headers: { Authorization: `Bearer ${after.access_token as string}` },
   });
   expect(me.status(), "the backend rejected the renewed token").toBe(200);
 });
 
-/**
- * Two browser contexts are the point — a single one cannot detect tokens
- * shared between sessions, so collapsing this into one page deletes the guard
- * without failing (ADR-0030).
- */
+// Two browser contexts: one page can't detect tokens shared between
+// sessions, so collapsing this to one deletes the guard without failing (ADR-0030).
 test("signing out on one device leaves the other's session intact", async ({
   browser,
   request,
@@ -236,8 +197,7 @@ test("signing out on one device leaves the other's session intact", async ({
   await laptop.getByRole("button", { name: "Sign out" }).click();
   await expect(laptop.getByRole("button", { name: "Sign in" })).toBeVisible();
 
-  // The laptop's own Keycloak SSO session is the one that ended, so it is
-  // asked for credentials again rather than being signed straight back in.
+  // The laptop's own Keycloak SSO session ended, so it's asked for credentials again.
   await laptop.getByRole("button", { name: "Sign in" }).click();
   await expect(
     laptop.locator("#username"),
@@ -255,8 +215,7 @@ test("signing out on one device leaves the other's session intact", async ({
   });
   expect(me.status(), "the phone's access token died with the laptop's sign-out").toBe(200);
 
-  // And the phone can still sign itself out cleanly — its id_token_hint names
-  // a session Keycloak still recognises, so no confirmation page.
+  // The phone signs out cleanly too — Keycloak still recognises its id_token_hint.
   await phone.getByRole("button", { name: "Sign out" }).click();
   await expect(phone.getByText("Do you want to log out?")).toHaveCount(0);
   await expect(phone.getByRole("button", { name: "Sign in" })).toBeVisible();
@@ -264,12 +223,8 @@ test("signing out on one device leaves the other's session intact", async ({
   await Promise.all(contexts.map((context) => context.close()));
 });
 
-/**
- * A corrupt refresh token is the deterministic way to provoke the
- * `invalid_grant` an idle-timed-out SSO session produces, which is the one
- * failure that must end the local session rather than leaving a signed-in user
- * who can reach nothing (ADR-0029).
- */
+// A corrupt refresh token deterministically provokes the `invalid_grant` an
+// idle-timed-out SSO session produces, which must end the local session (ADR-0029).
 test("ends the local session when Keycloak rejects the refresh token", async ({ page }) => {
   await page.goto("/en");
   await signIn(page);
@@ -281,9 +236,8 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
   });
   await account.close();
 
-  // First load spends the dead refresh token and deletes the session record;
-  // the cookie cannot be cleared mid-render, so the second load is the one
-  // that renders signed-out (lib/auth/endLocalSession.ts).
+  // First load deletes the session record; the cookie can't clear mid-render,
+  // so the second load is the one that renders signed-out (endLocalSession.ts).
   await page.goto("/en/beers");
   await page.goto("/en");
 
@@ -291,15 +245,8 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
   await expect(page.getByText("Hi, Test User")).toHaveCount(0);
 });
 
-/**
- * Regression guard for ADR-0031's Back-Channel Logout: without the realm's
- * `backchannel.logout.url` attribute wired up (keycloak/realm-export.json),
- * nothing tells Kalia a Keycloak-side logout happened and the local session
- * lives on regardless — verified to fail without that attribute. Keycloak
- * calls the backchannel logout endpoint as part of processing the admin
- * request below, but the exact timing relative to that call returning isn't
- * a contract this test should assume, hence the retry.
- */
+// Regression guard for ADR-0031: verified to fail without the realm's
+// `backchannel.logout.url` wired up. Retries since backchannel timing isn't a contract.
 test("Keycloak ending the SSO session ends the matching Kalia session", async ({ page, request }) => {
   await page.goto("/en");
   await signIn(page);

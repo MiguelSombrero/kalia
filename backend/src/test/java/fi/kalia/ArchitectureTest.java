@@ -24,15 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Enforces the DDD-lite module layout and dependency direction (ADR-0007) and
- * the one-filter-chain security invariant (ADR-0028). Module *boundaries* are
- * verified separately by {@link ModularityTest}; these rules govern the inside
- * of a module.
- *
- * <p>Most rules here are exercised by the codebase itself — production classes
- * match their {@code that()} clause, so a mistake in the rule shows up as a
- * failure right here. The three that are not, because nothing in production
- * ever triggers them, are checked against a violating fixture instead; see
+ * Enforces module layout (ADR-0007) and the one-filter-chain invariant
+ * (ADR-0028); module boundaries are {@link ModularityTest}'s job. Rules with
+ * no production violator are checked against a fixture instead — see
  * {@link ArchitectureRulesRejectViolationsTest}.
  */
 @AnalyzeClasses(packages = ArchitectureTest.BASE_PACKAGE,
@@ -41,11 +35,8 @@ class ArchitectureTest {
 
 	static final String BASE_PACKAGE = "fi.kalia";
 
-	/**
-	 * Matches the class the security filter chain is configured in. Keyed on
-	 * the bean rather than on a class name, so renaming or splitting
-	 * {@code SecurityConfig} does not silently take the guard with it.
-	 */
+	// Keyed on the bean, not a class name, so renaming SecurityConfig doesn't
+	// silently take the guard with it.
 	private static final DescribedPredicate<JavaClass> DECLARE_A_SECURITY_FILTER_CHAIN_BEAN =
 			new DescribedPredicate<>("declare a @Bean method returning a SecurityFilterChain") {
 				@Override
@@ -85,13 +76,8 @@ class ArchitectureTest {
 			.because("repositories belong to the domain layer (ADR-0007)")
 			.allowEmptyShould(false);
 
-	/**
-	 * {@code allowEmptyShould(false)} is what makes this fail on an *absent*
-	 * chain: with nothing declaring the bean the {@code that()} clause selects
-	 * nothing, which has to be a failure rather than a vacuous pass. Deleting
-	 * the chain would otherwise leave every endpoint of every module open with
-	 * no test objecting (ADR-0028).
-	 */
+	// allowEmptyShould(false) turns an absent chain into a failure instead of
+	// a vacuous pass — otherwise deleting it opens every endpoint unnoticed.
 	@ArchTest
 	static final ArchRule theResourceServerChainIsDeclaredByIdentity = classes()
 			.that(DECLARE_A_SECURITY_FILTER_CHAIN_BEAN)
@@ -111,14 +97,9 @@ class ArchitectureTest {
 			.because("the backend authenticates callers by validating a bearer token (ADR-0028)")
 			.allowEmptyShould(false);
 
-	/**
-	 * Keeps a protected module — {@code cellar} and everything after it — from
-	 * bringing its own security configuration instead of inheriting the
-	 * deny-by-default chain. A second chain does not merely add rules: the
-	 * first one whose matcher accepts the request decides it, so a module that
-	 * registers its own can open up paths the identity chain would have
-	 * required a token for.
-	 */
+	// A second chain doesn't merely add rules: the first matching chain
+	// decides the request, so a module's own chain can open paths identity's
+	// would have required a token for.
 	@ArchTest
 	static final ArchRule onlyIdentityConfiguresWebSecurity = noClasses()
 			.that().resideOutsideOfPackage(BASE_PACKAGE + ".identity..")
@@ -136,15 +117,9 @@ class ArchitectureTest {
 	@ArchTest
 	static final ArchRule noJavaUtilLogging = NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING;
 
-	/**
-	 * Takes a base package, unlike every rule above, so
-	 * {@link ArchitectureRulesRejectViolationsTest} can point this same rule
-	 * body at a fixture that breaks it — no production class ever will, and a
-	 * rule nothing triggers passes whether or not its condition is right. The
-	 * fixture cannot live under {@code fi.kalia} (see {@code archfixture}), so
-	 * the base package has to be a parameter to reach it. Only that varies:
-	 * the pattern built around it is shared with the run over production code.
-	 */
+	// Parameterised so {@link ArchitectureRulesRejectViolationsTest} can point
+	// this same rule body at a fixture that breaks it — a rule no production
+	// class ever triggers passes whether or not its condition is right.
 	static ArchRule domainDependsOnNoOuterLayer(String basePackage) {
 		return noClasses()
 				.that().resideInAPackage(basePackage + ".*.domain..")

@@ -5,9 +5,8 @@ import { createValkeyAdapter } from "./valkeyAdapter";
 const store = new Map<string, string>();
 const client = {
   get: vi.fn(async (key: string) => store.get(key) ?? null),
-  // No real expiry, only key presence — so PXAT/KEEPTTL are ignored. XX is
-  // not: refusing to create a missing key is a guarantee the adapter leans
-  // on, so the fake honours it rather than letting a test pass on shape.
+  // No real expiry, so PXAT/KEEPTTL are ignored; XX is honoured, since the
+  // adapter leans on "refuses to create a missing key" as a real guarantee.
   set: vi.fn(async (key: string, value: string, ...options: unknown[]) => {
     if (options.includes("XX") && !store.has(key)) {
       return null;
@@ -82,8 +81,8 @@ describe("valkeyAdapter", () => {
     ).resolves.toEqual(user);
   });
 
-  // Load-bearing: linkAccount runs once per account ever, so any token it
-  // wrote would outlive every session that follows (ADR-0030).
+  // Load-bearing: linkAccount runs once per account, so a token stored here
+  // would outlive every session that follows (ADR-0030).
   it("linkAccount stores no tokens, only the lookup index", async () => {
     const user = await valkeyAdapter.createUser!(newUserInput());
     await valkeyAdapter.linkAccount!({ ...account, userId: user.id });
@@ -153,9 +152,8 @@ describe("the session's Keycloak token set", () => {
     await expect(getSessionAccount("never-signed-in")).resolves.toBeNull();
   });
 
-  // Load-bearing: one user signed in twice is the case the whole keying exists
-  // for, and sign-out reads this record for the id_token_hint it sends, so a
-  // shared record ends the wrong Keycloak session (ADR-0030).
+  // Load-bearing: sign-out reads this record for its id_token_hint, so a
+  // shared record would end the wrong Keycloak session (ADR-0030).
   it("keeps two devices' tokens apart for the same user", async () => {
     const laptop = { ...account, userId: "user-1", id_token: "laptop-id-token" };
     const phone = { ...account, userId: "user-1", id_token: "phone-id-token" };
@@ -187,8 +185,8 @@ describe("the session's Keycloak token set", () => {
     await expect(getSessionAccount("tok-phone")).resolves.not.toBeNull();
   });
 
-  // Load-bearing: a renewed access token must not push the record's expiry
-  // past the session it belongs to, which is what a plain SET would do.
+  // Load-bearing: a renewed token must not push expiry past its session —
+  // a plain SET would do exactly that.
   it("keeps the record's expiry when a renewed set is written back", async () => {
     const expiry = expires();
     await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expiry);
@@ -209,9 +207,8 @@ describe("the session's Keycloak token set", () => {
     await expect(getSessionAccount("tok-1")).resolves.toMatchObject({ access_token: "renewed" });
   });
 
-  // Load-bearing: a renewal is a round trip to Keycloak, so the session can
-  // end while it is in flight. Recreating the record here would leave a live
-  // refresh token under a key with no expiry, for a session nobody can reach.
+  // Load-bearing: a renewal can outlast its session; recreating the record
+  // here would leave a live refresh token with no expiry, unreachable.
   it("does not resurrect the record when the session ended mid-renewal", async () => {
     await putSessionAccount("tok-1", { ...account, userId: "user-1" }, expires());
     await valkeyAdapter.deleteSession!("tok-1");
@@ -236,8 +233,7 @@ describe("the session's sid index", () => {
   });
 
   // Load-bearing: a Back-Channel Logout token naming this sid after the
-  // session ended must find nothing, or it would look like the notification
-  // was ignored (ADR-0031).
+  // session ended must find nothing (ADR-0031).
   it("deleteSession removes the sid index along with the session", async () => {
     const user = await valkeyAdapter.createUser!(newUserInput());
     await valkeyAdapter.createSession!({ sessionToken: "tok-1", userId: user.id, expires: expires() });

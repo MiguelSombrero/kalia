@@ -1,12 +1,7 @@
 import { createInternalKeycloakFetch } from "./internalKeycloakFetch";
 
-/**
- * A renewed token set, or why it could not be renewed. The two failures are
- * kept apart because they call for opposite responses: `rejected` means this
- * refresh token will never work again and the local session is dead with it,
- * while `unavailable` means we simply don't know — ending a session over a
- * Keycloak restart would be a self-inflicted sign-out.
- */
+// `rejected` means the refresh token is dead; `unavailable` means we don't
+// know — ending a session over a Keycloak restart would be a self-inflicted sign-out.
 export type RefreshOutcome =
   | {
       status: "renewed";
@@ -20,16 +15,8 @@ export type RefreshOutcome =
   | { status: "rejected" }
   | { status: "unavailable" };
 
-/**
- * Exchanges a refresh token for a fresh token set at Keycloak's token
- * endpoint (RFC 6749 §6). Auth.js has no refresh of its own — it exposes the
- * provider's tokens and leaves renewal to the app — so this is the one
- * hand-written OAuth request in the codebase (ADR-0025 confines the rest of
- * the protocol to Auth.js).
- *
- * The path is Keycloak's stable convention rather than a discovery-document
- * lookup, matching features/auth/endSessionUrl.ts.
- */
+// The one hand-written OAuth request in the codebase (RFC 6749 §6): Auth.js
+// exposes tokens but leaves renewal to the app (ADR-0025).
 export const refreshAccessToken = async (refreshToken: string): Promise<RefreshOutcome> => {
   const issuer = process.env.AUTH_KEYCLOAK_ISSUER;
   const internalOrigin = process.env.AUTH_KEYCLOAK_INTERNAL_ORIGIN;
@@ -39,9 +26,8 @@ export const refreshAccessToken = async (refreshToken: string): Promise<RefreshO
     return { status: "unavailable" };
   }
 
-  // Built per call, not once at module load: the same public-to-internal
-  // origin rewrite auth.ts explains, but reading the environment when the
-  // request is actually made.
+  // Built per call, not at module load, so it reads the environment when the
+  // request is actually made (same public-to-internal rewrite auth.ts explains).
   const fetchViaInternalKeycloak = createInternalKeycloakFetch(issuer, internalOrigin);
 
   let response: Response;
@@ -72,9 +58,8 @@ export const refreshAccessToken = async (refreshToken: string): Promise<RefreshO
   }
 
   const { access_token: accessToken, expires_in: expiresIn } = payload;
-  // A 200 without these is Keycloak answering something other than a token
-  // response — a gateway's own page, say. Storing it would poison the account
-  // record with a token no backend accepts, so treat it as no answer at all.
+  // A 200 without these is Keycloak answering with something other than a
+  // token response (e.g. a gateway page) — treat it as no answer at all.
   if (typeof accessToken !== "string" || typeof expiresIn !== "number") {
     return { status: "unavailable" };
   }
@@ -88,13 +73,8 @@ export const refreshAccessToken = async (refreshToken: string): Promise<RefreshO
   };
 };
 
-/**
- * Only `invalid_grant` is treated as fatal to the session. It is the one OAuth
- * error meaning the grant itself is gone — expired, revoked, or its SSO
- * session ended (RFC 6749 §5.2). `invalid_client` and friends indicate *our*
- * misconfiguration, and signing users out over a bad client secret would turn
- * a deployment mistake into a logout storm.
- */
+// Only `invalid_grant` is fatal (RFC 6749 §5.2); `invalid_client` and
+// friends are our own misconfiguration, not grounds to sign users out.
 const isInvalidGrant = async (response: Response): Promise<boolean> => {
   try {
     const body = (await response.json()) as Record<string, unknown>;

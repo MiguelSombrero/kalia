@@ -20,9 +20,8 @@ beforeAll(async () => {
   vi.stubEnv("AUTH_KEYCLOAK_INTERNAL_ORIGIN", "http://keycloak:8080");
   vi.stubEnv("AUTH_KEYCLOAK_ID", AUDIENCE);
 
-  // Serves the JWKS regardless of which origin the request targets, since
-  // the point of this test is validation logic, not internalKeycloakFetch's
-  // own origin rewrite (covered by lib/auth/internalKeycloakFetch.test.ts).
+  // Serves the JWKS regardless of origin: this test covers validation logic,
+  // not internalKeycloakFetch's own rewrite (internalKeycloakFetch.test.ts).
   vi.stubGlobal(
     "fetch",
     vi.fn(
@@ -37,11 +36,9 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-// Forced to the Node environment above: under the project's default jsdom
-// one, jose's own `instanceof Uint8Array` check on the payload it just
-// encoded fails — jsdom's Uint8Array is a distinct realm from Node's.
-// Verified against jose 6.2.8, which throws "payload must be an instance of
-// Uint8Array" from the encode step alone, before any signature is computed.
+// Forced to the Node environment above: under the default jsdom one, jose's
+// own `instanceof Uint8Array` check fails, since jsdom's Uint8Array is a
+// distinct realm from Node's. Verified against jose 6.2.8.
 const sign = async (claims: Record<string, unknown>, key: CryptoKey = signingKey) =>
   new SignJWT(claims).setProtectedHeader({ alg: "RS256", kid: KID }).setIssuedAt().sign(key);
 
@@ -83,8 +80,8 @@ describe("validateLogoutToken", () => {
     await expect(validateLogoutToken(token)).resolves.toEqual({ status: "invalid" });
   });
 
-  // Section 2.6 of the spec: this is the one claim a Logout Token must never
-  // carry, since its presence would mean an ID Token is being replayed as one.
+  // §2.6: the one claim a Logout Token must never carry — its presence
+  // would mean an ID Token is being replayed as one.
   it("rejects a token carrying a nonce", async () => {
     const token = await sign(validClaims({ nonce: "abc" }));
 

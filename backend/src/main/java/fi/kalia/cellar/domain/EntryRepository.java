@@ -11,18 +11,12 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 
 	Optional<Entry> findByUserIdAndBeerId(UUID userId, UUID beerId);
 
-	/**
-	 * Takes {@code userId} rather than checking existence first: a caller must
-	 * get the same "not found" for someone else's entry as for one that never
-	 * existed, or the two cases become distinguishable by response.
-	 */
+	// Takes userId rather than checking existence first, so someone else's
+	// entry and a nonexistent one both read as "not found".
 	Optional<Entry> findByIdAndUserId(UUID id, UUID userId);
 
-	/**
-	 * Quantity is derived by counting bottles, never stored
-	 * (architecture.md §3) — grouping here keeps that a single query per
-	 * caller instead of one count query per entry.
-	 */
+	// Quantity is derived by counting bottles, never stored (architecture.md
+	// §3); grouping here keeps it one query instead of one per entry.
 	@Query("""
 			select e.id as id, e.beerId as beerId, count(b) as quantity,
 			       e.createdAt as createdAt, e.updatedAt as updatedAt

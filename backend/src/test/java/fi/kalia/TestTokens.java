@@ -4,11 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-/**
- * Access tokens for integration tests, so the suite needs no Keycloak. A test
- * pairs this with a mocked {@code JwtDecoder}; the validation rules that
- * mocking bypasses are covered by {@code SecurityConfigTest}.
- */
+// Access tokens for integration tests, paired with a mocked JwtDecoder;
+// the validation rules that bypasses are covered by SecurityConfigTest.
 public final class TestTokens {
 
 	public static final String SUBJECT = "8f14e45f-ceea-467a-9a3c-1b2d4f6a8c90";
@@ -29,10 +26,7 @@ public final class TestTokens {
 				.build();
 	}
 
-	/**
-	 * A second, distinct caller — for asserting that one user's token cannot
-	 * reach another's data.
-	 */
+	// A second, distinct caller, for asserting isolation between users.
 	public static Jwt user(String subject, String username) {
 		return Jwt.withTokenValue("token")
 				.header("alg", "RS256")

@@ -9,12 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 
-/**
- * Jackson serializes nulls literally unless configured otherwise, and a
- * present {@code "city": null} does not match the {@code city?: string}
- * the generated frontend types promise. Verifies the configured
- * ObjectMapper omits null fields entirely.
- */
+// A present "city": null doesn't match the generated `city?: string` type;
+// verifies the configured ObjectMapper omits null fields entirely.
 @JsonTest
 class DtoSerializationIT {
 

@@ -6,17 +6,15 @@ const BACKCHANNEL_LOGOUT_EVENT = "http://schemas.openid.net/event/backchannel-lo
 
 export type LogoutTokenValidation = { status: "valid"; sid: string } | { status: "invalid" };
 
-// Module-scoped, matching auth.ts's own createInternalKeycloakFetch: jose
-// caches the fetched key set in memory and re-fetches only per its own
-// cooldown, so a fresh instance per call would defeat that.
+// Module-scoped: jose caches the key set in memory and re-fetches only per
+// its own cooldown, so a fresh instance per call would defeat that.
 let jwks: ReturnType<typeof createRemoteJWKSet> | undefined;
 
 const remoteJwks = () => {
   if (!jwks) {
     const issuer = process.env.AUTH_KEYCLOAK_ISSUER!;
     const internalOrigin = process.env.AUTH_KEYCLOAK_INTERNAL_ORIGIN!;
-    // The container can't dial Keycloak's public origin either, same split
-    // auth.ts documents for the token exchange.
+    // Same public/internal split auth.ts documents for the token exchange.
     jwks = createRemoteJWKSet(new URL(`${issuer}/protocol/openid-connect/certs`), {
       [customFetch]: createInternalKeycloakFetch(issuer, internalOrigin),
     });
@@ -24,24 +22,17 @@ const remoteJwks = () => {
   return jwks;
 };
 
-/**
- * Validates a Back-Channel Logout token per OpenID Connect Back-Channel
- * Logout 1.0 §2.6: a valid signature from Keycloak's own key set, the
- * expected issuer and audience, and the claims that tell a Logout Token
- * apart from an ID Token reused as one — an `events` claim naming the
- * backchannel-logout event, and no `nonce` claim (ADR-0031). `sid` is
- * required here, not just recommended, because it's the only key the local
- * session index (valkeyAdapter.ts) can look sessions up by.
- */
+// Validates signature, issuer, audience, the backchannel-logout `events`
+// claim, and no `nonce` (OIDC Back-Channel Logout 1.0 §2.6, ADR-0031). `sid`
+// is required here, not just recommended: it's the only key the local
+// session index (valkeyAdapter.ts) can look sessions up by.
 export const validateLogoutToken = async (logoutToken: string): Promise<LogoutTokenValidation> => {
   try {
     const { payload } = await jwtVerify(logoutToken, remoteJwks(), {
       issuer: process.env.AUTH_KEYCLOAK_ISSUER,
       audience: process.env.AUTH_KEYCLOAK_ID,
-      // Belt-and-braces alongside the JWKS's own kty-based key selection,
-      // which already can't resolve an HS256 header to one of Keycloak's RSA
-      // keys: pins out the algorithm-confusion class of attack explicitly
-      // rather than relying on that alone.
+      // Pins out algorithm-confusion attacks explicitly, alongside the
+      // JWKS's own kty-based key selection.
       algorithms: ["RS256"],
     });
 

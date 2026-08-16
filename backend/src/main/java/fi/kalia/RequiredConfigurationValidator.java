@@ -5,13 +5,11 @@ import java.util.function.UnaryOperator;
 import org.springframework.util.StringUtils;
 
 /**
- * Verifies configuration that deliberately has no default (ADR-0015). Must
- * run before the context starts, for two framework reasons: Spring's
- * configuration-properties binder resolves placeholders leniently, so an
- * unset {@code ${POSTGRES_PASSWORD}} binds as that literal string rather
- * than failing, and Flyway opens its connection before any bean of ours is
- * constructed. Later, a missing secret surfaces as
- * {@code password authentication failed} instead.
+ * Verifies configuration with deliberately no default (ADR-0015). Must run
+ * before the context starts: Spring's binder resolves an unset placeholder
+ * leniently as its literal string, and Flyway connects before our beans
+ * construct — later, a missing secret just surfaces as
+ * {@code password authentication failed}.
  */
 final class RequiredConfigurationValidator {
 

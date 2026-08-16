@@ -5,7 +5,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** Read-only inter-module API (ADR-0007); {@code cellar} is its first consumer. */
 @Component
 @RequiredArgsConstructor
 public class IdentityApi {

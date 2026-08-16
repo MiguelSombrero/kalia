@@ -8,14 +8,9 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * Drives Swagger UI's own Authorize button: Authorization Code with PKCE
- * against Keycloak's {@code kalia-swagger} client (public, no secret —
- * keycloak/realm-export.json), independent of the resource-server
- * validation in {@code identity.web.SecurityConfig} (ADR-0028). springdoc
- * resolves the {@code ${...}} placeholders below the same way it resolves
- * any other Spring property.
- */
+// Drives Swagger UI's Authorize button: Authorization Code + PKCE against
+// Keycloak's kalia-swagger client, independent of the resource-server
+// validation in identity.web.SecurityConfig (ADR-0028).
 @SpringBootApplication
 @SecurityScheme(name = "oauth2", type = SecuritySchemeType.OAUTH2,
 		flows = @OAuthFlows(authorizationCode = @OAuthFlow(

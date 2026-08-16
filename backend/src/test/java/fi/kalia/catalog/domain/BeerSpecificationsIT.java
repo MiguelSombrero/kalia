@@ -13,10 +13,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Runs against the real database and seed data: mocking the JPA Criteria API
- * would assert implementation calls rather than filtering behavior.
- */
+// Runs against real database and seed data: mocking the JPA Criteria API
+// would assert implementation calls, not filtering behavior.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
@@ -80,10 +78,10 @@ class BeerSpecificationsIT {
 
 	@Test
 	void abvBoundsAreInclusive() {
-		// KBS is exactly 12.0 — the strongest seed beer.
+		// KBS: strongest seed beer, exactly 12.0.
 		assertThat(search(null, null, null, null, new BigDecimal("12.0"), null))
 				.extracting(Beer::getName).containsExactly("KBS");
-		// Table Beer is exactly 3.0 — the weakest.
+		// Table Beer: weakest, exactly 3.0.
 		assertThat(search(null, null, null, null, null, new BigDecimal("3.0")))
 				.extracting(Beer::getName).containsExactly("Table Beer");
 	}
@@ -99,17 +97,13 @@ class BeerSpecificationsIT {
 
 	@Test
 	void percentInQueryIsTreatedAsLiteralNotWildcard() {
-		// "Gueuze 100% Lambic Bio" contains "10" but not the literal substring
-		// "10%" (it's "100%"), and "Rochefort 10" contains "10" but no "%" at
-		// all. An unescaped "%" turns the query into a wildcard, so both
-		// beers wrongly match; escaped, neither does.
+		// Unescaped, "%" is a SQL wildcard and "10%" would match "100%"/"10" too.
 		assertThat(search("10%", null, null, null, null, null)).isEmpty();
 	}
 
 	@Test
 	void underscoreInQueryIsTreatedAsLiteralNotWildcard() {
-		// No seed beer name contains a literal underscore. An unescaped "_"
-		// matches any single character, so this wrongly matches every beer.
+		// Unescaped, "_" matches any single character and would match every beer.
 		assertThat(search("_", null, null, null, null, null)).isEmpty();
 	}
 

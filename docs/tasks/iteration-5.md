@@ -43,7 +43,7 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 | [17](iteration-5/17-localize-the-code-comment-rule.md) | Load the code-comment rule where the code is written | done |
 | [18](iteration-5/18-check-code-comments.md) | Check the code-comment policy mechanically | done |
 | [19](iteration-5/19-separate-implementing-from-commenting.md) | Separate implementing from commenting | done |
-| [20](iteration-5/20-resweep-code-comments.md) | Re-sweep the tree's comments to the policy | refined |
+| [20](iteration-5/20-resweep-code-comments.md) | Re-sweep the tree's comments to the policy | done |
 
 Tasks 15 and 16 come from
 [ADR-0038](../adr/0038-in-repo-spec-driven-process.md); tasks 17-20 come from
