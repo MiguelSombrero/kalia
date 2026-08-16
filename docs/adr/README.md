@@ -89,6 +89,9 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0040](0040-client-reads-via-server-actions.md) — a client component's
   read of authenticated data calls a Server Action, not the generated client
   directly, so the token-lookup chain never enters the browser bundle.
+- [ADR-0041](0041-tanstack-query-feature-owned-hooks.md) — a component calls
+  a feature-owned hook (`useCellarBottles`) wrapping `useQuery`/`useMutation`,
+  never those TanStack Query hooks directly.
 
 ## Authentication and identity
 

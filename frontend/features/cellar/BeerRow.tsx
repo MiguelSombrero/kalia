@@ -1,26 +1,21 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { cardVariants } from "@/components/ui/card";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
-import { listCellarBottlesAction } from "./actions";
 import { BottleList } from "./BottleList";
 import type { CellarBeerRow } from "./types";
+import { useCellarBottles } from "./useCellarBottles";
 
 export const BeerRow = ({ locale, row }: { locale: Locale; row: CellarBeerRow }) => {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const panelId = useId();
 
-  const bottlesQuery = useQuery({
-    queryKey: ["cellar", "bottles", row.entryId],
-    queryFn: () => listCellarBottlesAction(row.entryId),
-    enabled: isExpanded,
-  });
+  const bottlesQuery = useCellarBottles(row.entryId, { enabled: isExpanded });
 
   return (
     <div className={cn(cardVariants, "overflow-hidden")}>

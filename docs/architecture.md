@@ -244,7 +244,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
   shareable/navigational state in URL search params (catalog filters,
-  pagination), ephemeral UI state in feature-scoped Zustand stores. Forms
+  pagination), ephemeral UI state in feature-scoped Zustand stores. A
+  component never calls `useQuery`/`useMutation` directly — always a
+  feature-owned hook wrapping it (`useCellarBottles`,
+  [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md)). Forms
   follow the same split — navigate → native GET form, mutate/validate →
   react-hook-form + Zod.
 - **API client generated from the backend's OpenAPI spec**
@@ -451,6 +454,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0036](adr/0036-pre-deployment-migration-edits.md) | Applied Flyway migrations may be edited before Kalia's first deployment | accepted | 2026-08-09 |
 | [ADR-0037](adr/0037-functional-modules.md) | The frontend is functional — no classes, discriminated unions over polymorphism, factory functions for DI | accepted | 2026-08-11 |
 | [ADR-0040](adr/0040-client-reads-via-server-actions.md) | A client component's read of authenticated data goes through a Server Action, not the generated client directly | accepted | 2026-08-16 |
+| [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md) | Client components call a feature-owned hook, never `useQuery`/`useMutation` directly | accepted | 2026-08-16 |
 
 ### Engineering process and documentation
 
