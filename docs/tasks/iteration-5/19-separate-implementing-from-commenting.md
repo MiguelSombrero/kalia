@@ -1,6 +1,6 @@
 # Task 19: Separate implementing from commenting
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -90,26 +90,26 @@ ordered, with the comment pass as a step of its own.
 
 ## Acceptance criteria
 
-- [ ] `.claude/skills/implement-task/SKILL.md` exists with a numbered
+- [x] `.claude/skills/implement-task/SKILL.md` exists with a numbered
       procedure covering task file to pull request, in which implementing and
       commenting are separate, ordered steps and the comment step closes by
       running `node scripts/check-comments.mjs`
-- [ ] The skill is verified to be invocable and to actually trigger: a
+- [x] The skill is verified to be invocable and to actually trigger: a
       `claude -p` session given a refined task file invokes it without being
       told to, and the run is recorded with the Claude Code version, since
       auto-invocation is model-decided rather than guaranteed
-- [ ] Every step in the skill links to the rule's existing home rather than
+- [x] Every step in the skill links to the rule's existing home rather than
       restating it — verified by checking each step's text against
       `CLAUDE.md`, so the skill adds no rule that does not already exist
       somewhere
-- [ ] `CLAUDE.md` gains one line making the skill the entry point for an
+- [x] `CLAUDE.md` gains one line making the skill the entry point for an
       implementation task, and the `## Workflow` gates are otherwise unchanged
-- [ ] The two-phase order is exercised end to end on a real change: the
+- [x] The two-phase order is exercised end to end on a real change: the
       implementation pass produces source with no comments, the comment pass
       adds only comments that pass ADR-0017's test, and
       `node scripts/check-comments.mjs` is green afterwards — this task's own
       later siblings are the first candidates
-- [ ] `node scripts/check-tasks.mjs`, `node scripts/check-adrs.mjs`,
+- [x] `node scripts/check-tasks.mjs`, `node scripts/check-adrs.mjs`,
       `mvn clean verify` and `npm test` are all green
 
 ## Notes
