@@ -296,6 +296,12 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   Swagger UI on the dev machine. Authentication makes that a defence in
   depth rather than the only one, but the loopback binding stays until a
   deployment story exists.
+- **Swagger UI drives its own Authorization Code + PKCE flow**, springdoc's
+  `@SecurityScheme`/`@SecurityRequirement` against Keycloak's `kalia-swagger`
+  client — public, no secret, distinct from `kalia-frontend`'s confidential
+  one so no secret is ever browser-visible in the docs UI. Required on every
+  endpoint that needs a bearer token, so the Authorize button covers all of
+  them, not `cellar` alone.
 - **Access tokens are renewed silently**
   ([ADR-0029](adr/0029-silent-token-refresh.md)): the BFF trades the stored
   refresh token for a fresh set when a request needs one and the held token

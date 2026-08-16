@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/cellar")
 @RequiredArgsConstructor
 @Tag(name = "Cellar", description = "The signed-in caller's own cellar")
+@SecurityRequirement(name = "oauth2")
 // Do not drop `content = @Content()`: Spring Security's bearer-token entry
 // point answers 401 with headers only, and an omitted `content` here would
 // have springdoc default to the operation's own success schema instead.
