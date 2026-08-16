@@ -21,6 +21,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [04](iteration-6/04-public-cellar-page.md) | Public cellar page | needs-refinement |
 | [07](iteration-6/07-cellar-domain-events.md) | Where a cellar's domain events are registered | needs-refinement |
 | [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | needs-refinement |
+| [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -46,3 +47,9 @@ The end-to-end journey in "Done when" is an acceptance criterion of
 not a task of its own ([ADR-0026](../adr/0026-task-file-format.md)) and not
 shared with [task 03](iteration-6/03-profile-page.md), whose browser coverage
 stops at the visibility control.
+
+[Task 09](iteration-6/09-batch-beer-lookup-for-cellar.md) also does not serve
+this iteration's "Done when" — it is a code-review finding from iteration-5
+task 11 (an N+1 backend-call pattern on the cellar page), riding along here
+because it is not urgent enough to block that task but is real enough not to
+sit in the general backlog indefinitely.
