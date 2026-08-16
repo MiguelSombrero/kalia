@@ -86,6 +86,9 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0037](0037-functional-modules.md) — no hand-written classes:
   discriminated unions and type guards over polymorphism, factory functions
   over constructors for DI, `type` over `interface`.
+- [ADR-0040](0040-client-reads-via-server-actions.md) — a client component's
+  read of authenticated data calls a Server Action, not the generated client
+  directly, so the token-lookup chain never enters the browser bundle.
 
 ## Authentication and identity
 

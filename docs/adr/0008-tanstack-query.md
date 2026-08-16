@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-21
+- **Amended:** 2026-08-16 by [ADR-0040](0040-client-reads-via-server-actions.md)
+  — this ADR's `queryFn` was never proven against a real client component
+  until the cellar page; ADR-0040 records what that first consumer forced:
+  the `queryFn` calls a Server Action, not the feature's `api.ts` directly
 
 ## Context
 

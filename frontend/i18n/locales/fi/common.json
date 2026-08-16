@@ -62,5 +62,34 @@
     "signIn": "Kirjaudu sisään",
     "signOut": "Kirjaudu ulos",
     "helloUser": "Hei, {{name}}"
+  },
+  "cellar": {
+    "title": "Kellarini",
+    "pageTitle": "Kellarini — Kalia",
+    "loading": "Ladataan kellaria…",
+    "empty": {
+      "title": "Kellarisi on tyhjä.",
+      "hint": "Kellariin lisäämäsi oluet näkyvät täällä."
+    },
+    "signIn": {
+      "title": "Kirjaudu sisään nähdäksesi kellarisi",
+      "hint": "Kellari pitää kirjaa omistamistasi oluista ja siitä, kuinka vanha kukin pullo on.",
+      "action": "Kirjaudu sisään"
+    },
+    "entry": {
+      "bottleCount_one": "{{count}} pullo",
+      "bottleCount_other": "{{count}} pulloa"
+    },
+    "bottle": {
+      "loading": "Ladataan pulloja…",
+      "error": "Pullojen lataus epäonnistui. Yritä uudelleen.",
+      "brewed": "valmistettu {{relative}}",
+      "bestBefore": "parasta ennen {{relative}}",
+      "container": {
+        "BOTTLE": "Pullo",
+        "CAN": "Tölkki",
+        "KEG": "Tynnyri"
+      }
+    }
   }
 }

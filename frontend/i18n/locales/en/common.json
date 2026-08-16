@@ -62,5 +62,34 @@
     "signIn": "Sign in",
     "signOut": "Sign out",
     "helloUser": "Hi, {{name}}"
+  },
+  "cellar": {
+    "title": "My cellar",
+    "pageTitle": "My cellar — Kalia",
+    "loading": "Loading your cellar…",
+    "empty": {
+      "title": "Your cellar is empty.",
+      "hint": "Beers you add to your cellar will show up here."
+    },
+    "signIn": {
+      "title": "Sign in to see your cellar",
+      "hint": "Your cellar keeps track of the beers you own and how old each bottle is.",
+      "action": "Sign in"
+    },
+    "entry": {
+      "bottleCount_one": "{{count}} bottle",
+      "bottleCount_other": "{{count}} bottles"
+    },
+    "bottle": {
+      "loading": "Loading bottles…",
+      "error": "Could not load bottles. Please try again.",
+      "brewed": "brewed {{relative}}",
+      "bestBefore": "best before {{relative}}",
+      "container": {
+        "BOTTLE": "Bottle",
+        "CAN": "Can",
+        "KEG": "Keg"
+      }
+    }
   }
 }

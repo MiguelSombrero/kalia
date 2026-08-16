@@ -236,7 +236,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   the access token belonging to the caller's own session, renewing it first if
   it has expired ([ADR-0028](adr/0028-resource-server-and-current-user.md),
   [ADR-0029](adr/0029-silent-token-refresh.md),
-  [ADR-0030](adr/0030-per-session-token-storage.md)).
+  [ADR-0030](adr/0030-per-session-token-storage.md)). A client component's
+  read of that same authenticated data calls a Server Action instead — never
+  the feature's `api.ts` directly — so the token-lookup chain stays out of
+  the browser bundle ([ADR-0040](adr/0040-client-reads-via-server-actions.md)).
 - **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
@@ -447,6 +450,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) | Cellar holds one row per bottle, quantity always derived — never a stored count | accepted | 2026-08-09 |
 | [ADR-0036](adr/0036-pre-deployment-migration-edits.md) | Applied Flyway migrations may be edited before Kalia's first deployment | accepted | 2026-08-09 |
 | [ADR-0037](adr/0037-functional-modules.md) | The frontend is functional — no classes, discriminated unions over polymorphism, factory functions for DI | accepted | 2026-08-11 |
+| [ADR-0040](adr/0040-client-reads-via-server-actions.md) | A client component's read of authenticated data goes through a Server Action, not the generated client directly | accepted | 2026-08-16 |
 
 ### Engineering process and documentation
 

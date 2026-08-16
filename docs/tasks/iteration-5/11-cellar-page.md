@@ -1,6 +1,6 @@
 # Task 11: Cellar page for the signed-in user
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** DW-2, DW-3
 
@@ -80,18 +80,18 @@ has. What a signed-out visitor sees at `/cellar`.
 
 ## Acceptance criteria
 
-- [ ] A signed-in user sees their own cellar as one row per beer, and can
+- [x] A signed-in user sees their own cellar as one row per beer, and can
       get from a beer to its individual bottles and their dates —
       component tests (`*.test.tsx`) for populated, empty and error states
-- [ ] Two bottles of the same beer with different dates appear under one
+- [x] Two bottles of the same beer with different dates appear under one
       beer and stay distinguishable — component test, because this is the
       whole point of the model and the easiest thing for a UI to flatten
       away
-- [ ] A signed-out visitor is invited to sign in rather than shown an error
+- [x] A signed-out visitor is invited to sign in rather than shown an error
       or an empty cellar — component test
-- [ ] Every rendered state passes `axe` with no violations, in both locales
+- [x] Every rendered state passes `axe` with no violations, in both locales
       — `jest-axe` in component tests
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

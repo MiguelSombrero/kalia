@@ -243,6 +243,14 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   `next build`, so the CSP cannot be driven by a runtime environment
   variable. Measured, see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)'s
   Evidence.
+- **A client component's `queryFn` must not call a feature's `api.ts`
+  directly when the read is authenticated.** `kaliaFetch`'s token lookup
+  drags `lib/auth/valkeyAdapter.ts` and `ioredis` into the client bundle,
+  which fails `npm run build` several layers down with `Module not found:
+  Can't resolve 'tls'` — a message that names `ioredis`, not the client
+  component that actually caused it. Route the call through a `"use server"`
+  action in the feature's `actions.ts` instead
+  ([ADR-0040](../docs/adr/0040-client-reads-via-server-actions.md)).
 
 **Other**
 
