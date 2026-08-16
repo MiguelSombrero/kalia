@@ -1,6 +1,6 @@
 # Task 10: Swagger UI OAuth2 authorization for authenticated endpoints
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -61,16 +61,16 @@ token to every "Try it out" request against an authenticated endpoint.
 
 ## Acceptance criteria
 
-- [ ] A developer can click Swagger UI's Authorize button, complete a
+- [x] A developer can click Swagger UI's Authorize button, complete a
       Keycloak sign-in, and successfully call `GET /api/v1/cellar` from the
       "Try it out" panel without manually copying a token — verified by hand
       against the local docker-compose stack; this is dev tooling, so no
       automated test observes Swagger UI's own browser behavior
-- [ ] `/v3/api-docs` includes the configured security scheme and marks it
+- [x] `/v3/api-docs` includes the configured security scheme and marks it
       required on every endpoint that needs it — integration test asserting
       `components.securitySchemes` and at least one authenticated operation's
       `security` array
-- [ ] `mvn verify` green
+- [x] `mvn verify` green
 
 ## Notes
 

@@ -26,7 +26,10 @@ curl localhost:8080/api/v1/beers?query=westvleteren
 API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and Swagger UI at
 `/swagger-ui/index.html`, both at `localhost:8080`. The compose stack
 enables them; running natively needs `SPRINGDOC_ENABLED=true` as above,
-since they are off unless a deployment opts in.
+since they are off unless a deployment opts in. Swagger UI's Authorize
+button drives a real Authorization Code + PKCE sign-in against Keycloak
+(`kalia-swagger` client) and attaches the resulting token to "Try it out"
+requests — no manual token copying (docs/architecture.md §6).
 
 ## Configuration
 
@@ -45,6 +48,7 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8081/realms/kalia` | The `iss` every accepted token must carry |
 | `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Where signing keys are fetched. A *different address* from the issuer under docker-compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
 | `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud` claim; rejects tokens minted for another client of the realm |
+| `KEYCLOAK_SWAGGER_CLIENT_ID` | `kalia-swagger` | Public, no secret — pre-fills Swagger UI's Authorize dialog (keycloak/realm-export.json) |
 
 Adding a setting that must not have a default means adding it to
 `RequiredConfigurationValidator.REQUIRED` as well as the properties file.
