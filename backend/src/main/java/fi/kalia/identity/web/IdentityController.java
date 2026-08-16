@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,6 +27,9 @@ class IdentityController {
 	private final CurrentUserService currentUser;
 
 	@GetMapping("/me")
+	// Do not remove: matches Spring's default, but its absence would silently
+	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
+	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "Get the current user",
 			description = "Returns the caller identified by the bearer token. Responds 401 when the request carries no valid token.")
 	CurrentUserDto me() {
