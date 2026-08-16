@@ -1,7 +1,8 @@
 # Task 17: Load the code-comment rule where the code is written
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
+- **PR:** #150
 - **Covers:** none
 
 ## Why
@@ -126,28 +127,28 @@ decision.
 
 ## Acceptance criteria
 
-- [ ] `.claude/rules/code-comments.md` exists with `paths:` frontmatter, and
+- [x] `.claude/rules/code-comments.md` exists with `paths:` frontmatter, and
       is verified to **actually load**: a `claude -p` session started at the
       repository root that reads one backend `.java` file and one frontend
       `.tsx` file reports it among its loaded memory files, and does not
       before either read — measured the way
       [ADR-0035](../../adr/0035-agent-context-layout.md)'s Evidence measured
       its own loading chain, with the Claude Code version recorded
-- [ ] The rule is verified to survive `/compact`: after compaction, reading a
+- [x] The rule is verified to survive `/compact`: after compaction, reading a
       matching file reloads it, and reading a non-matching file does not
-- [ ] `CLAUDE.md` no longer carries the operative code-comment text, only a
+- [x] `CLAUDE.md` no longer carries the operative code-comment text, only a
       pointer to the rule file and to
       [ADR-0017](../../adr/0017-code-comment-policy.md) — grep confirms the
       policy's text appears in exactly one place in the repository outside
       ADR-0017 itself
-- [ ] A new ADR records the decision, the general test, and the read-triggered
+- [x] A new ADR records the decision, the general test, and the read-triggered
       gap, with at least one Bad or Neutral consequence; it is listed in both
       [docs/adr/README.md](../../adr/README.md) and `docs/architecture.md` §9,
       and the ADR-structure test `node scripts/check-adrs.mjs` passes
-- [ ] ADR-0017, ADR-0020 and ADR-0035 each carry an `**Amended:**` line and
+- [x] ADR-0017, ADR-0020 and ADR-0035 each carry an `**Amended:**` line and
       the amended text rather than a rewrite; `node scripts/check-adrs.mjs`
       and `node scripts/check-tasks.mjs` are both green
-- [ ] `mvn clean verify` and `npm test` are unaffected — this task touches no
+- [x] `mvn clean verify` and `npm test` are unaffected — this task touches no
       source, so a green run is the evidence that it did not
 
 ## Notes

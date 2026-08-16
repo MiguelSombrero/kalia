@@ -184,7 +184,8 @@ lives there rather than in this file.
   caller injects `CurrentUserService` rather than taking a principal parameter
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)).
 - Code comments carry only what the repo cannot — full policy in
-  [CLAUDE.md](../CLAUDE.md)
+  [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), which
+  loads on its own when you open a file here
   ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
 
 **Traps — do not "fix" these**

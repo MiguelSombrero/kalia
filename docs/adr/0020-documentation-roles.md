@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-27
+- **Amended:** 2026-08-15 by
+  [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — the `CLAUDE.md`
+  carve-out below does not apply where a path-scoped rule can deliver the rule
+  instead
 
 ## Context
 
@@ -53,6 +57,12 @@ Two carve-outs, stated here so they are not later mistaken for drift:
   policy keeps its full form in `CLAUDE.md` while both READMEs reduce to a
   link. This exception is bounded by its justification: it covers rules that
   apply to *every* edit, not everything an agent might find useful.
+
+  > **Amended 2026-08-15.** The code-comment example no longer holds: that
+  > policy moved to `.claude/rules/code-comments.md`, and `CLAUDE.md` keeps a
+  > pointer. The carve-out itself stands, narrowed — see Consequences and
+  > [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md).
+
 - **A convention whose violation fails silently keeps its warning inline,
   wherever an editor will meet it.** The test is
   [ADR-0017](0017-code-comment-policy.md)'s own: if breaking the rule fails a
@@ -116,6 +126,24 @@ argument without licensing the rest.
   despite this rule, the missing piece is enforcement rather than intent —
   and the check would need to compare prose across documents, which is a
   materially harder thing to build than the structural checks that exist now.
+
+> **Amended 2026-08-15.** The first carve-out above — that `CLAUDE.md` may
+> restate a rule an agent must have without opening a second file — is
+> justified by a pointer being one an agent may never follow. That justification
+> now has an exception. A `.claude/rules/` file with `paths:` frontmatter is
+> loaded by the tool when a matching source file is read, so it is not a
+> pointer: nothing has to be followed.
+>
+> Where such a file can deliver a rule, the carve-out does not license a copy
+> in `CLAUDE.md`, and the one-home rule applies unchanged — the rule moves,
+> and `CLAUDE.md` keeps a pointer. The code-comment policy, which this ADR
+> cites as the carve-out's own example, is the first rule to move; see
+> [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) for the two
+> tests that decide which rules qualify.
+>
+> The carve-out stands unchanged for everything else, including rules whose
+> violation fails silently and which no glob can scope — the second carve-out
+> is untouched.
 
 ## Evidence
 

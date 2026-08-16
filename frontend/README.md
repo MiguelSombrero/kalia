@@ -247,7 +247,9 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
 **Other**
 
 - Code comments carry only what the repo cannot — full policy in
-  [CLAUDE.md](../CLAUDE.md) ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
+  [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), which
+  loads on its own when you open a file here
+  ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
 - This Next.js version may differ from an agent's training data; check
   `node_modules/next/dist/docs/` before relying on memory — see
   [AGENTS.md](AGENTS.md), which already caught `middleware.ts` → `proxy.ts`.

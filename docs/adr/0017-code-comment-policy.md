@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-26
+- **Amended:** 2026-08-15 by
+  [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — the operative
+  rules moved to `.claude/rules/code-comments.md`, which loads when a source
+  file is read; this ADR keeps the reasoning and the census
 - **Amended:** 2026-08-15 — the policy gained a mechanism,
   `scripts/check-comments.mjs` (iteration 5 task 18)
 
@@ -134,21 +138,18 @@ pointer: one line naming the ADR or doc section.
   its comments come from the backend's OpenAPI annotations and are
   regenerated, never hand-edited.
 
-> **Amended 2026-08-15.** The gap Context named — "nothing checks a comment
-> against the ADR it paraphrases" — is now partly closed. Drift measured
-> that day had returned the hand-written ratio to at or above this ADR's
-> pre-sweep 0.13, with seven files carrying more comment lines than code
-> and process narration live in the tree again. `scripts/check-comments.mjs`
-> hard-fails the decidable slice — process narration (`task N`,
-> `iteration N`, `PR #N`, `pull request`, `used to be`, `formerly`,
-> `renamed from`) — and reports, advisory only and never failing the build,
-> any comment block that names an ADR and runs more than one line, plus the
-> per-file and repository-wide comment ratio against the 0.09 baseline
-> above. Judging whether a comment actually paraphrases the ADR it names,
-> or whether a ratio outlier like `signInContext.ts` is load-bearing rather
-> than excess, stays a review call no script can make — the checker's own
-> header states that limit, and `/quality-sweep` covers it at a coarser
-> grain (iteration 5 task 18).
+> **Amended 2026-08-15 (iteration 5 task 18).** The gap Context named —
+> "nothing checks a comment against the ADR it paraphrases" — is now partly
+> closed. `scripts/check-comments.mjs` hard-fails the decidable slice —
+> process narration (`task N`, `iteration N`, `PR #N`, `pull request`,
+> `used to be`, `formerly`, `renamed from`) — and reports, advisory only and
+> never failing the build, any comment block that names an ADR and runs more
+> than one line, plus the per-file and repository-wide comment ratio against
+> the 0.09 baseline above. Judging whether a comment actually paraphrases
+> the ADR it names, or whether a ratio outlier like `signInContext.ts` is
+> load-bearing rather than excess, stays a review call no script can make —
+> the checker's own header states that limit, and `/quality-sweep` covers it
+> at a coarser grain.
 
 ## Consequences
 
@@ -169,3 +170,23 @@ pointer: one line naming the ADR or doc section.
 - **Revisit trigger:** if an agent breaks something a deleted comment had
   covered, that is evidence against the rule for that class of comment —
   restore it and record the case here. Empirical, not settled by taste.
+
+> **Amended 2026-08-15.** This ADR was written with no enforcement behind it,
+> and the Consequences above asked for the ratio to be re-verified during
+> `/quality-sweep` rather than trusting the convention to hold. It did not
+> hold: by 2026-08-15 the sweep was undone, seven hand-written files carried
+> more comment lines than code where this ADR measured none, and 92 comments
+> named an ADR they must move in lockstep with.
+>
+> [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) supplies what
+> was missing. The Decision, the corollary and the applied rules above are
+> unchanged and remain the policy — but their operative text now lives in
+> `.claude/rules/code-comments.md`, which Claude Code loads when a matching
+> source file is read, and `CLAUDE.md` holds a pointer rather than a copy.
+> This ADR remains the home for *why*, per
+> [ADR-0020](0020-documentation-roles.md).
+>
+> The revisit trigger above matters more after this, not less: a mechanism
+> makes deleting a comment cheaper, so a case where a deleted comment turns
+> out to have been load-bearing is evidence against the rule for that class
+> and gets recorded here.
