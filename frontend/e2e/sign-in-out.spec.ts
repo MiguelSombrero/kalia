@@ -292,13 +292,13 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
 });
 
 /**
- * The defect ADR-0031 fixes: previously nothing told Kalia a Keycloak-side
- * logout had happened, so the local session lived on regardless — this test
- * is a regression guard for that, verified to fail without the realm's
- * `backchannel.logout.url` attribute wired up (keycloak/realm-export.json).
- * Keycloak calls the backchannel logout endpoint as part of processing the
- * admin request below, but the exact timing relative to that call returning
- * isn't a contract this test should assume, hence the retry.
+ * Regression guard for ADR-0031's Back-Channel Logout: without the realm's
+ * `backchannel.logout.url` attribute wired up (keycloak/realm-export.json),
+ * nothing tells Kalia a Keycloak-side logout happened and the local session
+ * lives on regardless — verified to fail without that attribute. Keycloak
+ * calls the backchannel logout endpoint as part of processing the admin
+ * request below, but the exact timing relative to that call returning isn't
+ * a contract this test should assume, hence the retry.
  */
 test("Keycloak ending the SSO session ends the matching Kalia session", async ({ page, request }) => {
   await page.goto("/en");

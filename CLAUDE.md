@@ -72,6 +72,7 @@ the next command and breaks the one after it:
 (cd frontend && npm run test:e2e)  # playwright — needs the stack up
 node scripts/check-adrs.mjs        # ADR ↔ architecture.md §9 + adr/README.md
 node scripts/check-tasks.mjs       # task files ↔ iteration index
+node scripts/check-comments.mjs    # code-comment policy (ADR-0017): narration hard-fails, ratio/ADR-block advisory
 ```
 
 Two things that fail silently if you skip them:
@@ -206,12 +207,14 @@ Two things that fail silently if you skip them:
   anywhere in the repository and not derivable by reading it: external
   framework/library behavior, an empirical measurement, or a warning that
   a locally-correct edit is globally wrong. Everything else is a pointer —
-  one line naming the ADR or doc section, never a paraphrase of it, since
-  nothing guards a comment against the ADR it duplicates. Let the
-  enforcement mechanism set the weight: if breaking the invariant fails a
-  test, an ArchUnit rule or the build, that is the guard (comment at most
-  one line, preferably pointing at the test); if it fails silently or only
-  in production builds, the comment is mandatory and opens with "do not".
+  one line naming the ADR or doc section, never a paraphrase of it.
+  `scripts/check-comments.mjs` flags a multi-line ADR-naming block for
+  review (advisory — judging whether it's actually a paraphrase stays a
+  review call) and hard-fails process narration. Let the enforcement
+  mechanism set the weight: if breaking the invariant fails a test, an
+  ArchUnit rule or the build, that is the guard (comment at most one line,
+  preferably pointing at the test); if it fails silently or only in
+  production builds, the comment is mandatory and opens with "do not".
   Never narrate process — no task/PR/review references, no "used to be".
   That history belongs in the commit message and PR description, which are
   built to hold it; a code comment outlives them and becomes stale
