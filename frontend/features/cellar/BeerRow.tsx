@@ -8,7 +8,7 @@ import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { BottleList } from "./BottleList";
 import type { CellarBeerRow } from "./types";
-import { useCellarBottles } from "./useCellarBottles";
+import { useCellarBottles } from "./hooks/useCellarBottles";
 
 export const BeerRow = ({ locale, row }: { locale: Locale; row: CellarBeerRow }) => {
   const { t } = useTranslation();

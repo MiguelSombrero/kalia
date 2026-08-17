@@ -45,7 +45,7 @@ describe("generateMetadata", () => {
 
   it("titles the page in Finnish", async () => {
     await expect(generateMetadata({ params: Promise.resolve({ locale: "fi" }) })).resolves.toEqual({
-      title: "Kellarini — Kalia",
+      title: "Kellari — Kalia",
     });
   });
 });

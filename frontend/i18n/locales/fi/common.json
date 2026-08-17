@@ -64,8 +64,8 @@
     "helloUser": "Hei, {{name}}"
   },
   "cellar": {
-    "title": "Kellarini",
-    "pageTitle": "Kellarini — Kalia",
+    "title": "Kellari",
+    "pageTitle": "Kellari — Kalia",
     "loading": "Ladataan kellaria…",
     "empty": {
       "title": "Kellarisi on tyhjä.",

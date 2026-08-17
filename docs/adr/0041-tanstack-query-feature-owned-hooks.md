@@ -37,7 +37,7 @@ hook owns the query key, the `queryFn`/`mutationFn`, and any
 `invalidateQueries` a mutation needs against a read's key; the component
 only consumes the hook's return value.
 
-`frontend/features/cellar/useCellarBottles.ts` is the first example:
+`frontend/features/cellar/hooks/useCellarBottles.ts` is the first example:
 
 ```ts
 export const useCellarBottles = (entryId: string, options: { enabled: boolean }) => {
@@ -49,13 +49,20 @@ export const useCellarBottles = (entryId: string, options: { enabled: boolean })
 };
 ```
 
-The hook lives beside the component that uses it today
-(`features/cellar/`, not `features/cellar/hooks/`) — a dedicated
-subdirectory is not justified by one hook, and nothing here stops one
-appearing once several exist. Each hook is feature-internal by default
-(not re-exported from the feature's `index.ts`) unless a second feature
-genuinely needs to call it, matching the existing public-surface rule for
-every other symbol.
+**Hooks live in `features/<feature>/hooks/` from the start**, even for one
+hook — not colocated with the components in the feature's root, and not
+deferred until a second hook exists. `eslint-plugin-boundaries`' `features/*`
+pattern still classifies a file nested under a feature's `hooks/`
+subdirectory as that feature with no config change (verified: `npm run
+lint` and `npm run build` green with the hook in place). A hook with no
+single feature owner (e.g. a future `useDebounce`) would go in a top-level
+`hooks/` instead — not created now, since nothing needs it yet; when one
+does, `eslint.config.mjs`'s `boundaries/elements` needs a new entry for it
+first, unlike the feature-scoped case, which needed none.
+
+Each hook is feature-internal by default (not re-exported from the
+feature's `index.ts`) unless a second feature genuinely needs to call it,
+matching the existing public-surface rule for every other symbol.
 
 ## Alternatives considered
 
@@ -68,6 +75,14 @@ same feature, imminently — and retrofitting the hook once three components
 each inline their own copy of the query key is strictly more work than
 extracting it now, with one real example already in hand to model the
 convention on.
+
+**Colocate hooks flat in `features/<feature>/` alongside components, and
+only move to a `hooks/` subdirectory once several accumulate.** Slightly
+less structure for the first hook. Rejected for the same reason as the
+call-site question above: task 13/14's mutation hooks are not hypothetical,
+so the directory this feature settles on today is the one a second and
+third hook land in imminently — moving files (and updating every import)
+once they exist is strictly more churn than starting in the right place.
 
 ## Consequences
 
@@ -83,7 +98,17 @@ convention on.
   having inlined `useQuery` — the benefit only materializes once a second
   caller or a related mutation exists. That is true of `useCellarBottles`
   today; it stops being true the moment tasks 13/14 land.
-- **Revisit trigger:** if a feature accumulates enough hooks that finding
-  the read vs. the mutations among them gets hard, split into
-  `features/<feature>/hooks/` (queries vs. mutations, or one file per
-  hook) rather than one flat directory — not needed at one hook.
+- **Revisit trigger:** the first hook with no single feature owner —
+  `hooks/` at the repository root needs its own entry in
+  `eslint.config.mjs`'s `boundaries/elements` before anything may import
+  from it, unlike `features/<feature>/hooks/`, which needed none.
+
+## Evidence
+
+`eslint-plugin-boundaries`' `features/*` element pattern
+(`eslint.config.mjs`, `partialMatch: false`) was unverified against a
+nested subdirectory before this decision. Checked directly: moved
+`useCellarBottles.ts` into `features/cellar/hooks/`, updated its own
+relative import (`./actions` → `../actions`) and `BeerRow.tsx`'s import
+path, then ran `npm run lint` and `npm run build` — both green, no
+boundary violation and no new entry needed in `eslint.config.mjs`.

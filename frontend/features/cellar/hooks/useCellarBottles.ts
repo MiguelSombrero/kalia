@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { listCellarBottlesAction } from "./actions";
+import { listCellarBottlesAction } from "../actions";
 
 export const useCellarBottles = (entryId: string, options: { enabled: boolean }) => {
   return useQuery({

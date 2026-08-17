@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 const { listCellarBottlesAction } = vi.hoisted(() => ({ listCellarBottlesAction: vi.fn() }));
-vi.mock("./actions", () => ({ listCellarBottlesAction }));
+vi.mock("../actions", () => ({ listCellarBottlesAction }));
 
 import { useCellarBottles } from "./useCellarBottles";
 
