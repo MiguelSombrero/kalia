@@ -47,7 +47,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "jest-axe": "^11.0.0",
     "jsdom": "^30.0.1",
-    "orval": "^8.23.0",
+    "orval": "^8.24.0",
     "tailwindcss": "^4",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
