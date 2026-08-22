@@ -7,6 +7,12 @@
     "tagline": "Käsityöoluiden hallintaa olutharrastajille.",
     "browseCatalog": "Selaa oluita"
   },
+  "nav": {
+    "label": "Päänavigaatio",
+    "home": "Etusivu",
+    "catalog": "Oluet",
+    "cellar": "Kellari"
+  },
   "catalog": {
     "title": "Oluet",
     "pageTitle": "Oluet - Kalia",
