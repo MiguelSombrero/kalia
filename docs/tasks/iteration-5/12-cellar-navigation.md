@@ -1,6 +1,6 @@
 # Task 12: Navigation between Home, Catalog and Cellar
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -35,20 +35,26 @@ Cellar, with the current page indicated. Placement of the already-existing
   ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)).
 - WCAG 2.1 AA — keyboard-operable, visible focus, current page indicated by
   more than color alone.
+- Top bar: the three links extend the existing `<header>` in
+  `app/[locale]/layout.tsx`, staying inline and wrapping onto a second line
+  on narrow screens if needed. No hamburger/drawer or bottom tab bar —
+  three items don't warrant a new interaction pattern.
+- Links (Home, Catalog, Cellar) sit to the left within that header;
+  `AuthStatus` and `LocaleSwitcher` keep their current right-aligned
+  position.
+- The Cellar link is always shown, including to signed-out visitors —
+  clicking it lands on [task 11](11-cellar-page.md)'s existing in-page
+  sign-in prompt at `/cellar`. The nav's shape doesn't change with auth
+  state.
+- Current page is indicated by reusing `LocaleSwitcher`'s existing
+  active-link pattern — `aria-current="page"` plus underline and
+  font-weight, not color alone. A link is active for its whole section via
+  prefix match on the pathname, so a nested route (e.g. a beer detail page)
+  still marks its parent link (Catalog) active.
 
 ## Open questions
 
-1. **What nav component** — top bar, side bar, tabs, something else — and
-   how does it behave on mobile?
-2. **Where do `AuthStatus` and `LocaleSwitcher` sit** relative to the new
-   links?
-3. **Is the Cellar link shown to signed-out visitors** (leading to
-   [task 11](11-cellar-page.md)'s sign-in prompt) or hidden until signed
-   in?
-4. **How is the current page indicated?**
-
-An answer of "your call" to any of these is a fine answer and turns into a
-constraint above.
+**None.**
 
 ## Acceptance criteria
 
