@@ -154,37 +154,37 @@ this section as the project evolves!
 - PostgreSQL 18 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests;
   surefire/failsafe (Spring Boot-managed defaults; unit `*Test` /
-  integration `*IT` split), JaCoCo 0.8 (merged coverage report), ArchUnit 1.4
+  integration `*IT` split), JaCoCo 0.8 (merged coverage report), ArchUnit 1.5
   (package-structure rules)
 - Lombok (boilerplate reduction, version managed by Spring Boot's dependency
   BOM — see backend/README.md conventions)
-- springdoc-openapi 3.0 (OpenAPI spec + Swagger UI)
+- springdoc-openapi 3.1 (OpenAPI spec + Swagger UI)
 - spring-boot-starter-security-oauth2-resource-server (JWT validation against
   Keycloak, version managed by Spring Boot's dependency BOM — see ADR-0028)
 
 ### Frontend
 
-- Next.js 16.2 (App Router), React 19.2, TypeScript 5.9 (TS 7 not yet
+- Next.js 16.3 (App Router), React 19.2, TypeScript 5.9 (TS 7 not yet
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4 (styling)
 - TanStack Query 5.101 (client-component data layer — see ADR-0008)
 - Zustand 5.0 (client UI state — see ADR-0009)
-- react-hook-form 7.82 + Zod 4.4 (+ @hookform/resolvers 5.5) for
+- react-hook-form 7.83 + Zod 4.4 (+ @hookform/resolvers 5.5) for
   stateful forms and validation (ADR-0010)
 - i18next 26.3 + i18next-resources-to-backend 1.2 (server-side
   localization, English + Finnish), react-i18next 17.0 (the client-component
   bridge, mounted in `app/providers.tsx` — see ADR-0011)
-- orval 8.23 (API client generated from the backend's OpenAPI spec,
+- orval 8.24 (API client generated from the backend's OpenAPI spec,
   committed + CI drift check — see ADR-0012)
 - Vitest 4.1 + React Testing Library 16.3 (unit/component tests),
   Playwright 1.62 (E2E, chromium only, against the docker compose stack)
 - `package.json` `overrides` pin `postcss` ^8.5.10 and `sharp` ^0.35.0:
-  next 16.2.11 (as published) still bundles vulnerable versions of these, so
+  next 16.3.1 (as published) still bundles vulnerable versions of these, so
   npm can't resolve a fix within its own dependency range — remove each
   override once next bumps it themselves and `npm audit` stays clean without
   the override (the same `js-yaml` override was removed once orval 8.23.0
   bundled the fix itself)
-- eslint-plugin-jsx-a11y 6.10, jest-axe 10.0 (+ @types/jest-axe 3.5),
+- eslint-plugin-jsx-a11y 6.10, jest-axe 11.0 (+ @types/jest-axe 3.5),
   @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
 - eslint-plugin-boundaries 7.2 (import boundaries between `app/`,
@@ -192,7 +192,7 @@ this section as the project evolves!
   see ADR-0012)
 - next-auth 5.0.0-beta.32 (Auth.js — OIDC Authorization Code + PKCE client
   and session strategy, backed by a custom Valkey adapter — see ADR-0025)
-- ioredis 5.11 (Valkey client used by the Auth.js adapter)
+- ioredis 6.0 (Valkey client used by the Auth.js adapter)
 - Valkey 9.1 (server-side session store, Redis-API-compatible — ADR-0025)
 
 ### Local infrastructure
@@ -212,7 +212,7 @@ this section as the project evolves!
 ### CI
 
 - GitHub Actions (build + test both apps on every push), SHA-pinned:
-  actions/checkout v7.0, actions/setup-java v5.6, actions/setup-node v7.0
+  actions/checkout v7.0, actions/setup-java v5.7, actions/setup-node v7.0
 
 ## Repository layout (planned)
 
