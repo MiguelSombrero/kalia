@@ -31,9 +31,26 @@ worth settling now rather than after a second call site already existed.
 ## Decision
 
 **A client component never calls `useQuery`/`useMutation` directly — it
-calls a feature-owned hook (`useCellarBottles`, and later
-`useAddBottle`/`useUpdateBottle`/`useRemoveBottle`) that wraps it.** The
-hook owns the query key, the `queryFn`/`mutationFn`, and any
+calls a feature-owned hook that wraps it.** Each *operation* gets its own
+hook (`useCellarBottles` for the read; `useAddBottle`/`useUpdateBottle`/
+`useRemoveBottle` for tasks 13/14's mutations), never one hook per
+*resource* exposing every operation as a returned method — a mutation's
+`onSuccess`/`invalidateQueries` logic is specific to what changed, and
+bundling four operations behind one hook's return value mixes those
+concerns and forces every consumer's test to stub all four to exercise one.
+
+**Hooks for one resource are colocated in one file**, sharing the query key
+they all reference, rather than one file per hook. `useCellarBottles` today,
+and `useAddBottle`/`useUpdateBottle`/`useRemoveBottle` once tasks 13/14
+land, all belong in the same module — separate exported hooks, not a
+merged one, but one place to find anything about the bottles resource
+rather than four files to open. (The module will likely be renamed from
+`useCellarBottles.ts` to something resource-shaped, e.g. `useBottles.ts`,
+once it holds more than the one hook its current name describes — not done
+now, since renaming a file with one export ahead of the exports that would
+justify the new name is no more than guessing at it.)
+
+The hook owns the query key, the `queryFn`/`mutationFn`, and any
 `invalidateQueries` a mutation needs against a read's key; the component
 only consumes the hook's return value.
 
@@ -65,6 +82,15 @@ feature's `index.ts`) unless a second feature genuinely needs to call it,
 matching the existing public-surface rule for every other symbol.
 
 ## Alternatives considered
+
+**One hook per resource** (`useBottles()` returning `{ data, add, update,
+remove }`), rather than one hook per operation. Fewer hook names to
+remember, and everything about bottles genuinely is in one place. Rejected
+in favor of one-hook-per-operation-colocated-in-one-file instead: it gets
+the same "one place to look" property without merging a read's caching
+concerns and a mutation's `invalidateQueries`/`onSuccess` concerns into a
+single function's return value, and it keeps each hook's own test narrow
+(one mocked dependency, not four).
 
 **Call `useQuery`/`useMutation` directly in the component**, as `BeerRow`
 originally did. The simplest option for a single call site, and arguably

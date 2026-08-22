@@ -22,6 +22,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [07](iteration-6/07-cellar-domain-events.md) | Where a cellar's domain events are registered | needs-refinement |
 | [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | needs-refinement |
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | needs-refinement |
+| [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -53,3 +54,9 @@ this iteration's "Done when" — it is a code-review finding from iteration-5
 task 11 (an N+1 backend-call pattern on the cellar page), riding along here
 because it is not urgent enough to block that task but is real enough not to
 sit in the general backlog indefinitely.
+
+[Task 10](iteration-6/10-cellar-relative-date-precision.md) is the same
+situation from the same review: a request to show cellar dates with
+two-unit precision (task 11 shipped single-unit), deliberately split out
+rather than fixed mid-PR since it revises task 11's own spec'd example text
+and needs its open questions settled first.
