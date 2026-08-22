@@ -7,6 +7,12 @@
     "tagline": "Craft beer management for enthusiasts.",
     "browseCatalog": "Browse the beer catalog"
   },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "catalog": "Catalog",
+    "cellar": "Cellar"
+  },
   "catalog": {
     "title": "Beer catalog",
     "pageTitle": "Beer catalog — Kalia",
