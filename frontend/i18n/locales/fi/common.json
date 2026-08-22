@@ -96,6 +96,26 @@
         "CAN": "Tölkki",
         "KEG": "Tynnyri"
       }
+    },
+    "add": {
+      "action": "Lisää kellariin",
+      "title": "Lisää kellariin",
+      "description": "Lisää pulloja oluesta {{beer}} kellariisi.",
+      "containerType": "Pakkaus",
+      "brewedDate": "Panopäivä (valinnainen)",
+      "bestBeforeDate": "Parasta ennen (valinnainen)",
+      "quantity": "Kuinka monta",
+      "quantityDecrease": "Yksi vähemmän",
+      "quantityIncrease": "Yksi lisää",
+      "cancel": "Peruuta",
+      "submit": "Lisää",
+      "submitting": "Lisätään…",
+      "error": {
+        "quantityRange": "Valitse 1–24 pulloa.",
+        "brewedInFuture": "Panopäivä ei voi olla tulevaisuudessa.",
+        "bestBeforeNotAfterBrewed": "Parasta ennen -päivän on oltava panopäivän jälkeen.",
+        "failed": "Kellariin lisääminen epäonnistui. Yritä uudelleen."
+      }
     }
   }
 }

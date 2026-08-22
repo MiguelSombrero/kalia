@@ -93,6 +93,14 @@ Why the rationale lives there and not here:
   `auth.ts` count as `lib`). Enforced by ESLint (`eslint-plugin-boundaries` in
   `eslint.config.mjs`), which also rejects importing a folder no layer claims —
   [ADR-0012](../docs/adr/0012-orval-api-client.md).
+- **A feature never reaches into another feature — `app/` composes them.**
+  When one feature's page needs another's affordance (the catalog's pages
+  carry cellar's add-to-cellar button), the host component takes a slot —
+  `BeerList`'s `renderActions` render prop, `BeerDetailsCard`'s `actions`
+  node — and the route in `app/` fills it from the other feature's barrel.
+  The host stays unaware the other feature exists. Enforced by the same
+  `eslint-plugin-boundaries` rule as above, so the alternative fails `npm run
+  lint` rather than working quietly.
 - **Each feature exposes a trimmed public surface through `features/<feature>/index.ts`** —
   only the symbols a genuine external consumer needs, decided per symbol
   against the current import graph rather than re-exporting every internal
@@ -184,6 +192,14 @@ Why the rationale lives there and not here:
 - **Design tokens are two-layer**: components reference the semantic layer
   (`--color-primary`), never raw primitives (`--mint-600`). Shared primitives
   live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).
+- **`components/ui/` is hand-written and dependency-free, with one exception:
+  `dialog.tsx` wraps `@radix-ui/react-dialog` 1.1.23** for the focus trap,
+  focus restore, `Escape` handling and `aria-modal` inerting a modal needs —
+  behaviour, not styling, and each part of it fails silently
+  ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)'s 2026-08-22
+  amendment). Radix is headless: the dialog is still styled with the semantic
+  tokens above, and no other primitive may take a UI dependency without
+  amending that ADR again.
 - **Loading/error/empty states have a fixed shape**: `loading.tsx` per route
   with a shape-matched skeleton, one `app/[locale]/error.tsx` app-wide,
   `EmptyState` for no-results ([ADR-0022](../docs/adr/0022-loading-error-empty-states.md)).

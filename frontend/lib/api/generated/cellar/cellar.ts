@@ -53,36 +53,36 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type addBottleResponse201 = {
-  data: BottleDto
+export type addBottlesResponse201 = {
+  data: BottleDto[]
   status: 201
 }
 
-export type addBottleResponse400 = {
+export type addBottlesResponse400 = {
   data: ProblemDetail
   status: 400
 }
 
-export type addBottleResponse401 = {
+export type addBottlesResponse401 = {
   data: void
   status: 401
 }
 
-export type addBottleResponse404 = {
+export type addBottlesResponse404 = {
   data: ProblemDetail
   status: 404
 }
 
-export type addBottleResponseSuccess = (addBottleResponse201) & {
+export type addBottlesResponseSuccess = (addBottlesResponse201) & {
   headers: Headers;
 };
-export type addBottleResponseError = (addBottleResponse400 | addBottleResponse401 | addBottleResponse404) & {
+export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404) & {
   headers: Headers;
 };
 
-export type addBottleResponse = (addBottleResponseSuccess | addBottleResponseError)
+export type addBottlesResponse = (addBottlesResponseSuccess | addBottlesResponseError)
 
-export const getAddBottleUrl = () => {
+export const getAddBottlesUrl = () => {
 
 
 
@@ -91,12 +91,12 @@ export const getAddBottleUrl = () => {
 }
 
 /**
- * Extends the entry for this catalog beer if the caller already has one, otherwise creates it. The bottle's id is always server-assigned.
- * @summary Add a bottle
+ * Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned.
+ * @summary Add bottles
  */
-export const addBottle = async (addBottleRequestDto: AddBottleRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<addBottleResponse> => {
+export const addBottles = async (addBottleRequestDto: AddBottleRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<addBottlesResponse> => {
 
-  return kaliaFetch<addBottleResponse>(getAddBottleUrl(),
+  return kaliaFetch<addBottlesResponse>(getAddBottlesUrl(),
   {
     ...options,
     method: 'POST',
@@ -109,11 +109,11 @@ export const addBottle = async (addBottleRequestDto: AddBottleRequestDto, option
 
 
 
-export const getAddBottleMutationOptions = <TError = ProblemDetail | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottle>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof addBottle>>, TError,{data: AddBottleRequestDto}, TContext> => {
+export const getAddBottlesMutationOptions = <TError = ProblemDetail | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,{data: AddBottleRequestDto}, TContext> => {
 
-const mutationKey = ['addBottle'];
+const mutationKey = ['addBottles'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -123,10 +123,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBottle>>, {data: AddBottleRequestDto}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBottles>>, {data: AddBottleRequestDto}> = (props) => {
           const {data} = props ?? {};
 
-          return  addBottle(data,requestOptions)
+          return  addBottles(data,requestOptions)
         }
 
 
@@ -136,22 +136,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AddBottleMutationResult = NonNullable<Awaited<ReturnType<typeof addBottle>>>
-    export type AddBottleMutationBody = AddBottleRequestDto
-    export type AddBottleMutationError = ProblemDetail | void
+    export type AddBottlesMutationResult = NonNullable<Awaited<ReturnType<typeof addBottles>>>
+    export type AddBottlesMutationBody = AddBottleRequestDto
+    export type AddBottlesMutationError = ProblemDetail | void
 
     /**
- * @summary Add a bottle
+ * @summary Add bottles
  */
-export const useAddBottle = <TError = ProblemDetail | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottle>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+export const useAddBottles = <TError = ProblemDetail | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof addBottle>>,
+        Awaited<ReturnType<typeof addBottles>>,
         TError,
         {data: AddBottleRequestDto},
         TContext
       > => {
-      return useMutation(getAddBottleMutationOptions(options), queryClient);
+      return useMutation(getAddBottlesMutationOptions(options), queryClient);
     }
     export type removeBottleResponse204 = {
   data: void

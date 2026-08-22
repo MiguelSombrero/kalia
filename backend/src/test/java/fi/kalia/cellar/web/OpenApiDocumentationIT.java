@@ -33,7 +33,7 @@ class OpenApiDocumentationIT {
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/entries/{entryId}/bottles'].get.summary"))
 				.isEqualTo("List one entry's bottles");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles'].post.summary"))
-				.isEqualTo("Add a bottle");
+				.isEqualTo("Add bottles");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].patch.summary"))
 				.isEqualTo("Update a bottle");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].delete.summary"))

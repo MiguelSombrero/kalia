@@ -29,3 +29,7 @@ build/
 # architecture.md, README convention bullets), not here.
 .superpowers/
 docs/superpowers/
+
+# Playwright writes here when run from the repository root rather than frontend/.
+/test-results/
+/playwright-report/

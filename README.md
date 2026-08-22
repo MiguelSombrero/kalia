@@ -167,6 +167,10 @@ this section as the project evolves!
 - Next.js 16.3 (App Router), React 19.2, TypeScript 5.9 (TS 7 not yet
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4 (styling)
+- @radix-ui/react-dialog 1.1.23 (headless modal primitives behind
+  `components/ui/dialog.tsx` — the one UI dependency in an otherwise
+  hand-written primitive set, taken on for focus management rather than
+  appearance; see ADR-0021's 2026-08-22 amendment)
 - TanStack Query 5.101 (client-component data layer — see ADR-0008)
 - Zustand 5.0 (client UI state — see ADR-0009)
 - react-hook-form 7.83 + Zod 4.4 (+ @hookform/resolvers 5.5) for

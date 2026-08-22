@@ -1,6 +1,6 @@
 # Task 13: Add a bottle to the cellar from the catalog
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** DW-1
 
@@ -118,30 +118,30 @@ originally scoped frontend-only.
 
 ## Acceptance criteria
 
-- [ ] Adding a bottle from the beer list card and from the beer detail page
+- [x] Adding a bottle from the beer list card and from the beer detail page
       both put it in the cellar without a full page reload, and the cellar
       list reflects it — Playwright covers sign in → add from the list →
       add from the detail page → see both in the cellar
-- [ ] Submitting a quantity greater than 1 creates that many independent
+- [x] Submitting a quantity greater than 1 creates that many independent
       bottles sharing the same dates and container type, and the cellar's
       derived bottle count reflects all of them — component test, extending
       the quantity = 1 case
-- [ ] A quantity outside 1–24, or a best-before date at or before the
+- [x] A quantity outside 1–24, or a best-before date at or before the
       brewed date, is rejected with an inline error before submission —
       component test
-- [ ] A signed-out visitor clicking "Add to cellar" is sent through
+- [x] A signed-out visitor clicking "Add to cellar" is sent through
       sign-in and returns to the same beer, rather than seeing the dialog —
       component test
-- [ ] The button and its dialog — open, filled, and error states — pass
+- [x] The button and its dialog — open, filled, and error states — pass
       `axe` with no violations in both locales, and are fully
       keyboard-operable: open, tab through every field, `Escape` closes,
       focus returns to the trigger
-- [ ] `POST /api/v1/cellar/bottles` accepts `quantity`, creates that many
+- [x] `POST /api/v1/cellar/bottles` accepts `quantity`, creates that many
       bottles in one call, and returns them all — integration test,
       extending task 02's existing single-bottle test
-- [ ] The generated OpenAPI client is regenerated and committed; the
+- [x] The generated OpenAPI client is regenerated and committed; the
       `api-client-drift` CI job passes
-- [ ] `npm test`, `npm run lint`, `npm run build` and `mvn verify` are all
+- [x] `npm test`, `npm run lint`, `npm run build` and `mvn verify` are all
       green
 
 ## Notes

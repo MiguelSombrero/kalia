@@ -38,18 +38,18 @@ public class CellarService {
 	}
 
 	/**
-	 * Do not persist a newly created bottle by calling {@code
+	 * Do not persist newly created bottles by calling {@code
 	 * entries.save(entry)} instead: once {@code entry} is already managed,
 	 * Spring Data routes {@code save} through {@code EntityManager.merge},
 	 * which cascades to a transient child by copying it into a new managed
-	 * instance — the bottle reference returned to the caller would keep a
-	 * null id even though a row was inserted.
+	 * instance — the bottle references returned to the caller would keep a
+	 * null id even though rows were inserted.
 	 */
-	public Bottle addBottle(UUID userId, UUID beerId, ContainerType containerType,
+	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = entryFor(userId, beerId);
-		Bottle bottle = createBottle(entry, containerType, brewedDate, bestBeforeDate);
-		return bottles.save(bottle);
+		List<Bottle> created = createBottles(entry, quantity, containerType, brewedDate, bestBeforeDate);
+		return bottles.saveAll(created);
 	}
 
 	/** See {@link #removeBottle} for why ownership is checked through {@code userId}, not after loading by id alone. */
@@ -64,23 +64,15 @@ public class CellarService {
 		return bottle;
 	}
 
-	// Isolated here, not in addBottle, so an unrelated persistence-layer
+	// Isolated here, not in addBottles, so an unrelated persistence-layer
 	// IllegalArgumentException is never misreported as an invalid bottle.
-	private static Bottle createBottle(Entry entry, ContainerType containerType,
+	private static List<Bottle> createBottles(Entry entry, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		try {
-			return Bottle.create(entry, containerType, brewedDate, bestBeforeDate);
+			return entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
 		} catch (IllegalArgumentException e) {
 			throw new InvalidBottleException(e.getMessage(), e);
 		}
-	}
-
-	/** See {@link #addBottle} for why bottles save through {@code bottles}, not {@code entries}. */
-	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
-			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
-		Entry entry = entryFor(userId, beerId);
-		List<Bottle> created = entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
-		return bottles.saveAll(created);
 	}
 
 	// Deletes bottle explicitly, not just via Entry.removeBottle's cascade:

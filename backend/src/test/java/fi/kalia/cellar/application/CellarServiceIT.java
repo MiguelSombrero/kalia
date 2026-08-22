@@ -63,7 +63,7 @@ class CellarServiceIT {
 	void addingABottleCreatesTheEntryOnFirstUse() {
 		UUID userId = UUID.randomUUID();
 
-		service.addBottle(userId, beerId, ContainerType.BOTTLE, null, null);
+		service.addBottles(userId, beerId, 1, ContainerType.BOTTLE, null, null);
 
 		Entry entry = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow();
 		assertThat(entry.quantity()).isEqualTo(1);
@@ -73,8 +73,8 @@ class CellarServiceIT {
 	void addingASecondBottleReusesTheSameEntry() {
 		UUID userId = UUID.randomUUID();
 
-		service.addBottle(userId, beerId, ContainerType.BOTTLE, null, null);
-		service.addBottle(userId, beerId, ContainerType.CAN, null, null);
+		service.addBottles(userId, beerId, 1, ContainerType.BOTTLE, null, null);
+		service.addBottles(userId, beerId, 1, ContainerType.CAN, null, null);
 
 		Entry entry = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow();
 		assertThat(entry.quantity()).isEqualTo(2);
@@ -145,14 +145,14 @@ class CellarServiceIT {
 	void rejectsABeerIdThatDoesNotExistInTheCatalog() {
 		UUID unknownBeerId = UUID.randomUUID();
 
-		assertThatThrownBy(() -> service.addBottle(UUID.randomUUID(), unknownBeerId, ContainerType.BOTTLE, null, null))
+		assertThatThrownBy(() -> service.addBottles(UUID.randomUUID(), unknownBeerId, 1, ContainerType.BOTTLE, null, null))
 				.isInstanceOf(BeerNotFoundException.class);
 	}
 
 	@Test
 	void refusesToRemoveABottleOwnedBySomeoneElse() {
 		UUID owner = UUID.randomUUID();
-		Bottle bottle = service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
 
 		assertThatThrownBy(() -> service.removeBottle(UUID.randomUUID(), bottle.getId()))
 				.isInstanceOf(BottleNotFoundException.class);
@@ -162,9 +162,9 @@ class CellarServiceIT {
 	@Test
 	void listEntriesReportsOnlyTheCallersEntriesWithTheirDerivedQuantity() {
 		UUID owner = UUID.randomUUID();
-		service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
-		service.addBottle(owner, beerId, ContainerType.CAN, null, null);
-		service.addBottle(UUID.randomUUID(), beerId, ContainerType.KEG, null, null);
+		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
+		service.addBottles(owner, beerId, 1, ContainerType.CAN, null, null);
+		service.addBottles(UUID.randomUUID(), beerId, 1, ContainerType.KEG, null, null);
 
 		List<EntrySummary> summaries = service.listEntries(owner);
 
@@ -175,7 +175,7 @@ class CellarServiceIT {
 	@Test
 	void listBottlesReturnsAnEntrysBottles() {
 		UUID owner = UUID.randomUUID();
-		service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		Entry entry = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow();
 
 		List<Bottle> result = service.listBottles(owner, entry.getId());
@@ -186,7 +186,7 @@ class CellarServiceIT {
 	@Test
 	void refusesToListBottlesOfAnEntryOwnedBySomeoneElse() {
 		UUID owner = UUID.randomUUID();
-		service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		Entry entry = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow();
 
 		assertThatThrownBy(() -> service.listBottles(UUID.randomUUID(), entry.getId()))
@@ -196,7 +196,7 @@ class CellarServiceIT {
 	@Test
 	void updateBottleReplacesItsFields() {
 		UUID owner = UUID.randomUUID();
-		Bottle bottle = service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
 		LocalDate brewed = LocalDate.now().minusMonths(2);
 
 		Bottle updated = service.updateBottle(owner, bottle.getId(), ContainerType.CAN, brewed, null);
@@ -208,7 +208,7 @@ class CellarServiceIT {
 	@Test
 	void refusesToUpdateABottleOwnedBySomeoneElse() {
 		UUID owner = UUID.randomUUID();
-		Bottle bottle = service.addBottle(owner, beerId, ContainerType.BOTTLE, null, null);
+		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
 
 		assertThatThrownBy(() -> service.updateBottle(UUID.randomUUID(), bottle.getId(), ContainerType.CAN, null, null))
 				.isInstanceOf(BottleNotFoundException.class);
@@ -219,7 +219,7 @@ class CellarServiceIT {
 		UUID owner = UUID.randomUUID();
 		LocalDate tomorrow = LocalDate.now().plusDays(1);
 
-		assertThatThrownBy(() -> service.addBottle(owner, beerId, ContainerType.BOTTLE, tomorrow, null))
+		assertThatThrownBy(() -> service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, tomorrow, null))
 				.isInstanceOf(InvalidBottleException.class)
 				.hasMessageContaining("brewedDate");
 	}

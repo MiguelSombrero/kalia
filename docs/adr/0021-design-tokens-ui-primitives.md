@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-27
+- **Amended:** 2026-08-22 — the no-new-dependency rule now has one
+  exception, `@radix-ui/react-dialog`, for the modal primitive's focus
+  management (iteration 5 task 13)
 
 ## Context
 
@@ -66,6 +69,21 @@ no new dependency.**
 Spacing and border-radius deliberately use Tailwind's default scale with no
 new tokens — unlike colour and type, they are not a re-theming concern.
 
+> **Amended 2026-08-22.** **`components/ui/dialog.tsx` is the one primitive
+> built on a third-party dependency — `@radix-ui/react-dialog` 1.1.23 —
+> because a modal's accessibility is behaviour, not styling.** The
+> no-new-dependency rule above stands for everything else in
+> `components/ui/`, and this exception does not widen to a component library:
+> Radix is headless, so the dialog is still styled entirely with the semantic
+> tokens above, and only the `Dialog` primitive may import it.
+>
+> What it buys is the part that cannot be expressed as a class string: a focus
+> trap, focus restored to the trigger on close, `Escape` to dismiss,
+> `aria-modal` with the rest of the page inert, and scroll locking. That is
+> the WCAG 2.1 AA dialog contract this project holds itself to, and every item
+> in it fails silently — the dialog looks correct while being unusable by
+> keyboard or screen reader.
+
 ## Alternatives considered
 
 **A JS/TS token pipeline** (tokens defined in TypeScript, generated into CSS).
@@ -88,6 +106,17 @@ dark variant would be a different design, not a translation of this one.
 Recorded as a decision so that adding one later is understood as new design
 work rather than finishing something left half-done.
 
+> **Amended 2026-08-22**, for the dialog dependency: **hand-writing the
+> modal** in the same no-dependency spirit as the three primitives above.
+> Consistent with this ADR as written, and the reason the question was asked
+> at all. Rejected because the primitives it would sit beside are pure
+> presentation — a class string and a wrapper element — whereas a dialog is
+> focus management, and the failure mode differs in kind: a wrong class is
+> visible on the page, a missing focus trap is invisible to the person who
+> wrote it and total for someone navigating by keyboard. `cva`/`clsx` were
+> declined below because a few lines covered what they did; that argument
+> does not carry over, because a few lines do not cover this.
+
 **Keeping Tailwind defaults and styling per component.** The status quo.
 Rejected because it had already produced per-page drift, and because the
 product owner's aesthetic direction (craft-label: serif display, sparse
@@ -99,7 +128,8 @@ pastel accents) cannot be expressed as defaults.
   every component, and new features inherit the identity by using the
   primitives instead of choosing colours.
 - Good, because the whole system adds zero dependencies, so there is nothing
-  to keep up to date and no upgrade that can change how a button looks.
+  to keep up to date and no upgrade that can change how a button looks —
+  with the single 2026-08-22 exception below.
 - Bad, because `cn()` is a naive concatenation: passing two conflicting
   Tailwind classes leaves both in the output, and the last one in source
   order wins rather than the last one passed. `tailwind-merge` exists to
@@ -115,6 +145,23 @@ pastel accents) cannot be expressed as defaults.
 - **Revisit trigger:** a second consuming app, or a JS-side need to read a
   token value — either would reopen the JS-pipeline question that YAGNI
   settles today.
+
+> **Amended 2026-08-22**, for the dialog dependency:
+>
+> - Good, because the modal's keyboard and screen-reader contract is
+>   maintained upstream rather than being this project's to get right and
+>   keep right, and `components/ui/dialog.tsx` stays a thin styled wrapper.
+> - Bad, because "no new dependency" is no longer literally true of
+>   `components/ui/`, so the bar for the next such request is now a judgement
+>   about behaviour-versus-presentation rather than a flat no. The line drawn
+>   here: a primitive that only *looks* a certain way stays hand-written.
+> - Bad, because Radix pulls a subtree of its own packages
+>   (`react-dismissable-layer`, `react-focus-scope`, `aria-hidden`,
+>   `react-remove-scroll` among them) into the lockfile, widening the surface
+>   the CVE scan watches ([ADR-0024](0024-dependency-vulnerability-scanning.md))
+>   well past the one package named here.
+> - Neutral, because the dialog is now the app's first component whose
+>   accessibility is not verifiable by reading its own source.
 
 ## Evidence
 

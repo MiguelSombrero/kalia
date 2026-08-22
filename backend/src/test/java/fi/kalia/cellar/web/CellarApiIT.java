@@ -9,6 +9,7 @@ import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,8 +54,8 @@ class CellarApiIT {
 	@Test
 	void aRequestCarryingUserAsTokenGets404NeverForbiddenForUserBsEntryOrBottle() {
 		String bottleJson = addBottle(USER_A, beerId, "BOTTLE", null, null);
-		UUID entryId = UUID.fromString(JsonPath.read(bottleJson, "$.entryId"));
-		UUID bottleId = UUID.fromString(JsonPath.read(bottleJson, "$.id"));
+		UUID entryId = entryIdOf(bottleJson);
+		UUID bottleId = idOf(bottleJson);
 
 		client.get().uri("/api/v1/cellar/entries/{entryId}/bottles", entryId)
 				.header("Authorization", USER_B)
@@ -108,7 +109,7 @@ class CellarApiIT {
 		String first = addBottle(USER_A, beerId, "BOTTLE", null, null);
 		String second = addBottle(USER_A, beerId, "CAN", null, null);
 
-		assertThat((String) JsonPath.read(first, "$.entryId")).isEqualTo(JsonPath.read(second, "$.entryId"));
+		assertThat(entryIdOf(first)).isEqualTo(entryIdOf(second));
 	}
 
 	@Test
@@ -128,13 +129,13 @@ class CellarApiIT {
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
 
-		assertThat((String) JsonPath.read(body, "$.id")).isNotEqualTo(clientId.toString());
+		assertThat(idOf(body)).isNotEqualTo(clientId);
 	}
 
 	@Test
 	void aClientSuppliedIdInTheUpdateBottleRequestIsIgnored() {
 		String bottleJson = addBottle(USER_A, beerId, "BOTTLE", null, null);
-		UUID bottleId = UUID.fromString(JsonPath.read(bottleJson, "$.id"));
+		UUID bottleId = idOf(bottleJson);
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("id", UUID.randomUUID().toString());
 		request.put("containerType", "CAN");
@@ -152,7 +153,7 @@ class CellarApiIT {
 	@Test
 	void listsOneEntrysBottles() {
 		String bottleJson = addBottle(USER_A, beerId, "KEG", null, null);
-		UUID entryId = UUID.fromString(JsonPath.read(bottleJson, "$.entryId"));
+		UUID entryId = entryIdOf(bottleJson);
 
 		client.get().uri("/api/v1/cellar/entries/{entryId}/bottles", entryId)
 				.header("Authorization", USER_A)
@@ -169,7 +170,7 @@ class CellarApiIT {
 	@Test
 	void updatesABottlesFieldsAndPersistsTheChange() {
 		String bottleJson = addBottle(USER_A, beerId, "BOTTLE", null, null);
-		UUID bottleId = UUID.fromString(JsonPath.read(bottleJson, "$.id"));
+		UUID bottleId = idOf(bottleJson);
 
 		client.method(HttpMethod.PATCH).uri("/api/v1/cellar/bottles/{id}", bottleId)
 				.header("Authorization", USER_A)
@@ -189,7 +190,7 @@ class CellarApiIT {
 	void removingABottleReflectsInTheEntrysDerivedQuantity() {
 		String first = addBottle(USER_A, beerId, "BOTTLE", null, null);
 		addBottle(USER_A, beerId, "CAN", null, null);
-		UUID bottleId = UUID.fromString(JsonPath.read(first, "$.id"));
+		UUID bottleId = idOf(first);
 
 		client.delete().uri("/api/v1/cellar/bottles/{id}", bottleId)
 				.header("Authorization", USER_A)
@@ -242,6 +243,62 @@ class CellarApiIT {
 				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 
+	@Test
+	void addingWithAQuantityCreatesThatManyIndependentBottlesAndReturnsThemAll() {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("beerId", beerId.toString());
+		request.put("containerType", "CAN");
+		request.put("brewedDate", "2024-03-01");
+		request.put("quantity", 5);
+
+		String body = client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", USER_A)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.exchange()
+				.expectStatus().isCreated()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+
+		assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(5);
+		List<String> ids = JsonPath.read(body, "$[*].id");
+		assertThat(ids).doesNotHaveDuplicates();
+		List<String> brewedDates = JsonPath.read(body, "$[*].brewedDate");
+		assertThat(brewedDates).containsOnly("2024-03-01");
+
+		client.get().uri("/api/v1/cellar")
+				.header("Authorization", USER_A)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(entries -> assertThat((int) JsonPath.read(entries, "$[0].quantity")).isEqualTo(5));
+	}
+
+	@Test
+	void anAbsentQuantityAddsExactlyOneBottle() {
+		String body = addBottle(USER_A, beerId, "BOTTLE", null, null);
+
+		assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1);
+	}
+
+	@Test
+	void aQuantityOutsideTheAllowedRangeYieldsProblemJson400() {
+		for (int quantity : new int[] { 0, 25 }) {
+			Map<String, Object> request = new LinkedHashMap<>();
+			request.put("beerId", beerId.toString());
+			request.put("containerType", "BOTTLE");
+			request.put("quantity", quantity);
+
+			client.post().uri("/api/v1/cellar/bottles")
+					.header("Authorization", USER_A)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(request)
+					.exchange()
+					.expectStatus().isBadRequest()
+					.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+		}
+	}
+
 	private String addBottle(String bearer, UUID beerId, String containerType, String brewedDate,
 			String bestBeforeDate) {
 		Map<String, Object> request = new LinkedHashMap<>();
@@ -261,6 +318,14 @@ class CellarApiIT {
 				.expectStatus().isCreated()
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
+	}
+
+	private static UUID idOf(String addBottlesResponse) {
+		return UUID.fromString(JsonPath.read(addBottlesResponse, "$[0].id"));
+	}
+
+	private static UUID entryIdOf(String addBottlesResponse) {
+		return UUID.fromString(JsonPath.read(addBottlesResponse, "$[0].entryId"));
 	}
 
 	private static Map<String, Object> updateBody(String containerType, String brewedDate, String bestBeforeDate) {
