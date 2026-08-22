@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { auth } from "@/auth";
 import {
   BeerList,
   type BeerSearchParams,
@@ -6,6 +7,7 @@ import {
   searchBeers,
   SearchFilters,
 } from "@/features/catalog";
+import { AddToCellarButton } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 
@@ -42,8 +44,12 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 const BeersPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
   const beerParams = toBeerSearchParams(await searchParams);
-  const result = await searchBeers(beerParams);
-  const { t } = await getTranslation(locale);
+  const [result, session, { t }] = await Promise.all([
+    searchBeers(beerParams),
+    auth(),
+    getTranslation(locale),
+  ]);
+  const isSignedIn = Boolean(session?.user);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 sm:p-8">
@@ -51,7 +57,18 @@ const BeersPage = async ({ params, searchParams }: Props) => {
         {t("catalog.title")}
       </h1>
       <SearchFilters locale={locale} params={beerParams} />
-      <BeerList locale={locale} beers={result.content} />
+      <BeerList
+        locale={locale}
+        beers={result.content}
+        renderActions={(beer) => (
+          <AddToCellarButton
+            locale={locale}
+            beerId={beer.id}
+            beerName={beer.name}
+            isSignedIn={isSignedIn}
+          />
+        )}
+      />
       <Pagination locale={locale} params={beerParams} result={result} />
     </main>
   );

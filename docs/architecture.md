@@ -166,14 +166,17 @@ GET    /api/v1/breweries
 GET    /api/v1/me                                  -> the caller behind the bearer token
 GET    /api/v1/cellar                              -> the caller's entries, each with a derived quantity
 GET    /api/v1/cellar/entries/{entryId}/bottles     -> one entry's bottles
-POST   /api/v1/cellar/bottles                       -> add a bottle (body carries the catalog beerId)
+POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
 ```
 
 The cellar's endpoints (iteration 5) are two-level, following the data model in
 [§3](#3-backend-modules): one entry per catalog beer under `/api/v1/cellar`, its
-bottles read separately per entry. A bottle is addressed by its own id
+bottles read separately per entry. `POST` answers with an array because it
+creates `quantity` independently editable rows sharing one set of dates, never
+a stored count — the two-level model's whole point
+([ADR-0006](adr/0006-cellar-first.md)). A bottle is addressed by its own id
 everywhere else — `POST`, `PATCH`, `DELETE` — never nested under its entry: an
 `entryId` in that path could not be trusted any more than a caller-supplied
 user id, so it would buy no isolation guarantee, only a redundant "path entry
@@ -263,16 +266,20 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
   and a small set of shared primitives in `components/ui/` — the seam for a
-  possible future design-system extraction. No third-party component library.
+  possible future design-system extraction. No third-party component library;
+  the sole UI dependency is `@radix-ui/react-dialog`, headless primitives
+  behind `components/ui/dialog.tsx`, taken on for a modal's focus management
+  rather than its appearance.
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
   route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
   covering every route.
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
-  `:focus-visible` styling and a skip-to-content link, since the app has no
-  custom interactive widgets to retrofit. Enforced at three layers — lint,
-  unit test and E2E — all riding the existing `frontend`/`e2e` CI jobs, so no
-  separate a11y gate exists to forget. The mechanics are in
+  `:focus-visible` styling and a skip-to-content link. The one non-native
+  widget, the add-to-cellar modal, gets its focus trap and `aria-modal`
+  behaviour from Radix rather than hand-rolled ARIA. Enforced at three
+  layers — lint, unit test and E2E — all riding the existing `frontend`/`e2e`
+  CI jobs, so no separate a11y gate exists to forget. The mechanics are in
   [§7](#7-testing-strategy) and
   [frontend/README.md](../frontend/README.md).
 

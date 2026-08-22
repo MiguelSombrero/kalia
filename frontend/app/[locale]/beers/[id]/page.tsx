@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { BeerDetailsCard, getBeer } from "@/features/catalog";
+import { AddToCellarButton } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 
@@ -19,7 +21,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 const BeerPage = async ({ params }: Props) => {
   const { locale: rawLocale, id } = await params;
   const locale = toLocale(rawLocale);
-  const beer = await getBeer(id);
+  const [beer, session] = await Promise.all([getBeer(id), auth()]);
   if (!beer) {
     notFound();
   }
@@ -33,7 +35,18 @@ const BeerPage = async ({ params }: Props) => {
       >
         {t("beer.backToCatalog")}
       </Link>
-      <BeerDetailsCard locale={locale} beer={beer} />
+      <BeerDetailsCard
+        locale={locale}
+        beer={beer}
+        actions={
+          <AddToCellarButton
+            locale={locale}
+            beerId={beer.id}
+            beerName={beer.name}
+            isSignedIn={Boolean(session?.user)}
+          />
+        }
+      />
     </main>
   );
 };

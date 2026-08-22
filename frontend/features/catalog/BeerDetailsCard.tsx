@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cardVariants } from "@/components/ui/card";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
@@ -12,9 +13,11 @@ const breweryLocation = (city: string | undefined, country: string): string => {
 export const BeerDetailsCard = async ({
   locale,
   beer,
+  actions,
 }: {
   locale: Locale;
   beer: BeerDetails;
+  actions?: ReactNode;
 }) => {
   const { t } = await getTranslation(locale);
 
@@ -28,6 +31,7 @@ export const BeerDetailsCard = async ({
           {beer.brewery.name} — {breweryLocation(beer.brewery.city, beer.brewery.country)}
         </p>
       </header>
+      {actions}
       <dl className={cn(cardVariants, "flex flex-wrap gap-x-10 gap-y-4 p-4")}>
         <div>
           <dt className="text-sm text-muted-foreground">{t("beer.style")}</dt>

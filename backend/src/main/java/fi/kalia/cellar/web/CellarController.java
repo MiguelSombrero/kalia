@@ -67,21 +67,23 @@ class CellarController {
 
 	@PostMapping("/bottles")
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(summary = "Add a bottle",
+	@Operation(summary = "Add bottles",
 			description = """
-					Extends the entry for this catalog beer if the caller already has \
-					one, otherwise creates it. The bottle's id is always server-assigned.\
+					Adds the requested quantity of identical bottles, each its own independently \
+					editable row. Extends the entry for this catalog beer if the caller already has \
+					one, otherwise creates it. Bottle ids are always server-assigned.\
 					""")
 	@ApiResponses({
-			@ApiResponse(responseCode = "400", description = "The bottle's dates are invalid",
+			@ApiResponse(responseCode = "400", description = "The bottle's dates or quantity are invalid",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 							schema = @Schema(implementation = ProblemDetail.class))),
 			@ApiResponse(responseCode = "404", description = "No catalog beer with the given id",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 							schema = @Schema(implementation = ProblemDetail.class)))})
-	BottleDto addBottle(@Valid @RequestBody AddBottleRequestDto request) {
-		return BottleDto.from(cellar.addBottle(identity.requireCurrentUserId(), request.beerId(),
-				request.containerType(), request.brewedDate(), request.bestBeforeDate()));
+	List<BottleDto> addBottles(@Valid @RequestBody AddBottleRequestDto request) {
+		return cellar.addBottles(identity.requireCurrentUserId(), request.beerId(), request.quantityOrDefault(),
+				request.containerType(), request.brewedDate(), request.bestBeforeDate())
+				.stream().map(BottleDto::from).toList();
 	}
 
 	@PatchMapping("/bottles/{id}")

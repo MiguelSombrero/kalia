@@ -1,10 +1,11 @@
 import { apiError } from "@/lib/api/api-error";
 import { getBeer } from "@/lib/api/generated/catalog/catalog";
 import {
+  addBottles as generatedAddBottles,
   listBottles as generatedListBottles,
   listEntries as generatedListEntries,
 } from "@/lib/api/generated/cellar/cellar";
-import type { Bottle, CellarBeerRow } from "./types";
+import type { AddBottlesRequest, Bottle, CellarBeerRow } from "./types";
 
 export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
   const response = await generatedListEntries();
@@ -67,6 +68,16 @@ export const listCellarBottles = async (entryId: string): Promise<Bottle[]> => {
     );
   }
   return [...response.data].sort((a, b) => compareBrewedDate(a.brewedDate, b.brewedDate));
+};
+
+export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bottle[]> => {
+  const response = await generatedAddBottles(request);
+  if (response.status !== 201) {
+    throw apiError("http", `Adding bottles failed with status ${response.status}`, {
+      status: response.status,
+    });
+  }
+  return response.data;
 };
 
 const compareBrewedDate = (a?: string, b?: string): number => {

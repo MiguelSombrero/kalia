@@ -96,6 +96,26 @@
         "CAN": "Can",
         "KEG": "Keg"
       }
+    },
+    "add": {
+      "action": "Add to cellar",
+      "title": "Add to cellar",
+      "description": "Add bottles of {{beer}} to your cellar.",
+      "containerType": "Container",
+      "brewedDate": "Brewed (optional)",
+      "bestBeforeDate": "Best before (optional)",
+      "quantity": "How many",
+      "quantityDecrease": "One fewer",
+      "quantityIncrease": "One more",
+      "cancel": "Cancel",
+      "submit": "Add",
+      "submitting": "Adding…",
+      "error": {
+        "quantityRange": "Choose between 1 and 24 bottles.",
+        "brewedInFuture": "A brewed date cannot be in the future.",
+        "bestBeforeNotAfterBrewed": "Best before must be later than the brewed date.",
+        "failed": "Could not add to your cellar. Please try again."
+      }
     }
   }
 }

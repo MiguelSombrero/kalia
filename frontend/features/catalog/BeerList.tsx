@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cardVariants } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,9 +12,11 @@ import type { BeerSummary } from "./types";
 export const BeerList = async ({
   locale,
   beers,
+  renderActions,
 }: {
   locale: Locale;
   beers: BeerSummary[];
+  renderActions?: (beer: BeerSummary) => ReactNode;
 }) => {
   const { t } = await getTranslation(locale);
 
@@ -60,6 +63,9 @@ export const BeerList = async ({
             <Badge variant="neutral">{beer.style}</Badge>
             <Badge variant="accent">{beer.abv} %</Badge>
           </p>
+          {/* relative z-10: the stretched link above covers the whole card, and
+              anything interactive under it is unclickable without its own layer. */}
+          {renderActions && <div className="relative z-10 mt-3">{renderActions(beer)}</div>}
         </li>
       ))}
     </ul>

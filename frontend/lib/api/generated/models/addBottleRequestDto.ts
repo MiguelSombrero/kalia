@@ -7,7 +7,7 @@
 import type { AddBottleRequestDtoContainerType } from './addBottleRequestDtoContainerType';
 
 /**
- * A bottle to add to the caller's cellar
+ * One or more identical bottles to add to the caller's cellar
  */
 export interface AddBottleRequestDto {
   /** The catalog beer this bottle is of */
@@ -17,4 +17,10 @@ export interface AddBottleRequestDto {
   brewedDate?: string;
   /** Null when not recorded */
   bestBeforeDate?: string;
+  /**
+     * How many identical bottles to add (1-24); absent means one
+     * @minimum 1
+     * @maximum 24
+     */
+  quantity?: number;
 }
