@@ -1,6 +1,6 @@
 # Task 12: Navigation between Home, Catalog and Cellar
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -58,12 +58,12 @@ Cellar, with the current page indicated. Placement of the already-existing
 
 ## Acceptance criteria
 
-- [ ] A user can reach Home, Catalog and Cellar from any of those pages —
+- [x] A user can reach Home, Catalog and Cellar from any of those pages —
       Playwright covers navigating between all three
-- [ ] The current page is indicated in the nav — component test
-- [ ] The nav is keyboard-operable and passes `axe` with no violations, in
+- [x] The current page is indicated in the nav — component test
+- [x] The nav is keyboard-operable and passes `axe` with no violations, in
       both locales — `jest-axe` / `@axe-core/playwright`
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 
