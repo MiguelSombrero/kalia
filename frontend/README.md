@@ -120,6 +120,10 @@ Why the rationale lives there and not here:
 
 - **Client-component data goes through TanStack Query** — `useQuery`/`useMutation`,
   never hand-rolled `fetch` + `useState` ([ADR-0008](../docs/adr/0008-tanstack-query.md)).
+  A component calls a feature-owned hook wrapping it (`useCellarBottles`),
+  never `useQuery`/`useMutation` directly — the hook owns the query key and
+  any `invalidateQueries` a sibling mutation needs against it
+  ([ADR-0041](../docs/adr/0041-tanstack-query-feature-owned-hooks.md)).
 - **Client UI state goes in feature-scoped Zustand stores**, never API data or
   state that should survive a reload ([ADR-0009](../docs/adr/0009-zustand-ui-state.md)).
 - **Stateful forms use react-hook-form + Zod.** Submitting navigates → native
@@ -243,6 +247,24 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   `next build`, so the CSP cannot be driven by a runtime environment
   variable. Measured, see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)'s
   Evidence.
+- **A client component's `queryFn` must not call a feature's `api.ts`
+  directly when the read is authenticated.** `kaliaFetch`'s token lookup
+  drags `lib/auth/valkeyAdapter.ts` and `ioredis` into the client bundle,
+  which fails `npm run build` several layers down with `Module not found:
+  Can't resolve 'tls'` — a message that names `ioredis`, not the client
+  component that actually caused it. Route the call through a `"use server"`
+  action in the feature's `actions.ts` instead
+  ([ADR-0040](../docs/adr/0040-client-reads-via-server-actions.md)).
+- **A Server Action must be defined in the `"use server"` file that exports
+  it, never re-exported from a different `"use server"` file.** Sharing one
+  Server Action (e.g. `startSignIn`) between two features by defining it
+  once in a `lib/` module and re-exporting it from each feature's
+  `actions.ts` breaks Next's action-ID resolution: the client sends an ID
+  the server's manifest doesn't recognize, and the form submission fails at
+  runtime with `UnrecognizedActionError` — a real `POST` to the current
+  page, 404. No test, lint, or build catches this; only clicking the button
+  in a browser does. Duplicate the small action per feature instead
+  (matches the feature-isolation rule above, so it costs nothing extra).
 
 **Other**
 
