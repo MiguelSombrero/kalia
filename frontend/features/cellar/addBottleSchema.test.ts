@@ -19,9 +19,15 @@ describe("addBottleSchema", () => {
     expect(addBottleSchema.safeParse({ ...base, brewedDate: "2024-01-01" }).success).toBe(true);
   });
 
-  it.each([0, MAX_QUANTITY + 1, 1.5])("rejects the quantity %s", (quantity) => {
-    expect(errorFor({ ...base, quantity }, "quantity")).toBe("cellar.add.error.quantityRange");
-  });
+  // NaN is what an emptied number input produces. It belongs in this list
+  // because Zod answers a type failure with its own English prose unless the
+  // schema supplies a key, and that prose would be rendered to the user as-is.
+  it.each([0, MAX_QUANTITY + 1, 1.5, Number.NaN, undefined])(
+    "rejects the quantity %s with a translatable message",
+    (quantity) => {
+      expect(errorFor({ ...base, quantity }, "quantity")).toBe("cellar.add.error.quantityRange");
+    },
+  );
 
   it.each([MIN_QUANTITY, MAX_QUANTITY])("accepts the boundary quantity %s", (quantity) => {
     expect(addBottleSchema.safeParse({ ...base, quantity }).success).toBe(true);

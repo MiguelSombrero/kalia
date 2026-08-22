@@ -101,6 +101,40 @@ test("the open add-to-cellar dialog has no accessibility violations", async ({ p
     .analyze();
   expect(scan.violations).toEqual([]);
 
+  // Every enabled control reachable by Tab, and focus never escaping the
+  // dialog — the half of the modal contract jsdom cannot exercise.
+  const focusedControl = () =>
+    page.evaluate(() => {
+      const active = document.activeElement as HTMLElement | null;
+      // `||`, not `??`: a button's `id` is "" rather than null, which would
+      // swallow the textContent that actually names it.
+      const label =
+        active?.getAttribute("aria-label") || active?.id || active?.textContent?.trim() || "";
+      return { label, insideDialog: Boolean(active?.closest('[role="dialog"]')) };
+    });
+
+  // Opening focuses the first field rather than the dialog box itself, so the
+  // container select is reached without a Tab and the loop starts past it.
+  const reached = new Set<string>([(await focusedControl()).label]);
+  // A date input is several native tab stops (day, month, year), so this many
+  // presses is what it takes to walk one dialog end to end.
+  for (let press = 0; press < 12; press += 1) {
+    await page.keyboard.press("Tab");
+    const focused = await focusedControl();
+    expect(focused.insideDialog, "Tab moved focus out of the open dialog").toBe(true);
+    reached.add(focused.label);
+  }
+
+  const labels = [...reached];
+  for (const control of ["containerType", "brewedDate", "bestBeforeDate", "quantity"]) {
+    expect(labels.some((label) => label.endsWith(control)), `${control} was never focused`).toBe(
+      true,
+    );
+  }
+  // "One fewer" is deliberately absent: it is disabled at quantity 1, and a
+  // disabled control is correctly not a tab stop.
+  expect(labels).toEqual(expect.arrayContaining(["One more", "Cancel", "Add"]));
+
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
 });

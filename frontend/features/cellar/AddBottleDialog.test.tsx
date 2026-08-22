@@ -68,6 +68,16 @@ describe("AddBottleDialog", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  // The options come from the generated client's enum, so this is what would
+  // notice a container type going missing after a regeneration.
+  it("offers every container type the API defines", async () => {
+    await openDialog();
+
+    expect(
+      screen.getAllByRole("option").map((option) => option.getAttribute("value")),
+    ).toEqual(["BOTTLE", "CAN", "KEG"]);
+  });
+
   it("adds one bottle with only a container type chosen", async () => {
     await openDialog();
 
@@ -182,6 +192,20 @@ describe("AddBottleDialog", () => {
 
     expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
     // The dialog renders in a portal on document.body, outside `container`.
+    expect(await axe(document.body)).toHaveNoViolations();
+  });
+
+  it("has no a11y violations once every field is filled in", async () => {
+    await openDialog();
+
+    fireEvent.change(screen.getByLabelText("Brewed (optional)"), {
+      target: { value: "2024-01-01" },
+    });
+    fireEvent.change(screen.getByLabelText("Best before (optional)"), {
+      target: { value: "2027-01-01" },
+    });
+    fireEvent.change(quantityField(), { target: { value: "4" } });
+
     expect(await axe(document.body)).toHaveNoViolations();
   });
 

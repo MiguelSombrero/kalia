@@ -5,6 +5,11 @@ export type {
   BottleDtoContainerType as ContainerType,
 } from "@/lib/api/generated/models";
 
+// The value, not just the type: this file and api.ts are the only ones allowed
+// to reach the generated client, so a feature that needs to enumerate the
+// container types gets them from here rather than retyping the list.
+export { BottleDtoContainerType as containerTypeValues } from "@/lib/api/generated/models";
+
 /** One cellar entry merged with the catalog beer it points at. */
 export type CellarBeerRow = {
   entryId: string;
