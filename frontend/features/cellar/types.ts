@@ -3,6 +3,7 @@ export type {
   AddBottleRequestDto as AddBottlesRequest,
   BottleDto as Bottle,
   BottleDtoContainerType as ContainerType,
+  UpdateBottleRequestDto as UpdateBottleRequest,
 } from "@/lib/api/generated/models";
 
 // The value, not just the type: this file and api.ts are the only ones allowed

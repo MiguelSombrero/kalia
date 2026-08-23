@@ -3,13 +3,21 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-const { listCellarBottlesAction, addBottlesAction } = vi.hoisted(() => ({
-  listCellarBottlesAction: vi.fn(),
-  addBottlesAction: vi.fn(),
+const { listCellarBottlesAction, addBottlesAction, updateBottleAction, removeBottleAction } =
+  vi.hoisted(() => ({
+    listCellarBottlesAction: vi.fn(),
+    addBottlesAction: vi.fn(),
+    updateBottleAction: vi.fn(),
+    removeBottleAction: vi.fn(),
+  }));
+vi.mock("../actions", () => ({
+  listCellarBottlesAction,
+  addBottlesAction,
+  updateBottleAction,
+  removeBottleAction,
 }));
-vi.mock("../actions", () => ({ listCellarBottlesAction, addBottlesAction }));
 
-import { useAddBottle, useCellarBottles } from "./useBottles";
+import { useAddBottle, useCellarBottles, useRemoveBottle, useUpdateBottle } from "./useBottles";
 
 const createHarness = () => {
   const queryClient = new QueryClient({
@@ -88,6 +96,68 @@ describe("useAddBottle", () => {
 
     const { result } = renderHook(() => useAddBottle(), { wrapper: Wrapper });
     result.current.mutate({ beerId: "beer-1", containerType: "BOTTLE", quantity: 1 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["cellar", "bottles", "e1"] });
+  });
+});
+
+describe("useUpdateBottle", () => {
+  it("sends the request through the server action", async () => {
+    const request = { containerType: "CAN" as const, brewedDate: "2024-01-01" };
+    updateBottleAction.mockResolvedValue({
+      id: "b1",
+      entryId: "e1",
+      containerType: "CAN",
+      brewedDate: "2024-01-01",
+      createdAt: "2026-01-01",
+      updatedAt: "2026-01-01",
+    });
+
+    const { result } = renderHook(() => useUpdateBottle(), { wrapper: createHarness().Wrapper });
+    result.current.mutate({ id: "b1", request });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(updateBottleAction).toHaveBeenCalledWith("b1", request);
+  });
+
+  it("invalidates the bottle list of the entry the updated bottle belongs to", async () => {
+    updateBottleAction.mockResolvedValue({
+      id: "b1",
+      entryId: "e1",
+      containerType: "CAN",
+      createdAt: "2026-01-01",
+      updatedAt: "2026-01-01",
+    });
+    const { queryClient, Wrapper } = createHarness();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useUpdateBottle(), { wrapper: Wrapper });
+    result.current.mutate({ id: "b1", request: { containerType: "CAN" } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["cellar", "bottles", "e1"] });
+  });
+});
+
+describe("useRemoveBottle", () => {
+  it("sends the bottle id through the server action", async () => {
+    removeBottleAction.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useRemoveBottle(), { wrapper: createHarness().Wrapper });
+    result.current.mutate({ id: "b1", entryId: "e1" });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(removeBottleAction).toHaveBeenCalledWith("b1");
+  });
+
+  it("invalidates the bottle list of the entry it removed from", async () => {
+    removeBottleAction.mockResolvedValue(undefined);
+    const { queryClient, Wrapper } = createHarness();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useRemoveBottle(), { wrapper: Wrapper });
+    result.current.mutate({ id: "b1", entryId: "e1" });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["cellar", "bottles", "e1"] });

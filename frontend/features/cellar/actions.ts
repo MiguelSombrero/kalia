@@ -3,8 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { signIn } from "@/auth";
 import { isLocale } from "@/i18n/settings";
-import { addBottlesToCellar, listCellarBottles } from "./api";
-import type { AddBottlesRequest, Bottle } from "./types";
+import {
+  addBottlesToCellar,
+  listCellarBottles,
+  removeCellarBottle,
+  updateCellarBottle,
+} from "./api";
+import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 
 // Do not re-export this from a shared lib/ module instead of defining it
 // here: a Server Action re-exported through a second "use server" file
@@ -44,4 +49,18 @@ export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bott
   const created = await addBottlesToCellar(request);
   revalidatePath("/[locale]/cellar", "page");
   return created;
+};
+
+export const updateBottleAction = async (
+  id: string,
+  request: UpdateBottleRequest,
+): Promise<Bottle> => {
+  const updated = await updateCellarBottle(id, request);
+  revalidatePath("/[locale]/cellar", "page");
+  return updated;
+};
+
+export const removeBottleAction = async (id: string): Promise<void> => {
+  await removeCellarBottle(id);
+  revalidatePath("/[locale]/cellar", "page");
 };

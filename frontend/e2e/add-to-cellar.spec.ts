@@ -82,6 +82,34 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   expect(await bottleCount(page, listBeer)).toBe(listBefore + 2);
   expect(await bottleCount(page, detailBeer)).toBe(detailBefore + 1);
 
+  // Edit one of the bottles just added, then remove another — continuing
+  // the same signed-in session rather than a separate spec.
+  await page.goto("/en/cellar");
+  await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
+  const bottleList = page.getByRole("list", {
+    name: new RegExp(`Bottles of ${escapeRegExp(listBeer)}`),
+  });
+  await expect(bottleList).toBeVisible();
+
+  await bottleList.getByRole("button", { name: "Edit" }).first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByLabel("Container").selectOption("CAN");
+  await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(bottleList.getByText("Can")).toBeVisible();
+
+  // bottleCount() navigates to /en/cellar itself, collapsing the row again.
+  const beforeRemove = await bottleCount(page, listBeer);
+  await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
+  await expect(bottleList).toBeVisible();
+  await bottleList.getByRole("button", { name: "Remove" }).first().click();
+  await expect(page.getByText("Bottle removed.")).toBeVisible();
+  // No shorter way to prove the DELETE only fires once the undo window
+  // (~5s) genuinely elapses rather than firing immediately.
+  await page.waitForTimeout(5500);
+  await expect(page.getByText("Bottle removed.")).toBeHidden();
+  expect(await bottleCount(page, listBeer)).toBe(beforeRemove - 1);
+
   const scan = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();

@@ -4,8 +4,10 @@ import {
   addBottles as generatedAddBottles,
   listBottles as generatedListBottles,
   listEntries as generatedListEntries,
+  removeBottle as generatedRemoveBottle,
+  updateBottle as generatedUpdateBottle,
 } from "@/lib/api/generated/cellar/cellar";
-import type { AddBottlesRequest, Bottle, CellarBeerRow } from "./types";
+import type { AddBottlesRequest, Bottle, CellarBeerRow, UpdateBottleRequest } from "./types";
 
 export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
   const response = await generatedListEntries();
@@ -19,7 +21,9 @@ export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
 
   const rows = await Promise.all(response.data.map(toRow));
   return rows
-    .filter((row): row is CellarBeerRow => row !== null)
+    // A left join can hand back an entry every one of whose bottles has
+    // since been removed — nothing to show for it.
+    .filter((row): row is CellarBeerRow => row !== null && row.bottleCount > 0)
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
 
@@ -78,6 +82,28 @@ export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bo
     });
   }
   return response.data;
+};
+
+export const updateCellarBottle = async (
+  id: string,
+  request: UpdateBottleRequest,
+): Promise<Bottle> => {
+  const response = await generatedUpdateBottle(id, request);
+  if (response.status !== 200) {
+    throw apiError("http", `Updating bottle ${id} failed with status ${response.status}`, {
+      status: response.status,
+    });
+  }
+  return response.data;
+};
+
+export const removeCellarBottle = async (id: string): Promise<void> => {
+  const response = await generatedRemoveBottle(id);
+  if (response.status !== 204) {
+    throw apiError("http", `Removing bottle ${id} failed with status ${response.status}`, {
+      status: response.status,
+    });
+  }
 };
 
 const compareBrewedDate = (a?: string, b?: string): number => {

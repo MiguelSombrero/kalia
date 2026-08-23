@@ -5,6 +5,8 @@
 - **Amended:** 2026-08-22 — the no-new-dependency rule now has one
   exception, `@radix-ui/react-dialog`, for the modal primitive's focus
   management (iteration 5 task 13)
+- **Amended:** 2026-08-23 — a second exception, `@radix-ui/react-toast`, for
+  the remove-undo toast's live-region and timing contract (iteration 5 task 14)
 
 ## Context
 
@@ -84,6 +86,26 @@ new tokens — unlike colour and type, they are not a re-theming concern.
 > in it fails silently — the dialog looks correct while being unusable by
 > keyboard or screen reader.
 
+> **Amended 2026-08-23.** **`components/ui/toast.tsx` is a second primitive
+> built on a third-party dependency — `@radix-ui/react-toast` 1.2.15 —
+> for the same reason as the dialog: an accessible toast's live-region and
+> timing contract is behaviour, not styling, and is easy to get subtly
+> wrong by hand. It backs the cellar's remove-undo affordance: clicking
+> Remove hides a bottle immediately and shows a toast with an Undo action for
+> a few seconds before the delayed `DELETE` actually fires. Radix is
+> headless here too — the toast is styled with the semantic tokens above —
+> and only the `Toast`/`ToastProvider`/`ToastViewport`/`ToastAction`/
+> `ToastDescription` wrappers in `components/ui/toast.tsx` may import it.
+>
+> What it buys, beyond the dialog's focus contract: an `aria-live` region
+> announcing the toast to assistive tech without a manual `role="status"`
+> wire-up, and a duration/pause-on-hover/swipe-to-dismiss timing model that
+> would otherwise be reimplemented by hand. The toast's own auto-dismiss
+> timer is disabled (`duration={Infinity}`) since the undo window's actual
+> deadline — when the delayed `DELETE` fires — is owned by
+> `features/cellar/store.ts`, not by Radix; Radix supplies the announcement
+> and dismiss affordance, the app supplies the deadline.
+
 ## Alternatives considered
 
 **A JS/TS token pipeline** (tokens defined in TypeScript, generated into CSS).
@@ -117,6 +139,18 @@ work rather than finishing something left half-done.
 > declined below because a few lines covered what they did; that argument
 > does not carry over, because a few lines do not cover this.
 
+> **Amended 2026-08-23**, for the toast dependency: **hand-writing the
+> toast**, for the same reason the dialog wasn't hand-written. Rejected on
+> the same grounds — an `aria-live` announcement that races a component
+> unmount, or a timer that keeps counting down while the tab is backgrounded,
+> is invisible in a code read and only shows up as a screen-reader user
+> hearing nothing, or a bottle vanishing before the countdown looked like it
+> finished. **Reusing `components/ui/dialog.tsx`'s pattern but rendering the
+> toast as a non-modal dialog** was also considered and rejected: a toast is
+> not modal (the rest of the page stays interactive and the countdown keeps
+> running while other UI is used), so `aria-modal`/focus-trap semantics would
+> be actively wrong, not just unnecessary.
+
 **Keeping Tailwind defaults and styling per component.** The status quo.
 Rejected because it had already produced per-page drift, and because the
 product owner's aesthetic direction (craft-label: serif display, sparse
@@ -129,7 +163,7 @@ pastel accents) cannot be expressed as defaults.
   primitives instead of choosing colours.
 - Good, because the whole system adds zero dependencies, so there is nothing
   to keep up to date and no upgrade that can change how a button looks —
-  with the single 2026-08-22 exception below.
+  with the dialog and toast exceptions below.
 - Bad, because `cn()` is a naive concatenation: passing two conflicting
   Tailwind classes leaves both in the output, and the last one in source
   order wins rather than the last one passed. `tailwind-merge` exists to
@@ -162,6 +196,21 @@ pastel accents) cannot be expressed as defaults.
 >   well past the one package named here.
 > - Neutral, because the dialog is now the app's first component whose
 >   accessibility is not verifiable by reading its own source.
+
+> **Amended 2026-08-23**, for the toast dependency:
+>
+> - Good, because the toast's `aria-live` announcement, pause-on-hover and
+>   swipe-to-dismiss behaviour are maintained upstream, matching the dialog's
+>   consequence above.
+> - Bad, because `@radix-ui/react-toast` pulls its own dependency subtree
+>   into the lockfile (`react-dismissable-layer`, `react-visually-hidden`
+>   among them, alongside what `@radix-ui/react-dialog` already added),
+>   further widening the CVE scan's surface
+>   ([ADR-0024](0024-dependency-vulnerability-scanning.md)).
+> - Neutral, because the exception this ADR carves out for behaviour-over-
+>   presentation primitives (the dialog's 2026-08-22 amendment) is now used
+>   twice rather than once — the bar it set is doing the job it was written
+>   for, not eroding on first use.
 
 ## Evidence
 

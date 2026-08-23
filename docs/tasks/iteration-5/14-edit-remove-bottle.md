@@ -1,6 +1,6 @@
 # Task 14: Edit and remove a bottle from the cellar
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -108,25 +108,25 @@ already exposes them — this task is frontend-only.
 
 ## Acceptance criteria
 
-- [ ] Editing a bottle's container type and/or dates persists and is
+- [x] Editing a bottle's container type and/or dates persists and is
       reflected on the cellar page without a full reload — Playwright
       continues sign in → add → edit → see it updated
-- [ ] Removing a bottle hides it immediately and shows an undo toast;
+- [x] Removing a bottle hides it immediately and shows an undo toast;
       letting the toast elapse persists the removal on the cellar page
       without a full reload — same Playwright spec, continuing → remove
-- [ ] Clicking Undo before the toast elapses restores the bottle, and no
+- [x] Clicking Undo before the toast elapses restores the bottle, and no
       `DELETE` request ever reaches the backend for it — component test
       with fake timers
-- [ ] Removing a beer's last bottle removes its row from the cellar list
+- [x] Removing a beer's last bottle removes its row from the cellar list
       in the same optimistic step, and Undo restores both the bottle and
       its beer row — component test
-- [ ] Starting a second removal while one undo toast is showing finalizes
+- [x] Starting a second removal while one undo toast is showing finalizes
       the first bottle's removal and replaces the toast with one for the
       second — component test
-- [ ] The edit dialog, the remove control and the undo toast — including
+- [x] The edit dialog, the remove control and the undo toast — including
       its Undo button — pass `axe` with no violations in both locales, and
       are fully keyboard-operable
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

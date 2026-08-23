@@ -35,7 +35,7 @@ describe("addBottleSchema", () => {
 
   it("rejects a brewed date in the future", () => {
     expect(errorFor({ ...base, brewedDate: "2999-01-01" }, "brewedDate")).toBe(
-      "cellar.add.error.brewedInFuture",
+      "cellar.bottle.dateError.brewedInFuture",
     );
   });
 
@@ -44,7 +44,7 @@ describe("addBottleSchema", () => {
     (bestBeforeDate) => {
       expect(
         errorFor({ ...base, brewedDate: "2024-01-01", bestBeforeDate }, "bestBeforeDate"),
-      ).toBe("cellar.add.error.bestBeforeNotAfterBrewed");
+      ).toBe("cellar.bottle.dateError.bestBeforeNotAfterBrewed");
     },
   );
 
