@@ -1,6 +1,6 @@
 # Task 06: Route the catalog module's edges through its application layer
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why

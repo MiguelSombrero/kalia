@@ -1,6 +1,6 @@
 # Task 05: Close catalog search test gaps
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why

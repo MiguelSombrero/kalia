@@ -1,6 +1,6 @@
 # Task 07: Reject malformed sort parameters and paginate the brewery list
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
