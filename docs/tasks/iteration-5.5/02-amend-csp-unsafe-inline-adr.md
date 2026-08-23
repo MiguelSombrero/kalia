@@ -1,6 +1,6 @@
 # Task 02: Re-affirm CSP `unsafe-inline` and close ADR-0016's revisit trigger
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -49,12 +49,12 @@ page) or Subresource Integrity.
 
 ## Acceptance criteria
 
-- [ ] ADR-0016 has a 2026-08-23-or-later Amended note stating the trigger
+- [x] ADR-0016 has a 2026-08-23-or-later Amended note stating the trigger
       fired, the survey was re-run, and `'unsafe-inline'` is re-affirmed
-- [ ] ESLint forbids `dangerouslySetInnerHTML` (`react/no-danger` or
+- [x] ESLint forbids `dangerouslySetInnerHTML` (`react/no-danger` or
       equivalent) across `frontend/` — confirmed by a test: introduce one
       deliberately and confirm lint fails, then remove it
-- [ ] `node scripts/check-adrs.mjs` passes
+- [x] `node scripts/check-adrs.mjs` passes
 
 ## Notes
 
