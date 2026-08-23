@@ -125,3 +125,11 @@ the same question is harder to forget once the aggregate owns its own writes.
 The zero-quantity row is visible in `EntryRepository.findSummariesByUserId`'s
 `left join e.bottles b`, and `CellarServiceIT` removes bottles only from
 entries that have more.
+
+Also the subject of quality-backlog SHOULD-10, retired 2026-08-23 as
+superseded by this task rather than duplicated into iteration 5.5. In the
+conversation that retired it, the product owner leaned toward deleting the
+entry when its last bottle goes (question 1) — recorded here as a data point
+for this task's refinement, not a decision: that conversation didn't cover
+questions 2-6, in particular the public-cellar-visibility implications
+[task 02](02-public-cellar-api.md) needs answered.

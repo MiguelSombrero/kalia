@@ -9,6 +9,9 @@
 // docs/tasks/iteration-N/ directory exists. Iterations 0-4 predate the format
 // and have none, so they are exempt without needing a list of exceptions
 // here — the same partial adoption check-adrs.mjs uses for pre-template ADRs.
+// "N" allows one optional decimal place (e.g. iteration-5.5) so a
+// quality-backlog-only iteration can be inserted between two numbered ones
+// without renumbering everything after it.
 //
 // The rules that are not merely structural, each tracing to an observed
 // failure (ADR-0026's Evidence):
@@ -72,7 +75,7 @@ const sectionOf = (text, heading) => {
 };
 
 const iterations = readdirSync(TASKS_DIR, { withFileTypes: true })
-  .filter((e) => e.isDirectory() && /^iteration-\d+$/.test(e.name))
+  .filter((e) => e.isDirectory() && /^iteration-\d+(\.\d+)?$/.test(e.name))
   .map((e) => e.name)
   .sort();
 
