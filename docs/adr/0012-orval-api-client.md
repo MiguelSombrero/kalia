@@ -12,8 +12,7 @@
 - **Amended:** 2026-08-23 — the pinned orval version below was stale
   (8.22.0 against `package.json`'s 8.24.x); corrected to match `README.md`'s
   tech-stack table, the pinned reference per CLAUDE.md's "New dependencies"
-  rule, and `scripts/check-orval-version.mjs` now keeps the two from
-  drifting apart again (iteration 5.5 task 01)
+  rule (iteration 5.5 task 01)
 
 ## Context
 

@@ -425,12 +425,9 @@ a matching index row here (title and status), that it is also listed in
 `Bad`/`Neutral` consequence — see the "ADR index check" job in
 [ci.yml](../.github/workflows/ci.yml). Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
-([ADR-0026](adr/0026-task-file-format.md)), `scripts/check-comments.mjs`
+([ADR-0026](adr/0026-task-file-format.md)), and `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
-([ADR-0017](adr/0017-code-comment-policy.md)), and
-`scripts/check-orval-version.mjs` keeps the orval version pinned in
-`README.md`, [ADR-0012](adr/0012-orval-api-client.md) and
-`frontend/package.json` in agreement.
+([ADR-0017](adr/0017-code-comment-policy.md)).
 
 ### Product and system architecture
 

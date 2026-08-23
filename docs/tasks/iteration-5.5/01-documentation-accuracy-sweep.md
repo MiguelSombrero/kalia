@@ -112,9 +112,7 @@ ADR-0020-assigned home to a one-line pointer.
       is linked to a new ADR (bounded-request-parameters convention) rather
       than stated inline
 - [x] `README.md`, `docs/adr/0012-orval-api-client.md` and
-      `frontend/package.json` agree on the pinned orval version, and a new
-      automated test fails if they diverge again — confirmed by temporarily
-      desyncing one value locally and rerunning it
+      `frontend/package.json` agree on the pinned orval version
 - [x] WCAG 2.1 AA enforcement is described in exactly one place, the other
       two reduced to links
 - [x] The DDD-lite package-structure convention is described in exactly one
@@ -126,7 +124,8 @@ ADR-0020-assigned home to a one-line pointer.
       still states its real remaining reason (bundled with the
       structured-logs/metrics/tracing item) — it stays deferred, not
       promoted to a task
-- [x] `node scripts/check-adrs.mjs` passes
+- [x] `node scripts/check-adrs.mjs`, the existing ADR-index regression test,
+      passes
 
 ## Notes
 
@@ -137,3 +136,11 @@ Two open questions resolved by the product owner during refinement
 (2026-08-23): SHOULD-6's rationale graduates into a new ADR rather than
 folding into ADR-0007 or ADR-0014; COULD-13's backlog entry stays deferred
 with corrected reasoning rather than being promoted to a task.
+
+COULD-1's acceptance criterion originally required a new automated test
+keeping the orval version in sync — a refinement oversight the product owner
+flagged during PR review (2026-08-23): a standalone script enforcing one
+specific dependency's version agreement doesn't generalize, since every
+other pinned version in `README.md`'s tech-stack table relies on the same
+review discipline rather than its own script. Dropped in favor of the
+version fix alone; the criterion above reflects that.
