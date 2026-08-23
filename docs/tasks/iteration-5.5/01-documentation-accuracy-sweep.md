@@ -1,6 +1,6 @@
 # Task 01: Documentation accuracy and duplication sweep
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -83,14 +83,21 @@ ADR-0020-assigned home to a one-line pointer.
   mention is a one-line pointer with a link.
 - [ADR-0026](../../adr/0026-task-file-format.md) task-file conventions
   (this file follows them).
+- SHOULD-6's bounded-parameters rationale graduates into a **new ADR**
+  (bounded-request-parameters convention: named constants with a why,
+  cross-field checks reported through `detail`) — resolved by the product
+  owner during refinement: neither [ADR-0007](../../adr/0007-backend-package-structure.md)
+  (package structure) nor [ADR-0014](../../adr/0014-shared-exception-handling.md)
+  (exception handling) is a close enough topical fit to fold it into.
+- COULD-13's backlog entry stays deferred — resolved by the product owner
+  during refinement: only its stale blocker ("the frontend has no logging
+  convention at all") gets corrected; the entry keeps citing its still-valid
+  reason (bundled with the broader, still-open structured-logs/metrics/
+  tracing backlog item), rather than being promoted to a task now.
 
 ## Open questions
 
-- **Constraints and trade-offs:** SHOULD-6's bounded-parameters rationale —
-  does it graduate into a new ADR of its own, or fold into
-  [ADR-0007](../../adr/0007-backend-package-structure.md) (which already
-  covers this module's package-level conventions)? This decides whether the
-  task also creates a new ADR file.
+**None.**
 
 ## Acceptance criteria
 
@@ -102,7 +109,8 @@ ADR-0020-assigned home to a one-line pointer.
 - [ ] `docs/roadmap.md`'s Iteration DoD gate paragraph is a one-line pointer
       to CLAUDE.md, not a restatement
 - [ ] `backend/README.md`'s bounded-parameters bullet's multi-line rationale
-      is linked to an ADR (new or existing) rather than stated inline
+      is linked to a new ADR (bounded-request-parameters convention) rather
+      than stated inline
 - [ ] `README.md`, `docs/adr/0012-orval-api-client.md` and
       `frontend/package.json` agree on the pinned orval version, and a new
       automated test fails if they diverge again — confirmed by temporarily
@@ -113,12 +121,19 @@ ADR-0020-assigned home to a one-line pointer.
       place, the other two reduced to links
 - [ ] `docker-compose.yml`'s backend port comment matches the current
       defence-in-depth reasoning already in `docs/architecture.md` §6
-- [ ] `docs/tasks/backlog.md`'s deferred token-refresh-logging item states
-      its actual current reasoning, or is re-evaluated now that its stated
-      blocker no longer exists
+- [ ] `docs/tasks/backlog.md`'s deferred token-refresh-logging item no
+      longer cites the false "no logging convention at all" blocker, and
+      still states its real remaining reason (bundled with the
+      structured-logs/metrics/tracing item) — it stays deferred, not
+      promoted to a task
 - [ ] `node scripts/check-adrs.mjs` passes
 
 ## Notes
 
 Quality backlog: MUST-2, SHOULD-4, SHOULD-5, SHOULD-6, COULD-1, COULD-2,
 COULD-3, COULD-12, COULD-13.
+
+Two open questions resolved by the product owner during refinement
+(2026-08-23): SHOULD-6's rationale graduates into a new ADR rather than
+folding into ADR-0007 or ADR-0014; COULD-13's backlog entry stays deferred
+with corrected reasoning rather than being promoted to a task.
