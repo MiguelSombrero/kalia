@@ -348,6 +348,11 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   in production — Auth.js's `allowDangerousEmailAccountLinking` links the
   sign-in to the existing user by email instead of throwing
   `OAuthAccountNotLinked`, safe only because Keycloak is the sole provider.
+- **Two concurrent first-ever sign-ins for one subject resolve to one user**
+  ([ADR-0043](adr/0043-createuser-race-safety.md)): `createUser` claims the
+  email index with `SET NX` before writing the user record, and a request
+  that loses the claim waits on the winner's record instead of creating an
+  orphaned one of its own.
 
 ## 7. Testing strategy
 
@@ -466,6 +471,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0040](adr/0040-client-reads-via-server-actions.md) | A client component's read of authenticated data goes through a Server Action, not the generated client directly | accepted | 2026-08-16 |
 | [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md) | Client components call a feature-owned hook, never `useQuery`/`useMutation` directly | accepted | 2026-08-16 |
 | [ADR-0042](adr/0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
+| [ADR-0043](adr/0043-createuser-race-safety.md) | `createUser` claims the email index with SET NX so a losing concurrent sign-in joins the winner | accepted | 2026-08-23 |
 
 ### Engineering process and documentation
 

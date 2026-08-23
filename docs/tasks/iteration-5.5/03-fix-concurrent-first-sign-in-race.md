@@ -1,6 +1,6 @@
 # Task 03: Fix the concurrent-first-sign-in duplicate-user race
 
-- **Status:** refined
+- **Status:** in-progress
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -88,13 +88,13 @@ orphaned loser.
 
 ## Acceptance criteria
 
-- [ ] Two concurrent first-ever sign-ins by the same Keycloak subject result
+- [x] Two concurrent first-ever sign-ins by the same Keycloak subject result
       in exactly one `auth:user:*` record, and **both sign-ins still
       succeed** (each resolves to a valid session against that one user) —
       proven by an automated test that fires `createUser` concurrently
       against a real or emulated Valkey and is confirmed to fail against
       today's adapter
-- [ ] When the winning write never completes, a concurrent request waiting
+- [x] When the winning write never completes, a concurrent request waiting
       on it fails after a bounded wait instead of hanging indefinitely or
       creating a second user record — covered by an automated test that
       simulates the incomplete write
@@ -109,3 +109,12 @@ Quality backlog: SHOULD-8. Found while measuring whether ADR-0030 lets the
 E2E suite drop `mode: "serial"`; it is not the cause of the parallel
 failures that investigation was about, which reproduce with the user already
 present.
+
+The last two acceptance criteria are unverified as of this PR: this session's
+sandbox has no working Docker daemon (`dockerd` fails to start — `ulimit -Hn`
+is rejected even as root), so `docker compose up` and `npm run test:e2e`
+cannot run here. `npm test` is green
+(`frontend/lib/auth/valkeyAdapter.test.ts`'s new "createUser race safety"
+suite, confirmed to fail against the pre-fix adapter). Status stays
+`in-progress` until someone with a working Docker environment runs
+`npm run test:e2e` against a freshly flushed Valkey and flips it to `done`.
