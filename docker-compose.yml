@@ -25,9 +25,10 @@ services:
         condition: service_healthy
     ports:
       # Bound to localhost only, for local API access and Swagger UI
-      # (docs/architecture.md §6); the API stays unauthenticated until the
-      # auth iteration, so this must never be published beyond the dev
-      # machine. Other services reach it as http://backend:8080 regardless.
+      # (docs/architecture.md §6). Authentication makes this a defence in
+      # depth rather than the only protection, but the loopback binding
+      # stays until a deployment story exists. Other services reach it as
+      # http://backend:8080 regardless.
       - "127.0.0.1:8080:8080"
     healthcheck:
       # Asks the app whether it is ready, not merely whether the port is open:

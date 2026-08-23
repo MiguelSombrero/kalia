@@ -142,11 +142,10 @@ Rules for writing code here; each links to the ADR holding the reasoning —
 see [ADR-0020](../docs/adr/0020-documentation-roles.md) for why the rationale
 lives there rather than in this file.
 
-- **Package structure per module**: `domain` / `application` / `web` as direct
-  subpackages, dependency direction web → application → domain, never
-  inward-out. The module root package is the inter-module API and stays empty
-  until a consumer exists. Enforced by `ArchitectureTest`
-  ([ADR-0007](../docs/adr/0007-backend-package-structure.md)).
+- **Package structure per module**, enforced by `ArchitectureTest`: shape and
+  rationale live in
+  [docs/architecture.md §3](../docs/architecture.md#3-backend-modules) and
+  [ADR-0007](../docs/adr/0007-backend-package-structure.md).
 - **Entity→DTO mapping lives in `web`**, as static `from(...)` factories on
   the DTOs — so repositories must eager-load the relations the boundary needs
   (entity graphs), since mapping runs outside the service transaction.
@@ -172,16 +171,10 @@ lives there rather than in this file.
   which accept a text block as a compile-time constant the same as any other
   string literal. A trailing `\` at the end of a line suppresses that line's
   newline, for a literal that should read as one continuous sentence.
-- **Every request parameter is bounded.** Numeric params carry both ends of
-  their range (`@DecimalMin`/`@DecimalMax`, `@Min`/`@Max`) and free text
-  carries `@Size`, so no caller can hand the database an unbounded or
-  nonsensical value. Bounds are named constants with a comment saying why that
-  number — a bound nobody can justify gets changed by the next person who
-  finds it inconvenient. A constraint spanning two parameters can't be an
-  annotation on either: check it in the handler and throw the module's
-  API-response exception (see `requireOrderedAbvRange` in
-  `CatalogController`), which reports through `detail` rather than the
-  field-level `errors` array, since the violation belongs to the pair.
+- **Every request parameter is bounded**: named constants, not bare
+  annotation values, and a constraint spanning two parameters is checked in
+  the handler and reported through `detail`
+  ([ADR-0042](../docs/adr/0042-bounded-request-parameters.md)).
 - **Endpoints are protected unless listed as public.** `SecurityConfig`
   (`fi.kalia.identity.web`) permits the catalog reads, `/actuator/health` and
   the API docs; everything else needs a bearer token. A service that needs the
@@ -241,15 +234,9 @@ Bean Validation exceptions where Boot omits field-level detail
 
 ## Logging conventions
 
-SLF4J via Lombok's `@Slf4j`, parameterized only (`log.warn("Beer {} not
-found", id)`, never concatenation). Level follows what is being logged, not
-the mechanism that produced it: `ERROR` for genuine unexpected failures with
-the stack trace, `WARN` for anticipated conditions already recovered from
-(an exception designed as an API response is `WARN` at most, never `ERROR`),
-`INFO` for lifecycle events, `DEBUG` for diagnostics. Log once, where the
-exception is finally decided. Never log request/response bodies, tokens or
-passwords — log an identifier, not a full domain object. No manual controller
-entry/exit logging ([ADR-0013](../docs/adr/0013-logging-conventions.md)).
+SLF4J via Lombok's `@Slf4j`, parameterized only, level chosen by what's being
+logged rather than by the mechanism that produced it. Full convention and
+rationale: [ADR-0013](../docs/adr/0013-logging-conventions.md).
 
 ## Testing conventions
 

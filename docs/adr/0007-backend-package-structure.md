@@ -8,6 +8,10 @@
   wrong condition in them was indistinguishable from a satisfied one; the
   placement rules need no such fixture, since real entities and controllers
   exercise them every run (iteration 4 task 6)
+- **Amended:** 2026-08-23 — the layer enumeration in Decision's first bullet
+  restated `docs/architecture.md` §3's shape almost verbatim
+  ([ADR-0020](0020-documentation-roles.md)); it is now a pointer there, and
+  this ADR keeps the why (iteration 5.5 task 01)
 
 ## Context
 
@@ -23,12 +27,11 @@ with separate JPA entities) was weighed and rejected for this codebase.
 
 ## Decision
 
-- Inside each Modulith module, **DDD-lite layers as direct subpackages**:
-  `domain` (rich JPA entities, value objects, repositories, specifications),
-  `application` (use-case services, exceptions designed as API responses),
-  `web` (controllers, ProblemDetail advice, HTTP DTOs with `@Schema`,
-  entity→DTO mapping at the boundary). No `internal` wrapper — Modulith
-  treats every subpackage as internal by default.
+- Inside each Modulith module, **DDD-lite layers as direct subpackages**
+  instead of Modulith's flat `internal` package — Modulith treats every
+  subpackage as internal by default, so no `internal` wrapper is needed.
+  Current layer contents:
+  [docs/architecture.md §3](../architecture.md#3-backend-modules).
 - **Hexagonal dependency direction**: web → application → domain, never
   inward-out. Application returns domain types; mapping to DTOs happens in
   web (consequence: repositories eager-load lazy relations needed by the

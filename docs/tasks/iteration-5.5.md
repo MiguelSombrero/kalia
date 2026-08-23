@@ -15,7 +15,7 @@ COULD sections are empty, with every entry moved to Retired.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-5.5/01-documentation-accuracy-sweep.md) | Documentation accuracy and duplication sweep | refined |
+| [01](iteration-5.5/01-documentation-accuracy-sweep.md) | Documentation accuracy and duplication sweep | done |
 | [02](iteration-5.5/02-amend-csp-unsafe-inline-adr.md) | Re-affirm CSP `unsafe-inline` and close ADR-0016's revisit trigger | refined |
 | [03](iteration-5.5/03-fix-concurrent-first-sign-in-race.md) | Fix the concurrent-first-sign-in duplicate-user race | refined |
 | [04](iteration-5.5/04-catalog-search-usable-indexes.md) | Give catalog search usable indexes | refined |
