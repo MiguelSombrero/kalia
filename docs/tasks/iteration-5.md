@@ -33,7 +33,7 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 | ID | Task | Status |
 |---|---|---|
 | [07](iteration-5/07-drop-store-schemas.md) | Drop the empty `cart`, `ordering` and `payment` schemas | done |
-| [21](iteration-5/21-seed-testuser-cellar-data.md) | Pin testuser's Keycloak id and seed dev cellar data | needs-refinement |
+| [21](iteration-5/21-seed-testuser-cellar-data.md) | Pin testuser's Keycloak id and seed dev cellar data | dropped |
 
 ## Process
 
@@ -96,4 +96,7 @@ already-enforced import-boundary rule rather than retrofitted into one.
 Task 21 was raised in review of task 11 (PR #158): verifying the cellar
 page against a live stack needed a signed-in user with real cellar data,
 and `testuser`'s Keycloak id — currently random on every `docker compose
-up` — gave no stable id to seed against.
+up` — gave no stable id to seed against. Dropped once tasks 13 and 14
+shipped: adding and editing bottles by hand through the UI is now fast
+enough that dedicated seed data and a pinned Keycloak id are not worth
+maintaining as dev/test infrastructure.
