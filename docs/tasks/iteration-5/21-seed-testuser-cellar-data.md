@@ -1,6 +1,6 @@
 # Task 21: Pin testuser's Keycloak id and seed dev cellar data
 
-- **Status:** needs-refinement
+- **Status:** dropped
 - **Iteration:** [5](../iteration-5.md)
 - **Covers:** none
 
@@ -95,3 +95,11 @@ Raised during review of [task 11](11-cellar-page.md)
 the cellar page's populated state against a real running stack needed
 cellar data for `testuser`, and there was no way to seed it
 deterministically.
+
+**Dropped (2026-08-23).** Product-owner decision: with add-to-cellar (task
+13) and edit/remove (task 14) both now shipped, the UI itself can populate
+`testuser`'s cellar by hand in seconds, closing the gap this task was
+scoped to fix. A fixed Keycloak id and dedicated seed data are not worth
+maintaining as dev/test infrastructure on top of that. This file is kept,
+`dropped`, as the historical record of the concern and why it no longer
+applies.
