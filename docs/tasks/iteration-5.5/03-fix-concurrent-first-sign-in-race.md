@@ -1,6 +1,6 @@
 # Task 03: Fix the concurrent-first-sign-in duplicate-user race
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -98,10 +98,10 @@ orphaned loser.
       on it fails after a bounded wait instead of hanging indefinitely or
       creating a second user record — covered by an automated test that
       simulates the incomplete write
-- [ ] `frontend/e2e/sign-in-out.spec.ts` run with default Playwright
+- [x] `frontend/e2e/sign-in-out.spec.ts` run with default Playwright
       parallelism against a freshly flushed Valkey shows no duplicate user
       record
-- [ ] `npm test` and `npm run test:e2e` are green
+- [x] `npm test` and `npm run test:e2e` are green
 
 ## Notes
 
@@ -110,11 +110,10 @@ E2E suite drop `mode: "serial"`; it is not the cause of the parallel
 failures that investigation was about, which reproduce with the user already
 present.
 
-The last two acceptance criteria are unverified as of this PR: this session's
-sandbox has no working Docker daemon (`dockerd` fails to start — `ulimit -Hn`
-is rejected even as root), so `docker compose up` and `npm run test:e2e`
-cannot run here. `npm test` is green
-(`frontend/lib/auth/valkeyAdapter.test.ts`'s new "createUser race safety"
-suite, confirmed to fail against the pre-fix adapter). Status stays
-`in-progress` until someone with a working Docker environment runs
-`npm run test:e2e` against a freshly flushed Valkey and flips it to `done`.
+The last two acceptance criteria could not be run in this session's own
+sandbox: it has no working Docker daemon (`dockerd` fails to start —
+`ulimit -Hn` is rejected even as root), so `docker compose up` and
+`npm run test:e2e` cannot run here. They are instead confirmed by this PR's
+own CI run against a freshly provisioned stack: `npm test` (268/268),
+`npm run build`, and the full Playwright suite including
+`sign-in-out.spec.ts` (19/19, `fullyParallel: true`, no override) all green.
