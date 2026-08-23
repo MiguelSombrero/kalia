@@ -1,6 +1,6 @@
 # Task 03: Fix the concurrent-first-sign-in duplicate-user race
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -32,6 +32,10 @@ orphaned loser.
   sign-in path.
 - Migrating existing orphaned records, if any exist in a running environment
   today — this task prevents new ones.
+- Making the index-claim and the full user-record write atomic against a
+  process crash landing exactly between the two (e.g. via a Valkey Lua
+  script) — the bounded-wait timeout below (Constraints) already bounds the
+  user-visible impact of that already-rare case, and that is enough here.
 
 ## Constraints
 
@@ -39,26 +43,61 @@ orphaned loser.
   Valkey adapter and why it exists; this task works within it, not around
   it.
 - Auth.js's `Adapter` interface has no compare-and-set primitive to lean on —
-  the fix has to be a Valkey-side lock or conditional write (e.g. `SET NX`
-  on the account index, or a short-lived lock with the loser re-reading),
-  not a change to the interface contract.
+  the fix has to be a Valkey-side lock or conditional write, not a change to
+  the interface contract.
+- **The compare-and-set has to live in `createUser`, not `linkAccount`.**
+  Auth.js's own login handler (`@auth/core`, outside this adapter's control)
+  calls `getUserByAccount` → `createUser` → `linkAccount` → `createSession`
+  in a fixed sequence and threads whatever `createUser` *returns* straight
+  into the two calls that follow. A conditional write inside `linkAccount`
+  alone (e.g. `SET NX` on the account index) cannot save the losing request:
+  by the time `linkAccount` runs, the session-to-be already carries the
+  loser's own freshly-created (and about-to-be-orphaned) user id, since that
+  id came from `createUser`'s return value, not from anything `linkAccount`
+  does. Only `createUser`'s return value can redirect a request onto the
+  canonical user.
+- **Confirmed with the product owner (2026-08-23): a losing sign-in must
+  succeed transparently against the winner's user record, with no
+  user-visible failure in the ordinary (non-crash) case.** `createUser`
+  claims the email index (the field it actually receives — `linkAccount`'s
+  account info arrives too late, per the point above) with a conditional
+  write; the request that loses the claim waits a bounded time and re-reads
+  the index to return the winner's already-created user object instead of
+  creating its own. Both concurrent sign-ins then get a valid session
+  against the same user.
+- **Confirmed with the product owner (2026-08-23): if the winning write
+  never completes (crash mid-write), the waiting request's bounded wait
+  times out to failure** rather than hanging indefinitely or falling back to
+  creating a second user record. This reuses Auth.js's existing default
+  error page — no `pages.error` override exists today (confirmed:
+  `auth.ts` sets none), so this is already how every other adapter-thrown
+  error surfaces (e.g. `updateUser`'s `Cannot update unknown user` throw);
+  no new UI or copy is needed for this new failure path either.
+- This is a genuine architectural decision under
+  [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md) — a credible
+  alternative (`linkAccount`-only compare-and-set; unconditional fail-fast)
+  was rejected, and the reasoning above would not survive in the code alone.
+  Record it as its own new ADR, following the precedent of
+  [ADR-0029](../../adr/0029-silent-token-refresh.md)/[0030](../../adr/0030-per-session-token-storage.md)/[0031](../../adr/0031-backchannel-logout.md)/[0033](../../adr/0033-keycloak-account-relinking.md)
+  (small, focused adapter-behavior ADRs), not as an amendment to
+  ADR-0025 itself, since nothing here contradicts what ADR-0025 already says.
 
 ## Open questions
 
-- **Edge cases and failure handling:** if two concurrent sign-ins race and
-  one loses, what does that request see — does it retry and read the
-  winner's record, or does the sign-in fail and the user is asked to sign in
-  again? This governs a small piece of user-visible sign-in behavior in a
-  case that essentially never happens today but will exist as coded
-  behavior once fixed.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] Two concurrent first-ever sign-ins by the same Keycloak subject result
-      in exactly one `auth:user:*` record — proven by an automated test that
-      reproduces the race (e.g. firing `createUser`/`getUserByAccount`
-      concurrently against a real or emulated Valkey) and is confirmed to
-      fail against today's adapter
+      in exactly one `auth:user:*` record, and **both sign-ins still
+      succeed** (each resolves to a valid session against that one user) —
+      proven by an automated test that fires `createUser` concurrently
+      against a real or emulated Valkey and is confirmed to fail against
+      today's adapter
+- [ ] When the winning write never completes, a concurrent request waiting
+      on it fails after a bounded wait instead of hanging indefinitely or
+      creating a second user record — covered by an automated test that
+      simulates the incomplete write
 - [ ] `frontend/e2e/sign-in-out.spec.ts` run with default Playwright
       parallelism against a freshly flushed Valkey shows no duplicate user
       record
