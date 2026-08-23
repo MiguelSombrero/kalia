@@ -1,6 +1,6 @@
 # Task 04: Give catalog search usable indexes
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -43,31 +43,35 @@ introducing a new dependency (see Open questions).
   ([task 06](06-catalog-module-edge-layering.md) touches how that criteria
   object is constructed, not what it filters on — no ordering dependency
   between the two tasks).
+- **Name search strategy** (decided with the product owner 2026-08-23): keep
+  substring matching as the contract — current behavior stays. Serve it with
+  a `pg_trgm` trigram `GIN` index rather than narrowing to prefix-only
+  search. `pg_trgm` ships as a standard contrib extension in the
+  `postgres:18.4` image already used ([docker-compose.yml](../../../docker-compose.yml));
+  enabling it (`CREATE EXTENSION IF NOT EXISTS pg_trgm`) is not a new
+  external dependency requiring a version to pin, just a migration adding
+  the extension and the index.
+- **Target scale** (decided with the product owner 2026-08-23): validate and
+  test against 10,000 beers — comfortably past iteration 8's near-term
+  growth off the current ~50–100-beer seed, while cheap enough to seed in an
+  automated test. `docs/architecture.md`'s existing latency NFR (<300 ms
+  server time) applies at this scale too, though this task's acceptance bar
+  is index usage (`EXPLAIN`), not a latency measurement.
 
 ## Open questions
 
-- **Constraints and trade-offs:** for the name filter, is a Postgres
-  trigram index (`pg_trgm` + `GIN`, unindexed-substring-search's usual fix)
-  an acceptable new extension dependency, or does "no `%...%` substring
-  search" become the new contract (e.g. prefix-only, `LIKE 'x%'`, which a
-  plain b-tree index *can* serve)? These have different UX consequences —
-  substring match on beer name is current behavior, and narrowing it is a
-  user-facing change, not just a performance one.
-- **Non-functional attributes — performance:** what's the target scale to
-  validate against (iteration 8's "catalog beyond seed data" doesn't yet say
-  a number)? Without one, "the query is fast enough" has no acceptance bar
-  to test against.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The style filter is served by a functional (case-insensitive) index,
       not `beer_style_idx` as-is
 - [ ] `brewery.country` has an index the country filter can use
-- [ ] Whatever the name-search strategy is decided to be (see Open
-      questions), it is index-usable at the agreed target scale
-- [ ] An automated test seeds the catalog at the target scale and asserts
-      each filtered query uses the expected index (e.g. via `EXPLAIN`), not
-      just that it returns correct results
+- [ ] The name filter keeps substring matching and is served by a `pg_trgm`
+      trigram `GIN` index
+- [ ] An automated test seeds the catalog with 10,000 beers and asserts each
+      filtered query (name, style, country) uses the expected index (e.g.
+      via `EXPLAIN`), not just that it returns correct results
 - [ ] `mvn clean verify` is green
 
 ## Notes
