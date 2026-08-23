@@ -65,6 +65,5 @@ hand-written diagram (task 10). Each task's Notes section records its
 specific decision.
 
 No task here depends on another within this iteration; they can be worked
-in any order. None of them depends on [iteration 5](iteration-5.md)'s one
-remaining open task ([21](iteration-5/21-seed-testuser-cellar-data.md)) or
-on [iteration 6](iteration-6.md) starting.
+in any order, and none of them depends on [iteration 6](iteration-6.md)
+starting.
