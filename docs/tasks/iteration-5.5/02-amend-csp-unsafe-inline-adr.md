@@ -1,6 +1,6 @@
 # Task 02: Re-affirm CSP `unsafe-inline` and close ADR-0016's revisit trigger
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
