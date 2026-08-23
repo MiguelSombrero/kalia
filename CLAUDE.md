@@ -73,6 +73,7 @@ the next command and breaks the one after it:
 node scripts/check-adrs.mjs        # ADR ↔ architecture.md §9 + adr/README.md
 node scripts/check-tasks.mjs       # task files ↔ iteration index
 node scripts/check-comments.mjs    # code-comment policy (ADR-0017): narration hard-fails, ratio/ADR-block advisory
+node scripts/check-orval-version.mjs  # orval version agrees across README.md/ADR-0012/frontend/package.json
 ```
 
 Two things that fail silently if you skip them:

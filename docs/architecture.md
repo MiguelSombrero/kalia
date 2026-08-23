@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-08-08. This document describes **what is built**, plus the
+*Last updated: 2026-08-23. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -230,9 +230,13 @@ The shape of the frontend. Day-to-day rules for writing it live in
   agreed: `eslint.config.mjs` states the layers and the directions allowed
   between them ([ADR-0012](adr/0012-orval-api-client.md)), the frontend's
   counterpart to Spring Modulith's module verification.
-- `app/api/auth/[...nextauth]` is the app's one route handler, Auth.js's own
-  OIDC endpoints (§6); sign-in and sign-out are Server Actions rather than
-  posts to route handlers, so the CSP's `form-action 'self'` can stay strict
+- Two route handlers: `app/api/auth/[...nextauth]`, Auth.js's own OIDC
+  endpoints, and the deliberately unauthenticated
+  `app/api/auth/backchannel-logout`, which Keycloak calls server-to-server
+  ([§6](#6-authentication-and-identity),
+  [frontend/README.md](../frontend/README.md) auth conventions). Sign-in and
+  sign-out are Server Actions rather than posts to route handlers, so the
+  CSP's `form-action 'self'` can stay strict
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
   server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
   thin wrapper that owns the backend base URL and error mapping, and attaches
@@ -279,11 +283,8 @@ The shape of the frontend. Day-to-day rules for writing it live in
   `:focus-visible` styling and a skip-to-content link. The non-native
   widgets — the add/edit-bottle modals and the remove-undo toast — get their
   focus trap, `aria-modal` and live-region behaviour from Radix rather than
-  hand-rolled ARIA. Enforced at three
-  layers — lint, unit test and E2E — all riding the existing `frontend`/`e2e`
-  CI jobs, so no separate a11y gate exists to forget. The mechanics are in
-  [§7](#7-testing-strategy) and
-  [frontend/README.md](../frontend/README.md).
+  hand-rolled ARIA. How enforcement is layered across lint, unit and E2E
+  tests: [frontend/README.md](../frontend/README.md) testing conventions.
 
 ## 6. Authentication and identity
 
@@ -359,8 +360,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), plus the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)) |
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
-| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend), and a WCAG 2.1 AA `axe()` check on every component test that does a full `render(...)`. How to test async Server Components — RTL cannot render them — is a trap documented in [frontend/README.md](../frontend/README.md) |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove. `@axe-core/playwright` scans (WCAG 2.1 A/AA tags) run alongside these on every already-visited page state — no separate a11y-only spec |
+| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove, plus the WCAG 2.1 AA scans covered above |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -424,9 +425,12 @@ a matching index row here (title and status), that it is also listed in
 `Bad`/`Neutral` consequence — see the "ADR index check" job in
 [ci.yml](../.github/workflows/ci.yml). Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
-([ADR-0026](adr/0026-task-file-format.md)), and `scripts/check-comments.mjs`
+([ADR-0026](adr/0026-task-file-format.md)), `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
-([ADR-0017](adr/0017-code-comment-policy.md)).
+([ADR-0017](adr/0017-code-comment-policy.md)), and
+`scripts/check-orval-version.mjs` keeps the orval version pinned in
+`README.md`, [ADR-0012](adr/0012-orval-api-client.md) and
+`frontend/package.json` in agreement.
 
 ### Product and system architecture
 
@@ -464,6 +468,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0037](adr/0037-functional-modules.md) | The frontend is functional — no classes, discriminated unions over polymorphism, factory functions for DI | accepted | 2026-08-11 |
 | [ADR-0040](adr/0040-client-reads-via-server-actions.md) | A client component's read of authenticated data goes through a Server Action, not the generated client directly | accepted | 2026-08-16 |
 | [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md) | Client components call a feature-owned hook, never `useQuery`/`useMutation` directly | accepted | 2026-08-16 |
+| [ADR-0042](adr/0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
 
 ### Engineering process and documentation
 

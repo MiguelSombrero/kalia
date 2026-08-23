@@ -9,6 +9,11 @@
   enforced by ESLint rather than by convention, and this ADR now covers the
   frontend's other three import-boundary rules, which had the same
   prose-only status (iteration 5 task 05)
+- **Amended:** 2026-08-23 — the pinned orval version below was stale
+  (8.22.0 against `package.json`'s 8.24.x); corrected to match `README.md`'s
+  tech-stack table, the pinned reference per CLAUDE.md's "New dependencies"
+  rule, and `scripts/check-orval-version.mjs` now keeps the two from
+  drifting apart again (iteration 5.5 task 01)
 
 ## Context
 
@@ -28,7 +33,7 @@ different tool was chosen.
 OpenAPI spec, with the generated output committed and a CI job failing the
 build whenever the two disagree.**
 
-- **Tool: [orval](https://orval.dev) 8.22.0.** Pure Node/TypeScript (no JVM
+- **Tool: [orval](https://orval.dev) 8.24.** Pure Node/TypeScript (no JVM
   dependency in frontend tooling), and it generates TanStack Query hooks
   directly from the spec — a direct fit with
   [ADR-0008](0008-tanstack-query.md), which already made TanStack Query the

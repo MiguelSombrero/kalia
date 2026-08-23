@@ -118,6 +118,21 @@ jobs:
       - name: Verify code comments carry only what the repo cannot (see ADR-0017)
         run: node scripts/check-comments.mjs
 
+  orval-version-check:
+    name: orval version check
+    # Unconditional for the same reason as the three checks above: the three
+    # files it compares (README.md, an ADR, frontend/package.json) aren't
+    # classified as one unit by the changes filter, and this costs a few
+    # seconds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Verify the pinned orval version agrees across README.md, ADR-0012 and package.json
+        run: node scripts/check-orval-version.mjs
+
   backend:
     name: Backend (Maven)
     needs: [changes]

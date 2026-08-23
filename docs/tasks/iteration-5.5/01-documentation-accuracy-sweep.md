@@ -1,6 +1,6 @@
 # Task 01: Documentation accuracy and duplication sweep
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -101,32 +101,32 @@ ADR-0020-assigned home to a one-line pointer.
 
 ## Acceptance criteria
 
-- [ ] `docs/architecture.md` §5 no longer claims there is exactly one route
+- [x] `docs/architecture.md` §5 no longer claims there is exactly one route
       handler; it names both and points to where each is documented —
       verified by rereading §5 and §6 together
-- [ ] `backend/README.md`'s Logging conventions section is a summary and a
+- [x] `backend/README.md`'s Logging conventions section is a summary and a
       link to ADR-0013, not a restatement
-- [ ] `docs/roadmap.md`'s Iteration DoD gate paragraph is a one-line pointer
+- [x] `docs/roadmap.md`'s Iteration DoD gate paragraph is a one-line pointer
       to CLAUDE.md, not a restatement
-- [ ] `backend/README.md`'s bounded-parameters bullet's multi-line rationale
+- [x] `backend/README.md`'s bounded-parameters bullet's multi-line rationale
       is linked to a new ADR (bounded-request-parameters convention) rather
       than stated inline
-- [ ] `README.md`, `docs/adr/0012-orval-api-client.md` and
+- [x] `README.md`, `docs/adr/0012-orval-api-client.md` and
       `frontend/package.json` agree on the pinned orval version, and a new
       automated test fails if they diverge again — confirmed by temporarily
       desyncing one value locally and rerunning it
-- [ ] WCAG 2.1 AA enforcement is described in exactly one place, the other
+- [x] WCAG 2.1 AA enforcement is described in exactly one place, the other
       two reduced to links
-- [ ] The DDD-lite package-structure convention is described in exactly one
+- [x] The DDD-lite package-structure convention is described in exactly one
       place, the other two reduced to links
-- [ ] `docker-compose.yml`'s backend port comment matches the current
+- [x] `docker-compose.yml`'s backend port comment matches the current
       defence-in-depth reasoning already in `docs/architecture.md` §6
-- [ ] `docs/tasks/backlog.md`'s deferred token-refresh-logging item no
+- [x] `docs/tasks/backlog.md`'s deferred token-refresh-logging item no
       longer cites the false "no logging convention at all" blocker, and
       still states its real remaining reason (bundled with the
       structured-logs/metrics/tracing item) — it stays deferred, not
       promoted to a task
-- [ ] `node scripts/check-adrs.mjs` passes
+- [x] `node scripts/check-adrs.mjs` passes
 
 ## Notes
 

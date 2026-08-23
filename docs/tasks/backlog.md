@@ -35,9 +35,10 @@ Engineering work:
   returns `unavailable` and the caller sends no token, so a Keycloak outage
   looks exactly like ordinary anonymous browsing — nothing logs, nothing
   counts it ([ADR-0029](../adr/0029-silent-token-refresh.md)). Found while
-  building refresh; deliberately not fixed there, because the frontend has no
-  logging convention at all and inventing one for a single call site is the
-  wrong place to settle it. Belongs with the structured-logs item above.
+  building refresh; deliberately not fixed there, because a single
+  `frontend/lib/logger.ts` call at this one site, with no metrics or tracing
+  to count or alert on it, would still leave a Keycloak outage effectively
+  invisible. Belongs with the structured-logs/metrics/tracing item above.
 - **401 responses carry no body**, unlike every other error in the API, which
   is RFC 9457 problem+json (`docs/architecture.md` §4,
   [ADR-0014](../adr/0014-shared-exception-handling.md)). Spring Security's

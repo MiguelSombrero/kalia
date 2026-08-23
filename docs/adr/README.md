@@ -64,6 +64,9 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0036](0036-pre-deployment-migration-edits.md) — before Kalia is
   deployed anywhere, an applied Flyway migration may be edited directly
   rather than reversed forward.
+- [ADR-0042](0042-bounded-request-parameters.md) — every request parameter is
+  bounded by a named constant; a constraint spanning two parameters is
+  checked in the handler and reported through `detail`.
 
 ## Frontend structure and conventions
 

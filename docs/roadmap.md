@@ -33,16 +33,9 @@ past its seed data. Everything further out is in
   same PR — or explicitly confirmed accurate in the PR description
 - task status set to `done` in the task file and its iteration index
 
-**Iteration DoD gate:** an iteration is complete only when its **"Done
-when"** criteria (in its iteration index) are verified *by running them*,
-criterion by criterion — not when its last task is ticked. If a criterion is
-unmet, add tasks to the iteration until it is. The same check runs at
-planning time: an iteration's tasks must collectively cover its "Done when",
-or one of the two must be fixed. Once an iteration's "Done when" is
-enumerated with `DW-N` ids, `node scripts/check-tasks.mjs` checks the
-planning-time half mechanically: a criterion no live task covers, or a task
-covering one that does not exist — not whether the coverage claim is true
-([ADR-0026](adr/0026-task-file-format.md)).
+**Iteration DoD gate:** see [CLAUDE.md](../CLAUDE.md)'s workflow bullet of the
+same name; `scripts/check-tasks.mjs` checks its planning-time half
+mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 
 ## Iterations
 
