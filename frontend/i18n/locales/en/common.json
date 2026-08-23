@@ -89,12 +89,22 @@
     "bottle": {
       "loading": "Loading bottles…",
       "error": "Could not load bottles. Please try again.",
+      "list": "Bottles of {{beer}}",
       "brewed": "brewed {{relative}}",
       "bestBefore": "best before {{relative}}",
       "container": {
         "BOTTLE": "Bottle",
         "CAN": "Can",
         "KEG": "Keg"
+      },
+      "dateError": {
+        "brewedInFuture": "A brewed date cannot be in the future.",
+        "bestBeforeNotAfterBrewed": "Best before must be later than the brewed date."
+      },
+      "remove": {
+        "action": "Remove",
+        "toast": "Bottle removed.",
+        "undo": "Undo"
       }
     },
     "add": {
@@ -112,9 +122,21 @@
       "submitting": "Adding…",
       "error": {
         "quantityRange": "Choose between 1 and 24 bottles.",
-        "brewedInFuture": "A brewed date cannot be in the future.",
-        "bestBeforeNotAfterBrewed": "Best before must be later than the brewed date.",
         "failed": "Could not add to your cellar. Please try again."
+      }
+    },
+    "edit": {
+      "action": "Edit",
+      "title": "Edit bottle",
+      "description": "Edit this bottle of {{beer}}.",
+      "containerType": "Container",
+      "brewedDate": "Brewed (optional)",
+      "bestBeforeDate": "Best before (optional)",
+      "cancel": "Cancel",
+      "submit": "Save",
+      "submitting": "Saving…",
+      "error": {
+        "failed": "Could not save changes. Please try again."
       }
     }
   }

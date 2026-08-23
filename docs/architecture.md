@@ -267,17 +267,19 @@ The shape of the frontend. Day-to-day rules for writing it live in
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
   and a small set of shared primitives in `components/ui/` — the seam for a
   possible future design-system extraction. No third-party component library;
-  the sole UI dependency is `@radix-ui/react-dialog`, headless primitives
-  behind `components/ui/dialog.tsx`, taken on for a modal's focus management
-  rather than its appearance.
+  the two UI dependencies are `@radix-ui/react-dialog` and
+  `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
+  and `components/ui/toast.tsx`, taken on for a modal's focus management and a
+  toast's live-region/timing contract rather than either's appearance.
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
   route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
   covering every route.
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
-  `:focus-visible` styling and a skip-to-content link. The one non-native
-  widget, the add-to-cellar modal, gets its focus trap and `aria-modal`
-  behaviour from Radix rather than hand-rolled ARIA. Enforced at three
+  `:focus-visible` styling and a skip-to-content link. The non-native
+  widgets — the add/edit-bottle modals and the remove-undo toast — get their
+  focus trap, `aria-modal` and live-region behaviour from Radix rather than
+  hand-rolled ARIA. Enforced at three
   layers — lint, unit test and E2E — all riding the existing `frontend`/`e2e`
   CI jobs, so no separate a11y gate exists to forget. The mechanics are in
   [§7](#7-testing-strategy) and

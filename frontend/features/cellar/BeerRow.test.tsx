@@ -99,7 +99,9 @@ describe("BeerRow", () => {
     screen.getByRole("button", { name: /Westvleteren 12/ }).click();
 
     const item = await screen.findByRole("listitem");
-    expect(item.textContent).toBe("cellar.bottle.container.KEG");
+    expect(item.textContent).toBe(
+      "cellar.bottle.container.KEGcellar.edit.actioncellar.bottle.remove.action",
+    );
   });
 
   it("shows an inline error when the bottle fetch fails", async () => {

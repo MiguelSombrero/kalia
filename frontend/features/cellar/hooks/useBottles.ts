@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addBottlesAction, listCellarBottlesAction } from "../actions";
-import type { AddBottlesRequest, Bottle } from "../types";
+import {
+  addBottlesAction,
+  listCellarBottlesAction,
+  removeBottleAction,
+  updateBottleAction,
+} from "../actions";
+import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "../types";
 
 const bottlesKey = (entryId: string) => ["cellar", "bottles", entryId];
 
@@ -22,6 +27,29 @@ export const useAddBottle = () => {
       if (entryId) {
         queryClient.invalidateQueries({ queryKey: bottlesKey(entryId) });
       }
+    },
+  });
+};
+
+export const useUpdateBottle = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (variables: { id: string; request: UpdateBottleRequest }) =>
+      updateBottleAction(variables.id, variables.request),
+    onSuccess: (updated: Bottle) => {
+      queryClient.invalidateQueries({ queryKey: bottlesKey(updated.entryId) });
+    },
+  });
+};
+
+export const useRemoveBottle = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (variables: { id: string; entryId: string }) => removeBottleAction(variables.id),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: bottlesKey(variables.entryId) });
     },
   });
 };

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { listCellarBottles, listCellarEntries } from "./api";
+import { listCellarBottles, listCellarEntries, removeCellarBottle, updateCellarBottle } from "./api";
 import type { CellarBeerRow } from "./types";
 
 const beerId = "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f";
@@ -45,6 +45,23 @@ describe("listCellarEntries", () => {
       },
     ];
     await expect(listCellarEntries()).resolves.toEqual(expected);
+  });
+
+  it("drops an entry whose last bottle has already been removed", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.includes("/api/v1/cellar") && !url.includes("/bottles")) {
+        return Response.json([
+          { id: entryId, beerId, quantity: 0, createdAt: "2026-01-01", updatedAt: "2026-01-01" },
+        ]);
+      }
+      if (url.includes(`/api/v1/beers/${beerId}`)) {
+        return Response.json(beerDetails);
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(listCellarEntries()).resolves.toEqual([]);
   });
 
   it("throws when the entries lookup fails", async () => {
@@ -124,5 +141,51 @@ describe("listCellarBottles", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 500 })));
 
     await expect(listCellarBottles(entryId)).rejects.toThrow("status 500");
+  });
+});
+
+describe("updateCellarBottle", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const request = { containerType: "CAN" as const, brewedDate: "2024-01-01" };
+
+  it("returns the updated bottle", async () => {
+    const updated = {
+      id: "bottle-1",
+      entryId,
+      containerType: "CAN",
+      brewedDate: "2024-01-01",
+      createdAt: "2026-01-01",
+      updatedAt: "2026-01-02",
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json(updated)));
+
+    await expect(updateCellarBottle("bottle-1", request)).resolves.toEqual(updated);
+  });
+
+  it("throws when the update fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 404 })));
+
+    await expect(updateCellarBottle("bottle-1", request)).rejects.toThrow("status 404");
+  });
+});
+
+describe("removeCellarBottle", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("resolves once the bottle is removed", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 204 })));
+
+    await expect(removeCellarBottle("bottle-1")).resolves.toBeUndefined();
+  });
+
+  it("throws when the removal fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 404 })));
+
+    await expect(removeCellarBottle("bottle-1")).rejects.toThrow("status 404");
   });
 });

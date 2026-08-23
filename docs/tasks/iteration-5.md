@@ -24,7 +24,7 @@ Goal: a signed-in beer enthusiast records the individual bottles they own.
 | [11](iteration-5/11-cellar-page.md) | Cellar page for the signed-in user | done |
 | [12](iteration-5/12-cellar-navigation.md) | Navigation between Home, Catalog and Cellar | done |
 | [13](iteration-5/13-add-bottle-to-cellar.md) | Add a bottle to the cellar from the catalog | done |
-| [14](iteration-5/14-edit-remove-bottle.md) | Edit and remove a bottle from the cellar | refined |
+| [14](iteration-5/14-edit-remove-bottle.md) | Edit and remove a bottle from the cellar | done |
 | [09](iteration-5/09-bottle-beer-naming.md) | Reconcile the `Bottle` / `Beer` naming across `cellar` and `catalog` | dropped |
 | [10](iteration-5/10-swagger-oauth2-authorization.md) | Swagger UI OAuth2 authorization for authenticated endpoints | done |
 

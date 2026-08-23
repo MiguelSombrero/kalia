@@ -7,6 +7,7 @@ import { cardVariants } from "@/components/ui/card";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { BottleList } from "./BottleList";
+import { hiddenBottleCountForEntry, useBottleRemovalStore } from "./store";
 import type { CellarBeerRow } from "./types";
 import { useCellarBottles } from "./hooks/useBottles";
 
@@ -16,6 +17,16 @@ export const BeerRow = ({ locale, row }: { locale: Locale; row: CellarBeerRow })
   const panelId = useId();
 
   const bottlesQuery = useCellarBottles(row.entryId, { enabled: isExpanded });
+  const pending = useBottleRemovalStore((state) => state.pending);
+  const finalizing = useBottleRemovalStore((state) => state.finalizing);
+
+  // Optimistic overlay for the undo window and any in-flight delayed
+  // DELETE: hides the whole row the moment it would reach zero bottles,
+  // and keeps it hidden until that DELETE actually settles.
+  const bottleCount = row.bottleCount - hiddenBottleCountForEntry({ pending, finalizing }, row.entryId);
+  if (bottleCount <= 0) {
+    return null;
+  }
 
   return (
     <div className={cn(cardVariants, "overflow-hidden")}>
@@ -48,15 +59,18 @@ export const BeerRow = ({ locale, row }: { locale: Locale; row: CellarBeerRow })
           <Badge variant="accent">{row.abv} %</Badge>
         </span>
         <span className="w-16 shrink-0 text-right text-sm font-semibold text-foreground">
-          {t("cellar.entry.bottleCount", { count: row.bottleCount })}
+          {t("cellar.entry.bottleCount", { count: bottleCount })}
         </span>
       </button>
-      <div
-        id={panelId}
-        hidden={!isExpanded}
-        className="border-t border-border px-4 py-3 pl-11"
-      >
-        {isExpanded && <BottleList locale={locale} query={bottlesQuery} />}
+      <div id={panelId} hidden={!isExpanded} className="border-t border-border px-4 py-3 pl-11">
+        {isExpanded && (
+          <BottleList
+            locale={locale}
+            entryId={row.entryId}
+            beerName={row.beerName}
+            query={bottlesQuery}
+          />
+        )}
       </div>
     </div>
   );

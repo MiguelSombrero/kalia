@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { applyBottleDateRules } from "./bottleDateRules";
 import { containerTypeValues } from "./types";
 
 export const MIN_QUANTITY = 1;
@@ -7,8 +8,6 @@ export const MAX_QUANTITY = 24;
 // Derived from the generated client, so a container type added backend-side
 // reaches the form by regenerating rather than by remembering to edit a list.
 export const containerTypes = Object.values(containerTypeValues);
-
-const todayIso = (): string => new Date().toISOString().slice(0, 10);
 
 export const addBottleSchema = z
   .object({
@@ -23,25 +22,6 @@ export const addBottleSchema = z
       .min(MIN_QUANTITY, "cellar.add.error.quantityRange")
       .max(MAX_QUANTITY, "cellar.add.error.quantityRange"),
   })
-  .superRefine((values, ctx) => {
-    if (values.brewedDate && values.brewedDate > todayIso()) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["brewedDate"],
-        message: "cellar.add.error.brewedInFuture",
-      });
-    }
-    if (
-      values.brewedDate &&
-      values.bestBeforeDate &&
-      values.bestBeforeDate <= values.brewedDate
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["bestBeforeDate"],
-        message: "cellar.add.error.bestBeforeNotAfterBrewed",
-      });
-    }
-  });
+  .superRefine(applyBottleDateRules);
 
 export type AddBottleFormValues = z.infer<typeof addBottleSchema>;

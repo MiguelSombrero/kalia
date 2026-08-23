@@ -89,12 +89,22 @@
     "bottle": {
       "loading": "Ladataan pulloja…",
       "error": "Pullojen lataus epäonnistui. Yritä uudelleen.",
+      "list": "Oluen {{beer}} pullot",
       "brewed": "valmistettu {{relative}}",
       "bestBefore": "parasta ennen {{relative}}",
       "container": {
         "BOTTLE": "Pullo",
         "CAN": "Tölkki",
         "KEG": "Tynnyri"
+      },
+      "dateError": {
+        "brewedInFuture": "Panopäivä ei voi olla tulevaisuudessa.",
+        "bestBeforeNotAfterBrewed": "Parasta ennen -päivän on oltava panopäivän jälkeen."
+      },
+      "remove": {
+        "action": "Poista",
+        "toast": "Pullo poistettu.",
+        "undo": "Kumoa"
       }
     },
     "add": {
@@ -112,9 +122,21 @@
       "submitting": "Lisätään…",
       "error": {
         "quantityRange": "Valitse 1–24 pulloa.",
-        "brewedInFuture": "Panopäivä ei voi olla tulevaisuudessa.",
-        "bestBeforeNotAfterBrewed": "Parasta ennen -päivän on oltava panopäivän jälkeen.",
         "failed": "Kellariin lisääminen epäonnistui. Yritä uudelleen."
+      }
+    },
+    "edit": {
+      "action": "Muokkaa",
+      "title": "Muokkaa pulloa",
+      "description": "Muokkaa tätä oluen {{beer}} pulloa.",
+      "containerType": "Pakkaus",
+      "brewedDate": "Panopäivä (valinnainen)",
+      "bestBeforeDate": "Parasta ennen (valinnainen)",
+      "cancel": "Peruuta",
+      "submit": "Tallenna",
+      "submitting": "Tallennetaan…",
+      "error": {
+        "failed": "Muutosten tallennus epäonnistui. Yritä uudelleen."
       }
     }
   }
