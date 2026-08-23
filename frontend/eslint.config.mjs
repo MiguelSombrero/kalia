@@ -62,6 +62,9 @@ const eslintConfig = defineConfig([
       "no-console": "error",
       // Convention (ADR-0037): type over interface.
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+      // Keeps the zero-inline-script survey behind ADR-0016's CSP true
+      // between sweeps, instead of relying on someone re-running it by hand.
+      "react/no-danger": "error",
     },
   },
   {

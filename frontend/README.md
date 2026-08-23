@@ -123,6 +123,11 @@ Why the rationale lives there and not here:
   itself. A thin pass-through today (`logger.error(...)` →
   `console.error(...)`); the seam for routing to a real monitoring tool later
   without touching call sites.
+- **No `dangerouslySetInnerHTML`** — enforced by ESLint's `react/no-danger`
+  rule, closing one of the vectors the CSP's `'unsafe-inline'` trade-off
+  ([ADR-0016](../docs/adr/0016-security-response-headers.md)) depends on
+  staying clear; `innerHTML`, `eval` and inline `<script>` still rely on that
+  ADR's manual survey.
 
 **Data and state**
 

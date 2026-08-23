@@ -8,6 +8,9 @@
   environment variable; and `form-action 'self'` blocks a same-origin form
   whose route answers with a cross-origin redirect, which is why the auth
   flow navigates via Server Actions rather than form posts
+- **Amended:** 2026-08-23 — the Consequences' revisit trigger fired (Auth and
+  Cellar have both shipped); the source survey was re-run and `'unsafe-inline'`
+  is re-affirmed, see below
 
 ## Context
 
@@ -109,6 +112,25 @@ picks that domain, not this task.
   Auth/Cellar land and there's real session/user data to protect, the
   `'unsafe-inline'` trade-off should be re-examined against nonce-based CSP
   (or Subresource Integrity, if it has stabilized by then).
+
+> **Amended 2026-08-23.** The trigger above has fired: iteration 4 shipped
+> authentication and iteration 5 shipped the cellar, so there is now real
+> session and user data behind `'unsafe-inline'`'s XSS margin. The
+> 2026-08-23 quality-backlog triage re-ran the original source survey by
+> hand — no `dangerouslySetInnerHTML`, no `innerHTML`, no `eval`, no inline
+> `<script>` anywhere in `frontend/` — and found the margin unchanged from
+> when this ADR was written. Nonce-based CSP still costs the same trade
+> recorded in Alternatives considered (giving up the locale-root page's
+> static rendering) and Subresource Integrity is still experimental at this
+> Next.js version, so neither alternative's calculus has moved either.
+>
+> **The product owner's call: re-affirm `'unsafe-inline'`, close the trigger.**
+> `react/no-danger` is now an ESLint error (`frontend/eslint.config.mjs`), so
+> a future `dangerouslySetInnerHTML` fails `npm run lint` the moment it's
+> written instead of waiting to be caught by the next hand-run survey. The
+> other three items the survey checks — `innerHTML`, `eval`, an inline
+> `<script>` — have no such guard and still depend on the next sweep
+> re-running the survey by hand.
 
 ## Evidence
 
