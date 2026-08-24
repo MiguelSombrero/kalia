@@ -1,6 +1,6 @@
 # Task 09: Validate the locale parsed from the pathname
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -29,20 +29,25 @@ defined fallback for a pathname that doesn't start with a known locale.
 
 - Whatever `isLocale`/`toLocale` already do elsewhere in the codebase — this
   task reuses that, not a new validation scheme.
+- When the pathname's first segment isn't a known locale, no locale link
+  gets `aria-current="page"` or the active-locale styling — `aria-current`
+  asserts that a link represents the currently displayed page (WAI-ARIA;
+  WCAG 4.1.2 Name, Role, Value), and the current locale genuinely isn't
+  known in that case. This intentionally diverges from `toLocale`'s
+  fallback-to-`defaultLocale` convention used elsewhere in the codebase,
+  where the fallback stands in for routing/rendering rather than an
+  accessibility-facing "you are here" claim.
 
 ## Open questions
 
-- **Edge cases and failure handling:** what should `aria-current` and the
-  active-locale styling show when the first path segment isn't a known
-  locale (unreachable via app navigation, but this is exactly the case the
-  fix exists to cover — it needs a defined answer, not silent `undefined`
-  behavior)?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `LocaleSwitcher` no longer contains an `as Locale` assertion
-- [ ] A component test asserts behavior when the pathname's first segment
-      isn't a valid locale, per the Open questions answer
+- [ ] A component test asserts that when the pathname's first segment isn't
+      a valid locale, neither locale link has `aria-current` and neither
+      gets the active-locale styling
 - [ ] `npm test` is green
 
 ## Notes
