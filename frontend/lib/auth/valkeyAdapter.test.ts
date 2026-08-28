@@ -1,14 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdapterUser } from "next-auth/adapters";
 import { createValkeyAdapter } from "./valkeyAdapter";
 
 const store = new Map<string, string>();
 const client = {
   get: vi.fn(async (key: string) => store.get(key) ?? null),
-  // No real expiry, so PXAT/KEEPTTL are ignored; XX is honoured, since the
-  // adapter leans on "refuses to create a missing key" as a real guarantee.
+  // No real expiry, so PXAT/KEEPTTL are ignored; XX and NX are honoured,
+  // since the adapter leans on both as real compare-and-set guarantees.
   set: vi.fn(async (key: string, value: string, ...options: unknown[]) => {
     if (options.includes("XX") && !store.has(key)) {
+      return null;
+    }
+    if (options.includes("NX") && store.has(key)) {
       return null;
     }
     store.set(key, value);
@@ -129,6 +132,88 @@ describe("valkeyAdapter", () => {
 
     expect(deleted).toEqual({ sessionToken: "tok-3", userId: user.id, expires });
     await expect(valkeyAdapter.getSessionAndUser!("tok-3")).resolves.toBeNull();
+  });
+});
+
+describe("createUser race safety", () => {
+  const raceStore = new Map<string, string>();
+  const defaultSet = async (key: string, value: string, ...options: unknown[]): Promise<string | null> => {
+    if (options.includes("NX") && raceStore.has(key)) {
+      return null;
+    }
+    raceStore.set(key, value);
+    return "OK";
+  };
+  const raceClient = {
+    get: vi.fn(async (key: string) => raceStore.get(key) ?? null),
+    set: vi.fn(defaultSet),
+    del: vi.fn(async (...keys: string[]) => keys.filter((key) => raceStore.delete(key)).length),
+  };
+  const { adapter: raceAdapter } = createValkeyAdapter(raceClient);
+
+  beforeEach(() => {
+    raceStore.clear();
+    raceClient.set.mockImplementation(defaultSet);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("resolves two concurrent first sign-ins to the same user, with no orphaned record", async () => {
+    const email = "concurrent@example.com";
+
+    const resultsPromise = Promise.all([
+      raceAdapter.createUser!(newUserInput({ email })),
+      raceAdapter.createUser!(newUserInput({ email })),
+    ]);
+    await vi.advanceTimersByTimeAsync(100);
+    const [userA, userB] = await resultsPromise;
+
+    expect(userA).toEqual(userB);
+    const userRecordKeys = [...raceStore.keys()].filter((key) => key.startsWith("auth:user:"));
+    expect(userRecordKeys).toHaveLength(1);
+  });
+
+  it("a losing sign-in fails after a bounded wait when the winning write never completes", async () => {
+    const email = "crash@example.com";
+    // Simulates a crash between claiming the email index and writing the
+    // user record: the write to auth:user:* never resolves.
+    raceClient.set.mockImplementation(async (key: string, value: string, ...options: unknown[]) => {
+      if (key.startsWith("auth:user:")) {
+        return new Promise<string | null>(() => {});
+      }
+      return defaultSet(key, value, ...options);
+    });
+
+    raceAdapter.createUser!(newUserInput({ email })); // the winner; hangs mid-write and is never awaited
+    const losing = raceAdapter.createUser!(newUserInput({ email }));
+    const losingRejects = expect(losing).rejects.toThrow(/timed out/i);
+
+    await vi.advanceTimersByTimeAsync(2_000);
+    await losingRejects;
+  });
+
+  it("releases its email-index claim if writing the user record fails, so a retry can win", async () => {
+    const email = "retry@example.com";
+    raceClient.set.mockImplementation(async (key: string, value: string, ...options: unknown[]) => {
+      if (key.startsWith("auth:user:")) {
+        throw new Error("simulated Valkey write failure");
+      }
+      return defaultSet(key, value, ...options);
+    });
+
+    await expect(raceAdapter.createUser!(newUserInput({ email }))).rejects.toThrow(
+      "simulated Valkey write failure",
+    );
+
+    raceClient.set.mockImplementation(defaultSet);
+    const retried = await raceAdapter.createUser!(newUserInput({ email }));
+
+    expect(retried.email).toBe(email);
+    const userRecordKeys = [...raceStore.keys()].filter((key) => key.startsWith("auth:user:"));
+    expect(userRecordKeys).toHaveLength(1);
   });
 });
 

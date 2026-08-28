@@ -6,6 +6,7 @@ import { valkeyClient } from "./valkeyClient";
 export type ValkeyClient = {
   get: (key: string) => Promise<string | null>;
   set(key: string, value: string): Promise<string | null>;
+  set(key: string, value: string, mode: "NX"): Promise<string | null>;
   set(key: string, value: string, mode: "PXAT", millisecondsTimestamp: number): Promise<string | null>;
   set(key: string, value: string, mode: "KEEPTTL", flag: "XX"): Promise<string | null>;
   del: (...keys: string[]) => Promise<number>;
@@ -19,6 +20,13 @@ const sessionAccountKey = (sessionToken: string) => `auth:session-account:${sess
 const emailIndexKey = (email: string) => `auth:user-by-email:${email}`;
 const sidIndexKey = (sid: string) => `auth:sid-index:${sid}`;
 const sessionSidKey = (sessionToken: string) => `auth:session-sid:${sessionToken}`;
+
+// ADR-0043: bounds how long a losing concurrent createUser waits on the
+// winner's write before failing, rather than hanging or creating a duplicate.
+const CREATE_USER_CLAIM_TIMEOUT_MS = 2000;
+const CREATE_USER_CLAIM_POLL_INTERVAL_MS = 25;
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Valkey/JSON has no Date type — records keep date fields as ISO strings.
 type StoredUser = Omit<AdapterUser, "emailVerified"> & { emailVerified: string | null };
@@ -86,6 +94,22 @@ export const createValkeyAdapter = (client: ValkeyClient) => {
   const getSessionTokenBySid = async (sid: string): Promise<string | null> =>
     client.get(sidIndexKey(sid));
 
+  // Polls for the record a concurrent createUser is in the process of
+  // writing, so the request that lost the email-index claim below resolves
+  // to the winner's user instead of orphaning one of its own.
+  const waitForClaimedUser = async (email: string): Promise<AdapterUser> => {
+    const deadline = Date.now() + CREATE_USER_CLAIM_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      const winnerId = await client.get(emailIndexKey(email));
+      const winner = winnerId ? await readUser(winnerId) : null;
+      if (winner) {
+        return winner;
+      }
+      await sleep(CREATE_USER_CLAIM_POLL_INTERVAL_MS);
+    }
+    throw new Error(`Timed out waiting for a concurrent sign-in to finish creating a user for ${email}`);
+  };
+
   // Auth.js database-session adapter backed by Valkey (ADR-0030).
   //
   // getUserByEmail is implemented despite this being OAuth-only: @auth/core's
@@ -93,10 +117,25 @@ export const createValkeyAdapter = (client: ValkeyClient) => {
   // strategy regardless of provider — confirmed by running the sign-in flow,
   // not documented in the adapter type's own "currently invoked" notes.
   const adapter: Adapter = {
+    // Claims the email index with SET NX first — ioredis's compare-and-set
+    // primitive, since the Adapter interface has no equivalent (ADR-0043) —
+    // and only the request that wins it writes the user record. A losing
+    // request waits for that record instead of creating its own.
     createUser: async (user) => {
       const created: AdapterUser = { ...user, id: crypto.randomUUID() };
-      await client.set(userKey(created.id), JSON.stringify(toStoredUser(created)));
-      await client.set(emailIndexKey(created.email), created.id);
+      const claimed = await client.set(emailIndexKey(created.email), created.id, "NX");
+      if (claimed !== "OK") {
+        return waitForClaimedUser(created.email);
+      }
+      // The claim above is ours alone until the write below settles — if it
+      // rejects, releasing the claim lets a retry win instead of permanently
+      // locking the email out (a losing request only ever waits, never steals).
+      try {
+        await client.set(userKey(created.id), JSON.stringify(toStoredUser(created)));
+      } catch (error) {
+        await client.del(emailIndexKey(created.email));
+        throw error;
+      }
       return created;
     },
 

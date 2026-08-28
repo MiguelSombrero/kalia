@@ -119,6 +119,9 @@ in one place, read
 - [ADR-0033](0033-keycloak-account-relinking.md) — a stale account index
   (Keycloak's `sub` changed, e.g. on a dev realm reimport) re-links by email
   instead of locking the user out, since Keycloak is the only provider.
+- [ADR-0043](0043-createuser-race-safety.md) — `createUser` claims the email
+  index with `SET NX`; a losing concurrent first sign-in waits on the winner's
+  record instead of orphaning its own.
 
 ## Configuration, security and operations
 
