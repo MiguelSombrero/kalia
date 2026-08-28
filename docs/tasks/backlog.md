@@ -31,6 +31,11 @@ Engineering work:
   the moment anyone but the author uses this
 - Search engine — PostgreSQL full-text is fine at this size; OpenSearch only if
   faceted search outgrows it
+- Minimum length for the catalog search term. Shorter than three characters
+  yields no complete trigram, so the name filter falls back to a full scan
+  despite its index ([ADR-0044](../adr/0044-catalog-search-indexes.md)).
+  Imposing one is an API-contract change, so it is a decision to make rather
+  than a fix to apply
 - **A failing token refresh is silent.** `frontend/lib/auth/refreshAccessToken.ts`
   returns `unavailable` and the caller sends no token, so a Keycloak outage
   looks exactly like ordinary anonymous browsing — nothing logs, nothing

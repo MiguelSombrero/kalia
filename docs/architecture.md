@@ -121,6 +121,8 @@ application events; cross-module *reads* via the root-package API.
   [backend/README.md](../backend/README.md) database migrations). Seed data
   (~50–100 beers) ships as versioned migrations for deterministic dev/test
   environments.
+- One PostgreSQL extension is required: `pg_trgm`, installed into `public` by
+  the catalog migrations for the search indexes in the data model below.
 - Spring Modulith's event publication registry uses the JDBC flavor (not JPA),
   so framework infrastructure stays out of the persistence unit; its
   `event_publication` table lives in the `public` schema, created by Flyway
@@ -137,6 +139,11 @@ cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, creat
 
 `style` starts as an indexed text column; normalize into its own table only
 if style metadata appears. Prices are integer cents to avoid floating point.
+
+Catalog search is served by indexes matching the shape of each filter: a
+`pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
+functional B-tree indexes on `lower(beer.style)` and `lower(brewery.country)`
+([ADR-0044](adr/0044-catalog-search-indexes.md)).
 
 **The cellar is two levels, not one** ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
 A catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle*
@@ -472,6 +479,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md) | Client components call a feature-owned hook, never `useQuery`/`useMutation` directly | accepted | 2026-08-16 |
 | [ADR-0042](adr/0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
 | [ADR-0043](adr/0043-createuser-race-safety.md) | `createUser` claims the email index with SET NX so a losing concurrent sign-in joins the winner | accepted | 2026-08-23 |
+| [ADR-0044](adr/0044-catalog-search-indexes.md) | Catalog name search stays substring matching, served by a pg_trgm trigram index | accepted | 2026-08-28 |
 
 ### Engineering process and documentation
 

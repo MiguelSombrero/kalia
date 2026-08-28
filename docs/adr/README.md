@@ -67,6 +67,9 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0042](0042-bounded-request-parameters.md) — every request parameter is
   bounded by a named constant; a constraint spanning two parameters is
   checked in the handler and reported through `detail`.
+- [ADR-0044](0044-catalog-search-indexes.md) — catalog name search keeps
+  substring matching and a `pg_trgm` trigram index serves it; the style and
+  country filters get indexes on `lower(...)`.
 
 ## Frontend structure and conventions
 

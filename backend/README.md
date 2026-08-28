@@ -131,6 +131,11 @@ Flyway owns the schema (`ddl-auto=validate`). Locations under
 Version numbers (`V001`, `V002`, …) are **globally unique across all
 directories** — take the next free number regardless of directory.
 
+Migrations install one PostgreSQL extension, `pg_trgm`
+([ADR-0044](../docs/adr/0044-catalog-search-indexes.md)). It is a trusted
+extension, so the database owner can create it, but a deployment running
+migrations as a lower-privileged role fails at `CREATE EXTENSION`.
+
 Forward-only: an applied migration is never edited, and undoing one is a new
 migration — except before Kalia's first deployment, where editing history
 directly is allowed under narrow conditions
