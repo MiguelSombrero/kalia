@@ -9,6 +9,12 @@ RUN npm run build
 # Runtime stage — Next.js standalone output (see next.config.ts)
 FROM node:24-alpine
 ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000
+# node:24-alpine ships whatever Alpine packages it held when Docker Hub last
+# rebuilt the tag, which lags Alpine's own security updates by days — long
+# enough for the image scan (ADR-0024) to fail on a CVE whose fixed apk is
+# already published. Upgrading here takes those fixes at build time instead of
+# waiting for the rebuild. Must run before USER node: apk needs root.
+RUN apk --no-cache upgrade
 # The standalone server runs on `node` alone, so the package managers the
 # base image ships are never invoked here — and npm bundles its own
 # dependency tree, which is where every Node-package CVE this image has ever
