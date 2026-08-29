@@ -12,6 +12,13 @@
   restated `docs/architecture.md` §3's shape almost verbatim
   ([ADR-0020](0020-documentation-roles.md)); it is now a pointer there, and
   this ADR keeps the why (iteration 5.5 task 01)
+- **Amended:** 2026-08-29 — the dependency-direction enforcement now also
+  reaches the module *root* package: an inter-module API class that touches a
+  `domain` type must route through `application`, checked by a new
+  `ArchitectureTest` rule with its own violating fixture. The three layer
+  rules only ever saw classes inside `.domain`/`.application`/`.web`, so
+  `CatalogApi` injecting `BeerRepository` straight in was invisible to them
+  (iteration 5.5 task 06)
 
 ## Context
 
@@ -39,16 +46,19 @@ with separate JPA entities) was weighed and rejected for this codebase.
   mapping runs outside the service transaction).
 - **Module root package is the inter-module API** and stays empty until the
   first real consumer (cellar) arrives — the API emerges from its consumer.
+  It follows the same inward direction as `web`: it calls `application`, not
+  `domain` repositories directly.
 - **Rich JPA entities are the domain model** — a deliberate exception to
   framework-free-domain purity; separating domain classes from JPA entities
   would double every module's mapping surface for little gain at this scale.
 - **Full ports/adapters ceremony is deferred** to modules whose domain earns
   it (payment's `PaymentProvider`, ordering's state machine).
 - **ArchUnit 1.4.2 enforces the rules as tests** (`ArchitectureTest`): layer
-  dependency direction, controllers/advice only in `web`, entities and
-  repositories only in `domain`, plus general coding rules (no field
-  injection, no standard streams, no java.util.logging). Module *boundaries*
-  remain verified by Spring Modulith (`ModularityTest`).
+  dependency direction, the module root reaching `domain` only through
+  `application`, controllers/advice only in `web`, entities and repositories
+  only in `domain`, plus general coding rules (no field injection, no
+  standard streams, no java.util.logging). Module *boundaries* remain
+  verified by Spring Modulith (`ModularityTest`).
 - `@Nullable` (JSpecify) + `@Schema` co-location on web DTOs was reviewed
   and accepted: they document the same contract to two audiences.
 

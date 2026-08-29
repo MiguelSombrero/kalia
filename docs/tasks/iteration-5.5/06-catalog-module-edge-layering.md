@@ -1,6 +1,6 @@
 # Task 06: Route the catalog module's edges through its application layer
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -58,14 +58,17 @@ rather than wait for a second module to repeat the shortcut.
 
 ## Acceptance criteria
 
-- [ ] `CatalogController` no longer imports or constructs
+- [x] `CatalogController` no longer imports or constructs
       `fi.kalia.catalog.domain.BeerSearchCriteria` directly
-- [ ] `CatalogApi` no longer imports `fi.kalia.catalog.domain.BeerRepository`
-- [ ] A new `ArchitectureTest` rule fails when a module-root class depends on
+- [x] `CatalogApi` no longer imports `fi.kalia.catalog.domain.BeerRepository`
+- [x] A new `ArchitectureTest` rule fails when a module-root class depends on
       a `domain` type without going through `application` — proven by a
       fixture test that introduces such a violation and confirms the rule
       catches it, then removes the fixture
-- [ ] `mvn clean verify` is green
+      <br>*(the fixture is kept, not removed: `backend/README.md` requires a
+      standing fixture for any rule with no production violator, which this
+      rule has none of after the fix — see PR description)*
+- [x] `mvn clean verify` is green
 
 ## Notes
 

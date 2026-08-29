@@ -24,8 +24,12 @@ public class CatalogService {
 
 	private final BreweryRepository breweries;
 
-	public Page<Beer> searchBeers(BeerSearchCriteria criteria, Pageable pageable) {
-		return beers.findAll(BeerSpecifications.matching(criteria), pageable);
+	public Page<Beer> searchBeers(BeerSearchQuery query, Pageable pageable) {
+		return beers.findAll(BeerSpecifications.matching(toCriteria(query)), pageable);
+	}
+
+	public boolean beerExists(UUID beerId) {
+		return beers.existsById(beerId);
 	}
 
 	public Beer getBeer(UUID id) {
@@ -38,6 +42,11 @@ public class CatalogService {
 		return breweries.findAll().stream()
 				.sorted(Comparator.comparing(Brewery::getName, String.CASE_INSENSITIVE_ORDER))
 				.toList();
+	}
+
+	private static BeerSearchCriteria toCriteria(BeerSearchQuery query) {
+		return new BeerSearchCriteria(query.query(), query.style(), query.breweryId(),
+				query.country(), query.minAbv(), query.maxAbv());
 	}
 
 }

@@ -1,8 +1,8 @@
 package fi.kalia.catalog.web;
 
+import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
-import fi.kalia.catalog.domain.BeerSearchCriteria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -67,8 +67,8 @@ class CatalogController {
 			@RequestParam(defaultValue = "name,asc") String sort) {
 		requireOrderedAbvRange(minAbv, maxAbv);
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-		BeerSearchCriteria criteria = new BeerSearchCriteria(query, style, breweryId, country, minAbv, maxAbv);
-		return PageDto.from(catalog.searchBeers(criteria, pageable).map(BeerSummaryDto::from));
+		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, country, minAbv, maxAbv);
+		return PageDto.from(catalog.searchBeers(searchQuery, pageable).map(BeerSummaryDto::from));
 	}
 
 	@GetMapping("/beers/{id}")

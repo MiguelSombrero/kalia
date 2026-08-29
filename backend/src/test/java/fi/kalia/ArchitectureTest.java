@@ -7,6 +7,7 @@ import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_
 import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING;
 
 import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -52,6 +53,10 @@ class ArchitectureTest {
 
 	@ArchTest
 	static final ArchRule applicationDoesNotDependOnWeb = applicationDoesNotDependOnWeb(BASE_PACKAGE);
+
+	@ArchTest
+	static final ArchRule moduleRootReachesDomainThroughApplication =
+			moduleRootReachesDomainThroughApplication(BASE_PACKAGE);
 
 	@ArchTest
 	static final ArchRule controllersAndAdviceLiveInWeb = classes()
@@ -136,6 +141,35 @@ class ArchitectureTest {
 				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.web..")
 				.because("dependencies point inward: web → application → domain (ADR-0007)")
 				.allowEmptyShould(false);
+	}
+
+	// The other layer rules only constrain classes inside .domain/.application/
+	// .web; a module-root class (the inter-module API) sits outside all three.
+	// A root class touching a domain type must also touch application, so a
+	// straight-to-repository dependency is what fails; a domain type handed
+	// back through an application call is fine. allowEmptyShould is true here
+	// unlike the siblings: no root class touching domain is the clean end
+	// state, and ArchitectureRulesRejectViolationsTest proves the rule bites.
+	// Parameterised for the reason {@link #domainDependsOnNoOuterLayer(String)} gives.
+	static ArchRule moduleRootReachesDomainThroughApplication(String basePackage) {
+		return classes()
+				.that(JavaClass.Predicates.resideInAPackage(basePackage + ".*")
+						.and(dependOnClassesIn(basePackage + ".*.domain..")))
+				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.application..")
+				.because("a module-root API reaches domain through application, "
+						+ "like every other class in the module: web → application → domain (ADR-0007)")
+				.allowEmptyShould(true);
+	}
+
+	private static DescribedPredicate<JavaClass> dependOnClassesIn(String packageIdentifier) {
+		return new DescribedPredicate<>("depend on classes in '" + packageIdentifier + "'") {
+			@Override
+			public boolean test(JavaClass javaClass) {
+				return javaClass.getDirectDependenciesFromSelf().stream()
+						.map(Dependency::getTargetClass)
+						.anyMatch(JavaClass.Predicates.resideInAPackage(packageIdentifier));
+			}
+		};
 	}
 
 }

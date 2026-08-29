@@ -20,7 +20,7 @@ COULD sections are empty, with every entry moved to Retired.
 | [03](iteration-5.5/03-fix-concurrent-first-sign-in-race.md) | Fix the concurrent-first-sign-in duplicate-user race | done |
 | [04](iteration-5.5/04-catalog-search-usable-indexes.md) | Give catalog search usable indexes | done |
 | [05](iteration-5.5/05-catalog-search-test-gaps.md) | Close catalog search test gaps | refined |
-| [06](iteration-5.5/06-catalog-module-edge-layering.md) | Route the catalog module's edges through its application layer | refined |
+| [06](iteration-5.5/06-catalog-module-edge-layering.md) | Route the catalog module's edges through its application layer | done |
 | [07](iteration-5.5/07-catalog-api-hardening.md) | Reject malformed sort parameters and paginate the brewery list | refined |
 | [08](iteration-5.5/08-pin-springdoc-exposure-default.md) | Pin the springdoc production-exposure default with a test | refined |
 | [09](iteration-5.5/09-validate-locale-switcher-input.md) | Validate the locale parsed from the pathname | refined |
