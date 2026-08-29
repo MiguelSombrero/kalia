@@ -22,7 +22,7 @@ COULD sections are empty, with every entry moved to Retired.
 | [05](iteration-5.5/05-catalog-search-test-gaps.md) | Close catalog search test gaps | refined |
 | [06](iteration-5.5/06-catalog-module-edge-layering.md) | Route the catalog module's edges through its application layer | refined |
 | [07](iteration-5.5/07-catalog-api-hardening.md) | Reject malformed sort parameters and paginate the brewery list | refined |
-| [08](iteration-5.5/08-pin-springdoc-exposure-default.md) | Pin the springdoc production-exposure default with a test | refined |
+| [08](iteration-5.5/08-pin-springdoc-exposure-default.md) | Pin the springdoc production-exposure default with a test | done |
 | [09](iteration-5.5/09-validate-locale-switcher-input.md) | Validate the locale parsed from the pathname | refined |
 | [10](iteration-5.5/10-detect-module-diagram-drift.md) | Detect backend module-diagram drift in CI | refined |
 
