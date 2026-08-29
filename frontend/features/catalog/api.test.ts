@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildBeerSearchParams, getBeer } from "./api";
-import type { BeerDetails } from "./types";
+import { searchBeers as generatedSearchBeers } from "@/lib/api/generated/catalog/catalog";
+import { buildBeerSearchParams, getBeer, searchBeers } from "./api";
+import { isApiError } from "@/lib/api/api-error";
+import type { BeerDetails, BeerPage } from "./types";
+
+vi.mock("@/lib/api/generated/catalog/catalog", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api/generated/catalog/catalog")>()),
+  searchBeers: vi.fn(),
+}));
+
+const generatedSearchBeersMock = vi.mocked(generatedSearchBeers);
 
 describe("buildBeerSearchParams", () => {
   it("omits missing and empty values", () => {
@@ -29,6 +38,62 @@ describe("buildBeerSearchParams", () => {
     expect(params.get("page")).toBe("1");
     expect(params.get("size")).toBe("10");
     expect(params.get("sort")).toBe("abv,desc");
+  });
+});
+
+const emptyPage: BeerPage = { content: [], totalElements: 0, totalPages: 0, page: 0 };
+
+describe("searchBeers", () => {
+  afterEach(() => {
+    generatedSearchBeersMock.mockReset();
+  });
+
+  it("coerces numeric-string filters and pagination to numbers", async () => {
+    generatedSearchBeersMock.mockResolvedValue({ status: 200, data: emptyPage } as never);
+
+    await searchBeers({ query: "ipa", minAbv: "4.5", maxAbv: "9", page: "2", size: "24" });
+
+    expect(generatedSearchBeersMock).toHaveBeenCalledWith({
+      query: "ipa",
+      style: undefined,
+      country: undefined,
+      minAbv: 4.5,
+      maxAbv: 9,
+      page: 2,
+      size: 24,
+      sort: undefined,
+    });
+  });
+
+  it("passes empty numeric strings through as undefined", async () => {
+    generatedSearchBeersMock.mockResolvedValue({ status: 200, data: emptyPage } as never);
+
+    await searchBeers({ minAbv: "", maxAbv: "", page: "", size: "" });
+
+    expect(generatedSearchBeersMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        minAbv: undefined,
+        maxAbv: undefined,
+        page: undefined,
+        size: undefined,
+      }),
+    );
+  });
+
+  it("returns the page payload on a 200", async () => {
+    generatedSearchBeersMock.mockResolvedValue({ status: 200, data: emptyPage } as never);
+
+    await expect(searchBeers({})).resolves.toEqual(emptyPage);
+  });
+
+  it("throws a tagged http ApiError on a non-200 status", async () => {
+    generatedSearchBeersMock.mockResolvedValue({ status: 503, data: undefined } as never);
+
+    const error = await searchBeers({}).catch((e: unknown) => e);
+
+    expect(isApiError(error)).toBe(true);
+    expect(error).toMatchObject({ kind: "http", status: 503 });
+    expect((error as Error).message).toBe("Beer search failed with status 503");
   });
 });
 
