@@ -103,11 +103,14 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
   await expect(bottleList).toBeVisible();
   await bottleList.getByRole("button", { name: "Remove" }).first().click();
-  await expect(page.getByText("Bottle removed.")).toBeVisible();
+  // exact: true — Radix Toast also mirrors the text into an off-screen
+  // role="status" region ("Notification Bottle removed.Undo"), which a
+  // substring match picks up as a second element once it populates.
+  await expect(page.getByText("Bottle removed.", { exact: true })).toBeVisible();
   // No shorter way to prove the DELETE only fires once the undo window
   // (~5s) genuinely elapses rather than firing immediately.
   await page.waitForTimeout(5500);
-  await expect(page.getByText("Bottle removed.")).toBeHidden();
+  await expect(page.getByText("Bottle removed.", { exact: true })).toBeHidden();
   expect(await bottleCount(page, listBeer)).toBe(beforeRemove - 1);
 
   const scan = await new AxeBuilder({ page })
