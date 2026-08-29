@@ -91,6 +91,26 @@ class CatalogApiIT {
 	}
 
 	@Test
+	void sortsByStyleCaseInsensitively() {
+		client.get().uri("/api/v1/beers?sort=style,asc&size=54")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					java.util.List<String> styles = JsonPath.read(body, "$.content[*].style");
+					assertThat(styles).isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
+					assertThat(styles.get(0)).isEqualTo("American Wild Ale");
+				});
+
+		client.get().uri("/api/v1/beers?sort=style,desc&size=1")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.content[0].style"))
+						.isEqualTo("Wild Ale"));
+	}
+
+	@Test
 	void returnsBeerDetailsById() {
 		String listBody = client.get().uri("/api/v1/beers?query=Pliny")
 				.exchange()

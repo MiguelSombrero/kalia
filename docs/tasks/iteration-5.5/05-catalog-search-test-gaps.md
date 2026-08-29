@@ -1,6 +1,6 @@
 # Task 05: Close catalog search test gaps
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -45,13 +45,13 @@ has no test pinning it, so a future change could break either silently.
 
 ## Acceptance criteria
 
-- [ ] `features/catalog/api.test.ts` has a `describe("searchBeers", ...)`
+- [x] `features/catalog/api.test.ts` has a `describe("searchBeers", ...)`
       block covering the non-200 status path and the numeric-string
       coercion of `minAbv`/`maxAbv`/`page`/`size`
-- [ ] `CatalogApiIT` has a test sorting by `style` (both directions or at
+- [x] `CatalogApiIT` has a test sorting by `style` (both directions or at
       least confirming `ignoreCase()` behavior), following
       `sortsByAbvDescending`'s pattern
-- [ ] `npm test` and `mvn clean verify` are green
+- [x] `npm test` and `mvn clean verify` are green
 
 ## Notes
 
