@@ -1,6 +1,6 @@
 # Task 08: Pin the springdoc production-exposure default with a test
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -43,12 +43,12 @@ otherwise proves the property's fallback value) and asserts
 
 ## Acceptance criteria
 
-- [ ] A new test (unit or a `*Test`/`*IT` run outside the failsafe
+- [x] A new test (unit or a `*Test`/`*IT` run outside the failsafe
       springdoc override) asserts `/v3/api-docs` and
       `/swagger-ui/index.html` are unreachable with no `SPRINGDOC_ENABLED`
       override set — confirmed to fail if the property's fallback is
       temporarily flipped to `true` locally
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
