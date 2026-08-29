@@ -23,7 +23,7 @@ COULD sections are empty, with every entry moved to Retired.
 | [06](iteration-5.5/06-catalog-module-edge-layering.md) | Route the catalog module's edges through its application layer | refined |
 | [07](iteration-5.5/07-catalog-api-hardening.md) | Reject malformed sort parameters and paginate the brewery list | refined |
 | [08](iteration-5.5/08-pin-springdoc-exposure-default.md) | Pin the springdoc production-exposure default with a test | refined |
-| [09](iteration-5.5/09-validate-locale-switcher-input.md) | Validate the locale parsed from the pathname | refined |
+| [09](iteration-5.5/09-validate-locale-switcher-input.md) | Validate the locale parsed from the pathname | done |
 | [10](iteration-5.5/10-detect-module-diagram-drift.md) | Detect backend module-diagram drift in CI | refined |
 
 Numbered 5.5 rather than inserted as a renumbered 6, so iterations 6-8 (already

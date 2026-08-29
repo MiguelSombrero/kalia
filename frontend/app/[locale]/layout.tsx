@@ -55,7 +55,7 @@ const RootLayout = async ({ children, params }: Props) => {
             <SiteNav locale={locale} />
             <div className="flex items-center gap-4">
               <AuthStatus locale={locale} />
-              <LocaleSwitcher />
+              <LocaleSwitcher locale={locale} />
             </div>
           </header>
           {/* Plain wrapper, not <main> — every page under {children} already
