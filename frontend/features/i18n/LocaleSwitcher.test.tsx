@@ -10,7 +10,7 @@ import { LocaleSwitcher } from "./LocaleSwitcher";
 describe("LocaleSwitcher", () => {
   it("links to the same page in the other locale, preserving the path", async () => {
     usePathname.mockReturnValue("/en/beers/abc-123");
-    const { container } = render(<LocaleSwitcher />);
+    const { container } = render(<LocaleSwitcher locale="en" />);
 
     expect(screen.getByRole("link", { name: "English" })).toHaveAttribute(
       "href",
@@ -23,11 +23,28 @@ describe("LocaleSwitcher", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("marks the current locale with aria-current", () => {
+  it("marks the prop locale as current, regardless of the pathname", () => {
     usePathname.mockReturnValue("/fi/beers");
-    render(<LocaleSwitcher />);
+    render(<LocaleSwitcher locale="en" />);
 
-    expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "English" })).not.toHaveAttribute("aria-current");
+    const english = screen.getByRole("link", { name: "English" });
+    expect(english).toHaveAttribute("aria-current", "page");
+    expect(english).toHaveClass("font-semibold");
+    expect(screen.getByRole("link", { name: "Suomi" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("replaces the first segment when it is a known locale", () => {
+    usePathname.mockReturnValue("/fi/beers");
+    render(<LocaleSwitcher locale="en" />);
+
+    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en/beers");
+  });
+
+  it("prepends the locale when the first segment is not a known locale", () => {
+    usePathname.mockReturnValue("/beers");
+    render(<LocaleSwitcher locale="en" />);
+
+    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en/beers");
+    expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute("href", "/fi/beers");
   });
 });

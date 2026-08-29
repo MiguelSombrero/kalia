@@ -2,20 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { locales, type Locale } from "@/i18n/settings";
+import { isLocale, locales, type Locale } from "@/i18n/settings";
 
 const localeHref = (locale: Locale, pathname: string): string => {
   const segments = pathname.split("/");
-  segments[1] = locale;
+  if (isLocale(segments[1] ?? "")) {
+    segments[1] = locale;
+  } else {
+    segments.splice(1, 0, locale);
+  }
   return segments.join("/");
 };
 
 const localeNames: Record<Locale, string> = { en: "English", fi: "Suomi" };
 
+type Props = { locale: Locale };
+
 /** Locale codes (EN/FI) are intentionally not translated. */
-export const LocaleSwitcher = () => {
+export const LocaleSwitcher = ({ locale: currentLocale }: Props) => {
   const pathname = usePathname();
-  const currentLocale = pathname.split("/")[1] as Locale;
 
   return (
     <nav aria-label="Language" className="flex gap-2 text-sm">

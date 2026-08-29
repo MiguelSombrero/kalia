@@ -147,7 +147,7 @@ Component with async children, so the RTL rendering limitation recorded in
 
 **The locale wiring avoided a known defect.** Deriving the locale from the
 pathname would have repeated the unvalidated type assertion in
-`LocaleSwitcher.tsx` that the Quality backlog flags as COULD-6. Routing it
+`LocaleSwitcher.tsx` that the Quality backlog flags as COULD-5. Routing it
 through `Providers` uses the checked `toLocale` path instead. Locale changes
 happen by full navigation to a different locale-prefixed URL, which remounts
 the layout tree, so re-initializing `Providers` per `locale` prop change is

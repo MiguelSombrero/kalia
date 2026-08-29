@@ -1,6 +1,6 @@
 # Task 09: Validate the locale parsed from the pathname
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -62,17 +62,17 @@ first segment is not a known locale, instead of overwriting that segment.
 
 ## Acceptance criteria
 
-- [ ] `LocaleSwitcher` contains no `as Locale` assertion and no locale
+- [x] `LocaleSwitcher` contains no `as Locale` assertion and no locale
       derivation — it takes a `locale: Locale` prop, supplied by
       `app/[locale]/layout.tsx`
-- [ ] A component test asserts that the locale given as the prop is the one
+- [x] A component test asserts that the locale given as the prop is the one
       carrying `aria-current="page"` and the active styling, and that this
       holds independently of the pathname
-- [ ] A component test asserts `localeHref` prepends rather than overwrites
+- [x] A component test asserts `localeHref` prepends rather than overwrites
       when the pathname's first segment is not a known locale (`/beers` →
       `/en/beers`), and still replaces it when it is (`/fi/beers` →
       `/en/beers`)
-- [ ] `(cd frontend && npm test)` is green
+- [x] `(cd frontend && npm test)` is green
 
 ## Notes
 
