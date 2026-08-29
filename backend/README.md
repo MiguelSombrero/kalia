@@ -119,6 +119,12 @@ Notable suites:
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas
+- `ArchitectureDocumentationTest` — parses `docs/architecture.md` §2/§3 at
+  test time and compares the module set and dependency edges against Spring
+  Modulith's own view (`fi.kalia.web` excluded, per ADR-0014); fails the
+  build the moment the code and the hand-written docs disagree, in either
+  direction, or either section can't be found. Runs as a `*Test` since
+  `Documenter` needs no Spring context or Testcontainer
 
 ## Database migrations
 

@@ -55,8 +55,9 @@ jobs:
 
           # Files outside backend/ and frontend/ that either suite depends on.
           # docker-compose.yml builds and wires both; this workflow defines
-          # how they run.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/)' || true)
+          # how they run; docs/architecture.md is asserted against the
+          # backend's actual modules by ArchitectureDocumentationTest.
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing

@@ -1,6 +1,6 @@
 # Task 10: Detect backend module-diagram drift in CI
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -87,21 +87,21 @@ that test.
 
 ## Acceptance criteria
 
-- [ ] A `*Test` runs Spring Modulith's `Documenter` and fails when the
+- [x] A `*Test` runs Spring Modulith's `Documenter` and fails when the
       modules or dependencies it finds disagree with `docs/architecture.md`
       §2/§3 — confirmed to fail by temporarily adding a module dependency
       `catalog` doesn't have and not updating the docs
-- [ ] The same test fails in the opposite direction — confirmed by
+- [x] The same test fails in the opposite direction — confirmed by
       temporarily adding an edge to §3's `Depends on` column that no code
       creates
-- [ ] The test fails rather than passing vacuously when §2's mermaid block or
+- [x] The test fails rather than passing vacuously when §2's mermaid block or
       §3's table cannot be found — confirmed by temporarily renaming §3's
       heading
-- [ ] A pull request touching only `docs/architecture.md` runs the backend
+- [x] A pull request touching only `docs/architecture.md` runs the backend
       job — confirmed by running the "Detect changed areas" step's script
       against a changed-file list containing that path alone and reading
       `backend=true`
-- [ ] `mvn clean verify` is green with the docs and code in their current,
+- [x] `mvn clean verify` is green with the docs and code in their current,
       agreeing state
 
 ## Notes
