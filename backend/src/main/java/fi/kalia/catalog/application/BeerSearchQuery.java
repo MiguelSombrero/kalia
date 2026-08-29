@@ -1,0 +1,10 @@
+package fi.kalia.catalog.application;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.jspecify.annotations.Nullable;
+
+public record BeerSearchQuery(@Nullable String query, @Nullable String style,
+		@Nullable UUID breweryId, @Nullable String country,
+		@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
+}

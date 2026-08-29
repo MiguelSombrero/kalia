@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-08-23. This document describes **what is built**, plus the
+*Last updated: 2026-08-29. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -98,9 +98,12 @@ direction **web → application → domain** — enforced by ArchUnit
 [backend/README.md](../backend/README.md) code conventions.
 
 The module root package is reserved for the **inter-module API** and stays
-empty until the module's first consumer arrives. Full ports/adapters ceremony
-is deferred to modules whose domain earns it. Cross-module *writes* happen via
-application events; cross-module *reads* via the root-package API.
+empty until the module's first consumer arrives. It obeys the same inward
+dependency direction as `web` — it calls its module's `application` layer, not
+`domain` repositories directly, enforced by `ArchitectureTest`. Full
+ports/adapters ceremony is deferred to modules whose domain earns it.
+Cross-module *writes* happen via application events; cross-module *reads* via
+the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|

@@ -101,19 +101,21 @@ Notable suites:
 - `ModularityTest` — Spring Modulith `ApplicationModules.verify()`; fails on
   illegal cross-module dependencies
 - `ArchitectureTest` — the ArchUnit rules: layer placement and dependency
-  direction ([ADR-0007](../docs/adr/0007-backend-package-structure.md)), and
-  the guard that keeps the one resource-server filter chain in `identity`
+  direction ([ADR-0007](../docs/adr/0007-backend-package-structure.md)),
+  including the module-root API reaching `domain` only through `application`,
+  and the guard that keeps the one resource-server filter chain in `identity`
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) — a
   module bringing its own security configuration, or the chain going missing,
   fails the build
-- `ArchitectureRulesRejectViolationsTest` — runs three of those rules against
+- `ArchitectureRulesRejectViolationsTest` — runs four of those rules against
   `src/test/java/archfixture/`, a tree that breaks them. **Only the rules no
   production class ever triggers get a fixture.** `entitiesLiveInDomain` needs
   none: `Beer` is an `@Entity`, so a mistake in the rule fails
-  `ArchitectureTest` itself. A `noClasses()` rule is the opposite — passing
-  means its condition never met a candidate, so a wrong condition looks
-  exactly like a satisfied one. Adding a fixture for an already-exercised rule
-  tests ArchUnit, not this codebase; don't
+  `ArchitectureTest` itself. A `noClasses()` rule — or a `classes().should()`
+  rule every production class merely satisfies, like the module-root one — is
+  the opposite: passing means its condition never met a violator, so a wrong
+  condition looks exactly like a satisfied one. Adding a fixture for an
+  already-exercised rule tests ArchUnit, not this codebase; don't
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas

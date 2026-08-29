@@ -28,6 +28,12 @@ class ArchitectureRulesRejectViolationsTest {
 	}
 
 	@Test
+	void aModuleRootReachingIntoDomainWithoutApplicationInThePath() {
+		assertRejects(ArchitectureTest.moduleRootReachesDomainThroughApplication(FIXTURE),
+				"ModuleRootReachingIntoDomain");
+	}
+
+	@Test
 	void aModuleOtherThanIdentityConfiguringWebSecurity() {
 		assertRejects(ArchitectureTest.onlyIdentityConfiguresWebSecurity, "StraySecurityConfig");
 	}

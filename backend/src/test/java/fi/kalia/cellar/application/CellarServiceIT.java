@@ -5,8 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.CatalogApi;
+import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
+import fi.kalia.catalog.domain.BreweryRepository;
 import fi.kalia.cellar.domain.Bottle;
 import fi.kalia.cellar.domain.BottleRepository;
 import fi.kalia.cellar.domain.ContainerType;
@@ -44,6 +46,9 @@ class CellarServiceIT {
 	private BeerRepository beers;
 
 	@Autowired
+	private BreweryRepository breweries;
+
+	@Autowired
 	private TestEntityManager testEntityManager;
 
 	@Autowired
@@ -55,7 +60,7 @@ class CellarServiceIT {
 
 	@BeforeEach
 	void setUp() {
-		service = new CellarService(entries, bottles, new CatalogApi(beers));
+		service = new CellarService(entries, bottles, new CatalogApi(new CatalogService(beers, breweries)));
 		beerId = beers.findAll().stream().findFirst().map(Beer::getId).orElseThrow();
 	}
 

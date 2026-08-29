@@ -1,6 +1,6 @@
 package fi.kalia.catalog;
 
-import fi.kalia.catalog.domain.BeerRepository;
+import fi.kalia.catalog.application.CatalogService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CatalogApi {
 
-	private final BeerRepository beers;
+	private final CatalogService catalog;
 
 	public boolean beerExists(UUID beerId) {
-		return beers.existsById(beerId);
+		return catalog.beerExists(beerId);
 	}
 
 }
