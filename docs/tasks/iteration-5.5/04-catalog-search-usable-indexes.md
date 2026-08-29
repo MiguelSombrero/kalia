@@ -1,6 +1,6 @@
 # Task 04: Give catalog search usable indexes
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -64,15 +64,15 @@ introducing a new dependency (see Open questions).
 
 ## Acceptance criteria
 
-- [ ] The style filter is served by a functional (case-insensitive) index,
+- [x] The style filter is served by a functional (case-insensitive) index,
       not `beer_style_idx` as-is
-- [ ] `brewery.country` has an index the country filter can use
-- [ ] The name filter keeps substring matching and is served by a `pg_trgm`
+- [x] `brewery.country` has an index the country filter can use
+- [x] The name filter keeps substring matching and is served by a `pg_trgm`
       trigram `GIN` index
-- [ ] An automated test seeds the catalog with 10,000 beers and asserts each
+- [x] An automated test seeds the catalog with 10,000 beers and asserts each
       filtered query (name, style, country) uses the expected index (e.g.
       via `EXPLAIN`), not just that it returns correct results
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
