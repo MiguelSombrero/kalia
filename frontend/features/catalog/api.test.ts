@@ -1,15 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { searchBeers as generatedSearchBeers } from "@/lib/api/generated/catalog/catalog";
 import { buildBeerSearchParams, getBeer, searchBeers } from "./api";
-import { isApiError } from "@/lib/api/api-error";
 import type { BeerDetails, BeerPage } from "./types";
-
-vi.mock("@/lib/api/generated/catalog/catalog", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/api/generated/catalog/catalog")>()),
-  searchBeers: vi.fn(),
-}));
-
-const generatedSearchBeersMock = vi.mocked(generatedSearchBeers);
 
 describe("buildBeerSearchParams", () => {
   it("omits missing and empty values", () => {
@@ -43,56 +34,53 @@ describe("buildBeerSearchParams", () => {
 
 const emptyPage: BeerPage = { content: [], totalElements: 0, totalPages: 0, page: 0 };
 
+const requestUrl = (fetchMock: ReturnType<typeof vi.fn>): URL =>
+  new URL(String(fetchMock.mock.calls[0][0]));
+
 describe("searchBeers", () => {
   afterEach(() => {
-    generatedSearchBeersMock.mockReset();
+    vi.unstubAllGlobals();
   });
 
-  it("coerces numeric-string filters and pagination to numbers", async () => {
-    generatedSearchBeersMock.mockResolvedValue({ status: 200, data: emptyPage } as never);
+  it("sends numeric-string filters and pagination as coerced query params", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
 
     await searchBeers({ query: "ipa", minAbv: "4.5", maxAbv: "9", page: "2", size: "24" });
 
-    expect(generatedSearchBeersMock).toHaveBeenCalledWith({
-      query: "ipa",
-      style: undefined,
-      country: undefined,
-      minAbv: 4.5,
-      maxAbv: 9,
-      page: 2,
-      size: 24,
-      sort: undefined,
-    });
+    const params = requestUrl(fetchMock).searchParams;
+    expect(params.get("query")).toBe("ipa");
+    expect(params.get("minAbv")).toBe("4.5");
+    expect(params.get("maxAbv")).toBe("9");
+    expect(params.get("page")).toBe("2");
+    expect(params.get("size")).toBe("24");
   });
 
-  it("passes empty numeric strings through as undefined", async () => {
-    generatedSearchBeersMock.mockResolvedValue({ status: 200, data: emptyPage } as never);
+  it("drops empty numeric strings rather than sending them", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
 
     await searchBeers({ minAbv: "", maxAbv: "", page: "", size: "" });
 
-    expect(generatedSearchBeersMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        minAbv: undefined,
-        maxAbv: undefined,
-        page: undefined,
-        size: undefined,
-      }),
-    );
+    const url = requestUrl(fetchMock).toString();
+    expect(url).not.toContain("minAbv");
+    expect(url).not.toContain("maxAbv");
+    expect(url).not.toContain("page");
+    expect(url).not.toContain("size");
   });
 
   it("returns the page payload on a 200", async () => {
-    generatedSearchBeersMock.mockResolvedValue({ status: 200, data: emptyPage } as never);
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json(emptyPage)));
 
     await expect(searchBeers({})).resolves.toEqual(emptyPage);
   });
 
   it("throws a tagged http ApiError on a non-200 status", async () => {
-    generatedSearchBeersMock.mockResolvedValue({ status: 503, data: undefined } as never);
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
 
     const error = await searchBeers({}).catch((e: unknown) => e);
 
-    expect(isApiError(error)).toBe(true);
-    expect(error).toMatchObject({ kind: "http", status: 503 });
+    expect(error).toMatchObject({ name: "ApiError", kind: "http", status: 503 });
     expect((error as Error).message).toBe("Beer search failed with status 503");
   });
 });
