@@ -2,6 +2,11 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-09
+- **Amended:** 2026-08-29 — the pre-deployment allowance is no longer limited
+  to migrations encoding a rejected design; any schema change may go into the
+  existing migration it logically belongs to. Widened by the product owner in
+  review, where forward-only would have added a migration dropping an index
+  another migration had just created.
 
 ## Context
 
@@ -39,6 +44,15 @@ permanently into migration history.** Task 07 edits
 `V001__create_module_schemas.sql` in place, removing the `cart`, `ordering`
 and `payment` lines, rather than adding a migration that drops them.
 
+**Amended 2026-08-29 — the allowance is not limited to rejected designs.** A
+schema change goes into the existing migration it logically belongs to
+whenever one exists: an index belongs beside the table it indexes, written
+into that table's migration rather than added by a later one. The original
+wording allowed only what forward-only would have made permanently
+misleading, but the reason it gave — no database exists whose checksum this
+can break — never depended on the change being a rejected design. While that
+holds, writing the change where a reader would look for it is reason enough.
+
 This exception ends the moment anything is deployed outside a developer's own
 machine or CI — a database instance whose schema state actually matters,
 that isn't simply recreated on the next `docker compose up --build` or test
@@ -66,7 +80,10 @@ matching benefit to justify that cost.
   ran the old `V001` fails Flyway's checksum validation on next boot until
   the volume is wiped (`docker compose down -v`) or the schema history
   repaired. This is a one-time, self-inflicted cost each developer pays on
-  their own machine, not a shared or production one.
+  their own machine, not a shared or production one. The 2026-08-29 amendment
+  makes that cost routine rather than exceptional: any schema change may now
+  edit an applied migration, so wiping the volume becomes an ordinary step of
+  pulling `dev`.
 - Neutral, because the exception has no automated check for "has this been
   deployed yet" — applying it correctly is a judgment call each time, same
   as ADR-0027's process-weight judgment.

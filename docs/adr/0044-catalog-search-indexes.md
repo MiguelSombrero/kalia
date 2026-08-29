@@ -8,8 +8,8 @@
 `BeerSpecifications` builds the catalog's search filters, and none of the three
 text filters had an index that could serve it. The name filter is a
 leading-wildcard `LIKE '%term%'`, which no B-tree can answer whatever is
-indexed. The style filter compares `lower(style)`, and `beer_style_idx` was a
-plain index on the raw column, so a case-insensitive comparison could not use
+indexed. The style filter compares `lower(style)`, and the index on `style` was
+a plain one on the raw column, so a case-insensitive comparison could not use
 it. `brewery.country` had no index at all.
 
 None of this is visible against the ~54 beers the seed migration ships, where a
@@ -122,7 +122,7 @@ Sequential-scan baselines at this fixture size: `beer` 244.54, `brewery` 41.20.
 - With `fastupdate` left at its default `on`, the name query plans as
   `Seq Scan on beer` immediately after the rows are inserted and only picks the
   index once `VACUUM` has flushed the pending list. This is what
-  `fastupdate = off` in `V006__catalog_search_indexes.sql` is for, and
+  `fastupdate = off` in `V003__catalog_schema.sql` is for, and
   `BeerSearchIndexIT.nameFilterUsesTheTrigramIndex` fails if it is removed.
 - `lower(name) LIKE '%ip%'` — `Seq Scan on beer`, 10,047 rows removed by
   filter: too short to yield a trigram, as the consequence above records.

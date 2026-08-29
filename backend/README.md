@@ -136,10 +136,15 @@ Migrations install one PostgreSQL extension, `pg_trgm`
 extension, so the database owner can create it, but a deployment running
 migrations as a lower-privileged role fails at `CREATE EXTENSION`.
 
-Forward-only: an applied migration is never edited, and undoing one is a new
-migration — except before Kalia's first deployment, where editing history
-directly is allowed under narrow conditions
-([ADR-0036](../docs/adr/0036-pre-deployment-migration-edits.md)).
+**Until Kalia's first deployment, put a schema change in the existing
+migration it belongs to** rather than adding a new one — an index beside the
+table it indexes, say
+([ADR-0036](../docs/adr/0036-pre-deployment-migration-edits.md)). Editing an
+applied migration changes its checksum, so a `docker compose` Postgres volume
+that ran the old version fails Flyway validation until `docker compose down -v`
+wipes it. Forward-only — an applied migration is never edited, and undoing one
+is a new migration — resumes the moment a database exists whose schema state
+outlives a developer's machine or CI.
 
 ## Code conventions
 
