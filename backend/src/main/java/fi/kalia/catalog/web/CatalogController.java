@@ -12,7 +12,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +41,9 @@ class CatalogController {
 	/** Bounds search terms without truncating real input — the longest official country name runs to 56 characters. */
 	private static final int MAX_FILTER_LENGTH = 100;
 
+	/** A single page pulls at most this many rows, so no one response can return an unbounded slice of a table. */
+	private static final long MAX_PAGE_SIZE = 100;
+
 	private final CatalogService catalog;
 
 	@GetMapping("/beers")
@@ -61,8 +63,8 @@ class CatalogController {
 			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal maxAbv,
 			@Parameter(description = "Zero-based page index")
 			@RequestParam(defaultValue = "0") @Min(0) int page,
-			@Parameter(description = "Page size, 1-100")
-			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
+			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size,
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
 			@RequestParam(defaultValue = "name,asc") String sort) {
 		requireOrderedAbvRange(minAbv, maxAbv);
@@ -78,9 +80,13 @@ class CatalogController {
 	}
 
 	@GetMapping("/breweries")
-	@Operation(summary = "List breweries", description = "All breweries, sorted by name.")
-	List<BreweryDto> listBreweries() {
-		return catalog.listBreweries().stream().map(BreweryDto::from).toList();
+	@Operation(summary = "List breweries", description = "Paginate the brewery list, sorted by name.")
+	PageDto<BreweryDto> listBreweries(
+			@Parameter(description = "Zero-based page index")
+			@RequestParam(defaultValue = "0") @Min(0) int page,
+			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
+			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size) {
+		return PageDto.from(catalog.listBreweries(PageRequest.of(page, size)).map(BreweryDto::from));
 	}
 
 	// See backend/README.md's "Every request parameter is bounded" convention.
@@ -93,6 +99,10 @@ class CatalogController {
 
 	private static Sort parseSort(String sort) {
 		String[] parts = sort.split(",");
+		if (parts.length > 2) {
+			throw new InvalidSearchParameterException(
+					"Malformed sort '%s'; expected \"<property>,<asc|desc>\"".formatted(sort));
+		}
 		String property = parts[0].trim();
 		if (!SORTABLE.contains(property)) {
 			throw new InvalidSearchParameterException(
