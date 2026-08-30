@@ -68,6 +68,10 @@ What this covers, and what it does not:
   files. If it has a rejected alternative whose reasoning would not survive in
   a task file, it earns its own ADR
   ([ADR-0032](0032-when-a-decision-earns-an-adr.md)).
+- **[ADR-0026](0026-task-file-format.md) is amended, not contradicted.** Its
+  "tasks are refined just in time — immediately before work starts, not at
+  iteration planning" is the sentence this replaces, and it says so there.
+  Everything else in that bullet stands.
 - **Not decided here:** what a task file contains (ADR-0026) or which
   ambiguity categories get swept ([ADR-0038](0038-in-repo-spec-driven-process.md)).
   Only the unit changes.
