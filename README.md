@@ -249,6 +249,16 @@ kalia/
   persistence, Playwright for critical user flows.
 - **One issue at a time:** each roadmap task is a small, independently
   reviewable change with tests and updated docs.
+- **Checks run locally, not in CI first:** `make verify` runs everything CI
+  runs and `make verify-fast` the ~10 s subset; `make install-hooks` puts the
+  latter behind `git push`
+  ([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+  Nothing invokes an AI agent on your behalf at push time. To hand a failure
+  to one deliberately, run it yourself:
+
+  ```bash
+  claude -p "Run 'make verify-fast', fix every failure it reports, and re-run until it is green. Do not change behaviour." --allowedTools "Edit,Read,Bash"
+  ```
 
 ## License
 

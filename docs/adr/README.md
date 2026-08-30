@@ -165,3 +165,6 @@ to bound.
 - [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — a rule agents
   keep breaking earns a path-scoped rule file and a checker, not a firmer
   restatement.
+- [ADR-0045](0045-edit-time-checks-and-one-verify-gate.md) — `make verify` is
+  the one gate agents and people both run; the checkers also report at edit
+  time, and a `pre-push` hook blocks on the fast half.

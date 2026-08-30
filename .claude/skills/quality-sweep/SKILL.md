@@ -12,7 +12,17 @@ A periodic, whole-codebase check — broader than any single PR's diff can
 judge. See `CLAUDE.md` "Quality checks" for how this fits the rest of the
 process.
 
-## 1. Spawn subagents in parallel
+## 1. Checkpoint before the fan-out
+
+Write `.claude/session-checkpoint.md` first: the branch, the base ref, the
+four dimensions about to be dispatched, and the file each agent will write
+its findings to. A sweep is the heaviest thing run here and the likeliest to
+meet a session limit mid-flight; the plan lives only in this conversation
+until it is on disk, and re-exploring is what resuming costs without it
+([ADR-0045](../../../docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+Update it as each dimension returns.
+
+## 2. Spawn subagents in parallel
 
 Use the Agent tool with `subagent_type: Explore` for each dimension below
 (read-only audits — findings only, no fixes). Launch all four in a single
@@ -85,7 +95,7 @@ system exists), it's fine to report that as the finding — don't skip this
 dimension in advance of running it; let the subagent itself conclude
 there's nothing to report if that's true.
 
-## 2. Categorize and merge into the backlog
+## 3. Categorize and merge into the backlog
 
 Collect all findings from all four subagents. Categorize each MoSCoW-style:
 
@@ -134,7 +144,7 @@ and file reference. If a sweep genuinely finds nothing new and nothing to
 reconfirm, make no changes to the file and say so in the PR description
 rather than inventing findings to fill one.
 
-## 3. Open a PR
+## 4. Open a PR
 
 Branch `docs/quality-sweep-<date>` off up-to-date `dev`. Commit the
 `docs/tasks/quality-backlog.md` change. Push and open a PR whose

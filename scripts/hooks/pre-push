@@ -1,0 +1,17 @@
+#!/bin/sh
+# Blocks a push whose fast checks are red, so a lint or doc-checker failure
+# is caught here rather than bounced back from CI a few minutes later
+# (ADR-0045). Deliberately runs `verify-fast`, not `verify`: a gate that
+# needs Docker and several minutes would be bypassed with --no-verify often
+# enough to stop being a gate.
+#
+# `make install-hooks` copies this into the shared hooks directory rather
+# than symlinking it, because that directory outlives every worktree and a
+# link into one would dangle the moment its worktree is removed. The copy is
+# a snapshot: re-run `make install-hooks` after editing this file. It stays
+# correct in every worktree regardless, since the toplevel is resolved per
+# push rather than baked in.
+#
+# Bypass a single push with `git push --no-verify` when you mean to.
+set -e
+exec make -C "$(git rev-parse --show-toplevel)" verify-fast

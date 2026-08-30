@@ -3,5 +3,20 @@
     "deny": [
       "Edit(./frontend/lib/api/generated/**)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null) && node \"$root/scripts/hooks/post-edit-check.mjs\" || true",
+            "timeout": 20,
+            "statusMessage": "Running repository checkers"
+          }
+        ]
+      }
+    ]
   }
 }

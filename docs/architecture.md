@@ -442,7 +442,10 @@ a matching index row here (title and status), that it is also listed in
 does the same for task files against their iteration index
 ([ADR-0026](adr/0026-task-file-format.md)), and `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
-([ADR-0017](adr/0017-code-comment-policy.md)).
+([ADR-0017](adr/0017-code-comment-policy.md)). All three also run locally —
+inside `make verify`, and at edit time via a `PostToolUse` hook that reports
+the failure back to the agent without blocking
+([ADR-0045](adr/0045-edit-time-checks-and-one-verify-gate.md)).
 
 ### Product and system architecture
 
@@ -483,6 +486,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0042](adr/0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
 | [ADR-0043](adr/0043-createuser-race-safety.md) | `createUser` claims the email index with SET NX so a losing concurrent sign-in joins the winner | accepted | 2026-08-23 |
 | [ADR-0044](adr/0044-catalog-search-indexes.md) | Catalog name search stays substring matching, served by a pg_trgm trigram index | accepted | 2026-08-28 |
+| [ADR-0045](adr/0045-edit-time-checks-and-one-verify-gate.md) | One verify gate, run at edit time as a report and at push time as a block | accepted | 2026-08-30 |
 
 ### Engineering process and documentation
 

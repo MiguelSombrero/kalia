@@ -62,8 +62,16 @@ here, and the app still builds).
 
 ## Commands
 
-From the repository root — the parentheses matter, a bare `cd` persists into
-the next command and breaks the one after it:
+**`make verify` is the gate** — every check CI runs, in CI's order. `make
+verify-fast` is the ~10 s subset needing neither Docker nor a build, and is
+what the `pre-push` hook from `make install-hooks` runs. One of them goes
+green before every push
+([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)). `make
+help` lists the rest; `make next-adr` allocates the next ADR number.
+
+To run one suite on its own, from the repository root — the parentheses
+matter, a bare `cd` persists into the next command and breaks the one after
+it:
 
 ```bash
 (cd backend  && mvn test)          # unit tests (*Test) — fast, no Docker
@@ -92,6 +100,11 @@ Two things that fail silently if you skip them:
   the `refine-task` skill** (`.claude/skills/refine-task/SKILL.md`) — same
   kind of ordering, for the refinement gate below rather than the
   implementation ones.
+- **The entry point for cutting or removing a task worktree is the `worktree`
+  skill** (`.claude/skills/worktree/SKILL.md`) — fetch, branch off
+  `origin/dev` rather than a local `dev` that has gone stale, confirm which
+  tree the session is bound to before trusting any gate, and remove it once
+  its PR merges.
 - Work proceeds **one roadmap task at a time**, smallest reviewable change.
 - **Match process weight to the task — implement directly by default**
   ([ADR-0027](docs/adr/0027-process-weight.md)). Nearly every `docs/tasks`
@@ -139,7 +152,15 @@ Two things that fail silently if you skip them:
   and never touches one a session was started in. A stale one costs ~640 MB
   the moment `npm install` has run there. Worktrees share one object
   database, so this costs no extra clone — only isolation.
-- Test-first: write or update tests with the code; all suites green before
+- **Checkpoint before long or fanned-out work.** Write
+  `.claude/session-checkpoint.md` — worktree path, branch, base ref, the
+  ordered steps with done/pending status, and the exact scope handed to each
+  dispatched agent — before starting anything long or spawning parallel
+  agents, and update it as steps complete. It is gitignored, and it is the
+  only thing that survives a session-limit interruption: on "resume where you
+  left off", read it before re-exploring
+  ([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+- Test-first: write or update tests with the code; `make verify` green before
   a PR. Verify changes by actually running them (e.g. `docker compose up`,
   hitting the endpoint), not just by compiling.
 - **Open the PR automatically once a task is done** — don't wait for an
@@ -308,10 +329,19 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   lifecycle gates into one procedure (see Workflow above)
 - `.claude/skills/refine-task/SKILL.md` — orders the `needs-refinement` →
   `refined` gate into one procedure (see Workflow above)
-- `.claude/settings.json` — committed agent settings. Currently one
-  `permissions.deny` rule making the generated API client read-only
-  ([ADR-0012](docs/adr/0012-orval-api-client.md)). `settings.local.json`
-  beside it is per-machine and gitignored
+- `.claude/skills/worktree/SKILL.md` — orders worktree setup and teardown
+  into one procedure (see Workflow above)
+- `.claude/settings.json` — committed agent settings: a `permissions.deny`
+  rule making the generated API client read-only
+  ([ADR-0012](docs/adr/0012-orval-api-client.md)), and the `PostToolUse` hook
+  that runs the checker covering an edited file
+  ([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+  `settings.local.json` beside it is per-machine and gitignored
+- `Makefile` — the verification gate (`verify`, `verify-fast`) both agents
+  and people run, plus the local-dev shortcuts. `make help` lists them
+- `scripts/` — the dependency-free Node checkers CI runs, `next-adr.mjs`, and
+  `hooks/` (`post-edit-check.mjs`, wired up by `.claude/settings.json`;
+  `pre-push`, installed by `make install-hooks`)
 
 ## Environment notes
 
