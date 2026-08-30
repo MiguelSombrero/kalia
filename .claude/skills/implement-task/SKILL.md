@@ -48,11 +48,18 @@ their own condition from that ADR before they apply.
    expecting CI to be the first thing that tells you a check is red.
 9. Run `/code-review` on the diff and resolve each finding as fix-now or a
    new task — `CLAUDE.md` "Code-review gate".
-10. Check off the task's acceptance criteria and set its status to `done`, in
-    the task file and its iteration index. If this was the iteration's last
-    task, verify its "Done when" before updating its `Status` in
-    `docs/roadmap.md` — `CLAUDE.md`'s roadmap-task bullet and "Iteration DoD
-    gate".
+10. Go through the acceptance criteria one at a time and **run what each one
+    says verifies it**, rather than ticking the list from memory of having
+    done the work. A criterion states its own check — that is what
+    [ADR-0026](../../../docs/adr/0026-task-file-format.md) requires of it, and
+    why at least one is an automated test. Tick a box only after seeing that
+    check pass; if it fails, fix it and run it again. A criterion you cannot
+    honestly tick means the task is not done, not that the box is optimistic
+    — `CLAUDE.md`'s roadmap-task bullet. Only then set the status to `done`,
+    in the task file and its iteration index; and if this was the iteration's
+    last task, verify its "Done when" the same way — by running each
+    criterion — before updating that iteration's `Status` in
+    `docs/roadmap.md`, per "Iteration DoD gate".
 11. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 
@@ -72,7 +79,8 @@ which did not, naming a reason for each one skipped:
 - `make verify` (or `make verify-fast`, said explicitly)
 - `/code-review`
 - doc-sync
-- acceptance criteria checked off and status set to `done`
+- each acceptance criterion re-verified by running its own check, then
+  ticked, and the status set to `done`
 - iteration "Done when" re-verified, where this was the last task
 
 A gate with no verdict counts as skipped. "All gates passed" without the two
