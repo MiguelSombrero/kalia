@@ -1,7 +1,7 @@
 #!/bin/sh
 # Blocks a push whose fast checks are red, so a lint or doc-checker failure
 # is caught here rather than bounced back from CI a few minutes later
-# (ADR-0045). Deliberately runs `verify-fast`, not `verify`: a gate that
+# (ADR-0046). Deliberately runs `verify-fast`, not `verify`: a gate that
 # needs Docker and several minutes would be bypassed with --no-verify often
 # enough to stop being a gate.
 #

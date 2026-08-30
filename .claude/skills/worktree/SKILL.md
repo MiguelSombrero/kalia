@@ -10,7 +10,7 @@ its own worktree; nothing here changes that. This orders the setup and
 teardown the way `implement-task` orders the implementation gates, because
 the recurring failures were never in the work — they were a branch cut from
 a stale `dev`, a review scoped to the wrong tree, and worktrees nobody
-removed ([ADR-0045](../../../docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
 ## Start
 

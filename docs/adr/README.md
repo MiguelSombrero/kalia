@@ -70,6 +70,9 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0044](0044-catalog-search-indexes.md) — catalog name search keeps
   substring matching and a `pg_trgm` trigram index serves it; the style and
   country filters get indexes on `lower(...)`.
+- [ADR-0046](0045-brewery-list-paginates-in-application.md) — the brewery list
+  gains a `page`/`size` contract but keeps loading and sorting the full table
+  in Java, so its name order stays locale-independent.
 
 ## Frontend structure and conventions
 
@@ -165,6 +168,6 @@ to bound.
 - [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — a rule agents
   keep breaking earns a path-scoped rule file and a checker, not a firmer
   restatement.
-- [ADR-0045](0045-edit-time-checks-and-one-verify-gate.md) — `make verify` is
+- [ADR-0046](0046-edit-time-checks-and-one-verify-gate.md) — `make verify` is
   the one gate agents and people both run; the checkers also report at edit
   time, and a `pre-push` hook blocks on the fast half.

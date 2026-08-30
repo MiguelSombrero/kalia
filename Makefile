@@ -1,4 +1,4 @@
-# Shortcuts for common local-dev commands, and — since ADR-0045 — the
+# Shortcuts for common local-dev commands, and — since ADR-0046 — the
 # verification gate agents run too. `verify` and `verify-fast` are the one
 # place the check list lives; CLAUDE.md and the skills name the target
 # rather than restating what it runs, so there is exactly one thing to keep
@@ -70,5 +70,6 @@ install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-pu
 	install -m 755 scripts/hooks/pre-push "$$dest"; \
 	echo "installed $$dest (a copy — re-run after editing scripts/hooks/pre-push)"
 
-next-adr: ## Print the next unused ADR number
+next-adr: ## Print the next unused ADR number (scans every branch, not just this one)
+	@git fetch --quiet --prune origin 2>/dev/null || echo "warning: fetch failed — remote-tracking refs may be stale" >&2
 	@node scripts/next-adr.mjs

@@ -2,14 +2,14 @@
 // PostToolUse hook: runs whichever check-*.mjs checker covers the file an
 // agent just edited, and reports a failure back into the agent's context
 // while it is still working on that file. Why this exists at all, and why
-// it reports rather than blocks: ADR-0045.
+// it reports rather than blocks: ADR-0046.
 //
 // The repository root is resolved from this file's own location, never from
 // the session's working directory. That is the load-bearing property: each
 // worktree carries its own .claude/settings.json pointing at its own copy of
 // this script, so a hook can only ever check the tree it lives in — the
 // failure mode (a check bound to a different worktree than the edit) that
-// ADR-0045 records for /code-review cannot happen here.
+// ADR-0046 records for /code-review cannot happen here.
 
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -66,7 +66,7 @@ if (failures.length === 0) process.exit(0);
 // Reported, never failed. A checker legitimately goes red mid-task — a task
 // file exists before its index row does — so blocking the turn would fight
 // the work rather than guard it. `make verify-fast` and CI stay the gates
-// that actually fail (ADR-0045).
+// that actually fail (ADR-0046).
 const report = failures.join("\n\n");
 console.log(
   JSON.stringify({

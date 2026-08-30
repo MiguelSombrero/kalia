@@ -47,7 +47,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [3 — Production-readiness foundations](tasks/iteration-3.md) | Logging, exception-handling, config and security conventions | ✅ Done |
 | [4 — Authentication](tasks/iteration-4.md) | Users can sign in via Keycloak | ✅ Done |
 | [5 — Personal beer cellar](tasks/iteration-5.md) | Signed-in users record the bottles they own | ✅ Done |
-| [5.5 — Quality backlog](tasks/iteration-5.5.md) | The quality backlog is closed | ⬜ Todo |
+| [5.5 — Quality backlog](tasks/iteration-5.5.md) | The quality backlog is closed | ✅ Done |
 | [6 — User profile and public cellars](tasks/iteration-6.md) | A cellar can be made public and browsed by anyone | ⬜ Todo |
 | [6.5 — Sign-up](tasks/iteration-6.5.md) | Someone other than the author can create an account | ⬜ Todo |
 | [7 — Front page activity feed](tasks/iteration-7.md) | The front page shows what people add to their cellars | ⬜ Todo |

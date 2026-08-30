@@ -56,7 +56,7 @@ Before pushing, run the whole gate rather than any of these alone:
 `make verify` from the repository root, or `make verify-fast` for the subset
 that needs no Docker — it includes `npm run lint`, so a module-boundary
 violation in a new test file fails here rather than in CI
-([ADR-0045](../docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
 Regenerated output must be committed — CI's `api-client-drift` job
 regenerates and diffs, failing the build on drift (ADR-0012).

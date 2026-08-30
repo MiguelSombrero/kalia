@@ -19,7 +19,7 @@ four dimensions about to be dispatched, and the file each agent will write
 its findings to. A sweep is the heaviest thing run here and the likeliest to
 meet a session limit mid-flight; the plan lives only in this conversation
 until it is on disk, and re-exploring is what resuming costs without it
-([ADR-0045](../../../docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 Update it as each dimension returns.
 
 ## 2. Spawn subagents in parallel

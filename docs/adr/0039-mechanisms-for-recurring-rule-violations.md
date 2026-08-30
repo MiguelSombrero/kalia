@@ -4,7 +4,7 @@
 - **Date:** 2026-08-15
 - **Amended:** 2026-08-30 — the edit-time hook rejected below is adopted in
   a narrower form, running the checkers rather than injecting rule text
-  ([ADR-0045](0045-edit-time-checks-and-one-verify-gate.md))
+  ([ADR-0046](0046-edit-time-checks-and-one-verify-gate.md))
 
 ## Context
 
@@ -177,7 +177,7 @@ install. A third sibling costs less than a plugin in each toolchain.
 
 > **Amended 2026-08-30.** The hook is adopted, in a narrower form than the one
 > rejected here, and not because this trigger fired.
-> [ADR-0045](0045-edit-time-checks-and-one-verify-gate.md) runs the *checkers*
+> [ADR-0046](0046-edit-time-checks-and-one-verify-gate.md) runs the *checkers*
 > on `PostToolUse` and reports their output; it does not inject rule text,
 > which is what the cost-against-benefit rejection above was weighed against.
 > Two of that rejection's premises survive unchanged — a hook is still trusted

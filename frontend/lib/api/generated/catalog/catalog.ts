@@ -21,8 +21,9 @@ import type {
 
 import type {
   BeerDetailsDto,
-  BreweryDto,
+  ListBreweriesParams,
   PageDtoBeerSummaryDto,
+  PageDtoBreweryDto,
   SearchBeersParams
 } from '../models';
 
@@ -49,7 +50,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type listBreweriesResponse200 = {
-  data: BreweryDto[]
+  data: PageDtoBreweryDto
   status: 200
 }
 
@@ -60,21 +61,28 @@ export type listBreweriesResponseSuccess = (listBreweriesResponse200) & {
 
 export type listBreweriesResponse = (listBreweriesResponseSuccess)
 
-export const getListBreweriesUrl = () => {
+export const getListBreweriesUrl = (params?: ListBreweriesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/v1/breweries`
+  return stringifiedParams.length > 0 ? `/api/v1/breweries?${stringifiedParams}` : `/api/v1/breweries`
 }
 
 /**
- * All breweries, sorted by name.
+ * Paginate the brewery list, sorted by name.
  * @summary List breweries
  */
-export const listBreweries = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<listBreweriesResponse> => {
+export const listBreweries = async (params?: ListBreweriesParams, options?: Parameters<typeof kaliaFetch>[1]): Promise<listBreweriesResponse> => {
 
-  return kaliaFetch<listBreweriesResponse>(getListBreweriesUrl(),
+  return kaliaFetch<listBreweriesResponse>(getListBreweriesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -87,23 +95,23 @@ export const listBreweries = async ( options?: Parameters<typeof kaliaFetch>[1])
 
 
 
-export const getListBreweriesQueryKey = () => {
+export const getListBreweriesQueryKey = (params?: ListBreweriesParams,) => {
     return [
-    `/api/v1/breweries`
+    `/api/v1/breweries`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListBreweriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListBreweriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListBreweriesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListBreweriesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBreweries>>> = ({ signal }) => listBreweries({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBreweries>>> = ({ signal }) => listBreweries(params, { signal, ...requestOptions });
 
 
 
@@ -117,7 +125,7 @@ export type ListBreweriesQueryError = unknown
 
 
 export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>> & Pick<
+ params: undefined |  ListBreweriesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBreweries>>,
           TError,
@@ -127,7 +135,7 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>> & Pick<
+ params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBreweries>>,
           TError,
@@ -137,7 +145,7 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -145,11 +153,11 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
  */
 
 export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListBreweriesQueryOptions(options)
+  const queryOptions = getListBreweriesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

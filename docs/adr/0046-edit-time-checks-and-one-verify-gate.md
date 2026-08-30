@@ -1,4 +1,4 @@
-# ADR-0045: One verify gate, run at edit time as a report and at push time as a block
+# ADR-0046: One verify gate, run at edit time as a report and at push time as a block
 
 - **Status:** accepted
 - **Date:** 2026-08-30
@@ -94,8 +94,11 @@ What this covers, and what it does not:
   `git log --oneline origin/dev..HEAD` before the pull request, and reports
   which gates ran and which were skipped. A gate with no verdict counts as
   skipped.
-- **`make next-adr` allocates ADR numbers**, so two sessions reading the
-  directory cannot both pick the same one.
+- **`make next-adr` allocates ADR numbers**, scanning every remote-tracking
+  ref rather than only the working tree: a number is taken the moment another
+  *branch* claims it, not when that branch reaches `dev`. It fetches first,
+  and the residual gap — a branch pushed since that fetch — is stated rather
+  than pretended away.
 - **Headless Claude is not wired into the push path.** It is documented as a
   command a person runs deliberately.
 - **Not decided here:** what any checker checks. ADR-0017, ADR-0019 and
@@ -214,3 +217,14 @@ it**, and both are platform-specific in a way CI would never have shown:
 `make verify` built the backend incrementally where CI always builds from a
 fresh checkout. Both are fixed here; the second is why Decision names the
 clean build explicitly.
+
+**The ADR-number collision recurred while this ADR was open, which is why
+`next-adr` scans branches.** Its first version read `docs/adr/` in the working
+tree and returned `0045`; a concurrently open pull request had already claimed
+0045 on its own branch, and merging `dev` produced the collision as a conflict
+in this file's index. This ADR is 0046 as a result. The lesson is not that the
+command failed but that the earlier diagnosis was too narrow — two sessions
+reading one directory was never the whole failure mode, and a scan that stops
+at the working tree reproduces it across branches instead of within one.
+Verified afterwards: enumerating `refs/remotes` finds the claiming branch's
+ADR where a directory listing does not.

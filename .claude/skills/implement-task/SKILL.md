@@ -29,7 +29,7 @@ their own condition from that ADR before they apply.
    scope handed to each. Update it as steps complete. It is gitignored, and
    it is the only thing that survives a session-limit interruption, so on
    "resume where you left off" it is the first thing to read rather than
-   re-exploring ([ADR-0045](../../../docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+   re-exploring ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 4. Implement the change, writing no code comments in this pass (step 6 is
    where comments get added). If it introduces a new dependency, ask which
    version before continuing — `CLAUDE.md` "New dependencies: ask, don't
@@ -63,7 +63,7 @@ Before opening the pull request, print `pwd` and
 what makes the review range checkable rather than assumed — a `/code-review`
 bound to a different worktree reviews a different diff and still reports
 cleanly, which is the failure
-[ADR-0045](../../../docs/adr/0045-edit-time-checks-and-one-verify-gate.md)
+[ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)
 records.
 
 Then state, in the pull request or the final message, which of these ran and

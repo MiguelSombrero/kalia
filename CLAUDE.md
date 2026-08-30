@@ -66,7 +66,7 @@ here, and the app still builds).
 verify-fast` is the ~10 s subset needing neither Docker nor a build, and is
 what the `pre-push` hook from `make install-hooks` runs. One of them goes
 green before every push
-([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)). `make
+([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)). `make
 help` lists the rest; `make next-adr` allocates the next ADR number.
 
 To run one suite on its own, from the repository root — the parentheses
@@ -159,7 +159,7 @@ Two things that fail silently if you skip them:
   agents, and update it as steps complete. It is gitignored, and it is the
   only thing that survives a session-limit interruption: on "resume where you
   left off", read it before re-exploring
-  ([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+  ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 - Test-first: write or update tests with the code; `make verify` green before
   a PR. Verify changes by actually running them (e.g. `docker compose up`,
   hitting the endpoint), not just by compiling.
@@ -335,7 +335,7 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   rule making the generated API client read-only
   ([ADR-0012](docs/adr/0012-orval-api-client.md)), and the `PostToolUse` hook
   that runs the checker covering an edited file
-  ([ADR-0045](docs/adr/0045-edit-time-checks-and-one-verify-gate.md)).
+  ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
   `settings.local.json` beside it is per-machine and gitignored
 - `Makefile` — the verification gate (`verify`, `verify-fast`) both agents
   and people run, plus the local-dev shortcuts. `make help` lists them
