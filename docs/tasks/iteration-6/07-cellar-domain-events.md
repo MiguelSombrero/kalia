@@ -1,6 +1,6 @@
 # Task 07: Where a cellar's domain events are registered
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -69,45 +69,53 @@ No event is implemented and no production code ships.
   actually go through a `save` on the root, which is exactly what task 05 is
   deciding. Getting this order wrong produces a rule that is correct on paper
   and silently publishes nothing.
-- The output is an ADR following
+- The output is a **new** ADR following
   [template.md](../../adr/template.md), with the rejected option and its cost
-  recorded ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)). It
-  passes [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s test
-  because it binds every event the codebase will ever publish.
+  recorded ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)). Not an
+  amendment to [ADR-0002](../../adr/0002-spring-modulith.md), which decided
+  whether to use Modulith at all rather than where an event originates —
+  [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md) keeps one subject
+  in one document.
+- **The aggregate root registers the event; Spring Data drains it on `save` of
+  the root.** The event exists because the state change did, so a write path
+  added later cannot change cellar state without one. This is a hard
+  dependency on [task 05](05-cellar-aggregate-owns-its-writes.md), stated in
+  the ADR as a dependency rather than an assumption: if writes do not go
+  through a `save` on `Entry`, the rule is correct on paper and publishes
+  nothing.
+- **Every aggregate root registers its own events, including a module whose
+  aggregate is a single entity** — `catalog`, and the `profile` module
+  [task 01](01-profile-and-visibility.md) creates. One rule, so the next
+  module does not have to work out which kind it is. The rejected split —
+  "aggregates with members register, everything else publishes from the
+  service" — turns on whether an entity has children *yet*, which changes as a
+  module grows and silently makes existing code the wrong shape.
+- **An event carries ids and `occurredAt`, never a copy of anything that can
+  change.** The user id, the entry and bottle ids, the beer id, and when it
+  happened — facts about the event itself. Consumers read back through
+  `CatalogApi` and `ProfileApi`, so they always see current data, and a cellar
+  made private after the fact cannot be leaked by a stale copy. This makes
+  iteration 7 [task 01](../iteration-7/01-feed-module.md)'s hardest constraint
+  structural instead of a rule someone has to remember; its cost is that a
+  reader fans out reads and must handle an id pointing at something since
+  removed.
+- **Naming: `BottleAdded`** — past participle on the thing whose state
+  changed, never repeating the module name, since the package already carries
+  it (`fi.kalia.cellar.BottleAdded`). Gives `BottleRemoved`, `EntryEmptied`,
+  and later `CellarVisibilityChanged` in `profile` without anyone deciding
+  again. The rule is a vocabulary rule, so it also lands in
+  [task 08](08-ubiquitous-language-glossary.md)'s glossary.
+- **The event type lives in the module's root package**, which is the
+  inter-module API and the only part of a module a consumer may reference
+  ([architecture.md §3](../../architecture.md),
+  [ADR-0007](../../adr/0007-backend-package-structure.md)). `cellar.domain`
+  referencing it is allowed: `ArchitectureTest`'s `domainDependsOnNoOuterLayer`
+  forbids `domain` depending on `application` and `web`, and the root package
+  is neither.
 
 ## Open questions
 
-1. **Does the aggregate register the event, or the application service
-   publish it?** The first ties the event to the state change; the second
-   keeps entities free of the framework's event support and puts the decision
-   where the transaction is already visible.
-2. **If the aggregate registers it, what is the trigger — the state change or
-   the `save`?** Spring Data drains `@DomainEvents` on a repository `save`, so
-   an entity mutated inside a transaction and never explicitly saved publishes
-   nothing while its change still persists by dirty checking. `updateBottle`
-   is exactly that shape today. This is the silent failure the whole task
-   exists to surface, and its answer may be a test rather than a rule.
-3. **Does an event carry ids only, or a snapshot of what happened?** Ids mean
-   `feed` reads back through `CatalogApi` and always sees current data; a
-   snapshot means `feed` holds a copy that can go stale — which is the
-   mechanism behind iteration 7 task 01's named privacy trap, arriving here
-   first.
-4. **Does the rule bind modules whose aggregate is a single entity with no
-   members?** `catalog`, and whatever [task 01](01-profile-and-visibility.md)
-   creates for profiles, have no root-and-members structure to hang an event
-   on. Either the rule is about aggregates specifically, or it is about every
-   entity, and the two read differently to whoever writes the next module.
-5. **New ADR, or an amendment to
-   [ADR-0002](../../adr/0002-spring-modulith.md) or
-   [ADR-0007](../../adr/0007-backend-package-structure.md)?**
-   [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md) keeps decisions
-   on one subject as separate documents, which argues for a new one; the
-   product owner may read this as part of the Modulith decision instead.
-6. **Should the rule say anything about event naming?** `BottleAddedToCellar`
-   versus `CellarBottleAdded` versus `BottleAdded` is trivial in isolation and
-   permanent once a second event copies the first — and it is a vocabulary
-   question, so it may belong to
-   [task 08](08-ubiquitous-language-glossary.md) instead.
+**None.**
 
 ## Acceptance criteria
 
@@ -116,7 +124,12 @@ No event is implemented and no production code ships.
       passes
 - [ ] The ADR names the silent failure mode of *each* option — specifically,
       for each, the way an expected event fails to publish with nothing
-      erroring and no test necessarily noticing
+      erroring and no test necessarily noticing, including the chosen one's:
+      an entity mutated inside a transaction and never explicitly saved
+      persists by dirty checking and publishes nothing
+- [ ] The ADR states the naming rule and what it yields for the events already
+      foreseeable, and [task 08](08-ubiquitous-language-glossary.md)'s glossary
+      carries it as a term rule rather than a second copy of the reasoning
 - [ ] The ADR states whether the rule depends on
       [task 05](05-cellar-aggregate-owns-its-writes.md) having landed, and if
       so says so as a dependency rather than an assumption
@@ -147,3 +160,8 @@ them rather than writing them.
 If the product owner would rather not carry the exception, the alternative is
 to fold this into iteration 7 task 01 as its first deliverable — rejected for
 the reason in Why: that task already owns the iteration's hardest question.
+
+Refined 2026-08-30 with iteration 6 as a batch
+([ADR-0047](../../adr/0047-refinement-is-batched-per-iteration.md)). The
+decisions above are the ADR's content; writing it is still this task's work,
+and the no-automated-test exception recorded above stands.
