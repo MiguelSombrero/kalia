@@ -46,9 +46,21 @@ their own condition from that ADR before they apply.
    CI's order; `make verify-fast` is the subset that needs neither Docker nor
    a build, and is what the installed `pre-push` hook runs. Never push
    expecting CI to be the first thing that tells you a check is red.
-9. Run `/code-review` on the diff and resolve each finding as fix-now or a
-   new task — `CLAUDE.md` "Code-review gate".
-10. Go through the acceptance criteria one at a time and **run what each one
+9. **Run the change against a running stack and watch it work.** `make
+   verify` proves the suites pass, which is a different claim: a Server
+   Action that 404s after a re-export refactor, a quantity field cleared on
+   submit, a mock path that no longer matches the module it stands for — each
+   of those passes its unit tests and reads correctly in a diff. Bring the
+   stack up (`make up`), exercise the flow this task actually changed —
+   signing in as the seeded dev account where the flow needs it — and report
+   **what you saw**, not what you expected to see. A backend-only change is
+   exercised against the endpoint; a UI change is exercised in a browser,
+   which `docs/PULL_REQUEST_TEMPLATE.md` already requires as its own
+   test-plan line. "Nothing user-facing changed" is a verdict and a fine
+   answer; silence is not.
+10. Run `/code-review` on the diff and resolve each finding as fix-now or a
+    new task — `CLAUDE.md` "Code-review gate".
+11. Go through the acceptance criteria one at a time and **run what each one
     says verifies it**, rather than ticking the list from memory of having
     done the work. A criterion states its own check — that is what
     [ADR-0026](../../../docs/adr/0026-task-file-format.md) requires of it, and
@@ -60,7 +72,7 @@ their own condition from that ADR before they apply.
     last task, verify its "Done when" the same way — by running each
     criterion — before updating that iteration's `Status` in
     `docs/roadmap.md`, per "Iteration DoD gate".
-11. Push the branch and open the pull request per
+12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 
 ## Gates
@@ -77,6 +89,7 @@ Then state, in the pull request or the final message, which of these ran and
 which did not, naming a reason for each one skipped:
 
 - `make verify` (or `make verify-fast`, said explicitly)
+- the change exercised against a running stack, with what was observed
 - `/code-review`
 - doc-sync
 - each acceptance criterion re-verified by running its own check, then
