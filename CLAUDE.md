@@ -1,6 +1,10 @@
 # CLAUDE.md
 
-Instructions for AI agents working in this repository.
+Instructions for AI agents working in this repository. It is the only document
+loaded unconditionally, so every line costs context in every session: **keep it
+under 200 lines**, and see
+[ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md) for what a bullet
+is allowed to hold.
 
 ## Goals — read first
 
@@ -37,15 +41,13 @@ before making changes:
 
 - [docs/architecture.md](docs/architecture.md) — module boundaries, API
   conventions, persistence rules, testing strategy
-- [docs/roadmap.md](docs/roadmap.md) — iteration index and status; detailed
-  per-iteration task lists, the backlog, and the Quality backlog live under
-  [docs/tasks/](docs/tasks/). From iteration 5 on, tasks are one file each,
-  written to [docs/tasks/template.md](docs/tasks/template.md) before work
-  starts
+- [docs/roadmap.md](docs/roadmap.md) — iteration index and status; the
+  per-iteration tasks, the backlog and the quality backlog live under
+  [docs/tasks/](docs/tasks/), one file per task from iteration 5 on, written
+  to [its template](docs/tasks/template.md) before work starts
 - [docs/adr/](docs/adr/) — decisions already made, grouped by subject in
   [its README](docs/adr/README.md); don't relitigate them silently, propose a
-  new ADR instead. New ones follow
-  [docs/adr/template.md](docs/adr/template.md)
+  new ADR instead ([template](docs/adr/template.md))
 - [backend/README.md](backend/README.md) — run/test commands, Lombok/
   JSpecify/ArchUnit conventions, testing naming (`*Test`/`*IT`)
 - [frontend/README.md](frontend/README.md) — run/test commands,
@@ -59,6 +61,29 @@ repeated here: **this Next.js version postdates model training — check
 `frontend/node_modules/next/dist/docs/` before relying on memory about it.**
 Guessing fails silently rather than erroring (`middleware.ts` is `proxy.ts`
 here, and the app still builds).
+
+The rest of the tree:
+
+- `backend/` Spring Boot modulith (Java, Maven) · `frontend/` Next.js
+  (TypeScript, plus `AGENTS.md`) · `docs/` architecture, roadmap, tasks, ADRs,
+  and `ci-playbook.md` (a red CI job → the document that explains the fix)
+- `docker-compose.yml` — full local stack (PostgreSQL, backend, frontend,
+  Keycloak, Valkey); frontend `:3000` and backend `:8080` published,
+  localhost-only
+- `.github/` — `workflows/ci.yml` builds and tests both apps on every push and
+  scans for CVEs ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md));
+  `dependabot.yml` opens weekly update PRs
+- `Makefile` — the `verify` gate and the local-dev shortcuts (`make help`)
+- `scripts/` — the dependency-free Node checkers CI runs, `next-adr.mjs`, and
+  `hooks/` (`post-edit-check.mjs`, wired up by `.claude/settings.json`;
+  `pre-push`, installed by `make install-hooks`)
+- `.claude/` — `skills/` (the four entry points below, plus `quality-sweep`),
+  `rules/` (scoped to a file type by a `paths:` glob, loaded when a matching
+  file is read rather than every session), and `settings.json` (generated API
+  client read-only, [ADR-0012](docs/adr/0012-orval-api-client.md); the
+  `PostToolUse` checker hook,
+  [ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
+  `settings.local.json` beside it is per-machine and gitignored
 
 ## Commands
 
@@ -80,288 +105,153 @@ it:
 (cd frontend && npm run test:e2e)  # playwright — needs the stack up
 node scripts/check-adrs.mjs        # ADR ↔ architecture.md §9 + adr/README.md
 node scripts/check-tasks.mjs       # task files ↔ iteration index
-node scripts/check-comments.mjs    # code-comment policy (ADR-0017): narration hard-fails, ratio/ADR-block advisory
+node scripts/check-comments.mjs    # code-comment policy (ADR-0017)
 ```
-
-Two things that fail silently if you skip them:
-
-- **Use `mvn clean` after any `pom.xml` or plugin change** — an incremental
-  build can report success against stale compiled output.
-- `mvn verify 2>&1 | grep -E "Tests run:|ERROR|FAIL|BUILD"` cuts a green run
-  from ~285 lines to ~13 while keeping every `Tests run:` count, but it drops
-  assertion detail. **Re-run it unfiltered before diagnosing a failure.**
 
 ## Workflow
 
-- **The entry point for an implementation task is the `implement-task` skill**
-  (`.claude/skills/implement-task/SKILL.md`) — it orders the gates below into
-  one numbered procedure; the gates keep their meaning and their homes.
-- **The entry point for turning a `needs-refinement` task into `refined` is
-  the `refine-task` skill** (`.claude/skills/refine-task/SKILL.md`) — same
-  kind of ordering, for the refinement gate below rather than the
-  implementation ones.
-- **When more than one task in an iteration needs refining, the entry point is
-  the `refine-iteration` skill** (`.claude/skills/refine-iteration/SKILL.md`)
-  — refinement's unit is the iteration, not the task
-  ([ADR-0047](docs/adr/0047-refinement-is-batched-per-iteration.md)): sweep
-  each task, merge the questions into one agenda, answer them in a few rounds,
-  land one refinement PR. `refine-task` stays the entry point for a single
-  task.
-- **The entry point for cutting or removing a task worktree is the `worktree`
-  skill** (`.claude/skills/worktree/SKILL.md`) — fetch, branch off
-  `origin/dev` rather than a local `dev` that has gone stale, confirm which
-  tree the session is bound to before trusting any gate, and remove it once
-  its PR merges.
+Four skills under `.claude/skills/` are the entry points. Each orders gates
+stated below into a numbered procedure; none of them changes a gate.
+
+- **`implement-task`** — implementing a `refined` task, from reading the task
+  file to opening the pull request.
+- **`refine-task`** — taking one `needs-refinement` task to `refined`.
+- **`refine-iteration`** — when more than one task in an iteration needs it;
+  refinement's unit is the iteration
+  ([ADR-0047](docs/adr/0047-refinement-is-batched-per-iteration.md)).
+- **`worktree`** — cutting a task worktree off a freshly fetched `origin/dev`,
+  and removing it once its PR merges.
+
+The gates themselves:
+
 - Work proceeds **one roadmap task at a time**, smallest reviewable change.
 - **Match process weight to the task — implement directly by default**
-  ([ADR-0027](docs/adr/0027-process-weight.md)). Nearly every `docs/tasks`
-  item is a single- or few-file change: settle any open decision with the
-  product owner, implement it, run `/code-review`, open the PR. Reach past
-  that only for the two conditions the ADR names — a design-exploration
-  skill (e.g. `/feature-dev`) for a genuinely new subsystem whose design is
-  still open, subagent-driven execution only when a change spans enough
-  files that one context would overflow. Skip the implementation plan; never
-  skip the task file ([ADR-0026](docs/adr/0026-task-file-format.md)).
-- **Never start a task that is not `refined`.** From iteration 5 on, a task is
-  a file under `docs/tasks/iteration-N/` following
-  [the template](docs/tasks/template.md). A new one is created as
-  `needs-refinement`, and **only the product owner moves it to `refined`** —
-  never an agent on its own behalf. Getting there means writing down every
-  question worth their opinion, including interface and wording choices they
-  may want a say in, having that conversation, and recording the answers as
-  constraints. `Open questions` must read `**None.**` from `refined` onward
-  and `scripts/check-tasks.mjs` enforces that, but the status is the gate:
-  an empty question list proves nothing about whether anyone looked.
-  Acceptance criteria state how each outcome is verified, and at least one is
-  an automated test, so tests are never a task of their own.
-- **Refine in one PR, implement in another.** The task-file edit that moves
-  a task to `refined` (recording the product owner's answers as constraints)
-  is its own PR, merged to `dev` before implementation starts — never a
-  commit on the same branch as the implementation it refines. This keeps the
-  refinement record reviewable on its own, independent of the code diff it
-  authorizes, and gives the product owner a clean point to merge the
-  decision before any code changes begin.
+  ([ADR-0027](docs/adr/0027-process-weight.md)). Reach past that only for the
+  two conditions that ADR names: a design-exploration skill for a genuinely
+  new subsystem whose design is still open, and subagent-driven execution only
+  when a change would overflow one context. Skip the implementation plan;
+  never skip the task file ([ADR-0026](docs/adr/0026-task-file-format.md)).
+- **Never start a task that is not `refined`**, and **only the product owner
+  moves it there** — never an agent on its own behalf
+  ([ADR-0026](docs/adr/0026-task-file-format.md)).
+- **Refine in one PR, implement in another**
+  ([ADR-0026](docs/adr/0026-task-file-format.md)).
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
-- **Parallel sessions: one git worktree each, never a shared checkout.**
-  Two AI-agent sessions running `git` commands against the same working
-  directory race on its single `HEAD`/index — a `checkout` from one session
-  can interleave with a `commit` from the other and misattribute the commit
-  to the wrong branch. Before starting a session whose task doesn't depend
-  on another session's in-flight work, give it its own worktree. Claude Code
-  creates one under `.claude/worktrees/<name>/` — ask it to work in a
-  worktree, or start the session with `claude --worktree <name>`; branch off
-  `dev` there. `git worktree add` still works when you need the checkout
-  somewhere else. Either way, `git worktree remove` it once its PR merges.
-  Claude Code's periodic sweep will not do it for you: it skips any worktree
-  still holding uncommitted or unpushed work, which is every task worktree,
-  and never touches one a session was started in. A stale one costs ~640 MB
-  the moment `npm install` has run there. Worktrees share one object
-  database, so this costs no extra clone — only isolation.
-- **Checkpoint before long or fanned-out work.** Write
-  `.claude/session-checkpoint.md` — worktree path, branch, base ref, the
-  ordered steps with done/pending status, and the exact scope handed to each
-  dispatched agent — before starting anything long or spawning parallel
-  agents, and update it as steps complete. It is gitignored, and it is the
-  only thing that survives a session-limit interruption: on "resume where you
-  left off", read it before re-exploring
+- **Parallel sessions: one git worktree each, never a shared checkout.** Two
+  sessions running `git` against one working directory race on its single
+  `HEAD`/index, and a `checkout` interleaving with a `commit` misattributes
+  the commit to the wrong branch. The `worktree` skill covers setup and
+  teardown, including what Claude Code's own sweep will not clean up.
+- **Checkpoint before long or fanned-out work.**
+  `.claude/session-checkpoint.md` is gitignored and is the only thing that
+  survives a session-limit interruption: on "resume where you left off", read
+  it before re-exploring
   ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 - Test-first: write or update tests with the code; `make verify` green before
-  a PR. Verify changes by actually running them (e.g. `docker compose up`,
-  hitting the endpoint), not just by compiling.
+  a PR. Verify changes by actually running them, not just by compiling.
 - **Open the PR automatically once a task is done** — don't wait for an
-  explicit "create the PR" instruction. "Done" means: tests green, changes
-  verified by running them, doc-sync check complete, roadmap task ticked.
-  Push the branch and run `gh pr create`, following
-  [docs/PULL_REQUEST_TEMPLATE.md](docs/PULL_REQUEST_TEMPLATE.md) for what the
-  description covers, the moment those conditions hold. The PR is the review
-  gate, not its creation — opening one doesn't merge anything or touch `dev`;
-  merging stays the product owner's
-  explicit action on GitHub. This does not relax any other gate (doc-sync,
-  iteration DoD, dependency confirmation, review-comment discipline) — a
-  task isn't "done" if those are unmet, so the PR doesn't open until they are.
-- **Doc-sync gate (part of definition of done):** before opening a PR,
-  re-read the sections of `docs/architecture.md`, the task file and its
-  iteration index, and any ADRs the change touches. Update them in the same
-  PR, or state explicitly in the PR description that they were checked and
-  remain accurate. A PR without this is incomplete. The task file itself is
-  the exception: it records what was *asked for*, so it is frozen at
-  completion apart from its status — what shipped belongs in the ADR,
-  `docs/architecture.md` and the READMEs.
-- **Code-review gate (part of definition of done):** before opening a PR,
-  run `/code-review` on the diff — locally, in-session, no separate service
-  or billing involved. For each finding worth acting on, mark it **fix now**
-  (implement it in the current PR) or **new task** (turn it into a backlog
-  item instead); not every finding needs a task. Covers diff-local security
-  (injection, XSS, auth flaws, secrets), performance (N+1s, complexity,
-  leaks), correctness (edge cases, race conditions, error handling), and
-  maintainability (smells, duplication, naming, test coverage) — see
-  "Quality checks" below for the broader, whole-codebase checks this alone
-  doesn't cover.
-- **Beyond the gates above, proactively reach for other available Claude
-  Code skills when they'd genuinely help** — architecture review, design
-  critique, accessibility audits, and similar — don't wait to be asked,
-  but weigh each against the process-weight rule above: "genuinely help"
-  means this task needs it, not that the skill exists and looks thorough.
-  Skills are self-triggering by design (their own description is the
-  signal); this is a reminder to act on that, not a list to maintain here.
-  Unlike `/code-review` (bundled, always available), most other skills are
-  marketplace plugins tied to whoever's running the session — don't
-  hardcode specific plugin names as required steps, since they may not be
-  installed for a future session or contributor.
-- Check off every acceptance criterion and set the task's status to `done`,
-  in both the task file and its iteration index, as part of the PR that
-  completes it — a criterion that cannot honestly be checked means the task
-  isn't done. Update that iteration's Status in `docs/roadmap.md`'s index
-  table when the whole iteration is done. (Iterations 0–4 predate the task
-  files: there, tick the task in `docs/tasks/iteration-N.md`.)
-- **Iteration DoD gate:** never declare an iteration complete because its
-  last task is ticked. Re-read the iteration's "Done when" in its index and
-  verify each criterion by actually
-  running it; if any is unmet, add tasks to the iteration to close the gap.
-  Apply the same coverage check when planning an iteration: tasks must
-  collectively guarantee the "Done when", otherwise fix the tasks or the
-  criteria. Where an iteration's "Done when" is enumerated with `DW-N` ids,
-  `node scripts/check-tasks.mjs` checks the claim mechanically — a criterion
-  no live task covers, or a task covering one that doesn't exist — but not
-  whether a claimed task actually delivers it
-  ([ADR-0026](docs/adr/0026-task-file-format.md)).
-- **Code review is a dialogue.** Analyze every review comment critically —
+  explicit instruction. "Done" means every gate here is met, so the PR does
+  not open until they are. The PR is the review gate, not its creation:
+  opening one merges nothing, and merging stays the product owner's explicit
+  action on GitHub. Follow
+  [the template](docs/PULL_REQUEST_TEMPLATE.md).
+- **Doc-sync gate:** before opening a PR, re-read the sections of
+  `docs/architecture.md`, the iteration index and any ADRs the change touches,
+  and update them in the same PR — or state in the description that they were
+  checked and remain accurate. The task file is the exception: it records what
+  was *asked for*, so it is frozen at completion apart from its status.
+- **Code-review gate:** run `/code-review` on the diff — local, in-session, no
+  separate service — and mark each finding worth acting on **fix now** or
+  **new task**.
+- **Reach for other skills when they'd genuinely help** — architecture review,
+  design critique, accessibility audits — weighed against the process-weight
+  rule above: "genuinely help" means this task needs it, not that the skill
+  looks thorough. Skills self-trigger on their own description; don't hardcode
+  plugin names as required steps, since most are not bundled and may be absent
+  for a future session or contributor.
+- **Verify each acceptance criterion by running what it says verifies it**,
+  then tick it and set the status to `done` in both the task file and its
+  iteration index, in the PR that completes it. A criterion you cannot
+  honestly tick means the task isn't done. (Iterations 0–4 predate task files:
+  tick in `docs/tasks/iteration-N.md`.)
+- **Iteration DoD gate:** never declare an iteration complete because its last
+  task is ticked. Re-read its "Done when" and verify each criterion by running
+  it; if any is unmet, add tasks to close the gap. The same coverage check
+  applies when planning an iteration
+  ([ADR-0026](docs/adr/0026-task-file-format.md)). Update that iteration's
+  Status in `docs/roadmap.md` once it is genuinely done.
+- **Code review is a dialogue.** Analyse every review comment critically —
   architecture, security, code quality, API design, testability — before
-  acting. Agreeing: implement and reply with what changed. Disagreeing:
-  reply in the review thread with the concern and a concrete alternative,
-  and make **no code changes** until the discussion settles. If the product
-  owner's decision stands after discussion, implement it. Conventions that
-  emerge from review decisions get documented (CLAUDE.md, backend/frontend
-  README, or docs/) in the same PR.
+  acting. Agreeing: implement and reply with what changed. Disagreeing: reply
+  in the thread with the concern and a concrete alternative, and make **no
+  code changes** until the discussion settles. If the product owner's decision
+  stands after discussion, implement it. Conventions that emerge from review
+  get documented in the same PR.
 - Commit messages: imperative summary line, body explains what and why,
   reference the roadmap task.
-- **Code comments carry only what the repo cannot.** The rule itself lives in
-  [`.claude/rules/code-comments.md`](.claude/rules/code-comments.md), which
-  Claude Code loads on its own when you read a backend or frontend source
-  file — it is not repeated here, because a path-scoped rule is not a pointer
-  an agent has to follow ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md)).
-  Why the policy is what it is: [ADR-0017](docs/adr/0017-code-comment-policy.md).
-- **ADRs follow [template.md](docs/adr/template.md)** — five sections
-  (Context, Decision, Alternatives considered, Consequences, optional
-  Evidence), Decision opening with one self-contained sentence naming the
-  verdict, at least one Bad or Neutral consequence, and an accepted ADR
-  amended rather than rewritten. `scripts/check-adrs.mjs` enforces the
-  mechanical parts. See
-  [ADR-0019](docs/adr/0019-adr-format-and-conventions.md).
+- **Code comments carry only what the repo cannot** —
+  [`.claude/rules/code-comments.md`](.claude/rules/code-comments.md) loads
+  itself when you read a source file, so it is not repeated here
+  ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md),
+  [ADR-0017](docs/adr/0017-code-comment-policy.md)).
+- **ADRs follow [the template](docs/adr/template.md)** — five sections,
+  Decision opening with one self-contained sentence naming the verdict, at
+  least one Bad or Neutral consequence, and an accepted ADR amended rather
+  than rewritten ([ADR-0019](docs/adr/0019-adr-format-and-conventions.md)).
 - **A decision earns an ADR when a credible alternative was rejected and the
-  reason would not survive in the code, `docs/architecture.md` or a README** —
-  and decisions on one subject stay separate documents, since
-  [docs/adr/README.md](docs/adr/README.md) groups them by theme. See
-  [ADR-0032](docs/adr/0032-when-a-decision-earns-an-adr.md).
+  reason would not survive in the code, `docs/architecture.md` or a README**,
+  and decisions on one subject stay separate documents
+  ([ADR-0032](docs/adr/0032-when-a-decision-earns-an-adr.md)).
 - **Each documented fact has one home** — ADRs record *why*,
-  `docs/architecture.md` records *shape*, READMEs record *how*; every other
-  mention is a one-line pointer with a link. Two exceptions: this file may
-  restate anything that applies to every edit, since it is the only document
-  loaded unconditionally and a pointer here is one an agent never follows;
-  and **a rule whose violation fails silently keeps its warning inline
-  wherever an editor meets it** — compressing that class of rule into a link
-  is a regression dressed as tidying. When a README rule outgrows one line
-  and has no ADR, write the ADR. See
-  [ADR-0020](docs/adr/0020-documentation-roles.md).
-- **New dependencies: ask, don't research.** When a task introduces a new
-  dependency (library, starter, plugin, Docker image, GitHub Action), do not
-  spend time hunting registries for the latest version. List the new
-  dependencies and ask the user which versions to use — batched in one
-  question per task. Exceptions: versions already pinned in README/docs or
-  this file, and versions already confirmed from authoritative output (build
-  errors, repository metadata, generator output) — propose those for
-  confirmation instead. Record chosen versions in the README tech stack
-  section so they become the pinned reference.
+  `docs/architecture.md` *shape*, READMEs *how*; every other mention is a
+  one-line pointer with a link
+  ([ADR-0020](docs/adr/0020-documentation-roles.md)). Two exceptions: this
+  file may restate anything that applies to every edit, since a pointer here
+  is one an agent never follows; and **a rule whose violation fails silently
+  keeps its warning inline wherever an editor meets it** — compressing that
+  class of rule into a link is a regression dressed as tidying.
+- **New dependencies: ask, don't research.** When a task introduces one
+  (library, starter, plugin, Docker image, GitHub Action), list them and ask
+  which versions to use — batched in one question per task — rather than
+  hunting registries. Exceptions: versions already pinned in the READMEs or
+  here, and versions confirmed from authoritative output (build errors,
+  repository metadata, generator output); propose those for confirmation.
+  Record the chosen version in the README tech stack section.
 - **A CI vulnerability-scan failure unrelated to your diff is still your
-  problem, and it gets fixed in place.** The scan is deliberately diff-agnostic
-  ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md)): any open
-  PR can go red on a CVE disclosed against something already in `dev`, with
-  nothing in that PR's own changes at fault. Fix it as its own commit on the
-  same branch — don't spin up a second PR just to unblock the first. This is
-  mechanical, and does not need to ask first, only when the fix stays inside
-  the vulnerable package's own already-declared semver range (a lockfile-only
-  bump, no code change). A fix that would cross that range, or bumps a
-  *direct* dependency past its pinned version, is a version choice under "new
-  dependencies" above instead — ask, don't push it unasked. Confirm the fix
-  actually clears the finding before pushing, ideally by reproducing CI's
-  exact Trivy invocation locally (`frontend/README.md`, `backend/README.md`)
-  — a bump that doesn't reach the flagged transitive package leaves the
-  finding red.
+  problem, and it gets fixed in place** — as its own commit on the branch that
+  is open, never a second PR to unblock the first
+  ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md)). It does
+  not need asking first *only* while the fix stays inside the vulnerable
+  package's already-declared semver range (a lockfile-only bump, no code
+  change); crossing that range, or bumping a *direct* dependency past its pin,
+  is a version choice under "new dependencies" above. Confirm the fix actually
+  clears the finding before pushing, reproducing CI's exact Trivy invocation
+  (`frontend/README.md`, `backend/README.md`) — a bump that doesn't reach the
+  flagged transitive package leaves the finding red.
 - **A CI check you have seen fail before is probably in
-  [docs/ci-playbook.md](docs/ci-playbook.md)** — a lookup from a red job to
-  the document that already explains the fix, not a second copy of it. Add an
-  entry when a failure costs real time to *recognise*, and say which run it
-  came from.
+  [docs/ci-playbook.md](docs/ci-playbook.md)** — a red job mapped to the
+  document that already explains the fix. Add an entry when a failure costs
+  real time to *recognise*, and say which run it came from.
 
 ## Quality checks
 
-Beyond the per-PR code-review gate above (diff-scoped, self-run), the
-`/quality-sweep` skill (`.claude/skills/quality-sweep/SKILL.md`) runs a
-periodic, whole-codebase check — architecture, documentation, code
-quality, and security — at a coarser grain than any single PR can judge.
+The `/quality-sweep` skill runs a periodic, whole-codebase audit —
+architecture, documentation, code quality, security — at a coarser grain than
+any single PR's diff can judge. Its mechanics live in the skill and in
+[the quality backlog](docs/tasks/quality-backlog.md)'s own header.
 
-**Product-owner-initiated only, never something an AI agent triggers
-itself.** An AI agent should proactively *suggest* running it at the start
-of a new iteration's first task — surfacing the option, not deciding for
-the product owner. Lifting a finding out of the backlog into an iteration
-is likewise the product owner's instruction, never an agent's own call.
-
-Findings land in [docs/tasks/quality-backlog.md](docs/tasks/quality-backlog.md),
-whose header holds the mechanics — severity grouping, permanent IDs,
-confirmed-dates, retirement, and how a finding is lifted into a task.
-
-Not adopted: a full four-dimension subagent review on every task before
-every PR. Architecture and documentation need more context than one small
-task provides, so running them that often would be noisy and re-litigate
-settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
-
-## Repository layout
-
-- `backend/` — Spring Boot modulith (Java, Maven). Its `CLAUDE.md` imports
-  `backend/README.md`, so those conventions load once you touch the subtree
-- `frontend/` — Next.js (TypeScript). Same, plus `frontend/AGENTS.md`
-- `docs/` — architecture, roadmap, per-iteration tasks, ADRs, and
-  `ci-playbook.md` (red CI job → the document that explains the fix)
-- `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend +
-  Keycloak + Valkey). Frontend (`:3000`) and backend (`:8080`, for direct
-  API access and Swagger UI) are both published, localhost-only.
-- `.github/workflows/ci.yml` — build + test both apps on every push;
-  also scans dependencies and images for known CVEs
-  ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md))
-- `.github/dependabot.yml` — weekly update PRs for Maven, npm and GitHub
-  Actions dependencies
-- `.claude/rules/` — rules scoped to a file type by a `paths:` glob, loaded
-  when a matching file is read rather than every session. Currently one:
-  the code-comment policy
-  ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md))
-- `.claude/skills/quality-sweep/SKILL.md` — periodic quality sweep (see
-  Quality checks above)
-- `.claude/skills/implement-task/SKILL.md` — orders the implementation
-  lifecycle gates into one procedure (see Workflow above)
-- `.claude/skills/refine-task/SKILL.md` — orders the `needs-refinement` →
-  `refined` gate into one procedure (see Workflow above)
-- `.claude/skills/refine-iteration/SKILL.md` — the same gate with the
-  iteration as its unit (see Workflow above)
-- `.claude/skills/worktree/SKILL.md` — orders worktree setup and teardown
-  into one procedure (see Workflow above)
-- `.claude/settings.json` — committed agent settings: a `permissions.deny`
-  rule making the generated API client read-only
-  ([ADR-0012](docs/adr/0012-orval-api-client.md)), and the `PostToolUse` hook
-  that runs the checker covering an edited file
-  ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
-  `settings.local.json` beside it is per-machine and gitignored
-- `Makefile` — the verification gate (`verify`, `verify-fast`) both agents
-  and people run, plus the local-dev shortcuts. `make help` lists them
-- `scripts/` — the dependency-free Node checkers CI runs, `next-adr.mjs`, and
-  `hooks/` (`post-edit-check.mjs`, wired up by `.claude/settings.json`;
-  `pre-push`, installed by `make install-hooks`)
+**Product-owner-initiated only, and this is the part that cannot move into the
+skill:** it sets `disable-model-invocation`, so it is absent from an agent's
+skill list and cannot announce itself. An agent should proactively *suggest*
+running it at the start of a new iteration's first task, and never trigger it
+or lift a finding into an iteration on its own. A full four-dimension subagent
+review on every task before every PR stays **not adopted**
+([ADR-0027](docs/adr/0027-process-weight.md)).
 
 ## Environment notes
 
-- `gh` relies on `GITHUB_TOKEN` exported in `~/.zshrc`; in non-interactive
-  shells run it as `zsh -ic 'gh …'`.
 - Each worktree runs `docker compose up` independently and will collide on
   ports 3000/8080/5432 if two are brought up at once — give a concurrently-
   running worktree its own `-p <project>` and port overrides, or only run
