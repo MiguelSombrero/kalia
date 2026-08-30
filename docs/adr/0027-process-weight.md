@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-31
+- **Amended:** 2026-08-30 — records the rejection of a four-dimension subagent
+  review on every task before every PR, which had lived only in `CLAUDE.md`
 
 ## Context
 
@@ -70,6 +72,33 @@ it is what produced the measurements below: absent a written default, the mode
 that looks most thorough wins. Rejected because the failure is systematic
 rather than a lapse — the signal an agent reads (more layers = more rigour)
 points the wrong way.
+
+> **Amended 2026-08-30.** One more alternative belongs here, and had been
+> carried in `CLAUDE.md` alone since before this ADR was written:
+>
+> **A full four-dimension subagent review — architecture, documentation, code
+> quality, security — on every task before every PR.** Rejected, and it stays
+> rejected. Architecture and documentation need more context than one small
+> task provides, so running them at that frequency would be noisy and would
+> re-litigate settled decisions. The measurements above cut the same way: the
+> heavier process's review layers did not catch its two worst defects, so
+> adding four more per task buys layers rather than defects found. What this
+> repository runs instead is `/quality-sweep` — the same four dimensions, at
+> the whole-codebase grain where they have the context to be worth reading,
+> and only when the product owner asks.
+>
+> Two things this rejection does *not* cover, so that a future reading does
+> not stretch it. It is about a **swarm on every diff**, not about a single
+> reviewer: `/code-review` is a gate and stays one. And it is not an argument
+> against running the change — `implement-task` step 9 exercises the flow
+> against a live stack, which is a different activity from reviewing a diff
+> and was added precisely because no amount of diff-reading catches a Server
+> Action that 404s at runtime.
+>
+> Recorded here because it was a decision with no ADR home: `CLAUDE.md` stated
+> it and cited this ADR for the reasoning, which made the citation a dangling
+> one and the record deletable by any compaction pass
+> ([ADR-0048](0048-what-survives-a-claude-md-bullet.md)).
 
 ## Consequences
 

@@ -5,6 +5,10 @@
 - **Amended:** 2026-08-15 — an iteration's `## Done when` may enumerate
   identified criteria, and a task declares which it advances, checked by
   `scripts/check-tasks.mjs` (iteration 5 task 16)
+- **Amended:** 2026-08-30 — refinement's unit is the iteration rather than the
+  task, superseding "just in time" below
+  ([ADR-0047](0047-refinement-is-batched-per-iteration.md)); and the status
+  transition gets its own pull request
 
 ## Context
 
@@ -50,6 +54,27 @@ automated test; the iteration file becomes an index.**
   in the PR that made it. `Open questions` must be answered by then — but the
   gate is the status, because "no open questions" is satisfied as easily by
   an author who never looked as by one who looked and found none.
+
+  > **Amended 2026-08-30.** "Just in time — immediately before work starts,
+  > not at iteration planning" no longer holds, and
+  > [ADR-0047](0047-refinement-is-batched-per-iteration.md) is why: refinement
+  > became the queue that emptied, with zero tasks at `refined` against
+  > twenty-five at `needs-refinement`. Its unit is now the **iteration** — an
+  > iteration's questions are swept per task, merged into one agenda and
+  > answered in one conversation. Everything else in this bullet stands
+  > unchanged, including the part that matters most: only the product owner
+  > moves a task to `refined`, in a diff, and the status rather than an empty
+  > question list is the gate. The cost this trades away is exactly what "just
+  > in time" was buying — a task refined ahead of its implementation can go
+  > stale — and ADR-0047 carries that as a stated consequence and a revisit
+  > trigger rather than a footnote.
+  >
+  > **The status transition is its own pull request**, merged before
+  > implementation starts, never a commit on the branch that implements it.
+  > This was practice and a `CLAUDE.md` rule from the start but had no home
+  > here, so it is recorded now: it keeps the refinement record reviewable
+  > independently of the code diff it authorises, and gives the product owner
+  > a clean point to merge the decision before any code exists to argue with.
 - **Identifiers are permanent and never reused**, including for dropped tasks,
   matching the convention `docs/tasks/quality-backlog.md` adopted after sweep-
   scoped numbering collided.

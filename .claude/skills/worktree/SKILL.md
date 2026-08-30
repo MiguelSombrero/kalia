@@ -21,7 +21,9 @@ removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.
    `git worktree add .claude/worktrees/<name> -b <branch> origin/dev`.
    Branch naming is `CLAUDE.md`'s: `iteration-N/<topic>`, `docs/<topic>`,
    `fix/<topic>`. (`claude --worktree <name>`, or asking Claude Code for a
-   worktree, does the equivalent and puts it in the same place.)
+   worktree, does the equivalent and puts it in the same place.) Worktrees
+   share one object database, so an extra one costs no extra clone — only
+   isolation, and the disk the Finish steps below reclaim.
 3. Work from that directory for everything that follows, and never `cd` to
    the main checkout — `CLAUDE.md`'s environment note on two sessions racing
    on one `HEAD` is about exactly this.

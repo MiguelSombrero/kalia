@@ -174,3 +174,6 @@ to bound.
 - [ADR-0047](0047-refinement-is-batched-per-iteration.md) — an iteration's
   open questions are merged into one agenda and answered in one conversation,
   because refinement, not implementation, is the queue that empties.
+- [ADR-0048](0048-what-survives-a-claude-md-bullet.md) — `CLAUDE.md` keeps
+  rules, compliance mechanics and silent-failure warnings; rationale leaves it
+  only once an ADR holds it.
