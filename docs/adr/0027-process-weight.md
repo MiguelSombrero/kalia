@@ -4,6 +4,9 @@
 - **Date:** 2026-07-31
 - **Amended:** 2026-08-30 — records the rejection of a four-dimension subagent
   review on every task before every PR, which had lived only in `CLAUDE.md`
+- **Amended:** 2026-08-30 by [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md)
+  — the sweep those four dimensions run in gained a fifth, `process-quality`;
+  the rejection below is unchanged and still names four
 
 ## Context
 

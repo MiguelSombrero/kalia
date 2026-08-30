@@ -70,7 +70,7 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0044](0044-catalog-search-indexes.md) — catalog name search keeps
   substring matching and a `pg_trgm` trigram index serves it; the style and
   country filters get indexes on `lower(...)`.
-- [ADR-0046](0045-brewery-list-paginates-in-application.md) — the brewery list
+- [ADR-0045](0045-brewery-list-paginates-in-application.md) — the brewery list
   gains a `page`/`size` contract but keeps loading and sorting the full table
   in Java, so its name order stays locale-independent.
 
@@ -177,3 +177,6 @@ to bound.
 - [ADR-0048](0048-what-survives-a-claude-md-bullet.md) — `CLAUDE.md` keeps
   rules, compliance mechanics and silent-failure warnings; rationale leaves it
   only once an ADR holds it.
+- [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md) — the
+  repository's own process is audited as a fifth `/quality-sweep` dimension on
+  evidence of recurrence, never as a self-review step at the end of each task.
