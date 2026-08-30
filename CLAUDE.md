@@ -289,6 +289,11 @@ Two things that fail silently if you skip them:
   exact Trivy invocation locally (`frontend/README.md`, `backend/README.md`)
   — a bump that doesn't reach the flagged transitive package leaves the
   finding red.
+- **A CI check you have seen fail before is probably in
+  [docs/ci-playbook.md](docs/ci-playbook.md)** — a lookup from a red job to
+  the document that already explains the fix, not a second copy of it. Add an
+  entry when a failure costs real time to *recognise*, and say which run it
+  came from.
 
 ## Quality checks
 
@@ -317,7 +322,8 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
 - `backend/` — Spring Boot modulith (Java, Maven). Its `CLAUDE.md` imports
   `backend/README.md`, so those conventions load once you touch the subtree
 - `frontend/` — Next.js (TypeScript). Same, plus `frontend/AGENTS.md`
-- `docs/` — architecture, roadmap, per-iteration tasks, ADRs
+- `docs/` — architecture, roadmap, per-iteration tasks, ADRs, and
+  `ci-playbook.md` (red CI job → the document that explains the fix)
 - `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend +
   Keycloak + Valkey). Frontend (`:3000`) and backend (`:8080`, for direct
   API access and Swagger UI) are both published, localhost-only.
