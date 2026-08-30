@@ -100,6 +100,13 @@ Two things that fail silently if you skip them:
   the `refine-task` skill** (`.claude/skills/refine-task/SKILL.md`) — same
   kind of ordering, for the refinement gate below rather than the
   implementation ones.
+- **When more than one task in an iteration needs refining, the entry point is
+  the `refine-iteration` skill** (`.claude/skills/refine-iteration/SKILL.md`)
+  — refinement's unit is the iteration, not the task
+  ([ADR-0047](docs/adr/0047-refinement-is-batched-per-iteration.md)): sweep
+  each task, merge the questions into one agenda, answer them in a few rounds,
+  land one refinement PR. `refine-task` stays the entry point for a single
+  task.
 - **The entry point for cutting or removing a task worktree is the `worktree`
   skill** (`.claude/skills/worktree/SKILL.md`) — fetch, branch off
   `origin/dev` rather than a local `dev` that has gone stale, confirm which
@@ -282,6 +289,11 @@ Two things that fail silently if you skip them:
   exact Trivy invocation locally (`frontend/README.md`, `backend/README.md`)
   — a bump that doesn't reach the flagged transitive package leaves the
   finding red.
+- **A CI check you have seen fail before is probably in
+  [docs/ci-playbook.md](docs/ci-playbook.md)** — a lookup from a red job to
+  the document that already explains the fix, not a second copy of it. Add an
+  entry when a failure costs real time to *recognise*, and say which run it
+  came from.
 
 ## Quality checks
 
@@ -310,7 +322,8 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
 - `backend/` — Spring Boot modulith (Java, Maven). Its `CLAUDE.md` imports
   `backend/README.md`, so those conventions load once you touch the subtree
 - `frontend/` — Next.js (TypeScript). Same, plus `frontend/AGENTS.md`
-- `docs/` — architecture, roadmap, per-iteration tasks, ADRs
+- `docs/` — architecture, roadmap, per-iteration tasks, ADRs, and
+  `ci-playbook.md` (red CI job → the document that explains the fix)
 - `docker-compose.yml` — full local stack (PostgreSQL + backend + frontend +
   Keycloak + Valkey). Frontend (`:3000`) and backend (`:8080`, for direct
   API access and Swagger UI) are both published, localhost-only.
@@ -329,6 +342,8 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   lifecycle gates into one procedure (see Workflow above)
 - `.claude/skills/refine-task/SKILL.md` — orders the `needs-refinement` →
   `refined` gate into one procedure (see Workflow above)
+- `.claude/skills/refine-iteration/SKILL.md` — the same gate with the
+  iteration as its unit (see Workflow above)
 - `.claude/skills/worktree/SKILL.md` — orders worktree setup and teardown
   into one procedure (see Workflow above)
 - `.claude/settings.json` — committed agent settings: a `permissions.deny`

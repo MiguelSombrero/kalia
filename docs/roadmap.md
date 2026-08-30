@@ -11,7 +11,9 @@ From iteration 5 on, each task is its own file under
 carrying its own acceptance criteria
 ([ADR-0026](adr/0026-task-file-format.md)). A task starts at
 `needs-refinement` and only the product owner moves it to `refined`; nothing
-is picked up before that. Iterations 0–4 keep the older single-file form.
+is picked up before that. Refinement takes an iteration at a time rather than
+a task at a time — its questions are merged into one agenda and answered in
+one conversation ([ADR-0047](adr/0047-refinement-is-batched-per-iteration.md)). Iterations 0–4 keep the older single-file form.
 
 Priorities follow the [vision](../README.md)'s own dependency order. The
 catalog came first because you have to find a beer before you can own one, and

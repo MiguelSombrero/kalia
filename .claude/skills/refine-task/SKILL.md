@@ -10,6 +10,14 @@ description: Numbered procedure for taking one needs-refinement docs/tasks/itera
 gate below; nothing here changes one. This only orders them, the same way
 `implement-task` orders the implementation gates.
 
+This is the procedure for **one** task. When more than one task in an
+iteration needs refining, `refine-iteration` is the entry point instead —
+refinement's unit is the iteration
+([ADR-0047](../../../docs/adr/0047-refinement-is-batched-per-iteration.md)),
+and it delegates the per-task mechanics below rather than replacing them.
+Step 6 is the seam: an answer that reaches a dependent task already drags that
+task into this pull request.
+
 Refining is not implementing: this procedure never touches production code,
 never runs on the implementation branch, and ends in its own pull request —
 CLAUDE.md "Refine in one PR, implement in another".
