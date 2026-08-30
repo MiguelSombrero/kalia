@@ -171,3 +171,6 @@ to bound.
 - [ADR-0046](0046-edit-time-checks-and-one-verify-gate.md) — `make verify` is
   the one gate agents and people both run; the checkers also report at edit
   time, and a `pre-push` hook blocks on the fast half.
+- [ADR-0047](0047-refinement-is-batched-per-iteration.md) — an iteration's
+  open questions are merged into one agenda and answered in one conversation,
+  because refinement, not implementation, is the queue that empties.

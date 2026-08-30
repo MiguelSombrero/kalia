@@ -100,6 +100,13 @@ Two things that fail silently if you skip them:
   the `refine-task` skill** (`.claude/skills/refine-task/SKILL.md`) — same
   kind of ordering, for the refinement gate below rather than the
   implementation ones.
+- **When more than one task in an iteration needs refining, the entry point is
+  the `refine-iteration` skill** (`.claude/skills/refine-iteration/SKILL.md`)
+  — refinement's unit is the iteration, not the task
+  ([ADR-0047](docs/adr/0047-refinement-is-batched-per-iteration.md)): sweep
+  each task, merge the questions into one agenda, answer them in a few rounds,
+  land one refinement PR. `refine-task` stays the entry point for a single
+  task.
 - **The entry point for cutting or removing a task worktree is the `worktree`
   skill** (`.claude/skills/worktree/SKILL.md`) — fetch, branch off
   `origin/dev` rather than a local `dev` that has gone stale, confirm which
@@ -329,6 +336,8 @@ settled decisions ([ADR-0027](docs/adr/0027-process-weight.md)).
   lifecycle gates into one procedure (see Workflow above)
 - `.claude/skills/refine-task/SKILL.md` — orders the `needs-refinement` →
   `refined` gate into one procedure (see Workflow above)
+- `.claude/skills/refine-iteration/SKILL.md` — the same gate with the
+  iteration as its unit (see Workflow above)
 - `.claude/skills/worktree/SKILL.md` — orders worktree setup and teardown
   into one procedure (see Workflow above)
 - `.claude/settings.json` — committed agent settings: a `permissions.deny`
