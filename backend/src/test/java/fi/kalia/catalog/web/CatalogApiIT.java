@@ -150,6 +150,14 @@ class CatalogApiIT {
 	}
 
 	@Test
+	void pageIndexAboveTheCapYieldsProblemJson400() {
+		client.get().uri("/api/v1/beers?page=10001")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
 	void unsupportedSortPropertyYieldsProblemJson400WithGuidance() {
 		client.get().uri("/api/v1/beers?sort=price,desc")
 				.exchange()
@@ -158,6 +166,17 @@ class CatalogApiIT {
 				.expectBody(String.class)
 				.value(body -> assertThat((String) JsonPath.read(body, "$.detail"))
 						.contains("Unsupported sort property 'price'"));
+	}
+
+	@Test
+	void sortWithTrailingGarbageYieldsProblemJson400WithGuidance() {
+		client.get().uri("/api/v1/beers?sort=name,asc,extra")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.detail"))
+						.contains("Malformed sort 'name,asc,extra'"));
 	}
 
 	@Test
@@ -214,17 +233,69 @@ class CatalogApiIT {
 	}
 
 	@Test
-	void listsBreweriesSortedByName() {
-		client.get().uri("/api/v1/breweries")
+	void listsBreweriesPaginatedAndSortedByName() {
+		client.get().uri("/api/v1/breweries?size=100")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					java.util.List<String> names = JsonPath.read(body, "$[*].name");
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(20);
+					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(0);
+					java.util.List<String> names = JsonPath.read(body, "$.content[*].name");
 					assertThat(names).hasSize(20)
 							.isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
 					assertThat(names).contains("Brasserie Cantillon", "Põhjala");
 				});
+	}
+
+	@Test
+	void breweryListSecondPageContinuesTheSortedSequence() {
+		String firstPage = client.get().uri("/api/v1/breweries?page=0&size=8")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+		assertThat((java.util.List<?>) JsonPath.read(firstPage, "$.content")).hasSize(8);
+		assertThat((int) JsonPath.read(firstPage, "$.totalPages")).isEqualTo(3);
+		String lastOfFirstPage = JsonPath.read(firstPage, "$.content[7].name");
+
+		client.get().uri("/api/v1/breweries?page=1&size=8")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(1);
+					String firstOfSecondPage = JsonPath.read(body, "$.content[0].name");
+					assertThat(firstOfSecondPage.compareToIgnoreCase(lastOfFirstPage)).isGreaterThan(0);
+				});
+	}
+
+	@Test
+	void breweryPageIndexPastTheEndYieldsAnEmptyPage() {
+		client.get().uri("/api/v1/breweries?page=9000&size=100")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((java.util.List<?>) JsonPath.read(body, "$.content")).isEmpty();
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(20);
+				});
+	}
+
+	@Test
+	void breweryPageSizeAboveTheCapYieldsProblemJson400() {
+		client.get().uri("/api/v1/breweries?size=101")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void breweryPageIndexAboveTheCapYieldsProblemJson400() {
+		client.get().uri("/api/v1/breweries?page=10001")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 
 }

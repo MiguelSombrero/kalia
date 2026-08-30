@@ -70,6 +70,9 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0044](0044-catalog-search-indexes.md) — catalog name search keeps
   substring matching and a `pg_trgm` trigram index serves it; the style and
   country filters get indexes on `lower(...)`.
+- [ADR-0045](0045-brewery-list-paginates-in-application.md) — the brewery list
+  gains a `page`/`size` contract but keeps loading and sorting the full table
+  in Java, so its name order stays locale-independent.
 
 ## Frontend structure and conventions
 

@@ -170,7 +170,7 @@ REST, JSON, versioned under `/api/v1`. Built:
 ```
 GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
 GET    /api/v1/beers/{id}
-GET    /api/v1/breweries
+GET    /api/v1/breweries?page=&size=
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
@@ -198,7 +198,9 @@ entry or bottle belonging to another user answers 404, uniformly, never 403.
 Conventions:
 
 - Pagination: `page`/`size` params, response envelope with `content`,
-  `totalElements`, `totalPages`, `page`.
+  `totalElements`, `totalPages`, `page`. `/breweries` carries the contract but
+  still sorts and slices the full table in-application, to keep its name order
+  locale-independent ([ADR-0045](adr/0045-brewery-list-paginates-in-application.md)).
 - **Endpoints are client-agnostic resources.** An endpoint's shape follows the
   resource, not the screen that happens to consume it; assembling several
   resources into one view is the client's job. Today the frontend is the only
@@ -483,6 +485,7 @@ enforces the mechanically decidable half of the code-comment policy
 | [ADR-0042](adr/0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
 | [ADR-0043](adr/0043-createuser-race-safety.md) | `createUser` claims the email index with SET NX so a losing concurrent sign-in joins the winner | accepted | 2026-08-23 |
 | [ADR-0044](adr/0044-catalog-search-indexes.md) | Catalog name search stays substring matching, served by a pg_trgm trigram index | accepted | 2026-08-28 |
+| [ADR-0045](adr/0045-brewery-list-paginates-in-application.md) | The brewery list paginates in the application, keeping its Java-side name sort | accepted | 2026-08-29 |
 
 ### Engineering process and documentation
 

@@ -1,6 +1,6 @@
 # Task 07: Reject malformed sort parameters and paginate the brewery list
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [5.5](../iteration-5.5.md)
 
 ## Why
@@ -46,14 +46,23 @@ Two independent gaps in `CatalogController`'s request handling:
 
 ## Acceptance criteria
 
-- [ ] `sort=name,asc,extra` (and similar) is rejected with a 400
+- [x] `sort=name,asc,extra` (and similar) is rejected with a 400
       `problem+json`, not silently truncated — proven by a new
       `CatalogApiIT` test
-- [ ] `GET /api/v1/breweries` accepts `page`/`size` and returns a paginated
-      response shape; `listBreweries()` no longer loads the full table when
-      a page is requested
-- [ ] `mvn clean verify` is green
+- [x] `GET /api/v1/breweries` accepts `page`/`size` and returns a paginated
+      response shape; the full-table load is an accepted implementation
+      detail to be closed by a later cache of the sorted list, not by
+      moving the sort into the database
+      ([ADR-0045](../../adr/0045-brewery-list-paginates-in-application.md))
+- [x] `mvn clean verify` is green
 
 ## Notes
 
 Quality backlog: COULD-8, COULD-4.
+
+During implementation the product owner chose to keep brewery pagination in
+the application rather than push it to the database, so the deliberate
+locale-independent Java name sort survives; the efficiency gap is left for a
+later cache of the sorted list. Recorded as
+[ADR-0045](../../adr/0045-brewery-list-paginates-in-application.md), which
+also carries the reworded second acceptance criterion above.
