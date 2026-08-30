@@ -150,6 +150,14 @@ class CatalogApiIT {
 	}
 
 	@Test
+	void pageIndexAboveTheCapYieldsProblemJson400() {
+		client.get().uri("/api/v1/beers?page=10001")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
 	void unsupportedSortPropertyYieldsProblemJson400WithGuidance() {
 		client.get().uri("/api/v1/beers?sort=price,desc")
 				.exchange()
@@ -264,7 +272,7 @@ class CatalogApiIT {
 
 	@Test
 	void breweryPageIndexPastTheEndYieldsAnEmptyPage() {
-		client.get().uri("/api/v1/breweries?page=2147483647&size=100")
+		client.get().uri("/api/v1/breweries?page=9000&size=100")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
@@ -277,6 +285,14 @@ class CatalogApiIT {
 	@Test
 	void breweryPageSizeAboveTheCapYieldsProblemJson400() {
 		client.get().uri("/api/v1/breweries?size=101")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void breweryPageIndexAboveTheCapYieldsProblemJson400() {
+		client.get().uri("/api/v1/breweries?page=10001")
 				.exchange()
 				.expectStatus().isBadRequest()
 				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);

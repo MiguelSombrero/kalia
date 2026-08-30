@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–5 complete — a visitor can browse and search the
+> **Status:** iterations 0–5.5 complete — a visitor can browse and search the
 > seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
 > design system (tokens, shared primitives, loading/error/empty states,
@@ -10,8 +10,9 @@
 > handling, config, security headers, dependency scanning) are in place,
 > users can sign in and out via Keycloak, and a signed-in user can add,
 > edit and remove bottles in their own personal beer cellar, grouped by
-> beer with brewed/best-before dates, visible to nobody else. Next: a
-> public profile and cellar (iteration 6). Implementation proceeds one
+> beer with brewed/best-before dates, visible to nobody else, and the
+> iteration-5.5 quality backlog is closed. Next: a public profile and
+> cellar (iteration 6). Implementation proceeds one
 > issue at a time. See [docs/roadmap.md](docs/roadmap.md) for what gets
 > built and in which order.
 

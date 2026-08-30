@@ -44,6 +44,9 @@ class CatalogController {
 	/** A single page pulls at most this many rows, so no one response can return an unbounded slice of a table. */
 	private static final long MAX_PAGE_SIZE = 100;
 
+	/** Past this page index a request cannot land on real data at any allowed size — a larger value is malformed, not an empty page. */
+	private static final long MAX_PAGE = 10_000;
+
 	private final CatalogService catalog;
 
 	@GetMapping("/beers")
@@ -61,8 +64,8 @@ class CatalogController {
 			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal minAbv,
 			@Parameter(description = "Inclusive upper ABV bound, percent (0-" + MAX_ABV + ")")
 			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal maxAbv,
-			@Parameter(description = "Zero-based page index")
-			@RequestParam(defaultValue = "0") @Min(0) int page,
+			@Parameter(description = "Zero-based page index, 0-" + MAX_PAGE)
+			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_PAGE) int page,
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size,
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
@@ -82,8 +85,8 @@ class CatalogController {
 	@GetMapping("/breweries")
 	@Operation(summary = "List breweries", description = "Paginate the brewery list, sorted by name.")
 	PageDto<BreweryDto> listBreweries(
-			@Parameter(description = "Zero-based page index")
-			@RequestParam(defaultValue = "0") @Min(0) int page,
+			@Parameter(description = "Zero-based page index, 0-" + MAX_PAGE)
+			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_PAGE) int page,
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size) {
 		return PageDto.from(catalog.listBreweries(PageRequest.of(page, size)).map(BreweryDto::from));
