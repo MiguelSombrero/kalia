@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-15
+- **Amended:** 2026-08-30 — the edit-time hook rejected below is adopted in
+  a narrower form, running the checkers rather than injecting rule text
+  ([ADR-0046](0046-edit-time-checks-and-one-verify-gate.md))
 
 ## Context
 
@@ -171,6 +174,18 @@ install. A third sibling costs less than a plugin in each toolchain.
   rejected above becomes the next thing to try. If instead the checker fires
   mostly on comments that turn out to be correct, the decidability test in
   Decision is wrong and the failing classes should become advisory.
+
+> **Amended 2026-08-30.** The hook is adopted, in a narrower form than the one
+> rejected here, and not because this trigger fired.
+> [ADR-0046](0046-edit-time-checks-and-one-verify-gate.md) runs the *checkers*
+> on `PostToolUse` and reports their output; it does not inject rule text,
+> which is what the cost-against-benefit rejection above was weighed against.
+> Two of that rejection's premises survive unchanged — a hook is still trusted
+> per machine, and hook-injected prose would still carry no more force than
+> the rule file. The third does not: "it runs a shell command on every edit"
+> was estimated, and the measurement is about 40 ms per edit. Nothing here
+> changes what ADR-0017 asks of a comment, or the two tests in Decision above
+> that decide which mechanism a rule earns.
 
 ## Evidence
 

@@ -444,7 +444,10 @@ a matching index row here (title and status), that it is also listed in
 does the same for task files against their iteration index
 ([ADR-0026](adr/0026-task-file-format.md)), and `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
-([ADR-0017](adr/0017-code-comment-policy.md)).
+([ADR-0017](adr/0017-code-comment-policy.md)). All three also run locally —
+inside `make verify`, and at edit time via a `PostToolUse` hook that reports
+the failure back to the agent without blocking
+([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
 ### Product and system architecture
 
@@ -504,3 +507,4 @@ reasons and its rate is worth watching independently
 | [ADR-0035](adr/0035-agent-context-layout.md) | Per-directory CLAUDE.md files are pointers to their README, not copies of it | accepted | 2026-08-09 |
 | [ADR-0038](adr/0038-in-repo-spec-driven-process.md) | Keep the in-repo spec-driven process rather than adopt GitHub Spec Kit | accepted | 2026-08-15 |
 | [ADR-0039](adr/0039-mechanisms-for-recurring-rule-violations.md) | A rule agents keep breaking earns a mechanism, not more prose | accepted | 2026-08-15 |
+| [ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md) | One verify gate, run at edit time as a report and at push time as a block | accepted | 2026-08-30 |

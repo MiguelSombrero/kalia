@@ -70,6 +70,10 @@ integration test.
 Use `clean` after changing `pom.xml` or a plugin: an incremental build can
 report success against stale `target/classes` output.
 
+Before pushing, run the whole gate rather than this suite alone: `make verify`
+from the repository root, or `make verify-fast` for the subset that needs no
+Docker ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
+
 `mvn verify` prints ~285 lines, mostly Spring context startup. To keep a
 green run cheap for an AI-agent session, filter it — this keeps every
 `Tests run:` count, so the run is still evidence:

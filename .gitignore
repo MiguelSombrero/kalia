@@ -23,6 +23,11 @@ build/
 # checkout each, never shared history
 .claude/worktrees/
 
+# Session checkpoint written before long or fanned-out work (ADR-0045) — the
+# resume point for an interrupted session, never part of the change it
+# describes
+.claude/session-checkpoint.md
+
 # AI-agent working docs (superpowers skill: brainstorming companion,
 # specs, implementation plans) — process scratch, not project
 # documentation. Durable design decisions belong in docs/ (ADRs,
