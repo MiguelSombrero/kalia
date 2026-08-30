@@ -1,6 +1,6 @@
 ---
 name: quality-sweep
-description: Runs a periodic, whole-codebase quality audit (architecture, documentation, code-quality, security) and appends a MoSCoW-categorized task list to docs/tasks/quality-backlog.md, opened as a PR. Product-owner-initiated only.
+description: Runs a periodic, whole-codebase quality audit (architecture, documentation, code-quality, security, process) and appends a MoSCoW-categorized task list to docs/tasks/quality-backlog.md, opened as a PR. Product-owner-initiated only.
 disable-model-invocation: true
 context: fork
 agent: general-purpose
@@ -15,7 +15,7 @@ process.
 ## 1. Checkpoint before the fan-out
 
 Write `.claude/session-checkpoint.md` first: the branch, the base ref, the
-four dimensions about to be dispatched, and the file each agent will write
+five dimensions about to be dispatched, and the file each agent will write
 its findings to. A sweep is the heaviest thing run here and the likeliest to
 meet a session limit mid-flight; the plan lives only in this conversation
 until it is on disk, and re-exploring is what resuming costs without it
@@ -25,7 +25,7 @@ Update it as each dimension returns.
 ## 2. Spawn subagents in parallel
 
 Use the Agent tool with `subagent_type: Explore` for each dimension below
-(read-only audits — findings only, no fixes). Launch all four in a single
+(read-only audits — findings only, no fixes). Launch all five in a single
 message, multiple tool calls. Each Explore agent starts cold with no
 memory of this conversation, so give it a full, self-contained prompt.
 
@@ -95,11 +95,62 @@ system exists), it's fine to report that as the finding — don't skip this
 dimension in advance of running it; let the subagent itself conclude
 there's nothing to report if that's true.
 
+**process-quality**
+The only dimension that audits how this repository works on itself rather
+than what it builds. Almost all of its scope is read by no other
+dimension: `.claude/` (skills, `rules/`, `settings.json`), `scripts/` and
+`scripts/hooks/`, the `Makefile`, `CLAUDE.md`, and the merged pull
+requests and commits since the previous sweep
+([ADR-0051](../../../docs/adr/0051-process-retrospection-belongs-to-the-sweep.md)).
+The one overlap is `docs/PULL_REQUEST_TEMPLATE.md`, which
+documentation-quality already reads for staleness — read it here only as a
+gate mechanism (what it makes happen, and whether that still holds), so
+the two dimensions do not report the same finding twice.
+
+Look for, in rough order of what has actually gone wrong here before:
+
+- **A load-bearing rule with nothing behind it.** ADR-0039's test: a rule
+  whose violation class is decidable from its own text but which no
+  checker, hook, glob-scoped rule file or `permissions.deny` entry
+  enforces — and which the history shows being violated anyway.
+- **A mechanism nothing runs, or that everyone has learned to ignore.** A
+  checker absent from `make verify` and from CI; a hook whose output is
+  routinely scrolled past; a skill step that gate reports keep recording as
+  skipped, which is a step designed wrong rather than a run of lapses.
+- **Cost out of proportion to what it catches** — a step, hook or document
+  whose per-task cost is paid every task for findings that arrive rarely
+  or never. ADR-0027's process-weight test applies to the process itself,
+  and the binding resource is the product owner's review attention.
+- **Recurring friction with no mechanism at all** — the same CI failure
+  hitting twice with no `docs/ci-playbook.md` entry, the same clarification
+  asked at the start of every task, re-exploration a checkpoint should have
+  spared.
+- **Drift inside the process documents** — `CLAUDE.md` over
+  [ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)'s
+  200-line budget or holding rationale an ADR should own, a skill step
+  contradicting a `CLAUDE.md` gate, a citation resolving to nothing.
+
+Two constraints on this dimension specifically, both from ADR-0051, and
+the prompt must carry them:
+
+- **Every finding cites recurrence or absence — never one session.** Two
+  or more occurrences in separate pull requests or commits, or a mechanism
+  that demonstrably does not exist for a rule the files state. A single
+  session's friction is an anecdote; a finding resting on one is out of
+  scope no matter how plausible it reads.
+- **A proposed skill, hook, script or command is a finding only when the
+  evidence names the recurring failure it would catch.** "A skill for X
+  would help" without that evidence is not a finding, and inventing one to
+  avoid returning an empty dimension is the specific failure this
+  dimension is most prone to. Reporting that the process looks sound is a
+  valid result.
+
 ## 3. Categorize and merge into the backlog
 
-Collect all findings from all four subagents. Categorize each MoSCoW-style:
+Collect all findings from all five subagents. Categorize each MoSCoW-style:
 
-- **MUST** — a real bug, drift that actively misleads, or a security gap
+- **MUST** — a real bug, drift that actively misleads, or a security gap;
+  for a process finding, a rule that is reaching merged code unenforced
 - **SHOULD** — a real improvement, not urgent
 - **COULD** — a nice-to-have, low-impact polish item
 

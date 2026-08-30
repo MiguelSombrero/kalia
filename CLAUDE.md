@@ -237,18 +237,22 @@ The gates themselves:
 
 ## Quality checks
 
-The `/quality-sweep` skill runs a periodic, whole-codebase audit —
-architecture, documentation, code quality, security — at a coarser grain than
-any single PR's diff can judge. Its mechanics live in the skill and in
+The `/quality-sweep` skill runs a periodic, whole-codebase audit — of the
+product and of this repository's own process — at a coarser grain than any
+single PR's diff can judge. Its mechanics live in the skill and in
 [the quality backlog](docs/tasks/quality-backlog.md)'s own header.
 
 **Product-owner-initiated only, and this is the part that cannot move into the
 skill:** it sets `disable-model-invocation`, so it is absent from an agent's
 skill list and cannot announce itself. An agent should proactively *suggest*
 running it at the start of a new iteration's first task, and never trigger it
-or lift a finding into an iteration on its own. A full four-dimension subagent
-review on every task before every PR stays **not adopted**
-([ADR-0027](docs/adr/0027-process-weight.md)).
+or lift a finding into an iteration on its own. **Not adopted:** a full
+four-dimension subagent review on every task before every PR — `/code-review`
+is a single reviewer and stays a gate
+([ADR-0027](docs/adr/0027-process-weight.md)); and per-task process
+retrospection — an agent never closes a task by mining its own session for
+tooling ideas, which is the sweep's `process-quality` dimension
+([ADR-0051](docs/adr/0051-process-retrospection-belongs-to-the-sweep.md)).
 
 ## Environment notes
 
