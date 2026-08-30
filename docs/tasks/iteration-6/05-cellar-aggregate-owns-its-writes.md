@@ -1,6 +1,6 @@
 # Task 05: The cellar aggregate owns its writes
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -97,41 +97,40 @@ it changed nothing.
   A comment kept because it looks careful, describing mechanics no longer
   reachable, is the drift [ADR-0017](../../adr/0017-code-comment-policy.md)
   exists to prevent.
+- **One pull request**, covering the aggregate boundary and the exception
+  typing together. They touch the same four files; splitting them rewrites
+  `CellarService` twice and halves the context each review has.
+- **`cellar` only.** `catalog`'s `Beer.create` / `Brewery.create` keep their
+  `Assert` → `IllegalArgumentException` shape and adopt this convention in
+  [iteration 8 task 02](../iteration-8/02-add-beer-api.md), when they gain
+  their first non-test caller. The ADR records that as the plan, so it reads
+  as a deferral rather than an oversight.
+- **`BottleRepository` is deleted.** The by-id ownership lookup becomes a
+  query on `EntryRepository` returning the entry that owns a given bottle
+  *for a given user id* — so the ownership guarantee stays a property of the
+  query, which is what the 404-not-403 constraint above actually protects. No
+  repository survives for a non-root entity, which is why the ArchUnit rule
+  below needs the fixture its acceptance criterion already anticipates.
+- **One exception type for a violated cellar rule, and it lives in `domain`.**
+  The package is forced, not chosen: `ArchitectureTest`'s
+  `domainDependsOnNoOuterLayer` forbids an entity from referencing an
+  `application` type, so a rule raised inside `Entry` cannot throw one.
+  `InvalidBottleException` moves next to the rules that raise it and
+  `CellarExceptionHandler` maps it to the same 400 with the same message —
+  the HTTP contract does not move.
+- **`Entry.updated_at` starts moving** when a bottle is added, edited or
+  removed ([task 06](06-entry-with-no-bottles.md) decides what the column
+  means). Routing writes through the root is what makes that natural, so it
+  lands here rather than being retrofitted.
+- The event support [task 07](07-cellar-domain-events.md) decides is built on
+  this task: its rule is only true if writes go through a `save` on the root.
+  Nothing about events is implemented here, but a restructure that leaves some
+  write path persisting by dirty checking alone would make task 07's decision
+  silently false.
 
 ## Open questions
 
-1. **What happens to `BottleRepository`?** Deleting it means the by-id
-   ownership lookup behind `updateBottle` and `removeBottle` has to be
-   expressed as a query returning the *entry* that owns a given bottle;
-   narrowing it to the read path keeps a repository for a non-root entity,
-   which is the thing being objected to, but keeps `listBottles` simple.
-   Making it package-private in `domain` is a third answer that stops the
-   application layer reaching it without deleting anything.
-2. **One exception type for a violated cellar rule, or several?** Today
-   `InvalidBottleException` covers every date and container-type rule at once,
-   and `CellarExceptionHandler` maps it to a 400 carrying the message. Several
-   types make the `ProblemDetail` distinguishable by the frontend and add a
-   class per rule; one keeps the API exactly as it is.
-3. **Does the type live in `domain` or stay in `application`?**
-   [ADR-0007](../../adr/0007-backend-package-structure.md) puts "exceptions
-   designed as API responses" in `application`, and every cellar exception is
-   there now. A rule violated inside an entity is arguably a domain concept
-   and belongs next to the rule; the cost is that a module's exceptions then
-   live in two packages.
-4. **Does `catalog` follow in the same PR?** `Beer.create` and
-   `Brewery.create` use the same `Assert` → `IllegalArgumentException` shape.
-   They are called from tests only today, and iteration 8
-   [task 02](../iteration-8/02-add-beer-api.md) makes them live. Doing both
-   now is one convention landing once; doing `catalog` later means the
-   convention already exists when the module that needs it arrives.
-5. **One PR or two?** The aggregate boundary and the exception typing are
-   independent decisions that happen to touch the same four files. Splitting
-   halves each review and rewrites `CellarService` twice.
-6. **Is a no-behaviour-change refactor of this size wanted at all right now,
-   or is it better placed after iteration 6 ships?** It is groundwork, not
-   something a user sees, and the argument for doing it before
-   [task 02](02-public-cellar-api.md) is that task 02 is another caller — the
-   product owner may weigh that differently.
+**None.**
 
 ## Acceptance criteria
 
@@ -148,6 +147,12 @@ it changed nothing.
 - [ ] A unit test asserts that a violated bottle rule arrives at the caller as
       the module's own type, with no `IllegalArgumentException` caught
       anywhere in `cellar.application`
+- [ ] No repository for `Bottle` remains anywhere in the tree — a grep finds
+      none, and `mvn clean verify` is green without one
+- [ ] Every write path ends in a `save` on the aggregate root rather than
+      relying on dirty checking, so [task 07](07-cellar-domain-events.md)'s
+      rule can hold — proven by a test that asserts the root is saved on the
+      `updateBottle` path, the one shaped that way today
 - [ ] An integration test still proves that removing one bottle neither loads
       the entry's whole collection nor issues two deletes — the two guarantees
       `CellarServiceIT`'s statistics-counting tests hold today. If the
@@ -177,3 +182,10 @@ The DDD review's other findings are [task 06](06-entry-with-no-bottles.md),
 [task 08](08-ubiquitous-language-glossary.md). Its recommendations against —
 framework-free domain classes and repository ports — are recorded in this
 task's Non-goals so they do not come back as review comments.
+
+Refined 2026-08-30 with iteration 6 as a batch
+([ADR-0047](../../adr/0047-refinement-is-batched-per-iteration.md)). Question
+6 — whether a no-behaviour-change refactor of this size is wanted before
+iteration 6 ships — was put to the product owner and answered yes, now, for
+the reason Why gives: every task after this one is another caller built on the
+current shape.

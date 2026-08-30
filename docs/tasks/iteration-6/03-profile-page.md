@@ -1,6 +1,6 @@
 # Task 03: Profile page and the visibility control
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -16,9 +16,10 @@ place they can find out that they already did.
 
 ## Scope
 
-A profile page for the signed-in user showing who they are in Kalia and whether
-their cellar is public, with the control to change it and a way to reach the
-public view of their own cellar.
+A profile page for the signed-in user at `/[locale]/profile`, showing who they
+are in Kalia and whether their cellar is public, with the control to change it
+and a link to the public view of their own cellar. Plus the header entry point
+that reaches it, replacing today's "Hello, {name}" greeting.
 
 ## Non-goals
 
@@ -51,32 +52,35 @@ public view of their own cellar.
 - **A failed visibility change must not leave the UI showing the new state.**
   An optimistic toggle that silently reverts on the server is the one bug here
   that tells a user their cellar is private when it is not.
+- **The control is a toggle that applies immediately**, with no confirmation
+  dialog either way. The state sentence beneath it always states what is true
+  now, and a failure surfaces as a toast *and* rolls the displayed state back.
+- **The copy is "Who can see your cellar?" with "Only me" and "Anyone with the
+  link"** — the second is literally true because a public cellar is never
+  indexed and there is no discovery
+  ([ADR-0050](../../adr/0050-public-cellar-addressing.md),
+  [task 02](02-public-cellar-api.md) Non-goals). Wording that promises less
+  than the system does, or more, is the failure here. Finnish is written
+  alongside it, not translated from it
+  ([ADR-0011](../../adr/0011-i18next-localization.md)).
+- **The public-cellar link appears only while the cellar is public.** A
+  private cellar answers 404 for its owner too
+  ([ADR-0050](../../adr/0050-public-cellar-addressing.md)), so offering the
+  link while private would link to a not-found page.
+- The link points at the locale-less `/cellars/{username}`, which is the URL
+  the page offers for copying
+  ([ADR-0050](../../adr/0050-public-cellar-addressing.md)).
+- **The header renders an account icon and the username as one link** to
+  `/[locale]/profile`, replacing "Hello, {name}"; one accessible name covers
+  the pair, and the username stays visible so the signed-in account is
+  readable at a glance. `SiteNav` keeps its three items.
+- The page shows the username, the control and that link, and **no cellar
+  summary** — a second place cellar totals are rendered drifts from the cellar
+  page the first time either changes.
 
 ## Open questions
 
-The product owner wants a say in the wording and the interaction here, because
-this control is about someone's privacy.
-
-1. **What is the control?** A toggle that applies immediately, or a form with
-   a save button? Immediate is fewer clicks; a save button makes a deliberate
-   act deliberate.
-2. **Does making a cellar public need a confirmation step?** It is the moment
-   private data becomes readable by strangers. Confirming is friction on a
-   reversible action; not confirming makes it a single mis-click.
-3. **What exactly does the copy say?** "Public cellar" understates it if the
-   page is also indexable. This wording is what a user's understanding of the
-   feature is built on, so it wants writing rather than defaulting.
-4. **How does a user see their public cellar as others see it** — a link on the
-   profile, a preview mode, or nothing? Related to
-   [task 02](02-public-cellar-api.md) question 4.
-5. **Where does the profile live in the navigation**, and what is its URL for
-   the owner — `/profile`, or the same public URL as everyone else's?
-6. **What does the page show besides the toggle?** A user's own cellar summary
-   is the obvious candidate, and duplicating the cellar page is the obvious
-   risk.
-
-An answer of "your call" to any of these is a fine answer and turns into a
-constraint above.
+**None.**
 
 ## Acceptance criteria
 
@@ -87,6 +91,11 @@ constraint above.
       confirmed to fail against an optimistic update that does not roll back
 - [ ] A signed-out visitor is invited to sign in rather than shown an error or
       an empty profile — component test
+- [ ] The public-cellar link is absent while the cellar is private and present
+      once it is public — component test for both states
+- [ ] The header's profile link carries an accessible name naming both the
+      destination and the user, and reaches `/[locale]/profile` — component
+      test plus `jest-axe`
 - [ ] Playwright covers the control itself and stops there: sign in → toggle
       to public → **reload** → it is still public → toggle back. The reload is
       the part worth the browser, because a toggle that updates only local
@@ -102,3 +111,8 @@ constraint above.
 The iteration's end-to-end journey spec belongs to
 [task 04](04-public-cellar-page.md), not here — this task's browser coverage
 stops at the visibility control.
+
+Refined 2026-08-30 with iteration 6 as a batch
+([ADR-0047](../../adr/0047-refinement-is-batched-per-iteration.md)). The
+product owner asked for wording and interaction to be settled deliberately;
+both are Constraints above rather than a reviewer's call.

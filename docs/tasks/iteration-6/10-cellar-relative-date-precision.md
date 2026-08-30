@@ -1,6 +1,6 @@
 # Task 10: Multi-unit precision for cellar relative dates
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -52,29 +52,42 @@ Two-unit relative-date precision for `formatRelativeDate`, in both locales
   it once at the end — or hand-writing the connector and unit words per
   locale, giving up some of what `Intl.RelativeTimeFormat` currently
   handles for free.
+- **The rule is: keep the top two units, and drop the second when it rounds to
+  zero.** Years + months, months + days, days alone. The second unit never
+  reaches the next unit up — 11 months is its maximum — so the review's own
+  example, "3 years and 12 months ago", is unreachable by construction; it was
+  arithmetically impossible as written and is not what ships. Exactly three
+  years renders "brewed 3 years ago", not "3 years and 0 months ago". One rule
+  at every magnitude, with no threshold to remember.
+- **The phrase is composed from two `formatToParts()` calls**, not
+  hand-written per locale: format each unit, drop the direction word from the
+  first, join with the locale's connector, and let the second call's direction
+  word close the phrase. This is what keeps Finnish correct without
+  hand-written case rules — `Intl` already inflects for direction, giving
+  "3 vuotta … sitten" in the past and "3 vuoden … päästä" in the future, so
+  composition yields "3 vuotta ja 2 kuukautta sitten" and "3 vuoden ja 2
+  kuukauden päästä". Only the connector ("and" / "ja") is authored per locale
+  ([ADR-0011](../../adr/0011-i18next-localization.md)).
+- The composition depends on `formatToParts` part ordering, so the tests pin
+  it per locale rather than trusting it.
 
 ## Open questions
 
-- **Functional scope and behaviour:** does two-unit precision apply only to
-  spans ≥ 1 year (years + months), or does every magnitude get a second
-  unit (e.g. months + days for a shorter span, not just "2 months ago")?
-- **Domain and data model:** rounding/cutoff for the second unit — always
-  "keep the top two units, drop the rest," or does the second unit
-  disappear once it rounds to 0 (e.g. exactly 3 years renders as "3 years
-  ago", not "3 years and 0 months ago")?
-- **Interaction and UX flow, including wording a user will read:** exact
-  phrasing and connector word per locale — "years and months" in English;
-  the Finnish equivalent, including the correct partitive plural when both
-  units appear together.
-- **Constraints and trade-offs:** implementation approach given
-  `Intl.RelativeTimeFormat`'s single-unit limitation above — compose from
-  `formatToParts()`, or hand-write the phrase per locale.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A bottle whose brewed or best-before date is at least a year away
-      renders with two-unit precision (e.g. "brewed 3 years and 12 months
-      ago") in both locales — `formatRelativeDate.test.ts`
+- [ ] A span of years renders with two-unit precision in both locales — e.g.
+      "brewed 3 years and 2 months ago" / "brewed 3 vuotta ja 2 kuukautta
+      sitten" — `formatRelativeDate.test.ts`
+- [ ] A whole number of units renders with one unit and no zero second unit —
+      exactly three years is "3 years ago", and the second unit never reaches
+      the next unit up — `formatRelativeDate.test.ts`, with a case at each
+      magnitude boundary
+- [ ] A future date renders in the correct Finnish case — "3 vuoden ja 2
+      kuukauden päästä" rather than the past-tense inflection —
+      `formatRelativeDate.test.ts`, which is the case a composition bug
+      produces silently
 - [ ] `npm test` is green
 
 ## Notes
@@ -86,3 +99,6 @@ the single-unit format that task shipped was flagged as insufficient
 precision for tracking a cellar-worthy beer's age. The product owner asked
 for this to become its own iteration-6 task, with the open questions above
 settled during refinement, rather than a quick in-PR fix.
+
+Refined 2026-08-30 with iteration 6 as a batch
+([ADR-0047](../../adr/0047-refinement-is-batched-per-iteration.md)).

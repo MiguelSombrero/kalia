@@ -63,6 +63,14 @@ API, and delegating account creation entirely to an external provider
 - The Keycloak `sub` stays the canonical user identifier
   ([ADR-0028](../../adr/0028-resource-server-and-current-user.md)). Nothing
   here changes the backend.
+- **The username a new account gets is Kalia's permanent public identity for
+  that person** ([ADR-0049](../../adr/0049-profile-module-and-public-identity.md),
+  decided during iteration 6's refinement on 2026-08-30 — the caveat
+  [this iteration's index](../iteration-6.5.md) records). `preferred_username`
+  is copied once into the profile and never changes, and it is the URL segment
+  a public cellar is addressed by. So the sign-up form's question 2 is not
+  free: whatever it collects has to be something a stranger can reasonably see
+  and a person can live with permanently.
 - Registration settings are realm configuration, so they inherit
   [task 03](03-prevent-realm-configuration-drift.md)'s answer, and any
   environment-varying value inherits

@@ -53,6 +53,18 @@ nobody has committed to becomes a constraint anyway.
   per bottle, owned by an entry per (user, catalog beer); quantity is always
   derived, never a stored count.
 
+## Profiles and public cellars
+
+What a user is to other users, and how the one thing they can publish is
+addressed. Read as a pair: the first decides the identifier, the second
+decides the URL built on it.
+
+- [ADR-0049](0049-profile-module-and-public-identity.md) — a `profile` module
+  holds the user-facing identity: the Keycloak username copied once and
+  immutable, plus a cellar-visibility flag defaulting to private.
+- [ADR-0050](0050-public-cellar-addressing.md) — a public cellar lives at one
+  locale-less URL, answers 404 when it is not public, and is never indexed.
+
 ## Backend structure and conventions
 
 - [ADR-0007](0007-backend-package-structure.md) — DDD-lite layers

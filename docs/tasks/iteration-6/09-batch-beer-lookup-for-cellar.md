@@ -1,6 +1,6 @@
 # Task 09: Batch beer lookup for the cellar page
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -55,33 +55,32 @@ this endpoint.
   `lib/api/generated/catalog/**` from the cellar feature
   ([ADR-0012](../../adr/0012-orval-api-client.md)'s import-boundary rule);
   no new cross-feature import.
+- **The endpoint is `GET /api/v1/beers/batch?ids=…&ids=…`**, a repeated query
+  parameter binding to a `List<UUID>`, answering a bare `BeerSummaryDto[]`.
+  Bare rather than the `PageDto` envelope `GET /beers` uses: there is no
+  pagination here, so the envelope's `totalPages` and `page` would be fiction.
+  A dedicated path rather than `ids` on `/beers`, so `ids` never has to be
+  made mutually exclusive with every search and pagination parameter.
+- **An id matching nothing is omitted from the response**, not returned as a
+  null. The cellar page already handles a beer it cannot resolve — iteration 5
+  [task 11](../iteration-5/11-cellar-page.md)'s single-`getBeer` 404 path — so
+  omission reuses that path instead of adding a second one beside it.
+- **Capped at 100 ids; over the cap it answers 400**, never a silent
+  truncation. The bound is required by
+  [ADR-0042](../../adr/0042-bounded-request-parameters.md) and the cap is what
+  keeps the URL inside ordinary length limits.
+- **`getBeer` stays.** The beer detail page needs `BeerDetailsDto`, a
+  different and fuller shape, so retiring it would either cost that page
+  fields or make this endpoint serve two shapes.
+- Enriching `GET /api/v1/cellar` server-side is **not** the answer here, and
+  not an open question: [architecture.md §4](../../architecture.md)'s
+  client-agnostic-resources convention names the cellar endpoint as exactly
+  this temptation. Assembling two resources into one view stays the client's
+  job.
 
 ## Open questions
 
-- **Functional scope and behaviour:** should the endpoint return an empty
-  array for an id that doesn't match anything, or omit it from the
-  response? Cellar's caller needs to know the difference either way (a
-  stale `beerId` pointing at a removed catalog beer is possible — see
-  iteration-5 task 11's own handling of a single `getBeer` 404).
-- **Domain and data model:** what response shape — a bare array of
-  `BeerSummaryDto` (matching what the cellar page actually needs), or the
-  same `PageDto`-style envelope `GET /beers` already uses? A bare array has
-  no pagination metadata to keep in sync with a request that has no
-  pagination.
-- **Integrations and external dependencies:** request shape — a repeated
-  query parameter (`?ids=a&ids=b`), a comma-separated one (`?ids=a,b`), or
-  a POST body? Affects both the OpenAPI spec and how large a cellar can get
-  before hitting a URL-length limit.
-- **Edge cases and failure handling:** is there a cap on how many ids one
-  request may carry, and what happens past it (400, or silently truncated)?
-- **Constraints and trade-offs:** does this replace `getBeer(id)` entirely
-  (a single-id call becomes a one-element batch call), or do both endpoints
-  stay, with `getBeer` kept for the beer detail page
-  (`app/[locale]/beers/[id]/page.tsx`) and the batch endpoint added
-  alongside it?
-- **Terminology consistency:** endpoint name and path — e.g. `GET
-  /api/v1/beers?ids=...` (reusing the existing `/beers` route) versus a
-  dedicated `GET /api/v1/beers/batch`.
+**None.**
 
 ## Acceptance criteria
 
@@ -91,6 +90,11 @@ this endpoint.
       call count for a multi-entry cellar
 - [ ] The new endpoint returns the correct beer for each requested id and
       is documented in the OpenAPI spec — backend integration test (`*IT`)
+- [ ] An id matching no beer is omitted rather than returned as null, and the
+      cellar page renders the remaining entries — backend `*IT` for the
+      omission, frontend test for the page
+- [ ] More than 100 ids answers 400 rather than truncating — backend `*IT`,
+      confirmed to fail against an unbounded implementation
 - [ ] `npm run generate:api` regenerates `lib/api/generated/` with no
       uncommitted drift — CI's `api-client-drift` job stays green
 
@@ -100,3 +104,6 @@ Raised as a code-review finding on
 [iteration-5 task 11](../iteration-5/11-cellar-page.md), which shipped the
 N+1 call as a known, documented trade-off rather than block on a backend
 change out of that task's scope.
+
+Refined 2026-08-30 with iteration 6 as a batch
+([ADR-0047](../../adr/0047-refinement-is-batched-per-iteration.md)).

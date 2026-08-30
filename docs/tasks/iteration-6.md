@@ -13,16 +13,16 @@ cellar exists at all beyond what A's profile already reveals.
 
 | ID | Task | Status |
 |---|---|---|
-| [05](iteration-6/05-cellar-aggregate-owns-its-writes.md) | The cellar aggregate owns its writes | needs-refinement |
-| [06](iteration-6/06-entry-with-no-bottles.md) | What a cellar entry with no bottles is | needs-refinement |
-| [01](iteration-6/01-profile-and-visibility.md) | User profile and cellar visibility | needs-refinement |
-| [02](iteration-6/02-public-cellar-api.md) | Public cellar read API | needs-refinement |
-| [03](iteration-6/03-profile-page.md) | Profile page and the visibility control | needs-refinement |
-| [04](iteration-6/04-public-cellar-page.md) | Public cellar page | needs-refinement |
-| [07](iteration-6/07-cellar-domain-events.md) | Where a cellar's domain events are registered | needs-refinement |
-| [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | needs-refinement |
-| [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | needs-refinement |
-| [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | needs-refinement |
+| [05](iteration-6/05-cellar-aggregate-owns-its-writes.md) | The cellar aggregate owns its writes | refined |
+| [06](iteration-6/06-entry-with-no-bottles.md) | What a cellar entry with no bottles is | refined |
+| [01](iteration-6/01-profile-and-visibility.md) | User profile and cellar visibility | refined |
+| [02](iteration-6/02-public-cellar-api.md) | Public cellar read API | refined |
+| [03](iteration-6/03-profile-page.md) | Profile page and the visibility control | refined |
+| [04](iteration-6/04-public-cellar-page.md) | Public cellar page | refined |
+| [07](iteration-6/07-cellar-domain-events.md) | Where a cellar's domain events are registered | refined |
+| [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | refined |
+| [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |
+| [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -41,7 +41,16 @@ position is not ([template.md](template.md)).
 
 This is the first iteration where getting it wrong exposes someone's data
 rather than merely breaking a page, so tasks 01 and 02 carry the visibility
-rule between them and task 02 owns proving it.
+rule between them and task 02 owns proving it. Two ADRs written during
+refinement bind that pair and the two pages built on them:
+[ADR-0049](../adr/0049-profile-module-and-public-identity.md) decides what a
+user is to other users, and
+[ADR-0050](../adr/0050-public-cellar-addressing.md) decides how a public
+cellar is addressed and what it may reveal when it is not public.
+
+Task 06 gained a dependent: it lands before [task 02](iteration-6/02-public-cellar-api.md)
+so the public read never has to decide what a zero-quantity entry is, and its
+table position already reflects that.
 
 The end-to-end journey in "Done when" is an acceptance criterion of
 [task 04](iteration-6/04-public-cellar-page.md), the last task it depends on —
