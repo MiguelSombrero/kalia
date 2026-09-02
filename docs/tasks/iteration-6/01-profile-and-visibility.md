@@ -1,6 +1,6 @@
 # Task 01: User profile and cellar visibility
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -66,23 +66,23 @@ Visibility defaults to private.
 
 ## Acceptance criteria
 
-- [ ] A signed-in user has a profile without ever having filled in a form, and
+- [x] A signed-in user has a profile without ever having filled in a form, and
       it is the same profile across sessions — integration test signing in
       twice
-- [ ] A profile's username does not change when the same subject presents a
+- [x] A profile's username does not change when the same subject presents a
       token carrying a different `preferred_username` — integration test,
       confirmed to fail against an implementation that refreshes it
-- [ ] `profile` verifies as a Modulith module depending on no other module —
+- [x] `profile` verifies as a Modulith module depending on no other module —
       `ModularityTest`
-- [ ] A profile's cellar visibility defaults to private, and a user with no
+- [x] A profile's cellar visibility defaults to private, and a user with no
       profile row at all reads as private rather than throwing or defaulting
       open — unit test for the second case, confirmed to fail against an
       implementation that assumes the row exists
-- [ ] A user can change their own visibility and cannot change anyone else's —
+- [x] A user can change their own visibility and cannot change anyone else's —
       integration test covering both, the second confirmed to fail against an
       implementation trusting a caller-supplied id
-- [ ] `mvn clean verify` is green; `ModularityTest` and `ArchitectureTest` pass
-- [ ] `docs/architecture.md` gains the `profile` module row, the profile's
+- [x] `mvn clean verify` is green; `ModularityTest` and `ArchitectureTest` pass
+- [x] `docs/architecture.md` gains the `profile` module row, the profile's
       shape and the visibility rule in this task's PR
 
 ## Notes
