@@ -16,7 +16,7 @@ class BottleTest {
 		LocalDate tomorrow = LocalDate.now().plusDays(1);
 
 		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow, null))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
@@ -31,7 +31,7 @@ class BottleTest {
 		LocalDate date = LocalDate.now().minusMonths(1);
 
 		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, date, date))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
@@ -40,7 +40,7 @@ class BottleTest {
 		LocalDate bestBefore = brewed.minusDays(1);
 
 		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
@@ -112,7 +112,7 @@ class BottleTest {
 		LocalDate tomorrow = LocalDate.now().plusDays(1);
 
 		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, tomorrow, null))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test

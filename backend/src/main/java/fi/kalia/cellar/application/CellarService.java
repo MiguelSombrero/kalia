@@ -2,7 +2,6 @@ package fi.kalia.cellar.application;
 
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.cellar.domain.Bottle;
-import fi.kalia.cellar.domain.BottleRepository;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
@@ -22,74 +21,41 @@ public class CellarService {
 
 	private final EntryRepository entries;
 
-	private final BottleRepository bottles;
-
 	private final CatalogApi catalog;
 
 	public List<EntrySummary> listEntries(UUID userId) {
 		return entries.findSummariesByUserId(userId);
 	}
 
-	/** Takes {@code userId} for the same reason {@link #removeBottle} does: an entry belonging to someone else must read as not found, never as forbidden. */
 	public List<Bottle> listBottles(UUID userId, UUID entryId) {
 		Entry entry = entries.findByIdAndUserId(entryId, userId)
 				.orElseThrow(() -> new EntryNotFoundException(entryId));
-		return bottles.findByEntryIdOrderByCreatedAt(entry.getId());
+		return entry.getBottles();
 	}
 
-	/**
-	 * Do not persist newly created bottles by calling {@code
-	 * entries.save(entry)} instead: once {@code entry} is already managed,
-	 * Spring Data routes {@code save} through {@code EntityManager.merge},
-	 * which cascades to a transient child by copying it into a new managed
-	 * instance — the bottle references returned to the caller would keep a
-	 * null id even though rows were inserted.
-	 */
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = entryFor(userId, beerId);
-		List<Bottle> created = createBottles(entry, quantity, containerType, brewedDate, bestBeforeDate);
-		return bottles.saveAll(created);
+		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
+		return entries.save(entry).lastBottles(quantity);
 	}
 
-	/** See {@link #removeBottle} for why ownership is checked through {@code userId}, not after loading by id alone. */
 	public Bottle updateBottle(UUID userId, UUID bottleId, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
-		Bottle bottle = findOwnedBottle(userId, bottleId);
-		try {
-			bottle.update(containerType, brewedDate, bestBeforeDate);
-		} catch (IllegalArgumentException e) {
-			throw new InvalidBottleException(e.getMessage(), e);
-		}
-		return bottle;
+		Entry entry = ownerOf(userId, bottleId);
+		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate);
+		entries.save(entry);
+		return updated;
 	}
 
-	// Isolated here, not in addBottles, so an unrelated persistence-layer
-	// IllegalArgumentException is never misreported as an invalid bottle.
-	private static List<Bottle> createBottles(Entry entry, int quantity, ContainerType containerType,
-			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
-		try {
-			return entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
-		} catch (IllegalArgumentException e) {
-			throw new InvalidBottleException(e.getMessage(), e);
-		}
-	}
-
-	// Deletes bottle explicitly, not just via Entry.removeBottle's cascade:
-	// on a fresh request entry.getBottles() isn't loaded, so Hibernate can't
-	// cascade it. Calling both is safe — deleting an already-removed entity
-	// is a no-op.
 	public void removeBottle(UUID userId, UUID bottleId) {
-		Bottle bottle = findOwnedBottle(userId, bottleId);
-		bottle.getEntry().removeBottle(bottle);
-		bottles.delete(bottle);
+		Entry entry = ownerOf(userId, bottleId);
+		entry.removeBottle(bottleId);
+		entries.save(entry);
 	}
 
-	// Reports another user's bottle as not found, not forbidden, so a caller
-	// can't enumerate ids by a different error. Shared to keep the check in one place.
-	private Bottle findOwnedBottle(UUID userId, UUID bottleId) {
-		return bottles.findById(bottleId)
-				.filter(b -> b.getEntry().getUserId().equals(userId))
+	private Entry ownerOf(UUID userId, UUID bottleId) {
+		return entries.findByBottleIdAndUserId(bottleId, userId)
 				.orElseThrow(() -> new BottleNotFoundException(bottleId));
 	}
 
@@ -101,7 +67,7 @@ public class CellarService {
 					if (!catalog.beerExists(beerId)) {
 						throw new BeerNotFoundException(beerId);
 					}
-					return entries.save(Entry.create(userId, beerId));
+					return Entry.create(userId, beerId);
 				});
 	}
 

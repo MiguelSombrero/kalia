@@ -52,6 +52,10 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0034](0034-cellar-two-level-bottle-model.md) — the cellar holds one row
   per bottle, owned by an entry per (user, catalog beer); quantity is always
   derived, never a stored count.
+- [ADR-0052](0052-cellar-aggregate-owns-its-writes.md) — a bottle is created,
+  changed and removed only through its entry, every write ends in a `save` on
+  the root, and there is no `BottleRepository`; a violated bottle rule is a
+  `cellar.domain` exception from the point it is raised.
 
 ## Profiles and public cellars
 

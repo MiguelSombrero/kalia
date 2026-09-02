@@ -3,6 +3,7 @@ package fi.kalia.cellar.domain;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,15 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 
 	// Takes userId rather than checking existence first, so someone else's
 	// entry and a nonexistent one both read as "not found".
+	@EntityGraph(attributePaths = "bottles")
 	Optional<Entry> findByIdAndUserId(UUID id, UUID userId);
+
+	// The aggregate that owns a given bottle, resolved for the caller. Ownership
+	// is a property of this query — another user's bottle is indistinguishable
+	// from a missing one (architecture.md §4) — so never relax it to a
+	// load-by-id plus an after-the-fact check.
+	@Query("select b.entry from Bottle b where b.id = :bottleId and b.entry.userId = :userId")
+	Optional<Entry> findByBottleIdAndUserId(@Param("bottleId") UUID bottleId, @Param("userId") UUID userId);
 
 	// Quantity is derived by counting bottles, never stored (architecture.md
 	// §3); grouping here keeps it one query instead of one per entry.

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,7 +26,7 @@ class CellarPersistenceIT {
 	private EntryRepository entries;
 
 	@Autowired
-	private BottleRepository bottles;
+	private TestEntityManager testEntityManager;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -33,9 +34,10 @@ class CellarPersistenceIT {
 	@Test
 	void persistsAndReloadsAnEntryWithItsBottles() {
 		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		Bottle.create(entry, ContainerType.BOTTLE, LocalDate.now().minusMonths(6), null);
-		Bottle.create(entry, ContainerType.CAN, LocalDate.now().minusYears(1), LocalDate.now().plusMonths(6));
-		entries.save(entry);
+		entry.addBottles(1, ContainerType.BOTTLE, LocalDate.now().minusMonths(6), null);
+		entry.addBottles(1, ContainerType.CAN, LocalDate.now().minusYears(1), LocalDate.now().plusMonths(6));
+		entries.saveAndFlush(entry);
+		testEntityManager.clear();
 
 		Entry reloaded = entries.findById(entry.getId()).orElseThrow();
 
@@ -44,10 +46,10 @@ class CellarPersistenceIT {
 
 	@Test
 	void populatesCreatedAtAndUpdatedAtOnCreate() {
-		// saveAndFlush: @CreationTimestamp/@UpdateTimestamp generate at flush
-		// time, not when persist() is first called.
 		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		Bottle bottle = bottles.saveAndFlush(Bottle.create(entry, ContainerType.KEG, null, null));
+		entry.addBottles(1, ContainerType.KEG, null, null);
+		Entry saved = entries.saveAndFlush(entry);
+		Bottle bottle = saved.getBottles().getFirst();
 
 		assertThat(entry.getCreatedAt()).isNotNull();
 		assertThat(entry.getUpdatedAt()).isNotNull();
@@ -65,16 +67,25 @@ class CellarPersistenceIT {
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
+	// ADR-0034 evidence: removing a bottle deletes its row rather than changing
+	// a stored counter. Exercised through the aggregate now that the row's
+	// lifecycle belongs to Entry (ADR-0052).
 	@Test
 	void removingABottleDeletesItsRowRatherThanLeavingItOrphaned() {
-		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		// Saved through bottles, not entries: see CellarService.addBottle.
-		Bottle bottle = bottles.saveAndFlush(Bottle.create(entry, ContainerType.BOTTLE, null, null));
+		UUID userId = UUID.randomUUID();
+		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID()));
+		entry.addBottles(1, ContainerType.BOTTLE, null, null);
+		entries.saveAndFlush(entry);
+		testEntityManager.clear();
 
-		entry.removeBottle(bottle);
-		entries.flush();
+		Entry reloaded = entries.findByIdAndUserId(entry.getId(), userId).orElseThrow();
+		Bottle persisted = reloaded.getBottles().getFirst();
+		UUID bottleId = persisted.getId();
+		reloaded.removeBottle(persisted);
+		entries.saveAndFlush(reloaded);
 
-		assertThat(bottles.existsById(bottle.getId())).isFalse();
+		assertThat(reloaded.quantity()).isZero();
+		assertThat(entries.findByBottleIdAndUserId(bottleId, userId)).isEmpty();
 	}
 
 	@Test
@@ -100,10 +111,9 @@ class CellarPersistenceIT {
 	void findSummariesByUserIdReportsDerivedQuantityWithoutLoadingBottles() {
 		UUID userId = UUID.randomUUID();
 		Entry withTwoBottles = entries.save(Entry.create(userId, UUID.randomUUID()));
-		Bottle.create(withTwoBottles, ContainerType.BOTTLE, null, null);
-		Bottle.create(withTwoBottles, ContainerType.CAN, null, null);
+		withTwoBottles.addBottles(2, ContainerType.BOTTLE, null, null);
 		Entry empty = entries.save(Entry.create(userId, UUID.randomUUID()));
-		entries.saveAll(List.of(withTwoBottles, empty));
+		entries.saveAllAndFlush(List.of(withTwoBottles, empty));
 		entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID())); // another user
 
 		List<EntrySummary> summaries = entries.findSummariesByUserId(userId);
@@ -120,16 +130,22 @@ class CellarPersistenceIT {
 	}
 
 	@Test
-	void findByEntryIdOrderByCreatedAtReturnsOnlyThatEntrysBottles() {
-		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		Bottle first = bottles.saveAndFlush(Bottle.create(entry, ContainerType.BOTTLE, null, null));
-		Bottle second = bottles.saveAndFlush(Bottle.create(entry, ContainerType.CAN, null, null));
-		Entry otherEntry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		bottles.saveAndFlush(Bottle.create(otherEntry, ContainerType.KEG, null, null));
+	void anEntrysBottlesLoadOrderedByCreatedAt() {
+		UUID userId = UUID.randomUUID();
+		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID()));
+		entry.addBottles(1, ContainerType.BOTTLE, null, null);
+		entries.saveAndFlush(entry);
+		entry.addBottles(1, ContainerType.CAN, null, null);
+		entries.saveAndFlush(entry);
+		Entry other = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		other.addBottles(1, ContainerType.KEG, null, null);
+		entries.saveAndFlush(other);
+		testEntityManager.clear();
 
-		List<Bottle> result = bottles.findByEntryIdOrderByCreatedAt(entry.getId());
+		List<Bottle> bottles = entries.findByIdAndUserId(entry.getId(), userId).orElseThrow().getBottles();
 
-		assertThat(result).containsExactly(first, second);
+		assertThat(bottles).extracting(Bottle::getContainerType)
+				.containsExactly(ContainerType.BOTTLE, ContainerType.CAN);
 	}
 
 }

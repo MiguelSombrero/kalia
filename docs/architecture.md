@@ -120,7 +120,10 @@ the root-package API.
   seams. No cross-schema foreign keys between modules — cross-module references
   are by id only.
 - Spring Data JPA with rich domain entities where behavior exists; plain
-  records/projections for read models.
+  records/projections for read models. A non-root entity in an aggregate — a
+  `cellar.bottle` under its `entry` — is written only through its root and has
+  no repository of its own, enforced by ArchUnit
+  ([ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md)).
 - Flyway owns the schema, with migrations per module directory plus `common/`
   for cross-module infrastructure (layout and version-numbering rules:
   [backend/README.md](../backend/README.md) database migrations). Seed data
@@ -506,6 +509,7 @@ the failure back to the agent without blocking
 | [ADR-0045](adr/0045-brewery-list-paginates-in-application.md) | The brewery list paginates in the application, keeping its Java-side name sort | accepted | 2026-08-29 |
 | [ADR-0049](adr/0049-profile-module-and-public-identity.md) | A `profile` module owns who a user is to other users | accepted | 2026-08-30 |
 | [ADR-0050](adr/0050-public-cellar-addressing.md) | A public cellar has one locale-less URL and is indistinguishable from nothing when private | accepted | 2026-08-30 |
+| [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
 
 ### Engineering process and documentation
 

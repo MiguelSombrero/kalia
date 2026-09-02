@@ -13,7 +13,7 @@ cellar exists at all beyond what A's profile already reveals.
 
 | ID | Task | Status |
 |---|---|---|
-| [05](iteration-6/05-cellar-aggregate-owns-its-writes.md) | The cellar aggregate owns its writes | refined |
+| [05](iteration-6/05-cellar-aggregate-owns-its-writes.md) | The cellar aggregate owns its writes | done |
 | [06](iteration-6/06-entry-with-no-bottles.md) | What a cellar entry with no bottles is | refined |
 | [01](iteration-6/01-profile-and-visibility.md) | User profile and cellar visibility | done |
 | [02](iteration-6/02-public-cellar-api.md) | Public cellar read API | refined |
