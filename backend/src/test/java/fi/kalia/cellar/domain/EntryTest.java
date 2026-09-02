@@ -70,7 +70,7 @@ class EntryTest {
 	@Test
 	void bulkAddRejectsANonPositiveQuantity() {
 		assertThatThrownBy(() -> entry.addBottles(0, ContainerType.BOTTLE, null, null))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test

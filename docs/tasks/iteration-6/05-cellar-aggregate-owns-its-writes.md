@@ -1,6 +1,6 @@
 # Task 05: The cellar aggregate owns its writes
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -134,40 +134,69 @@ it changed nothing.
 
 ## Acceptance criteria
 
-- [ ] `CellarApiIT` passes without a single edit — it asserts the HTTP
+- [x] `CellarApiIT` passes without a single edit — it asserts the HTTP
       contract independently of the internals being restructured, so an edit
       to it is a behaviour change that was not noticed
-- [ ] ADR-0034's three named evidence tests pass unchanged
-- [ ] An ArchUnit rule in `ArchitectureTest` fails the build when a bottle is
+      *(verified: `git diff origin/dev` touches nothing in `CellarApiIT`; 14
+      tests green)*
+- [x] ADR-0034's three named evidence tests pass unchanged *(the two `EntryTest`
+      ones are byte-identical; `CellarPersistenceIT.removingABottleDeletesItsRowRatherThanLeavingItOrphaned`
+      was rewritten to remove through the aggregate — its assertion, "no row
+      survives", is unchanged — on the product owner's explicit direction, and
+      ADR-0034's Evidence section is amended to match)*
+- [x] An ArchUnit rule in `ArchitectureTest` fails the build when a bottle is
       written to from outside the aggregate that owns it, and it was confirmed
       to reject a violation — either against today's `CellarService` or, if
       nothing production would ever trigger it, against a fixture in
       `ArchitectureRulesRejectViolationsTest`, which exists because a rule
       nothing triggers passes whether or not its condition is right
-- [ ] A unit test asserts that a violated bottle rule arrives at the caller as
+      *(`ownedEntitiesHaveNoRepositoryOfTheirOwn`; fixture
+      `OwnedChildEntityRepository`; `ArchitectureRulesRejectViolationsTest.aRepositoryForAnEntityOwnedViaManyToOne`
+      confirms it bites)*
+- [x] A unit test asserts that a violated bottle rule arrives at the caller as
       the module's own type, with no `IllegalArgumentException` caught
       anywhere in `cellar.application`
-- [ ] No repository for `Bottle` remains anywhere in the tree — a grep finds
+      *(`CellarServiceIT.rejectsADomainDateViolationAsInvalidBottle` and
+      `…OnUpdateAsInvalidBottle`; no `catch (IllegalArgumentException` remains
+      in `cellar.application`)*
+- [x] No repository for `Bottle` remains anywhere in the tree — a grep finds
       none, and `mvn clean verify` is green without one
-- [ ] Every write path ends in a `save` on the aggregate root rather than
+      *(`BottleRepository.java` deleted; `grep -r BottleRepository backend/src`
+      is empty; `make backend-verify` green)*
+- [x] Every write path ends in a `save` on the aggregate root rather than
       relying on dirty checking, so [task 07](07-cellar-domain-events.md)'s
       rule can hold — proven by a test that asserts the root is saved on the
       `updateBottle` path, the one shaped that way today
-- [ ] An integration test still proves that removing one bottle neither loads
+      *(`CellarServiceIT.updateBottleSavesThroughTheAggregateRoot`:
+      `verify(entries).save(any(Entry.class))`)*
+- [x] An integration test still proves that removing one bottle neither loads
       the entry's whole collection nor issues two deletes — the two guarantees
       `CellarServiceIT`'s statistics-counting tests hold today. If the
       restructure makes either unreachable, the PR says which and why, and the
       test is deleted rather than left passing vacuously
-- [ ] Ownership is still proven: a test confirms a bottle and an entry
+      *(the "one delete" guarantee is kept as
+      `CellarServiceIT.removingABottleIssuesExactlyOneDelete`; the
+      "no whole-collection load" guarantee is now unreachable — routing removal
+      through the aggregate root loads the aggregate — so its test was deleted,
+      with the reason recorded in the PR and in [ADR-0052](../../adr/0052-cellar-aggregate-owns-its-writes.md))*
+- [x] Ownership is still proven: a test confirms a bottle and an entry
       belonging to another user answer 404 and not 403, and it was confirmed
       to fail against an implementation that loads by id and checks afterwards
-- [ ] `mvn clean verify` is green; `ArchitectureTest` and `ModularityTest`
-      pass
-- [ ] An ADR records the rule and what the rejected alternative would have
+      *(`CellarApiIT.aRequestCarryingUserAsTokenGets404NeverForbiddenForUserBsEntryOrBottle`,
+      unchanged; a post-load check that answered 403 would fail its
+      `isNotFound()` assertions)*
+- [x] `mvn clean verify` is green; `ArchitectureTest` and `ModularityTest`
+      pass *(backend half: `make backend-verify` green from clean; frontend
+      untouched — see PR test-plan for the parts not run locally)*
+- [x] An ADR records the rule and what the rejected alternative would have
       cost, and `node scripts/check-adrs.mjs` passes; ADR-0007 gains a pointer
       to it rather than being rewritten
-- [ ] Every comment the restructure makes unnecessary is gone, and each one
+      *([ADR-0052](../../adr/0052-cellar-aggregate-owns-its-writes.md);
+      ADR-0007 gains a fourth `Amended` line and nothing else; `check-adrs` OK)*
+- [x] Every comment the restructure makes unnecessary is gone, and each one
       kept is kept because the mechanics it describes are still reachable
+      *(the four long comments and two exception-renaming `try/catch` blocks
+      named in Why are gone; `node scripts/check-comments.mjs` OK)*
 
 ## Notes
 

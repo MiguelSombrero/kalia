@@ -9,12 +9,15 @@ import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.conditions.ArchConditions;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.repository.Repository;
 import org.springframework.security.config.Customizer;
@@ -80,6 +83,10 @@ class ArchitectureTest {
 			.should().resideInAPackage(BASE_PACKAGE + ".*.domain..")
 			.because("repositories belong to the domain layer (ADR-0007)")
 			.allowEmptyShould(false);
+
+	@ArchTest
+	static final ArchRule ownedEntitiesHaveNoRepositoryOfTheirOwn =
+			ownedEntitiesHaveNoRepositoryOfTheirOwn(BASE_PACKAGE);
 
 	// allowEmptyShould(false) turns an absent chain into a failure instead of
 	// a vacuous pass — otherwise deleting it opens every endpoint unnoticed.
@@ -159,6 +166,39 @@ class ArchitectureTest {
 				.because("a module-root API reaches domain through application, "
 						+ "like every other class in the module: web → application → domain (ADR-0007)")
 				.allowEmptyShould(true);
+	}
+
+	// A bottle is created, changed and removed only through the entry that owns
+	// it (ADR-0052): an entity a @OneToMany with orphan removal owns is reached
+	// through that aggregate root, the only side with a repository. No production
+	// class violates this, so ArchitectureRulesRejectViolationsTest points it at
+	// a fixture. Parameterised for the reason {@link #domainDependsOnNoOuterLayer(String)} gives.
+	static ArchRule ownedEntitiesHaveNoRepositoryOfTheirOwn(String basePackage) {
+		return noClasses()
+				.that().areAssignableTo(Repository.class)
+				.and().resideInAPackage(basePackage + "..")
+				.should().dependOnClassesThat(anEntityOwnedViaManyToOne())
+				.because("an owned entity is written through its aggregate root, not its own repository (ADR-0052)")
+				.allowEmptyShould(true);
+	}
+
+	private static DescribedPredicate<JavaClass> anEntityOwnedViaManyToOne() {
+		return new DescribedPredicate<>("an entity a @OneToMany aggregate root owns via orphan removal") {
+			@Override
+			public boolean test(JavaClass target) {
+				return target.isAnnotatedWith(Entity.class)
+						&& target.getAllFields().stream()
+								.filter(field -> field.isAnnotatedWith(ManyToOne.class))
+								.map(JavaField::getRawType)
+								.anyMatch(ArchitectureTest::ownsChildrenByOrphanRemoval);
+			}
+		};
+	}
+
+	private static boolean ownsChildrenByOrphanRemoval(JavaClass parent) {
+		return parent.getAllFields().stream()
+				.filter(field -> field.isAnnotatedWith(OneToMany.class))
+				.anyMatch(field -> field.getAnnotationOfType(OneToMany.class).orphanRemoval());
 	}
 
 	private static DescribedPredicate<JavaClass> dependOnClassesIn(String packageIdentifier) {

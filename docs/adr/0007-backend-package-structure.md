@@ -19,6 +19,11 @@
   rules only ever saw classes inside `.domain`/`.application`/`.web`, so
   `CatalogApi` injecting `BeerRepository` straight in was invisible to them
   (iteration 5.5 task 06)
+- **Amended:** 2026-09-02 by [ADR-0052](0052-cellar-aggregate-owns-its-writes.md) —
+  a further `ArchitectureTest` rule, `ownedEntitiesHaveNoRepositoryOfTheirOwn`,
+  keeps a Spring Data repository off an entity that a `@OneToMany` with orphan
+  removal owns, so a non-root part of an aggregate has no repository of its own
+  (iteration 6 task 05)
 
 ## Context
 

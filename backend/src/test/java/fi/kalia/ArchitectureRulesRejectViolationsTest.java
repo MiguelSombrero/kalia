@@ -38,6 +38,12 @@ class ArchitectureRulesRejectViolationsTest {
 		assertRejects(ArchitectureTest.onlyIdentityConfiguresWebSecurity, "StraySecurityConfig");
 	}
 
+	@Test
+	void aRepositoryForAnEntityOwnedViaManyToOne() {
+		assertRejects(ArchitectureTest.ownedEntitiesHaveNoRepositoryOfTheirOwn(FIXTURE),
+				"OwnedChildEntityRepository");
+	}
+
 	// Pins allowEmptyShould(false): dropping it turns "the chain was deleted"
 	// from a failure into a pass, and no fixture can stand in for an empty codebase.
 	@Test

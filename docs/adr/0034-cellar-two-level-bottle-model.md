@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-09
+- **Amended:** 2026-09-02 by [ADR-0052](0052-cellar-aggregate-owns-its-writes.md) —
+  the third evidence test below exercises removal through the `Entry` aggregate
+  now that `BottleRepository` is gone; the invariant it pins is unchanged
 
 ## Context
 
@@ -90,4 +93,7 @@ The invariant is pinned by tests that would fail against a `quantity` column:
 `EntryTest.removingABottleReducesQuantityWithoutAnyStoredCounter`,
 `EntryTest.bulkAddCreatesThatManyIndependentRows`, and
 `CellarPersistenceIT.removingABottleDeletesItsRowRatherThanLeavingItOrphaned`,
-which asserts the row itself is gone rather than a counter having changed.
+which asserts the row itself is gone rather than a counter having changed. The
+third removes the bottle through the `Entry` aggregate since
+[ADR-0052](0052-cellar-aggregate-owns-its-writes.md) — the assertion, that no
+row survives, is the same.

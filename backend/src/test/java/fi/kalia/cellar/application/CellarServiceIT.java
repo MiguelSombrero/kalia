@@ -2,6 +2,9 @@ package fi.kalia.cellar.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.verify;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.CatalogApi;
@@ -10,12 +13,13 @@ import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
 import fi.kalia.catalog.domain.BreweryRepository;
 import fi.kalia.cellar.domain.Bottle;
-import fi.kalia.cellar.domain.BottleRepository;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
 import fi.kalia.cellar.domain.EntrySummary;
+import fi.kalia.cellar.domain.InvalidBottleException;
 import jakarta.persistence.EntityManagerFactory;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +33,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -36,11 +41,10 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 class CellarServiceIT {
 
-	@Autowired
+	// Spied so updateBottleSavesThroughTheAggregateRoot can assert the write
+	// path ends in entries.save(root); every other test uses it as the real bean.
+	@MockitoSpyBean
 	private EntryRepository entries;
-
-	@Autowired
-	private BottleRepository bottles;
 
 	@Autowired
 	private BeerRepository beers;
@@ -60,7 +64,7 @@ class CellarServiceIT {
 
 	@BeforeEach
 	void setUp() {
-		service = new CellarService(entries, bottles, new CatalogApi(new CatalogService(beers, breweries)));
+		service = new CellarService(entries, new CatalogApi(new CatalogService(beers, breweries)));
 		beerId = beers.findAll().stream().findFirst().map(Beer::getId).orElseThrow();
 	}
 
@@ -99,42 +103,14 @@ class CellarServiceIT {
 
 		Entry afterRemoval = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow();
 		assertThat(afterRemoval.quantity()).isEqualTo(5);
-		assertThat(bottles.existsById(created.get(0).getId())).isFalse();
-		assertThat(bottles.existsById(created.get(1).getId())).isTrue();
+		assertThat(entries.findByBottleIdAndUserId(created.get(0).getId(), userId)).isEmpty();
+		assertThat(entries.findByBottleIdAndUserId(created.get(1).getId(), userId)).isPresent();
 	}
 
-	// Clearing the persistence context forces bottle.getEntry() back as an
-	// uninitialized proxy, matching a fresh HTTP request.
 	@Test
-	void removingABottleDoesNotLoadTheEntrysWholeBottleCollection() {
-		UUID userId = UUID.randomUUID();
-		List<Bottle> created = service.addBottles(userId, beerId, 6, ContainerType.BOTTLE, null, null);
-		UUID removedBottleId = created.get(0).getId();
-		testEntityManager.flush();
-		testEntityManager.clear();
-		Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
-		statistics.clear();
-
-		service.removeBottle(userId, removedBottleId);
-		testEntityManager.flush();
-
-		assertThat(statistics.getCollectionLoadCount())
-				.as("removing one bottle by id should not load the whole bottles collection")
-				.isZero();
-		assertThat(statistics.getEntityDeleteCount())
-				.as("the explicit repository delete and the orphan-removal cascade must not both fire")
-				.isEqualTo(1);
-		assertThat(bottles.existsById(removedBottleId)).isFalse();
-	}
-
-	// The other branch of Entry.removeBottle's isInitialized check: the
-	// collection is already loaded here.
-	@Test
-	void removingABottleFromAnAlreadyLoadedCollectionIssuesOnlyOneDelete() {
+	void removingABottleIssuesExactlyOneDelete() {
 		UUID userId = UUID.randomUUID();
 		List<Bottle> created = service.addBottles(userId, beerId, 3, ContainerType.BOTTLE, null, null);
-		Entry entry = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow();
-		assertThat(entry.quantity()).isEqualTo(3);
 		Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
 		statistics.clear();
 
@@ -142,7 +118,7 @@ class CellarServiceIT {
 		testEntityManager.flush();
 
 		assertThat(statistics.getEntityDeleteCount())
-				.as("the orphan-removal cascade and the explicit repository delete must not both fire")
+				.as("the orphan-removal cascade must fire once, not zero times and not twice")
 				.isEqualTo(1);
 	}
 
@@ -161,7 +137,7 @@ class CellarServiceIT {
 
 		assertThatThrownBy(() -> service.removeBottle(UUID.randomUUID(), bottle.getId()))
 				.isInstanceOf(BottleNotFoundException.class);
-		assertThat(bottles.existsById(bottle.getId())).isTrue();
+		assertThat(entries.findByBottleIdAndUserId(bottle.getId(), owner)).isPresent();
 	}
 
 	@Test
@@ -220,11 +196,56 @@ class CellarServiceIT {
 	}
 
 	@Test
-	void translatesADomainDateViolationIntoACuratedException() {
+	void updateBottleSavesThroughTheAggregateRoot() {
+		UUID owner = UUID.randomUUID();
+		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
+		clearInvocations(entries);
+
+		service.updateBottle(owner, bottle.getId(), ContainerType.CAN, null, null);
+
+		verify(entries).save(any(Entry.class));
+	}
+
+	@Test
+	void movesTheEntrysUpdatedAtWhenABottleIsAddedUpdatedOrRemoved() {
+		UUID owner = UUID.randomUUID();
+		Bottle bottle = service.addBottles(owner, beerId, 2, ContainerType.BOTTLE, null, null).getFirst();
+		testEntityManager.flush();
+		testEntityManager.clear();
+		Instant afterAdd = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow().getUpdatedAt();
+
+		service.updateBottle(owner, bottle.getId(), ContainerType.CAN, null, null);
+		testEntityManager.flush();
+		testEntityManager.clear();
+		Instant afterUpdate = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow().getUpdatedAt();
+
+		service.removeBottle(owner, bottle.getId());
+		testEntityManager.flush();
+		testEntityManager.clear();
+		Instant afterRemove = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow().getUpdatedAt();
+
+		assertThat(afterUpdate).isAfterOrEqualTo(afterAdd);
+		assertThat(afterRemove).isAfterOrEqualTo(afterUpdate);
+		assertThat(afterRemove).isAfter(afterAdd);
+	}
+
+	@Test
+	void rejectsADomainDateViolationAsInvalidBottle() {
 		UUID owner = UUID.randomUUID();
 		LocalDate tomorrow = LocalDate.now().plusDays(1);
 
 		assertThatThrownBy(() -> service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, tomorrow, null))
+				.isInstanceOf(InvalidBottleException.class)
+				.hasMessageContaining("brewedDate");
+	}
+
+	@Test
+	void rejectsADomainDateViolationOnUpdateAsInvalidBottle() {
+		UUID owner = UUID.randomUUID();
+		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
+		LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+		assertThatThrownBy(() -> service.updateBottle(owner, bottle.getId(), ContainerType.CAN, tomorrow, null))
 				.isInstanceOf(InvalidBottleException.class)
 				.hasMessageContaining("brewedDate");
 	}
