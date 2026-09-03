@@ -185,6 +185,7 @@ export const myProfile = async ( options?: Parameters<typeof kaliaFetch>[1]): Pr
 
 
 
+
 export const getMyProfileQueryKey = () => {
     return [
     `/api/v1/profile`
@@ -253,3 +254,8 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
 
   return withQueryKey(query, queryOptions.queryKey);
 }
+
+
+
+
+
