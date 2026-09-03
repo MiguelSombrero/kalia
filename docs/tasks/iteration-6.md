@@ -23,6 +23,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | refined |
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
+| [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -66,6 +67,17 @@ sit in the general backlog indefinitely.
 
 [Task 10](iteration-6/10-cellar-relative-date-precision.md) is the same
 situation from the same review: a request to show cellar dates with
-two-unit precision (task 11 shipped single-unit), deliberately split out
-rather than fixed mid-PR since it revises task 11's own spec'd example text
-and needs its open questions settled first.
+two-unit precision (iteration 5 task 11 shipped single-unit), deliberately
+split out rather than fixed mid-PR since it revises that task's own spec'd
+example text and needs its open questions settled first.
+
+[Task 11](iteration-6/11-e2e-suite-account-contention.md) does not serve this
+iteration's "Done when" either — it is a test-infrastructure bug found while
+running the e2e gate for [task 06](iteration-6/06-entry-with-no-bottles.md):
+`add-to-cellar.spec.ts` and `sign-in-out.spec.ts` share one Keycloak account
+under `fullyParallel: true`, so `make verify`'s e2e step is
+non-deterministic locally while CI's `retries` hide it. It rides along here
+because the flake is live now, not merged by this iteration; it is related to
+but distinct from
+[iteration-6.5 task 09](iteration-6.5/09-deterministic-test-accounts.md),
+which covers cross-run realm state rather than one run's parallelism.
