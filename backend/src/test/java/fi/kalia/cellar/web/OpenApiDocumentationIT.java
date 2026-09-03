@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestcontainersConfiguration;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -38,6 +39,39 @@ class OpenApiDocumentationIT {
 				.isEqualTo("Update a bottle");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].delete.summary"))
 				.isEqualTo("Remove a bottle");
+	}
+
+	@Test
+	void publicCellarEndpointIsDocumentedUnderItsOwnTag() {
+		String body = apiDocs();
+
+		List<String> tagNames = JsonPath.read(body, "$.tags[*].name");
+		assertThat(tagNames).contains("Public cellar");
+		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellars/{username}'].get.summary"))
+				.isEqualTo("Read a public cellar");
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellars/{username}'].get.responses.200"))
+				.isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellars/{username}'].get.responses.404"))
+				.isNotNull();
+	}
+
+	// The public response is its own type, not EntryDto/BottleDto (ADR-0050),
+	// so a field added to the owner's shape cannot reach strangers by default.
+	@Test
+	void thePublicCellarResponseIsADistinctSchemaFromTheOwnersShape() {
+		String body = apiDocs();
+
+		assertThat((Object) JsonPath.read(body, "$.components.schemas.PublicCellarDto")).isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.components.schemas.PublicCellarEntryDto")).isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.components.schemas.PublicCellarBottleDto")).isNotNull();
+
+		List<String> entryRequired = JsonPath.read(body, "$.components.schemas.PublicCellarEntryDto.required");
+		assertThat(entryRequired)
+				.containsExactlyInAnyOrder("id", "beerId", "quantity", "createdAt", "updatedAt", "bottles");
+		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.PublicCellarBottleDto.required");
+		assertThat(bottleRequired).containsExactlyInAnyOrder("id", "entryId", "containerType", "createdAt", "updatedAt");
+		Map<String, Object> rootProperties = JsonPath.read(body, "$.components.schemas.PublicCellarDto.properties");
+		assertThat(rootProperties).containsOnlyKeys("username", "entries");
 	}
 
 	@Test

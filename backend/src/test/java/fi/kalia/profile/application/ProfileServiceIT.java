@@ -66,4 +66,25 @@ class ProfileServiceIT {
 		assertThat(profiles.findById(userId).orElseThrow().isCellarPublic()).isTrue();
 	}
 
+	// A Keycloak sub change (ADR-0033) can leave two profile rows sharing one
+	// username; publicCellarOwnerId must resolve to the newest — the one the
+	// current token's sub points at — not throw on the pair.
+	@Test
+	void publicCellarOwnerIdResolvesToTheNewestProfileWhenAUsernameIsDuplicated() throws InterruptedException {
+		UUID staleId = UUID.randomUUID();
+		UUID currentId = UUID.randomUUID();
+		profiles.saveAndFlush(makePublic(Profile.create(staleId, "alice")));
+		// Distinct VM creation timestamps: @CreationTimestamp is Instant.now()
+		// at persist, and the ordering under test needs the two to differ.
+		Thread.sleep(5);
+		profiles.saveAndFlush(makePublic(Profile.create(currentId, "alice")));
+
+		assertThat(service.publicCellarOwnerId("alice")).contains(currentId);
+	}
+
+	private static Profile makePublic(Profile profile) {
+		profile.changeCellarVisibility(true);
+		return profile;
+	}
+
 }
