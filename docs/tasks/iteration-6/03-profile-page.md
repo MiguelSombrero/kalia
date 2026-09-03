@@ -1,6 +1,6 @@
 # Task 03: Profile page and the visibility control
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -96,15 +96,14 @@ that reaches it, replacing today's "Hello, {name}" greeting.
 - [x] The header's profile link carries an accessible name naming both the
       destination and the user, and reaches `/[locale]/profile` — component
       test plus `jest-axe`
-- [ ] Playwright covers the control itself and stops there: sign in → toggle
+- [x] Playwright covers the control itself and stops there: sign in → toggle
       to public → **reload** → it is still public → toggle back. The reload is
       the part worth the browser, because a toggle that updates only local
       state passes every component test. The journey through a stranger's view
       belongs to [task 04](04-public-cellar-page.md)
-- [ ] Every rendered state passes `axe` with no violations, in both locales —
-      `jest-axe` in component tests is verified; `@axe-core/playwright` on the
-      pages the E2E visits is written into `e2e/profile-visibility.spec.ts`
-      but not yet run
+- [x] Every rendered state passes `axe` with no violations, in both locales —
+      `jest-axe` in component tests and `@axe-core/playwright` in
+      `e2e/profile-visibility.spec.ts`
 - [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
