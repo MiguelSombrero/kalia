@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-08-29. This document describes **what is built**, plus the
+*Last updated: 2026-09-01. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -60,12 +60,13 @@ flowchart LR
         CAT[catalog]
         CEL[cellar]
         IDN[identity]
+        PROF[profile]
     end
     Browser --> UI
     UI --> RH
     RH -->|REST, JSON| API
-    API --> CAT & CEL & IDN
-    CAT & CEL --> PG[(PostgreSQL)]
+    API --> CAT & CEL & IDN & PROF
+    CAT & CEL & PROF --> PG[(PostgreSQL)]
 ```
 
 Key properties:
@@ -110,6 +111,7 @@ the root-package API.
 | `catalog` | Beers, breweries, styles; search & filtering | — |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)* | `catalog` (read: beer existence), `identity` (current user) |
+| `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
 
 ### Persistence
 
@@ -118,7 +120,10 @@ the root-package API.
   seams. No cross-schema foreign keys between modules — cross-module references
   are by id only.
 - Spring Data JPA with rich domain entities where behavior exists; plain
-  records/projections for read models.
+  records/projections for read models. A non-root entity in an aggregate — a
+  `cellar.bottle` under its `entry` — is written only through its root and has
+  no repository of its own, enforced by ArchUnit
+  ([ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md)).
 - Flyway owns the schema, with migrations per module directory plus `common/`
   for cross-module infrastructure (layout and version-numbering rules:
   [backend/README.md](../backend/README.md) database migrations). Seed data
@@ -138,6 +143,7 @@ catalog.brewery(id, name, country, city, created_at)
 catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, created_at)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
+profile.profile(id, username, cellar_public, created_at, updated_at)
 ```
 
 `style` starts as an indexed text column; normalize into its own table only
@@ -163,6 +169,17 @@ by id only, matching the persistence rule above. Both tables carry
 `catalog.beer` predates it and has only `created_at`. A bottle is removed by
 deleting its row — there is no "drunk" state yet.
 
+**A profile is keyed by the Keycloak `sub` itself** — `profile.profile.id`
+carries no separate generated id — **and is created lazily**, the first time
+anything needs one, rather than at sign-in (ADR-0049). `username` is copied
+from the token's `preferred_username` at that moment and never written again,
+even if a later token carries a different one; it is both the profile's
+whole public identity and the URL segment a public cellar is addressed by
+([ADR-0050](adr/0050-public-cellar-addressing.md)). `cellar_public` defaults
+to `false`, and **a missing profile row reads as private** — the rule every
+reader of it must apply, since lazy creation means the row may legitimately
+not exist yet.
+
 ## 4. API design
 
 REST, JSON, versioned under `/api/v1`. Built:
@@ -179,6 +196,7 @@ GET    /api/v1/cellar/entries/{entryId}/bottles     -> one entry's bottles
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
+PATCH  /api/v1/profile/visibility                   -> change whether the caller's cellar is public
 ```
 
 The cellar's endpoints (iteration 5) are two-level, following the data model in
@@ -491,6 +509,7 @@ the failure back to the agent without blocking
 | [ADR-0045](adr/0045-brewery-list-paginates-in-application.md) | The brewery list paginates in the application, keeping its Java-side name sort | accepted | 2026-08-29 |
 | [ADR-0049](adr/0049-profile-module-and-public-identity.md) | A `profile` module owns who a user is to other users | accepted | 2026-08-30 |
 | [ADR-0050](adr/0050-public-cellar-addressing.md) | A public cellar has one locale-less URL and is indistinguishable from nothing when private | accepted | 2026-08-30 |
+| [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
 
 ### Engineering process and documentation
 

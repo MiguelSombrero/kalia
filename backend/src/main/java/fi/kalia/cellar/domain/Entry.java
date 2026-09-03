@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -16,7 +17,6 @@ import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -39,6 +39,7 @@ public class Entry {
 
 	@Getter(AccessLevel.NONE)
 	@OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("createdAt")
 	private final List<Bottle> bottles = new ArrayList<>();
 
 	// source = VM: see Bottle.createdAt.
@@ -69,19 +70,48 @@ public class Entry {
 
 	public List<Bottle> addBottles(int quantity, ContainerType containerType, @Nullable LocalDate brewedDate,
 			@Nullable LocalDate bestBeforeDate) {
-		Assert.isTrue(quantity > 0, "quantity must be positive");
-		return IntStream.range(0, quantity)
+		if (quantity <= 0) {
+			throw new InvalidBottleException("quantity must be positive");
+		}
+		List<Bottle> added = IntStream.range(0, quantity)
 				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate))
 				.toList();
+		touch();
+		return added;
 	}
 
-	// Do not call this alone to delete a bottle's row: on an uninitialized
-	// bottles it is a no-op by design, so deleting for real also needs the
-	// explicit repository delete in CellarService#removeBottle.
+	public List<Bottle> lastBottles(int count) {
+		Assert.isTrue(count >= 0 && count <= bottles.size(), "count out of range");
+		return List.copyOf(bottles.subList(bottles.size() - count, bottles.size()));
+	}
+
+	public Bottle updateBottle(UUID bottleId, ContainerType containerType, @Nullable LocalDate brewedDate,
+			@Nullable LocalDate bestBeforeDate) {
+		Bottle bottle = bottleWithId(bottleId);
+		bottle.update(containerType, brewedDate, bestBeforeDate);
+		touch();
+		return bottle;
+	}
+
+	public void removeBottle(UUID bottleId) {
+		removeBottle(bottleWithId(bottleId));
+	}
+
 	public void removeBottle(Bottle bottle) {
-		if (Hibernate.isInitialized(bottles)) {
-			bottles.remove(bottle);
-		}
+		bottles.remove(bottle);
+		touch();
+	}
+
+	private Bottle bottleWithId(UUID bottleId) {
+		return bottles.stream()
+				.filter(b -> b.getId().equals(bottleId))
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException(
+						"entry %s does not contain bottle %s".formatted(id, bottleId)));
+	}
+
+	private void touch() {
+		this.updatedAt = Instant.now();
 	}
 
 	void registerBottle(Bottle bottle) {
