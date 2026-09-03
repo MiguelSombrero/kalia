@@ -64,6 +64,10 @@ public class Entry {
 		return bottles.size();
 	}
 
+	public boolean isEmpty() {
+		return bottles.isEmpty();
+	}
+
 	public List<Bottle> getBottles() {
 		return List.copyOf(bottles);
 	}

@@ -1,6 +1,6 @@
 # Task 06: What a cellar entry with no bottles is
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -95,28 +95,41 @@ long as there are bottles to group.
 
 ## Acceptance criteria
 
-- [ ] Removing an entry's last bottle has a defined outcome, proven by an
+- [x] Removing an entry's last bottle has a defined outcome, proven by an
       integration test that adds one bottle, removes it, and asserts what
       `GET /api/v1/cellar` returns — confirmed to fail against today's build,
       which returns a zero-quantity row nobody chose
-- [ ] Adding a bottle of the same beer again after the entry emptied works and
+      (`CellarApiIT.removingAnEntrysLastBottleDropsTheBeerFromTheCellarList`;
+      reverting the fix makes it expect 0 but get 1)
+- [x] Adding a bottle of the same beer again after the entry emptied works and
       does not collide with `UNIQUE (user_id, beer_id)` — integration test,
       whichever way question 1 is answered
-- [ ] `Entry.updated_at` moves when a bottle is added, edited or removed —
+      (`CellarApiIT.aBeerCanBeAddedAgainAfterItsEntryEmptied`,
+      `CellarServiceIT.reAddingABeerAfterItsEntryEmptiedCreatesAFreshEntryWithoutColliding`;
+      also exercised in the browser)
+- [x] `Entry.updated_at` moves when a bottle is added, edited or removed —
       integration test, confirmed to fail against today's build where it never
       moves after creation
+      (`CellarServiceIT.movesTheEntrysUpdatedAtWhenABottleIsAddedUpdatedOrRemoved`;
+      the moving `updated_at` shipped with [task 05](05-cellar-aggregate-owns-its-writes.md)
+      / [ADR-0052](../../adr/0052-cellar-aggregate-owns-its-writes.md), so the
+      test is green on `dev` now — this task keeps it green through the
+      entry-deletion change)
 - [x] [Task 02](02-public-cellar-api.md) has its Scope or Constraints updated
       to name this behaviour before it is refined, so the public read inherits
       the decision rather than re-deriving it — done in the refinement PR that
       settled it, which is the only place it could have been done in time
-- [ ] Removing the last bottle shows the message that names the consequence,
+- [x] Removing the last bottle shows the message that names the consequence,
       and undo restores both the bottle and the entry — component test for the
       wording, integration test for the restore
-- [ ] `docs/architecture.md` §3 states how long an entry lives, and
+      (`BottleRemoval.test.tsx` "removes a beer's row once its last bottle is
+      removed, names the consequence, and Undo restores both"; browser-confirmed
+      the wording "Bottle removed. That beer is no longer in your cellar.")
+- [x] `docs/architecture.md` §3 states how long an entry lives, and
       [ADR-0034](../../adr/0034-cellar-two-level-bottle-model.md) is amended
       with the decision and the rejected alternative — in the same PR, with
       `node scripts/check-adrs.mjs` passing
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

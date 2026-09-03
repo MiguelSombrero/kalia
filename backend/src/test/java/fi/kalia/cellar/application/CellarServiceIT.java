@@ -123,6 +123,37 @@ class CellarServiceIT {
 	}
 
 	@Test
+	void removingAnEntrysLastBottleDeletesTheEntry() {
+		UUID userId = UUID.randomUUID();
+		Bottle only = service.addBottles(userId, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
+
+		service.removeBottle(userId, only.getId());
+
+		assertThat(service.listEntries(userId)).isEmpty();
+		assertThat(entries.findByUserIdAndBeerId(userId, beerId)).isEmpty();
+	}
+
+	@Test
+	void reAddingABeerAfterItsEntryEmptiedCreatesAFreshEntryWithoutColliding() {
+		UUID userId = UUID.randomUUID();
+		Bottle first = service.addBottles(userId, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
+		UUID firstEntryId = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow().getId();
+
+		service.removeBottle(userId, first.getId());
+		// The emptied entry's delete and the fresh entry's insert reach the
+		// database in separate requests in production; flush the delete before
+		// re-adding so this single-transaction test matches that ordering.
+		testEntityManager.flush();
+		testEntityManager.clear();
+
+		service.addBottles(userId, beerId, 1, ContainerType.CAN, null, null);
+
+		Entry fresh = entries.findByUserIdAndBeerId(userId, beerId).orElseThrow();
+		assertThat(fresh.getId()).isNotEqualTo(firstEntryId);
+		assertThat(fresh.quantity()).isEqualTo(1);
+	}
+
+	@Test
 	void rejectsABeerIdThatDoesNotExistInTheCatalog() {
 		UUID unknownBeerId = UUID.randomUUID();
 

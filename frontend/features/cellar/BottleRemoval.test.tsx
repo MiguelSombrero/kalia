@@ -33,6 +33,7 @@ import type { Bottle, CellarBeerRow } from "./types";
 const REMOVE = "cellar.bottle.remove.action";
 const UNDO = "cellar.bottle.remove.undo";
 const TOAST = "cellar.bottle.remove.toast";
+const TOAST_LAST_BOTTLE = "cellar.bottle.remove.toastLastBottle";
 
 const westvleteren: CellarBeerRow = {
   entryId: "e1",
@@ -157,7 +158,7 @@ describe("bottle removal with undo", () => {
     expect(removeBottleAction).not.toHaveBeenCalled();
   });
 
-  it("removes a beer's row once its last bottle is removed, and Undo restores both", async () => {
+  it("removes a beer's row once its last bottle is removed, names the consequence, and Undo restores both", async () => {
     await renderCellar();
     await expand("Westvleteren 12");
     fakeRemovalTimer();
@@ -167,6 +168,8 @@ describe("bottle removal with undo", () => {
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: /Westvleteren 12/ })).not.toBeInTheDocument(),
     );
+    expect(screen.getByText(TOAST_LAST_BOTTLE)).toBeInTheDocument();
+    expect(screen.queryByText(TOAST)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: UNDO }));
 
@@ -184,13 +187,15 @@ describe("bottle removal with undo", () => {
     fakeRemovalTimer();
 
     fireEvent.click(removeButtonsFor("Westvleteren 12")[0]);
-    await waitFor(() => expect(screen.getByText(TOAST)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(TOAST_LAST_BOTTLE)).toBeInTheDocument());
 
     await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS / 2);
     fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
 
     await waitFor(() => expect(removeBottleAction).toHaveBeenCalledWith("bottle-1"));
     expect(removeBottleAction).toHaveBeenCalledTimes(1);
+    // The toast now follows the second, still-pending removal (Sahti still
+    // has a bottle left), so it drops back to the plain message.
     expect(screen.getByText(TOAST)).toBeInTheDocument();
 
     await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);

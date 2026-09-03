@@ -167,7 +167,11 @@ batch row with a count. `user_id` and `beer_id` are cross-module references
 by id only, matching the persistence rule above. Both tables carry
 `created_at` and `updated_at`, the convention this module sets going forward;
 `catalog.beer` predates it and has only `created_at`. A bottle is removed by
-deleting its row — there is no "drunk" state yet.
+deleting its row — there is no "drunk" state yet. An entry is a pure grouping,
+not something a user keeps: it is deleted when its last bottle is removed, so
+the cellar holds exactly the beers you own bottles of and no reader ever sees
+a zero-quantity row. Re-adding that beer creates a fresh entry
+([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
 
 **A profile is keyed by the Keycloak `sub` itself** — `profile.profile.id`
 carries no separate generated id — **and is created lazily**, the first time

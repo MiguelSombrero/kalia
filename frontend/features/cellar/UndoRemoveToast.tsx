@@ -31,7 +31,9 @@ export const UndoRemoveToast = () => {
         }}
       >
         <ToastDescription className="flex-1 text-sm text-foreground">
-          {t("cellar.bottle.remove.toast")}
+          {pending?.lastBottle
+            ? t("cellar.bottle.remove.toastLastBottle")
+            : t("cellar.bottle.remove.toast")}
         </ToastDescription>
         <ToastAction altText={t("cellar.bottle.remove.undo")} onClick={undoRemoval}>
           {t("cellar.bottle.remove.undo")}

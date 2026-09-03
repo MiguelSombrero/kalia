@@ -32,6 +32,16 @@ class EntryTest {
 	}
 
 	@Test
+	void isEmptyBecomesTrueWhenTheLastBottleIsRemoved() {
+		Bottle only = Bottle.create(entry, ContainerType.BOTTLE, null, null);
+		assertThat(entry.isEmpty()).isFalse();
+
+		entry.removeBottle(only);
+
+		assertThat(entry.isEmpty()).isTrue();
+	}
+
+	@Test
 	void bottlesWithDifferentDatesStayDistinguishable() {
 		LocalDate brewedIn2024 = LocalDate.of(2024, 6, 1);
 		LocalDate brewedIn2026 = LocalDate.of(2026, 6, 1);

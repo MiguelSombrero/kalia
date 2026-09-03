@@ -6,6 +6,8 @@ export const REMOVE_UNDO_DELAY_MS = 5000;
 type Removal = {
   bottleId: string;
   entryId: string;
+  /** True when this bottle is the entry's last, so removing it empties the cellar of that beer. */
+  lastBottle: boolean;
 };
 
 type BottleRemovalStore = {
@@ -23,7 +25,7 @@ type BottleRemovalStore = {
    * already pending, it is finalized immediately first — one toast at a
    * time: starting a second removal never queues behind the first.
    */
-  startRemoval: (bottleId: string, entryId: string, finalize: () => Promise<unknown> | void) => void;
+  startRemoval: (removal: Removal, finalize: () => Promise<unknown> | void) => void;
   /** Cancels the pending removal — `finalize` is never called. */
   undoRemoval: () => void;
 };
@@ -69,12 +71,11 @@ export const useBottleRemovalStore = create<BottleRemovalStore>((set) => {
   return {
     pending: null,
     finalizing: [],
-    startRemoval: (bottleId, entryId, finalize) => {
+    startRemoval: (removal, finalize) => {
       if (timeoutId && scheduled) {
         clearTimeout(timeoutId);
         dispatch(scheduled.removal, scheduled.finalize);
       }
-      const removal = { bottleId, entryId };
       scheduled = { removal, finalize };
       timeoutId = setTimeout(() => {
         timeoutId = null;
