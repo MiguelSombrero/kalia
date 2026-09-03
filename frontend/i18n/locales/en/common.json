@@ -104,6 +104,7 @@
       "remove": {
         "action": "Remove",
         "toast": "Bottle removed.",
+        "toastLastBottle": "Bottle removed. That beer is no longer in your cellar.",
         "undo": "Undo"
       }
     },

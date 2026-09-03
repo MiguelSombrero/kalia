@@ -5,6 +5,10 @@
 - **Amended:** 2026-09-02 by [ADR-0052](0052-cellar-aggregate-owns-its-writes.md) —
   the third evidence test below exercises removal through the `Entry` aggregate
   now that `BottleRepository` is gone; the invariant it pins is unchanged
+- **Amended:** 2026-09-03 by
+  [iteration 6 task 06](../tasks/iteration-6/06-entry-with-no-bottles.md) — an
+  entry does not outlive its bottles; see the Decision and Alternatives
+  additions dated the same day
 
 ## Context
 
@@ -45,6 +49,13 @@ independent `cellar.bottle` rows in one call
 (`fi.kalia.cellar.domain.Entry.addBottles`). The API cost of a case is one
 request; the storage cost is still one row per bottle.
 
+**Amendment (2026-09-03): an entry does not outlive its bottles.** An entry is
+a pure grouping — it exists for as long as there are bottles to group and no
+longer. Removing an entry's last bottle deletes the entry row; re-adding that
+beer later creates a new entry, so `UNIQUE (user_id, beer_id)` never collides
+with a survivor. No reader returns a zero-quantity row, because none exists to
+return.
+
 ## Alternatives considered
 
 **One row per (user, beer) with `quantity` and `vintage_year`** —
@@ -52,6 +63,17 @@ request; the storage cost is still one row per bottle.
 2024 bottle from a 2026 bottle of the same beer, which is the one fact a beer
 cellar exists to keep. `vintage_year` is also strictly less precise than the
 brewed/best-before dates the rest of this task settled on.
+
+**An entry as something a user keeps, surviving its last bottle** (considered
+2026-09-03). A zero-quantity entry would then read as "I've finished all of
+these" — a lightweight history of beers once held. Rejected: nothing asked for
+that history, and a surviving row is a phantom in every reader that counts
+bottles — "a beer this person owns none of" — which turns into a privacy
+question the moment
+[iteration 6 task 02](../tasks/iteration-6/02-public-cellar-api.md) publishes a
+cellar to strangers. A held-beer history, if it is ever wanted, is its own
+feature with its own opt-in, not a side effect of the count reaching zero
+([backlog](../tasks/backlog.md)).
 
 **A batch row with a stored `quantity`, for bottles sharing identical dates
 and container type**, reconsidered specifically to cut the friction of
@@ -81,6 +103,11 @@ moment one bottle from a batch is removed or edited on its own.
   storage scales with bottles rather than with distinct beers owned. Nothing
   about the app's scale today suggests that matters; worth remembering if
   per-user list rendering or storage ever becomes a question.
+- Neutral (2026-09-03 amendment), because "drink the last bottle, then buy the
+  beer again" produces a new entry with a new `created_at`: an entry's age
+  tracks the current holding, not the beer's whole history in the cellar.
+  Acceptable while the cellar is present-tense; revisit if held-beer history is
+  ever built.
 - **Revisit trigger:** if bulk-add's UX in [task
   13](../tasks/iteration-5/13-add-bottle-to-cellar.md) turns out to feel wrong
   even as one action — e.g. if rendering 24 rows is itself the complaint —

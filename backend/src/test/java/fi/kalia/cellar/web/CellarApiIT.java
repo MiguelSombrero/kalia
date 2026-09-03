@@ -206,6 +206,44 @@ class CellarApiIT {
 	}
 
 	@Test
+	void removingAnEntrysLastBottleDropsTheBeerFromTheCellarList() {
+		UUID bottleId = idOf(addBottle(USER_A, beerId, "BOTTLE", null, null));
+
+		client.delete().uri("/api/v1/cellar/bottles/{id}", bottleId)
+				.header("Authorization", USER_A)
+				.exchange()
+				.expectStatus().isNoContent();
+
+		client.get().uri("/api/v1/cellar")
+				.header("Authorization", USER_A)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((int) JsonPath.read(body, "$.length()")).isZero());
+	}
+
+	@Test
+	void aBeerCanBeAddedAgainAfterItsEntryEmptied() {
+		UUID firstBottleId = idOf(addBottle(USER_A, beerId, "BOTTLE", null, null));
+		client.delete().uri("/api/v1/cellar/bottles/{id}", firstBottleId)
+				.header("Authorization", USER_A)
+				.exchange()
+				.expectStatus().isNoContent();
+
+		addBottle(USER_A, beerId, "CAN", null, null);
+
+		client.get().uri("/api/v1/cellar")
+				.header("Authorization", USER_A)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1);
+					assertThat((int) JsonPath.read(body, "$[0].quantity")).isEqualTo(1);
+				});
+	}
+
+	@Test
 	void unauthenticatedRequestIsRejectedWhileTheCatalogStaysPublic() {
 		client.get().uri("/api/v1/cellar").exchange().expectStatus().isUnauthorized();
 

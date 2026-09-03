@@ -76,8 +76,9 @@ export const BottleList = ({
                 type="button"
                 className={cn(buttonVariants("outline"), "gap-1.5")}
                 onClick={() =>
-                  startRemoval(bottle.id, entryId, () =>
-                    removeBottle.mutateAsync({ id: bottle.id, entryId }),
+                  startRemoval(
+                    { bottleId: bottle.id, entryId, lastBottle: visibleBottles.length === 1 },
+                    () => removeBottle.mutateAsync({ id: bottle.id, entryId }),
                   )
                 }
               >

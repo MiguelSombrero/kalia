@@ -25,11 +25,13 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	Optional<Entry> findByBottleIdAndUserId(@Param("bottleId") UUID bottleId, @Param("userId") UUID userId);
 
 	// Quantity is derived by counting bottles, never stored (architecture.md
-	// §3); grouping here keeps it one query instead of one per entry.
+	// §3); grouping here keeps it one query instead of one per entry. Inner
+	// join, not left: an entry outlives no bottle (ADR-0034), so a zero here
+	// would be a bug to hide, not a row to show.
 	@Query("""
 			select e.id as id, e.beerId as beerId, count(b) as quantity,
 			       e.createdAt as createdAt, e.updatedAt as updatedAt
-			from Entry e left join e.bottles b
+			from Entry e join e.bottles b
 			where e.userId = :userId
 			group by e.id, e.beerId, e.createdAt, e.updatedAt
 			order by e.createdAt

@@ -51,7 +51,11 @@ public class CellarService {
 	public void removeBottle(UUID userId, UUID bottleId) {
 		Entry entry = ownerOf(userId, bottleId);
 		entry.removeBottle(bottleId);
-		entries.save(entry);
+		if (entry.isEmpty()) {
+			entries.delete(entry);
+		} else {
+			entries.save(entry);
+		}
 	}
 
 	private Entry ownerOf(UUID userId, UUID bottleId) {
