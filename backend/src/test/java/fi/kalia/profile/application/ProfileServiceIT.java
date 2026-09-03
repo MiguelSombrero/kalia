@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
@@ -21,6 +22,9 @@ class ProfileServiceIT {
 
 	@Autowired
 	private ProfileRepository profiles;
+
+	@Autowired
+	private TestEntityManager testEntityManager;
 
 	private ProfileService service;
 
@@ -70,16 +74,22 @@ class ProfileServiceIT {
 	// username; publicCellarOwnerId must resolve to the newest — the one the
 	// current token's sub points at — not throw on the pair.
 	@Test
-	void publicCellarOwnerIdResolvesToTheNewestProfileWhenAUsernameIsDuplicated() throws InterruptedException {
+	void publicCellarOwnerIdResolvesToTheNewestProfileWhenAUsernameIsDuplicated() {
 		UUID staleId = UUID.randomUUID();
 		UUID currentId = UUID.randomUUID();
 		profiles.saveAndFlush(makePublic(Profile.create(staleId, "alice")));
-		// Distinct VM creation timestamps: @CreationTimestamp is Instant.now()
-		// at persist, and the ordering under test needs the two to differ.
-		Thread.sleep(5);
+		backdateCreatedAt(staleId);
 		profiles.saveAndFlush(makePublic(Profile.create(currentId, "alice")));
 
 		assertThat(service.publicCellarOwnerId("alice")).contains(currentId);
+	}
+
+	private void backdateCreatedAt(UUID id) {
+		testEntityManager.getEntityManager()
+				.createNativeQuery("update profile.profile set created_at = created_at - interval '1 day' where id = :id")
+				.setParameter("id", id)
+				.executeUpdate();
+		testEntityManager.clear();
 	}
 
 	private static Profile makePublic(Profile profile) {
