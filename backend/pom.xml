@@ -29,6 +29,11 @@
 	<properties>
 		<java.version>25</java.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<!-- Overrides the Spring Boot 4.1.1 BOM's Tomcat 11.0.24, which carries
+		     CVE-2026-65182, CVE-2026-65905 and CVE-2026-68525 (all CRITICAL:
+		     security-constraint / FORM / DIGEST auth bypasses); fixed in
+		     11.0.25. Remove the override once the parent BOM catches up. -->
+		<tomcat.version>11.0.25</tomcat.version>
 	</properties>
 	<dependencies>
 		<dependency>
