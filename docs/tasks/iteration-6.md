@@ -24,6 +24,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
 | [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | needs-refinement |
+| [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -70,6 +71,13 @@ situation from the same review: a request to show cellar dates with
 two-unit precision (iteration 5 task 11 shipped single-unit), deliberately
 split out rather than fixed mid-PR since it revises that task's own spec'd
 example text and needs its open questions settled first.
+
+[Task 12](iteration-6/12-dev-csp-blocks-react-eval.md) does not serve this
+iteration's "Done when" either — it is a bug found while testing the app in
+`next dev` on 2026-09-03: `next.config.ts` serves one environment-blind CSP,
+and `next dev` needs `'unsafe-eval'` for React's development-mode debugging,
+so every dev page load logs a CSP violation. Predates this iteration; rides
+along for the same reason as tasks 09 and 10.
 
 [Task 11](iteration-6/11-e2e-suite-account-contention.md) does not serve this
 iteration's "Done when" either — it is a test-infrastructure bug found while
