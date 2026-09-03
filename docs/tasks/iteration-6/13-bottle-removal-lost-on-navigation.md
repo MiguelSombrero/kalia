@@ -1,4 +1,4 @@
-# Task 12: A bottle removal is undone by navigating away
+# Task 13: A bottle removal is undone by navigating away
 
 - **Status:** needs-refinement
 - **Iteration:** [6](../iteration-6.md)

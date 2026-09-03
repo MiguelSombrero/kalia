@@ -24,7 +24,8 @@ cellar exists at all beyond what A's profile already reveals.
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
 | [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | needs-refinement |
-| [12](iteration-6/12-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | needs-refinement |
+| [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | needs-refinement |
+| [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -72,6 +73,13 @@ two-unit precision (iteration 5 task 11 shipped single-unit), deliberately
 split out rather than fixed mid-PR since it revises that task's own spec'd
 example text and needs its open questions settled first.
 
+[Task 12](iteration-6/12-dev-csp-blocks-react-eval.md) does not serve this
+iteration's "Done when" either — it is a bug found while testing the app in
+`next dev` on 2026-09-03: `next.config.ts` serves one environment-blind CSP,
+and `next dev` needs `'unsafe-eval'` for React's development-mode debugging,
+so every dev page load logs a CSP violation. Predates this iteration; rides
+along for the same reason as tasks 09 and 10.
+
 [Task 11](iteration-6/11-e2e-suite-account-contention.md) does not serve this
 iteration's "Done when" either — it is a test-infrastructure bug found while
 running the e2e gate for [task 06](iteration-6/06-entry-with-no-bottles.md):
@@ -83,10 +91,10 @@ but distinct from
 [iteration-6.5 task 09](iteration-6.5/09-deterministic-test-accounts.md),
 which covers cross-run realm state rather than one run's parallelism.
 
-[Task 12](iteration-6/12-bottle-removal-lost-on-navigation.md) does not serve
+[Task 13](iteration-6/13-bottle-removal-lost-on-navigation.md) does not serve
 this iteration's "Done when" either — it is a product-owner bug report against
 the cellar page's undo-remove behaviour (iteration 5 task 14): the real
 `DELETE` is delayed by a client-only timer, so reloading or navigating away
 inside the undo window silently cancels the removal. It rides along here for
-the same reason as tasks 09–11 — the defect is live on `dev` now, not
+the same reason as tasks 09–12 — the defect is live on `dev` now, not
 introduced by this iteration.

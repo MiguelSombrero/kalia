@@ -1,0 +1,148 @@
+# Task 12: The dev CSP blocks React's development-mode `eval()`
+
+- **Status:** needs-refinement
+- **Iteration:** [6](../iteration-6.md)
+
+## Why
+
+Running `next dev` (Turbopack) and opening any page logs a Content Security
+Policy violation in the browser console:
+
+> The Content Security Policy (CSP) stops the evaluation of arbitrary strings
+> as JavaScript … `script-src` … blocked
+
+The blocked code is one of Next's hashed dev chunks (observed as
+`2b9a71mhgdrp6.js:1`). It is React's server-components dev client calling
+`(0, eval)(…)` from `createFakeFunction`
+(`frontend/node_modules/next/dist/compiled/react-server-dom-turbopack/cjs/react-server-dom-turbopack-client.browser.development.js`,
+around line 3410), used to reconstruct server-side call stacks and other
+debug information in the browser. React emits its own console error alongside
+the browser's:
+
+> eval() is not supported in this environment. If this page was served with a
+> `Content-Security-Policy` header, make sure that `unsafe-eval` is included.
+> React requires eval() in development mode for various debugging features
+> like reconstructing callstacks from a different environment. React will
+> never use eval() in production mode
+
+Root cause: `frontend/next.config.ts` serves **one static CSP for every
+environment** — `script-src 'self' 'unsafe-inline'`, no `'unsafe-eval'` —
+and `next dev` needs `'unsafe-eval'`. Next.js documents this exact case
+(`frontend/node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md`,
+line 42): "In development, `'unsafe-eval'` is required … `unsafe-eval` is not
+required for production. Neither React nor Next.js use `eval` in production by
+default." Every CSP example in that guide branches its `script-src` on an
+`isDev` flag; ours does not.
+
+Why it is worth doing now: the violation is live on every dev page load. It
+degrades the React/Next error overlay (server stack reconstruction fails
+silently), and a console that always shows a CSP violation trains developers
+to stop reading CSP violations — which is the one signal that catches a
+genuine external-origin or inline-script regression against this app's
+`'unsafe-inline'` trade-off ([ADR-0016](../../adr/0016-security-response-headers.md)).
+Production is unaffected: the `curl -I` evidence in ADR-0016 was taken
+against a production build, where React does not use `eval`.
+
+## Scope
+
+- `next dev` serves a CSP whose `script-src` permits React's development
+  `eval()`, so a fresh dev page load produces zero CSP violations in the
+  browser console.
+- `next build` / `next start` and the Docker production image serve a CSP
+  **unchanged** from today — no `'unsafe-eval'`, every other directive
+  identical.
+- The behaviour is covered by an automated test that fails against the
+  current single-environment header.
+
+## Non-goals
+
+- Revisiting `'unsafe-inline'` or the no-nonce decision — that trade-off was
+  re-affirmed on 2026-08-23 ([ADR-0016](../../adr/0016-security-response-headers.md))
+  and nothing here reopens it.
+- The other response headers (`X-Frame-Options`, `Referrer-Policy`, HSTS,
+  `Permissions-Policy`) — untouched.
+- The backend's own direct responses — out of scope for ADR-0016 and for
+  this task.
+
+## Constraints
+
+- **`headers()` in `next.config.ts` is baked in at build time**, and a
+  `process.env` value there is frozen to whatever was set during that build
+  ([ADR-0016](../../adr/0016-security-response-headers.md) 2026-07-30
+  amendment / [ADR-0025](../../adr/0025-authjs-valkey-adapter.md) Evidence).
+  This does not block the fix — `next dev` and `next build` are separate
+  processes with different `NODE_ENV` — but the fix must key off the
+  build-time environment, not attempt a runtime toggle, and must not be
+  driveable by a deployment env var.
+- ADR-0016 is the home of the CSP decision and its hand-run source survey;
+  its 2026-08-23 amendment explicitly records "no `eval` anywhere in
+  `frontend/`" (our code) as the basis for keeping `'unsafe-inline'`. That
+  statement stays true — the `eval` here is React's, in development only —
+  but the ADR must be amended in the implementing PR to record that the dev
+  CSP now diverges and why (doc-sync gate).
+- `next.config.ts`'s `async headers()` is written as `headers: async () => …`
+  to satisfy the arrow-function-only ESLint rule
+  ([ADR-0016](../../adr/0016-security-response-headers.md) Consequences) — any
+  refactor of the header construction keeps that form.
+- Verify in a real browser console, not with `curl` — `curl` does not enforce
+  CSP ([ADR-0016](../../adr/0016-security-response-headers.md) Evidence,
+  `frontend/AGENTS.md` traps).
+
+## Open questions
+
+1. **How is the environment detected?** `process.env.NODE_ENV ===
+   "development"` (what Next's own doc examples use), the `phase` argument
+   Next passes to a config function (`PHASE_DEVELOPMENT_SERVER`), or
+   something else. Pick the one that cannot silently evaluate wrong in the
+   Docker build.
+2. **Does `'unsafe-eval'` also need to reach `worker-src` / `child-src` or
+   any other directive** for Turbopack's dev workers, or is `script-src`
+   sufficient? Settle by observing the dev console with the fix in place,
+   not by guessing.
+3. **What proves the production header is unchanged?** A unit test asserting
+   the built header string in each mode, an e2e/`curl -I` check against the
+   Docker image, or both — and which is the automated acceptance criterion.
+   Note the e2e suite runs against the production stack, so it cannot observe
+   the dev header.
+4. **Where does the test live?** Asserting the header may need the
+   header-building logic extracted from `next.config.ts` into a testable
+   `lib/` (or co-located) function. Is that extraction wanted, or is a
+   coarser check (Playwright against `next start`, plus a manual dev-console
+   note) enough?
+5. **Terminology:** ADR-0016's title and body say "no-nonce variant" and
+   describe a single header. Does the amendment introduce a name for the
+   dev/prod split, or just describe it inline?
+
+## Acceptance criteria
+
+- [ ] With `next dev` running, loading `/en`, `/en/beers` and a beer detail
+      page produces **zero** CSP violations in the browser console —
+      verified in a browser, and confirmed to fail (violation present) before
+      the fix
+- [ ] `curl -I` against a production build (`next start` or the Docker image)
+      shows a `Content-Security-Policy` header byte-identical to today's —
+      no `'unsafe-eval'`
+- [ ] An automated test asserts `script-src` contains `'unsafe-eval'` in the
+      development build and does not in the production build, and was
+      confirmed to fail against the current single-environment `cspHeader`
+- [ ] `make verify` passes
+- [ ] [ADR-0016](../../adr/0016-security-response-headers.md) is amended (not
+      rewritten) to record the dev/prod CSP divergence and its reason, and
+      `docs/architecture.md`'s security-headers reference is re-checked
+
+## Notes
+
+Found 2026-09-03 while testing the application in `next dev`. Not caused by
+any iteration-6 change — `next.config.ts`'s CSP has been environment-blind
+since it was introduced in iteration 3
+([ADR-0016](../../adr/0016-security-response-headers.md)); Turbopack dev and
+the React 19 server-components client make the `eval` path reachable on an
+ordinary page load rather than only inside the error overlay.
+
+Rides along in iteration 6 for the same reason as
+[task 09](09-batch-beer-lookup-for-cellar.md) and
+[task 10](10-cellar-relative-date-precision.md): a real defect, not urgent
+enough to hold a release, not so minor it should sit in the general backlog.
+Does not serve this iteration's "Done when".
+
+Not in the [quality backlog](../quality-backlog.md).
