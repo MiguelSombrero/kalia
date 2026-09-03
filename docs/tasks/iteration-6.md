@@ -25,6 +25,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
 | [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | needs-refinement |
 | [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | needs-refinement |
+| [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -89,3 +90,11 @@ because the flake is live now, not merged by this iteration; it is related to
 but distinct from
 [iteration-6.5 task 09](iteration-6.5/09-deterministic-test-accounts.md),
 which covers cross-run realm state rather than one run's parallelism.
+
+[Task 13](iteration-6/13-bottle-removal-lost-on-navigation.md) does not serve
+this iteration's "Done when" either — it is a product-owner bug report against
+the cellar page's undo-remove behaviour (iteration 5 task 14): the real
+`DELETE` is delayed by a client-only timer, so reloading or navigating away
+inside the undo window silently cancels the removal. It rides along here for
+the same reason as tasks 09–12 — the defect is live on `dev` now, not
+introduced by this iteration.
