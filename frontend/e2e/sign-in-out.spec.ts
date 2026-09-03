@@ -88,7 +88,7 @@ const signIn = async (page: Page) => {
   await page.locator("#username").fill(USERNAME);
   await page.locator("#password").fill(PASSWORD);
   await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByText("Hi, Test User")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
 };
 
 test("signs in through Keycloak, shows the user's name, and signs out", async ({ page }) => {
@@ -104,7 +104,7 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
   await page.getByRole("button", { name: "Sign out" }).click();
 
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
-  await expect(page.getByText("Hi, Test User")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Profile: Test User" })).toHaveCount(0);
   expect((await scanForA11yViolations(page)).violations).toEqual([]);
 });
 
@@ -206,7 +206,7 @@ test("signing out on one device leaves the other's session intact", async ({
 
   // The phone never signed out, and its tokens are still its own and usable.
   await phone.reload();
-  await expect(phone.getByText("Hi, Test User")).toBeVisible();
+  await expect(phone.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
   const account = await storedAccount(phone);
   const stillValid = await account.read();
   await account.close();
@@ -242,7 +242,7 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
   await page.goto("/en");
 
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
-  await expect(page.getByText("Hi, Test User")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Profile: Test User" })).toHaveCount(0);
 });
 
 // Regression guard for ADR-0031: verified to fail without the realm's
@@ -257,5 +257,5 @@ test("Keycloak ending the SSO session ends the matching Kalia session", async ({
     await page.goto("/en");
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   }).toPass({ timeout: 15_000 });
-  await expect(page.getByText("Hi, Test User")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Profile: Test User" })).toHaveCount(0);
 });

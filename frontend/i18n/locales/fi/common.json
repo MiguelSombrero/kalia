@@ -67,7 +67,7 @@
   "auth": {
     "signIn": "Kirjaudu sisään",
     "signOut": "Kirjaudu ulos",
-    "helloUser": "Hei, {{name}}"
+    "profileLink": "Profiili: {{name}}"
   },
   "cellar": {
     "title": "Kellari",
@@ -139,6 +139,25 @@
       "error": {
         "failed": "Muutosten tallennus epäonnistui. Yritä uudelleen."
       }
+    }
+  },
+  "profile": {
+    "title": "Profiili",
+    "pageTitle": "Profiili — Kalia",
+    "loading": "Ladataan profiilia…",
+    "signIn": {
+      "title": "Kirjaudu sisään nähdäksesi profiilisi",
+      "hint": "Profiilissasi näkyy käyttäjänimesi ja onko kellarisi julkinen.",
+      "action": "Kirjaudu sisään"
+    },
+    "visibility": {
+      "legend": "Kuka näkee kellarisi?",
+      "private": "Vain minä",
+      "public": "Kuka tahansa linkin saanut",
+      "statePrivate": "Vain sinä näet kellarisi.",
+      "statePublic": "Kuka tahansa linkin saanut näkee kellarisi.",
+      "error": "Näkyvyyden päivitys epäonnistui. Yritä uudelleen.",
+      "viewLink": "Näytä julkinen kellarisi"
     }
   }
 }

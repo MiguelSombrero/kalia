@@ -5,13 +5,22 @@
  * OpenAPI spec version: v0
  */
 import {
-  useMutation
+  useMutation,
+  useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
   QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
-  UseMutationResult
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
@@ -25,6 +34,135 @@ import { kaliaFetch } from '../../mutator';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
+};
+
+export type myProfileResponse200 = {
+  data: ProfileDto
+  status: 200
+}
+
+export type myProfileResponse401 = {
+  data: void
+  status: 401
+}
+
+export type myProfileResponseSuccess = (myProfileResponse200) & {
+  headers: Headers;
+};
+export type myProfileResponseError = (myProfileResponse401) & {
+  headers: Headers;
+};
+
+export type myProfileResponse = (myProfileResponseSuccess | myProfileResponseError)
+
+export const getMyProfileUrl = () => {
+
+
+
+
+  return `/api/v1/profile`
+}
+
+/**
+ * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile.
+ * @summary Read the caller's own profile
+ */
+export const myProfile = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<myProfileResponse> => {
+
+  return kaliaFetch<myProfileResponse>(getMyProfileUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+export const getMyProfileQueryKey = () => {
+    return [
+    `/api/v1/profile`
+    ] as const;
+    }
+
+
+export const getMyProfileQueryOptions = <TData = Awaited<ReturnType<typeof myProfile>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getMyProfileQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof myProfile>>> = ({ signal }) => myProfile({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type MyProfileQueryResult = NonNullable<Awaited<ReturnType<typeof myProfile>>>
+export type MyProfileQueryError = void
+
+
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof myProfile>>,
+          TError,
+          Awaited<ReturnType<typeof myProfile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof myProfile>>,
+          TError,
+          Awaited<ReturnType<typeof myProfile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Read the caller's own profile
+ */
+
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getMyProfileQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
 
 export type changeVisibilityResponse200 = {
   data: ProfileDto

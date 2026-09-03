@@ -84,16 +84,16 @@ that reaches it, replacing today's "Hello, {name}" greeting.
 
 ## Acceptance criteria
 
-- [ ] A signed-in user sees their profile and their current cellar visibility,
+- [x] A signed-in user sees their profile and their current cellar visibility,
       and can change it — component tests (`*.test.tsx`) for both states
-- [ ] A failed visibility change surfaces an error and leaves the displayed
+- [x] A failed visibility change surfaces an error and leaves the displayed
       state matching the server — component test with a failing mutation,
       confirmed to fail against an optimistic update that does not roll back
-- [ ] A signed-out visitor is invited to sign in rather than shown an error or
+- [x] A signed-out visitor is invited to sign in rather than shown an error or
       an empty profile — component test
-- [ ] The public-cellar link is absent while the cellar is private and present
+- [x] The public-cellar link is absent while the cellar is private and present
       once it is public — component test for both states
-- [ ] The header's profile link carries an accessible name naming both the
+- [x] The header's profile link carries an accessible name naming both the
       destination and the user, and reaches `/[locale]/profile` — component
       test plus `jest-axe`
 - [ ] Playwright covers the control itself and stops there: sign in → toggle
@@ -102,9 +102,10 @@ that reaches it, replacing today's "Hello, {name}" greeting.
       state passes every component test. The journey through a stranger's view
       belongs to [task 04](04-public-cellar-page.md)
 - [ ] Every rendered state passes `axe` with no violations, in both locales —
-      `jest-axe` in component tests and `@axe-core/playwright` on the pages
-      the E2E visits
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+      `jest-axe` in component tests is verified; `@axe-core/playwright` on the
+      pages the E2E visits is written into `e2e/profile-visibility.spec.ts`
+      but not yet run
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 
