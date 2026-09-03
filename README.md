@@ -171,15 +171,16 @@ this section as the project evolves!
 - Next.js 16.3 (App Router), React 19.2, TypeScript 5.9 (TS 7 not yet
   supported by the Next toolchain — revisit when it is)
 - Tailwind CSS 4 (styling)
-- @radix-ui/react-dialog 1.1.23 (headless modal primitives behind
-  `components/ui/dialog.tsx` — the one UI dependency in an otherwise
-  hand-written primitive set, taken on for focus management rather than
-  appearance; see ADR-0021's 2026-08-22 amendment)
-- TanStack Query 5.101 (client-component data layer — see ADR-0008)
+- @radix-ui/react-dialog 1.1.23 and @radix-ui/react-toast 1.2.15 (headless
+  primitives behind `components/ui/dialog.tsx` and `components/ui/toast.tsx` —
+  the only two UI dependencies in an otherwise hand-written primitive set,
+  taken on for focus management and `aria-live` announcement rather than
+  appearance; see ADR-0021's 2026-08-22 and 2026-08-23 amendments)
+- TanStack Query 5.102 (client-component data layer — see ADR-0008)
 - Zustand 5.0 (client UI state — see ADR-0009)
-- react-hook-form 7.83 + Zod 4.4 (+ @hookform/resolvers 5.5) for
+- react-hook-form 7.83 + Zod 4.4 (+ @hookform/resolvers 5.9) for
   stateful forms and validation (ADR-0010)
-- i18next 26.3 + i18next-resources-to-backend 1.2 (server-side
+- i18next 26.4 + i18next-resources-to-backend 1.2 (server-side
   localization, English + Finnish), react-i18next 17.0 (the client-component
   bridge, mounted in `app/providers.tsx` — see ADR-0011)
 - orval 8.24 (API client generated from the backend's OpenAPI spec,
@@ -220,7 +221,7 @@ this section as the project evolves!
 ### CI
 
 - GitHub Actions (build + test both apps on every push), SHA-pinned:
-  actions/checkout v7.0, actions/setup-java v5.7, actions/setup-node v7.0
+  actions/checkout v7.0, actions/setup-java v6.0, actions/setup-node v7.0
 
 ## Repository layout (planned)
 
