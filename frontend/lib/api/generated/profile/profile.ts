@@ -50,7 +50,97 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type myProfileResponse200 = {
+export type changeVisibilityResponse200 = {
+  data: ProfileDto
+  status: 200
+}
+
+export type changeVisibilityResponse401 = {
+  data: void
+  status: 401
+}
+
+export type changeVisibilityResponseSuccess = (changeVisibilityResponse200) & {
+  headers: Headers;
+};
+export type changeVisibilityResponseError = (changeVisibilityResponse401) & {
+  headers: Headers;
+};
+
+export type changeVisibilityResponse = (changeVisibilityResponseSuccess | changeVisibilityResponseError)
+
+export const getChangeVisibilityUrl = () => {
+
+
+
+
+  return `/api/v1/profile/visibility`
+}
+
+/**
+ * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile.
+ * @summary Change the caller's cellar visibility
+ */
+export const changeVisibility = async (changeVisibilityRequestDto: ChangeVisibilityRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<changeVisibilityResponse> => {
+
+  return kaliaFetch<changeVisibilityResponse>(getChangeVisibilityUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(changeVisibilityRequestDto)
+  }
+);}
+
+
+
+
+
+export const getChangeVisibilityMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext> => {
+
+const mutationKey = ['changeVisibility'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeVisibility>>, {data: ChangeVisibilityRequestDto}> = (props) => {
+          const {data} = props ?? {};
+
+          return  changeVisibility(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChangeVisibilityMutationResult = NonNullable<Awaited<ReturnType<typeof changeVisibility>>>
+    export type ChangeVisibilityMutationBody = ChangeVisibilityRequestDto
+    export type ChangeVisibilityMutationError = void
+
+    /**
+ * @summary Change the caller's cellar visibility
+ */
+export const useChangeVisibility = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof changeVisibility>>,
+        TError,
+        {data: ChangeVisibilityRequestDto},
+        TContext
+      > => {
+      return useMutation(getChangeVisibilityMutationOptions(options), queryClient);
+    }
+    export type myProfileResponse200 = {
   data: ProfileDto
   status: 200
 }
@@ -163,94 +253,3 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-export type changeVisibilityResponse200 = {
-  data: ProfileDto
-  status: 200
-}
-
-export type changeVisibilityResponse401 = {
-  data: void
-  status: 401
-}
-
-export type changeVisibilityResponseSuccess = (changeVisibilityResponse200) & {
-  headers: Headers;
-};
-export type changeVisibilityResponseError = (changeVisibilityResponse401) & {
-  headers: Headers;
-};
-
-export type changeVisibilityResponse = (changeVisibilityResponseSuccess | changeVisibilityResponseError)
-
-export const getChangeVisibilityUrl = () => {
-
-
-
-
-  return `/api/v1/profile/visibility`
-}
-
-/**
- * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile.
- * @summary Change the caller's cellar visibility
- */
-export const changeVisibility = async (changeVisibilityRequestDto: ChangeVisibilityRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<changeVisibilityResponse> => {
-
-  return kaliaFetch<changeVisibilityResponse>(getChangeVisibilityUrl(),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(changeVisibilityRequestDto)
-  }
-);}
-
-
-
-
-
-export const getChangeVisibilityMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext> => {
-
-const mutationKey = ['changeVisibility'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeVisibility>>, {data: ChangeVisibilityRequestDto}> = (props) => {
-          const {data} = props ?? {};
-
-          return  changeVisibility(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChangeVisibilityMutationResult = NonNullable<Awaited<ReturnType<typeof changeVisibility>>>
-    export type ChangeVisibilityMutationBody = ChangeVisibilityRequestDto
-    export type ChangeVisibilityMutationError = void
-
-    /**
- * @summary Change the caller's cellar visibility
- */
-export const useChangeVisibility = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof changeVisibility>>,
-        TError,
-        {data: ChangeVisibilityRequestDto},
-        TContext
-      > => {
-      return useMutation(getChangeVisibilityMutationOptions(options), queryClient);
-    }
