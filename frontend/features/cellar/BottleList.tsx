@@ -6,17 +6,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+import { bottleDateParts, containerLabelKey } from "./bottleFacts";
 import { EditBottleDialog } from "./EditBottleDialog";
-import { formatRelativeDate } from "./formatRelativeDate";
 import { useRemoveBottle } from "./hooks/useBottles";
 import { isBottleHidden, useBottleRemovalStore } from "./store";
-import type { Bottle, ContainerType } from "./types";
-
-const containerLabelKey: Record<ContainerType, string> = {
-  BOTTLE: "cellar.bottle.container.BOTTLE",
-  CAN: "cellar.bottle.container.CAN",
-  KEG: "cellar.bottle.container.KEG",
-};
+import type { Bottle } from "./types";
 
 export const BottleList = ({
   locale,
@@ -55,14 +49,9 @@ export const BottleList = ({
   return (
     <ul aria-label={t("cellar.bottle.list", { beer: beerName })} className="flex flex-col gap-2">
       {visibleBottles.map((bottle) => {
-        const dateParts = [
-          bottle.brewedDate &&
-            t("cellar.bottle.brewed", { relative: formatRelativeDate(bottle.brewedDate, locale) }),
-          bottle.bestBeforeDate &&
-            t("cellar.bottle.bestBefore", {
-              relative: formatRelativeDate(bottle.bestBeforeDate, locale),
-            }),
-        ].filter((part): part is string => Boolean(part));
+        const dateParts = bottleDateParts(bottle, locale).map((part) =>
+          t(part.key, { relative: part.relative }),
+        );
 
         return (
           <li key={bottle.id} className="flex flex-wrap items-center gap-2 text-sm text-foreground">

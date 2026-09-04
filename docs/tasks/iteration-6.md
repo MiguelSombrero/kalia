@@ -18,7 +18,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [01](iteration-6/01-profile-and-visibility.md) | User profile and cellar visibility | done |
 | [02](iteration-6/02-public-cellar-api.md) | Public cellar read API | done |
 | [03](iteration-6/03-profile-page.md) | Profile page and the visibility control | done |
-| [04](iteration-6/04-public-cellar-page.md) | Public cellar page | refined |
+| [04](iteration-6/04-public-cellar-page.md) | Public cellar page | done |
 | [07](iteration-6/07-cellar-domain-events.md) | Where a cellar's domain events are registered | refined |
 | [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | refined |
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |

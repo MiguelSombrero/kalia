@@ -1,6 +1,6 @@
 # Task 04: Public cellar page
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -79,29 +79,42 @@ where the cellar is not public.
 
 ## Acceptance criteria
 
-- [ ] A signed-out visitor opening a public cellar's link sees its beers and
+- [x] A signed-out visitor opening a public cellar's link sees its beers and
       bottles — component test
-- [ ] A cellar that is not public renders the agreed state and exposes nothing
+      (`features/cellar/PublicCellarView.test.tsx`), plus the Playwright round
+      trip below
+- [x] A cellar that is not public renders the agreed state and exposes nothing
       about its contents — component test asserting the response's beers never
-      reach the DOM
-- [ ] **Playwright covers the whole round trip in one spec**, which this task
+      reach the DOM (`app/[locale]/cellars/[username]/page.test.tsx` —
+      `notFound()` is thrown before `resolvePublicCellarBeers` runs;
+      `app/[locale]/not-found.test.tsx` asserts the copy names neither
+      "private", "cellar" nor the username)
+- [x] **Playwright covers the whole round trip in one spec**, which this task
       owns: sign in as A → make the cellar public → sign out → open the URL
       with no session and see the beers → sign back in → make it private → the
       same URL no longer shows them. A real sign-out rather than a cleared
       cookie, since a spec that only drops the session can pass against a page
       still serving the owner's own cached data. A fixture of two fixed cellars
-      would miss the transitions entirely
-- [ ] Nothing the API withholds appears on the page — component test pinning
+      would miss the transitions entirely — `e2e/public-cellar.spec.ts`
+- [x] Nothing the API withholds appears on the page — component test pinning
       the rendered fields against the public response shape
-- [ ] The locale-less URL reaches the page in the reader's own language, and
+      (`PublicCellarView.test.tsx` — price and description never render)
+- [x] The locale-less URL reaches the page in the reader's own language, and
       the locale-prefixed pages carry `hreflang` and `rel="canonical"` —
-      Playwright for the redirect, component test for the tags
-- [ ] The page is served `noindex, nofollow` — component test on the rendered
+      Playwright for the redirect (`e2e/public-cellar.spec.ts`), component test
+      for the tags (`page.test.tsx` — canonical is the locale-less URL, shared
+      across `en`/`fi`/`x-default`)
+- [x] The page is served `noindex, nofollow` — component test on the rendered
       metadata, so a later metadata refactor cannot drop it silently
-- [ ] The owner's banner appears for the owner and for nobody else, and its
+      (`page.test.tsx`, on both the found and not-found branches)
+- [x] The owner's banner appears for the owner and for nobody else, and its
       absence changes nothing else on the page — component test for both
-- [ ] Every rendered state passes `axe` with no violations, in both locales
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+      (`PublicCellarView.test.tsx`)
+- [x] Every rendered state passes `axe` with no violations, in both locales —
+      `jest-axe` in `PublicCellarView.test.tsx`, `CellarBeerAccordion.test.tsx`,
+      `PublicCellarSkeleton.test.tsx`, `not-found.test.tsx`;
+      `@axe-core/playwright` in `e2e/public-cellar.spec.ts`
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

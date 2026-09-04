@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { listCellarBottles, listCellarEntries, removeCellarBottle, updateCellarBottle } from "./api";
-import type { CellarBeerRow } from "./types";
+import {
+  getPublicCellar,
+  listCellarBottles,
+  listCellarEntries,
+  removeCellarBottle,
+  resolvePublicCellarBeers,
+  updateCellarBottle,
+} from "./api";
+import type { CellarBeerRow, PublicCellar } from "./types";
 
 const beerId = "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f";
 const entryId = "e1111111-1111-1111-1111-111111111111";
@@ -96,6 +103,105 @@ describe("listCellarEntries", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(listCellarEntries()).rejects.toThrow("status 500");
+  });
+});
+
+describe("getPublicCellar", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("returns the cellar for a public username", async () => {
+    const cellar = { username: "testuser", entries: [] };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        expect(url).toContain("/api/v1/cellars/testuser");
+        return Response.json(cellar);
+      }),
+    );
+
+    await expect(getPublicCellar("testuser")).resolves.toEqual(cellar);
+  });
+
+  it("returns null for a 404 — unknown, private and profileless are one answer", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 404 })));
+
+    await expect(getPublicCellar("nobody")).resolves.toBeNull();
+  });
+
+  it("throws on any other failure rather than masking it as not-found", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 500 })));
+
+    await expect(getPublicCellar("testuser")).rejects.toThrow("status 500");
+  });
+});
+
+describe("resolvePublicCellarBeers", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const cellar: PublicCellar = {
+    username: "testuser",
+    entries: [
+      {
+        id: entryId,
+        beerId,
+        quantity: 2,
+        createdAt: "2026-01-01",
+        updatedAt: "2026-01-01",
+        bottles: [
+          {
+            id: "bottle-recent",
+            entryId,
+            containerType: "BOTTLE",
+            brewedDate: "2025-01-01",
+            createdAt: "2026-01-01",
+            updatedAt: "2026-01-01",
+          },
+          {
+            id: "bottle-oldest",
+            entryId,
+            containerType: "CAN",
+            brewedDate: "2020-01-01",
+            createdAt: "2026-01-01",
+            updatedAt: "2026-01-01",
+          },
+        ],
+      },
+    ],
+  };
+
+  it("merges each entry with its catalog beer and sorts bottles oldest brewed first", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.includes(`/api/v1/beers/${beerId}`)) {
+          return Response.json(beerDetails);
+        }
+        throw new Error(`unexpected url ${url}`);
+      }),
+    );
+
+    const beers = await resolvePublicCellarBeers(cellar);
+
+    expect(beers).toHaveLength(1);
+    expect(beers[0]).toMatchObject({
+      entryId,
+      beerId,
+      beerName: "Westvleteren 12",
+      breweryName: "Brouwerij Westvleteren",
+      style: "Quadrupel",
+      abv: 10.2,
+    });
+    expect(beers[0].bottles.map((bottle) => bottle.id)).toEqual(["bottle-oldest", "bottle-recent"]);
+  });
+
+  it("drops an entry whose beer no longer exists in the catalog", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 404 })));
+
+    await expect(resolvePublicCellarBeers(cellar)).resolves.toEqual([]);
   });
 });
 
