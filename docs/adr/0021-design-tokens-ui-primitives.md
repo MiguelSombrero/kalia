@@ -9,8 +9,8 @@
   the remove-undo toast's live-region and timing contract (iteration 5 task 14)
 - **Amended:** 2026-09-04 — the toast's own purpose narrowed: the undo
   action and its client-owned countdown are dropped, and it now reports
-  removal success/failure only ([ADR-0053](0053-bottle-removal-commits-immediately.md),
-  iteration 6 task 13)
+  removal success/failure only ([iteration 6 task
+  13](../tasks/iteration-6/13-bottle-removal-lost-on-navigation.md))
 
 ## Context
 
@@ -110,7 +110,8 @@ new tokens — unlike colour and type, they are not a re-theming concern.
 > `features/cellar/store.ts`, not by Radix; Radix supplies the announcement
 > and dismiss affordance, the app supplies the deadline.
 
-> **Amended 2026-09-04** ([ADR-0053](0053-bottle-removal-commits-immediately.md)).
+> **Amended 2026-09-04** ([iteration 6 task
+> 13](../tasks/iteration-6/13-bottle-removal-lost-on-navigation.md)).
 > **The toast no longer carries Undo.** Removing a bottle now commits its
 > `DELETE` immediately behind an upfront confirmation dialog (built on the
 > existing `dialog.tsx`/`@radix-ui/react-dialog` primitive above, not a new

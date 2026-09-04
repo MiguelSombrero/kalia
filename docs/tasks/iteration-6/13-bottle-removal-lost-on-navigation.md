@@ -35,10 +35,8 @@ rather than commit it.
 Removing a bottle requires an upfront confirmation dialog; confirming
 commits the `DELETE` immediately, with no delay and no undo affordance — so
 nothing about a removal can be lost to a reload, a client navigation, or a
-closed tab, because nothing is ever left pending
-([ADR-0053](../../adr/0053-bottle-removal-commits-immediately.md)). This
-covers the removal flow's commit timing and its confirmation/feedback UI
-across
+closed tab, because nothing is ever left pending. This covers the removal
+flow's commit timing and its confirmation/feedback UI across
 [`store.ts`](../../../frontend/features/cellar/store.ts),
 [`BottleList.tsx`](../../../frontend/features/cellar/BottleList.tsx),
 [`UndoRemoveToast.tsx`](../../../frontend/features/cellar/UndoRemoveToast.tsx)
@@ -49,9 +47,8 @@ described.
 ## Non-goals
 
 - A server-side undelete or soft-delete endpoint. [Task
-  14](../iteration-5/14-edit-remove-bottle.md) ruled it out and
-  [ADR-0053](../../adr/0053-bottle-removal-commits-immediately.md) does not
-  reopen it.
+  14](../iteration-5/14-edit-remove-bottle.md) ruled it out and this task
+  does not reopen it.
 - Re-adding a removed bottle via Undo — dropped. A removed bottle can only
   be re-added through the ordinary Add Bottle flow, which creates a new row
   with a new id and, per [task 06](06-entry-with-no-bottles.md), a fresh
@@ -64,17 +61,21 @@ described.
 
 - [Iteration 5 task 14](../iteration-5/14-edit-remove-bottle.md) is the
   origin of the undo design this task replaces; its decisions were recorded
-  in that (now frozen) task file's Constraints, not an ADR.
-- **The removal model is decided:
-  [ADR-0053](../../adr/0053-bottle-removal-commits-immediately.md)**
-  (refined 2026-09-04). Remove opens an upfront confirmation dialog, built
-  on the existing `components/ui/dialog.tsx` (`@radix-ui/react-dialog`)
-  primitive `AddBottleDialog`/`EditBottleDialog` already use — no new
-  dependency for the dialog itself. Confirming commits the `DELETE`
-  immediately; canceling issues no request and leaves the bottle untouched.
-  This resolves the [ADR-0009](../../adr/0009-zustand-ui-state.md) violation
-  the original Constraints named: no commit-critical intent is held in
-  Zustand or a closure any more.
+  in that (now frozen) task file's Constraints, not an ADR — this task
+  records its own reversal the same way, per the same reasoning ADR-0032
+  would apply: a client-side interaction-pattern choice local to one
+  feature, not a change to a module boundary, an API/data contract, or a
+  dependency choice beyond what ADR-0021 already tracks.
+- **The removal model is decided** (refined 2026-09-04). Remove opens an
+  upfront confirmation dialog, built on the existing
+  `components/ui/dialog.tsx` (`@radix-ui/react-dialog`) primitive
+  `AddBottleDialog`/`EditBottleDialog` already use — no new dependency for
+  the dialog itself. Confirming commits the `DELETE` immediately; canceling
+  issues no request and leaves the bottle untouched. This resolves the
+  [ADR-0009](../../adr/0009-zustand-ui-state.md) violation the original
+  Constraints named: no commit-critical intent is held in Zustand or a
+  closure any more. See Notes for the alternatives weighed and why each
+  lost.
 - **The confirm dialog closes optimistically on confirm; a failed `DELETE`
   is reported by an error toast, and the bottle is restored to the list**
   (refined 2026-09-04) — consistent with how other mutation failures surface
@@ -144,7 +145,8 @@ described.
       the undo descriptions in [iteration 5
       task 14](../iteration-5/14-edit-remove-bottle.md) and [task
       06](06-entry-with-no-bottles.md) are reconciled with the shipped
-      behaviour in this PR; `node scripts/check-adrs.mjs` green
+      behaviour in this PR; `node scripts/check-adrs.mjs` green (ADR-0021's
+      amendment matches the shipped toast)
 - [ ] `make verify` is green
 
 ## Notes
@@ -156,14 +158,41 @@ be implemented, the Undo button should be removed.
 
 Refined 2026-09-04: the delayed-`DELETE`-plus-client-only-undo model was
 found unable to satisfy that direction without a mechanism that itself had a
-gap (re-add undo loses the original id/entry; unload-time flush is
-best-effort; persisting intent doesn't survive a closed tab) — see
-[ADR-0053](../../adr/0053-bottle-removal-commits-immediately.md)'s
-Alternatives considered for the full comparison. The product owner's stated
-fallback — drop Undo, commit immediately — was chosen, gated by an upfront
-confirmation dialog rather than a bare immediate action, since removing the
-undo safety net without adding one before the action was judged to leave
-accidental clicks with no recovery at all.
+gap. Alternatives weighed and why each lost:
+
+- **Immediate `DELETE`, Undo as a re-add** (re-`POST` the removed bottle's
+  data). Rejected: the restored bottle gets a new id, a new
+  `created_at`/`updated_at`, and — if the original was its entry's last
+  bottle — a new entry too. What comes back is not the row that was
+  removed, which was judged a worse mismatch than having no undo at all.
+- **Keep the delayed `DELETE`, flush it on `pagehide`/`visibilitychange`**
+  via `navigator.sendBeacon` or a `keepalive` fetch, so leaving the page
+  commits the removal instead of cancelling it. Rejected: delivery on those
+  paths is explicitly best-effort under the Beacon and fetch-keepalive
+  specs, not guaranteed under every unload path (a crash, a forced tab
+  kill) — a destructive action's commit was judged not acceptable to leave
+  best-effort.
+- **Keep the delayed `DELETE`, persist the pending-removal intent** (e.g.
+  `sessionStorage`) and reconcile it on the cellar's next load. Rejected
+  outright: `sessionStorage` does not survive a closed tab, one of the
+  three loss modes (reload, navigation, closed tab) this task exists to
+  close — this alternative fails the same way the original bug does, just
+  for one of the three cases instead of all of them.
+
+The product owner's stated fallback — drop Undo, commit immediately — was
+chosen, gated by an upfront confirmation dialog rather than a bare immediate
+action, since removing the undo safety net without adding one before the
+action was judged to leave accidental clicks with no recovery at all.
+
+Originally recorded as a standalone ADR (ADR-0053); pulled during PR review
+([comment](https://github.com/MiguelSombrero/kalia/pull/218)) on the product
+owner's read that this is a client-side interaction-pattern choice local to
+one feature, not an architecturally significant decision — no module
+boundary, API/data contract, or dependency choice changes beyond what
+[ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s own amendment
+already covers, and iteration 5 task 14 recorded the equivalent original
+decision the same way, in its own task file, with no ADR. The reasoning
+above is recorded here instead, matching that precedent.
 
 The client-only timer this task removes was visible in
 [`frontend/features/cellar/store.ts`](../../../frontend/features/cellar/store.ts):

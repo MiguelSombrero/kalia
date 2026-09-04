@@ -56,9 +56,6 @@ nobody has committed to becomes a constraint anyway.
   changed and removed only through its entry, every write ends in a `save` on
   the root, and there is no `BottleRepository`; a violated bottle rule is a
   `cellar.domain` exception from the point it is raised.
-- [ADR-0053](0053-bottle-removal-commits-immediately.md) — removing a bottle
-  now requires an upfront confirmation dialog and commits the `DELETE`
-  immediately; the delayed-commit undo toast is dropped.
 
 ## Profiles and public cellars
 
