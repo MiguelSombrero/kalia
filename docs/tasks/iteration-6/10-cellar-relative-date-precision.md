@@ -1,6 +1,6 @@
 # Task 10: Multi-unit precision for cellar relative dates
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -77,18 +77,18 @@ Two-unit relative-date precision for `formatRelativeDate`, in both locales
 
 ## Acceptance criteria
 
-- [ ] A span of years renders with two-unit precision in both locales — e.g.
+- [x] A span of years renders with two-unit precision in both locales — e.g.
       "brewed 3 years and 2 months ago" / "brewed 3 vuotta ja 2 kuukautta
       sitten" — `formatRelativeDate.test.ts`
-- [ ] A whole number of units renders with one unit and no zero second unit —
+- [x] A whole number of units renders with one unit and no zero second unit —
       exactly three years is "3 years ago", and the second unit never reaches
       the next unit up — `formatRelativeDate.test.ts`, with a case at each
       magnitude boundary
-- [ ] A future date renders in the correct Finnish case — "3 vuoden ja 2
+- [x] A future date renders in the correct Finnish case — "3 vuoden ja 2
       kuukauden päästä" rather than the past-tense inflection —
       `formatRelativeDate.test.ts`, which is the case a composition bug
       produces silently
-- [ ] `npm test` is green
+- [x] `npm test` is green
 
 ## Notes
 
