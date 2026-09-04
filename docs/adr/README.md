@@ -57,6 +57,11 @@ nobody has committed to becomes a constraint anyway.
   changed and removed only through its entry, every write ends in a `save` on
   the root, and there is no `BottleRepository`; a violated bottle rule is a
   `cellar.domain` exception from the point it is raised.
+- [ADR-0053](0053-cellar-domain-events-on-the-aggregate-root.md) — a cellar
+  domain event is registered on the aggregate root and drained by Spring Data
+  on `save`, never published from a service; it carries ids and a timestamp,
+  never a mutable copy, and is named as a past participle on the thing that
+  changed (`BottleAdded`).
 
 ## Profiles and public cellars
 

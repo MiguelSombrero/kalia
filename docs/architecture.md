@@ -103,8 +103,10 @@ empty until the module's first consumer arrives. It obeys the same inward
 dependency direction as `web` — it calls its module's `application` layer, not
 `domain` repositories directly, enforced by `ArchitectureTest`. Full
 ports/adapters ceremony is deferred to modules whose domain earns it.
-Cross-module *writes* happen via application events; cross-module *reads* via
-the root-package API.
+Cross-module *writes* happen via application events — registered on the
+aggregate root and drained by Spring Data on `save`, never published from a
+service ([ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md));
+cross-module *reads* via the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
@@ -535,6 +537,7 @@ the failure back to the agent without blocking
 | [ADR-0049](adr/0049-profile-module-and-public-identity.md) | A `profile` module owns who a user is to other users | accepted | 2026-08-30 |
 | [ADR-0050](adr/0050-public-cellar-addressing.md) | A public cellar has one locale-less URL and is indistinguishable from nothing when private | accepted | 2026-08-30 |
 | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
+| [ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md) | A cellar's domain events are registered on the aggregate root, not published from the service | accepted | 2026-09-04 |
 
 ### Engineering process and documentation
 
