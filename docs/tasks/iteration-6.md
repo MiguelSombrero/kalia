@@ -20,7 +20,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [03](iteration-6/03-profile-page.md) | Profile page and the visibility control | done |
 | [04](iteration-6/04-public-cellar-page.md) | Public cellar page | done |
 | [07](iteration-6/07-cellar-domain-events.md) | Where a cellar's domain events are registered | done |
-| [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | refined |
+| [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | done |
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
 | [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | refined |

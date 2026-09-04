@@ -119,6 +119,22 @@ jobs:
       - name: Verify code comments carry only what the repo cannot (see ADR-0017)
         run: node scripts/check-comments.mjs
 
+  glossary-check:
+    name: Glossary check
+    # Unconditional for the same reason as the three checks above: a backend
+    # `domain` type can be added in a push the changes filter classifies as
+    # frontend-only, and this costs a few seconds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Verify every backend domain type has a glossary entry (see docs/glossary.md)
+        run: node scripts/check-glossary.mjs
+      - name: Self-test the glossary checker against fixtures
+        run: node --test scripts/check-glossary.test.mjs
+
   backend:
     name: Backend (Maven)
     needs: [changes]

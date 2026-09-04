@@ -43,10 +43,12 @@ frontend-e2e: ## Run frontend E2E tests (needs the stack up)
 lint: ## Lint the frontend
 	(cd frontend && npm run lint)
 
-check: ## Run doc/task/comment consistency checks
+check: ## Run doc/task/comment/glossary consistency checks
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
+	node scripts/check-glossary.mjs
+	node --test scripts/check-glossary.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build backend postgres
