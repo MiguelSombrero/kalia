@@ -85,10 +85,12 @@ migrations, and the event flow from `cellar` to `feed`.
    record everything and show private additions without a link. The middle one
    is safest and loses history permanently. This is the iteration's central
    question and the product owner's to answer.
-2. **How much does an event copy, and how much does it reference?** Copying
-   the beer and user names makes the feed a single cheap read and freezes text
-   that can later change; referencing keeps it true and makes every feed read
-   fan out.
+2. **How much does an event copy, and how much does it reference?**
+   [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)
+   already rules out copying anything mutable into the `cellar` event, so this
+   narrows to two parts: which ids the `BottleAdded` event carries, and whether
+   `feed`'s *own* stored record denormalises names for a cheap read (freezing
+   text that can later change) or references and fans out on every feed read.
 3. **Is one bottle one event?** Adding six bottles of the same beer would be
    six lines in a feed. Grouping them is friendlier and more to build.
 4. **Does deleting a bottle, or a cellar going private, remove past events?**

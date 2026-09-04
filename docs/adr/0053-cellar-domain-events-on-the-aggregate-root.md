@@ -46,9 +46,8 @@ domain event.** Bounding the decision:
 - **An event carries ids and `occurredAt`, never a copy of anything that can
   change.** The user id, the entry and bottle ids, the beer id, and when it
   happened — facts about the event itself. A consumer reads current data back
-  through [`CatalogApi`](../architecture.md#3-backend-modules) and `ProfileApi`,
-  so a cellar made private after the fact cannot be leaked by a stale copy in
-  an old event. The exact field set and whether a bulk add of six bottles is
+  through `CatalogApi` and `ProfileApi`, so a cellar made private after the
+  fact cannot be leaked by a stale copy in an old event. The exact field set and whether a bulk add of six bottles is
   one event or six are [iteration 7 task 01](../tasks/iteration-7/01-feed-module.md)'s
   (its open questions 2 and 3); this ADR fixes only that the payload is
   immutable references plus a timestamp.
@@ -76,7 +75,7 @@ domain event.** Bounding the decision:
   `delete` on its repository. "The aggregate registers the event" publishes
   something only if every write path actually ends in `entries.save(entry)` /
   `entries.delete(entry)` on the root, which is exactly what ADR-0052 decided
-  and enforced (`CellarService` lines 46, 53, 61, 63). ADR-0052 is `accepted`
+  and enforced for every `CellarService` write path. ADR-0052 is `accepted`
   as of 2026-09-02; without it this rule would be correct on paper and publish
   nothing.
 - **The proving test belongs to [iteration 7 task 01](../tasks/iteration-7/01-feed-module.md),
@@ -129,8 +128,8 @@ Spring Data inside `domain` deliberately. This ADR does not reopen that.
   structural rather than a rule a reader has to remember.
 - Bad, because a consumer now fans out reads (`CatalogApi`, `ProfileApi`) to
   render one feed line, and must handle an id that points at something since
-  removed — a bottle deleted, a beer that (today cannot but one day might)
-  disappear. This cost lands on `feed`, not on `cellar`.
+  removed — a bottle deleted, or a beer that cannot disappear today but one
+  day might. This cost lands on `feed`, not on `cellar`.
 - **Bad — the chosen option's silent failure mode:** a future write path
   mutates a managed `Entry` inside `CellarService`'s `@Transactional` method
   and returns *without* calling `entries.save(entry)`. JPA dirty checking
