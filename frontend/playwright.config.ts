@@ -22,7 +22,11 @@ export default defineConfig({
     cwd: path.resolve(__dirname, ".."),
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 5 * 60 * 1000,
+    // A cold `docker compose up --build` on a CI runner has no BuildKit cache:
+    // the frontend image's own `npm ci` alone runs 3–5 min on a slow-registry
+    // day, before `next build` and five containers coming up healthy. 5 min
+    // overran intermittently (see docs/ci-playbook.md).
+    timeout: 12 * 60 * 1000,
     stdout: "pipe",
     stderr: "pipe",
   },

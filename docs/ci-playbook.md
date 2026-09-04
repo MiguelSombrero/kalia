@@ -70,6 +70,18 @@ its own working tree. Renumber whichever has not merged, and allocate with
 `make next-adr` — which scans every remote-tracking ref, for exactly this
 reason ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
+## E2E (Playwright)
+
+**`Error: Timed out waiting 300000ms from config.webServer` — no test ran.**
+Not a test failure: Playwright's `webServer` starts `docker compose up --build`,
+and a cold CI runner has no BuildKit cache, so the frontend image's own
+`npm ci` alone takes 3–5 min (slow-registry days) before `next build` and five
+containers come up healthy. The 5-minute default overran on `dev` itself
+(runs `33842075895`, `33838096364`) and on PR #219. The wait budget lives in
+`frontend/playwright.config.ts`'s `webServer.timeout` — raised to 12 min. If it
+still overruns, the build itself is the thing to speed up (layer-cache the
+image in a CI step, then `docker compose up` without `--build`), not the timer.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by
