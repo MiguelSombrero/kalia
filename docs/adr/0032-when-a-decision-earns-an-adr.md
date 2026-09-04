@@ -4,6 +4,8 @@
 - **Date:** 2026-08-07
 - **Amended:** 2026-08-08 — added the second test below: a decision earns an
   ADR only when it binds work *now*
+- **Amended:** 2026-09-04 — added a third test: whether the task file that
+  made the decision is itself a sufficient home for it
 
 ## Context
 
@@ -109,6 +111,32 @@ in.
 > iteration 5 earns one; how beers might one day be priced across shops does
 > not.
 
+> **Amended 2026-09-04 — the third test.** Even a decision that clears both
+> tests above can still fail a third: whether a reader would ever need to
+> find it who was not already going to open the task file that made it.
+> **A decision earns an ADR only when its reasoning is something a
+> *different* task, a different module, or `docs/architecture.md`'s shape
+> will need later** — not merely because a credible alternative was
+> rejected. A decision whose reasoning only the task that made it, and
+> whoever implements it, will ever need stays in that task's own
+> Constraints/Notes; the task file is itself a sufficient home for it, for
+> as long as anyone will need it, and recording it a second time in an ADR
+> adds a copy to keep in step rather than a home the first didn't already
+> have.
+>
+> The evidence is a same-day round trip.
+> [Iteration 6 task 13](../tasks/iteration-6/13-bottle-removal-lost-on-navigation.md)
+> drafted a standalone ADR for dropping an undo affordance in favour of an
+> immediate-commit confirmation dialog, passing both tests above — three
+> credible alternatives were rejected, and the decision binds work now.
+> Product-owner review caught what the two tests missed:
+> [iteration 5 task 14](../tasks/iteration-5/14-edit-remove-bottle.md) made
+> the *original* version of the same decision, after this ADR already
+> existed, and recorded it in that task's own Constraints alone — no ADR,
+> and nothing since has needed one. If the original decision's home held,
+> its reversal's home holds too; the drafted ADR was retracted in the same
+> pull request rather than merged and left for a later cleanup.
+
 ## Alternatives considered
 
 **Merge ADRs by subject, starting with the authentication cluster.** The
@@ -189,6 +217,19 @@ prescribes.
   considered that a reviewer disputes, or the ADRs-per-merged-PR rate climbing
   back above the 0.41 baseline in Evidence — the first means the escape hatch
   is load-bearing, the second means the bar is not binding.
+
+> **Amended 2026-09-04:**
+>
+> - Good, because a decision whose blast radius is genuinely one task now has
+>   a stated reason it doesn't need an ADR, rather than the two-test formula
+>   being read as "any credible alternative, anywhere, always."
+> - Bad, because "would a reader who wasn't already going to open this task
+>   file need it" is a third judgment call stacked on the first two, with the
+>   same enforcement gap: nothing mechanical checks it, and an author who
+>   wants an ADR can still write one under the letter of the first two tests
+>   alone.
+> - Neutral, because this amendment does not touch any ADR filed before it —
+>   nothing here relitigates whether an existing ADR should have existed.
 
 ## Evidence
 

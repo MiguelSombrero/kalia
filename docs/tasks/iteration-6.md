@@ -23,9 +23,9 @@ cellar exists at all beyond what A's profile already reveals.
 | [08](iteration-6/08-ubiquitous-language-glossary.md) | A ubiquitous language per bounded context | refined |
 | [09](iteration-6/09-batch-beer-lookup-for-cellar.md) | Batch beer lookup for the cellar page | refined |
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | refined |
-| [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | needs-refinement |
-| [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | needs-refinement |
-| [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | needs-refinement |
+| [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | refined |
+| [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | refined |
+| [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | refined |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.

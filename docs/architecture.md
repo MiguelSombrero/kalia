@@ -327,10 +327,12 @@ The shape of the frontend. Day-to-day rules for writing it live in
   covering every route.
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
   `:focus-visible` styling and a skip-to-content link. The non-native
-  widgets — the add/edit-bottle modals and the remove-undo toast — get their
-  focus trap, `aria-modal` and live-region behaviour from Radix rather than
-  hand-rolled ARIA. How enforcement is layered across lint, unit and E2E
-  tests: [frontend/README.md](../frontend/README.md) testing conventions.
+  widgets — the add/edit-bottle and remove-confirmation modals, and the
+  removal-outcome toast — get their focus trap, `aria-modal` and live-region
+  behaviour from Radix rather than hand-rolled ARIA
+  ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). How enforcement is
+  layered across lint, unit and E2E tests:
+  [frontend/README.md](../frontend/README.md) testing conventions.
 
 ## 6. Authentication and identity
 

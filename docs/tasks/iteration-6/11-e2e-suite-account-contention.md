@@ -1,6 +1,6 @@
 # Task 11: The e2e suite's specs contend for one Keycloak account
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -66,34 +66,43 @@ spec's session.
 - A seeding or cleanup step that silently does nothing is worse than none — a
   green exit code proving only that a script ran, the same class as the
   [backlog](../backlog.md)'s import-boundary fixture.
+- **Identity split: one Keycloak account per Playwright worker, via a
+  worker-scoped fixture** (refined 2026-09-04). The fixture derives a
+  deterministic account name from `testInfo.workerIndex` and creates it
+  through Keycloak's admin API if it does not already exist ("create if not
+  exists"), rather than relying on a static pool of realm-export rows sized
+  to worker count. Chosen over distinct per-file accounts (doesn't survive
+  the durable-Keycloak transition below without rework, and needs a manual
+  realm-export edit for every future file needing isolation) and over
+  serializing session-ending specs via Playwright project dependencies (a
+  real, ongoing cost to suite wall-clock time, and converges with nothing).
+- **Converges with
+  [iteration-6.5 task 09](../iteration-6.5/09-deterministic-test-accounts.md)**
+  (refined 2026-09-04, decided together): the same idempotent
+  create-if-not-exists provisioning answers task 09's "where does `testuser`
+  come from once the realm file has no credentials" under both a fresh
+  realm-import and task 01's durable Keycloak — see task 09's own
+  Constraints, updated in this same pull request. This task still owns
+  fixing intra-run parallelism; task 09 still owns cross-run state, seeded
+  via the same mechanism rather than a second one.
+- **`bottleCount()`'s masking of "signed out" as "0 bottles" is fixed here**
+  (refined 2026-09-04), not filed separately — it is what made this bug slow
+  to diagnose, and the third acceptance criterion below already covers it.
 
 ## Open questions
 
-1. **How do the two specs stop sharing an identity?** Distinct accounts per
-   spec file in the realm export; one account per Playwright worker via a
-   worker-scoped fixture; or a Playwright project dependency that runs the
-   session-ending auth specs last. Each has a different blast radius on the
-   other e2e files.
-2. **Converge with
-   [iteration-6.5 task 09](../iteration-6.5/09-deterministic-test-accounts.md)
-   or keep separate?** Both turn on "where do test accounts come from"; they
-   differ in failure mode (intra-run parallelism here, cross-run state there)
-   and in iteration. One answer, or two that must not contradict.
-3. **Is `bottleCount()` returning 0 for both "beer absent" and "not signed in"
-   a second bug to fix here?** It masks an auth failure as an empty cellar,
-   which is what made this take time to recognise.
-4. **Does any of the fix belong in `playwright.config.ts`** (worker count,
-   project dependencies) rather than entirely in how specs acquire an
-   identity?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `cd frontend && npm run test:e2e` — the `make verify` invocation, with
       `retries` left at the local default of 0 and the run using more than one
       worker — passes on three consecutive runs against one already-up stack
-- [ ] `add-to-cellar.spec.ts` and `sign-in-out.spec.ts` no longer share an
-      identity, or it is demonstrated (state which) that a shared identity can
-      no longer let one spec fail another — with a Playwright run as evidence
+- [ ] Each Playwright worker authenticates as its own Keycloak account,
+      provisioned idempotently (create-if-not-exists) via the admin API by a
+      worker-scoped fixture — `add-to-cellar.spec.ts` and
+      `sign-in-out.spec.ts` no longer share an identity when they land on
+      different workers, with a Playwright run as evidence
 - [ ] A spec or helper that lands on a signed-out page where it expected a
       signed-in one fails as an authentication error, not as a silent "0
       bottles" / empty-state reading — verified by forcing that state
