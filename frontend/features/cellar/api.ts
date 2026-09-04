@@ -37,10 +37,9 @@ export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
 
-// One catalog round-trip enriches the whole cellar, distinct beer ids deduped.
-// The batch endpoint omits an id it cannot resolve rather than returning null,
-// so a beer no longer in the catalog is simply absent from the map — domain
-// data, not a transport failure (ADR-0023), handled in toRow.
+// The batch endpoint omits an id it cannot resolve rather than answering null,
+// so a beer no longer in the catalog is just absent from the map — a dropped
+// row, not a transport failure (ADR-0023), handled in toRow.
 const fetchBeersById = async (beerIds: string[]): Promise<Map<string, BeerSummaryDto>> => {
   const ids = [...new Set(beerIds)];
   if (ids.length === 0) {

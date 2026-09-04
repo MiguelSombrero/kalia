@@ -26,6 +26,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | refined |
 | [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | refined |
 | [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | refined |
+| [14](iteration-6/14-cellar-batch-lookup-chunking.md) | Chunk the cellar's batch beer lookup past 100 ids | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until
 the cellar exists.
@@ -98,3 +99,11 @@ the cellar page's undo-remove behaviour (iteration 5 task 14): the real
 inside the undo window silently cancels the removal. It rides along here for
 the same reason as tasks 09–12 — the defect is live on `dev` now, not
 introduced by this iteration.
+
+[Task 14](iteration-6/14-cellar-batch-lookup-chunking.md) does not serve this
+iteration's "Done when" either — it is a `/code-review` finding on
+[task 09](iteration-6/09-batch-beer-lookup-for-cellar.md)'s own
+implementation: that task's single batch call breaks a cellar of more than
+100 distinct beers, a narrow regression at the endpoint's id cap. It is
+filed here as a follow-up so the boundary behaviour is decided explicitly
+rather than left unhandled.
