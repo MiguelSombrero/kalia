@@ -57,7 +57,12 @@
     "pageTitle": "Beer not found — Kalia",
     "title": "Beer not found",
     "message": "This beer does not exist — maybe it was drunk already.",
-    "backLink": "Back to the catalog"
+    "backLink": "Back to the catalog",
+    "generic": {
+      "title": "Page not found",
+      "message": "This page does not exist.",
+      "backLink": "Back to Kalia"
+    }
   },
   "error": {
     "title": "Something went wrong",
@@ -81,6 +86,16 @@
       "title": "Sign in to see your cellar",
       "hint": "Your cellar keeps track of the beers you own and how old each bottle is.",
       "action": "Sign in"
+    },
+    "public": {
+      "heading": "{{username}}'s cellar",
+      "loading": "Loading this cellar…",
+      "ownerBanner": "This is how others see your cellar.",
+      "ownerBannerLink": "Back to your cellar",
+      "empty": {
+        "title": "This cellar is empty.",
+        "hint": "There are no beers in this cellar yet."
+      }
     },
     "entry": {
       "bottleCount_one": "{{count}} bottle",

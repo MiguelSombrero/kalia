@@ -312,7 +312,13 @@ The shape of the frontend. Day-to-day rules for writing it live in
   English + Finnish via i18next, locale-prefixed URLs
   (`app/[locale]/...`, e.g. `/en/beers`, `/fi/beers/{id}`). `proxy.ts`
   (Next 16's renamed `middleware.ts`) redirects locale-less requests based on
-  `Accept-Language`.
+  `Accept-Language`. The one page addressed locale-less is the public cellar
+  (`/cellars/{username}`), the app's only externally-shared URL: it carries
+  `hreflang`/`canonical` alternates and is served `noindex, nofollow`
+  ([ADR-0050](adr/0050-public-cellar-addressing.md)). The root layout sets
+  `metadataBase` from `AUTH_URL` so those alternates resolve to absolute URLs.
+  A cellar that is not public renders `app/[locale]/not-found.tsx`, the
+  generic localized 404 for the subtree.
 - **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
   and a small set of shared primitives in `components/ui/` — the seam for a

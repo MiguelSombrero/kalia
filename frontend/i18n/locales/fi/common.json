@@ -57,7 +57,12 @@
     "pageTitle": "Olutta ei löytynyt — Kalia",
     "title": "Olutta ei löytynyt",
     "message": "Tätä olutta ei ole olemassa — ehkä se on jo juotu.",
-    "backLink": "Takaisin tarjontaan"
+    "backLink": "Takaisin tarjontaan",
+    "generic": {
+      "title": "Sivua ei löytynyt",
+      "message": "Tätä sivua ei ole olemassa.",
+      "backLink": "Takaisin Kaliaan"
+    }
   },
   "error": {
     "title": "Jokin meni pieleen",
@@ -81,6 +86,16 @@
       "title": "Kirjaudu sisään nähdäksesi kellarisi",
       "hint": "Kellari pitää kirjaa omistamistasi oluista ja siitä, kuinka vanha kukin pullo on.",
       "action": "Kirjaudu sisään"
+    },
+    "public": {
+      "heading": "Käyttäjän {{username}} kellari",
+      "loading": "Ladataan kellaria…",
+      "ownerBanner": "Näin muut näkevät kellarisi.",
+      "ownerBannerLink": "Takaisin omaan kellariisi",
+      "empty": {
+        "title": "Tämä kellari on tyhjä.",
+        "hint": "Tässä kellarissa ei ole vielä oluita."
+      }
     },
     "entry": {
       "bottleCount_one": "{{count}} pullo",
