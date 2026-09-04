@@ -1,29 +1,34 @@
 // Exercises add-to-cellar against the compose stack, from both places the
-// affordance appears; credentials are the dev-only account in
-// keycloak/realm-export.json.
+// affordance appears; credentials are a per-worker account provisioned by
+// ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test, type KeycloakAccount } from "./support/keycloakAccount";
 
-const USERNAME = "testuser";
-const PASSWORD = "testuser123";
-
-// Shares the one realm user with the other specs, which cycle sign-in/out.
+// Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
 
-const signIn = async (page: Page) => {
+const signIn = async (page: Page, account: KeycloakAccount) => {
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.locator("#username").waitFor();
-  await page.locator("#username").fill(USERNAME);
-  await page.locator("#password").fill(PASSWORD);
+  await page.locator("#username").fill(account.username);
+  await page.locator("#password").fill(account.password);
   await page.getByRole("button", { name: "Sign In" }).click();
   await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
 };
 
 // 0 when the beer is not in the cellar at all, so the spec is a delta against
-// whatever earlier runs left behind rather than an absolute count.
+// whatever earlier runs left behind rather than an absolute count. Asserts
+// signed-in first: the cellar page renders "My cellar" and a sign-in prompt
+// alike when signed out (frontend/features/cellar/SignInPrompt.tsx), which
+// would otherwise read back as an indistinguishable 0 bottles.
 const bottleCount = async (page: Page, beerName: string): Promise<number> => {
   await page.goto("/en/cellar");
   await expect(page.getByRole("heading", { name: "My cellar" })).toBeVisible();
+  await expect(
+    page.getByRole("banner").getByRole("button", { name: "Sign out" }),
+    "landed on the cellar page signed out",
+  ).toBeVisible();
   const row = page.getByRole("button", { name: new RegExp(escapeRegExp(beerName)) });
   if ((await row.count()) === 0) {
     return 0;
@@ -55,9 +60,10 @@ const addBottles = async (page: Page, quantity: number) => {
 
 test("signs in, adds bottles from the list and the detail page, and sees both in the cellar", async ({
   page,
+  account,
 }) => {
   await page.goto("/en/beers");
-  await signIn(page);
+  await signIn(page, account);
   await page.goto("/en/beers");
 
   const cards = page.getByRole("listitem");
@@ -119,9 +125,9 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   expect(scan.violations).toEqual([]);
 });
 
-test("the open add-to-cellar dialog has no accessibility violations", async ({ page }) => {
+test("the open add-to-cellar dialog has no accessibility violations", async ({ page, account }) => {
   await page.goto("/en/beers");
-  await signIn(page);
+  await signIn(page, account);
   await page.goto("/en/beers");
 
   await page.getByRole("listitem").first().getByRole("button", { name: "Add to cellar" }).click();
@@ -174,6 +180,7 @@ test("the open add-to-cellar dialog has no accessibility violations", async ({ p
 // has to reach Keycloak and come back to the beer it was clicked on.
 test("a signed-out visitor is sent through sign-in and returns to the same beer", async ({
   page,
+  account,
 }) => {
   await page.goto("/en/beers");
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
@@ -182,10 +189,22 @@ test("a signed-out visitor is sent through sign-in and returns to the same beer"
   const beerName = (await card.getByRole("heading").textContent())!.trim();
   await card.getByRole("button", { name: "Add to cellar" }).click();
 
-  await page.locator("#username").fill(USERNAME);
-  await page.locator("#password").fill(PASSWORD);
+  await page.locator("#username").fill(account.username);
+  await page.locator("#password").fill(account.password);
   await page.getByRole("button", { name: "Sign In" }).click();
 
   await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]{36}$/);
   await expect(page.getByRole("heading", { level: 1, name: beerName })).toBeVisible();
+});
+
+// Forces the exact state bottleCount() must not silently read as "0 bottles"
+// (frontend/features/cellar/SignInPrompt.tsx renders under the same "My
+// cellar" heading) — it must fail loudly as an authentication problem instead.
+test("bottleCount fails loudly on a signed-out cellar page instead of reading zero bottles", async ({
+  page,
+}) => {
+  await page.goto("/en/cellar");
+  await expect(page.getByRole("banner").getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  await expect(bottleCount(page, "any beer")).rejects.toThrow(/signed out/i);
 });

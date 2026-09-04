@@ -1,15 +1,22 @@
 // Exercises the whole stack against compose-run Keycloak and Valkey
-// (docs/architecture.md §6, §7); credentials are the dev-only account in
-// keycloak/realm-export.json.
+// (docs/architecture.md §6, §7); credentials are a per-worker account
+// provisioned by ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
+import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 import Redis from "ioredis";
-
-const USERNAME = "testuser";
-const PASSWORD = "testuser123";
+import {
+  expect,
+  findKeycloakUser,
+  keycloakAdminToken,
+  KEYCLOAK_ADMIN_URL,
+  REALM,
+  test,
+  type KeycloakAccount,
+} from "./support/keycloakAccount";
 
 // Do not parallelize: measured 1-2 of 6 specs failing when run concurrently,
-// always cycling sign-in/sign-out, since all specs share one realm user.
+// always cycling sign-in/sign-out, since all specs on one worker share one
+// account (./support/keycloakAccount.ts).
 test.describe.configure({ mode: "serial" });
 
 // Re-registered per document: a blocked navigation leaves the document in
@@ -46,35 +53,14 @@ const storedAccount = async (page: Page) => {
 
 // Ends the Keycloak SSO session from the IdP side, so only Back-Channel
 // Logout (ADR-0031) can end the matching Kalia session.
-const endKeycloakSessionViaAdmin = async (request: APIRequestContext) => {
-  const adminUsername = process.env.KEYCLOAK_ADMIN ?? "admin";
-  const adminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
-
-  const tokenResponse = await request.post(
-    "http://localhost:8081/realms/master/protocol/openid-connect/token",
-    {
-      form: {
-        grant_type: "password",
-        client_id: "admin-cli",
-        username: adminUsername,
-        password: adminPassword,
-      },
-    },
-  );
-  expect(tokenResponse.ok(), "could not obtain a Keycloak admin token").toBeTruthy();
-  const { access_token: adminToken } = (await tokenResponse.json()) as { access_token: string };
-  const adminHeaders = { Authorization: `Bearer ${adminToken}` };
-
-  const usersResponse = await request.get("http://localhost:8081/admin/realms/kalia/users", {
-    headers: adminHeaders,
-    params: { username: USERNAME, exact: "true" },
-  });
-  const [user] = (await usersResponse.json()) as { id: string }[];
-  expect(user, `${USERNAME} has no Keycloak session to end`).toBeTruthy();
+const endKeycloakSessionViaAdmin = async (request: APIRequestContext, username: string) => {
+  const adminToken = await keycloakAdminToken(request);
+  const user = await findKeycloakUser(request, adminToken, username);
+  expect(user, `${username} has no Keycloak session to end`).toBeTruthy();
 
   const logoutResponse = await request.post(
-    `http://localhost:8081/admin/realms/kalia/users/${user.id}/logout`,
-    { headers: adminHeaders },
+    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${user!.id}/logout`,
+    { headers: { Authorization: `Bearer ${adminToken}` } },
   );
   expect(logoutResponse.ok(), "the admin logout call itself failed").toBeTruthy();
 };
@@ -82,20 +68,20 @@ const endKeycloakSessionViaAdmin = async (request: APIRequestContext) => {
 const scanForA11yViolations = (page: Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
-const signIn = async (page: Page) => {
+const signIn = async (page: Page, account: KeycloakAccount) => {
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.locator("#username").waitFor();
-  await page.locator("#username").fill(USERNAME);
-  await page.locator("#password").fill(PASSWORD);
+  await page.locator("#username").fill(account.username);
+  await page.locator("#password").fill(account.password);
   await page.getByRole("button", { name: "Sign In" }).click();
   await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
 };
 
-test("signs in through Keycloak, shows the user's name, and signs out", async ({ page }) => {
+test("signs in through Keycloak, shows the user's name, and signs out", async ({ page, account }) => {
   await page.goto("/en");
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
-  await signIn(page);
+  await signIn(page, account);
 
   await expect(page).toHaveURL(/localhost:3000/);
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
@@ -110,10 +96,10 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
 
 // One click is the assertion: a blocked sign-out deletes the local session,
 // so a second click would look fine while Keycloak's session survives (ADR-0025).
-test("signing out takes one click and is not blocked by the CSP", async ({ page }) => {
+test("signing out takes one click and is not blocked by the CSP", async ({ page, account }) => {
   const cspViolations = await collectCspViolations(page);
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
 
   await page.getByRole("button", { name: "Sign out" }).click();
 
@@ -123,11 +109,14 @@ test("signing out takes one click and is not blocked by the CSP", async ({ page 
 
 // Two cycles: staleness only shows on the second sign-out, when a stale
 // `id_token_hint` makes Keycloak ask to confirm the logout (ADR-0025).
-test("signs in and out twice without Keycloak asking to confirm the logout", async ({ page }) => {
+test("signs in and out twice without Keycloak asking to confirm the logout", async ({
+  page,
+  account,
+}) => {
   await page.goto("/en");
 
   for (const cycle of [1, 2]) {
-    await signIn(page);
+    await signIn(page, account);
     await page.getByRole("button", { name: "Sign out" }).click();
 
     // Never Keycloak's confirmation page, and never left stranded on Keycloak.
@@ -150,20 +139,20 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
 
 // Sent to the real backend, not compared as a string: withholding an expired
 // token also keeps browsing working, so only backend acceptance proves renewal (ADR-0029).
-test("renews an expired access token instead of dropping it", async ({ page, request }) => {
+test("renews an expired access token instead of dropping it", async ({ page, request, account }) => {
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
 
-  const account = await storedAccount(page);
-  const before = await account.read();
-  await account.patch({ expires_at: Math.floor(Date.now() / 1000) - 1 });
+  const session = await storedAccount(page);
+  const before = await session.read();
+  await session.patch({ expires_at: Math.floor(Date.now() / 1000) - 1 });
 
   // Calls the backend, so the token is actually fetched.
   await page.goto("/en/beers");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-  const after = await account.read();
-  await account.close();
+  const after = await session.read();
+  await session.close();
 
   expect(after.access_token, "the expired token was not replaced").not.toBe(before.access_token);
   expect(after.expires_at as number).toBeGreaterThan(Math.floor(Date.now() / 1000));
@@ -180,6 +169,7 @@ test("renews an expired access token instead of dropping it", async ({ page, req
 test("signing out on one device leaves the other's session intact", async ({
   browser,
   request,
+  account,
 }) => {
   const contexts: BrowserContext[] = [];
   const signedInPage = async () => {
@@ -187,7 +177,7 @@ test("signing out on one device leaves the other's session intact", async ({
     contexts.push(context);
     const page = await context.newPage();
     await page.goto("/en");
-    await signIn(page);
+    await signIn(page, account);
     return page;
   };
 
@@ -207,9 +197,9 @@ test("signing out on one device leaves the other's session intact", async ({
   // The phone never signed out, and its tokens are still its own and usable.
   await phone.reload();
   await expect(phone.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
-  const account = await storedAccount(phone);
-  const stillValid = await account.read();
-  await account.close();
+  const session = await storedAccount(phone);
+  const stillValid = await session.read();
+  await session.close();
   const me = await request.get("http://localhost:8080/api/v1/me", {
     headers: { Authorization: `Bearer ${stillValid.access_token as string}` },
   });
@@ -225,16 +215,16 @@ test("signing out on one device leaves the other's session intact", async ({
 
 // A corrupt refresh token deterministically provokes the `invalid_grant` an
 // idle-timed-out SSO session produces, which must end the local session (ADR-0029).
-test("ends the local session when Keycloak rejects the refresh token", async ({ page }) => {
+test("ends the local session when Keycloak rejects the refresh token", async ({ page, account }) => {
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
 
-  const account = await storedAccount(page);
-  await account.patch({
+  const session = await storedAccount(page);
+  await session.patch({
     expires_at: Math.floor(Date.now() / 1000) - 1,
     refresh_token: "no-longer-a-valid-grant",
   });
-  await account.close();
+  await session.close();
 
   // First load deletes the session record; the cookie can't clear mid-render,
   // so the second load is the one that renders signed-out (endLocalSession.ts).
@@ -247,11 +237,15 @@ test("ends the local session when Keycloak rejects the refresh token", async ({ 
 
 // Regression guard for ADR-0031: verified to fail without the realm's
 // `backchannel.logout.url` wired up. Retries since backchannel timing isn't a contract.
-test("Keycloak ending the SSO session ends the matching Kalia session", async ({ page, request }) => {
+test("Keycloak ending the SSO session ends the matching Kalia session", async ({
+  page,
+  request,
+  account,
+}) => {
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
 
-  await endKeycloakSessionViaAdmin(request);
+  await endKeycloakSessionViaAdmin(request, account.username);
 
   await expect(async () => {
     await page.goto("/en");
