@@ -7,8 +7,8 @@
 
 export type GetBeersByIdsParams = {
 /**
- * Beer ids, repeated; at most 100
- * @minItems 0
+ * Beer ids, repeated; 1-100
+ * @minItems 1
  * @maxItems 100
  */
 ids: string[];

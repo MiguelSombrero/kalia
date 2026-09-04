@@ -92,8 +92,8 @@ class CatalogController {
 			enriching a list it already holds (e.g. a cellar). An id matching no beer is omitted \
 			from the response rather than returned as null; order is not significant.""")
 	List<BeerSummaryDto> getBeersByIds(
-			@Parameter(description = "Beer ids, repeated; at most " + MAX_BATCH_IDS)
-			@RequestParam @Size(max = MAX_BATCH_IDS) List<UUID> ids) {
+			@Parameter(description = "Beer ids, repeated; 1-" + MAX_BATCH_IDS)
+			@RequestParam @Size(min = 1, max = MAX_BATCH_IDS) List<UUID> ids) {
 		return catalog.getBeers(ids).stream().map(BeerSummaryDto::from).toList();
 	}
 
