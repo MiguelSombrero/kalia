@@ -4,7 +4,7 @@
 // ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { expect, test, type KeycloakAccount } from "./support/keycloakAccount";
+import { expect, signIn, test, type KeycloakAccount } from "./support/keycloakAccount";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
@@ -14,15 +14,6 @@ const localeCellarUrl = (account: KeycloakAccount) => `/en/cellars/${account.use
 
 const scanForA11yViolations = (page: Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-
-const signIn = async (page: Page, account: KeycloakAccount) => {
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.locator("#username").waitFor();
-  await page.locator("#username").fill(account.username);
-  await page.locator("#password").fill(account.password);
-  await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
-};
 
 const signOut = async (page: Page) => {
   await page.getByRole("button", { name: "Sign out" }).click();

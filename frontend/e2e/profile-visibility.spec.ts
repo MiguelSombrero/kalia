@@ -4,19 +4,10 @@
 // provisioned by ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { expect, test, type KeycloakAccount } from "./support/keycloakAccount";
+import { expect, signIn, test } from "./support/keycloakAccount";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
-
-const signIn = async (page: Page, account: KeycloakAccount) => {
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.locator("#username").waitFor();
-  await page.locator("#username").fill(account.username);
-  await page.locator("#password").fill(account.password);
-  await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByRole("link", { name: /^Profile: / })).toBeVisible();
-};
 
 const openProfile = async (page: Page) => {
   await page.getByRole("link", { name: /^Profile: / }).click();

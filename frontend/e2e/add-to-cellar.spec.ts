@@ -3,19 +3,10 @@
 // ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { expect, test, type KeycloakAccount } from "./support/keycloakAccount";
+import { expect, signIn, test } from "./support/keycloakAccount";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
-
-const signIn = async (page: Page, account: KeycloakAccount) => {
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.locator("#username").waitFor();
-  await page.locator("#username").fill(account.username);
-  await page.locator("#password").fill(account.password);
-  await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
-};
 
 // 0 when the beer is not in the cellar at all, so the spec is a delta against
 // whatever earlier runs left behind rather than an absolute count. Asserts
@@ -197,9 +188,7 @@ test("a signed-out visitor is sent through sign-in and returns to the same beer"
   await expect(page.getByRole("heading", { level: 1, name: beerName })).toBeVisible();
 });
 
-// Forces the exact state bottleCount() must not silently read as "0 bottles"
-// (frontend/features/cellar/SignInPrompt.tsx renders under the same "My
-// cellar" heading) — it must fail loudly as an authentication problem instead.
+// Forces the state bottleCount() guards against (see its own comment above).
 test("bottleCount fails loudly on a signed-out cellar page instead of reading zero bottles", async ({
   page,
 }) => {

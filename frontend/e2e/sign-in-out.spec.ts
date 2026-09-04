@@ -5,13 +5,12 @@ import AxeBuilder from "@axe-core/playwright";
 import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 import Redis from "ioredis";
 import {
+  endKeycloakSessionForUser,
   expect,
   findKeycloakUser,
   keycloakAdminToken,
-  KEYCLOAK_ADMIN_URL,
-  REALM,
+  signIn,
   test,
-  type KeycloakAccount,
 } from "./support/keycloakAccount";
 
 // Do not parallelize: measured 1-2 of 6 specs failing when run concurrently,
@@ -57,25 +56,11 @@ const endKeycloakSessionViaAdmin = async (request: APIRequestContext, username: 
   const adminToken = await keycloakAdminToken(request);
   const user = await findKeycloakUser(request, adminToken, username);
   expect(user, `${username} has no Keycloak session to end`).toBeTruthy();
-
-  const logoutResponse = await request.post(
-    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${user!.id}/logout`,
-    { headers: { Authorization: `Bearer ${adminToken}` } },
-  );
-  expect(logoutResponse.ok(), "the admin logout call itself failed").toBeTruthy();
+  await endKeycloakSessionForUser(request, adminToken, user!.id);
 };
 
 const scanForA11yViolations = (page: Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-
-const signIn = async (page: Page, account: KeycloakAccount) => {
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.locator("#username").waitFor();
-  await page.locator("#username").fill(account.username);
-  await page.locator("#password").fill(account.password);
-  await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
-};
 
 test("signs in through Keycloak, shows the user's name, and signs out", async ({ page, account }) => {
   await page.goto("/en");
