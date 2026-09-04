@@ -27,6 +27,12 @@ public class CellarService {
 		return entries.findSummariesByUserId(userId);
 	}
 
+	// The caller has already been resolved to a public cellar's owner id by
+	// profile (ADR-0050); this only loads it.
+	public List<Entry> readPublicCellar(UUID ownerId) {
+		return entries.findWithBottlesByUserId(ownerId);
+	}
+
 	public List<Bottle> listBottles(UUID userId, UUID entryId) {
 		Entry entry = entries.findByIdAndUserId(entryId, userId)
 				.orElseThrow(() -> new EntryNotFoundException(entryId));

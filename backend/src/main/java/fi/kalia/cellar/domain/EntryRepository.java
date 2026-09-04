@@ -17,6 +17,13 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	@EntityGraph(attributePaths = "bottles")
 	Optional<Entry> findByIdAndUserId(UUID id, UUID userId);
 
+	// Bottles eager-loaded: DTO mapping runs outside the service transaction
+	// (backend/README.md). Keyed on an already-resolved owner id — never relax
+	// to load-then-filter, which turns a 404 into a 200 (ADR-0050).
+	@EntityGraph(attributePaths = "bottles")
+	@Query("select e from Entry e where e.userId = :userId order by e.createdAt")
+	List<Entry> findWithBottlesByUserId(@Param("userId") UUID userId);
+
 	// The aggregate that owns a given bottle, resolved for the caller. Ownership
 	// is a property of this query — another user's bottle is indistinguishable
 	// from a missing one (architecture.md §4) — so never relax it to a

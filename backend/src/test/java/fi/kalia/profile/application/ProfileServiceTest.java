@@ -47,4 +47,25 @@ class ProfileServiceTest {
 		assertThat(service.isCellarPublic(userId)).isTrue();
 	}
 
+	@Test
+	void publicCellarOwnerIdResolvesTheOwnerOfAPublicCellar() {
+		UUID userId = UUID.randomUUID();
+		Profile profile = Profile.create(userId, "alice");
+		profile.changeCellarVisibility(true);
+		given(profiles.findFirstByUsernameOrderByCreatedAtDesc("alice")).willReturn(Optional.of(profile));
+
+		assertThat(service.publicCellarOwnerId("alice")).contains(userId);
+	}
+
+	// A private cellar and an unknown username must be one answer (ADR-0050).
+	@Test
+	void publicCellarOwnerIdIsEmptyForAPrivateCellarOrAnUnknownUsername() {
+		Profile privateProfile = Profile.create(UUID.randomUUID(), "alice");
+		given(profiles.findFirstByUsernameOrderByCreatedAtDesc("alice")).willReturn(Optional.of(privateProfile));
+		given(profiles.findFirstByUsernameOrderByCreatedAtDesc("nobody")).willReturn(Optional.empty());
+
+		assertThat(service.publicCellarOwnerId("alice")).isEmpty();
+		assertThat(service.publicCellarOwnerId("nobody")).isEmpty();
+	}
+
 }

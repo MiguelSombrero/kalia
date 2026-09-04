@@ -110,7 +110,7 @@ the root-package API.
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering | — |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
-| `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)* | `catalog` (read: beer existence), `identity` (current user) |
+| `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
 
 ### Persistence
@@ -192,6 +192,7 @@ REST, JSON, versioned under `/api/v1`. Built:
 GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
 GET    /api/v1/beers/{id}
 GET    /api/v1/breweries?page=&size=
+GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
@@ -217,6 +218,16 @@ doesn't match the bottle's real entry" case
 ([task 02](tasks/iteration-5/02-cellar-rest-api.md)). The list is not
 paginated — a cellar is realistically far smaller than the catalog — and an
 entry or bottle belonging to another user answers 404, uniformly, never 403.
+
+`GET /api/v1/cellars/{username}` is the one cellar route a signed-out caller
+may reach: the whole of a cellar its owner has marked public, its bottles
+nested under their beers, in a response type of its own rather than the
+owner's `EntryDto`/`BottleDto`. `cellar` owns it and reads `profile` for the
+owner id and the visibility answer; the owner id is resolved before the cellar
+is loaded, so a non-public cellar is never read. An unknown username, a
+missing profile and a private cellar are one 404 — identical for every caller,
+the owner included — so usernames cannot be walked for cellars
+([ADR-0050](adr/0050-public-cellar-addressing.md)).
 
 Conventions:
 
@@ -338,7 +349,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   `identity` module maps the token's `sub` to the current user — the
   canonical per-user key every module uses. The BFF attaches the session's
   access token in `lib/api/mutator.ts`.
-- Catalog endpoints stay public; cellar endpoints require authentication. The
+- Catalog endpoints and the public cellar read (`GET /api/v1/cellars/*`) stay
+  public; every other cellar endpoint requires authentication. The
   filter chain denies by default, so a new
   endpoint is protected unless it is deliberately listed as public. ArchUnit
   keeps that chain in place: it must exist, live in `identity`, and configure
