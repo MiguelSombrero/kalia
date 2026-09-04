@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,19 @@ import org.springframework.web.bind.annotation.RestController;
 class ProfileController {
 
 	private final ProfileService profile;
+
+	@GetMapping
+	// Do not remove: matches Spring's default, but its absence would silently
+	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "Read the caller's own profile",
+			description = """
+					Creates the caller's profile the first time it is needed. The caller is always \
+					resolved from the bearer token, so this can never affect anyone else's profile.\
+					""")
+	ProfileDto myProfile(@AuthenticationPrincipal Jwt jwt) {
+		return ProfileDto.from(profile.currentProfile(currentUserId(jwt), currentUsername(jwt)));
+	}
 
 	@PatchMapping("/visibility")
 	// Do not remove: matches Spring's default, but its absence would silently

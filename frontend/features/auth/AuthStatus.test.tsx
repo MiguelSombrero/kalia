@@ -20,11 +20,13 @@ describe("AuthStatus", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("greets the signed-in user by name and offers to sign out", async () => {
+  it("links the signed-in user's name to their profile and offers to sign out", async () => {
     auth.mockResolvedValue({ user: { name: "Ada Lovelace", email: "ada@example.com" } });
     const { container } = render(await AuthStatus({ locale: "en" }));
 
-    expect(screen.getByText("Hi, Ada Lovelace")).toBeInTheDocument();
+    const profileLink = screen.getByRole("link", { name: "Profile: Ada Lovelace" });
+    expect(profileLink).toHaveAttribute("href", "/en/profile");
+    expect(screen.getByText("Ada Lovelace")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -33,6 +35,6 @@ describe("AuthStatus", () => {
     auth.mockResolvedValue({ user: { name: null, email: "ada@example.com" } });
     render(await AuthStatus({ locale: "en" }));
 
-    expect(screen.getByText("Hi, ada@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Profile: ada@example.com" })).toBeInTheDocument();
   });
 });

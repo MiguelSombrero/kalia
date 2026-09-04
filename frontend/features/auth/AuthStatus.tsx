@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
@@ -22,11 +23,32 @@ export const AuthStatus = async ({ locale }: Props) => {
 
   const name = session.user.name ?? session.user.email ?? "";
   return (
-    <form action={federatedSignOut} className="flex items-center gap-2">
-      <span className="text-muted-foreground">{t("auth.helloUser", { name })}</span>
-      <button type="submit" className="text-muted-foreground hover:underline">
-        {t("auth.signOut")}
-      </button>
-    </form>
+    <div className="flex items-center gap-2">
+      {/* One accessible name covers both the destination and the user,
+          naming the icon and the visible username as one link rather than
+          two separate accessible elements. */}
+      <Link
+        href={`/${locale}/profile`}
+        aria-label={t("auth.profileLink", { name })}
+        className="flex items-center gap-1.5 text-muted-foreground hover:underline"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          className="h-4 w-4"
+        >
+          <path d="M10 10a3 3 0 100-6 3 3 0 000 6zM4 17a6 6 0 0112 0" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span>{name}</span>
+      </Link>
+      <form action={federatedSignOut}>
+        <button type="submit" className="text-muted-foreground hover:underline">
+          {t("auth.signOut")}
+        </button>
+      </form>
+    </div>
   );
 };

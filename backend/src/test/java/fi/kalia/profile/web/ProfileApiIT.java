@@ -112,11 +112,62 @@ class ProfileApiIT {
 				.expectStatus().isUnauthorized();
 	}
 
+	@Test
+	void readsTheCallersOwnProfileReflectingAPriorVisibilityChange() {
+		changeVisibility(USER_A, true).expectStatus().isOk();
+
+		readProfile(USER_A)
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo("user-a");
+					assertThat((boolean) JsonPath.read(body, "$.cellarPublic")).isTrue();
+				});
+	}
+
+	@Test
+	void readingTheProfileCreatesItLazilyDefaultingToPrivate() {
+		assertThat(profiles.findById(userAId)).isEmpty();
+
+		readProfile(USER_A)
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((boolean) JsonPath.read(body, "$.cellarPublic")).isFalse());
+
+		assertThat(profiles.findById(userAId)).isPresent();
+	}
+
+	@Test
+	void eachCallerReadsOnlyTheirOwnProfile() {
+		changeVisibility(USER_A, true).expectStatus().isOk();
+
+		readProfile(USER_B)
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo("user-b");
+					assertThat((boolean) JsonPath.read(body, "$.cellarPublic")).isFalse();
+				});
+	}
+
+	@Test
+	void anUnauthenticatedReadIsRejected() {
+		client.method(HttpMethod.GET).uri("/api/v1/profile")
+				.exchange()
+				.expectStatus().isUnauthorized();
+	}
+
 	private RestTestClient.ResponseSpec changeVisibility(String bearer, boolean cellarPublic) {
 		return client.method(HttpMethod.PATCH).uri("/api/v1/profile/visibility")
 				.header("Authorization", bearer)
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(Map.of("cellarPublic", cellarPublic))
+				.exchange();
+	}
+
+	private RestTestClient.ResponseSpec readProfile(String bearer) {
+		return client.method(HttpMethod.GET).uri("/api/v1/profile")
+				.header("Authorization", bearer)
 				.exchange();
 	}
 

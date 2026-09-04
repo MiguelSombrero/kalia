@@ -201,6 +201,7 @@ GET    /api/v1/cellar/entries/{entryId}/bottles     -> one entry's bottles
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
+GET    /api/v1/profile                              -> the caller's own profile (username, current cellar visibility)
 PATCH  /api/v1/profile/visibility                   -> change whether the caller's cellar is public
 ```
 

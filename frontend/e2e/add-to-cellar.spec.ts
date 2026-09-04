@@ -16,7 +16,7 @@ const signIn = async (page: Page) => {
   await page.locator("#username").fill(USERNAME);
   await page.locator("#password").fill(PASSWORD);
   await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByText("Hi, Test User")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
 };
 
 // 0 when the beer is not in the cellar at all, so the spec is a delta against

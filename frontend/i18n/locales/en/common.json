@@ -67,7 +67,7 @@
   "auth": {
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "helloUser": "Hi, {{name}}"
+    "profileLink": "Profile: {{name}}"
   },
   "cellar": {
     "title": "My cellar",
@@ -139,6 +139,25 @@
       "error": {
         "failed": "Could not save changes. Please try again."
       }
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "pageTitle": "Profile — Kalia",
+    "loading": "Loading your profile…",
+    "signIn": {
+      "title": "Sign in to see your profile",
+      "hint": "Your profile shows your username and whether your cellar is public.",
+      "action": "Sign in"
+    },
+    "visibility": {
+      "legend": "Who can see your cellar?",
+      "private": "Only me",
+      "public": "Anyone with the link",
+      "statePrivate": "Only you can see your cellar.",
+      "statePublic": "Anyone with the link can see your cellar.",
+      "error": "Could not update your cellar visibility. Please try again.",
+      "viewLink": "View your public cellar"
     }
   }
 }
