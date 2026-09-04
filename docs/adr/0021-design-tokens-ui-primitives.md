@@ -7,6 +7,10 @@
   management (iteration 5 task 13)
 - **Amended:** 2026-08-23 — a second exception, `@radix-ui/react-toast`, for
   the remove-undo toast's live-region and timing contract (iteration 5 task 14)
+- **Amended:** 2026-09-04 — the toast's own purpose narrowed: the undo
+  action and its client-owned countdown are dropped, and it now reports
+  removal success/failure only ([ADR-0053](0053-bottle-removal-commits-immediately.md),
+  iteration 6 task 13)
 
 ## Context
 
@@ -105,6 +109,19 @@ new tokens — unlike colour and type, they are not a re-theming concern.
 > deadline — when the delayed `DELETE` fires — is owned by
 > `features/cellar/store.ts`, not by Radix; Radix supplies the announcement
 > and dismiss affordance, the app supplies the deadline.
+
+> **Amended 2026-09-04** ([ADR-0053](0053-bottle-removal-commits-immediately.md)).
+> **The toast no longer carries Undo.** Removing a bottle now commits its
+> `DELETE` immediately behind an upfront confirmation dialog (built on the
+> existing `dialog.tsx`/`@radix-ui/react-dialog` primitive above, not a new
+> one), because the delayed-commit-plus-client-only-timer model this toast
+> was built for could be silently lost to a reload, navigation, or a closed
+> tab. The toast now only reports the outcome — success, the "no longer in
+> your cellar" message when a removal empties an entry, and failure — with
+> no `ToastAction` and no countdown. Its `duration` is no longer
+> `Infinity`: with no deadline for it to race, Radix's own auto-dismiss
+> timing takes over, which is the ordinary use of the primitive this
+> exception's rationale already covers.
 
 ## Alternatives considered
 

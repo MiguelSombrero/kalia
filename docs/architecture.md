@@ -315,10 +315,12 @@ The shape of the frontend. Day-to-day rules for writing it live in
   covering every route.
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
   `:focus-visible` styling and a skip-to-content link. The non-native
-  widgets — the add/edit-bottle modals and the remove-undo toast — get their
-  focus trap, `aria-modal` and live-region behaviour from Radix rather than
-  hand-rolled ARIA. How enforcement is layered across lint, unit and E2E
-  tests: [frontend/README.md](../frontend/README.md) testing conventions.
+  widgets — the add/edit-bottle and remove-confirmation modals, and the
+  removal-outcome toast — get their focus trap, `aria-modal` and live-region
+  behaviour from Radix rather than hand-rolled ARIA
+  ([ADR-0053](adr/0053-bottle-removal-commits-immediately.md)). How
+  enforcement is layered across lint, unit and E2E tests:
+  [frontend/README.md](../frontend/README.md) testing conventions.
 
 ## 6. Authentication and identity
 
@@ -514,6 +516,7 @@ the failure back to the agent without blocking
 | [ADR-0049](adr/0049-profile-module-and-public-identity.md) | A `profile` module owns who a user is to other users | accepted | 2026-08-30 |
 | [ADR-0050](adr/0050-public-cellar-addressing.md) | A public cellar has one locale-less URL and is indistinguishable from nothing when private | accepted | 2026-08-30 |
 | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
+| [ADR-0053](adr/0053-bottle-removal-commits-immediately.md) | Bottle removal commits immediately behind a confirmation dialog, dropping undo | accepted | 2026-09-04 |
 
 ### Engineering process and documentation
 

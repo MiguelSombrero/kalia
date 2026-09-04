@@ -62,29 +62,30 @@ accounts does not depend on being the first to run.
 - A cleanup step that silently does nothing is worse than none. This is the
   same class as the [backlog](../backlog.md)'s frontend import-boundary
   fixture: a green exit code proving only that a script ran.
+- **`testuser` (and any other worker-derived e2e identity) is provisioned by
+  a worker-scoped Playwright fixture, idempotently (create-if-not-exists) via
+  the Keycloak admin API** — the same mechanism
+  [iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md)
+  introduces for intra-run parallelism, converged with this task on
+  2026-09-04 rather than decided separately. This answers this task's own
+  "where does `testuser` come from" question below for worker-derived
+  accounts: **accumulate, not reset** — idempotent creation means a leftover
+  account from a prior run is harmless and reused rather than recreated.
+  Registration-spec-created accounts are a different case and still open,
+  below.
 
 ## Open questions
 
-1. **Reset, or accumulate cleanly?** Tearing Keycloak's state down before each
-   run restores today's behaviour and throws away the durability
-   [task 01](01-persist-keycloak-state.md) just built. Letting accounts
-   accumulate means unique addresses per run and something that eventually
-   removes them.
-2. **Where does `testuser` come from once the realm file has no credentials?**
-   First-import seed, a setup script, a Playwright global setup, or the
-   admin API. [Task 01](01-persist-keycloak-state.md) question 3 is the same
-   question — whichever task answers it, the other should not answer it
-   differently.
-3. **How does a registration spec get a fresh address every run?** A timestamp
+1. **How does a registration spec get a fresh address every run?** A timestamp
    or random local-part is the obvious answer and it is what fills the realm
    with junk accounts.
-4. **Does anything delete test accounts, and when?** Per-run teardown is
+2. **Does anything delete test accounts, and when?** Per-run teardown is
    reliable until a run crashes; a periodic sweep needs something to run it;
    never is a choice too, if the junk is genuinely harmless.
-5. **Do cellar rows belonging to a deleted test user get cleaned up?** They key
+3. **Do cellar rows belonging to a deleted test user get cleaned up?** They key
    on `sub` and the backend has no user table to cascade from, so nothing
    removes them today.
-6. **Should the local stack tell a developer their Keycloak state is stale**
+4. **Should the local stack tell a developer their Keycloak state is stale**
    rather than failing in a confusing way three specs later?
 
 ## Acceptance criteria

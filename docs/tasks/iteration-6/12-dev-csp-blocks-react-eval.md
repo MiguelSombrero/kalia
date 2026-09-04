@@ -1,6 +1,6 @@
 # Task 12: The dev CSP blocks React's development-mode `eval()`
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -87,31 +87,28 @@ against a production build, where React does not use `eval`.
 - Verify in a real browser console, not with `curl` — `curl` does not enforce
   CSP ([ADR-0016](../../adr/0016-security-response-headers.md) Evidence,
   `frontend/AGENTS.md` traps).
+- **Environment detection: `process.env.NODE_ENV === "development"`**
+  (refined 2026-09-04) — matches Next's own CSP doc examples; the header is
+  still built at `next build`/`next dev` process start, so this reads
+  correctly without becoming a runtime toggle (see the constraint above).
+- **Whether `'unsafe-eval'` needs to reach `worker-src`/`child-src` or any
+  other directive besides `script-src` is not a refinement decision** — it
+  is settled during implementation by observing the dev console with the fix
+  in place, and the "zero CSP violations" acceptance criterion below is what
+  proves it either way.
+- **Header-building logic is extracted out of `next.config.ts` into a
+  testable function** (refined 2026-09-04), specifically so both build
+  modes' `script-src` can be unit-tested directly rather than only through a
+  coarser e2e/`curl` check. `headers()` in `next.config.ts` calls the
+  extracted function; the arrow-function-only ESLint rule above still binds
+  wherever it's called from `next.config.ts` itself.
+- **Terminology**: no new name is introduced for the dev/prod split — the
+  ADR-0016 amendment describes the divergence inline, matching how the ADR
+  already describes the rest of the header.
 
 ## Open questions
 
-1. **How is the environment detected?** `process.env.NODE_ENV ===
-   "development"` (what Next's own doc examples use), the `phase` argument
-   Next passes to a config function (`PHASE_DEVELOPMENT_SERVER`), or
-   something else. Pick the one that cannot silently evaluate wrong in the
-   Docker build.
-2. **Does `'unsafe-eval'` also need to reach `worker-src` / `child-src` or
-   any other directive** for Turbopack's dev workers, or is `script-src`
-   sufficient? Settle by observing the dev console with the fix in place,
-   not by guessing.
-3. **What proves the production header is unchanged?** A unit test asserting
-   the built header string in each mode, an e2e/`curl -I` check against the
-   Docker image, or both — and which is the automated acceptance criterion.
-   Note the e2e suite runs against the production stack, so it cannot observe
-   the dev header.
-4. **Where does the test live?** Asserting the header may need the
-   header-building logic extracted from `next.config.ts` into a testable
-   `lib/` (or co-located) function. Is that extraction wanted, or is a
-   coarser check (Playwright against `next start`, plus a manual dev-console
-   note) enough?
-5. **Terminology:** ADR-0016's title and body say "no-nonce variant" and
-   describe a single header. Does the amendment introduce a name for the
-   dev/prod split, or just describe it inline?
+**None.**
 
 ## Acceptance criteria
 
@@ -122,8 +119,9 @@ against a production build, where React does not use `eval`.
 - [ ] `curl -I` against a production build (`next start` or the Docker image)
       shows a `Content-Security-Policy` header byte-identical to today's —
       no `'unsafe-eval'`
-- [ ] An automated test asserts `script-src` contains `'unsafe-eval'` in the
-      development build and does not in the production build, and was
+- [ ] A unit test against the header-building function extracted from
+      `next.config.ts` asserts `script-src` contains `'unsafe-eval'` when
+      built for development and does not when built for production, and was
       confirmed to fail against the current single-environment `cspHeader`
 - [ ] `make verify` passes
 - [ ] [ADR-0016](../../adr/0016-security-response-headers.md) is amended (not
