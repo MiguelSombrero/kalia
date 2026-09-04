@@ -66,7 +66,11 @@ shared beer types; nothing cellar-specific stores a price.
 - `docs/glossary.md`, `docs/architecture.md` §3 (the data model sketch names
   `price_cents, currency` and "Prices are integer cents to avoid floating
   point") and any ADR mentioning price are updated in the same PR
-  ([ADR-0020](../../adr/0020-documentation-roles.md)).
+  ([ADR-0020](../../adr/0020-documentation-roles.md)). The same sweep fixes
+  the two places that wrongly list price as a *built search filter* —
+  `docs/architecture.md` §1 "Functional requirements" and `README.md`'s "What
+  Kalia does" list (quality backlog MUST-7, retired into this task); the API
+  has never had a price parameter.
 - `formatPrice` exists partly as [ADR-0011](../../adr/0011-i18next-localization.md)'s
   worked example of locale-aware number formatting; removing it must not leave
   that ADR referencing a helper that no longer exists.
@@ -112,8 +116,10 @@ shared beer types; nothing cellar-specific stores a price.
       catalog suite (`mvn test` / `npm test`), and every existing test that
       built a `Money` or asserted on a price is updated; the suite was
       confirmed to fail against the pre-removal code
-- [ ] `docs/architecture.md` §3, `docs/glossary.md` and any price-mentioning
-      ADR are updated; `make verify` is green
+- [ ] `docs/architecture.md` §1 and §3, `README.md`, `docs/glossary.md` and
+      any price-mentioning ADR are updated — no doc still lists price as a
+      searchable attribute or a beer property (quality backlog MUST-7);
+      `make verify` is green
 
 ## Notes
 
