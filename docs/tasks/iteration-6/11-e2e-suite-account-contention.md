@@ -1,6 +1,6 @@
 # Task 11: The e2e suite's specs contend for one Keycloak account
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -95,18 +95,18 @@ spec's session.
 
 ## Acceptance criteria
 
-- [ ] `cd frontend && npm run test:e2e` — the `make verify` invocation, with
+- [x] `cd frontend && npm run test:e2e` — the `make verify` invocation, with
       `retries` left at the local default of 0 and the run using more than one
       worker — passes on three consecutive runs against one already-up stack
-- [ ] Each Playwright worker authenticates as its own Keycloak account,
+- [x] Each Playwright worker authenticates as its own Keycloak account,
       provisioned idempotently (create-if-not-exists) via the admin API by a
       worker-scoped fixture — `add-to-cellar.spec.ts` and
       `sign-in-out.spec.ts` no longer share an identity when they land on
       different workers, with a Playwright run as evidence
-- [ ] A spec or helper that lands on a signed-out page where it expected a
+- [x] A spec or helper that lands on a signed-out page where it expected a
       signed-in one fails as an authentication error, not as a silent "0
       bottles" / empty-state reading — verified by forcing that state
-- [ ] `frontend/README.md` and/or `playwright.config.ts` state how e2e specs
+- [x] `frontend/README.md` and/or `playwright.config.ts` state how e2e specs
       acquire their identity and why, so the next spec author does not
       re-introduce the sharing
 
