@@ -36,6 +36,10 @@ Goal: someone other than the author can create a Kalia account.
 | [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | needs-refinement |
 | [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | needs-refinement |
 | [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | needs-refinement |
+| [11](iteration-6.5/11-concurrent-add-bottle-race.md) | Fix the concurrent add-bottle 500 and lost write | needs-refinement |
+| [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | needs-refinement |
+| [13](iteration-6.5/13-align-current-user-service-convention.md) | Make the caller-identity convention match the code | needs-refinement |
+| [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | needs-refinement |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under
@@ -108,6 +112,18 @@ because it is small, product-owner-requested from
 [PR #221](https://github.com/MiguelSombrero/kalia/pull/221)'s review, and 6.5
 is the next open iteration; it depends on nothing else in it and can run in
 any position.
+
+[Tasks 11–14](iteration-6.5/11-concurrent-add-bottle-race.md) are riders too
+(`Covers: none`, none about sign-up) — four MUST findings the product owner
+lifted from the [quality backlog](quality-backlog.md) on 2026-09-04, chosen by
+impact: **MUST-8** (task 11) and **MUST-9** (task 12) are user-facing cellar
+bugs; **MUST-3** (task 13) is a documented backend convention that produces
+wrong code in
+[iteration-6 task 02](iteration-6/02-public-cellar-api.md); **MUST-5**
+(task 14) is a self-contradiction in `docs/architecture.md`. Each depends on
+nothing else in this iteration and can run in any position. The
+`[needs decision]` points on MUST-3, MUST-8 and MUST-9 were settled in the
+lifting conversation and are recorded in the task files as constraints.
 
 One thing is deliberately **not** a task here. The
 [backlog](backlog.md)'s GDPR entry — account deletion, data export, consent —

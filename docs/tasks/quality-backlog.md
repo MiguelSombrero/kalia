@@ -43,64 +43,18 @@ they're already cross-referenced from merged PRs and
 
 ## MUST
 
-- **MUST-3** *(confirmed 2026-08-30)* **[needs decision]** — the binding
-  convention "a service that needs the caller injects `CurrentUserService`
-  rather than taking a principal parameter" has zero production instances, and
-  the newest module does the opposite: `CellarService` threads `UUID userId`
-  through all five public methods while `CellarController` resolves it via
-  `IdentityApi`. `backend/README.md:203` vs
-  `backend/src/main/java/fi/kalia/cellar/application/CellarService.java:29`.
-  The next task to touch this, [iteration-6 task 02](iteration-6/02-public-cellar-api.md),
-  reads a cellar for an *anonymous* caller, which is exactly where following
-  the written rule produces wrong code. Either the code adopts the convention
-  or the convention is rewritten to match the code.
 - **MUST-4** *(confirmed 2026-08-30)* — the root README calls
   `@radix-ui/react-dialog` "the one UI dependency in an otherwise hand-written
   primitive set" while `@radix-ui/react-toast` is a second one, sanctioned by
   ADR-0021's 2026-08-23 amendment and never recorded in the README tech stack
   as CLAUDE.md requires. `README.md:175` vs `frontend/package.json:18`,
   `docs/architecture.md:286`, `frontend/README.md:206`.
-- **MUST-5** *(confirmed 2026-08-30)* — `docs/architecture.md` contradicts
-  itself about the API client: §4 says "the frontend may later generate its
-  TypeScript client from the spec" (`docs/architecture.md:225`) while §5 says
-  it already does, into a committed `lib/api/generated/` with a CI drift check
-  (`docs/architecture.md:272`). A reader landing in §4 concludes the client is
-  hand-written and may edit generated files that regeneration discards.
 - **MUST-6** *(confirmed 2026-08-30)* — the ADR index labels ADR-0045's link
   "ADR-0046", so ADR-0046 appears twice under two different subjects and
   ADR-0045 never appears under its own number. `docs/adr/README.md:73` (target
   is `0045-brewery-list-paginates-in-application.md`; the real ADR-0046 is
   correctly listed at `docs/adr/README.md:171`). `check-adrs.mjs` validates
   link targets, not link labels, so it passes.
-- **MUST-7** *(confirmed 2026-08-30)* — price is documented as a *built*
-  search filter in two places, but the API has no price parameter:
-  `docs/architecture.md:26` and `README.md:102` list it, while
-  `CatalogController.searchBeers` accepts only `query`, `style`, `breweryId`,
-  `country`, `minAbv`, `maxAbv`, `page`, `size`, `sort`
-  (`backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:53`) and
-  `docs/architecture.md:171`'s own endpoint listing already omits it. Price is
-  display-only. (`README.md:104`'s *detail view* list is correct.)
-- **MUST-8** *(confirmed 2026-08-30)* **[needs decision]** — two concurrent
-  "add bottle" requests for the same beer end in a 500. `entryFor` does a
-  read-then-insert with no handling for the `UNIQUE (user_id, beer_id)`
-  constraint on `cellar.entry`, and no advice anywhere maps
-  `DataIntegrityViolationException`, so the loser's commit fails unhandled and
-  no bottles are persisted.
-  `backend/src/main/java/fi/kalia/cellar/application/CellarService.java:98`.
-  Catch-and-refetch, an `ON CONFLICT DO NOTHING` upsert, and a 409 are all
-  defensible; which one depends on whether the second request should silently
-  succeed or be told to retry.
-- **MUST-9** *(confirmed 2026-08-30)* **[needs decision]** — "brewed in the
-  future" is judged against the UTC date while the date picker offers the
-  user's local date, so a user east of UTC cannot record a bottle brewed today
-  during the first hours of every day. `todayIso()` is
-  `new Date().toISOString().slice(0, 10)`
-  (`frontend/features/cellar/bottleDateRules.ts:3`); the backend mirror uses
-  `LocalDate.now()` in the container's UTC default zone
-  (`backend/src/main/java/fi/kalia/cellar/domain/Bottle.java:82`). Both
-  schema tests use `2999-01-01`, which passes under any timezone, so nothing
-  pins the boundary. "Today" can be the client's local day or UTC everywhere;
-  the two give different answers.
 
 ## SHOULD
 
@@ -374,3 +328,8 @@ live section they came from.
 - ~~COULD-13~~ (`docs/tasks/backlog.md` defers a logging item on a reason that stopped being true in iteration 3) — lifted into [iteration-5.5 task 01](iteration-5.5/01-documentation-accuracy-sweep.md).
 - ~~COULD-14~~ (task 02 pointed at a "task 01 question 6" that no longer exists) — resolved: confirmed 2026-08-23 that the dangling reference has already been reworded away in a later PR. No task needed.
 - ~~COULD-15~~ (`Entry.addBottles` had no upper bound on bulk-add quantity) — resolved: confirmed 2026-08-23 that `AddBottleRequestDto` already bounds `quantity` with `@Min(1)`/`@Max(24)`. No task needed.
+- ~~MUST-3~~ (the `CurrentUserService`-injection convention in `backend/README.md` has zero production instances and every cross-module consumer does the opposite) — lifted into [iteration-6.5 task 13](iteration-6.5/13-align-current-user-service-convention.md). `[needs decision]` resolved by the product owner on 2026-09-04: rewrite the convention to match the code, not the reverse.
+- ~~MUST-5~~ (`docs/architecture.md` §4 says the frontend "may later" generate its API client while §5 documents that it already does, committed and drift-checked) — lifted into [iteration-6.5 task 14](iteration-6.5/14-fix-api-client-doc-contradiction.md).
+- ~~MUST-7~~ (price listed as a *built* search filter in `docs/architecture.md` §1 and `README.md` though the API has no price parameter) — retired into [iteration-6.5 task 10](iteration-6.5/10-remove-beer-price.md): that task removes price entirely and its doc sweep now names both locations explicitly. Superseded by that task rather than lifted separately, the same way SHOULD-10 was.
+- ~~MUST-8~~ (two concurrent "add bottle" requests for the same beer end in a 500 with no bottles persisted, the `entryFor` read-then-insert racing the `UNIQUE (user_id, beer_id)` constraint) — lifted into [iteration-6.5 task 11](iteration-6.5/11-concurrent-add-bottle-race.md). `[needs decision]` resolved by the product owner on 2026-09-04: catch-and-refetch via Spring Retry, not a 409 and not a Postgres `ON CONFLICT` upsert.
+- ~~MUST-9~~ ("brewed in the future" judged against the UTC date while the date picker offers the user's local date, blocking a user east of UTC from recording today's bottle in the early hours) — lifted into [iteration-6.5 task 12](iteration-6.5/12-bottle-future-date-uses-local-day.md). `[needs decision]` resolved by the product owner on 2026-09-04: "today" is the client's local day.
