@@ -43,12 +43,39 @@ migrations, and the event flow from `cellar` to `feed`.
 - One schema per module, migrations under the module's own Flyway location.
 - Spring Modulith's event publication registry already exists in the `public`
   schema ([architecture.md §3](../../architecture.md)) — this is the first
-  consumer, so its at-least-once semantics stop being theoretical.
+  consumer, so its at-least-once semantics stop being theoretical, and whatever
+  `feed` does on receipt must be safe to run twice for one event.
+- **Where the event originates is already decided —
+  [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md).**
+  This task does not choose it. `cellar.Entry` (the aggregate root) registers
+  `BottleAdded` inside its state-changing method, and Spring Data drains it
+  when `CellarService` calls `entries.save(entry)`; there is no service-side
+  `ApplicationEventPublisher` call to add. This is a hard dependency on
+  [ADR-0052](../../adr/0052-cellar-aggregate-owns-its-writes.md) too — every
+  cellar write path ends in a `save`/`delete` on the root, which is what makes
+  the registered event actually publish.
+- **The event type is `fi.kalia.cellar.BottleAdded` in `cellar`'s root
+  package** — the inter-module API, the only part of `cellar` this module may
+  reference ([ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md),
+  [ADR-0007](../../adr/0007-backend-package-structure.md)). Any further event
+  kind this iteration needs is named the same way: past participle on the thing
+  that changed, no module prefix (`BottleRemoved`, `EntryEmptied`).
+- **The event carries ids and `occurredAt`, never a copy of anything that can
+  change** ([ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)).
+  So the privacy rule below is already structural on the `cellar` side — a
+  stale visibility flag cannot be in the event because no mutable field is —
+  and open question 2 is narrowed to *which* ids, not whether to copy names.
 - **A feed event must never carry a cellar's privacy decision at the wrong
-  moment.** Whatever this task stores, visibility can change after the event is
-  recorded; the reader must see the current answer, not the one that was true
-  when the bottle was added. Getting this wrong leaks a cellar that was later
-  made private, and it fails silently.
+  moment.** Whatever this task stores in `feed`, visibility can change after
+  the event is recorded; the reader must see the current answer, not the one
+  that was true when the bottle was added. Getting this wrong leaks a cellar
+  that was later made private, and it fails silently.
+- **Prove the event actually fires on the real path.** An integration test
+  calls `CellarService.addBottles` — not `entries.save` directly — and asserts
+  a `BottleAdded` reaches the publication registry, via Spring Modulith's
+  `AssertablePublishedEvents` / `@ApplicationModuleTest`. ADR-0053 names this
+  test as this task's to write: a test that registers and saves in one step
+  would pass even if a production caller skipped the save.
 
 ## Open questions
 

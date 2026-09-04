@@ -1,6 +1,6 @@
 # Task 07: Where a cellar's domain events are registered
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -119,27 +119,27 @@ No event is implemented and no production code ships.
 
 ## Acceptance criteria
 
-- [ ] An ADR records where an event is registered, what it may carry, and what
+- [x] An ADR records where an event is registered, what it may carry, and what
       the rejected option would have cost; `node scripts/check-adrs.mjs`
       passes
-- [ ] The ADR names the silent failure mode of *each* option — specifically,
+- [x] The ADR names the silent failure mode of *each* option — specifically,
       for each, the way an expected event fails to publish with nothing
       erroring and no test necessarily noticing, including the chosen one's:
       an entity mutated inside a transaction and never explicitly saved
       persists by dirty checking and publishes nothing
-- [ ] The ADR states the naming rule and what it yields for the events already
+- [x] The ADR states the naming rule and what it yields for the events already
       foreseeable, and [task 08](08-ubiquitous-language-glossary.md)'s glossary
       carries it as a term rule rather than a second copy of the reasoning
-- [ ] The ADR states whether the rule depends on
+- [x] The ADR states whether the rule depends on
       [task 05](05-cellar-aggregate-owns-its-writes.md) having landed, and if
       so says so as a dependency rather than an assumption
-- [ ] `docs/architecture.md` §3's cross-module-writes line points at the ADR
+- [x] `docs/architecture.md` §3's cross-module-writes line points at the ADR
       instead of standing alone
-- [ ] Iteration 7 [task 01](../iteration-7/01-feed-module.md) has its
+- [x] Iteration 7 [task 01](../iteration-7/01-feed-module.md) has its
       Constraints rewritten against the decision before it is refined — a rule
       the task behind it does not reference is a rule that will not be
       followed
-- [ ] The ADR names the test iteration 7 task 01 must write to prove an event
+- [x] The ADR names the test iteration 7 task 01 must write to prove an event
       actually fires on the path the rule describes, without writing it here
 
 ## Notes
