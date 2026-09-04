@@ -115,6 +115,11 @@ cross-module *reads* via the root-package API.
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
 
+The term each module owns — every `domain` type's meaning inside its module,
+the words that mean two things across modules, and the published REST/JSON/
+TypeScript vocabulary a client meets — is catalogued in
+[docs/glossary.md](glossary.md), kept current by `scripts/check-glossary.mjs`.
+
 ### Persistence
 
 - Single PostgreSQL database; **one schema per module** so module boundaries

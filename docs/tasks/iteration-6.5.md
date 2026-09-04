@@ -35,6 +35,7 @@ Goal: someone other than the author can create a Kalia account.
 | [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | needs-refinement |
 | [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | needs-refinement |
 | [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | needs-refinement |
+| [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | needs-refinement |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under
@@ -97,6 +98,16 @@ lapses silently), and
 [09](iteration-6.5/09-deterministic-test-accounts.md) (the Playwright suite
 relies on the realm being wiped every start, and CI's fresh stack hides the
 breakage from everyone but the developer).
+
+[Task 10](iteration-6.5/10-remove-beer-price.md) does not serve this
+iteration's "Done when" (`Covers: none`) and is not about sign-up at all — it
+removes the vestigial beer `price` field, a leftover of the deprecated
+sell-beer vision ([ADR-0004](../adr/0004-backend-cart.md),
+[ADR-0005](../adr/0005-defer-auth-mock-payments.md)). It rides along here
+because it is small, product-owner-requested from
+[PR #221](https://github.com/MiguelSombrero/kalia/pull/221)'s review, and 6.5
+is the next open iteration; it depends on nothing else in it and can run in
+any position.
 
 One thing is deliberately **not** a task here. The
 [backlog](backlog.md)'s GDPR entry — account deletion, data export, consent —

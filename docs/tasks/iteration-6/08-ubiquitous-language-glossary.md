@@ -1,6 +1,6 @@
 # Task 08: A ubiquitous language per bounded context
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -97,29 +97,29 @@ confidently wrong.
 
 ## Acceptance criteria
 
-- [ ] Every type in every backend `domain` package has an entry giving its
+- [x] Every type in every backend `domain` package has an entry giving its
       meaning inside its own module — a type with no entry is the failure this
       is meant to make visible
-- [ ] Each entry says which module owns the term, and every word that means
+- [x] Each entry says which module owns the term, and every word that means
       two things across modules is named as such, with `Beer` and `Bottle`
       covered at minimum
-- [ ] The terms this iteration introduces — profile, cellar visibility, public
+- [x] The terms this iteration introduces — profile, cellar visibility, public
       cellar, and the user-facing identifier from
       [task 01](01-profile-and-visibility.md) — are in it, so the glossary
       starts current rather than starting behind
-- [ ] The published vocabulary is covered as well as the Java names — REST
+- [x] The published vocabulary is covered as well as the Java names — REST
       path segments, JSON field names and generated TypeScript types, with
       `EntryDto.quantity` among them as a term the schema does not contain
-- [ ] Terms weighed and dropped are recorded, iteration 5
+- [x] Terms weighed and dropped are recorded, iteration 5
       [task 09](../iteration-5/09-bottle-beer-naming.md)'s rejected
       `Bottle`/`Beer` rename among them, and the event-naming rule from
       [task 07](07-cellar-domain-events.md) is in it as a term rule
-- [ ] `scripts/check-glossary.mjs` fails when a type in a backend `domain`
+- [x] `scripts/check-glossary.mjs` fails when a type in a backend `domain`
       package has no entry, proven by a test running it against a fixture
       glossary with an entry removed — a check nothing ever trips passes
       whether or not its condition is right, which is why
       `ArchitectureRulesRejectViolationsTest` exists on the backend side
-- [ ] `node scripts/check-adrs.mjs` and `node scripts/check-tasks.mjs` still
+- [x] `node scripts/check-adrs.mjs` and `node scripts/check-tasks.mjs` still
       pass, and any new check joins them in CI rather than being a command
       someone remembers to run
 
