@@ -196,6 +196,24 @@ class CellarServiceIT {
 	}
 
 	@Test
+	void readPublicCellarReturnsTheOwnersEntriesEachWithItsBottles() {
+		UUID owner = UUID.randomUUID();
+		service.addBottles(owner, beerId, 2, ContainerType.BOTTLE, null, null);
+		testEntityManager.flush();
+		testEntityManager.clear();
+
+		List<Entry> cellar = service.readPublicCellar(owner);
+
+		assertThat(cellar).hasSize(1);
+		assertThat(cellar.getFirst().getBottles()).hasSize(2);
+	}
+
+	@Test
+	void readPublicCellarIsEmptyForAnOwnerWithNoCellar() {
+		assertThat(service.readPublicCellar(UUID.randomUUID())).isEmpty();
+	}
+
+	@Test
 	void refusesToListBottlesOfAnEntryOwnedBySomeoneElse() {
 		UUID owner = UUID.randomUUID();
 		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);

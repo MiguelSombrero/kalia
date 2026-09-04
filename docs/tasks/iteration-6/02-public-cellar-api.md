@@ -1,6 +1,6 @@
 # Task 02: Public cellar read API
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -76,28 +76,28 @@ through `profile`'s root-package API.
 
 ## Acceptance criteria
 
-- [ ] A signed-out request reads a public cellar's beers and bottles —
+- [x] A signed-out request reads a public cellar's beers and bottles —
       integration test
-- [ ] **A private cellar is unreadable by a signed-out caller, by a different
+- [x] **A private cellar is unreadable by a signed-out caller, by a different
       signed-in user, and by a caller passing the owner's own identifier** —
       integration test for each, every one confirmed to fail against an
       implementation that ignores the visibility flag
-- [ ] Flipping a cellar from public to private makes an identical request stop
+- [x] Flipping a cellar from public to private makes an identical request stop
       working — integration test doing exactly that, which is the case a test
       of two fixed cellars would miss
-- [ ] A private cellar, an unknown username and the owner's own private cellar
+- [x] A private cellar, an unknown username and the owner's own private cellar
       produce byte-identical responses — integration test comparing status and
       body across all three, confirmed to fail against an implementation that
       answers 403 for any of them
-- [ ] The public response is a distinct type from `EntryDto`/`BottleDto` — a
+- [x] The public response is a distinct type from `EntryDto`/`BottleDto` — a
       test pins its rendered field set, so a field added to the owner's shape
       cannot reach it without someone choosing to add it
-- [ ] The owner still reads and writes their own cellar unchanged, and no
+- [x] The owner still reads and writes their own cellar unchanged, and no
       caller can write to anyone else's through the new path — integration test
-- [ ] The generated OpenAPI client is regenerated and committed; the
+- [x] The generated OpenAPI client is regenerated and committed; the
       `api-client-drift` CI job passes
       ([ADR-0012](../../adr/0012-orval-api-client.md))
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

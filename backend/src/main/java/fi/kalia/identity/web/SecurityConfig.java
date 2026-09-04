@@ -46,6 +46,10 @@ class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/v1/beers", "/api/v1/beers/*",
 								"/api/v1/breweries")
 						.permitAll()
+						// A public cellar is readable by anyone, including signed-out
+						// (ADR-0050). Single star: only the username segment, never a
+						// sub-resource, and GET only — the resource is read-only.
+						.requestMatchers(HttpMethod.GET, "/api/v1/cellars/*").permitAll()
 						// "/swagger-ui.html" needs its own entry — it is not under /swagger-ui/.
 						.requestMatchers("/actuator/health/**").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
