@@ -1,28 +1,19 @@
 // The full journey in one spec: a cellar made public is readable by a
 // signed-out visitor from its link, and made private again it reveals
-// nothing. Credentials are the dev-only account in keycloak/realm-export.json.
+// nothing. Credentials are a per-worker account provisioned by
+// ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, signIn, test, type KeycloakAccount } from "./support/keycloakAccount";
 
-const USERNAME = "testuser";
-const PASSWORD = "testuser123";
-const SHARE_URL = `/cellars/${USERNAME}`;
-const LOCALE_CELLAR_URL = `/en/cellars/${USERNAME}`;
-
-// Shares the one realm user with the other specs, which cycle sign-in/out.
+// Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
+
+const shareUrl = (account: KeycloakAccount) => `/cellars/${account.username}`;
+const localeCellarUrl = (account: KeycloakAccount) => `/en/cellars/${account.username}`;
 
 const scanForA11yViolations = (page: Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-
-const signIn = async (page: Page) => {
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.locator("#username").waitFor();
-  await page.locator("#username").fill(USERNAME);
-  await page.locator("#password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByRole("link", { name: "Profile: Test User" })).toBeVisible();
-};
 
 const signOut = async (page: Page) => {
   await page.getByRole("button", { name: "Sign out" }).click();
@@ -33,7 +24,7 @@ const signOut = async (page: Page) => {
 // Puts at least one beer in the cellar so the public page has something to
 // show, and returns its name. Uses a beer well down the list because
 // add-to-cellar.spec asserts exact bottle deltas on the first two catalog
-// cards; the suite still shares this one Keycloak account.
+// cards, and both specs can land on the same worker's account.
 const ensureABeerInCellar = async (page: Page): Promise<string> => {
   await page.goto("/en/beers");
   const card = page.getByRole("listitem").nth(6);
@@ -70,17 +61,23 @@ const setVisibility = async (page: Page, option: "Only me" | "Anyone with the li
 
 test("a public cellar is readable signed-out from its link, and private reveals nothing", async ({
   page,
+  account,
 }) => {
+  const shareUrlPath = shareUrl(account);
+  const localeCellarUrlPath = localeCellarUrl(account);
+
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
   const beerName = await ensureABeerInCellar(page);
   await setVisibility(page, "Anyone with the link");
 
   // The owner reaches their public cellar from the profile, and is the only
   // caller who sees the "this is how others see it" banner.
   await page.getByRole("link", { name: "View your public cellar" }).click();
-  await expect(page).toHaveURL(new RegExp(`${LOCALE_CELLAR_URL}$`));
-  await expect(page.getByRole("heading", { level: 1, name: "testuser's cellar" })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${localeCellarUrlPath}$`));
+  await expect(
+    page.getByRole("heading", { level: 1, name: `${account.username}'s cellar` }),
+  ).toBeVisible();
   await expect(page.getByText("This is how others see your cellar.")).toBeVisible();
   await expect(page.getByRole("button", { name: new RegExp(beerName) })).toBeVisible();
   expect((await scanForA11yViolations(page)).violations).toEqual([]);
@@ -90,9 +87,11 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   // beers, with no owner banner.
   await page.goto("/en");
   await signOut(page);
-  await page.goto(SHARE_URL);
-  await expect(page).toHaveURL(new RegExp(`${LOCALE_CELLAR_URL}$`));
-  await expect(page.getByRole("heading", { level: 1, name: "testuser's cellar" })).toBeVisible();
+  await page.goto(shareUrlPath);
+  await expect(page).toHaveURL(new RegExp(`${localeCellarUrlPath}$`));
+  await expect(
+    page.getByRole("heading", { level: 1, name: `${account.username}'s cellar` }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: new RegExp(beerName) })).toBeVisible();
   await expect(page.getByText("This is how others see your cellar.")).toHaveCount(0);
   expect((await scanForA11yViolations(page)).violations).toEqual([]);
@@ -100,17 +99,17 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   // Back in, back to private: the same URL now answers only "not found", and
   // the beer is gone from the DOM.
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
   await setVisibility(page, "Only me");
 
-  await page.goto(LOCALE_CELLAR_URL);
+  await page.goto(localeCellarUrlPath);
   await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   await expect(page.getByText(beerName)).toHaveCount(0);
 
   // And the same for a signed-out visitor arriving on the share URL.
   await page.goto("/en");
   await signOut(page);
-  await page.goto(SHARE_URL);
+  await page.goto(shareUrlPath);
   await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   await expect(page.getByText(beerName)).toHaveCount(0);
 });

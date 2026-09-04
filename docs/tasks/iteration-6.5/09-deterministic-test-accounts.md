@@ -87,6 +87,21 @@ accounts does not depend on being the first to run.
    removes them today.
 4. **Should the local stack tell a developer their Keycloak state is stale**
    rather than failing in a confusing way three specs later?
+5. **Does account identity need to be unique per Playwright *process/run*, not
+   just per worker?** [Iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md)'s
+   worker-scoped fixture (`frontend/e2e/support/keycloakAccount.ts`) derives
+   account names from `workerInfo.parallelIndex`, which resets to 0 for every
+   fresh `npx playwright test` invocation. Two concurrent Playwright
+   processes against the same live stack — a developer re-running one spec
+   in a second terminal while the full suite runs in a first, or two
+   worktrees sharing one stack — independently derive the same
+   `e2e-worker-0` account and can collide, reproducing task 11's own
+   contention bug one level up. Salting the name with something
+   process/run-scoped (hostname, PID, a generated run id) would fix that,
+   but is in tension with this task's "accumulate, not reset" answer above:
+   a run-scoped salt mints fresh accounts every run on a durable Keycloak
+   instead of safely reusing them. May need to fold into question 2's
+   cleanup answer rather than be solved separately.
 
 ## Acceptance criteria
 
@@ -110,3 +125,7 @@ Found while sketching this iteration on 2026-08-29, from reading
 account-creating spec is what makes the problem concrete —
 [task 01](01-persist-keycloak-state.md) still owns keeping the existing suite
 green on its own, since the definition of done requires it.
+
+Open question 5 above surfaced from `/code-review` on
+[iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md), PR
+[#226](https://github.com/MiguelSombrero/kalia/pull/226).

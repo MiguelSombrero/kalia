@@ -1,24 +1,13 @@
 // Exercises the visibility control itself against the compose stack; the
 // journey through a stranger's view of a public cellar belongs to the public
-// cellar page, once it exists. Credentials are the dev-only account in
-// keycloak/realm-export.json.
+// cellar page, once it exists. Credentials are a per-worker account
+// provisioned by ./support/keycloakAccount.ts.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, signIn, test } from "./support/keycloakAccount";
 
-const USERNAME = "testuser";
-const PASSWORD = "testuser123";
-
-// Shares the one realm user with the other specs, which cycle sign-in/out.
+// Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
-
-const signIn = async (page: Page) => {
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.locator("#username").waitFor();
-  await page.locator("#username").fill(USERNAME);
-  await page.locator("#password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign In" }).click();
-  await expect(page.getByRole("link", { name: /^Profile: / })).toBeVisible();
-};
 
 const openProfile = async (page: Page) => {
   await page.getByRole("link", { name: /^Profile: / }).click();
@@ -28,9 +17,9 @@ const openProfile = async (page: Page) => {
 const scanForA11yViolations = (page: Page) =>
   new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
-test("toggles cellar visibility, and the choice survives a reload", async ({ page }) => {
+test("toggles cellar visibility, and the choice survives a reload", async ({ page, account }) => {
   await page.goto("/en");
-  await signIn(page);
+  await signIn(page, account);
   await openProfile(page);
 
   // Start from a known state regardless of what earlier runs left behind.
