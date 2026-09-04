@@ -1,21 +1,7 @@
 import type { NextConfig } from "next";
+import { buildCspHeader } from "./lib/config/cspHeader";
 
-// ADR-0016. No-nonce: 'unsafe-inline' keeps static rendering.
-const cspHeader = `
-  default-src 'self';
-  script-src 'self' 'unsafe-inline';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' blob: data:;
-  font-src 'self';
-  connect-src 'self';
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
-  frame-ancestors 'none';
-  upgrade-insecure-requests;
-`
-  .replace(/\s{2,}/g, " ")
-  .trim();
+const cspHeader = buildCspHeader(process.env.NODE_ENV);
 
 const nextConfig: NextConfig = {
   // Self-contained server bundle for the Docker runtime image

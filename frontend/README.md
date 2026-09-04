@@ -273,9 +273,9 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   abandons rather than cancels. A caller's own signal passes through untouched,
   so TanStack Query cancellation still works.
 - **Adding an external origin** (script, font, image host) means adding it to
-  `cspHeader` in `next.config.ts` in the same PR, or the browser silently
-  blocks it. Verify in the browser console, not just a successful build
-  ([ADR-0016](../docs/adr/0016-security-response-headers.md)).
+  `buildCspHeader` in `lib/config/cspHeader.ts` in the same PR, or the browser
+  silently blocks it. Verify in the browser console, not just a successful
+  build ([ADR-0016](../docs/adr/0016-security-response-headers.md)).
 - **Never navigate to another origin with a real `<form>`** — `form-action
   'self'` blocks it, *including* when the form posts to our own route and
   that route answers with a cross-origin redirect. Use a Server Action and
