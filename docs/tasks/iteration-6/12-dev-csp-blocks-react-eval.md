@@ -1,6 +1,6 @@
 # Task 12: The dev CSP blocks React's development-mode `eval()`
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -112,19 +112,19 @@ against a production build, where React does not use `eval`.
 
 ## Acceptance criteria
 
-- [ ] With `next dev` running, loading `/en`, `/en/beers` and a beer detail
+- [x] With `next dev` running, loading `/en`, `/en/beers` and a beer detail
       page produces **zero** CSP violations in the browser console —
       verified in a browser, and confirmed to fail (violation present) before
       the fix
-- [ ] `curl -I` against a production build (`next start` or the Docker image)
+- [x] `curl -I` against a production build (`next start` or the Docker image)
       shows a `Content-Security-Policy` header byte-identical to today's —
       no `'unsafe-eval'`
-- [ ] A unit test against the header-building function extracted from
+- [x] A unit test against the header-building function extracted from
       `next.config.ts` asserts `script-src` contains `'unsafe-eval'` when
       built for development and does not when built for production, and was
       confirmed to fail against the current single-environment `cspHeader`
-- [ ] `make verify` passes
-- [ ] [ADR-0016](../../adr/0016-security-response-headers.md) is amended (not
+- [x] `make verify` passes
+- [x] [ADR-0016](../../adr/0016-security-response-headers.md) is amended (not
       rewritten) to record the dev/prod CSP divergence and its reason, and
       `docs/architecture.md`'s security-headers reference is re-checked
 
