@@ -11,6 +11,8 @@
 - **Amended:** 2026-08-23 — the Consequences' revisit trigger fired (Auth and
   Cellar have both shipped); the source survey was re-run and `'unsafe-inline'`
   is re-affirmed, see below
+- **Amended:** 2026-09-04 — `next dev`'s `script-src` now also carries
+  `'unsafe-eval'`, `next build`/`next start` unchanged, see below
 
 ## Context
 
@@ -131,6 +133,30 @@ picks that domain, not this task.
 > other three items the survey checks — `innerHTML`, `eval`, an inline
 > `<script>` — have no such guard and still depend on the next sweep
 > re-running the survey by hand.
+
+> **Amended 2026-09-04.** `next dev` (Turbopack, React 19) reaches an `eval()`
+> call on an ordinary page load, not only in the error overlay: React's
+> server-components dev client (`createFakeFunction` in
+> `react-server-dom-turbopack-client.browser.development.js`) uses `eval` to
+> reconstruct server-side call stacks for debugging, and the CSP above blocked
+> it, degrading the dev error overlay and training the console to always show
+> a violation. This is React's own `eval`, not the app's — the 2026-08-23
+> survey's "no `eval` anywhere in `frontend/`" finding still stands. Next.js
+> documents the same requirement for every dev CSP example
+> (`node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md`):
+> `'unsafe-eval'` is needed in development and not in production, since
+> neither React nor Next.js use `eval` in a production build.
+>
+> **The header now diverges by build-time environment.** `script-src` gains
+> `'unsafe-eval'` only when `process.env.NODE_ENV === "development"`;
+> `next build`/`next start` and the Docker production image are byte-identical
+> to before this amendment. `headers()` stays build-time-evaluated
+> (2026-07-30 amendment above) — this reads `NODE_ENV` at the same build-time
+> point, not as a runtime toggle. The header-building logic moved out of
+> `next.config.ts` into `frontend/lib/config/cspHeader.ts` so the two branches
+> are unit-tested directly (`cspHeader.test.ts`) rather than only through a
+> `curl`/browser check. This is additive to the no-nonce decision above, not
+> a reopening of it.
 
 ## Evidence
 

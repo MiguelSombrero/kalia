@@ -83,6 +83,19 @@ one and does not reliably stop it afterwards — run `docker compose down`
 from the repo root when you're done testing locally. Not an issue in CI:
 the runner is discarded after the job.
 
+A spec that signs in gets its Keycloak account from the worker-scoped
+`account` fixture (`e2e/support/keycloakAccount.ts`), never a hardcoded
+username: the account is derived from the Playwright worker index and
+provisioned idempotently via the admin API on first use. One account per
+worker, not per file or per spec — `fullyParallel` (`playwright.config.ts`)
+schedules files onto whichever worker is free, so two specs signing in as
+the same fixed account can and did land on different workers at once and
+step on each other's session mid-test
+([iteration 6 task 11](../docs/tasks/iteration-6/11-e2e-suite-account-contention.md)).
+A new spec that needs to sign in imports `test`/`expect` from that support
+file and uses the `account` fixture, the same way
+`e2e/sign-in-out.spec.ts` does.
+
 ## Conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning.
@@ -260,9 +273,9 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   abandons rather than cancels. A caller's own signal passes through untouched,
   so TanStack Query cancellation still works.
 - **Adding an external origin** (script, font, image host) means adding it to
-  `cspHeader` in `next.config.ts` in the same PR, or the browser silently
-  blocks it. Verify in the browser console, not just a successful build
-  ([ADR-0016](../docs/adr/0016-security-response-headers.md)).
+  `buildCspHeader` in `lib/config/cspHeader.ts` in the same PR, or the browser
+  silently blocks it. Verify in the browser console, not just a successful
+  build ([ADR-0016](../docs/adr/0016-security-response-headers.md)).
 - **Never navigate to another origin with a real `<form>`** — `form-action
   'self'` blocks it, *including* when the form posts to our own route and
   that route answers with a cross-origin redirect. Use a Server Action and
