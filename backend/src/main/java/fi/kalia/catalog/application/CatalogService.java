@@ -6,6 +6,7 @@ import fi.kalia.catalog.domain.BeerSearchCriteria;
 import fi.kalia.catalog.domain.BeerSpecifications;
 import fi.kalia.catalog.domain.Brewery;
 import fi.kalia.catalog.domain.BreweryRepository;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +36,10 @@ public class CatalogService {
 
 	public Beer getBeer(UUID id) {
 		return beers.findById(id).orElseThrow(() -> new BeerNotFoundException(id));
+	}
+
+	public List<Beer> getBeers(Collection<UUID> ids) {
+		return beers.findByIdIn(ids);
 	}
 
 	public Page<Brewery> listBreweries(Pageable pageable) {

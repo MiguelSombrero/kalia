@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,9 @@ class CatalogController {
 	/** Past this page index a request cannot land on real data at any allowed size — a larger value is malformed, not an empty page. */
 	private static final long MAX_PAGE = 10_000;
 
+	/** Batch lookup id cap: keeps the repeated-parameter URL inside ordinary length limits (ADR-0042). */
+	private static final int MAX_BATCH_IDS = 100;
+
 	private final CatalogService catalog;
 
 	@GetMapping("/beers")
@@ -80,6 +84,17 @@ class CatalogController {
 	@Operation(summary = "Get beer details", description = "Full details for a single beer, including its brewery.")
 	BeerDetailsDto getBeer(@Parameter(description = "Beer id") @PathVariable UUID id) {
 		return BeerDetailsDto.from(catalog.getBeer(id));
+	}
+
+	@GetMapping("/beers/batch")
+	@Operation(summary = "Get beers by id", description = """
+			Summaries for a set of beers named by repeated `ids` query parameter, for a client \
+			enriching a list it already holds (e.g. a cellar). An id matching no beer is omitted \
+			from the response rather than returned as null; order is not significant.""")
+	List<BeerSummaryDto> getBeersByIds(
+			@Parameter(description = "Beer ids, repeated; 1-" + MAX_BATCH_IDS)
+			@RequestParam @Size(min = 1, max = MAX_BATCH_IDS) List<UUID> ids) {
+		return catalog.getBeers(ids).stream().map(BeerSummaryDto::from).toList();
 	}
 
 	@GetMapping("/breweries")

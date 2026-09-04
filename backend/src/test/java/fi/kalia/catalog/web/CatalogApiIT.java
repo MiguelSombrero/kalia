@@ -3,6 +3,8 @@ package fi.kalia.catalog.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fi.kalia.TestcontainersConfiguration;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -131,6 +133,68 @@ class CatalogApiIT {
 					assertThat((int) JsonPath.read(body, "$.price.cents")).isEqualTo(750);
 					assertThat((String) JsonPath.read(body, "$.price.currency")).isEqualTo("EUR");
 				});
+	}
+
+	@Test
+	void batchLookupReturnsTheCorrectBeerForEachRequestedId() {
+		String listBody = client.get().uri("/api/v1/beers?style=Quadrupel&size=3")
+				.exchange()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+		List<String> ids = JsonPath.read(listBody, "$.content[*].id");
+		List<String> names = JsonPath.read(listBody, "$.content[*].name");
+
+		client.get().uri("/api/v1/beers/batch?ids={a}&ids={b}", ids.get(0), ids.get(1))
+				.exchange()
+				.expectStatus().isOk()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((List<String>) JsonPath.read(body, "$[*].id"))
+							.containsExactlyInAnyOrder(ids.get(0), ids.get(1));
+					assertThat((List<String>) JsonPath.read(body, "$[*].name"))
+							.containsExactlyInAnyOrder(names.get(0), names.get(1));
+				});
+	}
+
+	@Test
+	void batchLookupOmitsAnUnknownIdRatherThanReturningNull() {
+		String listBody = client.get().uri("/api/v1/beers?query=Pliny")
+				.exchange()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+		String knownId = JsonPath.read(listBody, "$.content[0].id");
+
+		client.get().uri("/api/v1/beers/batch?ids={known}&ids=00000000-0000-0000-0000-000000000000", knownId)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((List<?>) JsonPath.read(body, "$")).hasSize(1);
+					assertThat((String) JsonPath.read(body, "$[0].id")).isEqualTo(knownId);
+				});
+	}
+
+	@Test
+	void batchLookupAboveTheHundredIdCapYieldsProblemJson400() {
+		StringBuilder uri = new StringBuilder("/api/v1/beers/batch?");
+		for (int i = 0; i < 101; i++) {
+			uri.append("ids=").append(UUID.randomUUID()).append('&');
+		}
+		client.get().uri(uri.toString())
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void batchLookupWithNoIdsYieldsProblemJson400() {
+		client.get().uri("/api/v1/beers/batch?ids=")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("ids"));
 	}
 
 	@Test

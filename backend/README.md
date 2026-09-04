@@ -193,6 +193,11 @@ lives there rather than in this file.
   which accept a text block as a compile-time constant the same as any other
   string literal. A trailing `\` at the end of a line suppresses that line's
   newline, for a literal that should read as one continuous sentence.
+- **Import a type rather than referencing it fully-qualified inline** —
+  `List<String>`, not `java.util.List<String>` — including in test code, a
+  cast, or a one-off local variable. Existing fully-qualified inline
+  references are not being retrofitted wholesale; fix the ones a change
+  actually touches.
 - **Every request parameter is bounded**: named constants, not bare
   annotation values, and a constraint spanning two parameters is checked in
   the handler and reported through `detail`

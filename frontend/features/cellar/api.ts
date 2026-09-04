@@ -1,5 +1,6 @@
 import { apiError } from "@/lib/api/api-error";
-import { getBeer } from "@/lib/api/generated/catalog/catalog";
+import { getBeer, getBeersByIds } from "@/lib/api/generated/catalog/catalog";
+import type { BeerSummaryDto } from "@/lib/api/generated/models";
 import {
   addBottles as generatedAddBottles,
   listBottles as generatedListBottles,
@@ -27,38 +28,39 @@ export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
     });
   }
 
-  const rows = await Promise.all(response.data.map(toRow));
-  return rows
+  const beersById = await fetchBeersById(response.data.map((entry) => entry.beerId));
+  return response.data
+    .map((entry) => toRow(entry, beersById.get(entry.beerId)))
     // A left join can hand back an entry every one of whose bottles has
     // since been removed — nothing to show for it.
     .filter((row): row is CellarBeerRow => row !== null && row.bottleCount > 0)
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
 
-// A 404 here means the entry's beer no longer exists in the catalog — domain
-// data, not a transport failure (ADR-0023), so the row is dropped rather than
-// failing the whole list, mirroring features/catalog/api.ts's getBeer.
-const toRow = async (entry: {
-  id: string;
-  beerId: string;
-  quantity: number;
-}): Promise<CellarBeerRow | null> => {
-  const beerResponse = await getBeer(entry.beerId);
-  // Widened via Number(): the generated type has only a 200 branch (no
-  // documented error response), so a literal comparison to 404 would not
-  // compile — matches features/catalog/api.ts's own workaround for this gap.
-  const beerStatus = Number(beerResponse.status);
-  if (beerStatus === 404) {
+// The batch endpoint omits an id it cannot resolve rather than answering null,
+// so a beer no longer in the catalog is just absent from the map — a dropped
+// row, not a transport failure (ADR-0023), handled in toRow.
+const fetchBeersById = async (beerIds: string[]): Promise<Map<string, BeerSummaryDto>> => {
+  const ids = [...new Set(beerIds)];
+  if (ids.length === 0) {
+    return new Map();
+  }
+  const response = await getBeersByIds({ ids });
+  if (response.status !== 200) {
+    throw apiError("http", `Batch beer lookup failed with status ${response.status}`, {
+      status: response.status,
+    });
+  }
+  return new Map(response.data.map((beer) => [beer.id, beer]));
+};
+
+const toRow = (
+  entry: { id: string; beerId: string; quantity: number },
+  beer: BeerSummaryDto | undefined,
+): CellarBeerRow | null => {
+  if (!beer) {
     return null;
   }
-  if (beerStatus !== 200) {
-    throw apiError(
-      "http",
-      `Beer lookup for cellar entry ${entry.id} failed with status ${beerStatus}`,
-      { status: beerStatus },
-    );
-  }
-  const beer = beerResponse.data;
   return {
     entryId: entry.id,
     beerId: entry.beerId,

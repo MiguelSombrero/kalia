@@ -35,6 +35,8 @@ class OpenApiDocumentationIT {
 				.isEqualTo("Search beers");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/beers/{id}'].get.summary"))
 				.isEqualTo("Get beer details");
+		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/beers/batch'].get.summary"))
+				.isEqualTo("Get beers by id");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/breweries'].get.summary"))
 				.isEqualTo("List breweries");
 	}

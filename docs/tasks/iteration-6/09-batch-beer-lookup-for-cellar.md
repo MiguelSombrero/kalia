@@ -1,7 +1,8 @@
 # Task 09: Batch beer lookup for the cellar page
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
+- **PR:** #222
 
 ## Why
 
@@ -84,18 +85,18 @@ this endpoint.
 
 ## Acceptance criteria
 
-- [ ] The cellar page issues one backend call to enrich all of a user's
+- [x] The cellar page issues one backend call to enrich all of a user's
       cellar entries with beer data, regardless of how many distinct beers
       are in the cellar — verified by a frontend test asserting the fetch
       call count for a multi-entry cellar
-- [ ] The new endpoint returns the correct beer for each requested id and
+- [x] The new endpoint returns the correct beer for each requested id and
       is documented in the OpenAPI spec — backend integration test (`*IT`)
-- [ ] An id matching no beer is omitted rather than returned as null, and the
+- [x] An id matching no beer is omitted rather than returned as null, and the
       cellar page renders the remaining entries — backend `*IT` for the
       omission, frontend test for the page
-- [ ] More than 100 ids answers 400 rather than truncating — backend `*IT`,
+- [x] More than 100 ids answers 400 rather than truncating — backend `*IT`,
       confirmed to fail against an unbounded implementation
-- [ ] `npm run generate:api` regenerates `lib/api/generated/` with no
+- [x] `npm run generate:api` regenerates `lib/api/generated/` with no
       uncommitted drift — CI's `api-client-drift` job stays green
 
 ## Notes
