@@ -21,6 +21,8 @@ import type {
 
 import type {
   BeerDetailsDto,
+  BeerSummaryDto,
+  GetBeersByIdsParams,
   ListBreweriesParams,
   PageDtoBeerSummaryDto,
   PageDtoBreweryDto,
@@ -391,6 +393,132 @@ export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError =
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetBeerQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type getBeersByIdsResponse200 = {
+  data: BeerSummaryDto[]
+  status: 200
+}
+
+export type getBeersByIdsResponseSuccess = (getBeersByIdsResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getBeersByIdsResponse = (getBeersByIdsResponseSuccess)
+
+export const getGetBeersByIdsUrl = (params: GetBeersByIdsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    const explodeParameters = ["ids"];
+
+    if (Array.isArray(value) && explodeParameters.includes(key)) {
+      value.forEach((v) => {
+        normalizedParams.append(key, v === null ? 'null' : String(v));
+      });
+      return;
+    }
+
+
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/beers/batch?${stringifiedParams}` : `/api/v1/beers/batch`
+}
+
+/**
+ * Summaries for a set of beers named by repeated `ids` query parameter, for a client enriching a list it already holds (e.g. a cellar). An id matching no beer is omitted from the response rather than returned as null; order is not significant.
+ * @summary Get beers by id
+ */
+export const getBeersByIds = async (params: GetBeersByIdsParams, options?: Parameters<typeof kaliaFetch>[1]): Promise<getBeersByIdsResponse> => {
+
+  return kaliaFetch<getBeersByIdsResponse>(getGetBeersByIdsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBeersByIdsQueryKey = (params?: GetBeersByIdsParams,) => {
+    return [
+    `/api/v1/beers/batch`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetBeersByIdsQueryOptions = <TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBeersByIdsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBeersByIds>>> = ({ signal }) => getBeersByIds(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBeersByIdsQueryResult = NonNullable<Awaited<ReturnType<typeof getBeersByIds>>>
+export type GetBeersByIdsQueryError = unknown
+
+
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+ params: GetBeersByIdsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBeersByIds>>,
+          TError,
+          Awaited<ReturnType<typeof getBeersByIds>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+ params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBeersByIds>>,
+          TError,
+          Awaited<ReturnType<typeof getBeersByIds>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+ params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get beers by id
+ */
+
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+ params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBeersByIdsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

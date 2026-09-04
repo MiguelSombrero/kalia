@@ -198,6 +198,7 @@ REST, JSON, versioned under `/api/v1`. Built:
 ```
 GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
 GET    /api/v1/beers/{id}
+GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
 GET    /api/v1/breweries?page=&size=
 GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
 

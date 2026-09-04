@@ -134,6 +134,58 @@ class CatalogApiIT {
 	}
 
 	@Test
+	void batchLookupReturnsTheCorrectBeerForEachRequestedId() {
+		String listBody = client.get().uri("/api/v1/beers?style=Quadrupel&size=3")
+				.exchange()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+		java.util.List<String> ids = JsonPath.read(listBody, "$.content[*].id");
+		java.util.List<String> names = JsonPath.read(listBody, "$.content[*].name");
+
+		client.get().uri("/api/v1/beers/batch?ids={a}&ids={b}", ids.get(0), ids.get(1))
+				.exchange()
+				.expectStatus().isOk()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((java.util.List<String>) JsonPath.read(body, "$[*].id"))
+							.containsExactlyInAnyOrder(ids.get(0), ids.get(1));
+					assertThat((java.util.List<String>) JsonPath.read(body, "$[*].name"))
+							.containsExactlyInAnyOrder(names.get(0), names.get(1));
+				});
+	}
+
+	@Test
+	void batchLookupOmitsAnUnknownIdRatherThanReturningNull() {
+		String listBody = client.get().uri("/api/v1/beers?query=Pliny")
+				.exchange()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+		String knownId = JsonPath.read(listBody, "$.content[0].id");
+
+		client.get().uri("/api/v1/beers/batch?ids={known}&ids=00000000-0000-0000-0000-000000000000", knownId)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((java.util.List<?>) JsonPath.read(body, "$")).hasSize(1);
+					assertThat((String) JsonPath.read(body, "$[0].id")).isEqualTo(knownId);
+				});
+	}
+
+	@Test
+	void batchLookupAboveTheHundredIdCapYieldsProblemJson400() {
+		StringBuilder uri = new StringBuilder("/api/v1/beers/batch?");
+		for (int i = 0; i < 101; i++) {
+			uri.append("ids=").append(java.util.UUID.randomUUID()).append('&');
+		}
+		client.get().uri(uri.toString())
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
 	void unknownBeerIdYieldsProblemJson404() {
 		client.get().uri("/api/v1/beers/00000000-0000-0000-0000-000000000000")
 				.exchange()
