@@ -1,6 +1,6 @@
 # Task 02: One realm file for every environment
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-2
 
@@ -69,27 +69,57 @@ mostly about preventing.
 
 ## Open questions
 
-1. **Placeholders in the export, or a different mechanism entirely?** If
-   `replace-placeholders` proves unreliable on `26.7.0`, the alternatives are a
-   generated file, `kcadm.sh` at startup, or a configuration tool such as
-   `keycloak-config-cli` — which would also answer
-   [task 03](03-prevent-realm-configuration-drift.md), making these two
-   arguably one decision. A tool is a new dependency and needs a version
-   confirmed, per [CLAUDE.md](../../../CLAUDE.md)'s dependency rule.
-2. **Where does the local client secret live?** A committed `.env` is the same
-   plaintext secret in a different file; a generated one on first run is
-   reproducible-build-hostile; an untracked `.env` needs documenting or a new
-   contributor gets a broken stack with no message saying why.
-3. **Does `testuser` survive this file at all?** If the export stops carrying
-   credentials, the fixture account has to come from somewhere —
-   [task 01](01-persist-keycloak-state.md) question 3 and
-   [task 09](09-deterministic-test-accounts.md).
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **Placeholders, or a different mechanism?** Decided: **keycloak-config-cli**
+   (new dependency — the `~v6.4`/`v6.5` line, exact patch confirmed against
+   Keycloak `26.7.0` compatibility at implementation time). This is the same
+   decision as [task 03](03-prevent-realm-configuration-drift.md)'s Q1/Q2, as
+   both tasks suspected: one tool applies the committed file idempotently on
+   every boot (task 03's drift problem) and handles per-environment
+   substitution (this task's problem) rather than two mechanisms. Needs a
+   written record per this task's own acceptance criteria and
+   [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s tests (a
+   credible rejected alternative — raw `${VAR}` placeholder substitution,
+   hand-scripted `kcadm.sh` — whose reasoning [task 04](04-send-email-from-kalia.md),
+   [task 05](05-self-registration-with-email-verification.md),
+   [task 06](06-kalia-branded-bilingual-auth-pages.md) and
+   [task 07](07-google-as-a-sign-up-route.md) will all need, since each
+   inherits "realm configuration" through this mechanism): a new ADR, numbered
+   via `make next-adr` at implementation time, shared by this task and
+   task 03 rather than duplicated.
+2. **Where does the local client secret live?** Decided: an **untracked `.env`
+   at the repository root** (not `frontend/.env.local` — the secret is
+   consumed by both the `keycloak` and `frontend` services in
+   `docker-compose.yml` itself, which is genuinely root-level, not
+   frontend-scoped). This needs no new mechanism: Docker Compose already
+   auto-loads a `.env` file beside `docker-compose.yml` for `${VAR}`
+   substitution in the compose file — the same mechanism
+   `${POSTGRES_PASSWORD:-kalia}` and `${AUTH_SECRET:-kalia-dev-auth-secret}`
+   already use, just without a default this time — and `.gitignore` already
+   carries a bare `.env` entry that matches at any depth including root, so no
+   `.gitignore` change is needed either. Document it in the root
+   [README.md](../../../README.md)'s "Run locally" section, the only existing
+   doc home that already covers `docker compose up --build`
+   ([ADR-0020](../../adr/0020-documentation-roles.md) — neither app README
+   owns a docker-compose-level secret).
+3. **Does `testuser` survive this file at all?** Decided in
+   [task 01](01-persist-keycloak-state.md): `testuser` stays, but with **no
+   credential in the committed file** — it is seeded via the same idempotent
+   create-if-not-exists mechanism as e2e worker accounts
+   (`frontend/e2e/support/keycloakAccount.ts`), not a `credentials` block in
+   `realm-export.json`. `git grep` finding no password for it is therefore
+   part of this task's own acceptance criteria, not a carve-out.
 4. **Is `sslRequired` per-environment, or does local also move to HTTPS?**
-   Keeping it variable means shipping a realm that *can* be insecure; making
-   local HTTPS means certificates in the dev stack.
-5. **How much of the realm should the file still own?** Every value that varies
-   is a placeholder, and a file that is more placeholder than content is harder
-   to review than one generated from a template.
+   Decided: stays an environment-varying placeholder; local dev stays HTTP,
+   unchanged from today. No certificate management added to the dev stack.
+5. **How much of the realm should the file still own?** Decided: the file
+   keeps the full realm definition (clients, flows, identity providers as
+   later tasks add them); per-environment values are substituted via
+   keycloak-config-cli's own variable mechanism rather than Keycloak's native
+   `${VAR}` placeholder resolution, following from question 1's answer.
 
 ## Acceptance criteria
 

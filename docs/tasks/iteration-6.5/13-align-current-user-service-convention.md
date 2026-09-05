@@ -1,6 +1,6 @@
 # Task 13: Make the caller-identity convention match the code
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -71,20 +71,25 @@ uses; a mechanism pins it so it cannot silently drift again.
 
 ## Open questions
 
-- **Module boundaries:** does
-  [ADR-0028](../../adr/0028-resource-server-and-current-user.md) get an
-  amendment, or does only the README bullet change? Its revisit-trigger list
-  is about the authentication mechanism, not this convention.
-- **Completion signal / enforcement:** can an ArchUnit rule pin it — e.g. no
-  class outside `identity` depends on `CurrentUserService` — or does
-  `backend/README.md`'s "don't add a fixture for an already-satisfied rule"
-  caveat argue against it? If no test, a written rationale.
-- **Terminology:** is "principal parameter" versus "the caller's id" worth
-  standardising across the README and `docs/architecture.md` §4's
-  authentication bullet?
-- **Scope:** does the `CurrentUserService` mention in the
-  [ProfileController comment](../../../backend/src/main/java/fi/kalia/profile/web/ProfileController.java)
-  need rewording too?
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+- **Module boundaries:** decided — only the README bullet changes; no
+  ADR-0028 amendment. The code is already correct and ADR-0028's own
+  revisit-trigger list is about the authentication mechanism, not this
+  convention, so its record needs no update to become accurate.
+- **Completion signal / enforcement:** decided — add the ArchUnit rule. The
+  problem here was a written rule with zero enforcement drifting silently
+  from the code; a rule nothing checks can drift the same way again, and
+  this one is cheap to write.
+- **Terminology:** standardise on "the caller's id," matching how the
+  corrected README describes the actual pattern (`IdentityApi` resolution at
+  the edge, an id passed into the service) more precisely than "principal
+  parameter" does.
+- **Scope:** yes, reword the
+  [ProfileController comment](../../../backend/src/main/java/fi/kalia/profile/web/ProfileController.java)'s
+  `CurrentUserService` mention too, in the same pass.
 
 ## Acceptance criteria
 

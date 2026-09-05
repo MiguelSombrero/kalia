@@ -1,6 +1,6 @@
 # Task 09: Keep the test suites deterministic against a Keycloak that no longer resets
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-3
 
@@ -47,8 +47,16 @@ accounts does not depend on being the first to run.
 
 ## Constraints
 
-- `testuser` must still exist on a fresh clone with no manual step, or the
-  suite is unrunnable for a new contributor.
+- **Correction found during refinement (2026-09-05):** the Playwright suite no
+  longer depends on `testuser` at all — [iteration 6 task
+  11](../iteration-6/11-e2e-suite-account-contention.md) already moved every
+  spec onto dynamically-provisioned `e2e-worker-N` accounts
+  (`frontend/e2e/support/keycloakAccount.ts`); `grep -rn testuser
+  frontend/e2e/` finds nothing. `testuser` itself is [task
+  01](01-persist-keycloak-state.md)'s seeded manual/demo account, not a test
+  fixture this task's suite needs — this task's own scope is the
+  `e2e-worker-N` accounts (question 5) and registration-spec-created accounts
+  (questions 1–2) instead.
 - It must not become a real account with a known password on any deployment
   — the reason [task 02](02-parameterise-realm-configuration.md) takes the
   password out of the committed realm file in the first place.
@@ -76,32 +84,36 @@ accounts does not depend on being the first to run.
 
 ## Open questions
 
-1. **How does a registration spec get a fresh address every run?** A timestamp
-   or random local-part is the obvious answer and it is what fills the realm
-   with junk accounts.
-2. **Does anything delete test accounts, and when?** Per-run teardown is
-   reliable until a run crashes; a periodic sweep needs something to run it;
-   never is a choice too, if the junk is genuinely harmless.
-3. **Do cellar rows belonging to a deleted test user get cleaned up?** They key
-   on `sub` and the backend has no user table to cascade from, so nothing
-   removes them today.
-4. **Should the local stack tell a developer their Keycloak state is stale**
-   rather than failing in a confusing way three specs later?
-5. **Does account identity need to be unique per Playwright *process/run*, not
-   just per worker?** [Iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md)'s
-   worker-scoped fixture (`frontend/e2e/support/keycloakAccount.ts`) derives
-   account names from `workerInfo.parallelIndex`, which resets to 0 for every
-   fresh `npx playwright test` invocation. Two concurrent Playwright
-   processes against the same live stack — a developer re-running one spec
-   in a second terminal while the full suite runs in a first, or two
-   worktrees sharing one stack — independently derive the same
-   `e2e-worker-0` account and can collide, reproducing task 11's own
-   contention bug one level up. Salting the name with something
-   process/run-scoped (hostname, PID, a generated run id) would fix that,
-   but is in tension with this task's "accumulate, not reset" answer above:
-   a run-scoped salt mints fresh accounts every run on a durable Keycloak
-   instead of safely reusing them. May need to fold into question 2's
-   cleanup answer rather than be solved separately.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **How does a registration spec get a fresh address every run?** Decided:
+   a timestamp/random local-part per run.
+2. **Does anything delete test accounts, and when?** Decided: no — nothing
+   ever deletes a test account, worker-derived or registration-spec-created.
+   `docker compose down -v` is the only reset, consistent with
+   [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md) treating a
+   volume wipe as an ordinary, expected step pre-deployment.
+3. **Do cellar rows belonging to a deleted test user get cleaned up?** Moot,
+   given question 2: since nothing ever deletes a test account, this task
+   creates no orphaned cellar rows to clean up.
+4. **Should the local stack warn about stale Keycloak state?** Decided: no
+   special warning needed here. [Task 03](03-prevent-realm-configuration-drift.md)'s
+   keycloak-config-cli mechanism already reconciles an old volume's
+   realm-level configuration to the committed file on every boot, so the
+   specific "old realm shape" staleness this question worried about is
+   handled structurally rather than needing a separate check in this task.
+5. **Does account identity need to be unique per Playwright process/run?**
+   Resolved as no-longer-applicable to this task's remaining scope: the
+   `e2e-worker-N` naming/collision question is
+   [iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md)'s
+   own already-`done` mechanism (`parallelIndex`, documented in
+   `frontend/README.md`), unchanged by this task. Registration-spec accounts
+   (question 1) use an entirely different, timestamp/random-based naming
+   scheme, so they carry none of the same collision risk — two concurrent
+   Playwright processes each minting a fresh timestamped address don't derive
+   the same name the way two `e2e-worker-0` derivations could.
 
 ## Acceptance criteria
 

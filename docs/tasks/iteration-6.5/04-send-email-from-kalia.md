@@ -1,6 +1,6 @@
 # Task 04: Give Kalia a way to send email
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-3
 
@@ -36,11 +36,21 @@ sender identity a recipient sees.
 ## Constraints
 
 - **Free tier, no contract, no paid plan** — the product owner's standing
-  constraint on this iteration. As of 2026-08-29 that admits Brevo (300/day),
-  Resend (3 000/month) and Mailtrap (4 000/month); Mailgun's free tier is
-  100/day, SendGrid no longer has one, and Amazon SES requires an AWS account
-  with a card. Confirm current terms at refinement rather than trusting this
-  list.
+  constraint on this iteration. **Decided during refinement (2026-09-05): the
+  product owner's own Gmail account via SMTP (`smtp.gmail.com`, an App
+  Password credential), rather than a third-party transactional-mail
+  provider.** Verified rather than assumed: a personal Gmail account may send
+  500 messages per rolling 24-hour window (2,000 for Google Workspace) over
+  SMTP with an App Password (required once 2-Step Verification is on, since
+  Google removed plain-password SMTP access in 2025) — a higher daily cap than
+  Brevo's 300/day candidate, no signup with a new third party, and
+  infrastructure the product owner already controls. The trade-off worth
+  recording: Gmail SMTP is meant for personal correspondence rather than
+  transactional mail, deliverability for app-sent mail is not specially
+  optimised the way a dedicated provider's is, and — same shape of concern as
+  [task 07](07-google-as-a-sign-up-route.md)'s Google Cloud OAuth client —
+  the sending identity is tied to one person's personal Google account rather
+  than a project-owned one.
 - **Self-hosting an SMTP server is not an option to weigh seriously.** Cloud
   and residential IP ranges are blocked by default at most receivers, and
   deliverability needs a domain, aligned SPF/DKIM/DMARC and reputation built
@@ -56,25 +66,34 @@ sender identity a recipient sees.
 
 ## Open questions
 
-1. **Which provider?** A version-and-vendor choice for the product owner, not
-   an agent. Worth deciding alongside whether it is needed at all: if
-   [task 07](07-google-as-a-sign-up-route.md)'s route were the *only* one,
-   this task disappears entirely.
-2. **What catches mail locally?** A container such as Mailpit or MailHog keeps
-   development offline and lets a Playwright spec read the verification link
-   out of an API — which is probably the only practical way to test the
-   registration flow end to end. It is a new Docker image and needs a version.
-3. **Does the real provider get exercised anywhere before a deployment
-   exists?** A path configured and never run is a path that does not work.
-4. **What address does mail come from, and what does the sender name say?**
-   Both are user-visible wording, and a free tier usually forces a
-   provider-owned sending domain until a real one is verified.
-5. **What happens when sending fails?** Keycloak's own behaviour on SMTP
-   failure during registration decides whether a user is left with an account
-   they cannot verify, and that is a support burden with no support channel.
-6. **Is a rate limit needed?** A verification endpoint that will send mail to
-   any address supplied is an abuse vector, and a free tier's daily cap is a
-   denial-of-service budget someone else can spend.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **Which provider?** Decided: Gmail SMTP via the product owner's own
+   account — see Constraints above. Password registration
+   ([task 05](05-self-registration-with-email-verification.md)) is still the
+   base route (per this iteration's index, Google is a fast-follow, not a
+   replacement), so this task is needed regardless of task 07.
+2. **What catches mail locally?** Decided: **Mailpit** (new dependency,
+   `axllent/mailpit` Docker image — exact tag confirmed at implementation
+   time). Preferred over MailHog, which is effectively unmaintained upstream;
+   Mailpit exposes an HTTP API a Playwright spec can query directly to read a
+   verification link out of a caught message.
+3. **Does the real provider get exercised before a deployment exists?**
+   Decided: yes — manually send at least one real message through the Gmail
+   SMTP path during this task's implementation, confirming actual
+   deliverability, even though local dev/test default to Mailpit.
+4. **Sender address and name?** Decided: the product owner's Gmail address as
+   the underlying sender, with **"Kalia" as the display name** (e.g.
+   `Kalia <the-gmail-address>`), so the mail reads as the product rather than
+   a personal account despite the underlying address.
+5. **What happens when sending fails?** Decided: the registration fails
+   visibly and the user is asked to retry — no account is left in an
+   unverifiable limbo state with no signal that verification never went out.
+6. **Is a rate limit needed?** Decided: yes, add a basic rate limit on the
+   registration/verification-email path now, given Gmail's 500/day cap is a
+   real, exhaustible budget even before any deployment or real traffic exists.
 
 ## Acceptance criteria
 

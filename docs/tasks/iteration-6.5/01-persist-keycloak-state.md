@@ -1,6 +1,6 @@
 # Task 01: Persist Keycloak's state across restarts
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-1
 
@@ -69,33 +69,44 @@ in as `testuser` and today rely on the reimport to put that account there.
 
 ## Open questions
 
-1. **Its own PostgreSQL container, or a second database in the existing one?**
-   A separate container is the honest boundary — Keycloak's schema is its own
-   and Flyway must never see it — and it is one more service, one more volume
-   and one more thing to start. A second database inside the running `postgres`
-   service is cheaper and puts an identity store in the same failure domain as
-   the application data.
-2. **Does the Keycloak image stay stock, or become a `Dockerfile` with
-   `kc.sh build --optimized`?** Stock means an implicit build on every boot and
-   a slower start; an optimized image is the documented production practice and
-   adds a build step to the repo.
-3. **What happens to `testuser` once the realm stops reimporting?** It has to
-   exist for the Playwright specs on a fresh machine, and it must not become a
-   real account with a known password on any future deployment. Seeded on first
-   import only, created by a script the developer runs, or something else —
-   this is the question [task 09](09-deterministic-test-accounts.md) inherits
-   if it is not settled here.
-4. **Does the realm's `sslRequired: none` stay?** It is what makes local HTTP
-   work and it is exactly wrong anywhere else, so it is an environment-varying
-   value — which makes it [task 02](02-parameterise-realm-configuration.md)'s
-   business, unless it should block this task instead.
-5. **Should a persistent `sub` change anything about
-   [ADR-0033](../../adr/0033-keycloak-account-relinking.md)?** Half that ADR's
-   justification is the dev stack's reimport churn, which this task ends.
-   Flagged here, decided in [task 08](08-revisit-account-linking.md).
-6. **Does anything need to survive `down -v`?** If not, say so — the answer
-   sets what a developer is expected to lose when they reset the stack, and
-   it is better stated than discovered.
+**None.**
+
+Resolved during refinement (2026-09-05), recorded as Constraints above and
+below:
+
+1. **Own PostgreSQL container, or a second database in the existing one?**
+   Decided: a second database inside the existing `postgres` service. Cheaper,
+   one fewer service and volume; acceptable because this is local-stack-only
+   (see Non-goals) rather than a deployment.
+2. **Stock Keycloak image, or a `Dockerfile` with `kc.sh build --optimized`?**
+   Decided: the optimized build, from this task rather than deferred — matches
+   documented production practice from the start rather than adding a second
+   migration of the image later.
+3. **What happens to `testuser`?** Decided: it stays, as a seeded manual/demo
+   account a developer can sign in with directly — but it is **no longer a
+   credential baked into the committed realm file**. It is seeded via the same
+   idempotent create-if-not-exists mechanism [task 02](02-parameterise-realm-configuration.md)
+   and [task 09](09-deterministic-test-accounts.md) use for e2e accounts
+   (`frontend/e2e/support/keycloakAccount.ts`'s pattern, generalised), not a
+   `credentials` block in `realm-export.json`. This was checked against the
+   current code rather than assumed: [iteration 6 task
+   11](../iteration-6/11-e2e-suite-account-contention.md) already moved the
+   Playwright suite entirely onto dynamically-provisioned `e2e-worker-N`
+   accounts — `grep -rn testuser frontend/e2e/` finds nothing — so this task's
+   AC2 (`sub` stability across a restart) now targets this seeded demo
+   account, not a suite dependency.
+4. **Does `sslRequired: none` stay?** Not this task's decision to make — see
+   [task 02](02-parameterise-realm-configuration.md), which keeps it an
+   environment-varying value with local staying HTTP. Not a blocker here.
+5. **Should a persistent `sub` change ADR-0033?** Decided in
+   [task 08](08-revisit-account-linking.md):
+   `allowDangerousEmailAccountLinking` stays, for the narrower residual case
+   (an admin deleting and recreating a Keycloak user with the same email).
+6. **Does anything need to survive `down -v`?** Decided: no. Consistent with
+   [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md) treating a
+   volume wipe as an ordinary, expected step pre-deployment — a
+   `docker compose down -v` resets Keycloak's persisted state the same way it
+   resets Postgres's.
 
 ## Acceptance criteria
 

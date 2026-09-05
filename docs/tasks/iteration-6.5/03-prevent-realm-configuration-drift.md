@@ -1,6 +1,6 @@
 # Task 03: Keep realm configuration from drifting once the import stops running
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-2
 
@@ -56,29 +56,39 @@ disagree — and a check that says so if they do.
 
 ## Open questions
 
-1. **Which mechanism?** Roughly: accept the admin console as the source of
-   truth and export back to the file as a reviewed step; drive the realm from
-   the file on every boot with a configuration tool such as
-   `keycloak-config-cli` (idempotent, and it also solves
-   [task 02](02-parameterise-realm-configuration.md)'s substitution problem);
-   or script `kcadm.sh` calls. The first is cheapest and relies on discipline,
-   which is what this task exists to stop relying on.
-2. **Is this one decision with [task 02](02-parameterise-realm-configuration.md)?**
-   If a configuration tool wins here it very likely wins there too, and the two
-   tasks should merge rather than pick different mechanisms a month apart.
-3. **What is compared, and how strictly?** A full export diff is noisy — ids,
-   timestamps and defaults churn on their own. A check that ignores too much
-   passes on the change that mattered.
-4. **Does the check run in CI, or only locally?** CI's `e2e` job already
-   starts the full compose stack (`playwright.config.ts`), so a live realm is
-   available there at no new cost — but CI always starts from an empty volume,
-   so it compares the file against a realm freshly imported *from that file*
-   and can never catch the drift this task is about. Catching a console-made
-   change needs the check to run where the database persists, which is a
-   developer's machine.
-5. **What is the recovery when drift is found?** Regenerate the file from the
-   realm, or reapply the file over the realm — they are opposite answers and
-   one of them discards someone's work.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **Which mechanism?** Decided: **keycloak-config-cli**, driving the realm
+   from the committed file on every boot. Same tool and same decision as
+   [task 02](02-parameterise-realm-configuration.md)'s Q1 — see question 2.
+2. **Is this one decision with task 02?** Yes, confirmed — one ADR (numbered
+   via `make next-adr` at implementation time) records the choice and its
+   rejected alternatives once, referenced by both task files rather than
+   decided twice.
+3. **What is compared, and how strictly?** Decided: keycloak-config-cli's own
+   `--import.dry-run=true` mode (with debug logging) reports the changes it
+   *would* apply without applying them. Any reported change is drift — the
+   check's exit code is non-zero whenever the dry run reports one or more
+   planned changes, zero otherwise. This is diffing at the semantic level the
+   tool already understands (a realm setting, a client attribute), not a raw
+   JSON export diff, so it does not need a separate answer for how to ignore
+   churning ids/timestamps/defaults.
+4. **Does the check run in CI, or only locally?** Decided: locally only, run
+   as part of `make verify` (or a pre-push hook) against a persistent
+   developer stack. Confirmed by the same reasoning the question raised: CI's
+   `e2e` job always starts from an empty volume, so a dry run there compares
+   the file against a realm freshly imported *from that same file* — it would
+   report zero drift every time regardless of whether the mechanism works,
+   proving nothing about the console-made-change case this task exists for.
+5. **What is the recovery when drift is found?** Decided: reapply the file
+   over the realm — this is not a separate recovery step to build, since
+   running keycloak-config-cli normally (without `--import.dry-run`) already
+   does exactly this on every boot. "Regenerate the file from the realm"
+   is not offered as a recovery path: a console-made change is treated as
+   unreviewed and gets overwritten back to the committed file's state, which
+   is what makes the file trustworthy as the source of truth.
 
 ## Acceptance criteria
 

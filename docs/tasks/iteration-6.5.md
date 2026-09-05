@@ -26,20 +26,20 @@ Goal: someone other than the author can create a Kalia account.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-6.5/01-persist-keycloak-state.md) | Persist Keycloak's state across restarts | needs-refinement |
-| [02](iteration-6.5/02-parameterise-realm-configuration.md) | One realm file for every environment | needs-refinement |
-| [03](iteration-6.5/03-prevent-realm-configuration-drift.md) | Keep realm configuration from drifting once the import stops running | needs-refinement |
-| [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | needs-refinement |
-| [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | needs-refinement |
-| [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | needs-refinement |
-| [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | needs-refinement |
-| [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | needs-refinement |
-| [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | needs-refinement |
-| [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | needs-refinement |
-| [11](iteration-6.5/11-concurrent-add-bottle-race.md) | Fix the concurrent add-bottle 500 and lost write | needs-refinement |
-| [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | needs-refinement |
-| [13](iteration-6.5/13-align-current-user-service-convention.md) | Make the caller-identity convention match the code | needs-refinement |
-| [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | needs-refinement |
+| [01](iteration-6.5/01-persist-keycloak-state.md) | Persist Keycloak's state across restarts | refined |
+| [02](iteration-6.5/02-parameterise-realm-configuration.md) | One realm file for every environment | refined |
+| [03](iteration-6.5/03-prevent-realm-configuration-drift.md) | Keep realm configuration from drifting once the import stops running | refined |
+| [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | refined |
+| [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | refined |
+| [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | refined |
+| [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | refined |
+| [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | refined |
+| [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | refined |
+| [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | refined |
+| [11](iteration-6.5/11-concurrent-add-bottle-race.md) | Fix the concurrent add-bottle 500 and lost write | refined |
+| [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | refined |
+| [13](iteration-6.5/13-align-current-user-service-convention.md) | Make the caller-identity convention match the code | refined |
+| [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | refined |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under

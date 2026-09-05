@@ -1,6 +1,6 @@
 # Task 07: Google as a second sign-up route
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-4
 
@@ -70,32 +70,36 @@ identity provider.
 
 ## Open questions
 
-1. **Google, or GitHub, or both?** GitHub is the easier registration and the
-   wrong audience for a beer app; Google is the broad one and the more
-   involved consent screen. Both means two providers and the collision question
-   in question 4 becomes live rather than theoretical.
-2. **Whose Google Cloud project owns the OAuth client,** and what happens to
-   Kalia if that account goes away? A free dependency with no contract still
-   has an owner.
-3. **Is the "unverified app" consent screen acceptable?** Basic scopes need no
-   review, but the screen warns the user until the lighter branding
-   verification is done — and that needs a privacy policy and a domain, neither
-   of which exists.
-4. **What if a Google account presents an email that already has a Kalia
-   password account?** Link, refuse, or create a duplicate — the substance of
-   [task 08](08-revisit-account-linking.md), flagged here because this task is
-   what makes it reachable.
-5. **What does the button say, and where does it sit** relative to the password
-   form? User-visible wording, and it lives on a Keycloak page
-   ([task 06](06-kalia-branded-bilingual-auth-pages.md)).
-6. **How is this tested without hitting Google?** A Playwright spec cannot
-   drive a real Google consent screen. A second Keycloak realm acting as a
-   stand-in OIDC provider is the usual answer and is more moving parts than it
-   sounds.
-7. **Does the privacy consequence need recording?** Every sign-in tells Google
-   the user opened a beer platform. Small, real, and the kind of thing
-   [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md) says belongs in
-   the consequences of a decision rather than nowhere.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **Google, or GitHub, or both?** Decided: Google only.
+2. **Whose Google Cloud project owns the OAuth client?** Decided: the product
+   owner's own Google account. Client id/secret are supplied via the
+   environment and never committed, per Constraints above.
+3. **Is the "unverified app" consent screen acceptable?** Decided: yes,
+   acceptable for now — revisit once an actual deployment exists with a
+   privacy policy and a domain to clear Google's lighter branding
+   verification.
+4. **Email collision?** Owned by [task 08](08-revisit-account-linking.md),
+   decided there: Keycloak's first-broker-login flow auto-links when Google's
+   `email_verified` claim is true.
+5. **Button copy and placement?** Deferred to implementation, following the
+   existing sign-in button's conventions and [task 06](06-kalia-branded-bilingual-auth-pages.md)'s
+   theming — the product owner reviews the actual wording on the PR rather
+   than it being fixed here.
+6. **How is this tested without hitting Google?** Decided: a second Keycloak
+   realm acting as a stand-in OIDC provider, exercising the real broker /
+   first-broker-login code path end to end.
+7. **Does the privacy consequence need recording?** Decided: yes — but rather
+   than a separate ADR for this task (its provider-choice reasoning is
+   already recorded in [this iteration's own index](../iteration-6.5.md),
+   which is a stable, shared home for the sign-up options analysis), the
+   privacy consequence and the "unverified app" acceptance are recorded as
+   Consequences of [task 08](08-revisit-account-linking.md)'s ADR-0033
+   amendment — the natural home, since that amendment is specifically about
+   the cost of Google being a second, Keycloak-brokered sign-in provider.
 
 ## Acceptance criteria
 

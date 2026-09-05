@@ -1,6 +1,6 @@
 # Task 06: Kalia-branded, bilingual Keycloak pages
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-5
 
@@ -66,28 +66,28 @@ Kalia and appear in the language the user was already reading.
 
 ## Open questions
 
-1. **How much theme?** Stock `keycloak.v2` with a logo and a small stylesheet
-   override is a few files. A full custom theme is a subproject. Where between
-   them is a product-owner judgement about how much the seam matters.
-2. **How does Keycloak learn the user's language?** Enabling
-   `internationalizationEnabled` with `fi` and `en` gets Keycloak's own
-   translated strings; passing `ui_locales` from the sign-in Server Action
-   makes it follow the locale the user was actually reading rather than their
-   browser's guess. The second needs a change in `frontend/auth.ts`.
-3. **Are Keycloak's stock Finnish translations good enough,** or does Kalia
-   override them? Overriding means owning them; not overriding means the login
-   page speaks in a voice the rest of the app does not.
-4. **Are the verification and reset emails localised too?** They are Keycloak
-   templates as well, and an English email after a Finnish registration is the
-   same hole one step later.
-5. **How is any of this tested?** Playwright can drive the pages on the other
-   origin and `@axe-core/playwright` is already a dependency, so an
-   accessibility assertion on the login page is reachable — but nothing checks
-   a Keycloak message bundle for a missing key, and a missing key renders as a
-   raw identifier rather than failing.
-6. **Does the locale survive the round trip?** A user reading `/fi` who signs
-   in should come back to `/fi`. Worth checking that it does today, before
-   changing anything.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **How much theme?** Decided: stock `keycloak.v2` plus a logo and a small
+   stylesheet override — not a full custom theme.
+2. **How does Keycloak learn the user's language?** Decided: both — enable
+   `internationalizationEnabled` with `fi`/`en`, **and** pass `ui_locales`
+   from the sign-in Server Action (a change in `frontend/auth.ts`), so
+   Keycloak follows the locale the user was actually reading rather than
+   guessing from the browser. This follows the existing precedent of the app
+   itself trusting its own resolved locale over a fresh browser inference.
+3. **Are Keycloak's stock Finnish translations good enough?** Decided: yes,
+   use them as-is — no override, no second Finnish translation surface to
+   maintain in step with `frontend/i18n/locales/fi/`.
+4. **Are the verification and reset emails localised too?** Decided: yes.
+5. **How is any of this tested?** Playwright plus `@axe-core/playwright`,
+   consistent with the rest of the app's E2E accessibility coverage — no new
+   testing mechanism needed.
+6. **Does the locale survive the round trip?** Verify as part of the same
+   Playwright coverage; already required by this task's own acceptance
+   criteria.
 
 ## Acceptance criteria
 
