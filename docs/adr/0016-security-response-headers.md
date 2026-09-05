@@ -13,6 +13,9 @@
   is re-affirmed, see below
 - **Amended:** 2026-09-04 — `next dev`'s `script-src` now also carries
   `'unsafe-eval'`, `next build`/`next start` unchanged, see below
+- **Amended:** 2026-09-05 — `upgrade-insecure-requests` is dropped from the
+  CSP until a real HTTPS deployment exists; unlike HSTS it is not inert over
+  HTTP, see below
 
 ## Context
 
@@ -51,7 +54,7 @@ margin this app doesn't yet need.
   (the browser never calls the backend directly); `object-src 'none'`;
   `base-uri 'self'`; `form-action 'self'` (matches `SearchFilters`' native
   GET-form submission); `frame-ancestors 'none'`;
-  `upgrade-insecure-requests`.
+  `upgrade-insecure-requests` (removed — see the 2026-09-05 amendment).
 - **`X-Frame-Options: DENY`** — duplicates `frame-ancestors 'none'` for
   browsers that predate CSP2 (2014) or ignore it; `frame-ancestors` is
   authoritative where both are understood.
@@ -157,6 +160,28 @@ picks that domain, not this task.
 > are unit-tested directly (`cspHeader.test.ts`) rather than only through a
 > `curl`/browser check. This is additive to the no-nonce decision above, not
 > a reopening of it.
+
+> **Amended 2026-09-05.** `upgrade-insecure-requests` is removed from the CSP
+> for now. The Decision added it with the same "costs nothing today, correct
+> the moment TLS exists" reasoning as the HSTS header — but that reasoning
+> only holds for HSTS, which browsers ignore when it arrives over HTTP. A
+> page that carries `upgrade-insecure-requests` is acted on immediately:
+> Chrome rewrites the scheme of the page's own requests to `https://`,
+> `localhost` included. Served over plain HTTP (`docker compose up`,
+> `npm run dev` — the only way this app runs, no TLS anywhere yet), every
+> Next.js `<Link>` RSC prefetch and client navigation to
+> `https://localhost:3000/…` then fails with `net::ERR_SSL_PROTOCOL_ERROR`,
+> and the App Router client crashes decoding the empty response
+> (`Cannot read properties of undefined (reading 'startTime')`). The original
+> Evidence run missed this because it only checked headers with `curl` and
+> browsed within a page; the failure is on the *next* navigation.
+>
+> The directive returns together with the HTTPS deployment work — the same
+> milestone that decides the production domain, revisits HSTS `preload`, and
+> the point at which it stops being inert-versus-harmful and starts doing its
+> job. `buildCspHeader` now emits it in no environment; `cspHeader.test.ts`
+> guards its absence. `X-Frame-Options`, `Referrer-Policy`, HSTS and
+> `Permissions-Policy` are unchanged.
 
 ## Evidence
 

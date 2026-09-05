@@ -43,7 +43,13 @@ describe("buildCspHeader", () => {
     expect(buildCspHeader("production")).toBe(
       "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; object-src 'none'; " +
-        "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
+        "base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
     );
+  });
+
+  it("omits upgrade-insecure-requests in every environment while the app is HTTP-only", () => {
+    for (const env of ["development", "production", undefined]) {
+      expect(buildCspHeader(env)).not.toContain("upgrade-insecure-requests");
+    }
   });
 });
