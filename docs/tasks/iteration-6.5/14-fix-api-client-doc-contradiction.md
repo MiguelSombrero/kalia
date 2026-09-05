@@ -1,6 +1,6 @@
 # Task 14: Resolve architecture.md's contradiction about the API client
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -68,12 +68,12 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] `docs/architecture.md` §4 no longer implies the generated client is
+- [x] `docs/architecture.md` §4 no longer implies the generated client is
       future or optional — it states the current fact or points to §5
-- [ ] A repo-wide grep (run in refinement and recorded in the PR) finds no
+- [x] A repo-wide grep (run in refinement and recorded in the PR) finds no
       remaining "may later generate" / "hand-written client" phrasing across
       `docs/`
-- [ ] The backend test that parses this document —
+- [x] The backend test that parses this document —
       `ArchitectureDocumentationTest` — still passes against the edited §2/§3,
       and `make verify` is green (`check-adrs`, `check-tasks`,
       `check-comments`, `npm test`, `mvn verify`)

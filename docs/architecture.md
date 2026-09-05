@@ -265,8 +265,9 @@ Conventions:
 - OpenAPI spec generated with springdoc (`/v3/api-docs`, Swagger UI at
   `/swagger-ui/index.html`, reachable at `localhost:8080` on the dev
   machine — see [§6](#6-authentication-and-identity)).
-  Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`.
-  The frontend may later generate its TypeScript client from the spec.
+  Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`,
+  and the frontend generates its client from it — see
+  [§5](#5-frontend-design).
 
 ## 5. Frontend design
 
