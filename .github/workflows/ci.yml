@@ -146,6 +146,22 @@ jobs:
       - name: Self-test the glossary checker against fixtures
         run: node --test scripts/check-glossary.test.mjs
 
+  realm-config-checker-self-test:
+    name: Realm-config checker self-test
+    # Unconditional and cheap, like the checks above. check-keycloak-realm-config.mjs
+    # itself only runs with a live Keycloak (keycloak-realm-check below), and on
+    # a freshly imported realm it always passes — so this fixture test is the
+    # only thing that catches the checker losing its ability to detect drift
+    # (ADR-0054).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Self-test the realm-config checker against fixtures
+        run: node --test scripts/check-keycloak-realm-config.test.mjs
+
   backend:
     name: Backend (Maven)
     needs: [changes]
@@ -276,7 +292,7 @@ jobs:
         run: docker compose up -d --build keycloak-seed
       - name: Verify the realm accepts sign-in, not just a healthy container
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
-      - name: Verify the imported realm matches FRONTEND_URL
+      - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
 
   vulnerability-scan:

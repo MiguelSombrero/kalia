@@ -158,6 +158,13 @@ services:
       KEYCLOAK_AVAILABILITYCHECK_ENABLED: "true"
       KEYCLOAK_AVAILABILITYCHECK_TIMEOUT: 120s
       IMPORT_FILES_LOCATIONS: /config/kalia-realm.json
+      # ADR-0054. Left on (the tool's default), the import is skipped whenever
+      # the file's checksum is unchanged — so a setting changed in the admin
+      # console is never reconciled back, on any boot. Off, every run is a full
+      # diff/apply: that is what makes a restart (or `docker compose up -d
+      # keycloak-config`) the recovery from drift, and what
+      # scripts/check-keycloak-realm-config.mjs checks has not been skipped.
+      IMPORT_CACHE_ENABLED: "false"
       IMPORT_VARSUBSTITUTION_ENABLED: "true"
       # Undefined-is-error is this tool's own default, kept explicit — see
       # ADR-0054's Alternatives/Evidence for why that property mattered here.

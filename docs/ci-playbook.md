@@ -105,3 +105,13 @@ pulling `dev`, not a sign something is wrong.
 **The README tech-stack table disagrees with `pom.xml` or `package.json`.**
 Caught in review rather than by CI, deliberately — see the rejected checker
 above. When you bump a pinned version, the table is part of the change.
+
+**A `make` target that runs `docker compose up --wait` exits `1` although
+every container is fine.** `--wait` counts a service that *exits* as a
+failure — including a one-shot that ran to `exit 0` (`keycloak-config`,
+`keycloak-seed`). Name only long-running services in a `--wait` invocation;
+let a one-shot be waited on by the script that consumes it (each
+`scripts/check-keycloak-*.mjs` has its own retry loop) or bring it up with a
+plain `up -d`. Cost ~10 min to spot on the branch for iteration 6.5 task 03,
+because the failing line had been piped to `tail` — which also hid it (see
+`implement-task` step 9: read `make` output from a file, not a pager).

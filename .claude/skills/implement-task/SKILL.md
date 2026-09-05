@@ -11,6 +11,10 @@ its own — a moment to apply
 [ADR-0017](../../../docs/adr/0017-code-comment-policy.md)'s test to a comment
 before it is written, rather than after, in the same pass as the code.
 
+`/code-review` and `make verify` are ordered review-then-verify, so the slow
+gate runs once on a diff that review and doc-sync have both finished with,
+not once before review and again after.
+
 The default stays [ADR-0027](../../../docs/adr/0027-process-weight.md)'s:
 implement directly and run `/code-review`. Invoking this skill is not licence
 to reach for `/feature-dev` or subagent-driven execution — those still need
@@ -42,11 +46,21 @@ their own condition from that ADR before they apply.
    file's iteration index, and any ADRs the change touches, and update them
    or record in the pull request that they were checked — `CLAUDE.md`
    "Doc-sync gate".
-8. Run `make verify` and get it green. It is the whole check list CI runs, in
+8. Run `/code-review` on the diff and resolve each finding as fix-now or a
+   new task — `CLAUDE.md` "Code-review gate". This runs *before* the full
+   `make verify` below, not after: `/code-review`, the comment pass and
+   doc-sync can each still change the diff, and `make verify` is the slow
+   gate — running it once on the finished diff beats running it, reviewing,
+   then running it again. Step 5's relevant suites are already green, which
+   is what makes the review worth doing at this point.
+9. Run `make verify` and get it green. It is the whole check list CI runs, in
    CI's order; `make verify-fast` is the subset that needs neither Docker nor
    a build, and is what the installed `pre-push` hook runs. Never push
-   expecting CI to be the first thing that tells you a check is red.
-9. **Run the change against a running stack and watch it work.** `make
+   expecting CI to be the first thing that tells you a check is red. Redirect
+   its output to a file and read that — piping a long `make`/`mvn`/`npm` run
+   to `tail` or `head` reports the *pager's* exit code, not the command's,
+   and scrolls the failing line out of view.
+10. **Run the change against a running stack and watch it work.** `make
    verify` proves the suites pass, which is a different claim: a Server
    Action that 404s after a re-export refactor, a quantity field cleared on
    submit, a mock path that no longer matches the module it stands for — each
@@ -58,8 +72,6 @@ their own condition from that ADR before they apply.
    which `docs/PULL_REQUEST_TEMPLATE.md` already requires as its own
    test-plan line. "Nothing user-facing changed" is a verdict and a fine
    answer; silence is not.
-10. Run `/code-review` on the diff and resolve each finding as fix-now or a
-    new task — `CLAUDE.md` "Code-review gate".
 11. Go through the acceptance criteria one at a time and **run what each one
     says verifies it**, rather than ticking the list from memory of having
     done the work. A criterion states its own check — that is what
@@ -86,12 +98,12 @@ cleanly, which is the failure
 records.
 
 Then state, in the pull request or the final message, which of these ran and
-which did not, naming a reason for each one skipped:
+which did not, naming a reason for each one skipped (in procedure order):
 
+- doc-sync
+- `/code-review`
 - `make verify` (or `make verify-fast`, said explicitly)
 - the change exercised against a running stack, with what was observed
-- `/code-review`
-- doc-sync
 - each acceptance criterion re-verified by running its own check, then
   ticked, and the status set to `done`
 - iteration "Done when" re-verified, where this was the last task
