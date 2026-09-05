@@ -1,6 +1,6 @@
 # Task 11: Fix the concurrent add-bottle 500 and lost write
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -76,19 +76,28 @@ succeeds.
 
 ## Open questions
 
-- **Failure handling:** after the fix, is there any remaining path where a
-  concurrent add against an *existing* entry loses bottles? State the
-  analysis (child `bottle` inserts under distinct ids, computed quantity) and
-  have the product owner confirm the scope stays entry-creation only, or
-  widen it.
-- **Constraints/trade-offs:** Spring Retry is a dependency carried for one
-  call site. Confirm that is acceptable versus the dependency-free
-  two-transaction get-or-create (a `REQUIRES_NEW` inner method or an
-  entry-creation step that commits first).
-- **Module boundaries:** does `entryFor`'s get-or-create shape recur anywhere
-  planned (profile, feed)? If so the retry belongs somewhere shareable, not
-  inline on `addBottles`.
-- **Constraints:** ADR or no ADR, and if yes, which subject.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+- **Failure handling:** confirmed — the existing-entry concurrent-add path
+  loses no bottles (child `bottle` rows insert under distinct ids and
+  quantity is computed, not stored), and this task's scope stays
+  entry-creation only, per its own Non-goals. No widening.
+- **Constraints/trade-offs:** Spring Retry accepted for this one call site,
+  over the dependency-free two-transaction alternative — already the task's
+  own stated constraint, confirmed rather than reopened.
+- **Module boundaries:** `entryFor`'s get-or-create shape is not shared by
+  any planned module today (profile, feed have no equivalent yet). Not
+  extracted speculatively — if a second module needs the same shape later,
+  share the mechanism then rather than generalising ahead of a second user.
+- **ADR or no ADR:** decided — **yes, write one.** A retry-on-constraint-
+  violation pattern is a reusable convention other modules may hit later,
+  which is exactly [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s
+  third test (a different module's reasoning, not just this task's own).
+  Numbered via `make next-adr` at implementation time; records the decision,
+  the rejected alternatives (409, DB `ON CONFLICT` upsert) and the
+  per-attempt-transaction constraint from this task's own Constraints above.
 
 ## Acceptance criteria
 

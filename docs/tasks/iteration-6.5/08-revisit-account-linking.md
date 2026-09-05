@@ -1,6 +1,6 @@
 # Task 08: Revisit account linking now that both of ADR-0033's premises have moved
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-4
 
@@ -69,31 +69,35 @@ trigger.
 
 ## Open questions
 
-1. **Does `allowDangerousEmailAccountLinking` stay?** With `sub` stable, the
-   remaining case is an administrator deleting and recreating a Keycloak user.
-   Removing the flag restores the strict default and reintroduces a lockout
-   with no self-service recovery; keeping it keeps a flag whose stated
-   justification has shrunk.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **Does `allowDangerousEmailAccountLinking` stay?** Decided: yes, kept —
+   for the narrower residual case (an admin deleting and recreating a
+   Keycloak user with the same email). Removing it would reintroduce a
+   lockout with no self-service recovery for that case.
 2. **What does Keycloak's first-broker-login flow do on an email collision?**
-   Automatically link, require the user to prove the existing account by
-   signing into it, require an email confirmation, or refuse and create nothing.
-   Keycloak's default is not automatic linking, and accepting the default
-   without deciding is what this task forbids.
-3. **Is Google's `email_verified` claim trusted as proof of the address?** It is
-   the whole basis on which linking could be safe, and it is a claim from a
-   third party.
-4. **Does the stale-index clutter ADR-0033 accepted still get accepted?** It
-   noted orphaned `auth:account-index:keycloak:<old-sub>` keys that are never
-   removed. A stable `sub` means far fewer of them, which either makes the
-   consequence moot or makes cleaning them cheap enough to bother with.
-5. **Amendment or supersession?** Depends on how much of ADR-0033's decision
-   survives question 1, and the answer changes what a reader of the old ADR
-   is told.
-6. **Is there a general lesson about revisit triggers?** A trigger phrased in
-   terms of one layer's view of the world ("a second provider in Auth.js")
-   missed a change that mattered. Whether that is worth a line in
-   [ADR-0019](../../adr/0019-adr-format-and-conventions.md) or is a one-off is
-   a judgement, not an obvious yes.
+   Decided: automatically link, when Google's `email_verified` claim is
+   `true` (see question 3). This mirrors ADR-0033's existing reasoning for
+   the Auth.js-level flag — the collision is only reachable because Google
+   already gates its own accounts on a real mailbox — and avoids
+   reintroducing the exact sign-in friction Google sign-up exists to remove.
+3. **Is Google's `email_verified` claim trusted?** Decided: yes.
+4. **Does the stale-index clutter still get accepted?** Decided: yes, still
+   accepted, no cleanup added — now rarer (only the admin-recreation case),
+   and a sweep mechanism is more than the residual problem justifies.
+5. **Amendment or supersession?** Decided: amend ADR-0033 (not supersede) —
+   its Auth.js-level decision (question 1) still stands, narrowed. The
+   amendment also carries [task 07](07-google-as-a-sign-up-route.md)'s
+   provider-choice reasoning and privacy consequence (its own question 7),
+   since this is the ADR specifically about the cost of a second sign-in
+   provider, and a corrected revisit trigger that actually fires for a
+   Keycloak-brokered provider.
+6. **Is there a general lesson about revisit triggers?** Decided: treated as
+   a one-off, noted in ADR-0033's amendment text itself rather than promoted
+   into [ADR-0019](../../adr/0019-adr-format-and-conventions.md)'s general
+   rules — a single instance doesn't yet justify a standing process rule.
 
 ## Acceptance criteria
 

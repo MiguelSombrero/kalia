@@ -1,6 +1,6 @@
 # Task 10: Remove the beer price property
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -77,27 +77,26 @@ shared beer types; nothing cellar-specific stores a price.
 
 ## Open questions
 
-- **Domain/data model:** edit `catalog/V003__catalog_schema.sql` and
-  `V004__catalog_seed_data.sql` in place (routine here since
-  [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md)'s amendment,
-  and a local volume wipe is already an ordinary step of pulling `dev`), or
-  add `V005`/`V006` that drop the columns? In-place keeps the schema history
-  honest for a pre-deployment app; a new migration is safer if any
-  environment is not wiped.
-- **Interaction/UX:** the beer details card and list lose a field. Does the
-  layout just close up, or does the product owner want the freed space used
-  for something already available (style, ABV, brewery)?
-- **Terminology:** `docs/glossary.md` currently lists `Money` and the
-  `price`-related published terms. They move to the "Terms weighed and
-  dropped" section (as a removed concept, distinct from the rejected-rename
-  entries), or are deleted outright?
-- **Localization:** confirm the en/fi `common.json` price keys
-  (`catalog.beer.price` and any `formatPrice` plural/format keys) are removed,
-  not just unused.
-- **Completion signal:** is "no occurrence of price / Money / cents / currency
-  outside unrelated code, and `docs/architecture.md` §3 no longer mentions
-  prices" the bar, or is there a UI screenshot the product owner wants to sign
-  off?
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+- **Domain/data model:** decided — edit `V003__catalog_schema.sql` and
+  `V004__catalog_seed_data.sql` in place, per
+  [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md)'s amendment
+  (routine now for any pre-deployment schema change, not just rejected
+  designs; a local volume wipe is already ordinary here).
+- **Interaction/UX:** decided — the layout just closes up; no freed-space
+  replacement.
+- **Terminology:** decided — `Money` and the price-related glossary terms
+  move to `docs/glossary.md`'s existing "Terms weighed and dropped" section,
+  as a removed concept distinct from the rejected-rename entries there.
+- **Localization:** confirmed as an acceptance-criterion action, not a
+  decision — the en/fi `common.json` price keys are removed as part of this
+  task's implementation.
+- **Completion signal:** confirmed — "no occurrence of price / Money / cents
+  / currency outside unrelated code, and `docs/architecture.md` §3 no longer
+  mentions prices" is the bar; no separate UI sign-off requested.
 
 ## Acceptance criteria
 

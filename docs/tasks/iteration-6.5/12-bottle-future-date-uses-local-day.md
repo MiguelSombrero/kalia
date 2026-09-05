@@ -1,6 +1,6 @@
 # Task 12: Judge a bottle's brewed date against the user's local day
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -59,19 +59,34 @@ brewed date (the boundary is inclusive).
 
 ## Open questions
 
-- **Interaction / transport:** does the request carry the client's local date
-  as a value, or its UTC offset in minutes, or does the authoritative check
-  move client-side with the backend keeping only a loose guard (e.g. "not
-  after tomorrow UTC")? Each has a different API-shape and testability cost.
-- **Failure handling:** if a request arrives with no client "today" (an older
-  client, a script), does the backend reject, or fall back to UTC
-  `LocalDate.now()`?
-- **Interaction / UX:** should the picker's `max` also be the local day, so
-  the future date cannot be selected at all and the validation message is
-  only a fallback?
-- **Edge cases:** non-whole-hour offsets and DST — sending a date string
-  sidesteps these; sending an offset does not fully.
-- **Constraints:** ADR, an `architecture.md` line, or neither.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+- **Interaction / transport:** decided — the client sends its own local date
+  as a plain date string (the same bare-`LocalDate` shape `brewedDate`
+  already uses), not a UTC offset. This is the right tool for "which calendar
+  day did the user mean," not "reconstruct a timestamp across time zones" —
+  an offset-based approach still needs DST and non-whole-hour-offset math
+  (India +5:30, Nepal +5:45) server-side to recover a calendar date, which is
+  the same class of bug this task fixes, just relocated. The picker already
+  produces a bare local date with no offset math at all.
+- **Failure handling:** decided — if a request arrives with no client "today"
+  (an older client, a script), the backend falls back to UTC
+  `LocalDate.now()` rather than rejecting. Backward-compatible, and
+  consistent with this task's own "not a security boundary" framing: the
+  worst case is the same narrow UTC-boundary behaviour that exists today.
+- **Interaction / UX:** decided — yes, the picker's `max` is also set to the
+  local day, so the future date cannot be selected at all; the validation
+  message becomes a fallback rather than the primary defence.
+- **Edge cases:** resolved by the transport decision above — sending a plain
+  date string sidesteps DST and non-whole-hour-offset issues entirely, which
+  is part of why it was chosen over an offset.
+- **Doc home:** decided — neither an ADR nor an `docs/architecture.md` line.
+  The rejected alternative (UTC everywhere) and its reasoning are narrow to
+  this one bug fix; this task's own Constraints section is a sufficient home
+  per [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s third
+  test.
 
 ## Acceptance criteria
 

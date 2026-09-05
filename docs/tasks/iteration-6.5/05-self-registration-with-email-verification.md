@@ -1,6 +1,6 @@
 # Task 05: Self-registration with email verification
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-3
 
@@ -81,44 +81,62 @@ API, and delegating account creation entirely to an external provider
 - Whatever the sign-up form asks for is wording a user reads, and is the
   product owner's to approve.
 - ADR shape follows [the template](../../adr/template.md) and
-  [ADR-0019](../../adr/0019-adr-format-and-conventions.md); whether it is one
-  ADR or shares one with [task 03](03-prevent-realm-configuration-drift.md) is
-  that task's question 2.
+  [ADR-0019](../../adr/0019-adr-format-and-conventions.md). Decided during
+  refinement: this task's registration-approach decision gets its own ADR,
+  separate from [task 03](03-prevent-realm-configuration-drift.md)'s
+  keycloak-config-cli ADR — the two are independently reversible
+  ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s test: which
+  registration mechanism Kalia uses could change without touching how realm
+  configuration is deployed, and vice versa).
 
 ## Open questions
 
-1. **Which approach?** The analysis of 2026-08-29 recommended Keycloak's own
-   registration flow, with a Kalia-native admin-API form judged the worst of
-   both — consistent UI bought with reimplemented security code, a
-   `manage-users` credential in the frontend, and a hybrid UI anyway because
-   password reset stays on Keycloak's pages. The product owner decides; the ADR
-   records it either way.
-2. **What does the form ask for?** Email and password is the minimum. A display
-   name here would answer
-   [iteration 6 task 01](../iteration-6/01-profile-and-visibility.md)'s open
-   question 3 — and answering it by accident, in a different iteration, is
-   exactly the drift this process exists to prevent. These two want deciding
-   together.
-3. **Verify the address before or after setting a password?** Keycloak 26 can
-   do verification first, so an unverified account never holds a credential.
-   It is the safer order and the less familiar flow.
-4. **What may an unverified user do?** Nothing, or browse but not own a cellar.
-   The answer decides whether "verified" is a gate the application knows about
-   or purely Keycloak's business.
-5. **What does a user see when the email is already registered?** Saying so
-   confirms to a stranger that an address has a Kalia account; not saying so
-   leaves a real person stuck with no idea why. A deliberate choice either way.
-6. **Password policy?** Keycloak enforces whatever it is told. Nothing is set
-   today, which means no minimum length.
-7. **Is there anything to agree to?** No terms, no privacy policy and no age
-   statement exist. A beer platform with no age acknowledgement at all is a
-   choice worth making on purpose — noting that Kalia does not sell beer, so
-   this is a product decision rather than a legal duty, and that strong
-   identification would be disproportionate (see Notes).
-8. **Does sign-up need its own Kalia page at all,** or does the existing Sign
-   in button plus Keycloak's own "Register" link suffice? A `/sign-up` route
-   that redirects into Keycloak's registration endpoint is a small thing that
-   makes the option discoverable.
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+1. **Which approach?** Decided: **Keycloak's own registration flow**, per the
+   analysis's recommendation. Recorded in a new ADR (numbered via
+   `make next-adr` at implementation time) — a credible rejected alternative
+   (the Kalia-native admin-API form) whose reasoning a later reader would need
+   independent of this task file, per
+   [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md).
+2. **What does the form ask for?** Decided: **email, password, and a separate
+   public username — never the email address, and never derived from it.**
+   [ADR-0049](../../adr/0049-profile-module-and-public-identity.md) already
+   fixed that Keycloak's `preferred_username` becomes the permanent,
+   immutable URL segment for a public cellar
+   ([ADR-0050](../../adr/0050-public-cellar-addressing.md)); using the email
+   as the username (Keycloak's `registrationEmailAsUsername`) would
+   permanently leak a registrant's email address into every public cellar
+   link they ever share, which conflicts with ADR-0049's own privacy framing.
+   `registrationEmailAsUsername` stays `false`; the username field is
+   constrained to URL-safe characters (letters, digits, `-`, `_`; no `@` or
+   spaces). This is the answer [iteration 6 task
+   01](../iteration-6/01-profile-and-visibility.md)'s question 3 needed —
+   that task is already `done` and already took the identifier decision from
+   the other side (ADR-0049), so this task's form simply has to collect
+   something Keycloak can issue as `preferred_username`, which it now does.
+3. **Verify before or after setting a password?** Decided: verify first —
+   Keycloak 26's flow where an unverified account never holds a working
+   credential.
+4. **What may an unverified user do?** Decided: nothing — blocked from the
+   application entirely until verified.
+5. **What does a user see when the email is already registered?** Decided:
+   say so explicitly ("this email is already registered"). Accepts the
+   enumeration trade-off (confirming to a stranger that an address has a
+   Kalia account) in exchange for not stranding a real person with no
+   explanation; record this as a Consequence in the new ADR from question 1.
+6. **Password policy?** Decided: minimum length only, **8 characters**. No
+   composition rules (upper/lower/digit/symbol) — matches current
+   length-over-composition guidance and is a deliberate improvement over
+   today's no-minimum-at-all default.
+7. **Is there anything to agree to?** Decided: yes, a minimal acknowledgement
+   checkbox (e.g. "I'm old enough to use a beer app") — no full terms of
+   service or privacy policy. Exact copy is the product owner's to approve on
+   the PR, not fixed here.
+8. **Does sign-up need its own Kalia page?** Decided: yes, a small dedicated
+   `/sign-up` route that redirects into Keycloak's registration endpoint.
 
 ## Acceptance criteria
 

@@ -1,6 +1,6 @@
 # Task 14: Resolve architecture.md's contradiction about the API client
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -51,12 +51,20 @@ doc set concludes the client is hand-written or that generating it is optional.
 
 ## Open questions
 
-- **Completeness:** is §4 line 266 the only stale spot? Refinement greps
-  `docs/` for "may later" and "hand-written" phrasing about the client.
-- **Interaction:** does §4 keep a one-line pointer, or drop the client
-  mention entirely as §5's concern?
-- **Completion signal:** is "no sentence in the doc set implies the client is
-  hand-written or optional, confirmed by grep" the bar?
+**None.**
+
+Resolved during refinement (2026-09-05):
+
+- **Completeness:** confirmed by running the grep now —
+  `grep -rn "may later generate\|hand-written client" docs/ README.md` finds
+  exactly one stale spot outside this task file itself:
+  `docs/architecture.md:267`. Nothing else in `docs/` needs the sweep.
+- **Interaction:** decided — §4 keeps a one-line pointer ("…and the frontend
+  generates its client from it — see §5"), rather than dropping the mention
+  entirely; matches this task's own Constraints on the natural shape of the
+  sentence.
+- **Completion signal:** confirmed — "no sentence in the doc set implies the
+  client is hand-written or optional, confirmed by grep" is the bar.
 
 ## Acceptance criteria
 
