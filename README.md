@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–5.5 complete — a visitor can browse and search the
+> **Status:** iterations 0–6 complete — a visitor can browse and search the
 > seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
 > design system (tokens, shared primitives, loading/error/empty states,
@@ -10,9 +10,11 @@
 > handling, config, security headers, dependency scanning) are in place,
 > users can sign in and out via Keycloak, and a signed-in user can add,
 > edit and remove bottles in their own personal beer cellar, grouped by
-> beer with brewed/best-before dates, visible to nobody else, and the
-> iteration-5.5 quality backlog is closed. Next: a public profile and
-> cellar (iteration 6). Implementation proceeds one
+> beer with brewed/best-before dates. A user now has a profile and can make
+> that cellar public: anyone with the link — signed in or not — can browse
+> it, and set back to private it leaks nothing, not even that it exists.
+> Next: sign-up, so someone other than the author can create an account
+> (iteration 6.5). Implementation proceeds one
 > issue at a time. See [docs/roadmap.md](docs/roadmap.md) for what gets
 > built and in which order.
 
@@ -105,11 +107,13 @@ In roadmap order, a user can:
 - Sign in with Keycloak
 - Maintain a personal beer cellar: the bottles they own, each with its brewed
   and best-before dates, grouped by beer _(iteration 5)_
+- Set up a profile and make their cellar public — browsable by anyone with the
+  link, signed in or not _(iteration 6)_
 
 Then:
 
-- A user profile, and a cellar that is private by default but can be made
-  public and browsed by anyone _(iteration 6)_
+- Sign up for an account without the product owner creating it by hand
+  _(iteration 6.5)_
 - A front-page feed of what people are adding to their cellars _(iteration 7)_
 - A catalog that grows past its seed data, with users adding the beers they
   cannot find _(iteration 8)_
@@ -136,9 +140,9 @@ flowchart LR
 ```
 
 The backend is a single deployable split into Spring Modulith modules
-(`catalog`, `identity`, and `cellar` as iteration 5 builds it) with enforced
-boundaries, keeping a later extraction to microservices possible without paying
-the distributed-systems cost now.
+(`catalog`, `identity`, `cellar`, and `profile` as iteration 6 adds it) with
+enforced boundaries, keeping a later extraction to microservices possible
+without paying the distributed-systems cost now.
 
 Full design: [docs/architecture.md](docs/architecture.md) ·
 Decision records: [docs/adr/](docs/adr/)
@@ -231,7 +235,8 @@ kalia/
 │   └── src/main/java/fi/kalia/
 │       ├── catalog/  # beers, breweries, search
 │       ├── identity/ # Keycloak integration, current-user resolution
-│       └── cellar/   # personal beer cellar (iteration 5)
+│       ├── cellar/   # personal beer cellar (iteration 5)
+│       └── profile/  # user profile, public cellar visibility (iteration 6)
 ├── frontend/         # Next.js app (BFF + UI)
 ├── docs/
 │   ├── architecture.md
