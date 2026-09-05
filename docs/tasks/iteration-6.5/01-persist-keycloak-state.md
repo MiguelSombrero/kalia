@@ -121,9 +121,9 @@ below:
 - [ ] The full Playwright suite passes against the changed stack, from an
       empty volume (`docker compose down -v` first), on a machine that has
       never run it
-- [ ] An automated check fails if Keycloak comes up serving a realm that
+- [x] An automated check fails if Keycloak comes up serving a realm that
       rejects sign-in — a healthy container is not the assertion
-- [ ] `(cd backend && mvn verify)` and `(cd frontend && npm test)` stay green
+- [x] `(cd backend && mvn verify)` and `(cd frontend && npm test)` stay green
 
 ## Notes
 
@@ -133,3 +133,19 @@ the first real blocker rather than any question about the sign-up form itself.
 Related [backlog](../backlog.md) entries: "Deployment target + IaC", which
 this does not close, and "The Keycloak realm export is hardcoded to
 localhost", which [task 02](02-parameterise-realm-configuration.md) does.
+
+Implementation opened as a PR with AC1–AC3 unchecked (2026-09-05): the
+sandbox this was implemented in cannot pull `maven:3.9-eclipse-temurin-25-noble`
+(backend's build-stage base image) or any other not-yet-cached image —
+`docker pull hello-world` hangs the same way, and survives a Docker Desktop
+restart — so the full stack (frontend+backend) never came up locally. AC4
+and AC5 don't need it and are verified. AC1 and AC2 explicitly require a
+browser against the running stack / the token the backend receives, so they
+need a manual pass once Docker access is available, in this sandbox or
+elsewhere; AC3 needs a working `docker compose build backend`, which CI has
+(normal internet access) even where this sandbox didn't. The persistence
+mechanism itself was independently verified against Keycloak's admin REST
+API directly (restart and full `down`/`up` cycles, `testuser`'s user id
+byte-identical across both, `down -v` genuinely resetting it, the seed
+script racing and winning against Keycloak's transient post-healthcheck
+"Bootstrap in progress" 503).

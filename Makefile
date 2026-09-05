@@ -5,8 +5,8 @@
 # in sync with CI.
 
 .PHONY: help up down restart logs ps backend-test backend-verify frontend-test \
-        frontend-build frontend-e2e lint check api-drift verify verify-fast \
-        install-hooks next-adr
+        frontend-build frontend-e2e lint check api-drift keycloak-check verify \
+        verify-fast install-hooks next-adr
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -60,9 +60,14 @@ api-drift: ## Fail if the committed API client has drifted from the live spec (n
 	(cd frontend && npm run generate:api)
 	git diff --exit-code -- frontend/lib/api/generated
 
+keycloak-check: ## Fail if Keycloak's realm rejects sign-in for the seeded dev account (needs Docker)
+	docker compose up -d --build --wait --wait-timeout 120 postgres keycloak
+	docker compose up -d --build keycloak-seed
+	node scripts/check-keycloak-signin.mjs testuser testuser123
+
 verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
-verify: verify-fast frontend-build backend-verify api-drift frontend-e2e ## Every check CI runs, in CI's order (needs Docker)
+verify: verify-fast frontend-build backend-verify api-drift keycloak-check frontend-e2e ## Every check CI runs, in CI's order (needs Docker)
 
 install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-push hook
 	@dest="$$(git rev-parse --git-common-dir)/hooks/pre-push"; \
