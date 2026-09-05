@@ -1,6 +1,6 @@
 # Task 03: Keep realm configuration from drifting once the import stops running
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-2
 
@@ -90,20 +90,31 @@ Resolved during refinement (2026-09-05):
    unreviewed and gets overwritten back to the committed file's state, which
    is what makes the file trustworthy as the source of truth.
 
+> **Implementation note (2026-09-05).** Q3's `--import.dry-run=true` does not
+> exist in keycloak-config-cli — it is an open feature request
+> ([adorsys/keycloak-config-cli#1645](https://github.com/adorsys/keycloak-config-cli/issues/1645)).
+> The drift check is instead `scripts/check-keycloak-realm-config.mjs`
+> asserting every value the committed file pins against the live realm via
+> the admin REST API. Q5's "reapplies on every boot" also required
+> `IMPORT_CACHE_ENABLED=false`, now set. Both recorded in
+> [ADR-0054](../../adr/0054-keycloak-config-cli-realm-management.md)'s
+> amendments; the rest of Q3/Q5 (semantic field-level diff, no separate
+> recovery tool, overwrite-not-regenerate) stands.
+
 ## Acceptance criteria
 
-- [ ] A realm setting changed only in the admin console is detected — an
+- [x] A realm setting changed only in the admin console is detected — an
       automated check reports the drift and exits non-zero, confirmed by making
       such a change and watching it fail
-- [ ] The same check passes on an untouched stack, so it is not merely always
+- [x] The same check passes on an untouched stack, so it is not merely always
       red
-- [ ] Applying the committed configuration to an already-populated realm
+- [x] Applying the committed configuration to an already-populated realm
       changes it, rather than being skipped the way `--import-realm` is —
       verified against a database that already holds the realm
-- [ ] A fresh clone still reaches a working sign-in with the documented
+- [x] A fresh clone still reaches a working sign-in with the documented
       startup command and no extra manual step, verified by the Playwright
       suite from an empty volume
-- [ ] The chosen mechanism and why it beat the alternatives is written down
+- [x] The chosen mechanism and why it beat the alternatives is written down
       where [ADR-0020](../../adr/0020-documentation-roles.md) says it belongs
 
 ## Notes
