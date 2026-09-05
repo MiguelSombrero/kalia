@@ -25,10 +25,24 @@ One shared, dependency-free helper that the three existing scripts import and
 use instead of their own copies, with identical caller-visible behavior (same
 environment variable names and defaults, same error message wording).
 
+Also in scope: exposing that helper as a small CLI
+(`node scripts/keycloak-admin.mjs <verb> …`) for the ad-hoc realm reads and
+writes that verifying a realm task's acceptance criteria does by hand today —
+a password-grant token piped from `curl` into `python3 -c`, rebuilt from
+scratch each time ([task 03](03-prevent-realm-configuration-drift.md)'s
+session did it six times). The CLI is a thin front end over the same token +
+retry the three scripts share; it adds no Keycloak interaction the repo does
+not already perform. Its verb set is an open question below.
+
 ## Non-goals
 
-- Adding a new capability beyond what the three scripts already do — this
-  only removes duplication.
+- Changing what any of the three scripts *check or seed*: their assertions,
+  retry counts, delays and error wording stay identical before and after.
+  (The CLI in scope is new surface, but only over the shared token/retry the
+  scripts already contain.)
+- A CLI that grows into a general `kcadm.sh` replacement — the verb set stays
+  the minimum that acceptance-criteria verification for this iteration's
+  realm tasks actually needs (see open question 2).
 - A new npm dependency: these are one-shot Docker-job scripts that must stay
   dependency-free (no `npm install` step to run them), so the helper is a
   local file import, not a package.
@@ -50,6 +64,14 @@ environment variable names and defaults, same error message wording).
    always exits (no caller-side handling needed) — and picking one is a
    product-visible-enough decision (differs in how a failure looks in CI
    logs) to settle before writing the helper rather than while writing it.
+2. **What verbs does the CLI expose?** [Task 03](03-prevent-realm-configuration-drift.md)'s
+   acceptance-criteria verification needed: read a realm setting, read a
+   client field, set a realm setting, add/remove a client redirect URI.
+   Minimally that is `get-realm` / `get-client` / `set-realm` plus perhaps a
+   generic authenticated `PUT`. The surface is a refinement call — too few
+   and it is not worth having over `curl`, too many and it is the
+   `kcadm.sh` re-implementation the Non-goals rule out. Whether the CLI also
+   earns an acceptance criterion of its own is part of this.
 
 ## Acceptance criteria
 
