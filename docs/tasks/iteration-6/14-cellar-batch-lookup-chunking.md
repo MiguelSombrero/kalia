@@ -1,6 +1,6 @@
 # Task 14: Chunk the cellar's batch beer lookup past 100 ids
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -89,16 +89,16 @@ cellar of 100 or fewer distinct beers still issues exactly one batch call.
 
 ## Acceptance criteria
 
-- [ ] A cellar of more than 100 distinct catalog beers renders its full
+- [x] A cellar of more than 100 distinct catalog beers renders its full
       list, with no failed request — frontend test with a mocked multi-chunk
       cellar, confirmed to fail against today's single-call implementation
-- [ ] A cellar of 100 or fewer distinct beers still issues exactly one batch
+- [x] A cellar of 100 or fewer distinct beers still issues exactly one batch
       call — frontend test asserting the call count
-- [ ] The chunk size is derived from a single named constant, not a repeated
+- [x] The chunk size is derived from a single named constant, not a repeated
       literal — visible in review, covered by the tests above
-- [ ] Whatever partial-failure behaviour refinement settles on is covered by
+- [x] Whatever partial-failure behaviour refinement settles on is covered by
       a frontend test with a mocked failing chunk
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

@@ -42,6 +42,28 @@ const isEntriesUrl = (url: string) =>
   url.includes("/api/v1/cellar") && !url.includes("/bottles");
 const isBatchUrl = (url: string) => url.includes("/api/v1/beers/batch");
 
+const makeBeerId = (i: number) => `00000000-0000-4000-8000-${i.toString().padStart(12, "0")}`;
+
+const makeBeerSummary = (i: number) => ({
+  id: makeBeerId(i),
+  name: `Beer ${i}`,
+  style: "Lager",
+  abv: 5,
+  price: { cents: 500, currency: "EUR" },
+  brewery: { id: "br", name: "Brewery" },
+});
+
+const makeEntries = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `entry-${i}`,
+    beerId: makeBeerId(i),
+    quantity: 1,
+    createdAt: "2026-01-01",
+    updatedAt: "2026-01-01",
+  }));
+
+const requestedBatchIds = (url: string) => new URL(url, "http://localhost").searchParams.getAll("ids");
+
 describe("listCellarEntries", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -161,6 +183,77 @@ describe("listCellarEntries", () => {
         ]);
       }
       return new Response(null, { status: 500 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(listCellarEntries()).rejects.toThrow("status 500");
+  });
+
+  it("chunks a cellar of more than 100 distinct beers into multiple batch calls, merging every beer into the rendered list", async () => {
+    const count = 150;
+    const entries = makeEntries(count);
+    const beersById = new Map(entries.map((entry, i) => [entry.beerId, makeBeerSummary(i)]));
+    const batchCallSizes: number[] = [];
+    const fetchMock = vi.fn(async (url: string) => {
+      if (isEntriesUrl(url)) {
+        return Response.json(entries);
+      }
+      if (isBatchUrl(url)) {
+        const ids = requestedBatchIds(url);
+        batchCallSizes.push(ids.length);
+        return Response.json(ids.map((id) => beersById.get(id)));
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const rows = await listCellarEntries();
+
+    expect(rows).toHaveLength(count);
+    expect(batchCallSizes.sort((a, b) => b - a)).toEqual([100, 50]);
+  });
+
+  it("issues exactly one batch call for a cellar of exactly 100 distinct beers", async () => {
+    const count = 100;
+    const entries = makeEntries(count);
+    const beersById = new Map(entries.map((entry, i) => [entry.beerId, makeBeerSummary(i)]));
+    let batchCallCount = 0;
+    const fetchMock = vi.fn(async (url: string) => {
+      if (isEntriesUrl(url)) {
+        return Response.json(entries);
+      }
+      if (isBatchUrl(url)) {
+        batchCallCount += 1;
+        const ids = requestedBatchIds(url);
+        return Response.json(ids.map((id) => beersById.get(id)));
+      }
+      throw new Error(`unexpected url ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const rows = await listCellarEntries();
+
+    expect(rows).toHaveLength(count);
+    expect(batchCallCount).toBe(1);
+  });
+
+  it("throws when one chunk of a multi-chunk batch lookup fails, rather than rendering a partial cellar", async () => {
+    const entries = makeEntries(150);
+    const beersById = new Map(entries.map((entry, i) => [entry.beerId, makeBeerSummary(i)]));
+    let batchCallCount = 0;
+    const fetchMock = vi.fn(async (url: string) => {
+      if (isEntriesUrl(url)) {
+        return Response.json(entries);
+      }
+      if (isBatchUrl(url)) {
+        batchCallCount += 1;
+        if (batchCallCount === 2) {
+          return new Response(null, { status: 500 });
+        }
+        const ids = requestedBatchIds(url);
+        return Response.json(ids.map((id) => beersById.get(id)));
+      }
+      throw new Error(`unexpected url ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
 
