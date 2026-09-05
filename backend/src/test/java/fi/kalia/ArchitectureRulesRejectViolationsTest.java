@@ -39,6 +39,12 @@ class ArchitectureRulesRejectViolationsTest {
 	}
 
 	@Test
+	void aModuleOtherThanIdentityDependingOnCurrentUserService() {
+		assertRejects(ArchitectureTest.onlyIdentityDependsOnCurrentUserService,
+				"StrayCurrentUserServiceCaller");
+	}
+
+	@Test
 	void aRepositoryForAnEntityOwnedViaManyToOne() {
 		assertRejects(ArchitectureTest.ownedEntitiesHaveNoRepositoryOfTheirOwn(FIXTURE),
 				"OwnedChildEntityRepository");

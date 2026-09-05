@@ -1,6 +1,6 @@
 # Task 13: Make the caller-identity convention match the code
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -93,19 +93,21 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] [`backend/README.md`](../../../backend/README.md) no longer tells a
+- [x] [`backend/README.md`](../../../backend/README.md) no longer tells a
       service to inject `CurrentUserService`; it describes edge resolution via
       `IdentityApi` with the id passed to the service, and a reader following
       it writes code matching `CellarController` / `CellarService`
-- [ ] An automated check fails when a module outside `identity` depends on
+- [x] An automated check fails when a module outside `identity` depends on
       `CurrentUserService` — an ArchUnit rule in `ArchitectureTest` confirmed
       to fail against a deliberately-added violation — **or** the PR records
       why no test is added
-- [ ] `docs/architecture.md` §4's authentication bullet and
+- [x] `docs/architecture.md` §4's authentication bullet and
       [ADR-0028](../../adr/0028-resource-server-and-current-user.md) are
       consistent with the new wording; `node scripts/check-adrs.mjs` and
       `make verify` are green
-- [ ] If ADR-0028 is amended, `docs/adr/README.md`'s gloss still matches
+- [x] If ADR-0028 is amended, `docs/adr/README.md`'s gloss still matches —
+      N/A: per refinement, only the README bullet changes, ADR-0028 stays
+      unamended, and `docs/adr/README.md`'s gloss is untouched
 
 ## Notes
 

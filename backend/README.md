@@ -204,8 +204,13 @@ lives there rather than in this file.
   ([ADR-0042](../docs/adr/0042-bounded-request-parameters.md)).
 - **Endpoints are protected unless listed as public.** `SecurityConfig`
   (`fi.kalia.identity.web`) permits the catalog reads, `/actuator/health` and
-  the API docs; everything else needs a bearer token. A service that needs the
-  caller injects `CurrentUserService` rather than taking a principal parameter
+  the API docs; everything else needs a bearer token. A controller resolves
+  the caller's id at the web edge — via `IdentityApi.requireCurrentUserId()`
+  outside `identity`, or `CurrentUserService` directly inside it — and passes
+  that id into the application service; a public or anonymous read takes a
+  resolved owner id, or none, the same way. `profile` is the one exception,
+  decoding the token itself rather than depending on `identity`
+  ([ADR-0049](../docs/adr/0049-profile-module-and-public-identity.md))
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)).
 - Code comments carry only what the repo cannot — full policy in
   [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), which
