@@ -37,6 +37,10 @@ export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
 
+// Matches the backend's CatalogController.MAX_BATCH_IDS (ADR-0042) — named
+// once here so the two can't drift silently out of step.
+const MAX_BATCH_IDS = 100;
+
 // The batch endpoint omits an id it cannot resolve rather than answering null,
 // so a beer no longer in the catalog is just absent from the map — a dropped
 // row, not a transport failure (ADR-0023), handled in toRow.
@@ -45,13 +49,27 @@ const fetchBeersById = async (beerIds: string[]): Promise<Map<string, BeerSummar
   if (ids.length === 0) {
     return new Map();
   }
+  const chunks = chunk(ids, MAX_BATCH_IDS);
+  const beers = await Promise.all(chunks.map(fetchBeerChunk));
+  return new Map(beers.flat().map((beer) => [beer.id, beer]));
+};
+
+const chunk = <T,>(items: T[], size: number): T[][] => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+};
+
+const fetchBeerChunk = async (ids: string[]): Promise<BeerSummaryDto[]> => {
   const response = await getBeersByIds({ ids });
   if (response.status !== 200) {
     throw apiError("http", `Batch beer lookup failed with status ${response.status}`, {
       status: response.status,
     });
   }
-  return new Map(response.data.map((beer) => [beer.id, beer]));
+  return response.data;
 };
 
 const toRow = (
