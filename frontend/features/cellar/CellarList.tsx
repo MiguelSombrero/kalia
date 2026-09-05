@@ -2,8 +2,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { BeerRow } from "./BeerRow";
+import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import type { CellarBeerRow } from "./types";
-import { UndoRemoveToast } from "./UndoRemoveToast";
 
 export const CellarList = async ({ locale, rows }: { locale: Locale; rows: CellarBeerRow[] }) => {
   const { t } = await getTranslation(locale);
@@ -21,7 +21,7 @@ export const CellarList = async ({ locale, rows }: { locale: Locale; rows: Cella
           </li>
         ))}
       </ul>
-      <UndoRemoveToast />
+      <RemovalOutcomeToast />
     </>
   );
 };

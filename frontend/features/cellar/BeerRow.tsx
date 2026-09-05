@@ -14,13 +14,12 @@ export const BeerRow = ({ locale, row }: { locale: Locale; row: CellarBeerRow })
   const [isExpanded, setIsExpanded] = useState(false);
 
   const bottlesQuery = useCellarBottles(row.entryId, { enabled: isExpanded });
-  const pending = useBottleRemovalStore((state) => state.pending);
-  const finalizing = useBottleRemovalStore((state) => state.finalizing);
+  const removing = useBottleRemovalStore((state) => state.removing);
 
-  // Optimistic overlay for the undo window and any in-flight delayed
-  // DELETE: hides the whole row the moment it would reach zero bottles,
-  // and keeps it hidden until that DELETE actually settles.
-  const bottleCount = row.bottleCount - hiddenBottleCountForEntry({ pending, finalizing }, row.entryId);
+  // Optimistic overlay for an in-flight DELETE: hides the whole row the
+  // moment it would reach zero bottles, and keeps it hidden until that
+  // DELETE actually settles.
+  const bottleCount = row.bottleCount - hiddenBottleCountForEntry(removing, row.entryId);
   if (bottleCount <= 0) {
     return null;
   }

@@ -100,20 +100,41 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
   await expect(bottleList).toBeVisible();
   await bottleList.getByRole("button", { name: "Remove" }).first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
   // exact: true — Radix Toast also mirrors the text into an off-screen
-  // role="status" region ("Notification Bottle removed.Undo"), which a
+  // role="status" region ("Notification Bottle removed."), which a
   // substring match picks up as a second element once it populates.
   await expect(page.getByText("Bottle removed.", { exact: true })).toBeVisible();
-  // No shorter way to prove the DELETE only fires once the undo window
-  // (~5s) genuinely elapses rather than firing immediately.
-  await page.waitForTimeout(5500);
-  await expect(page.getByText("Bottle removed.", { exact: true })).toBeHidden();
+  // The DELETE already fired by the time the dialog closed — no delay left
+  // to wait out before the count reflects it.
   expect(await bottleCount(page, listBeer)).toBe(beforeRemove - 1);
 
   const scan = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
   expect(scan.violations).toEqual([]);
+
+  // A confirmed removal must survive navigating away and a hard reload:
+  // nothing about it is left pending after the dialog closes.
+  const beforeSecondRemove = await bottleCount(page, listBeer);
+  await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
+  await expect(bottleList).toBeVisible();
+  await bottleList.getByRole("button", { name: "Remove" }).first().click();
+  await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  await page.goto("/en/beers");
+  expect(
+    await bottleCount(page, listBeer),
+    "bottle reappeared after navigating away and back",
+  ).toBe(beforeSecondRemove - 1);
+
+  await page.reload();
+  expect(await bottleCount(page, listBeer), "bottle reappeared after a hard reload").toBe(
+    beforeSecondRemove - 1,
+  );
 });
 
 test("the open add-to-cellar dialog has no accessibility violations", async ({ page, account }) => {

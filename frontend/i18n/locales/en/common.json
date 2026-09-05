@@ -118,9 +118,13 @@
       },
       "remove": {
         "action": "Remove",
+        "confirmTitle": "Remove bottle",
+        "confirmDescription": "Remove this bottle of {{beer}}? This cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Remove",
         "toast": "Bottle removed.",
         "toastLastBottle": "Bottle removed. That beer is no longer in your cellar.",
-        "undo": "Undo"
+        "error": "Could not remove the bottle. Please try again."
       }
     },
     "add": {

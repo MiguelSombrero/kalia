@@ -1,95 +1,62 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { REMOVE_UNDO_DELAY_MS, useBottleRemovalStore } from "./store";
+import { afterEach, describe, expect, it } from "vitest";
+import { hiddenBottleCountForEntry, isBottleHidden, useBottleRemovalStore } from "./store";
 
-const removal = (bottleId: string, entryId: string, lastBottle = false) => ({
-  bottleId,
-  entryId,
-  lastBottle,
-});
-
-beforeEach(() => {
-  vi.useFakeTimers();
-});
+const removal = (bottleId: string, entryId: string) => ({ bottleId, entryId });
 
 afterEach(() => {
-  useBottleRemovalStore.getState().undoRemoval();
-  vi.useRealTimers();
+  useBottleRemovalStore.setState({ removing: [], outcome: null });
 });
 
 describe("useBottleRemovalStore", () => {
-  it("tracks the pending removal and finalizes it once the undo window elapses", async () => {
-    const finalize = vi.fn();
+  it("tracks a removal as in flight until it finishes", () => {
+    useBottleRemovalStore.getState().startRemoving(removal("bottle-1", "entry-1"));
 
-    useBottleRemovalStore.getState().startRemoval(removal("bottle-1", "entry-1"), finalize);
+    expect(useBottleRemovalStore.getState().removing).toEqual([removal("bottle-1", "entry-1")]);
+    expect(isBottleHidden(useBottleRemovalStore.getState().removing, "bottle-1")).toBe(true);
 
-    expect(useBottleRemovalStore.getState().pending).toEqual(removal("bottle-1", "entry-1"));
-    expect(finalize).not.toHaveBeenCalled();
+    useBottleRemovalStore.getState().finishRemoving(removal("bottle-1", "entry-1"), { lastBottle: false });
 
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
-
-    expect(finalize).toHaveBeenCalledTimes(1);
-    expect(useBottleRemovalStore.getState().pending).toBeNull();
-    expect(useBottleRemovalStore.getState().finalizing).toEqual([]);
+    expect(useBottleRemovalStore.getState().removing).toEqual([]);
+    expect(isBottleHidden(useBottleRemovalStore.getState().removing, "bottle-1")).toBe(false);
   });
 
-  it("carries the last-bottle flag on the pending removal so the toast can name the consequence", () => {
-    useBottleRemovalStore.getState().startRemoval(removal("bottle-1", "entry-1", true), vi.fn());
+  it("tracks two concurrent removals independently", () => {
+    useBottleRemovalStore.getState().startRemoving(removal("bottle-1", "entry-1"));
+    useBottleRemovalStore.getState().startRemoving(removal("bottle-2", "entry-1"));
 
-    expect(useBottleRemovalStore.getState().pending?.lastBottle).toBe(true);
+    expect(hiddenBottleCountForEntry(useBottleRemovalStore.getState().removing, "entry-1")).toBe(2);
+
+    useBottleRemovalStore.getState().finishRemoving(removal("bottle-1", "entry-1"), { lastBottle: false });
+
+    expect(hiddenBottleCountForEntry(useBottleRemovalStore.getState().removing, "entry-1")).toBe(1);
+    expect(isBottleHidden(useBottleRemovalStore.getState().removing, "bottle-2")).toBe(true);
   });
 
-  it("keeps the bottle masked via `finalizing` until the delayed DELETE settles, not just until the timer fires", async () => {
-    let resolveDelete!: () => void;
-    const finalize = vi.fn(() => new Promise<void>((resolve) => (resolveDelete = resolve)));
+  it("records a successful removal's outcome, carrying whether it emptied the entry", () => {
+    useBottleRemovalStore.getState().startRemoving(removal("bottle-1", "entry-1"));
+    useBottleRemovalStore.getState().finishRemoving(removal("bottle-1", "entry-1"), { lastBottle: true });
 
-    useBottleRemovalStore.getState().startRemoval(removal("bottle-1", "entry-1"), finalize);
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
-
-    // The timer has fired and `pending` cleared, but the DELETE it kicked
-    // off hasn't resolved yet — the bottle must still be masked, or it
-    // flickers back into view for the length of that request.
-    expect(useBottleRemovalStore.getState().pending).toBeNull();
-    expect(useBottleRemovalStore.getState().finalizing).toEqual([removal("bottle-1", "entry-1")]);
-
-    resolveDelete();
-    await vi.advanceTimersByTimeAsync(0);
-
-    expect(useBottleRemovalStore.getState().finalizing).toEqual([]);
+    expect(useBottleRemovalStore.getState().outcome).toEqual({ lastBottle: true });
   });
 
-  it("cancels the pending removal on undo, never calling finalize", async () => {
-    const finalize = vi.fn();
+  it("records a failed removal's outcome", () => {
+    useBottleRemovalStore.getState().startRemoving(removal("bottle-1", "entry-1"));
+    useBottleRemovalStore.getState().finishRemoving(removal("bottle-1", "entry-1"), { failed: true });
 
-    useBottleRemovalStore.getState().startRemoval(removal("bottle-1", "entry-1"), finalize);
-    useBottleRemovalStore.getState().undoRemoval();
-
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
-
-    expect(finalize).not.toHaveBeenCalled();
-    expect(useBottleRemovalStore.getState().pending).toBeNull();
+    expect(useBottleRemovalStore.getState().outcome).toEqual({ failed: true });
   });
 
-  it("finalizes the first removal immediately when a second one starts — one toast at a time", async () => {
-    let resolveFirstDelete!: () => void;
-    const finalizeFirst = vi.fn(() => new Promise<void>((resolve) => (resolveFirstDelete = resolve)));
-    const finalizeSecond = vi.fn();
+  it("a failed removal stops hiding the bottle, restoring it to the list", () => {
+    useBottleRemovalStore.getState().startRemoving(removal("bottle-1", "entry-1"));
+    useBottleRemovalStore.getState().finishRemoving(removal("bottle-1", "entry-1"), { failed: true });
 
-    useBottleRemovalStore.getState().startRemoval(removal("bottle-1", "entry-1"), finalizeFirst);
-    useBottleRemovalStore.getState().startRemoval(removal("bottle-2", "entry-1"), finalizeSecond);
-    await vi.advanceTimersByTimeAsync(0);
+    expect(isBottleHidden(useBottleRemovalStore.getState().removing, "bottle-1")).toBe(false);
+  });
 
-    expect(finalizeFirst).toHaveBeenCalledTimes(1);
-    expect(finalizeSecond).not.toHaveBeenCalled();
-    expect(useBottleRemovalStore.getState().pending).toEqual(removal("bottle-2", "entry-1"));
-    // The first bottle is no longer `pending`, but its DELETE is already in
-    // flight — still masked, so it doesn't reappear before that settles.
-    expect(useBottleRemovalStore.getState().finalizing).toEqual([removal("bottle-1", "entry-1")]);
-    resolveFirstDelete();
+  it("clears the outcome on dismiss", () => {
+    useBottleRemovalStore.getState().finishRemoving(removal("bottle-1", "entry-1"), { lastBottle: false });
+    useBottleRemovalStore.getState().dismissOutcome();
 
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
-
-    expect(finalizeSecond).toHaveBeenCalledTimes(1);
-    expect(finalizeFirst).toHaveBeenCalledTimes(1);
-    expect(useBottleRemovalStore.getState().finalizing).toEqual([]);
+    expect(useBottleRemovalStore.getState().outcome).toBeNull();
   });
 });

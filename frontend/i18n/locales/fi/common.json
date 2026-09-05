@@ -118,9 +118,13 @@
       },
       "remove": {
         "action": "Poista",
+        "confirmTitle": "Poista pullo",
+        "confirmDescription": "Poistetaanko tämä oluen {{beer}} pullo? Tätä ei voi perua.",
+        "cancel": "Peruuta",
+        "confirm": "Poista",
         "toast": "Pullo poistettu.",
         "toastLastBottle": "Pullo poistettu. Olut ei ole enää kellarissasi.",
-        "undo": "Kumoa"
+        "error": "Pullon poisto epäonnistui. Yritä uudelleen."
       }
     },
     "add": {

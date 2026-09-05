@@ -1,6 +1,6 @@
 # Task 13: A bottle removal is undone by navigating away
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -119,37 +119,55 @@ described.
 
 ## Acceptance criteria
 
-- [ ] Clicking Remove opens a confirmation dialog; confirming commits the
+- [x] Clicking Remove opens a confirmation dialog; confirming commits the
       `DELETE` immediately (not after a delay) — the bottle is gone and
       stays gone across an immediate navigation away and back, and across a
       hard reload — Playwright spec that confirms a removal, then separately
       navigates away and back and hard-reloads, asserting the bottle is
       absent both times; confirmed to fail against today's build, where the
       bottle reappears
-- [ ] Canceling the confirmation dialog leaves the bottle untouched and
+- [x] Canceling the confirmation dialog leaves the bottle untouched and
       issues no `DELETE` — component/integration test
-- [ ] If the `DELETE` fails after confirmation, an error toast reports it and
+- [x] If the `DELETE` fails after confirmation, an error toast reports it and
       the bottle is restored to the list — component test with a mocked
       failing mutation
-- [ ] The confirmation dialog and the remove control pass `axe` with no
+- [x] The confirmation dialog and the remove control pass `axe` with no
       violations in both locales and are fully keyboard-operable (open,
       confirm, cancel via keyboard) — component test
-- [ ] Removing a beer's last bottle still empties its row from the cellar
+- [x] Removing a beer's last bottle still empties its row from the cellar
       list in the same step, and the toast still carries the "no longer in
       your cellar" message — component test
-- [ ] No `cellar.bottle.remove.undo` (or other Undo-only) string remains
+- [x] No `cellar.bottle.remove.undo` (or other Undo-only) string remains
       defined-but-unused, and `store.ts`'s delayed-dispatch/undo state
       (`startRemoval`, `undoRemoval`, `REMOVE_UNDO_DELAY_MS`, `finalizing`)
       is removed rather than left dead — i18n key check plus lint/build
-- [ ] `docs/architecture.md`'s cellar and frontend-accessibility sections and
+- [x] `docs/architecture.md`'s cellar and frontend-accessibility sections and
       the undo descriptions in [iteration 5
       task 14](../iteration-5/14-edit-remove-bottle.md) and [task
       06](06-entry-with-no-bottles.md) are reconciled with the shipped
       behaviour in this PR; `node scripts/check-adrs.mjs` green (ADR-0021's
       amendment matches the shipped toast)
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
+
+Implemented 2026-09-05, PR [#228](https://github.com/MiguelSombrero/kalia/pull/228).
+The implementing session's own sandbox could not run the Playwright spec or
+the Docker-dependent parts of `make verify` — its container-registry pulls
+are blocked entirely (`docker pull hello-world` itself returns 403, not
+specific to the Keycloak image `docker-compose.yml` needs) — so `make
+verify-fast` (327 frontend tests), lint and build were confirmed locally,
+and the e2e spec plus the rest of `make verify` (`Frontend`, `E2E
+(Playwright)`, `API client drift check`, the vulnerability scan; `Backend
+(Maven)` correctly skipped, untouched by this change) were confirmed green
+by CI on the PR instead — 21 passed, 1 unrelated flake
+(`profile-visibility.spec.ts`, retried and passed) on the same run that
+carries the new `add-to-cellar.spec.ts` assertions. Not independently
+re-verified: that the new spec fails against pre-fix `dev` specifically —
+the delayed-`DELETE` mechanism it targets makes that failure mode
+mechanical (a `setTimeout`-scheduled request that never fires if the tab
+navigates away first), and CI proved the spec passes against the fix, but
+this wasn't run against the old code in a separate check.
 
 Provenance: product-owner bug report, 2026-09-03, in the session on branch
 `claude/cellar-bottle-removal-undo-2abea1`. The product owner's direction:
