@@ -20,8 +20,9 @@ Kalia sends no email today and has no SMTP configuration anywhere.
 
 Keycloak can send mail in the local stack and, in principle, from a deployment:
 a place for a developer to read what was sent without a real mailbox, a real
-sending path configured from the environment rather than committed, and the
-sender identity a recipient sees.
+sending path configured from the environment rather than committed — built to
+work, not proven to work against the real provider, see open question 3 — and
+the sender identity a recipient sees.
 
 ## Non-goals
 
@@ -81,9 +82,24 @@ Resolved during refinement (2026-09-05):
    Mailpit exposes an HTTP API a Playwright spec can query directly to read a
    verification link out of a caught message.
 3. **Does the real provider get exercised before a deployment exists?**
-   Decided: yes — manually send at least one real message through the Gmail
-   SMTP path during this task's implementation, confirming actual
-   deliverability, even though local dev/test default to Mailpit.
+   Decided: **no.** Local dev and test always run against Mailpit, which needs
+   no SMTP auth, and every acceptance criterion below is satisfiable that way
+   — none require a live connection to `smtp.gmail.com`. Reversed within the
+   same refinement conversation after the product owner raised a hard
+   requirement: no AI agent implementing this task may have any means of
+   reading the real App Password, not merely an instruction not to type it in
+   — an agent with filesystem/shell access on the machine can in principle
+   read any file it is pointed at or dump a resolved environment variable, so
+   the credential's existence has to be kept out of any session an agent has
+   tool access to, not just out of the code it writes. Exercising the real
+   provider now, with no domain and no deployment to receive replies or
+   bounces, was also already adjacent to this task's domain/DNS and
+   deliverability-engineering non-goals above — it belongs to the deployment
+   that does not exist, same as they do. Consequence: this task configures the
+   Gmail SMTP sending path but does not prove it against the real provider;
+   that proof — and the first point at which the real App Password has to
+   exist on any machine — becomes a future deployment task's problem. See the
+   Notes below.
 4. **Sender address and name?** Decided: the product owner's Gmail address as
    the underlying sender, with **"Kalia" as the display name** (e.g.
    `Kalia <the-gmail-address>`), so the mail reads as the product rather than
@@ -121,3 +137,12 @@ OIDC provider does at sign-in. The defensible distinction is failure mode — a
 mail outage delays new sign-ups, a broker outage locks out existing users —
 and that is an argument about which route is the *base*, not about which
 dependency is acceptable.
+
+Whichever future task first deploys Kalia and turns on the real Gmail SMTP
+path inherits the question open question 3 deliberately leaves unanswered:
+how the real App Password gets created and put in place without any AI agent
+implementing that task having the means to read it. Re-raise this explicitly
+during that task's own refinement — don't assume the env-var-only pattern
+[task 02](02-parameterise-realm-configuration.md) already established for the
+Keycloak client secret is sufficient on its own, since it was judged
+insufficient for exactly this credential in this task's refinement.
