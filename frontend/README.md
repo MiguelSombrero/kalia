@@ -219,13 +219,13 @@ Why the rationale lives there and not here:
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
   `dialog.tsx` wraps `@radix-ui/react-dialog` 1.1.23** for the focus trap,
   focus restore, `Escape` handling and `aria-modal` inerting a modal needs,
-  **and `toast.tsx` wraps `@radix-ui/react-toast` 1.2.15** for the undo
-  toast's `aria-live` announcement and timing model — behaviour, not
-  styling, and each part of it fails silently
-  ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)'s 2026-08-22
-  and 2026-08-23 amendments). Radix is headless: both primitives are still
-  styled with the semantic tokens above, and no other primitive may take a
-  UI dependency without amending that ADR again.
+  **and `toast.tsx` wraps `@radix-ui/react-toast` 1.2.15** for the removal
+  outcome toast's `aria-live` announcement and auto-dismiss timing —
+  behaviour, not styling, and each part of it fails silently
+  ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)'s 2026-08-22,
+  2026-08-23 and 2026-09-04 amendments). Radix is headless: both primitives
+  are still styled with the semantic tokens above, and no other primitive
+  may take a UI dependency without amending that ADR again.
 - **Loading/error/empty states have a fixed shape**: `loading.tsx` per route
   with a shape-matched skeleton, one `app/[locale]/error.tsx` app-wide,
   `EmptyState` for no-results ([ADR-0022](../docs/adr/0022-loading-error-empty-states.md)).

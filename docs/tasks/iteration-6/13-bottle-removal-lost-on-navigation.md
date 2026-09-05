@@ -126,22 +126,22 @@ described.
       navigates away and back and hard-reloads, asserting the bottle is
       absent both times; confirmed to fail against today's build, where the
       bottle reappears
-- [ ] Canceling the confirmation dialog leaves the bottle untouched and
+- [x] Canceling the confirmation dialog leaves the bottle untouched and
       issues no `DELETE` — component/integration test
-- [ ] If the `DELETE` fails after confirmation, an error toast reports it and
+- [x] If the `DELETE` fails after confirmation, an error toast reports it and
       the bottle is restored to the list — component test with a mocked
       failing mutation
-- [ ] The confirmation dialog and the remove control pass `axe` with no
+- [x] The confirmation dialog and the remove control pass `axe` with no
       violations in both locales and are fully keyboard-operable (open,
       confirm, cancel via keyboard) — component test
-- [ ] Removing a beer's last bottle still empties its row from the cellar
+- [x] Removing a beer's last bottle still empties its row from the cellar
       list in the same step, and the toast still carries the "no longer in
       your cellar" message — component test
-- [ ] No `cellar.bottle.remove.undo` (or other Undo-only) string remains
+- [x] No `cellar.bottle.remove.undo` (or other Undo-only) string remains
       defined-but-unused, and `store.ts`'s delayed-dispatch/undo state
       (`startRemoval`, `undoRemoval`, `REMOVE_UNDO_DELAY_MS`, `finalizing`)
       is removed rather than left dead — i18n key check plus lint/build
-- [ ] `docs/architecture.md`'s cellar and frontend-accessibility sections and
+- [x] `docs/architecture.md`'s cellar and frontend-accessibility sections and
       the undo descriptions in [iteration 5
       task 14](../iteration-5/14-edit-remove-bottle.md) and [task
       06](06-entry-with-no-bottles.md) are reconciled with the shipped
@@ -150,6 +150,22 @@ described.
 - [ ] `make verify` is green
 
 ## Notes
+
+Implemented 2026-09-05: the code, i18n and docs changes are complete and
+`make verify-fast` (check/lint/frontend unit+component tests, 327 passing),
+`npm run lint` and `npm run build` are all green. The two unchecked criteria
+above — the Playwright spec and the full `make verify` — could not be run
+from this session: its sandbox blocks all container-registry pulls (`docker
+pull hello-world` itself returns 403, not specific to the Keycloak image
+`docker-compose.yml` needs), so the stack cannot come up and neither the new
+e2e spec nor `mvn verify`/`api-drift` could execute here. The Playwright spec
+itself is written (`frontend/e2e/add-to-cellar.spec.ts`) and its logic is
+mirrored by a passing component test
+(`BottleRemoval.test.tsx`'s "commits the DELETE immediately on confirm,
+with no delay"), but only an environment with real registry access — CI, or
+a local machine — can actually run it and satisfy the criterion's own
+"confirmed to fail against today's build" requirement. Status stays
+`refined` until that run is confirmed.
 
 Provenance: product-owner bug report, 2026-09-03, in the session on branch
 `claude/cellar-bottle-removal-undo-2abea1`. The product owner's direction:

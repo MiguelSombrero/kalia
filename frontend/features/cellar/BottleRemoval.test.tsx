@@ -1,15 +1,11 @@
-// Exercises the undo-toast removal flow end to end: BeerRow, BottleList and
-// UndoRemoveToast coordinate through the shared removal store, so this test
-// renders the real composition (CellarList) rather than any one component
-// in isolation.
+// Exercises the confirm-then-remove flow end to end: BeerRow, BottleList,
+// RemoveBottleDialog and RemovalOutcomeToast coordinate through the shared
+// removal store, so this test renders the real composition (CellarList)
+// rather than any one component in isolation.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// RTL's own `waitFor` detects fake timers via a global `jest` object
-// (testing-library/dom's jestFakeTimersAreEnabled), which Vitest's `vi`
-// fake timers don't satisfy — it silently falls back to real-time polling
-// and hangs. Vitest's own `vi.waitFor` has no such assumption.
 const waitFor = vi.waitFor;
 
 vi.mock("react-i18next", () => ({
@@ -26,14 +22,15 @@ const { listCellarBottlesAction, removeBottleAction } = vi.hoisted(() => ({
 vi.mock("./actions", () => ({ listCellarBottlesAction, removeBottleAction }));
 
 import { CellarList } from "./CellarList";
-import { REMOVE_UNDO_DELAY_MS } from "./store";
+import { useBottleRemovalStore } from "./store";
 import type { Bottle, CellarBeerRow } from "./types";
 
-// The mocked react-i18next above passes keys through untranslated.
 const REMOVE = "cellar.bottle.remove.action";
-const UNDO = "cellar.bottle.remove.undo";
+const CONFIRM = "cellar.bottle.remove.confirm";
+const CANCEL = "cellar.bottle.remove.cancel";
 const TOAST = "cellar.bottle.remove.toast";
 const TOAST_LAST_BOTTLE = "cellar.bottle.remove.toastLastBottle";
+const TOAST_ERROR = "cellar.bottle.remove.error";
 
 const westvleteren: CellarBeerRow = {
   entryId: "e1",
@@ -103,11 +100,7 @@ const bottleListFor = (beerName: string) => within(screen.getByRole("list", { na
 const removeButtonsFor = (beerName: string) =>
   bottleListFor(beerName).getAllByRole("button", { name: REMOVE });
 
-// Only setTimeout/clearTimeout are faked, and only from here on — i18next's
-// own init (run inside CellarList, awaited by renderCellar/expand above)
-// relies on a real setTimeout internally and hangs forever if it's already
-// faked when that runs.
-const fakeRemovalTimer = () => vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+const confirmDialog = () => within(screen.getByRole("dialog"));
 
 beforeEach(() => {
   listCellarBottlesAction.mockReset();
@@ -119,86 +112,69 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vi.useRealTimers();
+  // The removal store is a module-level singleton: state left behind by one
+  // test would otherwise leak into whichever test runs next.
+  useBottleRemovalStore.setState({ removing: [], outcome: null });
 });
 
-describe("bottle removal with undo", () => {
-  it("hides the bottle and shows an undo toast, finalizing the DELETE once the toast elapses", async () => {
+describe("bottle removal with an upfront confirmation", () => {
+  it("commits the DELETE immediately on confirm, with no delay", async () => {
     await renderCellar();
     await expand("Pihtiputaan Sahti");
-    fakeRemovalTimer();
 
     expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
 
     fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
-
-    await waitFor(() => expect(screen.getByText(TOAST)).toBeInTheDocument());
-    expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(1);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
     expect(removeBottleAction).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
+    fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 
-    expect(removeBottleAction).toHaveBeenCalledWith("bottle-2");
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(1);
+    await waitFor(() => expect(removeBottleAction).toHaveBeenCalledWith("bottle-2"));
+    await waitFor(() => expect(screen.getByText(TOAST)).toBeInTheDocument());
   });
 
-  it("restores the bottle on Undo, and never sends the DELETE request", async () => {
+  it("issues no DELETE and leaves the bottle untouched when canceled", async () => {
     await renderCellar();
     await expand("Pihtiputaan Sahti");
-    fakeRemovalTimer();
 
     fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
-    await waitFor(() => expect(screen.getByText(TOAST)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: UNDO }));
+    fireEvent.click(confirmDialog().getByRole("button", { name: CANCEL }));
 
-    await waitFor(() => expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2));
-    expect(screen.queryByText(TOAST)).not.toBeInTheDocument();
-
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
     expect(removeBottleAction).not.toHaveBeenCalled();
   });
 
-  it("removes a beer's row once its last bottle is removed, names the consequence, and Undo restores both", async () => {
+  it("reports a failed DELETE with an error toast and restores the bottle", async () => {
+    removeBottleAction.mockRejectedValue(new Error("boom"));
+    await renderCellar();
+    await expand("Pihtiputaan Sahti");
+
+    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
+
+    await waitFor(() => expect(screen.getByText(TOAST_ERROR)).toBeInTheDocument());
+    expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
+  });
+
+  it("removes a beer's row once its last bottle is removed, and the toast names the consequence", async () => {
     await renderCellar();
     await expand("Westvleteren 12");
-    fakeRemovalTimer();
 
     fireEvent.click(screen.getByRole("button", { name: REMOVE }));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: /Westvleteren 12/ })).not.toBeInTheDocument(),
     );
-    expect(screen.getByText(TOAST_LAST_BOTTLE)).toBeInTheDocument();
-    expect(screen.queryByText(TOAST)).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: UNDO }));
-
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Westvleteren 12/ })).toBeInTheDocument(),
-    );
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
-    expect(removeBottleAction).not.toHaveBeenCalled();
-  });
-
-  it("finalizes the first removal immediately when a second one starts — one toast at a time", async () => {
-    await renderCellar();
-    await expand("Westvleteren 12");
-    await expand("Pihtiputaan Sahti");
-    fakeRemovalTimer();
-
-    fireEvent.click(removeButtonsFor("Westvleteren 12")[0]);
     await waitFor(() => expect(screen.getByText(TOAST_LAST_BOTTLE)).toBeInTheDocument());
-
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS / 2);
-    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
-
-    await waitFor(() => expect(removeBottleAction).toHaveBeenCalledWith("bottle-1"));
-    expect(removeBottleAction).toHaveBeenCalledTimes(1);
-    // The toast now follows the second, still-pending removal (Sahti still
-    // has a bottle left), so it drops back to the plain message.
-    expect(screen.getByText(TOAST)).toBeInTheDocument();
-
-    await vi.advanceTimersByTimeAsync(REMOVE_UNDO_DELAY_MS);
-    expect(removeBottleAction).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText(TOAST)).not.toBeInTheDocument();
   });
 });

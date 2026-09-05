@@ -1,8 +1,9 @@
 // Complements BottleRemoval.test.tsx's flow coverage: this checks the
-// remove control, the edit dialog and the undo toast with real translated
-// text in both locales, since that file mocks react-i18next to raw keys.
+// remove control, the confirmation dialog and the outcome toast with real
+// translated text in both locales, since that file mocks react-i18next to
+// raw keys.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
@@ -48,6 +49,11 @@ const renderCellar = async (locale: Locale) => {
   );
 };
 
+const openConfirmDialog = async (removeLabel: string) => {
+  fireEvent.click((await screen.findAllByRole("button", { name: removeLabel }))[0]);
+  return screen.findByRole("dialog");
+};
+
 beforeEach(() => {
   listCellarBottlesAction.mockReset();
   listCellarBottlesAction.mockResolvedValue([
@@ -71,13 +77,15 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  // The removal store is a module-level singleton: a removal left pending
-  // by one test — with a real 5s setTimeout still running — would otherwise
-  // leak into whichever test runs next.
-  useBottleRemovalStore.getState().undoRemoval();
+  // The removal store is a module-level singleton: state left behind by one
+  // test would otherwise leak into whichever test runs next.
+  useBottleRemovalStore.setState({ removing: [], outcome: null });
 });
 
 describe.each([["en"], ["fi"]] as const)("bottle removal accessibility (%s)", (locale) => {
+  const removeLabel = locale === "en" ? "Remove" : "Poista";
+  const cancelLabel = locale === "en" ? "Cancel" : "Peruuta";
+
   it("has no a11y violations with the remove and edit controls visible", async () => {
     const { container } = await renderCellar(locale);
 
@@ -87,22 +95,43 @@ describe.each([["en"], ["fi"]] as const)("bottle removal accessibility (%s)", (l
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("has no a11y violations once the undo toast is showing, and Undo is keyboard-operable", async () => {
-    const { container } = await renderCellar(locale);
-
+  it("opens a keyboard-reachable confirmation dialog with no a11y violations, cancelable via Escape", async () => {
+    await renderCellar(locale);
     fireEvent.click(screen.getByRole("button", { name: new RegExp(row.beerName) }));
-    const removeLabel = locale === "en" ? "Remove" : "Poista";
-    const undoLabel = locale === "en" ? "Undo" : "Kumoa";
 
-    fireEvent.click((await screen.findAllByRole("button", { name: removeLabel }))[0]);
-    const undoButton = await screen.findByRole("button", { name: undoLabel });
+    const removeButton = (await screen.findAllByRole("button", { name: removeLabel }))[0];
+    removeButton.focus();
+    expect(removeButton).toHaveFocus();
+
+    const dialog = await openConfirmDialog(removeLabel);
+    expect(await axe(document.body)).toHaveNoViolations();
+
+    const dialogScope = within(dialog);
+    const cancelButton = dialogScope.getByRole("button", { name: cancelLabel });
+    const confirmButton = dialogScope.getByRole("button", { name: removeLabel });
+    cancelButton.focus();
+    expect(cancelButton).toHaveFocus();
+    confirmButton.focus();
+    expect(confirmButton).toHaveFocus();
+
+    fireEvent.keyDown(dialog, { key: "Escape", code: "Escape" });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(removeBottleAction).not.toHaveBeenCalled();
+  });
+
+  it("has no a11y violations once the outcome toast is showing", async () => {
+    const { container } = await renderCellar(locale);
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(row.beerName) }));
+
+    const dialog = await openConfirmDialog(removeLabel);
+    fireEvent.click(within(dialog).getByRole("button", { name: removeLabel }));
+
+    await screen.findByText(locale === "en" ? "Bottle removed." : "Pullo poistettu.");
 
     expect(await axe(container)).toHaveNoViolations();
     // The toast renders in its own portal, outside `container`.
     const notifications = screen.getByRole("region", { name: /Notifications/ });
     expect(await axe(notifications)).toHaveNoViolations();
-
-    undoButton.focus();
-    expect(undoButton).toHaveFocus();
   });
 });
