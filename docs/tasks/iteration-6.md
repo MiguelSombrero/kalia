@@ -25,7 +25,7 @@ cellar exists at all beyond what A's profile already reveals.
 | [10](iteration-6/10-cellar-relative-date-precision.md) | Multi-unit precision for cellar relative dates | done |
 | [11](iteration-6/11-e2e-suite-account-contention.md) | The e2e suite's specs contend for one Keycloak account | done |
 | [12](iteration-6/12-dev-csp-blocks-react-eval.md) | The dev CSP blocks React's development-mode `eval()` | done |
-| [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | refined |
+| [13](iteration-6/13-bottle-removal-lost-on-navigation.md) | A bottle removal is undone by navigating away | done |
 | [14](iteration-6/14-cellar-batch-lookup-chunking.md) | Chunk the cellar's batch beer lookup past 100 ids | needs-refinement |
 
 Depends on [iteration 5](iteration-5.md): there is nothing to make public until

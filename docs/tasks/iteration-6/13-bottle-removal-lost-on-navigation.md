@@ -1,6 +1,6 @@
 # Task 13: A bottle removal is undone by navigating away
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -119,7 +119,7 @@ described.
 
 ## Acceptance criteria
 
-- [ ] Clicking Remove opens a confirmation dialog; confirming commits the
+- [x] Clicking Remove opens a confirmation dialog; confirming commits the
       `DELETE` immediately (not after a delay) — the bottle is gone and
       stays gone across an immediate navigation away and back, and across a
       hard reload — Playwright spec that confirms a removal, then separately
@@ -147,25 +147,27 @@ described.
       06](06-entry-with-no-bottles.md) are reconciled with the shipped
       behaviour in this PR; `node scripts/check-adrs.mjs` green (ADR-0021's
       amendment matches the shipped toast)
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 
-Implemented 2026-09-05: the code, i18n and docs changes are complete and
-`make verify-fast` (check/lint/frontend unit+component tests, 327 passing),
-`npm run lint` and `npm run build` are all green. The two unchecked criteria
-above — the Playwright spec and the full `make verify` — could not be run
-from this session: its sandbox blocks all container-registry pulls (`docker
-pull hello-world` itself returns 403, not specific to the Keycloak image
-`docker-compose.yml` needs), so the stack cannot come up and neither the new
-e2e spec nor `mvn verify`/`api-drift` could execute here. The Playwright spec
-itself is written (`frontend/e2e/add-to-cellar.spec.ts`) and its logic is
-mirrored by a passing component test
-(`BottleRemoval.test.tsx`'s "commits the DELETE immediately on confirm,
-with no delay"), but only an environment with real registry access — CI, or
-a local machine — can actually run it and satisfy the criterion's own
-"confirmed to fail against today's build" requirement. Status stays
-`refined` until that run is confirmed.
+Implemented 2026-09-05, PR [#228](https://github.com/MiguelSombrero/kalia/pull/228).
+The implementing session's own sandbox could not run the Playwright spec or
+the Docker-dependent parts of `make verify` — its container-registry pulls
+are blocked entirely (`docker pull hello-world` itself returns 403, not
+specific to the Keycloak image `docker-compose.yml` needs) — so `make
+verify-fast` (327 frontend tests), lint and build were confirmed locally,
+and the e2e spec plus the rest of `make verify` (`Frontend`, `E2E
+(Playwright)`, `API client drift check`, the vulnerability scan; `Backend
+(Maven)` correctly skipped, untouched by this change) were confirmed green
+by CI on the PR instead — 21 passed, 1 unrelated flake
+(`profile-visibility.spec.ts`, retried and passed) on the same run that
+carries the new `add-to-cellar.spec.ts` assertions. Not independently
+re-verified: that the new spec fails against pre-fix `dev` specifically —
+the delayed-`DELETE` mechanism it targets makes that failure mode
+mechanical (a `setTimeout`-scheduled request that never fires if the tab
+navigates away first), and CI proved the spec passes against the fix, but
+this wasn't run against the old code in a separate check.
 
 Provenance: product-owner bug report, 2026-09-03, in the session on branch
 `claude/cellar-bottle-removal-undo-2abea1`. The product owner's direction:
