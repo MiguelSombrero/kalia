@@ -1,6 +1,6 @@
 # Task 04: Give Kalia a way to send email
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-3
 
@@ -113,17 +113,17 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] Triggering a Keycloak email in the local stack produces a message a
+- [x] Triggering a Keycloak email in the local stack produces a message a
       developer can read without a real mailbox, verified by doing it
-- [ ] The verification link in that message resolves against the configured
+- [x] The verification link in that message resolves against the configured
       frontend origin, not a container-internal hostname — the same
       two-address trap [ADR-0025](../../adr/0025-authjs-valkey-adapter.md)
       records three failures for
-- [ ] A Playwright spec reads a real message out of the local catcher and
+- [x] A Playwright spec reads a real message out of the local catcher and
       follows its link, so the mail path is covered by an automated test
       rather than a manual click
-- [ ] `git grep` finds no SMTP credential in the repository
-- [ ] The chosen provider and its free-tier limits are recorded in the tech
+- [x] `git grep` finds no SMTP credential in the repository
+- [x] The chosen provider and its free-tier limits are recorded in the tech
       stack section of the relevant README, per
       [CLAUDE.md](../../../CLAUDE.md)'s dependency rule
 

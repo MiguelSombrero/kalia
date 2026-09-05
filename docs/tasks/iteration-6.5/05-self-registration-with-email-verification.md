@@ -137,6 +137,15 @@ Resolved during refinement (2026-09-05):
    the PR, not fixed here.
 8. **Does sign-up need its own Kalia page?** Decided: yes, a small dedicated
    `/sign-up` route that redirects into Keycloak's registration endpoint.
+9. **Rate limit on the sign-up / verification-email path?** Decided: yes, a
+   basic one. Relocated here from [task 04](04-send-email-from-kalia.md)'s
+   open question 6 during that task's implementation (2026-09-05): task 04
+   configures the mail path but adds no Kalia-controlled request surface, and
+   the `/sign-up` route this task introduces is that surface. Gmail's
+   500-recipients-per-24 h free-tier cap (recorded in task 04) is a real,
+   exhaustible budget even before any deployment, so the limit goes in with
+   the route rather than waiting for a deployment task. Exact mechanism and
+   thresholds are the implementer's to propose on the PR.
 
 ## Acceptance criteria
 
@@ -152,6 +161,9 @@ Resolved during refinement (2026-09-05):
       question 4 decides it cannot reach
 - [ ] Registering an address that already exists behaves the way question 5
       decided, covered by a test that names the decision
+- [ ] The sign-up / verification-email path has a basic rate limit (question
+      9), covered by a test that shows it refusing once the threshold is
+      crossed
 - [ ] An ADR records the decision, the rejected alternatives and at least one
       Bad or Neutral consequence; `node scripts/check-adrs.mjs` passes
 - [ ] `docs/architecture.md` §6 describes registration, and the ADR is in its
