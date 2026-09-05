@@ -98,7 +98,11 @@ falling back to `kalia`) are fixed dev-only values — never reuse them outside
 local development. The realm file is applied to Keycloak by the
 `keycloak-config` service (`keycloak-config-cli`,
 [ADR-0054](docs/adr/0054-keycloak-config-cli-realm-management.md)) on every
-startup, not baked into the Keycloak image. To sign in to Kalia itself (not
+startup, not baked into the Keycloak image — it fully reconciles the realm
+each run, so a change made in the admin console is overwritten on the next
+`docker compose up`. `make verify` fails if the running realm has drifted
+from the file; re-apply with `docker compose up -d --wait keycloak-config`.
+To sign in to Kalia itself (not
 the Keycloak admin console), use the seeded dev account `testuser` /
 `testuser123`, created idempotently on every startup by the `keycloak-seed`
 service rather than baked into the realm export. For development with hot

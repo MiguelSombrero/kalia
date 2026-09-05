@@ -2,6 +2,11 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-05
+- **Amended:** 2026-09-05 — task 03's drift detection is an admin-API
+  assertion (`scripts/check-keycloak-realm-config.mjs`), not the
+  `--import.dry-run` mode task 03's refinement assumed keycloak-config-cli
+  had; and `IMPORT_CACHE_ENABLED=false` is set so a reconcile actually
+  re-applies rather than skipping on an unchanged file.
 
 ## Context
 
@@ -48,6 +53,28 @@ substitution entirely.**
   realm to match the file whether the realm is being created for the first
   time or already exists — the property `--import-realm` doesn't have, and
   the one task 03 needs.
+
+  > **Amended 2026-09-05 (task 03).** "Reconciles on every `docker compose
+  > up`" is only true with `IMPORT_CACHE_ENABLED=false`, now set on the
+  > service. Left at the tool's default, keycloak-config-cli stores a
+  > checksum of the file as a realm attribute and skips the entire import
+  > when the file is unchanged — so a setting changed in the admin console
+  > is never reconciled back on any boot, which is the exact failure task 03
+  > exists to close. With the cache off every run is a full diff/apply
+  > (measured at well under a second on this realm), so re-running the
+  > service — `docker compose up -d --wait keycloak-config`, or any full
+  > restart — is the recovery from drift, with no separate tool to build.
+
+- **Drift detection** (task 03) is `scripts/check-keycloak-realm-config.mjs`:
+  it resolves the committed file's `$(env:...)` placeholders and asserts
+  every value the file pins against what Keycloak's admin REST API reports
+  for the running realm. `make keycloak-check` runs it *before*
+  keycloak-config reconciles the realm, so a change made only in the admin
+  console on a persistent dev stack fails the check rather than being healed
+  first and never reported. It is a `make verify` gate, not a CI one: CI
+  always starts from an empty volume, where the realm is imported from the
+  same file the check would compare against, so it could only ever report
+  zero drift.
 - Per-environment values are resolved via the tool's own variable
   substitution (`IMPORT_VARSUBSTITUTION_ENABLED=true`), not Keycloak's:
   `$(env:FRONTEND_URL)`, `$(env:KEYCLOAK_SSL_REQUIRED)` and
@@ -93,6 +120,32 @@ an identity provider) multiplies that surface for no benefit over a tool
 that already implements idempotent diff/apply per resource kind and is
 exercised by its own test suite.
 
+> **Amended 2026-09-05 (task 03).** Task 03's refinement settled on
+> keycloak-config-cli's own `--import.dry-run=true` to *report* drift
+> without applying it. That mode does not exist: it is an open feature
+> request ([adorsys/keycloak-config-cli#1645](https://github.com/adorsys/keycloak-config-cli/issues/1645),
+> opened 2026-06-08), absent from v6.5.1's configuration-property set
+> (`spring-configuration-metadata.json` in the pinned jar lists
+> `import.validate`, `.parallel`, `.files.*`, `.cache.*`, `.var-substitution.*`,
+> `.remote-state.*`, `.behaviors.*`, `.managed.*` — no dry-run). Three real
+> alternatives were then weighed:
+>
+> - **Admin-API assertion — chosen.** `scripts/check-keycloak-realm-config.mjs`
+>   reads the committed file and compares every value it pins against the
+>   live realm via Keycloak's versioned admin REST API. Field-level, so
+>   Keycloak's own defaults and generated ids never register as churn; built
+>   on a stable interface; already had a home and a `make verify` wiring
+>   from task 02. Its cost — it only checks what the file pins — is the
+>   intended behaviour: every realm setting a later task adds to the file is
+>   covered the moment it lands there, and nothing else is.
+> - **Reconcile-and-report:** run keycloak-config-cli with the cache off and
+>   grep its debug log for create/update/delete lines. Rejected: depends on
+>   parsing log strings that are not an API and shift between versions.
+> - **Export–normalize–diff** with the bundled `normalize` tool. Rejected:
+>   `normalize`'s output shape is itself unstable, and the committed file's
+>   `$(env:...)` placeholders would have to be pushed through the same
+>   normalisation for the diff to mean anything.
+
 ## Consequences
 
 - Good, because one committed file now describes every environment, with no
@@ -117,8 +170,22 @@ exercised by its own test suite.
   root `.env` with `KALIA_FRONTEND_CLIENT_SECRET` set first — a one-time step
   it did not need before, traded for no client secret existing in the
   repository.
+- Neutral (task 03), because `IMPORT_CACHE_ENABLED=false` makes every
+  `keycloak-config` run a full diff/apply instead of a checksum skip. On this
+  realm that is sub-second; it grows with the realm, and the checksum skip is
+  there to reclaim if boot time ever becomes the complaint — at the cost of
+  drift no longer self-healing on restart.
+- Neutral (task 03), because the drift check reads the realm through
+  Keycloak's cache, which can lag a write by a few seconds: a check run in
+  the moment right after a reconcile can still report the pre-reconcile
+  value. It does not affect `make verify` (the check runs before the
+  reconcile, or against a freshly imported realm), only a manual re-check
+  immediately after manual recovery.
 - **Revisit trigger:** if keycloak-config-cli's release cadence lags a
-  Keycloak upgrade this project needs badly enough to block it.
+  Keycloak upgrade this project needs badly enough to block it — or if
+  [#1645](https://github.com/adorsys/keycloak-config-cli/issues/1645) ships a
+  dry-run/plan mode, which would let the drift check diff at the tool's own
+  semantic level instead of field-by-field.
 
 ## Evidence
 
