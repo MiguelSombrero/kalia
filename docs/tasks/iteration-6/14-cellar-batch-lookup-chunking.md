@@ -1,6 +1,6 @@
 # Task 14: Chunk the cellar's batch beer lookup past 100 ids
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6](../iteration-6.md)
 
 ## Why
@@ -58,24 +58,34 @@ cellar of 100 or fewer distinct beers still issues exactly one batch call.
   chunk still throws.
 - The chunk size is the backend cap, referenced once rather than restated as
   a second literal that can drift from it.
+- **No product ceiling on cellar size.** Chunking is unbounded — a cellar of
+  any distinct-beer count is fetched in `ceil(N/100)` calls; the page never
+  paginates or truncates. Matches `docs/architecture.md` §4's existing note
+  that a cellar is "realistically far smaller than the catalog" — this task
+  closes an edge case, not a size the product expects to hit.
+- **A failed chunk fails the whole page**, the same as today's single-call
+  behaviour. A chunk that fails is a transport failure (ADR-0023), not a
+  missing beer, so it is not folded into the unknown-id-omission path —
+  rendering a partial cellar as if it were complete would misrepresent what
+  the caller owns.
+- **The chunk fan-out is not concurrency-limited** — all chunks are issued
+  together (e.g. via `Promise.all`). `N > 100` is rare enough that
+  `ceil(N/100)` stays small in practice; a concurrency limiter is unneeded
+  complexity for a burst size that isn't realistically large.
+- **`resolvePublicCellarBeers` stays out of scope**, per the Non-goals above
+  — task 09 already deferred it deliberately and folding it in here would
+  widen a narrow bug-fix task. If the public cellar page has the same
+  over-100 exposure, that is a separate task.
+- No ADR: chunking a fixed cap is a single, mechanical implementation
+  choice with no seriously-considered alternative whose reasoning would
+  need to survive outside this file — the bar
+  [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md) sets. No
+  `docs/architecture.md` change either — §4 documents the backend endpoint's
+  cap, not frontend call patterns.
 
 ## Open questions
 
-- Functional scope: is the intended ceiling on a cellar's distinct-beer
-  count truly unbounded, or is there a product limit above which the cellar
-  page is allowed to degrade differently (paginate, truncate with a notice)?
-- Edge cases and failure handling: if one chunk of several fails, should the
-  page fail whole (current behaviour), or render the beers it did resolve
-  and drop the rest the way an unknown id is already dropped?
-- Trade-offs: should the concurrent chunk fan-out be bounded (e.g. a small
-  concurrency limit) to avoid a burst of parallel backend calls for a very
-  large cellar, or is ceil(N/100) calls acceptable as-is given how rare
-  N > 100 is?
-- Module boundaries: does any part of this decision belong in an ADR, or is
-  it a within-feature implementation choice recorded only here and in
-  `docs/architecture.md` if the §4 note needs a word?
-- Should `resolvePublicCellarBeers` be folded in after all, so both cellar
-  reads share one enrichment path?
+**None.**
 
 ## Acceptance criteria
 
