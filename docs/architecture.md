@@ -420,6 +420,16 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   email index with `SET NX` before writing the user record, and a request
   that loses the claim waits on the winner's record instead of creating an
   orphaned one of its own.
+- **Keycloak sends its own mail** — email verification and password reset,
+  never anything from Kalia's own backend or frontend. The realm's SMTP
+  settings are `$(env:KEYCLOAK_SMTP_*)` placeholders in
+  `keycloak/realm-export.json` (so they inherit
+  [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s drift check
+  and carry no credential), defaulting to the **Mailpit** container in local
+  dev and test and overridable to a real sender (Gmail SMTP) for a
+  deployment. The sender shows as `Kalia <address>`. The e2e suite reads a
+  real message back out of Mailpit's API
+  (`frontend/e2e/keycloak-email.spec.ts`).
 
 ## 7. Testing strategy
 
@@ -433,7 +443,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove, plus the WCAG 2.1 AA scans covered above |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API), plus the WCAG 2.1 AA scans covered above |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage

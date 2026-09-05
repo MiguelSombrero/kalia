@@ -89,7 +89,8 @@ docker compose up --build   # frontend at http://localhost:3000
 The frontend is published at `:3000`; the backend is also published, at
 `:8080` (localhost only) for direct API access and Swagger UI — see
 [backend/README.md](backend/README.md). Keycloak's admin console is at
-`:8081` (admin/admin, dev-only credentials) and Valkey at `:6379`. All
+`:8081` (admin/admin, dev-only credentials), Valkey at `:6379`, and Mailpit's
+inbox UI — where every email Keycloak sends locally lands — at `:8025`. All
 bindings are localhost-only, never reachable beyond the dev machine.
 [keycloak/realm-export.json](keycloak/realm-export.json) carries no
 credential — the `kalia-frontend` client secret above and the Postgres
@@ -224,8 +225,18 @@ this section as the project evolves!
 
 - Keycloak 26.7 (identity provider — OIDC for the frontend, JWT issuer for
   the backend; pinned in `docker-compose.yml`)
+- Mailpit 1.27 (`axllent/mailpit`, pinned in `docker-compose.yml`) — catches
+  every email Keycloak sends in local dev and test; no auth, no real
+  delivery. A deployment instead points the realm's SMTP config
+  (`docker-compose.yml`'s `KEYCLOAK_SMTP_*`) at **Gmail SMTP**
+  (`smtp.gmail.com`, an App Password): the free tier is 500 messages per
+  rolling 24 h on a personal account (2,000 on Google Workspace), chosen for
+  the higher cap and no new third-party signup — trade-offs recorded in
+  [docs/tasks/iteration-6.5/04-send-email-from-kalia.md](docs/tasks/iteration-6.5/04-send-email-from-kalia.md).
+  The real credential is not created or held anywhere yet — see that task's
+  Notes
 - Docker Compose: full stack (PostgreSQL + backend + frontend + Keycloak +
-  Valkey)
+  Valkey + Mailpit)
 - Base images: maven:3.9-eclipse-temurin-25-noble (backend build),
   eclipse-temurin:25-jre-noble (backend runtime), node:24-alpine (frontend).
   `-noble` (Ubuntu 24.04 LTS, supported to April 2029) over plain `-jre`

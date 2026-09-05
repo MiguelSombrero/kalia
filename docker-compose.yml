@@ -128,6 +128,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      # Keycloak only dials mailpit when it actually sends a message, long
+      # after startup — service_started is enough to order them.
+      mailpit:
+        condition: service_started
     ports:
       # Bound to localhost only, same convention as the other services.
       # 8081, not 8080: the backend already publishes 8080 on the host.
@@ -176,6 +180,23 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       KEYCLOAK_SSL_REQUIRED: ${KEYCLOAK_SSL_REQUIRED:-none}
       KALIA_FRONTEND_CLIENT_SECRET: ${KALIA_FRONTEND_CLIENT_SECRET:?set KALIA_FRONTEND_CLIENT_SECRET in a root .env file, see README.md}
+      # SMTP for the realm's mail (email verification, password reset). These
+      # defaults point Keycloak at the mailpit service below, which needs no
+      # auth or TLS; a deployment overrides them to reach a real sender (Gmail
+      # via smtp.gmail.com:587, auth on, STARTTLS on, an App Password as
+      # KEYCLOAK_SMTP_PASSWORD). The realm file holds only $(env:...)
+      # placeholders — no credential is committed, same rule as
+      # KALIA_FRONTEND_CLIENT_SECRET above. keycloak-config-cli resolves
+      # these; scripts/check-keycloak-realm-config.mjs mirrors the defaults so
+      # it can run without compose.
+      KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST:-mailpit}
+      KEYCLOAK_SMTP_PORT: ${KEYCLOAK_SMTP_PORT:-1025}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM:-no-reply@kalia.test}
+      KEYCLOAK_SMTP_AUTH: ${KEYCLOAK_SMTP_AUTH:-false}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:-false}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:-false}
+      KEYCLOAK_SMTP_USER: ${KEYCLOAK_SMTP_USER:-}
+      KEYCLOAK_SMTP_PASSWORD: ${KEYCLOAK_SMTP_PASSWORD:-}
     volumes:
       - ./keycloak/realm-export.json:/config/kalia-realm.json:ro
 
@@ -203,6 +224,24 @@ services:
       - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    # The local mail catcher for everything Keycloak sends. Nothing in this
+    # stack ever talks to a real SMTP provider — the realm's SMTP config
+    # defaults to this container (keycloak-config's KEYCLOAK_SMTP_* above),
+    # and the e2e spec reads caught messages back over the HTTP API on 8025.
+    # Chosen over MailHog, which is effectively unmaintained upstream.
+    image: axllent/mailpit:v1.27.11
+    ports:
+      # Bound to localhost only, same convention as the other services. 8025
+      # is the web UI and HTTP API; SMTP (1025) is reached only in-network as
+      # mailpit:1025 and is not published.
+      - "127.0.0.1:8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 5s
       timeout: 3s
       retries: 10

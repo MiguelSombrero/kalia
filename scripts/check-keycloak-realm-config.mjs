@@ -25,12 +25,24 @@ import { dirname, resolve } from "node:path";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
 
-// Mirrors docker-compose.yml's keycloak-config service: the two values it
-// gives a `:-` default, this gives the same default. KALIA_FRONTEND_CLIENT_SECRET
-// has no default there either — an unset one is an error, not a skipped field.
+// Mirrors docker-compose.yml's keycloak-config service: every value it gives
+// a `:-` default, this gives the same default, so the check runs without
+// compose. KALIA_FRONTEND_CLIENT_SECRET has no default there — an unset one
+// is an error, not a skipped field. The SMTP block is different: its `:-`
+// defaults point at the mailpit container and an empty user/password is the
+// no-auth local state, not a missing secret — a deployment overrides them to
+// reach a real sender.
 const ENV_DEFAULTS = {
   KEYCLOAK_SSL_REQUIRED: "none",
   FRONTEND_URL: "http://localhost:3000",
+  KEYCLOAK_SMTP_HOST: "mailpit",
+  KEYCLOAK_SMTP_PORT: "1025",
+  KEYCLOAK_SMTP_FROM: "no-reply@kalia.test",
+  KEYCLOAK_SMTP_AUTH: "false",
+  KEYCLOAK_SMTP_STARTTLS: "false",
+  KEYCLOAK_SMTP_SSL: "false",
+  KEYCLOAK_SMTP_USER: "",
+  KEYCLOAK_SMTP_PASSWORD: "",
 };
 
 // Loads the root .env the same way `docker compose` does, so running this
@@ -113,11 +125,28 @@ export const diffRealm = (spec, live) => {
       return;
     }
     compared++;
+    // A committed value that resolved to "" (an unset $(env:...) with an
+    // empty default — SMTP auth off locally, say) asserts nothing: Keycloak
+    // drops empty smtpServer entries on import, so "" and absent are one
+    // state. A non-empty live value where "" was committed is still drift.
+    if (want === "") {
+      if (got === undefined || got === null || got === "") return;
+      mismatches.push(`${path}: committed empty, live is ${serialise(got)}`);
+      return;
+    }
     if (want !== got) mismatches.push(`${path}: committed ${serialise(want)} != live ${serialise(got)}`);
   };
 
   for (const [key, value] of Object.entries(spec)) {
     if (key === "realm" || key === "clients") continue;
+    if (key === "smtpServer" && value !== null && typeof value === "object") {
+      // Keycloak returns smtpServer.password masked as "**********" on every
+      // read (a client secret, by contrast, comes back in full), so it can
+      // never be compared — drop it before diffing.
+      const { password: _password, ...pinnable } = value;
+      compare("realm.smtpServer", pinnable, live.realm?.smtpServer ?? {});
+      continue;
+    }
     compare(`realm.${key}`, value, live.realm?.[key]);
   }
 
