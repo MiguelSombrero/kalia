@@ -40,6 +40,7 @@ Goal: someone other than the author can create a Kalia account.
 | [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | refined |
 | [13](iteration-6.5/13-align-current-user-service-convention.md) | Make the caller-identity convention match the code | refined |
 | [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | refined |
+| [15](iteration-6.5/15-shared-keycloak-admin-helper.md) | Extract a shared Keycloak admin-token/retry helper | needs-refinement |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under
