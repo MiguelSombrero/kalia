@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-09-01. This document describes **what is built**, plus the
+*Last updated: 2026-09-05. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -26,12 +26,14 @@ Built:
 - Search/filter beers by name, brewery, country, style, ABV, price
 - Beer detail view
 - Sign-in and sign-out (Keycloak); browsing stays anonymous
-
-Being built (iteration 5):
-
 - Personal beer cellar: the signed-in user's owned bottles, each carrying its
   own brewed and best-before dates, grouped by the catalog beer they are
-  bottles of
+  bottles of *(iteration 5)*
+- A user profile and a cellar-visibility control; a public cellar readable by
+  anyone from a link or the owner's profile *(iteration 6)*
+
+Next (iteration 6.5, not yet refined): sign-up, so someone other than the
+author can create an account.
 
 ### Non-functional requirements
 
