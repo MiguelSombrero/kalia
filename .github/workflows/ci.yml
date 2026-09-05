@@ -15,6 +15,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # docker-compose.yml has no default for this one, on purpose (ADR-0054):
+  # the whole file is interpolated regardless of which services a job
+  # targets, so every job that touches docker-compose.yml needs it — a
+  # value that stays inside one ephemeral runner and is never asserted
+  # against, unlike scripts/check-keycloak-signin.mjs's testuser/testuser123.
+  KALIA_FRONTEND_CLIENT_SECRET: ci-run-not-a-credential
+
 jobs:
   changes:
     name: Detect changed areas
@@ -57,10 +65,10 @@ jobs:
           # docker-compose.yml builds and wires both; this workflow defines
           # how they run; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
-          # keycloak/, postgres/ and the two keycloak scripts feed
+          # keycloak/, postgres/ and the three keycloak scripts feed
           # docker-compose.yml's keycloak and postgres services, which
           # keycloak-realm-check below asserts against.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|check-keycloak-signin)\.mjs)' || true)
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing
@@ -268,6 +276,8 @@ jobs:
         run: docker compose up -d --build keycloak-seed
       - name: Verify the realm accepts sign-in, not just a healthy container
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
+      - name: Verify the imported realm matches FRONTEND_URL
+        run: node scripts/check-keycloak-realm-config.mjs
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and

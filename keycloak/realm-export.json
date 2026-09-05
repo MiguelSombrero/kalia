@@ -1,7 +1,7 @@
 {
   "realm": "kalia",
   "enabled": true,
-  "sslRequired": "none",
+  "sslRequired": "$(env:KEYCLOAK_SSL_REQUIRED)",
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,
@@ -13,15 +13,15 @@
       "publicClient": false,
       "protocol": "openid-connect",
       "clientAuthenticatorType": "client-secret",
-      "secret": "kalia-dev-secret",
-      "redirectUris": ["http://localhost:3000/*"],
-      "webOrigins": ["http://localhost:3000"],
+      "secret": "$(env:KALIA_FRONTEND_CLIENT_SECRET)",
+      "redirectUris": ["$(env:FRONTEND_URL)/*"],
+      "webOrigins": ["$(env:FRONTEND_URL)"],
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:3000/*",
+        "post.logout.redirect.uris": "$(env:FRONTEND_URL)/*",
         "backchannel.logout.url": "http://frontend:3000/api/auth/backchannel-logout",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"

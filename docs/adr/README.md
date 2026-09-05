@@ -161,6 +161,9 @@ in one place, read
   missing a required variable aborts at startup instead of failing every call.
 - [ADR-0024](0024-dependency-vulnerability-scanning.md) — Trivy fails CI on
   fixable HIGH/CRITICAL findings; Dependabot opens the updates.
+- [ADR-0054](0054-keycloak-config-cli-realm-management.md) — keycloak-config-cli,
+  not Keycloak's own placeholders, resolves per-environment realm values and
+  re-applies the committed realm file on every boot.
 
 ## Engineering process and documentation
 

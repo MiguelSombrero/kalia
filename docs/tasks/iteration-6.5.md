@@ -27,7 +27,7 @@ Goal: someone other than the author can create a Kalia account.
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-6.5/01-persist-keycloak-state.md) | Persist Keycloak's state across restarts | refined |
-| [02](iteration-6.5/02-parameterise-realm-configuration.md) | One realm file for every environment | refined |
+| [02](iteration-6.5/02-parameterise-realm-configuration.md) | One realm file for every environment | done |
 | [03](iteration-6.5/03-prevent-realm-configuration-drift.md) | Keep realm configuration from drifting once the import stops running | refined |
 | [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | refined |
 | [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | refined |
@@ -40,6 +40,7 @@ Goal: someone other than the author can create a Kalia account.
 | [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | refined |
 | [13](iteration-6.5/13-align-current-user-service-convention.md) | Make the caller-identity convention match the code | done |
 | [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | done |
+| [15](iteration-6.5/15-shared-keycloak-admin-helper.md) | Extract a shared Keycloak admin-token/retry helper | needs-refinement |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under

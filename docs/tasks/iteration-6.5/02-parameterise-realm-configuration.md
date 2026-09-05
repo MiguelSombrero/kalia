@@ -1,7 +1,8 @@
 # Task 02: One realm file for every environment
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
+- **PR:** #235
 - **Covers:** DW-2
 
 ## Why
@@ -123,18 +124,18 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] Whether `keycloak.migration.replace-placeholders` actually substitutes
+- [x] Whether `keycloak.migration.replace-placeholders` actually substitutes
       environment variables on `quay.io/keycloak/keycloak:26.7.0` is confirmed
       by running it, and the result is written into the task's chosen approach
       — not assumed from the documentation
-- [ ] `git grep` finds no client secret and no user password anywhere in
+- [x] `git grep` finds no client secret and no user password anywhere in
       `keycloak/`
-- [ ] From an empty volume, the local stack still signs `testuser` in end to
+- [x] From an empty volume, the local stack still signs `testuser` in end to
       end — full Playwright suite, not a manual click
-- [ ] An automated test asserts the imported realm's `kalia-frontend` redirect
+- [x] An automated test asserts the imported realm's `kalia-frontend` redirect
       URI equals the configured frontend origin, and fails when the two are
       made to disagree — confirmed to fail against a deliberately broken value
-- [ ] The same realm file imports against a second, non-localhost set of
+- [x] The same realm file imports against a second, non-localhost set of
       values, demonstrated by running it with those values supplied
 
 ## Notes
