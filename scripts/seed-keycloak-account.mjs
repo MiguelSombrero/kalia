@@ -11,7 +11,7 @@ if (!username || !password) {
   process.exit(1);
 }
 
-const requestAdminToken = async () => {
+const adminToken = async () => {
   const response = await fetch(`${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -27,23 +27,6 @@ const requestAdminToken = async () => {
   }
   const { access_token: token } = await response.json();
   return token;
-};
-
-// Keycloak's healthcheck can report ready a moment before master-realm
-// bootstrap (KC_BOOTSTRAP_ADMIN_*) has finished, answering with a transient
-// 503 "Bootstrap in progress" — seen in practice right after
-// depends_on: condition: service_healthy is satisfied.
-const adminToken = async (attempts = 10, delayMs = 2000) => {
-  for (let attempt = 1; ; attempt++) {
-    try {
-      return await requestAdminToken();
-    } catch (error) {
-      if (attempt >= attempts) {
-        throw error;
-      }
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
 };
 
 const findUser = async (token) => {
@@ -83,20 +66,50 @@ const createUser = async (token) => {
       credentials: [{ type: "password", value: password, temporary: false }],
     }),
   });
-  return response.ok;
+  if (response.ok) {
+    return true;
+  }
+  if (response.status === 409) {
+    return false;
+  }
+  throw new Error(`could not create Keycloak user ${username}: ${response.status} ${await response.text()}`);
 };
 
-const token = await adminToken();
-const existing = await findUser(token);
-if (existing) {
-  await resetPassword(token, existing.id);
-} else if (!(await createUser(token))) {
-  // Lost a create race against a concurrent invocation claiming the same
-  // username; the winner already carries the desired password, so it's
-  // enough that the account exists now.
+const ensureAccount = async () => {
+  const token = await adminToken();
+  const existing = await findUser(token);
+  if (existing) {
+    await resetPassword(token, existing.id);
+    return;
+  }
+  if (await createUser(token)) {
+    return;
+  }
+  // Lost a create race (409) against a concurrent invocation claiming the
+  // same username; the winner already carries the desired password, so
+  // it's enough that the account exists now.
   const winner = await findUser(token);
   if (!winner) {
     throw new Error(`could not create Keycloak user ${username}`);
+  }
+};
+
+// Keycloak's healthcheck can report ready a moment before master-realm
+// bootstrap (KC_BOOTSTRAP_ADMIN_*) has finished, answering with a transient
+// 503 "Bootstrap in progress" right after depends_on: condition:
+// service_healthy is satisfied — retry the whole operation, not just the
+// token request, since any step can hit it.
+const attempts = 15;
+const delayMs = 2000;
+for (let attempt = 1; ; attempt++) {
+  try {
+    await ensureAccount();
+    break;
+  } catch (error) {
+    if (attempt >= attempts) {
+      throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 }
 

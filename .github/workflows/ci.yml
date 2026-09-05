@@ -56,8 +56,11 @@ jobs:
           # Files outside backend/ and frontend/ that either suite depends on.
           # docker-compose.yml builds and wires both; this workflow defines
           # how they run; docs/architecture.md is asserted against the
-          # backend's actual modules by ArchitectureDocumentationTest.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md)' || true)
+          # backend's actual modules by ArchitectureDocumentationTest;
+          # keycloak/, postgres/ and the two keycloak scripts feed
+          # docker-compose.yml's keycloak and postgres services, which
+          # keycloak-realm-check below asserts against.
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|check-keycloak-signin)\.mjs)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing
@@ -248,10 +251,9 @@ jobs:
 
   keycloak-realm-check:
     name: Keycloak realm check
-    # Gated the same as api-client-drift: docker-compose.yml and
-    # keycloak/realm-export.json aren't classified as backend or frontend by
-    # the changes filter, but a change to either could still break the
-    # realm import this asserts against.
+    # docker-compose.yml, keycloak/ and postgres/ are in the changes job's
+    # `shared` list above, so a change to any of them runs this even when
+    # neither backend/ nor frontend/ itself changed.
     needs: [changes]
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
@@ -261,11 +263,11 @@ jobs:
         with:
           node-version: '24'
       - name: Start Keycloak and Postgres
-        run: docker compose up -d --build --wait postgres keycloak
+        run: docker compose up -d --build --wait --wait-timeout 120 postgres keycloak
       - name: Seed the demo account
         run: docker compose up -d --build keycloak-seed
       - name: Verify the realm accepts sign-in, not just a healthy container
-        run: timeout 60 sh -c 'until node scripts/check-keycloak-signin.mjs testuser testuser123; do sleep 2; done'
+        run: node scripts/check-keycloak-signin.mjs testuser testuser123
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and

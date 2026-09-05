@@ -61,13 +61,9 @@ api-drift: ## Fail if the committed API client has drifted from the live spec (n
 	git diff --exit-code -- frontend/lib/api/generated
 
 keycloak-check: ## Fail if Keycloak's realm rejects sign-in for the seeded dev account (needs Docker)
-	docker compose up -d --build --wait postgres keycloak
+	docker compose up -d --build --wait --wait-timeout 120 postgres keycloak
 	docker compose up -d --build keycloak-seed
-	@i=0; until node scripts/check-keycloak-signin.mjs testuser testuser123; do \
-	    i=$$((i + 1)); \
-	    [ $$i -lt 30 ] || exit 1; \
-	    sleep 2; \
-	done
+	node scripts/check-keycloak-signin.mjs testuser testuser123
 
 verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 

@@ -134,9 +134,6 @@ services:
       retries: 30
 
   keycloak-seed:
-    # testuser is no longer in keycloak/realm-export.json (a credential
-    # baked into the committed realm file), so something has to create it —
-    # idempotently, since this container runs on every `docker compose up`.
     # node:24-alpine matches frontend/Dockerfile's build stage; the script
     # is dependency-free, so no image build is needed for this one-shot job.
     image: node:24-alpine
