@@ -58,8 +58,7 @@ class ProfileController {
 	}
 
 	// profile depends on no other module (ADR-0049), so it resolves the
-	// caller from the token itself rather than through identity's
-	// CurrentUserService.
+	// caller's id from the token itself rather than through IdentityApi.
 	private static UUID currentUserId(Jwt jwt) {
 		return UUID.fromString(jwt.getSubject());
 	}

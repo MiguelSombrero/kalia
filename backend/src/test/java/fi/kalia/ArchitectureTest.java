@@ -15,6 +15,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.conditions.ArchConditions;
+import fi.kalia.identity.application.CurrentUserService;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -118,6 +119,15 @@ class ArchitectureTest {
 			.should().dependOnClassesThat()
 			.belongToAnyOf(HttpSecurity.class, SecurityFilterChain.class, EnableWebSecurity.class)
 			.because("web security is configured in exactly one place (ADR-0028)")
+			.allowEmptyShould(false);
+
+	@ArchTest
+	static final ArchRule onlyIdentityDependsOnCurrentUserService = noClasses()
+			.that().resideOutsideOfPackage(BASE_PACKAGE + ".identity..")
+			.should().dependOnClassesThat()
+			.belongToAnyOf(CurrentUserService.class)
+			.because("CurrentUserService is identity-module-private; other modules resolve "
+					+ "the caller's id through IdentityApi (ADR-0028)")
 			.allowEmptyShould(false);
 
 	@ArchTest
