@@ -83,6 +83,9 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql
+      # Runs once, only against an empty data directory: creates the second
+      # database Keycloak below persists into, alongside `kalia`.
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kalia -d kalia"]
       interval: 5s
@@ -90,22 +93,33 @@ services:
       retries: 10
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.7.0
-    # start-dev: no external DB needed, state is ephemeral by design (the
-    # realm below is reimported fresh on every start, see docs/tasks/iteration-4.md)
-    command: start-dev --import-realm
+    build: ./keycloak
+    # start (not start-dev): production mode, backed by the `keycloak`
+    # database below so the realm survives a restart. --import-realm only
+    # takes effect the first time, against an empty database — once the
+    # realm exists, Keycloak leaves it and whatever it has accumulated alone.
+    command: start --optimized --import-realm
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-      KC_HEALTH_ENABLED: "true"
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: kalia
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
+      # Production mode defaults to requiring HTTPS; this stack is HTTP-only.
+      KC_HTTP_ENABLED: "true"
       # Fixed to the public address, not request-derived: Keycloak stamps
       # whichever hostname received a given request into the `iss` it
       # returns for that request, so without this, the browser (reaching
       # Keycloak via 127.0.0.1:8081) and the frontend container (reaching
       # it as keycloak:8080) would get inconsistent self-reported
       # identities — confirmed live: "unexpected iss (issuer) response
-      # parameter value". Must match AUTH_KEYCLOAK_ISSUER above.
+      # parameter value". Must match AUTH_KEYCLOAK_ISSUER above. Also
+      # satisfies production mode's requirement for either --hostname or
+      # --hostname-strict false.
       KC_HOSTNAME: http://localhost:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/kalia-realm.json:ro
     ports:
@@ -118,6 +132,24 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+
+  keycloak-seed:
+    # testuser is no longer in keycloak/realm-export.json (a credential
+    # baked into the committed realm file), so something has to create it —
+    # idempotently, since this container runs on every `docker compose up`.
+    # node:24-alpine matches frontend/Dockerfile's build stage; the script
+    # is dependency-free, so no image build is needed for this one-shot job.
+    image: node:24-alpine
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./scripts/seed-keycloak-account.mjs:/seed-keycloak-account.mjs:ro
+    entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]
 
   valkey:
     image: valkey/valkey:9.1.1-alpine

@@ -408,11 +408,12 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   own expiry.
 - **A stale account index re-links by email rather than locking the user
   out** ([ADR-0033](adr/0033-keycloak-account-relinking.md)): if Keycloak's
-  `sub` for a returning user changes — the dev stack's realm reimports on
-  every restart, and a deleted-and-recreated Keycloak user would do the same
-  in production — Auth.js's `allowDangerousEmailAccountLinking` links the
-  sign-in to the existing user by email instead of throwing
-  `OAuthAccountNotLinked`, safe only because Keycloak is the sole provider.
+  `sub` for a returning user changes — an emptied dev-stack volume
+  reimports the realm from scratch, and a deleted-and-recreated Keycloak
+  user would do the same in production — Auth.js's
+  `allowDangerousEmailAccountLinking` links the sign-in to the existing user
+  by email instead of throwing `OAuthAccountNotLinked`, safe only because
+  Keycloak is the sole provider.
 - **Two concurrent first-ever sign-ins for one subject resolve to one user**
   ([ADR-0043](adr/0043-createuser-race-safety.md)): `createUser` claims the
   email index with `SET NX` before writing the user record, and a request

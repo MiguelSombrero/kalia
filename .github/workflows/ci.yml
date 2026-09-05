@@ -246,6 +246,27 @@ jobs:
       - name: Fail if the committed client has drifted from the live spec
         run: git diff --exit-code -- lib/api/generated
 
+  keycloak-realm-check:
+    name: Keycloak realm check
+    # Gated the same as api-client-drift: docker-compose.yml and
+    # keycloak/realm-export.json aren't classified as backend or frontend by
+    # the changes filter, but a change to either could still break the
+    # realm import this asserts against.
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Start Keycloak and Postgres
+        run: docker compose up -d --build --wait postgres keycloak
+      - name: Seed the demo account
+        run: docker compose up -d --build keycloak-seed
+      - name: Verify the realm accepts sign-in, not just a healthy container
+        run: timeout 60 sh -c 'until node scripts/check-keycloak-signin.mjs testuser testuser123; do sleep 2; done'
+
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and
     # e2e above): a dependency already in this branch can gain a CVE the

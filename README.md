@@ -90,10 +90,11 @@ bindings are localhost-only, never reachable beyond the dev machine. The
 [keycloak/realm-export.json](keycloak/realm-export.json) and the Postgres
 password in [docker-compose.yml](docker-compose.yml) (`POSTGRES_PASSWORD`,
 falling back to `kalia`) are likewise fixed dev-only values — never reuse
-them outside local development. To sign
-in to Kalia itself (not the Keycloak admin console), use the seeded dev
-account `testuser` / `testuser123`, also defined in that same realm
-export. For development with hot reload, run the apps natively — see
+them outside local development. To sign in to Kalia itself (not the
+Keycloak admin console), use the seeded dev account `testuser` /
+`testuser123`, created idempotently on every startup by the
+`keycloak-seed` service rather than baked into the realm export. For
+development with hot reload, run the apps natively — see
 [backend/README.md](backend/README.md) and
 [frontend/README.md](frontend/README.md).
 
