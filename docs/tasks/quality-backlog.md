@@ -164,17 +164,26 @@ they're already cross-referenced from merged PRs and
   backend call carries the *attacker's* bearer token — the victim's bottles
   land in the attacker's cellar. `sessionCookie.test.ts` never tests the
   both-present case.
-- **SHOULD-25** *(confirmed 2026-08-30)* **[needs decision]** —
+- **SHOULD-25** *(confirmed 2026-09-05)* **[needs decision]** —
   `keycloak/realm-export.json` is simultaneously the dev realm and the repo's
-  only realm definition, and it pins a development security posture:
-  `"sslRequired": "none"` (line 4), no `bruteForceProtected` (so no lockout on
-  password guessing), a committed confidential-client secret
-  `"kalia-dev-secret"` (line 16, duplicated at `docker-compose.yml:53`) and a
-  seeded non-temporary password (line 91). A first deployment starting from
-  this file accepts the password form over plain HTTP, allows unlimited online
-  guessing, and hands anyone reading the repo the credentials the
-  confidential-client model depends on. Harden the shared realm, or split a
-  dev realm from a deployable one.
+  only realm definition. Two of its three original findings are now fixed by
+  [iteration 6.5](iteration-6.5.md) tasks 01 and 02: the committed
+  confidential-client secret and the seeded non-temporary password are both
+  gone from the file (a runtime-supplied secret and an idempotently-seeded
+  account instead — [ADR-0054](../adr/0054-keycloak-config-cli-realm-management.md)),
+  and `sslRequired` is now an environment-supplied value rather than a
+  hardcoded one, so a deployment *can* require TLS without editing the file —
+  but `docker-compose.yml`'s own default is still `"none"`
+  (`KEYCLOAK_SSL_REQUIRED:-none`) if nobody sets it, so a hasty first
+  deployment that only sets the two secrets this file now demands
+  (`FRONTEND_URL`, `KALIA_FRONTEND_CLIENT_SECRET`) still inherits dev's HTTP
+  posture silently. What remains: there is still no `bruteForceProtected`
+  anywhere in the file (so still no lockout on password guessing in any
+  environment, dev included), the insecure default stays live until an
+  operator overrides it, and it is still one realm definition rather than a
+  dev realm split from a
+  deployable one — harden the shared realm's remaining gaps, or make that
+  split, is still an open decision.
 - **SHOULD-26** *(confirmed 2026-08-30)* **[needs decision]** — Valkey holds
   every session's refresh and ID tokens in plaintext JSON with no
   authentication and no TLS: the URL is `redis://` with no credentials

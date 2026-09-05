@@ -46,11 +46,16 @@ services:
       # The container listens on 0.0.0.0, which Auth.js would otherwise put
       # straight into redirect/form-action URLs it builds — that's not the
       # host the browser can reach, and our CSP's form-action 'self' then
-      # silently blocks the mismatched-origin submission.
-      AUTH_URL: http://localhost:3000
+      # silently blocks the mismatched-origin submission. Same value as
+      # keycloak-config's FRONTEND_URL below (ADR-0054): they name the same
+      # origin to two different consumers of it.
+      AUTH_URL: ${FRONTEND_URL:-http://localhost:3000}
       AUTH_SECRET: ${AUTH_SECRET:-kalia-dev-auth-secret}
       AUTH_KEYCLOAK_ID: kalia-frontend
-      AUTH_KEYCLOAK_SECRET: kalia-dev-secret
+      # No default: this is the same secret keycloak-config-cli writes into
+      # the kalia-frontend client below, and a wrong-but-present value fails
+      # every sign-in far less legibly than compose refusing to start.
+      AUTH_KEYCLOAK_SECRET: ${KALIA_FRONTEND_CLIENT_SECRET:?set KALIA_FRONTEND_CLIENT_SECRET in a root .env file, see README.md}
       # Keycloak's one public, canonical identity (matches KC_HOSTNAME
       # below) — every token/discovery-document/callback `iss` it issues
       # names this, so it's what Auth.js must validate against, even
@@ -67,8 +72,11 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-      keycloak:
-        condition: service_healthy
+      # Not just keycloak's own healthcheck: that reports healthy as soon as
+      # Keycloak is up, before keycloak-config below has created the realm,
+      # and Auth.js's OIDC discovery call would 404 in that window.
+      keycloak-config:
+        condition: service_completed_successfully
       valkey:
         condition: service_healthy
 
@@ -95,10 +103,10 @@ services:
   keycloak:
     build: ./keycloak
     # start (not start-dev): production mode, backed by the `keycloak`
-    # database below so the realm survives a restart. --import-realm only
-    # takes effect the first time, against an empty database — once the
-    # realm exists, Keycloak leaves it and whatever it has accumulated alone.
-    command: start --optimized --import-realm
+    # database below so the realm survives a restart. No --import-realm:
+    # the realm is owned by keycloak-config below, which (unlike
+    # --import-realm) reconciles it on every boot rather than only the first.
+    command: start --optimized
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
@@ -120,8 +128,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./keycloak/realm-export.json:/opt/keycloak/data/import/kalia-realm.json:ro
     ports:
       # Bound to localhost only, same convention as the other services.
       # 8081, not 8080: the backend already publishes 8080 on the host.
@@ -133,13 +139,48 @@ services:
       timeout: 3s
       retries: 30
 
+  keycloak-config:
+    # Applies keycloak/realm-export.json on every boot, reconciling an
+    # already-populated realm rather than only creating it once (ADR-0054).
+    image: quay.io/adorsys/keycloak-config-cli:6.5.1-26
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_USER: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      # keycloak's own healthcheck (port 9000) can report ready a moment
+      # before the admin REST API (port 8080) accepts admin/admin — the same
+      # transient window seed-keycloak-account.mjs retries around. This is
+      # this tool's own equivalent: it retries the connection itself instead
+      # of failing the whole one-shot container on the first attempt.
+      KEYCLOAK_AVAILABILITYCHECK_ENABLED: "true"
+      KEYCLOAK_AVAILABILITYCHECK_TIMEOUT: 120s
+      IMPORT_FILES_LOCATIONS: /config/kalia-realm.json
+      IMPORT_VARSUBSTITUTION_ENABLED: "true"
+      # Undefined-is-error is this tool's own default, kept explicit — see
+      # ADR-0054's Alternatives/Evidence for why that property mattered here.
+      IMPORT_VARSUBSTITUTION_UNDEFINEDISERROR: "true"
+      # No trailing slash: concatenated directly into redirectUris/webOrigins
+      # below and in scripts/check-keycloak-realm-config.mjs — a trailing
+      # slash silently produces a double slash that both sides still agree
+      # on, so nothing catches it.
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      KEYCLOAK_SSL_REQUIRED: ${KEYCLOAK_SSL_REQUIRED:-none}
+      KALIA_FRONTEND_CLIENT_SECRET: ${KALIA_FRONTEND_CLIENT_SECRET:?set KALIA_FRONTEND_CLIENT_SECRET in a root .env file, see README.md}
+    volumes:
+      - ./keycloak/realm-export.json:/config/kalia-realm.json:ro
+
   keycloak-seed:
     # node:24-alpine matches frontend/Dockerfile's build stage; the script
     # is dependency-free, so no image build is needed for this one-shot job.
     image: node:24-alpine
     depends_on:
-      keycloak:
-        condition: service_healthy
+      # Not just keycloak's healthcheck: the realm this seeds a user into
+      # doesn't exist until keycloak-config above has created it.
+      keycloak-config:
+        condition: service_completed_successfully
     environment:
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}

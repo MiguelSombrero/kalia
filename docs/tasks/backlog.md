@@ -55,31 +55,6 @@ Engineering work:
   no headers and would silently drop it — the identical defect ADR-0014
   records for the 405 `Allow` header. Any fix needs a test pinning both the
   body and the header.
-- **The Keycloak realm export is hardcoded to localhost**, and one of the
-  hardcoded values is a credential. Also a prerequisite for the mobile client
-  below, which needs a second client in this realm with its own redirect URIs.
-  `keycloak/realm-export.json` pins the
-  `kalia-frontend` client's `redirectUris`, `webOrigins` and
-  `post.logout.redirect.uris` to `http://localhost:3000`, `sslRequired` to
-  `none`, the client secret to `kalia-dev-secret` in plaintext, and
-  `testuser`'s password to `testuser123` — so the realm cannot be imported
-  anywhere but a dev machine, and the committed secret plus a known-password
-  account become live credentials the moment it is. Blocks the deployment
-  item above. Keycloak's startup import resolves `${VAR}` placeholders from
-  environment variables, which lets one committed file serve every
-  environment with the values supplied per deployment; the compose service
-  would then carry today's literals as its own environment
-  ([docker-compose.yml](../../docker-compose.yml)), leaving local development
-  unchanged. **The trap when fixing it:** a placeholder that does not resolve
-  does not necessarily stop the server — depending on how the importer treats
-  it, the realm either fails to import or imports with the literal
-  `${KALIA_FRONTEND_URL}` as its redirect URI, and both leave a *healthy*
-  Keycloak serving a realm that silently rejects every sign-in. Compounding
-  it, `--import-realm` skips a realm that already exists, so a second attempt
-  against the same database changes nothing. Any fix has to be verified from
-  an empty database (`docker compose down -v`) with an automated check that
-  the imported realm's redirect URI matches the configured frontend origin —
-  asserting the container started proves nothing.
 - **The frontend's import boundaries have no violating fixture**, unlike the
   backend's ArchUnit rules, which are re-run against
   `backend/src/test/java/archfixture/` for exactly this reason

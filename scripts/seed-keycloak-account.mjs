@@ -96,9 +96,10 @@ const ensureAccount = async () => {
 
 // Keycloak's healthcheck can report ready a moment before master-realm
 // bootstrap (KC_BOOTSTRAP_ADMIN_*) has finished, answering with a transient
-// 503 "Bootstrap in progress" right after depends_on: condition:
-// service_healthy is satisfied — retry the whole operation, not just the
-// token request, since any step can hit it.
+// 503 "Bootstrap in progress" — this script's own depends_on
+// (keycloak-config, ADR-0054) already waits out most of that window, but
+// retry the whole operation anyway, not just the token request, since any
+// step can still hit it.
 const attempts = 15;
 const delayMs = 2000;
 for (let attempt = 1; ; attempt++) {
