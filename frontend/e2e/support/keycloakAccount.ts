@@ -88,6 +88,65 @@ const createKeycloakUser = async (
   return response.ok();
 };
 
+// Creates an account with an unverified email (but a complete enough profile
+// that Keycloak asks for nothing else) so a spec can drive Keycloak's own
+// email actions against it, and returns its id.
+export const createUnverifiedKeycloakUser = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  username: string,
+  email: string,
+): Promise<string> => {
+  const response = await apiRequest.post(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+    data: {
+      username,
+      email,
+      enabled: true,
+      emailVerified: false,
+      firstName: "Mail",
+      lastName: "Test",
+    },
+  });
+  expect(response.ok(), `could not create Keycloak user ${username}`).toBeTruthy();
+  const created = await findKeycloakUser(apiRequest, adminToken, username);
+  expect(created, `Keycloak user ${username} missing right after creation`).toBeTruthy();
+  return created!.id;
+};
+
+export const deleteKeycloakUser = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  userId: string,
+): Promise<void> => {
+  const response = await apiRequest.delete(
+    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}`,
+    { headers: { Authorization: `Bearer ${adminToken}` } },
+  );
+  expect(response.ok(), `could not delete Keycloak user ${userId}`).toBeTruthy();
+};
+
+// Asks Keycloak to email the user a link that runs `actions` (e.g.
+// ["VERIFY_EMAIL"]); client_id/redirect_uri decide where the link lands the
+// browser once the action is done.
+export const sendActionsEmail = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  userId: string,
+  actions: string[],
+  redirectUri: string,
+): Promise<void> => {
+  const response = await apiRequest.put(
+    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
+    {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      params: { client_id: "kalia-frontend", redirect_uri: redirectUri },
+      data: actions,
+    },
+  );
+  expect(response.ok(), "Keycloak rejected the execute-actions-email request").toBeTruthy();
+};
+
 // Idempotent to the account's desired end state, not just its existence: a
 // worker that finds the account already there (a prior run, or another
 // worker) still resets its password, so a locally changed ACCOUNT_PASSWORD

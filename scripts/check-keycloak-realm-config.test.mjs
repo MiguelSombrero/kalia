@@ -16,6 +16,13 @@ const committedFixture = () => ({
   enabled: true,
   sslRequired: "$(env:KEYCLOAK_SSL_REQUIRED)",
   accessTokenLifespan: 300,
+  smtpServer: {
+    host: "$(env:KEYCLOAK_SMTP_HOST)",
+    fromDisplayName: "Kalia",
+    auth: "$(env:KEYCLOAK_SMTP_AUTH)",
+    user: "$(env:KEYCLOAK_SMTP_USER)",
+    password: "$(env:KEYCLOAK_SMTP_PASSWORD)",
+  },
   clients: [
     {
       clientId: "kalia-frontend",
@@ -32,7 +39,14 @@ const committedFixture = () => ({
 });
 
 const liveFixture = () => ({
-  realm: { realm: "kalia", enabled: true, sslRequired: "none", accessTokenLifespan: 300 },
+  realm: {
+    realm: "kalia",
+    enabled: true,
+    sslRequired: "none",
+    accessTokenLifespan: 300,
+    // Keycloak drops the empty user, masks the password, and keeps the rest.
+    smtpServer: { host: "mailpit", fromDisplayName: "Kalia", auth: "false", password: "**********" },
+  },
   clients: {
     "kalia-frontend": {
       clientId: "kalia-frontend",
@@ -54,7 +68,15 @@ const liveFixture = () => ({
   },
 });
 
-const env = { KEYCLOAK_SSL_REQUIRED: "none", FRONTEND_URL: "http://localhost:3000", KALIA_FRONTEND_CLIENT_SECRET: "s3cr3t" };
+const env = {
+  KEYCLOAK_SSL_REQUIRED: "none",
+  FRONTEND_URL: "http://localhost:3000",
+  KALIA_FRONTEND_CLIENT_SECRET: "s3cr3t",
+  KEYCLOAK_SMTP_HOST: "mailpit",
+  KEYCLOAK_SMTP_AUTH: "false",
+  KEYCLOAK_SMTP_USER: "",
+  KEYCLOAK_SMTP_PASSWORD: "",
+};
 
 test("resolvePlaceholders substitutes $(env:VAR) through nested structures", () => {
   const resolved = resolvePlaceholders(committedFixture(), env);
@@ -75,6 +97,30 @@ test("diffRealm passes when the live realm matches every pinned value", () => {
   const { mismatches, compared } = diffRealm(resolvePlaceholders(committedFixture(), env), liveFixture());
   assert.deepEqual(mismatches, []);
   assert.ok(compared > 0, "the check must actually compare something");
+});
+
+test("diffRealm ignores the masked smtpServer.password and an emptied smtp user", () => {
+  // Committed password resolves to a real-looking value; live is always
+  // "**********". Committed user resolves to "" (auth off); live omits it.
+  const committed = resolvePlaceholders(committedFixture(), { ...env, KEYCLOAK_SMTP_PASSWORD: "an-app-password" });
+  const { mismatches } = diffRealm(committed, liveFixture());
+  assert.deepEqual(mismatches, []);
+});
+
+test("diffRealm still catches an smtp host changed only in the admin console", () => {
+  const live = liveFixture();
+  live.realm.smtpServer.host = "smtp.evil.example";
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 1);
+  assert.match(mismatches[0], /realm\.smtpServer\.host: committed "mailpit" != live "smtp\.evil\.example"/);
+});
+
+test("diffRealm catches an smtp user set in the console where the file commits none", () => {
+  const live = liveFixture();
+  live.realm.smtpServer.user = "leaked@example.com";
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 1);
+  assert.match(mismatches[0], /realm\.smtpServer\.user: committed empty, live is "leaked@example\.com"/);
 });
 
 test("diffRealm catches a realm setting changed only in the admin console", () => {

@@ -29,7 +29,7 @@ Goal: someone other than the author can create a Kalia account.
 | [01](iteration-6.5/01-persist-keycloak-state.md) | Persist Keycloak's state across restarts | refined |
 | [02](iteration-6.5/02-parameterise-realm-configuration.md) | One realm file for every environment | done |
 | [03](iteration-6.5/03-prevent-realm-configuration-drift.md) | Keep realm configuration from drifting once the import stops running | done |
-| [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | refined |
+| [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | done |
 | [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | refined |
 | [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | refined |
 | [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | refined |

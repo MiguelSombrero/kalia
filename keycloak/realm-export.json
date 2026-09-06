@@ -6,6 +6,17 @@
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,
   "revokeRefreshToken": false,
+  "smtpServer": {
+    "host": "$(env:KEYCLOAK_SMTP_HOST)",
+    "port": "$(env:KEYCLOAK_SMTP_PORT)",
+    "from": "$(env:KEYCLOAK_SMTP_FROM)",
+    "fromDisplayName": "Kalia",
+    "auth": "$(env:KEYCLOAK_SMTP_AUTH)",
+    "starttls": "$(env:KEYCLOAK_SMTP_STARTTLS)",
+    "ssl": "$(env:KEYCLOAK_SMTP_SSL)",
+    "user": "$(env:KEYCLOAK_SMTP_USER)",
+    "password": "$(env:KEYCLOAK_SMTP_PASSWORD)"
+  },
   "clients": [
     {
       "clientId": "kalia-frontend",
