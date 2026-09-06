@@ -150,6 +150,9 @@ in one place, read
 - [ADR-0043](0043-createuser-race-safety.md) — `createUser` claims the email
   index with `SET NX`; a losing concurrent first sign-in waits on the winner's
   record instead of orphaning its own.
+- [ADR-0055](0055-self-registration-via-keycloak.md) — a visitor registers
+  entirely inside Keycloak's own flow, reached through a second Auth.js
+  provider pointed at its registration endpoint; no admin credential in the BFF.
 
 ## Configuration, security and operations
 

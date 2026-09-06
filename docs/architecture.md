@@ -31,9 +31,11 @@ Built:
   bottles of *(iteration 5)*
 - A user profile and a cellar-visibility control; a public cellar readable by
   anyone from a link or the owner's profile *(iteration 6)*
+- Self-registration with email verification, so someone other than the author
+  can create an account *(iteration 6.5)*
 
-Next (iteration 6.5, not yet refined): sign-up, so someone other than the
-author can create an account.
+Next (iteration 6.5, in progress): Kalia-branded/bilingual auth pages, Google
+as a second sign-up route, and the rest of that iteration's tasks.
 
 ### Non-functional requirements
 
@@ -430,6 +432,19 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   deployment. The sender shows as `Kalia <address>`. The e2e suite reads a
   real message back out of Mailpit's API
   (`frontend/e2e/keycloak-email.spec.ts`).
+- **A visitor registers entirely inside Keycloak's own registration flow**
+  ([ADR-0055](adr/0055-self-registration-via-keycloak.md)): `frontend/app/[locale]/sign-up`
+  is a small Kalia page (an acknowledgement checkbox, a basic Valkey-backed
+  rate limit) that redirects into a second Auth.js provider
+  (`keycloak-register`) pointed at `{issuer}/protocol/openid-connect/registrations`
+  instead of the login endpoint — Auth.js still builds the request itself
+  (state, PKCE, nonce), no OIDC primitive is hand-rolled. The realm decides
+  the rest: `registrationAllowed`, `verifyEmail` and `duplicateEmailsAllowed`
+  are plain `keycloak/realm-export.json` settings, so a newly registered
+  account is blocked from completing sign-in until its email is verified, and
+  registering an already-used address says so explicitly rather than
+  pretending to succeed. No Keycloak admin credential exists in the BFF for
+  this or any other path.
 
 ## 7. Testing strategy
 
@@ -443,7 +458,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API), plus the WCAG 2.1 AA scans covered above |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`), plus the WCAG 2.1 AA scans covered above |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -559,6 +574,7 @@ the failure back to the agent without blocking
 | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
 | [ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md) | A cellar's domain events are registered on the aggregate root, not published from the service | accepted | 2026-09-04 |
 | [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md) | keycloak-config-cli owns realm import, not Keycloak's native placeholders | accepted | 2026-09-05 |
+| [ADR-0055](adr/0055-self-registration-via-keycloak.md) | Self-registration via Keycloak's own registration flow | accepted | 2026-09-06 |
 
 ### Engineering process and documentation
 
