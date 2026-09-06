@@ -6,6 +6,11 @@
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000,
   "revokeRefreshToken": false,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": true,
+  "duplicateEmailsAllowed": false,
+  "passwordPolicy": "length(8)",
   "smtpServer": {
     "host": "$(env:KEYCLOAK_SMTP_HOST)",
     "port": "$(env:KEYCLOAK_SMTP_PORT)",

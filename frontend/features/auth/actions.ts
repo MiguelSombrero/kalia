@@ -2,9 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
+import { defaultLocale, isLocale } from "@/i18n/settings";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { keycloakEndSessionUrl } from "./endSessionUrl";
+import { checkSignUpRateLimit } from "./signUpRateLimit";
 
 // Do not re-export this from a shared lib/ module instead of defining it
 // here: a Server Action re-exported through a second "use server" file
@@ -13,6 +15,27 @@ import { keycloakEndSessionUrl } from "./endSessionUrl";
 // not caught by any test, lint, or build in this repo.
 export const startSignIn = async () => {
   await signIn("keycloak");
+};
+
+const signUpLocale = (formData: FormData): string => {
+  const locale = formData.get("locale");
+  return typeof locale === "string" && isLocale(locale) ? locale : defaultLocale;
+};
+
+// Mirrors startSignIn/startCellarSignIn's own small duplication rather than a
+// shared helper — see the comment on those.
+export const startSignUp = async (formData: FormData) => {
+  const locale = signUpLocale(formData);
+
+  if (formData.get("agree") !== "on") {
+    redirect(`/${locale}/sign-up?error=agree-required`);
+  }
+
+  if (!(await checkSignUpRateLimit())) {
+    redirect(`/${locale}/sign-up?error=rate-limited`);
+  }
+
+  await signIn("keycloak-register");
 };
 
 // Also ends the Keycloak SSO session via end_session_endpoint, this browser's

@@ -13,11 +13,16 @@ export const AuthStatus = async ({ locale }: Props) => {
 
   if (!session?.user) {
     return (
-      <form action={startSignIn}>
-        <button type="submit" className="text-muted-foreground hover:underline">
-          {t("auth.signIn")}
-        </button>
-      </form>
+      <div className="flex items-center gap-2">
+        <form action={startSignIn}>
+          <button type="submit" className="text-muted-foreground hover:underline">
+            {t("auth.signIn")}
+          </button>
+        </form>
+        <Link href={`/${locale}/sign-up`} className="text-muted-foreground hover:underline">
+          {t("auth.signUp")}
+        </Link>
+      </div>
     );
   }
 

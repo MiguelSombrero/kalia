@@ -16,6 +16,8 @@ describe("AuthStatus", () => {
     const { container } = render(await AuthStatus({ locale: "en" }));
 
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    const signUpLink = screen.getByRole("link", { name: "Create an account" });
+    expect(signUpLink).toHaveAttribute("href", "/en/sign-up");
     expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });

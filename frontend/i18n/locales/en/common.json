@@ -71,6 +71,7 @@
   },
   "auth": {
     "signIn": "Sign in",
+    "signUp": "Create an account",
     "signOut": "Sign out",
     "profileLink": "Profile: {{name}}"
   },
@@ -177,6 +178,17 @@
       "statePublic": "Anyone with the link can see your cellar.",
       "error": "Could not update your cellar visibility. Please try again.",
       "viewLink": "View your public cellar"
+    }
+  },
+  "signUp": {
+    "pageTitle": "Create an account — Kalia",
+    "title": "Create your account",
+    "hint": "You'll set your email and password, and pick a username, on Keycloak's own sign-up page next.",
+    "agree": "I'm old enough to use a beer app.",
+    "action": "Continue to sign-up",
+    "error": {
+      "agreeRequired": "Please confirm you're old enough to use a beer app.",
+      "rateLimited": "Too many sign-up attempts. Please try again in a few minutes."
     }
   }
 }

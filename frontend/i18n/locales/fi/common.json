@@ -71,6 +71,7 @@
   },
   "auth": {
     "signIn": "Kirjaudu sisään",
+    "signUp": "Luo tili",
     "signOut": "Kirjaudu ulos",
     "profileLink": "Profiili: {{name}}"
   },
@@ -177,6 +178,17 @@
       "statePublic": "Kuka tahansa linkin saanut näkee kellarisi.",
       "error": "Näkyvyyden päivitys epäonnistui. Yritä uudelleen.",
       "viewLink": "Näytä julkinen kellarisi"
+    }
+  },
+  "signUp": {
+    "pageTitle": "Luo tili — Kalia",
+    "title": "Luo tili",
+    "hint": "Asetat sähköpostiosoitteesi, salasanasi ja käyttäjätunnuksesi seuraavaksi Keycloakin omalla rekisteröitymissivulla.",
+    "agree": "Olen tarpeeksi vanha käyttämään olutsovellusta.",
+    "action": "Jatka rekisteröitymiseen",
+    "error": {
+      "agreeRequired": "Vahvista, että olet tarpeeksi vanha käyttämään olutsovellusta.",
+      "rateLimited": "Liian monta rekisteröitymisyritystä. Yritä uudelleen muutaman minuutin kuluttua."
     }
   }
 }

@@ -161,12 +161,12 @@ Resolved during refinement (2026-09-05):
       question 4 decides it cannot reach
 - [ ] Registering an address that already exists behaves the way question 5
       decided, covered by a test that names the decision
-- [ ] The sign-up / verification-email path has a basic rate limit (question
+- [x] The sign-up / verification-email path has a basic rate limit (question
       9), covered by a test that shows it refusing once the threshold is
       crossed
-- [ ] An ADR records the decision, the rejected alternatives and at least one
+- [x] An ADR records the decision, the rejected alternatives and at least one
       Bad or Neutral consequence; `node scripts/check-adrs.mjs` passes
-- [ ] `docs/architecture.md` §6 describes registration, and the ADR is in its
+- [x] `docs/architecture.md` §6 describes registration, and the ADR is in its
       §9 index and [docs/adr/README.md](../../adr/README.md)
 
 ## Notes
@@ -190,3 +190,27 @@ but the author uses this" — this is that moment. Deliberately not a task in
 this iteration, because nothing is deployed and no real person can register
 yet; it should be raised the moment a deployment is planned, and it is a
 reason not to deploy this iteration's work casually.
+
+Implementation opened as a PR with AC1–AC5 unchecked (2026-09-06): this
+sandbox has no Docker daemon at all (`docker info` fails with "no such file or
+directory" until `dockerd` is started manually), and once started it cannot
+pull any image — every registry blob request gets a `403 Forbidden` from
+Docker Hub's CDN, reproduced with a plain `docker pull alpine:3.20`, a step
+further than [task 01](01-persist-keycloak-state.md)'s session (which could at
+least run already-cached images). So the compose stack never came up, and
+nothing that needs a browser against Keycloak — the registration form itself,
+the verify-before-usable redirect, the duplicate-email message, the restart
+cycle — could be exercised or even independently checked against Keycloak's
+admin REST API the way task 01 managed to. AC6–AC8 don't need it: the sign-up
+rate limiter is a pure Valkey-backed function with its own passing Vitest
+suite (`frontend/features/auth/signUpRateLimit.test.ts`), and the ADR/doc-sync
+checks are static. The Playwright spec for AC1–AC4
+(`frontend/e2e/sign-up.spec.ts`) is written and passes `npm run lint`/`tsc`
+but has never been run, so "confirmed to fail against the unfixed build" in
+AC2 is not yet true of it either. This needs a pass against a running stack,
+in this sandbox once Docker access works or elsewhere, before AC1–AC5 can be
+honestly ticked. [ADR-0055](../../adr/0055-self-registration-via-keycloak.md)'s
+Consequences also flag one implementation gap found while scoping this: the
+registration form's username field does not yet reject `@`/whitespace, since
+enforcing it needs a Keycloak user-profile change this session had no live
+realm to verify against.
