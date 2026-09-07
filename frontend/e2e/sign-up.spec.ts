@@ -34,12 +34,15 @@ const fillProfileFields = async (page: Page, fields: { username: string; email: 
 };
 
 // Keycloak defers password collection to a separate UPDATE_PASSWORD required
-// action, shown after VERIFY_EMAIL is satisfied — fill it only when it's
-// actually on the page, so this helper also works for flows where a realm
-// theme puts the password back on the registration form itself.
+// action, shown after VERIFY_EMAIL is satisfied — its login-update-password.ftl
+// names the field "password-new", not "password" (that id is the sign-in
+// form's). Fill whichever is actually on the page, so this helper also works
+// for flows where a realm theme puts the password back on the registration
+// form itself.
 const setPasswordWhenPrompted = async (page: Page, password: string) => {
-  if (!(await page.locator("#password").count())) return;
-  await page.locator("#password").fill(password);
+  const newPassword = page.locator("#password-new").or(page.locator("#password"));
+  if (!(await newPassword.count())) return;
+  await newPassword.fill(password);
   if (await page.locator("#password-confirm").count()) {
     await page.locator("#password-confirm").fill(password);
   }
