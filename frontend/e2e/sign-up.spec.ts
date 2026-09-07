@@ -17,25 +17,33 @@ import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
 const FRONTEND_ORIGIN = "http://localhost:3000";
 const KEYCLOAK_ORIGIN = "http://localhost:8081";
 
-// Fills whichever of Keycloak's registration fields are present: the realm
-// asks for username/email/password, but the stock register.ftl also shows
-// firstName/lastName unless the user profile is customized to drop them
-// (ADR-0055's Consequences) — tolerate either shape rather than assume one.
-const fillRegistrationForm = async (
-  page: Page,
-  fields: { username: string; email: string; password: string },
-) => {
+// Fills the registration form's profile fields: the keycloak.v2 theme's
+// register.ftl asks for username/email/firstName/lastName but collects the
+// password separately, as a follow-up UPDATE_PASSWORD required action once
+// the address is verified (see setPasswordWhenPrompted below) — tolerate a
+// password field being present too, in case a differently themed realm adds
+// one back.
+const fillProfileFields = async (page: Page, fields: { username: string; email: string }) => {
   await page.locator("#username").waitFor();
   await page.locator("#username").fill(fields.username);
   await page.locator("#email").fill(fields.email);
-  await page.locator("#password").fill(fields.password);
-  if (await page.locator("#password-confirm").count()) {
-    await page.locator("#password-confirm").fill(fields.password);
-  }
   if (await page.locator("#firstName").count()) {
     await page.locator("#firstName").fill("E2E");
     await page.locator("#lastName").fill("Test");
   }
+};
+
+// Keycloak defers password collection to a separate UPDATE_PASSWORD required
+// action, shown after VERIFY_EMAIL is satisfied — fill it only when it's
+// actually on the page, so this helper also works for flows where a realm
+// theme puts the password back on the registration form itself.
+const setPasswordWhenPrompted = async (page: Page, password: string) => {
+  if (!(await page.locator("#password").count())) return;
+  await page.locator("#password").fill(password);
+  if (await page.locator("#password-confirm").count()) {
+    await page.locator("#password-confirm").fill(password);
+  }
+  await page.getByRole("button", { name: /submit|save|continue|update/i }).click();
 };
 
 const startSignUp = async (page: Page) => {
@@ -65,7 +73,7 @@ test.describe("self-registration", () => {
     const password = "correct-horse-battery";
 
     await startSignUp(page);
-    await fillRegistrationForm(page, { username, email, password });
+    await fillProfileFields(page, { username, email });
     await page.getByRole("button", { name: /register|sign.?up/i }).click();
 
     // The browser is still on Keycloak, not redirected back with a session —
@@ -77,6 +85,11 @@ test.describe("self-registration", () => {
     const link = linkFromMessage(message);
 
     await page.goto(link);
+    await clickThroughKeycloakAction(page);
+
+    // Verifying the email lands on a follow-up UPDATE_PASSWORD required
+    // action — the registration form itself never asked for a password.
+    await setPasswordWhenPrompted(page, password);
     await clickThroughKeycloakAction(page);
 
     await expect(page).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}/en`));
@@ -108,13 +121,10 @@ test.describe("self-registration", () => {
     const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
 
     try {
-      const setPassword = await request.put(
-        `${KEYCLOAK_ORIGIN}/admin/realms/kalia/users/${userId}/reset-password`,
-        {
-          headers: { Authorization: `Bearer ${adminToken}` },
-          data: { type: "password", value: password, temporary: false },
-        },
-      );
+      const setPassword = await request.put(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users/${userId}/reset-password`, {
+        headers: { Authorization: `Bearer ${adminToken}` },
+        data: { type: "password", value: password, temporary: false },
+      });
       expect(setPassword.ok()).toBeTruthy();
 
       await page.goto(`${FRONTEND_ORIGIN}/en`);
@@ -140,10 +150,9 @@ test.describe("self-registration", () => {
     const existingEmail = `${account.username}@example.com`;
 
     await startSignUp(page);
-    await fillRegistrationForm(page, {
+    await fillProfileFields(page, {
       username: `duplicate-${Date.now()}`,
       email: existingEmail,
-      password: "correct-horse-battery",
     });
     await page.getByRole("button", { name: /register|sign.?up/i }).click();
 
