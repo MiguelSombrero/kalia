@@ -339,7 +339,7 @@ jobs:
       - name: Print Playwright error context
         if: failure()
         run: |
-          find frontend/test-results -name "error-context.md" -print -exec cat {} \; || true
+          find test-results -name "error-context.md" -print -exec cat {} \; || true
       # A failure's trace/screenshot (playwright.config.ts's "on-first-retry")
       # otherwise dies with the runner — nothing this repo already does
       # uploads it, so a red run today is undiagnosable after the fact.
