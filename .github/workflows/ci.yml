@@ -303,18 +303,32 @@ jobs:
       # the actual server-rendered HTML directly (bypassing the browser and
       # Playwright's accessibility-tree snapshot entirely) to see what
       # Keycloak itself sends for id="password".
-      - name: Fetch the raw registration page HTML
+      - name: Fetch the raw registration page HTML and submit it without a password
         run: |
-          curl -s "http://localhost:8081/realms/kalia/protocol/openid-connect/registrations?client_id=kalia-frontend&response_type=code&scope=openid&redirect_uri=http://localhost:3000/api/auth/callback/keycloak-register" \
-            -c /tmp/cookies.txt -o /tmp/register.html
-          echo "=== theme in use ==="
-          grep -o '/resources/[a-zA-Z0-9]*/login/[a-zA-Z0-9.]*' /tmp/register.html | head -1
-          echo "=== every <input> tag verbatim ==="
-          grep -oE '<input[^>]*>' /tmp/register.html
-          echo "=== every <template> tag's opening line (web-component content lives here) ==="
-          grep -n '<template' /tmp/register.html
-          echo "=== full body, kc-register-form to its closing form tag ==="
-          sed -n '/id="kc-register-form"/,/<\/form>/p' /tmp/register.html
+          REGISTER_URL="http://localhost:8081/realms/kalia/protocol/openid-connect/registrations?client_id=kalia-frontend&response_type=code&scope=openid&redirect_uri=http://localhost:3000/api/auth/callback/keycloak-register"
+          curl -s "$REGISTER_URL" -c /tmp/cookies.txt -o /tmp/register.html
+          echo "=== confirmed: no id=\"password\" anywhere in the GET response ==="
+          grep -c 'id="password"' /tmp/register.html || true
+          ACTION=$(grep -oE 'action="[^"]*"' /tmp/register.html | head -1 | sed -e 's/^action="//' -e 's/"$//' -e 's/&amp;/\&/g')
+          echo "=== form action ==="
+          echo "$ACTION"
+          # Submitting exactly what the browser can submit — no password field
+          # exists to include — to see whether Keycloak completes registration
+          # server-side without one (a password step comes right after) or
+          # rejects it (something else is wrong with this request/flow).
+          STAMP=$(date +%s)
+          curl -s -D /tmp/post-headers.txt -o /tmp/post-body.html -b /tmp/cookies.txt -c /tmp/cookies.txt \
+            -X POST "$ACTION" \
+            --data-urlencode "username=diag${STAMP}" \
+            --data-urlencode "email=diag${STAMP}@example.com" \
+            --data-urlencode "firstName=Diag" \
+            --data-urlencode "lastName=Test"
+          echo "=== POST response headers ==="
+          cat /tmp/post-headers.txt
+          echo "=== does the POST response body have a password field? ==="
+          grep -c 'id="password"' /tmp/post-body.html || true
+          echo "=== POST response page title/heading ==="
+          grep -oE '<h1[^>]*>[^<]*' /tmp/post-body.html || grep -oE 'id="kc-page-title"[^<]*<[^>]*>[^<]*' /tmp/post-body.html || true
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and
