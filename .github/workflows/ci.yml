@@ -329,6 +329,19 @@ jobs:
           grep -c 'id="password"' /tmp/post-body.html || true
           echo "=== POST response page title/heading ==="
           grep -oE '<h1[^>]*>[^<]*' /tmp/post-body.html || grep -oE 'id="kc-page-title"[^<]*<[^>]*>[^<]*' /tmp/post-body.html || true
+          # The POST above 302'd to a VERIFY_EMAIL required action with no
+          # password ever collected — confirming registration succeeded
+          # without a credential. This checks what Keycloak actually recorded
+          # on the created user: if UPDATE_PASSWORD landed in requiredActions,
+          # it's chained after email verification; if not, the account has no
+          # credential at all and something in the flow config needs fixing.
+          ADMIN_TOKEN=$(curl -s -X POST http://localhost:8081/realms/master/protocol/openid-connect/token \
+            -d "grant_type=password&client_id=admin-cli&username=admin&password=admin" \
+            | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+          echo "=== the diagnostic user's requiredActions / credentials ==="
+          curl -s "http://localhost:8081/admin/realms/kalia/users?username=diag${STAMP}&exact=true" \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            | python3 -c "import sys,json;u=json.load(sys.stdin)[0];print({k:v for k,v in u.items() if k in ('username','emailVerified','requiredActions','enabled')})"
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and
