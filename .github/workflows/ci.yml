@@ -294,6 +294,26 @@ jobs:
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
+      # Diagnostic for the sign-up e2e spec failure: the registration form
+      # Playwright lands on is missing its password fields entirely
+      # (confirmed from the E2E job's own page-snapshot dump), which only
+      # renders when the "registration form" sub-flow's
+      # registration-password-action execution is REQUIRED. Dumping the
+      # actual flow/execution list here shows whether that execution is
+      # present, disabled, or missing outright — needed before writing a fix
+      # rather than guessing the flow JSON blind.
+      - name: Dump the registration authentication flow
+        run: |
+          TOKEN=$(curl -s -X POST http://localhost:8081/realms/master/protocol/openid-connect/token \
+            -d "grant_type=password&client_id=admin-cli&username=admin&password=admin" \
+            | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+          echo "=== realm registrationFlow / browserFlow ==="
+          curl -s http://localhost:8081/admin/realms/kalia -H "Authorization: Bearer $TOKEN" \
+            | python3 -c "import sys,json;d=json.load(sys.stdin);print({k:v for k,v in d.items() if 'Flow' in k})"
+          echo "=== authentication flows ==="
+          curl -s http://localhost:8081/admin/realms/kalia/authentication/flows -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+          echo "=== registration form executions ==="
+          curl -s "http://localhost:8081/admin/realms/kalia/authentication/flows/registration%20form/executions" -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and
