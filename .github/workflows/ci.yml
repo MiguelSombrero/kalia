@@ -307,12 +307,14 @@ jobs:
         run: |
           curl -s "http://localhost:8081/realms/kalia/protocol/openid-connect/registrations?client_id=kalia-frontend&response_type=code&scope=openid&redirect_uri=http://localhost:3000/api/auth/callback/keycloak-register" \
             -c /tmp/cookies.txt -o /tmp/register.html
-          echo "=== response size ==="
-          wc -l /tmp/register.html
-          echo "=== every element id in the page ==="
-          grep -oE 'id="[a-zA-Z0-9_-]*"' /tmp/register.html | sort -u
-          echo "=== lines mentioning password (case-insensitive) ==="
-          grep -in "password" /tmp/register.html || echo "(none found)"
+          echo "=== theme in use ==="
+          grep -o '/resources/[a-zA-Z0-9]*/login/[a-zA-Z0-9.]*' /tmp/register.html | head -1
+          echo "=== every <input> tag verbatim ==="
+          grep -oE '<input[^>]*>' /tmp/register.html
+          echo "=== every <template> tag's opening line (web-component content lives here) ==="
+          grep -n '<template' /tmp/register.html
+          echo "=== full body, kc-register-form to its closing form tag ==="
+          sed -n '/id="kc-register-form"/,/<\/form>/p' /tmp/register.html
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and
