@@ -1,8 +1,8 @@
 # Task 07: Google as a second sign-up route
 
-- **Status:** refined
+- **Status:** dropped
 - **Iteration:** [6.5](../iteration-6.5.md)
-- **Covers:** DW-4
+- **Covers:** none
 
 ## Why
 
@@ -123,3 +123,25 @@ Option C in the sign-up options analysis of 2026-08-29, recommended as a fast
 follow to password registration rather than as the base — the asymmetry being
 that a mail-provider outage delays new sign-ups while a broker outage locks
 out every existing user of that broker.
+
+**Dropped in refinement (2026-09-08).** Reviewed once more with the product
+owner and dropped: supporting a second authentication mechanism is complexity
+this stage of development does not need while native Keycloak is the only one
+in use. The drop costs one-button sign-up, and avoids a Google Cloud OAuth
+client under a personal account, an "unverified app" consent screen, an
+`identityProviders` block plus its client secret in the realm configuration,
+and the second Keycloak realm question 6 invented to stand in as an OIDC
+provider purely to exercise the broker path. Nothing forecloses it later:
+brokering inside Keycloak is exactly what keeps a provider a realm-configuration
+change rather than an architectural one, so
+[ADR-0025](../../adr/0025-authjs-valkey-adapter.md) and
+[ADR-0028](../../adr/0028-resource-server-and-current-user.md) are untouched
+either way, and the provider analysis that would otherwise be re-researched
+stays in [this iteration's index](../iteration-6.5.md). This file is kept,
+`dropped`, as the record of the concern and the decision that closed it.
+
+One thing it asserted was already untrue when it was dropped: acceptance
+criterion 4 asks that `frontend/auth.ts` "still registers exactly one
+provider", but [task 05](05-self-registration-with-email-verification.md)
+had already added a second provider entry (`keycloak-register`) for the same
+Keycloak realm. [Task 08](08-revisit-account-linking.md) carries that finding.

@@ -34,8 +34,9 @@ Built:
 - Self-registration with email verification, so someone other than the author
   can create an account *(iteration 6.5)*
 
-Next (iteration 6.5, in progress): Kalia-branded/bilingual auth pages, Google
-as a second sign-up route, and the rest of that iteration's tasks.
+Next (iteration 6.5, in progress): Kalia-branded/bilingual auth pages,
+Keycloak state that survives a restart, and the rest of that iteration's
+tasks.
 
 ### Non-functional requirements
 
