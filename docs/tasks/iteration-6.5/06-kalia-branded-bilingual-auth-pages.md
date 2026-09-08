@@ -1,6 +1,6 @@
 # Task 06: Kalia-branded, bilingual Keycloak pages
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-5
 
@@ -91,17 +91,17 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] Signing in from a Finnish page shows a Finnish Keycloak login form, and
+- [x] Signing in from a Finnish page shows a Finnish Keycloak login form, and
       from an English page an English one — verified in a browser, both ways
-- [ ] Registration and password-reset pages, and the emails they send, follow
+- [x] Registration and password-reset pages, and the emails they send, follow
       the same language
-- [ ] A Playwright spec asserts the language of the Keycloak page reached from
+- [x] A Playwright spec asserts the language of the Keycloak page reached from
       each locale, and was confirmed to fail before the change
-- [ ] An `@axe-core/playwright` check runs against the login and registration
+- [x] An `@axe-core/playwright` check runs against the login and registration
       pages with no violations at WCAG 2.1 AA
-- [ ] A user landing on `/fi` and signing in returns to `/fi`, covered by a
+- [x] A user landing on `/fi` and signing in returns to `/fi`, covered by a
       test
-- [ ] Where auth-page strings live, and how they stay in step with
+- [x] Where auth-page strings live, and how they stay in step with
       `frontend/i18n/locales/`, is documented in the home
       [ADR-0020](../../adr/0020-documentation-roles.md) prescribes
 
