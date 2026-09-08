@@ -149,17 +149,17 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] A visitor with no account completes sign-up in a browser and reaches
+- [x] A visitor with no account completes sign-up in a browser and reaches
       their own empty cellar signed in, without any operator action
-- [ ] A Playwright spec covers register → verify → sign in → sign out → sign in
+- [x] A Playwright spec covers register → verify → sign in → sign out → sign in
       again, reading the verification link from the local mail catcher, and was
       confirmed to fail against the unfixed build
 - [ ] The account created that way survives a stack restart and signs in again
       — the guarantee [task 01](01-persist-keycloak-state.md) exists for,
       demonstrated by the feature that needs it
-- [ ] An automated test pins that an unverified account cannot reach whatever
+- [x] An automated test pins that an unverified account cannot reach whatever
       question 4 decides it cannot reach
-- [ ] Registering an address that already exists behaves the way question 5
+- [x] Registering an address that already exists behaves the way question 5
       decided, covered by a test that names the decision
 - [x] The sign-up / verification-email path has a basic rate limit (question
       9), covered by a test that shows it refusing once the threshold is
@@ -214,3 +214,28 @@ Consequences also flag one implementation gap found while scoping this: the
 registration form's username field does not yet reject `@`/whitespace, since
 enforcing it needs a Keycloak user-profile change this session had no live
 realm to verify against.
+
+That PR merged with AC1–AC5 still unchecked; a follow-up PR fixing `dev`'s
+CI (the e2e spec above had never actually run against a live stack, and was
+wrong about the registration form's shape — Keycloak's `keycloak.v2` theme
+collects no password on that form at all, deferring it to a separate
+`UPDATE_PASSWORD` required action shown after `VERIFY_EMAIL`) got
+`frontend/e2e/sign-up.spec.ts` passing in CI (run
+[#590](https://github.com/MiguelSombrero/kalia/actions/runs/34165233707)).
+That run is what ticks AC1, AC2, AC4 and AC5 above: its three tests are, in
+order, exactly register→verify→sign in→sign out→sign in again (a real
+browser reaching the signed-in profile link — AC1 and AC2 together), an
+unverified account blocked from the application (AC4), and a duplicate email
+saying so explicitly (AC5).
+
+AC3 (restart survival) had no coverage at all — this sandbox still has no
+working Docker, so it could not be exercised directly. Added
+`scripts/check-signup-survives-restart.mjs` (wired into CI's
+`keycloak-realm-check` job and `make keycloak-check`): it drives the same
+register → verify-email → set-password flow directly over HTTP against
+Keycloak's endpoints (that job has no frontend container to point a browser
+at), then runs `docker compose restart keycloak` and signs in again with the
+same credentials. Its pure HTML-form/cookie-jar parsing has a fixture-driven
+self-test (`scripts/check-signup-survives-restart.test.mjs`, in `make check`)
+that runs without Docker; the restart check itself needed CI to actually
+confirm, the same way PR #241's spec fix did.

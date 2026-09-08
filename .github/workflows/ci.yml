@@ -162,6 +162,20 @@ jobs:
       - name: Self-test the realm-config checker against fixtures
         run: node --test scripts/check-keycloak-realm-config.test.mjs
 
+  signup-restart-checker-self-test:
+    name: Signup-restart checker self-test
+    # Same reasoning as realm-config-checker-self-test above: check-signup-survives-restart.mjs
+    # itself only runs with a live stack (keycloak-realm-check below), so this
+    # pins its HTML-form and cookie-jar parsing without needing one.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Self-test the signup-restart checker against fixtures
+        run: node --test scripts/check-signup-survives-restart.test.mjs
+
   backend:
     name: Backend (Maven)
     needs: [changes]
@@ -294,6 +308,8 @@ jobs:
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
+      - name: Verify a self-registered account survives a Keycloak restart
+        run: node scripts/check-signup-survives-restart.mjs
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and

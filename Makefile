@@ -48,7 +48,7 @@ check: ## Run doc/task/comment/glossary consistency checks
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
 	node scripts/check-glossary.mjs
-	node --test scripts/check-glossary.test.mjs scripts/check-keycloak-realm-config.test.mjs
+	node --test scripts/check-glossary.test.mjs scripts/check-keycloak-realm-config.test.mjs scripts/check-signup-survives-restart.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build backend postgres
@@ -65,12 +65,13 @@ api-drift: ## Fail if the committed API client has drifted from the live spec (n
 # the admin console fails the check instead of being healed and never reported
 # (ADR-0054). With nothing running, a fresh realm is imported first so the
 # check has something to compare against.
-keycloak-check: ## Fail if Keycloak's realm rejects sign-in, or has drifted from keycloak/realm-export.json (needs Docker)
+keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from keycloak/realm-export.json, or forgets a self-registered account across a restart (needs Docker)
 	@docker compose ps --status running --quiet keycloak | grep -q . \
 	    || docker compose up -d --build --wait --wait-timeout 120 postgres keycloak keycloak-config
 	node scripts/check-keycloak-realm-config.mjs
 	docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123
+	node scripts/check-signup-survives-restart.mjs
 
 verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
