@@ -69,8 +69,11 @@ own and overrides none of Keycloak's.**
   visitor was actually reading in the URL, carried on a hidden form field —
   so Keycloak follows that rather than guessing from a fresh browser
   inference. This mirrors the app already trusting its own resolved locale
-  over `Accept-Language`. The same actions pass a locale-prefixed
-  `redirectTo`, so a visitor who started on `/fi` returns to `/fi`.
+  over `Accept-Language`. The same actions pass an explicit locale-prefixed
+  `redirectTo` (the beer page for the "add to cellar" prompt, otherwise that
+  locale's home, cellar or profile), rather than leaning on the `Referer`
+  header Auth.js falls back to — so `/fi` reliably returns to `/fi` even if a
+  future `Referrer-Policy` change strips the path.
 - **Auth-page strings live in Keycloak's own message bundles, and Kalia keeps
   none of its own.** Keycloak ships `en` and `fi` translations for every
   login, registration, verification and password-reset string; Kalia's theme
@@ -135,6 +138,12 @@ on an English-default browser would get an English login page. Passing
   does not reach `keycloak/themes/kalia/login/resources/css/login.css`; the
   mint hex is duplicated there by hand, and a re-theme has two places to
   touch. Accepted as the cost of the pages being Keycloak's, not the app's.
+- Neutral, because the explicit `redirectTo` changes one existing behaviour:
+  clicking "Sign in" in the header from a deep page (`/fi/beers/<id>`) now
+  returns to `/fi` rather than back to that page, since the header form cannot
+  see the full path. Accepted — a global header control returning to the
+  language home is a normal pattern, and the beer-page "add to cellar" prompt,
+  which does have the context, still returns to the exact beer.
 - Neutral, because the emails are localised but not visually themed beyond the
   sender name. If branded HTML mail is ever wanted, it is a Keycloak email
   theme — more FreeMarker — and a separate decision.

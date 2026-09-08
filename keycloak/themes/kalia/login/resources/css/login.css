@@ -28,7 +28,7 @@ body#keycloak-bg {
    match frontend/app/globals.css's own :focus-visible rule instead. */
 :focus-visible {
   outline: 2px solid #2f6f5e;
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* The header wrapper renders realm.displayNameHtml (empty here); repurpose it

@@ -35,14 +35,20 @@ test.describe("Keycloak pages follow the app's language", () => {
       await expect(page.getByText(loginWord, { exact: false })).toBeVisible();
     });
 
-    test(`the registration page reached from /${locale} is in ${htmlLang}`, async ({ page }) => {
+    test(`the registration page reached from /${locale} is in ${htmlLang} and passes axe`, async ({
+      page,
+    }) => {
       await page.goto(`${FRONTEND_ORIGIN}/${locale}/sign-up`);
       await page.getByRole("checkbox").check();
       await page.getByRole("button", { name: /Continue to sign-up|Jatka rekisteröitymiseen/ }).click();
+      await page.locator("#kc-register-form").waitFor();
 
       await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
       expect(await langOf(page)).toBe(htmlLang);
       await expect(page.getByRole("button", { name: registerWord })).toBeVisible();
+      // Same WCAG 2.1 AA bar as the rest of the app — scanned here rather than
+      // in a fourth registration test to keep /sign-up rate-limit pressure down.
+      expect((await scanForA11yViolations(page)).violations).toEqual([]);
     });
 
     test(`the password-reset page reached from /${locale} is in ${htmlLang}`, async ({ page }) => {
@@ -63,15 +69,9 @@ test.describe("Keycloak pages meet WCAG 2.1 AA", () => {
 
     expect((await scanForA11yViolations(page)).violations).toEqual([]);
   });
-
-  test("the registration page has no accessibility violations", async ({ page }) => {
-    await page.goto(`${FRONTEND_ORIGIN}/en/sign-up`);
-    await page.getByRole("checkbox").check();
-    await page.getByRole("button", { name: "Continue to sign-up" }).click();
-    await page.locator("#kc-register-form").waitFor();
-
-    expect((await scanForA11yViolations(page)).violations).toEqual([]);
-  });
+  // The registration page's axe scan rides along with its language test above,
+  // so registering (which the shared /sign-up rate limit counts) happens once
+  // per locale, not twice.
 });
 
 test.describe("the locale survives the round trip", () => {

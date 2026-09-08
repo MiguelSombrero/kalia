@@ -21,8 +21,9 @@ import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 export const startCellarSignIn = async (formData?: FormData) => {
   const locale = localeFromForm(formData);
   // `ui_locales` picks the Keycloak page language (ADR-0056); the return
-  // path keeps the visitor on the beer they clicked, else that locale's home.
-  const redirectTo = beerReturnPath(formData) ?? `/${locale}`;
+  // path keeps the visitor on the beer they clicked, else on their cellar —
+  // the page the bare prompt is inviting them to.
+  const redirectTo = beerReturnPath(formData) ?? `/${locale}/cellar`;
   await signIn("keycloak", { redirectTo }, { ui_locales: locale });
 };
 
