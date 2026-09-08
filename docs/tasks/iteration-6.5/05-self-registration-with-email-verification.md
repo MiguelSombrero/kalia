@@ -1,6 +1,6 @@
 # Task 05: Self-registration with email verification
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-3
 
@@ -154,7 +154,7 @@ Resolved during refinement (2026-09-05):
 - [x] A Playwright spec covers register → verify → sign in → sign out → sign in
       again, reading the verification link from the local mail catcher, and was
       confirmed to fail against the unfixed build
-- [ ] The account created that way survives a stack restart and signs in again
+- [x] The account created that way survives a stack restart and signs in again
       — the guarantee [task 01](01-persist-keycloak-state.md) exists for,
       demonstrated by the feature that needs it
 - [x] An automated test pins that an unverified account cannot reach whatever
@@ -239,3 +239,15 @@ same credentials. Its pure HTML-form/cookie-jar parsing has a fixture-driven
 self-test (`scripts/check-signup-survives-restart.test.mjs`, in `make check`)
 that runs without Docker; the restart check itself needed CI to actually
 confirm, the same way PR #241's spec fix did.
+
+Its first real run found a genuine bug rather than confirming the guarantee
+outright: the script asserted the registration POST's redirect target
+without ever visiting it, but Keycloak only sends the verification email as
+a side effect of the `VERIFY_EMAIL` required action actually being
+challenged — something a real browser does automatically by following the
+redirect, which this script did not. Fixed by adding that `GET`; confirmed
+green in this PR's own CI
+([run #34184741780](https://github.com/MiguelSombrero/kalia/actions/runs/34184741780),
+`Keycloak realm check` job, "Verify a self-registered account survives a
+Keycloak restart" step) — the account signs in again after
+`docker compose restart keycloak`. That run is what ticks AC3.
