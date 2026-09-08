@@ -114,6 +114,7 @@ const register = async (jar) => {
   if (registerPage.status !== 200) {
     throw new Error(`GET registration page returned ${registerPage.status}`);
   }
+  console.log(`GET registration page: 200, cookies [${[...jar.keys()].join(", ")}]`);
   const action = extractFormAction(await registerPage.text());
 
   const submitted = await request(jar, action, {
@@ -128,10 +129,24 @@ const register = async (jar) => {
   if (submitted.status !== 302) {
     throw new Error(`registration POST returned ${submitted.status}, expected a redirect to the VERIFY_EMAIL page`);
   }
+  // The Location URL is just routing state (execution/client_id/tab_id), not
+  // a credential — safe to log unconditionally, and this is the only way to
+  // tell a real VERIFY_EMAIL redirect apart from a 302 back to some other
+  // page (e.g. the form itself, on a session/cookie mismatch this script
+  // caused rather than Keycloak rejecting the registration outright).
+  const location = submitted.headers.get("location");
+  console.log(`registration POST: 302 -> ${location}, cookies [${[...jar.keys()].join(", ")}]`);
+  if (!location || !location.includes("VERIFY_EMAIL")) {
+    throw new Error(`registration POST redirected to ${location}, expected the VERIFY_EMAIL required-action page`);
+  }
 };
 
 const waitForVerificationLink = async () => {
-  const deadline = Date.now() + 15_000;
+  // Twice frontend/e2e/support/mailpit.ts's 15s: this job brings the stack
+  // up and registers immediately after, unlike the e2e job's Playwright
+  // spec, which only gets here after the whole stack (frontend included)
+  // has been up and warm for minutes.
+  const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
     const search = await fetch(`${MAILPIT_URL}/api/v1/search?${new URLSearchParams({ query: `to:${email}` })}`);
     const { messages } = await search.json();
@@ -143,7 +158,7 @@ const waitForVerificationLink = async () => {
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  throw new Error(`no verification email reached mailpit for ${email} within 15s`);
+  throw new Error(`no verification email reached mailpit for ${email} within 30s`);
 };
 
 const verifyEmailAndSetPassword = async (jar, link) => {
