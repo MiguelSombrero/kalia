@@ -15,8 +15,13 @@ test("extractFormAction finds a form action and unescapes &amp;", () => {
   assert.equal(extractFormAction(html), "https://kc.test/registrations?session_code=abc&execution=123");
 });
 
-test("extractFormAction throws with a snippet of the page when there is no form", () => {
-  assert.throws(() => extractFormAction("<html><body>Invalid parameter: client_id</body></html>"), /Invalid parameter/);
+test("extractFormAction throws without embedding the page body — a page in this flow can be the UPDATE_PASSWORD form", () => {
+  const html = "<html><body>Invalid parameter: client_id</body></html>";
+  assert.throws(() => extractFormAction(html), (error) => {
+    assert.match(error.message, /page length 54/);
+    assert.doesNotMatch(error.message, /Invalid parameter/);
+    return true;
+  });
 });
 
 test("mergeCookies stores the name=value pair from each Set-Cookie header, dropping attributes", () => {

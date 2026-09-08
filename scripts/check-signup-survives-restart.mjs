@@ -49,15 +49,19 @@ const request = async (jar, url, init = {}) => {
   return response;
 };
 
+// Never embeds the page body in its error: a page in this flow can be the
+// UPDATE_PASSWORD form, and a validation error re-render is not a place to
+// assume Keycloak never echoes a submitted value back.
 export const extractFormAction = (html) => {
   const match = html.match(/<form[^>]*\baction="([^"]*)"/);
-  if (!match) throw new Error(`no <form action="..."> found in:\n${html.slice(0, 2000)}`);
+  if (!match) throw new Error(`no <form action="..."> found (page length ${html.length})`);
   return match[1].replace(/&amp;/g, "&");
 };
 
 // Follows a chain of Keycloak's own redirects (VERIFY_EMAIL consumed ->
 // UPDATE_PASSWORD required action shown next) until a page actually renders,
-// updating the cookie jar at each hop the way a browser would.
+// updating the cookie jar at each hop the way a browser would. Same
+// no-body-in-errors rule as extractFormAction above.
 const followToNextPage = async (jar, url) => {
   let current = url;
   for (let hop = 0; hop < 5; hop++) {
@@ -67,7 +71,7 @@ const followToNextPage = async (jar, url) => {
       current = new URL(response.headers.get("location"), current).toString();
       continue;
     }
-    throw new Error(`unexpected ${response.status} following ${current}:\n${(await response.text()).slice(0, 2000)}`);
+    throw new Error(`unexpected ${response.status} following ${current}`);
   }
   throw new Error(`too many redirects starting from ${url}`);
 };
@@ -122,7 +126,7 @@ const register = async (jar) => {
   // though the account it just created has no usable credential yet — it
   // never renders that page as this response's own body.
   if (submitted.status !== 302) {
-    throw new Error(`registration POST returned ${submitted.status}, expected a redirect to the VERIFY_EMAIL page:\n${(await submitted.text()).slice(0, 2000)}`);
+    throw new Error(`registration POST returned ${submitted.status}, expected a redirect to the VERIFY_EMAIL page`);
   }
 };
 
@@ -151,8 +155,11 @@ const verifyEmailAndSetPassword = async (jar, link) => {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ "password-new": password, "password-confirm": password }),
   });
+  // No response body in this error either, on the same reasoning as
+  // extractFormAction/followToNextPage above: this POST's own request body
+  // carried the password.
   if (submitted.status !== 302) {
-    throw new Error(`UPDATE_PASSWORD POST returned ${submitted.status}, expected a redirect back to the app:\n${(await submitted.text()).slice(0, 2000)}`);
+    throw new Error(`UPDATE_PASSWORD POST returned ${submitted.status}, expected a redirect back to the app`);
   }
 };
 
@@ -162,8 +169,10 @@ const trySignIn = async () => {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ grant_type: "password", client_id: "admin-cli", username, password }),
   });
+  // No response body here either: this request's own body carried the
+  // password, same reasoning as the errors above.
   if (!response.ok) {
-    throw new Error(`Keycloak rejected sign-in for ${username} after the restart: ${response.status} ${await response.text()}`);
+    throw new Error(`Keycloak rejected sign-in for ${username} after the restart: ${response.status}`);
   }
   if (!(await response.json()).access_token) {
     throw new Error(`Keycloak accepted sign-in for ${username} after the restart but returned no access token`);
