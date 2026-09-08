@@ -15,11 +15,10 @@ test("extractFormAction finds a form action and unescapes &amp;", () => {
   assert.equal(extractFormAction(html), "https://kc.test/registrations?session_code=abc&execution=123");
 });
 
-test("extractFormAction throws without embedding the page body — a page in this flow can be the UPDATE_PASSWORD form", () => {
+test("extractFormAction throws a fixed message with nothing derived from the page — a page in this flow can be the UPDATE_PASSWORD form", () => {
   const html = "<html><body>Invalid parameter: client_id</body></html>";
   assert.throws(() => extractFormAction(html), (error) => {
-    assert.match(error.message, /page length 54/);
-    assert.doesNotMatch(error.message, /Invalid parameter/);
+    assert.equal(error.message, 'no <form action="..."> found on the page');
     return true;
   });
 });

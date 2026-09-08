@@ -49,12 +49,13 @@ const request = async (jar, url, init = {}) => {
   return response;
 };
 
-// Never embeds the page body in its error: a page in this flow can be the
-// UPDATE_PASSWORD form, and a validation error re-render is not a place to
-// assume Keycloak never echoes a submitted value back.
+// The thrown message is a fixed string with nothing derived from `html` at
+// all, not even its length: a page in this flow can be the UPDATE_PASSWORD
+// form, and a validation error re-render is not a place to assume Keycloak
+// never echoes a submitted value back into that content.
 export const extractFormAction = (html) => {
   const match = html.match(/<form[^>]*\baction="([^"]*)"/);
-  if (!match) throw new Error(`no <form action="..."> found (page length ${html.length})`);
+  if (!match) throw new Error("no <form action=\"...\"> found on the page");
   return match[1].replace(/&amp;/g, "&");
 };
 
@@ -138,6 +139,16 @@ const register = async (jar) => {
   console.log(`registration POST: 302 -> ${location}, cookies [${[...jar.keys()].join(", ")}]`);
   if (!location || !location.includes("VERIFY_EMAIL")) {
     throw new Error(`registration POST redirected to ${location}, expected the VERIFY_EMAIL required-action page`);
+  }
+
+  // Keycloak sends the verification email as a side effect of the
+  // VERIFY_EMAIL required action actually being challenged — a browser
+  // follows this redirect automatically, which is what triggers the send. A
+  // script that only inspects the Location header never causes it, and no
+  // mail ever reaches mailpit no matter how long it then waits.
+  const challenged = await request(jar, location);
+  if (challenged.status !== 200) {
+    throw new Error(`GET the VERIFY_EMAIL required-action page returned ${challenged.status}`);
   }
 };
 
