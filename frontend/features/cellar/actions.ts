@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { signIn } from "@/auth";
-import { isLocale } from "@/i18n/settings";
+import { defaultLocale, isLocale, type Locale } from "@/i18n/settings";
 import {
   addBottlesToCellar,
   listCellarBottles,
@@ -19,8 +19,16 @@ import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 // features/auth's startSignIn — features cannot import each other
 // (frontend/README.md's Structure bullet), so this stays a small duplicate.
 export const startCellarSignIn = async (formData?: FormData) => {
-  const redirectTo = beerReturnPath(formData);
-  await signIn("keycloak", redirectTo ? { redirectTo } : undefined);
+  const locale = localeFromForm(formData);
+  // `ui_locales` picks the Keycloak page language (ADR-0056); the return
+  // path keeps the visitor on the beer they clicked, else that locale's home.
+  const redirectTo = beerReturnPath(formData) ?? `/${locale}`;
+  await signIn("keycloak", { redirectTo }, { ui_locales: locale });
+};
+
+const localeFromForm = (formData?: FormData): Locale => {
+  const locale = formData?.get("locale");
+  return typeof locale === "string" && isLocale(locale) ? locale : defaultLocale;
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
