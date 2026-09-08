@@ -85,6 +85,13 @@ test.describe("the locale survives the round trip", () => {
 
     await expect(page).toHaveURL(`${FRONTEND_ORIGIN}/fi`);
     await expect(page.getByRole("link", { name: /^Profiili: / })).toBeVisible();
+
+    // Sign back out: this spec shares the worker `account` with the other
+    // signed-in specs, and a lingering Keycloak SSO session for it is the
+    // contention the suite's serial specs already guard against. The
+    // federated sign-out returns to the default-locale home, not /fi.
+    await page.getByRole("button", { name: "Kirjaudu ulos" }).click();
+    await expect(page.getByRole("button", { name: /^(Sign in|Kirjaudu sisään)$/ })).toBeVisible();
   });
 });
 
