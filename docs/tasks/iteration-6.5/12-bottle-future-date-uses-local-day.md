@@ -1,6 +1,6 @@
 # Task 12: Judge a bottle's brewed date against the user's local day
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -90,18 +90,18 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] A frontend unit test on `applyBottleDateRules` pins a fixed clock and a
+- [x] A frontend unit test on `applyBottleDateRules` pins a fixed clock and a
       positive UTC offset and asserts that the user's local "today" is
       accepted during the UTC-previous-day window — confirmed to fail against
       the current `todayIso()`
-- [ ] A `cellar` backend test (`*Test`/`*IT`) pins the boundary with a date
+- [x] A `cellar` backend test (`*Test`/`*IT`) pins the boundary with a date
       other than `2999-01-01`: the client's local today is accepted, a date
       genuinely a day past it is rejected — confirmed to fail against
       `LocalDate.now()`-in-UTC
-- [ ] In a browser (or a Playwright spec) a bottle with `brewedDate` set to
+- [x] In a browser (or a Playwright spec) a bottle with `brewedDate` set to
       the local today is accepted while the machine clock is in the UTC
       boundary window
-- [ ] `make verify` is green; any ADR or `docs/architecture.md` section
+- [x] `make verify` is green; any ADR or `docs/architecture.md` section
       touched is updated in the same PR
 
 ## Notes
