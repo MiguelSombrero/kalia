@@ -171,6 +171,9 @@ in one place, read
 - [ADR-0054](0054-keycloak-config-cli-realm-management.md) — keycloak-config-cli,
   not Keycloak's own placeholders, resolves per-environment realm values and
   re-applies the committed realm file on every boot.
+- [ADR-0057](0057-worktree-docker-compose-isolation.md) — no fixed Compose
+  project name, so each git worktree's directory name isolates its own
+  containers, network and volume automatically.
 
 ## Engineering process and documentation
 

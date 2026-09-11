@@ -260,9 +260,13 @@ tooling ideas, which is the sweep's `process-quality` dimension
 
 ## Environment notes
 
-- Each worktree runs `docker compose up` independently and will collide on
-  ports 3000/8080/5432 if two are brought up at once — give a concurrently-
-  running worktree its own `-p <project>` and port overrides, or only run
-  the stack in one worktree at a time.
+- Each worktree's `docker compose` project is isolated automatically —
+  `docker-compose.yml` has no fixed `name:`, so Compose names the project
+  after the worktree's own directory ([ADR-0057](docs/adr/0057-worktree-docker-compose-isolation.md));
+  a worktree's `up`/`down -v` never touches another worktree's containers or
+  volume. Standard host ports (3000/8080/8081/5432/6379/8025) are still fixed
+  in `docker-compose.yml` and hardcoded in `frontend/e2e/*.spec.ts` and
+  `scripts/*.mjs`, so two worktrees still collide on ports if brought up at
+  once — only run the full stack in one worktree at a time.
 - Docker Desktop may need starting: `open -a Docker`, then wait for
   `docker info` to succeed.

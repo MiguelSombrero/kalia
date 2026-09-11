@@ -596,6 +596,7 @@ the failure back to the agent without blocking
 | [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md) | keycloak-config-cli owns realm import, not Keycloak's native placeholders | accepted | 2026-09-05 |
 | [ADR-0055](adr/0055-self-registration-via-keycloak.md) | Self-registration via Keycloak's own registration flow | accepted | 2026-09-06 |
 | [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md) | Kalia's Keycloak pages — a minimal theme, realm-level i18n, and Keycloak's own translations | accepted | 2026-09-08 |
+| [ADR-0057](adr/0057-worktree-docker-compose-isolation.md) | Drop the fixed Compose project name so each worktree gets its own stack | accepted | 2026-09-11 |
 
 ### Engineering process and documentation
 
