@@ -18,7 +18,6 @@ export * from './currentUserDto';
 export * from './entryDto';
 export * from './getBeersByIdsParams';
 export * from './listBreweriesParams';
-export * from './moneyDto';
 export * from './pageDtoBeerSummaryDto';
 export * from './pageDtoBreweryDto';
 export * from './problemDetail';

@@ -23,7 +23,7 @@ class DtoSerializationIT {
 	@Test
 	void omitsNullDescriptionFromBeerDetailsJson() throws Exception {
 		BeerDetailsDto beer = new BeerDetailsDto(UUID.randomUUID(), "Test Beer", "IPA",
-				new BigDecimal("5.0"), null, new MoneyDto(500, "EUR"),
+				new BigDecimal("5.0"), null,
 				new BreweryDto(UUID.randomUUID(), "Test Brewery", "Finland", null));
 
 		String json = beerDetailsJson.write(beer).getJson();

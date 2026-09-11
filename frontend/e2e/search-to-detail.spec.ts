@@ -76,7 +76,6 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Westvleteren 12" })).toBeVisible();
   await expect(page.getByText("Tyyli")).toBeVisible();
   await expect(page.getByText("Alkoholi")).toBeVisible();
-  await expect(page.getByText(/12,50\s€/)).toBeVisible();
 
   await page.getByRole("link", { name: "Suomi" }).waitFor();
   await page.getByRole("link", { name: "English" }).click();

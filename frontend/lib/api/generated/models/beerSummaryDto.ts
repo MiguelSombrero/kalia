@@ -5,7 +5,6 @@
  * OpenAPI spec version: v0
  */
 import type { BreweryRefDto } from './breweryRefDto';
-import type { MoneyDto } from './moneyDto';
 
 /**
  * A beer as it appears in search results
@@ -16,6 +15,5 @@ export interface BeerSummaryDto {
   style: string;
   /** Alcohol by volume, percent */
   abv: number;
-  price: MoneyDto;
   brewery: BreweryRefDto;
 }
