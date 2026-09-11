@@ -15,10 +15,11 @@ Goal: someone other than the author can create a Kalia account.
   password, proves the address is theirs, and reaches their own empty cellar
   signed in, without an operator touching Keycloak — and the suites that
   cover it pass twice in a row on the same stack.
-- **DW-4:** A visitor can instead create an account with Google, and what
-  happens when that Google address already belongs to a Kalia account is a
-  decision someone made, recorded in an ADR whose revisit trigger can
-  actually fire.
+- **DW-4:** What happens when a sign-in presents an email address that already
+  belongs to a Kalia account is a decision someone made, recorded in an ADR
+  that is true of the system as it stands — including a revisit trigger that
+  can actually fire — and pinned by a test that fails if the decision is
+  changed silently. *(Reworded 2026-09-08; see below.)*
 - **DW-5:** The pages where all of this happens are recognisably Kalia and
   appear in the language the user was already reading, Finnish or English.
 
@@ -32,7 +33,7 @@ Goal: someone other than the author can create a Kalia account.
 | [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | done |
 | [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | done |
 | [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | done |
-| [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | refined |
+| [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | dropped |
 | [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | refined |
 | [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | refined |
 | [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | refined |
@@ -66,10 +67,26 @@ is destroyed at the next restart, and
 [task 03](iteration-6.5/03-prevent-realm-configuration-drift.md) is deliberately
 ahead of the three tasks that each add realm configuration, because
 retrofitting it means reverse-engineering a live database back into a file.
-[Task 08](iteration-6.5/08-revisit-account-linking.md) runs last because it
-needs both [01](iteration-6.5/01-persist-keycloak-state.md) and
-[07](iteration-6.5/07-google-as-a-sign-up-route.md) to have landed before there
-is anything to decide.
+[Task 08](iteration-6.5/08-revisit-account-linking.md) needs
+[01](iteration-6.5/01-persist-keycloak-state.md) to have landed before there is
+anything to decide; with
+[07](iteration-6.5/07-google-as-a-sign-up-route.md) dropped, nothing else in
+this iteration gates it.
+
+**[Task 07](iteration-6.5/07-google-as-a-sign-up-route.md) was dropped on
+2026-09-08**, before any of it was implemented: a second authentication
+mechanism is complexity this stage of development does not need while native
+Keycloak is the only one in use. What that costs, what it avoids and why it
+stays reversible are recorded in the task file, kept as history. **DW-4 was
+reworded in the same pass** rather than renumbered —
+[ADR-0026](../adr/0026-task-file-format.md) makes the ids permanent — because
+only its Google half died with the task. Its account-linking half stands on
+its own: [task 01](iteration-6.5/01-persist-keycloak-state.md) and
+[task 05](iteration-6.5/05-self-registration-with-email-verification.md)
+between them had already moved both premises
+[ADR-0033](../adr/0033-keycloak-account-relinking.md) rests on, Google or no
+Google, and [task 08](iteration-6.5/08-revisit-account-linking.md) still owns
+it.
 
 This iteration comes from a sign-up options analysis on 2026-08-29. Its two
 externally-checked conclusions are recorded here so they are not re-researched:
@@ -78,7 +95,10 @@ externally-checked conclusions are recorded here so they are not re-researched:
   constraint.** Google's `openid`/`email`/`profile` scopes are non-sensitive —
   no verification review, no payment, no contract — and GitHub OAuth apps are
   free. Apple is excluded (paid developer programme) and Facebook in practice
-  (business verification).
+  (business verification). Kept as a finding even though
+  [task 07](iteration-6.5/07-google-as-a-sign-up-route.md) was dropped: cost
+  was never the reason it went, so this analysis still stands if a brokered
+  provider is ever revisited.
 - **Suomi.fi is unavailable, on eligibility rather than cost.** Private
   operators have no right to use Suomi.fi-tunnistus except when performing a
   public administration task; it is free only for public-administration bodies
@@ -97,9 +117,9 @@ realm that already exists),
 are English-only and outside [ADR-0011](../adr/0011-i18next-localization.md)'s
 reach entirely, so a bilingual app has a monolingual front door),
 [08](iteration-6.5/08-revisit-account-linking.md)
-([ADR-0033](../adr/0033-keycloak-account-relinking.md)'s revisit trigger cannot
-fire for a provider brokered inside Keycloak, so its stated safety argument
-lapses silently), and
+([ADR-0033](../adr/0033-keycloak-account-relinking.md)'s safety argument rests
+on Keycloak being the only provider the app registers, and its revisit trigger
+is worded so that it lapses without firing), and
 [09](iteration-6.5/09-deterministic-test-accounts.md) (the Playwright suite
 relies on the realm being wiped every start, and CI's fresh stack hides the
 breakage from everyone but the developer).

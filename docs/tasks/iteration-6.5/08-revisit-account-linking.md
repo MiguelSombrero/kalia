@@ -17,34 +17,52 @@ dev stack reimporting its realm on every start and handing `testuser` a new
 case the ADR also names — a Keycloak user deleted and recreated with the same
 email — survives, but it is rarer than the one that drove the decision.
 
-**Its safety argument gets a caveat.** The ADR is explicit that the flag is safe
-"specifically because Keycloak is the *only* provider this app registers", and
-sets a revisit trigger: "a second sign-in provider is added".
-[Task 07](07-google-as-a-sign-up-route.md) adds one — but brokered *inside*
-Keycloak, so Auth.js still sees a single provider and **the trigger never
-fires**. The risk the flag's name warns about nonetheless reappears one layer
-down, in Keycloak's own first-broker-login flow, where a Google account
-presenting an email that already belongs to a password account is exactly the
-collision the flag is dangerous about.
+**Its safety argument is already inaccurate as written.** The ADR is explicit
+that the flag is safe "specifically because Keycloak is the *only* provider
+this app registers", and sets a revisit trigger: "a second sign-in provider is
+added". [Task 05](05-self-registration-with-email-verification.md) added one —
+`keycloak-register` in `frontend/auth.ts`, a second Auth.js provider entry
+against the same realm and the same `kalia-frontend` client
+([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)) — and **the
+trigger did not fire**, because a second entry for one identity source does not
+read as "a second sign-in provider". The trust boundary genuinely did not move.
+The ADR's sentence, and the comment repeating it above `keycloakOptions`, are
+wrong all the same.
 
-A revisit trigger that cannot fire is worse than none, because it reads as
-coverage. That is the drift this task exists to close, and it has to be closed
-in the same iteration that creates it.
+**And the flag has stopped being a recovery net.**
+`frontend/lib/auth/valkeyAdapter.ts` keys the account index by provider id
+(`auth:account-index:<provider>:<sub>`), so the session a registration
+establishes through `keycloak-register` and that account's next sign-in through
+`keycloak` do not share an entry: the sign-in misses `getUserByAccount`, falls
+back to `getUserByEmail`, and reaches the right user *only* because
+`allowDangerousEmailAccountLinking` is set. That is the ordinary second visit
+of every account registered since task 05, not an edge case.
+`frontend/e2e/sign-up.spec.ts`'s "register, verify, sign in, sign out, and sign
+in again" would fail if the flag were removed — but it names none of this, so
+what stands between a plausible cleanup and a sign-in outage is a test that
+looks like it is about something else.
+
+A revisit trigger that lapses without firing is worse than none, because it
+reads as coverage. That is the drift this task exists to close, and it has to
+be closed in the same iteration that creates it.
 
 ## Scope
 
 Two decisions, recorded where [ADR-0020](../../adr/0020-documentation-roles.md)
-says they belong: whether Auth.js keeps `allowDangerousEmailAccountLinking`
-now that its main justification is gone, and what Keycloak's first-broker-login
-flow does when a brokered account claims an email that already exists.
+says they belong: whether Auth.js keeps `allowDangerousEmailAccountLinking` now
+that its original justification is gone and a different one has taken its
+place, and how ADR-0033 has to be worded for a future second provider — a
+brokered one, or another entry against Keycloak itself — to actually trip its
+revisit trigger.
 
-Whatever ADR-0033 says afterwards has to be true, including its revisit
-trigger.
+Whatever ADR-0033 says afterwards has to be true, including that trigger.
 
 ## Non-goals
 
-- Adding Google — [task 07](07-google-as-a-sign-up-route.md). This decides how
-  it behaves at the edge, not whether it exists.
+- Adding a second identity provider.
+  [Task 07](07-google-as-a-sign-up-route.md) (Google, brokered by Keycloak)
+  was dropped on 2026-09-08; if one is ever added, what this task decides is
+  what it inherits.
 - A Kalia-side UI for linking or unlinking accounts.
 - Changing how the backend identifies a user.
   [ADR-0028](../../adr/0028-resource-server-and-current-user.md)'s `sub` key is
@@ -60,12 +78,13 @@ trigger.
   `docs/architecture.md` §9 and [docs/adr/README.md](../../adr/README.md) must
   agree with whatever changes.
 - **This fails silently in the dangerous direction.** Account linking that is
-  too permissive shows no error; it hands one person's cellar to another. There
-  is no failing test to notice it after the fact, so the decision has to be
-  pinned by a test written on purpose.
+  too permissive shows no error; it hands one person's cellar to another. The
+  one suite that would notice today notices by accident (see `Why`), so the
+  decision has to be pinned by a test written on purpose.
 - Depends on [task 01](01-persist-keycloak-state.md) (stable `sub`) and
-  [task 07](07-google-as-a-sign-up-route.md) (a second provider to collide
-  with) having landed, which is why it runs last.
+  [task 05](05-self-registration-with-email-verification.md) (the second
+  provider entry, and the registration path the flag now carries) having
+  landed. Task 05 has; task 01 has not.
 
 ## Open questions
 
@@ -99,14 +118,25 @@ Resolved during refinement (2026-09-05):
    into [ADR-0019](../../adr/0019-adr-format-and-conventions.md)'s general
    rules — a single instance doesn't yet justify a standing process rule.
 
+Revised 2026-09-08, after [task 07](07-google-as-a-sign-up-route.md) was
+dropped. Questions 2 and 3 lose their subject: with no brokered provider there
+is no first-broker-login flow to configure and no Google `email_verified` claim
+to trust, so nothing is decided there and nothing is left open. Question 5's
+amendment narrows to match — it no longer carries task 07's provider-choice
+reasoning or its privacy consequence, and the corrected revisit trigger is
+about a second Auth.js provider entry for one identity source rather than about
+brokering. Questions 1, 4 and 6 stand, and question 1's answer is now
+load-bearing rather than merely kind: see `Why`.
+
 ## Acceptance criteria
 
 - [ ] ADR-0033 is amended or superseded so that every sentence in it is true of
       the system as it then stands, including its revisit trigger, and
       `node scripts/check-adrs.mjs` passes
-- [ ] A brokered sign-in whose email already belongs to an existing account
-      behaves the way question 2 decided — covered by an automated test that
-      names the decision and was confirmed to fail against the other behaviour
+- [ ] An account registered through `keycloak-register` and signing in again
+      through `keycloak` reaches the same user — covered by an automated test
+      that names the decision and was confirmed to fail with
+      `allowDangerousEmailAccountLinking` removed
 - [ ] A test pins whether `allowDangerousEmailAccountLinking` is set, so a
       later change to it is a deliberate, reviewed edit rather than a silent one
 - [ ] Two accounts with the same email cannot end up sharing one cellar,
@@ -119,5 +149,11 @@ Resolved during refinement (2026-09-05):
 Found while sketching this iteration on 2026-08-29. The finding is not that
 ADR-0033 was wrong — it was right for the system it described — but that
 [task 01](01-persist-keycloak-state.md) and
-[task 07](07-google-as-a-sign-up-route.md) between them invalidate its context
-while leaving its own revisit trigger silent.
+[task 05](05-self-registration-with-email-verification.md) between them
+invalidate its context while leaving its own revisit trigger silent.
+
+Rewritten 2026-09-08 when [task 07](07-google-as-a-sign-up-route.md) was
+dropped. The original framing hung the second premise on Google being brokered
+inside Keycloak. The second provider entry task 05 had already shipped turns
+out to be the sharper example, and unlike the Google one it is in the code
+today.

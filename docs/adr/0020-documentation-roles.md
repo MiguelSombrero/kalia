@@ -145,6 +145,34 @@ argument without licensing the rest.
 > violation fails silently and which no glob can scope — the second carve-out
 > is untouched.
 
+> **Amended 2026-09-11.** The one-home rule had a blind spot this ADR's own
+> audit did not cover: **version numbers**. The root README's tech-stack
+> section restated the version of every dependency at major.minor precision —
+> a fact whose home is the manifest that installs it (`backend/pom.xml`,
+> `frontend/package.json`, `docker-compose.yml`, a `Dockerfile`, a workflow).
+>
+> That section now keeps the inventory and the reason each dependency exists,
+> and drops the numbers. A number stays only where the number is the subject
+> of the sentence: a major version that identifies a framework generation
+> (Next.js 16, Spring Boot 4, Java 25 — these change on a deliberate
+> migration, not on a bump), an npm `overrides` entry whose removal condition
+> has to be written in prose because JSON takes no comments, and a pin taken
+> to clear a named CVE.
+>
+> The evidence is that this duplication failed in the direction the ADR
+> predicts, but not at the numbers. Checked on 2026-09-11: every major.minor
+> version in the section was still accurate, because major.minor survives the
+> patch bumps that are most dependency traffic. What had gone stale was the
+> prose around them — the section never gained `keycloak-config-cli`
+> ([ADR-0054](0054-keycloak-config-cli-realm-management.md)) two iterations
+> after it was adopted, and still said Keycloak's version was pinned in
+> `docker-compose.yml` after
+> [ADR-0056](0056-branded-bilingual-keycloak-pages.md) moved it into
+> `keycloak/Dockerfile`. The numbers were what made the section look like
+> something only a dependency bump had to visit. `CLAUDE.md`'s
+> new-dependency rule is amended to match: record the version in the manifest,
+> add the technology to the README without one.
+
 ## Evidence
 
 The audit behind Context, over `backend/README.md` (213 lines),

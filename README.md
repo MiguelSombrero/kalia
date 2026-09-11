@@ -162,70 +162,82 @@ Decision records: [docs/adr/](docs/adr/)
 
 ## Tech stack
 
-Main technologies used in this project, at major.minor precision — exact
-pins drift with every dependency bump, so check `backend/pom.xml`,
-`frontend/package.json` and `.github/workflows/ci.yml` for what's actually
-running (a few, like Lombok, are pinned only indirectly via Spring Boot's
-dependency BOM and won't show an explicit version there either). Update
-this section as the project evolves!
+What this project is built with, and why — an inventory, not a version list.
+**The version of a thing lives in the file that installs it** and nowhere
+else: `backend/pom.xml`, `frontend/package.json`, `docker-compose.yml`, the
+`Dockerfile`s and `.github/workflows/`
+([ADR-0020](docs/adr/0020-documentation-roles.md)'s one-home rule, amended
+2026-09-11). A number appears below only where the number is the point of the
+sentence — a major version that tells you which framework generation this is,
+an override and the condition for removing it, a pin taken to clear a CVE.
+Add a technology here when you add it to a manifest; don't restate what the
+manifest already says.
 
 ### Backend
 
-- Java 25, Spring Boot 4.1 with Spring Modulith 2.1 (later possibility to migrate to microservices)
+- Java 25, Spring Boot 4 with Spring Modulith (later possibility to migrate to microservices)
 - PostgreSQL 18 (data persistence), Flyway (migrations & seed data)
 - Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests;
   surefire/failsafe (Spring Boot-managed defaults; unit `*Test` /
-  integration `*IT` split), JaCoCo 0.8 (merged coverage report), ArchUnit 1.5
+  integration `*IT` split), JaCoCo (merged coverage report), ArchUnit
   (package-structure rules)
 - Lombok (boilerplate reduction, version managed by Spring Boot's dependency
   BOM — see backend/README.md conventions)
-- springdoc-openapi 3.1 (OpenAPI spec + Swagger UI)
+- springdoc-openapi (OpenAPI spec + Swagger UI)
 - spring-boot-starter-security-oauth2-resource-server (JWT validation against
   Keycloak, version managed by Spring Boot's dependency BOM — see ADR-0028)
+- `pom.xml` overrides Tomcat and the PostgreSQL driver past the versions the
+  Spring Boot BOM ships, each to clear a CVE. The override carries an XML
+  comment naming the CVE and the condition for dropping it again
 
 ### Frontend
 
-- Next.js 16.3 (App Router), React 19.2, TypeScript 5.9 (TS 7 not yet
-  supported by the Next toolchain — revisit when it is)
+- Next.js 16 (App Router), React 19, TypeScript 5 (TS 7 not yet supported by
+  the Next toolchain — revisit when it is)
 - Tailwind CSS 4 (styling)
-- @radix-ui/react-dialog 1.1.23 and @radix-ui/react-toast 1.2.15 (headless
+- @radix-ui/react-dialog and @radix-ui/react-toast (headless
   primitives behind `components/ui/dialog.tsx` and `components/ui/toast.tsx` —
   the only two UI dependencies in an otherwise hand-written primitive set,
   taken on for focus management and `aria-live` announcement rather than
   appearance; see ADR-0021's 2026-08-22 and 2026-08-23 amendments)
-- TanStack Query 5.102 (client-component data layer — see ADR-0008)
-- Zustand 5.0 (client UI state — see ADR-0009)
-- react-hook-form 7.83 + Zod 4.4 (+ @hookform/resolvers 5.9) for
-  stateful forms and validation (ADR-0010)
-- i18next 26.4 + i18next-resources-to-backend 1.2 (server-side
-  localization, English + Finnish), react-i18next 17.0 (the client-component
-  bridge, mounted in `app/providers.tsx` — see ADR-0011)
-- orval 8.24 (API client generated from the backend's OpenAPI spec,
-  committed + CI drift check — see ADR-0012)
-- Vitest 4.1 + React Testing Library 16.3 (unit/component tests),
-  Playwright 1.62 (E2E, chromium only, against the docker compose stack)
-- `package.json` `overrides` pin `postcss` ^8.5.10 and `sharp` ^0.35.0:
-  next 16.3.1 (as published) still bundles vulnerable versions of these, so
-  npm can't resolve a fix within its own dependency range — remove each
-  override once next bumps it themselves and `npm audit` stays clean without
-  the override (the same `js-yaml` override was removed once orval 8.23.0
-  bundled the fix itself)
-- eslint-plugin-jsx-a11y 6.10, jest-axe 11.0 (+ @types/jest-axe 3.5),
-  @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
-  time (iteration 2 task 7)
-- eslint-plugin-boundaries 7.2 (import boundaries between `app/`,
-  `features/`, `components/ui/` and `lib/`, checked by `npm run lint` —
-  see ADR-0012)
-- next-auth 5.0.0-beta.32 (Auth.js — OIDC Authorization Code + PKCE client
-  and session strategy, backed by a custom Valkey adapter — see ADR-0025)
-- ioredis 6.0 (Valkey client used by the Auth.js adapter)
-- Valkey 9.1 (server-side session store, Redis-API-compatible — ADR-0025)
+- TanStack Query (client-component data layer — see ADR-0008)
+- Zustand (client UI state — see ADR-0009)
+- react-hook-form + Zod (+ @hookform/resolvers) for stateful forms and
+  validation (ADR-0010)
+- i18next + i18next-resources-to-backend (server-side localization, English +
+  Finnish), react-i18next (the client-component bridge, mounted in
+  `app/providers.tsx` — see ADR-0011)
+- orval (API client generated from the backend's OpenAPI spec, committed + CI
+  drift check — see ADR-0012)
+- Vitest + React Testing Library (unit/component tests), Playwright (E2E,
+  chromium only, against the docker compose stack)
+- `package.json` `overrides` pin `postcss` and `sharp` — the one place a
+  number below is load-bearing, since JSON takes no comments: next 16.3.1 (as
+  published) bundled vulnerable versions of both and npm could not resolve a
+  fix inside next's own dependency range. next 16.3.3 declares fixed versions
+  of both itself, so the removal condition is now worth re-testing — drop each
+  override once `npm audit` stays clean without it (the same `js-yaml`
+  override was dropped once orval bundled the fix itself)
+- eslint-plugin-jsx-a11y, jest-axe (+ @types/jest-axe), @axe-core/playwright —
+  WCAG 2.1 AA enforcement at lint/unit/E2E time (iteration 2 task 7)
+- eslint-plugin-boundaries (import boundaries between `app/`, `features/`,
+  `components/ui/` and `lib/`, checked by `npm run lint` — see ADR-0012)
+- next-auth 5, still a beta line (Auth.js — OIDC Authorization Code + PKCE
+  client and session strategy, backed by a custom Valkey adapter — see
+  ADR-0025)
+- ioredis (Valkey client used by the Auth.js adapter)
+- Valkey (server-side session store, Redis-API-compatible — ADR-0025)
 
 ### Local infrastructure
 
-- Keycloak 26.7 (identity provider — OIDC for the frontend, JWT issuer for
-  the backend; pinned in `docker-compose.yml`)
-- Mailpit 1.27 (`axllent/mailpit`, pinned in `docker-compose.yml`) — catches
+- Keycloak 26 (identity provider — OIDC for the frontend, JWT issuer for the
+  backend; built from `keycloak/Dockerfile`, which is also where the Kalia
+  login theme is baked in — [ADR-0056](docs/adr/0056-branded-bilingual-keycloak-pages.md))
+- keycloak-config-cli (`quay.io/adorsys/keycloak-config-cli`, the
+  `keycloak-config` service) — reconciles `keycloak/realm-export.json` into
+  the running realm on every startup, and `make verify` fails if the realm has
+  drifted from it ([ADR-0054](docs/adr/0054-keycloak-config-cli-realm-management.md))
+- Mailpit (`axllent/mailpit`) — catches
   every email Keycloak sends in local dev and test; no auth, no real
   delivery. A deployment instead points the realm's SMTP config
   (`docker-compose.yml`'s `KEYCLOAK_SMTP_*`) at **Gmail SMTP**
@@ -247,8 +259,9 @@ this section as the project evolves!
 
 ### CI
 
-- GitHub Actions (build + test both apps on every push), SHA-pinned:
-  actions/checkout v7.0, actions/setup-java v6.0, actions/setup-node v7.0
+- GitHub Actions (build + test both apps on every push). Every action is
+  SHA-pinned with its tag in a trailing comment — `.github/workflows/` is the
+  list
 
 ## Repository layout (planned)
 
