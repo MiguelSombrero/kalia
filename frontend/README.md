@@ -220,9 +220,9 @@ Why the rationale lives there and not here:
   (`--color-primary`), never raw primitives (`--mint-600`). Shared primitives
   live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
-  `dialog.tsx` wraps `@radix-ui/react-dialog` 1.1.23** for the focus trap,
+  `dialog.tsx` wraps `@radix-ui/react-dialog`** for the focus trap,
   focus restore, `Escape` handling and `aria-modal` inerting a modal needs,
-  **and `toast.tsx` wraps `@radix-ui/react-toast` 1.2.15** for the removal
+  **and `toast.tsx` wraps `@radix-ui/react-toast`** for the removal
   outcome toast's `aria-live` announcement and auto-dismiss timing —
   behaviour, not styling, and each part of it fails silently
   ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)'s 2026-08-22,

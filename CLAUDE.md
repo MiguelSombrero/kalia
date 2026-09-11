@@ -215,10 +215,14 @@ The gates themselves:
 - **New dependencies: ask, don't research.** When a task introduces one
   (library, starter, plugin, Docker image, GitHub Action), list them and ask
   which versions to use — batched in one question per task — rather than
-  hunting registries. Exceptions: versions already pinned in the READMEs or
-  here, and versions confirmed from authoritative output (build errors,
-  repository metadata, generator output); propose those for confirmation.
-  Record the chosen version in the README tech stack section.
+  hunting registries. Exceptions: versions already pinned in a manifest
+  (`backend/pom.xml`, `frontend/package.json`, `docker-compose.yml`, a
+  `Dockerfile`, a workflow) or here, and versions confirmed from authoritative
+  output (build errors, repository metadata, generator output); propose those
+  for confirmation. **The version is recorded in that manifest and nowhere
+  else** — add the technology to the README tech stack inventory without its
+  number ([ADR-0020](docs/adr/0020-documentation-roles.md), amended
+  2026-09-11).
 - **A CI vulnerability-scan failure unrelated to your diff is still your
   problem, and it gets fixed in place** — as its own commit on the branch that
   is open, never a second PR to unblock the first
