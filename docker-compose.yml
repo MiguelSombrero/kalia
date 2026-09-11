@@ -1,4 +1,11 @@
-name: kalia
+# No top-level `name:` here, deliberately. Compose falls back to the
+# basename of the directory holding this file as the project name — every
+# git worktree lives in its own uniquely named directory (main checkout:
+# "kalia"), so leaving this unset gives each worktree's stack its own
+# containers/network/volume automatically, instead of every worktree
+# colliding on one shared "kalia" project (a `COMPOSE_PROJECT_NAME` in each
+# worktree's own `.env` would work too, but only if every worktree remembers
+# to set it). Do not reintroduce a fixed `name:`.
 
 services:
   backend:
