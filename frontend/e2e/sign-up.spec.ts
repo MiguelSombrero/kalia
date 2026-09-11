@@ -2,8 +2,10 @@
 // into Keycloak's registration flow, an unverified account is blocked from
 // completing sign-in, registering an already-used email says so, and the
 // verification link is read back out of Mailpit the same way
-// keycloak-email.spec.ts does.
+// keycloak-email.spec.ts does. The first test also pins ADR-0033's
+// account-linking decision — see its comments below.
 import type { Page } from "@playwright/test";
+import Redis from "ioredis";
 import {
   createUnverifiedKeycloakUser,
   deleteKeycloakUser,
@@ -16,6 +18,28 @@ import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
 
 const FRONTEND_ORIGIN = "http://localhost:3000";
 const KEYCLOAK_ORIGIN = "http://localhost:8081";
+
+// Unprefixed on http, `__Secure-` prefixed on https (lib/auth/sessionCookie.ts
+// carries the same list for server-side reads) — this suite always runs
+// against FRONTEND_ORIGIN's http, but checking both keeps that assumption
+// from failing silently if that ever changes.
+const SESSION_COOKIE_NAMES = ["authjs.session-token", "__Secure-authjs.session-token"];
+
+// Reads the Auth.js adapter's own user id for the browser's current session
+// straight out of Valkey (lib/auth/valkeyAdapter.ts's `auth:session:<token>`
+// record) — the identity Auth.js's account-linking resolves a sign-in to,
+// and the most direct way to prove two sign-ins reached the same one. Takes
+// an already-open client so a test calling this more than once shares one
+// connection instead of opening a fresh one per call.
+const kaliaUserId = async (page: Page, valkey: Redis): Promise<string> => {
+  const cookies = await page.context().cookies();
+  const sessionToken = cookies.find((cookie) => SESSION_COOKIE_NAMES.includes(cookie.name))?.value;
+  expect(sessionToken, "the page carries no Auth.js session cookie").toBeTruthy();
+
+  const raw = await valkey.get(`auth:session:${sessionToken}`);
+  expect(raw, "no Auth.js session record found in Valkey for this cookie").toBeTruthy();
+  return (JSON.parse(raw!) as { userId: string }).userId;
+};
 
 // Fills the registration form's profile fields: the keycloak.v2 theme's
 // register.ftl asks for username/email/firstName/lastName but collects the
@@ -98,6 +122,11 @@ test.describe("self-registration", () => {
     await expect(page).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}/en`));
     await expect(page.getByRole("link", { name: /^Profile: /i })).toBeVisible();
 
+    const valkey = new Redis("redis://localhost:6379");
+    // This sign-in went through "keycloak-register" (ADR-0055); the account
+    // index it wrote is filed under that provider id.
+    const registeredUserId = await kaliaUserId(page, valkey);
+
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
@@ -107,6 +136,15 @@ test.describe("self-registration", () => {
     await page.locator("#password").fill(password);
     await page.getByRole("button", { name: "Sign In" }).click();
     await expect(page.getByRole("link", { name: /^Profile: /i })).toBeVisible();
+
+    // Pins ADR-0033: this second sign-in goes through the plain "keycloak"
+    // provider, which misses the account index "keycloak-register" wrote and
+    // falls back to `getUserByEmail` — reaching the same Kalia user only
+    // because `allowDangerousEmailAccountLinking` is set. Confirmed to throw
+    // `OAuthAccountNotLinked` here instead, with the flag unset.
+    const secondUserId = await kaliaUserId(page, valkey);
+    await valkey.quit();
+    expect(secondUserId).toBe(registeredUserId);
 
     const adminToken = await keycloakAdminToken(request);
     const created = await findKeycloakUser(request, adminToken, username);
@@ -163,5 +201,34 @@ test.describe("self-registration", () => {
     // Still on the registration form, not signed in — this never reaches
     // Kalia at all.
     await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
+  });
+
+  test("Keycloak itself refuses a second live account with an existing email, bypassing Kalia's own sign-up form entirely", async ({
+    request,
+    account,
+  }) => {
+    const adminToken = await keycloakAdminToken(request);
+    const existing = await findKeycloakUser(request, adminToken, account.username);
+    expect(existing, `fixture account ${account.username} should already exist`).toBeTruthy();
+
+    // Straight against Keycloak's admin API, not Kalia's registration form:
+    // realm-export.json's duplicateEmailsAllowed: false is what ADR-0033's
+    // account-linking flag actually depends on for safety — it never sees
+    // two live Keycloak users sharing an email to merge in the first place,
+    // so it can recover one person's own account but never hand two
+    // different people's cellars to each other.
+    const response = await request.post(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      data: {
+        username: `admin-duplicate-${Date.now()}`,
+        email: `${account.username}@example.com`,
+        enabled: true,
+        emailVerified: true,
+        firstName: "Admin",
+        lastName: "Duplicate",
+      },
+    });
+
+    expect(response.status(), "Keycloak allowed a second live account with an existing email").toBe(409);
   });
 });

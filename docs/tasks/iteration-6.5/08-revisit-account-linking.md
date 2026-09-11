@@ -1,6 +1,6 @@
 # Task 08: Revisit account linking now that both of ADR-0033's premises have moved
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-4
 
@@ -130,18 +130,18 @@ load-bearing rather than merely kind: see `Why`.
 
 ## Acceptance criteria
 
-- [ ] ADR-0033 is amended or superseded so that every sentence in it is true of
+- [x] ADR-0033 is amended or superseded so that every sentence in it is true of
       the system as it then stands, including its revisit trigger, and
       `node scripts/check-adrs.mjs` passes
-- [ ] An account registered through `keycloak-register` and signing in again
+- [x] An account registered through `keycloak-register` and signing in again
       through `keycloak` reaches the same user — covered by an automated test
       that names the decision and was confirmed to fail with
       `allowDangerousEmailAccountLinking` removed
-- [ ] A test pins whether `allowDangerousEmailAccountLinking` is set, so a
+- [x] A test pins whether `allowDangerousEmailAccountLinking` is set, so a
       later change to it is a deliberate, reviewed edit rather than a silent one
-- [ ] Two accounts with the same email cannot end up sharing one cellar,
+- [x] Two accounts with the same email cannot end up sharing one cellar,
       demonstrated end to end against the running stack rather than argued
-- [ ] `docs/architecture.md` §6's account-linking paragraph matches the
+- [x] `docs/architecture.md` §6's account-linking paragraph matches the
       outcome
 
 ## Notes

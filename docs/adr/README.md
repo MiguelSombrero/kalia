@@ -145,8 +145,10 @@ in one place, read
   ended too: an unauthenticated endpoint validates the Logout Token's
   signature and ends the local session matching its `sid`.
 - [ADR-0033](0033-keycloak-account-relinking.md) — a stale account index
-  (Keycloak's `sub` changed, e.g. on a dev realm reimport) re-links by email
-  instead of locking the user out, since Keycloak is the only provider.
+  (Keycloak's `sub` changed, e.g. an admin recreating a user) or a sign-in
+  through a different Auth.js provider entry for the same Keycloak account
+  re-links by email instead of locking the user out, since every entry
+  shares one identity source.
 - [ADR-0043](0043-createuser-race-safety.md) — `createUser` claims the email
   index with `SET NX`; a losing concurrent first sign-in waits on the winner's
   record instead of orphaning its own.
