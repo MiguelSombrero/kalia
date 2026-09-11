@@ -3,7 +3,7 @@
 // in the locale the visitor was reading and meet the app's WCAG 2.1 AA bar.
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { deleteKeycloakUser, expect, findKeycloakUser, keycloakAdminToken, test } from "./support/keycloakAccount";
+import { expect, test } from "./support/keycloakAccount";
 import { waitForMessageTo } from "./support/mailpit";
 
 const FRONTEND_ORIGIN = "http://localhost:3000";
@@ -116,9 +116,5 @@ test.describe("the verification email follows the same language", () => {
     // verification wording, never the English "verify your email address".
     expect(body).toContain("sähköpost");
     expect(body).not.toContain("verify your email");
-
-    const adminToken = await keycloakAdminToken(request);
-    const created = await findKeycloakUser(request, adminToken, username);
-    if (created) await deleteKeycloakUser(request, adminToken, created.id);
   });
 });

@@ -35,7 +35,7 @@ Goal: someone other than the author can create a Kalia account.
 | [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | done |
 | [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | dropped |
 | [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | done |
-| [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | refined |
+| [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | done |
 | [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | done |
 | [11](iteration-6.5/11-concurrent-add-bottle-race.md) | Fix the concurrent add-bottle 500 and lost write | refined |
 | [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | refined |
