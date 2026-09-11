@@ -31,7 +31,23 @@ describe("startSignUp", () => {
 
     await startSignUp(formData({ locale: "en", agree: "on" }));
 
-    expect(signIn).toHaveBeenCalledWith("keycloak-register");
+    expect(signIn).toHaveBeenCalledWith(
+      "keycloak-register",
+      { redirectTo: "/en" },
+      { ui_locales: "en" },
+    );
+  });
+
+  it("tells Keycloak to render registration in the page's own language", async () => {
+    const { startSignUp } = await import("./actions");
+
+    await startSignUp(formData({ locale: "fi", agree: "on" }));
+
+    expect(signIn).toHaveBeenCalledWith(
+      "keycloak-register",
+      { redirectTo: "/fi" },
+      { ui_locales: "fi" },
+    );
   });
 
   it("refuses without the acknowledgement checkbox, without ever checking the rate limit", async () => {
@@ -60,5 +76,25 @@ describe("startSignUp", () => {
     await expect(startSignUp(formData({ agree: "" }))).rejects.toThrow(
       "REDIRECT:/en/sign-up?error=agree-required",
     );
+  });
+});
+
+describe("startSignIn", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("tells Keycloak to render the login page in the language the visitor was reading", async () => {
+    const { startSignIn } = await import("./actions");
+
+    await startSignIn(formData({ locale: "fi" }));
+
+    expect(signIn).toHaveBeenCalledWith("keycloak", { redirectTo: "/fi" }, { ui_locales: "fi" });
+  });
+
+  it("falls back to the default locale when the form carries none", async () => {
+    const { startSignIn } = await import("./actions");
+
+    await startSignIn();
+
+    expect(signIn).toHaveBeenCalledWith("keycloak", { redirectTo: "/en" }, { ui_locales: "en" });
   });
 });

@@ -153,6 +153,10 @@ in one place, read
 - [ADR-0055](0055-self-registration-via-keycloak.md) — a visitor registers
   entirely inside Keycloak's own flow, reached through a second Auth.js
   provider pointed at its registration endpoint; no admin credential in the BFF.
+- [ADR-0056](0056-branded-bilingual-keycloak-pages.md) — Keycloak's pages get a
+  minimal `keycloak.v2` theme and the realm's own `en`/`fi` internationalisation;
+  the sign-in actions pass `ui_locales`, and Kalia writes no auth-page
+  translations of its own.
 
 ## Configuration, security and operations
 

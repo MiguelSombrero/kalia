@@ -11,6 +11,7 @@ export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
     <EmptyState title={t("profile.signIn.title")}>
       <p>{t("profile.signIn.hint")}</p>
       <form action={startProfileSignIn} className="mt-4">
+        <input type="hidden" name="locale" value={locale} />
         <Button type="submit" variant="primary">
           {t("profile.signIn.action")}
         </Button>

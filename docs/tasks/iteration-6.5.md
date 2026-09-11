@@ -31,7 +31,7 @@ Goal: someone other than the author can create a Kalia account.
 | [03](iteration-6.5/03-prevent-realm-configuration-drift.md) | Keep realm configuration from drifting once the import stops running | done |
 | [04](iteration-6.5/04-send-email-from-kalia.md) | Give Kalia a way to send email | done |
 | [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | done |
-| [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | refined |
+| [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | done |
 | [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | refined |
 | [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | refined |
 | [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | refined |

@@ -15,6 +15,7 @@ export const AuthStatus = async ({ locale }: Props) => {
     return (
       <div className="flex items-center gap-2">
         <form action={startSignIn}>
+          <input type="hidden" name="locale" value={locale} />
           <button type="submit" className="text-muted-foreground hover:underline">
             {t("auth.signIn")}
           </button>

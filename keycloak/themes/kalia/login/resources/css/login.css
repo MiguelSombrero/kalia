@@ -1,0 +1,50 @@
+/* Kalia login theme override — layered after keycloak.v2's own styles.css
+ * (theme.properties). Scope is deliberately tiny (ADR-0056): the brand
+ * colour, the cream ground, and the Kalia wordmark in the header. Everything
+ * else is stock keycloak.v2, including every form control and the WCAG-checked
+ * PatternFly focus behaviour. */
+
+:root {
+  /* mint-600 / cream-50 / charcoal-900 — the semantic values from
+     frontend/app/globals.css. Driving PatternFly's own global primary token
+     re-colours the primary button, links and focus ring in one place. */
+  --pf-v5-global--primary-color--100: #2f6f5e;
+  --pf-v5-global--primary-color--200: #24564a;
+  --pf-v5-global--link--Color: #2f6f5e;
+  --pf-v5-global--link--Color--hover: #24564a;
+
+  /* keycloak.v2's own hooks: the card's top accent bar and the page
+     background image (dropped for a flat cream ground). */
+  --keycloak-card-top-color: #2f6f5e;
+  --keycloak-bg-logo-url: none;
+}
+
+.login-pf body,
+body#keycloak-bg {
+  background: #faf3e9;
+}
+
+/* keycloak.v2 leaves form controls with the browser's default focus outline;
+   match frontend/app/globals.css's own :focus-visible rule instead. */
+:focus-visible {
+  outline: 2px solid #2f6f5e;
+  outline-offset: 2px;
+}
+
+/* The header wrapper renders realm.displayNameHtml (empty here); repurpose it
+   as the Kalia wordmark. A decorative CSS background needs no alt text, and
+   the page's own <title> and <h1> carry the accessible name. */
+#kc-header-wrapper {
+  width: 220px;
+  height: 60px;
+  margin: 0 auto;
+  padding: 0;
+  font-size: 0;
+  background: url("../img/kalia-logo.svg") center / contain no-repeat;
+}
+
+/* White-on-cream is invisible; keep any real text charcoal. */
+#kc-header-wrapper,
+.pf-v5-c-login__main-header h1 {
+  color: #2b2725 !important;
+}

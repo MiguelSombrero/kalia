@@ -213,6 +213,9 @@ Why the rationale lives there and not here:
 
 - **Localization is i18next**, every route under `app/[locale]/…`; strings in
   `i18n/locales/{en,fi}/common.json` ([ADR-0011](../docs/adr/0011-i18next-localization.md)).
+  The Keycloak auth pages are the exception — Keycloak translates those, not
+  i18next; the sign-in actions pass `ui_locales`
+  ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)).
 - **Design tokens are two-layer**: components reference the semantic layer
   (`--color-primary`), never raw primitives (`--mint-600`). Shared primitives
   live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).
