@@ -60,26 +60,34 @@ public class Bottle {
 	}
 
 	static Bottle create(Entry entry, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, LocalDate today) {
 		Assert.notNull(entry, "entry must not be null");
 		Assert.notNull(containerType, "containerType must not be null");
-		requireValidDates(brewedDate, bestBeforeDate);
+		Assert.notNull(today, "today must not be null");
+		requireValidDates(brewedDate, bestBeforeDate, today);
 		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate);
 		entry.registerBottle(bottle);
 		return bottle;
 	}
 
 	void update(ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, LocalDate today) {
 		Assert.notNull(containerType, "containerType must not be null");
-		requireValidDates(brewedDate, bestBeforeDate);
+		Assert.notNull(today, "today must not be null");
+		requireValidDates(brewedDate, bestBeforeDate, today);
 		this.containerType = containerType;
 		this.brewedDate = brewedDate;
 		this.bestBeforeDate = bestBeforeDate;
 	}
 
-	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
-		if (brewedDate != null && brewedDate.isAfter(LocalDate.now())) {
+	// today is the caller's own local calendar day (CellarController resolves
+	// it, falling back to the server's LocalDate.now() when absent) rather
+	// than this method's own clock read: judging a UTC-computed "today"
+	// against a local date picker rejects a bottle brewed today for a caller
+	// east of UTC in the first hours of their day.
+	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate,
+			LocalDate today) {
+		if (brewedDate != null && brewedDate.isAfter(today)) {
 			throw new InvalidBottleException("brewedDate must not be in the future");
 		}
 		if (brewedDate != null && bestBeforeDate != null && !bestBeforeDate.isAfter(brewedDate)) {

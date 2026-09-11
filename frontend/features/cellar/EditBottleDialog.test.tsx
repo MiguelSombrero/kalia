@@ -14,6 +14,7 @@ vi.mock("./actions", () => ({
   listCellarBottlesAction: vi.fn(),
 }));
 
+import { todayIso } from "./bottleDateRules";
 import { EditBottleDialog } from "./EditBottleDialog";
 import type { Bottle } from "./types";
 
@@ -118,6 +119,7 @@ describe("EditBottleDialog", () => {
         containerType: "CAN",
         brewedDate: "2024-06-01",
         bestBeforeDate: "2027-06-01",
+        today: todayIso(),
       }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());

@@ -12,6 +12,7 @@ const { addBottlesAction } = vi.hoisted(() => ({ addBottlesAction: vi.fn() }));
 vi.mock("./actions", () => ({ addBottlesAction, listCellarBottlesAction: vi.fn() }));
 
 import { AddBottleDialog } from "./AddBottleDialog";
+import { todayIso } from "./bottleDateRules";
 
 const created = [
   {
@@ -90,6 +91,7 @@ describe("AddBottleDialog", () => {
         quantity: 1,
         brewedDate: undefined,
         bestBeforeDate: undefined,
+        today: todayIso(),
       }),
     );
   });

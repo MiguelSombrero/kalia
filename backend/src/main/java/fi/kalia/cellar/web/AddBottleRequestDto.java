@@ -20,7 +20,9 @@ public record AddBottleRequestDto(
 		@Schema(description = "Null when not recorded") @Nullable LocalDate brewedDate,
 		@Schema(description = "Null when not recorded") @Nullable LocalDate bestBeforeDate,
 		@Schema(description = "How many identical bottles to add (1-" + MAX_QUANTITY
-				+ "); absent means one") @Nullable @Min(MIN_QUANTITY) @Max(MAX_QUANTITY) Integer quantity) {
+				+ "); absent means one") @Nullable @Min(MIN_QUANTITY) @Max(MAX_QUANTITY) Integer quantity,
+		@Schema(description = "The caller's local calendar date, judged against brewedDate instead of the "
+				+ "server's own clock; absent falls back to the server's UTC date") @Nullable LocalDate today) {
 
 	private static final int MIN_QUANTITY = 1;
 

@@ -15,4 +15,6 @@ export interface UpdateBottleRequestDto {
   brewedDate?: string;
   /** Null when not recorded */
   bestBeforeDate?: string;
+  /** The caller's local calendar date, judged against brewedDate instead of the server's own clock; absent falls back to the server's UTC date */
+  today?: string;
 }

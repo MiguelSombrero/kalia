@@ -23,4 +23,6 @@ export interface AddBottleRequestDto {
      * @maximum 24
      */
   quantity?: number;
+  /** The caller's local calendar date, judged against brewedDate instead of the server's own clock; absent falls back to the server's UTC date */
+  today?: string;
 }

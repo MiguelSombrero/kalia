@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { containerTypes } from "./addBottleSchema";
+import { todayIso } from "./bottleDateRules";
 import { type EditBottleFormValues, editBottleSchema } from "./editBottleSchema";
 import { useUpdateBottle } from "./hooks/useBottles";
 import type { Bottle } from "./types";
@@ -65,6 +66,7 @@ export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerNam
           containerType: values.containerType,
           brewedDate: values.brewedDate || undefined,
           bestBeforeDate: values.bestBeforeDate || undefined,
+          today: todayIso(),
         },
       },
       { onSuccess: () => onOpenChange(false) },
@@ -123,6 +125,7 @@ export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerNam
             <input
               id={`${ids}-brewedDate`}
               type="date"
+              max={todayIso()}
               className={fieldClasses}
               aria-invalid={Boolean(errors.brewedDate)}
               aria-describedby={describedBy("brewedDate")}

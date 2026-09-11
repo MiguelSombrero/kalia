@@ -281,6 +281,47 @@ class CellarApiIT {
 				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 
+	// Dates far in the past relative to the real server clock, so the outcome
+	// can only come from honouring the supplied today, not the server's own —
+	// unlike a far-future date such as 2999-01-01, which would be rejected
+	// under either clock and so would prove nothing about which one won.
+	@Test
+	void addingABottleWithATodayFieldAcceptsABrewedDateEqualToIt() {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("beerId", beerId.toString());
+		request.put("containerType", "BOTTLE");
+		request.put("brewedDate", "2020-01-01");
+		request.put("today", "2020-01-01");
+
+		String body = client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", USER_A)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.exchange()
+				.expectStatus().isCreated()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+
+		assertThat((String) JsonPath.read(body, "$[0].brewedDate")).isEqualTo("2020-01-01");
+	}
+
+	@Test
+	void addingABottleWithATodayFieldRejectsABrewedDateOneDayPastIt() {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("beerId", beerId.toString());
+		request.put("containerType", "BOTTLE");
+		request.put("brewedDate", "2020-01-02");
+		request.put("today", "2020-01-01");
+
+		client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", USER_A)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
 	@Test
 	void addingWithAQuantityCreatesThatManyIndependentBottlesAndReturnsThemAll() {
 		Map<String, Object> request = new LinkedHashMap<>();

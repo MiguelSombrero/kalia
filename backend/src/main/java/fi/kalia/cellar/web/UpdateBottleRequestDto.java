@@ -13,5 +13,7 @@ import org.jspecify.annotations.Nullable;
 public record UpdateBottleRequestDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull ContainerType containerType,
 		@Schema(description = "Null when not recorded") @Nullable LocalDate brewedDate,
-		@Schema(description = "Null when not recorded") @Nullable LocalDate bestBeforeDate) {
+		@Schema(description = "Null when not recorded") @Nullable LocalDate bestBeforeDate,
+		@Schema(description = "The caller's local calendar date, judged against brewedDate instead of the "
+				+ "server's own clock; absent falls back to the server's UTC date") @Nullable LocalDate today) {
 }

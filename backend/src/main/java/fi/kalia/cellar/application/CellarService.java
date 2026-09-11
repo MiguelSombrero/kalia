@@ -40,16 +40,16 @@ public class CellarService {
 	}
 
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
-			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate, LocalDate today) {
 		Entry entry = entryFor(userId, beerId);
-		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
+		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate, today);
 		return entries.save(entry).lastBottles(quantity);
 	}
 
 	public Bottle updateBottle(UUID userId, UUID bottleId, ContainerType containerType,
-			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate, LocalDate today) {
 		Entry entry = ownerOf(userId, bottleId);
-		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate);
+		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate, today);
 		entries.save(entry);
 		return updated;
 	}
