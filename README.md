@@ -205,11 +205,12 @@ this section as the project evolves!
 - Vitest 4.1 + React Testing Library 16.3 (unit/component tests),
   Playwright 1.62 (E2E, chromium only, against the docker compose stack)
 - `package.json` `overrides` pin `postcss` ^8.5.10 and `sharp` ^0.35.0:
-  next 16.3.1 (as published) still bundles vulnerable versions of these, so
-  npm can't resolve a fix within its own dependency range — remove each
-  override once next bumps it themselves and `npm audit` stays clean without
-  the override (the same `js-yaml` override was removed once orval 8.23.0
-  bundled the fix itself)
+  next 16.3.1 (as published) still bundled vulnerable versions of these, so
+  npm couldn't resolve a fix within its own dependency range. next 16.3.3
+  declares `postcss` 8.5.23 and `sharp` ^0.35.3 itself, so the removal
+  condition is now worth re-testing — remove each override once next bumps it
+  themselves and `npm audit` stays clean without the override (the same
+  `js-yaml` override was removed once orval 8.23.0 bundled the fix itself)
 - eslint-plugin-jsx-a11y 6.10, jest-axe 11.0 (+ @types/jest-axe 3.5),
   @axe-core/playwright 4.12 — WCAG 2.1 AA enforcement at lint/unit/E2E
   time (iteration 2 task 7)
