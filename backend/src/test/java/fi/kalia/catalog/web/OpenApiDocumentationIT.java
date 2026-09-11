@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestcontainersConfiguration;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -53,11 +54,19 @@ class OpenApiDocumentationIT {
 		// springdoc does not infer "required" from Java non-nullability alone:
 		// every field defaulted to optional until requiredMode was set
 		// explicitly. description is @Nullable and must stay out of this list.
-		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "price", "brewery");
+		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "brewery");
 
 		List<String> detailsRequired =
 				JsonPath.read(body, "$.components.schemas.BeerDetailsDto.required");
 		assertThat(detailsRequired).doesNotContain("description");
+
+		Map<String, Object> summaryProperties =
+				JsonPath.read(body, "$.components.schemas.BeerSummaryDto.properties");
+		Map<String, Object> detailsProperties =
+				JsonPath.read(body, "$.components.schemas.BeerDetailsDto.properties");
+		assertThat(summaryProperties).doesNotContainKey("price");
+		assertThat(detailsProperties).doesNotContainKey("price");
+		assertThat(body).doesNotContain("MoneyDto");
 	}
 
 	@Test

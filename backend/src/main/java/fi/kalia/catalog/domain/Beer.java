@@ -1,6 +1,5 @@
 package fi.kalia.catalog.domain;
 
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -39,31 +38,26 @@ public class Beer {
 
 	private @Nullable String description;
 
-	@Embedded
-	private Money price;
-
 	private Instant createdAt;
 
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
-			@Nullable String description, Money price) {
+			@Nullable String description) {
 		this.brewery = brewery;
 		this.name = name;
 		this.style = style;
 		this.abv = abv;
 		this.description = description;
-		this.price = price;
 		this.createdAt = Instant.now();
 	}
 
 	public static Beer create(Brewery brewery, String name, String style,
-			BigDecimal abv, @Nullable String description, Money price) {
+			BigDecimal abv, @Nullable String description) {
 		Assert.notNull(brewery, "brewery must not be null");
 		Assert.hasText(name, "name must not be blank");
 		Assert.hasText(style, "style must not be blank");
 		Assert.notNull(abv, "abv must not be null");
 		Assert.isTrue(abv.signum() >= 0, "abv must not be negative");
-		Assert.notNull(price, "price must not be null");
-		return new Beer(brewery, name, style, abv, description, price);
+		return new Beer(brewery, name, style, abv, description);
 	}
 
 }

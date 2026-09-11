@@ -1,6 +1,6 @@
 # Task 10: Remove the beer price property
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -100,22 +100,22 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] `catalog.beer` has no price/currency column and the seed data sets none;
+- [x] `catalog.beer` has no price/currency column and the seed data sets none;
       a fresh `docker compose up` (no `-v`) starts and the catalog loads
-- [ ] `Money`, `MoneyDto` and every `price` field are gone from the backend;
+- [x] `Money`, `MoneyDto` and every `price` field are gone from the backend;
       `mvn verify` passes, including the OpenAPI documentation IT with no
       price in the schema
-- [ ] The regenerated frontend client contains no `price` / `MoneyDto`, the
+- [x] The regenerated frontend client contains no `price` / `MoneyDto`, the
       `api-drift` check is green, and no beer view renders a price — verified
       in a browser on the beer list and a beer details page
-- [ ] `formatPrice` and its en/fi strings are removed, and
+- [x] `formatPrice` and its en/fi strings are removed, and
       [ADR-0011](../../adr/0011-i18next-localization.md) no longer points at a
       helper that does not exist
-- [ ] An automated test asserting a beer carries no price is added to the
+- [x] An automated test asserting a beer carries no price is added to the
       catalog suite (`mvn test` / `npm test`), and every existing test that
       built a `Money` or asserted on a price is updated; the suite was
       confirmed to fail against the pre-removal code
-- [ ] `docs/architecture.md` §1 and §3, `README.md`, `docs/glossary.md` and
+- [x] `docs/architecture.md` §1 and §3, `README.md`, `docs/glossary.md` and
       any price-mentioning ADR are updated — no doc still lists price as a
       searchable attribute or a beer property (quality backlog MUST-7);
       `make verify` is green

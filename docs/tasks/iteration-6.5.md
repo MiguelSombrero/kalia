@@ -34,14 +34,15 @@ Goal: someone other than the author can create a Kalia account.
 | [05](iteration-6.5/05-self-registration-with-email-verification.md) | Self-registration with email verification | done |
 | [06](iteration-6.5/06-kalia-branded-bilingual-auth-pages.md) | Kalia-branded, bilingual Keycloak pages | done |
 | [07](iteration-6.5/07-google-as-a-sign-up-route.md) | Google as a second sign-up route | dropped |
-| [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | refined |
+| [08](iteration-6.5/08-revisit-account-linking.md) | Revisit account linking now that both of ADR-0033's premises have moved | done |
 | [09](iteration-6.5/09-deterministic-test-accounts.md) | Keep the test suites deterministic against a Keycloak that no longer resets | done |
-| [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | refined |
+| [10](iteration-6.5/10-remove-beer-price.md) | Remove the beer price property | done |
 | [11](iteration-6.5/11-concurrent-add-bottle-race.md) | Fix the concurrent add-bottle 500 and lost write | refined |
 | [12](iteration-6.5/12-bottle-future-date-uses-local-day.md) | Judge a bottle's brewed date against the user's local day | refined |
 | [13](iteration-6.5/13-align-current-user-service-convention.md) | Make the caller-identity convention match the code | done |
 | [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | done |
 | [15](iteration-6.5/15-shared-keycloak-admin-helper.md) | Extract a shared Keycloak admin-token/retry helper | needs-refinement |
+| [16](iteration-6.5/16-structurally-pin-shared-keycloak-credentials.md) | Structurally pin auth.ts's shared Keycloak credentials | refined |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under
@@ -71,7 +72,14 @@ retrofitting it means reverse-engineering a live database back into a file.
 [01](iteration-6.5/01-persist-keycloak-state.md) to have landed before there is
 anything to decide; with
 [07](iteration-6.5/07-google-as-a-sign-up-route.md) dropped, nothing else in
-this iteration gates it.
+this iteration gates it. **Done 2026-09-11:** [task 01](iteration-6.5/01-persist-keycloak-state.md)'s
+Postgres-backed Keycloak was already merged to `dev` — landed as a mechanism,
+even though that task's own AC1–AC3 stay unverified (see its Notes) — which
+was enough to decide on, since the decision
+[task 08](iteration-6.5/08-revisit-account-linking.md) records rests on the
+residual admin-recreation case in
+[ADR-0033](../adr/0033-keycloak-account-relinking.md), not on that
+verification.
 
 **[Task 07](iteration-6.5/07-google-as-a-sign-up-route.md) was dropped on
 2026-09-08**, before any of it was implemented: a second authentication

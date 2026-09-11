@@ -19,7 +19,6 @@ const beerSummary = {
   name: "Westvleteren 12",
   style: "Quadrupel",
   abv: 10.2,
-  price: { cents: 1250, currency: "EUR" },
   brewery: { id: "br1", name: "Brouwerij Westvleteren" },
 };
 
@@ -28,7 +27,6 @@ const secondBeerSummary = {
   name: "Rochefort 10",
   style: "Quadrupel",
   abv: 11.3,
-  price: { cents: 990, currency: "EUR" },
   brewery: { id: "br2", name: "Brasserie de Rochefort" },
 };
 
@@ -49,7 +47,6 @@ const makeBeerSummary = (i: number) => ({
   name: `Beer ${i}`,
   style: "Lager",
   abv: 5,
-  price: { cents: 500, currency: "EUR" },
   brewery: { id: "br", name: "Brewery" },
 });
 

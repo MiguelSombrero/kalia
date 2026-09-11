@@ -44,16 +44,15 @@ reader is a translation-policy question belonging with
 ## catalog
 
 Beers, breweries and styles, plus search and filtering. Depends on no other
-module. Its data is public by nature — a beer's price is catalog data a
+module. Its data is public by nature — a beer's attributes are catalog data a
 signed-out visitor may read.
 
 ### Domain types (`fi.kalia.catalog.domain`)
 
 | Type | Meaning in this module | Why |
 |---|---|---|
-| `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV, price and description. Not a physical object and not something a user owns — the cellar references it by id only. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) |
+| `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id only. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) |
 | `Brewery` | The maker of beers, with a country and optional city. | [ADR-0007](adr/0007-backend-package-structure.md) |
-| `Money` | A value object: an integer amount in minor units (cents) plus a 3-letter ISO-4217 currency code. Never floating point. | [architecture.md §3](architecture.md#3-backend-modules) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerSpecifications` | A factory of JPA `Specification<Beer>` predicates built from a `BeerSearchCriteria`, with `LIKE` wildcards escaped. | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`. | [ADR-0007](adr/0007-backend-package-structure.md) |
@@ -166,3 +165,4 @@ Recorded so a later session does not re-propose them.
 | A separate handle + editable display name | Rejected in [ADR-0049](adr/0049-profile-module-and-public-identity.md). Kalia has one immutable `username` and no rename path; revisit when someone actually asks to be called something else. |
 | An opaque profile `UUID` as the public-cellar URL segment | Rejected in [ADR-0049](adr/0049-profile-module-and-public-identity.md) / [ADR-0050](adr/0050-public-cellar-addressing.md): a link has to tell its recipient whose cellar it is. `username` is the segment. |
 | A "drunk" / "consumed" bottle state | Not rejected, deferred: a bottle is removed by deleting its row, with no lifecycle state yet ([architecture.md §3](architecture.md#3-backend-modules)). Listed so the absence is known to be deliberate. |
+| `Beer.price` / `catalog.domain.Money` | Removed (iteration 6.5 [task 10](tasks/iteration-6.5/10-remove-beer-price.md)): price is not a property of a beer — one beer has many shop prices, and Kalia has no shop integration. A leftover from the deprecated "sell beer" vision ([ADR-0004](adr/0004-backend-cart.md), [ADR-0005](adr/0005-defer-auth-mock-payments.md)). Not a rejected rename — a dropped concept, listed so it is not re-added without a fresh design. |

@@ -19,8 +19,6 @@ CREATE TABLE catalog.beer (
     style       text NOT NULL,
     abv         numeric(4, 1) NOT NULL CHECK (abv >= 0),
     description text,
-    price_cents integer NOT NULL CHECK (price_cents >= 0),
-    currency    varchar(3) NOT NULL DEFAULT 'EUR',
     created_at  timestamptz NOT NULL DEFAULT now(),
     UNIQUE (brewery_id, name)
 );

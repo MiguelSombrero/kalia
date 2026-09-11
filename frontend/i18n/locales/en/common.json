@@ -50,8 +50,7 @@
   "beer": {
     "backToCatalog": "← Back to catalog",
     "style": "Style",
-    "abv": "ABV",
-    "price": "Price"
+    "abv": "ABV"
   },
   "notFound": {
     "pageTitle": "Beer not found — Kalia",

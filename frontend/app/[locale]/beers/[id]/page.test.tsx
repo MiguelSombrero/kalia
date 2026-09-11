@@ -6,7 +6,6 @@ const westvleteren12 = {
   style: "Quadrupel",
   abv: 10.2,
   description: "Dark strong Trappist ale.",
-  price: { cents: 1250, currency: "EUR" },
   brewery: { id: "br1", name: "Brouwerij Westvleteren", country: "Belgium", city: "Vleteren" },
 };
 

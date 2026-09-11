@@ -3,7 +3,6 @@ import { cardVariants } from "@/components/ui/card";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
-import { formatPrice } from "./formatPrice";
 import type { BeerDetails } from "./types";
 
 const breweryLocation = (city: string | undefined, country: string): string => {
@@ -40,10 +39,6 @@ export const BeerDetailsCard = async ({
         <div>
           <dt className="text-sm text-muted-foreground">{t("beer.abv")}</dt>
           <dd className="mt-1 font-medium text-foreground">{beer.abv} %</dd>
-        </div>
-        <div>
-          <dt className="text-sm text-muted-foreground">{t("beer.price")}</dt>
-          <dd className="mt-1 font-medium text-foreground">{formatPrice(beer.price, locale)}</dd>
         </div>
       </dl>
       {beer.description && (
