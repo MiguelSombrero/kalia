@@ -3,8 +3,9 @@
 # git worktree lives in its own uniquely named directory (main checkout:
 # "kalia"), so leaving this unset gives each worktree's stack its own
 # containers/network/volume automatically, instead of every worktree
-# colliding on one shared "kalia" project. Do not reintroduce a fixed
-# `name:` — see ADR-0057.
+# colliding on one shared "kalia" project (a `COMPOSE_PROJECT_NAME` in each
+# worktree's own `.env` would work too, but only if every worktree remembers
+# to set it). Do not reintroduce a fixed `name:`.
 
 services:
   backend:
