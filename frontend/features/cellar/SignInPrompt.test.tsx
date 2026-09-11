@@ -20,6 +20,8 @@ describe("SignInPrompt", () => {
 
     expect(screen.getByText("Kirjaudu sisään nähdäksesi kellarisi")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Kirjaudu sisään" })).toBeInTheDocument();
+    // Carried to the sign-in action so Keycloak renders in this locale.
+    expect(container.querySelector('input[name="locale"]')).toHaveValue("fi");
     expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -34,9 +34,8 @@ Built:
 - Self-registration with email verification, so someone other than the author
   can create an account *(iteration 6.5)*
 
-Next (iteration 6.5, in progress): Kalia-branded/bilingual auth pages,
-Keycloak state that survives a restart, and the rest of that iteration's
-tasks.
+Next (iteration 6.5, in progress): Keycloak state that survives a restart,
+account linking revisited, and the rest of that iteration's tasks.
 
 ### Non-functional requirements
 
@@ -333,6 +332,16 @@ The shape of the frontend. Day-to-day rules for writing it live in
   `metadataBase` from `AUTH_URL` so those alternates resolve to absolute URLs.
   A cellar that is not public renders `app/[locale]/not-found.tsx`, the
   generic localized 404 for the subtree.
+- **The Keycloak auth pages are a second, disjoint translation surface**
+  ([ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)): login,
+  registration, verification and password-reset are Keycloak's, on its own
+  origin, translated by Keycloak's own `en`/`fi` message bundles — not
+  i18next, and with no Kalia-authored auth-page strings to keep in step with
+  `i18n/locales/`. The realm enables `internationalizationEnabled`; the
+  sign-in Server Actions pass `ui_locales` (and a locale-prefixed
+  `redirectTo`) so the visitor stays in the language they were reading. The
+  realm's `loginTheme` is a minimal `keycloak.v2` child in
+  `keycloak/themes/kalia/`.
 - **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
   and a small set of shared primitives in `components/ui/` — the seam for a
@@ -446,6 +455,16 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   registering an already-used address says so explicitly rather than
   pretending to succeed. No Keycloak admin credential exists in the BFF for
   this or any other path.
+- **Those Keycloak pages are branded and bilingual**
+  ([ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)): a minimal
+  `keycloak.v2` child theme (`keycloak/themes/kalia/`, baked into the
+  Keycloak image) for the logo, cream ground and mint primary, and the
+  realm's own `en`/`fi` internationalisation for the words. The sign-in
+  Server Actions pass `ui_locales` so Keycloak renders in the locale the
+  visitor was reading; `loginTheme` and the i18n settings are realm
+  configuration under [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s
+  drift check. Verification and reset mail is localised by the same
+  mechanism; branding of mail stops at the `Kalia` sender name.
 
 ## 7. Testing strategy
 
@@ -459,7 +478,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`), plus the WCAG 2.1 AA scans covered above |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language and WCAG 2.1 AA of the Keycloak pages reached from each locale (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)), plus the WCAG 2.1 AA scans covered above |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -576,6 +595,7 @@ the failure back to the agent without blocking
 | [ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md) | A cellar's domain events are registered on the aggregate root, not published from the service | accepted | 2026-09-04 |
 | [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md) | keycloak-config-cli owns realm import, not Keycloak's native placeholders | accepted | 2026-09-05 |
 | [ADR-0055](adr/0055-self-registration-via-keycloak.md) | Self-registration via Keycloak's own registration flow | accepted | 2026-09-06 |
+| [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md) | Kalia's Keycloak pages — a minimal theme, realm-level i18n, and Keycloak's own translations | accepted | 2026-09-08 |
 
 ### Engineering process and documentation
 

@@ -2,30 +2,32 @@
 
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
-import { defaultLocale, isLocale } from "@/i18n/settings";
+import { defaultLocale, isLocale, type Locale } from "@/i18n/settings";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { keycloakEndSessionUrl } from "./endSessionUrl";
 import { checkSignUpRateLimit } from "./signUpRateLimit";
+
+// The hidden "locale" field on each sign-in form: it becomes signIn()'s
+// `ui_locales` (Keycloak renders its pages in it — ADR-0056) and the
+// locale-prefixed return path.
+const localeFromForm = (formData?: FormData): Locale => {
+  const locale = formData?.get("locale");
+  return typeof locale === "string" && isLocale(locale) ? locale : defaultLocale;
+};
 
 // Do not re-export this from a shared lib/ module instead of defining it
 // here: a Server Action re-exported through a second "use server" file
 // breaks Next's action-ID resolution — the client sends an ID the server's
 // manifest doesn't recognize (UnrecognizedActionError), reproduced live,
 // not caught by any test, lint, or build in this repo.
-export const startSignIn = async () => {
-  await signIn("keycloak");
+export const startSignIn = async (formData?: FormData) => {
+  const locale = localeFromForm(formData);
+  await signIn("keycloak", { redirectTo: `/${locale}` }, { ui_locales: locale });
 };
 
-const signUpLocale = (formData: FormData): string => {
-  const locale = formData.get("locale");
-  return typeof locale === "string" && isLocale(locale) ? locale : defaultLocale;
-};
-
-// Mirrors startSignIn/startCellarSignIn's own small duplication rather than a
-// shared helper — see the comment on those.
 export const startSignUp = async (formData: FormData) => {
-  const locale = signUpLocale(formData);
+  const locale = localeFromForm(formData);
 
   if (formData.get("agree") !== "on") {
     redirect(`/${locale}/sign-up?error=agree-required`);
@@ -35,7 +37,7 @@ export const startSignUp = async (formData: FormData) => {
     redirect(`/${locale}/sign-up?error=rate-limited`);
   }
 
-  await signIn("keycloak-register");
+  await signIn("keycloak-register", { redirectTo: `/${locale}` }, { ui_locales: locale });
 };
 
 // Also ends the Keycloak SSO session via end_session_endpoint, this browser's

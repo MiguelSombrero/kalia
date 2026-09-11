@@ -11,6 +11,7 @@ export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
     <EmptyState title={t("cellar.signIn.title")}>
       <p>{t("cellar.signIn.hint")}</p>
       <form action={startCellarSignIn} className="mt-4">
+        <input type="hidden" name="locale" value={locale} />
         <Button type="submit" variant="primary">
           {t("cellar.signIn.action")}
         </Button>

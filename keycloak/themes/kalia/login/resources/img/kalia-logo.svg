@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 72" role="img" aria-label="Kalia">
+  <title>Kalia</title>
+  <!-- Snifter mark, echoing the cellar the product is built around. -->
+  <g fill="none" stroke="#2f6f5e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 12h24c0 14-6 22-12 22S20 26 20 12Z" fill="#eaf5f1"/>
+    <path d="M32 34v18"/>
+    <path d="M23 52h18"/>
+  </g>
+  <text x="66" y="49" font-family="Georgia, 'Times New Roman', 'Noto Serif', serif"
+        font-size="46" font-weight="600" letter-spacing="0.5" fill="#2b2725">Kalia</text>
+</svg>
