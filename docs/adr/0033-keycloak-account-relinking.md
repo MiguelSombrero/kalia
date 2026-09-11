@@ -2,6 +2,16 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-08
+- **Amended:** 2026-09-11 — narrows the decision to the case it actually still
+  covers now that both of this ADR's premises have moved
+  ([iteration 6.5 task 08](../tasks/iteration-6.5/08-revisit-account-linking.md)):
+  [task 01](../tasks/iteration-6.5/01-persist-keycloak-state.md) closes the
+  dev-reimport case this ADR was written against, and
+  [task 05](../tasks/iteration-6.5/05-self-registration-with-email-verification.md)
+  added a second Auth.js provider entry (`keycloak-register`) that this ADR's
+  "only provider" sentence and revisit trigger did not anticipate. The flag
+  stays set — see the updated Consequences — and the trigger is reworded so
+  it actually fires for a second identity source instead of lapsing silently.
 
 ## Context
 
@@ -28,6 +38,27 @@ failure is reachable in production too, any time a Keycloak user is deleted
 and recreated with the same email — an admin action this app's own code does
 not control.
 
+> **Amended 2026-09-11.** [Task 01](../tasks/iteration-6.5/01-persist-keycloak-state.md)
+> moves Keycloak off `start-dev --import-realm` onto a persistent,
+> Postgres-backed realm, which closes the dev-reimport case above: `sub` no
+> longer changes on a plain restart. The production case — a Keycloak user
+> deleted and recreated with the same email, an admin action this app does
+> not control — is untouched by that fix and is the only case the Decision
+> below still defends against.
+>
+> A second, unrelated gap in the account index surfaced independently:
+> `frontend/lib/auth/valkeyAdapter.ts` keys `auth:account-index:<provider>:<sub>`
+> by *provider id*, not just by `sub`. [Task 05](../tasks/iteration-6.5/05-self-registration-with-email-verification.md)
+> added `keycloak-register` — a second Auth.js provider entry, same Keycloak
+> realm and client — as the entry point for self-registration
+> ([ADR-0055](0055-self-registration-via-keycloak.md)). A session created
+> through `keycloak-register` writes its account-index entry under that
+> provider id; that same person's next sign-in through the plain `keycloak`
+> provider looks up a *different* key, misses, and only reaches their own
+> account via the same `getUserByEmail` fallback and the same flag below.
+> This is now the ordinary second sign-in of every self-registered account,
+> not an edge case — see the Decision's amendment.
+
 ## Decision
 
 **Set `allowDangerousEmailAccountLinking: true` on the Keycloak provider
@@ -49,6 +80,23 @@ Once linked, Auth.js's own `linkAccount` call
 (`handle-login.js`) writes a fresh `auth:account-index:keycloak:<new-sub>`
 entry pointing at the pre-existing user — the flow self-heals on the very
 next sign-in, no manual Valkey cleanup required.
+
+> **Amended 2026-09-11.** "Keycloak is the *only* provider this app
+> registers" is no longer accurate as a literal count of provider entries —
+> `frontend/auth.ts` registers two, `keycloak` and `keycloak-register` — and
+> was already inaccurate as the safety argument even before that: what makes
+> the flag safe is not the number of entries, it is that every entry
+> authenticates against the *same* Keycloak realm and client, so the only way
+> this code path is reached is still "the same identity source claims this
+> email again," never a second, less-trusted source hijacking it. `keycloak-register`
+> does not move that boundary — it is a second *entry point* into the one
+> identity source this app has always trusted, reached through Keycloak's
+> registration endpoint instead of its login one. The flag stays kept, now
+> for two cases rather than one: the residual admin-recreation case in
+> Context, and the `keycloak-register`/`keycloak` provider-id split above,
+> which self-registered accounts hit on their very next sign-in. See the
+> corrected Consequences and revisit trigger below for what a genuinely
+> second identity source would mean instead.
 
 ## Alternatives considered
 
@@ -85,6 +133,31 @@ can prevent.
   reopen the exact hijacking risk the flag's name warns about, and that
   addition must revisit this ADR rather than inherit the flag by default.
 - **Revisit trigger:** a second sign-in provider is added.
+
+> **Amended 2026-09-11.** The Neutral entry and trigger above read "a second
+> provider" as "a second Auth.js provider entry," which
+> [task 05](../tasks/iteration-6.5/05-self-registration-with-email-verification.md)'s
+> `keycloak-register` satisfied literally without reopening the hijacking risk
+> either bullet is actually about — see the Decision's amendment for why.
+> Corrected:
+>
+> - Neutral, because `allowDangerousEmailAccountLinking`'s safety rests on
+>   one *identity source*, not one Auth.js provider entry — see Decision.
+>   `keycloak-register` does not reopen the hijacking risk this flag warns
+>   about, and per Decision above is now load-bearing for an ordinary
+>   self-registered sign-in too, not only the admin-recreation case.
+> - **Revisit trigger:** a second identity source is added — a distinct
+>   OAuth/OIDC issuer this app trusts directly, or one brokered into Keycloak
+>   (e.g. Keycloak's own identity-brokering for Google or another IdP) via a
+>   `first-broker-login` flow. A second Auth.js provider entry against
+>   Keycloak's own realm and client — another `keycloak-register`-style
+>   endpoint — does **not** trip this trigger on its own, since it moves no
+>   trust boundary.
+>
+> Treated as a one-off correction rather than a general rule about revisit
+> triggers: this is the first case on record of one lapsing without firing,
+> and one instance does not yet justify a standing rule in
+> [ADR-0019](0019-adr-format-and-conventions.md).
 
 ## Evidence
 

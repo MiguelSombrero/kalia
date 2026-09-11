@@ -1,33 +1,9 @@
-import { customFetch } from "@auth/core";
 import NextAuth from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
-import { createInternalKeycloakFetch } from "@/lib/auth/internalKeycloakFetch";
+import { keycloakOptions } from "@/lib/auth/keycloakOptions";
 import { sidFromIdToken } from "@/lib/auth/sessionId";
 import { createdSession } from "@/lib/auth/signInContext";
 import { putSessionAccount, putSessionSid, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
-
-// `issuer` must stay Keycloak's public `iss` (KC_HOSTNAME): oauth4webapi's
-// validateAuthResponse checks the callback against this exact string, and
-// the internal Docker hostname throws "unexpected iss" if used instead —
-// confirmed live. Requests are redirected to the internal origin transparently
-// (lib/auth/internalKeycloakFetch.ts); the validated `iss` string is untouched.
-const fetchViaInternalKeycloak = createInternalKeycloakFetch(
-  process.env.AUTH_KEYCLOAK_ISSUER!,
-  process.env.AUTH_KEYCLOAK_INTERNAL_ORIGIN!,
-);
-
-// Shared by both providers below: same Keycloak client (kalia-frontend), just
-// entered through a different endpoint. Keeping this one object is what
-// guarantees the two never drift apart on the settings that matter (secret,
-// issuer, the internal-address fetch).
-const keycloakOptions = {
-  clientId: process.env.AUTH_KEYCLOAK_ID,
-  clientSecret: process.env.AUTH_KEYCLOAK_SECRET,
-  issuer: process.env.AUTH_KEYCLOAK_ISSUER,
-  // Safe only because Keycloak is the sole provider: see ADR-0033.
-  allowDangerousEmailAccountLinking: true,
-  [customFetch]: fetchViaInternalKeycloak,
-};
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: valkeyAdapter,

@@ -420,13 +420,18 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   another RP's own logout) previously left the Kalia session alive until its
   own expiry.
 - **A stale account index re-links by email rather than locking the user
-  out** ([ADR-0033](adr/0033-keycloak-account-relinking.md)): if Keycloak's
-  `sub` for a returning user changes — an emptied dev-stack volume
-  reimports the realm from scratch, and a deleted-and-recreated Keycloak
-  user would do the same in production — Auth.js's
-  `allowDangerousEmailAccountLinking` links the sign-in to the existing user
-  by email instead of throwing `OAuthAccountNotLinked`, safe only because
-  Keycloak is the sole provider.
+  out** ([ADR-0033](adr/0033-keycloak-account-relinking.md)): the account
+  index (`frontend/lib/auth/valkeyAdapter.ts`) is keyed by provider id and
+  `sub` together, so either a changed `sub` — a Keycloak user deleted and
+  recreated with the same email, an admin action this app does not control —
+  or a sign-in through a *different* Auth.js provider entry for the same
+  Keycloak account misses it. `keycloak-register`
+  ([ADR-0055](adr/0055-self-registration-via-keycloak.md)) is exactly that
+  second entry: a self-registered account's very next sign-in, through the
+  plain `keycloak` entry, always misses the index `keycloak-register` wrote.
+  Either way, Auth.js's `allowDangerousEmailAccountLinking` links the sign-in
+  to the existing user by email instead of throwing `OAuthAccountNotLinked` —
+  see ADR-0033's Decision for why that stays safe.
 - **Two concurrent first-ever sign-ins for one subject resolve to one user**
   ([ADR-0043](adr/0043-createuser-race-safety.md)): `createUser` claims the
   email index with `SET NX` before writing the user record, and a request
