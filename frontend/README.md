@@ -96,6 +96,19 @@ A new spec that needs to sign in imports `test`/`expect` from that support
 file and uses the `account` fixture, the same way
 `e2e/sign-in-out.spec.ts` does.
 
+**Nothing needs resetting before running the suite.** Keycloak's realm
+persists across restarts ([iteration 6.5 task
+01](../docs/tasks/iteration-6.5/01-persist-keycloak-state.md)), so a
+worker's `account` is created once and reused on every later run — never
+recreated, never deleted. A spec that registers a new account (`sign-up.spec.ts`,
+`keycloak-email.spec.ts`, `keycloak-branding.spec.ts`) names it with a
+timestamp and never deletes it either: those accounts accumulate as harmless
+leftover data rather than being cleaned up, so a registration spec run twice
+never collides with its own prior run on an already-registered address. The
+only thing that clears any of this is `docker compose down -v`, which is not
+part of the normal test loop
+([iteration 6.5 task 09](../docs/tasks/iteration-6.5/09-deterministic-test-accounts.md)).
+
 ## Conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning.

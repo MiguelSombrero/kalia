@@ -114,18 +114,6 @@ export const createUnverifiedKeycloakUser = async (
   return created!.id;
 };
 
-export const deleteKeycloakUser = async (
-  apiRequest: APIRequestContext,
-  adminToken: string,
-  userId: string,
-): Promise<void> => {
-  const response = await apiRequest.delete(
-    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}`,
-    { headers: { Authorization: `Bearer ${adminToken}` } },
-  );
-  expect(response.ok(), `could not delete Keycloak user ${userId}`).toBeTruthy();
-};
-
 // Asks Keycloak to email the user a link that runs `actions` (e.g.
 // ["VERIFY_EMAIL"]); client_id/redirect_uri decide where the link lands the
 // browser once the action is done.
