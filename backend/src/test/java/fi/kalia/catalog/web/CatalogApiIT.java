@@ -130,8 +130,7 @@ class CatalogApiIT {
 					assertThat((String) JsonPath.read(body, "$.style")).isEqualTo("Double IPA");
 					assertThat((String) JsonPath.read(body, "$.brewery.name")).isEqualTo("Russian River Brewing Company");
 					assertThat((String) JsonPath.read(body, "$.description")).isNotBlank();
-					assertThat((int) JsonPath.read(body, "$.price.cents")).isEqualTo(750);
-					assertThat((String) JsonPath.read(body, "$.price.currency")).isEqualTo("EUR");
+					assertThat(body).doesNotContain("\"price\"");
 				});
 	}
 

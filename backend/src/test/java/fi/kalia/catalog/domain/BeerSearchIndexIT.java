@@ -61,10 +61,10 @@ class BeerSearchIndexIT {
 				FROM generate_series(1, ?) g
 				""", SEEDED_BREWERIES);
 		jdbc.update("""
-				INSERT INTO catalog.beer (brewery_id, name, style, abv, price_cents, currency)
+				INSERT INTO catalog.beer (brewery_id, name, style, abv)
 				SELECT b.id, 'Seeded Beer ' || g,
 				       (ARRAY['IPA', 'Stout', 'Lager', 'Pilsner', 'Saison'])[1 + (g % 5)],
-				       5.0, 500, 'EUR'
+				       5.0
 				FROM generate_series(1, ?) g
 				JOIN catalog.brewery b ON b.name = 'Seeded Brewery ' || (1 + (g % ?))
 				""", SEEDED_BEERS, SEEDED_BREWERIES);

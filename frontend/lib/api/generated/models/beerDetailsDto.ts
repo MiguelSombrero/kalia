@@ -5,7 +5,6 @@
  * OpenAPI spec version: v0
  */
 import type { BreweryDto } from './breweryDto';
-import type { MoneyDto } from './moneyDto';
 
 /**
  * Full details for a single beer
@@ -17,6 +16,5 @@ export interface BeerDetailsDto {
   /** Alcohol by volume, percent */
   abv: number;
   description?: string;
-  price: MoneyDto;
   brewery: BreweryDto;
 }

@@ -60,7 +60,7 @@ happening as a side effect of someone adding a sitemap.
 
 The public response is its own DTO type rather than the owner's, carrying the
 same fields it does today. Nothing in a cellar is private by nature — a beer's
-price is catalog data and already public — so withholding any current field
+ABV is catalog data and already public — so withholding any current field
 would be arbitrary; a separate type is the seam that lets a *future* field be
 owner-only without the public shape inheriting it by default.
 

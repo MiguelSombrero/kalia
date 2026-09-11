@@ -23,7 +23,7 @@ clarity, testability, and iterative delivery** over premature scale.
 
 Built:
 
-- Search/filter beers by name, brewery, country, style, ABV, price
+- Search/filter beers by name, brewery, country, style, ABV
 - Beer detail view
 - Sign-in and sign-out (Keycloak); browsing stays anonymous
 - Personal beer cellar: the signed-in user's owned bottles, each carrying its
@@ -151,14 +151,14 @@ TypeScript vocabulary a client meets — is catalogued in
 
 ```
 catalog.brewery(id, name, country, city, created_at)
-catalog.beer(id, brewery_id, name, style, abv, description, price_cents, currency, created_at)
+catalog.beer(id, brewery_id, name, style, abv, description, created_at)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at)
 ```
 
 `style` starts as an indexed text column; normalize into its own table only
-if style metadata appears. Prices are integer cents to avoid floating point.
+if style metadata appears.
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and

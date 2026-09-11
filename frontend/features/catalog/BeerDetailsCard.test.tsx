@@ -10,12 +10,11 @@ const westvleteren12: BeerDetails = {
   style: "Quadrupel",
   abv: 10.2,
   description: "Dark strong Trappist ale with notes of dried fruit.",
-  price: { cents: 1250, currency: "EUR" },
   brewery: { id: "br1", name: "Brouwerij Westvleteren", country: "Belgium", city: "Vleteren" },
 };
 
 describe("BeerDetailsCard", () => {
-  it("renders name, brewery with location, style, abv, price and description", async () => {
+  it("renders name, brewery with location, style, abv and description, with no price", async () => {
     const { container } = render(await BeerDetailsCard({ locale: "en", beer: westvleteren12 }));
 
     expect(
@@ -25,8 +24,8 @@ describe("BeerDetailsCard", () => {
     expect(screen.getByText("Style")).toBeInTheDocument();
     expect(screen.getByText("Quadrupel")).toBeInTheDocument();
     expect(screen.getByText(/10\.2\s?%/)).toBeInTheDocument();
-    expect(screen.getByText("€12.50")).toBeInTheDocument();
     expect(screen.getByText(/dried fruit/)).toBeInTheDocument();
+    expect(screen.queryByText(/€/)).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -46,12 +45,11 @@ describe("BeerDetailsCard", () => {
     expect(screen.queryByText(/dried fruit/)).not.toBeInTheDocument();
   });
 
-  it("renders translated labels and locale-formatted price in Finnish", async () => {
+  it("renders translated labels in Finnish", async () => {
     render(await BeerDetailsCard({ locale: "fi", beer: westvleteren12 }));
 
     expect(screen.getByText("Tyyli")).toBeInTheDocument();
     expect(screen.getByText("Alkoholi")).toBeInTheDocument();
-    expect(screen.getByText("Hinta")).toBeInTheDocument();
-    expect(screen.getByText(/12,50\s€/)).toBeInTheDocument();
+    expect(screen.queryByText("Hinta")).not.toBeInTheDocument();
   });
 });

@@ -8,6 +8,12 @@
   component holding translated text and triggered the condition named below.
   `react-i18next` is wired: `app/providers.tsx` mounts an `I18nextProvider`
   over an instance built with `initReactI18next`
+- **Amended:** 2026-09-11 — `formatPrice`, this ADR's worked example of
+  locale-aware number formatting, was removed with the beer price property
+  itself ([task 10](../tasks/iteration-6.5/10-remove-beer-price.md)). The
+  decision that number formatting is part of localization stands; ABV already
+  renders as a plain locale-agnostic percentage, so no replacement example
+  exists until a future feature needs `Intl.NumberFormat` again.
 
 ## Context
 
@@ -56,10 +62,10 @@ grammar and number formatting, not only string translation.**
   preserving the rest of the path. Full placement and styling belong to the
   UI-design task in [iteration 2](../tasks/iteration-2.md); this is the
   minimum needed to verify both languages by running the app.
-- **Number and currency formatting is locale-aware** (`formatPrice`, via
-  `Intl.NumberFormat(locale, …)`): `€12.50` in English, `12,50 €` in
-  Finnish — correct number formatting is part of localization, not just
-  string translation.
+- **Number and currency formatting is locale-aware** — correct number
+  formatting is part of localization, not just string translation. (Since
+  amended: the worked example, `formatPrice` via `Intl.NumberFormat(locale,
+  …)`, was removed with the beer price property; see the amendment above.)
 - **Plural forms use i18next's `_one`/`_other` suffixes**
   (`catalog.pagination.summary`), including
   Finnish's partitive plural ("1 olut" vs. "5 olutta") — a real grammatical

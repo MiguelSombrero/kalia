@@ -50,8 +50,7 @@
   "beer": {
     "backToCatalog": "← Takaisin tarjontaan",
     "style": "Tyyli",
-    "abv": "Alkoholi",
-    "price": "Hinta"
+    "abv": "Alkoholi"
   },
   "notFound": {
     "pageTitle": "Olutta ei löytynyt — Kalia",
