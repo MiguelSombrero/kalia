@@ -184,6 +184,14 @@ the cellar holds exactly the beers you own bottles of and no reader ever sees
 a zero-quantity row. Re-adding that beer creates a fresh entry
 ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
 
+**Two concurrent first-ever add-bottle requests for the same (user, beer)
+both succeed against one shared entry**
+([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md)):
+`CellarService.addBottles` retries once, in a fresh transaction, when its own
+get-or-create trips the `unique (user_id, beer_id)` constraint above — the
+losing request's retry then finds the winner's committed entry and appends to
+it instead of inserting a second one.
+
 **A profile is keyed by the Keycloak `sub` itself** — `profile.profile.id`
 carries no separate generated id — **and is created lazily**, the first time
 anything needs one, rather than at sign-in (ADR-0049). `username` is copied
@@ -601,6 +609,7 @@ the failure back to the agent without blocking
 | [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md) | keycloak-config-cli owns realm import, not Keycloak's native placeholders | accepted | 2026-09-05 |
 | [ADR-0055](adr/0055-self-registration-via-keycloak.md) | Self-registration via Keycloak's own registration flow | accepted | 2026-09-06 |
 | [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md) | Kalia's Keycloak pages — a minimal theme, realm-level i18n, and Keycloak's own translations | accepted | 2026-09-08 |
+| [ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md) | A get-or-create write retries once on its own unique-constraint violation, each attempt its own transaction | accepted | 2026-09-11 |
 
 ### Engineering process and documentation
 
