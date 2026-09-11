@@ -11,22 +11,21 @@ class BottleTest {
 
 	private static final Entry ENTRY = Entry.create(UUID.randomUUID(), UUID.randomUUID());
 
+	private static final LocalDate TODAY = LocalDate.now();
+
 	@Test
 	void rejectsABrewedDateInTheFuture() {
-		LocalDate today = LocalDate.now();
-		LocalDate tomorrow = today.plusDays(1);
+		LocalDate tomorrow = TODAY.plusDays(1);
 
-		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow, null, today))
+		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow, null, TODAY))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
 	void acceptsABrewedDateOfToday() {
-		LocalDate today = LocalDate.now();
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, TODAY, null, TODAY);
 
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, today, null, today);
-
-		assertThat(bottle.getBrewedDate()).isEqualTo(today);
+		assertThat(bottle.getBrewedDate()).isEqualTo(TODAY);
 	}
 
 	// The boundary is judged against the caller-supplied today, not this
@@ -34,55 +33,52 @@ class BottleTest {
 	// when it equals the supplied today, and rejected the day after it.
 	@Test
 	void acceptsABrewedDateEqualToTheSuppliedToday() {
-		LocalDate today = LocalDate.now().plusYears(3);
+		LocalDate suppliedToday = TODAY.plusYears(3);
 
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, today, null, today);
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, suppliedToday, null, suppliedToday);
 
-		assertThat(bottle.getBrewedDate()).isEqualTo(today);
+		assertThat(bottle.getBrewedDate()).isEqualTo(suppliedToday);
 	}
 
 	@Test
 	void rejectsABrewedDateOneDayPastTheSuppliedToday() {
-		LocalDate today = LocalDate.now().plusYears(3);
-		LocalDate dayAfter = today.plusDays(1);
+		LocalDate suppliedToday = TODAY.plusYears(3);
+		LocalDate dayAfter = suppliedToday.plusDays(1);
 
-		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, dayAfter, null, today))
+		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, dayAfter, null, suppliedToday))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
 	void rejectsABestBeforeDateEqualToTheBrewedDate() {
-		LocalDate today = LocalDate.now();
-		LocalDate date = today.minusMonths(1);
+		LocalDate date = TODAY.minusMonths(1);
 
-		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, date, date, today))
+		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, date, date, TODAY))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
 	void rejectsABestBeforeDateBeforeTheBrewedDate() {
-		LocalDate today = LocalDate.now();
-		LocalDate brewed = today.minusMonths(1);
+		LocalDate brewed = TODAY.minusMonths(1);
 		LocalDate bestBefore = brewed.minusDays(1);
 
-		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore, today))
+		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore, TODAY))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
 	void acceptsABestBeforeDateAfterTheBrewedDate() {
-		LocalDate today = LocalDate.now();
-		LocalDate brewed = today.minusYears(1);
+		LocalDate brewed = TODAY.minusYears(1);
 		LocalDate bestBefore = brewed.plusYears(2);
 
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore, today);
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore, TODAY);
 
 		assertThat(bottle.getBestBeforeDate()).isEqualTo(bestBefore);
 	}
 
 	@Test
 	void allowsBothDatesToBeUnknown() {
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.CAN, null, null, LocalDate.now());
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.CAN, null, null, TODAY);
 
 		assertThat(bottle.getBrewedDate()).isNull();
 		assertThat(bottle.getBestBeforeDate()).isNull();
@@ -90,10 +86,9 @@ class BottleTest {
 
 	@Test
 	void allowsOnlyTheBrewedDateToBeKnown() {
-		LocalDate today = LocalDate.now();
-		LocalDate brewed = today.minusMonths(6);
+		LocalDate brewed = TODAY.minusMonths(6);
 
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.KEG, brewed, null, today);
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.KEG, brewed, null, TODAY);
 
 		assertThat(bottle.getBrewedDate()).isEqualTo(brewed);
 		assertThat(bottle.getBestBeforeDate()).isNull();
@@ -101,9 +96,9 @@ class BottleTest {
 
 	@Test
 	void allowsOnlyTheBestBeforeDateToBeKnown() {
-		LocalDate bestBefore = LocalDate.now().plusMonths(6);
+		LocalDate bestBefore = TODAY.plusMonths(6);
 
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.CAN, null, bestBefore, LocalDate.now());
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.CAN, null, bestBefore, TODAY);
 
 		assertThat(bottle.getBrewedDate()).isNull();
 		assertThat(bottle.getBestBeforeDate()).isEqualTo(bestBefore);
@@ -111,13 +106,13 @@ class BottleTest {
 
 	@Test
 	void rejectsANullContainerType() {
-		assertThatThrownBy(() -> Bottle.create(ENTRY, null, null, null, LocalDate.now()))
+		assertThatThrownBy(() -> Bottle.create(ENTRY, null, null, null, TODAY))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void rejectsANullEntry() {
-		assertThatThrownBy(() -> Bottle.create(null, ContainerType.BOTTLE, null, null, LocalDate.now()))
+		assertThatThrownBy(() -> Bottle.create(null, ContainerType.BOTTLE, null, null, TODAY))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
@@ -129,12 +124,11 @@ class BottleTest {
 
 	@Test
 	void updateReplacesContainerTypeAndBothDates() {
-		LocalDate today = LocalDate.now();
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, today);
-		LocalDate brewed = today.minusMonths(3);
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, TODAY);
+		LocalDate brewed = TODAY.minusMonths(3);
 		LocalDate bestBefore = brewed.plusYears(1);
 
-		bottle.update(ContainerType.KEG, brewed, bestBefore, today);
+		bottle.update(ContainerType.KEG, brewed, bestBefore, TODAY);
 
 		assertThat(bottle.getContainerType()).isEqualTo(ContainerType.KEG);
 		assertThat(bottle.getBrewedDate()).isEqualTo(brewed);
@@ -143,25 +137,24 @@ class BottleTest {
 
 	@Test
 	void updateEnforcesTheSameDateInvariantsAsCreate() {
-		LocalDate today = LocalDate.now();
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, today);
-		LocalDate tomorrow = today.plusDays(1);
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, TODAY);
+		LocalDate tomorrow = TODAY.plusDays(1);
 
-		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, tomorrow, null, today))
+		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, tomorrow, null, TODAY))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
 	void updateRejectsANullContainerType() {
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, LocalDate.now());
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, TODAY);
 
-		assertThatThrownBy(() -> bottle.update(null, null, null, LocalDate.now()))
+		assertThatThrownBy(() -> bottle.update(null, null, null, TODAY))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void updateRejectsANullToday() {
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, LocalDate.now());
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null, TODAY);
 
 		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, null, null, null))
 				.isInstanceOf(IllegalArgumentException.class);

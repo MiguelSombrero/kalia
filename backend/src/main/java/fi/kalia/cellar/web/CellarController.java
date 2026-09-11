@@ -119,9 +119,8 @@ class CellarController {
 		cellar.removeBottle(identity.requireCurrentUserId(), id);
 	}
 
-	// Not a security boundary (ADR-0028): the caller's token is what's
-	// trusted, and a client lying about its local day only lets it backdate
-	// or postdate its own bottle by about a day.
+	// ADR-0028: the token, not this value, is what's trusted — a caller can
+	// only misdate their own bottle by supplying a false today.
 	private static LocalDate resolveToday(@Nullable LocalDate clientToday) {
 		return clientToday != null ? clientToday : LocalDate.now();
 	}

@@ -4,6 +4,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, signIn, test } from "./support/keycloakAccount";
+import { escapeRegExp } from "./support/text";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
@@ -27,8 +28,6 @@ const bottleCount = async (page: Page, beerName: string): Promise<number> => {
   const label = (await row.first().textContent()) ?? "";
   return Number(/(\d+)\s+bottles?/.exec(label)?.[1] ?? 0);
 };
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // A full document reload would reset this, so reading it back afterwards is
 // what proves the add never navigated away.

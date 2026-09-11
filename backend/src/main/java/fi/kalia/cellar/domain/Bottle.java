@@ -80,11 +80,8 @@ public class Bottle {
 		this.bestBeforeDate = bestBeforeDate;
 	}
 
-	// today is the caller's own local calendar day (CellarController resolves
-	// it, falling back to the server's LocalDate.now() when absent) rather
-	// than this method's own clock read: judging a UTC-computed "today"
-	// against a local date picker rejects a bottle brewed today for a caller
-	// east of UTC in the first hours of their day.
+	// today is the caller's local day, resolved by CellarController — see
+	// BottleTest's suppliedToday tests for why it must not be LocalDate.now().
 	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate,
 			LocalDate today) {
 		if (brewedDate != null && brewedDate.isAfter(today)) {

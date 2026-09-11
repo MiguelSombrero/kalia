@@ -2,14 +2,13 @@
 // are both judged against the caller's local calendar day, not the server's
 // or the browser's own UTC date.
 import { expect, signIn, test } from "./support/keycloakAccount";
+import { escapeRegExp } from "./support/text";
 
 test.describe.configure({ mode: "serial" });
 
 // Asia/Kolkata (UTC+5:30, no DST) keeps a fixed offset year-round, unlike a
 // zone with summer time, so the boundary below reproduces reliably.
 test.use({ timezoneId: "Asia/Kolkata" });
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 test("a bottle brewed on the local today is accepted while the UTC calendar date is still yesterday", async ({
   page,
@@ -38,10 +37,8 @@ test("a bottle brewed on the local today is accepted while the UTC calendar date
   await expect(page.getByRole("dialog")).toBeHidden();
   await expect(page.getByText("cellar.bottle.dateError.brewedInFuture")).toHaveCount(0);
 
-  // Clean up: this is the shared per-worker account (keycloakAccount.ts), and
-  // a bottle dated years out would otherwise sit in its cellar indefinitely,
-  // confusing a later spec that edits "the first bottle" without expecting
-  // one so far in the future.
+  // Clean up: the shared per-worker account (keycloakAccount.ts) would
+  // otherwise keep a bottle dated years out indefinitely.
   await page.goto("/en/cellar");
   await page.getByRole("button", { name: beerNamePattern }).click();
   const bottleList = page.getByRole("list", { name: new RegExp(`Bottles of ${beerNamePattern.source}`) });
