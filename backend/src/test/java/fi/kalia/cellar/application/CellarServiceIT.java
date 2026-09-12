@@ -62,6 +62,8 @@ class CellarServiceIT {
 
 	private UUID beerId;
 
+	private static final LocalDate TODAY = LocalDate.now();
+
 	@BeforeEach
 	void setUp() {
 		service = new CellarService(entries, new CatalogApi(new CatalogService(beers, breweries)));
@@ -227,7 +229,7 @@ class CellarServiceIT {
 	void updateBottleReplacesItsFields() {
 		UUID owner = UUID.randomUUID();
 		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
-		LocalDate brewed = LocalDate.now().minusMonths(2);
+		LocalDate brewed = TODAY.minusMonths(2);
 
 		Bottle updated = service.updateBottle(owner, bottle.getId(), ContainerType.CAN, brewed, null);
 
@@ -281,9 +283,9 @@ class CellarServiceIT {
 	@Test
 	void rejectsADomainDateViolationAsInvalidBottle() {
 		UUID owner = UUID.randomUUID();
-		LocalDate tomorrow = LocalDate.now().plusDays(1);
+		LocalDate dayAfterTomorrow = TODAY.plusDays(2);
 
-		assertThatThrownBy(() -> service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, tomorrow, null))
+		assertThatThrownBy(() -> service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, dayAfterTomorrow, null))
 				.isInstanceOf(InvalidBottleException.class)
 				.hasMessageContaining("brewedDate");
 	}
@@ -292,11 +294,24 @@ class CellarServiceIT {
 	void rejectsADomainDateViolationOnUpdateAsInvalidBottle() {
 		UUID owner = UUID.randomUUID();
 		Bottle bottle = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null).getFirst();
-		LocalDate tomorrow = LocalDate.now().plusDays(1);
+		LocalDate dayAfterTomorrow = TODAY.plusDays(2);
 
-		assertThatThrownBy(() -> service.updateBottle(owner, bottle.getId(), ContainerType.CAN, tomorrow, null))
+		assertThatThrownBy(() -> service.updateBottle(owner, bottle.getId(), ContainerType.CAN, dayAfterTomorrow, null))
 				.isInstanceOf(InvalidBottleException.class)
 				.hasMessageContaining("brewedDate");
+	}
+
+	// The one-day tolerance (Bottle.FUTURE_TOLERANCE_DAYS) is exercised at the
+	// domain level by BottleTest; this only proves it isn't lost on the way
+	// from CellarService through Entry.
+	@Test
+	void acceptsABrewedDateOfTomorrowThroughTheService() {
+		UUID owner = UUID.randomUUID();
+		LocalDate tomorrow = TODAY.plusDays(1);
+
+		Bottle accepted = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, tomorrow, null).getFirst();
+
+		assertThat(accepted.getBrewedDate()).isEqualTo(tomorrow);
 	}
 
 }

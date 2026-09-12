@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { containerTypes } from "./addBottleSchema";
+import { todayIso } from "./bottleDateRules";
 import { type EditBottleFormValues, editBottleSchema } from "./editBottleSchema";
 import { useUpdateBottle } from "./hooks/useBottles";
 import type { Bottle } from "./types";
@@ -123,6 +124,7 @@ export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerNam
             <input
               id={`${ids}-brewedDate`}
               type="date"
+              max={todayIso()}
               className={fieldClasses}
               aria-invalid={Boolean(errors.brewedDate)}
               aria-describedby={describedBy("brewedDate")}

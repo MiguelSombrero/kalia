@@ -21,6 +21,7 @@ import {
   MAX_QUANTITY,
   MIN_QUANTITY,
 } from "./addBottleSchema";
+import { todayIso } from "./bottleDateRules";
 import { useAddBottle } from "./hooks/useBottles";
 
 const fieldClasses =
@@ -109,6 +110,7 @@ export const AddBottleDialog = ({ beerId, beerName }: { beerId: string; beerName
             <input
               id={`${ids}-brewedDate`}
               type="date"
+              max={todayIso()}
               className={fieldClasses}
               aria-invalid={Boolean(errors.brewedDate)}
               aria-describedby={describedBy("brewedDate")}

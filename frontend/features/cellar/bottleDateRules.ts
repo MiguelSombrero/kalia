@@ -1,6 +1,15 @@
 import type { z } from "zod";
 
-const todayIso = (): string => new Date().toISOString().slice(0, 10);
+// Local calendar date, not toISOString's UTC one: a caller east of UTC in the
+// first hours of their day would otherwise see their own "today" rejected as
+// a future brewedDate until UTC catches up.
+export const todayIso = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 /** Shared by addBottleSchema and editBottleSchema so the two forms agree. */
 export const applyBottleDateRules = (

@@ -8,6 +8,7 @@ import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -271,6 +272,45 @@ class CellarApiIT {
 		request.put("beerId", beerId.toString());
 		request.put("containerType", "BOTTLE");
 		request.put("brewedDate", "2999-01-01");
+
+		client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", USER_A)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	// The one-day tolerance (Bottle.FUTURE_TOLERANCE_DAYS) is what lets a
+	// caller east of UTC record a bottle brewed on their own local today
+	// without the server trusting anything the caller claims about the date.
+	@Test
+	void addingABottleWithABrewedDateOfTomorrowIsAccepted() {
+		String tomorrow = LocalDate.now().plusDays(1).toString();
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("beerId", beerId.toString());
+		request.put("containerType", "BOTTLE");
+		request.put("brewedDate", tomorrow);
+
+		String body = client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", USER_A)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.exchange()
+				.expectStatus().isCreated()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+
+		assertThat((String) JsonPath.read(body, "$[0].brewedDate")).isEqualTo(tomorrow);
+	}
+
+	@Test
+	void addingABottleWithABrewedDateTwoDaysOutYieldsProblemJson400() {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("beerId", beerId.toString());
+		request.put("containerType", "BOTTLE");
+		request.put("brewedDate", LocalDate.now().plusDays(2).toString());
 
 		client.post().uri("/api/v1/cellar/bottles")
 				.header("Authorization", USER_A)

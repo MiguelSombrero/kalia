@@ -78,8 +78,13 @@ public class Bottle {
 		this.bestBeforeDate = bestBeforeDate;
 	}
 
+	// No IANA timezone's calendar day ever runs more than a day ahead of UTC
+	// (max offset +14:00), so this tolerance always accepts a bottle brewed
+	// on the caller's own local today without trusting anything it claims.
+	private static final int FUTURE_TOLERANCE_DAYS = 1;
+
 	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
-		if (brewedDate != null && brewedDate.isAfter(LocalDate.now())) {
+		if (brewedDate != null && brewedDate.isAfter(LocalDate.now().plusDays(FUTURE_TOLERANCE_DAYS))) {
 			throw new InvalidBottleException("brewedDate must not be in the future");
 		}
 		if (brewedDate != null && bestBeforeDate != null && !bestBeforeDate.isAfter(brewedDate)) {

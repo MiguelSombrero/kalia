@@ -11,24 +11,38 @@ class BottleTest {
 
 	private static final Entry ENTRY = Entry.create(UUID.randomUUID(), UUID.randomUUID());
 
-	@Test
-	void rejectsABrewedDateInTheFuture() {
-		LocalDate tomorrow = LocalDate.now().plusDays(1);
+	private static final LocalDate TODAY = LocalDate.now();
 
-		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow, null))
+	@Test
+	void acceptsABrewedDateOfToday() {
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, TODAY, null);
+
+		assertThat(bottle.getBrewedDate()).isEqualTo(TODAY);
+	}
+
+	// The one-day tolerance is what lets a caller east of UTC record a bottle
+	// brewed on their own local today (see the task's Why): no IANA timezone
+	// is ever more than a day ahead of the server's own UTC clock.
+	@Test
+	void acceptsABrewedDateOfTomorrow() {
+		LocalDate tomorrow = TODAY.plusDays(1);
+
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow, null);
+
+		assertThat(bottle.getBrewedDate()).isEqualTo(tomorrow);
+	}
+
+	@Test
+	void rejectsABrewedDateTwoDaysInTheFuture() {
+		LocalDate dayAfterTomorrow = TODAY.plusDays(2);
+
+		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, dayAfterTomorrow, null))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
 	@Test
-	void acceptsABrewedDateOfToday() {
-		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, LocalDate.now(), null);
-
-		assertThat(bottle.getBrewedDate()).isEqualTo(LocalDate.now());
-	}
-
-	@Test
 	void rejectsABestBeforeDateEqualToTheBrewedDate() {
-		LocalDate date = LocalDate.now().minusMonths(1);
+		LocalDate date = TODAY.minusMonths(1);
 
 		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, date, date))
 				.isInstanceOf(InvalidBottleException.class);
@@ -36,7 +50,7 @@ class BottleTest {
 
 	@Test
 	void rejectsABestBeforeDateBeforeTheBrewedDate() {
-		LocalDate brewed = LocalDate.now().minusMonths(1);
+		LocalDate brewed = TODAY.minusMonths(1);
 		LocalDate bestBefore = brewed.minusDays(1);
 
 		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore))
@@ -45,7 +59,7 @@ class BottleTest {
 
 	@Test
 	void acceptsABestBeforeDateAfterTheBrewedDate() {
-		LocalDate brewed = LocalDate.now().minusYears(1);
+		LocalDate brewed = TODAY.minusYears(1);
 		LocalDate bestBefore = brewed.plusYears(2);
 
 		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, brewed, bestBefore);
@@ -63,7 +77,7 @@ class BottleTest {
 
 	@Test
 	void allowsOnlyTheBrewedDateToBeKnown() {
-		LocalDate brewed = LocalDate.now().minusMonths(6);
+		LocalDate brewed = TODAY.minusMonths(6);
 
 		Bottle bottle = Bottle.create(ENTRY, ContainerType.KEG, brewed, null);
 
@@ -73,7 +87,7 @@ class BottleTest {
 
 	@Test
 	void allowsOnlyTheBestBeforeDateToBeKnown() {
-		LocalDate bestBefore = LocalDate.now().plusMonths(6);
+		LocalDate bestBefore = TODAY.plusMonths(6);
 
 		Bottle bottle = Bottle.create(ENTRY, ContainerType.CAN, null, bestBefore);
 
@@ -96,7 +110,7 @@ class BottleTest {
 	@Test
 	void updateReplacesContainerTypeAndBothDates() {
 		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null);
-		LocalDate brewed = LocalDate.now().minusMonths(3);
+		LocalDate brewed = TODAY.minusMonths(3);
 		LocalDate bestBefore = brewed.plusYears(1);
 
 		bottle.update(ContainerType.KEG, brewed, bestBefore);
@@ -109,9 +123,9 @@ class BottleTest {
 	@Test
 	void updateEnforcesTheSameDateInvariantsAsCreate() {
 		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, null, null);
-		LocalDate tomorrow = LocalDate.now().plusDays(1);
+		LocalDate dayAfterTomorrow = TODAY.plusDays(2);
 
-		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, tomorrow, null))
+		assertThatThrownBy(() -> bottle.update(ContainerType.BOTTLE, dayAfterTomorrow, null))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 
