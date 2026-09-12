@@ -11,11 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -84,7 +82,7 @@ class CellarController {
 							schema = @Schema(implementation = ProblemDetail.class)))})
 	List<BottleDto> addBottles(@Valid @RequestBody AddBottleRequestDto request) {
 		return cellar.addBottles(identity.requireCurrentUserId(), request.beerId(), request.quantityOrDefault(),
-				request.containerType(), request.brewedDate(), request.bestBeforeDate(), resolveToday(request.today()))
+				request.containerType(), request.brewedDate(), request.bestBeforeDate())
 				.stream().map(BottleDto::from).toList();
 	}
 
@@ -105,7 +103,7 @@ class CellarController {
 	BottleDto updateBottle(@Parameter(description = "Bottle id") @PathVariable UUID id,
 			@Valid @RequestBody UpdateBottleRequestDto request) {
 		return BottleDto.from(cellar.updateBottle(identity.requireCurrentUserId(), id, request.containerType(),
-				request.brewedDate(), request.bestBeforeDate(), resolveToday(request.today())));
+				request.brewedDate(), request.bestBeforeDate()));
 	}
 
 	@DeleteMapping("/bottles/{id}")
@@ -117,12 +115,6 @@ class CellarController {
 					schema = @Schema(implementation = ProblemDetail.class)))
 	void removeBottle(@Parameter(description = "Bottle id") @PathVariable UUID id) {
 		cellar.removeBottle(identity.requireCurrentUserId(), id);
-	}
-
-	// ADR-0028: the token, not this value, is what's trusted — a caller can
-	// only misdate their own bottle by supplying a false today.
-	private static LocalDate resolveToday(@Nullable LocalDate clientToday) {
-		return clientToday != null ? clientToday : LocalDate.now();
 	}
 
 }

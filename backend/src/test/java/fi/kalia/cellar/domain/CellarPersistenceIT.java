@@ -34,9 +34,8 @@ class CellarPersistenceIT {
 	@Test
 	void persistsAndReloadsAnEntryWithItsBottles() {
 		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		entry.addBottles(1, ContainerType.BOTTLE, LocalDate.now().minusMonths(6), null, LocalDate.now());
-		entry.addBottles(1, ContainerType.CAN, LocalDate.now().minusYears(1), LocalDate.now().plusMonths(6),
-				LocalDate.now());
+		entry.addBottles(1, ContainerType.BOTTLE, LocalDate.now().minusMonths(6), null);
+		entry.addBottles(1, ContainerType.CAN, LocalDate.now().minusYears(1), LocalDate.now().plusMonths(6));
 		entries.saveAndFlush(entry);
 		testEntityManager.clear();
 
@@ -48,7 +47,7 @@ class CellarPersistenceIT {
 	@Test
 	void populatesCreatedAtAndUpdatedAtOnCreate() {
 		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		entry.addBottles(1, ContainerType.KEG, null, null, LocalDate.now());
+		entry.addBottles(1, ContainerType.KEG, null, null);
 		Entry saved = entries.saveAndFlush(entry);
 		Bottle bottle = saved.getBottles().getFirst();
 
@@ -75,7 +74,7 @@ class CellarPersistenceIT {
 	void removingABottleDeletesItsRowRatherThanLeavingItOrphaned() {
 		UUID userId = UUID.randomUUID();
 		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID()));
-		entry.addBottles(1, ContainerType.BOTTLE, null, null, LocalDate.now());
+		entry.addBottles(1, ContainerType.BOTTLE, null, null);
 		entries.saveAndFlush(entry);
 		testEntityManager.clear();
 
@@ -112,7 +111,7 @@ class CellarPersistenceIT {
 	void findSummariesByUserIdReportsDerivedQuantityWithoutLoadingBottles() {
 		UUID userId = UUID.randomUUID();
 		Entry withTwoBottles = entries.save(Entry.create(userId, UUID.randomUUID()));
-		withTwoBottles.addBottles(2, ContainerType.BOTTLE, null, null, LocalDate.now());
+		withTwoBottles.addBottles(2, ContainerType.BOTTLE, null, null);
 		entries.saveAndFlush(withTwoBottles);
 		entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID())); // another user
 
@@ -140,12 +139,12 @@ class CellarPersistenceIT {
 	void anEntrysBottlesLoadOrderedByCreatedAt() {
 		UUID userId = UUID.randomUUID();
 		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID()));
-		entry.addBottles(1, ContainerType.BOTTLE, null, null, LocalDate.now());
+		entry.addBottles(1, ContainerType.BOTTLE, null, null);
 		entries.saveAndFlush(entry);
-		entry.addBottles(1, ContainerType.CAN, null, null, LocalDate.now());
+		entry.addBottles(1, ContainerType.CAN, null, null);
 		entries.saveAndFlush(entry);
 		Entry other = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
-		other.addBottles(1, ContainerType.KEG, null, null, LocalDate.now());
+		other.addBottles(1, ContainerType.KEG, null, null);
 		entries.saveAndFlush(other);
 		testEntityManager.clear();
 

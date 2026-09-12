@@ -73,12 +73,12 @@ public class Entry {
 	}
 
 	public List<Bottle> addBottles(int quantity, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate, LocalDate today) {
+			@Nullable LocalDate bestBeforeDate) {
 		if (quantity <= 0) {
 			throw new InvalidBottleException("quantity must be positive");
 		}
 		List<Bottle> added = IntStream.range(0, quantity)
-				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate, today))
+				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate))
 				.toList();
 		touch();
 		return added;
@@ -90,9 +90,9 @@ public class Entry {
 	}
 
 	public Bottle updateBottle(UUID bottleId, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate, LocalDate today) {
+			@Nullable LocalDate bestBeforeDate) {
 		Bottle bottle = bottleWithId(bottleId);
-		bottle.update(containerType, brewedDate, bestBeforeDate, today);
+		bottle.update(containerType, brewedDate, bestBeforeDate);
 		touch();
 		return bottle;
 	}

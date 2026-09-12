@@ -60,31 +60,31 @@ public class Bottle {
 	}
 
 	static Bottle create(Entry entry, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate, LocalDate today) {
+			@Nullable LocalDate bestBeforeDate) {
 		Assert.notNull(entry, "entry must not be null");
 		Assert.notNull(containerType, "containerType must not be null");
-		Assert.notNull(today, "today must not be null");
-		requireValidDates(brewedDate, bestBeforeDate, today);
+		requireValidDates(brewedDate, bestBeforeDate);
 		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate);
 		entry.registerBottle(bottle);
 		return bottle;
 	}
 
 	void update(ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate, LocalDate today) {
+			@Nullable LocalDate bestBeforeDate) {
 		Assert.notNull(containerType, "containerType must not be null");
-		Assert.notNull(today, "today must not be null");
-		requireValidDates(brewedDate, bestBeforeDate, today);
+		requireValidDates(brewedDate, bestBeforeDate);
 		this.containerType = containerType;
 		this.brewedDate = brewedDate;
 		this.bestBeforeDate = bestBeforeDate;
 	}
 
-	// today is the caller's local day, resolved by CellarController — see
-	// BottleTest's suppliedToday tests for why it must not be LocalDate.now().
-	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate,
-			LocalDate today) {
-		if (brewedDate != null && brewedDate.isAfter(today)) {
+	// No IANA timezone's calendar day ever runs more than a day ahead of UTC
+	// (max offset +14:00), so this tolerance always accepts a bottle brewed
+	// on the caller's own local today without trusting anything it claims.
+	private static final int FUTURE_TOLERANCE_DAYS = 1;
+
+	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
+		if (brewedDate != null && brewedDate.isAfter(LocalDate.now().plusDays(FUTURE_TOLERANCE_DAYS))) {
 			throw new InvalidBottleException("brewedDate must not be in the future");
 		}
 		if (brewedDate != null && bestBeforeDate != null && !bestBeforeDate.isAfter(brewedDate)) {

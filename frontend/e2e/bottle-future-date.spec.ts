@@ -1,6 +1,6 @@
-// The brewed-date picker's max and the backend's "not in the future" check
-// are both judged against the caller's local calendar day, not the server's
-// or the browser's own UTC date.
+// The brewed-date picker's max is judged against the caller's local
+// calendar day, not the browser's UTC date; the backend accepts it under
+// its own one-day tolerance around the server's clock (Bottle.java).
 import { expect, signIn, test } from "./support/keycloakAccount";
 import { escapeRegExp } from "./support/text";
 
@@ -22,23 +22,35 @@ test("a bottle brewed on the local today is accepted while the UTC calendar date
   const beerName = (await card.getByRole("heading").textContent())!.trim();
   const beerNamePattern = new RegExp(escapeRegExp(beerName));
 
-  // 20:00 UTC on the 14th is already 01:30 local on the 15th: local "today"
-  // is a day past what a UTC-computed "today" would say.
-  await page.clock.setFixedTime(new Date("2030-06-14T20:00:00Z"));
+  // Freezing the browser clock only affects the page's own Date — the real
+  // backend keeps ticking on the actual wall clock, so this is anchored to
+  // today's real UTC date rather than a fixed literal that would eventually
+  // fall outside the backend's own one-day tolerance.
+  const utcTodayMidnight = Date.UTC(
+    new Date().getUTCFullYear(),
+    new Date().getUTCMonth(),
+    new Date().getUTCDate(),
+  );
+  const localTomorrowIso = new Date(utcTodayMidnight + 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  // 20:00 UTC is already 01:30 the next day in Kolkata: local "today" is a
+  // day past what a UTC-computed "today" would say.
+  await page.clock.setFixedTime(new Date(utcTodayMidnight + 20 * 60 * 60 * 1000));
 
   await card.getByRole("button", { name: "Add to cellar" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
   const brewedDateInput = page.getByLabel("Brewed (optional)");
-  await expect(brewedDateInput).toHaveAttribute("max", "2030-06-15");
-  await brewedDateInput.fill("2030-06-15");
+  await expect(brewedDateInput).toHaveAttribute("max", localTomorrowIso);
+  await brewedDateInput.fill(localTomorrowIso);
   await page.getByRole("dialog").getByRole("button", { name: "Add", exact: true }).click();
 
   await expect(page.getByRole("dialog")).toBeHidden();
   await expect(page.getByText("cellar.bottle.dateError.brewedInFuture")).toHaveCount(0);
 
   // Clean up: the shared per-worker account (keycloakAccount.ts) would
-  // otherwise keep a bottle dated years out indefinitely.
+  // otherwise keep this bottle around indefinitely.
   await page.goto("/en/cellar");
   await page.getByRole("button", { name: beerNamePattern }).click();
   const bottleList = page.getByRole("list", { name: new RegExp(`Bottles of ${beerNamePattern.source}`) });

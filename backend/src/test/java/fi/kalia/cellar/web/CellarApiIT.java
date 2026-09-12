@@ -282,18 +282,16 @@ class CellarApiIT {
 				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 
-	// A supplied today years from the real server clock, not a far-past or
-	// far-future literal: brewedDate equal to it is accepted only if the
-	// server honours the supplied value rather than its own LocalDate.now(),
-	// which would reject a brewedDate this far out either way.
+	// The one-day tolerance (Bottle.FUTURE_TOLERANCE_DAYS) is what lets a
+	// caller east of UTC record a bottle brewed on their own local today
+	// without the server trusting anything the caller claims about the date.
 	@Test
-	void addingABottleWithATodayFieldAcceptsABrewedDateEqualToIt() {
-		String suppliedToday = LocalDate.now().plusYears(3).toString();
+	void addingABottleWithABrewedDateOfTomorrowIsAccepted() {
+		String tomorrow = LocalDate.now().plusDays(1).toString();
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("beerId", beerId.toString());
 		request.put("containerType", "BOTTLE");
-		request.put("brewedDate", suppliedToday);
-		request.put("today", suppliedToday);
+		request.put("brewedDate", tomorrow);
 
 		String body = client.post().uri("/api/v1/cellar/bottles")
 				.header("Authorization", USER_A)
@@ -304,17 +302,15 @@ class CellarApiIT {
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
 
-		assertThat((String) JsonPath.read(body, "$[0].brewedDate")).isEqualTo(suppliedToday);
+		assertThat((String) JsonPath.read(body, "$[0].brewedDate")).isEqualTo(tomorrow);
 	}
 
 	@Test
-	void addingABottleWithATodayFieldRejectsABrewedDateOneDayPastIt() {
-		LocalDate suppliedToday = LocalDate.now().plusYears(3);
+	void addingABottleWithABrewedDateTwoDaysOutYieldsProblemJson400() {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("beerId", beerId.toString());
 		request.put("containerType", "BOTTLE");
-		request.put("brewedDate", suppliedToday.plusDays(1).toString());
-		request.put("today", suppliedToday.toString());
+		request.put("brewedDate", LocalDate.now().plusDays(2).toString());
 
 		client.post().uri("/api/v1/cellar/bottles")
 				.header("Authorization", USER_A)

@@ -45,16 +45,16 @@ public class CellarService {
 	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
 	// Do not add a side effect before entries.save(entry): a retry re-runs this whole method.
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
-			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate, LocalDate today) {
+			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = entryFor(userId, beerId);
-		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate, today);
+		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
 		return entries.save(entry).lastBottles(quantity);
 	}
 
 	public Bottle updateBottle(UUID userId, UUID bottleId, ContainerType containerType,
-			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate, LocalDate today) {
+			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = ownerOf(userId, bottleId);
-		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate, today);
+		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate);
 		entries.save(entry);
 		return updated;
 	}

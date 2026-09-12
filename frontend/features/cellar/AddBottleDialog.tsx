@@ -68,7 +68,6 @@ export const AddBottleDialog = ({ beerId, beerName }: { beerId: string; beerName
         quantity: values.quantity,
         brewedDate: values.brewedDate || undefined,
         bestBeforeDate: values.bestBeforeDate || undefined,
-        today: todayIso(),
       },
       { onSuccess: () => onOpenChange(false) },
     );

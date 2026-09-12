@@ -109,3 +109,19 @@ Resolved during refinement (2026-09-05):
 Provenance: quality backlog **MUST-9** (confirmed 2026-08-30). The
 `[needs decision]` was resolved with the product owner on 2026-09-04 — the
 client's local day, not UTC everywhere.
+
+**Revised during PR review (2026-09-12):** the transport decided above —
+the client sends its own local day, the backend trusts it and falls back to
+`LocalDate.now()` when absent — was replaced before merge. The product
+owner asked what the server-side check still validated once the client
+supplied both sides of the comparison, since nothing bounded a lying
+client's claimed "today" at all. The backend now widens its own
+`LocalDate.now()` by one day instead (`Bottle.FUTURE_TOLERANCE_DAYS`): no
+IANA timezone's calendar day ever runs more than a day ahead of UTC, so this
+still accepts a bottle brewed on the caller's own local today, without the
+server trusting anything the caller claims. It is also strictly more
+bounded than the transport above (a fixed one day, versus an unbounded
+client-supplied date). The frontend fix — `todayIso()` computing the local
+day, and the date picker's `max` — is unchanged; only the wire transport and
+the backend's own check were replaced. See
+[PR #250](https://github.com/MiguelSombrero/kalia/pull/250)'s discussion.

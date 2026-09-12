@@ -66,7 +66,6 @@ export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerNam
           containerType: values.containerType,
           brewedDate: values.brewedDate || undefined,
           bestBeforeDate: values.bestBeforeDate || undefined,
-          today: todayIso(),
         },
       },
       { onSuccess: () => onOpenChange(false) },
