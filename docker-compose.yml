@@ -222,6 +222,9 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     volumes:
       - ./scripts/seed-keycloak-account.mjs:/seed-keycloak-account.mjs:ro
+      # seed-keycloak-account.mjs imports its token-fetch/retry helper from
+      # this file by relative path, so it needs mounting alongside it.
+      - ./scripts/keycloak-admin.mjs:/keycloak-admin.mjs:ro
     entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]
 
   valkey:

@@ -1,6 +1,6 @@
 # Task 15: Extract a shared Keycloak admin-token/retry helper
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -116,10 +116,10 @@ Resolved during refinement (2026-09-12):
 
 ## Acceptance criteria
 
-- [ ] The three scripts import one shared admin-token/retry helper instead of
+- [x] The three scripts import one shared admin-token/retry helper instead of
       each implementing their own — verified by `git grep` finding no
       duplicate implementation of either piece of logic
-- [ ] `make keycloak-check`, the existing integration test exercising all
+- [x] `make keycloak-check`, the existing integration test exercising all
       three scripts together, still passes with identical observable
       behavior (same messages, same exit codes) before and after
 

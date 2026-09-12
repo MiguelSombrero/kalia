@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { fetchToken, withRetry } from "./keycloak-admin.mjs";
+
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8081";
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
@@ -11,23 +13,13 @@ if (!username || !password) {
   process.exit(1);
 }
 
-const adminToken = async () => {
-  const response = await fetch(`${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "password",
-      client_id: "admin-cli",
-      username: ADMIN_USERNAME,
-      password: ADMIN_PASSWORD,
-    }),
+const adminToken = () =>
+  fetchToken({
+    realm: "master",
+    username: ADMIN_USERNAME,
+    password: ADMIN_PASSWORD,
+    describeError: (status, text) => `could not obtain a Keycloak admin token: ${status} ${text}`,
   });
-  if (!response.ok) {
-    throw new Error(`could not obtain a Keycloak admin token: ${response.status} ${await response.text()}`);
-  }
-  const { access_token: token } = await response.json();
-  return token;
-};
 
 const findUser = async (token) => {
   const url = new URL(`${KEYCLOAK_URL}/admin/realms/${REALM}/users`);
@@ -99,19 +91,10 @@ const ensureAccount = async () => {
 // 503 "Bootstrap in progress" — this script's own depends_on
 // (keycloak-config, ADR-0054) already waits out most of that window, but
 // retry the whole operation anyway, not just the token request, since any
-// step can still hit it.
-const attempts = 15;
-const delayMs = 2000;
-for (let attempt = 1; ; attempt++) {
-  try {
-    await ensureAccount();
-    break;
-  } catch (error) {
-    if (attempt >= attempts) {
-      throw error;
-    }
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
-  }
-}
+// step can still hit it. No catch here: an uncaught throw at exhaustion
+// prints Node's own stack trace and exits non-zero, deliberately unlike
+// check-keycloak-signin.mjs and check-keycloak-realm-config.mjs's clean
+// one-line message — don't add one without also reconciling the wording.
+await withRetry(ensureAccount, { attempts: 15, delayMs: 2000 });
 
 console.log(`Keycloak account ${username} is present in realm ${REALM}`);

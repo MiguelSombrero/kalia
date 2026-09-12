@@ -22,6 +22,8 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
+import { fetchToken, withRetry } from "./keycloak-admin.mjs";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
 
@@ -195,23 +197,13 @@ const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
 const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
 
-const adminToken = async () => {
-  const response = await fetch(`${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "password",
-      client_id: "admin-cli",
-      username: ADMIN_USERNAME,
-      password: ADMIN_PASSWORD,
-    }),
+const adminToken = () =>
+  fetchToken({
+    realm: "master",
+    username: ADMIN_USERNAME,
+    password: ADMIN_PASSWORD,
+    describeError: (status, text) => `could not obtain a Keycloak admin token: ${status} ${text}`,
   });
-  if (!response.ok) {
-    throw new Error(`could not obtain a Keycloak admin token: ${response.status} ${await response.text()}`);
-  }
-  const { access_token: token } = await response.json();
-  return token;
-};
 
 const fetchJson = async (token, path) => {
   const response = await fetch(`${KEYCLOAK_URL}${path}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -248,22 +240,11 @@ const run = async () => {
   // out. Mismatches get exactly one recheck after a short pause: a genuine
   // drift is still there a moment later, but a read that caught Keycloak's
   // realm cache mid-write clears — retrying a real mismatch to exhaustion
-  // would just burn 30 seconds before failing anyway.
-  const attempts = 15;
+  // would just burn 30 seconds before failing anyway. withRetry throws at
+  // exhaustion, caught by this module's own run().catch below — same
+  // one-line message and exit code as fetching it directly.
   const delayMs = 2000;
-  const fetchWithRetry = async () => {
-    let lastError;
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-      try {
-        return await fetchLiveRealm(clientIds);
-      } catch (error) {
-        lastError = error;
-        if (attempt < attempts) await new Promise((r) => setTimeout(r, delayMs));
-      }
-    }
-    console.error(lastError.message);
-    process.exit(1);
-  };
+  const fetchWithRetry = () => withRetry(() => fetchLiveRealm(clientIds), { attempts: 15, delayMs });
 
   let { mismatches, compared } = diffRealm(committed, await fetchWithRetry());
   if (mismatches.length > 0) {
