@@ -1,6 +1,6 @@
 # Task 17: Reconcile check-signup-survives-restart.mjs with the shared Keycloak helper
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -41,17 +41,33 @@ call-site swap, and outside what task 15 itself scoped or reviewed.
 
 ## Scope
 
-Decide, and implement, one of:
+Migrate `check-signup-survives-restart.mjs` onto
+`scripts/keycloak-admin.mjs`'s exported `fetchToken`/`withRetry`, replacing
+its own `adminToken()` (line 80), `trySignIn()` (line 192), and
+`signInWithRetry()` (line 210) — with identical caller-visible behavior (same
+log lines, same error wording, same exit codes, same retry counts/delays).
 
-- **(a)** Extend `scripts/keycloak-admin.mjs`'s `fetchToken`/retry helper with
-  an opt-out from reading and forwarding the response body on password-bearing
-  error paths, then migrate `check-signup-survives-restart.mjs` onto it.
-- **(b)** Leave `check-signup-survives-restart.mjs`'s copy as its own
-  implementation, with a comment explaining why it isn't shared — pointing at
-  the CodeQL fix and at `scripts/keycloak-admin.mjs`.
+Each call site composes `fetchToken` + `withRetry` directly, the same pattern
+`seed-keycloak-account.mjs` and `check-keycloak-realm-config.mjs` already use
+(task 15 never exported a combined "admin token" helper — only the two
+lower-level pieces are shared):
 
-Whichever is chosen, the decision and its reasoning are recorded in this task
-file (Open questions, once resolved) rather than left implicit in a diff.
+- Master-realm admin token (replacing `adminToken()`): `fetchToken({realm:
+  "master", username: ADMIN_USERNAME, password: ADMIN_PASSWORD,
+  describeError})` wrapped in `withRetry(..., {attempts: 15, delayMs:
+  2000})`, matching the other two scripts' identical composition.
+- `kalia`-realm sign-in check (replacing `trySignIn()`): `fetchToken({realm:
+  REALM, username, password, describeError})`, retried via `withRetry(...,
+  {attempts: 30, delayMs: 2000})` in place of `signInWithRetry()`.
+
+No change to `scripts/keycloak-admin.mjs` itself: `fetchToken`'s existing
+`describeError(status, text)` contract already supports omitting the response
+body from a thrown message — a caller's `describeError` simply doesn't
+reference the `text` argument. `response.text()` is still read internally by
+`fetchToken`, but since that value never reaches a thrown message or a log
+call for either of this script's call sites, there is no CodeQL
+clear-text-logging data-flow path from it, so no interface change is needed
+to avoid reintroducing the finding.
 
 ## Non-goals
 
@@ -62,34 +78,67 @@ file (Open questions, once resolved) rather than left implicit in a diff.
 - A generic "read the body or don't" flag on every `keycloak-admin.mjs`
   function regardless of whether anything needs it — only the password-bearing
   paths this script exercises are in play.
+- Any change to `fetchToken`'s signature, or to `scripts/keycloak-admin.test.mjs`
+  — see Scope: the existing contract already covers this script's needs.
+- Exporting a shared `adminToken()` composition (or any other new export)
+  from `scripts/keycloak-admin.mjs` — this script composes `fetchToken` and
+  `withRetry` at its own call sites instead, matching `seed-keycloak-account.mjs`
+  and `check-keycloak-realm-config.mjs`.
 
 ## Constraints
 
-- This task cannot start implementation before [task 15](15-shared-keycloak-admin-helper.md)
-  lands, if option (a) is chosen — there is no `scripts/keycloak-admin.mjs` to
-  extend until then. If option (b) is chosen, this task does not depend on
-  task 15's implementation timing, only on its existence as the thing the
-  comment points to.
-- Whatever the outcome, no password or other credential value may reach
-  `console.log`/`console.error` or a thrown `Error` message — the constraint
-  the original CodeQL finding enforced stays in force.
+- [Task 15](15-shared-keycloak-admin-helper.md) is done and
+  `scripts/keycloak-admin.mjs` exists, so this task is unblocked.
+- No password or other credential value may reach `console.log`/`console.error`
+  or a thrown `Error` message — the constraint the original CodeQL finding
+  enforced stays in force.
+- `describeError` for the master-realm admin token call site must reproduce
+  `adminToken()`'s current exact wording, `could not obtain a Keycloak admin
+  token: ${response.status}` (no response body — its current behavior already
+  omits it, unlike `keycloak-admin.mjs`'s own private `adminToken()`, whose
+  `describeError` includes `${text}`).
+- `describeError` for the `kalia`-realm sign-in call site must reproduce
+  `trySignIn()`'s current exact wording, `Keycloak rejected sign-in for
+  ${username} after the restart: ${response.status}` (no response body).
+- `fetchToken` only returns whatever `access_token` field it finds (or
+  `undefined`) — it does not itself check for a missing token. The migrated
+  sign-in call site must keep `trySignIn()`'s explicit check (line 203-205)
+  and its exact message, `Keycloak accepted sign-in for ${username} after the
+  restart but returned no access token`, for the case where Keycloak accepts
+  credentials but the grant response omits a token.
 
 ## Open questions
 
+**None.**
+
+Resolved during refinement (2026-09-12):
+
 1. **(a) shared helper with an opt-out, or (b) keep the script's own copy
-   with an explaining comment?** See Scope. This is the product-owner
-   decision this task exists to capture.
-2. If (a): what should the opt-out look like on `fetchToken`'s call
-   signature — a boolean flag, or a `describeError` that simply never
-   receives the body (e.g., called with `undefined` when the caller opted
-   out) — and does `withRetry` need any change at all, or only `fetchToken`?
+   with an explaining comment?** Decided: (a) — migrate onto
+   `scripts/keycloak-admin.mjs`'s exported `fetchToken`/`withRetry`. See
+   Scope.
+2. **What should the opt-out look like on `fetchToken`'s call signature?**
+   Decided: no signature change. `fetchToken`'s existing `describeError(status,
+   text)` callback already lets a caller ignore `text`; since neither of this
+   script's two call sites' `describeError` implementations reference it, no
+   data flows from the response body to a thrown message, so the CodeQL
+   clear-text-logging finding the original fix addressed does not reappear.
+   `withRetry` needs no change either — its shape (attempts/delayMs, always
+   throws at exhaustion) already matches `signInWithRetry()` and `adminToken()`
+   exactly.
+3. **Should `scripts/keycloak-admin.mjs` export a shared `adminToken()`
+   composition, now that a third script would use the identical
+   master-realm/attempts:15/delayMs:2000 shape?** Decided: no — compose
+   `fetchToken` + `withRetry` inline at this script's own call site, matching
+   `seed-keycloak-account.mjs` and `check-keycloak-realm-config.mjs`. Keeps
+   this task's diff a like-for-like swap and avoids re-opening task 15's
+   scope (Non-goals).
 
 ## Acceptance criteria
 
 - [ ] `check-signup-survives-restart.mjs` no longer duplicates
-      `scripts/keycloak-admin.mjs`'s helper (option a), or carries a comment
-      explaining why it keeps its own copy (option b) — verified by reading
-      the diff
+      `scripts/keycloak-admin.mjs`'s `fetchToken`/`withRetry` — verified by
+      reading the diff
 - [ ] `make keycloak-check` and `node --test scripts/check-signup-survives-restart.test.mjs`
       still pass with identical observable behavior (same log lines, same
       exit codes) before and after
