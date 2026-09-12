@@ -176,6 +176,22 @@ jobs:
       - name: Self-test the signup-restart checker against fixtures
         run: node --test scripts/check-signup-survives-restart.test.mjs
 
+  keycloak-admin-checker-self-test:
+    name: Keycloak admin helper self-test
+    # Same reasoning as the two self-tests above: fetchToken/withRetry in
+    # scripts/keycloak-admin.mjs only run for real against a live Keycloak
+    # (keycloak-realm-check below, through the three scripts that import
+    # them), so this pins their retry/exhaustion behavior against a stubbed
+    # fetch instead.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Self-test the shared Keycloak admin-token/retry helper
+        run: node --test scripts/keycloak-admin.test.mjs
+
   backend:
     name: Backend (Maven)
     needs: [changes]

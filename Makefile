@@ -48,7 +48,7 @@ check: ## Run doc/task/comment/glossary consistency checks
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
 	node scripts/check-glossary.mjs
-	node --test scripts/check-glossary.test.mjs scripts/check-keycloak-realm-config.test.mjs scripts/check-signup-survives-restart.test.mjs
+	node --test scripts/check-glossary.test.mjs scripts/check-keycloak-realm-config.test.mjs scripts/check-signup-survives-restart.test.mjs scripts/keycloak-admin.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build backend postgres
