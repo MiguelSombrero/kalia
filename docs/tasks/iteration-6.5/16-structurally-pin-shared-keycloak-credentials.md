@@ -1,6 +1,6 @@
 # Task 16: Structurally pin auth.ts's shared Keycloak credentials
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -95,17 +95,17 @@ Resolved during refinement (2026-09-11):
 
 ## Acceptance criteria
 
-- [ ] `frontend/lib/auth/keycloakOptions.ts` exports a provider-builder
+- [x] `frontend/lib/auth/keycloakOptions.ts` exports a provider-builder
       function and no longer exports the raw credentials object — verified
       by `git grep` finding no other file importing a raw `keycloakOptions`
       value
-- [ ] `frontend/auth.ts`'s `providers` array builds both the `keycloak` and
+- [x] `frontend/auth.ts`'s `providers` array builds both the `keycloak` and
       `keycloak-register` entries through that function — verified by
       reading the diff and by `npm run build` succeeding
-- [ ] A unit test builds both provider variants and asserts identical
+- [x] A unit test builds both provider variants and asserts identical
       `clientId`/`issuer`, confirmed to fail when one variant is hand-edited
       to a different value
-- [ ] `npm test` and `npm run lint` pass
+- [x] `npm test` and `npm run lint` pass
 
 ## Notes
 
