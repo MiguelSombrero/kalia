@@ -43,7 +43,7 @@ Goal: someone other than the author can create a Kalia account.
 | [14](iteration-6.5/14-fix-api-client-doc-contradiction.md) | Resolve architecture.md's contradiction about the API client | done |
 | [15](iteration-6.5/15-shared-keycloak-admin-helper.md) | Extract a shared Keycloak admin-token/retry helper | done |
 | [16](iteration-6.5/16-structurally-pin-shared-keycloak-credentials.md) | Structurally pin auth.ts's shared Keycloak credentials | done |
-| [17](iteration-6.5/17-reconcile-signup-restart-check-with-shared-keycloak-helper.md) | Reconcile check-signup-survives-restart.mjs with the shared Keycloak helper | needs-refinement |
+| [17](iteration-6.5/17-reconcile-signup-restart-check-with-shared-keycloak-helper.md) | Reconcile check-signup-survives-restart.mjs with the shared Keycloak helper | refined |
 
 Numbered 6.5 rather than inserted as a renumbered 7, for the same reason
 [iteration 5.5](iteration-5.5.md) was: iterations 6–8 are already drafted under
