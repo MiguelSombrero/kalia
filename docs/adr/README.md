@@ -63,6 +63,14 @@ nobody has committed to becomes a constraint anyway.
   never a mutable copy, and is named as a past participle on the thing that
   changed (`BottleAdded`).
 
+## Feed
+
+- [ADR-0058](0058-feed-event-recording-model.md) — feed's listener is
+  idempotent on a dedicated event id (not a natural key), the event carries
+  no `entryId` because it isn't reliably available yet when the event is
+  registered, and `FeedLine` freezes quantity and vintage from the event
+  rather than ever reading `cellar` live.
+
 ## Profiles and public cellars
 
 What a user is to other users, and how the one thing they can publish is

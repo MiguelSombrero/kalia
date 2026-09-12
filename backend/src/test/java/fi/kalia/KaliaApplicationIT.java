@@ -73,7 +73,7 @@ class KaliaApplicationIT {
 		List<String> schemas = jdbcTemplate.queryForList(
 				"SELECT schema_name FROM information_schema.schemata", String.class);
 
-		assertThat(schemas).contains("catalog", "cellar");
+		assertThat(schemas).contains("catalog", "cellar", "feed");
 	}
 
 	// The store never shipped (ADR-0004, ADR-0005).

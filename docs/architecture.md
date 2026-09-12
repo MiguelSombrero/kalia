@@ -65,12 +65,14 @@ flowchart LR
         CEL[cellar]
         IDN[identity]
         PROF[profile]
+        FED[feed]
     end
     Browser --> UI
     UI --> RH
     RH -->|REST, JSON| API
     API --> CAT & CEL & IDN & PROF
-    CAT & CEL & PROF --> PG[(PostgreSQL)]
+    FED --> CEL
+    CAT & CEL & PROF & FED --> PG[(PostgreSQL)]
 ```
 
 Key properties:
@@ -118,6 +120,7 @@ cross-module *reads* via the root-package API.
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
+| `feed` | A record of things that happened — currently, a bottle added to a cellar *(iteration 7)*; reading it over HTTP and any UI are later tasks | `cellar` (event: bottle added) |
 
 The term each module owns — every `domain` type's meaning inside its module,
 the words that mean two things across modules, and the published REST/JSON/
@@ -155,6 +158,7 @@ catalog.beer(id, brewery_id, name, style, abv, description, created_at)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at)
+feed.line(id, event_id, user_id, beer_id, quantity, brewed_date, occurred_at, sequence_number, created_at, updated_at)
 ```
 
 `style` starts as an indexed text column; normalize into its own table only
@@ -202,6 +206,23 @@ whole public identity and the URL segment a public cellar is addressed by
 to `false`, and **a missing profile row reads as private** — the rule every
 reader of it must apply, since lazy creation means the row may legitimately
 not exist yet.
+
+**A `feed.line` row is a record of an act, not a view of a current holding**
+([ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md),
+[ADR-0058](adr/0058-feed-event-recording-model.md)): `quantity` and
+`brewed_date` are frozen from the `cellar.BottleAdded` event that created the
+row and never change again, even if the bottles they describe are later
+edited or removed. `event_id` is the idempotency key a listener checks before
+inserting, since Spring Modulith's event publication registry is
+at-least-once. Every addition is recorded whatever the owner's cellar
+visibility — the read, not the write, is where that rule applies
+([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)) — so the table
+retains rows for cellars that are currently private.
+`sequence_number` is a database-assigned, strictly increasing identity column,
+indexed from its first migration though nothing queries it yet: it is the
+total order [iteration 7 task 06](tasks/iteration-7/06-feed-increments.md)
+reads a cursor against, because neither `occurred_at` nor an ordinary
+`BIGSERIAL` survives commit reordering on its own.
 
 ## 4. API design
 
@@ -610,6 +631,7 @@ the failure back to the agent without blocking
 | [ADR-0055](adr/0055-self-registration-via-keycloak.md) | Self-registration via Keycloak's own registration flow | accepted | 2026-09-06 |
 | [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md) | Kalia's Keycloak pages — a minimal theme, realm-level i18n, and Keycloak's own translations | accepted | 2026-09-08 |
 | [ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md) | A get-or-create write retries once on its own unique-constraint violation, each attempt its own transaction | accepted | 2026-09-11 |
+| [ADR-0058](adr/0058-feed-event-recording-model.md) | Feed's event-recording model — an idempotent listener freezing an act's own facts, reading nothing live | accepted | 2026-09-12 |
 
 ### Engineering process and documentation
 

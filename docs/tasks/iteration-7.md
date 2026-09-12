@@ -29,7 +29,7 @@ showing it as it happens.
 |---|---|---|
 | [09](iteration-7/09-feed-and-private-cellars.md) | What a feed line may reveal, and what that does to ADR-0050 | refined |
 | [05](iteration-7/05-feed-delivery-decision.md) | Decide how the feed reaches a browser that is already open | refined |
-| [01](iteration-7/01-feed-module.md) | `feed` module and cellar events | refined |
+| [01](iteration-7/01-feed-module.md) | `feed` module and cellar events | done |
 | [04](iteration-7/04-feed-line-composition.md) | The reads a feed line needs | refined |
 | [02](iteration-7/02-feed-api.md) | Feed read API | refined |
 | [06](iteration-7/06-feed-increments.md) | Asking the feed what is new | refined |

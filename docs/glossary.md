@@ -100,6 +100,23 @@ read of a cellar its owner has made public. Reads `catalog` (beer existence),
 | `EntryRepository` | Persistence for the `Entry` aggregate. Every lookup is keyed on an already-resolved owner id, so another user's entry and a missing one are indistinguishable. | [ADR-0050](adr/0050-public-cellar-addressing.md) |
 | `InvalidBottleException` | A domain exception for bottle data that cannot be accepted: a future brewed date, a best-before date not after the brewed date, a non-positive add quantity. | [ADR-0014](adr/0014-shared-exception-handling.md) |
 
+## feed
+
+A record of things that happened — currently, a bottle added to a cellar.
+Depends on `cellar` (the `BottleAdded` event) and nothing else. **"Feed",
+"event" and "activity" already mean something else in this codebase** — a
+Spring application event, a Spring Modulith `event_publication` row — so a
+type here is never named with any of those three words on its own; `FeedLine`
+is deliberately explicit rather than the bare `Line` the module-scoping
+convention would otherwise suggest.
+
+### Domain types (`fi.kalia.feed.domain`)
+
+| Type | Meaning in this module | Why |
+|---|---|---|
+| `FeedLine` | A record of one act — a bulk-add of bottles to a cellar entry. Freezes `quantity` and `brewedDate` from the `cellar.BottleAdded` event that created it forever; never updated afterwards. | [ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md), [ADR-0058](adr/0058-feed-event-recording-model.md) |
+| `FeedLineRepository` | Persistence for `FeedLine`, including the `existsByEventId` idempotency check a redelivered event relies on. | [ADR-0058](adr/0058-feed-event-recording-model.md) |
+
 ---
 
 ## Words that mean two things across modules
