@@ -2,6 +2,7 @@
 
 - **Status:** needs-refinement
 - **Iteration:** [7](../iteration-7.md)
+- **Covers:** DW-4, DW-3
 
 ## Why
 
@@ -25,14 +26,27 @@ empty states — including the empty state that a brand-new installation shows.
 
 - Liking or commenting on an event — [backlog](../backlog.md).
 - Filtering or personalising the feed.
+- Updating the page while it is open — [task 07](07-live-front-page.md) makes
+  this page live; this task gets the rendered version right first.
+- A relative-time formatter usable outside `features/cellar` —
+  [task 08](08-shared-relative-time.md), if question 2 below wants one.
 - Removing the catalog entry point. Browsing beers stays reachable from the
   front page.
 
 ## Constraints
 
 - Server components by default; a client component only where interaction needs
-  one ([frontend/README.md](../../../frontend/README.md) conventions). A feed
-  that only renders does not need the client.
+  one ([frontend/README.md](../../../frontend/README.md) conventions). The
+  rendered feed this task builds does not need the client —
+  [task 07](07-live-front-page.md) is what makes it live, and it must be able
+  to adopt this list rather than replace it, so the markup and data this task
+  produces are the ones a client component takes over.
+- **The feed is global shared state and the Playwright suite mutates it.**
+  Other specs add bottles while this one runs, so an assertion about a feed's
+  length, or about an event's *position* in it, flakes in CI
+  ([iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md) is
+  the precedent) — assert that your own event is present, from an account that
+  is yours.
 - The feature package follows whatever
   [iteration 5 task 06](../iteration-5/06-feature-public-surfaces.md) settles
   for public surfaces, and the boundaries
@@ -53,10 +67,15 @@ empty states — including the empty state that a brand-new installation shows.
 
 The product owner wants a say here: this is the first thing anyone sees.
 
-1. **What does a feed line say, in both languages?** "Miguel Sombrero added
-   AleSmith IPA to his cellar" is the vision's example. The exact wording,
-   including how a private cellar's line reads if it appears at all, wants
-   writing rather than defaulting.
+1. **What does a feed line say, in both languages?** "MiguelSombrero added
+   AleSmith IPA to the cellar" is the vision's example with the username in it
+   ([dropped task 10](10-person-display-name.md)), and "the cellar" is the
+   linked text where the cellar is public. The exact wording, including how a
+   private cellar's line reads if it appears at all, wants writing rather than
+   defaulting. In Finnish the linked words take a case ending and cannot be a
+   fixed substring of a translated sentence — this is the trap the Constraints
+   name, and it is sharper here because the link is in the middle of the
+   sentence rather than at its end.
 2. **How is time shown** — "2 hours ago", a date, or nothing?
 3. **What does the front page look like around the feed?** Is the feed the
    whole page now, or does the title, tagline and catalog button stay above it?

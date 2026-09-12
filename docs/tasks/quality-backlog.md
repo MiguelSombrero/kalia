@@ -66,22 +66,6 @@ they're already cross-referenced from merged PRs and
   lines 3-4 is "describes **what is built**, plus the iteration currently
   being built". `ArchitectureDocumentationTest` guards the module set and
   dependency edges but nothing guards this prose.
-- **SHOULD-13** *(confirmed 2026-08-30)* — the per-module exception advices are
-  application-global, not module-scoped as ADR-0014 and `backend/README.md`
-  describe: a bare `@RestControllerAdvice` with no `basePackages` or
-  `assignableTypes` registers for every controller in the application, so
-  catalog's advice is live on cellar's and identity's endpoints.
-  `backend/src/main/java/fi/kalia/catalog/web/CatalogExceptionHandler.java:11`,
-  `backend/src/main/java/fi/kalia/cellar/web/CellarExceptionHandler.java:13`.
-  No collision exists today, but two modules already define same-named
-  `BeerNotFoundException` types, and iterations 6 and 7 each add a module.
-- **SHOULD-14** *(confirmed 2026-08-30)* — "DTOs at the API boundary — JPA
-  entities never serialize directly" (`docs/architecture.md:220`) is the one
-  §3/§4 layering rule with no ArchUnit guard, in a codebase that enforces its
-  neighbours. The architecture deliberately hands domain entities outward
-  (`CellarService.listBottles` returns `List<Bottle>` to `web`), so a handler
-  returning `Bottle` instead of `BottleDto` would serialize `entry.userId` and
-  trip a lazy collection with no test, no lint and no build failure.
 - **SHOULD-15** *(confirmed 2026-08-30)* **[needs decision]** —
   `features/cellar` depends on the catalog subdomain invisibly to the boundary
   rule documented as enforcing exactly this: `frontend/features/cellar/api.ts:2`
@@ -138,32 +122,6 @@ they're already cross-referenced from merged PRs and
   (Sign-up), so the README reads as if account creation is never coming.
   `README.md:109-115` vs `docs/roadmap.md:54` and `docs/tasks/iteration-6.5.md`
   with its nine task files.
-- **SHOULD-22** *(confirmed 2026-08-30)* — the search predicates lowercase with
-  the JVM default locale while the SQL side and the `lower(...)` indexes do
-  not, so the two disagree wherever the default locale is Turkish or Azeri:
-  `"IPA".toLowerCase()` yields dotless `"ıpa"` and `?style=IPA` returns zero
-  rows. `backend/src/main/java/fi/kalia/catalog/domain/BeerSpecifications.java:29`,
-  `:34`, `:41` — `toLowerCase(Locale.ROOT)` at all three sites. Nothing in the
-  suite pins the locale, so this passes CI and fails only in that deployment.
-- **SHOULD-23** *(confirmed 2026-08-30)* — a misspelled sort *direction*
-  silently sorts the wrong way: `parseSort` rejects an unknown property and
-  more than two comma-separated parts, but any second part that is not `desc`
-  falls through to `ASC` with no error, so `?sort=abv,dsc` returns 200 sorted
-  ascending. `backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:114`.
-  This is the direction-token half of the shape retired COULD-8 fixed for
-  trailing garbage, left behind.
-- **SHOULD-24** *(confirmed 2026-08-30)* — the session-cookie lookup prefers
-  the unprefixed name over `__Secure-`: the array is ordered
-  `["authjs.session-token", "__Secure-authjs.session-token"]` and the first
-  defined value wins, the opposite of Auth.js, which under HTTPS issues and
-  reads only the `__Secure-` name.
-  `frontend/lib/auth/sessionCookie.ts:6`. Harmless today (no TLS deployment,
-  so `__Secure-` is never issued); once TLS lands, an attacker who can write a
-  cookie for the registrable domain but not read the victim's sets the
-  unprefixed name, `auth()` still resolves the victim's session, and every
-  backend call carries the *attacker's* bearer token — the victim's bottles
-  land in the attacker's cellar. `sessionCookie.test.ts` never tests the
-  both-present case.
 - **SHOULD-25** *(confirmed 2026-09-05)* **[needs decision]** —
   `keycloak/realm-export.json` is simultaneously the dev realm and the repo's
   only realm definition. Two of its three original findings are now fixed by
@@ -177,13 +135,14 @@ they're already cross-referenced from merged PRs and
   (`KEYCLOAK_SSL_REQUIRED:-none`) if nobody sets it, so a hasty first
   deployment that only sets the two secrets this file now demands
   (`FRONTEND_URL`, `KALIA_FRONTEND_CLIENT_SECRET`) still inherits dev's HTTP
-  posture silently. What remains: there is still no `bruteForceProtected`
-  anywhere in the file (so still no lockout on password guessing in any
-  environment, dev included), the insecure default stays live until an
-  operator overrides it, and it is still one realm definition rather than a
-  dev realm split from a
-  deployable one — harden the shared realm's remaining gaps, or make that
-  split, is still an open decision.
+  posture silently. What remains: the insecure `sslRequired` default stays
+  live until an operator overrides it, and it is still one realm definition
+  rather than a dev realm split from a deployable one — harden the shared
+  realm's remaining gaps, or make that split, is still an open decision.
+  **The missing `bruteForceProtected` half of this finding was lifted
+  2026-09-12 into
+  [iteration-7 task 11](iteration-7/11-keycloak-brute-force-protection.md)**
+  and is no longer part of what remains here.
 - **SHOULD-26** *(confirmed 2026-08-30)* **[needs decision]** — Valkey holds
   every session's refresh and ID tokens in plaintext JSON with no
   authentication and no TLS: the URL is `redis://` with no credentials
@@ -217,16 +176,6 @@ they're already cross-referenced from merged PRs and
 
 ## COULD
 
-- **COULD-16** *(confirmed 2026-08-30)* — the catalog module has no `*Test`
-  files at all, only `*IT`, so `mvn test` — the fast, Docker-free gate — covers
-  none of its three pieces of pure, framework-free logic: `parseSort`'s
-  tokenizing and whitelist
-  (`backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:103`),
-  `listBreweries`'s in-memory `subList` slicing with `Math.min` clamps at both
-  ends (`.../catalog/application/CatalogService.java:40`), and
-  `escapeLikeWildcards`'s backslash-first escaping
-  (`.../catalog/domain/BeerSpecifications.java:17`). All three are static and
-  need no Spring context.
 - **COULD-17** *(confirmed 2026-08-30)* **[needs decision]** — `MAX_PAGE`
   10,000 combined with `MAX_PAGE_SIZE` 100 admits `OFFSET 1_000_000` on an
   endpoint `SecurityConfig` makes `permitAll()`
@@ -342,3 +291,9 @@ live section they came from.
 - ~~MUST-7~~ (price listed as a *built* search filter in `docs/architecture.md` §1 and `README.md` though the API has no price parameter) — retired into [iteration-6.5 task 10](iteration-6.5/10-remove-beer-price.md): that task removes price entirely and its doc sweep now names both locations explicitly. Superseded by that task rather than lifted separately, the same way SHOULD-10 was.
 - ~~MUST-8~~ (two concurrent "add bottle" requests for the same beer end in a 500 with no bottles persisted, the `entryFor` read-then-insert racing the `UNIQUE (user_id, beer_id)` constraint) — lifted into [iteration-6.5 task 11](iteration-6.5/11-concurrent-add-bottle-race.md). `[needs decision]` resolved by the product owner on 2026-09-04: catch-and-refetch via Spring Retry, not a 409 and not a Postgres `ON CONFLICT` upsert.
 - ~~MUST-9~~ ("brewed in the future" judged against the UTC date while the date picker offers the user's local date, blocking a user east of UTC from recording today's bottle in the early hours) — lifted into [iteration-6.5 task 12](iteration-6.5/12-bottle-future-date-uses-local-day.md). `[needs decision]` resolved by the product owner on 2026-09-04: "today" is the client's local day.
+- ~~SHOULD-13~~ (per-module `@RestControllerAdvice`s are bare and therefore application-global, so catalog's advice is live on every module's endpoints) — lifted into [iteration-7 task 12](iteration-7/12-scope-exception-advices.md). Re-confirmed 2026-09-12 and lifted then rather than at a later sweep because iteration 7 adds `feed`, the third module to register one.
+- ~~SHOULD-14~~ ("DTOs at the API boundary" is the one §3/§4 layering rule with no ArchUnit guard, in an architecture that deliberately hands domain entities outward) — lifted into [iteration-7 task 13](iteration-7/13-guard-dtos-at-the-api-boundary.md). Re-confirmed 2026-09-12; lifted ahead of iteration 7 task 02, the first public endpoint returning many users' data.
+- ~~SHOULD-22~~ (search predicates lowercase with the JVM default locale, so `?style=IPA` returns zero rows under a Turkish or Azeri default) — lifted into [iteration-7 task 14](iteration-7/14-catalog-silent-failures.md), merged with SHOULD-23 and COULD-16 at the product owner's instruction to combine similar small findings: all three are in `catalog`, and two of them live in the functions the third says are untested.
+- ~~SHOULD-23~~ (a misspelled sort *direction* falls through to `ASC`, so `?sort=abv,dsc` returns 200 sorted the wrong way) — lifted into [iteration-7 task 14](iteration-7/14-catalog-silent-failures.md), merged as above.
+- ~~SHOULD-24~~ (the session-cookie lookup prefers the unprefixed name over `__Secure-`, the opposite of Auth.js; once TLS lands, an attacker who can write but not read cookies for the registrable domain makes every backend call carry *their* bearer token) — lifted into [iteration-7 task 15](iteration-7/15-session-cookie-prefers-secure-prefix.md). Re-confirmed 2026-09-12: `SESSION_COOKIE_NAMES` still lists the unprefixed name first.
+- ~~COULD-16~~ (the catalog module has no `*Test` files at all, so `mvn test` covers none of its three pieces of pure, framework-free logic) — lifted into [iteration-7 task 14](iteration-7/14-catalog-silent-failures.md), merged as above.
