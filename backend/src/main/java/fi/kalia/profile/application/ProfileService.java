@@ -2,8 +2,11 @@ package fi.kalia.profile.application;
 
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,15 @@ public class ProfileService {
 	// A missing row reads as private (ADR-0049).
 	public boolean isCellarPublic(UUID userId) {
 		return profiles.findById(userId).map(Profile::isCellarPublic).orElse(false);
+	}
+
+	// Do not add a per-entry visibility flag: an id with no profile row and one
+	// whose cellar is private must stay indistinguishable, so both are simply
+	// absent from the map rather than present with cellarPublic=false (ADR-0050).
+	public Map<UUID, String> publicUsernames(Collection<UUID> userIds) {
+		return profiles.findAllById(userIds).stream()
+				.filter(Profile::isCellarPublic)
+				.collect(Collectors.toMap(Profile::getId, Profile::getUsername));
 	}
 
 	// Empty for an unknown username, a missing profile row and a private cellar

@@ -1,6 +1,6 @@
 # Task 04: The reads a feed line needs
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-2
 
@@ -145,23 +145,23 @@ for how a line is assembled; [task 02](02-feed-api.md) and
 
 ## Acceptance criteria
 
-- [ ] A set of beer ids resolves to a name and a brewery, separately, in one
+- [x] A set of beer ids resolves to a name and a brewery, separately, in one
       query, and an unknown id is handled by the convention this task states
       rather than by an exception — integration test including an unknown id
-- [ ] A set of user ids resolves to a username and the *current* cellar
+- [x] A set of user ids resolves to a username and the *current* cellar
       visibility, in one query — integration test
-- [ ] A user id with no profile row and a user id whose cellar is private are
+- [x] A user id with no profile row and a user id whose cellar is private are
       indistinguishable in the response — integration test asserting the two
       cases produce identical output, confirmed to fail against an
       implementation that reports them separately
-- [ ] The id set is bounded and an over-cap request is rejected rather than
+- [x] The id set is bounded and an over-cap request is rejected rather than
       executed — integration test
-- [ ] `ModularityTest` and `ArchitectureTest` stay green with `feed` reading
+- [x] `ModularityTest` and `ArchitectureTest` stay green with `feed` reading
       both modules, and `cellar` still does not depend on `feed`
-- [ ] Neither read is exposed over HTTP, so the OpenAPI spec and the generated
+- [x] Neither read is exposed over HTTP, so the OpenAPI spec and the generated
       client are unchanged by this task — `api-client-drift` passes with no
       regeneration, which is the observable form of "these stayed module APIs"
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
