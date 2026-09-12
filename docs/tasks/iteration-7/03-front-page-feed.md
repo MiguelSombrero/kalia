@@ -68,9 +68,14 @@ empty states — including the empty state that a brand-new installation shows.
 The product owner wants a say here: this is the first thing anyone sees.
 
 1. **What does a feed line say, in both languages?** "Miguel Sombrero added
-   AleSmith IPA to his cellar" is the vision's example. The exact wording,
-   including how a private cellar's line reads if it appears at all, wants
-   writing rather than defaulting.
+   AleSmith IPA to the cellar" is the vision's example — a person's first and
+   last name, with "the cellar" as the linked words where the cellar is public.
+   The exact wording, including how a private cellar's line reads if it appears
+   at all, and what a line reads like for someone with no name on file
+   ([task 10](10-person-display-name.md)), wants writing rather than
+   defaulting. In Finnish the name takes a case ending and the linked words
+   cannot simply be substrings of a translated sentence — this is the trap the
+   Constraints name.
 2. **How is time shown** — "2 hours ago", a date, or nothing?
 3. **What does the front page look like around the feed?** Is the feed the
    whole page now, or does the title, tagline and catalog button stay above it?

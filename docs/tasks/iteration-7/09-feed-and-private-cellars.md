@@ -18,15 +18,22 @@ project's rule is that an accepted ADR is revisited deliberately rather than
 contradicted quietly ([CLAUDE.md](../../../CLAUDE.md),
 [ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
 
-The [vision](../../../README.md) for this page already answers part of it:
-a private cellar's line appears, with the text and no link. Read against
-ADR-0050 that is not a small exception. Nobody has to walk anything: the front
-page hands a stranger a username, and the presence or absence of a link tells
-them which state that cellar is in. It is the same oracle, arrived at from the
-other side and without the walk. The question is not whether the vision is
-allowed to win — it is the product owner's product — but what ADR-0050's
-property becomes once it does, and which of its stated costs are still worth
-paying for what is left.
+The [vision](../../../README.md) for this page already answers part of it: a
+private cellar's line appears, with the text and no link — and the text names a
+**person**, "Miguel Sombrero", a first name and a last name, not a username.
+That distinction is what keeps most of ADR-0050's property intact. A line with
+no link carries no `/cellars/{username}`, so nothing about a private cellar's
+owner can be turned into an address, and there is still nothing to walk.
+(Kalia holds no such name today; [task 10](10-person-display-name.md) is what
+gets one.)
+
+What the feed does expose is narrower than that and still worth deciding
+deliberately. A public cellar's line carries its link, so its username is on
+the landing page by construction — which is *discoverability*, precisely the
+thing ADR-0050 asked to be revisited for rather than an accident to be caught.
+And the front page becomes a page listing **real names and what those people
+own**. That is a larger disclosure than any username ever was, and it is the
+one that cannot be withdrawn once a search engine holds it.
 
 Three consequences travel with it, and none is visible from inside
 [task 01](01-feed-module.md) or [task 02](02-feed-api.md):
@@ -41,12 +48,13 @@ Three consequences travel with it, and none is visible from inside
   link" — could be *exactly* true. Once the front page hands the link to every
   visitor, "anyone with the link" is everyone. Users who already flipped that
   switch agreed to the old sentence.
-- **The front page is not `noindex`, and it will contain names.** The cellar
-  page's own directive keeps it out of a search index, but the front page
-  carrying "Miguel Sombrero added AleSmith IPA" is itself indexable content,
-  and a crawler reading it discovers both the username and the URL. The
-  information ADR-0050 kept out of search arrives in it through a page nobody
-  thought of as a cellar.
+- **The front page is not `noindex`, and it will carry people's names.** The
+  cellar page's own directive keeps that page out of a search index; the front
+  page carrying "Miguel Sombrero added AleSmith IPA" is itself indexable
+  content, and a crawler reading it takes both the name and — from the link —
+  the username and the cellar URL. The information ADR-0050 kept out of search
+  arrives in it through a page nobody thought of as a cellar, and it arrives
+  attached to a real name rather than a handle.
 
 ## Scope
 
@@ -98,27 +106,34 @@ part of it that no longer holds.
    separate from cellar visibility. They differ in what a stranger learns, in
    what a brand-new Kalia's front page looks like, and in how much there is to
    build.
-2. **Does the front page become `noindex`, stay indexable, or something in
+2. **Is a person's real name the right thing to publish, or a chosen display
+   name?** The vision's example is a first and last name, and
+   [task 10](10-person-display-name.md) asks the same question from the data
+   side. It belongs here too, because it is the single biggest lever on
+   everything above: a name the user chose, defaulting to their username,
+   makes the indexing question and the private-cellar question much smaller
+   without changing how a line reads.
+3. **Does the front page become `noindex`, stay indexable, or something in
    between?** An indexable front page carrying usernames is the part of this
    that cannot be undone later — a page in a search index persists after the
    content changes, which is the exact reason ADR-0050 refused indexing in the
    first place.
-3. **What is left of ADR-0050's uniform 404?** If the feed already says who has
+4. **What is left of ADR-0050's uniform 404?** If the feed already says who has
    a public cellar, the 404 still hides the cellars of people who have never
    added a bottle, and still costs the owner a preview of their own page. Is
    that trade still the one Kalia wants, or does the ADR get amended further
    while it is open?
-4. **Do people who have already made a choice get asked again?** Nobody has
+5. **Do people who have already made a choice get asked again?** Nobody has
    users yet, so the honest version is: does the visibility control's copy
    change, and does it now describe two things — who may read the cellar, and
    whether the owner appears on the front page?
-5. **Is a beer someone owns private information at all?** Kalia's position so
+6. **Is a beer someone owns private information at all?** Kalia's position so
    far is that nothing in a cellar is private by nature — an ABV is catalog
    data ([ADR-0050](../../adr/0050-public-cellar-addressing.md)) — and the
    private/public switch is about the *collection*, not the facts in it. A feed
-   line publishes one fact from a private collection. Worth saying out loud
-   which of those two readings Kalia holds, because every later feature inherits
-   it.
+   line publishes one fact from a private collection, attached to a name.
+   Worth saying out loud which of those two readings Kalia holds, because every
+   later feature inherits it.
 
 ## Acceptance criteria
 
