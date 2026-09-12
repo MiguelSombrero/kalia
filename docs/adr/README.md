@@ -95,6 +95,9 @@ decides the URL built on it.
 - [ADR-0045](0045-brewery-list-paginates-in-application.md) — the brewery list
   gains a `page`/`size` contract but keeps loading and sorting the full table
   in Java, so its name order stays locale-independent.
+- [ADR-0057](0057-retry-on-constraint-violation-for-get-or-create.md) — a
+  get-or-create write retries once on its own unique-constraint violation via
+  Spring Framework's native `@Retryable`, each attempt its own transaction.
 
 ## Frontend structure and conventions
 

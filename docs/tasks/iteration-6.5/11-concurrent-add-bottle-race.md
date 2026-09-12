@@ -1,6 +1,6 @@
 # Task 11: Fix the concurrent add-bottle 500 and lost write
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -101,16 +101,16 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] An integration test (`*IT`, two threads/transactions against the
+- [x] An integration test (`*IT`, two threads/transactions against the
       Testcontainers PostgreSQL) fires two `addBottles` calls for the same
       (user, beer) with no pre-existing entry and asserts: exactly one
       `entry` row, every bottle from both calls persisted, no exception
       surfaced — confirmed to fail (500 and lost bottles) against the
       pre-fix code
-- [ ] The same test asserts the losing request returns its bottles with a
+- [x] The same test asserts the losing request returns its bottles with a
       201, not a 500
-- [ ] `mvn verify` is green, including `ModularityTest` and `ArchitectureTest`
-- [ ] Any new dependency is recorded in
+- [x] `mvn verify` is green, including `ModularityTest` and `ArchitectureTest`
+- [x] Any new dependency is recorded in
       [`backend/README.md`](../../../backend/README.md)'s tech stack; if
       refinement decides an ADR is earned it is added and
       `node scripts/check-adrs.mjs` stays green
