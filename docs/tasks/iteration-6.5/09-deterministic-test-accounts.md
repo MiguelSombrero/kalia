@@ -1,6 +1,6 @@
 # Task 09: Keep the test suites deterministic against a Keycloak that no longer resets
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-3
 
@@ -117,15 +117,15 @@ Resolved during refinement (2026-09-05):
 
 ## Acceptance criteria
 
-- [ ] The full Playwright suite passes twice in a row, on the same stack, with
+- [x] The full Playwright suite passes twice in a row, on the same stack, with
       no `docker compose down -v` and no manual step between the runs —
       the failure mode this task exists for, demonstrated absent
-- [ ] It also passes from an empty volume on a machine that has never run it
-- [ ] A registration spec run twice does not fail the second time on an
+- [x] It also passes from an empty volume on a machine that has never run it
+- [x] A registration spec run twice does not fail the second time on an
       already-registered address
-- [ ] Whatever seeds `testuser` fails loudly if it does not, rather than
+- [x] Whatever seeds `testuser` fails loudly if it does not, rather than
       leaving the suite to discover it — verified by breaking it on purpose
-- [ ] `frontend/README.md` states what a developer is expected to do about
+- [x] `frontend/README.md` states what a developer is expected to do about
       Keycloak state before running the suite, if anything
 
 ## Notes
@@ -141,3 +141,35 @@ green on its own, since the definition of done requires it.
 Open question 5 above surfaced from `/code-review` on
 [iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md), PR
 [#226](https://github.com/MiguelSombrero/kalia/pull/226).
+
+Implementation (2026-09-11): the actual code gap was narrower than the task
+reads at a glance — [task 01](01-persist-keycloak-state.md)'s realm
+persistence and [iteration 6 task
+11](../iteration-6/11-e2e-suite-account-contention.md)'s worker-account
+fixture were already in `dev`, both idempotent and already never deleting.
+The gap was four specs (`sign-up.spec.ts` ×2, `keycloak-email.spec.ts`,
+`keycloak-branding.spec.ts`) that named their own registration-spec accounts
+uniquely per run (question 1, already correct) but then deleted them,
+contradicting question 2's "nothing ever deletes a test account" — removed,
+along with the now-unused `deleteKeycloakUser` helper.
+
+AC1/AC2 verification hit a real environment hazard worth recording:
+`docker-compose.yml` hardcodes `name: kalia`, so every worktree's `docker
+compose` shares one project, one set of containers, and one Postgres volume
+by default — there is no per-worktree isolation
+([CLAUDE.md](../../../CLAUDE.md)'s environment notes name the port collision
+half of this but not the shared-volume half). With two other worktrees
+active during this task's implementation, a concurrent `docker compose up`
+elsewhere reconfigured the shared realm mid-verification (the Keycloak
+client secret changed under this session without this session touching it),
+which is what a first pass at AC1 actually caught — not a bug in this
+diff. Verification was redone against an isolated project
+(`COMPOSE_PROJECT_NAME=kalia-task09` in this worktree's gitignored `.env`,
+`docker compose -p kalia down` first to free the standard ports without
+touching the shared volume), from an empty volume: `make verify` and a
+second, immediately-following `npx playwright test` both passed 35/35, with
+no `docker compose down -v` and no manual step in between. `testuser`'s seed
+script (`scripts/seed-keycloak-account.mjs`) and the worker-account fixture
+(`ensureKeycloakAccount` in `frontend/e2e/support/keycloakAccount.ts`) were
+each broken on purpose (a wrong admin password; Keycloak stopped) and both
+failed loudly rather than silently passing.

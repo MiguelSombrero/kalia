@@ -8,7 +8,6 @@ import type { Page } from "@playwright/test";
 import Redis from "ioredis";
 import {
   createUnverifiedKeycloakUser,
-  deleteKeycloakUser,
   expect,
   findKeycloakUser,
   keycloakAdminToken,
@@ -145,10 +144,6 @@ test.describe("self-registration", () => {
     const secondUserId = await kaliaUserId(page, valkey);
     await valkey.quit();
     expect(secondUserId).toBe(registeredUserId);
-
-    const adminToken = await keycloakAdminToken(request);
-    const created = await findKeycloakUser(request, adminToken, username);
-    if (created) await deleteKeycloakUser(request, adminToken, created.id);
   });
 
   test("an unverified account cannot sign in — it stays on Keycloak's verify-email page", async ({
@@ -161,27 +156,23 @@ test.describe("self-registration", () => {
     const password = "correct-horse-battery";
     const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
 
-    try {
-      const setPassword = await request.put(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users/${userId}/reset-password`, {
-        headers: { Authorization: `Bearer ${adminToken}` },
-        data: { type: "password", value: password, temporary: false },
-      });
-      expect(setPassword.ok()).toBeTruthy();
+    const setPassword = await request.put(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users/${userId}/reset-password`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      data: { type: "password", value: password, temporary: false },
+    });
+    expect(setPassword.ok()).toBeTruthy();
 
-      await page.goto(`${FRONTEND_ORIGIN}/en`);
-      await page.getByRole("button", { name: "Sign in" }).click();
-      await page.locator("#username").waitFor();
-      await page.locator("#username").fill(username);
-      await page.locator("#password").fill(password);
-      await page.getByRole("button", { name: "Sign In" }).click();
+    await page.goto(`${FRONTEND_ORIGIN}/en`);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.locator("#username").waitFor();
+    await page.locator("#username").fill(username);
+    await page.locator("#password").fill(password);
+    await page.getByRole("button", { name: "Sign In" }).click();
 
-      // Blocked from the application entirely: still on Keycloak, never
-      // signed in to Kalia.
-      await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
-      await expect(page.getByRole("link", { name: /^Profile: /i })).not.toBeVisible();
-    } finally {
-      await deleteKeycloakUser(request, adminToken, userId);
-    }
+    // Blocked from the application entirely: still on Keycloak, never
+    // signed in to Kalia.
+    await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
+    await expect(page.getByRole("link", { name: /^Profile: /i })).not.toBeVisible();
   });
 
   test("registering an already-used email says so explicitly", async ({ page, request, account }) => {

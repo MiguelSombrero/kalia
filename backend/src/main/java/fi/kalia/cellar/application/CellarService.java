@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,9 @@ public class CellarService {
 		return entry.getBottles();
 	}
 
+	// ADR-0057; each retry's own transaction is verified by ConcurrentAddBottleApiIT.
+	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
+	// Do not add a side effect before entries.save(entry): a retry re-runs this whole method.
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate, LocalDate today) {
 		Entry entry = entryFor(userId, beerId);
