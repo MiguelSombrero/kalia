@@ -35,6 +35,7 @@ restyling what is already there.
 |---|---|---|
 | [01](iteration-7.5/01-how-a-design-task-runs.md) | How a design task runs | needs-refinement |
 | [02](iteration-7.5/02-design-audit-baseline.md) | The app as it stands, audited | needs-refinement |
+| [14](iteration-7.5/14-where-design-intent-lives.md) | Where Kalia's design intent lives | needs-refinement |
 | [03](iteration-7.5/03-visual-identity.md) | A new visual identity: colour, type, and the feel they make | needs-refinement |
 | [04](iteration-7.5/04-imagery-iconography-and-the-mark.md) | Imagery, iconography and the Kalia mark | needs-refinement |
 | [05](iteration-7.5/05-token-only-styling-enforced.md) | Make token-only styling a rule the build enforces | needs-refinement |
@@ -69,6 +70,13 @@ rather than a preference:
   first says how the rest are run; the second gives them their problem
   statements, so that four layout tasks do not each re-derive what is wrong
   with the app.
+- **[14](iteration-7.5/14-where-design-intent-lives.md) comes before
+  [03](iteration-7.5/03-visual-identity.md)** because that task produces a
+  statement of what Kalia should feel like and five later tasks are meant to be
+  held against it, so it has to know where that statement goes. Its ID is 14
+  rather than 03 because it was added after the iteration was seeded and IDs
+  are permanent ([the template](template.md)); order of work is the table's
+  order, not the ID, as in [iteration 7](iteration-7.md).
 - **[03](iteration-7.5/03-visual-identity.md) and
   [04](iteration-7.5/04-imagery-iconography-and-the-mark.md) settle the
   vocabulary** every later task consumes. Nothing below them can be prototyped

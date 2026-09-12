@@ -80,6 +80,9 @@ Whatever is chosen is applied to the token layer and to the three primitives in
 - Any new dependency — a typeface package, a colour library — is a product
   owner question under `CLAUDE.md`'s "ask, don't research" rule, batched into
   refinement.
+- **Where the feel statement goes is [task 14](14-where-design-intent-lives.md)'s
+  decision, not this one's.** That task lands first precisely so this one does
+  not have to invent a home for a brief that five later tasks are held against.
 - [ADR-0019](../../adr/0019-adr-format-and-conventions.md): an accepted ADR is
   amended, not rewritten. Replacing the palette
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) records is a large
@@ -130,8 +133,10 @@ Whatever is chosen is applied to the token layer and to the three primitives in
       blend assembled after the fact
 - [ ] The chosen identity is recorded as an amendment to or replacement of
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md), stating the
-      feel it is meant to produce and the directions rejected, and passing
-      `node scripts/check-adrs.mjs`
+      directions rejected and why, and passing `node scripts/check-adrs.mjs`
+- [ ] The feel the identity is meant to produce is written down where
+      [task 14](14-where-design-intent-lives.md) decided it belongs, in a form
+      a later task can be held against
 - [ ] Every colour pairing the app actually uses is computed against WCAG 2.1
       AA **before** the palette is committed, and the ADR's Evidence table
       lists the pairings and ratios that ship — not iteration 2's

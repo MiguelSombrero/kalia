@@ -44,6 +44,11 @@ evidence the decision rests on.
 - Reopening the two-layer token system.
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s structure is
   settled and [task 03](03-visual-identity.md) works inside it.
+- Kalia's design brief. [Task 14](14-where-design-intent-lives.md) owns whether
+  a standing design document exists and what is in it; this task decides
+  whether `components/ui/` becomes a system. If the answer here is yes, its
+  documentation and that document have to resolve into one thing rather than
+  two that disagree — which is task 14's question 7, asked from this side.
 - The JS/TS token pipeline. It has its own revisit trigger in
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) — a second
   consuming app, or a JS-side need to read a token — and neither has fired.
