@@ -1,6 +1,6 @@
 # Task 08: Relative time outside the cellar
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-4
 
@@ -60,26 +60,46 @@ rendering identically on the server and in the browser.
   are the guard, and they must keep passing unchanged rather than being updated
   to match a new formatter.
 
+**Decided 2026-09-12 by the product owner. This task goes ahead** — its Notes
+made it conditional on [task 03](03-front-page-feed.md)'s time question, and
+that answer was relative time, so the second consumer
+[iteration 6 task 10](../iteration-6/10-cellar-relative-date-precision.md)
+named has appeared. This section is the single home for the formatter's rules.
+
+- **One unit, not two** (question 2): "just now" under a minute, then minutes,
+  hours, "yesterday", days. A collector cares about the months between a
+  brewed date and today; a feed line does not, and the second unit reads as
+  noise on a news line. The cellar keeps its two-unit output unchanged, which
+  is the regression surface above.
+- **Relative up to a week, then a localised absolute date** (question 1).
+  "3 weeks ago" is vaguer than a date for something that old, and
+  [task 09](09-feed-and-private-cellars.md)'s decision makes old events *common
+  near the top of the feed* rather than a rarity — only public cellars appear,
+  so the page is quiet and its top lines may be weeks old. The floor and the
+  week boundary are both unit boundaries the tests below must cover.
+- **A `<time datetime>` carries the exact instant** (question 4) alongside the
+  human text, in every case including the absolute one — so the precise time is
+  available on hover and to assistive technology whatever the text says.
+- **The text refreshes with the list, not on its own timer** (question 3). The
+  page polls anyway ([task 05](05-feed-delivery-decision.md)), so "4 minutes
+  ago" becoming "5 minutes ago" is free on the next render and there is no
+  second clock to keep in step — which is also the answer to the hydration
+  mismatch in the Why: one clock, read once per render, on both sides.
+
 ## Open questions
 
-1. **What are the feed's units and its floor?** "just now" under a minute,
-   minutes, hours, then what — does a three-week-old event say "3 weeks ago" or
-   a date?
-2. **Is one unit enough for the feed?** The cellar shows two because a
-   collector cares about the months; a feed line probably does not.
-3. **Does the timestamp update while the page is open**, ticking from "1 minute
-   ago" to "2 minutes ago", or is it fixed at render? A live page
-   ([task 07](07-live-front-page.md)) makes this visible in a way a static one
-   does not.
-4. **Does a machine-readable timestamp accompany the human one** — a `<time
-   datetime>` with the exact instant, so the precise time is available on hover
-   and to assistive technology even when the text says "2 hours ago"?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A shared formatter renders sub-day distances correctly in both locales —
-      unit tests per locale across the unit boundaries, including the two
-      adjacent to the floor
+- [ ] A shared formatter renders sub-day distances in one unit, correctly in
+      both locales — unit tests per locale across the unit boundaries,
+      including the two adjacent to the "just now" floor
+- [ ] An instant older than a week renders as a localised absolute date rather
+      than a relative one, in both locales — unit test on both sides of the
+      week boundary
+- [ ] Every rendered value carries a `<time datetime>` with the exact instant,
+      including the absolute-date case — unit test
 - [ ] The cellar's rendered dates are unchanged — its existing tests pass
       without modification, which is the criterion rather than a new test
 - [ ] The same instant renders identically on the server and in the browser —
@@ -91,8 +111,7 @@ rendering identically on the server and in the browser.
 
 ## Notes
 
-Conditional on [task 03](03-front-page-feed.md)'s open question about how a
-feed line shows time. If the answer is an absolute date or no time at all, this
-task is dropped rather than refined — it exists because the likely answer
-creates a second consumer for code whose own task file said it would be
-extracted when one did.
+Was conditional on [task 03](03-front-page-feed.md)'s open question about how a
+feed line shows time, to be dropped rather than refined if the answer had been
+an absolute date or no time at all. **The answer on 2026-09-12 was relative
+time**, so the condition is met and the task stands; see Constraints.

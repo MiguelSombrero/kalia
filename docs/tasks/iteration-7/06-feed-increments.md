@@ -1,6 +1,6 @@
 # Task 06: Asking the feed what is new
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-5
 
@@ -30,8 +30,9 @@ rather than of either endpoint.
 
 The contract for "events after X": what X is, the total order it is a position
 in, how far back it may reach, what bounds it, and what the server says when a
-client's X is too old to answer. Plus, if [task 05](05-feed-delivery-decision.md)
-chose a transport that holds a connection open, the endpoint that does so.
+client's X is too old to answer. [Task 05](05-feed-delivery-decision.md) chose
+polling, so there is **no connection-holding endpoint to build** — this task is
+a cursor parameter, an ordering guarantee and the bounds around them.
 
 ## Non-goals
 
@@ -68,29 +69,59 @@ chose a transport that holds a connection open, the endpoint that does so.
   a feed read newest-first over a growing table without one degrades quietly
   as it fills.
 
+**Decided 2026-09-12 by the product owner.** This section is the single home
+for the ordering and cursor contract; [task 01](01-feed-module.md) creates the
+column and index it names and [task 02](02-feed-api.md) serves its first page.
+
+- **The cursor is opaque to the client** (question 1): a string it round-trips
+  without parsing, so the ordering mechanism can change later without a
+  contract change — which matters because the contract is the one a second,
+  independently released client would inherit
+  ([backlog](../backlog.md) — mobile client). A readable timestamp was rejected
+  for inviting a client to construct its own and pin the implementation, and
+  for inviting exactly the ordering bug below into every client that tries.
+- **Offset `page`/`size` is rejected** for this endpoint and for
+  [task 02](02-feed-api.md)'s first page. The API therefore carries two
+  pagination shapes, recorded in
+  [architecture.md §4](../../architecture.md) as a deliberate split.
+- **The total order must survive commit reordering, and a `BIGSERIAL` alone
+  does not.** The Why states the flaw for timestamps; a sequence has it too,
+  because ids are allocated at insert and become visible at commit, so a
+  transaction holding a lower id can commit after a reader has taken a cursor
+  past it. **[Task 05](05-feed-delivery-decision.md)'s 60-second latency budget
+  makes the cheapest fix viable** — serving only events settled for longer than
+  a short lag, so in-flight transactions have committed — but the mechanism is
+  the implementer's choice, constrained by the acceptance criterion below
+  rather than mandated here.
+- **A cursor older than the served window answers *start over*** (question 2),
+  not a partial result: only that lets a client know it has a hole. The window
+  is 30 days ([task 05](05-feed-delivery-decision.md)). The same answer serves
+  question 5 — a visitor whose tab has been open longer than the window reloads
+  rather than catching up — and a malformed or forged cursor is
+  `problem+json` like any other rejected input.
+- **An increment is capped at the same page size as the first page, and the
+  response says whether it was truncated** (question 3), so a client prepending
+  to a list can tell "that was all" from "ask again". A page open overnight
+  asks repeatedly rather than receiving a thousand events at once. **Recorded
+  by the agent during refinement rather than asked** — it follows from the
+  bounded-parameter convention
+  ([ADR-0042](../../adr/0042-bounded-request-parameters.md)) and from the first
+  page and the increment being one contract.
+- **The contract is additive: it never retracts a line** (question 4). A cellar
+  going private while a visitor's page is open leaves the rendered line on
+  screen until they reload, with a link that 404s from that moment — accepted
+  and recorded as a Neutral consequence in
+  [task 09](09-feed-and-private-cellars.md)'s decision, not solved here. A
+  retraction list and a whole-list replacement were both considered and
+  rejected for the contract they would cost.
+- **Polling pauses while the tab is hidden and catches up on focus**
+  ([task 05](05-feed-delivery-decision.md)), so the catch-up path this contract
+  serves is exercised on every tab focus rather than only after a network
+  failure — which is what makes it worth testing properly.
+
 ## Open questions
 
-1. **Is the cursor opaque to the client, or a timestamp it can construct?** An
-   opaque cursor can change shape later; a readable one invites a client to
-   build its own and pin the implementation. A stream's `Last-Event-ID` has to
-   carry whatever this answers.
-2. **What happens when a client's cursor is older than the feed keeps?**
-   [Task 02](02-feed-api.md)'s question 2 asks how far back the feed goes; this
-   is its consequence — the server can answer with what it has, or tell the
-   client to start over, and only the second lets a client know it has a hole.
-3. **Is there a cap on one increment's size, and what does a client do when it
-   hits the cap?** A page open overnight asks for a thousand events. Answering
-   all of them and answering a capped page mean different things to a client
-   that is prepending to a list.
-4. **Does an increment ever correct a line the client already has?** A cellar
-   made private while a visitor's page is open leaves a rendered line still
-   carrying a link to it. Nothing in a purely additive contract can take that
-   link away, and whether that matters is a privacy question rather than a
-   technical one — the link keeps working only if the cellar is public, so the
-   worst case is a stale link that 404s, but the *line* still says whose it is.
-5. **Does the same contract serve a visitor who has been reading for an hour
-   and one who just arrived?** Or does a client past some age reload the page
-   rather than catch up?
+**None.**
 
 ## Acceptance criteria
 
@@ -103,10 +134,17 @@ chose a transport that holds a connection open, the endpoint that does so.
 - [ ] An increment enforces the private-cellar rule identically to the first
       page — integration test that runs the same visibility assertion against
       both paths, so the second cannot silently diverge
-- [ ] A malformed, forged or over-old cursor answers `problem+json` rather than
-      an unbounded query or a stack trace — integration test
-- [ ] The increment is bounded and its cap is observable to the caller —
+- [ ] A malformed or forged cursor answers `problem+json` rather than an
+      unbounded query or a stack trace, and a cursor older than the 30-day
+      window answers *start over* rather than a partial result — integration
+      test covering both, since only the second lets a client know it has a
+      hole
+- [ ] The increment is capped and the response tells the caller it was
+      truncated, so a client can distinguish "that was all" from "ask again" —
       integration test
+- [ ] The cursor is opaque: a test constructs a plausible-looking cursor by
+      hand and it is rejected rather than honoured, so no client can come to
+      depend on its shape
 - [ ] The generated API client is regenerated and committed; the
       `api-client-drift` CI job passes
 - [ ] `mvn clean verify` is green

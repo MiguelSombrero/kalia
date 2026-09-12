@@ -1,6 +1,6 @@
 # Task 13: Make "DTOs at the API boundary" a rule the build enforces
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -31,9 +31,9 @@ entities it would be.
 
 ## Scope
 
-An ArchUnit rule that fails the build when a controller method returns, or a
-`@RestController`'s signature otherwise exposes, a JPA entity — plus the
-violating fixture that proves the rule fires.
+An ArchUnit rule that fails the build when a controller method returns, or
+accepts as a request body, a JPA entity — plus the violating fixtures that
+prove the rule fires.
 
 ## Non-goals
 
@@ -44,8 +44,9 @@ violating fixture that proves the rule fires.
   ([ADR-0052](../../adr/0052-cellar-aggregate-owns-its-writes.md) keeps writes
   on the aggregate root and the service layer hands the root outward); the
   boundary being guarded is the HTTP one, not the layer one.
-- Request bodies. Worth asking about — see question 2 — but the finding and the
-  documented rule are about serialisation outward.
+- ~~Request bodies.~~ **In scope as of refinement** — see Constraints. The
+  finding and the documented rule are about serialisation outward, but the
+  inward direction is guarded in the same rule set.
 
 ## Constraints
 
@@ -66,20 +67,29 @@ violating fixture that proves the rule fires.
 - [ADR-0007](../../adr/0007-backend-package-structure.md) is where the layer
   rules live and `ArchitectureTest` is where they are written.
 
+**Decided 2026-09-12.**
+
+- **The rule guards both directions** (question 2, product owner): a controller
+  method may neither return a JPA entity nor accept one as a `@RequestBody`. No
+  controller does either today, so nothing needs fixing and this is purely the
+  cheapest moment to add it. The inward case is the more dangerous of the two —
+  an entity in a response over-shares, an entity in a request body is mass
+  assignment, letting a caller set any field including ids and the owner.
+- **The rule lives in its own test class, not `ArchitectureTest`** (question 1).
+  It is an HTTP-boundary rule; the existing class is about layer direction, and
+  keeping them apart keeps each class's name honest about what breaking it
+  means. **Recorded by the agent during refinement rather than asked.**
+- **`api-client-drift` is a coincidence, not a second guard** (question 3), and
+  the answer says so in one line. An entity leaking into a response would show
+  as a diff in the generated client
+  ([ADR-0012](../../adr/0012-orval-api-client.md)) — but only for the outward
+  direction, only if someone reads the diff, and not at all for a request body
+  that was already shaped like its DTO. Relying on it would be relying on a
+  side effect.
+
 ## Open questions
 
-1. **Does the rule belong in `ArchitectureTest` or its own test class?** It is
-   an HTTP-boundary rule rather than a layer-direction rule, and the existing
-   class is about layers.
-2. **Does it cover request bodies too?** A `@RequestBody Bottle` lets a caller
-   set any field on an entity, including ids and the owner. No controller does
-   it today. Guarding both directions costs little now; guarding one and
-   discovering the other later costs a second conversation.
-3. **What about the generated OpenAPI spec?** An entity leaking into a response
-   also leaks into the published schema and then into the frontend's generated
-   client ([ADR-0012](../../adr/0012-orval-api-client.md)) — so `api-client
-   drift` would show it as a diff. Whether that counts as a second guard worth
-   naming, or a coincidence not to rely on, is worth a line in the answer.
+**None.**
 
 ## Acceptance criteria
 
@@ -89,8 +99,12 @@ violating fixture that proves the rule fires.
 - [ ] The rule catches an entity wrapped in `List`, `Page`, `Optional` and
       `ResponseEntity`, each proven by its own fixture rather than by one case
       standing in for four
-- [ ] Every existing controller passes the rule unchanged, or the response that
-      does not is fixed in this task and its change described
+- [ ] A controller method accepting a JPA entity as a `@RequestBody` fails the
+      build — ArchUnit rule with its own violating fixture, confirmed to fail
+      there
+- [ ] Every existing controller passes the rule unchanged in both directions,
+      or the signature that does not is fixed in this task and its change
+      described
 - [ ] `docs/architecture.md` §7's testing table lists the new guard, so a reader
       editing a controller learns a test exists before CI tells them
 - [ ] `mvn clean verify` is green

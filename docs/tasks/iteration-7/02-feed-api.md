@@ -1,6 +1,6 @@
 # Task 02: Feed read API
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-2, DW-3
 
@@ -51,34 +51,50 @@ line and link a public cellar.
   ([ADR-0014](../../adr/0014-shared-exception-handling.md)); Bean Validation
   bounds every request parameter, following the convention `catalog`'s
   controller applies.
-- Pagination follows the existing envelope
-  ([architecture.md §4](../../architecture.md)) if the feed is paginated at all
-  — see question 1.
+- Pagination does **not** follow the catalog's `page`/`size` envelope — see
+  the cursor decision below and [task 06](06-feed-increments.md).
+
+**Decided 2026-09-12 by the product owner.** The privacy rule lives in
+[task 09](09-feed-and-private-cellars.md)'s Constraints, the storage shape in
+[task 01](01-feed-module.md)'s, line assembly in
+[task 04](04-feed-line-composition.md)'s and the cursor in
+[task 06](06-feed-increments.md)'s; none is restated here
+([ADR-0020](../../adr/0020-documentation-roles.md)). What binds this endpoint:
+
+- **Only events whose owner's cellar is currently public are served**, and that
+  filter is this endpoint's, applied at read time
+  ([task 09](09-feed-and-private-cellars.md)). It is the single correctness
+  rule for the whole feature, so the test below is the one that matters most in
+  the iteration.
+- **The response carries a whole line, not ids** — username, beer name,
+  brewery, bottle count, vintage, and the instant — assembled by the backend
+  ([task 04](04-feed-line-composition.md)). The username is also what the
+  page's link to `/cellars/{username}` is built from
+  ([ADR-0050](../../adr/0050-public-cellar-addressing.md)).
+- **This endpoint and [task 06](06-feed-increments.md)'s increment are one
+  contract, not two.** Both serve the same opaque cursor over the same total
+  order; this task serves the first page of it. Question 1's two shapes are
+  therefore one shape, and [architecture.md §4](../../architecture.md) records
+  the cursor form beside the catalog's `page`/`size` as a **deliberate split** —
+  a stable search result set and a list growing at the head are different
+  problems — rather than leaving it to look like an inconsistency to tidy.
+- **The feed serves a 30-day window** (question 2), over a table that keeps
+  every row ([task 05](05-feed-delivery-decision.md)). Every query is bounded
+  and there is no deletion job.
+- **The response is identical for every caller, signed in or out** (question
+  4). No "you added this" marker and no exclusion of the caller's own
+  additions — so the response is wholly cacheable later, and there is no
+  caller-dependent branch on a public path
+  ([ADR-0050](../../adr/0050-public-cellar-addressing.md)'s reasoning applies
+  here too).
+- **A line whose beer or person no longer resolves is dropped**
+  ([task 04](04-feed-line-composition.md)), which means a page may return fewer
+  lines than asked for without that being an error — the client pages on the
+  cursor, never on the count.
 
 ## Open questions
 
-1. **Is the feed paginated, or a fixed recent-N?** A front page needs the most
-   recent handful; infinite scrolling needs a cursor. Offset pagination over a
-   feed that grows at the head is the classic wrong answer, so the choice
-   matters more than it looks. Two things sharpen it. The cost of being wrong
-   is asymmetric: the catalog's `page`/`size` envelope can be changed in
-   lockstep with its single client, and a feed contract an independently
-   released client depends on cannot ([backlog](../backlog.md) — mobile
-   client). And if the answer is a cursor, the API then has **two** pagination
-   shapes — which is defensible, because a stable search result set and a feed
-   growing at the head are genuinely different problems, but it should be
-   recorded in [architecture.md §4](../../architecture.md) as a deliberate
-   split rather than left to look like an inconsistency someone should tidy.
-2. **How far back does the feed go?** Everything ever, or a window? Nothing
-   currently deletes events.
-3. **What does a line carry?** Enough to render "X added a Y to their cellar"
-   plus a link — but whether the beer links to the catalog, whether the user
-   links to a profile, and whether the bottle's dates appear all change the
-   response shape. The person's half of it is the **username**
-   ([dropped task 10](10-person-display-name.md) records why, not a display
-   name), which is also what a public cellar's link is built from.
-4. **Does a signed-in caller see anything different from a signed-out one** —
-   their own additions marked, for instance, or their own excluded?
+**None.**
 
 ## Acceptance criteria
 
@@ -87,9 +103,14 @@ line and link a public cellar.
       including one that was public when the event was recorded — integration
       test flipping visibility between the write and the read, confirmed to
       fail against an implementation that resolves visibility at write time
-- [ ] An event whose cellar is public carries what the page needs to link it,
-      and one that is not carries nothing that would let a caller construct
-      that link — integration test
+- [ ] An event whose owner's cellar is not public is absent from the response
+      entirely — not present-but-stripped — including one recorded while that
+      cellar was public; integration test asserting the response carries no
+      field naming the owner, since a stripped-in-the-UI answer is not a
+      privacy answer
+- [ ] A signed-in caller and a signed-out caller receive byte-identical
+      responses for the same cursor — integration test, confirmed to fail
+      against an implementation that marks the caller's own events
 - [ ] Request parameters are bounded and a hostile value is rejected with
       `problem+json` rather than producing an unbounded query — integration
       test

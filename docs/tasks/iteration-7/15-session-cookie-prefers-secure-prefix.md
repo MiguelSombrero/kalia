@@ -1,6 +1,6 @@
 # Task 15: Prefer the `__Secure-` session cookie over the unprefixed one
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -64,15 +64,26 @@ who can only *write* cookies, and a test for the case that makes it matter.
 - Local development is HTTP and must keep working. A fix that only reads
   `__Secure-` breaks every developer.
 
+**Decided 2026-09-12.**
+
+- **Prefer `__Secure-`, keep reading both** (question 1, product owner). The
+  fix is the one-line reordering. It closes the attack completely: the
+  prefixed cookie cannot be set over plain HTTP, so preferring it means an
+  attacker's unprefixed cookie is never the one that wins, whatever else is
+  present. Ignoring the unprefixed name entirely under HTTPS was rejected —
+  it needs the app to know its own scheme reliably, which behind a proxy
+  depends on forwarded headers being right, and getting *that* wrong signs
+  every user out rather than erroring visibly.
+- **Nothing else in the frontend reads a cookie by name from a list** (question
+  2, answered during refinement by search, not by asking):
+  `frontend/lib/auth/sessionCookie.ts` is the only `cookieStore.get` call
+  outside `vitest.setup.ts`'s mock. The two Playwright specs that touch cookies
+  read them from the browser context, not by this pattern. So there is no
+  second instance of this bug to fix and none to leave for a later sweep.
+
 ## Open questions
 
-1. **Is preferring `__Secure-` enough, or should the unprefixed name be
-   ignored entirely when the app knows it is running under HTTPS?** Preference
-   fixes the attack; ignoring is stricter and needs the app to know its own
-   scheme reliably, which behind a proxy it may not.
-2. **Does anything else in the codebase read a cookie by name in a list?** If
-   the pattern appears twice, the second one has the same bug and this task
-   should say so rather than leave it for a later sweep.
+**None.**
 
 ## Acceptance criteria
 

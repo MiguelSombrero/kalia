@@ -1,6 +1,6 @@
 # Task 11: Lockout on password guessing
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -18,7 +18,13 @@ compound it:
   on ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)) with unique
   usernames, so the registration form reports a taken name; and from this
   iteration on, the front page lists them
-  ([task 03](03-front-page-feed.md)).
+  ([task 03](03-front-page-feed.md)). *Refined 2026-09-12:* the feed lists only
+  the usernames of people who made their cellar public
+  ([task 09](09-feed-and-private-cellars.md)) — usernames
+  [ADR-0050](../../adr/0050-public-cellar-addressing.md) already publishes in
+  the URL those people are invited to share. The front page hands them out
+  unasked, which is the new part; the premise of this task is narrower than
+  first written but not removed.
 - **The password policy is `length(8)` and nothing else** — no composition
   rule, no breach-list check
   ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md) chose length
@@ -79,35 +85,52 @@ actually stopped rather than that a flag is set.
   into a flaky suite. Verify against a full `npm run test:e2e`, not only a
   single spec.
 
+**Decided 2026-09-12 by the product owner.**
+
+- **Temporary lockout with a growing wait** (question 1). Permanent lockout is
+  rejected for the reason the Constraints name: with usernames public, it hands
+  anyone a way to lock anyone out, and Kalia has no self-service unlock path.
+- **Thresholds: around 10 failures before lockout, a 60-second initial wait,
+  doubling to a cap of about 15 minutes, and the failure count forgotten after
+  12 hours** (question 2). Tighter than Keycloak's own 30-failure default,
+  because the password policy is `length(8)` with no composition rule and no
+  breach-list check
+  ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)); looser than
+  5-in-5-minutes, so a developer mistyping their own password is not locked out
+  of their own machine and a stranger who knows your username cannot trivially
+  make a nuisance of themselves. The exact numbers are the implementer's to
+  confirm against `kcadm`'s actual attribute names; these are the intent.
+- **The same policy in every environment** (question 4). `realm-export.json` is
+  simultaneously the dev realm and the only realm definition, and the
+  thresholds above were chosen so that does not hurt. Splitting a dev realm
+  from a deployable one stays [quality backlog SHOULD-25](../quality-backlog.md).
+  **Only failed sign-ins count**, so the E2E suite's repeated *successful* ones
+  are unaffected — which the full-suite criterion below verifies rather than
+  assumes.
+- **A locked account is told so, and told roughly when to retry** (question 3).
+  It leaks nothing the registration form does not already leak, and a person
+  locked out by a generic "invalid credentials" will simply keep trying, which
+  extends their own lockout.
+- **Nothing observes it yet** (question 5), and the ADR-free answer is to say
+  so rather than assume otherwise. Kalia has no metrics
+  ([backlog](../backlog.md)); a lockout is visible only in Keycloak's own
+  admin console. Recorded as a known gap, not closed here.
+
 ## Open questions
 
-1. **Temporary or permanent lockout?** Permanent means an administrator has to
-   unlock, and with public usernames it hands anyone a way to lock anyone out.
-   Temporary with an increasing wait is the usual answer; permanent is
-   defensible only with a self-service unlock path, which Kalia does not have.
-2. **What thresholds?** Failures before lockout, the initial wait, how it
-   grows, and how long the failure count is remembered. Keycloak's own defaults
-   (30 failures, 60s initial wait, doubling, 12h) are a starting point, not
-   obviously the right one for an app with this password policy.
-3. **Does a locked account say so?** Telling the user is kinder and confirms to
-   an attacker that the account exists — though the registration form already
-   confirms that, so the usual argument for silence is weaker here than it
-   normally is.
-4. **Is the same threshold right for dev?** A developer mistyping their own
-   password three times in a local stack should not be locked out of their own
-   machine for an hour.
-5. **Does anything observe it?** A lockout that nobody can see is also an
-   attack nobody can see. Kalia has no metrics ([backlog](../backlog.md)), so
-   the honest answer may be "not yet" — worth saying rather than assuming.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] Repeated failed sign-ins lock the account according to the chosen policy
       — automated test driving real failed sign-ins against the running
       Keycloak, confirmed to fail against the current realm
-- [ ] A locked account recovers exactly as question 1 decides, and that
-      recovery is exercised rather than assumed — the same test signs in
-      successfully after the wait
+- [ ] A locked account recovers on its own after the wait, with no
+      administrator action, and that recovery is exercised rather than assumed
+      — the same test signs in successfully afterwards
+- [ ] A locked-out sign-in attempt tells the person the account is temporarily
+      locked rather than returning a generic credential failure — asserted
+      against the running Keycloak
 - [ ] The setting is applied by the `kcadm` mechanism
       ([ADR-0054](../../adr/0054-keycloak-config-cli-realm-management.md)) and
       is idempotent — applying it twice to a realm that already has it changes

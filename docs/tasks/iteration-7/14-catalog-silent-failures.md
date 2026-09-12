@@ -1,6 +1,6 @@
 # Task 14: Two silent catalog bugs, and the unit tests that would have caught them
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -44,9 +44,9 @@ without Docker.
 
 ## Non-goals
 
-- Any change to the search API's contract, parameters or response shape.
-  `?sort=abv,dsc` currently returns 200; whether it becomes a 400 is question 1
-  and is the only contract question here.
+- Any change to the search API's contract, parameters or response shape beyond
+  the one decided in Constraints: `?sort=abv,dsc` becomes a 400. That is the
+  only contract change here.
 - `MAX_PAGE` and the deep-offset concern — [quality backlog](../quality-backlog.md)
   COULD-17, still `[needs decision]` and a different argument.
 - Rewriting the existing `*IT` coverage. The unit tests are added beneath it,
@@ -72,26 +72,35 @@ without Docker.
   parameter must be checked against what `features/catalog` actually sends
   before it turns a working page into a 400.
 
+**Decided 2026-09-12.**
+
+- **An invalid sort direction is a 400 `problem+json`** (questions 1 and 2,
+  product owner), and `asc`/`desc` are both explicitly accepted, **case-
+  insensitively** — so `?sort=abv,ASC` is valid and `?sort=abv,dsc` is
+  rejected. Consistent with how `parseSort` already treats an unknown sort
+  *property* and with
+  [ADR-0042](../../adr/0042-bounded-request-parameters.md). It is a contract
+  change, which is why what `features/catalog` actually sends is checked in a
+  browser before it ships, per the constraint above.
+- **The suite's default locale is not pinned globally** (question 3). The three
+  sites are fixed with `Locale.ROOT` and the locale bug is asserted by a test
+  that sets a Turkish locale *explicitly* — because a test merely calling
+  `toLowerCase(Locale.ROOT)` and checking the output passes against the broken
+  code on any Western machine. Running the whole backend suite under
+  `-Duser.language=tr` was rejected as a standing constraint every future test
+  would inherit, including every test with a locale-dependent assertion of its
+  own. The accepted cost: a fourth call site added later without `Locale.ROOT`
+  is caught only if someone writes the test.
+
 ## Open questions
 
-1. **Does an invalid sort direction become a 400, or keep defaulting to
-   ascending?** Rejecting is consistent with how `parseSort` already treats an
-   unknown *property* and with the bounded-parameters convention; defaulting is
-   the current behaviour and is more forgiving to a hand-written URL. Rejecting
-   is a contract change, which is why it is a question rather than an
-   assumption.
-2. **Is `asc` explicitly accepted, or is anything-that-is-not-`desc`
-   ascending?** The same question one level down, and the answer decides
-   whether `?sort=abv,asc` and `?sort=abv,ASC` are both valid.
-3. **Should the suite pin a hostile default locale globally?** Running the
-   whole backend suite under `-Duser.language=tr` would catch this class of bug
-   everywhere rather than at the three sites someone remembered. It would also
-   be a standing constraint on every future test.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `?sort=abv,dsc` behaves as question 1 decides, and the behaviour is
-      asserted — unit test on `parseSort`, confirmed to fail against the
+- [ ] `?sort=abv,dsc` is rejected with `problem+json` rather than silently
+      sorting ascending, and `?sort=abv,ASC` and `?sort=abv,asc` are both
+      accepted — unit tests on `parseSort`, confirmed to fail against the
       current fall-through to `ASC`
 - [ ] Case-insensitive search returns the same rows under a Turkish default
       locale as under a Western one — unit test that sets the locale
@@ -102,9 +111,9 @@ without Docker.
       that run under `mvn test` with no Docker
 - [ ] `(cd backend && mvn test)` alone — no Docker — exercises the catalog's
       pure logic, which it does not today
-- [ ] The frontend's own sort values still work if question 1 makes the
-      parameter stricter — checked against what `features/catalog` sends, in a
-      browser and not only against the test suite
+- [ ] The frontend's own sort values still work against the now-stricter
+      parameter — checked against what `features/catalog` sends, in a browser
+      and not only against the test suite
 - [ ] `mvn clean verify` is green
 
 ## Notes

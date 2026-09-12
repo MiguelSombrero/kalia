@@ -1,6 +1,6 @@
 # Task 04: The reads a feed line needs
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-2
 
@@ -86,42 +86,68 @@ boundary question 1 settles, the same two reads are the deliverable.
   and the generated client is regenerated and committed
   ([ADR-0012](../../adr/0012-orval-api-client.md)).
 
+**Decided 2026-09-12 by the product owner.** This section is the single home
+for how a line is assembled; [task 02](02-feed-api.md) and
+[task 03](03-front-page-feed.md) point here.
+
+- **The backend assembles the line** (question 1). `GET /api/v1/feed` answers
+  with the username, the beer, the brewery, the count, the vintage and the
+  time — resolved server-side, one query per module — not with ids for a client
+  to enrich. **Both reads therefore stay inside the backend as module APIs
+  (`CatalogApi`, `ProfileApi`); neither becomes an HTTP endpoint**, so the
+  bounding above applies to the module-API method signature rather than to a
+  request parameter, and nothing is added to the OpenAPI spec by this task.
+- **[architecture.md §4](../../architecture.md)'s client-agnostic-resources
+  convention is reconciled, not excepted.** That convention says an endpoint's
+  shape follows the resource rather than the screen. "Who added what, and when"
+  *is* the feed resource — a feed event without its actor is not a smaller
+  resource, it is an incomplete one — so returning it whole follows the
+  convention. The ids-only alternative is the one that would shape the endpoint
+  around a rendering strategy. §4 currently names the feed endpoint as where
+  this convention gets tested; the paragraph gets that reading written into it
+  by [task 09](09-feed-and-private-cellars.md)'s documentation pass or this
+  task, whichever lands first, so the two documents do not disagree.
+  [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)'s
+  "the consumer reads back through `CatalogApi` and `ProfileApi`" is satisfied
+  literally.
+- **The privacy argument for backend assembly is gone, and that is worth
+  recording rather than relying on.** [Task 09](09-feed-and-private-cellars.md)
+  decided only public cellars appear, so every line is linkable by construction
+  and there is no username a browser would have to be trusted not to link. The
+  decision above rests on the resource argument and on the landing page's first
+  paint being one call rather than three — not on privacy.
+- **The beer read returns name and brewery separately** (question 2), so a line
+  can name the brewery and so a brewery link stays available later without
+  changing the read.
+- **A line whose beer or person no longer resolves is dropped** (question 3),
+  not rendered with a blank. Theoretical until GDPR account deletion
+  ([backlog](../backlog.md)), which makes it the normal case for exactly the
+  people who asked to disappear — so dropping is also the behaviour those users
+  would want.
+- **The `ProfileApi` batch read stays username-plus-current-visibility.** The
+  feed filters on it ([task 09](09-feed-and-private-cellars.md)), so the
+  visibility answer is load-bearing on the read path and not merely a hint for
+  whether to link.
+- **The cellar page's client-side enrichment is deliberately not converged on
+  this** (question 4). It stays as
+  [iteration 6 task 09](../iteration-6/09-batch-beer-lookup-for-cellar.md)
+  built it: a signed-in page whose client component already holds ids, reading
+  over `/beers/batch` through a Server Action
+  ([ADR-0040](../../adr/0040-client-reads-via-server-actions.md)). The feed is
+  a public, server-rendered landing page assembled in one call. Two shapes for
+  two situations, said out loud here so a later reader tidies neither into the
+  other. **Recorded by the agent during refinement rather than asked** — the
+  product owner should say so if they disagree.
+
 ## Open questions
 
-1. **Who assembles a feed line — the backend or the browser?** This is the
-   task's real question and it points two ways at once.
-   [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)
-   says the consumer reads back through `CatalogApi`/`ProfileApi`, which is
-   backend assembly. [architecture.md §4](../../architecture.md)'s
-   client-agnostic-resources convention says the opposite and *names the feed
-   endpoint by name* as one of the places that convention is about to be
-   tested; the cellar page already works that way, holding ids and enriching
-   them over `/beers/batch`. The feed has one thing the cellar does not,
-   though: the decision of whether a cellar may be linked is a privacy
-   decision, and handing a browser the ingredients to make it — a username it
-   would then have to be trusted not to link — is a different thing from
-   handing it a beer name. An answer here either way should be reconciled with
-   whichever of those two documents it contradicts, rather than left as two
-   rules that disagree.
-2. **Does a line name the brewery?** The vision's sentence says "AleSmith IPA",
-   which is already brewery-plus-beer in one string as beer names usually go.
-   Whether the read returns the brewery separately decides whether a line can
-   say "AleSmith's IPA" or link the brewery later.
-3. **What does a line do when its beer or its person no longer resolves?**
-   Nothing deletes catalog beers and nothing deletes profiles today, so this is
-   theoretical — until GDPR account deletion ([backlog](../backlog.md)), which
-   makes it the normal case for exactly the users who asked to disappear. Drop
-   the line, or render it without the name?
-4. **Should the cellar page's client-side enrichment converge on this?** Two
-   ways of turning ids into beer names is a thing someone will later "tidy",
-   and it is cheaper to say now that they are deliberately different than to
-   discover it in a review.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A set of beer ids resolves to what a feed line prints, in one query, and
-      an unknown id is handled by the convention this task states rather than
-      by an exception — integration test including an unknown id
+- [ ] A set of beer ids resolves to a name and a brewery, separately, in one
+      query, and an unknown id is handled by the convention this task states
+      rather than by an exception — integration test including an unknown id
 - [ ] A set of user ids resolves to a username and the *current* cellar
       visibility, in one query — integration test
 - [ ] A user id with no profile row and a user id whose cellar is private are
@@ -132,8 +158,9 @@ boundary question 1 settles, the same two reads are the deliverable.
       executed — integration test
 - [ ] `ModularityTest` and `ArchitectureTest` stay green with `feed` reading
       both modules, and `cellar` still does not depend on `feed`
-- [ ] If question 1 lands on HTTP, the generated client is regenerated and
-      committed and the `api-client-drift` CI job passes
+- [ ] Neither read is exposed over HTTP, so the OpenAPI spec and the generated
+      client are unchanged by this task — `api-client-drift` passes with no
+      regeneration, which is the observable form of "these stayed module APIs"
 - [ ] `mvn clean verify` is green
 
 ## Notes
