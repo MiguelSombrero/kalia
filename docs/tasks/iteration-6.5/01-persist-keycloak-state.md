@@ -1,6 +1,6 @@
 # Task 01: Persist Keycloak's state across restarts
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** DW-1
 
@@ -110,15 +110,15 @@ below:
 
 ## Acceptance criteria
 
-- [ ] A user created through Keycloak's admin console is still there and can
+- [x] A user created through Keycloak's admin console is still there and can
       still sign in after `docker compose restart keycloak` and after
       `docker compose down && docker compose up` — verified in a browser
       against the running stack, not by reading configuration
-- [ ] `testuser`'s Keycloak `sub` is byte-for-byte identical before and after
+- [x] `testuser`'s Keycloak `sub` is byte-for-byte identical before and after
       that restart cycle, checked against the token the backend receives — the
       instability [ADR-0033](../../adr/0033-keycloak-account-relinking.md)
       documents is gone
-- [ ] The full Playwright suite passes against the changed stack, from an
+- [x] The full Playwright suite passes against the changed stack, from an
       empty volume (`docker compose down -v` first), on a machine that has
       never run it
 - [x] An automated check fails if Keycloak comes up serving a realm that
@@ -149,3 +149,15 @@ API directly (restart and full `down`/`up` cycles, `testuser`'s user id
 byte-identical across both, `down -v` genuinely resetting it, the seed
 script racing and winning against Keycloak's transient post-healthcheck
 "Bootstrap in progress" 503).
+
+AC1–AC3 verified in a follow-up session (2026-09-12), on a worktree with
+working Docker access: created a user (`acuser01`) through the admin
+console with a permanent password, and confirmed in the browser it signs
+in after both `docker compose restart keycloak` and a full
+`docker compose down && docker compose up` (AC1). `testuser`'s Keycloak
+user id stayed `6d76f07b-1c4d-4e63-896b-41462d8e82c7` across both restart
+cycles, checked against the actual access token stored server-side for a
+real browser sign-in (Valkey's `auth:session-account:*`) and confirmed by
+calling the running backend's `GET /api/v1/me` with it (AC2). The full
+Playwright suite passed (37/37) starting from `docker compose down -v`
+(AC3).
