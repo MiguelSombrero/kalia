@@ -1,5 +1,6 @@
 package fi.kalia.cellar.domain;
 
+import fi.kalia.cellar.BottleAdded;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,13 +22,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.util.Assert;
 
 @Entity
 @Table(name = "entry", schema = "cellar")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Entry {
+public class Entry extends AbstractAggregateRoot<Entry> {
 
 	@Id
 	@GeneratedValue
@@ -81,6 +83,10 @@ public class Entry {
 				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate))
 				.toList();
 		touch();
+		// entryId is deliberately not on this event: for a first-use entry
+		// (transient, id null) it is not assigned until entries.save(entry)
+		// persists it, which runs after this method returns (ADR-0058).
+		registerEvent(new BottleAdded(UUID.randomUUID(), userId, beerId, quantity, brewedDate, Instant.now()));
 		return added;
 	}
 

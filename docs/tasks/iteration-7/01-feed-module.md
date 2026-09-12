@@ -1,6 +1,6 @@
 # Task 01: `feed` module and cellar events
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-1, DW-3
 
@@ -162,28 +162,28 @@ tasks [02](02-feed-api.md), [04](04-feed-line-composition.md) and
 
 ## Acceptance criteria
 
-- [ ] Adding a bottle to a cellar records a feed event, and `cellar` has no
+- [x] Adding a bottle to a cellar records a feed event, and `cellar` has no
       compile-time dependency on `feed` — `ModularityTest` is the verification
       for the second half
-- [ ] The event is recorded through the application-event mechanism, and a
+- [x] The event is recorded through the application-event mechanism, and a
       failure in `feed` does not fail the cellar addition that triggered it —
       integration test with a failing consumer, confirmed to fail against a
       direct synchronous call
-- [ ] Every addition is recorded regardless of the owner's cellar visibility —
+- [x] Every addition is recorded regardless of the owner's cellar visibility —
       integration test adding a bottle to a private cellar and asserting the
       row exists, confirmed to fail against an implementation that consults
       visibility on the write path
-- [ ] A bulk add of six identical bottles produces one event carrying a count
+- [x] A bulk add of six identical bottles produces one event carrying a count
       of six, not six events — integration test through `CellarService`
-- [ ] A bottle deleted, and a bottle's brewed date edited, after the event was
+- [x] A bottle deleted, and a bottle's brewed date edited, after the event was
       recorded leave the stored line unchanged — integration test, since this
       is what "a record of an act" means and nothing else asserts it
-- [ ] Flyway migration creates the `feed` schema and applies cleanly against an
+- [x] Flyway migration creates the `feed` schema and applies cleanly against an
       empty database — verified by the integration test suite migrating from
       scratch
-- [ ] An ADR records the event-recording model and what was rejected, passing
+- [x] An ADR records the event-recording model and what was rejected, passing
       `node scripts/check-adrs.mjs`
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
