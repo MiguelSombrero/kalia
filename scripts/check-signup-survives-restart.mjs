@@ -17,6 +17,7 @@
 
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { fetchToken, withRetry } from "./keycloak-admin.mjs";
 
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8081";
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
@@ -77,20 +78,21 @@ const followToNextPage = async (jar, url) => {
   throw new Error(`too many redirects starting from ${url}`);
 };
 
-const adminToken = async () => {
-  const response = await fetch(`${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "password",
-      client_id: "admin-cli",
-      username: ADMIN_USERNAME,
-      password: ADMIN_PASSWORD,
-    }),
-  });
-  if (!response.ok) throw new Error(`could not obtain a Keycloak admin token: ${response.status}`);
-  return (await response.json()).access_token;
-};
+// Same transient-503 window check-keycloak-signin.mjs and
+// seed-keycloak-account.mjs already retry through: admin-cli's password
+// grant can briefly 503 right after Keycloak reports healthy, while
+// master-realm bootstrap is still finishing.
+const adminToken = () =>
+  withRetry(
+    () =>
+      fetchToken({
+        realm: "master",
+        username: ADMIN_USERNAME,
+        password: ADMIN_PASSWORD,
+        describeError: (status) => `could not obtain a Keycloak admin token: ${status}`,
+      }),
+    { attempts: 15, delayMs: 2000 },
+  );
 
 const findUser = async (token) => {
   const response = await fetch(
@@ -190,37 +192,15 @@ const verifyEmailAndSetPassword = async (jar, link) => {
 };
 
 const trySignIn = async () => {
-  const response = await fetch(`${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ grant_type: "password", client_id: "admin-cli", username, password }),
+  const accessToken = await fetchToken({
+    realm: REALM,
+    username,
+    password,
+    describeError: (status) => `Keycloak rejected sign-in for ${username} after the restart: ${status}`,
   });
-  // No response body here either: this request's own body carried the
-  // password, same reasoning as the errors above.
-  if (!response.ok) {
-    throw new Error(`Keycloak rejected sign-in for ${username} after the restart: ${response.status}`);
-  }
-  if (!(await response.json()).access_token) {
+  if (!accessToken) {
     throw new Error(`Keycloak accepted sign-in for ${username} after the restart but returned no access token`);
   }
-};
-
-// Same retry shape as check-keycloak-signin.mjs: absorbs the boot window a
-// production-mode restart takes, not just the container coming back.
-const signInWithRetry = async () => {
-  const attempts = 30;
-  const delayMs = 2000;
-  let lastError;
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    try {
-      await trySignIn();
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-  throw lastError;
 };
 
 // Best-effort: called from the outer finally below on every exit path, not
@@ -262,7 +242,9 @@ const run = async () => {
     console.log(`registered and verified ${username}; restarting keycloak...`);
     execSync("docker compose restart keycloak", { stdio: "inherit" });
 
-    await signInWithRetry();
+    // Same retry shape as check-keycloak-signin.mjs: absorbs the boot window
+    // a production-mode restart takes, not just the container coming back.
+    await withRetry(trySignIn, { attempts: 30, delayMs: 2000 });
     console.log(`${username} signs in after the restart — Keycloak's account persistence covers self-registered accounts too`);
   } finally {
     await deleteIfExists();

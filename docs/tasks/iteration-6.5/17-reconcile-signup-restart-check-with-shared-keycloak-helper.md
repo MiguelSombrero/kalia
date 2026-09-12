@@ -1,6 +1,6 @@
 # Task 17: Reconcile check-signup-survives-restart.mjs with the shared Keycloak helper
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [6.5](../iteration-6.5.md)
 - **Covers:** none
 
@@ -136,13 +136,13 @@ Resolved during refinement (2026-09-12):
 
 ## Acceptance criteria
 
-- [ ] `check-signup-survives-restart.mjs` no longer duplicates
+- [x] `check-signup-survives-restart.mjs` no longer duplicates
       `scripts/keycloak-admin.mjs`'s `fetchToken`/`withRetry` — verified by
       reading the diff
-- [ ] `make keycloak-check` and `node --test scripts/check-signup-survives-restart.test.mjs`
+- [x] `make keycloak-check` and `node --test scripts/check-signup-survives-restart.test.mjs`
       still pass with identical observable behavior (same log lines, same
       exit codes) before and after
-- [ ] No password value appears in any log line or thrown error message —
+- [x] No password value appears in any log line or thrown error message —
       verified by triggering each error path (bad credentials, sign-in
       rejected) locally and inspecting the output
 
