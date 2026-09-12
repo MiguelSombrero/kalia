@@ -103,7 +103,9 @@ read of a cellar its owner has made public. Reads `catalog` (beer existence),
 ## feed
 
 A record of things that happened — currently, a bottle added to a cellar.
-Depends on `cellar` (the `BottleAdded` event) and nothing else. **"Feed",
+Depends on `cellar` (the `BottleAdded` event), `catalog` (a beer's name and
+brewery, read fresh for the feed endpoint) and `profile` (a username and the
+owner's *current* cellar visibility, same reason). **"Feed",
 "event" and "activity" already mean something else in this codebase** — a
 Spring application event, a Spring Modulith `event_publication` row — so a
 type here is never named with any of those three words on its own; `FeedLine`
@@ -144,16 +146,18 @@ and they drift from the Java names that produced them.
 | `/cellar/entries/{entryId}/bottles` | One entry's bottles. Elsewhere a bottle is addressed by its own id, never nested under its entry. |
 | `/cellar/bottles`, `/cellar/bottles/{id}` | Add / update / remove a bottle. `POST` answers with an array — it creates `quantity` independently editable rows, never a stored count. |
 | `/profile/visibility` | Change whether the caller's cellar is public. |
+| `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
 
 ### JSON field names
 
 | Field | Meaning |
 |---|---|
 | `beerId` | A cross-module reference to `catalog.Beer` by id. Cellar responses never embed a `Beer` object. |
-| `quantity` | On `EntryDto` / `PublicCellarEntryDto`: the derived bottle count (`COUNT(*)`). It maps to no database column and no stored domain field — it exists only at the API boundary. On `AddBottleRequestDto`: how many identical bottles to create (1–24). |
+| `quantity` | On `EntryDto` / `PublicCellarEntryDto`: the derived bottle count (`COUNT(*)`). It maps to no database column and no stored domain field — it exists only at the API boundary. On `AddBottleRequestDto`: how many identical bottles to create (1–24). On `FeedLineDto`: the count frozen on one bulk-add act at the moment it happened — never recomputed, and unrelated to what the cellar holds now. |
 | `cellarPublic` | The wire name for cellar visibility, on `ProfileDto` and `ChangeVisibilityRequestDto`. |
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`. |
+| `content`, `nextCursor` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`: opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. |
 
 ### Generated TypeScript types
 
