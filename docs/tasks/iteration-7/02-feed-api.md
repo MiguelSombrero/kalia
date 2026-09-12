@@ -2,6 +2,7 @@
 
 - **Status:** needs-refinement
 - **Iteration:** [7](../iteration-7.md)
+- **Covers:** DW-2, DW-3
 
 ## Why
 
@@ -26,16 +27,26 @@ line and link a public cellar.
   follow model that does not exist.
 - Writing anything. Events are recorded by [task 01](01-feed-module.md)'s event
   consumer, never by an HTTP call.
+- Asking what is new *since* a point the caller already holds —
+  [task 06](06-feed-increments.md). This task serves the first page; that one
+  serves every page after it, over the same ordering.
+- Building the reads that turn an event's ids into a name and a beer —
+  [task 04](04-feed-line-composition.md). This endpoint consumes them.
 
 ## Constraints
 
 - The endpoint is public, so it is listed as such deliberately
   ([ADR-0028](../../adr/0028-resource-server-and-current-user.md)) — default
   deny stays the rule.
-- Whatever [task 01](01-feed-module.md) settles about private cellars is
-  enforced here too, at read time, against the *current* visibility. A cellar
-  made private after an event was recorded must not be linked or named beyond
-  what that decision allows.
+- Whatever [task 09](09-feed-and-private-cellars.md) settles about private
+  cellars is enforced here, at read time, against the *current* visibility. A
+  cellar made private after an event was recorded must not be linked or named
+  beyond what that decision allows.
+- A line's contents come from [task 04](04-feed-line-composition.md)'s reads,
+  resolved for the whole page at once rather than per line — twenty lines must
+  not be twenty lookups each of two modules
+  ([ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)
+  requires reading current data back, not how many times).
 - Errors are RFC 9457 `problem+json`
   ([ADR-0014](../../adr/0014-shared-exception-handling.md)); Bean Validation
   bounds every request parameter, following the convention `catalog`'s

@@ -2,6 +2,7 @@
 
 - **Status:** needs-refinement
 - **Iteration:** [7](../iteration-7.md)
+- **Covers:** DW-1, DW-3
 
 ## Why
 
@@ -31,6 +32,12 @@ migrations, and the event flow from `cellar` to `feed`.
 - Event kinds other than a cellar addition. More will come; they are cheap to
   add once the shape exists and expensive to guess at now.
 - Likes and comments — [backlog](../backlog.md).
+- Deciding what a feed line may reveal about a cellar that is not public —
+  [task 09](09-feed-and-private-cellars.md) settles that against
+  [ADR-0050](../../adr/0050-public-cellar-addressing.md); this task stores
+  whatever its answer needs.
+- The reads that turn the ids in an event into a name a line can print —
+  [task 04](04-feed-line-composition.md).
 
 ## Constraints
 
@@ -70,6 +77,19 @@ migrations, and the event flow from `cellar` to `feed`.
   the event is recorded; the reader must see the current answer, not the one
   that was true when the bottle was added. Getting this wrong leaks a cellar
   that was later made private, and it fails silently.
+- **A new module's `domain` types need glossary rows in the same PR.**
+  `scripts/check-glossary.mjs` fails CI when `fi.kalia.feed.domain` has types
+  and [docs/glossary.md](../../glossary.md) has no table for them
+  ([iteration 6 task 08](../iteration-6/08-ubiquitous-language-glossary.md)) —
+  and `feed`, `event` and `activity` are exactly the words that already mean
+  something else in this codebase (a Spring application event, an
+  `event_publication` row), so the table is worth more here than the check
+  costs.
+- **The table is read newest-first and grows forever**, so the order it is
+  read in is the order it is indexed on from the first migration. An
+  unindexed feed degrades quietly as it fills rather than failing;
+  [task 06](06-feed-increments.md) then depends on that order being total,
+  which a timestamp alone is not.
 - **Prove the event actually fires on the real path.** An integration test
   calls `CellarService.addBottles` — not `entries.save` directly — and asserts
   a `BottleAdded` reaches the publication registry, via Spring Modulith's
@@ -83,8 +103,13 @@ migrations, and the event flow from `cellar` to `feed`.
    they differ in what leaks: record everything and filter on read; record
    nothing private, so making a cellar public later reveals no history; or
    record everything and show private additions without a link. The middle one
-   is safest and loses history permanently. This is the iteration's central
-   question and the product owner's to answer.
+   is safest and loses history permanently — and, because `cellar_public`
+   defaults to `false`, it also means a new Kalia's front page is empty until
+   somebody opts in. **This question now belongs to
+   [task 09](09-feed-and-private-cellars.md)**, which takes it together with
+   what it does to [ADR-0050](../../adr/0050-public-cellar-addressing.md); the
+   [vision](../../../README.md) already leans to the third answer. It stays
+   listed here because this task cannot be refined until it is closed.
 2. **How much does an event copy, and how much does it reference?**
    [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)
    already rules out copying anything mutable into the `cellar` event, so this

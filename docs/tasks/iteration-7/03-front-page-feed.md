@@ -2,6 +2,7 @@
 
 - **Status:** needs-refinement
 - **Iteration:** [7](../iteration-7.md)
+- **Covers:** DW-4, DW-3
 
 ## Why
 
@@ -25,14 +26,27 @@ empty states — including the empty state that a brand-new installation shows.
 
 - Liking or commenting on an event — [backlog](../backlog.md).
 - Filtering or personalising the feed.
+- Updating the page while it is open — [task 07](07-live-front-page.md) makes
+  this page live; this task gets the rendered version right first.
+- A relative-time formatter usable outside `features/cellar` —
+  [task 08](08-shared-relative-time.md), if question 2 below wants one.
 - Removing the catalog entry point. Browsing beers stays reachable from the
   front page.
 
 ## Constraints
 
 - Server components by default; a client component only where interaction needs
-  one ([frontend/README.md](../../../frontend/README.md) conventions). A feed
-  that only renders does not need the client.
+  one ([frontend/README.md](../../../frontend/README.md) conventions). The
+  rendered feed this task builds does not need the client —
+  [task 07](07-live-front-page.md) is what makes it live, and it must be able
+  to adopt this list rather than replace it, so the markup and data this task
+  produces are the ones a client component takes over.
+- **The feed is global shared state and the Playwright suite mutates it.**
+  Other specs add bottles while this one runs, so an assertion about a feed's
+  length, or about an event's *position* in it, flakes in CI
+  ([iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md) is
+  the precedent) — assert that your own event is present, from an account that
+  is yours.
 - The feature package follows whatever
   [iteration 5 task 06](../iteration-5/06-feature-public-surfaces.md) settles
   for public surfaces, and the boundaries
