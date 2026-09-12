@@ -23,9 +23,7 @@ go through application events. The rule has never been exercised.
 
 A `feed` module owning a record of things that happened, and the recording of
 the first kind: someone added a bottle to their cellar. Its own schema and
-migrations, and **two** event flows into it — `cellar` announcing an addition,
-and `profile` announcing that a cellar stopped being public, which purges that
-owner's rows (Constraints).
+migrations, and the event flow from `cellar` to `feed`.
 
 ## Non-goals
 
@@ -112,17 +110,22 @@ tasks [02](02-feed-api.md), [04](04-feed-line-composition.md) and
   write path, so there is no consume-time check to get wrong and no window in
   which an addition is silently dropped because the owner flipped the switch a
   second later.
-- **`profile` gains its first domain event, `CellarVisibilityChanged`,
-  registered on `Profile` as aggregate root** — the name and the mechanism are
-  already fixed by
-  [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md),
-  which names that exact event; this task does not choose either. `feed`
-  consumes it and deletes that owner's rows when the new value is private.
-  **That purge is deliberately redundant defence in depth, never the privacy
-  mechanism** — the reasoning is in
-  [task 09](09-feed-and-private-cellars.md)'s Constraints and the code comment
-  carries it, because a later reader finding both a filter and a purge must not
-  delete the filter. Like the addition consumer, it is safe to run twice.
+- **Nothing in this module reacts to a cellar's visibility changing, and that
+  is deliberate.** A purge of an owner's rows on going private was decided in
+  refinement and removed in review of that PR;
+  [task 09](09-feed-and-private-cellars.md)'s Constraints hold the four reasons
+  and this task does not restate them
+  ([ADR-0020](../../adr/0020-documentation-roles.md)). The consequence here is
+  that `feed` consumes exactly one event, `profile` gains no domain event yet,
+  and **the read-time visibility filter in [task 02](02-feed-api.md) and
+  [task 06](06-feed-increments.md) is the only thing standing between a private
+  cellar and the front page.** A reviewer looking for a second safety net
+  should find this bullet rather than assume one was forgotten.
+- **The table therefore retains rows for cellars that are currently private** —
+  never served, never assembled, retained. Accepted in
+  [task 09](09-feed-and-private-cellars.md); named here because it is this
+  task's schema that holds them, and because GDPR erasure
+  ([backlog](../backlog.md)) will come back to it.
 - **A feed line is a record of an act, not a view of a current holding**
   (questions 2, 4 and 5). `feed`'s own row **freezes the act's own facts** —
   the bottle count and the vintage — because those describe what happened, and
@@ -166,11 +169,10 @@ tasks [02](02-feed-api.md), [04](04-feed-line-composition.md) and
       failure in `feed` does not fail the cellar addition that triggered it —
       integration test with a failing consumer, confirmed to fail against a
       direct synchronous call
-- [ ] Every addition is recorded regardless of visibility, and a cellar going
-      private purges that owner's rows — integration test covering a cellar
-      public at write time and private at read time, and the reverse, confirmed
-      to fail against an implementation that consults visibility on the write
-      path
+- [ ] Every addition is recorded regardless of the owner's cellar visibility —
+      integration test adding a bottle to a private cellar and asserting the
+      row exists, confirmed to fail against an implementation that consults
+      visibility on the write path
 - [ ] A bulk add of six identical bottles produces one event carrying a count
       of six, not six events — integration test through `CellarService`
 - [ ] A bottle deleted, and a bottle's brewed date edited, after the event was

@@ -122,13 +122,14 @@ gap in it:
   client component rather than a pure server-rendered list, and makes its
   ordering after [task 06](iteration-7/06-feed-increments.md) a dependency
   rather than a convenience.
-- **A cellar going private purges its feed rows**, so
-  [task 01](iteration-7/01-feed-module.md) grows a second event flow —
-  `profile` publishing `CellarVisibilityChanged`, the event
-  [ADR-0053](../adr/0053-cellar-domain-events-on-the-aggregate-root.md) already
-  names. That purge is deliberately redundant: the read-time visibility filter
-  is the single correctness rule, and the task files say so in terms meant to
-  stop a later reader deleting it.
+- **The read-time visibility filter is the only thing keeping a private cellar
+  off the front page.** A purge of an owner's rows on going private was decided
+  during refinement and removed in review of the refinement PR: it bounds
+  nothing, because recording never stops and the rows rebuild from that owner's
+  next addition. [Task 09](iteration-7/09-feed-and-private-cellars.md) holds
+  the full reasoning and the rejected alternative for its ADR to carry;
+  [task 01](iteration-7/01-feed-module.md) consumes one event rather than two,
+  and `profile` gains no domain event yet.
 
 [Task 08](iteration-7/08-shared-relative-time.md) was conditional on the feed
 showing relative time; it does, so the task stands rather than being dropped.

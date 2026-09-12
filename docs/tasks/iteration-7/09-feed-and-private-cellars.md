@@ -124,18 +124,44 @@ records them, the alternatives above as rejected, and their consequences.
   indexing is the part that cannot be reversed on a user's timescale, and
   making the page indexable later is one header change while un-indexing it is
   not.
-- **Storage: record every addition unconditionally; the feed *read* always
-  filters on the owner's current visibility; and a cellar going private purges
-  that owner's feed rows.** The read filter is the single correctness rule.
-  **The purge is deliberately redundant defence in depth and must be documented
-  as such** — it cannot be the mechanism, because Spring Modulith's event
-  publication is asynchronous and at-least-once, so between the visibility
-  change committing and the purge running those rows are readable, and a purge
-  that silently fails leaves a private cellar on the front page with nothing to
-  notice. A reader who later finds both may not delete the filter. The purge
-  also means an owner who was ever public retains nothing; an owner who has
-  never been public accumulates rows nobody ever sees, which is the accepted
-  cost. [Task 01](01-feed-module.md) builds both paths.
+- **Storage: record every addition unconditionally, and filter on the owner's
+  current visibility at read time. That filter is the only rule, and it lives
+  in one place** — [task 02](02-feed-api.md)'s endpoint and
+  [task 06](06-feed-increments.md)'s increment, which share it rather than
+  implementing it twice. Nothing consults visibility on the write path, so
+  there is no consume-time check to get wrong and no window in which an
+  addition is silently dropped because the owner flipped the switch a second
+  later.
+- **A purge on going private was decided, then removed on 2026-09-12 in review
+  of the refinement PR, and the ADR records it as a rejected alternative.** The
+  idea was to delete an owner's feed rows when their cellar stopped being
+  public, as redundant defence in depth beside the read filter. It was dropped
+  because it delivers none of what it appeared to:
+  - **It bounds nothing.** Recording never stops, so the rows rebuild from that
+    owner's very next addition. The purge clears a snapshot, not a state — an
+    owner who was ever public retains rows again the moment they add a bottle,
+    exactly like one who never was.
+  - **Its defence in depth is partial in the worst direction.** It covers only
+    rows predating the flip, so a broken read filter still exposes everything
+    added after it — the more recent and more sensitive half. A partial net
+    against a fail-open bug is worse than none, because its presence is what
+    tempts a later reader to trust it instead of the filter.
+  - **It makes history asymmetric and irreversible.** An owner who goes private
+    and public again loses everything from before the flip, while one who never
+    toggled keeps it — permanent data loss from a one-click control whose copy
+    says nothing about deletion.
+  - **It does not un-publish.** A line already painted in a visitor's browser
+    stays until they reload (below), and the front page is `noindex`, so there
+    is no search index to expunge. The one benefit that was a genuine
+    difference in kind — erasing what had actually been on the front page
+    rather than merely hiding what never was — is not one it can deliver.
+  **The accepted cost of removing it, stated plainly: the `feed` table retains
+  rows for cellars that are currently private.** They are never served, never
+  assembled into a line and never counted; they are retained. Making that
+  untrue would need a consume-time visibility check as well, which was
+  considered and rejected for losing — invisibly and forever — every bottle
+  added while private by an owner who then makes their cellar public. GDPR
+  erasure ([backlog](../backlog.md)) is where retention gets revisited.
 - **[ADR-0050](../../adr/0050-public-cellar-addressing.md)'s uniform 404 is
   unchanged** (question 3). The amendment marks the revisit trigger fired and
   records that discovery now exists — for public cellars, through this feed —
@@ -173,10 +199,10 @@ records them, the alternatives above as rejected, and their consequences.
       separate display name was rejected, so the question is not reopened from
       scratch — [dropped task 10](10-person-display-name.md) is the source, not
       a second home for the reasoning
-- [ ] The record states that the read-time visibility filter is the single
-      correctness rule and the going-private purge is deliberately redundant,
-      in terms plain enough that a later reader cannot remove the filter on the
-      grounds that the purge covers it
+- [ ] The record states that the read-time visibility filter is the *only*
+      rule, lists the purge among the rejected alternatives with the four
+      reasons above, and names the retained-rows cost as an accepted
+      consequence rather than leaving it unsaid
 - [ ] `docs/architecture.md` §4 and §5 describe the resulting rule where they
       describe the public cellar's addressing and the front page
 - [ ] The ADR does not contradict the Constraints above, which the refinement
