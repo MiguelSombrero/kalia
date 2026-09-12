@@ -20,11 +20,11 @@ and nothing else. `ProfileApi` exposes `publicCellarOwnerId(String)` — a
 username-to-id lookup, the opposite direction from the one a feed makes, which
 starts from a user id and needs a name to print and an answer about linking.
 There is today **no way at all, over HTTP or across modules, to turn a user id
-into anything a line could print.** And the thing to print is not the username:
-the [vision](../../../README.md)'s line names a person — "Miguel Sombrero", a
-first name and a last name — which Kalia does not store at all.
-[Task 10](10-person-display-name.md) is what gives `profile` a name to publish;
-this task is what makes it readable for a page of lines at once.
+into anything a line could print.** `profile.profile` holds the username and
+`ProfileApi` will not hand it over for an id. A feed line names its person by
+username — the product owner's decision, with the reasoning in
+[dropped task 10](10-person-display-name.md) — so the missing read is narrow
+and entirely inside `profile`.
 
 The second half is shape, not existence. A page of twenty lines resolves twenty
 beers and twenty people. Done one line at a time that is forty queries across
@@ -36,17 +36,16 @@ holding a list of ids should not ask twenty times.
 ## Scope
 
 Making two facts reachable for a *set* of ids rather than one at a time: a
-catalog beer's identity as a feed line prints it, and a person's published
-name ([task 10](10-person-display-name.md)) plus their cellar's current
-visibility — and, where a line links, the username that link is built from. Whichever side of the API
+catalog beer's identity as a feed line prints it, and a person's username plus
+their cellar's current visibility — the username being both what a line prints
+and what a public cellar's link is built from. Whichever side of the API
 boundary question 1 settles, the same two reads are the deliverable.
 
 ## Non-goals
 
 - The feed endpoint itself — [task 02](02-feed-api.md).
-- Deciding what a person's published name *is*, where it comes from, or what
-  stands in when there is none — [task 10](10-person-display-name.md). This
-  task reads whatever that settles.
+- Introducing a display name distinct from the username. Decided against —
+  [dropped task 10](10-person-display-name.md) records why.
 - Recording events — [task 01](01-feed-module.md).
 - Deciding what a line may say about a private cellar —
   [task 09](09-feed-and-private-cellars.md) owns that, and this task returns
@@ -108,19 +107,12 @@ boundary question 1 settles, the same two reads are the deliverable.
    which is already brewery-plus-beer in one string as beer names usually go.
    Whether the read returns the brewery separately decides whether a line can
    say "AleSmith's IPA" or link the brewery later.
-3. **Does the read return the username at all, or only for a cellar that can
-   be linked?** The username is only needed to build `/cellars/{username}`, so
-   returning it for a person whose cellar is not public hands a caller
-   something it has no use for — and, per
-   [task 09](09-feed-and-private-cellars.md), possibly something it should not
-   have. Withholding it is free here and impossible to retrofit once a client
-   depends on it.
-4. **What does a line do when its beer or its person no longer resolves?**
+3. **What does a line do when its beer or its person no longer resolves?**
    Nothing deletes catalog beers and nothing deletes profiles today, so this is
    theoretical — until GDPR account deletion ([backlog](../backlog.md)), which
    makes it the normal case for exactly the users who asked to disappear. Drop
    the line, or render it without the name?
-5. **Should the cellar page's client-side enrichment converge on this?** Two
+4. **Should the cellar page's client-side enrichment converge on this?** Two
    ways of turning ids into beer names is a thing someone will later "tidy",
    and it is cheaper to say now that they are deliberately different than to
    discover it in a review.
@@ -130,11 +122,8 @@ boundary question 1 settles, the same two reads are the deliverable.
 - [ ] A set of beer ids resolves to what a feed line prints, in one query, and
       an unknown id is handled by the convention this task states rather than
       by an exception — integration test including an unknown id
-- [ ] A set of user ids resolves to a published name and the *current* cellar
+- [ ] A set of user ids resolves to a username and the *current* cellar
       visibility, in one query — integration test
-- [ ] A username is returned only where question 3 says it may be — integration
-      test asserting its absence for a cellar that is not public, confirmed to
-      fail against an implementation that returns the whole profile
 - [ ] A user id with no profile row and a user id whose cellar is private are
       indistinguishable in the response — integration test asserting the two
       cases produce identical output, confirmed to fail against an

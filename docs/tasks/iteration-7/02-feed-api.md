@@ -74,10 +74,9 @@ line and link a public cellar.
 3. **What does a line carry?** Enough to render "X added a Y to their cellar"
    plus a link — but whether the beer links to the catalog, whether the user
    links to a profile, and whether the bottle's dates appear all change the
-   response shape. The person's half of it is a *name*, not a username
-   ([task 10](10-person-display-name.md)); the username appears only inside a
-   public cellar's link, which is [task 04](04-feed-line-composition.md)'s
-   question 3.
+   response shape. The person's half of it is the **username**
+   ([dropped task 10](10-person-display-name.md) records why, not a display
+   name), which is also what a public cellar's link is built from.
 4. **Does a signed-in caller see anything different from a signed-out one** —
    their own additions marked, for instance, or their own excluded?
 

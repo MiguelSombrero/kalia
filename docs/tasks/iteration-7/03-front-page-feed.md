@@ -67,15 +67,15 @@ empty states — including the empty state that a brand-new installation shows.
 
 The product owner wants a say here: this is the first thing anyone sees.
 
-1. **What does a feed line say, in both languages?** "Miguel Sombrero added
-   AleSmith IPA to the cellar" is the vision's example — a person's first and
-   last name, with "the cellar" as the linked words where the cellar is public.
-   The exact wording, including how a private cellar's line reads if it appears
-   at all, and what a line reads like for someone with no name on file
-   ([task 10](10-person-display-name.md)), wants writing rather than
-   defaulting. In Finnish the name takes a case ending and the linked words
-   cannot simply be substrings of a translated sentence — this is the trap the
-   Constraints name.
+1. **What does a feed line say, in both languages?** "MiguelSombrero added
+   AleSmith IPA to the cellar" is the vision's example with the username in it
+   ([dropped task 10](10-person-display-name.md)), and "the cellar" is the
+   linked text where the cellar is public. The exact wording, including how a
+   private cellar's line reads if it appears at all, wants writing rather than
+   defaulting. In Finnish the linked words take a case ending and cannot be a
+   fixed substring of a translated sentence — this is the trap the Constraints
+   name, and it is sharper here because the link is in the middle of the
+   sentence rather than at its end.
 2. **How is time shown** — "2 hours ago", a date, or nothing?
 3. **What does the front page look like around the feed?** Is the feed the
    whole page now, or does the title, tagline and catalog button stay above it?
