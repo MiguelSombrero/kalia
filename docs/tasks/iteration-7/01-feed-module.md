@@ -1,6 +1,6 @@
 # Task 01: `feed` module and cellar events
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-1, DW-3
 
@@ -23,7 +23,9 @@ go through application events. The rule has never been exercised.
 
 A `feed` module owning a record of things that happened, and the recording of
 the first kind: someone added a bottle to their cellar. Its own schema and
-migrations, and the event flow from `cellar` to `feed`.
+migrations, and **two** event flows into it — `cellar` announcing an addition,
+and `profile` announcing that a cellar stopped being public, which purges that
+owner's rows (Constraints).
 
 ## Non-goals
 
@@ -97,42 +99,63 @@ migrations, and the event flow from `cellar` to `feed`.
   test as this task's to write: a test that registers and saves in one step
   would pass even if a production caller skipped the save.
 
+**Decided 2026-09-12 by the product owner.** The privacy half lives in
+[task 09](09-feed-and-private-cellars.md)'s Constraints and is not restated
+here ([ADR-0020](../../adr/0020-documentation-roles.md)); what follows is the
+storage shape that falls out of it, and this section is its single home —
+tasks [02](02-feed-api.md), [04](04-feed-line-composition.md) and
+[06](06-feed-increments.md) point here.
+
+- **Every addition is recorded, whatever the cellar's visibility** (question
+  1, closed by [task 09](09-feed-and-private-cellars.md)). The read filters;
+  the writer does not. Nothing about a cellar's privacy is consulted on the
+  write path, so there is no consume-time check to get wrong and no window in
+  which an addition is silently dropped because the owner flipped the switch a
+  second later.
+- **`profile` gains its first domain event, `CellarVisibilityChanged`,
+  registered on `Profile` as aggregate root** — the name and the mechanism are
+  already fixed by
+  [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md),
+  which names that exact event; this task does not choose either. `feed`
+  consumes it and deletes that owner's rows when the new value is private.
+  **That purge is deliberately redundant defence in depth, never the privacy
+  mechanism** — the reasoning is in
+  [task 09](09-feed-and-private-cellars.md)'s Constraints and the code comment
+  carries it, because a later reader finding both a filter and a purge must not
+  delete the filter. Like the addition consumer, it is safe to run twice.
+- **A feed line is a record of an act, not a view of a current holding**
+  (questions 2, 4 and 5). `feed`'s own row **freezes the act's own facts** —
+  the bottle count and the vintage — because those describe what happened, and
+  it **reads current data back** for what other modules own: beer name and
+  brewery through `CatalogApi`, username through `ProfileApi`
+  ([task 04](04-feed-line-composition.md) builds both reads). So
+  [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)'s
+  rule is honoured where it binds — the *`cellar` event* carries ids and
+  `occurredAt` and nothing mutable — while `feed`'s own record may hold the two
+  facts that are true of the event forever. **Deleting a bottle, or editing its
+  brewed date afterwards, does not change or remove the line.** `feed`
+  therefore gains no dependency on `cellar` beyond the event itself.
+- **A bulk add is one event carrying a count** (question 3). One
+  `POST /api/v1/cellar/bottles` creating six identical bottles is one
+  `BottleAdded` and one feed line — "added 6 bottles of …" — not six. The bulk
+  add is already one operation sharing one set of dates
+  ([architecture.md §3](../../architecture.md)), so the grouping boundary is
+  the operation and needs no read-time collapsing rule and no cursor that has
+  to stay stable across one.
+- **The stored event knows whose cellar it came from, queryably** (question 6).
+  A per-user or followed-users feed stays an addition rather than a rewrite —
+  nothing here builds fan-out or a follow model, and the read is the same
+  global list for every caller ([task 02](02-feed-api.md)).
+- **The ordering column is decided in [task 06](06-feed-increments.md)** and
+  this task's first migration creates it and its index. Note the trap named
+  there: a `BIGSERIAL` has the same silent-loss flaw as a timestamp, because
+  ids are allocated at insert and become visible at commit. Whatever total
+  order task 06 settles, the index exists from migration one — an unindexed
+  feed degrades quietly as it fills rather than failing.
+
 ## Open questions
 
-1. **Is an event recorded for a private cellar at all?** Three answers, and
-   they differ in what leaks: record everything and filter on read; record
-   nothing private, so making a cellar public later reveals no history; or
-   record everything and show private additions without a link. The middle one
-   is safest and loses history permanently — and, because `cellar_public`
-   defaults to `false`, it also means a new Kalia's front page is empty until
-   somebody opts in. **This question now belongs to
-   [task 09](09-feed-and-private-cellars.md)**, which takes it together with
-   what it does to [ADR-0050](../../adr/0050-public-cellar-addressing.md); the
-   [vision](../../../README.md) already leans to the third answer. It stays
-   listed here because this task cannot be refined until it is closed.
-2. **How much does an event copy, and how much does it reference?**
-   [ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md)
-   already rules out copying anything mutable into the `cellar` event, so this
-   narrows to two parts: which ids the `BottleAdded` event carries, and whether
-   `feed`'s *own* stored record denormalises names for a cheap read (freezing
-   text that can later change) or references and fans out on every feed read.
-3. **Is one bottle one event?** Adding six bottles of the same beer would be
-   six lines in a feed. Grouping them is friendlier and more to build.
-4. **Does deleting a bottle, or a cellar going private, remove past events?**
-   Related to question 1, but distinct: a user may reasonably expect deleting
-   something to remove the announcement of it.
-5. **Does the event record a bottle's dates?** "Miguel added a 2019 AleSmith
-   IPA" is a better line than "Miguel added an AleSmith IPA", and it is more
-   about that person's cellar than the bare fact is.
-6. **Does the stored shape preclude a per-user feed later?** This iteration
-   builds one global feed and says so, and that is not being reopened. But
-   following other users is in the [backlog](../backlog.md), and a feed
-   delivered as a notification rather than a page is per-user by definition
-   ([backlog](../backlog.md) — mobile client). Nothing here needs to build
-   fan-out or a follow model; the question is only whether what gets stored
-   makes adding one an addition or a rewrite — which is mostly about whether an
-   event knows whose cellar it came from in a queryable way, rather than only
-   enough to render a line.
+**None.**
 
 ## Acceptance criteria
 
@@ -143,10 +166,16 @@ migrations, and the event flow from `cellar` to `feed`.
       failure in `feed` does not fail the cellar addition that triggered it —
       integration test with a failing consumer, confirmed to fail against a
       direct synchronous call
-- [ ] Whatever question 1 settles is enforced and tested for both a public and
-      a private cellar, including a cellar whose visibility changes *after* the
-      event was recorded — this last case is the one a fixture-based test
-      misses
+- [ ] Every addition is recorded regardless of visibility, and a cellar going
+      private purges that owner's rows — integration test covering a cellar
+      public at write time and private at read time, and the reverse, confirmed
+      to fail against an implementation that consults visibility on the write
+      path
+- [ ] A bulk add of six identical bottles produces one event carrying a count
+      of six, not six events — integration test through `CellarService`
+- [ ] A bottle deleted, and a bottle's brewed date edited, after the event was
+      recorded leave the stored line unchanged — integration test, since this
+      is what "a record of an act" means and nothing else asserts it
 - [ ] Flyway migration creates the `feed` schema and applies cleanly against an
       empty database — verified by the integration test suite migrating from
       scratch

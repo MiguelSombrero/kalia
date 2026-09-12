@@ -1,6 +1,6 @@
 # Task 12: Scope each module's exception advice to its own module
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -67,18 +67,27 @@ advice is added unscoped.
   ([architecture.md §3](../../architecture.md)) and must stay
   application-wide — a fix that scopes everything uniformly breaks it.
 
+**Decided 2026-09-12.**
+
+- **`basePackages` is the convention** (question 1, product owner), and
+  `feed`'s advice and every later module's follow it without re-deciding. It
+  binds by controller package, so a second controller added to a module is
+  covered automatically — the routine case. It breaks on a package rename,
+  which is a deliberate act visible in the same diff, rather than on the
+  routine one. `assignableTypes` fails in the direction nobody notices: a new
+  controller silently falls through to another module's advice.
+- **Both guards, not a choice between them** (question 2, closed by this task's
+  own acceptance criteria rather than by asking): an integration test proving
+  one module's advice does not answer on another module's endpoint, *and* a
+  build-failing rule that every `@RestControllerAdvice` outside `fi.kalia.web`
+  declares a scoping attribute — the second exercised against a violating
+  fixture under `backend/src/test/java/archfixture/`, since a rule no
+  production class violates passes whether or not its condition is right
+  ([architecture.md §7](../../architecture.md)).
+
 ## Open questions
 
-1. **`basePackages` or `assignableTypes`?** Package-based survives a new
-   controller in the module and breaks on a package rename; type-based is the
-   reverse. A preference here is worth stating once so `feed`'s advice and
-   every later module's follow it without re-deciding.
-2. **Is the guard an ArchUnit rule or a Spring integration test?** ArchUnit can
-   assert every `@RestControllerAdvice` outside `fi.kalia.web` declares a
-   scoping attribute — cheap, fast, and blind to whether the attribute is
-   *correct*. An integration test can prove catalog's advice does not answer on
-   a cellar endpoint — slower, and it only covers the pairs someone thought to
-   write.
+**None.**
 
 ## Acceptance criteria
 
@@ -91,8 +100,8 @@ advice is added unscoped.
       build, and that guard is itself exercised against a violating fixture
       under `backend/src/test/java/archfixture/` rather than only against
       compliant code
-- [ ] `backend/README.md`'s exception-handling convention names the scoping
-      attribute a new module's advice must carry
+- [ ] `backend/README.md`'s exception-handling convention names `basePackages`
+      as the scoping attribute a new module's advice must carry
 - [ ] `mvn clean verify` is green
 
 ## Notes

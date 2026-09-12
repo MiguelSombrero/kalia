@@ -1,6 +1,6 @@
 # Task 07: The front page updates without a reload
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-5
 
@@ -22,11 +22,12 @@ clicked something.
 
 ## Scope
 
-Making the rendered feed live: a subscription through whatever
-[task 05](05-feed-delivery-decision.md) chose, wrapped in a feature-owned hook;
-new events appearing in the list; duplicates and out-of-order arrivals handled;
-sane behaviour when the connection drops and comes back; and a region that
-changes on its own without ambushing a keyboard or screen-reader user.
+Making the rendered feed live: polling through the feature-owned hook
+[task 03](03-front-page-feed.md) already built, paused while the tab is hidden
+and catching up on focus; new events offered at the head of the list behind a
+control; duplicates and out-of-order arrivals handled; sane behaviour when a
+poll fails and recovers; and a region that changes without ambushing a keyboard
+or screen-reader user.
 
 ## Non-goals
 
@@ -54,10 +55,12 @@ changes on its own without ambushing a keyboard or screen-reader user.
   screen reader loses the reader's place, and a list that announces every
   arrival in full is worse. `prefers-reduced-motion` applies to any animation
   used to introduce a line.
-- The CSP is `connect-src 'self'`
-  ([ADR-0016](../../adr/0016-security-response-headers.md)), which covers a
-  same-origin subscription and nothing else — confirm it in a browser, since a
-  CSP failure is invisible to a unit test
+- The CSP needs no change and this was confirmed rather than assumed:
+  `frontend/lib/config/cspHeader.ts` is `connect-src 'self'`
+  ([ADR-0016](../../adr/0016-security-response-headers.md)) and
+  [task 05](05-feed-delivery-decision.md) chose polling through a Server
+  Action, which is a same-origin POST. Still worth one look in a browser, since
+  a CSP failure is invisible to a unit test
   ([iteration 6 task 12](../iteration-6/12-dev-csp-blocks-react-eval.md) is the
   precedent for this class of bug).
 - **The front page is statically rendered today** and a live feed makes it
@@ -73,37 +76,69 @@ changes on its own without ambushing a keyboard or screen-reader user.
 - Both locales ([ADR-0011](../../adr/0011-i18next-localization.md)); tokens
   only ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)).
 
+**Decided 2026-09-12 by the product owner.** The transport lives in
+[task 05](05-feed-delivery-decision.md)'s Constraints and the contract in
+[task 06](06-feed-increments.md)'s; neither is restated
+([ADR-0020](../../adr/0020-documentation-roles.md)). This section is the single
+home for how arrivals behave on screen.
+
+- **New events appear behind a control, never on their own** (question 1).
+  A "3 new events" affordance appears at the head of the list; clicking it
+  prepends them. **This is what satisfies both new WCAG criteria without a
+  judgement call:** 2.2.2 *Pause, Stop, Hide* does not bite because nothing
+  updates automatically, and the control is itself the 4.1.3 *Status Message* —
+  announced politely, without moving focus, and without reading every arriving
+  line in full. Question 2 dissolves with it: nothing is inserted above what
+  the visitor is reading, so scroll position is never disturbed and there is
+  nothing to compensate for.
+- **The visitor's own addition arrives the same way as anyone else's**
+  (question 3) — through the next poll, up to 60 seconds later, with no
+  special-casing. [Task 02](02-feed-api.md) serves an identical response to
+  every caller, so the page has nothing to special-case with.
+- **Polling pauses while the tab is hidden and catches up on focus**
+  ([task 05](05-feed-delivery-decision.md)), so the catch-up path is the
+  ordinary path rather than a failure path — it runs every time someone returns
+  to the tab, which is what makes the reconnect test below meaningful rather
+  than theoretical.
+- **The list is capped** (question 4). A tab left open all day accumulates
+  arrivals at the head while infinite scroll accumulates history at the foot;
+  the rendered list is bounded at both ends and older entries are dropped from
+  the DOM. **Recorded by the agent during refinement rather than asked** — the
+  alternative is unbounded memory growth on Kalia's landing page.
+- **Liveness is surfaced only when it breaks** (question 5). Nothing in the
+  normal case — no dot, no "updated just now", no permanent chrome on a page
+  whose job is to look calm. After repeated poll failures, a quiet inline
+  notice with a way to retry, so a stalled feed is distinguishable from a quiet
+  evening. Kalia has no metrics ([backlog](../backlog.md)), so the page is the
+  only place this can ever show.
+- **Nothing appears outside the page** (question 6): no count in the tab title.
+  It would be incoherent with the decision that a hidden tab stops polling, and
+  it is a commitment about what Kalia does with attention that this iteration
+  is not making.
+
 ## Open questions
 
-1. **Do new events appear on their own, or behind a "3 new events" control the
-   visitor clicks?** The second is what most feeds do, and it is the kinder
-   answer for a reader mid-sentence and the easier one to make accessible.
-   Appearing on their own is more impressive and is what the vision's wording
-   suggests. This is the product owner's call and it shapes everything below
-   it.
-2. **What happens to the visitor's scroll position** when something is inserted
-   above what they are reading?
-3. **Does the visitor's own addition arrive the same way?** Someone who adds a
-   bottle in another tab is the most likely person to be looking at the feed.
-4. **Does the page grow forever?** A tab left open all day accumulates every
-   event; capping the list is easy and invisible, and not capping it is also a
-   decision.
-5. **Should the visitor be able to tell the feed is live — or that it has
-   stopped being live?** A dead connection currently looks exactly like a quiet
-   evening. Nothing in Kalia has metrics ([backlog](../backlog.md)), so the
-   page is the only place this could show.
-6. **Does anything appear outside the page** — a count in the tab title, say?
-   Cheap to build, and a commitment about what Kalia does with attention.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A new event arriving while the page is open is rendered without a reload
-      — component test driving the subscription
+- [ ] A new event arriving while the page is open surfaces the "N new events"
+      control, and nothing enters the list until it is activated — component
+      test, confirmed to fail against an implementation that prepends
+      immediately
+- [ ] Polling stops while the tab is hidden and catches up on focus — component
+      test driving visibility change, confirmed to fail against a hook that
+      polls regardless
 - [ ] An event the page already holds arriving a second time does not appear
       twice — component test, confirmed to fail against an implementation that
       appends unconditionally
-- [ ] A dropped and re-established connection leaves no hole and no duplicate
-      in the list — component test covering the reconnect path
+- [ ] A failed poll followed by a successful one leaves no hole and no
+      duplicate in the list — component test covering the recovery path
+- [ ] Repeated poll failures surface the stalled-feed notice, and a successful
+      poll clears it — component test, since a dead feed otherwise looks
+      exactly like a quiet evening
+- [ ] The rendered list stays bounded with arrivals at the head and paging at
+      the foot — component test asserting the cap holds in both directions
 - [ ] The server-rendered first page is adopted rather than re-fetched — test
       asserting no request is made for what was already delivered
 - [ ] The live region passes `axe` with no violations in both locales, and the

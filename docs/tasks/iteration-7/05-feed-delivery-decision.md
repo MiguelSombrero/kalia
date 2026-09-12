@@ -1,6 +1,6 @@
 # Task 05: Decide how the feed reaches a browser that is already open
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-6
 
@@ -88,30 +88,64 @@ explicitly.
   (`docker compose`, `frontend/playwright.config.ts`), because
   [task 07](07-live-front-page.md) has to prove the behaviour end-to-end.
 
+**Decided 2026-09-12 by the product owner. This section is the single home for
+the delivery answers; tasks [02](02-feed-api.md), [03](03-front-page-feed.md),
+[06](06-feed-increments.md) and [07](07-live-front-page.md) point here rather
+than restating them ([ADR-0020](../../adr/0020-documentation-roles.md)).** The
+ADR this task writes records them and the rejected transports.
+
+- **Latency target: at most 60 seconds** from an event being recorded to a
+  focused page showing it (question 1). Stated as a number so a reader can tell
+  whether the built thing meets it. The decisive argument is
+  [task 09](09-feed-and-private-cellars.md)'s: only public cellars appear, and
+  `cellar_public` defaults to `false`, so this page realistically changes hours
+  apart — sub-second push buys a latency nobody is present to perceive.
+- **The transport is polling**, from a client component on an interval, through
+  a Server Action ([ADR-0040](../../adr/0040-client-reads-via-server-actions.md)),
+  over [task 06](06-feed-increments.md)'s "since" contract (questions 3 and 4:
+  the simplest thing that demonstrates the feature, not a production shape set
+  now). **No server-sent events, no WebSocket, no new kind of route handler,
+  no CSP change** — confirmed, not assumed: `frontend/lib/config/cspHeader.ts`
+  is `connect-src 'self'` and a Server Action is a same-origin POST, so the two
+  route handlers [architecture.md §5](../../architecture.md) inventories stay
+  two. The single-instance limitation disappears with the connection registry
+  rather than being accepted: no instance holds subscriber state, so a second
+  backend instance needs nothing, and
+  [architecture.md §8](../../architecture.md)'s statement that this stack's
+  Valkey is the frontend's session store and not backend infrastructure stands
+  unchanged.
+- **The seam is kept** (question 5). The page subscribes through one
+  feature-owned hook ([ADR-0041](../../adr/0041-tanstack-query-feature-owned-hooks.md)),
+  so swapping polling for a stream later is a frontend-internal change and not
+  an API contract change. This costs little now and is unavailable later.
+- **Polling pauses while the tab is hidden and catches up on focus** (question
+  2). An event does not have to reach a backgrounded tab, a sleeping phone or a
+  laptop that was shut. Kalia is "the page keeps itself current while you read
+  it", not "Kalia delivers news" — the second needs a per-user feed and device
+  registration and is [backlog](../backlog.md) work. The catch-up path has to
+  exist for reconnection anyway, so pausing adds no code that was not already
+  required.
+- **Retention: every row is kept; only a recent window is served** (question 6,
+  and [task 02](02-feed-api.md)'s question 2). The API serves events newer than
+  a stated window — **30 days** — and a cursor older than that is answered
+  *start over* rather than with a partial result, because that is the only
+  answer that lets a client know it has a hole. No deletion job, and every
+  query is bounded.
+- **De-duplication is by the event's own identity**, carried in
+  [task 06](06-feed-increments.md)'s cursor ordering: delivery is at-least-once
+  whatever the transport, so the page must recognise an event it already holds.
+  That identity is a property of the event, decided once in
+  [task 01](01-feed-module.md) and [task 06](06-feed-increments.md), not three
+  times.
+- **Likes and comments** (question 3) are [backlog](../backlog.md) work and did
+  not earn bidirectionality here. A transport chosen for one direction is not
+  wrong for two; when they arrive they are a mutation over the existing Server
+  Action path, and the hook seam above is what makes a later WebSocket a
+  contained change.
+
 ## Open questions
 
-1. **What does "real-time" have to mean — a second, ten seconds, a minute?**
-   Every option on the table satisfies "no reload needed"; they differ only
-   here, and this number is the decision. It is the product owner's to give.
-2. **Does an event have to reach a tab nobody is looking at?** A backgrounded
-   tab, a sleeping phone, a laptop that was shut. The answer separates "the
-   page keeps itself current while you read it" from "Kalia delivers news",
-   and the second is a much larger system.
-3. **Are likes and comments coming to this page?** They are in the
-   [backlog](../backlog.md) and they send traffic the other way. A transport
-   chosen for one direction is not wrong for two, but it is worth knowing.
-4. **What is an open connection per visitor worth?** Nobody is deployed and
-   nobody has users, so the honest form of the question is: is this a
-   production shape being set now, or the simplest thing that demonstrates the
-   feature while the stack is still one container?
-5. **Is the transport allowed to be replaceable?** If the page subscribes
-   through one feature-owned hook, swapping polling for a stream later is a
-   frontend-internal change; if the API contract differs per transport, it is
-   not. Deciding to keep the seam costs little now and is unavailable later.
-6. **How long does a disconnected client have before it is told to start
-   over?** A phone in a pocket for six hours reconnects asking for everything
-   since yesterday, and answering that honestly is a different query from
-   answering "since a minute ago".
+**None.**
 
 ## Acceptance criteria
 
@@ -129,10 +163,11 @@ explicitly.
 - [ ] `docs/architecture.md` §2, §4 and §5 describe the transport where they
       describe the shapes it changes — the route-handler inventory in §5 in
       particular, which currently says there are exactly two
-- [ ] Tasks [06](06-feed-increments.md) and [07](07-live-front-page.md) have
-      their Scope and Open questions rewritten against the decision before
-      either is refined, and [task 03](03-front-page-feed.md)'s
-      "does not need the client" constraint is corrected
+- [ ] The ADR does not contradict the Constraints above, which the refinement
+      PR already wrote into tasks [02](02-feed-api.md),
+      [03](03-front-page-feed.md), [06](06-feed-increments.md) and
+      [07](07-live-front-page.md) — read against each of them, and any
+      divergence resolved in this PR
 - [ ] The ADR names the test each of tasks 06 and 07 must write to prove
       delivery and reconnection, without writing either here
 
@@ -147,7 +182,9 @@ one — the same exception, for the same reason, taken by
 belong to tasks 06 and 07, which is why the last criterion names them rather
 than writing any.
 
-**A recommendation, not a decision.** Polling from a client component on an
+**Written as a recommendation before the decision; the product owner took it
+on 2026-09-12, so the Constraints above are now the decision and this
+paragraph is kept as the reasoning that led there.** Polling from a client component on an
 interval, through a Server Action
 ([ADR-0040](../../adr/0040-client-reads-via-server-actions.md)), over the
 "since" contract [task 06](06-feed-increments.md) builds, is the only option
