@@ -186,6 +186,32 @@ they're already cross-referenced from merged PRs and
   when writing a new controller for
   [iteration-7 task 02](iteration-7/02-feed-api.md), reproducing the same gap,
   caught only in that PR's human review.
+- **SHOULD-30** *(confirmed 2026-09-13)* **[needs decision]** — `HttpBoundaryTest`'s
+  guard against JPA entities crossing the HTTP boundary only recognizes a
+  `@RestController` method annotated (or meta-annotated) with `@RequestMapping`
+  (`A_CONTROLLER_HANDLER_METHOD`,
+  `backend/src/test/java/fi/kalia/HttpBoundaryTest.java:41-48`), so it does not
+  see an `@ExceptionHandler` method on a `@RestControllerAdvice` class —
+  `fi.kalia.web.GlobalExceptionHandler`, `fi.kalia.catalog.web.CatalogExceptionHandler`
+  and `fi.kalia.cellar.web.CellarExceptionHandler` carry neither annotation.
+  Every advice method returns bare `ProblemDetail` today, so nothing currently
+  violates, but that shape is convention, not enforcement: ADR-0014 calls it
+  "maintained by discipline — Spring does not enforce it"
+  (`docs/adr/0014-shared-exception-handling.md:66`), the same
+  unenforced-by-design gap [task 13](iteration-7/13-guard-dtos-at-the-api-boundary.md)
+  exists to close for ordinary controllers. A future handler embedding an
+  entity in a `ProblemDetail.setProperty(...)` extension would slip past both
+  the ArchUnit rule and ADR-0014's discipline, silently. Task 13 scoped the
+  rule to "a controller method" literally and never raised advice classes.
+  Two remediations: widen `A_CONTROLLER_HANDLER_METHOD` (or add a parallel
+  predicate) to also match `@ExceptionHandler` methods on
+  `@RestControllerAdvice` classes, with its own archfixture fixture proving it
+  fires, mirroring `HttpBoundaryRulesRejectViolationsTest`'s existing pattern;
+  or leave it to ADR-0014's "only two exception types, always `ProblemDetail`"
+  contract and add a one-line comment on `A_CONTROLLER_HANDLER_METHOD` naming
+  the exclusion as deliberate. Spending a second ArchUnit rule and fixture on
+  a class of method that has never actually leaked an entity is a
+  product-owner call.
 
 ## COULD
 
