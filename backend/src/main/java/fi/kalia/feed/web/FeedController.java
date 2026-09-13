@@ -55,15 +55,17 @@ class FeedController {
 			so there is nothing left to vary by caller. A page may carry fewer lines than requested — a line \
 			whose beer or person no longer resolves is dropped rather than rendered blank.""")
 	@ApiResponse(responseCode = "400",
-			description = "size is missing, non-numeric, or outside 1-" + MAX_SIZE + "; or since is malformed "
-					+ "or was never issued by this server",
+			description = "size is missing, non-numeric, or outside 1-" + MAX_SIZE + """
+					; or since is malformed \
+					or was never issued by this server""",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = ProblemDetail.class)))
 	FeedPageDto readFeed(
 			@Parameter(description = "Page size, 1-" + MAX_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_SIZE) int size,
-			@Parameter(description = "Opaque cursor from a previous line's own cursor; when given, reads events "
-					+ "recorded after it instead of the most recent page")
+			@Parameter(description = """
+					Opaque cursor from a previous line's own cursor; when given, reads events recorded after it \
+					instead of the most recent page""")
 			@RequestParam(required = false) @Size(max = MAX_CURSOR_LENGTH) @Nullable String since) {
 		// Blank, not just absent: an empty since= is treated the same as no
 		// cursor at all rather than failing as a malformed one.
