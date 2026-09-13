@@ -1,6 +1,6 @@
 # Task 02: Feed read API
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-2, DW-3
 
@@ -98,26 +98,26 @@ line and link a public cellar.
 
 ## Acceptance criteria
 
-- [ ] A signed-out caller reads recent events newest-first — integration test
-- [ ] **No event exposes anything about a cellar that is currently private**,
+- [x] A signed-out caller reads recent events newest-first — integration test
+- [x] **No event exposes anything about a cellar that is currently private**,
       including one that was public when the event was recorded — integration
       test flipping visibility between the write and the read, confirmed to
       fail against an implementation that resolves visibility at write time
-- [ ] An event whose owner's cellar is not public is absent from the response
+- [x] An event whose owner's cellar is not public is absent from the response
       entirely — not present-but-stripped — including one recorded while that
       cellar was public; integration test asserting the response carries no
       field naming the owner, since a stripped-in-the-UI answer is not a
       privacy answer
-- [ ] A signed-in caller and a signed-out caller receive byte-identical
+- [x] A signed-in caller and a signed-out caller receive byte-identical
       responses for the same cursor — integration test, confirmed to fail
       against an implementation that marks the caller's own events
-- [ ] Request parameters are bounded and a hostile value is rejected with
+- [x] Request parameters are bounded and a hostile value is rejected with
       `problem+json` rather than producing an unbounded query — integration
       test
-- [ ] The generated OpenAPI client is regenerated and committed; the
+- [x] The generated OpenAPI client is regenerated and committed; the
       `api-client-drift` CI job passes
       ([ADR-0012](../../adr/0012-orval-api-client.md))
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

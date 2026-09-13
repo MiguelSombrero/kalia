@@ -123,7 +123,7 @@ cross-module *reads* via the root-package API.
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
-| `feed` | A record of things that happened — currently, a bottle added to a cellar *(iteration 7)*; reading it over HTTP and any UI are later tasks | `cellar` (event: bottle added) |
+| `feed` | A record of things that happened — currently, a bottle added to a cellar *(iteration 7)*; reading it over HTTP and any UI are later tasks | `cellar` (event: bottle added), `catalog` (read: beer name and brewery), `profile` (read: username and current cellar visibility) |
 
 The term each module owns — every `domain` type's meaning inside its module,
 the words that mean two things across modules, and the published REST/JSON/
@@ -237,6 +237,7 @@ GET    /api/v1/beers/{id}
 GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
 GET    /api/v1/breweries?page=&size=
 GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
+GET    /api/v1/feed?size=                           -> the most recent events, newest first, from cellars currently public; identical for every caller
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
@@ -273,20 +274,39 @@ missing profile and a private cellar are one 404 — identical for every caller,
 the owner included — so usernames cannot be walked for cellars
 ([ADR-0050](adr/0050-public-cellar-addressing.md)).
 
+`GET /api/v1/feed` answers the same for every caller, signed in or out: only
+events whose owner's cellar is *currently* public are served, resolved at read
+time against `catalog` and `profile` rather than against anything copied into
+the event when it was recorded
+([ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md),
+[ADR-0058](adr/0058-feed-event-recording-model.md)). It returns the whole
+line — username, beer name, brewery, bottle count, vintage and the instant —
+rather than ids for a client to enrich, which is the client-agnostic-resources
+convention below applied rather than excepted: "who added what, and when" is
+the resource, and a feed event without its actor would be an incomplete one,
+not a smaller one. A line whose beer or person no longer resolves is dropped,
+so a page may carry fewer lines than `size` without that being an error.
+
 Conventions:
 
 - Pagination: `page`/`size` params, response envelope with `content`,
   `totalElements`, `totalPages`, `page`. `/breweries` carries the contract but
   still sorts and slices the full table in-application, to keep its name order
   locale-independent ([ADR-0045](adr/0045-brewery-list-paginates-in-application.md)).
+  The feed is the deliberate exception: a list that grows at the head reads
+  wrong under an offset, so it takes only a bounded `size` and answers with a
+  `nextCursor` — opaque, round-tripped rather than parsed — instead of a page
+  number. A stable search result set and a list growing at the head are
+  different problems, kept as two shapes rather than forced into one.
 - **Endpoints are client-agnostic resources.** An endpoint's shape follows the
   resource, not the screen that happens to consume it; assembling several
   resources into one view is the client's job. Today the frontend is the only
   caller and does exactly that, so this holds by circumstance — it is written
   down because the cellar, profile and feed endpoints are each an opportunity
-  to shape a response around one Next.js page instead.
+  to shape a response around one Next.js page instead. The feed endpoint above
+  is where this gets tested: it returns the resource whole rather than ids.
 - Authentication: bearer token, default deny — every route needs one except
-  the catalog reads above, `/actuator/health` and the API docs
+  the catalog reads above, the feed, `/actuator/health` and the API docs
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)). A path whose
   user is implied by the credential is top-level (`/me`, `/cellar`), never
   `/users/{id}/…`.

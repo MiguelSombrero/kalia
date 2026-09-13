@@ -173,6 +173,19 @@ they're already cross-referenced from merged PRs and
   bump changed the SHA and left the comment. The comment is the only thing a
   reviewer reads to know what is running, which is the review step SHA-pinning
   exists to enable, and the whole CVE gate runs on that action.
+- **SHOULD-29** *(confirmed 2026-09-13)* — `CatalogController` documents no
+  response codes at all, though `backend/README.md`'s SpringDoc convention says
+  "Document each handler's response codes with `@ApiResponse`/`@ApiResponses`"
+  and calls undocumented API surface "a gap, not a later task."
+  `searchBeers` (`backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:56`)
+  has several bounded `@RequestParam`s, each capable of a 400, and none
+  documented; `getBeer` (`:83`) throws `BeerNotFoundException` — a 404 via
+  `CatalogExceptionHandler` — with no `@ApiResponse` either.
+  `PublicCellarController` follows the convention correctly for its own 404.
+  This is not hypothetical cost: it was the (wrong) precedent an agent copied
+  when writing a new controller for
+  [iteration-7 task 02](iteration-7/02-feed-api.md), reproducing the same gap,
+  caught only in that PR's human review.
 
 ## COULD
 
