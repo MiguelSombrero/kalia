@@ -255,6 +255,72 @@ class FeedControllerIT {
 		assertThat((String) JsonPath.read(body, "$.nextCursor")).isNotNull();
 	}
 
+	@Test
+	void beforeReturnsEveryEventBeforeTheCursorExactlyOnceNewestFirst() {
+		recordLine(makePublicProfile("before-older-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now().minusSeconds(120));
+		FeedLine anchor = recordLine(makePublicProfile("before-anchor-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now().minusSeconds(60));
+		recordLine(makePublicProfile("before-newer-user"), catalogBeers.get(0).getId(), 1, Instant.now());
+
+		String body = readBefore(cursorCodec.encode(anchor.getSequenceNumber()), MAX_SIZE);
+
+		List<String> usernames = JsonPath.read(body, "$.content[*].username");
+		assertThat(usernames).doesNotContain("before-anchor-user", "before-newer-user")
+				.contains("before-older-user");
+	}
+
+	// A row recorded (inserted) after the window closed on it still has a
+	// sequence number below a same-day anchor's, so only the window cutoff —
+	// not sequence order alone — keeps it out of a `before` read. This is
+	// the "stops rather than loops past the edge of the window" guarantee,
+	// checked the same way readRecent's window test is: for the fixture this
+	// test controls, not for the response being empty, since the table is
+	// shared global state across this class.
+	@Test
+	void aBeforeReadExcludesEventsOutsideTheThirtyDayWindow() {
+		UUID tooOldUser = makePublicProfile("before-window-excluded-user");
+		recordLine(tooOldUser, catalogBeers.get(0).getId(), 1, Instant.now().minus(40, ChronoUnit.DAYS));
+		FeedLine anchor = recordLine(makePublicProfile("before-window-anchor-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now());
+
+		String body = readBefore(cursorCodec.encode(anchor.getSequenceNumber()), MAX_SIZE);
+
+		assertThat(body).doesNotContain("before-window-excluded-user");
+	}
+
+	@Test
+	void aBeforeReadEnforcesThePrivateCellarRuleLikeTheFirstPage() {
+		FeedLine anchor = recordLine(makePublicProfile("before-visibility-anchor-user"),
+				catalogBeers.get(0).getId(), 1, Instant.now());
+		recordLine(makePrivateProfile("before-private-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now().minusSeconds(1));
+
+		String body = readBefore(cursorCodec.encode(anchor.getSequenceNumber()), MAX_SIZE);
+
+		assertThat(body).doesNotContain("before-private-user");
+	}
+
+	@Test
+	void aMalformedBeforeCursorAnswersProblemJson() {
+		client.get().uri("/api/v1/feed?before=not-a-valid-cursor!!")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
+	@Test
+	void sinceAndBeforeTogetherAreRejected() {
+		FeedLine anchor = recordLine(makePublicProfile("since-and-before-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now());
+		String cursor = cursorCodec.encode(anchor.getSequenceNumber());
+
+		client.get().uri("/api/v1/feed?since={cursor}&before={cursor}", cursor, cursor)
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+	}
+
 	private UUID makePublicProfile(String username) {
 		return saveProfile(username, true);
 	}
@@ -285,6 +351,14 @@ class FeedControllerIT {
 
 	private String readSince(String since, int size) {
 		return client.get().uri("/api/v1/feed?since={since}&size={size}", since, size)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+	}
+
+	private String readBefore(String before, int size) {
+		return client.get().uri("/api/v1/feed?before={before}&size={size}", before, size)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
