@@ -27,7 +27,7 @@ showing it as it happens.
 
 | ID | Task | Status |
 |---|---|---|
-| [09](iteration-7/09-feed-and-private-cellars.md) | What a feed line may reveal, and what that does to ADR-0050 | refined |
+| [09](iteration-7/09-feed-and-private-cellars.md) | What a feed line may reveal, and what that does to ADR-0050 | done |
 | [05](iteration-7/05-feed-delivery-decision.md) | Decide how the feed reaches a browser that is already open | refined |
 | [01](iteration-7/01-feed-module.md) | `feed` module and cellar events | done |
 | [04](iteration-7/04-feed-line-composition.md) | The reads a feed line needs | done |
@@ -45,10 +45,10 @@ criterion and each says so with `Covers: none`.
 
 | ID | Task | Status |
 |---|---|---|
-| [15](iteration-7/15-session-cookie-prefers-secure-prefix.md) | Prefer the `__Secure-` session cookie over the unprefixed one | refined |
+| [15](iteration-7/15-session-cookie-prefers-secure-prefix.md) | Prefer the `__Secure-` session cookie over the unprefixed one | done |
 | [11](iteration-7/11-keycloak-brute-force-protection.md) | Lockout on password guessing | refined |
 | [12](iteration-7/12-scope-exception-advices.md) | Scope each module's exception advice to its own module | refined |
-| [13](iteration-7/13-guard-dtos-at-the-api-boundary.md) | Make "DTOs at the API boundary" a rule the build enforces | refined |
+| [13](iteration-7/13-guard-dtos-at-the-api-boundary.md) | Make "DTOs at the API boundary" a rule the build enforces | done |
 | [14](iteration-7/14-catalog-silent-failures.md) | Two silent catalog bugs, and the unit tests that would have caught them | done |
 
 Order of work is the table's order, not the ID — tasks 01–03 were written

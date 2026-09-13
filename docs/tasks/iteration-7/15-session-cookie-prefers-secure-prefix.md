@@ -1,6 +1,6 @@
 # Task 15: Prefer the `__Secure-` session cookie over the unprefixed one
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -87,16 +87,16 @@ who can only *write* cookies, and a test for the case that makes it matter.
 
 ## Acceptance criteria
 
-- [ ] With both cookie names present and carrying different values, the
+- [x] With both cookie names present and carrying different values, the
       `__Secure-` value is the one used — unit test, confirmed to fail against
       the current ordering
-- [ ] With only the unprefixed name present, it is still used, so local HTTP
+- [x] With only the unprefixed name present, it is still used, so local HTTP
       development is unaffected — unit test
-- [ ] With only the `__Secure-` name present, it is used — unit test
-- [ ] Sign-in, a cellar read and sign-out still work end to end against the
+- [x] With only the `__Secure-` name present, it is used — unit test
+- [x] Sign-in, a cellar read and sign-out still work end to end against the
       HTTP dev stack — Playwright, since this sits under every authenticated
       request
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

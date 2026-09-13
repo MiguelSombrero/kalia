@@ -1,6 +1,6 @@
 # Task 09: What a feed line may reveal, and what that does to ADR-0050
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-3, DW-6
 
@@ -187,31 +187,31 @@ records them, the alternatives above as rejected, and their consequences.
 
 ## Acceptance criteria
 
-- [ ] A decision record states which option question 1 chose, what the rejected
+- [x] A decision record states which option question 1 chose, what the rejected
       ones would have cost, and — as ADR-0019 requires — at least one Bad or
       Neutral consequence of the choice; `node scripts/check-adrs.mjs` passes
-- [ ] [ADR-0050](../../adr/0050-public-cellar-addressing.md) is amended in
+- [x] [ADR-0050](../../adr/0050-public-cellar-addressing.md) is amended in
       place, its revisit trigger marked as fired, and the properties that no
       longer hold are named rather than left standing as written
-- [ ] The record states the front page's indexing directive and why, given that
+- [x] The record states the front page's indexing directive and why, given that
       indexing is the part that cannot be reversed on a user's timescale
-- [ ] The record states that a line names its person by username and why a
+- [x] The record states that a line names its person by username and why a
       separate display name was rejected, so the question is not reopened from
       scratch — [dropped task 10](10-person-display-name.md) is the source, not
       a second home for the reasoning
-- [ ] The record states that the read-time visibility filter is the *only*
+- [x] The record states that the read-time visibility filter is the *only*
       rule, lists the purge among the rejected alternatives with the four
       reasons above, and names the retained-rows cost as an accepted
       consequence rather than leaving it unsaid
-- [ ] `docs/architecture.md` §4 and §5 describe the resulting rule where they
+- [x] `docs/architecture.md` §4 and §5 describe the resulting rule where they
       describe the public cellar's addressing and the front page
-- [ ] The ADR does not contradict the Constraints above, which the refinement
+- [x] The ADR does not contradict the Constraints above, which the refinement
       PR already wrote into tasks [01](01-feed-module.md),
       [02](02-feed-api.md), [03](03-front-page-feed.md),
       [04](04-feed-line-composition.md) and [06](06-feed-increments.md) — read
       against each of them, and any divergence resolved in this PR rather than
       left for the task that hits it
-- [ ] The record names the test each of tasks 01–03 must write to prove the
+- [x] The record names the test each of tasks 01–03 must write to prove the
       rule holds across a visibility change in both directions, without writing
       any of them here
 

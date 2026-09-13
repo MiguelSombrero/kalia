@@ -279,7 +279,11 @@ events whose owner's cellar is *currently* public are served, resolved at read
 time against `catalog` and `profile` rather than against anything copied into
 the event when it was recorded
 ([ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md),
-[ADR-0058](adr/0058-feed-event-recording-model.md)). It returns the whole
+[ADR-0058](adr/0058-feed-event-recording-model.md)). A cellar that is not
+public contributes no line, named or unnamed — the read-time filter above is
+the *only* rule; recording never checks visibility, and going private later
+neither purges nor needs to purge what was already recorded
+([ADR-0059](adr/0059-feed-respects-cellar-visibility.md)). It returns the whole
 line — username, beer name, brewery, bottle count, vintage and the instant —
 rather than ids for a client to enrich, which is the client-agnostic-resources
 convention below applied rather than excepted: "who added what, and when" is
@@ -383,7 +387,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   ([ADR-0050](adr/0050-public-cellar-addressing.md)). The root layout sets
   `metadataBase` from `AUTH_URL` so those alternates resolve to absolute URLs.
   A cellar that is not public renders `app/[locale]/not-found.tsx`, the
-  generic localized 404 for the subtree.
+  generic localized 404 for the subtree. The front page is `noindex,
+  nofollow` too, for the same reason: it carries usernames beside what they
+  added, and indexing is the one part of discoverability that cannot be
+  undone on a user's timescale ([ADR-0059](adr/0059-feed-respects-cellar-visibility.md)).
 - **The Keycloak auth pages are a second, disjoint translation surface**
   ([ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)): login,
   registration, verification and password-reset are Keycloak's, on its own
@@ -533,6 +540,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), plus the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)) |
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
+| Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly") |
+| `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | Neither rule has a production violator either, so the same no-violator-passes-vacuously risk applies and both get the same fixture treatment |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language and WCAG 2.1 AA of the Keycloak pages reached from each locale (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)), plus the WCAG 2.1 AA scans covered above |
@@ -655,6 +664,7 @@ the failure back to the agent without blocking
 | [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md) | Kalia's Keycloak pages — a minimal theme, realm-level i18n, and Keycloak's own translations | accepted | 2026-09-08 |
 | [ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md) | A get-or-create write retries once on its own unique-constraint violation, each attempt its own transaction | accepted | 2026-09-11 |
 | [ADR-0058](adr/0058-feed-event-recording-model.md) | Feed's event-recording model — an idempotent listener freezing an act's own facts, reading nothing live | accepted | 2026-09-12 |
+| [ADR-0059](adr/0059-feed-respects-cellar-visibility.md) | A feed line exists only for a public cellar, filtered at read time, and the front page stays noindex | accepted | 2026-09-13 |
 
 ### Engineering process and documentation
 
