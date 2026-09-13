@@ -74,6 +74,10 @@ nobody has committed to becomes a constraint anyway.
   public contributes no line, named or unnamed; the rule is a single
   read-time filter, never a write-time check or a purge; and it amends
   ADR-0050 now that a feed makes public cellars discoverable.
+- [ADR-0060](0060-feed-delivery-is-polling.md) — the front-page feed reaches
+  an already-open browser by polling through a Server Action, not a stream;
+  no new route-handler kind, no CSP change, no instance-affinity limitation
+  to accept.
 
 ## Profiles and public cellars
 

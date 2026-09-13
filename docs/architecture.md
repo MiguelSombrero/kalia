@@ -90,6 +90,11 @@ Key properties:
   no account; the cellar requires sign-in. Authentication was built before the
   cellar because the cellar is per-user data
   ([ADR-0006](adr/0006-cellar-first.md)).
+- **No persistent connection anywhere in the stack.** The one page that
+  updates without a reload — the front-page feed — polls on an interval
+  through a Server Action rather than holding a stream open; there is no
+  server-sent-events or WebSocket endpoint, and no connection registry
+  ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
 
 ## 3. Backend modules
 
@@ -290,6 +295,9 @@ convention below applied rather than excepted: "who added what, and when" is
 the resource, and a feed event without its actor would be an incomplete one,
 not a smaller one. A line whose beer or person no longer resolves is dropped,
 so a page may carry fewer lines than `size` without that being an error.
+A page already showing the feed re-reads this same resource on an interval
+rather than holding a connection open — there is no separate streaming
+endpoint ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
 
 Conventions:
 
@@ -349,7 +357,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   endpoints, and the deliberately unauthenticated
   `app/api/auth/backchannel-logout`, which Keycloak calls server-to-server
   ([§6](#6-authentication-and-identity),
-  [frontend/README.md](../frontend/README.md) auth conventions). Sign-in and
+  [frontend/README.md](../frontend/README.md) auth conventions). This stays
+  the full list even for the front page's live-updating feed: it polls
+  through a Server Action, not a third route handler
+  ([ADR-0060](adr/0060-feed-delivery-is-polling.md)). Sign-in and
   sign-out are Server Actions rather than posts to route handlers, so the
   CSP's `form-action 'self'` can stay strict
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
@@ -665,6 +676,7 @@ the failure back to the agent without blocking
 | [ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md) | A get-or-create write retries once on its own unique-constraint violation, each attempt its own transaction | accepted | 2026-09-11 |
 | [ADR-0058](adr/0058-feed-event-recording-model.md) | Feed's event-recording model — an idempotent listener freezing an act's own facts, reading nothing live | accepted | 2026-09-12 |
 | [ADR-0059](adr/0059-feed-respects-cellar-visibility.md) | A feed line exists only for a public cellar, filtered at read time, and the front page stays noindex | accepted | 2026-09-13 |
+| [ADR-0060](adr/0060-feed-delivery-is-polling.md) | The front-page feed reaches an already-open browser by polling, not a stream | accepted | 2026-09-13 |
 
 ### Engineering process and documentation
 
