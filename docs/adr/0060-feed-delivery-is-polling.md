@@ -5,7 +5,7 @@
 
 ## Context
 
-[Iteration 7](../roadmap.md) builds a front page that shows recent feed
+[Iteration 7](../tasks/iteration-7.md) builds a front page that shows recent feed
 events, but tasks 01–03 describe a page that is rendered once and goes stale
 the moment it is delivered. The product vision's second half — the page
 updates as things happen, with no reload — is not a detail of the front-page
@@ -115,10 +115,10 @@ the browser side is [task 07](../tasks/iteration-7/07-live-front-page.md).
 Task 06 proves the ordering and cursor half of this decision with an
 integration test that commits two events out of timestamp order and confirms
 a cursor taken between the commits still delivers both (already in its own
-acceptance criteria). Task 07 proves the client half: a test that a page
-polling on an interval pauses while its tab is hidden and, on refocus,
-catches up to the current cursor in one request rather than replaying every
-missed interval.
+acceptance criteria). Task 07 proves the client half: a test driving a
+visibility change confirms polling stops while the tab is hidden and resumes,
+catching up on the current cursor, once it is focused again (also already
+named in that task's own acceptance criteria).
 
 ## Alternatives considered
 
