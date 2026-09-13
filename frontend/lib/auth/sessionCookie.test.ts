@@ -31,4 +31,13 @@ describe("currentSessionToken", () => {
 
     await expect(currentSessionToken()).resolves.toBeUndefined();
   });
+
+  it("prefers the __Secure- cookie when both are present with different values", async () => {
+    withCookies({
+      "authjs.session-token": "attacker-set",
+      "__Secure-authjs.session-token": "session-abc",
+    });
+
+    await expect(currentSessionToken()).resolves.toBe("session-abc");
+  });
 });

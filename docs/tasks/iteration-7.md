@@ -45,7 +45,7 @@ criterion and each says so with `Covers: none`.
 
 | ID | Task | Status |
 |---|---|---|
-| [15](iteration-7/15-session-cookie-prefers-secure-prefix.md) | Prefer the `__Secure-` session cookie over the unprefixed one | refined |
+| [15](iteration-7/15-session-cookie-prefers-secure-prefix.md) | Prefer the `__Secure-` session cookie over the unprefixed one | done |
 | [11](iteration-7/11-keycloak-brute-force-protection.md) | Lockout on password guessing | refined |
 | [12](iteration-7/12-scope-exception-advices.md) | Scope each module's exception advice to its own module | refined |
 | [13](iteration-7/13-guard-dtos-at-the-api-boundary.md) | Make "DTOs at the API boundary" a rule the build enforces | refined |
