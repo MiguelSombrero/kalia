@@ -28,7 +28,7 @@ showing it as it happens.
 | ID | Task | Status |
 |---|---|---|
 | [09](iteration-7/09-feed-and-private-cellars.md) | What a feed line may reveal, and what that does to ADR-0050 | done |
-| [05](iteration-7/05-feed-delivery-decision.md) | Decide how the feed reaches a browser that is already open | refined |
+| [05](iteration-7/05-feed-delivery-decision.md) | Decide how the feed reaches a browser that is already open | done |
 | [01](iteration-7/01-feed-module.md) | `feed` module and cellar events | done |
 | [04](iteration-7/04-feed-line-composition.md) | The reads a feed line needs | done |
 | [02](iteration-7/02-feed-api.md) | Feed read API | done |

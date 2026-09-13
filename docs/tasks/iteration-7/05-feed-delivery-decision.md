@@ -1,6 +1,6 @@
 # Task 05: Decide how the feed reaches a browser that is already open
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-6
 
@@ -149,26 +149,26 @@ ADR this task writes records them and the rejected transports.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the chosen transport, the rejected ones, and what each
+- [x] An ADR records the chosen transport, the rejected ones, and what each
       would have cost in the four structural terms above — BFF hop, instance
       affinity, open-connection exposure, duplicate delivery — passing
       `node scripts/check-adrs.mjs`
-- [ ] The ADR states the latency the answer is allowed to have, as a number,
+- [x] The ADR states the latency the answer is allowed to have, as a number,
       and how a reader would tell whether the built thing meets it
-- [ ] The ADR states whether more than one backend instance is supported, as
+- [x] The ADR states whether more than one backend instance is supported, as
       an accepted limitation or a solved problem, rather than leaving it
       unasked
-- [ ] The ADR states what identifies a feed event for de-duplication, since
+- [x] The ADR states what identifies a feed event for de-duplication, since
       every option delivers duplicates
-- [ ] `docs/architecture.md` §2, §4 and §5 describe the transport where they
+- [x] `docs/architecture.md` §2, §4 and §5 describe the transport where they
       describe the shapes it changes — the route-handler inventory in §5 in
       particular, which currently says there are exactly two
-- [ ] The ADR does not contradict the Constraints above, which the refinement
+- [x] The ADR does not contradict the Constraints above, which the refinement
       PR already wrote into tasks [02](02-feed-api.md),
       [03](03-front-page-feed.md), [06](06-feed-increments.md) and
       [07](07-live-front-page.md) — read against each of them, and any
       divergence resolved in this PR
-- [ ] The ADR names the test each of tasks 06 and 07 must write to prove
+- [x] The ADR names the test each of tasks 06 and 07 must write to prove
       delivery and reconnection, without writing either here
 
 ## Notes
