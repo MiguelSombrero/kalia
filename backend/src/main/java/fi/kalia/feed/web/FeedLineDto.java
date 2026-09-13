@@ -14,11 +14,13 @@ public record FeedLineDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String brewery,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int quantity,
 		@Schema(description = "Null when not recorded") @Nullable LocalDate brewedDate,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant occurredAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant occurredAt,
+		@Schema(description = "Opaque; pass as this event's own position to the since parameter to read "
+				+ "everything recorded after it", requiredMode = Schema.RequiredMode.REQUIRED) String cursor) {
 
 	static FeedLineDto from(FeedLineView view) {
 		return new FeedLineDto(view.username(), view.beerName(), view.brewery(), view.quantity(),
-				view.brewedDate(), view.occurredAt());
+				view.brewedDate(), view.occurredAt(), view.cursor());
 	}
 
 }

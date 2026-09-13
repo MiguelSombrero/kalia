@@ -17,4 +17,6 @@ export interface FeedLineDto {
   /** Null when not recorded */
   brewedDate?: string;
   occurredAt: string;
+  /** Opaque; pass as this event's own position to the since parameter to read everything recorded after it */
+  cursor: string;
 }

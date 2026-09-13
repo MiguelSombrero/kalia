@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -34,6 +36,11 @@ class FeedController {
 	// cross what those batch reads accept.
 	private static final int MAX_SIZE = 99;
 
+	// A signed cursor is a base64url sequence number, a ".", and a
+	// base64url HMAC-SHA256 (FeedCursorCodec) — at most 26 + 1 + 43 = 70
+	// characters; rounded up with margin for the encoding to change.
+	private static final int MAX_CURSOR_LENGTH = 96;
+
 	private final FeedService feed;
 
 	@GetMapping
@@ -41,17 +48,27 @@ class FeedController {
 	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "Read the feed", description = """
-			The most recent events, newest first, each naming the person and the beer. Identical for every \
-			caller, signed in or out: only events whose owner's cellar is currently public are served, so \
-			there is nothing left to vary by caller. A page may carry fewer lines than requested — a line \
+			Without since: the most recent events, newest first, each naming the person and the beer. With \
+			since, an opaque cursor from a previous line: every event recorded after it instead, still newest \
+			first, capped at size and marked startOver if the cursor has aged past the served window. Identical \
+			for every caller, signed in or out: only events whose owner's cellar is currently public are served, \
+			so there is nothing left to vary by caller. A page may carry fewer lines than requested — a line \
 			whose beer or person no longer resolves is dropped rather than rendered blank.""")
-	@ApiResponse(responseCode = "400", description = "size is missing, non-numeric, or outside 1-" + MAX_SIZE,
+	@ApiResponse(responseCode = "400",
+			description = "size is missing, non-numeric, or outside 1-" + MAX_SIZE + "; or since is malformed "
+					+ "or was never issued by this server",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = ProblemDetail.class)))
 	FeedPageDto readFeed(
 			@Parameter(description = "Page size, 1-" + MAX_SIZE)
-			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_SIZE) int size) {
-		return FeedPageDto.from(feed.readRecent(size));
+			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_SIZE) int size,
+			@Parameter(description = "Opaque cursor from a previous line's own cursor; when given, reads events "
+					+ "recorded after it instead of the most recent page")
+			@RequestParam(required = false) @Size(max = MAX_CURSOR_LENGTH) @Nullable String since) {
+		// Blank, not just absent: an empty since= is treated the same as no
+		// cursor at all rather than failing as a malformed one.
+		return since == null || since.isBlank() ? FeedPageDto.from(feed.readRecent(size))
+				: FeedPageDto.from(feed.readSince(since, size));
 	}
 
 }

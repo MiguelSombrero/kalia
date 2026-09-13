@@ -23,7 +23,7 @@ class DtoSerializationIT {
 	@Test
 	void omitsNullBrewedDateFromFeedLineJson() throws Exception {
 		FeedLineDto line = new FeedLineDto("alice", "AleSmith IPA", "AleSmith Brewing Company", 6, null,
-				Instant.now());
+				Instant.now(), "cursor-value");
 
 		String json = feedLineJson.write(line).getJson();
 
@@ -32,11 +32,22 @@ class DtoSerializationIT {
 
 	@Test
 	void omitsNullNextCursorFromFeedPageJson() throws Exception {
-		FeedPageDto page = new FeedPageDto(List.of(), null);
+		FeedPageDto page = new FeedPageDto(List.of(), null, false);
 
 		String json = feedPageJson.write(page).getJson();
 
 		assertThat(json).doesNotContain("nextCursor");
+	}
+
+	// startOver is a required boolean, unlike nextCursor above: false must
+	// still appear on the wire rather than being omitted the way a null is.
+	@Test
+	void neverOmitsStartOverFromFeedPageJsonEvenWhenFalse() throws Exception {
+		FeedPageDto page = new FeedPageDto(List.of(), null, false);
+
+		String json = feedPageJson.write(page).getJson();
+
+		assertThat(json).contains("\"startOver\":false");
 	}
 
 }

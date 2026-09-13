@@ -12,4 +12,10 @@ export type ReadFeedParams = {
  * @maximum 99
  */
 size?: number;
+/**
+ * Opaque cursor from a previous line's own cursor; when given, reads events recorded after it instead of the most recent page
+ * @minLength 0
+ * @maxLength 96
+ */
+since?: string;
 };

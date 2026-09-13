@@ -1,8 +1,11 @@
 package fi.kalia.feed.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
@@ -10,9 +13,11 @@ import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.ProfileApi;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,11 +37,15 @@ class FeedServiceTest {
 	@Mock
 	private ProfileApi profile;
 
+	// A real codec, not a mock: it is what mints and rejects test cursors, so
+	// the tests exercise the same signing/opacity behavior production does.
+	private final FeedCursorCodec codec = new FeedCursorCodec();
+
 	private FeedService service;
 
 	@BeforeEach
 	void setUp() {
-		service = new FeedService(lines, catalog, profile);
+		service = new FeedService(lines, catalog, profile, codec);
 	}
 
 	@Test
@@ -108,6 +117,86 @@ class FeedServiceTest {
 		FeedPage page = service.readRecent(1);
 
 		assertThat(page.lines()).isEmpty();
+	}
+
+	@Test
+	void sinceAMalformedCursorIsRejected() {
+		assertThatThrownBy(() -> service.readSince("not-a-valid-cursor!!", 20))
+				.isInstanceOf(InvalidFeedCursorException.class);
+	}
+
+	// A well-formed signature for a sequence number no row backs answers
+	// startOver, not an error: the signature already proves this server once
+	// issued it, and ADR-0058's retention means the only honest reason it is
+	// missing now is that it aged out.
+	@Test
+	void sinceASignedCursorWithNoBackingRowAnswersStartOver() {
+		given(lines.findBySequenceNumber(42L)).willReturn(Optional.empty());
+
+		FeedPage page = service.readSince(codec.encode(42L), 20);
+
+		assertThat(page.lines()).isEmpty();
+		assertThat(page.startOver()).isTrue();
+	}
+
+	// The opacity requirement in full: a value with the right shape (a real,
+	// existing sequence number, correctly base64url-encoded) but without this
+	// server's signature is rejected exactly like a garbage string — a client
+	// cannot come to depend on the cursor being "just a number".
+	@Test
+	void sinceAWellShapedButUnsignedCursorIsRejected() {
+		assertThatThrownBy(() -> service.readSince("NDI", 20)).isInstanceOf(InvalidFeedCursorException.class);
+	}
+
+	@Test
+	void sinceACursorOlderThanTheWindowAnswersStartOver() {
+		FeedLine anchor = mock(FeedLine.class);
+		given(anchor.getOccurredAt()).willReturn(Instant.now().minus(40, ChronoUnit.DAYS));
+		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
+
+		FeedPage page = service.readSince(codec.encode(42L), 20);
+
+		assertThat(page.lines()).isEmpty();
+		assertThat(page.nextCursor()).isNull();
+		assertThat(page.startOver()).isTrue();
+	}
+
+	@Test
+	void sinceAValidCursorReturnsNewerLinesNewestFirst() {
+		FeedLine anchor = mock(FeedLine.class);
+		given(anchor.getOccurredAt()).willReturn(Instant.now());
+		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
+		FeedLine older = line();
+		FeedLine newer = line();
+		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
+				any(), any())).willReturn(List.of(older, newer));
+		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(older, newer));
+		given(profile.publicUsernames(any()))
+				.willReturn(Map.of(older.getUserId(), "older", newer.getUserId(), "newer"));
+
+		FeedPage page = service.readSince(codec.encode(42L), 20);
+
+		assertThat(page.lines()).extracting(FeedLineView::username).containsExactly("newer", "older");
+		assertThat(page.nextCursor()).isNull();
+		assertThat(page.startOver()).isFalse();
+	}
+
+	@Test
+	void sinceATruncatedResultCarriesACursorToTheNearestNewRow() {
+		FeedLine anchor = mock(FeedLine.class);
+		given(anchor.getOccurredAt()).willReturn(Instant.now());
+		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
+		FeedLine nearest = line();
+		FeedLine furthest = line();
+		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
+				any(), any())).willReturn(List.of(nearest, furthest));
+		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(nearest));
+		given(profile.publicUsernames(any())).willReturn(Map.of(nearest.getUserId(), "nearest"));
+
+		FeedPage page = service.readSince(codec.encode(42L), 1);
+
+		assertThat(page.lines()).hasSize(1);
+		assertThat(page.nextCursor()).isNotNull();
 	}
 
 	private static Map<UUID, BeerSummary> beerSummaries(FeedLine... resolvable) {

@@ -227,10 +227,10 @@ visibility — the read, not the write, is where that rule applies
 ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)) — so the table
 retains rows for cellars that are currently private.
 `sequence_number` is a database-assigned, strictly increasing identity column,
-indexed from its first migration though nothing queries it yet: it is the
-total order [iteration 7 task 06](tasks/iteration-7/06-feed-increments.md)
-reads a cursor against, because neither `occurred_at` nor an ordinary
-`BIGSERIAL` survives commit reordering on its own.
+indexed from its first migration: it is the total order both the feed's first
+page and its "since" increment read a cursor against, because neither
+`occurred_at` nor an ordinary `BIGSERIAL` survives commit reordering on its
+own.
 
 ## 4. API design
 
@@ -242,7 +242,7 @@ GET    /api/v1/beers/{id}
 GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
 GET    /api/v1/breweries?page=&size=
 GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
-GET    /api/v1/feed?size=                           -> the most recent events, newest first, from cellars currently public; identical for every caller
+GET    /api/v1/feed?size=&since=                    -> the most recent events, or (with since) everything recorded after a previously seen one; newest first, from cellars currently public; identical for every caller
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
@@ -289,15 +289,30 @@ public contributes no line, named or unnamed — the read-time filter above is
 the *only* rule; recording never checks visibility, and going private later
 neither purges nor needs to purge what was already recorded
 ([ADR-0059](adr/0059-feed-respects-cellar-visibility.md)). It returns the whole
-line — username, beer name, brewery, bottle count, vintage and the instant —
-rather than ids for a client to enrich, which is the client-agnostic-resources
-convention below applied rather than excepted: "who added what, and when" is
-the resource, and a feed event without its actor would be an incomplete one,
-not a smaller one. A line whose beer or person no longer resolves is dropped,
-so a page may carry fewer lines than `size` without that being an error.
-A page already showing the feed re-reads this same resource on an interval
-rather than holding a connection open — there is no separate streaming
-endpoint ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
+line — username, beer name, brewery, bottle count, vintage, the instant and the
+event's own opaque cursor — rather than ids for a client to enrich, which is
+the client-agnostic-resources convention below applied rather than excepted:
+"who added what, and when" is the resource, and a feed event without its actor
+would be an incomplete one, not a smaller one. A line whose beer or person no
+longer resolves is dropped, so a page may carry fewer lines than `size`
+without that being an error. A page already showing the feed re-reads this
+same resource on an interval rather than holding a connection open — there is
+no separate streaming endpoint ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
+
+**`since`, given a line's own cursor, answers "everything recorded after it"
+instead of the most recent page** — the increment a page that is already open
+polls for, over the same total order and the same visibility filter as the
+first page, so the two cannot silently diverge. It is capped at `size` exactly
+as the first page is, and a non-null `nextCursor` means "ask again": passed
+back as `since`, it fetches the rest of a truncated increment; on a plain
+read it marks that older history exists beyond what was served. A `since`
+older than the served window answers `startOver: true`
+with no content rather than a partial page, because serving from the window's
+edge would silently drop everything between the cursor and the edge — the one
+answer that tells a caller it has a hole instead of quietly handing it a
+shorter list. A `since` that is malformed, or well-formed but never issued by
+this server, is rejected as `problem+json` rather than honoured, so a client
+cannot come to depend on the cursor's shape.
 
 Conventions:
 
@@ -306,10 +321,11 @@ Conventions:
   still sorts and slices the full table in-application, to keep its name order
   locale-independent ([ADR-0045](adr/0045-brewery-list-paginates-in-application.md)).
   The feed is the deliberate exception: a list that grows at the head reads
-  wrong under an offset, so it takes only a bounded `size` and answers with a
-  `nextCursor` — opaque, round-tripped rather than parsed — instead of a page
-  number. A stable search result set and a list growing at the head are
-  different problems, kept as two shapes rather than forced into one.
+  wrong under an offset, so it takes a bounded `size` and an optional `since`
+  and answers with a `nextCursor` — opaque, round-tripped rather than parsed —
+  instead of a page number. A stable search result set and a list growing at
+  the head are different problems, kept as two shapes rather than forced into
+  one.
 - **Endpoints are client-agnostic resources.** An endpoint's shape follows the
   resource, not the screen that happens to consume it; assembling several
   resources into one view is the client's job. Today the frontend is the only

@@ -5,13 +5,12 @@ import fi.kalia.catalog.CatalogApi;
 import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.ProfileApi;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,6 +35,8 @@ public class FeedService {
 
 	private final ProfileApi profile;
 
+	private final FeedCursorCodec cursorCodec;
+
 	public void recordBottleAdded(UUID eventId, UUID userId, UUID beerId, int quantity,
 			@Nullable LocalDate brewedDate, Instant occurredAt) {
 		// Do not remove: the event publication registry is at-least-once, so
@@ -54,41 +55,63 @@ public class FeedService {
 	@Transactional(readOnly = true)
 	public FeedPage readRecent(int size) {
 		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
-		// One extra row, trimmed below: the only way to say whether there is
-		// more beyond this page without guessing from a page that happens to
-		// come back exactly `size` long.
 		List<FeedLine> fetched = lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(cutoff,
 				PageRequest.of(0, size + 1));
+		Trimmed trimmed = trim(fetched, size);
+		return new FeedPage(resolve(trimmed.page()), trimmed.nextCursor(), false);
+	}
+
+	// Same bound as readRecent above; `since` is validated separately by
+	// cursorCodec.decode.
+	@Transactional(readOnly = true)
+	public FeedPage readSince(String cursor, int size) {
+		long sequenceNumber = cursorCodec.decode(cursor);
+		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
+		Optional<FeedLine> anchor = lines.findBySequenceNumber(sequenceNumber);
+		if (anchor.isEmpty() || anchor.get().getOccurredAt().isBefore(cutoff)) {
+			return new FeedPage(List.of(), null, true);
+		}
+
+		List<FeedLine> fetched = lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(
+				sequenceNumber, cutoff, PageRequest.of(0, size + 1));
+		Trimmed trimmed = trim(fetched, size);
+		return new FeedPage(resolve(trimmed.page()).reversed(), trimmed.nextCursor(), false);
+	}
+
+	// One extra row, trimmed here: the only way to say whether there is more
+	// beyond this page without guessing from a page that happens to come back
+	// exactly `size` long. `fetched` is sorted in whichever direction the
+	// caller reads in, so `getLast()` is always the correct boundary to
+	// resume from next, forward or backward alike.
+	private Trimmed trim(List<FeedLine> fetched, int size) {
 		boolean hasMore = fetched.size() > size;
 		List<FeedLine> page = hasMore ? fetched.subList(0, size) : fetched;
+		String nextCursor = hasMore ? cursorCodec.encode(page.getLast().getSequenceNumber()) : null;
+		return new Trimmed(page, nextCursor);
+	}
 
+	private record Trimmed(List<FeedLine> page, @Nullable String nextCursor) {
+
+	}
+
+	// A line whose beer or person no longer resolves is dropped. Shared by
+	// readRecent and readSince so the visibility filter cannot diverge
+	// between them.
+	private List<FeedLineView> resolve(List<FeedLine> page) {
 		Set<UUID> beerIds = page.stream().map(FeedLine::getBeerId).collect(Collectors.toSet());
 		Set<UUID> userIds = page.stream().map(FeedLine::getUserId).collect(Collectors.toSet());
 		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(beerIds);
 		Map<UUID, String> usernames = profile.publicUsernames(userIds);
 
-		// A line whose beer or person no longer resolves is dropped, not
-		// rendered with a blank — a page may end up shorter than `size`;
-		// the client pages on the cursor below, never on the count.
-		List<FeedLineView> resolved = page.stream()
+		return page.stream()
 				.filter(line -> usernames.containsKey(line.getUserId()) && beers.containsKey(line.getBeerId()))
 				.map(line -> toView(line, usernames.get(line.getUserId()), beers.get(line.getBeerId())))
 				.toList();
-
-		String nextCursor = hasMore ? encodeCursor(page.getLast().getSequenceNumber()) : null;
-		return new FeedPage(resolved, nextCursor);
 	}
 
-	private static FeedLineView toView(FeedLine line, String username, BeerSummary beer) {
-		return new FeedLineView(username, beer.name(), beer.brewery(), line.getQuantity(), line.getBrewedDate(),
-				line.getOccurredAt());
-	}
-
-	// Opaque to the client: a plain sequence number would invite a caller to
-	// construct or increment one instead of round-tripping it as given.
-	private static String encodeCursor(long sequenceNumber) {
-		return Base64.getUrlEncoder().withoutPadding()
-				.encodeToString(Long.toString(sequenceNumber).getBytes(StandardCharsets.UTF_8));
+	private FeedLineView toView(FeedLine line, String username, BeerSummary beer) {
+		return new FeedLineView(cursorCodec.encode(line.getSequenceNumber()), username, beer.name(), beer.brewery(),
+				line.getQuantity(), line.getBrewedDate(), line.getOccurredAt());
 	}
 
 }

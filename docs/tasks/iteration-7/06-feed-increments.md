@@ -1,6 +1,6 @@
 # Task 06: Asking the feed what is new
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-5
 
@@ -125,29 +125,29 @@ column and index it names and [task 02](02-feed-api.md) serves its first page.
 
 ## Acceptance criteria
 
-- [ ] A client that has seen event X receives every event recorded after it,
+- [x] A client that has seen event X receives every event recorded after it,
       exactly once per request, newest-first — integration test
-- [ ] **An event whose transaction commits after a later-timestamped one is
+- [x] **An event whose transaction commits after a later-timestamped one is
       still delivered** — integration test that commits two events out of
       timestamp order with a cursor taken between the commits, confirmed to
       fail against an ordering taken on `occurredAt` alone
-- [ ] An increment enforces the private-cellar rule identically to the first
+- [x] An increment enforces the private-cellar rule identically to the first
       page — integration test that runs the same visibility assertion against
       both paths, so the second cannot silently diverge
-- [ ] A malformed or forged cursor answers `problem+json` rather than an
+- [x] A malformed or forged cursor answers `problem+json` rather than an
       unbounded query or a stack trace, and a cursor older than the 30-day
       window answers *start over* rather than a partial result — integration
       test covering both, since only the second lets a client know it has a
       hole
-- [ ] The increment is capped and the response tells the caller it was
+- [x] The increment is capped and the response tells the caller it was
       truncated, so a client can distinguish "that was all" from "ask again" —
       integration test
-- [ ] The cursor is opaque: a test constructs a plausible-looking cursor by
+- [x] The cursor is opaque: a test constructs a plausible-looking cursor by
       hand and it is rejected rather than honoured, so no client can come to
       depend on its shape
-- [ ] The generated API client is regenerated and committed; the
+- [x] The generated API client is regenerated and committed; the
       `api-client-drift` CI job passes
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
