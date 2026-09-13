@@ -243,6 +243,26 @@ class CatalogApiIT {
 	}
 
 	@Test
+	void misspelledSortDirectionYieldsProblemJson400InsteadOfSortingAscending() {
+		client.get().uri("/api/v1/beers?sort=abv,dsc")
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.detail"))
+						.contains("Unsupported sort direction 'dsc'"));
+	}
+
+	@Test
+	void sortDirectionIsAcceptedCaseInsensitively() {
+		client.get().uri("/api/v1/beers?sort=abv,ASC&size=1")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((double) JsonPath.read(body, "$.content[0].abv")).isEqualTo(3.0));
+	}
+
+	@Test
 	void abvAboveTheHundredPercentCapYieldsFieldLevelError() {
 		client.get().uri("/api/v1/beers?maxAbv=101")
 				.exchange()
