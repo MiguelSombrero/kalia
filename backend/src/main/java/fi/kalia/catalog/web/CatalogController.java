@@ -115,7 +115,7 @@ class CatalogController {
 		}
 	}
 
-	private static Sort parseSort(String sort) {
+	static Sort parseSort(String sort) {
 		String[] parts = sort.split(",");
 		if (parts.length > 2) {
 			throw new InvalidSearchParameterException(
@@ -126,9 +126,13 @@ class CatalogController {
 			throw new InvalidSearchParameterException(
 					"Unsupported sort property '%s'; use one of %s".formatted(property, SORTABLE));
 		}
-		Sort.Direction direction = parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc")
-				? Sort.Direction.DESC
-				: Sort.Direction.ASC;
+		Sort.Direction direction = Sort.Direction.ASC;
+		if (parts.length > 1) {
+			String rawDirection = parts[1].trim();
+			direction = Sort.Direction.fromOptionalString(rawDirection)
+					.orElseThrow(() -> new InvalidSearchParameterException(
+							"Unsupported sort direction '%s'; use 'asc' or 'desc'".formatted(rawDirection)));
+		}
 		Sort.Order order = new Sort.Order(direction, property);
 		if (property.equals("name") || property.equals("style")) {
 			order = order.ignoreCase();

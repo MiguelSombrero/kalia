@@ -48,6 +48,10 @@ public class CatalogService {
 		List<Brewery> sorted = breweries.findAll().stream()
 				.sorted(Comparator.comparing(Brewery::getName, String.CASE_INSENSITIVE_ORDER))
 				.toList();
+		return paginate(sorted, pageable);
+	}
+
+	static <T> Page<T> paginate(List<T> sorted, Pageable pageable) {
 		int from = (int) Math.min(pageable.getOffset(), sorted.size());
 		int to = Math.min(from + pageable.getPageSize(), sorted.size());
 		return new PageImpl<>(sorted.subList(from, to), pageable, sorted.size());
