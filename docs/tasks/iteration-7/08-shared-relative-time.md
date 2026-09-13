@@ -1,6 +1,6 @@
 # Task 08: Relative time outside the cellar
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-4
 
@@ -92,22 +92,22 @@ named has appeared. This section is the single home for the formatter's rules.
 
 ## Acceptance criteria
 
-- [ ] A shared formatter renders sub-day distances in one unit, correctly in
+- [x] A shared formatter renders sub-day distances in one unit, correctly in
       both locales — unit tests per locale across the unit boundaries,
       including the two adjacent to the "just now" floor
-- [ ] An instant older than a week renders as a localised absolute date rather
+- [x] An instant older than a week renders as a localised absolute date rather
       than a relative one, in both locales — unit test on both sides of the
       week boundary
-- [ ] Every rendered value carries a `<time datetime>` with the exact instant,
+- [x] Every rendered value carries a `<time datetime>` with the exact instant,
       including the absolute-date case — unit test
-- [ ] The cellar's rendered dates are unchanged — its existing tests pass
+- [x] The cellar's rendered dates are unchanged — its existing tests pass
       without modification, which is the criterion rather than a new test
-- [ ] The same instant renders identically on the server and in the browser —
+- [x] The same instant renders identically on the server and in the browser —
       test asserting no hydration mismatch, confirmed to fail against a
       formatter that reads the clock independently on each side
-- [ ] `npm run lint` passes with the formatter imported from two features,
+- [x] `npm run lint` passes with the formatter imported from two features,
       proving the boundary allows it
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 
@@ -115,3 +115,12 @@ Was conditional on [task 03](03-front-page-feed.md)'s open question about how a
 feed line shows time, to be dropped rather than refined if the answer had been
 an absolute date or no time at all. **The answer on 2026-09-12 was relative
 time**, so the condition is met and the task stands; see Constraints.
+
+**AC6's second feature is a throwaway, by product-owner decision during
+implementation.** The formatter's only real consumer today is the cellar;
+the feed frontend that would use it doesn't exist yet — task 03 is still
+`refined`. `frontend/features/profile/relativeTimeReachability.test.tsx`
+exists solely to give `npm run lint` a second feature importing
+`components/ui/relative-time` and prove the boundary allows it; it asserts
+nothing about profile behavior. Delete it once task 03 lands and imports the
+formatter for real.

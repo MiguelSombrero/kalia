@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/settings";
-import { formatRelativeDate } from "./formatRelativeDate";
+import { formatRelativeDate } from "@/lib/relativeDate";
 import type { ContainerType } from "./types";
 
 /** i18n key per container type, shared by the owner and public bottle lists. */
