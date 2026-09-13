@@ -2,6 +2,11 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-30
+- **Amended:** 2026-09-13 by [ADR-0059](0059-feed-respects-cellar-visibility.md)
+  — the revisit trigger below fired: a feed now makes public cellars
+  discoverable. The 404 rule and locale-less addressing are unchanged; what
+  no longer holds as written is the Consequences entry about "anyone with the
+  link" being the whole promise, corrected below
 
 ## Context
 
@@ -103,7 +108,10 @@ be published to strangers by default, failing open.
   distinguishes a private cellar from one that does not exist, so usernames
   cannot be walked for cellars.
 - Good, because the visibility control's copy — "anyone with the link" — is
-  exactly true, with no asterisk about search engines.
+  exactly true, with no asterisk about search engines. (Since amended: a feed
+  now hands that link to every front-page visitor unasked, so for a public
+  cellar "anyone with the link" is in practice everyone; the control's copy
+  is updated to say so, per [ADR-0059](0059-feed-respects-cellar-visibility.md).)
 - Bad, because a visitor whose link has gone private sees a bare not-found and
   cannot tell a typo from a mind changed. That is the cost of the property
   above and it is paid by the legitimate visitor.
@@ -119,4 +127,7 @@ be published to strangers by default, failing open.
 - **Revisit trigger:** Kalia wants public cellars to be discoverable — by
   search, by a browse page, or by a feed that links to strangers. Indexing and
   the 404 rule are then reconsidered together, because discoverability makes
-  the enumeration argument moot rather than merely inconvenient.
+  the enumeration argument moot rather than merely inconvenient. **Fired
+  2026-09-13** — see [ADR-0059](0059-feed-respects-cellar-visibility.md): the
+  404 rule was reconsidered and kept exactly as written; indexing was
+  reconsidered and stays closed for the front page too.

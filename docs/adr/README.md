@@ -70,6 +70,10 @@ nobody has committed to becomes a constraint anyway.
   no `entryId` because it isn't reliably available yet when the event is
   registered, and `FeedLine` freezes quantity and vintage from the event
   rather than ever reading `cellar` live.
+- [ADR-0059](0059-feed-respects-cellar-visibility.md) — a cellar that is not
+  public contributes no line, named or unnamed; the rule is a single
+  read-time filter, never a write-time check or a purge; and it amends
+  ADR-0050 now that a feed makes public cellars discoverable.
 
 ## Profiles and public cellars
 
@@ -82,6 +86,9 @@ decides the URL built on it.
   immutable, plus a cellar-visibility flag defaulting to private.
 - [ADR-0050](0050-public-cellar-addressing.md) — a public cellar lives at one
   locale-less URL, answers 404 when it is not public, and is never indexed.
+  Amended by [ADR-0059](0059-feed-respects-cellar-visibility.md): "anyone with
+  the link" no longer means only whoever the owner told directly, now that a
+  feed hands the link to every front-page visitor.
 
 ## Backend structure and conventions
 
