@@ -1,6 +1,6 @@
 # Task 13: Make "DTOs at the API boundary" a rule the build enforces
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -93,21 +93,21 @@ prove the rule fires.
 
 ## Acceptance criteria
 
-- [ ] A controller method returning a JPA entity fails the build — ArchUnit
+- [x] A controller method returning a JPA entity fails the build — ArchUnit
       rule, run against a violating fixture under
       `backend/src/test/java/archfixture/`, and confirmed to fail there
-- [ ] The rule catches an entity wrapped in `List`, `Page`, `Optional` and
+- [x] The rule catches an entity wrapped in `List`, `Page`, `Optional` and
       `ResponseEntity`, each proven by its own fixture rather than by one case
       standing in for four
-- [ ] A controller method accepting a JPA entity as a `@RequestBody` fails the
+- [x] A controller method accepting a JPA entity as a `@RequestBody` fails the
       build — ArchUnit rule with its own violating fixture, confirmed to fail
       there
-- [ ] Every existing controller passes the rule unchanged in both directions,
+- [x] Every existing controller passes the rule unchanged in both directions,
       or the signature that does not is fixed in this task and its change
       described
-- [ ] `docs/architecture.md` §7's testing table lists the new guard, so a reader
+- [x] `docs/architecture.md` §7's testing table lists the new guard, so a reader
       editing a controller learns a test exists before CI tells them
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
