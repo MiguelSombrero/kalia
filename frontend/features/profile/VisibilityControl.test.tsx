@@ -52,7 +52,11 @@ describe("VisibilityControl", () => {
     renderControl({ username: "ada", initialCellarPublic: true });
 
     expect(screen.getByRole("radio", { name: "Anyone with the link" })).toBeChecked();
-    expect(screen.getByText("Anyone with the link can see your cellar.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Anyone with the link can see your cellar, and your additions appear on Kalia's front page.",
+      ),
+    ).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "View your public cellar" });
     expect(link).toHaveAttribute("href", "/cellars/ada");
   });
@@ -63,7 +67,11 @@ describe("VisibilityControl", () => {
 
     fireEvent.click(screen.getByRole("radio", { name: "Anyone with the link" }));
 
-    expect(screen.getByText("Anyone with the link can see your cellar.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Anyone with the link can see your cellar, and your additions appear on Kalia's front page.",
+      ),
+    ).toBeInTheDocument();
     await waitFor(() => expect(changeVisibilityAction).toHaveBeenCalledWith(true));
   });
 
@@ -97,6 +105,9 @@ describe("VisibilityControl", () => {
     const { container } = renderControl({ username: "ada", initialCellarPublic: true }, "fi");
 
     expect(screen.getByRole("radio", { name: "Kuka tahansa linkin saanut" })).toBeChecked();
+    expect(
+      screen.getByText("Kuka tahansa linkin saanut näkee kellarisi, ja lisäyksesi näkyvät Kalian etusivulla."),
+    ).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 

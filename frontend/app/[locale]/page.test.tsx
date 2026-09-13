@@ -1,31 +1,103 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
-import Home from "./page";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { FeedPage } from "@/features/feed";
+import { apiError } from "@/lib/api/api-error";
+
+const line = (username: string, cursor: string) => ({
+  username,
+  beerName: "AleSmith IPA",
+  brewery: "AleSmith Brewing",
+  quantity: 2,
+  occurredAt: "2026-09-13T11:56:00.000Z",
+  cursor,
+});
+
+const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));
+const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
+const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
+
+vi.mock("@/features/feed", () => ({ readFeed, FeedList: () => null }));
+vi.mock("@/features/profile", () => ({ getProfile }));
+vi.mock("@/auth", () => ({ auth }));
+
+import Home, { generateMetadata } from "./page";
+
+const params = Promise.resolve({ locale: "en" });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  auth.mockResolvedValue(null);
+});
+
+describe("generateMetadata", () => {
+  it("titles the page and serves noindex, nofollow", async () => {
+    const metadata = await generateMetadata({ params });
+
+    expect(metadata.title).toBe("Kalia");
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
+});
 
 describe("Home", () => {
-  it("shows the Kalia heading and links to the English catalog", async () => {
-    const ui = await Home({ params: Promise.resolve({ locale: "en" }) });
-    const { container } = render(ui);
+  it("renders recent events newest-first for a signed-out visitor", async () => {
+    const page: FeedPage = {
+      content: [line("newer-user", "c2"), line("older-user", "c1")],
+      nextCursor: undefined,
+      startOver: false,
+    };
+    readFeed.mockResolvedValue(page);
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: /kalia/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /browse the beer catalog/i })).toHaveAttribute(
-      "href",
-      "/en/beers",
-    );
+    const { container } = render(await Home({ params }));
+
+    expect(screen.getByText("Kalia")).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("shows the Finnish tagline and links to the Finnish catalog", async () => {
-    const ui = await Home({ params: Promise.resolve({ locale: "fi" }) });
-    render(ui);
+  it("renders the empty state for a signed-out visitor, with no private-cellar hint", async () => {
+    readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
 
-    expect(screen.getByText("Käsityöoluiden hallintaa olutharrastajille.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Selaa oluita" })).toHaveAttribute(
+    const { container } = render(await Home({ params }));
+
+    expect(screen.getByText("Nothing here yet.")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Your own cellar is private, so your additions won't show up here."),
+    ).not.toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("renders a differing empty state for a signed-in visitor whose own cellar is private", async () => {
+    readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
+    auth.mockResolvedValue({ user: { name: "Ada" } });
+    getProfile.mockResolvedValue({ username: "ada", cellarPublic: false });
+
+    render(await Home({ params }));
+
+    expect(screen.getByText("Nothing here yet.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Your own cellar is private, so your additions won't show up here."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Make your cellar public" })).toHaveAttribute(
       "href",
-      "/fi/beers",
+      "/en/profile",
     );
+  });
+
+  it("does not show the private-cellar hint to a signed-in visitor whose cellar is already public", async () => {
+    readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
+    auth.mockResolvedValue({ user: { name: "Ada" } });
+    getProfile.mockResolvedValue({ username: "ada", cellarPublic: true });
+
+    render(await Home({ params }));
+
+    expect(
+      screen.queryByText("Your own cellar is private, so your additions won't show up here."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("propagates a feed read failure to the app's error boundary", async () => {
+    readFeed.mockRejectedValue(apiError("network", "could not reach the backend"));
+
+    await expect(Home({ params })).rejects.toThrow();
   });
 });

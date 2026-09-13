@@ -13,7 +13,7 @@ const QueryClientProbe = () => {
 /** Throws during render unless an I18nextProvider is above it. */
 const TranslationProbe = () => {
   const { t } = useTranslation();
-  return <p>{t("app.browseCatalog")}</p>;
+  return <p>{t("nav.catalog")}</p>;
 };
 
 describe("Providers", () => {
@@ -34,6 +34,6 @@ describe("Providers", () => {
       </Providers>,
     );
 
-    expect(screen.getByText("Selaa oluita")).toBeInTheDocument();
+    expect(screen.getByText("Oluet")).toBeInTheDocument();
   });
 });

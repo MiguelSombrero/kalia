@@ -28,12 +28,12 @@ test("toggles cellar visibility, and the choice survives a reload", async ({ pag
   await expect(page.getByRole("link", { name: "View your public cellar" })).toHaveCount(0);
 
   await page.getByRole("radio", { name: "Anyone with the link" }).check();
-  await expect(page.getByText("Anyone with the link can see your cellar.")).toBeVisible();
+  await expect(page.getByText("Anyone with the link can see your cellar, and your additions appear on Kalia's front page.")).toBeVisible();
   await expect(page.getByRole("link", { name: "View your public cellar" })).toBeVisible();
 
   await page.reload();
   await expect(page.getByRole("radio", { name: "Anyone with the link" })).toBeChecked();
-  await expect(page.getByText("Anyone with the link can see your cellar.")).toBeVisible();
+  await expect(page.getByText("Anyone with the link can see your cellar, and your additions appear on Kalia's front page.")).toBeVisible();
 
   await page.getByRole("radio", { name: "Only me" }).check();
   await expect(page.getByText("Only you can see your cellar.")).toBeVisible();
