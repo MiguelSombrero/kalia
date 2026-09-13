@@ -1,6 +1,6 @@
 # Task 14: Two silent catalog bugs, and the unit tests that would have caught them
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -98,23 +98,23 @@ without Docker.
 
 ## Acceptance criteria
 
-- [ ] `?sort=abv,dsc` is rejected with `problem+json` rather than silently
+- [x] `?sort=abv,dsc` is rejected with `problem+json` rather than silently
       sorting ascending, and `?sort=abv,ASC` and `?sort=abv,asc` are both
       accepted — unit tests on `parseSort`, confirmed to fail against the
       current fall-through to `ASC`
-- [ ] Case-insensitive search returns the same rows under a Turkish default
+- [x] Case-insensitive search returns the same rows under a Turkish default
       locale as under a Western one — unit test that sets the locale
       explicitly, confirmed to fail against `toLowerCase()` with no argument,
       and covering all three call sites
-- [ ] `parseSort`, `listBreweries`'s slicing including both `Math.min` clamps,
+- [x] `parseSort`, `listBreweries`'s slicing including both `Math.min` clamps,
       and `escapeLikeWildcards`'s backslash-first escaping each have unit tests
       that run under `mvn test` with no Docker
-- [ ] `(cd backend && mvn test)` alone — no Docker — exercises the catalog's
+- [x] `(cd backend && mvn test)` alone — no Docker — exercises the catalog's
       pure logic, which it does not today
-- [ ] The frontend's own sort values still work against the now-stricter
+- [x] The frontend's own sort values still work against the now-stricter
       parameter — checked against what `features/catalog` sends, in a browser
       and not only against the test suite
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

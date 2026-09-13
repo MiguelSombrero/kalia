@@ -6,28 +6,31 @@
 
 ## Why
 
-[Task 14](14-catalog-silent-failures.md) makes `GET /api/v1/beers` reject an
-unrecognized sort direction (e.g. `?sort=abv,dsc`) with a `problem+json` 400
-instead of silently sorting ascending — a deliberate, product-owner-approved
-contract change (task 14's Constraints/Decided, 2026-09-12).
-`features/catalog`'s own `SearchFilters` dropdown only ever sends one of five
-literal values (`name,asc`, `name,desc`, `abv,asc`, `abv,desc`, `style,asc` —
-`SearchFilters.tsx:100-104`), so the UI itself is unaffected, which is exactly
-what task 14's own frontend-check constraint verified.
+[Task 14](14-catalog-silent-failures.md), now `done`, made `GET
+/api/v1/beers` reject an unrecognized sort direction (e.g. `?sort=abv,dsc`)
+with a `problem+json` 400 instead of silently sorting ascending — a
+deliberate, product-owner-approved contract change (task 14's
+Constraints/Decided, 2026-09-12; confirmed in the shipped code,
+`CatalogController.parseSort`). `features/catalog`'s own `SearchFilters`
+dropdown only ever sends one of five literal values (`name,asc`, `name,desc`,
+`abv,asc`, `abv,desc`, `style,asc` — `SearchFilters.tsx:100-104`), so the UI
+itself is unaffected, which is exactly what task 14's own frontend-check
+constraint verified.
 
 But `app/[locale]/beers/page.tsx`'s `toBeerSearchParams` (`page.tsx:20-31`)
 passes the raw `sort` URL search param straight through to `searchBeers`
 (`features/catalog/api.ts:32-48`) with no validation of its own. A bookmarked
 or hand-typed URL carrying any other value — `?sort=abv,dsc`, a stale link
 predating task 14, or a typo — used to render a page (silently sorted the
-wrong way); once task 14 ships, the same URL makes the server component
-throw (`api.ts:44-46`: any non-200 status becomes a thrown `apiError`), which
-propagates past the page to the app-wide `app/[locale]/error.tsx` boundary
+wrong way); now that task 14 has shipped, the same URL makes the server
+component throw (`api.ts:44-46`: any non-200 status becomes a thrown
+`apiError`), which propagates past the page to the app-wide
+`app/[locale]/error.tsx` boundary
 ([ADR-0022](../../adr/0022-loading-error-empty-states.md)) instead of
-rendering a catalog page that just ignores the bad param. Task 14 scoped its
-own frontend check to "the frontend's own sort values still work" — it did
-not cover a value the frontend never sends itself, which is what this task
-addresses.
+rendering a catalog page that just ignores the bad param. This is a live
+regression today, not a hypothetical one. Task 14 scoped its own frontend
+check to "the frontend's own sort values still work" — it did not cover a
+value the frontend never sends itself, which is what this task addresses.
 
 There is already a precedent for exactly this shape in the same file:
 `getBeer` (`api.ts:52-57`) regex-validates a UUID taken from the URL and
@@ -53,10 +56,9 @@ throwing.
 
 ## Constraints
 
-- **Depends on [task 14](14-catalog-silent-failures.md) shipping first** — the
-  failure mode described here does not exist until `GET /api/v1/beers`
-  actually starts rejecting an invalid direction with a 400. This task should
-  not merge ahead of it.
+- **[Task 14](14-catalog-silent-failures.md) has already shipped** (`done`,
+  merged into `dev`) — the regression this task describes is live, not
+  anticipated; the fix here can proceed without waiting on anything else.
 - Whatever set of accepted values the fix checks against must be kept in sync
   with `SearchFilters.tsx`'s five `<option>` values and with `parseSort`'s own
   whitelist (`SORTABLE` plus case-insensitive `asc`/`desc`, per task 14's
@@ -99,7 +101,7 @@ throwing.
 - [ ] A request for `/en/beers?sort=abv,dsc` (or another value outside the
       known set) renders the catalog page rather than the app-wide error
       boundary — automated test, confirmed to fail against the current
-      pass-through once task 14 is in place
+      pass-through
 - [ ] `npm test` covers the chosen validation point falling back for a `sort`
       value outside the known set
 - [ ] The five values `SearchFilters` actually sends (`name,asc`, `name,desc`,
@@ -108,9 +110,8 @@ throwing.
 
 ## Notes
 
-Surfaced while investigating task 14's frontend impact, ahead of task 14
-landing — this task's fix should not ship before task 14 does, since the bug
-it fixes does not exist until then. Not filed via the quality backlog's
-usual sweep-then-lift path; written directly as a task file per instruction,
-since the shape of the fix already needed the product owner's input rather
-than being ready-to-implement as found.
+Surfaced while investigating task 14's frontend impact, shortly after task 14
+merged. Not filed via the quality backlog's usual sweep-then-lift path;
+written directly as a task file per instruction, since the shape of the fix
+already needed the product owner's input rather than being
+ready-to-implement as found.

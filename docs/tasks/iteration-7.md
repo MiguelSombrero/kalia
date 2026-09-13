@@ -49,7 +49,7 @@ criterion and each says so with `Covers: none`.
 | [11](iteration-7/11-keycloak-brute-force-protection.md) | Lockout on password guessing | refined |
 | [12](iteration-7/12-scope-exception-advices.md) | Scope each module's exception advice to its own module | refined |
 | [13](iteration-7/13-guard-dtos-at-the-api-boundary.md) | Make "DTOs at the API boundary" a rule the build enforces | done |
-| [14](iteration-7/14-catalog-silent-failures.md) | Two silent catalog bugs, and the unit tests that would have caught them | refined |
+| [14](iteration-7/14-catalog-silent-failures.md) | Two silent catalog bugs, and the unit tests that would have caught them | done |
 | [16](iteration-7/16-catalog-sort-param-degrades-to-error-boundary.md) | An out-of-set `sort` value 400s the catalog page instead of degrading | needs-refinement |
 
 Order of work is the table's order, not the ID — tasks 01–03 were written
