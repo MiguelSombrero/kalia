@@ -73,6 +73,9 @@ flowchart LR
     API --> CAT & CEL & IDN & PROF
     FED --> CEL
     CAT & CEL & PROF & FED --> PG[(PostgreSQL)]
+    Browser -.->|OIDC redirect| KC[Keycloak]
+    RH -->|session read/write| VK[(Valkey)]
+    IDN -->|validate token, JWKS| KC
 ```
 
 Key properties:
