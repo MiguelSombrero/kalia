@@ -120,6 +120,16 @@ Notable suites:
   the opposite: passing means its condition never met a violator, so a wrong
   condition looks exactly like a satisfied one. Adding a fixture for an
   already-exercised rule tests ArchUnit, not this codebase; don't
+- `HttpBoundaryTest` — the HTTP-boundary ArchUnit rules, kept apart from
+  `ArchitectureTest` because that class is about layer direction and this one
+  about what a controller handler may put on the wire: a handler method may
+  neither return nor accept (`@RequestBody`) a JPA entity, seen through
+  `List`, `Page`, `Optional` and `ResponseEntity` wrappers alike
+  (architecture.md §4, §7)
+- `HttpBoundaryRulesRejectViolationsTest` — same reasoning as
+  `ArchitectureRulesRejectViolationsTest` above, applied to `HttpBoundaryTest`:
+  neither of its rules has a production violator, so both are re-run against
+  `archfixture/httpboundary/`
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas
