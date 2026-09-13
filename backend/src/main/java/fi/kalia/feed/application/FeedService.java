@@ -20,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +29,6 @@ public class FeedService {
 	// The feed serves a 30-day window over a table that keeps every row
 	// (ADR-0058) — no deletion job, every query bounded instead.
 	private static final int WINDOW_DAYS = 30;
-
-	// One less than CatalogApi/ProfileApi's own batch-id cap: the lookahead
-	// row below can push a page's distinct beer or user ids to size + 1, and
-	// that must never cross what those batch reads accept.
-	private static final int MAX_SIZE = 99;
 
 	private final FeedLineRepository lines;
 
@@ -53,9 +47,12 @@ public class FeedService {
 		lines.save(FeedLine.bottleAdded(eventId, userId, beerId, quantity, brewedDate, occurredAt));
 	}
 
+	// Do not call with size outside 1-99 — FeedController's Bean Validation is
+	// the only caller and the only bound: below 1, the lookahead trim indexes
+	// an empty page's getLast(); above 99, the lookahead row can push a page's
+	// distinct beer or user ids past CatalogApi/ProfileApi's own batch-id cap.
 	@Transactional(readOnly = true)
 	public FeedPage readRecent(int size) {
-		Assert.isTrue(size >= 1 && size <= MAX_SIZE, "size must be between 1 and " + MAX_SIZE);
 		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
 		// One extra row, trimmed below: the only way to say whether there is
 		// more beyond this page without guessing from a page that happens to

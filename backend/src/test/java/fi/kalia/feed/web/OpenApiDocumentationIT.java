@@ -28,7 +28,10 @@ class OpenApiDocumentationIT {
 		List<String> tagNames = JsonPath.read(body, "$.tags[*].name");
 		assertThat(tagNames).contains("Feed");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/feed'].get.summary")).isEqualTo("Read the feed");
+		// Guards backend/README.md's trap: adding @ApiResponse without an
+		// explicit @ResponseStatus silently drops the synthesized 200.
 		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/feed'].get.responses.200")).isNotNull();
+		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/feed'].get.responses.400")).isNotNull();
 	}
 
 	@Test

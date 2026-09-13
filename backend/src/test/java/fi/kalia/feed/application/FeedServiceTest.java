@@ -1,7 +1,6 @@
 package fi.kalia.feed.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
@@ -38,21 +37,6 @@ class FeedServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new FeedService(lines, catalog, profile);
-	}
-
-	// A zero or negative size would otherwise reach the lookahead trim below
-	// with an empty page while hasMore is still true, calling getLast() on it.
-	@Test
-	void aNonPositiveSizeIsRejectedRatherThanExecuted() {
-		assertThatThrownBy(() -> service.readRecent(0)).isInstanceOf(IllegalArgumentException.class);
-		assertThatThrownBy(() -> service.readRecent(-1)).isInstanceOf(IllegalArgumentException.class);
-	}
-
-	// One more than this and the lookahead row below could push a page's
-	// distinct beer or user ids past CatalogApi/ProfileApi's own batch cap.
-	@Test
-	void aSizeOverTheCapIsRejectedRatherThanExecuted() {
-		assertThatThrownBy(() -> service.readRecent(100)).isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test

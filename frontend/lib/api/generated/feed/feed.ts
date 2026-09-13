@@ -21,6 +21,7 @@ import type {
 
 import type {
   FeedPageDto,
+  ProblemDetail,
   ReadFeedParams
 } from '../models';
 
@@ -51,12 +52,19 @@ export type readFeedResponse200 = {
   status: 200
 }
 
+export type readFeedResponse400 = {
+  data: ProblemDetail
+  status: 400
+}
+
 export type readFeedResponseSuccess = (readFeedResponse200) & {
   headers: Headers;
 };
-;
+export type readFeedResponseError = (readFeedResponse400) & {
+  headers: Headers;
+};
 
-export type readFeedResponse = (readFeedResponseSuccess)
+export type readFeedResponse = (readFeedResponseSuccess | readFeedResponseError)
 
 export const getReadFeedUrl = (params?: ReadFeedParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -99,7 +107,7 @@ export const getReadFeedQueryKey = (params?: ReadFeedParams,) => {
     }
 
 
-export const getReadFeedQueryOptions = <TData = Awaited<ReturnType<typeof readFeed>>, TError = unknown>(params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getReadFeedQueryOptions = <TData = Awaited<ReturnType<typeof readFeed>>, TError = ProblemDetail>(params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -118,10 +126,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ReadFeedQueryResult = NonNullable<Awaited<ReturnType<typeof readFeed>>>
-export type ReadFeedQueryError = unknown
+export type ReadFeedQueryError = ProblemDetail
 
 
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = unknown>(
+export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ProblemDetail>(
  params: undefined |  ReadFeedParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof readFeed>>,
@@ -131,7 +139,7 @@ export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = unknown>(
+export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ProblemDetail>(
  params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof readFeed>>,
@@ -141,7 +149,7 @@ export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = unknown>(
+export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ProblemDetail>(
  params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -149,7 +157,7 @@ export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError
  * @summary Read the feed
  */
 
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = unknown>(
+export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ProblemDetail>(
  params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
