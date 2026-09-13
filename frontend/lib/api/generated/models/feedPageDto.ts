@@ -11,6 +11,8 @@ import type { FeedLineDto } from './feedLineDto';
  */
 export interface FeedPageDto {
   content: FeedLineDto[];
-  /** Opaque; pass back to continue reading. Null when this page reached the end of the served window. */
+  /** Opaque; non-null when there is more beyond this page. For a since read, pass it back as since to fetch the rest of a truncated batch. For a plain read it marks that older history exists beyond what is served here. */
   nextCursor?: string;
+  /** True only for a since cursor older than the served window: content is empty and the caller has a hole it must not mistake for a partial result — discard what it holds and request a fresh first page instead */
+  startOver: boolean;
 }

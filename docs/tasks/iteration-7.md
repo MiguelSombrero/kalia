@@ -32,7 +32,7 @@ showing it as it happens.
 | [01](iteration-7/01-feed-module.md) | `feed` module and cellar events | done |
 | [04](iteration-7/04-feed-line-composition.md) | The reads a feed line needs | done |
 | [02](iteration-7/02-feed-api.md) | Feed read API | done |
-| [06](iteration-7/06-feed-increments.md) | Asking the feed what is new | refined |
+| [06](iteration-7/06-feed-increments.md) | Asking the feed what is new | done |
 | [08](iteration-7/08-shared-relative-time.md) | Relative time outside the cellar | done |
 | [03](iteration-7/03-front-page-feed.md) | Front page feed | refined |
 | [07](iteration-7/07-live-front-page.md) | The front page updates without a reload | refined |
