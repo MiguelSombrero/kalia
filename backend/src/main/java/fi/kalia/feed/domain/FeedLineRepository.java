@@ -27,4 +27,9 @@ public interface FeedLineRepository extends JpaRepository<FeedLine, UUID> {
 	List<FeedLine> findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(
 			long sequenceNumber, Instant cutoff, Pageable pageable);
 
+	// The mirror of the query above: descending, for continuing a page toward
+	// older history instead of catching up on newer arrivals.
+	List<FeedLine> findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(
+			long sequenceNumber, Instant cutoff, Pageable pageable);
+
 }

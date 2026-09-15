@@ -4,14 +4,29 @@
   },
   "app": {
     "name": "Kalia",
-    "tagline": "Käsityöoluiden hallintaa olutharrastajille.",
-    "browseCatalog": "Selaa oluita"
+    "tagline": "Käsityöoluiden hallintaa olutharrastajille."
   },
   "nav": {
     "label": "Päänavigaatio",
     "home": "Etusivu",
     "catalog": "Oluet",
     "cellar": "Kellari"
+  },
+  "feed": {
+    "loading": "Ladataan viimeaikaista toimintaa…",
+    "loadingMore": "Ladataan lisää…",
+    "line": {
+      "withVintage_one": "lisäsi kellariinsa {{count}} pullon vuoden {{vintage}} olutta {{beerName}}",
+      "withVintage_other": "lisäsi kellariinsa {{count}} pulloa vuoden {{vintage}} olutta {{beerName}}",
+      "withoutVintage_one": "lisäsi kellariinsa {{count}} pullon olutta {{beerName}}",
+      "withoutVintage_other": "lisäsi kellariinsa {{count}} pulloa olutta {{beerName}}"
+    },
+    "empty": {
+      "title": "Ei vielä mitään.",
+      "hint": "Tänne kertyy toimintaa kellareista, jotka omistajansa ovat päättäneet tehdä julkisiksi.",
+      "privateHint": "Oma kellarisi on yksityinen, joten sinun lisäyksesi eivät näy täällä.",
+      "privateLink": "Tee kellarisi julkiseksi"
+    }
   },
   "catalog": {
     "title": "Oluet",
@@ -174,7 +189,7 @@
       "private": "Vain minä",
       "public": "Kuka tahansa linkin saanut",
       "statePrivate": "Vain sinä näet kellarisi.",
-      "statePublic": "Kuka tahansa linkin saanut näkee kellarisi.",
+      "statePublic": "Kuka tahansa linkin saanut näkee kellarisi, ja lisäyksesi näkyvät Kalian etusivulla.",
       "error": "Näkyvyyden päivitys epäonnistui. Yritä uudelleen.",
       "viewLink": "Näytä julkinen kellarisi"
     }

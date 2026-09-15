@@ -1,6 +1,6 @@
 # Task 03: Front page feed
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-4, DW-3
 
@@ -133,31 +133,31 @@ home for what the page looks like.
 
 ## Acceptance criteria
 
-- [ ] The front page renders recent events newest-first for a signed-out
+- [x] The front page renders recent events newest-first for a signed-out
       visitor — component tests (`*.test.tsx`) for populated, empty and error
       states
-- [ ] Every rendered line's username links to `/cellars/{username}` — component
+- [x] Every rendered line's username links to `/cellars/{username}` — component
       test; there is no unlinked variant, because a line only exists for a
       public cellar ([task 09](09-feed-and-private-cellars.md))
-- [ ] Scrolling to the foot of the list loads the next page over the cursor and
+- [x] Scrolling to the foot of the list loads the next page over the cursor and
       appends it, and reaching the end of the window stops rather than looping
       — component test driving the sentinel
-- [ ] The empty state renders for a signed-out visitor and for a signed-in
+- [x] The empty state renders for a signed-out visitor and for a signed-in
       visitor whose own cellar is private, and differs between them — component
       test per case
-- [ ] The visibility control's new copy is present in both locales and states
+- [x] The visibility control's new copy is present in both locales and states
       both meanings — component test on `features/profile`, since the string
       moved for a reason that is easy to lose
-- [ ] Feed lines read correctly in both `en` and `fi`, including a name and a
+- [x] Feed lines read correctly in both `en` and `fi`, including a name and a
       beer in the same sentence — component test per locale
-- [ ] Playwright covers sign in → make the cellar public → add a bottle → see
+- [x] Playwright covers sign in → make the cellar public → add a bottle → see
       it appear on the front page → follow the username link to the public
       cellar, from an account that is the spec's own
       ([iteration 6 task 11](../iteration-6/11-e2e-suite-account-contention.md))
-- [ ] Every rendered state passes `axe` with no violations, in both locales —
+- [x] Every rendered state passes `axe` with no violations, in both locales —
       `jest-axe` in component tests and `@axe-core/playwright` on the pages the
       E2E visits
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

@@ -4,14 +4,29 @@
   },
   "app": {
     "name": "Kalia",
-    "tagline": "Craft beer management for enthusiasts.",
-    "browseCatalog": "Browse the beer catalog"
+    "tagline": "Craft beer management for enthusiasts."
   },
   "nav": {
     "label": "Main navigation",
     "home": "Home",
     "catalog": "Catalog",
     "cellar": "Cellar"
+  },
+  "feed": {
+    "loading": "Loading recent activity…",
+    "loadingMore": "Loading more…",
+    "line": {
+      "withVintage_one": "added {{count}} bottle of a {{vintage}} {{beerName}} to their cellar",
+      "withVintage_other": "added {{count}} bottles of a {{vintage}} {{beerName}} to their cellar",
+      "withoutVintage_one": "added {{count}} bottle of {{beerName}} to their cellar",
+      "withoutVintage_other": "added {{count}} bottles of {{beerName}} to their cellar"
+    },
+    "empty": {
+      "title": "Nothing here yet.",
+      "hint": "This is where cellars people have chosen to make public show what they're adding.",
+      "privateHint": "Your own cellar is private, so your additions won't show up here.",
+      "privateLink": "Make your cellar public"
+    }
   },
   "catalog": {
     "title": "Beer catalog",
@@ -174,7 +189,7 @@
       "private": "Only me",
       "public": "Anyone with the link",
       "statePrivate": "Only you can see your cellar.",
-      "statePublic": "Anyone with the link can see your cellar.",
+      "statePublic": "Anyone with the link can see your cellar, and your additions appear on Kalia's front page.",
       "error": "Could not update your cellar visibility. Please try again.",
       "viewLink": "View your public cellar"
     }

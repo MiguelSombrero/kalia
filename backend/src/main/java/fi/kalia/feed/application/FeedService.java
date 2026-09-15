@@ -61,6 +61,20 @@ public class FeedService {
 		return new FeedPage(resolve(trimmed.page()), trimmed.nextCursor(), false);
 	}
 
+	// Same bound as readRecent above; `before` is validated the same way as
+	// `since` below, but needs no anchor lookup: unlike catching up, walking
+	// toward older history has no "aged past the window" case to report —
+	// running out of rows within the cutoff is the ordinary way this ends.
+	@Transactional(readOnly = true)
+	public FeedPage readBefore(String cursor, int size) {
+		long sequenceNumber = cursorCodec.decode(cursor);
+		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
+		List<FeedLine> fetched = lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(
+				sequenceNumber, cutoff, PageRequest.of(0, size + 1));
+		Trimmed trimmed = trim(fetched, size);
+		return new FeedPage(resolve(trimmed.page()), trimmed.nextCursor(), false);
+	}
+
 	// Same bound as readRecent above; `since` is validated separately by
 	// cursorCodec.decode.
 	@Transactional(readOnly = true)

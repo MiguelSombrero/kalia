@@ -5,6 +5,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, signIn, test, type KeycloakAccount } from "./support/keycloakAccount";
+import { setCellarVisibility } from "./support/visibility";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
@@ -38,27 +39,6 @@ const ensureABeerInCellar = async (page: Page): Promise<string> => {
   return beerName;
 };
 
-const setVisibility = async (page: Page, option: "Only me" | "Anyone with the link") => {
-  await page.getByRole("link", { name: /^Profile: / }).click();
-  await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
-
-  // The toggle is optimistic; wait for the Server Action POST to commit before
-  // the test navigates to a page that reads the new value.
-  const committed = page.waitForResponse(
-    (response) =>
-      response.request().method() === "POST" &&
-      response.url().includes("/profile") &&
-      response.status() === 200,
-  );
-  await page.getByRole("radio", { name: option }).check();
-  const confirmation =
-    option === "Anyone with the link"
-      ? "Anyone with the link can see your cellar."
-      : "Only you can see your cellar.";
-  await expect(page.getByText(confirmation)).toBeVisible();
-  await committed;
-};
-
 test("a public cellar is readable signed-out from its link, and private reveals nothing", async ({
   page,
   account,
@@ -69,7 +49,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   await page.goto("/en");
   await signIn(page, account);
   const beerName = await ensureABeerInCellar(page);
-  await setVisibility(page, "Anyone with the link");
+  await setCellarVisibility(page, "Anyone with the link");
 
   // The owner reaches their public cellar from the profile, and is the only
   // caller who sees the "this is how others see it" banner.
@@ -100,7 +80,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   // the beer is gone from the DOM.
   await page.goto("/en");
   await signIn(page, account);
-  await setVisibility(page, "Only me");
+  await setCellarVisibility(page, "Only me");
 
   await page.goto(localeCellarUrlPath);
   await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();

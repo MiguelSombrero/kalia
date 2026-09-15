@@ -199,6 +199,73 @@ class FeedServiceTest {
 		assertThat(page.nextCursor()).isNotNull();
 	}
 
+	@Test
+	void beforeAMalformedCursorIsRejected() {
+		assertThatThrownBy(() -> service.readBefore("not-a-valid-cursor!!", 20))
+				.isInstanceOf(InvalidFeedCursorException.class);
+	}
+
+	@Test
+	void beforeAValidCursorReturnsOlderLinesNewestFirst() {
+		FeedLine older = line();
+		FeedLine newer = line();
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
+				any(), any())).willReturn(List.of(newer, older));
+		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(newer, older));
+		given(profile.publicUsernames(any()))
+				.willReturn(Map.of(newer.getUserId(), "newer", older.getUserId(), "older"));
+
+		FeedPage page = service.readBefore(codec.encode(42L), 20);
+
+		assertThat(page.lines()).extracting(FeedLineView::username).containsExactly("newer", "older");
+		assertThat(page.nextCursor()).isNull();
+		assertThat(page.startOver()).isFalse();
+	}
+
+	// Reaching the edge of the retained window ends the walk with an empty,
+	// cursor-less page rather than an error — the caller stops asking rather
+	// than looping, and there is no "aged past the window" case to report the
+	// way readSince has, since walking toward older history simply runs out.
+	@Test
+	void beforeAtTheEdgeOfTheWindowYieldsAnEmptyPageWithNoCursor() {
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
+				any(), any())).willReturn(List.of());
+
+		FeedPage page = service.readBefore(codec.encode(42L), 20);
+
+		assertThat(page.lines()).isEmpty();
+		assertThat(page.nextCursor()).isNull();
+		assertThat(page.startOver()).isFalse();
+	}
+
+	@Test
+	void beforeATruncatedResultCarriesACursorToTheNearestOlderRow() {
+		FeedLine nearest = line();
+		FeedLine furthest = line();
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
+				any(), any())).willReturn(List.of(nearest, furthest));
+		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(nearest));
+		given(profile.publicUsernames(any())).willReturn(Map.of(nearest.getUserId(), "nearest"));
+
+		FeedPage page = service.readBefore(codec.encode(42L), 1);
+
+		assertThat(page.lines()).hasSize(1);
+		assertThat(page.nextCursor()).isNotNull();
+	}
+
+	@Test
+	void beforeALineWhoseOwnerIsNotCurrentlyPublicIsDropped() {
+		FeedLine line = line();
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
+				any(), any())).willReturn(List.of(line));
+		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(line));
+		given(profile.publicUsernames(any())).willReturn(Map.of());
+
+		FeedPage page = service.readBefore(codec.encode(42L), 20);
+
+		assertThat(page.lines()).isEmpty();
+	}
+
 	private static Map<UUID, BeerSummary> beerSummaries(FeedLine... resolvable) {
 		Map<UUID, BeerSummary> beers = new HashMap<>();
 		for (FeedLine line : resolvable) {
