@@ -576,6 +576,23 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   configuration under [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s
   drift check. Verification and reset mail is localised by the same
   mechanism; branding of mail stops at the `Kalia` sender name.
+- **The realm locks an account temporarily, with a growing wait, after
+  repeated failed sign-ins — never permanently**
+  ([ADR-0061](adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)):
+  `keycloak/realm-export.json` sets `bruteForceProtected`, 10 failures
+  (`failureFactor`) before the first 60-second wait (`waitIncrementSeconds`),
+  doubling to a 15-minute cap (`maxFailureWaitSeconds`), with the failure
+  count forgotten after 12 hours (`maxDeltaTimeSeconds`) — the same policy in
+  every environment, under
+  [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s drift check.
+  Permanent lockout is rejected: with the front-page feed publishing
+  usernames ([task 03](tasks/iteration-7/03-front-page-feed.md)), it would
+  hand anyone a way to lock anyone else out of their account with no
+  self-service unlock path. Keycloak's own lockout
+  message is deliberately identical to its invalid-credentials one, to avoid
+  revealing an account exists — the `kalia` login theme overrides
+  `accountTemporarilyDisabledMessage` to say so instead, since the account
+  name behind it is not secret here.
 - **Every Keycloak error page keeps a way back into Kalia**: the
   `kalia-frontend` client carries `rootUrl`/`baseUrl`
   (`keycloak/realm-export.json`, under
@@ -725,6 +742,7 @@ the failure back to the agent without blocking
 | [ADR-0058](adr/0058-feed-event-recording-model.md) | Feed's event-recording model — an idempotent listener freezing an act's own facts, reading nothing live | accepted | 2026-09-12 |
 | [ADR-0059](adr/0059-feed-respects-cellar-visibility.md) | A feed line exists only for a public cellar, filtered at read time, and the front page stays noindex | accepted | 2026-09-13 |
 | [ADR-0060](adr/0060-feed-delivery-is-polling.md) | The front-page feed reaches an already-open browser by polling, not a stream | accepted | 2026-09-13 |
+| [ADR-0061](adr/0061-brute-force-lockout-is-temporary-and-disclosed.md) | Brute-force lockout is temporary, growing, and disclosed to the person locked out | accepted | 2026-09-19 |
 
 ### Engineering process and documentation
 

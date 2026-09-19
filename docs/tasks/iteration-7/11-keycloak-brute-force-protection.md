@@ -1,6 +1,6 @@
 # Task 11: Lockout on password guessing
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -122,24 +122,24 @@ actually stopped rather than that a flag is set.
 
 ## Acceptance criteria
 
-- [ ] Repeated failed sign-ins lock the account according to the chosen policy
+- [x] Repeated failed sign-ins lock the account according to the chosen policy
       — automated test driving real failed sign-ins against the running
       Keycloak, confirmed to fail against the current realm
-- [ ] A locked account recovers on its own after the wait, with no
+- [x] A locked account recovers on its own after the wait, with no
       administrator action, and that recovery is exercised rather than assumed
       — the same test signs in successfully afterwards
-- [ ] A locked-out sign-in attempt tells the person the account is temporarily
+- [x] A locked-out sign-in attempt tells the person the account is temporarily
       locked rather than returning a generic credential failure — asserted
       against the running Keycloak
-- [ ] The setting is applied by the `kcadm` mechanism
+- [x] The setting is applied by the `kcadm` mechanism
       ([ADR-0054](../../adr/0054-keycloak-config-cli-realm-management.md)) and
       is idempotent — applying it twice to a realm that already has it changes
       nothing, verified by running it twice
-- [ ] A full `npm run test:e2e` passes with the policy live, proving the
+- [x] A full `npm run test:e2e` passes with the policy live, proving the
       threshold does not trip on the suite's own repeated sign-ins
-- [ ] `docs/architecture.md` §6 records that the realm has brute-force
+- [x] `docs/architecture.md` §6 records that the realm has brute-force
       protection and what the policy is
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

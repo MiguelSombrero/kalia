@@ -148,7 +148,7 @@ decides the URL built on it.
 
 ## Authentication and identity
 
-Six independent decisions, in the order they were made — later ones fix
+Seven independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
 ([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
@@ -181,6 +181,9 @@ in one place, read
   minimal `keycloak.v2` theme and the realm's own `en`/`fi` internationalisation;
   the sign-in actions pass `ui_locales`, and Kalia writes no auth-page
   translations of its own.
+- [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md) — repeated
+  failed sign-ins lock an account temporarily, never permanently, and the
+  kalia theme overrides Keycloak's own generic lockout message to say so.
 
 ## Configuration, security and operations
 
