@@ -1,6 +1,7 @@
 package fi.kalia.feed.web;
 
 import fi.kalia.feed.application.FeedService;
+import fi.kalia.feed.application.InvalidFeedCursorException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -48,16 +49,20 @@ class FeedController {
 	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "Read the feed", description = """
-			Without since: the most recent events, newest first, each naming the person and the beer. With \
-			since, an opaque cursor from a previous line: every event recorded after it instead, still newest \
-			first, capped at size and marked startOver if the cursor has aged past the served window. Identical \
-			for every caller, signed in or out: only events whose owner's cellar is currently public are served, \
-			so there is nothing left to vary by caller. A page may carry fewer lines than requested — a line \
-			whose beer or person no longer resolves is dropped rather than rendered blank.""")
+			Without since or before: the most recent events, newest first, each naming the person and the beer. \
+			With since, an opaque cursor from a previous line: every event recorded after it instead, still \
+			newest first, capped at size and marked startOver if the cursor has aged past the served window — \
+			the increment a page that is already open polls for. With before, an opaque cursor from a previous \
+			line: every event recorded before it instead, still newest first and capped at size — how a page \
+			already open continues toward older history as its visitor scrolls. since and before are mutually \
+			exclusive. Identical for every caller, signed in or out: only events whose owner's cellar is \
+			currently public are served, so there is nothing left to vary by caller. A page may carry fewer \
+			lines than requested — a line whose beer or person no longer resolves is dropped rather than \
+			rendered blank.""")
 	@ApiResponse(responseCode = "400",
 			description = "size is missing, non-numeric, or outside 1-" + MAX_SIZE + """
-					; or since is malformed \
-					or was never issued by this server""",
+					; since or before is malformed or was never issued by this server; or both since and before \
+					are given""",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = ProblemDetail.class)))
 	FeedPageDto readFeed(
@@ -65,12 +70,27 @@ class FeedController {
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_SIZE) int size,
 			@Parameter(description = """
 					Opaque cursor from a previous line's own cursor; when given, reads events recorded after it \
-					instead of the most recent page""")
-			@RequestParam(required = false) @Size(max = MAX_CURSOR_LENGTH) @Nullable String since) {
-		// Blank, not just absent: an empty since= is treated the same as no
-		// cursor at all rather than failing as a malformed one.
-		return since == null || since.isBlank() ? FeedPageDto.from(feed.readRecent(size))
-				: FeedPageDto.from(feed.readSince(since, size));
+					instead of the most recent page. Mutually exclusive with before.""")
+			@RequestParam(required = false) @Size(max = MAX_CURSOR_LENGTH) @Nullable String since,
+			@Parameter(description = """
+					Opaque cursor from a previous line's own cursor; when given, reads events recorded before it \
+					instead of the most recent page, for continuing toward older history. Mutually exclusive \
+					with since.""")
+			@RequestParam(required = false) @Size(max = MAX_CURSOR_LENGTH) @Nullable String before) {
+		// Blank, not just absent: an empty since= or before= is treated the
+		// same as no cursor at all rather than failing as a malformed one.
+		boolean hasSince = since != null && !since.isBlank();
+		boolean hasBefore = before != null && !before.isBlank();
+		if (hasSince && hasBefore) {
+			throw new InvalidFeedCursorException("since and before are mutually exclusive");
+		}
+		if (hasSince) {
+			return FeedPageDto.from(feed.readSince(since, size));
+		}
+		if (hasBefore) {
+			return FeedPageDto.from(feed.readBefore(before, size));
+		}
+		return FeedPageDto.from(feed.readRecent(size));
 	}
 
 }

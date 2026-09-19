@@ -82,7 +82,7 @@ export const getReadFeedUrl = (params?: ReadFeedParams,) => {
 }
 
 /**
- * Without since: the most recent events, newest first, each naming the person and the beer. With since, an opaque cursor from a previous line: every event recorded after it instead, still newest first, capped at size and marked startOver if the cursor has aged past the served window. Identical for every caller, signed in or out: only events whose owner's cellar is currently public are served, so there is nothing left to vary by caller. A page may carry fewer lines than requested — a line whose beer or person no longer resolves is dropped rather than rendered blank.
+ * Without since or before: the most recent events, newest first, each naming the person and the beer. With since, an opaque cursor from a previous line: every event recorded after it instead, still newest first, capped at size and marked startOver if the cursor has aged past the served window — the increment a page that is already open polls for. With before, an opaque cursor from a previous line: every event recorded before it instead, still newest first and capped at size — how a page already open continues toward older history as its visitor scrolls. since and before are mutually exclusive. Identical for every caller, signed in or out: only events whose owner's cellar is currently public are served, so there is nothing left to vary by caller. A page may carry fewer lines than requested — a line whose beer or person no longer resolves is dropped rather than rendered blank.
  * @summary Read the feed
  */
 export const readFeed = async (params?: ReadFeedParams, options?: Parameters<typeof kaliaFetch>[1]): Promise<readFeedResponse> => {

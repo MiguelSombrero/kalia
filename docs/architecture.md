@@ -213,7 +213,13 @@ whole public identity and the URL segment a public cellar is addressed by
 ([ADR-0050](adr/0050-public-cellar-addressing.md)). `cellar_public` defaults
 to `false`, and **a missing profile row reads as private** — the rule every
 reader of it must apply, since lazy creation means the row may legitimately
-not exist yet.
+not exist yet. **Two first-ever reads for the same brand-new profile both
+succeed** on the same `@Retryable` shape as the cellar entry above
+([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md)):
+`ProfileService.currentProfile` and `changeCellarVisibility` each retry once
+on their own `profile_pkey` violation, the second annotated separately since
+its internal call to the first is a same-bean self-invocation Spring's proxy
+cannot intercept.
 
 **A `feed.line` row is a record of an act, not a view of a current holding**
 ([ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md),
@@ -227,10 +233,10 @@ visibility — the read, not the write, is where that rule applies
 ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)) — so the table
 retains rows for cellars that are currently private.
 `sequence_number` is a database-assigned, strictly increasing identity column,
-indexed from its first migration: it is the total order both the feed's first
-page and its "since" increment read a cursor against, because neither
-`occurred_at` nor an ordinary `BIGSERIAL` survives commit reordering on its
-own.
+indexed from its first migration: it is the total order the feed's first page,
+its "since" increment and its "before" continuation all read a cursor against,
+because neither `occurred_at` nor an ordinary `BIGSERIAL` survives commit
+reordering on its own.
 
 ## 4. API design
 
@@ -242,7 +248,7 @@ GET    /api/v1/beers/{id}
 GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
 GET    /api/v1/breweries?page=&size=
 GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
-GET    /api/v1/feed?size=&since=                    -> the most recent events, or (with since) everything recorded after a previously seen one; newest first, from cellars currently public; identical for every caller
+GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
@@ -310,9 +316,23 @@ older than the served window answers `startOver: true`
 with no content rather than a partial page, because serving from the window's
 edge would silently drop everything between the cursor and the edge — the one
 answer that tells a caller it has a hole instead of quietly handing it a
-shorter list. A `since` that is malformed, or well-formed but never issued by
-this server, is rejected as `problem+json` rather than honoured, so a client
-cannot come to depend on the cursor's shape.
+shorter list.
+
+**`before` is `since`'s mirror: the same cursor, read the other way**, for a
+page that is already open continuing toward older history as its visitor
+scrolls rather than catching up on new arrivals — the standard pairing for a
+list that grows at the head (Twitter's `since_id`/`max_id`, the GraphQL Relay
+Cursor Connections spec's `after`/`before`), completed here rather than
+invented. It shares `since`'s total order, visibility filter, `size` cap and
+truncation-cursor shape exactly, but reports no `startOver`: catching up has
+an "aged past the window" case to name because a stale `since` would
+otherwise silently skip a gap, while walking toward older history simply
+returns fewer rows, and eventually none, as it nears the window's edge — the
+one answer that already tells a caller to stop asking. `since` and `before`
+are mutually exclusive on one request. A `since` or `before` that is
+malformed, or well-formed but never issued by this server, is rejected as
+`problem+json` rather than honoured, so a client cannot come to depend on the
+cursor's shape.
 
 Conventions:
 
@@ -322,10 +342,10 @@ Conventions:
   locale-independent ([ADR-0045](adr/0045-brewery-list-paginates-in-application.md)).
   The feed is the deliberate exception: a list that grows at the head reads
   wrong under an offset, so it takes a bounded `size` and an optional `since`
-  and answers with a `nextCursor` — opaque, round-tripped rather than parsed —
-  instead of a page number. A stable search result set and a list growing at
-  the head are different problems, kept as two shapes rather than forced into
-  one.
+  or `before` and answers with a `nextCursor` — opaque, round-tripped rather
+  than parsed — instead of a page number. A stable search result set and a
+  list growing at the head are different problems, kept as two shapes rather
+  than forced into one.
 - **Endpoints are client-agnostic resources.** An endpoint's shape follows the
   resource, not the screen that happens to consume it; assembling several
   resources into one view is the client's job. Today the frontend is the only

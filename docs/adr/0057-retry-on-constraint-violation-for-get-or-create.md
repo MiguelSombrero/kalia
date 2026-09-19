@@ -2,6 +2,16 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-11
+- **Amended:** 2026-09-13 — the revisit trigger below fired, exactly as
+  anticipated: `profile.ProfileService.currentProfile` raced when the front
+  page's own profile read landed close enough to the profile page's, and
+  `profile_pkey` tripped the same way `cellar.entry`'s constraint did. Both
+  `currentProfile` and `changeCellarVisibility` now carry the identical
+  `@Retryable` shape — the latter needs its own annotation, not just
+  `currentProfile`'s, since its internal call to `currentProfile` is a
+  same-bean self-invocation Spring's proxy-based retry cannot intercept. No
+  shared helper: the annotation is one line, so "a shared note" (this one)
+  is what the trigger's own wording asked for, not new machinery.
 
 ## Context
 

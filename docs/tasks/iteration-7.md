@@ -34,7 +34,7 @@ showing it as it happens.
 | [02](iteration-7/02-feed-api.md) | Feed read API | done |
 | [06](iteration-7/06-feed-increments.md) | Asking the feed what is new | done |
 | [08](iteration-7/08-shared-relative-time.md) | Relative time outside the cellar | done |
-| [03](iteration-7/03-front-page-feed.md) | Front page feed | refined |
+| [03](iteration-7/03-front-page-feed.md) | Front page feed | done |
 | [07](iteration-7/07-live-front-page.md) | The front page updates without a reload | refined |
 | [10](iteration-7/10-person-display-name.md) | A person's name, for a feed line to say | dropped |
 

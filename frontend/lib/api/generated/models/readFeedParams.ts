@@ -13,9 +13,15 @@ export type ReadFeedParams = {
  */
 size?: number;
 /**
- * Opaque cursor from a previous line's own cursor; when given, reads events recorded after it instead of the most recent page
+ * Opaque cursor from a previous line's own cursor; when given, reads events recorded after it instead of the most recent page. Mutually exclusive with before.
  * @minLength 0
  * @maxLength 96
  */
 since?: string;
+/**
+ * Opaque cursor from a previous line's own cursor; when given, reads events recorded before it instead of the most recent page, for continuing toward older history. Mutually exclusive with since.
+ * @minLength 0
+ * @maxLength 96
+ */
+before?: string;
 };
