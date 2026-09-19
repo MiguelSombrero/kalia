@@ -23,7 +23,7 @@ import org.springframework.data.domain.Pageable;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
-class CatalogApiIT {
+class CatalogModuleApiIT {
 
 	@Autowired
 	private BeerRepository beers;

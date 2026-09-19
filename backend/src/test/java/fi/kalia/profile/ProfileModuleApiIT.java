@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Import;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
-class ProfileApiIT {
+class ProfileModuleApiIT {
 
 	@Autowired
 	private ProfileRepository profiles;

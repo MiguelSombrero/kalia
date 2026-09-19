@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-class OpenApiDocumentationIT {
+class CatalogOpenApiDocumentationIT {
 
 	@Autowired
 	private RestTestClient client;

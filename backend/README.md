@@ -253,7 +253,7 @@ rather than behind a link.
 - **Null fields must stay omitted from JSON**
   (`spring.jackson.default-property-inclusion=non_null`), never `"field":
   null` — that is what keeps `city?: string` sound across the schema, the
-  generated types and the wire. `DtoSerializationIT` pins it.
+  generated types and the wire. The per-module `*DtoSerializationIT` classes pin it.
 - **Don't add a handler for a generic Spring MVC exception without first
   measuring what Boot already returns.** A `ProblemDetail` return carries no
   response headers, so overriding an exception whose Boot handling sets one

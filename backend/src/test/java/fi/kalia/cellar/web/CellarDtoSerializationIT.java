@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 
-// Same trap catalog.web.DtoSerializationIT pins: a present "brewedDate":
+// Same trap CatalogDtoSerializationIT pins: a present "brewedDate":
 // null doesn't match the generated `brewedDate?: string` type.
 @JsonTest
-class DtoSerializationIT {
+class CellarDtoSerializationIT {
 
 	@Autowired
 	private JacksonTester<BottleDto> bottleJson;
