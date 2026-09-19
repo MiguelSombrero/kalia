@@ -52,7 +52,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [5.5 — Quality backlog](tasks/iteration-5.5.md) | The quality backlog is closed | ✅ Done |
 | [6 — User profile and public cellars](tasks/iteration-6.md) | A cellar can be made public and browsed by anyone | ✅ Done |
 | [6.5 — Sign-up](tasks/iteration-6.5.md) | Someone other than the author can create an account | ✅ Done |
-| [7 — Front page activity feed](tasks/iteration-7.md) | The front page shows what people add to their cellars, live | ⬜ Todo |
+| [7 — Front page activity feed](tasks/iteration-7.md) | The front page shows what people add to their cellars, live | ✅ Done |
 | [7.5 — Design sprint](tasks/iteration-7.5.md) | Kalia looks designed rather than defaulted | ⬜ Todo |
 | [8 — Catalog beyond seed data](tasks/iteration-8.md) | Users add the beers they cannot find | ⬜ Todo |
 
