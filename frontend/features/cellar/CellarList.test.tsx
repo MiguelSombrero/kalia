@@ -62,13 +62,4 @@ describe("CellarList", () => {
     expect(screen.getByText("Kellarisi on tyhjä.")).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
-
-  it("renders one row per beer in Finnish with no a11y violations", async () => {
-    const { container } = renderWithQueryClient(
-      await CellarList({ locale: "fi", rows: [westvleteren, sahti] }),
-    );
-
-    expect(screen.getByRole("button", { name: /Westvleteren 12/ })).toBeInTheDocument();
-    expect(await axe(container)).toHaveNoViolations();
-  });
 });

@@ -40,16 +40,17 @@ beforeEach(() => {
 });
 
 describe("VisibilityControl", () => {
-  it("reflects a private cellar and offers no public link", () => {
-    renderControl({ username: "ada", initialCellarPublic: false });
+  it("reflects a private cellar and offers no public link", async () => {
+    const { container } = renderControl({ username: "ada", initialCellarPublic: false });
 
     expect(screen.getByRole("radio", { name: "Only me" })).toBeChecked();
     expect(screen.getByText("Only you can see your cellar.")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "View your public cellar" })).not.toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("reflects a public cellar and links to it", () => {
-    renderControl({ username: "ada", initialCellarPublic: true });
+  it("reflects a public cellar and links to it", async () => {
+    const { container } = renderControl({ username: "ada", initialCellarPublic: true });
 
     expect(screen.getByRole("radio", { name: "Anyone with the link" })).toBeChecked();
     expect(
@@ -59,6 +60,7 @@ describe("VisibilityControl", () => {
     ).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "View your public cellar" });
     expect(link).toHaveAttribute("href", "/cellars/ada");
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("applies the change immediately, with no confirmation step", async () => {
@@ -108,18 +110,6 @@ describe("VisibilityControl", () => {
     expect(
       screen.getByText("Kuka tahansa linkin saanut näkee kellarisi, ja lisäyksesi näkyvät Kalian etusivulla."),
     ).toBeInTheDocument();
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("renders the private state in English with no a11y violations", async () => {
-    const { container } = renderControl({ username: "ada", initialCellarPublic: false });
-
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("renders the public state in English with no a11y violations", async () => {
-    const { container } = renderControl({ username: "ada", initialCellarPublic: true });
-
     expect(await axe(container)).toHaveNoViolations();
   });
 });

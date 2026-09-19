@@ -10,14 +10,7 @@ describe("buildCspHeader", () => {
     expect(scriptSrc).toContain("'unsafe-eval'");
   });
 
-  it("does not allow eval() when built for production", () => {
-    const scriptSrc = buildCspHeader("production")
-      .split(";")
-      .find((directive) => directive.trim().startsWith("script-src"));
-
-    expect(scriptSrc).not.toContain("'unsafe-eval'");
-  });
-
+  // Production's own script-src is pinned by the byte-for-byte test below.
   it("does not allow eval() for any non-development environment", () => {
     const scriptSrc = buildCspHeader(undefined)
       .split(";")
