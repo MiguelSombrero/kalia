@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { pollFeedAction, readOlderFeedAction } from "../actions";
 import { LIVE_POLL_INTERVAL_MS } from "../constants";
 import type { FeedPage } from "../types";
@@ -17,10 +17,19 @@ const EMPTY_POLL_RESULT: FeedPage = { content: [], nextCursor: undefined, startO
  * below are what keep the server's render as the only read of page one.
  * Scrolling still works: `fetchNextPage` always fetches its new page
  * regardless of staleness.
+ *
+ * `useId()` scopes the key to this mount. The app's QueryClient
+ * (app/providers.tsx) outlives a client-side navigation, so a visitor who
+ * leaves the front page and returns within TanStack Query's gcTime (default
+ * 5 minutes, unset here) would otherwise remount onto the *previous* mount's
+ * cache entry — `initialData` only seeds a query that doesn't already exist,
+ * so the freshly server-rendered `initialPage` passed in below would be
+ * silently discarded in favour of whatever was scrolled to last time.
  */
 export const useOlderFeed = (initialPage: FeedPage) => {
+  const mountId = useId();
   return useInfiniteQuery({
-    queryKey: feedKey,
+    queryKey: [...feedKey, mountId],
     queryFn: ({ pageParam }) => readOlderFeedAction(pageParam as string),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -53,8 +62,18 @@ export const useOlderFeed = (initialPage: FeedPage) => {
  * the same reason FeedList.tsx reads fetchNextPage/isFetchingNextPage through
  * a ref rather than an effect dependency. The queryFn deliberately does not
  * depend on the queryKey for this.
+ *
+ * `useId()`, unlike `since`, *is* folded into the key — for the same
+ * per-mount reason as useOlderFeed above, but the failure mode here is
+ * subtler: left unscoped, a remount within gcTime reuses the previous
+ * mount's cached response, and the effect in FeedList.tsx that advances
+ * `sinceCursor` from `poll.data` rewinds it behind the fresh SSR page's own
+ * cursor. It self-corrects once the next real tick's response is
+ * deduplicated against `knownCursors`, but the tick itself is spent
+ * re-asking the backend for events every remount already has.
  */
 export const usePollFeed = (since: string) => {
+  const mountId = useId();
   const sinceRef = useRef(since);
   useEffect(() => {
     sinceRef.current = since;
@@ -62,7 +81,7 @@ export const usePollFeed = (since: string) => {
 
   // eslint-disable-next-line @tanstack/query/exhaustive-deps -- since is deliberately kept out of the key, see the doc comment above
   const query = useQuery({
-    queryKey: pollFeedKey,
+    queryKey: [...pollFeedKey, mountId],
     queryFn: () => pollFeedAction(sinceRef.current),
     initialData: EMPTY_POLL_RESULT,
     staleTime: 0,

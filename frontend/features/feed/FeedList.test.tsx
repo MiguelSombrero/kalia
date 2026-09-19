@@ -83,13 +83,17 @@ const line = (cursor: string, username: string) => ({
   cursor,
 });
 
-const renderList = (initialPage: FeedPage, locale: Locale = "en", emptyState: ReactNode = <p>empty</p>) => {
+const renderList = (
+  initialPage: FeedPage,
+  locale: Locale = "en",
+  emptyState: ReactNode = <p>empty</p>,
+  queryClient: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) => {
   const i18n = createInstance();
   i18n.use(initReactI18next).init({
     ...getOptions(locale),
     resources: { en: { common: enCommon }, fi: { common: fiCommon } },
   });
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
   return render(
     <QueryClientProvider client={queryClient}>
@@ -503,6 +507,74 @@ describe("FeedList live polling", () => {
       vi.useRealTimers();
 
       expect(await axe(container)).toHaveNoViolations();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+// The app's own QueryClient (app/providers.tsx) is created once and outlives
+// a client-side navigation, unlike the fresh one `renderList` makes for every
+// other test above — these two share one across an unmount/remount to
+// reproduce that.
+describe("FeedList remounted on a shared QueryClient", () => {
+  it("shows the freshly rendered first page, not a scroll left over from a previous mount", async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    readOlderFeedAction.mockResolvedValueOnce({
+      content: [line("c-old2", "bob")],
+      nextCursor: undefined,
+      startOver: false,
+    });
+
+    const { unmount } = renderList(
+      { content: [line("c-old1", "alice")], nextCursor: "c-old1", startOver: false },
+      "en",
+      undefined,
+      queryClient,
+    );
+    act(() => intersectionObserverInstances[0]!.trigger(true));
+    await waitFor(() => expect(screen.getByRole("link", { name: "bob" })).toBeInTheDocument());
+    unmount();
+
+    renderList({ content: [line("c-new", "carol")], nextCursor: undefined, startOver: false }, "en", undefined, queryClient);
+
+    expect(screen.getByRole("link", { name: "carol" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "alice" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "bob" })).not.toBeInTheDocument();
+  });
+
+  it("polls from the freshly rendered page's own cursor, not one left rewound by a previous mount", async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    vi.useFakeTimers();
+    try {
+      pollFeedAction.mockResolvedValueOnce({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
+      const { unmount } = renderList(
+        { content: [line("c1", "alice")], nextCursor: undefined, startOver: false },
+        "en",
+        undefined,
+        queryClient,
+      );
+      await advancePoll();
+      expect(pollFeedAction).toHaveBeenNthCalledWith(1, "c1");
+      unmount();
+
+      pollFeedAction.mockResolvedValueOnce({ content: [], nextCursor: undefined, startOver: false });
+      // The fresh SSR page already reflects carol and dave, which mount 1
+      // never polled far enough to see — its own cache entry still holds
+      // bob's tick as the newest thing it knows about.
+      renderList(
+        {
+          content: [line("c4", "dave"), line("c3", "carol"), line("c2", "bob"), line("c1", "alice")],
+          nextCursor: undefined,
+          startOver: false,
+        },
+        "en",
+        undefined,
+        queryClient,
+      );
+      await advancePoll();
+
+      expect(pollFeedAction).toHaveBeenNthCalledWith(2, "c4");
     } finally {
       vi.useRealTimers();
     }
