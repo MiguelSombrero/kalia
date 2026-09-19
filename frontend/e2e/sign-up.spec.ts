@@ -13,10 +13,9 @@ import {
   keycloakAdminToken,
   test,
 } from "./support/keycloakAccount";
+import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-
-const FRONTEND_ORIGIN = "http://localhost:3000";
-const KEYCLOAK_ORIGIN = "http://localhost:8081";
+import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 // Unprefixed on http, `__Secure-` prefixed on https (lib/auth/sessionCookie.ts
 // carries the same list for server-side reads) — this suite always runs
@@ -76,20 +75,6 @@ const startSignUp = async (page: Page) => {
   await page.goto(`${FRONTEND_ORIGIN}/en/sign-up`);
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Continue to sign-up" }).click();
-};
-
-// Keycloak guards action links behind a confirmation page and may show a
-// "back to application" page instead of redirecting on its own — same
-// tolerant loop as keycloak-email.spec.ts.
-const clickThroughKeycloakAction = async (page: Page) => {
-  for (let step = 0; step < 3 && page.url().startsWith(KEYCLOAK_ORIGIN); step++) {
-    const next = page
-      .getByRole("link", { name: /proceed|continue|back to application/i })
-      .or(page.getByRole("button", { name: /proceed|continue|submit/i }));
-    if (!(await next.count())) break;
-    await next.first().click();
-    await page.waitForLoadState();
-  }
 };
 
 test.describe("self-registration", () => {

@@ -1,6 +1,6 @@
 import { expect, request, test as base, type APIRequestContext, type Page } from "@playwright/test";
+import { KEYCLOAK_ORIGIN } from "./origins";
 
-const KEYCLOAK_ADMIN_URL = "http://localhost:8081";
 const REALM = "kalia";
 const ACCOUNT_PASSWORD = "testuser123";
 
@@ -11,7 +11,7 @@ export const keycloakAdminToken = async (apiRequest: APIRequestContext): Promise
   const adminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
 
   const response = await apiRequest.post(
-    `${KEYCLOAK_ADMIN_URL}/realms/master/protocol/openid-connect/token`,
+    `${KEYCLOAK_ORIGIN}/realms/master/protocol/openid-connect/token`,
     {
       form: {
         grant_type: "password",
@@ -31,7 +31,7 @@ export const findKeycloakUser = async (
   adminToken: string,
   username: string,
 ): Promise<{ id: string } | undefined> => {
-  const response = await apiRequest.get(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users`, {
+  const response = await apiRequest.get(`${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users`, {
     headers: { Authorization: `Bearer ${adminToken}` },
     params: { username, exact: "true" },
   });
@@ -46,7 +46,7 @@ export const endKeycloakSessionForUser = async (
   userId: string,
 ): Promise<void> => {
   const response = await apiRequest.post(
-    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}/logout`,
+    `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/logout`,
     { headers: { Authorization: `Bearer ${adminToken}` } },
   );
   expect(response.ok(), "the admin logout call itself failed").toBeTruthy();
@@ -59,7 +59,7 @@ const resetKeycloakPassword = async (
   password: string,
 ): Promise<void> => {
   const response = await apiRequest.put(
-    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}/reset-password`,
+    `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/reset-password`,
     {
       headers: { Authorization: `Bearer ${adminToken}` },
       data: { type: "password", value: password, temporary: false },
@@ -73,7 +73,7 @@ const createKeycloakUser = async (
   adminToken: string,
   account: KeycloakAccount,
 ): Promise<boolean> => {
-  const response = await apiRequest.post(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users`, {
+  const response = await apiRequest.post(`${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users`, {
     headers: { Authorization: `Bearer ${adminToken}` },
     data: {
       username: account.username,
@@ -97,7 +97,7 @@ export const createUnverifiedKeycloakUser = async (
   username: string,
   email: string,
 ): Promise<string> => {
-  const response = await apiRequest.post(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users`, {
+  const response = await apiRequest.post(`${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users`, {
     headers: { Authorization: `Bearer ${adminToken}` },
     data: {
       username,
@@ -125,7 +125,7 @@ export const sendActionsEmail = async (
   redirectUri: string,
 ): Promise<void> => {
   const response = await apiRequest.put(
-    `${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
+    `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
     {
       headers: { Authorization: `Bearer ${adminToken}` },
       params: { client_id: "kalia-frontend", redirect_uri: redirectUri },

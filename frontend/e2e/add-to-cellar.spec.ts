@@ -1,10 +1,11 @@
 // Exercises add-to-cellar against the compose stack, from both places the
 // affordance appears; credentials are a per-worker account provisioned by
 // ./support/keycloakAccount.ts.
-import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, signIn, test } from "./support/keycloakAccount";
+import { CATALOG_CARD } from "./support/catalog";
 import { escapeRegExp } from "./support/text";
+import { expectNoA11yViolations } from "./support/a11y";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
@@ -57,8 +58,8 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   await page.goto("/en/beers");
 
   const cards = page.getByRole("listitem");
-  const listBeer = (await cards.nth(0).getByRole("heading").textContent())!.trim();
-  const detailBeer = (await cards.nth(1).getByRole("heading").textContent())!.trim();
+  const listBeer = (await cards.nth(CATALOG_CARD.addFromList).getByRole("heading").textContent())!.trim();
+  const detailBeer = (await cards.nth(CATALOG_CARD.addFromDetail).getByRole("heading").textContent())!.trim();
   expect(listBeer).not.toEqual(detailBeer);
 
   const listBefore = await bottleCount(page, listBeer);
@@ -66,11 +67,11 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
 
   await page.goto("/en/beers");
   const stillSameDocument = await markDocument(page);
-  await cards.nth(0).getByRole("button", { name: "Add to cellar" }).click();
+  await cards.nth(CATALOG_CARD.addFromList).getByRole("button", { name: "Add to cellar" }).click();
   await addBottles(page, 2);
   expect(await stillSameDocument(), "adding from the list reloaded the page").toBe(true);
 
-  await cards.nth(1).getByRole("heading").getByRole("link").click();
+  await cards.nth(CATALOG_CARD.addFromDetail).getByRole("heading").getByRole("link").click();
   await expect(page.getByRole("heading", { level: 1, name: detailBeer })).toBeVisible();
   await page.getByRole("button", { name: "Add to cellar" }).click();
   await addBottles(page, 1);
@@ -110,10 +111,7 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   // to wait out before the count reflects it.
   expect(await bottleCount(page, listBeer)).toBe(beforeRemove - 1);
 
-  const scan = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-    .analyze();
-  expect(scan.violations).toEqual([]);
+  await expectNoA11yViolations(page);
 
   // A confirmed removal must survive navigating away and a hard reload:
   // nothing about it is left pending after the dialog closes.
@@ -144,10 +142,7 @@ test("the open add-to-cellar dialog has no accessibility violations", async ({ p
   await page.getByRole("listitem").first().getByRole("button", { name: "Add to cellar" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
-  const scan = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-    .analyze();
-  expect(scan.violations).toEqual([]);
+  await expectNoA11yViolations(page);
 
   // Every enabled control reachable by Tab, and focus never escaping the
   // dialog — the half of the modal contract jsdom cannot exercise.

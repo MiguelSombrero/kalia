@@ -1,18 +1,13 @@
 // Kalia-branded, bilingual Keycloak pages (ADR-0056): the login, registration
 // and password-reset pages Keycloak renders on a different origin must appear
 // in the locale the visitor was reading and meet the app's WCAG 2.1 AA bar.
-import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "./support/keycloakAccount";
 import { waitForMessageTo } from "./support/mailpit";
-
-const FRONTEND_ORIGIN = "http://localhost:3000";
-const KEYCLOAK_ORIGIN = "http://localhost:8081";
+import { expectNoA11yViolations } from "./support/a11y";
+import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 const langOf = (page: Page) => page.locator("html").getAttribute("lang");
-
-const scanForA11yViolations = (page: Page) =>
-  new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
 // The header "Sign in" control, whichever language the app page is in.
 const clickSignIn = (page: Page) =>
@@ -48,7 +43,7 @@ test.describe("Keycloak pages follow the app's language", () => {
       await expect(page.getByRole("button", { name: registerWord })).toBeVisible();
       // Same WCAG 2.1 AA bar as the rest of the app — scanned here rather than
       // in a fourth registration test to keep /sign-up rate-limit pressure down.
-      expect((await scanForA11yViolations(page)).violations).toEqual([]);
+      await expectNoA11yViolations(page);
     });
 
     test(`the password-reset page reached from /${locale} is in ${htmlLang}`, async ({ page }) => {
@@ -67,7 +62,7 @@ test.describe("Keycloak pages meet WCAG 2.1 AA", () => {
     await clickSignIn(page);
     await page.locator("#kc-form-login").waitFor();
 
-    expect((await scanForA11yViolations(page)).violations).toEqual([]);
+    await expectNoA11yViolations(page);
   });
   // The registration page's axe scan rides along with its language test above,
   // so registering (which the shared /sign-up rate limit counts) happens once
