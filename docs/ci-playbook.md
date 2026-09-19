@@ -132,3 +132,27 @@ let a one-shot be waited on by the script that consumes it (each
 plain `up -d`. Cost ~10 min to spot on the branch for iteration 6.5 task 03,
 because the failing line had been piped to `tail` — which also hid it (see
 `implement-task` step 9: read `make` output from a file, not a pager).
+
+**`make verify` fails at `frontend-build` with a TypeScript error in a file
+your diff never touched.** In a newly created worktree, `frontend/node_modules`
+does not arrive in a state matching `package-lock.json` — `git worktree add`
+does not populate it, and a copied or previously-installed tree can be several
+bumps behind. The symptom is a type error, not a version complaint:
+`vitest.setup.ts(14,13): error TS2428: All declarations of 'Matchers' must have
+identical type parameters`, because that file re-declares vitest's `Matchers`
+for `jest-axe` against vitest 5's type shape while vitest 4 is what is actually
+installed. `npm test` passes throughout and prints `RUN v4.1.10` — that banner,
+compared against the lockfile, is the tell. Run `(cd frontend && npm ci)` before
+the first `make verify` in a fresh worktree. Observed 2026-09-19 on the branch
+for this file's sign-up rate-limit entry above.
+
+**`mvn` fails to compile the backend with
+`java.lang.ExceptionInInitializerError: com.sun.tools.javac.tree.EndPosTable`.**
+Lombok meeting a JDK newer than the one the build targets. `mvn` reads
+`JAVA_HOME`, which on a Mac with several JDKs installed is whichever one is
+first on the path — not necessarily the version `java -version` reports, and
+not necessarily `pom.xml`'s release. Pin it for the command:
+`JAVA_HOME=$(/usr/libexec/java_home -v 25) make verify`. The error names
+javac's internals rather than a version mismatch, and an *incremental* build
+that recompiles nothing at all skips it entirely — so a target can pass once
+and fail the next time without the tree changing.
