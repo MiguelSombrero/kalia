@@ -70,6 +70,19 @@ integration test.
 Use `clean` after changing `pom.xml` or a plugin: an incremental build can
 report success against stale `target/classes` output.
 
+**Maven must run on JDK 25, not merely have it installed.** Lombok's
+annotation processor reaches into `javac` internals, so a newer JDK fails the
+`compile` goal with `Fatal error compiling:
+java.lang.ExceptionInInitializerError: com.sun.tools.javac.tree.EndPosTable`
+— which names neither Lombok nor the JDK, and looks like a broken build
+rather than a wrong toolchain. `mvn -version` reports the JDK Maven itself
+runs on, which is *not* necessarily the one `java -version` shows (Homebrew's
+`maven` formula depends on its own `openjdk`). Point it at 25 if they differ:
+
+```bash
+JAVA_HOME=$(/usr/libexec/java_home -v 25) mvn clean verify
+```
+
 Before pushing, run the whole gate rather than this suite alone: `make verify`
 from the repository root, or `make verify-fast` for the subset that needs no
 Docker ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).

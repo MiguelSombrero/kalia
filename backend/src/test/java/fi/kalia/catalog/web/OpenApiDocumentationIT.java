@@ -23,11 +23,7 @@ class OpenApiDocumentationIT {
 
 	@Test
 	void catalogEndpointsAreDocumentedWithTagsAndSummaries() {
-		String body = client.get().uri("/v3/api-docs")
-				.exchange()
-				.expectStatus().isOk()
-				.expectBody(String.class)
-				.returnResult().getResponseBody();
+		String body = apiDocs();
 
 		List<String> tagNames = JsonPath.read(body, "$.tags[*].name");
 		assertThat(tagNames).contains("Catalog");
@@ -44,11 +40,7 @@ class OpenApiDocumentationIT {
 
 	@Test
 	void beerSummarySchemaMarksNonNullableFieldsRequired() {
-		String body = client.get().uri("/v3/api-docs")
-				.exchange()
-				.expectStatus().isOk()
-				.expectBody(String.class)
-				.returnResult().getResponseBody();
+		String body = apiDocs();
 
 		List<String> required = JsonPath.read(body, "$.components.schemas.BeerSummaryDto.required");
 		// springdoc does not infer "required" from Java non-nullability alone:
@@ -76,4 +68,13 @@ class OpenApiDocumentationIT {
 				.expectStatus().isOk();
 	}
 
+	private String apiDocs() {
+		return client.get().uri("/v3/api-docs")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.returnResult().getResponseBody();
+	}
+
 }
+

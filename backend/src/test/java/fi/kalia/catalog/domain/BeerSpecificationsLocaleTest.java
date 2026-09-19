@@ -32,6 +32,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class BeerSpecificationsLocaleTest {
 
+	// Turkish lowercases "I" to a dotless i, so a default-locale toLowerCase
+	// stops matching the stored "ipa". That is the bug under test, so the
+	// locale is fixed for every test here rather than set per test.
+	private static final Locale TURKISH = Locale.of("tr", "TR");
+
 	@Mock
 	private Root<Beer> root;
 
@@ -55,6 +60,7 @@ class BeerSpecificationsLocaleTest {
 	@BeforeEach
 	void stubCriteriaApi() {
 		originalDefaultLocale = Locale.getDefault();
+		Locale.setDefault(TURKISH);
 		when(root.get(anyString())).thenReturn(path);
 		lenient().when(path.get(anyString())).thenReturn(path);
 		when(cb.lower(any())).thenReturn(lowered);
@@ -74,7 +80,6 @@ class BeerSpecificationsLocaleTest {
 
 	@Test
 	void nameQueryIsLowercasedTheSameUnderATurkishDefaultLocale() {
-		Locale.setDefault(new Locale("tr", "TR"));
 		ArgumentCaptor<String> literal = ArgumentCaptor.forClass(String.class);
 
 		search(new BeerSearchCriteria("IPA", null, null, null, null, null));
@@ -85,7 +90,6 @@ class BeerSpecificationsLocaleTest {
 
 	@Test
 	void styleFilterIsLowercasedTheSameUnderATurkishDefaultLocale() {
-		Locale.setDefault(new Locale("tr", "TR"));
 		ArgumentCaptor<Object> literal = ArgumentCaptor.forClass(Object.class);
 
 		search(new BeerSearchCriteria(null, "IPA", null, null, null, null));
@@ -96,7 +100,6 @@ class BeerSpecificationsLocaleTest {
 
 	@Test
 	void countryFilterIsLowercasedTheSameUnderATurkishDefaultLocale() {
-		Locale.setDefault(new Locale("tr", "TR"));
 		ArgumentCaptor<Object> literal = ArgumentCaptor.forClass(Object.class);
 
 		search(new BeerSearchCriteria(null, null, null, "ISTANBUL", null, null));
