@@ -2,17 +2,14 @@
 // and that specific addition surfaces on the front page with a working link
 // back to the cellar it names. Credentials are a per-worker account
 // provisioned by ./support/keycloakAccount.ts.
-import AxeBuilder from "@axe-core/playwright";
-import type { Page } from "@playwright/test";
 import { expect, signIn, test } from "./support/keycloakAccount";
+import { CATALOG_CARD } from "./support/catalog";
 import { escapeRegExp } from "./support/text";
 import { setCellarVisibility } from "./support/visibility";
+import { expectNoA11yViolations } from "./support/a11y";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
-
-const scanForA11yViolations = (page: Page) =>
-  new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
 test("a public addition appears on the front page and links back to its cellar", async ({
   page,
@@ -23,10 +20,8 @@ test("a public addition appears on the front page and links back to its cellar",
   await setCellarVisibility(page, "Anyone with the link");
 
   await page.goto("/en/beers");
-  // Down the list, matching the other specs sharing this worker's account —
-  // avoids the exact-delta assertions add-to-cellar.spec makes on the first
-  // two cards and the fixed card public-cellar.spec uses.
-  const card = page.getByRole("listitem").nth(12);
+  // Which card, and why it is not an arbitrary one: support/catalog.ts.
+  const card = page.getByRole("listitem").nth(CATALOG_CARD.frontPageFeed);
   const beerName = (await card.getByRole("heading").textContent())!.trim();
   await card.getByRole("button", { name: "Add to cellar" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -46,7 +41,7 @@ test("a public addition appears on the front page and links back to its cellar",
     .first();
   await expect(line).toBeVisible();
 
-  expect((await scanForA11yViolations(page)).violations).toEqual([]);
+  await expectNoA11yViolations(page);
 
   await line.getByRole("link", { name: account.username }).click();
   await expect(page).toHaveURL(new RegExp(`/en/cellars/${account.username}$`));

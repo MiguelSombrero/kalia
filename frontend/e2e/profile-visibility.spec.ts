@@ -2,9 +2,9 @@
 // journey through a stranger's view of a public cellar belongs to the public
 // cellar page, once it exists. Credentials are a per-worker account
 // provisioned by ./support/keycloakAccount.ts.
-import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, signIn, test } from "./support/keycloakAccount";
+import { expectNoA11yViolations } from "./support/a11y";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
@@ -13,9 +13,6 @@ const openProfile = async (page: Page) => {
   await page.getByRole("link", { name: /^Profile: / }).click();
   await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
 };
-
-const scanForA11yViolations = (page: Page) =>
-  new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
 test("toggles cellar visibility, and the choice survives a reload", async ({ page, account }) => {
   await page.goto("/en");
@@ -41,5 +38,5 @@ test("toggles cellar visibility, and the choice survives a reload", async ({ pag
   await page.reload();
   await expect(page.getByRole("radio", { name: "Only me" })).toBeChecked();
 
-  expect((await scanForA11yViolations(page)).violations).toEqual([]);
+  await expectNoA11yViolations(page);
 });

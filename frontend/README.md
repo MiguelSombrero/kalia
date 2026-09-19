@@ -83,6 +83,14 @@ one and does not reliably stop it afterwards — run `docker compose down`
 from the repo root when you're done testing locally. Not an issue in CI:
 the runner is discarded after the job.
 
+**A fresh worktree needs its own root `.env` before the stack will start.**
+It is gitignored, so it does not travel with a `git worktree add`, and
+without it `docker compose` fails on an interpolation error naming
+`KALIA_FRONTEND_CLIENT_SECRET` rather than anything about tests — which
+reads like a broken E2E suite. Create it as the root
+[README](../README.md) describes. Host ports are fixed, so only one
+worktree can hold the stack up at a time (repository CLAUDE.md).
+
 A spec that signs in gets its Keycloak account from the worker-scoped
 `account` fixture (`e2e/support/keycloakAccount.ts`), never a hardcoded
 username: the account is derived from the Playwright worker index and
@@ -253,9 +261,11 @@ Why the rationale lives there and not here:
   `expect(await axe(container)).toHaveNoViolations();` (matcher registered
   once in `vitest.setup.ts`). WCAG 2.1 AA is the bar, enforced at three
   layers: `eslint-plugin-jsx-a11y` at lint time, `jest-axe` here, and
-  `@axe-core/playwright` scanning real pages tagged
-  `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` at E2E time. All three ride the
-  existing lint/test/e2e commands — there is no separate a11y gate to forget.
+  `@axe-core/playwright` scanning real pages at E2E time, through
+  `e2e/support/a11y.ts`'s `expectNoA11yViolations` — a spec calls that rather
+  than building its own `AxeBuilder`, so the tag scope stays one decision
+  instead of one per file. All three ride the existing lint/test/e2e
+  commands — there is no separate a11y gate to forget.
 - **`jose`'s `SignJWT`/`sign()` throws under this project's default Vitest
   environment** (`jsdom`, set in `vitest.config.ts`): `TypeError: payload
   must be an instance of Uint8Array`, from jose's own check on the payload it

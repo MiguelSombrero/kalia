@@ -2,19 +2,17 @@
 // signed-out visitor from its link, and made private again it reveals
 // nothing. Credentials are a per-worker account provisioned by
 // ./support/keycloakAccount.ts.
-import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, signIn, test, type KeycloakAccount } from "./support/keycloakAccount";
+import { CATALOG_CARD } from "./support/catalog";
 import { setCellarVisibility } from "./support/visibility";
+import { expectNoA11yViolations } from "./support/a11y";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
 
 const shareUrl = (account: KeycloakAccount) => `/cellars/${account.username}`;
 const localeCellarUrl = (account: KeycloakAccount) => `/en/cellars/${account.username}`;
-
-const scanForA11yViolations = (page: Page) =>
-  new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
 const signOut = async (page: Page) => {
   await page.getByRole("button", { name: "Sign out" }).click();
@@ -23,12 +21,11 @@ const signOut = async (page: Page) => {
 };
 
 // Puts at least one beer in the cellar so the public page has something to
-// show, and returns its name. Uses a beer well down the list because
-// add-to-cellar.spec asserts exact bottle deltas on the first two catalog
-// cards, and both specs can land on the same worker's account.
+// show, and returns its name. Which card, and why it is not an arbitrary
+// one: support/catalog.ts.
 const ensureABeerInCellar = async (page: Page): Promise<string> => {
   await page.goto("/en/beers");
-  const card = page.getByRole("listitem").nth(6);
+  const card = page.getByRole("listitem").nth(CATALOG_CARD.publicCellar);
   const beerName = (await card.getByRole("heading").textContent())!.trim();
 
   await card.getByRole("button", { name: "Add to cellar" }).click();
@@ -60,7 +57,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   ).toBeVisible();
   await expect(page.getByText("This is how others see your cellar.")).toBeVisible();
   await expect(page.getByRole("button", { name: new RegExp(beerName) })).toBeVisible();
-  expect((await scanForA11yViolations(page)).violations).toEqual([]);
+  await expectNoA11yViolations(page);
 
   // A genuine sign-out — not a cleared cookie — then the locale-less share URL
   // with no session: it lands in the reader's own language and shows the
@@ -74,7 +71,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   ).toBeVisible();
   await expect(page.getByRole("button", { name: new RegExp(beerName) })).toBeVisible();
   await expect(page.getByText("This is how others see your cellar.")).toHaveCount(0);
-  expect((await scanForA11yViolations(page)).violations).toEqual([]);
+  await expectNoA11yViolations(page);
 
   // Back in, back to private: the same URL now answers only "not found", and
   // the beer is gone from the DOM.

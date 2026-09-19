@@ -8,9 +8,9 @@ import {
   keycloakAdminToken,
   sendActionsEmail,
 } from "./support/keycloakAccount";
+import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-
-const FRONTEND_ORIGIN = "http://localhost:3000";
+import { FRONTEND_ORIGIN } from "./support/origins";
 
 test("Keycloak sends a readable verification email whose link lands back on the frontend", async ({
   page,
@@ -35,18 +35,7 @@ test("Keycloak sends a readable verification email whose link lands back on the 
   expect(link).not.toContain("keycloak:8080");
 
   await page.goto(link);
-  // Keycloak guards action links behind a confirmation page (so email
-  // scanners can't consume them), and may show a "back to application" page
-  // rather than redirecting on its own. Click through whatever it shows
-  // until the browser leaves Keycloak.
-  for (let step = 0; step < 3 && page.url().startsWith("http://localhost:8081"); step++) {
-    const next = page
-      .getByRole("link", { name: /proceed|continue|back to application/i })
-      .or(page.getByRole("button", { name: /proceed|continue|submit/i }));
-    if (!(await next.count())) break;
-    await next.first().click();
-    await page.waitForLoadState();
-  }
+  await clickThroughKeycloakAction(page);
 
   // The action completes and Keycloak returns the browser to the configured
   // frontend origin — not a dead end on a container-internal host.

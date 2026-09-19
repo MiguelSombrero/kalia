@@ -1,9 +1,9 @@
 // Exercises the whole stack against compose-run Keycloak and Valkey
 // (docs/architecture.md §6, §7); credentials are a per-worker account
 // provisioned by ./support/keycloakAccount.ts.
-import AxeBuilder from "@axe-core/playwright";
 import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 import Redis from "ioredis";
+import { expectNoA11yViolations } from "./support/a11y";
 import {
   endKeycloakSessionForUser,
   expect,
@@ -59,9 +59,6 @@ const endKeycloakSessionViaAdmin = async (request: APIRequestContext, username: 
   await endKeycloakSessionForUser(request, adminToken, user!.id);
 };
 
-const scanForA11yViolations = (page: Page) =>
-  new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-
 test("signs in through Keycloak, shows the user's name, and signs out", async ({ page, account }) => {
   await page.goto("/en");
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
@@ -70,13 +67,13 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
 
   await expect(page).toHaveURL(/localhost:3000/);
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
-  expect((await scanForA11yViolations(page)).violations).toEqual([]);
+  await expectNoA11yViolations(page);
 
   await page.getByRole("button", { name: "Sign out" }).click();
 
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Profile: Test User" })).toHaveCount(0);
-  expect((await scanForA11yViolations(page)).violations).toEqual([]);
+  await expectNoA11yViolations(page);
 });
 
 // One click is the assertion: a blocked sign-out deletes the local session,
