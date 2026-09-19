@@ -16,6 +16,8 @@ export const CATALOG_CARD = {
   publicCellar: 6,
   /** front-page-feed.spec.ts — only needs its own addition to be findable. */
   frontPageFeed: 12,
+  /** live-front-page.spec.ts — only needs its own addition to be findable. */
+  liveFrontPage: 13,
 } as const;
 
 // bottle-future-date.spec.ts deliberately borrows `addFromList` rather than

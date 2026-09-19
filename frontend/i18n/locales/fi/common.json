@@ -26,6 +26,12 @@
       "hint": "Tänne kertyy toimintaa kellareista, jotka omistajansa ovat päättäneet tehdä julkisiksi.",
       "privateHint": "Oma kellarisi on yksityinen, joten sinun lisäyksesi eivät näy täällä.",
       "privateLink": "Tee kellarisi julkiseksi"
+    },
+    "live": {
+      "newEvents_one": "{{count}} uusi tapahtuma",
+      "newEvents_other": "{{count}} uutta tapahtumaa",
+      "stalled": "Sivun päivittäminen ei onnistu juuri nyt.",
+      "retry": "Yritä uudelleen"
     }
   },
   "catalog": {

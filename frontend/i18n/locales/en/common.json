@@ -26,6 +26,12 @@
       "hint": "This is where cellars people have chosen to make public show what they're adding.",
       "privateHint": "Your own cellar is private, so your additions won't show up here.",
       "privateLink": "Make your cellar public"
+    },
+    "live": {
+      "newEvents_one": "{{count}} new event",
+      "newEvents_other": "{{count}} new events",
+      "stalled": "Having trouble keeping this up to date.",
+      "retry": "Retry"
     }
   },
   "catalog": {

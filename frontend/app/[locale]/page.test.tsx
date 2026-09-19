@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FeedPage } from "@/features/feed";
 import { apiError } from "@/lib/api/api-error";
@@ -16,15 +17,17 @@ const line = (username: string, cursor: string) => ({
 const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
-// FeedList is a client component with its own test; this stands in for it and
-// records what the page handed it, which is the part Home is responsible for.
+// FeedList is a client component with its own test, including which of
+// `emptyState` or the list it renders — this stands in for it, records what
+// the page handed it (which is the part Home is responsible for), and always
+// renders `emptyState` so this file can assert on what Home built for it.
 const { feedListProps } = vi.hoisted(() => ({ feedListProps: vi.fn() }));
 
 vi.mock("@/features/feed", () => ({
   readFeed,
-  FeedList: (props: unknown) => {
+  FeedList: (props: { emptyState: ReactNode }) => {
     feedListProps(props);
-    return <div data-testid="feed-list" />;
+    return <div data-testid="feed-list">{props.emptyState}</div>;
   },
 }));
 vi.mock("@/features/profile", () => ({ getProfile }));
@@ -49,7 +52,7 @@ describe("generateMetadata", () => {
 });
 
 describe("Home", () => {
-  it("hands the feed it read to the feed list, rather than the empty state", async () => {
+  it("hands the feed it read to the feed list", async () => {
     const page: FeedPage = {
       content: [line("newer-user", "c2"), line("older-user", "c1")],
       nextCursor: undefined,
@@ -61,14 +64,13 @@ describe("Home", () => {
 
     expect(screen.getByText("Kalia")).toBeInTheDocument();
     expect(screen.getByTestId("feed-list")).toBeInTheDocument();
-    expect(screen.queryByText("Nothing here yet.")).not.toBeInTheDocument();
     expect(feedListProps).toHaveBeenCalledWith(
       expect.objectContaining({ locale: "en", initialPage: page }),
     );
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders the empty state for a signed-out visitor, with no private-cellar hint", async () => {
+  it("builds the empty state for a signed-out visitor, with no private-cellar hint", async () => {
     readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
 
     const { container } = render(await Home({ params }));
@@ -80,7 +82,7 @@ describe("Home", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders a differing empty state for a signed-in visitor whose own cellar is private", async () => {
+  it("builds a differing empty state for a signed-in visitor whose own cellar is private", async () => {
     readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
     auth.mockResolvedValue({ user: { name: "Ada" } });
     getProfile.mockResolvedValue({ username: "ada", cellarPublic: false });
