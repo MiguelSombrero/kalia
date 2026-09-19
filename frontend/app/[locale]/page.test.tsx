@@ -16,8 +16,17 @@ const line = (username: string, cursor: string) => ({
 const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
+// FeedList is a client component with its own test; this stands in for it and
+// records what the page handed it, which is the part Home is responsible for.
+const { feedListProps } = vi.hoisted(() => ({ feedListProps: vi.fn() }));
 
-vi.mock("@/features/feed", () => ({ readFeed, FeedList: () => null }));
+vi.mock("@/features/feed", () => ({
+  readFeed,
+  FeedList: (props: unknown) => {
+    feedListProps(props);
+    return <div data-testid="feed-list" />;
+  },
+}));
 vi.mock("@/features/profile", () => ({ getProfile }));
 vi.mock("@/auth", () => ({ auth }));
 
@@ -40,7 +49,7 @@ describe("generateMetadata", () => {
 });
 
 describe("Home", () => {
-  it("renders recent events newest-first for a signed-out visitor", async () => {
+  it("hands the feed it read to the feed list, rather than the empty state", async () => {
     const page: FeedPage = {
       content: [line("newer-user", "c2"), line("older-user", "c1")],
       nextCursor: undefined,
@@ -51,6 +60,11 @@ describe("Home", () => {
     const { container } = render(await Home({ params }));
 
     expect(screen.getByText("Kalia")).toBeInTheDocument();
+    expect(screen.getByTestId("feed-list")).toBeInTheDocument();
+    expect(screen.queryByText("Nothing here yet.")).not.toBeInTheDocument();
+    expect(feedListProps).toHaveBeenCalledWith(
+      expect.objectContaining({ locale: "en", initialPage: page }),
+    );
     expect(await axe(container)).toHaveNoViolations();
   });
 

@@ -14,14 +14,12 @@ const ALL_REQUIRED = {
 };
 
 describe("verifyRequiredConfiguration", () => {
-  it("names the missing variable when running in production without it", () => {
-    expect(() => verifyRequiredConfiguration({ NODE_ENV: "production" })).toThrow("BACKEND_URL");
-  });
+  it("names every variable missing in production, not just the first", () => {
+    const verifyWithNoneSet = () => verifyRequiredConfiguration({ NODE_ENV: "production" });
 
-  it("names every missing variable, not just the first", () => {
-    expect(() => verifyRequiredConfiguration({ NODE_ENV: "production" })).toThrow(
-      "AUTH_KEYCLOAK_ISSUER",
-    );
+    for (const name of Object.keys(ALL_REQUIRED).filter((key) => key !== "NODE_ENV")) {
+      expect(verifyWithNoneSet).toThrow(name);
+    }
   });
 
   it("rejects a blank value rather than accepting it as configured", () => {

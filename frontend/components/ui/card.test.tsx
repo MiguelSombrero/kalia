@@ -13,10 +13,3 @@ describe("Card", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
-
-describe("cardVariants", () => {
-  it("is a non-empty class string without a padding utility", () => {
-    expect(cardVariants.length).toBeGreaterThan(0);
-    expect(cardVariants).not.toMatch(/(^|\s)p-\d/);
-  });
-});

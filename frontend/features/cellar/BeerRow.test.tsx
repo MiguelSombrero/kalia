@@ -25,11 +25,14 @@ const row: CellarBeerRow = {
   bottleCount: 2,
 };
 
-const renderRow = (locale: "en" | "fi" = "en") => {
+// One locale only: react-i18next is mocked to raw keys here, so a second one
+// renders identical markup. Locale reaches nothing but the date wording,
+// which lib/relativeDate.test.ts covers in both languages.
+const renderRow = () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <BeerRow locale={locale} row={row} />
+      <BeerRow locale="en" row={row} />
     </QueryClientProvider>,
   );
 };
@@ -42,13 +45,6 @@ describe("BeerRow", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByRole("list")).not.toBeInTheDocument();
     expect(listCellarBottlesAction).not.toHaveBeenCalled();
-    expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("renders collapsed in Finnish with no a11y violations", async () => {
-    const { container } = renderRow("fi");
-
-    expect(screen.getByRole("button", { name: /Westvleteren 12/ })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -79,6 +75,13 @@ describe("BeerRow", () => {
     await waitFor(() => expect(listCellarBottlesAction).toHaveBeenCalledWith("e1"));
     const items = await screen.findAllByRole("listitem");
     expect(items).toHaveLength(2);
+    // Each row shows the dates its own bottle carries, not the entry's: only
+    // the second bottle has a best-before date on record.
+    expect(items[0]).toHaveTextContent("cellar.bottle.brewed");
+    expect(items[0]).not.toHaveTextContent("cellar.bottle.bestBefore");
+    expect(items[1]).toHaveTextContent("cellar.bottle.brewed");
+    expect(items[1]).toHaveTextContent("cellar.bottle.bestBefore");
+    // Different brewed dates, so the two rows never collapse into one reading.
     expect(items[0].textContent).not.toEqual(items[1].textContent);
 
     expect(await axe(container)).toHaveNoViolations();
