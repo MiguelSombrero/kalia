@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-08
+- **Amended:** 2026-09-19 by [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md)
+  — the theme now overrides one message key
 
 ## Context
 
@@ -83,6 +85,14 @@ own and overrides none of Keycloak's.**
   app), and the way they are kept from drifting is that neither ever
   translates the other's strings. The one Kalia-authored piece of the auth
   pages, the wordmark, is an image with no text to translate.
+
+  > **Amended 2026-09-19 ([ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md)).**
+  > This is no longer exactly true: `keycloak/themes/kalia/login/messages/`
+  > now exists and overrides `accountTemporarilyDisabledMessage`, in both
+  > locales — the one key where Keycloak's own translation is deliberately
+  > uninformative rather than merely something Kalia would have phrased
+  > differently. Every other string is still untouched, for the reason
+  > stated above.
 - **The verification and password-reset emails are localised by the same
   mechanism** — Keycloak sends them against the recipient's stored `locale`,
   set when they registered through a language-specific page — and are not

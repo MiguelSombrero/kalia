@@ -70,7 +70,7 @@ const resetKeycloakPassword = async (
   expect(response.ok(), `could not reset password for Keycloak user ${userId}`).toBeTruthy();
 };
 
-const createKeycloakUser = async (
+export const createKeycloakUser = async (
   apiRequest: APIRequestContext,
   adminToken: string,
   account: KeycloakAccount,
