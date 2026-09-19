@@ -12,7 +12,7 @@ import org.springframework.boot.test.json.JacksonTester;
 // A present "brewedDate": null doesn't match the generated `brewedDate?: string`
 // type; verifies the configured ObjectMapper omits null fields entirely.
 @JsonTest
-class DtoSerializationIT {
+class FeedDtoSerializationIT {
 
 	@Autowired
 	private JacksonTester<FeedLineDto> feedLineJson;

@@ -12,7 +12,7 @@ import org.springframework.boot.test.json.JacksonTester;
 // A present "city": null doesn't match the generated `city?: string` type;
 // verifies the configured ObjectMapper omits null fields entirely.
 @JsonTest
-class DtoSerializationIT {
+class CatalogDtoSerializationIT {
 
 	@Autowired
 	private JacksonTester<BeerDetailsDto> beerDetailsJson;
