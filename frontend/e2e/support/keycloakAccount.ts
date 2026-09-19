@@ -1,5 +1,7 @@
 import { expect, request, test as base, type APIRequestContext, type Page } from "@playwright/test";
+import Redis from "ioredis";
 import { KEYCLOAK_ORIGIN } from "./origins";
+import { clearSignUpRateLimit, VALKEY_URL } from "./valkey";
 
 const REALM = "kalia";
 const ACCOUNT_PASSWORD = "testuser123";
@@ -178,7 +180,10 @@ export const signIn = async (page: Page, account: KeycloakAccount): Promise<void
 // workerIndex: the latter is never reused for the life of the process (a
 // worker restart after a crash gets a new one), so it would grow the
 // provisioned-account pool past the worker count over a long or flaky run.
-export const test = base.extend<object, { account: KeycloakAccount }>({
+export const test = base.extend<
+  { signUpBudget: void },
+  { account: KeycloakAccount; valkey: Redis }
+>({
   account: [
     async ({}, use, workerInfo) => {
       const account: KeycloakAccount = {
@@ -197,6 +202,28 @@ export const test = base.extend<object, { account: KeycloakAccount }>({
       await use(account);
     },
     { scope: "worker" },
+  ],
+
+  valkey: [
+    async ({}, use) => {
+      const valkey = new Redis(VALKEY_URL);
+      await use(valkey);
+      await valkey.quit();
+    },
+    { scope: "worker" },
+  ],
+
+  // `auto`, so no spec has to remember: which tests reach /sign-up is not
+  // knowable from here, a spec is free to start registering later, and
+  // clearing a counter no test touched costs one DEL. Per test rather than
+  // once per run because CI retries a failing spec twice, which is exactly
+  // when the budget is tightest.
+  signUpBudget: [
+    async ({ valkey }, use) => {
+      await clearSignUpRateLimit(valkey);
+      await use();
+    },
+    { auto: true },
   ],
 });
 

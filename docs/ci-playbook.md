@@ -82,6 +82,23 @@ containers come up healthy. The 5-minute default overran on `dev` itself
 still overruns, the build itself is the thing to speed up (layer-cache the
 image in a CI step, then `docker compose up` without `--build`), not the timer.
 
+**Several registration specs time out waiting for `#username`, each passes in
+isolation, and which ones fail moves between runs.** The shared `/sign-up`
+rate limit is spent. It is one counter for every visitor, 20 attempts per 10
+minutes, by design ([ADR-0055](adr/0055-self-registration-via-keycloak.md)),
+and a full suite run spends about five: `sign-up.spec.ts` registers twice and
+`keycloak-branding.spec.ts` three times. Nothing expired them between runs, so
+roughly three consecutive `npm run test:e2e` runs exhausted the window — and
+once it is exhausted the Server Action redirects to
+`/sign-up?error=rate-limited` instead of Keycloak, so the specs never reach a
+registration form and fail on the `#username` wait with nothing in the trace
+naming a rate limit. Observed locally with the counter standing at 36; a
+`docker compose exec valkey valkey-cli del auth:sign-up-rate` from the repo
+root turned the same run 38/38 green. The suite now clears the counter before
+every test that uses the shared `test` fixture — how, and what a spec has to
+do to opt in, is in [frontend/README.md](../frontend/README.md). That `del` is
+still the one-line escape hatch if a spec ever registers outside it.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by
@@ -115,3 +132,27 @@ let a one-shot be waited on by the script that consumes it (each
 plain `up -d`. Cost ~10 min to spot on the branch for iteration 6.5 task 03,
 because the failing line had been piped to `tail` — which also hid it (see
 `implement-task` step 9: read `make` output from a file, not a pager).
+
+**`make verify` fails at `frontend-build` with a TypeScript error in a file
+your diff never touched.** In a newly created worktree, `frontend/node_modules`
+does not arrive in a state matching `package-lock.json` — `git worktree add`
+does not populate it, and a copied or previously-installed tree can be several
+bumps behind. The symptom is a type error, not a version complaint:
+`vitest.setup.ts(14,13): error TS2428: All declarations of 'Matchers' must have
+identical type parameters`, because that file re-declares vitest's `Matchers`
+for `jest-axe` against vitest 5's type shape while vitest 4 is what is actually
+installed. `npm test` passes throughout and prints `RUN v4.1.10` — that banner,
+compared against the lockfile, is the tell. Run `(cd frontend && npm ci)` before
+the first `make verify` in a fresh worktree. Observed 2026-09-19 on the branch
+for this file's sign-up rate-limit entry above.
+
+**`mvn` fails to compile the backend with
+`java.lang.ExceptionInInitializerError: com.sun.tools.javac.tree.EndPosTable`.**
+Lombok meeting a JDK newer than the one the build targets. `mvn` reads
+`JAVA_HOME`, which on a Mac with several JDKs installed is whichever one is
+first on the path — not necessarily the version `java -version` reports, and
+not necessarily `pom.xml`'s release. Pin it for the command:
+`JAVA_HOME=$(/usr/libexec/java_home -v 25) make verify`. The error names
+javac's internals rather than a version mismatch, and an *incremental* build
+that recompiles nothing at all skips it entirely — so a target can pass once
+and fail the next time without the tree changing.

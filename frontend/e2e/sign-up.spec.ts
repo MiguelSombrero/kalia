@@ -5,7 +5,7 @@
 // keycloak-email.spec.ts does. The first test also pins ADR-0033's
 // account-linking decision — see its comments below.
 import type { Page } from "@playwright/test";
-import Redis from "ioredis";
+import type Redis from "ioredis";
 import {
   createUnverifiedKeycloakUser,
   expect,
@@ -28,8 +28,8 @@ const SESSION_COOKIE_NAMES = ["authjs.session-token", "__Secure-authjs.session-t
 // straight out of Valkey (lib/auth/valkeyAdapter.ts's `auth:session:<token>`
 // record) — the identity Auth.js's account-linking resolves a sign-in to,
 // and the most direct way to prove two sign-ins reached the same one. Takes
-// an already-open client so a test calling this more than once shares one
-// connection instead of opening a fresh one per call.
+// the worker-scoped `valkey` fixture's client rather than opening its own, so
+// calling it twice in one test shares one connection.
 const kaliaUserId = async (page: Page, valkey: Redis): Promise<string> => {
   const cookies = await page.context().cookies();
   const sessionToken = cookies.find((cookie) => SESSION_COOKIE_NAMES.includes(cookie.name))?.value;
@@ -79,7 +79,11 @@ const startSignUp = async (page: Page) => {
 };
 
 test.describe("self-registration", () => {
-  test("register, verify, sign in, sign out, and sign in again", async ({ page, request }) => {
+  test("register, verify, sign in, sign out, and sign in again", async ({
+    page,
+    request,
+    valkey,
+  }) => {
     const username = `signup-${Date.now()}`;
     const email = `${username}@example.com`;
     const password = "correct-horse-battery";
@@ -107,7 +111,6 @@ test.describe("self-registration", () => {
     await expect(page).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}/en`));
     await expect(page.getByRole("link", { name: /^Profile: /i })).toBeVisible();
 
-    const valkey = new Redis("redis://localhost:6379");
     // This sign-in went through "keycloak-register" (ADR-0055); the account
     // index it wrote is filed under that provider id.
     const registeredUserId = await kaliaUserId(page, valkey);
@@ -128,7 +131,6 @@ test.describe("self-registration", () => {
     // because `allowDangerousEmailAccountLinking` is set. Confirmed to throw
     // `OAuthAccountNotLinked` here instead, with the flag unset.
     const secondUserId = await kaliaUserId(page, valkey);
-    await valkey.quit();
     expect(secondUserId).toBe(registeredUserId);
   });
 

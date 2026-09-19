@@ -117,6 +117,20 @@ only thing that clears any of this is `docker compose down -v`, which is not
 part of the normal test loop
 ([iteration 6.5 task 09](../docs/tasks/iteration-6.5/09-deterministic-test-accounts.md)).
 
+**The one exception, and the suite handles it itself.** `/sign-up` is rate
+limited by a single counter shared by every visitor, 20 attempts per 10
+minutes ([ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md)), and
+a full run spends about five of them — so without clearing it, three
+consecutive runs exhaust the window and every registering spec starts timing
+out on Keycloak's `#username`, saying nothing about rate limiting. The
+worker-scoped `valkey` fixture and the automatic `signUpBudget` fixture in
+`e2e/support/keycloakAccount.ts` clear the counter before each test, so a spec
+importing `test` from that support file needs no setup of its own. A spec that
+imports `test` straight from `@playwright/test` does not get this — if it
+registers, it either switches to the shared `test` or reaches
+`e2e/support/valkey.ts`'s `clearSignUpRateLimit` itself. The failure signature
+is in [docs/ci-playbook.md](../docs/ci-playbook.md).
+
 ## Conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning.
