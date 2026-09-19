@@ -576,6 +576,18 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   configuration under [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s
   drift check. Verification and reset mail is localised by the same
   mechanism; branding of mail stops at the `Kalia` sender name.
+- **Every Keycloak error page keeps a way back into Kalia**: the
+  `kalia-frontend` client carries `rootUrl`/`baseUrl`
+  (`keycloak/realm-export.json`, under
+  [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s drift check),
+  because Keycloak's own `error.ftl` renders its "Back to Application" link
+  only for a client that has a `baseUrl`. Without one those pages are dead
+  ends — and they are reachable from an emailed link, so the visitor has no
+  history to go back to. The case that exposed it: a verification link opened
+  in a browser already signed in as a *different* user, which Keycloak
+  deliberately refuses (`different_user_authenticated`, HTTP 400). The
+  refusal is correct and is left as it is; only the escape hatch was missing.
+  Pinned by `frontend/e2e/sign-up.spec.ts`.
 
 ## 7. Testing strategy
 

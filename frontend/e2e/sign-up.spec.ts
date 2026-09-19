@@ -11,6 +11,7 @@ import {
   expect,
   findKeycloakUser,
   keycloakAdminToken,
+  signIn,
   test,
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
@@ -129,6 +130,56 @@ test.describe("self-registration", () => {
     const secondUserId = await kaliaUserId(page, valkey);
     await valkey.quit();
     expect(secondUserId).toBe(registeredUserId);
+  });
+
+  // Regression: the verification link is emailed, so it is routinely opened in
+  // a different browser from the one that registered — and that browser may
+  // already hold an SSO session for someone else (a shared machine, or an
+  // older account of one's own). Keycloak deliberately refuses the token then,
+  // with a 400 and "already authenticated as different user". Its own
+  // error.ftl offers the only escape from that page — the "Back to
+  // Application" link — and renders it solely when the client carries a
+  // baseUrl (`<#if client?? && client.baseUrl?has_content>`). kalia-frontend
+  // had none, so the page was a dead end reachable only from an emailed link:
+  // no link, no button, the address bar the sole way out. What this asserts is
+  // that escape hatch, not Keycloak's refusal, which is correct and is left
+  // alone.
+  test("a verification link opened where someone else is signed in still offers a way back to Kalia", async ({
+    page,
+    browser,
+    request,
+    account,
+  }) => {
+    const username = `foreign-session-${Date.now()}`;
+    const email = `${username}@example.com`;
+
+    await startSignUp(page);
+    await fillProfileFields(page, { username, email });
+    await page.getByRole("button", { name: /register|sign.?up/i }).click();
+    await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
+
+    const link = linkFromMessage(await waitForMessageTo(request, email));
+
+    // A second browser context is the whole point: a fresh cookie jar that
+    // then signs in as the worker's own fixture account, so Keycloak sees an
+    // identity cookie for a *different* user than the token's subject.
+    const otherBrowser = await browser.newContext();
+    try {
+      const otherPage = await otherBrowser.newPage();
+      await otherPage.goto(`${FRONTEND_ORIGIN}/en`);
+      await signIn(otherPage, account);
+
+      await otherPage.goto(link);
+
+      await expect(otherPage.getByText(/already authenticated as different user/i)).toBeVisible();
+      const backToApplication = otherPage.getByRole("link", { name: /back to application/i });
+      await expect(backToApplication).toBeVisible();
+      // The link has to actually leave Keycloak for Kalia, not merely exist.
+      await backToApplication.click();
+      await expect(otherPage).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}`));
+    } finally {
+      await otherBrowser.close();
+    }
   });
 
   test("an unverified account cannot sign in — it stays on Keycloak's verify-email page", async ({

@@ -36,6 +36,8 @@
       "protocol": "openid-connect",
       "clientAuthenticatorType": "client-secret",
       "secret": "$(env:KALIA_FRONTEND_CLIENT_SECRET)",
+      "rootUrl": "$(env:FRONTEND_URL)",
+      "baseUrl": "$(env:FRONTEND_URL)",
       "redirectUris": ["$(env:FRONTEND_URL)/*"],
       "webOrigins": ["$(env:FRONTEND_URL)"],
       "standardFlowEnabled": true,
