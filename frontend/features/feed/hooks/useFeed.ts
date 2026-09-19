@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { pollFeedAction, readOlderFeedAction } from "../actions";
 import { LIVE_POLL_INTERVAL_MS } from "../constants";
 import type { FeedPage } from "../types";
@@ -42,9 +42,10 @@ export const useOlderFeed = (initialPage: FeedPage) => {
  * default staleTime has also elapsed. `retry: false` keeps each interval tick
  * to exactly one attempt rather than spending it on that tick's own retries.
  * `failureCount` is *not* a consecutive-ticks counter — it resets to 0 at the
- * start of every attempt (it counts one attempt's own retries) — so a caller
- * wanting "N ticks in a row have failed" tracks it from `dataUpdatedAt`/
- * `errorUpdatedAt` instead, as FeedList.tsx does.
+ * start of every attempt (it counts one attempt's own retries) — so
+ * `consecutiveFailures` below tracks it from `dataUpdatedAt`/`errorUpdatedAt`
+ * instead, each of which changes exactly once per attempt regardless of
+ * outcome.
  *
  * `since` is read through a ref, not a query-key dependency: the caller
  * advances it as new events are consumed, and folding it into the key would
@@ -60,7 +61,7 @@ export const usePollFeed = (since: string) => {
   }, [since]);
 
   // eslint-disable-next-line @tanstack/query/exhaustive-deps -- since is deliberately kept out of the key, see the doc comment above
-  return useQuery({
+  const query = useQuery({
     queryKey: pollFeedKey,
     queryFn: () => pollFeedAction(sinceRef.current),
     initialData: EMPTY_POLL_RESULT,
@@ -68,6 +69,26 @@ export const usePollFeed = (since: string) => {
     retry: false,
     refetchInterval: LIVE_POLL_INTERVAL_MS,
     refetchOnMount: false,
+    // Pinned rather than left at the library default: the catch-up-on-focus
+    // half of this hook's contract depends on it, and a later app-wide
+    // default change elsewhere must not silently take it away here.
+    refetchOnWindowFocus: true,
     refetchOnReconnect: false,
   });
+
+  const [consecutiveFailures, setConsecutiveFailures] = useState(0);
+  const lastErrorUpdatedAt = useRef(query.errorUpdatedAt);
+  const lastDataUpdatedAt = useRef(query.dataUpdatedAt);
+  useEffect(() => {
+    if (query.errorUpdatedAt !== lastErrorUpdatedAt.current) {
+      lastErrorUpdatedAt.current = query.errorUpdatedAt;
+      setConsecutiveFailures((prev) => prev + 1);
+    }
+    if (query.dataUpdatedAt !== lastDataUpdatedAt.current) {
+      lastDataUpdatedAt.current = query.dataUpdatedAt;
+      setConsecutiveFailures(0);
+    }
+  }, [query.dataUpdatedAt, query.errorUpdatedAt]);
+
+  return { data: query.data, refetch: query.refetch, consecutiveFailures };
 };

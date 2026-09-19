@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cardVariants } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { useOlderFeed, usePollFeed } from "./hooks/useFeed";
 import type { FeedLine, FeedPage } from "./types";
 
 type Props = { locale: Locale; now: string; initialPage: FeedPage; emptyState: ReactNode };
+
+const capped = (lines: FeedLine[]): FeedLine[] => lines.slice(0, FEED_LIST_CAP);
 
 /**
  * The server-rendered first page, continued backward as the visitor scrolls
@@ -41,7 +43,7 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
     latestFetch.current = { isFetchingNextPage, fetchNextPage };
   }, [isFetchingNextPage, fetchNextPage]);
 
-  const historyLines = data.pages.flatMap((page) => page.content);
+  const historyLines = useMemo(() => data.pages.flatMap((page) => page.content), [data.pages]);
 
   const [sinceCursor, setSinceCursor] = useState(() => initialPage.content[0]?.cursor ?? "");
   const [pendingLines, setPendingLines] = useState<FeedLine[]>([]);
@@ -67,42 +69,37 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
       window.location.reload();
       return;
     }
-    if (poll.data.content.length === 0) {
-      return;
+    if (poll.data.content.length > 0) {
+      const fresh = poll.data.content.filter((line) => !knownCursors.current.has(line.cursor));
+      if (fresh.length > 0) {
+        setPendingLines((prev) => capped([...fresh, ...prev]));
+      }
     }
-    const fresh = poll.data.content.filter((line) => !knownCursors.current.has(line.cursor));
-    if (fresh.length > 0) {
-      setPendingLines((prev) => [...fresh, ...prev].slice(0, FEED_LIST_CAP));
+    // A batch can be empty with a cursor still attached: every line in it
+    // resolved to a cellar that isn't public any more, filtered out after
+    // the page was already sized. Advancing past it is what lets the next
+    // poll reach whatever real event comes after, rather than re-reading
+    // the same filtered batch forever.
+    if (poll.data.content.length > 0 || poll.data.nextCursor) {
+      setSinceCursor(poll.data.nextCursor ?? poll.data.content[0]!.cursor);
     }
-    setSinceCursor(poll.data.nextCursor ?? poll.data.content[0]!.cursor);
   }, [poll.data]);
 
   const revealPending = () => {
-    setRevealedLines((prev) => [...pendingLines, ...prev].slice(0, FEED_LIST_CAP));
+    setRevealedLines((prev) => capped([...pendingLines, ...prev]));
     setPendingLines([]);
   };
 
-  // Counts consecutive failed ticks itself: poll.failureCount resets to 0 at
-  // the start of every attempt (it counts one attempt's own retries, moot
-  // here since retry is off), not across the separate attempts a recurring
-  // interval makes.
-  const [consecutiveFailures, setConsecutiveFailures] = useState(0);
-  const lastErrorUpdatedAt = useRef(poll.errorUpdatedAt);
-  const lastDataUpdatedAt = useRef(poll.dataUpdatedAt);
-  useEffect(() => {
-    if (poll.errorUpdatedAt !== lastErrorUpdatedAt.current) {
-      lastErrorUpdatedAt.current = poll.errorUpdatedAt;
-      setConsecutiveFailures((prev) => prev + 1);
-    }
-    if (poll.dataUpdatedAt !== lastDataUpdatedAt.current) {
-      lastDataUpdatedAt.current = poll.dataUpdatedAt;
-      setConsecutiveFailures(0);
-    }
-  }, [poll.dataUpdatedAt, poll.errorUpdatedAt]);
-
-  const isStalled = consecutiveFailures >= STALLED_AFTER_FAILURES;
-  const lines = [...revealedLines, ...historyLines].slice(0, FEED_LIST_CAP);
-  const canLoadMore = hasNextPage && lines.length < FEED_LIST_CAP;
+  const isStalled = poll.consecutiveFailures >= STALLED_AFTER_FAILURES;
+  const lines = useMemo(() => capped([...revealedLines, ...historyLines]), [revealedLines, historyLines]);
+  // `lines.length > 0` is part of the condition, not just the cap: the
+  // sentinel only ever renders alongside a non-empty list (below), and
+  // without this term here too, a feed that starts empty with more history
+  // behind it (every recent line filtered out, but `hasNextPage` true) would
+  // have `canLoadMore` already `true` before it has anything on screen —
+  // this effect's dependency would then see no change, and never re-run,
+  // when the list later gains its first line and the sentinel actually mounts.
+  const canLoadMore = hasNextPage && lines.length > 0 && lines.length < FEED_LIST_CAP;
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -129,7 +126,9 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
         </div>
       )}
       {lines.length === 0 ? (
-        emptyState
+        // Never alongside the control above: "Nothing here yet" beside "1 new
+        // event" would tell the visitor two contradictory things at once.
+        pendingLines.length === 0 && emptyState
       ) : (
         <>
           <ul className="flex flex-col gap-3">

@@ -1,4 +1,4 @@
-import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, notifyManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
@@ -10,6 +10,16 @@ import fiCommon from "@/i18n/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
 import { FEED_LIST_CAP, LIVE_POLL_INTERVAL_MS, STALLED_AFTER_FAILURES } from "./constants";
 import type { FeedPage } from "./types";
+
+// query-core's notifyManager schedules a background update's React
+// notification through a real `setTimeout(fn, 0)`, which measurably never
+// fires within `vi.advanceTimersByTimeAsync` under Vitest's fake timers —
+// the query cache updates (confirmed by reading it directly) but the
+// component never re-renders on its own. Runs it synchronously instead, so
+// `act(() => vi.advanceTimersByTimeAsync(...))` alone is enough to observe a
+// poll tick's result, the same as a real browser's own event loop would a
+// moment later.
+notifyManager.setScheduler((callback) => callback());
 
 const { readOlderFeedAction, pollFeedAction } = vi.hoisted(() => ({
   readOlderFeedAction: vi.fn(),
@@ -81,18 +91,7 @@ const renderList = (initialPage: FeedPage, locale: Locale = "en", emptyState: Re
   });
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
-  // A function, not a memoized element: TanStack Query notifies React of a
-  // background update (e.g. a poll tick) through a real `setTimeout(fn, 0)`
-  // (query-core's notifyManager), which measurably does not fire within
-  // `vi.advanceTimersByTimeAsync` under Vitest's fake timers — the query
-  // cache updates (confirmed by reading it directly) but the component never
-  // re-renders on its own. Re-rendering picks up the fresh snapshot instead,
-  // the way a real browser's own event loop would have a tick later — but
-  // only when given a genuinely new element each call: React bails out of
-  // reconciling (and never re-invokes FeedList) when `rerender()` receives
-  // the exact same element reference back (confirmed by comparison against
-  // RTL's own renderHook, which builds a fresh element per rerender call).
-  const buildElement = () => (
+  return render(
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <FeedList
@@ -102,19 +101,13 @@ const renderList = (initialPage: FeedPage, locale: Locale = "en", emptyState: Re
           emptyState={emptyState}
         />
       </I18nextProvider>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
-  const view = render(buildElement());
-  const poke = () => view.rerender(buildElement());
-  return { ...view, poke };
 };
 
 const emptyPoll = (): FeedPage => ({ content: [], nextCursor: undefined, startOver: false });
 
-const advancePoll = async (poke: () => void, ms = LIVE_POLL_INTERVAL_MS) => {
-  await act(() => vi.advanceTimersByTimeAsync(ms));
-  act(poke);
-};
+const advancePoll = (ms = LIVE_POLL_INTERVAL_MS) => act(() => vi.advanceTimersByTimeAsync(ms));
 
 beforeEach(() => {
   readOlderFeedAction.mockReset();
@@ -229,14 +222,14 @@ describe("FeedList live polling", () => {
     pollFeedAction.mockResolvedValue({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
     vi.useFakeTimers();
     try {
-      const { poke } = renderList(
+      renderList(
         { content: [], nextCursor: undefined, startOver: false },
         "en",
         <p>Nothing here yet.</p>,
       );
       expect(screen.getByText("Nothing here yet.")).toBeInTheDocument();
 
-      await advancePoll(poke);
+      await advancePoll();
 
       // Started with no cursor at all — the backend treats a blank `since`
       // the same as no cursor, reading the most recent page instead.
@@ -250,12 +243,88 @@ describe("FeedList live polling", () => {
     }
   });
 
+  it("never shows the empty state next to the new-events control", async () => {
+    pollFeedAction.mockResolvedValue({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+    vi.useFakeTimers();
+    try {
+      renderList(
+        { content: [], nextCursor: undefined, startOver: false },
+        "en",
+        <p>Nothing here yet.</p>,
+      );
+
+      await advancePoll();
+
+      expect(screen.getByRole("button", { name: "1 new event" })).toBeInTheDocument();
+      expect(screen.queryByText("Nothing here yet.")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("can still load older history once a feed that started empty gains its first line", async () => {
+    // Every line in the first page resolved to a cellar that isn't public
+    // any more, leaving content empty but hasNextPage true from the very
+    // first render.
+    readOlderFeedAction.mockResolvedValue({
+      content: [line("older", "zoe")],
+      nextCursor: undefined,
+      startOver: false,
+    });
+    pollFeedAction.mockResolvedValue({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [], nextCursor: "c0", startOver: false }, "en", <p>empty</p>);
+
+      await advancePoll();
+      act(() => screen.getByRole("button", { name: "1 new event" }).click());
+      expect(screen.getByRole("link", { name: "alice" })).toBeInTheDocument();
+
+      expect(screen.getByRole("status")).toBeInTheDocument();
+      // async act, not waitFor: waitFor's own retry is real-timer-based and
+      // would hang under vi.useFakeTimers(); an async act still flushes the
+      // mocked action's microtask-resolved promise before returning.
+      await act(async () => {
+        intersectionObserverInstances[0]!.trigger(true);
+      });
+
+      expect(readOlderFeedAction).toHaveBeenCalledWith("c0");
+      expect(screen.getByRole("link", { name: "zoe" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("advances past a batch that came back empty but still carries a cursor", async () => {
+    // Every line in this batch resolved to a cellar that isn't public any
+    // more — content is empty, but nextCursor says there is more beyond it.
+    pollFeedAction.mockResolvedValueOnce({ content: [], nextCursor: "c-skip", startOver: false });
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      await advancePoll();
+      expect(pollFeedAction).toHaveBeenNthCalledWith(1, "c1");
+
+      pollFeedAction.mockResolvedValueOnce({
+        content: [line("c-new", "bob")],
+        nextCursor: undefined,
+        startOver: false,
+      });
+      await advancePoll();
+
+      expect(pollFeedAction).toHaveBeenNthCalledWith(2, "c-skip");
+      expect(screen.getByRole("button", { name: "1 new event" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("surfaces a new-events control and holds arrivals out of the list until it is activated", async () => {
     pollFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
     vi.useFakeTimers();
     try {
-      const { poke } = renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
-      await advancePoll(poke);
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      await advancePoll();
 
       expect(screen.queryByRole("link", { name: "bob" })).not.toBeInTheDocument();
       const control = screen.getByRole("button", { name: "1 new event" });
@@ -271,10 +340,10 @@ describe("FeedList live polling", () => {
   it("stops polling while the tab is hidden and catches up once it is focused again", async () => {
     vi.useFakeTimers();
     try {
-      const { poke } = renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
       focusManager.setFocused(false);
 
-      await advancePoll(poke, LIVE_POLL_INTERVAL_MS * 3);
+      await advancePoll(LIVE_POLL_INTERVAL_MS * 3);
       expect(pollFeedAction).not.toHaveBeenCalled();
 
       pollFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
@@ -282,7 +351,6 @@ describe("FeedList live polling", () => {
         focusManager.setFocused(true);
         await vi.advanceTimersByTimeAsync(0);
       });
-      act(poke);
 
       expect(pollFeedAction).toHaveBeenCalledWith("c1");
       expect(screen.getByRole("button", { name: "1 new event" })).toBeInTheDocument();
@@ -299,8 +367,8 @@ describe("FeedList live polling", () => {
         nextCursor: undefined,
         startOver: false,
       });
-      const { poke } = renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
-      await advancePoll(poke);
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      await advancePoll();
 
       // Redelivers c2 alongside a genuinely new c3 (ADR-0060: at-least-once delivery).
       pollFeedAction.mockResolvedValueOnce({
@@ -308,7 +376,7 @@ describe("FeedList live polling", () => {
         nextCursor: undefined,
         startOver: false,
       });
-      await advancePoll(poke);
+      await advancePoll();
 
       expect(screen.getByRole("button", { name: "2 new events" })).toBeInTheDocument();
     } finally {
@@ -320,15 +388,15 @@ describe("FeedList live polling", () => {
     vi.useFakeTimers();
     try {
       pollFeedAction.mockRejectedValueOnce(new Error("network error"));
-      const { poke } = renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
-      await advancePoll(poke);
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      await advancePoll();
 
       pollFeedAction.mockResolvedValueOnce({
         content: [line("c2", "bob")],
         nextCursor: undefined,
         startOver: false,
       });
-      await advancePoll(poke);
+      await advancePoll();
 
       expect(pollFeedAction).toHaveBeenNthCalledWith(1, "c1");
       expect(pollFeedAction).toHaveBeenNthCalledWith(2, "c1");
@@ -342,14 +410,14 @@ describe("FeedList live polling", () => {
     vi.useFakeTimers();
     try {
       pollFeedAction.mockRejectedValue(new Error("network error"));
-      const { poke } = renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
 
       for (let i = 0; i < STALLED_AFTER_FAILURES - 1; i++) {
-        await advancePoll(poke);
+        await advancePoll();
       }
       expect(screen.queryByText("Having trouble keeping this up to date.")).not.toBeInTheDocument();
 
-      await advancePoll(poke);
+      await advancePoll();
       expect(screen.getByText("Having trouble keeping this up to date.")).toBeInTheDocument();
 
       pollFeedAction.mockResolvedValue(emptyPoll());
@@ -357,7 +425,6 @@ describe("FeedList live polling", () => {
         screen.getByRole("button", { name: "Retry" }).click();
         await vi.advanceTimersByTimeAsync(0);
       });
-      act(poke);
 
       expect(screen.queryByText("Having trouble keeping this up to date.")).not.toBeInTheDocument();
     } finally {
@@ -373,8 +440,8 @@ describe("FeedList live polling", () => {
     });
     vi.useFakeTimers();
     try {
-      const { poke } = renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
-      await advancePoll(poke);
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      await advancePoll();
 
       const control = screen.getByRole("button", { name: `${FEED_LIST_CAP} new events` });
       act(() => control.click());
@@ -392,10 +459,10 @@ describe("FeedList live polling", () => {
     pollFeedAction.mockResolvedValue({ content: [line("new", "amy")], nextCursor: undefined, startOver: false });
     vi.useFakeTimers();
     try {
-      const { poke } = renderList(firstPage);
+      renderList(firstPage);
       expect(screen.getByRole("status")).toBeInTheDocument();
 
-      await advancePoll(poke);
+      await advancePoll();
       act(() => screen.getByRole("button", { name: "1 new event" }).click());
 
       expect(screen.getAllByRole("listitem")).toHaveLength(FEED_LIST_CAP);
@@ -410,12 +477,12 @@ describe("FeedList live polling", () => {
     pollFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
     vi.useFakeTimers();
     try {
-      const { container, poke } = renderList({
+      const { container } = renderList({
         content: [line("c1", "alice")],
         nextCursor: undefined,
         startOver: false,
       });
-      await advancePoll(poke);
+      await advancePoll();
       vi.useRealTimers();
 
       expect(await axe(container)).toHaveNoViolations();
@@ -428,11 +495,11 @@ describe("FeedList live polling", () => {
     pollFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
     vi.useFakeTimers();
     try {
-      const { container, poke } = renderList(
+      const { container } = renderList(
         { content: [line("c1", "alice")], nextCursor: undefined, startOver: false },
         "fi",
       );
-      await advancePoll(poke);
+      await advancePoll();
       vi.useRealTimers();
 
       expect(await axe(container)).toHaveNoViolations();
