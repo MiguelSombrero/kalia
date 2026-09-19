@@ -82,6 +82,23 @@ containers come up healthy. The 5-minute default overran on `dev` itself
 still overruns, the build itself is the thing to speed up (layer-cache the
 image in a CI step, then `docker compose up` without `--build`), not the timer.
 
+**Several registration specs time out waiting for `#username`, each passes in
+isolation, and which ones fail moves between runs.** The shared `/sign-up`
+rate limit is spent. It is one counter for every visitor, 20 attempts per 10
+minutes, by design ([ADR-0055](adr/0055-self-registration-via-keycloak.md)),
+and a full suite run spends about five: `sign-up.spec.ts` registers twice and
+`keycloak-branding.spec.ts` three times. Nothing expired them between runs, so
+roughly three consecutive `npm run test:e2e` runs exhausted the window — and
+once it is exhausted the Server Action redirects to
+`/sign-up?error=rate-limited` instead of Keycloak, so the specs never reach a
+registration form and fail on the `#username` wait with nothing in the trace
+naming a rate limit. Observed locally with the counter standing at 36; a
+`docker compose exec valkey valkey-cli del auth:sign-up-rate` from the repo
+root turned the same run 38/38 green. The suite now clears the counter before
+every test that uses the shared `test` fixture — how, and what a spec has to
+do to opt in, is in [frontend/README.md](../frontend/README.md). That `del` is
+still the one-line escape hatch if a spec ever registers outside it.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by
