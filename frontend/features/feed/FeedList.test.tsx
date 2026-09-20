@@ -406,6 +406,25 @@ describe("FeedList live polling", () => {
     }
   });
 
+  it("reloads instead of retrying once the poll reports startOver", async () => {
+    // A since cursor that no longer verifies — most concretely, a backend
+    // restart mid-session (actions.ts's pollFeedAction) — has no partial
+    // catch-up, unlike a transient failure: only a fresh page recovers it.
+    const reload = vi.fn();
+    vi.spyOn(window, "location", "get").mockReturnValue({ ...window.location, reload });
+    pollFeedAction.mockResolvedValue({ content: [], nextCursor: undefined, startOver: true });
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+
+      await advancePoll();
+
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("surfaces the stalled notice after repeated failures, and a successful poll clears it", async () => {
     vi.useFakeTimers();
     try {

@@ -1,5 +1,6 @@
 "use server";
 
+import { isApiError } from "@/lib/api/api-error";
 import { FEED_PAGE_SIZE } from "./constants";
 import { readFeed } from "./api";
 import type { FeedPage } from "./types";
@@ -17,5 +18,19 @@ export const readOlderFeedAction = async (before: string): Promise<FeedPage> => 
 // (ADR-0060), so the simplest thing that stays correct is to let polling's
 // own cadence catch up.
 export const pollFeedAction = async (since: string): Promise<FeedPage> => {
-  return readFeed({ since });
+  try {
+    return await readFeed({ since });
+  } catch (error) {
+    // A since cursor 400s only when it stops verifying — most concretely,
+    // FeedCursorCodec.java's signing key was minted fresh by a backend
+    // restart mid-session. Indistinguishable here from the aged-past-window
+    // case FeedService.readSince already reports as startOver, and just as
+    // unrecoverable without a fresh page, so it is folded into that same
+    // signal rather than retried forever against a cursor that will never
+    // verify again.
+    if (isApiError(error) && error.kind === "http" && error.status === 400) {
+      return { content: [], nextCursor: undefined, startOver: true };
+    }
+    throw error;
+  }
 };
