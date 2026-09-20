@@ -13,7 +13,10 @@ import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.lang.conditions.ArchConditions;
 import fi.kalia.identity.application.CurrentUserService;
 import jakarta.persistence.Entity;
@@ -70,6 +73,9 @@ class ArchitectureTest {
 			.because("HTTP is a web-layer concern (ADR-0007); module-neutral "
 					+ "advice lives in the one sanctioned fi.kalia.web location (ADR-0014)")
 			.allowEmptyShould(false);
+
+	@ArchTest
+	static final ArchRule moduleAdviceDeclaresBasePackages = moduleAdviceDeclaresBasePackages(BASE_PACKAGE);
 
 	@ArchTest
 	static final ArchRule entitiesLiveInDomain = classes()
@@ -158,6 +164,28 @@ class ArchitectureTest {
 				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.web..")
 				.because("dependencies point inward: web → application → domain (ADR-0007)")
 				.allowEmptyShould(false);
+	}
+
+	/** Parameterised for the reason {@link #domainDependsOnNoOuterLayer(String)} gives. */
+	static ArchRule moduleAdviceDeclaresBasePackages(String basePackage) {
+		return classes()
+				.that().areAnnotatedWith(RestControllerAdvice.class)
+				.and().resideOutsideOfPackage(basePackage + ".web..")
+				.should(declareBasePackages())
+				.because("basePackages is the scoping convention (ADR-0014, backend/README.md); "
+						+ "without it an advice answers for every controller in the application")
+				.allowEmptyShould(false);
+	}
+
+	private static ArchCondition<JavaClass> declareBasePackages() {
+		return new ArchCondition<>("declare a non-empty basePackages") {
+			@Override
+			public void check(JavaClass javaClass, ConditionEvents events) {
+				boolean satisfied = javaClass.getAnnotationOfType(RestControllerAdvice.class).basePackages().length > 0;
+				events.add(new SimpleConditionEvent(javaClass, satisfied,
+						javaClass.getName() + " declares no basePackages"));
+			}
+		};
 	}
 
 	// The other layer rules only constrain classes inside .domain/.application/

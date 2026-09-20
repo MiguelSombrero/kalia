@@ -1,6 +1,6 @@
 # Task 12: Scope each module's exception advice to its own module
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -91,18 +91,18 @@ advice is added unscoped.
 
 ## Acceptance criteria
 
-- [ ] An exception type handled by one module's advice is **not** handled by it
+- [x] An exception type handled by one module's advice is **not** handled by it
       when thrown from another module's controller — integration test,
       confirmed to fail against the current unscoped advices
-- [ ] `fi.kalia.web`'s global advice still answers on every module's endpoints
+- [x] `fi.kalia.web`'s global advice still answers on every module's endpoints
       — integration test covering at least two modules
-- [ ] A new unscoped `@RestControllerAdvice` outside `fi.kalia.web` fails the
+- [x] A new unscoped `@RestControllerAdvice` outside `fi.kalia.web` fails the
       build, and that guard is itself exercised against a violating fixture
       under `backend/src/test/java/archfixture/` rather than only against
       compliant code
-- [ ] `backend/README.md`'s exception-handling convention names `basePackages`
+- [x] `backend/README.md`'s exception-handling convention names `basePackages`
       as the scoping attribute a new module's advice must carry
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 
