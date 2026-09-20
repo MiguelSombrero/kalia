@@ -32,6 +32,15 @@ of it and never opens the ADR.
 Apply the test by naming the fact. If you cannot say what a comment carries
 that the repository does not, delete it.
 
+**Decide by re-reading the finished, tested diff, not while first drafting
+it.** A comment that seemed worth adding mid-draft often isn't once the code
+is done — you were explaining your own thinking to yourself, not a fact a
+later reader lacks. One written once you've just closed a real trap (a bug
+fix, a review finding) is the opposite case and usually earns its place
+immediately. `git diff | grep -E "^\+.*(//|\*)"` finds every comment line an
+edit is about to add, or already added, so this re-check has something
+concrete to run against instead of relying on memory of what got written.
+
 ## Let the enforcement mechanism set the weight
 
 - Breaking the invariant **fails a test, an ArchUnit rule or the build** →
