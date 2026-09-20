@@ -1,6 +1,6 @@
 # Task 16: An out-of-set `sort` value 400s the catalog page instead of degrading
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -103,20 +103,20 @@ throwing.
 
 ## Acceptance criteria
 
-- [ ] A request for `/en/beers?sort=abv,dsc` (unrecognized direction) renders
+- [x] A request for `/en/beers?sort=abv,dsc` (unrecognized direction) renders
       the catalog page sorted by `name,asc` rather than the app-wide error
       boundary — automated test, confirmed to fail against the current
       pass-through
-- [ ] A request for a malformed `sort` with more than two comma-separated
+- [x] A request for a malformed `sort` with more than two comma-separated
       parts (e.g. `/en/beers?sort=abv,asc,extra`) also renders the catalog
       page sorted by `name,asc` rather than the app-wide error boundary —
       automated test, confirmed to fail against the current pass-through
-- [ ] `npm test` covers the chosen validation point falling back to exactly
+- [x] `npm test` covers the chosen validation point falling back to exactly
       `name,asc` for both invalid shapes above
-- [ ] The five values `SearchFilters` actually sends (`name,asc`, `name,desc`,
+- [x] The five values `SearchFilters` actually sends (`name,asc`, `name,desc`,
       `abv,asc`, `abv,desc`, `style,asc`) are still accepted unchanged —
       verified in a browser, not only against the test suite
-- [ ] `SearchFilters.tsx`'s five `<option>` values and the new validation
+- [x] `SearchFilters.tsx`'s five `<option>` values and the new validation
       guard both read from one exported list — no second hardcoded copy of
       the five literals
 

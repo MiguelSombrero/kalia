@@ -83,6 +83,39 @@ describe("searchBeers", () => {
     expect(error).toMatchObject({ name: "ApiError", kind: "http", status: 503 });
     expect((error as Error).message).toBe("Beer search failed with status 503");
   });
+
+  it.each(["name,asc", "name,desc", "abv,asc", "abv,desc", "style,asc"])(
+    "sends %s unchanged — the values SearchFilters actually offers",
+    async (sort) => {
+      const fetchMock = vi.fn(async () => Response.json(emptyPage));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await searchBeers({ sort });
+
+      expect(requestUrl(fetchMock).searchParams.get("sort")).toBe(sort);
+    },
+  );
+
+  it("omits sort rather than sending it, when the param is absent", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await searchBeers({});
+
+    expect(requestUrl(fetchMock).searchParams.has("sort")).toBe(false);
+  });
+
+  it.each([
+    ["abv,dsc", "an unrecognized direction"],
+    ["abv,asc,extra", "more than two comma-separated parts"],
+  ])("falls back to name,asc for %s (%s) rather than reaching the backend", async (sort) => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await searchBeers({ sort });
+
+    expect(requestUrl(fetchMock).searchParams.get("sort")).toBe("name,asc");
+  });
 });
 
 const beerId = "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f";

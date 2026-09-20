@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import type { BeerSearchParams } from "./types";
+import { DEFAULT_SORT, SORT_OPTIONS, type BeerSearchParams } from "./types";
 
 const inputClasses =
   "w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-foreground";
@@ -96,12 +96,12 @@ export const SearchFilters = async ({
           <label htmlFor="sort" className="mb-1 block text-sm font-medium">
             {t("catalog.filters.sortLabel")}
           </label>
-          <select id="sort" name="sort" defaultValue={params.sort ?? "name,asc"} className={inputClasses}>
-            <option value="name,asc">{t("catalog.filters.sortNameAsc")}</option>
-            <option value="name,desc">{t("catalog.filters.sortNameDesc")}</option>
-            <option value="abv,asc">{t("catalog.filters.sortAbvAsc")}</option>
-            <option value="abv,desc">{t("catalog.filters.sortAbvDesc")}</option>
-            <option value="style,asc">{t("catalog.filters.sortStyleAsc")}</option>
+          <select id="sort" name="sort" defaultValue={params.sort ?? DEFAULT_SORT} className={inputClasses}>
+            {SORT_OPTIONS.map(({ value, labelKey }) => (
+              <option key={value} value={value}>
+                {t(labelKey)}
+              </option>
+            ))}
           </select>
         </div>
         <Button type="submit">{t("catalog.filters.submit")}</Button>
