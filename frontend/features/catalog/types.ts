@@ -18,3 +18,16 @@ export type BeerSearchParams = {
   size?: string;
   sort?: string;
 };
+
+/** The `sort` values `SearchFilters` offers, and `api.ts` validates against. */
+export const SORT_OPTIONS = [
+  { value: "name,asc", labelKey: "catalog.filters.sortNameAsc" },
+  { value: "name,desc", labelKey: "catalog.filters.sortNameDesc" },
+  { value: "abv,asc", labelKey: "catalog.filters.sortAbvAsc" },
+  { value: "abv,desc", labelKey: "catalog.filters.sortAbvDesc" },
+  { value: "style,asc", labelKey: "catalog.filters.sortStyleAsc" },
+] as const;
+
+export type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+
+export const DEFAULT_SORT: SortValue = "name,asc";
