@@ -32,27 +32,20 @@ export const useOlderFeed = (initialPage: FeedPage) => {
 };
 
 /**
- * Polls for events after `since` on an interval. TanStack Query's own
- * `refetchInterval` already skips the actual fetch while the tab is hidden
- * (`refetchIntervalInBackground` defaults to false) and `refetchOnWindowFocus`
- * already re-fetches the moment it is focused again — this hook adds nothing
- * of its own for that behaviour, per ADR-0060's "no hand-rolled visibility
- * listener" seam. `staleTime: 0` overrides the QueryClient's 60s default
- * (ADR-0008) so a focus regain always re-fetches rather than only when the
- * default staleTime has also elapsed. `retry: false` keeps each interval tick
- * to exactly one attempt rather than spending it on that tick's own retries.
- * `failureCount` is *not* a consecutive-ticks counter — it resets to 0 at the
- * start of every attempt (it counts one attempt's own retries) — so
- * `consecutiveFailures` below tracks it from `dataUpdatedAt`/`errorUpdatedAt`
- * instead, each of which changes exactly once per attempt regardless of
- * outcome.
+ * `refetchIntervalInBackground` defaults to false, so TanStack Query itself
+ * already skips fetching while the tab is hidden and catches up on focus
+ * regain (ADR-0060: no hand-rolled visibility listener). `staleTime: 0`
+ * overrides the QueryClient's 60s default (ADR-0008) — a focus-triggered
+ * refetch only fires when data is stale, so without this a focus regain
+ * inside that 60s window would silently do nothing.
  *
- * `since` is read through a ref, not a query-key dependency: the caller
- * advances it as new events are consumed, and folding it into the key would
- * restart the interval on every arrival instead of polling continuously —
- * the same reason FeedList.tsx reads fetchNextPage/isFetchingNextPage through
- * a ref rather than an effect dependency. The queryFn deliberately does not
- * depend on the queryKey for this.
+ * `failureCount` is *not* a consecutive-ticks counter: it resets to 0 at the
+ * start of every attempt, so `consecutiveFailures` below tracks it from
+ * `dataUpdatedAt`/`errorUpdatedAt` instead.
+ *
+ * `since` is read through a ref rather than a query-key dependency: changing
+ * the key would restart TanStack Query's interval scheduling on every
+ * arrival instead of polling continuously.
  */
 export const usePollFeed = (since: string) => {
   const sinceRef = useRef(since);

@@ -20,10 +20,9 @@ const capped = (lines: FeedLine[]): FeedLine[] => lines.slice(0, FEED_LIST_CAP);
  * and forward as new events poll in. `now` is threaded in from the server
  * render rather than read afresh here — see lib/relativeInstant.ts's caller
  * contract for why a second `new Date()` would diverge from what was already
- * painted. `emptyState` is rendered by this component rather than its caller
- * (`page.tsx`) precisely because it must keep polling and can transition out
- * of empty on its own — a page that starts with nothing yet is exactly the
- * case where staying live matters most.
+ * painted. `emptyState` is rendered here rather than by `page.tsx` choosing
+ * between this component and it: a feed that starts empty must keep polling
+ * and can still go live on its own, which page.tsx alone deciding cannot do.
  */
 export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
   const { t } = useTranslation();
@@ -50,11 +49,10 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
   const [revealedLines, setRevealedLines] = useState<FeedLine[]>([]);
   const poll = usePollFeed(sinceCursor);
 
-  // Every currently known cursor, so a redelivered event (ADR-0060: delivery
-  // is at-least-once) is dropped rather than rendered twice. Synced after
-  // render, ahead of the effect below in source order, rather than computed
-  // inside that effect's closure — the same ref-after-render shape as
-  // latestFetch above.
+  // ADR-0060: delivery is at-least-once, so a redelivered event must be
+  // dropped rather than rendered twice. This effect must run before the one
+  // below in source order, since that one reads knownCursors.current
+  // synchronously rather than depending on it.
   const knownCursors = useRef<Set<string>>(new Set());
   useEffect(() => {
     knownCursors.current = new Set(
