@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
-import { pollFeedAction, readOlderFeedAction } from "../actions";
+import { pollFeedAction, readOlderFeedAction, type OlderFeedPage } from "../actions";
 import { LIVE_POLL_INTERVAL_MS } from "../constants";
 import type { FeedPage } from "../types";
 
@@ -28,7 +28,7 @@ const EMPTY_POLL_RESULT: FeedPage = { content: [], nextCursor: undefined, startO
  */
 export const useOlderFeed = (initialPage: FeedPage) => {
   const mountId = useId();
-  return useInfiniteQuery({
+  return useInfiniteQuery<OlderFeedPage>({
     queryKey: [...feedKey, mountId],
     queryFn: ({ pageParam }) => readOlderFeedAction(pageParam as string),
     initialPageParam: null as string | null,

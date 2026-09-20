@@ -32,6 +32,12 @@
       "newEvents_other": "{{count}} uutta tapahtumaa",
       "stalled": "Sivun päivittäminen ei onnistu juuri nyt.",
       "retry": "Yritä uudelleen"
+    },
+    "older": {
+      "failed": "Vanhempien tapahtumien lataus ei onnistunut.",
+      "retry": "Yritä uudelleen",
+      "cursorExpired": "Vanhempien tapahtumien lataus ei onnistu enää — päivitä sivu jatkaaksesi.",
+      "reload": "Päivitä sivu"
     }
   },
   "catalog": {

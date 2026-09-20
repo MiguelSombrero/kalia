@@ -32,6 +32,12 @@
       "newEvents_other": "{{count}} new events",
       "stalled": "Having trouble keeping this up to date.",
       "retry": "Retry"
+    },
+    "older": {
+      "failed": "Couldn't load more history.",
+      "retry": "Try again",
+      "cursorExpired": "Couldn't load more history — refresh the page to continue.",
+      "reload": "Refresh page"
     }
   },
   "catalog": {
