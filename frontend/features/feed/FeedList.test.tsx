@@ -411,7 +411,7 @@ describe("FeedList live polling", () => {
     // restart mid-session (actions.ts's pollFeedAction) — has no partial
     // catch-up, unlike a transient failure: only a fresh page recovers it.
     const reload = vi.fn();
-    vi.spyOn(window, "location", "get").mockReturnValue({ ...window.location, reload });
+    const location = vi.spyOn(window, "location", "get").mockReturnValue({ ...window.location, reload });
     pollFeedAction.mockResolvedValue({ content: [], nextCursor: undefined, startOver: true });
     vi.useFakeTimers();
     try {
@@ -422,6 +422,7 @@ describe("FeedList live polling", () => {
       expect(reload).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
+      location.mockRestore();
     }
   });
 
