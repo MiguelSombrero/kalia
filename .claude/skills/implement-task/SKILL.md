@@ -40,8 +40,12 @@ their own condition from that ADR before they apply.
    research".
 5. Write or update tests with the code and get the relevant suites green —
    `CLAUDE.md` "Test-first", verified by actually running the change.
-6. Re-read the diff and add only the comments that pass
-   `.claude/rules/code-comments.md`'s test.
+6. `git diff | grep -E "^\+.*(//|\*)"` to find every comment line the diff
+   has added so far, including ones written inline during step 4 despite its
+   instruction not to — that instruction is a target, not a guarantee, so
+   this step re-checks rather than assumes it held. Name the fact each one
+   carries against `.claude/rules/code-comments.md`'s test; delete or trim
+   whatever can't name one.
 7. Doc-sync: re-read the touched sections of `docs/architecture.md`, the task
    file's iteration index, and any ADRs the change touches, and update them
    or record in the pull request that they were checked — `CLAUDE.md`
