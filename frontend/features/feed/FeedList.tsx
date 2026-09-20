@@ -27,7 +27,13 @@ const capped = (lines: FeedLine[]): FeedLine[] => lines.slice(0, FEED_LIST_CAP);
 export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
   const { t } = useTranslation();
   const [renderedAt] = useState(() => new Date(now));
-  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useOlderFeed(initialPage);
+  const { data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
+    useOlderFeed(initialPage);
+  // A permanently invalid cursor arrives via `data`, not `error` — actions.ts
+  // resolves it into the last page instead of throwing (see OlderFeedPage).
+  // Its empty nextCursor already turns hasNextPage off, so the sentinel needs
+  // no separate handling to stop retrying.
+  const isOlderCursorExpired = data.pages.at(-1)?.cursorExpired === true;
   const sentinelRef = useRef<HTMLDivElement>(null);
   // Read inside the observer callback instead of the effect's own closure:
   // an IntersectionObserver reports the sentinel's current state as soon as
@@ -140,6 +146,21 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
             </div>
           )}
         </>
+      )}
+      {(isFetchNextPageError || isOlderCursorExpired) && (
+        <div
+          role="status"
+          className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
+        >
+          <span>{t(isOlderCursorExpired ? "feed.older.cursorExpired" : "feed.older.failed")}</span>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={isOlderCursorExpired ? () => window.location.reload() : () => fetchNextPage()}
+          >
+            {t(isOlderCursorExpired ? "feed.older.reload" : "feed.older.retry")}
+          </Button>
+        </div>
       )}
       {isStalled && (
         <div
