@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 // ADR-0014.
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "fi.kalia.cellar.web")
 class CellarExceptionHandler {
 
 	@ExceptionHandler({BeerNotFoundException.class, EntryNotFoundException.class, BottleNotFoundException.class,

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 // ADR-0014.
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "fi.kalia.feed.web")
 class FeedExceptionHandler {
 
 	@ExceptionHandler(InvalidFeedCursorException.class)

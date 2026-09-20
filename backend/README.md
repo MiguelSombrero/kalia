@@ -282,9 +282,13 @@ exception caught by such a handler would leak internal messages. Everything
 unexpected falls through to Spring Boot's defaults — 500 problem+json without
 a message (`server.error.include-message=never`), logged server-side.
 
-Business exceptions live in each module's own `<module>.web` advice; the one
-shared advice, `fi.kalia.web.GlobalExceptionHandler`, handles only the two
-Bean Validation exceptions where Boot omits field-level detail
+Business exceptions live in each module's own `<module>.web` advice, scoped to
+that module's controllers with `@RestControllerAdvice(basePackages =
+"fi.kalia.<module>.web")` — a bare `@RestControllerAdvice` registers for every
+controller in the application, not just the owning module's. `ArchitectureTest`
+fails the build on a new advice outside `fi.kalia.web` with no `basePackages`.
+The one shared advice, `fi.kalia.web.GlobalExceptionHandler`, handles only the
+two Bean Validation exceptions where Boot omits field-level detail
 ([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
 
 ## Logging conventions
