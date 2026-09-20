@@ -1,6 +1,6 @@
 # Task 16: An out-of-set `sort` value 400s the catalog page instead of degrading
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** none
 
@@ -71,42 +71,54 @@ throwing.
 - Feature-boundary conventions ([frontend/README.md](../../../frontend/README.md)):
   `app/` composes, a feature owns its own domain logic. `sort`'s valid set is
   defined by `features/catalog`'s own `SearchFilters`, which bears on where
-  the fix belongs (see Open questions).
+  the fix belongs (see Decided below).
+
+**Decided 2026-09-20 (product owner).**
+
+- **Silent fallback, no visible indication.** An out-of-set `sort` renders the
+  catalog page sorted by the default (`name,asc`), exactly as if the param
+  were absent. No redirect to a canonical URL and no inline notice — the
+  address bar keeps the original (bad) param untouched. The simpler of the
+  three options considered, and consistent with how a missing `sort` already
+  behaves.
+- **Both rejection shapes fall back, not only the direction case.** Task 14
+  rejects two shapes — an unrecognized direction (`abv,dsc`) and a malformed
+  `sort` with more than two comma-separated parts. Both count as "outside the
+  known set" and both fall back to the default; there is one check ("is this
+  one of the five accepted literals"), not a rule per rejection shape.
+- **The five valid values get a single exported home in `features/catalog`.**
+  Both `SearchFilters.tsx`'s `<option>`s and the new validation guard consume
+  the same exported list/type — not two hardcoded copies that can drift, which
+  is the failure mode this task exists to close (see Constraints above).
+  Exactly where within `features/catalog` (`types.ts` vs. a small dedicated
+  module) is an implementation detail, not a task-file decision.
+- **The fallback value is asserted exactly, not just "renders."** The
+  acceptance test proves an out-of-set `sort` resolves to `name,asc`
+  specifically, not merely that the error boundary is avoided — so a future
+  change landing on some other unintended default is caught.
 
 ## Open questions
 
-- **Interaction/UX:** for an unrecognized `sort`, does the page fall back
-  silently to the default (`name,asc`) as if the param were absent, or should
-  the visitor see some indication their requested sort wasn't honored (e.g.
-  a redirect to the canonical URL with the bad param stripped, or an inline
-  notice)?
-- **Module boundaries:** should the validation live in `toBeerSearchParams`
-  (`page.tsx`), in a guard inside `features/catalog/api.ts`/`types.ts`, or as
-  a small helper exported from `features/catalog` that both the page and
-  `api.ts` can use? There is currently no shared source-of-truth list of the
-  five valid values anywhere in the frontend — `SearchFilters.tsx` hardcodes
-  its five `<option>`s and `BeerSearchParams.sort` is a bare `string`
-  (`types.ts:19`) — so this may also decide whether that list gets a single
-  home.
-- **Scope of "invalid":** task 14 also rejects a malformed `sort` with more
-  than two comma-separated parts ("Malformed sort..."), a different rejection
-  than an unrecognized direction. Does this task's fallback cover both shapes
-  of rejection, or only the direction case?
-- **Completion signal:** does "fixed" require a test asserting the exact
-  fallback value (`name,asc`), or is "renders without throwing" sufficient
-  regardless of which sort order results?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A request for `/en/beers?sort=abv,dsc` (or another value outside the
-      known set) renders the catalog page rather than the app-wide error
+- [ ] A request for `/en/beers?sort=abv,dsc` (unrecognized direction) renders
+      the catalog page sorted by `name,asc` rather than the app-wide error
       boundary — automated test, confirmed to fail against the current
       pass-through
-- [ ] `npm test` covers the chosen validation point falling back for a `sort`
-      value outside the known set
+- [ ] A request for a malformed `sort` with more than two comma-separated
+      parts (e.g. `/en/beers?sort=abv,asc,extra`) also renders the catalog
+      page sorted by `name,asc` rather than the app-wide error boundary —
+      automated test, confirmed to fail against the current pass-through
+- [ ] `npm test` covers the chosen validation point falling back to exactly
+      `name,asc` for both invalid shapes above
 - [ ] The five values `SearchFilters` actually sends (`name,asc`, `name,desc`,
       `abv,asc`, `abv,desc`, `style,asc`) are still accepted unchanged —
       verified in a browser, not only against the test suite
+- [ ] `SearchFilters.tsx`'s five `<option>` values and the new validation
+      guard both read from one exported list — no second hardcoded copy of
+      the five literals
 
 ## Notes
 
