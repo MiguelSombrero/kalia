@@ -1,6 +1,6 @@
 # Task 07: The front page updates without a reload
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7](../iteration-7.md)
 - **Covers:** DW-5
 
@@ -122,34 +122,45 @@ home for how arrivals behave on screen.
 
 ## Acceptance criteria
 
-- [ ] A new event arriving while the page is open surfaces the "N new events"
+- [x] A new event arriving while the page is open surfaces the "N new events"
       control, and nothing enters the list until it is activated — component
       test, confirmed to fail against an implementation that prepends
       immediately
-- [ ] Polling stops while the tab is hidden and catches up on focus — component
+- [x] Polling stops while the tab is hidden and catches up on focus — component
       test driving visibility change, confirmed to fail against a hook that
       polls regardless
-- [ ] An event the page already holds arriving a second time does not appear
+- [x] An event the page already holds arriving a second time does not appear
       twice — component test, confirmed to fail against an implementation that
       appends unconditionally
-- [ ] A failed poll followed by a successful one leaves no hole and no
+- [x] A failed poll followed by a successful one leaves no hole and no
       duplicate in the list — component test covering the recovery path
-- [ ] Repeated poll failures surface the stalled-feed notice, and a successful
+- [x] Repeated poll failures surface the stalled-feed notice, and a successful
       poll clears it — component test, since a dead feed otherwise looks
       exactly like a quiet evening
-- [ ] The rendered list stays bounded with arrivals at the head and paging at
+- [x] The rendered list stays bounded with arrivals at the head and paging at
       the foot — component test asserting the cap holds in both directions
-- [ ] The server-rendered first page is adopted rather than re-fetched — test
+- [x] The server-rendered first page is adopted rather than re-fetched — test
       asserting no request is made for what was already delivered
-- [ ] The live region passes `axe` with no violations in both locales, and the
+- [x] The live region passes `axe` with no violations in both locales, and the
       behaviour chosen in question 1 is verified against WCAG 2.2.2 and 4.1.3
       rather than assumed — `jest-axe` in component tests plus a stated manual
-      check of what a screen reader announces
-- [ ] Playwright covers two browser contexts: one sits on the front page while
+      check of what a screen reader announces. Manual check: with the stack
+      running, Chromium's own computed accessibility tree (read via CDP, the
+      same data a screen reader consumes) showed the "N new events" control
+      inside a `status` node before it was clicked, and that node — along
+      with the control — gone from the tree immediately after, with the new
+      line now in the list. `role="status"` carries an implicit
+      `aria-live="polite"`/`aria-atomic="true"` (WAI-ARIA), so this is 4.1.3's
+      "status message" announced without a focus move; nothing changes until
+      that click, so 2.2.2 does not apply.
+- [x] Playwright covers two browser contexts: one sits on the front page while
       the other signs in and adds a bottle, and the first sees it appear
       without navigating — confirmed to fail against
-      [task 03](03-front-page-feed.md)'s static page
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+      [task 03](03-front-page-feed.md)'s static page (also caught a real bug
+      before this: the front page never mounted the feed's live component at
+      all when the feed started empty, so it could never go live — fixed by
+      moving the empty/list decision into the client component)
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

@@ -37,21 +37,24 @@ const Home = async ({ params }: Props) => {
         <p className="text-sm text-muted-foreground">{t("app.tagline")}</p>
       </div>
 
-      {page.content.length === 0 ? (
-        <EmptyState title={t("feed.empty.title")}>
-          <p>{t("feed.empty.hint")}</p>
-          {viewerProfile && !viewerProfile.cellarPublic && (
-            <p>
-              {t("feed.empty.privateHint")}{" "}
-              <Link href={`/${locale}/profile`} className="underline underline-offset-2">
-                {t("feed.empty.privateLink")}
-              </Link>
-            </p>
-          )}
-        </EmptyState>
-      ) : (
-        <FeedList locale={locale} now={now.toISOString()} initialPage={page} />
-      )}
+      <FeedList
+        locale={locale}
+        now={now.toISOString()}
+        initialPage={page}
+        emptyState={
+          <EmptyState title={t("feed.empty.title")}>
+            <p>{t("feed.empty.hint")}</p>
+            {viewerProfile && !viewerProfile.cellarPublic && (
+              <p>
+                {t("feed.empty.privateHint")}{" "}
+                <Link href={`/${locale}/profile`} className="underline underline-offset-2">
+                  {t("feed.empty.privateLink")}
+                </Link>
+              </p>
+            )}
+          </EmptyState>
+        }
+      />
     </main>
   );
 };
