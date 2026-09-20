@@ -177,11 +177,17 @@ class ArchitectureTest {
 				.allowEmptyShould(false);
 	}
 
+	// basePackages and its shorthand alias value() are the same attribute at
+	// Spring runtime (@AliasFor), but ArchUnit reads raw bytecode without
+	// resolving Spring aliases, so a class file records at most one of the
+	// two — both must be checked or @RestControllerAdvice("fi.kalia.x.web")
+	// fails this rule despite being correctly scoped.
 	private static ArchCondition<JavaClass> declareBasePackages() {
 		return new ArchCondition<>("declare a non-empty basePackages") {
 			@Override
 			public void check(JavaClass javaClass, ConditionEvents events) {
-				boolean satisfied = javaClass.getAnnotationOfType(RestControllerAdvice.class).basePackages().length > 0;
+				RestControllerAdvice annotation = javaClass.getAnnotationOfType(RestControllerAdvice.class);
+				boolean satisfied = annotation.basePackages().length > 0 || annotation.value().length > 0;
 				events.add(new SimpleConditionEvent(javaClass, satisfied,
 						javaClass.getName() + " declares no basePackages"));
 			}
