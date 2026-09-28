@@ -30,6 +30,14 @@ no API change (`7079412`). Regenerate, then confirm the diff really is
 header-only before committing — that check is what distinguishes this from a
 genuine contract change.
 
+**A bigger orval bump changes the generated code shape, not just the header.**
+8.24.0 → 8.37.0 added a `getXMutationKey()` helper and a named
+`XMutationVariables` type per mutation, and normalized request headers
+through a new `getHeaders()` inliner — every file with a mutation hook
+changed, still with no API change ([PR #302](https://github.com/MiguelSombrero/kalia/pull/302)).
+Same fix as above: regenerate, then read the diff to confirm it is orval's
+own output shifting, not a contract change, before committing.
+
 **One endpoint loses its success response.** Adding any `@ApiResponse` to a
 handler — including one declared at the class level — makes springdoc stop
 synthesising the success response from the return type, and drop it from
