@@ -8,6 +8,7 @@ import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -70,6 +71,24 @@ class GlobalExceptionHandlerIT {
 					assertThat((String) JsonPath.read(body, "$.detail")).isEqualTo("Validation failed");
 					assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("name");
 					assertThat((String) JsonPath.read(body, "$.errors[0].message")).isEqualTo("must not be blank");
+				});
+	}
+
+	// Proves GlobalExceptionHandler answers for more than the catalog module
+	// above — it is module-neutral, not catalog's own (ADR-0014).
+	@Test
+	void requestBodyValidationFailureOnAnotherModulesEndpointAlsoYieldsFieldLevelErrors() {
+		client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.body("{}".getBytes(StandardCharsets.UTF_8))
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((String) JsonPath.read(body, "$.detail")).isEqualTo("Validation failed");
+					assertThat((List<String>) JsonPath.read(body, "$.errors[*].field")).contains("beerId");
 				});
 	}
 

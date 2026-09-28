@@ -34,6 +34,11 @@ class ArchitectureRulesRejectViolationsTest {
 	}
 
 	@Test
+	void anAdviceWithNoBasePackages() {
+		assertRejects(ArchitectureTest.moduleAdviceDeclaresBasePackages(FIXTURE), "UnscopedModuleAdvice");
+	}
+
+	@Test
 	void aModuleOtherThanIdentityConfiguringWebSecurity() {
 		assertRejects(ArchitectureTest.onlyIdentityConfiguresWebSecurity, "StraySecurityConfig");
 	}

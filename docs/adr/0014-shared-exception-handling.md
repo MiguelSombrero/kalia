@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-25
+- **Amended:** 2026-09-20 — each module's own advice must declare
+  `basePackages`, build-enforced; see the Amendment section
 
 ## Context
 
@@ -73,6 +75,19 @@ field-level detail, and nothing else.**
   `fi.kalia.*.web..` (any module's own web package, unchanged) OR
   `fi.kalia.web..` (this one sanctioned shared location) — the two
   patterns are disjoint, so nothing else is loosened.
+
+**Amended 2026-09-20 — "the owning module's own advice" is now build-enforced,
+not only conventional.** `CatalogExceptionHandler` and `CellarExceptionHandler`
+were both a bare `@RestControllerAdvice`, which Spring registers for every
+controller in the application regardless of which module declared it — this
+decision's intent, but not what the code did. Each module's advice now carries
+`@RestControllerAdvice(basePackages = "fi.kalia.<module>.web")`, and
+`ArchitectureTest`'s `moduleAdviceDeclaresBasePackages` fails the build on a
+new advice outside `fi.kalia.web` with no `basePackages`
+([iteration-7 task 12](../tasks/iteration-7/12-scope-exception-advices.md)).
+This does not close the no-overlap gap below — two correctly-scoped advices
+can still collide on a shared exception type — it only stops an advice from
+answering for controllers outside its own module.
 
 ## Alternatives considered
 
