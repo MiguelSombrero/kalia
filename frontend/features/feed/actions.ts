@@ -5,11 +5,28 @@ import { FEED_PAGE_SIZE } from "./constants";
 import { readFeed } from "./api";
 import type { FeedPage } from "./types";
 
+// A Server Action's thrown error reaches the client stripped to
+// name/message/stack (React Flight's own protocol) — kind and status never
+// arrive, so a permanently invalid cursor must be told apart from a
+// transient one here, before it crosses that boundary.
+export type OlderFeedPage = FeedPage & { cursorExpired?: true };
+
 // ADR-0040: must stay a Server Action even though the feed endpoint itself is
 // public — kaliaFetch still resolves through the server-only access-token
 // lookup chain regardless of whether the call ends up sending one.
-export const readOlderFeedAction = async (before: string): Promise<FeedPage> => {
-  return readFeed({ before, size: FEED_PAGE_SIZE });
+export const readOlderFeedAction = async (before: string): Promise<OlderFeedPage> => {
+  try {
+    return await readFeed({ before, size: FEED_PAGE_SIZE });
+  } catch (error) {
+    // Same cause as pollFeedAction's startOver fold below: a before cursor
+    // 400s identically once FeedCursorCodec's signing key rotates, but never
+    // auto-recovers the way startOver does (FeedList.test.tsx: "offers a
+    // page reload").
+    if (isApiError(error) && error.kind === "http" && error.status === 400) {
+      return { content: [], nextCursor: undefined, startOver: false, cursorExpired: true };
+    }
+    throw error;
+  }
 };
 
 // ADR-0040, same reasoning as readOlderFeedAction above. A truncated batch's

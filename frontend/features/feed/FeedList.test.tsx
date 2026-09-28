@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import enCommon from "@/i18n/locales/en/common.json";
 import fiCommon from "@/i18n/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
+import { apiError } from "@/lib/api/api-error";
 import { FEED_LIST_CAP, LIVE_POLL_INTERVAL_MS, STALLED_AFTER_FAILURES } from "./constants";
 import type { FeedPage } from "./types";
 
@@ -207,6 +208,82 @@ describe("FeedList", () => {
       { content: [line("c1", "alice")], nextCursor: "c1", startOver: false },
       "fi",
     );
+
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("FeedList older-history error handling", () => {
+  it("offers a retry when loading older history fails transiently, and clears once it succeeds", async () => {
+    readOlderFeedAction.mockRejectedValueOnce(apiError("network", "Could not reach the backend"));
+    renderList({ content: [line("c1", "alice")], nextCursor: "c1", startOver: false });
+
+    act(() => intersectionObserverInstances[0]!.trigger(true));
+
+    await waitFor(() => expect(screen.getByText("Couldn't load more history.")).toBeInTheDocument());
+    expect(
+      screen.queryByText("Couldn't load more history — refresh the page to continue."),
+    ).not.toBeInTheDocument();
+    // Scrolled-to content stays put — no reload happened behind the notice.
+    expect(screen.getByRole("link", { name: "alice" })).toBeInTheDocument();
+
+    readOlderFeedAction.mockResolvedValueOnce({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
+    act(() => screen.getByRole("button", { name: "Try again" }).click());
+
+    await waitFor(() => expect(screen.getByRole("link", { name: "bob" })).toBeInTheDocument());
+    expect(screen.queryByText("Couldn't load more history.")).not.toBeInTheDocument();
+  });
+
+  it("offers a page reload instead of a retry once the before cursor no longer verifies, and does not reload on its own", async () => {
+    // Resolved, not rejected — see actions.ts's OlderFeedPage comment.
+    readOlderFeedAction.mockResolvedValueOnce({
+      content: [],
+      nextCursor: undefined,
+      startOver: false,
+      cursorExpired: true,
+    });
+    const reload = vi.fn();
+    const location = vi.spyOn(window, "location", "get").mockReturnValue({ ...window.location, reload });
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: "c1", startOver: false });
+
+      act(() => intersectionObserverInstances[0]!.trigger(true));
+
+      await waitFor(() =>
+        expect(
+          screen.getByText("Couldn't load more history — refresh the page to continue."),
+        ).toBeInTheDocument(),
+      );
+      expect(reload).not.toHaveBeenCalled();
+      expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+
+      act(() => screen.getByRole("button", { name: "Refresh page" }).click());
+
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      location.mockRestore();
+    }
+  });
+
+  it("shows no older-history notice after a normal successful scroll", async () => {
+    readOlderFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
+    renderList({ content: [line("c1", "alice")], nextCursor: "c1", startOver: false });
+
+    act(() => intersectionObserverInstances[0]!.trigger(true));
+    await waitFor(() => expect(screen.getByRole("link", { name: "bob" })).toBeInTheDocument());
+
+    expect(screen.queryByText("Couldn't load more history.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Couldn't load more history — refresh the page to continue."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("has no accessibility violations while the older-history retry notice is showing", async () => {
+    readOlderFeedAction.mockRejectedValueOnce(apiError("network", "Could not reach the backend"));
+    const { container } = renderList({ content: [line("c1", "alice")], nextCursor: "c1", startOver: false });
+
+    act(() => intersectionObserverInstances[0]!.trigger(true));
+    await waitFor(() => expect(screen.getByText("Couldn't load more history.")).toBeInTheDocument());
 
     expect(await axe(container)).toHaveNoViolations();
   });
