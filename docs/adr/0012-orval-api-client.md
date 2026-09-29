@@ -13,6 +13,11 @@
   (8.22.0 against `package.json`'s 8.24.x); corrected to match `README.md`'s
   tech-stack table, the pinned reference per CLAUDE.md's "New dependencies"
   rule (iteration 5.5 task 01)
+- **Amended:** 2026-09-28 — dropped the version number from the tool bullet
+  below instead of correcting it a third time (dependabot bumped orval to
+  8.37.0); CLAUDE.md's "New dependencies" rule was itself amended 2026-09-11
+  to record a dependency's version only in its manifest
+  (`frontend/package.json` here), so this line had no business restating it
 
 ## Context
 
@@ -32,7 +37,7 @@ different tool was chosen.
 OpenAPI spec, with the generated output committed and a CI job failing the
 build whenever the two disagree.**
 
-- **Tool: [orval](https://orval.dev) 8.24.** Pure Node/TypeScript (no JVM
+- **Tool: [orval](https://orval.dev).** Pure Node/TypeScript (no JVM
   dependency in frontend tooling), and it generates TanStack Query hooks
   directly from the spec — a direct fit with
   [ADR-0008](0008-tanstack-query.md), which already made TanStack Query the

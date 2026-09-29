@@ -83,11 +83,25 @@ export const getChangeVisibilityUrl = () => {
  */
 export const changeVisibility = async (changeVisibilityRequestDto: ChangeVisibilityRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<changeVisibilityResponse> => {
 
-  return kaliaFetch<changeVisibilityResponse>(getChangeVisibilityUrl(),
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return kaliaFetch<changeVisibilityResponse>(getChangeVisibilityUrl(),
   {
     ...options,
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(changeVisibilityRequestDto)
   }
 );}
@@ -96,11 +110,13 @@ export const changeVisibility = async (changeVisibilityRequestDto: ChangeVisibil
 
 
 
-export const getChangeVisibilityMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext> => {
+export const getChangeVisibilityMutationKey = () => ['changeVisibility'] as const;
 
-const mutationKey = ['changeVisibility'];
+export const getChangeVisibilityMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext> => {
+
+const mutationKey = getChangeVisibilityMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -110,7 +126,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeVisibility>>, {data: ChangeVisibilityRequestDto}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeVisibility>>, ChangeVisibilityMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  changeVisibility(data,requestOptions)
@@ -126,16 +142,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ChangeVisibilityMutationResult = NonNullable<Awaited<ReturnType<typeof changeVisibility>>>
     export type ChangeVisibilityMutationBody = ChangeVisibilityRequestDto
     export type ChangeVisibilityMutationError = void
+    export type ChangeVisibilityMutationVariables = {data: ChangeVisibilityRequestDto}
 
     /**
  * @summary Change the caller's cellar visibility
  */
 export const useChangeVisibility = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,{data: ChangeVisibilityRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof changeVisibility>>,
         TError,
-        {data: ChangeVisibilityRequestDto},
+        ChangeVisibilityMutationVariables,
         TContext
       > => {
       return useMutation(getChangeVisibilityMutationOptions(options), queryClient);

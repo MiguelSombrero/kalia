@@ -96,11 +96,25 @@ export const getAddBottlesUrl = () => {
  */
 export const addBottles = async (addBottleRequestDto: AddBottleRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<addBottlesResponse> => {
 
-  return kaliaFetch<addBottlesResponse>(getAddBottlesUrl(),
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return kaliaFetch<addBottlesResponse>(getAddBottlesUrl(),
   {
     ...options,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(addBottleRequestDto)
   }
 );}
@@ -109,11 +123,13 @@ export const addBottles = async (addBottleRequestDto: AddBottleRequestDto, optio
 
 
 
-export const getAddBottlesMutationOptions = <TError = ProblemDetail | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,{data: AddBottleRequestDto}, TContext> => {
+export const getAddBottlesMutationKey = () => ['addBottles'] as const;
 
-const mutationKey = ['addBottles'];
+export const getAddBottlesMutationOptions = <TError = ProblemDetail | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext> => {
+
+const mutationKey = getAddBottlesMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -123,7 +139,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBottles>>, {data: AddBottleRequestDto}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBottles>>, AddBottlesMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  addBottles(data,requestOptions)
@@ -139,16 +155,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AddBottlesMutationResult = NonNullable<Awaited<ReturnType<typeof addBottles>>>
     export type AddBottlesMutationBody = AddBottleRequestDto
     export type AddBottlesMutationError = ProblemDetail | void
+    export type AddBottlesMutationVariables = {data: AddBottleRequestDto}
 
     /**
  * @summary Add bottles
  */
 export const useAddBottles = <TError = ProblemDetail | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,{data: AddBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof addBottles>>,
         TError,
-        {data: AddBottleRequestDto},
+        AddBottlesMutationVariables,
         TContext
       > => {
       return useMutation(getAddBottlesMutationOptions(options), queryClient);
@@ -204,11 +221,13 @@ export const removeBottle = async (id: string, options?: Parameters<typeof kalia
 
 
 
-export const getRemoveBottleMutationOptions = <TError = void | ProblemDetail,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,{id: string}, TContext> => {
+export const getRemoveBottleMutationKey = () => ['removeBottle'] as const;
 
-const mutationKey = ['removeBottle'];
+export const getRemoveBottleMutationOptions = <TError = void | ProblemDetail,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext> => {
+
+const mutationKey = getRemoveBottleMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -218,7 +237,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeBottle>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeBottle>>, RemoveBottleMutationVariables> = (props) => {
           const {id} = props ?? {};
 
           return  removeBottle(id,requestOptions)
@@ -234,16 +253,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type RemoveBottleMutationResult = NonNullable<Awaited<ReturnType<typeof removeBottle>>>
 
     export type RemoveBottleMutationError = void | ProblemDetail
+    export type RemoveBottleMutationVariables = {id: string}
 
     /**
  * @summary Remove a bottle
  */
 export const useRemoveBottle = <TError = void | ProblemDetail,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof removeBottle>>,
         TError,
-        {id: string},
+        RemoveBottleMutationVariables,
         TContext
       > => {
       return useMutation(getRemoveBottleMutationOptions(options), queryClient);
@@ -292,11 +312,25 @@ export const getUpdateBottleUrl = (id: string,) => {
 export const updateBottle = async (id: string,
     updateBottleRequestDto: UpdateBottleRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<updateBottleResponse> => {
 
-  return kaliaFetch<updateBottleResponse>(getUpdateBottleUrl(id),
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return kaliaFetch<updateBottleResponse>(getUpdateBottleUrl(id),
   {
     ...options,
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(updateBottleRequestDto)
   }
 );}
@@ -305,11 +339,13 @@ export const updateBottle = async (id: string,
 
 
 
-export const getUpdateBottleMutationOptions = <TError = ProblemDetail | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,{id: string;data: UpdateBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,{id: string;data: UpdateBottleRequestDto}, TContext> => {
+export const getUpdateBottleMutationKey = () => ['updateBottle'] as const;
 
-const mutationKey = ['updateBottle'];
+export const getUpdateBottleMutationOptions = <TError = ProblemDetail | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext> => {
+
+const mutationKey = getUpdateBottleMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -319,7 +355,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBottle>>, {id: string;data: UpdateBottleRequestDto}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBottle>>, UpdateBottleMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
           return  updateBottle(id,data,requestOptions)
@@ -335,16 +371,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UpdateBottleMutationResult = NonNullable<Awaited<ReturnType<typeof updateBottle>>>
     export type UpdateBottleMutationBody = UpdateBottleRequestDto
     export type UpdateBottleMutationError = ProblemDetail | void
+    export type UpdateBottleMutationVariables = {id: string;data: UpdateBottleRequestDto}
 
     /**
  * @summary Update a bottle
  */
 export const useUpdateBottle = <TError = ProblemDetail | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,{id: string;data: UpdateBottleRequestDto}, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateBottle>>,
         TError,
-        {id: string;data: UpdateBottleRequestDto},
+        UpdateBottleMutationVariables,
         TContext
       > => {
       return useMutation(getUpdateBottleMutationOptions(options), queryClient);
