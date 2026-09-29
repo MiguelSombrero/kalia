@@ -1,6 +1,6 @@
 # Task 01: How a design task runs
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-1
 
@@ -37,10 +37,11 @@ anything is chosen, how they reach the product owner, how a choice is recorded
 so a later task inherits it, and where the line falls between choosing a design
 and implementing it.
 
-Whether the mechanism is a skill, a change to
-[the task template](../template.md), or both, is part of this task — but the
-product owner's stated preference is a skill, and the decision is recorded
-either way.
+Concretely, per the Constraints below: a fifth skill, `design-task`; an
+optional `Kind` metadata line in [the task template](../template.md) that marks
+a task as a design task, enforced by `scripts/check-tasks.mjs` and covered by a
+fixture test of its own; the marker applied to this iteration's design tasks;
+and the ADR recording why.
 
 ## Non-goals
 
@@ -48,12 +49,13 @@ either way.
   under; the first design decision is [task 03](03-visual-identity.md).
 - Reopening [ADR-0027](../../adr/0027-process-weight.md)'s process-weight rule.
   A design task is being given a procedure because prototyping genuinely has
-  steps, not because process is being added for its own sake — and if the
-  answer turns out to be "the existing skills cover it", that is a valid
-  outcome of this task.
+  steps, not because process is being added for its own sake.
 - A design-review gate on every PR. `/code-review` stays the single reviewer
   ([ADR-0027](../../adr/0027-process-weight.md)); this is about how a design
   *task* is run, not a new gate on unrelated work.
+- A component catalogue or sandbox route inside the app. Prototypes live
+  outside the repository (below); whether a rendered catalogue is worth having
+  on its own is [task 12](12-do-we-need-a-design-system.md)'s question 3.
 
 ## Constraints
 
@@ -73,88 +75,113 @@ either way.
   is batched per iteration, so this iteration's twelve remaining tasks are
   refined in one conversation. Whatever this task produces has to survive being
   applied twelve times, not once.
-- [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md): skill-versus-
-  template is a decision with a credible rejected alternative whose reasoning
-  would not survive in the code, so it earns an ADR.
+- [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md): the mechanism is a
+  decision with credible rejected alternatives whose reasoning would not survive
+  in the code, so it earns an ADR.
+
+Decided with the product owner in refinement, 2026-09-29:
+
+- **Mechanism: a skill plus a template marker.** A fifth skill, `design-task`,
+  covers a design task from "refined" to "the product owner chose, and the
+  choice is recorded", then hands off to `implement-task` for the build rather
+  than restating its gates. The template gains an optional
+  `- **Kind:** design` metadata line, beside `Status`/`Iteration`/`PR`/`Covers`;
+  `design` is its only value, and no line means an ordinary task. When the
+  line is present, `check-tasks.mjs` fails unless at least one acceptance
+  criterion mentions built alternatives. The rule is covered by a fixture test,
+  `scripts/check-tasks.test.mjs`, following
+  [`check-glossary.test.mjs`](../../../scripts/check-glossary.test.mjs)'s
+  precedent — so this task writes a real test and does not take
+  [ADR-0026](../../adr/0026-task-file-format.md)'s no-test exception.
+- **General, not sprint-only.** The skill is for any task whose outcome is a
+  visual choice, including ones after this iteration. Until it is invoked it
+  costs only its description line
+  ([ADR-0035](../../adr/0035-agent-context-layout.md)).
+- **Where a direction is looked at.** Directions are built as self-contained
+  HTML mockups carrying real sample data — Finnish strings included
+  ([ADR-0011](../../adr/0011-i18next-localization.md)) — and published as
+  private claude.ai Artifacts the product owner opens side by side. The chosen
+  direction is then confirmed in the real app, shown in the desktop app's
+  browser pane, with screenshots at both agreed widths in the pull request.
+  Because a future session may not have the Artifact tool, the skill names a
+  fallback that shows the same HTML file in the browser pane. `CLAUDE.md`
+  already holds that a plugin which may be absent is never a required step,
+  and the same reasoning applies to a harness tool.
+- **Prototypes do not survive in the repository.** No mockup code is
+  committed; the ADR's description of each direction is the record.
+- **One task both chooses and builds, in one pull request.** The iteration stays
+  at thirteen tasks, and tasks 03–10 are already written that way.
+- **Three directions in the first round; rounds are open after that.** The
+  product owner decides when they are satisfied and when the process ends —
+  the skill sets no cap. A blend of directions is allowed only as a new
+  direction that is built and shown, never assembled after the choice, so the
+  direction chosen is always one the product owner actually saw.
+- **Every design-kind task writes its own ADR**: the directions shown, the one
+  chosen, and why the others were rejected. Standing intent — what later tasks
+  are held against — goes where [task 14](14-where-design-intent-lives.md)
+  decides, not into those ADRs.
+- **What "done" means for a design task** is the shape tasks 06–10 already use:
+  a criterion that the product owner chose from built alternatives, plus
+  behavioural tests of what shipped — skeletons matching the new layout,
+  `@axe-core/playwright` scans at both agreed widths, keyboard-only tests
+  where something became interactive.
+- **The procedure is proven by [task 03](03-visual-identity.md), not here.**
+  Task 03 is its first real use and carries a criterion to fix whatever the
+  skill got wrong, in its own pull request. This task closes when the skill, the
+  marker and the ADR land.
 
 ## Open questions
 
-1. **Where does a prototype get looked at?** Four candidates, and they differ
-   in what they cost and what they prove: a published Artifact the product
-   owner opens in a browser; a `/design` sandbox route inside the Next app;
-   static HTML committed under a scratch directory and served locally;
-   screenshots posted in the pull request. The first three let the product
-   owner interact; only the sandbox route proves the design works in the real
-   app with real data.
-2. **Does a prototype live in the repository or is it thrown away?** Keeping it
-   gives a later task something to diff against and the ADR something to point
-   at; keeping it also means committed code that nothing ships and nothing
-   tests, which rots.
-3. **How many directions before a choice?** Iteration 2 ran comparisons in
-   pairs and triples. A number stated up front is what stops a task converging
-   on the first idea and calling it a choice.
-4. **How many rounds before the product owner is being asked too often?**
-   Prototyping is a loop, and the loop's exit condition is the product owner's
-   satisfaction — which means the honest question is how much of their time
-   each of twelve tasks may take.
-5. **Does one task both choose and implement, or do they split?** Choosing a
-   palette is a decision task producing an ADR; applying it is production code
-   with tests. Iteration 7 split decision from build
-   ([task 05](../iteration-7/05-feed-delivery-decision.md)); whether a design
-   task should is a real question, and the answer decides whether this
-   iteration has 13 tasks or 26.
-6. **What does "done" mean for a layout task?** "Looks good" cannot fail. The
-   procedure needs to say what a design task's acceptance criteria are allowed
-   to look like, and that has to be compatible with
-   [ADR-0026](../../adr/0026-task-file-format.md)'s rule that a criterion
-   states an observable outcome and how it is verified.
-7. **Is the product owner's chosen direction recorded per task, or once?**
-   Twelve ADRs for twelve tasks is noise; one ADR amended twelve times is a
-   document rewritten rather than amended, which
-   [ADR-0019](../../adr/0019-adr-format-and-conventions.md) forbids. There is a
-   third answer — most tasks record nothing and inherit
-   [task 03](03-visual-identity.md)'s ADR — and it is worth choosing on purpose.
-8. **Does the procedure apply outside this iteration?** A skill written for a
-   one-off sprint and a skill written for every future UI change are different
-   documents, and the second has to earn its place in a context budget
-   ([ADR-0035](../../adr/0035-agent-context-layout.md)).
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A written procedure exists that a session can follow from "this design
-      task is refined" to "the product owner chose, and the choice is
-      recorded", with numbered steps rather than advice
-- [ ] An ADR records whether the mechanism is a skill, a template change or
-      both, names the rejected alternatives, and states at least one Bad or
-      Neutral consequence — passing `node scripts/check-adrs.mjs`
-- [ ] The ADR states where a prototype is shown and whether it survives in the
-      repository, so that no later task has to invent an answer
+- [ ] `.claude/skills/design-task/SKILL.md` exists as a numbered procedure from
+      "this design task is refined" to "the product owner chose, and the choice
+      is recorded in an ADR", handing off to `implement-task` for the build
+      without restating or changing any of its gates
+- [ ] An ADR records the mechanism — skill plus marker — and names the rejected
+      alternatives (skill only, template only, a sandbox route, committed static
+      HTML, screenshots only, choosing and building as separate tasks), with at
+      least one Bad or Neutral consequence, passing
+      `node scripts/check-adrs.mjs`
+- [ ] The ADR states where a prototype is shown, that it does not survive in the
+      repository, the directions-and-rounds rule, and that each design task
+      writes its own ADR — so that no later task has to invent an answer
 - [ ] The ADR names how a design task satisfies
       [ADR-0026](../../adr/0026-task-file-format.md)'s rule that every task
-      carries an automated test — including which of tasks 03–13 take the
-      documented exception and which write real tests — without writing any of
-      them here
-- [ ] If the answer changes [the task template](../template.md), then
-      `scripts/check-tasks.mjs` changes with it in the same PR and
-      `node scripts/check-tasks.mjs` passes against every existing task file
-- [ ] The procedure was run against one real task before this one closes —
-      [task 02](02-design-audit-baseline.md) or
-      [task 03](03-visual-identity.md) — and anything it got wrong is fixed
-      rather than noted
+      carries an automated test, and which of tasks 02–14 take the documented
+      exception, without writing any of their tests here
+- [ ] [The task template](../template.md) documents the `Kind` line, and
+      [ADR-0026](../../adr/0026-task-file-format.md) is amended with a pointer
+      to the new ADR, the way its `Covers` amendment was made
+- [ ] `scripts/check-tasks.test.mjs` fails on a design task with no
+      alternatives criterion and on an unknown `Kind` value, and passes an
+      ordinary task with no `Kind` line — each confirmed to fail before the
+      rule existed — and runs in `make verify` and in CI
+- [ ] Tasks [03](03-visual-identity.md),
+      [04](04-imagery-iconography-and-the-mark.md), [06](06-page-shell.md),
+      [07](07-front-page-layout.md), [08](08-catalog-layout.md),
+      [09](09-cellar-layout.md) and [10](10-profile-and-sign-up-layout.md)
+      carry `- **Kind:** design`, and `node scripts/check-tasks.mjs` passes
+      against every existing task file
+- [ ] `CLAUDE.md` names `design-task` alongside the other skills and stays
+      under 200 lines
+- [ ] `make verify` is green
 
 ## Notes
 
-This task produces no production code. Whether it therefore takes
-[ADR-0026](../../adr/0026-task-file-format.md)'s automated-test exception — the
-one [iteration 7 task 05](../iteration-7/05-feed-delivery-decision.md),
-[iteration 6 task 07](../iteration-6/07-cellar-domain-events.md) and
-[iteration 8 task 01](../iteration-8/01-catalog-data-source.md) each took —
-depends on question 5's answer, which is why the criteria above name the
-checker scripts rather than a test suite.
+**Written as a recommendation before the decision; the product owner decided
+differently on one point on 2026-09-29, so the Constraints above are now the
+decision and this paragraph is kept as the reasoning that led there.** The
+recommendation was a fifth skill with [the task template](../template.md) left
+untouched. The reasoning: the template holds the *request*, a design task's
+request is already expressible in it, and what was missing was the procedure.
+The product owner took the skill and added the marker, so that a design task
+cannot be written without its "the product owner chose" criterion — enforced
+rather than remembered, at the cost of a template and checker change.
 
-**A recommendation, not a decision.** A fifth skill beside `implement-task`,
-`refine-task`, `refine-iteration` and `worktree`, leaving
-[the task template](../template.md) untouched. The template holds the
-*request*, and a design task's request is expressible in it already — this
-file is the proof. What is missing is the procedure, and a procedure is what
-the four existing skills are.
+The original criterion — that the procedure be run against task 02 or 03
+before this task closes — was replaced in refinement. Task 02 is an audit and
+has no alternatives to choose between, and task 03 follows tasks 02 and 14 and
+needs this skill merged before it can use it.

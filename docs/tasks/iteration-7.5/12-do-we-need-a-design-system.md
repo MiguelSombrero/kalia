@@ -88,9 +88,10 @@ evidence the decision rests on.
    actually going wrong that a design system would fix.
 3. **Is a component catalogue worth it on its own?** A rendered page showing
    every primitive in every state is the one artefact that would have made this
-   iteration easier, independently of whether anything is extracted — and
-   [task 01](01-how-a-design-task-runs.md) may already have built something
-   like it for prototyping.
+   iteration easier, independently of whether anything is extracted.
+   [Task 01](01-how-a-design-task-runs.md) deliberately builds none: its
+   prototypes are Artifacts outside the repository, so this question starts
+   from nothing.
 4. **Does [iteration 8](../iteration-8.md) change the answer?** It adds
    catalog-contribution forms, the first UI written under the new identity
    rather than converted to it. That is the first real test of whether a new
