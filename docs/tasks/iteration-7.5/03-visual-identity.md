@@ -88,6 +88,12 @@ Whatever is chosen is applied to the token layer and to the three primitives in
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) records is a large
   enough change that whether it amends or supersedes is itself a judgement to
   make deliberately.
+- **How directions are built, shown, counted and recorded is
+  [task 01](01-how-a-design-task-runs.md)'s `design-task` skill**, not this
+  task's to decide: three directions in the first round, rounds open until the
+  product owner is satisfied, and the choice recorded in this task's own ADR.
+  This task is the skill's first real use, so it is also where the skill is
+  corrected (acceptance criteria below).
 
 ## Open questions
 
@@ -117,20 +123,18 @@ Whatever is chosen is applied to the token layer and to the three primitives in
    chosen direction needs a rounder or flatter or more layered feel, the answer
    changes, and it should change in writing rather than by a task quietly
    adding tokens.
-7. **How many directions, and how are they shown?**
-   [Task 01](01-how-a-design-task-runs.md) answers this in general; this task
-   is the first to need the answer, so it is the one that finds out whether it
-   works.
-8. **Does the identity have to work in both locales?** Finnish and English set
+7. **Does the identity have to work in both locales?** Finnish and English set
    differently — Finnish words are longer and compound — and a type scale or a
    button sized around English is a thing that breaks in Finnish only
    ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
 ## Acceptance criteria
 
-- [ ] At least the agreed number of distinct directions were built and put in
-      front of the product owner, and the one chosen is identifiable — not a
-      blend assembled after the fact
+- [ ] At least three distinct directions were built and put in front of the
+      product owner, as [task 01](01-how-a-design-task-runs.md) requires, and
+      the one chosen is identifiable — not a blend assembled after the fact
+- [ ] Anything `design-task` got wrong when run here is fixed in the skill in
+      this task's pull request rather than noted, and the PR says what changed
 - [ ] The chosen identity is recorded as an amendment to or replacement of
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md), stating the
       directions rejected and why, and passing `node scripts/check-adrs.mjs`
