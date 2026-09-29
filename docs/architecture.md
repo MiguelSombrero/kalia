@@ -128,7 +128,7 @@ cross-module *reads* via the root-package API.
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
-| `feed` | A record of things that happened — currently, a bottle added to a cellar *(iteration 7)*; reading it over HTTP and any UI are later tasks | `cellar` (event: bottle added), `catalog` (read: beer name and brewery), `profile` (read: username and current cellar visibility) |
+| `feed` | A record of things that happened — currently, a bottle added to a cellar, read over HTTP and rendered live on the front page *(iteration 7)* | `cellar` (event: bottle added), `catalog` (read: beer name and brewery), `profile` (read: username and current cellar visibility) |
 
 The term each module owns — every `domain` type's meaning inside its module,
 the words that mean two things across modules, and the published REST/JSON/
