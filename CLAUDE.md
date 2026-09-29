@@ -41,17 +41,15 @@ before making changes:
 
 - [docs/architecture.md](docs/architecture.md) — module boundaries, API
   conventions, persistence rules, testing strategy
-- [docs/roadmap.md](docs/roadmap.md) — iteration index and status; the
-  per-iteration tasks, the backlog and the quality backlog live under
-  [docs/tasks/](docs/tasks/), one file per task from iteration 5 on, written
-  to [its template](docs/tasks/template.md) before work starts
+- [docs/roadmap.md](docs/roadmap.md) — iteration index and status; tasks, the
+  backlog and the quality backlog live under [docs/tasks/](docs/tasks/), one
+  file per task from iteration 5 on, written to
+  [its template](docs/tasks/template.md) before work starts
 - [docs/adr/](docs/adr/) — decisions already made, grouped by subject in
   [its README](docs/adr/README.md); don't relitigate them silently, propose a
   new ADR instead ([template](docs/adr/template.md))
-- [backend/README.md](backend/README.md) — run/test commands, Lombok/
-  JSpecify/ArchUnit conventions, testing naming (`*Test`/`*IT`)
-- [frontend/README.md](frontend/README.md) — run/test commands,
-  feature-package conventions, TanStack Query/Zustand/i18next usage
+- [backend/README.md](backend/README.md) and
+  [frontend/README.md](frontend/README.md) — run/test commands and conventions
 
 Both READMEs load on their own once you touch their subtree — `backend/`
 and `frontend/` each carry a `CLAUDE.md` that imports theirs
@@ -62,28 +60,18 @@ repeated here: **this Next.js version postdates model training — check
 Guessing fails silently rather than erroring (`middleware.ts` is `proxy.ts`
 here, and the app still builds).
 
-The rest of the tree:
-
-- `backend/` Spring Boot modulith (Java, Maven) · `frontend/` Next.js
-  (TypeScript, plus `AGENTS.md`) · `docs/` architecture, roadmap, tasks, ADRs,
-  and `ci-playbook.md` (a red CI job → the document that explains the fix)
-- `docker-compose.yml` — full local stack (PostgreSQL, backend, frontend,
-  Keycloak, Valkey); frontend `:3000` and backend `:8080` published,
-  localhost-only
-- `.github/` — `workflows/ci.yml` builds and tests both apps on every push and
-  scans for CVEs ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md));
-  `dependabot.yml` opens weekly update PRs
-- `Makefile` — the `verify` gate and the local-dev shortcuts (`make help`)
-- `scripts/` — the dependency-free Node checkers CI runs, `next-adr.mjs`, and
-  `hooks/` (`post-edit-check.mjs`, wired up by `.claude/settings.json`;
-  `pre-push`, installed by `make install-hooks`)
-- `.claude/` — `skills/` (the four entry points below, plus `quality-sweep`),
-  `rules/` (scoped to a file type by a `paths:` glob, loaded when a matching
-  file is read rather than every session), and `settings.json` (generated API
-  client read-only, [ADR-0012](docs/adr/0012-orval-api-client.md); the
-  `PostToolUse` checker hook,
-  [ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
-  `settings.local.json` beside it is per-machine and gitignored
+The rest of the tree: `backend/` (Java, Maven) · `frontend/` (TypeScript, plus
+`AGENTS.md`) · `docs/` (including `ci-playbook.md`) · `docker-compose.yml`, the
+full local stack, frontend `:3000` and backend `:8080` published localhost-only ·
+`.github/` (`ci.yml`, CVE scan per
+[ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md); `dependabot.yml`)
+· `Makefile` · `scripts/` (the dependency-free Node checkers CI runs,
+`next-adr.mjs`, `hooks/`) · `.claude/` — `skills/`, `rules/` (a `paths:` glob
+loads one when a matching file is read), and `settings.json` (generated API
+client read-only, [ADR-0012](docs/adr/0012-orval-api-client.md); the
+`PostToolUse` checker hook,
+[ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
+`settings.local.json` beside it is per-machine and gitignored.
 
 ## Commands
 
@@ -103,20 +91,21 @@ it:
 (cd backend  && mvn verify)        # + integration tests (*IT) — needs Docker
 (cd frontend && npm test)          # vitest
 (cd frontend && npm run test:e2e)  # playwright — needs the stack up
-node scripts/check-adrs.mjs        # ADR ↔ architecture.md §9 + adr/README.md
-node scripts/check-tasks.mjs       # task files ↔ iteration index
-node scripts/check-comments.mjs    # code-comment policy (ADR-0017)
 ```
 
 ## Workflow
 
-Four skills under `.claude/skills/` are the entry points. Each orders gates
+Five skills under `.claude/skills/` are the entry points. Each orders gates
 stated below into a numbered procedure; none of them changes a gate.
 
-- **`implement-task`** — implementing a `refined` task, from reading the task
-  file to opening the pull request.
-- **`refine-task`** — taking one `needs-refinement` task to `refined`.
-- **`refine-iteration`** — when more than one task in an iteration needs it;
+- **`implement-task`** — a `refined` task, from the task file to the pull
+  request.
+- **`design-task`** — a `Kind: design` task, whose outcome is a visual choice:
+  directions are built, the product owner chooses, an ADR records it, then
+  `implement-task` builds it
+  ([ADR-0062](docs/adr/0062-a-design-task-is-a-skill-and-a-marker.md)).
+- **`refine-task`** — one `needs-refinement` task to `refined`.
+- **`refine-iteration`** — more than one task in an iteration needs it;
   refinement's unit is the iteration
   ([ADR-0047](docs/adr/0047-refinement-is-batched-per-iteration.md)).
 - **`worktree`** — cutting a task worktree off a freshly fetched `origin/dev`,
@@ -139,11 +128,10 @@ The gates themselves:
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
-- **Parallel sessions: one git worktree each, never a shared checkout.** Two
+- **Parallel sessions: one git worktree each, never a shared checkout** — two
   sessions running `git` against one working directory race on its single
-  `HEAD`/index, and a `checkout` interleaving with a `commit` misattributes
-  the commit to the wrong branch. The `worktree` skill covers setup and
-  teardown, including what Claude Code's own sweep will not clean up.
+  `HEAD`/index and misattribute commits. The `worktree` skill covers setup and
+  teardown.
 - **Checkpoint before long or fanned-out work.**
   `.claude/session-checkpoint.md` is gitignored and is the only thing that
   survives a session-limit interruption: on "resume where you left off", read
@@ -152,11 +140,9 @@ The gates themselves:
 - Test-first: write or update tests with the code; `make verify` green before
   a PR. Verify changes by actually running them, not just by compiling.
 - **Open the PR automatically once a task is done** — don't wait for an
-  explicit instruction. "Done" means every gate here is met, so the PR does
-  not open until they are. The PR is the review gate, not its creation:
-  opening one merges nothing, and merging stays the product owner's explicit
-  action on GitHub. Follow
-  [the template](docs/PULL_REQUEST_TEMPLATE.md).
+  explicit instruction. "Done" means every gate here is met. The PR is the
+  review gate, not its creation: merging stays the product owner's explicit
+  action on GitHub. Follow [the template](docs/PULL_REQUEST_TEMPLATE.md).
 - **Doc-sync gate:** before opening a PR, re-read the sections of
   `docs/architecture.md`, the iteration index and any ADRs the change touches,
   and update them in the same PR — or state in the description that they were
@@ -193,7 +179,7 @@ The gates themselves:
   reference the roadmap task.
 - **Code comments carry only what the repo cannot** —
   [`.claude/rules/code-comments.md`](.claude/rules/code-comments.md) loads
-  itself when you read a source file, so it is not repeated here
+  itself when you read a source file
   ([ADR-0039](docs/adr/0039-mechanisms-for-recurring-rule-violations.md),
   [ADR-0017](docs/adr/0017-code-comment-policy.md)).
 - **ADRs follow [the template](docs/adr/template.md)** — five sections,
@@ -235,16 +221,14 @@ The gates themselves:
   (`frontend/README.md`, `backend/README.md`) — a bump that doesn't reach the
   flagged transitive package leaves the finding red.
 - **A CI check you have seen fail before is probably in
-  [docs/ci-playbook.md](docs/ci-playbook.md)** — a red job mapped to the
-  document that already explains the fix. Add an entry when a failure costs
-  real time to *recognise*, and say which run it came from.
+  [docs/ci-playbook.md](docs/ci-playbook.md)**; add an entry when a failure
+  costs real time to *recognise*, and say which run it came from.
 
 ## Quality checks
 
 The `/quality-sweep` skill runs a periodic, whole-codebase audit — of the
-product and of this repository's own process — at a coarser grain than any
-single PR's diff can judge. Its mechanics live in the skill and in
-[the quality backlog](docs/tasks/quality-backlog.md)'s own header.
+product and of this repository's own process. Its mechanics live in the skill
+and in [the quality backlog](docs/tasks/quality-backlog.md)'s own header.
 
 **Product-owner-initiated only, and this is the part that cannot move into the
 skill:** it sets `disable-model-invocation`, so it is absent from an agent's
@@ -260,11 +244,10 @@ tooling ideas, which is the sweep's `process-quality` dimension
 
 ## Environment notes
 
-- Each worktree's `docker compose` project is isolated automatically:
-  `docker-compose.yml` has no fixed `name:`, so Compose names it after the
-  worktree's own directory, and `up`/`down -v` never touch another worktree's
-  containers or volume. Host ports (3000/8080/8081/5432/6379/8025) are still
-  fixed, so two worktrees still collide if both bring up the full stack at
-  once — run it in one worktree at a time.
+- Each worktree's `docker compose` project is isolated automatically, so
+  `up`/`down -v` never touch another worktree's containers or volume. Host
+  ports (3000/8080/8081/5432/6379/8025) are still fixed, so two worktrees
+  still collide if both bring up the full stack at once — run it in one
+  worktree at a time.
 - Docker Desktop may need starting: `open -a Docker`, then wait for
   `docker info` to succeed.

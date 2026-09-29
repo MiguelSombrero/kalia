@@ -1,6 +1,6 @@
 # Task 01: How a design task runs
 
-- **Status:** refined
+- **Status:** in-progress
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-1
 
@@ -136,30 +136,30 @@ Decided with the product owner in refinement, 2026-09-29:
 
 ## Acceptance criteria
 
-- [ ] `.claude/skills/design-task/SKILL.md` exists as a numbered procedure from
+- [x] `.claude/skills/design-task/SKILL.md` exists as a numbered procedure from
       "this design task is refined" to "the product owner chose, and the choice
       is recorded in an ADR", handing off to `implement-task` for the build
       without restating or changing any of its gates
-- [ ] An ADR records the mechanism — skill plus marker — and names the rejected
+- [x] An ADR records the mechanism — skill plus marker — and names the rejected
       alternatives (skill only, template only, a sandbox route, committed static
       HTML, screenshots only, choosing and building as separate tasks), with at
       least one Bad or Neutral consequence, passing
       `node scripts/check-adrs.mjs`
-- [ ] The ADR states where a prototype is shown, that it does not survive in the
+- [x] The ADR states where a prototype is shown, that it does not survive in the
       repository, the directions-and-rounds rule, and that each design task
       writes its own ADR — so that no later task has to invent an answer
-- [ ] The ADR names how a design task satisfies
+- [x] The ADR names how a design task satisfies
       [ADR-0026](../../adr/0026-task-file-format.md)'s rule that every task
       carries an automated test, and which of tasks 02–14 take the documented
       exception, without writing any of their tests here
-- [ ] [The task template](../template.md) documents the `Kind` line, and
+- [x] [The task template](../template.md) documents the `Kind` line, and
       [ADR-0026](../../adr/0026-task-file-format.md) is amended with a pointer
       to the new ADR, the way its `Covers` amendment was made
-- [ ] `scripts/check-tasks.test.mjs` fails on a design task with no
+- [x] `scripts/check-tasks.test.mjs` fails on a design task with no
       alternatives criterion and on an unknown `Kind` value, and passes an
       ordinary task with no `Kind` line — each confirmed to fail before the
       rule existed — and runs in `make verify` and in CI
-- [ ] Tasks [03](03-visual-identity.md),
+- [x] Tasks [03](03-visual-identity.md),
       [04](04-imagery-iconography-and-the-mark.md), [06](06-page-shell.md),
       [07](07-front-page-layout.md), [08](08-catalog-layout.md),
       [09](09-cellar-layout.md) and [10](10-profile-and-sign-up-layout.md)
@@ -167,7 +167,7 @@ Decided with the product owner in refinement, 2026-09-29:
       against every existing task file
 - [ ] `CLAUDE.md` names `design-task` alongside the other skills and stays
       under 200 lines
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

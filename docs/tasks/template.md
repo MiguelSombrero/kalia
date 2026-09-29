@@ -84,6 +84,7 @@ no `iteration-N/` directory at all is.
 - **Iteration:** [N](../iteration-N.md)
 - **PR:** #123
 - **Covers:** DW-1, DW-3
+- **Kind:** design
 ```
 
 `Status` is a vocabulary token, nothing else. `PR` is added when the pull
@@ -96,6 +97,15 @@ enumerated `Done when` with `DW-N` ids; until then, omit it. `none` is
 stated explicitly rather than left implicit, so an unclaimed criterion means
 someone has to add or fix a task rather than a task quietly opting out by
 omission.
+
+`Kind` is optional, and `design` is its only value; no line means an ordinary
+task. It marks a task whose outcome is a visual choice the product owner makes
+between built alternatives, which is run by the `design-task` skill rather than
+straight from `implement-task`
+([ADR-0062](../adr/0062-a-design-task-is-a-skill-and-a-marker.md)).
+`scripts/check-tasks.mjs` fails an unknown value, and fails a `design` task
+none of whose acceptance criteria mentions built alternatives — one criterion
+carrying both words, as the product owner chose from built alternatives does.
 
 **A new task file is created as `needs-refinement`, and only the product
 owner moves it to `refined`.** That transition is the gate on starting work:

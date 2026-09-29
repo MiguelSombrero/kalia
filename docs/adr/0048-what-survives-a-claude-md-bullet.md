@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-30
+- **Amended:** 2026-09-29 — the revisit trigger below had fired (270 lines); a
+  second rationale-only pass reached 252 and stopped, recorded in Evidence
 
 ## Context
 
@@ -166,6 +168,22 @@ in `docs/tasks/template.md`, the worktree teardown facts in the `worktree`
 skill, the `DW-N` coverage mechanics in ADR-0026's 2026-08-15 amendment, and
 "when a rule outgrows the README's one-line bar, write the ADR" in ADR-0020
 line 74. Nothing was found homeless at the end of the pass.
+
+> **Amended 2026-09-29.** The revisit trigger fired: `CLAUDE.md` was 270 lines
+> on `dev` when [iteration 7.5 task 01](../tasks/iteration-7.5/01-how-a-design-task-runs.md)
+> needed to add a skill to it. A second pass applied the protocol above to
+> rationale, history and descriptive prose only — the tree listing, the
+> per-suite checker commands, and the "why" clauses after five gates — and took
+> it from 270 to 252, with the new `design-task` entry included. It stopped
+> there because what remains is rules, and the only option this ADR names that
+> reaches 200 is the one it rejected "for now". Every dropped sentence was
+> checked against its home by reading the target: the worktree sweep in the
+> `worktree` skill step 8, the Compose project naming in `docker-compose.yml`'s
+> header comment, the `pre-push` hook in ADR-0046 and `make install-hooks`, the
+> weekly cadence in `dependabot.yml`, and the CI playbook's purpose in its own
+> opening paragraph. The choice between moving gates and adding
+> `check-claude-md.mjs` is left open as
+> [quality backlog SHOULD-31](../tasks/quality-backlog.md), not decided here.
 
 **One obsolete rule was deleted rather than moved**: the `gh` /`GITHUB_TOKEN`
 bullet. `gh auth status` reports keyring authentication with no token, and

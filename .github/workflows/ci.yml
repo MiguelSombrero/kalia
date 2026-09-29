@@ -114,6 +114,8 @@ jobs:
           node-version: '24'
       - name: Verify task files and iteration indexes (see ADR-0026)
         run: node scripts/check-tasks.mjs
+      - name: Self-test the task checker's Kind rule against fixtures
+        run: node --test scripts/check-tasks.test.mjs
 
   comment-policy-check:
     name: Comment policy check
