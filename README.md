@@ -18,10 +18,12 @@
 > cellar — Keycloak's realm and every account in it now survive a restart,
 > the branded sign-up and sign-in pages appear in the visitor's own
 > language, and what happens when a sign-up's email already belongs to an
-> account is a decision recorded in an ADR. Next: a front-page feed of what
-> people are adding to their cellars (iteration 7). Implementation proceeds
-> one issue at a time. See [docs/roadmap.md](docs/roadmap.md) for what gets
-> built and in which order.
+> account is a decision recorded in an ADR. The front page now shows a live
+> feed of what people are adding to their public cellars, newest first,
+> updating without a reload as new events arrive (iteration 7). Next: a
+> design sprint so Kalia looks designed rather than defaulted (iteration
+> 7.5). Implementation proceeds one issue at a time. See
+> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
 
 ## Goal
 
@@ -129,10 +131,11 @@ In roadmap order, a user can:
   link, signed in or not _(iteration 6)_
 - Sign up for an account without the product owner creating it by hand
   _(iteration 6.5)_
+- See a live front-page feed of what people are adding to their public
+  cellars, updating without a reload _(iteration 7)_
 
 Then:
 
-- A front-page feed of what people are adding to their cellars _(iteration 7)_
 - A catalog that grows past its seed data, with users adding the beers they
   cannot find _(iteration 8)_
 
@@ -158,9 +161,9 @@ flowchart LR
 ```
 
 The backend is a single deployable split into Spring Modulith modules
-(`catalog`, `identity`, `cellar`, and `profile` as iteration 6 adds it) with
-enforced boundaries, keeping a later extraction to microservices possible
-without paying the distributed-systems cost now.
+(`catalog`, `identity`, `cellar`, `profile` as iteration 6 adds it, and `feed`
+as iteration 7 adds it) with enforced boundaries, keeping a later extraction
+to microservices possible without paying the distributed-systems cost now.
 
 Full design: [docs/architecture.md](docs/architecture.md) ·
 Decision records: [docs/adr/](docs/adr/)
@@ -277,7 +280,8 @@ kalia/
 │       ├── catalog/  # beers, breweries, search
 │       ├── identity/ # Keycloak integration, current-user resolution
 │       ├── cellar/   # personal beer cellar (iteration 5)
-│       └── profile/  # user profile, public cellar visibility (iteration 6)
+│       ├── profile/  # user profile, public cellar visibility (iteration 6)
+│       └── feed/     # front-page activity feed (iteration 7)
 ├── frontend/         # Next.js app (BFF + UI)
 ├── docs/
 │   ├── architecture.md
