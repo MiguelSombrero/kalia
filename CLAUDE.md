@@ -128,6 +128,12 @@ The gates themselves:
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
+- **Never commit, push or upload a screenshot or screen capture** — of the app,
+  the browser pane or any other screen. It can show something on the product
+  owner's machine that nobody noticed, and a commit cannot be taken back. Keep
+  one in the scratchpad to check your own work, describe what you saw in words,
+  and never `git add -f` past the ignore. Assets designed to ship are not
+  captures ([ADR-0062](docs/adr/0062-a-design-task-is-a-skill-and-a-marker.md)).
 - **Parallel sessions: one git worktree each, never a shared checkout** — two
   sessions running `git` against one working directory race on its single
   `HEAD`/index and misattribute commits. The `worktree` skill covers setup and

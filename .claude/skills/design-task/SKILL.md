@@ -74,17 +74,20 @@ rank them in a way that pre-empts the pick.
    doc-sync, `/code-review`, `make verify`, each acceptance criterion run and
    then ticked.
 10. **Confirm it in the real app**, as part of `implement-task`'s step 10.
-    Bring the stack up, open the built page in the desktop app's browser pane,
-    and take a screenshot at each agreed width. A mockup is a claim about a
-    design; the real page is the check on whether it survived contact with
-    real components and data. If it did not, that is a finding for the
-    product owner, not something to quietly adjust.
+    Bring the stack up, open the built page in the desktop app's browser pane
+    and look at it at each agreed width. A mockup is a claim about a design;
+    the real page is the check on whether it survived contact with real
+    components and data. If it did not, that is a finding for the product
+    owner, not something to quietly adjust. **No screenshot leaves the
+    machine:** if you take one to look closely, it goes in the scratchpad, and
+    it is never committed, pushed or uploaded — `CLAUDE.md` has the rule.
 11. **Open the pull request** (`implement-task`'s step 12) per
-    `docs/PULL_REQUEST_TEMPLATE.md`, with the screenshots from step 10 in it.
-    The criteria a design task carries beyond an ordinary one are that the
-    product owner chose from built alternatives, and behavioural tests of what
-    shipped — skeletons matching the new layout, `@axe-core/playwright` scans
-    at both widths, keyboard-only tests where something became interactive.
+    `docs/PULL_REQUEST_TEMPLATE.md`, saying in words what you saw at each
+    width — no image. The criteria a design task carries beyond an ordinary
+    one are that the product owner chose from built alternatives, and
+    behavioural tests of what shipped — skeletons matching the new layout,
+    `@axe-core/playwright` scans at both widths, keyboard-only tests where
+    something became interactive.
 
 ## Gates
 

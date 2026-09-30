@@ -35,6 +35,12 @@ build/
 .superpowers/
 docs/superpowers/
 
+# Screen captures — never shared (CLAUDE.md, ADR-0062). macOS writes the first
+# two by default; a directory named for them is the other likely home.
+Screenshot*
+Screen Shot*
+screenshots/
+
 # Playwright writes here when run from the repository root rather than frontend/.
 /test-results/
 /playwright-report/

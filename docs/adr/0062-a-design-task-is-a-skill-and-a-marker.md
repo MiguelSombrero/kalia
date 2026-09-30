@@ -48,8 +48,13 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   the same HTML file shown in the desktop app's browser pane — because a future
   session may not have the Artifact tool, and a tool that may be absent is not
   a required step, as `CLAUDE.md` already holds of plugins. The chosen
-  direction is then confirmed in the real app, in that browser pane, with
-  screenshots at both agreed widths in the pull request.
+  direction is then confirmed in the real app, in that browser pane, at both
+  agreed widths.
+- **No screenshot leaves the machine.** None is committed, pushed or uploaded,
+  the pull request says in words what was seen at each width, and a capture
+  taken to look closely stays in the scratchpad. `CLAUDE.md` carries the rule
+  because a capture can show something on the product owner's machine that
+  nobody noticed, and a commit cannot be taken back.
 - **Prototypes do not survive in the repository.** No mockup code is committed;
   the ADR's description of each direction is the record.
 - **Directions and rounds.** Three directions in the first round. Rounds are
@@ -112,6 +117,13 @@ direction kept as runnable code is clutter nobody maintains.
 cannot be resized or interacted with, and the phone-width behaviour that most
 of these tasks turn on is exactly what it hides.
 
+**Screenshots of the built page in the pull request.** The first version of the
+decision, taken in refinement, so a reviewer could see the result without
+running it. Rejected by the product owner before this ADR merged: the image is
+captured on their machine and published on GitHub, and from the CLI the only
+way to attach one is to commit it, so anything visible in the capture becomes
+permanent history.
+
 **Choosing and building as separate tasks.** Rejected: it doubles the pull
 requests and lets a chosen direction be built by a session that never saw the
 alternatives. The built page is also the real check on a choice, so an ADR
@@ -134,6 +146,9 @@ mockup's word alone.
   real components and data. Confirming the chosen direction in the real app is
   the mitigation, and a direction that fails there costs a round after the
   product owner has already chosen.
+- Bad, because a reviewer of the pull request cannot see the built page in it.
+  The product owner has to look at the running app, or at the private Artifact,
+  and the pull request's account of what was seen is text.
 - Bad, because showing the mockups depends on the Artifact tool being in the
   session; the browser-pane fallback works but is less convenient for looking at
   three directions side by side.

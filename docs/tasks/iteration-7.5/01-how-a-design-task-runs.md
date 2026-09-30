@@ -103,8 +103,10 @@ Decided with the product owner in refinement, 2026-09-29:
   ([ADR-0011](../../adr/0011-i18next-localization.md)) — and published as
   private claude.ai Artifacts the product owner opens side by side. The chosen
   direction is then confirmed in the real app, shown in the desktop app's
-  browser pane, with screenshots at both agreed widths in the pull request.
-  Because a future session may not have the Artifact tool, the skill names a
+  browser pane, at both agreed widths. No screenshot is committed, pushed or
+  uploaded: the pull request says in words what was seen (decided 2026-09-30,
+  replacing an earlier "screenshots at both agreed widths in the pull
+  request"). Because a future session may not have the Artifact tool, the skill names a
   fallback that shows the same HTML file in the browser pane. `CLAUDE.md`
   already holds that a plugin which may be absent is never a required step,
   and the same reasoning applies to a harness tool.
