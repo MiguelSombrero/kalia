@@ -1,7 +1,8 @@
 # Task 01: How a design task runs
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
+- **PR:** #308
 - **Covers:** DW-1
 
 ## Why
@@ -102,15 +103,19 @@ Decided with the product owner in refinement, 2026-09-29:
   ([ADR-0011](../../adr/0011-i18next-localization.md)) — and published as
   private claude.ai Artifacts the product owner opens side by side. The chosen
   direction is then confirmed in the real app, shown in the desktop app's
-  browser pane, with screenshots at both agreed widths in the pull request.
-  Because a future session may not have the Artifact tool, the skill names a
+  browser pane, at both agreed widths. No screenshot is committed, pushed or
+  uploaded: the pull request says in words what was seen (decided 2026-09-30,
+  replacing an earlier "screenshots at both agreed widths in the pull
+  request"). Because a future session may not have the Artifact tool, the skill names a
   fallback that shows the same HTML file in the browser pane. `CLAUDE.md`
   already holds that a plugin which may be absent is never a required step,
   and the same reasoning applies to a harness tool.
 - **Prototypes do not survive in the repository.** No mockup code is
   committed; the ADR's description of each direction is the record.
 - **One task both chooses and builds, in one pull request.** The iteration stays
-  at thirteen tasks, and tasks 03–10 are already written that way.
+  at thirteen tasks, and tasks 03–10 are already written that way. It is one
+  unbroken run, and the product owner signs the built page off live against the
+  chosen mockup before the pull request opens (decided 2026-09-30).
 - **Three directions in the first round; rounds are open after that.** The
   product owner decides when they are satisfied and when the process ends —
   the skill sets no cap. A blend of directions is allowed only as a new
@@ -136,38 +141,37 @@ Decided with the product owner in refinement, 2026-09-29:
 
 ## Acceptance criteria
 
-- [ ] `.claude/skills/design-task/SKILL.md` exists as a numbered procedure from
+- [x] `.claude/skills/design-task/SKILL.md` exists as a numbered procedure from
       "this design task is refined" to "the product owner chose, and the choice
       is recorded in an ADR", handing off to `implement-task` for the build
       without restating or changing any of its gates
-- [ ] An ADR records the mechanism — skill plus marker — and names the rejected
+- [x] An ADR records the mechanism — skill plus marker — and names the rejected
       alternatives (skill only, template only, a sandbox route, committed static
       HTML, screenshots only, choosing and building as separate tasks), with at
       least one Bad or Neutral consequence, passing
       `node scripts/check-adrs.mjs`
-- [ ] The ADR states where a prototype is shown, that it does not survive in the
+- [x] The ADR states where a prototype is shown, that it does not survive in the
       repository, the directions-and-rounds rule, and that each design task
       writes its own ADR — so that no later task has to invent an answer
-- [ ] The ADR names how a design task satisfies
+- [x] The ADR names how a design task satisfies
       [ADR-0026](../../adr/0026-task-file-format.md)'s rule that every task
       carries an automated test, and which of tasks 02–14 take the documented
       exception, without writing any of their tests here
-- [ ] [The task template](../template.md) documents the `Kind` line, and
+- [x] [The task template](../template.md) documents the `Kind` line, and
       [ADR-0026](../../adr/0026-task-file-format.md) is amended with a pointer
       to the new ADR, the way its `Covers` amendment was made
-- [ ] `scripts/check-tasks.test.mjs` fails on a design task with no
+- [x] `scripts/check-tasks.test.mjs` fails on a design task with no
       alternatives criterion and on an unknown `Kind` value, and passes an
       ordinary task with no `Kind` line — each confirmed to fail before the
       rule existed — and runs in `make verify` and in CI
-- [ ] Tasks [03](03-visual-identity.md),
+- [x] Tasks [03](03-visual-identity.md),
       [04](04-imagery-iconography-and-the-mark.md), [06](06-page-shell.md),
       [07](07-front-page-layout.md), [08](08-catalog-layout.md),
       [09](09-cellar-layout.md) and [10](10-profile-and-sign-up-layout.md)
       carry `- **Kind:** design`, and `node scripts/check-tasks.mjs` passes
       against every existing task file
-- [ ] `CLAUDE.md` names `design-task` alongside the other skills and stays
-      under 200 lines
-- [ ] `make verify` is green
+- [x] `CLAUDE.md` names `design-task` alongside the other skills
+- [x] `make verify` is green
 
 ## Notes
 

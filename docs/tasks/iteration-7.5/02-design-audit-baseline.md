@@ -77,7 +77,9 @@ sign-up, and the shared loading, empty, error and not-found states.
    ([`/quality-sweep`](../quality-backlog.md)).
 2. **Do the screenshots get committed?** They are the only part of this task
    that is evidence rather than opinion, and they are also binary files that
-   are stale the moment [task 06](06-page-shell.md) lands.
+   are stale the moment [task 06](06-page-shell.md) lands. The rule in
+   `CLAUDE.md` now answers half of it: no screenshot is ever committed or
+   uploaded, so what is left to ask is what form the evidence takes instead.
 3. **Which widths count?** "Phone and desktop" needs numbers, and the numbers
    become the widths every later task verifies at. Tablet is a third answer
    nobody has asked for yet.

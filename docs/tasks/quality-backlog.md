@@ -212,6 +212,19 @@ they're already cross-referenced from merged PRs and
   the exclusion as deliberate. Spending a second ArchUnit rule and fixture on
   a class of method that has never actually leaked an entity is a
   product-owner call.
+- **SHOULD-31** *(confirmed 2026-09-29)* **[needs decision]** — `CLAUDE.md` is
+  260 lines against the 200-line budget it states about itself
+  ([ADR-0048](../adr/0048-what-survives-a-claude-md-bullet.md)), and that
+  ADR's revisit trigger ("if `CLAUDE.md` passes 200 lines again") has fired.
+  Found closing [iteration 7.5 task 01](iteration-7.5/01-how-a-design-task-runs.md),
+  which needed a line added to it: a pass that trimmed only rationale, history
+  and descriptive prose took the file from 270 to 252 and no further, so the
+  remaining ~53 lines are rules, not prose. ADR-0048 already names the one
+  option that reaches 200 — moving whole gates (doc-sync, code-review,
+  iteration DoD) into `implement-task` — and rejects it "for now" as "its own
+  decision rather than smuggling it into a compaction pass"; the other live
+  option is its `check-claude-md.mjs`, advisory first. Deciding between them
+  is a product-owner call and an ADR, not a trim.
 
 ## COULD
 

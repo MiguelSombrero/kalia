@@ -9,6 +9,9 @@
   task, superseding "just in time" below
   ([ADR-0047](0047-refinement-is-batched-per-iteration.md)); and the status
   transition gets its own pull request
+- **Amended:** 2026-09-29 — a task file may carry an optional
+  `- **Kind:** design` metadata line, checked by `scripts/check-tasks.mjs`
+  ([ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md))
 
 ## Context
 
@@ -108,6 +111,13 @@ is the normative skeleton.
 > exist in that iteration's `Done when`; every `DW-N` id must be claimed by
 > at least one live task. A `dropped` task's claim does not count — its work
 > moved elsewhere, or it would hide a real gap.
+
+> **Amended 2026-09-29.** A task file may also carry `- **Kind:** design`
+> beside `Status`/`Iteration`/`PR`/`Covers`, marking a task whose outcome is a
+> visual choice between built alternatives. `design` is the only value and no
+> line means an ordinary task. Why, and what a design task is run by, is
+> [ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md); the rule that
+> every task carries an automated test stands unchanged.
 
 ## Alternatives considered
 

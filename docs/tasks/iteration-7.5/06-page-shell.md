@@ -3,6 +3,7 @@
 - **Status:** needs-refinement
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4
+- **Kind:** design
 
 ## Why
 

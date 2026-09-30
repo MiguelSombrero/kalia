@@ -239,3 +239,8 @@ to bound.
 - [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md) — the
   repository's own process is audited as a fifth `/quality-sweep` dimension on
   evidence of recurrence, never as a self-review step at the end of each task.
+- [ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md) — a task whose
+  outcome is a visual choice runs under the `design-task` skill and a
+  `Kind: design` marker the task checker enforces; mockups are shown as
+  Artifacts, never committed, and each design task records its choice in its
+  own ADR.
