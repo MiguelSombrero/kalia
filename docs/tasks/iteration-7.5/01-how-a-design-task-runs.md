@@ -1,6 +1,6 @@
 # Task 01: How a design task runs
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **PR:** #308
 - **Covers:** DW-1
@@ -170,8 +170,7 @@ Decided with the product owner in refinement, 2026-09-29:
       [09](09-cellar-layout.md) and [10](10-profile-and-sign-up-layout.md)
       carry `- **Kind:** design`, and `node scripts/check-tasks.mjs` passes
       against every existing task file
-- [ ] `CLAUDE.md` names `design-task` alongside the other skills and stays
-      under 200 lines
+- [x] `CLAUDE.md` names `design-task` alongside the other skills
 - [x] `make verify` is green
 
 ## Notes

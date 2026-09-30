@@ -33,7 +33,7 @@ restyling what is already there.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-7.5/01-how-a-design-task-runs.md) | How a design task runs | in-progress |
+| [01](iteration-7.5/01-how-a-design-task-runs.md) | How a design task runs | done |
 | [02](iteration-7.5/02-design-audit-baseline.md) | The app as it stands, audited | needs-refinement |
 | [14](iteration-7.5/14-where-design-intent-lives.md) | Where Kalia's design intent lives | needs-refinement |
 | [03](iteration-7.5/03-visual-identity.md) | A new visual identity: colour, type, and the feel they make | needs-refinement |
