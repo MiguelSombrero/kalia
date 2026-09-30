@@ -67,7 +67,13 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   skill sets no cap. A blend of directions is allowed only as a new direction
   that is built and shown, never assembled after the choice, so the direction
   chosen is always one the product owner actually saw.
-- **One task both chooses and builds, in one pull request.**
+- **One task both chooses and builds, in one pull request, in one unbroken
+  run.** The choice lives only in the product owner's eye and the ADR's words
+  until it is built, so the build is not handed to another session. Before the
+  pull request opens, the product owner signs off the built page live, in the
+  browser pane, against the chosen mockup, and the pull request records that
+  sign-off. A session interrupted after the choice resumes from the checkpoint
+  and the ADR, and shows the chosen direction again before building.
 - **Every design task writes its own ADR:** the directions shown, the one
   chosen, and why each other was rejected. Standing intent — what later tasks
   are held against — goes where
@@ -154,6 +160,10 @@ mockup's word alone.
 - Bad, because a reviewer of the pull request cannot see the built page in it.
   The product owner has to look at the running app, or at the private Artifact,
   and the pull request's account of what was seen is text.
+- Bad, because the live sign-off needs the product owner present in the session
+  when the built page is shown. A design task cannot finish while they are
+  away, which is the cost of never publishing an image for them to look at
+  later.
 - Bad, because showing the mockups depends on the Artifact tool being in the
   session; the browser-pane fallback works but is less convenient for looking at
   three directions side by side.

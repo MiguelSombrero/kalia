@@ -32,7 +32,8 @@ rank them in a way that pre-empts the pick.
 3. Branch off up-to-date `dev` and write `.claude/session-checkpoint.md`, both
    exactly as `implement-task` steps 2–3 say. Add a line per round to the
    checkpoint as it happens — the mockups are not kept, so the checkpoint is
-   where each round's directions are noted until step 8 turns them into an ADR.
+   where each round's directions and their Artifact links are noted until
+   step 8 turns them into an ADR.
 4. **Round one: build three distinct directions.** Distinct means they differ
    in a structural choice — layout, hierarchy, density, where the weight
    falls — not in a colour swap of one design. Each is a self-contained HTML
@@ -60,6 +61,13 @@ rank them in a way that pre-empts the pick.
    the checkpoint.
 7. **Stop when the product owner names the direction.** Do not proceed on an
    inference from a comment. If the reply is ambiguous, ask which one.
+   Choosing and building are one unbroken run, steps 7 to 11: the direction is
+   only in the product owner's eye and the ADR's words until it is built, so
+   do not hand the build to a different session. If the session is interrupted
+   anyway, the resuming session reads the checkpoint and the ADR, shows the
+   product owner the chosen direction again — from its Artifact if it still
+   exists, rebuilt from the ADR if not — and builds only after they say that
+   is the one they chose.
 8. **Record the choice in this task's own ADR** — `make next-adr`, then
    [the ADR template](../../../docs/adr/template.md). It holds the directions
    shown, across every round, each described well enough that a reader who
@@ -81,13 +89,19 @@ rank them in a way that pre-empts the pick.
     owner, not something to quietly adjust. **No screenshot leaves the
     machine:** if you take one to look closely, it goes in the scratchpad, and
     it is never committed, pushed or uploaded — `CLAUDE.md` has the rule.
+    **Then the product owner signs it off live.** Show them the built page in
+    the browser pane at each agreed width, next to the chosen mockup, and ask
+    whether it is the direction they chose. Their answer gates the pull
+    request: "matches", or what differs. A difference is fixed and shown
+    again, or recorded in the ADR as a deliberate departure they agreed to —
+    never left for a reviewer to notice.
 11. **Open the pull request** (`implement-task`'s step 12) per
     `docs/PULL_REQUEST_TEMPLATE.md`, saying in words what you saw at each
-    width — no image. The criteria a design task carries beyond an ordinary
-    one are that the product owner chose from built alternatives, and
-    behavioural tests of what shipped — skeletons matching the new layout,
-    `@axe-core/playwright` scans at both widths, keyboard-only tests where
-    something became interactive.
+    width and recording the product owner's sign-off from step 10 — no image.
+    The criteria a design task carries beyond an ordinary one are that the
+    product owner chose from built alternatives, and behavioural tests of what
+    shipped — skeletons matching the new layout, `@axe-core/playwright` scans
+    at both widths, keyboard-only tests where something became interactive.
 
 ## Gates
 

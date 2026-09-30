@@ -113,7 +113,9 @@ Decided with the product owner in refinement, 2026-09-29:
 - **Prototypes do not survive in the repository.** No mockup code is
   committed; the ADR's description of each direction is the record.
 - **One task both chooses and builds, in one pull request.** The iteration stays
-  at thirteen tasks, and tasks 03–10 are already written that way.
+  at thirteen tasks, and tasks 03–10 are already written that way. It is one
+  unbroken run, and the product owner signs the built page off live against the
+  chosen mockup before the pull request opens (decided 2026-09-30).
 - **Three directions in the first round; rounds are open after that.** The
   product owner decides when they are satisfied and when the process ends —
   the skill sets no cap. A blend of directions is allowed only as a new
