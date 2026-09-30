@@ -54,7 +54,12 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   the pull request says in words what was seen at each width, and a capture
   taken to look closely stays in the scratchpad. `CLAUDE.md` carries the rule
   because a capture can show something on the product owner's machine that
-  nobody noticed, and a commit cannot be taken back.
+  nobody noticed, and a commit cannot be taken back. A prose rule alone is the
+  shape [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) says
+  agents break, so `scripts/check-no-raster-images.mjs` backs it: it fails
+  `make verify` and CI on any raster image git tracks outside an allowlist of
+  directories that starts empty. A task that ships a raster asset adds its
+  directory to the allowlist, so the exception is visible in its diff.
 - **Prototypes do not survive in the repository.** No mockup code is committed;
   the ADR's description of each direction is the record.
 - **Directions and rounds.** Three directions in the first round. Rounds are
@@ -155,6 +160,11 @@ mockup's word alone.
 - Neutral, because the checker verifies a word pair in one criterion, not that
   alternatives were built. That stays a review question, the same limit
   `scripts/check-tasks.mjs` already has for the test criterion.
+- Neutral, because the raster check draws its line by directory, not by what a
+  file shows: a capture placed in an allowed directory passes, and a screenshot
+  renamed to a non-image extension is invisible to it. It stops the accident
+  and the careless `git add -f`, not a deliberate evasion, and vector images
+  are out of its scope.
 - Neutral, because a fifth skill's description costs context in every session
   until it is invoked ([ADR-0035](0035-agent-context-layout.md)).
 - Neutral, because `Kind` now exists as a vocabulary with one value; a second
@@ -180,3 +190,11 @@ mockup's word alone.
   alternatives). With the rule added all 5 pass, and `node scripts/check-tasks.mjs`
   passes against every existing task file with `Kind: design` on tasks 03, 04,
   06, 07, 08, 09 and 10.
+- **The raster check was confirmed to fail before it existed and to block a
+  forced add.** `scripts/check-no-raster-images.test.mjs` was written first and
+  the suite errored on the missing module; with the checker it has 7 passing
+  tests, including a staged-but-uncommitted file, a mixed-case extension, an
+  untracked image, and a directory that only shares an allowed one's prefix.
+  On the real tree, `git add -f` of a `.png` made the checker exit 1 and name
+  the file; removed, it exits 0. The repository tracked no raster image when
+  the check was added.

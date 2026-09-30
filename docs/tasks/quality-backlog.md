@@ -213,7 +213,7 @@ they're already cross-referenced from merged PRs and
   a class of method that has never actually leaked an entity is a
   product-owner call.
 - **SHOULD-31** *(confirmed 2026-09-29)* **[needs decision]** — `CLAUDE.md` is
-  259 lines against the 200-line budget it states about itself
+  260 lines against the 200-line budget it states about itself
   ([ADR-0048](../adr/0048-what-survives-a-claude-md-bullet.md)), and that
   ADR's revisit trigger ("if `CLAUDE.md` passes 200 lines again") has fired.
   Found closing [iteration 7.5 task 01](iteration-7.5/01-how-a-design-task-runs.md),

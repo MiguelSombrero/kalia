@@ -57,6 +57,13 @@ shell that follow, not left as a direction.
 - **No beer imagery exists and none is coming from the seed data.** Whatever
   fills a beer's place on a page has to be generated from what a beer already
   has — name, brewery, country, style, ABV — or be deliberate empty space.
+- **A raster asset needs its directory allowed.** `make verify` fails on any
+  tracked raster image
+  ([ADR-0062](../../adr/0062-a-design-task-is-a-skill-and-a-marker.md)), and
+  its allowlist is empty. Shipping one means adding its directory to
+  `ALLOWED_DIRS` in `scripts/check-no-raster-images.mjs`, in this task's diff,
+  and choosing a directory that will never hold a capture. An SVG is not
+  affected.
 - An icon library is a new dependency and therefore a product owner question
   under `CLAUDE.md`'s "ask, don't research" rule, answered in refinement with a
   version, not researched by an agent.
