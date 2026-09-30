@@ -192,9 +192,16 @@ mockup's word alone.
   06, 07, 08, 09 and 10.
 - **The raster check was confirmed to fail before it existed and to block a
   forced add.** `scripts/check-no-raster-images.test.mjs` was written first and
-  the suite errored on the missing module; with the checker it has 7 passing
+  the suite errored on the missing module; with the checker it has 8 passing
   tests, including a staged-but-uncommitted file, a mixed-case extension, an
-  untracked image, and a directory that only shares an allowed one's prefix.
+  untracked image, a directory that only shares an allowed one's prefix, and a
+  run with `GIT_DIR` exported. That last one was added after the first version
+  failed under `git push`: the pre-push hook exports `GIT_DIR`, the fixture's
+  `git init` inherited it, and it set `core.bare = true` in the real
+  repository's shared config, which then broke the hook for every worktree.
+  The checker and the fixtures now drop `GIT_DIR`, `GIT_WORK_TREE` and
+  `GIT_INDEX_FILE`, and the regression test points `GIT_DIR` at a decoy
+  repository so it cannot touch the real one.
   On the real tree, `git add -f` of a `.png` made the checker exit 1 and name
   the file; removed, it exits 0. The repository tracked no raster image when
   the check was added.

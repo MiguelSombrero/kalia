@@ -25,13 +25,19 @@ const ALLOWED_DIRS = [];
 
 const RASTER = /\.(png|jpe?g|gif|webp|heic|heif|avif|bmp|tiff?)$/i;
 
+// A git hook exports GIT_DIR and its siblings, and `make verify-fast` runs
+// this from the pre-push hook. Inherited, they point git at the hook's
+// repository instead of `root`, which is wrong for a fixture and fatal for a
+// checkout git considers bare.
+const { GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, ...ENV_WITHOUT_REPO } = process.env;
+
 /**
  * @param {string} root repository root to check
  * @param {string[]} [allowedDirs] repository-relative directories that may hold raster images
  * @returns {string[]} one message per failure; empty means OK
  */
 export function checkRasterImages(root, allowedDirs = ALLOWED_DIRS) {
-  const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" })
+  const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: root, env: ENV_WITHOUT_REPO, encoding: "utf8" })
     .split("\0")
     .filter(Boolean);
 
