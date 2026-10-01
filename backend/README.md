@@ -111,7 +111,11 @@ is fixed in place on whatever branch is open (CLAUDE.md), by bumping the
 flagged dependency to Trivy's named fixed version in `pom.xml` — confirm the
 fix locally before pushing with
 `trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed pom.xml`,
-matching CI's `vulnerability-scan.yml` exactly.
+matching CI's `vulnerability-scan.yml` exactly. An OS-package finding in the
+image needs no edit: the runtime stage's `apt-get upgrade` takes Ubuntu's
+fixed package at build time, so rebuild and confirm with
+`docker compose build backend` then
+`trivy image --severity HIGH,CRITICAL --ignore-unfixed <compose project>-backend`.
 
 Notable suites:
 
