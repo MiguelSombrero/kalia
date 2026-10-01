@@ -1,6 +1,6 @@
 # Task 06: The page shell every page sits in
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4
 - **Kind:** design
@@ -8,15 +8,16 @@
 ## Why
 
 Kalia has no shell. It has a header in `app/[locale]/layout.tsx` and then each
-page builds its own container, and the four that exist have converged on
+page builds its own container, and most of them have converged on
 copy-pasting the same class string:
 
 ```
 mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 sm:p-8
 ```
 
-— identically on the cellar, the profile and the public cellar, and with
-`max-w-5xl` on the catalog. Nothing shares it and nothing says a fifth page
+— identically on the cellar, the profile, the public cellar and a beer's
+details, near-identically on the front page, with `max-w-5xl` on the catalog
+and `max-w-md` on sign-up. Nothing shares it and nothing says the next page
 should match. That is the drift
 [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) set out to stop, in
 the one dimension it did not tokenise: layout.
@@ -25,15 +26,13 @@ It also carries a bug that is visible on every page. Each `<main>` is
 `min-h-screen`, inside a `<body>` that is `min-h-full flex flex-col` with a
 header above it. Every page is therefore at least a full viewport tall
 *beneath* the header, so every page in Kalia scrolls slightly no matter how
-little is on it. The front page compounds it: `min-h-screen` plus
-`justify-center` means its content is centred in a box that starts below the
-header, so it sits visibly low rather than centred.
+little is on it.
 
 The header is the other half. It is an unconstrained flex row that spans the
 full window — it does not line up with the content beneath it at any width —
 holding a text nav, sign-in status and a locale switcher, with `flex-wrap` as
-its entire response to a narrow screen. Kalia has no footer, no favicon, and no
-mark in the header at all
+its entire response to a narrow screen. Kalia has no footer, a favicon that is
+still the Next.js default, and no mark in the header at all
 ([task 04](04-imagery-iconography-and-the-mark.md)).
 
 ## Scope
@@ -73,8 +72,8 @@ problem above lives in.
   a new interactive widget, and
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s two dependency
   exceptions were both granted for exactly this reason: focus management is
-  behaviour, not styling, and fails silently. Whether one is needed is
-  question 3.
+  behaviour, not styling, and fails silently. Whether one is needed is the
+  chosen direction's call (below).
 - Locale-prefixed URLs ([ADR-0011](../../adr/0011-i18next-localization.md)) and
   the locale-less public cellar
   ([ADR-0050](../../adr/0050-public-cellar-addressing.md)) both pass through
@@ -83,40 +82,46 @@ problem above lives in.
 - Whatever this task decides binds five later surfaces, so it lands before
   them — the iteration index states the ordering and why.
 
+- The agreed widths and the 24×24 minimum target size are iteration-wide
+  decisions recorded in [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **The shell is a `Page` component** that each page wraps itself in. It
+  renders `<main id="main-content">` and the content container, and takes a
+  width variant, so that the catalog's wider grid is an explicit choice rather
+  than a different class string. The skip-link reasoning now in
+  `app/[locale]/layout.tsx` moves into that component with it. A layout that
+  owns `<main>` outright, and a documented set of container classes, were the
+  rejected alternatives, which this task's ADR records.
+- **Phone navigation may be a real widget** if the chosen direction hides
+  destinations behind a control. A new Radix primitive is allowed if the
+  design needs one. Its version is a question for the product owner when it
+  is chosen, not researched (`CLAUDE.md` "ask, don't research"), and
+  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) is amended for it
+  the way its two earlier behaviour exceptions were.
+- **The header carries the mark in whichever form
+  [task 04](04-imagery-iconography-and-the-mark.md) produced.** That task lands
+  first. A header that needs a form task 04 did not make goes back to the
+  product owner as a finding rather than being drawn here unasked.
+- **A footer, if one is chosen, holds only what already exists** — the locale
+  switch, links to existing destinations. It creates no new page, legal or
+  otherwise.
+- Whether the header stays put on scroll, and where sign-in status and the
+  signed-in person's identity sit, are prototyped as directions rather than
+  decided in advance.
+
 ## Open questions
 
-1. **Is there a footer, and what is in it?** Kalia has none. A footer is where
-   a language switch, a link to a public cellar, and eventually the legal
-   surface the [backlog](../backlog.md)'s GDPR entry will need all naturally
-   live — and "none" is a defensible answer for a product with three
-   destinations.
-2. **One container width or several?** The catalog is `max-w-5xl` because it is
-   a grid; the cellar and profile are `max-w-3xl` because they are lists.
-   That may be right and merely undocumented, or it may be why the app feels
-   inconsistent between pages.
-3. **What does navigation do on a phone?** Wrapping is what it does today. A
-   menu behind a control, a bottom bar, or leaving it wrapped but designed, are
-   three different answers with three different accessibility costs.
-4. **Does the header carry the mark?** Depends on
-   [task 04](04-imagery-iconography-and-the-mark.md), and the two should be
-   looked at together rather than in sequence.
-5. **Does the header stay put when the page scrolls?** A feed is the first
-   thing in Kalia that is long enough for the answer to matter.
-6. **Where does sign-in status belong?** It is a text link beside the locale
-   switcher today. Once there is a profile and a public cellar, the signed-in
-   person has an identity that the header is the usual place to show.
-7. **Does the shell become a component, a layout, or a token set?** A React
-   component that pages wrap themselves in, `layout.tsx` owning `<main>`
-   outright, or a documented set of container classes. The third is closest to
-   today and the easiest to drift from again.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The product owner chose from built alternatives — at minimum for the
       header and for the phone-width navigation
-- [ ] No page restates the container: a new page gets the shell by using it,
-      and the `mx-auto flex min-h-screen max-w-… ` string appears in one place
-      rather than four
+- [ ] No page restates the container: every page renders through the `Page`
+      component, and the `mx-auto flex min-h-screen max-w-…` string appears in
+      one place rather than seven
 - [ ] No page is taller than its content requires — the `min-h-screen`-under-a-
       header problem is gone, verified in a browser at both agreed widths
       rather than by reading the classes
@@ -127,7 +132,10 @@ problem above lives in.
       real browser
 - [ ] If phone navigation becomes an interactive widget, its focus and
       keyboard behaviour are covered by a `jest-axe` test and an E2E test that
-      opens it with the keyboard alone
+      opens it with the keyboard alone, and any new dependency's version is
+      pinned in `frontend/package.json` only
+- [ ] Every interactive element in the shell is at least 24×24 CSS pixels at
+      both agreed widths, asserted by a test
 - [ ] The `@axe-core/playwright` scans pass on every page at both widths
 - [ ] The findings [task 02](02-design-audit-baseline.md) recorded against the
       header, footer and page frame are each fixed or carry a written decision

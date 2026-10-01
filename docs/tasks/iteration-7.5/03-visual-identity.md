@@ -1,6 +1,6 @@
 # Task 03: A new visual identity: colour, type, and the feel they make
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-2
 - **Kind:** design
@@ -96,38 +96,40 @@ Whatever is chosen is applied to the token layer and to the three primitives in
   This task is the skill's first real use, so it is also where the skill is
   corrected (acceptance criteria below).
 
+- The agreed widths, the contrast check and the route back to the product
+  owner on a contrast failure are iteration-wide decisions recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **Everything is open.** Today's craft-label direction is not a starting
+  point to refine, and Fraunces and Inter are not kept by default. Typefaces
+  stay within Google Fonts, per the `next/font/google` constraint above.
+- **Each round-one direction proposes its own feel.** Every direction arrives
+  with a one-paragraph feel statement and the reference points behind it. The
+  chosen direction's statement, edited by the product owner, becomes the brief
+  in `docs/design.md` ([task 14](14-where-design-intent-lives.md)).
+- **State colours are required:** at least a success and a destructive token,
+  since the removal toast and the remove dialog already need them. How many
+  accents there are, and whether radius, elevation or spacing get tokens, is
+  decided by the chosen direction and recorded in this task's ADR. If that
+  overturns [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s claim
+  that spacing and radius are not re-theming concerns, the ADR says so in
+  writing.
+- **Both locales.** The mockups carry Finnish strings
+  ([ADR-0062](../../adr/0062-a-design-task-is-a-skill-and-a-marker.md)), and a
+  type scale is judged against Finnish compounds as well as English
+  ([ADR-0011](../../adr/0011-i18next-localization.md)).
+- **This task builds the contrast check.** A dependency-free `scripts/`
+  checker computes the WCAG relative-luminance contrast of the semantic
+  pairings the app uses and fails the build below AA, so that the new palette
+  lands already guarded rather than discovered late in Playwright. Where the
+  list of pairings is declared is this task's to choose, beside `docs/design.md`'s
+  token rows if that fits.
+
 ## Open questions
 
-1. **Is the current direction a starting point or is everything open?** The
-   craft-label direction — warm cream, serif display, sparse pastel — was
-   chosen deliberately and could be refined rather than replaced. "More modern
-   and attractive" is compatible with both, and which one is being asked for
-   changes what gets prototyped.
-2. **What should Kalia feel like, in words?** The written answer is what a
-   prototype is judged against and what stops "modern" meaning whatever the
-   last thing anyone looked at was. Reference points — products, labels,
-   magazines, anything the product owner can point at — are worth more here
-   than adjectives.
-3. **Do Fraunces and Inter survive?** They are a defensible pairing and the
-   product owner picked them from a comparison. Changing them is the single
-   biggest lever on "modern"; keeping them and changing everything else is also
-   a real answer.
-4. **Does the palette need state colours?** Success, warning and destructive
-   have no tokens today, and the removal toast already reports success and
-   failure, and the remove dialog is already a destructive action. They are
-   being expressed with something; it is worth deciding what.
-5. **Is one accent enough?** A feed, a profile and a public cellar are three
-   contexts that may want to be visually distinguishable, and there is one
-   accent tint today.
-6. **Are spacing, radius and elevation re-theming concerns after all?**
-   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) says no. If the
-   chosen direction needs a rounder or flatter or more layered feel, the answer
-   changes, and it should change in writing rather than by a task quietly
-   adding tokens.
-7. **Does the identity have to work in both locales?** Finnish and English set
-   differently — Finnish words are longer and compound — and a type scale or a
-   button sized around English is a thing that breaks in Finnish only
-   ([ADR-0011](../../adr/0011-i18next-localization.md)).
+**None.**
 
 ## Acceptance criteria
 
@@ -145,6 +147,11 @@ Whatever is chosen is applied to the token layer and to the three primitives in
 - [ ] Every colour pairing the app actually uses is computed against WCAG 2.1
       AA **before** the palette is committed, and the ADR's Evidence table
       lists the pairings and ratios that ship — not iteration 2's
+- [ ] A `scripts/` contrast checker fails `make verify` and CI when a declared
+      pairing falls below AA, with a fixture test confirmed to fail before the
+      checker existed
+- [ ] Success and destructive state tokens exist, and the removal toast and
+      the remove dialog use them
 - [ ] `app/globals.css` and `app/[locale]/layout.tsx` are the only files
       carrying a colour or typeface value; no component references a primitive
       or a raw value

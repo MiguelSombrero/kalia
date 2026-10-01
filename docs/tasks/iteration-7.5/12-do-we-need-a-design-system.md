@@ -1,6 +1,6 @@
 # Task 12: Do we need a design system?
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-8
 
@@ -37,46 +37,8 @@ process.
 An inventory of what the redesign actually produced is part of the task, as the
 evidence the decision rests on.
 
-## Non-goals
-
-- Building it. If the answer is yes, what gets built is scheduled work, and
-  this task says what and where rather than doing it.
-- Reopening the two-layer token system.
-  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s structure is
-  settled and [task 03](03-visual-identity.md) works inside it.
-- Kalia's design brief. [Task 14](14-where-design-intent-lives.md) owns whether
-  a standing design document exists and what is in it; this task decides
-  whether `components/ui/` becomes a system. If the answer here is yes, its
-  documentation and that document have to resolve into one thing rather than
-  two that disagree — which is task 14's question 7, asked from this side.
-- The JS/TS token pipeline. It has its own revisit trigger in
-  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) — a second
-  consuming app, or a JS-side need to read a token — and neither has fired.
-  Worth naming here because "design system" and "token pipeline" get conflated,
-  and they are different questions with different triggers.
-
-## Constraints
-
-- **YAGNI is the default.** The repository has rejected speculative tooling
-  before, in this exact area and in writing
-  ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s rejection of a
-  token pipeline as "tooling built years ahead of the need"). A yes has to
-  point at a need that exists.
-- [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md): this earns an
-  ADR either way. "We considered a design system and decided against it, for
-  these reasons, revisit when X" is exactly the kind of decision that vanishes
-  from a codebase if it is not written down — and its absence is what let the
-  question sit open for five iterations.
-- [ADR-0020](../../adr/0020-documentation-roles.md): if the answer involves
-  documentation, each fact gets one home. A design system that restates what
-  `docs/architecture.md` §5 and
-  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) already say is a
-  fourth copy to keep in step.
-- The [backlog](../backlog.md)'s mobile-client entry is the strongest live
-  argument for extraction and the strongest reason to wait: a native client
-  cannot consume CSS custom properties, and nothing is deployed.
-
-## Open questions
+The questions the decision has to answer, held with the product owner when the
+task runs — they are its subject, not things to settle before it starts:
 
 1. **What would a design system be, here?** Documentation of the primitives; a
    rendered component catalogue; usage rules a reviewer can cite; a separate
@@ -106,6 +68,56 @@ evidence the decision rests on.
    people. Kalia has one product owner and agents. Whether that makes it more
    valuable — agents forget, documents do not — or less, is the interesting
    version of this question.
+
+## Non-goals
+
+- Building it. If the answer is yes, what gets built is scheduled work, and
+  this task says what and where rather than doing it.
+- Reopening the two-layer token system.
+  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s structure is
+  settled and [task 03](03-visual-identity.md) works inside it.
+- Kalia's design brief. [Task 14](14-where-design-intent-lives.md) owns whether
+  a standing design document exists and what is in it; this task decides
+  whether `components/ui/` becomes a system. If the answer here is yes, its
+  documentation and that document have to resolve into one thing rather than
+  two that disagree — which is settled in Constraints below.
+- The JS/TS token pipeline. It has its own revisit trigger in
+  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) — a second
+  consuming app, or a JS-side need to read a token — and neither has fired.
+  Worth naming here because "design system" and "token pipeline" get conflated,
+  and they are different questions with different triggers.
+
+## Constraints
+
+- **YAGNI is the default.** The repository has rejected speculative tooling
+  before, in this exact area and in writing
+  ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s rejection of a
+  token pipeline as "tooling built years ahead of the need"). A yes has to
+  point at a need that exists.
+- [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md): this earns an
+  ADR either way. "We considered a design system and decided against it, for
+  these reasons, revisit when X" is exactly the kind of decision that vanishes
+  from a codebase if it is not written down — and its absence is what let the
+  question sit open for five iterations.
+- [ADR-0020](../../adr/0020-documentation-roles.md): if the answer involves
+  documentation, each fact gets one home. A design system that restates what
+  `docs/architecture.md` §5 and
+  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) already say is a
+  fourth copy to keep in step.
+- The [backlog](../backlog.md)'s mobile-client entry is the strongest live
+  argument for extraction and the strongest reason to wait: a native client
+  cannot consume CSS custom properties, and nothing is deployed.
+
+- **If the answer is yes, its documentation and `docs/design.md` resolve into
+  one**, with one containing the other, and this task's ADR says which way
+  round ([task 14](14-where-design-intent-lives.md), decided in refinement on
+  2026-10-01). Two documents that both describe Kalia's visual language is the
+  [ADR-0020](../../adr/0020-documentation-roles.md) failure this avoids.
+
+## Open questions
+
+**None.** Refinement on 2026-10-01 found nothing to settle before the task
+starts; the questions above are the decision itself.
 
 ## Acceptance criteria
 

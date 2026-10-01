@@ -8,6 +8,14 @@ RUN mvn -B package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:25-jre-noble
+# eclipse-temurin:25-jre-noble ships whatever Ubuntu packages it held when the
+# tag was last rebuilt, which lags Ubuntu's own security updates — long enough
+# for the image scan (ADR-0024) to fail on a CVE whose fixed package is already
+# published. Upgrading here takes those fixes at build time. Must run before
+# USER kalia: apt needs root.
+RUN apt-get update \
+	&& apt-get upgrade -y --no-install-recommends \
+	&& rm -rf /var/lib/apt/lists/*
 # curl is here only so the container can health-check itself: the image ships
 # no HTTP client, and without one a compose healthcheck can do no better than
 # probe whether the port is open. An orchestrator with its own HTTP probe

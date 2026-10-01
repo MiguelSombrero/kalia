@@ -1,6 +1,6 @@
 # Task 13: Accessibility and contrast, re-verified across the redesign
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-7
 
@@ -49,15 +49,17 @@ to be its own task.
 
 - Re-running the per-surface checks the layout tasks already ran. Those are
   their gates and they passed; this task assumes them.
-- Raising the standard above WCAG 2.1 AA. That is a product owner decision and
-  a different iteration.
+- Raising the standard above WCAG 2.1 AA beyond the one raise the product
+  owner made in refinement — the 24×24 minimum target size
+  ([iteration index](../iteration-7.5.md)). Any further raise is a different
+  iteration.
 - Auditing the Keycloak pages' controls. They are stock `keycloak.v2` and
   deliberately left so ([ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md));
-  the contrast of what [task 11](11-keycloak-pages-carry-the-identity.md)
-  changed there is that task's own criterion, since those pages are outside
-  `@axe-core/playwright`'s reach entirely.
-- Building new enforcement. If this pass finds that a class of problem needs a
-  check, that is a finding to record, and
+  re-theming them, and the axe scans and contrast that go with it, are
+  [task 11](11-keycloak-pages-carry-the-identity.md)'s own criteria.
+- Building new enforcement beyond the target-size test below. The contrast
+  check is [task 03](03-visual-identity.md)'s. If this pass finds that another
+  class of problem needs a check, that is a finding to record, and
   [ADR-0039](../../adr/0039-mechanisms-for-recurring-rule-violations.md) is the
   standing answer for what to do about it.
 
@@ -79,28 +81,39 @@ to be its own task.
   [the quality backlog](../quality-backlog.md) unless it is cheap to fix, per
   this project's usual split.
 
+- The agreed widths, the 24×24 minimum target size, the contrast check and
+  the route back to the product owner on a contrast failure are
+  iteration-wide decisions recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **Three flows are walked by keyboard alone, in both locales:**
+  1. search → open a beer → add it to the cellar → see it in the cellar →
+     remove it;
+  2. sign in → profile → make the cellar public → open one's own public
+     cellar;
+  3. front page → take in new entries through the "N new" control → follow a
+     username → that person's public cellar.
+
+  Flow 1 is also covered end to end by a Playwright test.
+- **The contrast check already exists when this task starts**, built by
+  [task 03](03-visual-identity.md). This task verifies the final palette under
+  it and completes [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s
+  Evidence, rather than building a second record.
+- **The 24×24 minimum target size is enforced here.** Tasks 06–10 design to
+  it; this task asserts it across every surface and records the raise above
+  WCAG 2.1 AA in an ADR, since staying at 2.1 AA was the rejected
+  alternative.
+- **A contrast failure in a chosen palette stops the task.** The failing
+  pairing goes to the product owner with built adjustments, as a
+  `design-task` round, and the owning task's ADR is amended with the choice.
+  It is never patched quietly.
+- **Both locales are checked**, because Finnish overflows where English fits.
+
 ## Open questions
 
-1. **Which flows get a focus-order walk?** Per-page scans are automated; a walk
-   through "search → open a beer → add to cellar → see it in the cellar → remove
-   it" is manual and is where focus actually breaks. The list of flows is the
-   scope of the manual half.
-2. **Does anything here become permanent enforcement?** A contrast computation
-   that runs in CI against `globals.css` would close the gap
-   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) named, and would
-   sit naturally beside [task 05](05-token-only-styling-enforced.md)'s checker.
-   Whether that is in scope or a finding is worth deciding up front.
-3. **Is target size in play?** WCAG 2.1 AA does not require the 24×24 minimum
-   that 2.2 added, so a redesign could be AA-conformant and still uncomfortable
-   on a phone. Whether Kalia holds itself to the stricter line is a product
-   owner call and would be a deliberate raise of the bar.
-4. **What happens to a finding that needs a redesign to fix?** A contrast
-   failure in a chosen palette is not a bug to patch quietly — it changes a
-   decision the product owner made, and the route back to them should be agreed
-   before it happens rather than during.
-5. **Are both locales checked?** Finnish text is longer, and text that fits in
-   English and overflows in Finnish is an accessibility problem that only one
-   of the two locales shows.
+**None.**
 
 ## Acceptance criteria
 
@@ -110,9 +123,16 @@ to be its own task.
       table describes the palette that ships
 - [ ] `@axe-core/playwright` scans pass on every surface, at both agreed widths
       and in both locales
-- [ ] The agreed flows were walked by keyboard alone and the focus order
-      through each is correct, with a Playwright test covering at least the
-      add-to-cellar flow end to end by keyboard
+- [ ] The three agreed flows were walked by keyboard alone in both locales and
+      the focus order through each is correct, with a Playwright test covering
+      flow 1 end to end by keyboard
+- [ ] Every interactive element on every surface is at least 24×24 CSS pixels
+      at both agreed widths, or meets success criterion 2.5.8's spacing
+      exception, asserted by a Playwright test
+- [ ] An ADR records the raise to WCAG 2.2's 2.5.8 and the rejected
+      alternative of staying at 2.1 AA, passing `node scripts/check-adrs.mjs`,
+      and [architecture.md §5](../../architecture.md)'s accessibility bullet
+      states the bar that is actually enforced
 - [ ] Everything the redesign made interactive is operable without a mouse,
       and everything it animates respects `prefers-reduced-motion`, covered by
       a test

@@ -19,6 +19,19 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
 - Recommendations ("if you liked this IPA…")
 - Following other users, so a feed can be personal rather than global
 - Admin UI + role-based access for catalog management
+- **User-uploaded images** — avatars and beer photos. Storage, a CDN,
+  responsive variants, moderation and a GDPR surface (the mobile section below
+  names the first four). The product owner expects them eventually, so
+  [iteration 7.5](iteration-7.5.md) reserves their shapes in the layouts and
+  fills them with generated placeholders until then.
+- **A social card for a shared public cellar** — what a pasted
+  `/cellars/{username}` link unfurls to in a chat app, whether a static Kalia
+  card or one per cellar
+  ([ADR-0050](../adr/0050-public-cellar-addressing.md)). Left out of iteration
+  7.5's task 04, which shipped only the favicon and touch icon.
+- **Adding a beer from the cellar** — a search-and-add flow inside the cellar,
+  rather than only a route into the catalog
+  ([iteration 7.5 task 09](iteration-7.5/09-cellar-layout.md)).
 
 Engineering work:
 

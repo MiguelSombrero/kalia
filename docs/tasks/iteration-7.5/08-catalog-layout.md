@@ -1,6 +1,6 @@
 # Task 08: Catalog layout
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -31,7 +31,10 @@ rows or thirty.
 
 Both catalog surfaces, prototyped and chosen together because they share
 components: the list page — filters, results grid, pagination, and the
-**Add to cellar** action on each result — and a beer's details page.
+**Add to cellar** action on each result — and a beer's details page. Two
+small additions ride along, neither needing an API change: a way back from a
+beer's details to the exact search that led there, and the number of results
+shown before the results.
 
 Includes each surface's loading skeleton
 (`BeerListSkeleton`, `BeerDetailsSkeleton`), its empty state, and its
@@ -71,31 +74,31 @@ shape-matches those to the layouts this task changes.
 - The shell from [task 06](06-page-shell.md) and the identity from
   [task 03](03-visual-identity.md) are inherited, not re-decided.
 
+- The agreed widths, reserved image shapes and the 24×24 minimum target size
+  are iteration-wide decisions recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **`SearchFilters` may become a client component if the chosen direction
+  needs it** — a drawer, a live result count. If it does, this task writes an
+  ADR superseding the reasoning in [architecture.md §5](../../architecture.md)
+  (acceptance criteria below). Either way the URL stays the state: a filter UI
+  that does not produce a shareable URL is still a regression.
+- **A beer's details page links back to the search that led there**, carrying
+  that search's parameters — filters, sort and page — rather than leaving it to
+  the browser's back button.
+- **The result count is shown before the results.** The API already returns
+  `totalElements`.
+- **A beer card carries the image slot
+  [task 04](04-imagery-iconography-and-the-mark.md) produced**, filled by its
+  generated placeholder. Whether the results are a grid or a dense list, and
+  whether the stretched-link card survives its action button, are prototyped
+  as directions.
+
 ## Open questions
 
-1. **Where do five filters go on a phone?** Above the results is what happens
-   today, which pushes every result below the fold. Collapsed, in a drawer, or
-   reduced to a search box with the rest behind a control, are the usual
-   answers, and two of the three make the form interactive — see Constraints.
-2. **What is a beer card, and what is on it?** Name, brewery, style, ABV and an
-   action today, all at one weight. Which of those a person actually scans by
-   decides the hierarchy.
-3. **Is a grid right?** Three columns of cards is one answer for a catalog; a
-   dense list is another, and it is a better one if scanning many beers
-   quickly is the real task.
-4. **Does the stretched-link card survive an action button?** It works now.
-   Whether it is the right pattern once a card has one interactive child — and
-   whether it should have two, once a beer can be added to a cellar from the
-   list — is worth deciding rather than inheriting.
-5. **What does a beer's detail page do that the card does not?** It shows the
-   same five facts plus a description. If that is all it is, it is a page with
-   very little on it, and that is a design problem worth naming.
-6. **Is there a route back to the search that found a beer?** A visitor who
-   filters, pages to result 40, opens a beer and then goes back — what happens
-   is currently whatever the browser does.
-7. **Where does pagination belong, and what does it say?** At the bottom only,
-   today. Whether a reader needs to know how many results there were before
-   they start scrolling is a real question for a catalog.
+**None.**
 
 ## Acceptance criteria
 
@@ -111,6 +114,11 @@ shape-matches those to the layouts this task changes.
       with their colocated vitest tests asserting the new shapes
 - [ ] The empty state, the beer not-found page and a result set of exactly one
       each render deliberately, covered by tests
+- [ ] A beer's details page reached from a filtered, paged search links back
+      to that same search, covered by a test that asserts the link's
+      parameters
+- [ ] The result count shows before the results and reads correctly in both
+      locales for one result and for many, covered by a test
 - [ ] A card's action is operable by keyboard and does not fight the card's own
       link, covered by a test that drives it with the keyboard alone
 - [ ] Both surfaces work at both agreed widths and the

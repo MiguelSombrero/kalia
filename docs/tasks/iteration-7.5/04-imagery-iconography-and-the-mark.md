@@ -1,6 +1,6 @@
 # Task 04: Imagery, iconography and the Kalia mark
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-2
 - **Kind:** design
@@ -43,8 +43,8 @@ shell that follow, not left as a direction.
 - **User-uploaded images.** Avatars and beer photos from users bring storage,
   a CDN, responsive variants and moderation — the [backlog](../backlog.md)
   names all four under the mobile client's product gaps — plus a GDPR surface.
-  This task designs for the app as it is, and question 1 is about whether it
-  should design so that uploads can arrive later.
+  This task designs the shapes uploads will fill (Constraints), not the
+  uploads.
 - **Adding an image field to a beer.** That is a backend model change and a
   catalog-data question, and [iteration 8](../iteration-8.md) is where the
   catalog's data source is decided.
@@ -64,13 +64,11 @@ shell that follow, not left as a direction.
   `ALLOWED_DIRS` in `scripts/check-no-raster-images.mjs`, in this task's diff,
   and choosing a directory that will never hold a capture. An SVG is not
   affected.
-- An icon library is a new dependency and therefore a product owner question
-  under `CLAUDE.md`'s "ask, don't research" rule, answered in refinement with a
-  version, not researched by an agent.
-  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s no-new-dependency
-  rule for `components/ui/` has been breached twice, both times for behaviour
-  rather than appearance; an icon set is appearance, so it does not fit the
-  exception those two amendments carved out.
+- [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s
+  no-new-dependency rule for `components/ui/` has been breached twice, both
+  times for behaviour rather than appearance; an icon set is appearance, so it
+  does not fit the exception those two amendments carved out — which is why
+  the icons are drawn rather than installed (below).
 - **The CSP is `img-src 'self'` territory**
   ([ADR-0016](../../adr/0016-security-response-headers.md),
   `frontend/lib/config/cspHeader.ts`): anything loaded from a third-party host
@@ -85,38 +83,36 @@ shell that follow, not left as a direction.
   and what it costs, is something to read in
   `frontend/node_modules/next/dist/docs/` rather than recall.
 
+Decided with the product owner in refinement, 2026-10-01 (the iteration-wide
+part, that layouts reserve image shapes, is in
+[the iteration index](../iteration-7.5.md)):
+
+- **User-uploaded images are likely later, so this task designs the shapes
+  they will fill.** A beer and a person each get an image slot, filled for now
+  by a generated placeholder made from what the record already has. What fills
+  the beer's slot — a mark from style or country, a colour from ABV, a
+  letterform from the brewery — is prototyped as alternatives. So is the
+  person's, with initials on a coloured ground among them, and it applies in
+  the feed as well as on the profile. Uploads themselves are a
+  [backlog](../backlog.md) entry.
+- **Icons are hand-drawn SVG, with no icon library.** A handful are drawn to
+  match the mark and live in `components/ui/`, which keeps
+  [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s rule against
+  taking on a dependency for appearance.
+- **An agent drawing SVG by hand is acceptable output** for the mark's new
+  forms, the icons and any illustration. They are shown as built alternatives
+  like everything else, and the product owner rejects what falls short.
+- **The mark gets a compact square form**, used for a favicon and an
+  `apple-touch-icon` that replace the Next.js default `app/favicon.ico` still
+  in the tree. The form the header holds is chosen with
+  [task 06](06-page-shell.md), which follows this one. A `.ico` is not caught
+  by the raster check but a `.png` is, and the constraint above applies to it.
+- **No social card in this iteration.** What a pasted public-cellar link
+  unfurls to is a [backlog](../backlog.md) entry.
+
 ## Open questions
 
-1. **Are user-uploaded images ever coming?** The answer changes this task
-   completely. If avatars and beer photos arrive in a year, this task designs
-   the shapes they will fill and picks placeholders that become real images. If
-   they never arrive, Kalia is a text product and should be designed as one
-   confidently rather than apologetically.
-2. **Does a beer get a visual stand-in?** A generated mark from style or
-   country, a colour derived from ABV, a letterform from the brewery — or an
-   empty card that says nothing and is the better answer. This is the single
-   biggest decision in the task, because the catalog list and the cellar are
-   both grids of beers.
-3. **Icons: none, hand-drawn, or a library?** Kalia's three
-   `components/ui` primitives are hand-written on principle. A handful of SVGs
-   drawn to match the mark keeps that principle; an icon set is a dependency
-   with hundreds of glyphs, of which Kalia would use eight.
-4. **Does the mark need a second form?** The existing SVG is a wide
-   snifter-plus-wordmark lockup at 260×72. A header — especially at phone width
-   — usually wants a compact mark, and a favicon and an `apple-touch-icon` want
-   a square one. Kalia has no favicon today.
-5. **Who draws what does not exist?** Illustration and a redrawn mark are
-   production work, and the honest question is whether an agent drawing SVG by
-   hand is acceptable output or whether this stays deliberately minimal.
-6. **Does a profile get an avatar?** There is no avatar today and no image to
-   put in one. Initials on a coloured ground is the usual answer and needs no
-   uploads, no storage and no moderation — but it is a design decision and it
-   shows up in the feed as well as the profile.
-7. **Is there a Kalia favicon and social card?** The public cellar is the app's
-   only externally-shared URL
-   ([ADR-0050](../../adr/0050-public-cellar-addressing.md)), and it is served
-   `noindex, nofollow` but still gets pasted into chat clients that unfurl it.
-   What that unfurl looks like is a design question nobody has asked.
+**None.**
 
 ## Acceptance criteria
 
@@ -125,15 +121,14 @@ shell that follow, not left as a direction.
 - [ ] Every asset that ships exists as a real file in the repository, and the
       Kalia mark is reachable by the app rather than living only under
       `keycloak/themes/`
+- [ ] The favicon and `apple-touch-icon` are Kalia's square mark, verified in
+      a browser, not by reading the markup
+- [ ] The beer and person image slots render their generated placeholder,
+      covered by a vitest test per placeholder component
 - [ ] Decorative assets are hidden from assistive technology and meaningful
       ones carry an accessible name, asserted by a `jest-axe` test on the
       component that renders them
-- [ ] If an icon dependency is taken on, its version is pinned in
-      `frontend/package.json` and recorded nowhere else, the technology is
-      added to the README tech-stack inventory without its number, and
-      [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) is amended to
-      say why appearance earned an exception its own amendments limited to
-      behaviour
+- [ ] No icon dependency is added to `frontend/package.json`
 - [ ] Nothing loads from a third-party origin, or the CSP change that permits
       it is made deliberately and verified in a browser rather than with `curl`
 - [ ] `make verify` is green

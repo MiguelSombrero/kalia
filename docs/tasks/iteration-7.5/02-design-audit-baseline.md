@@ -1,6 +1,6 @@
 # Task 02: The app as it stands, audited
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-5
 
@@ -33,9 +33,16 @@ and what is wrong with it. Findings are visual and usability problems, each
 with an identifier a later task can cite, each stating what is wrong rather
 than what to do about it.
 
-The surfaces: front page, catalog list with filters and pagination, a beer's
-details, an empty cellar and a populated one, a public cellar, a profile,
-sign-up, and the shared loading, empty, error and not-found states.
+The surfaces: front page signed out and signed in, catalog list with filters
+and pagination, a beer's details, an empty cellar and a populated one, a public
+cellar, a profile, sign-up, Keycloak's login and registration pages (which
+[DW-3](../iteration-7.5.md) names), and the shared loading, empty, error and
+not-found states.
+
+Two further kinds of finding are recorded, each marked as such. A
+**product** finding is a flow missing a step rather than a control that is
+hard to use. A **keep** finding is something deliberately right, so that the
+redesign can show it kept it on purpose rather than by accident.
 
 ## Non-goals
 
@@ -61,54 +68,54 @@ sign-up, and the shared loading, empty, error and not-found states.
   [the quality backlog](../quality-backlog.md)'s are: a finding that is dropped
   keeps its ID rather than being renumbered, so a later task's citation never
   goes stale.
-- Where a finding lands is an
-  [ADR-0020](../../adr/0020-documentation-roles.md) question and not obvious —
-  this is a snapshot of a moment, not a standing document, and the repository
-  has no home for that shape yet.
+- **The agreed widths are the iteration's**, 375×812 and 1280×800
+  ([iteration index](../iteration-7.5.md), decided in refinement).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **The findings live in `docs/tasks/iteration-7.5/audit.md`**, a file that
+  dies with the iteration rather than an addition to
+  [the quality backlog](../quality-backlog.md) or the iteration index. It is a
+  snapshot, and its place says so. `scripts/check-tasks.mjs` reads only
+  `NN-*.md` files, so it accepts a file of this name beside the tasks.
+- **Findings are written in words; no screenshot is committed, pushed or
+  uploaded** (`CLAUDE.md`). Looking at a page to write a finding happens in
+  the desktop app's browser pane, and any capture taken to look closely stays
+  in the scratchpad.
+- **The committed evidence is a Playwright "surface tour" spec** in
+  `frontend/e2e/`: code only, running in Playwright's own isolated headless
+  browser against the local stack. It visits every surface in Scope at both
+  widths and asserts that each one rendered, so a page that disappears or
+  breaks fails the suite. **It takes no screenshots at all**, not even into
+  gitignored output, so there is no image to leak. Later tasks may extend it.
+- **A product finding is recorded here, not sent elsewhere first.** The task
+  that owns the surface records what happens to it — fixed, or a
+  [backlog](../backlog.md) entry — and that written decision is what
+  [DW-5](../iteration-7.5.md) checks.
+- **A keep finding is allowed** and carries an ID like any other.
 
 ## Open questions
 
-1. **Where do the findings live?** A file under `docs/tasks/iteration-7.5/`
-   that dies with the iteration; an addition to
-   [the quality backlog](../quality-backlog.md), which is the existing home for
-   "found, not yet scheduled"; or the iteration index itself. The first is
-   honest about the document's lifespan, the second reuses a mechanism that
-   already works and already has a sweep behind it
-   ([`/quality-sweep`](../quality-backlog.md)).
-2. **Do the screenshots get committed?** They are the only part of this task
-   that is evidence rather than opinion, and they are also binary files that
-   are stale the moment [task 06](06-page-shell.md) lands. The rule in
-   `CLAUDE.md` now answers half of it: no screenshot is ever committed or
-   uploaded, so what is left to ask is what form the evidence takes instead.
-3. **Which widths count?** "Phone and desktop" needs numbers, and the numbers
-   become the widths every later task verifies at. Tablet is a third answer
-   nobody has asked for yet.
-4. **How far does "usability" reach?** A control that is hard to find is
-   clearly in. An entire flow that is missing a step — say, no way to get from
-   a beer's details back to the search that found it — is a product finding
-   wearing a usability finding's clothes, and it is worth deciding now whether
-   those get recorded here or sent to [the backlog](../backlog.md).
-5. **Is a finding allowed to say "this is fine"?** A baseline that records only
-   problems cannot later show that something was deliberately kept, and this
-   iteration is going to change things that were right.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] Every surface named in Scope is captured at both agreed widths, and the
-      captures are reproducible — a committed script or a documented command,
-      not a manual pass someone would have to repeat by hand
-- [ ] Each finding carries a permanent ID, names the surface and width it was
-      found at, and states the problem without naming a fix
+- [ ] `docs/tasks/iteration-7.5/audit.md` records findings for every surface
+      named in Scope at both agreed widths, each with a permanent ID, the
+      surface and width it was found at, its kind (problem, product or keep),
+      and the problem stated without naming a fix
+- [ ] A committed Playwright spec visits every surface in Scope at both agreed
+      widths and asserts each rendered; it was confirmed to fail when pointed
+      at a route that does not exist, and it writes no screenshot anywhere
+- [ ] `node scripts/check-no-raster-images.mjs` passes, and the pull request
+      describes in words what was seen
 - [ ] At least one finding is cross-page — a problem invisible from any single
       surface — or the audit states in writing that it looked for such findings
       and there were none
-- [ ] Tasks [06](06-page-shell.md)–[10](10-profile-and-sign-up-layout.md) each cite the
-      findings on their surface in their Scope, so that
+- [ ] Tasks [06](06-page-shell.md)–[11](11-keycloak-pages-carry-the-identity.md)
+      each cite the findings on their surface in their Scope, so that
       [DW-5](../iteration-7.5.md) can be checked by reading rather than by
       remembering
-- [ ] The capture script runs in CI or is covered by a test that fails when a
-      surface it should capture no longer exists, so the baseline cannot
-      silently stop covering a page
 - [ ] `make verify` is green
 
 ## Notes
@@ -119,5 +126,5 @@ statement, and accepted.
 
 The accepted cost, stated here rather than discovered later: a findings
 document is stale from the moment the redesign starts landing, and nothing
-keeps it true. It is a baseline, not a standing document — which is exactly
-what question 1 is asking about.
+keeps it true. It is a baseline, not a standing document — which is why it
+lives beside the tasks and dies with the iteration.

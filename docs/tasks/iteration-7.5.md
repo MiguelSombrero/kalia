@@ -34,19 +34,19 @@ restyling what is already there.
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-7.5/01-how-a-design-task-runs.md) | How a design task runs | done |
-| [02](iteration-7.5/02-design-audit-baseline.md) | The app as it stands, audited | needs-refinement |
-| [14](iteration-7.5/14-where-design-intent-lives.md) | Where Kalia's design intent lives | needs-refinement |
-| [03](iteration-7.5/03-visual-identity.md) | A new visual identity: colour, type, and the feel they make | needs-refinement |
-| [04](iteration-7.5/04-imagery-iconography-and-the-mark.md) | Imagery, iconography and the Kalia mark | needs-refinement |
-| [05](iteration-7.5/05-token-only-styling-enforced.md) | Make token-only styling a rule the build enforces | needs-refinement |
-| [06](iteration-7.5/06-page-shell.md) | The page shell every page sits in | needs-refinement |
-| [07](iteration-7.5/07-front-page-layout.md) | Front page layout | needs-refinement |
-| [08](iteration-7.5/08-catalog-layout.md) | Catalog layout | needs-refinement |
-| [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | needs-refinement |
-| [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | needs-refinement |
-| [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | needs-refinement |
-| [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | needs-refinement |
-| [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | needs-refinement |
+| [02](iteration-7.5/02-design-audit-baseline.md) | The app as it stands, audited | refined |
+| [14](iteration-7.5/14-where-design-intent-lives.md) | Where Kalia's design intent lives | refined |
+| [03](iteration-7.5/03-visual-identity.md) | A new visual identity: colour, type, and the feel they make | refined |
+| [04](iteration-7.5/04-imagery-iconography-and-the-mark.md) | Imagery, iconography and the Kalia mark | refined |
+| [05](iteration-7.5/05-token-only-styling-enforced.md) | Make token-only styling a rule the build enforces | refined |
+| [06](iteration-7.5/06-page-shell.md) | The page shell every page sits in | refined |
+| [07](iteration-7.5/07-front-page-layout.md) | Front page layout | refined |
+| [08](iteration-7.5/08-catalog-layout.md) | Catalog layout | refined |
+| [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | refined |
+| [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | refined |
+| [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | refined |
+| [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | refined |
+| [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | refined |
 
 **Every task here is a prototyping task, and that is what makes this iteration
 unusual.** The right palette, the right layout and the right amount of
@@ -111,6 +111,41 @@ page that iteration 6.5 delivers.
 the catalog-contribution forms it adds are the first UI written under the new
 identity rather than converted to it, which is the first honest test of whether
 [task 12](iteration-7.5/12-do-we-need-a-design-system.md)'s answer was right.
+
+**Decided in refinement on 2026-10-01**, binding every task that points here
+— recorded once rather than copied into each task file
+([ADR-0020](../adr/0020-documentation-roles.md)):
+
+- **The two agreed widths are 375×812 and 1280×800.** Every "both agreed
+  widths" in this iteration, and [DW-4](#done-when), means exactly these. No
+  tablet width is verified.
+- **The opening audit is a written problem list, not a gallery.** Its findings
+  live in `docs/tasks/iteration-7.5/audit.md` with permanent IDs, described in
+  words; what is committed as evidence is a Playwright spec that visits every
+  surface at both widths and takes no screenshots
+  ([task 02](iteration-7.5/02-design-audit-baseline.md) has the detail).
+- **Kalia's standing design intent lives in `docs/design.md`**, a document
+  outside [ADR-0020](../adr/0020-documentation-roles.md)'s three homes on
+  [`docs/glossary.md`](../glossary.md)'s model;
+  [task 14](iteration-7.5/14-where-design-intent-lives.md) writes its rules.
+- **User-uploaded images are likely later, so layouts reserve their shapes.**
+  A beer and a person each get an image slot in the layouts that show them,
+  filled for now by a generated placeholder
+  ([task 04](iteration-7.5/04-imagery-iconography-and-the-mark.md)). Uploads
+  themselves stay in the [backlog](backlog.md).
+- **Interactive targets are at least 24×24 CSS pixels** — WCAG 2.2 success
+  criterion 2.5.8, a deliberate raise above the 2.1 AA bar Kalia otherwise
+  holds, because a redesign aimed at phones could pass 2.1 AA and still be
+  uncomfortable to tap. Tasks 06–10 design to it;
+  [task 13](iteration-7.5/13-accessibility-and-contrast-reverified.md)
+  enforces it and records the raise in an ADR.
+- **Contrast becomes a build check**, built by
+  [task 03](iteration-7.5/03-visual-identity.md) so that the new palette lands
+  already guarded.
+- **A contrast failure in a palette the product owner chose goes back to
+  them.** It is never patched quietly: the failing pairing is shown with built
+  adjustments, as a `design-task` round, and the owning task's ADR is amended
+  with the choice.
 
 **Dark mode was considered and deliberately not reopened.**
 [ADR-0021](../adr/0021-design-tokens-ui-primitives.md) dropped it as a

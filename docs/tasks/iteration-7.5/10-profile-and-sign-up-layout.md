@@ -1,6 +1,6 @@
 # Task 10: Profile and sign-up layout
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -39,7 +39,8 @@ control and the consequences it needs to make visible, and the sign-up page
 Kalia renders.
 
 Includes `ProfileViewSkeleton`, the signed-out profile prompt, and the sign-up
-page's error and pending states.
+page's two error states — the acknowledgement left unticked, and the
+rate-limited hand-off.
 
 ## Non-goals
 
@@ -69,46 +70,51 @@ page's error and pending states.
   ([ADR-0050](../../adr/0050-public-cellar-addressing.md)). A design that
   previews the public cellar from inside the profile must not become a way to
   see a cellar that is not public.
-- Sign-up is a `react-hook-form` + Zod form
-  ([ADR-0010](../../adr/0010-react-hook-form-zod.md)) — a mutation, not a
-  navigation — and its failures surface as a tagged `ApiError`
-  ([ADR-0023](../../adr/0023-typed-api-failures.md)).
+- **Kalia's sign-up page collects no credentials.** It is one acknowledgement
+  checkbox and a button, posted to the `startSignUp` Server Action, which
+  rate-limits the attempt and hands the visitor to Keycloak's registration
+  page, where the email and password are actually entered
+  ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)). Its two
+  failures come back as an `?error=` parameter (`agree-required`,
+  `rate-limited`). The registration form itself is
+  [task 11](11-keycloak-pages-carry-the-identity.md)'s.
 - **A sign-up page must not become a second front door with different rules.**
-  Whatever it says about passwords or email has to be what Keycloak actually
-  enforces ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)), or
+  If a redesign has it say anything about passwords or email, that has to be
+  what Keycloak actually enforces ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)), or
   it is a lie that fails only when a real person hits it.
 - The shell from [task 06](06-page-shell.md) and the identity from
   [task 03](03-visual-identity.md) are inherited, not re-decided.
 
+- The agreed widths, reserved image shapes and the 24×24 minimum target size
+  are iteration-wide decisions recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **Sign-up and the Keycloak pages share one "single form, centred" layout**,
+  so the hand-off from Kalia's page to Keycloak's feels continuous. The two
+  are recognisably related rather than identical, because Keycloak's pages
+  stay inside `keycloak.v2`'s documented hooks
+  ([task 11](11-keycloak-pages-carry-the-identity.md)). Whichever of the two
+  tasks runs first proposes the layout; the second inherits it.
+- **The profile carries the person's image slot** from
+  [task 04](04-imagery-iconography-and-the-mark.md), filled by its generated
+  placeholder.
+- **What a profile is for, whether it shows the person their own public
+  cellar, and how the visibility control is presented**, including whether
+  making a cellar public asks for confirmation, are prototyped as directions.
+  Any preview of the public cellar shows only what is public, per the
+  Constraints above.
+- **Sign-out stays in the header** ([task 06](06-page-shell.md)). The profile
+  may also offer it if the chosen direction shows it there.
+- **What a new person sees right after signing up is not this task's.**
+  Where the registration hand-off lands them is unchanged, and their first
+  look at their own cellar is its empty state, which
+  [task 09](09-cellar-layout.md) owns.
+
 ## Open questions
 
-1. **What is a profile page for?** Somewhere to change settings, somewhere to
-   see yourself as others see you, or the private twin of your public cellar.
-   Three different pages, and today's is an accidental version of the first.
-2. **Does a profile show the person their own public cellar?** A link, a
-   preview, or nothing. This is the only thing that would make the visibility
-   toggle's consequence concrete.
-3. **How is a consequential toggle presented?** Making a cellar public
-   publishes a page. Whether that deserves a confirmation, a clear
-   before/after, or simply better wording and placement, is worth prototyping
-   rather than assuming.
-4. **Is the profile the right home for sign-out?** Sign-out lives in the header
-   today. Most products put it on the account page too, and the header is about
-   to be redesigned in [task 06](06-page-shell.md).
-5. **What does the profile look like when there is nothing to put on it?**
-   Which is today, and — unless non-goal one changes — after this task too. A
-   design that is honest about a two-field profile is better than one that pads
-   it.
-6. **Does sign-up share a layout with anything?** It is a single form on an
-   otherwise empty page, and so is the sign-in page Keycloak renders
-   ([task 11](11-keycloak-pages-carry-the-identity.md)). Whether Kalia has a
-   "one form, nothing else" layout that both use is a question the two tasks
-   should answer together.
-7. **What does a person see immediately after signing up?** The flow ends at
-   their own empty cellar ([iteration 6.5](../iteration-6.5.md) DW-3), which is
-   the emptiest page in the product and the one moment a new user is most
-   likely to leave. Whether that is this task's problem or
-   [task 09](09-cellar-layout.md)'s is worth settling in refinement.
+**None.**
 
 ## Acceptance criteria
 
@@ -119,13 +125,14 @@ page's error and pending states.
 - [ ] Toggling visibility still publishes and unpublishes the public cellar,
       and a non-public cellar is still indistinguishable from a missing one,
       covered by the existing tests updated rather than deleted
-- [ ] The sign-up page renders in the new identity, and anything it states
-      about credentials matches what Keycloak enforces — verified against the
-      running realm in a browser, not against the copy
+- [ ] The sign-up page renders in the new identity and the shared single-form
+      layout, and anything it states about credentials matches what Keycloak
+      enforces — verified against the running realm in a browser, not against
+      the copy
 - [ ] `ProfileViewSkeleton` matches the layout that ships, with its test
       asserting the new shape
-- [ ] The signed-out profile prompt, a sign-up validation failure and a
-      sign-up server failure each render deliberately, covered by tests
+- [ ] The signed-out profile prompt, the `agree-required` error and the
+      `rate-limited` error each render deliberately, covered by tests
 - [ ] All three surfaces work at both agreed widths and the
       `@axe-core/playwright` scans pass at each
 - [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the

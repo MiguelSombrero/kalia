@@ -1,6 +1,6 @@
 # Task 05: Make token-only styling a rule the build enforces
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-6
 
@@ -43,9 +43,9 @@ silence.
   this task checks against whatever that one produces.
 - Fixing violations. There are none today; if the redesign introduces any, they
   belong to the task that introduced them.
-- Enforcing anything beyond colour and typeface unless
-  [task 03](03-visual-identity.md)'s question 6 says spacing, radius and
-  elevation became re-theming concerns too.
+- Enforcing anything beyond colour and typeface, even if
+  [task 03](03-visual-identity.md)'s chosen direction tokenises radius,
+  elevation or spacing. A shadow's colour is a colour and is covered.
 - The `cn()` class-merging problem.
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) records it as an
   accepted Bad consequence — `cn()` does not de-duplicate conflicting Tailwind
@@ -61,8 +61,8 @@ silence.
 - `eslint.config.mjs` is the frontend's existing boundary enforcer — it already
   states the feature layers and the directions allowed between them
   ([architecture.md §5](../../architecture.md)) — so a lint rule is a credible
-  second home with a real advantage: it reports in the editor. Choosing between
-  the two is question 1.
+  second home with a real advantage: it reports in the editor. It was weighed
+  and not chosen (below).
 - [ADR-0046](../../adr/0046-edit-time-checks-and-one-verify-gate.md): one
   verify gate. A new check joins `make verify` rather than becoming a thing
   someone has to remember to run.
@@ -73,32 +73,32 @@ silence.
 - [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md): whether this
   earns its own ADR or an amendment to
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) depends on whether
-  a credible alternative is rejected. Question 1 suggests one will be.
+  a credible alternative is rejected — and the ESLint rule was.
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **A dependency-free `scripts/` checker, not an ESLint rule.** It matches
+  `check-comments.mjs`, which polices a comparable convention, and it runs in
+  `make verify-fast`, in the `PostToolUse` edit-time hook and in CI. The edit
+  hook is where its feedback reaches the agents who write nearly all of this
+  code, so the ESLint rule's real advantage, reporting in the editor, buys
+  little here.
+- **What is banned:** hex, `rgb()` and `hsl()` colour literals; Tailwind's
+  default palette utilities (`bg-zinc-100`, `text-white`); arbitrary colour
+  and font values (`bg-[#fff]`, `font-[…]`); and any `var(--…)` reference to
+  the primitive layer. Arbitrary *size* values such as `dialog.tsx`'s
+  `max-h-[calc(100dvh-2rem)]` stay legal.
+- **It covers `components/ui/`** as well as features and pages. That is where
+  a violation would spread furthest.
+- **It reads CSS as well as TSX:** any `.css` file under `frontend/` except
+  `app/globals.css`.
+- **An exception is an inline marker comment stating its reason**, on or just
+  above the line it excuses, so it is visible where an editor meets it. A
+  marker with no reason fails.
 
 ## Open questions
 
-1. **ESLint rule or `scripts/` checker?** A lint rule reports in the editor,
-   understands JSX, and is where the frontend's other structural rules already
-   live; a checker is dependency-free, runs in `verify-fast`, and matches
-   `check-comments.mjs`, which polices a comparable convention. Doing both is a
-   third answer and probably a waste.
-2. **What exactly is banned?** Candidates, in widening order: hex and `rgb()`
-   literals in `.tsx`; Tailwind's default colour utilities (`bg-zinc-100`,
-   `text-white`); arbitrary values (`bg-[#fff]`, `text-[color:var(--x)]`);
-   direct references to the primitive layer (`var(--mint-600)`). The last one
-   is the rule ADR-0021 actually states and the easiest to violate innocently.
-3. **How is an exception granted?** `dialog.tsx` already carries arbitrary
-   *size* values (`max-h-[calc(100dvh-2rem)]`) for a good reason, so a blanket
-   ban on square brackets is wrong. Whether an exception is a comment, an
-   allowlist in the checker, or an ESLint disable with a reason, changes how
-   visible it is later — and an exception nobody can see is how the rule dies.
-4. **Does it cover the primitives themselves?** `components/ui/` is where a
-   semantic token is turned into a class string, so it is the one place that
-   legitimately does more colour work than anywhere else — but it is also where
-   a violation would spread furthest.
-5. **Does it look at CSS as well as TSX?** Today all the styling is in `.tsx`
-   plus one stylesheet. If the redesign introduces component CSS, a checker
-   that only reads `.tsx` goes quietly blind.
+**None.**
 
 ## Acceptance criteria
 
@@ -106,9 +106,16 @@ silence.
       token layer fails the build, demonstrated by a test that introduces such
       a component and asserts the failure — the check was confirmed to fail
       before it was confirmed to pass
-- [ ] The check runs in `make verify` and in CI, and in the `PostToolUse`
-      edit-time hook if it is fast enough to belong there
+- [ ] The check runs in `make verify-fast`, `make verify`, CI and the
+      `PostToolUse` edit-time hook
       ([ADR-0046](../../adr/0046-edit-time-checks-and-one-verify-gate.md))
+- [ ] Its fixture test covers each banned form, a `.css` file, a file under
+      `components/ui/`, a legal arbitrary size value, a marker with a reason
+      and a marker without one
+- [ ] An ADR, or an amendment to
+      [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md), records the
+      rule and the rejected ESLint alternative, passing
+      `node scripts/check-adrs.mjs`
 - [ ] Every existing file passes with no exception granted, or each exception
       granted is visible in the diff and states its reason
 - [ ] The rule is documented once, in the home
