@@ -1,6 +1,6 @@
 # Task 14: Where Kalia's design intent lives
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-2
 
@@ -38,10 +38,10 @@ checker.
 
 ## Scope
 
-One decision, recorded, and the document if the answer is yes: whether Kalia
-has a standing design document; exactly what it holds and — more importantly —
-what it must not, against the three existing homes; how it is kept true; and
-which later tasks write which parts of it.
+The decision, recorded, and the document's skeleton: that Kalia has a
+standing design document; exactly what it holds and — more importantly — what
+it must not, against the three existing homes; how it is kept true; and which
+later tasks write which parts of it.
 
 ## Non-goals
 
@@ -55,7 +55,7 @@ which later tasks write which parts of it.
   conflating the two is how a design document turns into a component catalogue
   nobody maintains.
 - Restating token values. `app/globals.css` is their one home and this document
-  does not become a second — see question 3, which is the whole risk.
+  does not become a second — that line is the whole risk.
 - Reopening [ADR-0020](../../adr/0020-documentation-roles.md)'s three-home rule
   as a rule. The glossary already established that a document outside the three
   can exist without overturning it; this is the second such case, not a new
@@ -86,58 +86,56 @@ which later tasks write which parts of it.
   the feel statement needs to know where it goes; deciding afterwards means
   moving it.
 
+Decided with the product owner in refinement, 2026-10-01 (the iteration-wide
+part is in [the iteration index](../iteration-7.5.md)):
+
+- **The document exists and is named `docs/design.md`.** The product owner
+  chose the name knowing that [architecture.md §5](../../architecture.md) is
+  titled "Frontend design"; the two are told apart by what each holds, and §5
+  points at this document rather than sharing its subject.
+- **What it holds:** the feel statement and its reference points; what each
+  semantic token *means* and when to reach for it; layout principles that are
+  standing rather than per-page; what imagery and the mark are for; and the
+  two locales' typographic constraints. Which of those turn out to be
+  conventions belonging in `frontend/README.md` instead is this task's ADR to
+  draw.
+- **It holds no values.** `app/globals.css` stays their one home. A token's
+  meaning is not a value and is what this document exists to hold.
+- **The token-meaning half is machine-checked**, on
+  [`docs/glossary.md`](../../glossary.md)'s model: every semantic token in
+  `app/globals.css` has a row saying what it means, and every row names a
+  token that exists. The check is bidirectional and ships a fixture self-test.
+  Everything else in the document is review-maintained.
+- **It is for agents first, and it is linked rather than loaded.**
+  [Architecture.md §5](../../architecture.md) and step 2 of the `design-task`
+  skill point at it; nothing imports it into every session
+  ([ADR-0035](../../adr/0035-agent-context-layout.md)).
+- **If [task 12](12-do-we-need-a-design-system.md) says yes**, the design
+  system's documentation and this document resolve into one, with one
+  containing the other. Task 12's ADR says which way round.
+
 ## Open questions
 
-1. **Does it exist at all?** The honest alternative is that
-   [task 03](03-visual-identity.md)'s ADR amendment carries the feel statement
-   and nothing else is created. That is cheaper, keeps the three homes intact,
-   and the cost is that a standing brief is buried in a decision record — which
-   is exactly where today's one-line version is buried, and why it is not doing
-   any work.
-2. **What is in it?** Candidates: the feel statement and its reference points;
-   what each semantic token *means* and when to reach for it; layout principles
-   that are standing rather than per-page; what imagery and the mark are for;
-   the two locales' typographic constraints. Some of these belong in
-   `frontend/README.md` as conventions instead, and separating those is most of
-   the work.
-3. **Does it hold any values?** The strong recommendation is no — `globals.css`
-   is their home. But "what `--color-accent` means and when to use it" is not a
-   value, and it is genuinely homeless today. Where that line falls decides
-   whether this document is useful or is SHOULD-20 repeating itself.
-4. **Is any of it machine-checked?** The glossary's pattern maps directly:
-   every semantic token in `globals.css` has a row saying what it means, checked
-   bidirectionally, so a token added without an explanation fails the build and
-   a row naming a token that no longer exists fails too. That would sit
-   naturally beside [task 05](05-token-only-styling-enforced.md)'s checker and
-   would make this the second document in the repository that cannot rot
-   quietly.
-5. **Who is it for?** Agents, the product owner, or a future contributor. The
-   glossary answers "agents, because they forget"; if this document's answer is
-   the same, its shape follows from that, and so does whether it is loaded into
-   context.
-6. **Is it named `docs/design.md`?** `architecture.md` §5 is already titled
-   "Frontend design", and the [backlog](../backlog.md) already notes that the
-   singular title is a problem once a second client exists. Two documents whose
-   names both say "design" is a navigation problem on day one.
-7. **What happens to it if [task 12](12-do-we-need-a-design-system.md) says
-   yes?** A design system's documentation and a design brief overlap, and the
-   answer should be that one contains the other rather than that both exist and
-   disagree.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] An ADR records whether the document exists, what it holds, what it
+- [ ] An ADR records that the document exists, what it holds, what it
       explicitly does not, and the rejected alternative of folding the brief
       into [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) — with at
       least one Bad or Neutral consequence, passing
       `node scripts/check-adrs.mjs`
-- [ ] If it exists, it carries a "how this file is kept current" section naming
-      which parts are checked and which are review-maintained, following
-      [`docs/glossary.md`](../../glossary.md)
-- [ ] If any part is machine-checked, the checker is bidirectional and ships a
-      fixture self-test the way `scripts/check-glossary.test.mjs` does — because
-      nothing in the real tree would otherwise trip it, and a check that never
-      fires passes whether or not its condition is right
+- [ ] `docs/design.md` exists with the sections named above and a "how this
+      file is kept current" section naming which parts are checked and which
+      are review-maintained, following [`docs/glossary.md`](../../glossary.md)
+- [ ] A bidirectional checker fails when a semantic token in `app/globals.css`
+      has no meaning row and when a row names a token that does not exist. It
+      ships a fixture self-test the way `scripts/check-glossary.test.mjs` does,
+      because nothing in the real tree would otherwise trip it, and a check
+      that never fires passes whether or not its condition is right. It runs
+      in `make verify` and in CI
+- [ ] [Architecture.md §5](../../architecture.md) and the `design-task`
+      skill's step 2 link to `docs/design.md`
 - [ ] No fact in it is also stated in
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md),
       `docs/architecture.md` §5, `frontend/README.md` or `app/globals.css` —
@@ -161,7 +159,8 @@ Written as a decision task rather than a "create the file" task, and scoped
 deliberately narrower than that question. Capturing "our design and visual
 look" as a whole would duplicate three documents that already work; what is
 actually homeless is the brief — the intent a later change is judged against.
-Question 1 keeps the wider reading available if the product owner wants it.
+Refinement on 2026-10-01 settled that the document exists, under the name
+the product owner first asked for.
 
 Placed third in the order of work rather than given a low ID, because IDs are
 permanent ([the template](../template.md)) and this task was added after the

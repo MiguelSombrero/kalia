@@ -1,6 +1,6 @@
 # Task 11: Carry the identity into the Keycloak pages
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3
 
@@ -22,10 +22,13 @@ the first person to notice will be a stranger signing up.
 
 That is the exact failure class `CLAUDE.md` singles out — a rule whose
 violation fails silently — and it is worse here than in the app, because the
-Keycloak pages are outside every guard Kalia has. They are not in the Next
-build, not in `npm test`, not touched by
-[task 05](05-token-only-styling-enforced.md)'s checker, and not scanned by
-`@axe-core/playwright`. They are also the pages a person meets *before* they
+Keycloak pages are outside most of the guards Kalia has. They are not in the
+Next build, not in `npm test`, and not touched by
+[task 05](05-token-only-styling-enforced.md)'s checker. Playwright does reach
+them — `frontend/e2e/keycloak-branding.spec.ts` checks their language and
+axe-scans the login and registration pages — but only at its one desktop
+viewport, and nothing there compares their colours with the app's. They are
+also the pages a person meets *before* they
 have ever seen Kalia, which makes them the first impression rather than a
 footnote.
 
@@ -42,8 +45,8 @@ palette are kept from drifting again.
 
 - Reopening [ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md)'s
   decision to stay a minimal `keycloak.v2` child rather than a full custom
-  theme, unless the new identity genuinely cannot be expressed inside it —
-  which is question 2.
+  theme. If the new identity genuinely cannot be expressed inside it, that is
+  a finding for the product owner, not a licence to leave the hooks.
 - The Kalia-rendered sign-up page. It is in the Next app and belongs to
   [task 10](10-profile-and-sign-up-layout.md).
 - Keycloak's translations. The `en`/`fi` message bundles are a separate
@@ -64,8 +67,8 @@ palette are kept from drifting again.
   this line stays — but it is a dependency worth knowing about, because it is
   the second place that decision is written down.
 - The theme cannot import `frontend/app/globals.css`. Different origin,
-  different build, no shared pipeline. Whatever solves question 1 has to work
-  across that gap.
+  different build, no shared pipeline. The drift check below works across
+  that gap by reading both files.
 - Keycloak ships its form controls and their WCAG-checked focus behaviour;
   [ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md) deliberately
   left them stock. A re-theme that restyles controls takes on their
@@ -74,31 +77,34 @@ palette are kept from drifting again.
   typeface on the auth pages is a separate load with its own cost, and its own
   CSP implications on Keycloak's origin.
 
+- The agreed widths are an iteration-wide decision recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **Recognisably related, not identical.** The pages carry the new palette and
+  [task 04](04-imagery-iconography-and-the-mark.md)'s mark inside
+  `keycloak.v2`'s documented hooks, and
+  [ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md) stands. They
+  share one "single form, centred" layout with Kalia's own sign-up page
+  ([task 10](10-profile-and-sign-up-layout.md)); whichever of the two tasks
+  runs first proposes it, and the second inherits it. Which form of the mark
+  fits the fixed `#kc-header-wrapper` box is chosen between built
+  alternatives.
+- **A drift check keeps the two copies of the palette in step.** A
+  dependency-free `scripts/` checker parses `login.css` and
+  `frontend/app/globals.css` and fails when a colour `login.css` claims to
+  share has diverged. It ships a fixture test and follows
+  `check-keycloak-realm-config.mjs`'s precedent.
+- **No typeface is loaded on Keycloak's origin.** The pages fall back to a
+  system font stack, so there is no extra font load and no CSP change there.
+- **Verification extends the existing spec.** `keycloak-branding.spec.ts`
+  already reaches these pages, so it is extended to both agreed widths and to
+  axe scans of all four pages, rather than replaced by something new.
+
 ## Open questions
 
-1. **How do the two copies of the palette stay in step?** A generated file
-   written from `globals.css` at build time; a check that parses both and fails
-   on divergence — `scripts/` already holds
-   `check-keycloak-realm-config.mjs`, which is the same shape of problem
-   solved the same way; a documented manual step in
-   [task 05](05-token-only-styling-enforced.md)'s rule; or accepting the drift
-   in writing. Doing nothing is the status quo and is what produced this task.
-2. **Can the new identity be expressed inside `keycloak.v2` at all?** Today's
-   is a colour swap, which the parent theme's hooks handle. A direction with a
-   distinctive type scale, a mark placement or a layout of its own may not fit,
-   and finding that out is part of the task rather than a surprise at the end.
-3. **How much should the auth pages match the app?** Identical, recognisably
-   related, or deliberately plainer. A sign-in page that looks exactly like the
-   app but behaves like Keycloak sets an expectation it cannot meet.
-4. **Does the mark appear, and in which form?** The current theme repurposes
-   `#kc-header-wrapper` as a 220×60 CSS background wordmark. Whatever
-   [task 04](04-imagery-iconography-and-the-mark.md) decides has to fit a fixed
-   box that is not a Kalia component.
-5. **Do these pages get verified at a phone width too?** They are not in the
-   Playwright suite, so whatever verification they get is whatever this task
-   builds.
-6. **Is a typeface worth loading here?** Four pages a person sees a handful of
-   times, against an extra font load on a separate origin.
+**None.**
 
 ## Acceptance criteria
 
@@ -106,17 +112,17 @@ palette are kept from drifting again.
       verification, password reset — render in the new identity, verified in a
       browser at both agreed widths against the running stack, not by reading
       CSS
-- [ ] The palette exists in one place, or a check fails when the two copies
-      diverge — demonstrated by a test that changes one and asserts the
-      failure, following `check-keycloak-realm-config.mjs`'s precedent
-- [ ] If divergence is accepted instead,
-      [ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md) is amended
-      to say so and to name what a future re-theme must remember
+- [ ] A check fails when the two copies of the palette diverge — demonstrated
+      by a fixture test that changes one and asserts the failure, following
+      `check-keycloak-realm-config.mjs`'s precedent — and it runs in
+      `make verify` and in CI
 - [ ] The theme still layers over stock `keycloak.v2` and still touches only
       documented hooks, or the decision to go further is recorded as an
       amendment with its upgrade cost stated
-- [ ] Contrast on the re-themed pages is checked against WCAG 2.1 AA — by
-      computation, since these pages are outside `@axe-core/playwright`'s reach
+- [ ] `keycloak-branding.spec.ts` axe-scans all four pages at both agreed
+      widths and passes, and contrast on the re-themed pages is also computed
+      against WCAG 2.1 AA, since the drift check compares colours, not
+      pairings
 - [ ] Both locales still render correctly on all four pages
       ([ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md))
 - [ ] `make verify` is green

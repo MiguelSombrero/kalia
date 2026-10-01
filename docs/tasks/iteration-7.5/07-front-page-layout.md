@@ -1,6 +1,6 @@
 # Task 07: Front page layout
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -12,18 +12,17 @@ heard of it, and — after [iteration 7](../iteration-7.md) — the page that sh
 the product working. Those are two jobs, and nothing has ever laid them out
 together.
 
-Today it is three centred elements: a heading, a tagline, a button. Iteration 7
-adds a live feed beneath them, designed as a list of sentences, and its own
-task file says the page "today renders a static welcome" and that this
-iteration "replaces it". What it does not decide is the relationship between
-the two halves — whether a visitor arrives at a pitch with a feed under it, or
-at a feed with a pitch beside it, or at something that is neither.
+Iteration 7 replaced the static welcome with a compact masthead — the app's
+name and tagline — and the feed beneath it, a list of sentences that pages
+back as the visitor scrolls. It decided what the page *does*, and said in so
+many words that this iteration gives it its visual treatment
+([iteration 7 task 03](../iteration-7/03-front-page-feed.md)): it was
+responsible for the page being right, not for it looking finished.
 
 The feed also makes this the first page in Kalia that **changes while someone
-is looking at it** ([iteration 7 task 07](../iteration-7/07-live-front-page.md)),
-which is a layout problem before it is an accessibility one: content that
-arrives has to arrive somewhere that does not move what the reader is looking
-at.
+is looking at it** ([iteration 7 task 07](../iteration-7/07-live-front-page.md)).
+New entries wait behind an "N new" control rather than moving what the reader
+is looking at, and that control has never been designed either.
 
 There are two shapes nobody has drawn. A brand-new visitor sees a feed of
 strangers' bottles and has no account; a signed-in user with a cellar sees the
@@ -33,8 +32,9 @@ layout or two is unanswered.
 ## Scope
 
 The front page's layout, prototyped and chosen: what a visitor sees first, how
-the feed and the pitch relate, what a feed entry looks like, how new entries
-arrive, and what the page is when the feed is empty or failing.
+the masthead and the feed relate, what a feed entry looks like, what the
+"N new" control looks like, and what the page is when the feed is empty or
+failing.
 
 Both audiences — signed out and signed in — and both agreed widths. Includes
 the page's loading skeleton and empty state, since
@@ -56,9 +56,8 @@ shape-matched to the layout this task changes.
 
 ## Constraints
 
-- **Depends on [iteration 7](../iteration-7.md) having landed.** There is no
-  feed to lay out before it, and prototyping against a feed that does not exist
-  yet produces a layout for imagined data.
+- **Depends on [iteration 7](../iteration-7.md), which has landed.**
+  Prototypes use real feed data from it, not data imagined for the layout.
 - A feed line names its person by username and may link to a public cellar;
   what it may reveal is
   [iteration 7 task 09](../iteration-7/09-feed-and-private-cellars.md)'s
@@ -74,30 +73,35 @@ shape-matched to the layout this task changes.
 - The shell from [task 06](06-page-shell.md) and the identity from
   [task 03](03-visual-identity.md) are inherited, not re-decided.
 
+- The agreed widths, reserved image shapes and the 24×24 minimum target size
+  are iteration-wide decisions recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **Iteration 7's front-page behaviour binds this task; it designs the
+  visuals.** The feed is the page under a compact masthead, it pages back by
+  infinite scroll, new entries wait behind an "N new" control, and an empty
+  feed explains and invites
+  ([iteration 7 task 03](../iteration-7/03-front-page-feed.md),
+  [task 07](../iteration-7/07-live-front-page.md)). A direction that changes any
+  of those is not one of the alternatives.
+- **A signed-in variant may be prototyped.** Directions may show a signed-in
+  front page that differs from the signed-out one — without the pitch, with a
+  route into the visitor's own cellar. Whether one layout or two ships is the
+  product owner's choice between built alternatives.
+- **A feed entry may carry the image slots
+  [task 04](04-imagery-iconography-and-the-mark.md) produced** — the beer's
+  stand-in, the person's placeholder — or not, as prototyped.
+- **A feed that fails renders its error inside the page.** The masthead
+  survives, and the route-wide `error.tsx`
+  ([ADR-0022](../../adr/0022-loading-error-empty-states.md)) is no longer what
+  a failing first feed read shows. This is a behaviour change, so it is tested
+  like one.
+
 ## Open questions
 
-1. **Is this a landing page with a feed, or a feed with a header?** The single
-   biggest question in the task, and it is a product question as much as a
-   visual one — it says whether Kalia introduces itself or shows itself.
-2. **Does a signed-in user get a different front page?** They have a cellar,
-   they know what Kalia is, and the pitch is dead space to them.
-3. **What is a feed entry, visually?** Iteration 7 designs it as a sentence.
-   Whether that stays a line of text, becomes a card, or becomes something with
-   the beer's visual stand-in from
-   [task 04](04-imagery-iconography-and-the-mark.md) on it, is open.
-4. **How does a new entry arrive?** Appearing at the top silently, appearing
-   with motion, or waiting behind a "3 new" control the reader clicks. The
-   third is the only one that never moves what someone is reading.
-5. **How much feed is on the page?** There is no pagination in iteration 7's
-   design and no infinite scroll; a front page that grows forever is a
-   different page from one that shows ten.
-6. **What does an empty feed look like?** On a brand-new instance with no
-   bottles anywhere, this is the first thing every visitor sees, and it is
-   currently nobody's page.
-7. **What happens when the feed fails but the page loads?** The pitch is still
-   valid and the feed is not; one `error.tsx` for the whole route
-   ([ADR-0022](../../adr/0022-loading-error-empty-states.md)) may be the wrong
-   granularity here.
+**None.**
 
 ## Acceptance criteria
 
@@ -108,7 +112,8 @@ shape-matched to the layout this task changes.
 - [ ] The page's loading skeleton matches the layout that ships, and its
       colocated vitest test asserts the match rather than the old shape
 - [ ] Empty feed, failing feed and loaded feed each render deliberately, each
-      covered by a test
+      covered by a test — the failing one asserting that the masthead is
+      still rendered and the route's `error.tsx` is not
 - [ ] New entries arrive without moving content the reader is already looking
       at, verified in a browser and covered by a Playwright assertion
 - [ ] `prefers-reduced-motion` is honoured by anything this task animates

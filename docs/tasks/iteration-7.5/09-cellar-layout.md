@@ -1,6 +1,6 @@
 # Task 09: Cellar layout
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -49,9 +49,11 @@ the sign-in prompt shown to a signed-out visitor, the empty cellar, and
   [ADR-0049](../../adr/0049-profile-module-and-public-identity.md) and
   [ADR-0050](../../adr/0050-public-cellar-addressing.md), and the uniform 404
   is not this task's to soften.
-- Sorting or filtering a cellar as a *feature*. If prototyping shows the cellar
-  needs it — question 4 — that is a finding to record and schedule, not
-  something to build under a layout task.
+- Sorting or filtering a cellar *by the user* — controls a person uses to
+  reorder or narrow their cellar. If prototyping shows the cellar needs them,
+  that is a finding to record and schedule, not something to build under a
+  layout task. The cellar's *default* order is in scope (Constraints).
+- An in-cellar way to find and add a beer. A [backlog](../backlog.md) entry.
 
 ## Constraints
 
@@ -62,8 +64,9 @@ the sign-in prompt shown to a signed-out visitor, the empty cellar, and
   wearing a usability improvement's clothes.
 - The public cellar is locale-less, carries `hreflang`/`canonical` alternates
   and is served `noindex, nofollow`
-  ([ADR-0050](../../adr/0050-public-cellar-addressing.md)). It is also, per
-  question 6, the page that gets pasted into chat clients.
+  ([ADR-0050](../../adr/0050-public-cellar-addressing.md)). It is also the page
+  that gets pasted into chat clients, though what that unfurls to is a
+  [backlog](../backlog.md) entry, not this task.
 - **Removing a bottle commits immediately behind an upfront confirmation
   dialog**, and the toast reports the outcome only —
   [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s 2026-09-04
@@ -84,35 +87,36 @@ the sign-in prompt shown to a signed-out visitor, the empty cellar, and
   ([iteration 6.5 task 12](../iteration-6.5/12-bottle-future-date-uses-local-day.md)),
   which matters the moment a layout starts saying anything about *when*.
 
+- The agreed widths, reserved image shapes and the 24×24 minimum target size
+  are iteration-wide decisions recorded in
+  [the iteration index](../iteration-7.5.md).
+
+Decided with the product owner in refinement, 2026-10-01:
+
+- **The cellar may say things about time.** A bottle past its best-before is
+  visibly marked, judged against the user's local day as above.
+- **The default order may change, and a backend change to support it is in
+  scope.** Ordering beers by what is drinkable soonest needs bottle dates at
+  the beer level, and the owner's cellar fetches bottles only when a row
+  opens. If the chosen order needs data the beer row does not have, this task
+  grows a backend part, with its tests, the regenerated API client
+  ([ADR-0012](../../adr/0012-orval-api-client.md)) and the doc-sync that goes
+  with it. *Which* order is the default is prototyped.
+- **Adding a bottle still happens from the catalog**, and the cellar —
+  especially an empty one — offers a clear route into it.
+- **The empty cellar is a new user's first run.** Sign-up ends signed in, and
+  the first cellar a new person opens is empty
+  ([iteration 6.5](../iteration-6.5.md) DW-3), so this task owns that moment
+  rather than [task 10](10-profile-and-sign-up-layout.md).
+- **Prototypes are looked at with a small cellar and a large one**, and
+  whether the public cellar is the owner's page with its controls removed or a
+  page of its own is one of the choices between built alternatives.
+- **A beer row carries the image slot
+  [task 04](04-imagery-iconography-and-the-mark.md) produced.**
+
 ## Open questions
 
-1. **Is an accordion list the right shape for a cellar?** It is the shape the
-   data has. A shelf, a grid, a table with sortable columns, or a timeline by
-   best-before date are all shapes a *cellar* has, and none of them has been
-   tried.
-2. **What does a person come to their cellar to find out?** What is drinkable
-   soonest, what they have most of, what they added recently, or simply what is
-   there. The answer decides the default order, and there is no order today
-   beyond whatever the API returns.
-3. **How does a cellar of forty beers differ from one of four?** Every
-   prototype must be looked at with both, because a stack of identical rows
-   fails gradually rather than suddenly.
-4. **Does the cellar need sorting or filtering?** Probably, and it is out of
-   scope to build — but prototyping is how that becomes a recorded finding with
-   evidence instead of a hunch.
-5. **Where does "add a bottle" start?** From the catalog today, via a control
-   on a search result. Whether a cellar should also be able to start that
-   journey — and what it looks like when it does — is unanswered.
-6. **Is the public cellar the same page with controls removed, or its own
-   design?** It is the only page a stranger reaches first. Treating it as a
-   read-only variant is one answer; treating it as Kalia's shop window is
-   another.
-7. **What does an empty cellar look like, and an empty public one?** A new
-   user's first sight of the product they signed up for, and a stranger's first
-   sight of someone who made an empty cellar public.
-8. **How much does a bottle row show?** Two dates and two controls today. A
-   bottle whose best-before has passed is currently indistinguishable from one
-   brewed yesterday.
+**None.**
 
 ## Acceptance criteria
 
@@ -129,7 +133,13 @@ the sign-in prompt shown to a signed-out visitor, the empty cellar, and
 - [ ] `CellarListSkeleton` and `PublicCellarSkeleton` match the layouts that
       ship, with their colocated tests asserting the new shapes
 - [ ] Empty cellar, empty public cellar, and the signed-out sign-in prompt each
-      render deliberately, covered by tests
+      render deliberately, covered by tests, and the empty cellar links into
+      the catalog
+- [ ] A bottle past its best-before is visibly marked and one on its
+      best-before day is not, judged on the user's local day, covered by a
+      test that pins the boundary
+- [ ] If the default order changed, it is asserted by a frontend test, and any
+      backend change behind it by backend tests of its own
 - [ ] Both surfaces work at both agreed widths and the
       `@axe-core/playwright` scans pass at both
 - [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the
