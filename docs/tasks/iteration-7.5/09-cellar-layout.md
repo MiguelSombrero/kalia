@@ -39,6 +39,8 @@ Includes the add-, edit- and remove-bottle dialogs, the removal-outcome toast,
 the sign-in prompt shown to a signed-out visitor, the empty cellar, and
 `CellarListSkeleton`/`PublicCellarSkeleton`.
 
+**Audit findings on these surfaces** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): [AUD-28](audit.md), [AUD-29](audit.md), [AUD-30](audit.md), [AUD-31](audit.md), [AUD-32](audit.md), [AUD-33](audit.md), [AUD-34](audit.md), [AUD-35](audit.md), the cellars' share of [AUD-06](audit.md), [AUD-07](audit.md), [AUD-09](audit.md), [AUD-45](audit.md), [AUD-47](audit.md); keeps [AUD-49](audit.md), [AUD-53](audit.md), [AUD-54](audit.md), [AUD-55](audit.md). [AUD-30](audit.md), [AUD-31](audit.md), [AUD-32](audit.md), [AUD-33](audit.md), [AUD-34](audit.md) are product findings: the task records for each whether it is fixed or becomes a [backlog](../backlog.md) entry.
+
 ## Non-goals
 
 - What a cellar *stores*. Adding a field to a bottle, or changing the two-level

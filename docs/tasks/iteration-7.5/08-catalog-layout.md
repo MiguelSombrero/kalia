@@ -41,6 +41,8 @@ Includes each surface's loading skeleton
 not-found page, since [ADR-0022](../../adr/0022-loading-error-empty-states.md)
 shape-matches those to the layouts this task changes.
 
+**Audit findings on these surfaces** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): [AUD-18](audit.md), [AUD-19](audit.md), [AUD-20](audit.md), [AUD-21](audit.md), [AUD-22](audit.md), [AUD-23](audit.md), [AUD-24](audit.md), [AUD-25](audit.md), [AUD-26](audit.md), [AUD-27](audit.md), [AUD-58](audit.md), the catalog's share of [AUD-06](audit.md), [AUD-07](audit.md), [AUD-09](audit.md), [AUD-45](audit.md), [AUD-47](audit.md); keeps [AUD-49](audit.md), [AUD-51](audit.md), [AUD-52](audit.md), [AUD-57](audit.md). [AUD-21](audit.md), [AUD-22](audit.md), [AUD-23](audit.md), [AUD-24](audit.md) are product findings: the task records for each whether it is fixed or becomes a [backlog](../backlog.md) entry.
+
 ## Non-goals
 
 - Changing what a search can do. Adding a filter, changing sort options or

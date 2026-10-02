@@ -42,6 +42,8 @@ Includes `ProfileViewSkeleton`, the signed-out profile prompt, and the sign-up
 page's two error states — the acknowledgement left unticked, and the
 rate-limited hand-off.
 
+**Audit findings on these surfaces** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): [AUD-13](audit.md), [AUD-33](audit.md), [AUD-36](audit.md), [AUD-37](audit.md), [AUD-38](audit.md), [AUD-39](audit.md), the profile's and sign-up's share of [AUD-06](audit.md), [AUD-47](audit.md); keep [AUD-49](audit.md). [AUD-33](audit.md), [AUD-39](audit.md) are product findings: the task records for each whether it is fixed or becomes a [backlog](../backlog.md) entry.
+
 ## Non-goals
 
 - Adding profile *data*. A display name, a bio, an avatar or a join date are
