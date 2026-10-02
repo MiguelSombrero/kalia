@@ -41,6 +41,8 @@ Keycloak-rendered pages carrying the new palette, typography and mark as far as
 the theme mechanism allows — and a decision about how the two copies of the
 palette are kept from drifting again.
 
+**Audit findings on these surfaces** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): [AUD-40](audit.md), [AUD-41](audit.md), [AUD-42](audit.md), [AUD-43](audit.md), [AUD-44](audit.md), Keycloak's share of [AUD-05](audit.md), [AUD-06](audit.md), [AUD-08](audit.md), [AUD-39](audit.md); keeps [AUD-49](audit.md), [AUD-56](audit.md). [AUD-43](audit.md), [AUD-39](audit.md) are product findings: the task records for each whether it is fixed or becomes a [backlog](../backlog.md) entry.
+
 ## Non-goals
 
 - Reopening [ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md)'s

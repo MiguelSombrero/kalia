@@ -1,6 +1,6 @@
 # Task 02: The app as it stands, audited
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-5
 
@@ -100,23 +100,23 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] `docs/tasks/iteration-7.5/audit.md` records findings for every surface
+- [x] `docs/tasks/iteration-7.5/audit.md` records findings for every surface
       named in Scope at both agreed widths, each with a permanent ID, the
       surface and width it was found at, its kind (problem, product or keep),
       and the problem stated without naming a fix
-- [ ] A committed Playwright spec visits every surface in Scope at both agreed
+- [x] A committed Playwright spec visits every surface in Scope at both agreed
       widths and asserts each rendered; it was confirmed to fail when pointed
       at a route that does not exist, and it writes no screenshot anywhere
-- [ ] `node scripts/check-no-raster-images.mjs` passes, and the pull request
+- [x] `node scripts/check-no-raster-images.mjs` passes, and the pull request
       describes in words what was seen
-- [ ] At least one finding is cross-page — a problem invisible from any single
+- [x] At least one finding is cross-page — a problem invisible from any single
       surface — or the audit states in writing that it looked for such findings
       and there were none
-- [ ] Tasks [06](06-page-shell.md)–[11](11-keycloak-pages-carry-the-identity.md)
+- [x] Tasks [06](06-page-shell.md)–[11](11-keycloak-pages-carry-the-identity.md)
       each cite the findings on their surface in their Scope, so that
       [DW-5](../iteration-7.5.md) can be checked by reading rather than by
       remembering
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

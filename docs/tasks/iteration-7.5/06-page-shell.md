@@ -47,6 +47,8 @@ Includes the shell's own accountable details — the skip link
 the sign-in status — and the `<html>`/`<body>` height rules the `min-h-screen`
 problem above lives in.
 
+**Audit findings on this surface** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): problems [AUD-01](audit.md), [AUD-02](audit.md), [AUD-03](audit.md), [AUD-04](audit.md), [AUD-05](audit.md), [AUD-10](audit.md), [AUD-11](audit.md), [AUD-12](audit.md), [AUD-13](audit.md), [AUD-45](audit.md), [AUD-46](audit.md), [AUD-48](audit.md), and the shell's share of [AUD-06](audit.md) (header targets), and cross-page [AUD-07](audit.md), [AUD-08](audit.md), [AUD-09](audit.md) where they are decided here; keeps [AUD-49](audit.md), [AUD-50](audit.md).
+
 ## Non-goals
 
 - What goes inside any page. [Tasks 07](07-front-page-layout.md)–[10](10-profile-and-sign-up-layout.md)

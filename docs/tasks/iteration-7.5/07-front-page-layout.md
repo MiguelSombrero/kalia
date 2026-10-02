@@ -41,6 +41,8 @@ the page's loading skeleton and empty state, since
 [ADR-0022](../../adr/0022-loading-error-empty-states.md)'s skeletons are
 shape-matched to the layout this task changes.
 
+**Audit findings on this surface** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): [AUD-14](audit.md), [AUD-15](audit.md), [AUD-16](audit.md), [AUD-17](audit.md), the front page's share of [AUD-06](audit.md), [AUD-07](audit.md), [AUD-09](audit.md), [AUD-47](audit.md); keep [AUD-49](audit.md). [AUD-14](audit.md) is a product finding: the task records whether it is fixed or becomes a [backlog](../backlog.md) entry.
+
 ## Non-goals
 
 - The feed's data, delivery or privacy rules. All three belong to
