@@ -274,6 +274,13 @@ rather than behind a link.
   the class level — and silently drops the success response from
   `/v3/api-docs` instead of adding to it. No compile error, no test failure
   unless something asserts on the generated spec.
+- **Change the API's wire format through a `ServerHttpMessageConvertersCustomizer`,
+  never an `HttpMessageConverter` bean.** Boot hands every converter bean to
+  the HTTP clients as well — `RestClient` and the tests' `RestTestClient` —
+  ahead of their defaults, so a stricter or reformatting JSON converter
+  silently changes how outgoing calls decode responses too. In tests it can
+  take over reading a `problem+json` body as a `String`, failing ITs that
+  never touched JSON.
 
 ## Error-handling convention
 
