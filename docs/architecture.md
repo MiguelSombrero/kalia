@@ -463,19 +463,16 @@ The shape of the frontend. Day-to-day rules for writing it live in
   `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
   toast's live-region/timing contract rather than either's appearance.
-  Imagery is information rather than decoration
-  ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)): a beer's slot is
-  its ABV on its style colour (a strip of that colour in a list, nothing where
-  the surface knows neither), a person's is their initials, and `BeerSlot` and
-  `PersonSlot` in `components/ui/` draw them from data the surface already
-  holds, with no API field and no image file. The seven icons are hand-drawn
-  in `components/ui/icon.tsx`, with no icon library. The mark is a nine-cell
-  rack (`KaliaMark`); the favicon is `app/icon.svg` with a 32 px PNG fallback
-  and the apple-touch icon, both generated at build from the same drawing, so
-  no raster is tracked. A generated icon's URL has no extension, so `proxy.ts`
-  excludes that family from the locale redirect by name.
-  What the identity is meant to feel like, and what each semantic token
-  means, is [docs/design.md](design.md)
+  `BeerSlot`, `PersonSlot`, `Icon` and `KaliaMark` are further primitives in
+  `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)).
+  The two slots draw from data a surface already holds, so the API has no image
+  field, and the icons are hand-drawn rather than a library. The favicon is
+  `app/icon.svg` with a 32 px PNG fallback and the apple-touch icon, both
+  generated at build, so no raster is tracked. A generated icon's URL has no
+  extension, so `proxy.ts` excludes that family from the locale redirect by
+  name; a new extensionless generated route needs the same.
+  What the identity is meant to feel like, what each semantic token means, and
+  what the imagery and the mark stand for is [docs/design.md](design.md)
   ([ADR-0063](adr/0063-design-intent-has-its-own-document.md)).
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
