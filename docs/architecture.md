@@ -463,8 +463,16 @@ The shape of the frontend. Day-to-day rules for writing it live in
   `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
   toast's live-region/timing contract rather than either's appearance.
-  What the identity is meant to feel like, and what each semantic token
-  means, is [docs/design.md](design.md)
+  `BeerSlot`, `PersonSlot`, `Icon` and `KaliaMark` are further primitives in
+  `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)).
+  The two slots draw from data a surface already holds, so the API has no image
+  field, and the icons are hand-drawn rather than a library. The favicon is
+  `app/icon.svg` with a 32 px PNG fallback and the apple-touch icon, both
+  generated at build, so no raster is tracked. A generated icon's URL has no
+  extension, so `proxy.ts` excludes that family from the locale redirect by
+  name; a new extensionless generated route needs the same.
+  What the identity is meant to feel like, what each semantic token means, and
+  what the imagery and the mark stand for is [docs/design.md](design.md)
   ([ADR-0063](adr/0063-design-intent-has-its-own-document.md)).
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
@@ -754,6 +762,7 @@ the failure back to the agent without blocking
 | [ADR-0060](adr/0060-feed-delivery-is-polling.md) | The front-page feed reaches an already-open browser by polling, not a stream | accepted | 2026-09-13 |
 | [ADR-0061](adr/0061-brute-force-lockout-is-temporary-and-disclosed.md) | Brute-force lockout is temporary, growing, and disclosed to the person locked out | accepted | 2026-09-19 |
 | [ADR-0064](adr/0064-visual-identity-can-art-square.md) | Kalia's identity had outgrown the catalog it was chosen for, so it becomes Can art drawn square, with beer styles coloured by group | accepted | 2026-10-03 |
+| [ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md) | Kalia has no beer pictures and no mark in its own app, so a beer is shown by its strength on its style colour, a person by initials, and the mark is a cellar rack | accepted | 2026-10-03 |
 
 ### Engineering process and documentation
 

@@ -206,6 +206,7 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-success-foreground` | `--color-success` | text |
 | `--color-destructive-foreground` | `--color-destructive` | text |
 | `--color-style-foreground` | `--color-style` | text |
+| `--color-primary` | `--color-background` | non-text |
 | `--color-border` | `--color-background` | non-text |
 | `--color-border` | `--color-surface` | non-text |
 | `--color-focus-ring` | `--color-background` | non-text |
@@ -253,7 +254,64 @@ page only belongs in that page's own task and ADR, not here.
 
 ## Imagery and the mark
 
-*Not yet written.* What imagery is for, what the placeholder that reserves a
-beer's or a person's image slot stands in for, and what the Kalia mark is
-meant to say arrive with
-[task 04](tasks/iteration-7.5/04-imagery-iconography-and-the-mark.md).
+**Kalia draws no pictures of beers.** There are no beer photographs to show,
+and a generated stand-in, a pattern or a monogram, would tell a visitor less
+than the facts a beer already has while taking room in every row. Imagery in
+Kalia is a fact drawn large enough to scan, never decoration, and where a
+surface does not know the fact, nothing is drawn.
+
+Chosen from built alternatives in
+[iteration 7.5 task 04](tasks/iteration-7.5/04-imagery-iconography-and-the-mark.md);
+the directions that were rejected, and why, are
+[ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md).
+
+### What each placeholder stands in for
+
+- **A beer's slot stands in for the beer's photograph.** Where the strength is
+  known it is a band of the beer's style colour with the strength set large,
+  like the figure on a specimen label. In a list, where only the style is
+  known, it is a thin strip of that colour beside the row. Where neither is
+  known, as on the front page feed today, there is no slot and the row is
+  text. A layout reserves room for a slot only when the data to fill it
+  exists; it never leaves an empty box.
+- **A person's slot stands in for their photograph.** It is their initials in
+  a hairline square, with no colour. Colour in this identity has two jobs,
+  telling beer styles apart and marking the one action, so a person is not
+  given a third.
+- **Both are decorative.** A beer's strength and a person's name are always
+  written beside them as text, so the slots are hidden from assistive
+  technology rather than named.
+- **They are the frames an upload will later fill.** The band and the square
+  are the shapes a beer photograph and a profile picture would go in, so
+  adding uploads later changes what is inside the frame and not the layout
+  around it.
+
+### Icons
+
+A word is the default. An icon appears only for the few jobs a word cannot do
+well, such as a menu on a phone, a close on a dialog, a tick or a cross in a
+toast, an arrow or a search. There are few of them on purpose: Finnish labels
+are longer than English ones and an icon beside every word would take room the
+word needs. They are drawn in the same plain line as the hairline edges, with
+square ends, so they read as part of the same hand. An icon beside a word is
+hidden from assistive technology; one that stands alone carries a name.
+Navigation tabs, container types, edit, remove and visibility stay words.
+
+### The mark
+
+The mark is a cellar rack: nine square cells, eight in ink and one in the
+action colour. The cellar is the product, and the one filled cell is the bottle
+you own; the single accent is the same restraint the whole identity shows with
+its one action colour. It is square, ruled and quiet, which is what Kalia is
+meant to feel like, and it holds up when it is the size of a browser tab. It
+deliberately carries no glass: a drinking vessel would say "beer" where the mark
+should say "a place where beer is kept".
+
+Beside it the name is set in capitals at normal width and widely spaced. The
+wide display face is for page titles, so the wordmark labels and does not
+shout. The mark stands alone, without the name, wherever there is only room
+for a square: the browser tab and the home-screen icon.
+
+The Keycloak pages still show the snifter drawn for them in iteration 6.5 until
+[task 11](tasks/iteration-7.5/11-keycloak-pages-carry-the-identity.md) carries
+this mark across.
