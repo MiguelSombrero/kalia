@@ -266,6 +266,8 @@ Why the rationale lives there and not here:
   2026-08-23 and 2026-09-04 amendments). Radix is headless: both primitives
   are still styled with the semantic tokens above, and no other primitive
   may take a UI dependency without amending that ADR again.
+  Icons are hand-drawn in `icon.tsx` rather than installed, because an icon is
+  appearance ([ADR-0065](../docs/adr/0065-imagery-icons-and-mark-specimen.md)).
 - **Loading/error/empty states have a fixed shape**: `loading.tsx` per route
   with a shape-matched skeleton, one `app/[locale]/error.tsx` app-wide,
   `EmptyState` for no-results ([ADR-0022](../docs/adr/0022-loading-error-empty-states.md)).
