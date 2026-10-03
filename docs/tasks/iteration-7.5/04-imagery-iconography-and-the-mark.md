@@ -129,6 +129,9 @@ part, that layouts reserve image shapes, is in
       ones carry an accessible name, asserted by a `jest-axe` test on the
       component that renders them
 - [ ] No icon dependency is added to `frontend/package.json`
+- [ ] [`docs/design.md`](../../design.md)'s *Imagery and the mark* section
+      says what imagery is for, what each placeholder stands in for, and what
+      the mark is meant to say — as intent, with no file paths or values
 - [ ] Nothing loads from a third-party origin, or the CSP change that permits
       it is made deliberately and verified in a browser rather than with `curl`
 - [ ] `make verify` is green

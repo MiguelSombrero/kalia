@@ -244,3 +244,7 @@ to bound.
   `Kind: design` marker the task checker enforces; mockups are shown as
   Artifacts, never committed, and each design task records its choice in its
   own ADR.
+- [ADR-0063](0063-design-intent-has-its-own-document.md) — standing design
+  intent lives in `docs/design.md`, outside the three homes on the glossary's
+  model: meaning and intent, never a value, with every semantic token's
+  meaning row checked by the build.

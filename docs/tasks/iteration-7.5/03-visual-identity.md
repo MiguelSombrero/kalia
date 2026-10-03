@@ -143,7 +143,12 @@ Decided with the product owner in refinement, 2026-10-01:
       directions rejected and why, and passing `node scripts/check-adrs.mjs`
 - [ ] The feel the identity is meant to produce is written down where
       [task 14](14-where-design-intent-lives.md) decided it belongs, in a form
-      a later task can be held against
+      a later task can be held against: [`docs/design.md`](../../design.md)'s
+      *Feel* section holds the statement and its reference points, its
+      *Semantic tokens* rows describe the new layer rather than iteration 2's
+      (`node scripts/check-design-tokens.mjs` passes), and its *Typography
+      across the two locales* section says what English and Finnish each
+      demand of the type scale
 - [ ] Every colour pairing the app actually uses is computed against WCAG 2.1
       AA **before** the palette is committed, and the ADR's Evidence table
       lists the pairings and ratios that ship — not iteration 2's

@@ -456,6 +456,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
   toast's live-region/timing contract rather than either's appearance.
+  What the identity is meant to feel like, and what each semantic token
+  means, is [docs/design.md](design.md)
+  ([ADR-0063](adr/0063-design-intent-has-its-own-document.md)).
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
   route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
@@ -766,3 +769,4 @@ reasons and its rate is worth watching independently
 | [ADR-0048](adr/0048-what-survives-a-claude-md-bullet.md) | A CLAUDE.md bullet keeps the rule and sheds the reason | accepted | 2026-08-30 |
 | [ADR-0051](adr/0051-process-retrospection-belongs-to-the-sweep.md) | Process retrospection belongs to the sweep, not to every task | accepted | 2026-08-30 |
 | [ADR-0062](adr/0062-a-design-task-is-a-skill-and-a-marker.md) | A design task has no known outcome, so it runs under a skill and a template marker | accepted | 2026-09-29 |
+| [ADR-0063](adr/0063-design-intent-has-its-own-document.md) | Kalia's design intent has its own document, which holds meaning and never values | accepted | 2026-10-03 |
