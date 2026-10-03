@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Every token globals.css's `@theme inline` block declares has exactly one
+// Every token globals.css's `@theme` blocks declare has exactly one
 // meaning row in docs/design.md, and every row names a token that still exists
 // (ADR-0063). Plain Node with no dependencies, like check-glossary.mjs, and
 // self-tested against fixtures for the same reason: the real tree never trips
@@ -32,9 +32,9 @@ export function checkDesignTokens(root) {
     return [`docs/design.md not found at ${designPath}`];
   }
 
-  const declared = themeInlineTokens(css);
+  const declared = themeTokens(css);
   if (declared === null) {
-    return ["frontend/app/globals.css: no `@theme inline` block — nothing declares the semantic layer"];
+    return ["frontend/app/globals.css: no `@theme` block — nothing declares the semantic layer"];
   }
   const rows = meaningRows(design);
   if (rows === null) {
@@ -46,7 +46,7 @@ export function checkDesignTokens(root) {
     const count = rows.filter((r) => r === token).length;
     if (count === 0) {
       failures.push(
-        `docs/design.md: \`${token}\` is declared in globals.css's @theme inline block but has no meaning row ` +
+        `docs/design.md: \`${token}\` is declared in a globals.css @theme block but has no meaning row ` +
           `(add one under "## Semantic tokens")`,
       );
     } else if (count > 1) {
@@ -57,27 +57,32 @@ export function checkDesignTokens(root) {
     if (!declared.includes(token)) {
       failures.push(
         `docs/design.md: the "Semantic tokens" section has a row for \`${token}\`, ` +
-          `which is not declared in globals.css's @theme inline block`,
+          `which no globals.css @theme block declares`,
       );
     }
   }
   return failures;
 }
 
-function themeInlineTokens(css) {
+// Every `@theme` block counts, inline or not and however many there are: each
+// one generates the Tailwind utilities components consume.
+function themeTokens(css) {
   const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const start = source.search(/@theme\s+inline\s*\{/);
-  if (start === -1) return null;
+  const blocks = [...source.matchAll(/@theme\b[^{;]*\{/g)];
+  if (blocks.length === 0) return null;
 
-  const open = source.indexOf("{", start);
-  let depth = 0;
-  let end = open;
-  for (; end < source.length; end++) {
-    if (source[end] === "{") depth++;
-    if (source[end] === "}" && --depth === 0) break;
+  const tokens = new Set();
+  for (const block of blocks) {
+    const open = block.index + block[0].length - 1;
+    let depth = 0;
+    let end = open;
+    for (; end < source.length; end++) {
+      if (source[end] === "{") depth++;
+      if (source[end] === "}" && --depth === 0) break;
+    }
+    for (const m of source.slice(open + 1, end).matchAll(/(--[A-Za-z0-9-]+)\s*:/g)) tokens.add(m[1]);
   }
-  const body = source.slice(open + 1, end);
-  return [...body.matchAll(/(--[A-Za-z0-9-]+)\s*:/g)].map((m) => m[1]).sort();
+  return [...tokens].sort();
 }
 
 // The first-column code spans of every table row from "## Semantic tokens" to
@@ -104,7 +109,7 @@ const invokedDirectly =
 if (invokedDirectly) {
   const root = resolve(SELF_DIR, "..");
   const failures = checkDesignTokens(root);
-  console.log(`Checking docs/design.md against globals.css's @theme inline tokens\n`);
+  console.log(`Checking docs/design.md against globals.css's @theme tokens\n`);
   for (const f of failures) console.log(`  FAIL  ${f}`);
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

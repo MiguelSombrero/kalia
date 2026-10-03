@@ -50,15 +50,16 @@ is checked by the build in both directions.**
   a choice (that choice's ADR, linked from the section it shaped), or a rule
   for writing a component.
 - **Where it meets `frontend/README.md`.** The README keeps what a developer
-  applies mechanically while writing a component — a component references the
-  semantic layer only, and primitives compose through `cn()`. `docs/design.md`
+  applies mechanically while writing a component — for example, that a
+  component references the semantic layer and never a primitive. `docs/design.md`
   keeps what needs judgement: which token a given element should use, and
   what the result should feel like. A sentence that a lint rule or checker
   could enforce is a README convention. A sentence a reviewer has to judge
   belongs in this document.
-- **A semantic token is anything declared in `globals.css`'s `@theme inline`
-  block.** That block is the layer components consume through Tailwind
-  utilities, so it is the one a meaning is owed for. `scripts/check-design-tokens.mjs`
+- **A semantic token is anything declared in one of `globals.css`'s `@theme`
+  blocks**, inline or not, however many there are. Those blocks generate
+  the Tailwind utilities components consume, so they are the layer a meaning
+  is owed for. `scripts/check-design-tokens.mjs`
   fails when such a token has no meaning row, when one has more than one, and
   when a row names a token that no longer exists. It ships a fixture
   self-test, as `check-glossary.mjs` does, because nothing in the real tree
@@ -148,15 +149,17 @@ guessing.
 
 ## Evidence
 
-When this document was created (`origin/dev` at `d547fb1`), `globals.css`'s
-`@theme inline` block declared twelve tokens: ten `--color-*` and two
-`--font-*`. `docs/design.md` was written with a meaning row for each one,
-taken from how `app/`, `components/` and `features/` actually use them rather
-than from intent. Two findings came out of that survey and are reflected in
-the rows. `--color-primary` marks hover on activatable elements as well as
-filling the main action. `--color-surface` backs form fields as well as cards.
+When this document was created (`origin/dev` at `d547fb1`), `globals.css`
+had one `@theme` block, `@theme inline`, declaring twelve tokens: ten
+`--color-*` and two `--font-*`. `docs/design.md` was written with a meaning
+row for each one, taken from how `app/`, `components/` and `features/`
+actually use them rather than from intent. Three findings came out of that
+survey and are reflected in the rows: `--color-primary` marks hover on
+activatable elements as well as filling the main action, `--color-surface`
+backs form fields as well as cards, and `--color-border`, faded, is the
+loading skeleton's fill.
 
 `node --test scripts/check-design-tokens.test.mjs` was run before
 `check-design-tokens.mjs` existed and failed on the missing module. Once the
-checker existed, its seven fixture cases passed and the real-tree case failed
+checker existed, its fixture cases passed and the real-tree case failed
 until `docs/design.md` was written.

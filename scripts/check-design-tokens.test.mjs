@@ -72,7 +72,7 @@ function withFixture(options, assertions) {
   }
 }
 
-test("passes when every @theme inline token has exactly one meaning row", () => {
+test("passes when every @theme token has exactly one meaning row", () => {
   withFixture({}, (failures) => assert.deepEqual(failures, []));
 });
 
@@ -86,7 +86,7 @@ test("fails when a token has no meaning row", () => {
   );
 });
 
-test("fails when a row names a token @theme inline does not declare", () => {
+test("fails when a row names a token no @theme block declares", () => {
   withFixture(
     {
       design: designMd.replace(
@@ -96,7 +96,7 @@ test("fails when a row names a token @theme inline does not declare", () => {
     },
     (failures) => {
       assert.equal(failures.length, 1);
-      assert.match(failures[0], /`--color-gone`.*not declared/);
+      assert.match(failures[0], /`--color-gone`.*no globals.css @theme block declares/);
     },
   );
 });
@@ -123,11 +123,26 @@ test("fails when the Semantic tokens section is absent", () => {
   });
 });
 
-test("fails when globals.css has no @theme inline block", () => {
+test("fails when globals.css has no @theme block", () => {
   withFixture({ css: ":root {\n  --primary: #000000;\n}\n" }, (failures) => {
     assert.equal(failures.length, 1);
-    assert.match(failures[0], /no `@theme inline` block/);
+    assert.match(failures[0], /no `@theme` block/);
   });
+});
+
+test("checks tokens in every @theme block, inline or not", () => {
+  withFixture(
+    {
+      css:
+        globalsCss +
+        "@theme inline {\n  --color-destructive: var(--primary);\n}\n\n@theme {\n  --radius-card: 0.75rem;\n}\n",
+    },
+    (failures) => {
+      assert.equal(failures.length, 2);
+      assert.match(failures[0], /`--color-destructive`.*no meaning row/);
+      assert.match(failures[1], /`--radius-card`.*no meaning row/);
+    },
+  );
 });
 
 test("fails when docs/design.md does not exist", () => {

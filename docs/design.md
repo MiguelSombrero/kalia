@@ -23,9 +23,9 @@ anything a visitor sees; the `design-task` skill and
 
 - **Every semantic token has exactly one meaning row** under
   [Semantic tokens](#semantic-tokens) below, and every row names a token that
-  exists. A semantic token is anything declared in the `@theme inline` block
-  of `frontend/app/globals.css` — the layer components consume through
-  Tailwind utilities. `scripts/check-design-tokens.mjs` fails the build in
+  exists. A semantic token is anything declared in an `@theme` block of
+  `frontend/app/globals.css`, inline or not — the layer components consume
+  through Tailwind utilities. `scripts/check-design-tokens.mjs` fails the build in
   both directions; it runs in CI (the `design-token-check` job) and under
   `make check`, with a fixture self-test
   (`scripts/check-design-tokens.test.mjs`) because nothing in the real tree
@@ -87,7 +87,7 @@ the token layer it replaces.
 | `--color-surface` | A raised plane that holds one thing: a card, a dialog, a toast, a form field. | Content or an input needs to read as a separate object from the page around it. |
 | `--color-foreground` | Primary text, and anything that must read at full strength. | Body copy, headings, values. Also the dialog scrim, at reduced opacity. |
 | `--color-muted-foreground` | Secondary text: supporting, never essential to the task. | Labels, metadata, helper text, empty-state explanations — text a reader may skip. |
-| `--color-border` | A quiet edge between planes or groups. | Separating a surface from the page, or one list item from the next; never to draw attention. |
+| `--color-border` | A quiet edge between planes or groups, and the fill of something not there yet. | Separating a surface from the page or one list item from the next, and, faded, the blocks of a loading skeleton. Never to draw attention. |
 | `--color-primary` | Kalia's one action colour. | The fill of the single main action in a view, and the hover cue — an edge or a faint tint — on anything else that can be activated. Used sparingly, so it keeps meaning "act here". |
 | `--color-primary-foreground` | Text and icons placed on `--color-primary`. | Whenever something sits on a primary fill; never on its own. |
 | `--color-accent` | A soft, low-emphasis tint for marking a category or attribute. | Badges and tags — style, strength — that label rather than act. |
