@@ -28,6 +28,15 @@ const ROUTES = [
     covers: (p) => p === "docs/design.md" || p === "frontend/app/globals.css",
   },
   {
+    checker: "check-token-styling.mjs",
+    covers: (p) =>
+      p === "frontend/app/globals.css" ||
+      (p.startsWith("frontend/") &&
+        /\.(tsx?|css)$/.test(p) &&
+        !p.startsWith("frontend/lib/api/generated/") &&
+        !p.includes("/node_modules/")),
+  },
+  {
     checker: "check-comments.mjs",
     covers: (p) =>
       (p.startsWith("backend/src/") && p.endsWith(".java")) ||
