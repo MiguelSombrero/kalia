@@ -46,13 +46,12 @@ anything a visitor sees; the `design-task` skill and
 
 - **Values** — `frontend/app/globals.css` for colour and every other token,
   `frontend/app/[locale]/layout.tsx` for which typefaces load.
-- **The token system's shape** — two layers, components reading only the
-  semantic one, primitives in `components/ui/`:
+- **The token system's shape** —
   [architecture.md §5](architecture.md#5-frontend-design), decided in
   [ADR-0021](adr/0021-design-tokens-ui-primitives.md).
-- **Rules for writing a component** — which layer a class may reference, how
-  primitives compose: [frontend/README.md](../frontend/README.md) conventions.
-  This file says which token to reach for; the README says how to reach.
+- **Rules for writing a component** —
+  [frontend/README.md](../frontend/README.md) conventions. This file says
+  which token to reach for; the README says how to reach.
 - **Component documentation.** Whether `components/ui/` becomes a design
   system, and where that would be documented, is
   [iteration 7.5 task 12](tasks/iteration-7.5/12-do-we-need-a-design-system.md)'s

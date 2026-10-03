@@ -1,6 +1,6 @@
 # Task 14: Where Kalia's design intent lives
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-2
 
@@ -120,33 +120,33 @@ part is in [the iteration index](../iteration-7.5.md)):
 
 ## Acceptance criteria
 
-- [ ] An ADR records that the document exists, what it holds, what it
+- [x] An ADR records that the document exists, what it holds, what it
       explicitly does not, and the rejected alternative of folding the brief
       into [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md) — with at
       least one Bad or Neutral consequence, passing
       `node scripts/check-adrs.mjs`
-- [ ] `docs/design.md` exists with the sections named above and a "how this
+- [x] `docs/design.md` exists with the sections named above and a "how this
       file is kept current" section naming which parts are checked and which
       are review-maintained, following [`docs/glossary.md`](../../glossary.md)
-- [ ] A bidirectional checker fails when a semantic token in `app/globals.css`
+- [x] A bidirectional checker fails when a semantic token in `app/globals.css`
       has no meaning row and when a row names a token that does not exist. It
       ships a fixture self-test the way `scripts/check-glossary.test.mjs` does,
       because nothing in the real tree would otherwise trip it, and a check
       that never fires passes whether or not its condition is right. It runs
       in `make verify` and in CI
-- [ ] [Architecture.md §5](../../architecture.md) and the `design-task`
+- [x] [Architecture.md §5](../../architecture.md) and the `design-task`
       skill's step 2 link to `docs/design.md`
-- [ ] No fact in it is also stated in
+- [x] No fact in it is also stated in
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md),
       `docs/architecture.md` §5, `frontend/README.md` or `app/globals.css` —
       each of those either points at it or is pointed at, and the PR says which
       way round for each
-- [ ] Tasks [03](03-visual-identity.md), [04](04-imagery-iconography-and-the-mark.md),
+- [x] Tasks [03](03-visual-identity.md), [04](04-imagery-iconography-and-the-mark.md),
       [06](06-page-shell.md) and [12](12-do-we-need-a-design-system.md) each
       have an acceptance criterion naming what they contribute to it, added in
       this task's PR — so the document is filled by the work rather than in one
       sitting afterwards
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 
