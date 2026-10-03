@@ -36,7 +36,7 @@ restyling what is already there.
 | [01](iteration-7.5/01-how-a-design-task-runs.md) | How a design task runs | done |
 | [02](iteration-7.5/02-design-audit-baseline.md) | The app as it stands, audited | done |
 | [14](iteration-7.5/14-where-design-intent-lives.md) | Where Kalia's design intent lives | done |
-| [03](iteration-7.5/03-visual-identity.md) | A new visual identity: colour, type, and the feel they make | refined |
+| [03](iteration-7.5/03-visual-identity.md) | A new visual identity: colour, type, and the feel they make | done |
 | [04](iteration-7.5/04-imagery-iconography-and-the-mark.md) | Imagery, iconography and the Kalia mark | refined |
 | [05](iteration-7.5/05-token-only-styling-enforced.md) | Make token-only styling a rule the build enforces | refined |
 | [06](iteration-7.5/06-page-shell.md) | The page shell every page sits in | refined |
