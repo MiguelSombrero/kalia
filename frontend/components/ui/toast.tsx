@@ -17,12 +17,43 @@ export const ToastViewport = ({ className, ...props }: ComponentProps<typeof Toa
   );
 };
 
-export const Toast = ({ className, ...props }: ComponentProps<typeof ToastPrimitive.Root>) => {
+export type ToastVariant = "success" | "destructive";
+
+const variantClasses: Record<ToastVariant, string> = {
+  success: "bg-success text-success-foreground",
+  destructive: "bg-destructive text-destructive-foreground",
+};
+
+const SuccessIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2.2} className="h-5 w-5">
+    <path d="m4.5 10.5 3.5 3.5 7.5-8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const DestructiveIcon = () => (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2.2} className="h-5 w-5">
+    <circle cx="10" cy="10" r="7.5" />
+    <path d="M10 6v4.5M10 13.6v.1" strokeLinecap="round" />
+  </svg>
+);
+
+type ToastProps = ComponentProps<typeof ToastPrimitive.Root> & { variant: ToastVariant };
+
+export const Toast = ({ variant, className, children, ...props }: ToastProps) => {
   return (
     <ToastPrimitive.Root
-      className={cn(cardVariants, "flex items-center gap-4 p-4 shadow-xl", className)}
+      data-variant={variant}
+      className={cn(cardVariants, "flex items-stretch overflow-hidden", className)}
       {...props}
-    />
+    >
+      <span
+        aria-hidden="true"
+        className={cn("flex w-12 shrink-0 items-center justify-center border-r border-border", variantClasses[variant])}
+      >
+        {variant === "success" ? <SuccessIcon /> : <DestructiveIcon />}
+      </span>
+      <div className="flex flex-1 items-center gap-4 p-4">{children}</div>
+    </ToastPrimitive.Root>
   );
 };
 

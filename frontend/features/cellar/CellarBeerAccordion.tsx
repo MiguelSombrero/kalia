@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cardVariants } from "@/components/ui/card";
+import { beerStyleGroup } from "@/lib/beerStyle";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -44,7 +45,7 @@ export const CellarBeerAccordion = ({
         aria-expanded={expanded}
         aria-controls={panelId}
         onClick={onToggle}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 focus-visible:outline-none"
+        className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-left hover:bg-primary/5 focus-visible:outline-none sm:flex-nowrap"
       >
         <svg
           aria-hidden="true"
@@ -63,15 +64,17 @@ export const CellarBeerAccordion = ({
           <span className="block font-semibold text-foreground">{title}</span>
           <span className="block text-sm text-muted-foreground">{subtitle}</span>
         </span>
-        <span className="flex shrink-0 items-center gap-1.5">
-          <Badge variant="neutral">{style}</Badge>
+        <span className="order-last flex basis-full flex-wrap items-center gap-1.5 pl-7 sm:order-none sm:basis-auto sm:shrink-0 sm:pl-0">
+          <Badge variant="style" data-beer-style={beerStyleGroup(style)}>
+            {style}
+          </Badge>
           <Badge variant="accent">{abv} %</Badge>
         </span>
         <span className="w-16 shrink-0 text-right text-sm font-semibold text-foreground">
           {countLabel}
         </span>
       </button>
-      <div id={panelId} hidden={!expanded} className="border-t border-border px-4 py-3 pl-11">
+      <div id={panelId} hidden={!expanded} className="border-t border-divider px-4 py-3 pl-11">
         {children}
       </div>
     </div>

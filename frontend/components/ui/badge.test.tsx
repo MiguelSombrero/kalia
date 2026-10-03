@@ -11,6 +11,20 @@ describe("Badge", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("renders the style variant in whichever style colour its data-beer-style selects", async () => {
+    const { container } = render(
+      <Badge variant="style" data-beer-style="stout">
+        Imperial Stout
+      </Badge>,
+    );
+
+    const badge = screen.getByText("Imperial Stout");
+    expect(badge.className).toBe(badgeVariants("style"));
+    expect(badge.className).toContain("bg-style text-style-foreground");
+    expect(badge).toHaveAttribute("data-beer-style", "stout");
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("defaults to the neutral variant", () => {
     render(<Badge>Quadrupel</Badge>);
 

@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
 import { cardVariants } from "@/components/ui/card";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { beerStyleGroup } from "@/lib/beerStyle";
 import { cn } from "@/lib/cn";
 import type { BeerDetails } from "./types";
 
@@ -34,7 +36,11 @@ export const BeerDetailsCard = async ({
       <dl className={cn(cardVariants, "flex flex-wrap gap-x-10 gap-y-4 p-4")}>
         <div>
           <dt className="text-sm text-muted-foreground">{t("beer.style")}</dt>
-          <dd className="mt-1 font-medium text-foreground">{beer.style}</dd>
+          <dd className="mt-1">
+            <Badge variant="style" data-beer-style={beerStyleGroup(beer.style)}>
+              {beer.style}
+            </Badge>
+          </dd>
         </div>
         <div>
           <dt className="text-sm text-muted-foreground">{t("beer.abv")}</dt>

@@ -5,6 +5,7 @@ import { cardVariants } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { beerStyleGroup } from "@/lib/beerStyle";
 import { cn } from "@/lib/cn";
 import type { BeerSummary } from "./types";
 
@@ -54,7 +55,9 @@ export const BeerList = async ({
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">{beer.brewery.name}</p>
           <p className="mt-2 flex flex-wrap gap-1 text-sm">
-            <Badge variant="neutral">{beer.style}</Badge>
+            <Badge variant="style" data-beer-style={beerStyleGroup(beer.style)}>
+              {beer.style}
+            </Badge>
             <Badge variant="accent">{beer.abv} %</Badge>
           </p>
           {/* relative z-10: the stretched link above covers the whole card, and

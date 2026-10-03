@@ -25,7 +25,7 @@ import { todayIso } from "./bottleDateRules";
 import { useAddBottle } from "./hooks/useBottles";
 
 const fieldClasses =
-  "mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground";
+  "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
 export const AddBottleDialog = ({ beerId, beerName }: { beerId: string; beerName: string }) => {
   const { t } = useTranslation();

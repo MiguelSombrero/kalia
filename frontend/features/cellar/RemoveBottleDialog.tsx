@@ -76,7 +76,7 @@ export const RemoveBottleDialog = ({
           <DialogClose className={buttonVariants("outline")}>
             {t("cellar.bottle.remove.cancel")}
           </DialogClose>
-          <Button type="button" variant="primary" onClick={onConfirm}>
+          <Button type="button" variant="destructive" onClick={onConfirm}>
             {t("cellar.bottle.remove.confirm")}
           </Button>
         </div>

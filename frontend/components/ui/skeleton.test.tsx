@@ -9,7 +9,7 @@ describe("Skeleton", () => {
 
     const skeleton = screen.getByTestId("skeleton");
     expect(skeleton).toHaveAttribute("aria-hidden", "true");
-    expect(skeleton.className).toBe("animate-pulse rounded-md bg-border/60 h-4 w-32");
+    expect(skeleton.className).toBe("animate-pulse rounded-control bg-divider h-4 w-32");
     expect(await axe(container)).toHaveNoViolations();
   });
 

@@ -15,6 +15,7 @@ export const RemovalOutcomeToast = () => {
   const outcome = useBottleRemovalStore((state) => state.outcome);
   const dismissOutcome = useBottleRemovalStore((state) => state.dismissOutcome);
 
+  const failed = outcome !== null && "failed" in outcome;
   const message =
     outcome && "failed" in outcome
       ? t("cellar.bottle.remove.error")
@@ -25,6 +26,7 @@ export const RemovalOutcomeToast = () => {
   return (
     <ToastProvider swipeDirection="right">
       <Toast
+        variant={failed ? "destructive" : "success"}
         open={outcome !== null}
         onOpenChange={(open) => {
           if (!open) dismissOutcome();

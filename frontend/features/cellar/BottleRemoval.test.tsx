@@ -3,6 +3,7 @@
 // removal store, so this test renders the real composition (CellarList)
 // rather than any one component in isolation.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { buttonVariants } from "@/components/ui/button";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -127,6 +128,7 @@ describe("bottle removal with an upfront confirmation", () => {
     fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
     expect(removeBottleAction).not.toHaveBeenCalled();
+    expect(confirmDialog().getByRole("button", { name: CONFIRM }).className).toBe(buttonVariants("destructive"));
 
     fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 
@@ -134,6 +136,7 @@ describe("bottle removal with an upfront confirmation", () => {
     expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(1);
     await waitFor(() => expect(removeBottleAction).toHaveBeenCalledWith("bottle-2"));
     await waitFor(() => expect(screen.getByText(TOAST)).toBeInTheDocument());
+    expect(screen.getByText(TOAST).closest("[data-variant]")).toHaveAttribute("data-variant", "success");
   });
 
   it("issues no DELETE and leaves the bottle untouched when canceled", async () => {
@@ -160,6 +163,7 @@ describe("bottle removal with an upfront confirmation", () => {
     fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 
     await waitFor(() => expect(screen.getByText(TOAST_ERROR)).toBeInTheDocument());
+    expect(screen.getByText(TOAST_ERROR).closest("[data-variant]")).toHaveAttribute("data-variant", "destructive");
     expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
   });
 

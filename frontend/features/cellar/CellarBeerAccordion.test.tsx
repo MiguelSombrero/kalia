@@ -21,6 +21,7 @@ describe("CellarBeerAccordion", () => {
 
     const toggle = screen.getByRole("button", { name: /Westvleteren 12/ });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByText("Quadrupel")).toHaveAttribute("data-beer-style", "belgian-dark");
     expect(screen.getByText("panel body")).not.toBeVisible();
     expect(await axe(container)).toHaveNoViolations();
   });
