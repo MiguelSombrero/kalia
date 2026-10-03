@@ -145,6 +145,13 @@ test("checks tokens in every @theme block, inline or not", () => {
   );
 });
 
+test("counts a Tailwind sub-property as part of its token, not a token of its own", () => {
+  withFixture(
+    { css: globalsCss.replace("  --font-sans: var(--font-example, sans-serif);", "  --font-sans: var(--font-example, sans-serif);\n  --font-sans--font-variation-settings: \"wdth\" 125;") },
+    (failures) => assert.deepEqual(failures, []),
+  );
+});
+
 test("fails when docs/design.md does not exist", () => {
   withFixture({ design: null }, (failures) => {
     assert.equal(failures.length, 1);

@@ -80,7 +80,10 @@ function themeTokens(css) {
       if (source[end] === "{") depth++;
       if (source[end] === "}" && --depth === 0) break;
     }
-    for (const m of source.slice(open + 1, end).matchAll(/(--[A-Za-z0-9-]+)\s*:/g)) tokens.add(m[1]);
+    for (const m of source.slice(open + 1, end).matchAll(/(--[A-Za-z0-9-]+)\s*:/g)) {
+      // `--text-label--line-height` is Tailwind's sub-property of `--text-label`, documented in its row.
+      tokens.add(m[1].replace(/^(--.+?)--.*$/, "$1"));
+    }
   }
   return [...tokens].sort();
 }

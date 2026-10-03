@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
 import { LocaleSwitcher } from "@/features/i18n";
@@ -8,14 +8,10 @@ import { SiteNav } from "@/features/navigation";
 import { Providers } from "../providers";
 import "../globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+  axes: ["wdth"],
 });
 
 export const generateStaticParams = () => locales.map((locale) => ({ locale }));
@@ -45,12 +41,12 @@ const RootLayout = async ({ children, params }: Props) => {
   return (
     <html
       lang={locale}
-      className={`${fraunces.variable} ${inter.variable} h-full antialiased`}
+      className={`${archivo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-2 focus:text-foreground focus:outline focus:outline-2 focus:outline-focus-ring"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-surface focus:px-4 focus:py-2 focus:text-foreground focus:outline focus:outline-2 focus:outline-focus-ring"
         >
           {t("a11y.skipToContent")}
         </a>
