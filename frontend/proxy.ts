@@ -25,7 +25,10 @@ export const proxy = (request: NextRequest) => {
 };
 
 export const config = {
-  // Everything except Next internals, API routes and files with an extension
-  // (favicon.ico, etc.) — the same shape as Next's own negative-match example.
-  matcher: ["/((?!_next|api|.*\\..*).*)"],
+  // Everything except Next internals, API routes, files with an extension
+  // (icon.svg, etc.) and the generated icon, icon1 and apple-icon routes,
+  // whose URLs have no extension — the same shape as Next's own negative-match
+  // example. Any other generated route with no extension (opengraph-image,
+  // say) has to be named here too.
+  matcher: ["/((?!_next|api|(?:apple-)?icon\\d*$|.*\\..*).*)"],
 };
