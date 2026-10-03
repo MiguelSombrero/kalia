@@ -15,6 +15,8 @@
   action and its client-owned countdown are dropped, and it now reports
   removal success/failure only ([iteration 6 task
   13](../tasks/iteration-6/13-bottle-removal-lost-on-navigation.md))
+- **Amended:** 2026-10-03 by [ADR-0066](0066-token-only-styling-is-a-build-check.md)
+  — the two-layer rule is now a build check rather than a convention
 
 ## Context
 

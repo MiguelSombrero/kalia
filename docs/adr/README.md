@@ -139,6 +139,9 @@ decides the URL built on it.
 - [ADR-0065](0065-imagery-icons-and-mark-specimen.md) — no beer pictures: a
   beer is its ABV on its style colour, a person is initials, the mark is a
   nine-cell cellar rack, and seven hand-drawn icons cover what words cannot.
+- [ADR-0066](0066-token-only-styling-is-a-build-check.md) — a colour or
+  typeface outside the semantic token layer fails the build, through a
+  `scripts/` checker rather than an ESLint rule.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a
