@@ -165,6 +165,23 @@ jobs:
       - name: Self-test the design token checker against fixtures
         run: node --test scripts/check-design-tokens.test.mjs
 
+  contrast-check:
+    name: Contrast check
+    # Unconditional for the same reason as the design token check above: a
+    # colour in frontend/app/globals.css and the pairing that uses it in
+    # docs/design.md can land in pushes the changes filter classifies
+    # differently, and this costs a few seconds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Verify every declared pairing and beer-style colour meets WCAG 2.1 AA (see docs/design.md)
+        run: node scripts/check-contrast.mjs
+      - name: Self-test the contrast checker against fixtures
+        run: node --test scripts/check-contrast.test.mjs
+
   raster-image-check:
     name: Raster image check
     # Unconditional: an image can be committed under any path, including ones

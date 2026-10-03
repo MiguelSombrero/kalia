@@ -21,7 +21,7 @@ describe("BeerList", () => {
       "/en/beers/b1",
     );
     expect(screen.getByText("Brouwerij Westvleteren")).toBeInTheDocument();
-    expect(screen.getByText(/Quadrupel/)).toBeInTheDocument();
+    expect(screen.getByText("Quadrupel")).toHaveAttribute("data-beer-style", "belgian-dark");
     expect(screen.getByText(/10\.2\s?%/)).toBeInTheDocument();
     expect(screen.queryByText(/€/)).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();

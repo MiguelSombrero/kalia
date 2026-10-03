@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/settings";
 import { DEFAULT_SORT, SORT_OPTIONS, type BeerSearchParams } from "./types";
 
 const inputClasses =
-  "w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-foreground";
+  "w-full rounded-control border border-border bg-surface px-3 py-1.5 text-sm text-foreground";
 
 // Plain GET form, deliberately native rather than react-hook-form/Zod
 // (ADR-0010); submitting drops the page param, restarting from page one.

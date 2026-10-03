@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import {
   createKeycloakUser,
   expect,
@@ -27,6 +27,20 @@ const expectRendered = async (page: Page, heading: string | RegExp) => {
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow, "the page scrolls sideways").toBeLessThanOrEqual(0);
+};
+
+const expectContained = async (row: Locator) => {
+  const escaping = await row.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return [...element.querySelectorAll<HTMLElement>("*")]
+      .filter((child) => {
+        const box = child.getBoundingClientRect();
+        const overflowsItself = child.scrollWidth > child.clientWidth + 1 && getComputedStyle(child).display !== "inline";
+        return box.left < bounds.left - 1 || box.right > bounds.right + 1 || overflowsItself;
+      })
+      .map((child) => child.textContent?.trim() || child.tagName);
+  });
+  expect(escaping, "content escapes the row or overflows its own box").toEqual([]);
 };
 
 const SIGNED_OUT_SURFACES = [
@@ -153,6 +167,7 @@ for (const viewport of VIEWPORTS) {
         await expectRendered(page, "My cellar");
         const row = page.getByRole("button", { name: new RegExp(escapeRegExp(beerName)) });
         await expect(row).toBeVisible();
+        await expectContained(row);
         await row.click();
         await expect(page.getByRole("button", { name: "Edit" }).first()).toBeVisible();
         await expect(page.getByRole("button", { name: "Remove" }).first()).toBeVisible();

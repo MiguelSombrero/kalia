@@ -20,7 +20,7 @@ import { useUpdateBottle } from "./hooks/useBottles";
 import type { Bottle } from "./types";
 
 const fieldClasses =
-  "mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground";
+  "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
 export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerName: string }) => {
   const { t } = useTranslation();

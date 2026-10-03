@@ -43,14 +43,15 @@ frontend-e2e: ## Run frontend E2E tests (needs the stack up)
 lint: ## Lint the frontend
 	(cd frontend && npm run lint)
 
-check: ## Run doc/task/comment/glossary/design-token consistency checks
+check: ## Run doc/task/comment/glossary/design-token/contrast consistency checks
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
 	node scripts/check-glossary.mjs
 	node scripts/check-design-tokens.mjs
+	node scripts/check-contrast.mjs
 	node scripts/check-no-raster-images.mjs
-	node --test scripts/check-glossary.test.mjs scripts/check-design-tokens.test.mjs scripts/check-tasks.test.mjs scripts/check-no-raster-images.test.mjs scripts/check-keycloak-realm-config.test.mjs scripts/check-signup-survives-restart.test.mjs scripts/keycloak-admin.test.mjs
+	node --test scripts/check-glossary.test.mjs scripts/check-design-tokens.test.mjs scripts/check-contrast.test.mjs scripts/check-tasks.test.mjs scripts/check-no-raster-images.test.mjs scripts/check-keycloak-realm-config.test.mjs scripts/check-signup-survives-restart.test.mjs scripts/keycloak-admin.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build backend postgres

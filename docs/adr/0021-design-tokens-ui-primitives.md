@@ -1,7 +1,11 @@
 # ADR-0021: Two-layer CSS design tokens and three shared UI primitives, no new dependency
 
-- **Status:** accepted
+- **Status:** partially-superseded
 - **Date:** 2026-07-27
+- **Superseded-by:** [ADR-0064](0064-visual-identity-can-art-square.md)
+  (partial) — the palette, the typefaces, the claim that border-radius is not
+  a re-theming concern, and the contrast evidence; the two-layer rule, the
+  primitives, the dependency exceptions and light-only stand
 - **Amended:** 2026-08-22 — the no-new-dependency rule now has one
   exception, `@radix-ui/react-dialog`, for the modal primitive's focus
   management (iteration 5 task 13)
@@ -74,6 +78,12 @@ no new dependency.**
 
 Spacing and border-radius deliberately use Tailwind's default scale with no
 new tokens — unlike colour and type, they are not a re-theming concern.
+
+> **Superseded in part 2026-10-03** by
+> [ADR-0064](0064-visual-identity-can-art-square.md). The identity is no
+> longer Fraunces and Inter on cream with a mint primary, and border-radius
+> is now a token, because the next re-theme changed it in every primitive.
+> Spacing stays on Tailwind's scale. Everything else in this Decision stands.
 
 > **Amended 2026-08-22.** **`components/ui/dialog.tsx` is the one primitive
 > built on a third-party dependency — `@radix-ui/react-dialog` 1.1.23 —
@@ -243,6 +253,11 @@ runtime by the existing `@axe-core/playwright` E2E scans:
 | White text on coral-700, if ever used filled | ≈5.4:1 | 4.5:1 |
 | Charcoal-900 on coral-100 / mint-100 badge tints | ≈13:1 | 4.5:1 |
 | Mint-600 as focus ring (non-text indicator) | ≈5.9:1 | 3:1 |
+
+> **Superseded 2026-10-03.** The table above is iteration 2's palette, which
+> no longer ships. [ADR-0064](0064-visual-identity-can-art-square.md)'s
+> Evidence holds the pairings that do, and `scripts/check-contrast.mjs` now
+> checks them on every build.
 
 **The palette was chosen with the product owner through iterative mockups**,
 not proposed whole: palette comparison → restrained/whitespace pass →

@@ -22,7 +22,7 @@ describe("BeerDetailsCard", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Brouwerij Westvleteren — Vleteren, Belgium/)).toBeInTheDocument();
     expect(screen.getByText("Style")).toBeInTheDocument();
-    expect(screen.getByText("Quadrupel")).toBeInTheDocument();
+    expect(screen.getByText("Quadrupel")).toHaveAttribute("data-beer-style", "belgian-dark");
     expect(screen.getByText(/10\.2\s?%/)).toBeInTheDocument();
     expect(screen.getByText(/dried fruit/)).toBeInTheDocument();
     expect(screen.queryByText(/€/)).not.toBeInTheDocument();

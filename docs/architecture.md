@@ -451,7 +451,14 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
   and a small set of shared primitives in `components/ui/` — the seam for a
-  possible future design-system extraction. No third-party component library;
+  possible future design-system extraction. The identity is "Can art, square"
+  ([ADR-0064](adr/0064-visual-identity-can-art-square.md)): a white page,
+  hairline ink edges, one cobalt action colour, success and destructive state
+  colours, Archivo run wide for display, square corners and no shadows, with
+  every beer style coloured by its style group — `lib/beerStyle.ts` maps a
+  style name to a group and `globals.css` holds each group's colour.
+  `scripts/check-contrast.mjs` holds every declared colour pairing and every
+  style colour to WCAG 2.1 AA in the build. No third-party component library;
   the two UI dependencies are `@radix-ui/react-dialog` and
   `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
@@ -715,7 +722,7 @@ the failure back to the agent without blocking
 | [ADR-0015](adr/0015-configuration-strategy.md) | Environment-variable configuration, not Spring profiles | accepted | 2026-07-25 |
 | [ADR-0016](adr/0016-security-response-headers.md) | Security response headers via `next.config.ts` | accepted | 2026-07-26 |
 | [ADR-0018](adr/0018-frontend-env-var-validation.md) | Frontend environment-variable validation via `instrumentation.ts` | accepted | 2026-07-26 |
-| [ADR-0021](adr/0021-design-tokens-ui-primitives.md) | Two-layer CSS design tokens and three shared UI primitives, no new dependency | accepted | 2026-07-27 |
+| [ADR-0021](adr/0021-design-tokens-ui-primitives.md) | Two-layer CSS design tokens and three shared UI primitives, no new dependency | partially-superseded | 2026-07-27 |
 | [ADR-0022](adr/0022-loading-error-empty-states.md) | Shape-matched loading skeletons, one error boundary at the locale root | accepted | 2026-07-27 |
 | [ADR-0023](adr/0023-typed-api-failures.md) | API failures are a tagged `ApiError`, and a non-2xx status is not one | accepted | 2026-07-27 |
 | [ADR-0024](adr/0024-dependency-vulnerability-scanning.md) | Trivy scans dependencies and images in CI; Dependabot opens the fixes | accepted | 2026-07-27 |
@@ -746,6 +753,7 @@ the failure back to the agent without blocking
 | [ADR-0059](adr/0059-feed-respects-cellar-visibility.md) | A feed line exists only for a public cellar, filtered at read time, and the front page stays noindex | accepted | 2026-09-13 |
 | [ADR-0060](adr/0060-feed-delivery-is-polling.md) | The front-page feed reaches an already-open browser by polling, not a stream | accepted | 2026-09-13 |
 | [ADR-0061](adr/0061-brute-force-lockout-is-temporary-and-disclosed.md) | Brute-force lockout is temporary, growing, and disclosed to the person locked out | accepted | 2026-09-19 |
+| [ADR-0064](adr/0064-visual-identity-can-art-square.md) | Kalia's identity had outgrown the catalog it was chosen for, so it becomes Can art drawn square, with beer styles coloured by group | accepted | 2026-10-03 |
 
 ### Engineering process and documentation
 

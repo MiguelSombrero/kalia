@@ -20,7 +20,7 @@ export const DialogContent = ({
       <DialogPrimitive.Content
         className={cn(
           cardVariants,
-          "fixed left-1/2 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto p-6 shadow-xl",
+          "fixed left-1/2 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto p-6",
           className,
         )}
         {...props}
@@ -37,7 +37,7 @@ export const DialogTitle = ({
 }: ComponentProps<typeof DialogPrimitive.Title>) => {
   return (
     <DialogPrimitive.Title
-      className={cn("font-display text-xl font-bold tracking-tight text-foreground", className)}
+      className={cn("font-display text-title font-bold text-foreground", className)}
       {...props}
     />
   );

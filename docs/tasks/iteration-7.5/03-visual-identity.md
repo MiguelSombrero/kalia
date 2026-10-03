@@ -1,7 +1,8 @@
 # Task 03: A new visual identity: colour, type, and the feel they make
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
+- **PR:** #313
 - **Covers:** DW-2
 - **Kind:** design
 
@@ -133,15 +134,15 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] At least three distinct directions were built and put in front of the
+- [x] At least three distinct directions were built and put in front of the
       product owner, as [task 01](01-how-a-design-task-runs.md) requires, and
       the one chosen is identifiable — not a blend assembled after the fact
-- [ ] Anything `design-task` got wrong when run here is fixed in the skill in
+- [x] Anything `design-task` got wrong when run here is fixed in the skill in
       this task's pull request rather than noted, and the PR says what changed
-- [ ] The chosen identity is recorded as an amendment to or replacement of
+- [x] The chosen identity is recorded as an amendment to or replacement of
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md), stating the
       directions rejected and why, and passing `node scripts/check-adrs.mjs`
-- [ ] The feel the identity is meant to produce is written down where
+- [x] The feel the identity is meant to produce is written down where
       [task 14](14-where-design-intent-lives.md) decided it belongs, in a form
       a later task can be held against: [`docs/design.md`](../../design.md)'s
       *Feel* section holds the statement and its reference points, its
@@ -149,24 +150,24 @@ Decided with the product owner in refinement, 2026-10-01:
       (`node scripts/check-design-tokens.mjs` passes), and its *Typography
       across the two locales* section says what English and Finnish each
       demand of the type scale
-- [ ] Every colour pairing the app actually uses is computed against WCAG 2.1
+- [x] Every colour pairing the app actually uses is computed against WCAG 2.1
       AA **before** the palette is committed, and the ADR's Evidence table
       lists the pairings and ratios that ship — not iteration 2's
-- [ ] A `scripts/` contrast checker fails `make verify` and CI when a declared
+- [x] A `scripts/` contrast checker fails `make verify` and CI when a declared
       pairing falls below AA, with a fixture test confirmed to fail before the
       checker existed
-- [ ] Success and destructive state tokens exist, and the removal toast and
+- [x] Success and destructive state tokens exist, and the removal toast and
       the remove dialog use them
-- [ ] `app/globals.css` and `app/[locale]/layout.tsx` are the only files
+- [x] `app/globals.css` and `app/[locale]/layout.tsx` are the only files
       carrying a colour or typeface value; no component references a primitive
       or a raw value
-- [ ] The existing `npm test` suites — including every `components/ui`
+- [x] The existing `npm test` suites — including every `components/ui`
       colocated test and its `jest-axe` assertion — pass against the new
       tokens, and the Playwright `@axe-core/playwright` scans pass against
       every page that exists today
-- [ ] `docs/architecture.md` §5's visual-design bullet describes the identity
+- [x] `docs/architecture.md` §5's visual-design bullet describes the identity
       that ships
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

@@ -20,6 +20,14 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Save" }).className).toBe(buttonVariants("primary"));
   });
 
+  it("renders the destructive variant with no a11y violations", async () => {
+    const { container } = render(<Button variant="destructive">Remove</Button>);
+
+    expect(screen.getByRole("button", { name: "Remove" }).className).toBe(buttonVariants("destructive"));
+    expect(buttonVariants("destructive")).toContain("bg-destructive text-destructive-foreground");
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("merges a custom className with the outline variant", () => {
     render(
       <Button variant="outline" className="extra">

@@ -74,7 +74,7 @@ export const VisibilityControl = ({ username, initialCellarPublic }: Props) => {
       )}
 
       <ToastProvider swipeDirection="right">
-        <Toast open={showError} duration={5000} onOpenChange={(open) => !open && setShowError(false)}>
+        <Toast variant="destructive" open={showError} duration={5000} onOpenChange={(open) => !open && setShowError(false)}>
           <ToastDescription className="flex-1 text-sm text-foreground">
             {t("profile.visibility.error")}
           </ToastDescription>
