@@ -51,6 +51,7 @@ const PALETTE_UTILITY = new RegExp(
   "g",
 );
 const ARBITRARY_COLOUR = new RegExp(`(?<![\\w-])${COLOUR_PREFIX}-\\[([^\\]]*)\\]`, "g");
+const SHORTHAND_VAR = new RegExp(`(?<![\\w-])(?:${COLOUR_PREFIX}|font)-\\(\\s*(?:[\\w-]+:)?(--[\\w-]+)`, "g");
 const ARBITRARY_FONT = /(?<![\w-])font-\[([^\]]*)\]/g;
 const VAR_REFERENCE = /var\(\s*(--[\w-]+)/g;
 const FONT_FAMILY = /(?:font-family|fontFamily)\s*:(.*)/g;
@@ -59,6 +60,9 @@ const FONT_FAMILY = /(?:font-family|fontFamily)\s*:(.*)/g;
 // value Tailwind resolves as something else.
 const NOT_A_COLOUR =
   /^(?:[-+]?[\d.]|(?:calc|clamp|min|max|url)\(|(?:length|percentage|number|integer|position|size|bg-size|angle|line-width|url|image|ratio):)/;
+
+// Not a colour of its own: nothing a re-theme could change.
+const COLOUR_KEYWORD = /^(?:transparent|currentcolor|inherit|initial|unset)$/i;
 
 /**
  * @param {string} root repository root to check
@@ -206,32 +210,31 @@ function dropContained(violations) {
   return kept;
 }
 
-function* matches(re, code) {
-  for (const m of code.matchAll(re)) yield m;
-}
-
 function* findViolations(code, theme, primitive) {
   const hit = (m, message) => ({ index: m.index, length: m[0].length, message });
 
-  for (const m of matches(HEX, code)) yield hit(m, `hex colour literal \`${m[0]}\``);
-  for (const m of matches(COLOUR_FUNCTION, code)) yield hit(m, `colour function \`${m[0]}…)\``);
-  for (const m of matches(COLOUR_SPACE, code)) yield hit(m, `colour function \`${m[0]}…)\``);
-  for (const m of matches(PALETTE_UTILITY, code)) yield hit(m, `Tailwind default-palette utility \`${m[0]}\``);
+  for (const m of code.matchAll(HEX)) yield hit(m, `hex colour literal \`${m[0]}\``);
+  for (const m of code.matchAll(COLOUR_FUNCTION)) yield hit(m, `colour function \`${m[0]}…)\``);
+  for (const m of code.matchAll(COLOUR_SPACE)) yield hit(m, `colour function \`${m[0]}…)\``);
+  for (const m of code.matchAll(PALETTE_UTILITY)) yield hit(m, `Tailwind default-palette utility \`${m[0]}\``);
 
-  for (const m of matches(ARBITRARY_COLOUR, code)) {
+  for (const m of code.matchAll(ARBITRARY_COLOUR)) {
     const value = m[1].trim();
     const semantic = value.match(/^var\(\s*(--[\w-]+)\s*\)$/);
-    if (NOT_A_COLOUR.test(value) || (semantic && theme.has(semantic[1]))) continue;
+    if (NOT_A_COLOUR.test(value) || COLOUR_KEYWORD.test(value) || (semantic && theme.has(semantic[1]))) continue;
     yield hit(m, `arbitrary colour value \`${m[0]}\``);
   }
-  for (const m of matches(ARBITRARY_FONT, code)) {
+  for (const m of code.matchAll(ARBITRARY_FONT)) {
     if (/^(?:\d+|(?:weight|number):.*)$/.test(m[1].trim())) continue;
     yield hit(m, `arbitrary typeface value \`${m[0]}\``);
   }
-  for (const m of matches(VAR_REFERENCE, code)) {
+  for (const m of code.matchAll(VAR_REFERENCE)) {
     if (primitive.has(m[1])) yield hit(m, `reference to the primitive layer \`${m[1]}\``);
   }
-  for (const m of matches(FONT_FAMILY, code)) {
+  for (const m of code.matchAll(SHORTHAND_VAR)) {
+    if (primitive.has(m[1])) yield hit(m, `reference to the primitive layer \`${m[0]}…)\``);
+  }
+  for (const m of code.matchAll(FONT_FAMILY)) {
     const semantic = m[1].trim().match(/^["'`]?var\(\s*(--[\w-]+)\s*\)["'`]?[\s,;})]*$/);
     if (semantic && theme.has(semantic[1])) continue;
     yield hit(m, "typeface set by hand; use a `font-*` utility or `var(--font-…)` of a semantic font token");

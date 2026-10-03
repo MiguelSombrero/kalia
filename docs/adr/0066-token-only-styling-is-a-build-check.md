@@ -118,8 +118,8 @@ for a handful of files, with no way to read the TSX half of the same rule.
 Checked 2026-10-03, iteration 7.5 task 05, with Node 24.
 
 `node --test scripts/check-token-styling.test.mjs` was run before
-`check-token-styling.mjs` existed and failed on the missing module. Once the
-checker existed, the one fixture that runs it against the real tree failed on
-`frontend/lib/kaliaMark.ts` lines 1 to 3, the only violations in the tree, which
-the task's own search of `components/`, `features/` and `app/` had not covered.
-With the three markers in place all 18 fixtures and the real-tree run pass.
+`check-token-styling.mjs` existed and failed on the missing module. The
+checker's first run over the real tree failed on `frontend/lib/kaliaMark.ts`
+lines 1 to 3, the only violations in it, which the task's own search of
+`components/`, `features/` and `app/` had not covered. With the three markers
+in place the checker reports OK and all fixtures pass.

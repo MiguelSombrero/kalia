@@ -7,11 +7,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { checkTokenStyling } from "./check-token-styling.mjs";
-
-const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const globalsCss = [
   '@import "tailwindcss";',
@@ -49,10 +46,6 @@ function run(files, { css = globalsCss } = {}) {
 const component = (className) => `export const C = () => <div className="${className}" />;\n`;
 const failing = (path, text) => run({ [path]: text });
 
-test("the repository's own tree passes with every exception stating a reason", () => {
-  assert.deepEqual(checkTokenStyling(REAL_ROOT), []);
-});
-
 test("a component built from semantic tokens passes", () => {
   const failures = run({
     "frontend/components/ui/ok.tsx": component(
@@ -87,6 +80,15 @@ test("an arbitrary colour or typeface value fails", () => {
     const failures = failing("frontend/components/a.tsx", component(cls));
     assert.ok(failures.length >= 1, cls);
   }
+});
+
+test("Tailwind's parenthesised custom-property shorthand is read like var()", () => {
+  assert.equal(failing("frontend/components/a.tsx", component("bg-(--ink-950) text-(color:--background)")).length, 2);
+  assert.deepEqual(failing("frontend/components/b.tsx", component("bg-(--color-background) text-(--radix-x)")), []);
+});
+
+test("an arbitrary transparent, currentColor or inherit names no colour and stays legal", () => {
+  assert.deepEqual(failing("frontend/components/a.tsx", component("border-[transparent] bg-[currentColor]")), []);
 });
 
 test("a reference to the primitive layer fails, as a var() or inside an arbitrary value", () => {

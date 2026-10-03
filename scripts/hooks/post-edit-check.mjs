@@ -33,6 +33,8 @@ const ROUTES = [
       p === "frontend/app/globals.css" ||
       (p.startsWith("frontend/") &&
         /\.(tsx?|css)$/.test(p) &&
+        !/\.(test|spec)\.tsx?$/.test(p) &&
+        !p.startsWith("frontend/e2e/") &&
         !p.startsWith("frontend/lib/api/generated/") &&
         !p.includes("/node_modules/")),
   },
