@@ -35,13 +35,23 @@ rank them in a way that pre-empts the pick.
    step 8 turns them into an ADR.
 4. **Round one: build three distinct directions.** Distinct means they differ
    in a structural choice — layout, hierarchy, density, where the weight
-   falls — not in a colour swap of one design. Each is a self-contained HTML
+   falls — not in a colour swap of one design. For an identity rather than a
+   layout, the structural choice is the feel and what colour, type and shape
+   each do in it — one action colour or colour as a category key, a quiet face
+   or a loud one, soft planes or ruled lines — shown applied to the same
+   real screens so only the identity varies. Each is a self-contained HTML
    file:
    - carrying real sample data, not lorem ipsum: beers, breweries and feed
      events from the seed or the running app, Finnish strings included
      ([ADR-0011](../../../docs/adr/0011-i18next-localization.md));
    - working at the phone and desktop widths the iteration agreed (for
-     iteration 7.5, the two widths task 02 records);
+     iteration 7.5, the two widths task 02 records), with a switch in the
+     page between them: an Artifact is as wide as the product owner's window,
+     so a mockup that relies on media queries is only ever seen at one
+     width. Lay the sample screens out with container queries and have the
+     switch narrow their container;
+   - showing the contrast of every colour pairing it uses, computed from its
+     own values, so a direction is never chosen on a palette that fails AA;
    - written outside the repository, in the session's scratchpad. **No mockup
      code is committed.**
 5. **Show them.** Publish each direction as a private claude.ai Artifact
@@ -56,10 +66,17 @@ rank them in a way that pre-empts the pick.
    builds what was asked for — a refinement of one direction, a new one, two
    put side by side again. **A blend is allowed only as a new direction that
    is built and shown**, never assembled after the choice, so the direction
-   chosen is always one the product owner actually saw. Note each round in
-   the checkpoint.
+   chosen is always one the product owner actually saw. A direction carried
+   into a later round unchanged keeps its Artifact link rather than being
+   republished. Note each round in the checkpoint.
 7. **Stop when the product owner names the direction.** Do not proceed on an
-   inference from a comment. If the reply is ambiguous, ask which one.
+   inference from a comment. If the reply is ambiguous, ask which one. A
+   choice that comes with a change attached ("that one, but …") is not yet a
+   direction anyone has seen: build the change, show it as a refinement
+   round, and treat it as chosen only when the product owner says so. A
+   change that raises a question beyond the visual one — where a mapping
+   lives, how much of today's app it reaches — is the product owner's too,
+   asked with the trade-offs before building.
    Choosing and building are one unbroken run, steps 7 to 11: the direction is
    only in the product owner's eye and the ADR's words until it is built, so
    do not hand the build to a different session. If the session is interrupted
