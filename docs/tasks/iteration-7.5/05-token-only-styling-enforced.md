@@ -1,6 +1,6 @@
 # Task 05: Make token-only styling a rule the build enforces
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-6
 
@@ -102,30 +102,30 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] A component that references a colour or typeface outside the semantic
+- [x] A component that references a colour or typeface outside the semantic
       token layer fails the build, demonstrated by a test that introduces such
       a component and asserts the failure — the check was confirmed to fail
       before it was confirmed to pass
-- [ ] The check runs in `make verify-fast`, `make verify`, CI and the
+- [x] The check runs in `make verify-fast`, `make verify`, CI and the
       `PostToolUse` edit-time hook
       ([ADR-0046](../../adr/0046-edit-time-checks-and-one-verify-gate.md))
-- [ ] Its fixture test covers each banned form, a `.css` file, a file under
+- [x] Its fixture test covers each banned form, a `.css` file, a file under
       `components/ui/`, a legal arbitrary size value, a marker with a reason
       and a marker without one
-- [ ] An ADR, or an amendment to
+- [x] An ADR, or an amendment to
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md), records the
       rule and the rejected ESLint alternative, passing
       `node scripts/check-adrs.mjs`
-- [ ] Every existing file passes with no exception granted, or each exception
+- [x] Every existing file passes with no exception granted, or each exception
       granted is visible in the diff and states its reason
-- [ ] The rule is documented once, in the home
+- [x] The rule is documented once, in the home
       [ADR-0020](../../adr/0020-documentation-roles.md) gives it, with a
       one-line pointer from anywhere else that mentions it — and because a
       violation of this rule fails *silently* rather than loudly, the warning
       is kept inline wherever an editor meets it, per `CLAUDE.md`
-- [ ] `docs/ci-playbook.md` has an entry for the new red job if recognising the
+- [x] `docs/ci-playbook.md` has an entry for the new red job if recognising the
       failure would cost a reader real time
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

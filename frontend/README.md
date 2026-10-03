@@ -254,6 +254,14 @@ Why the rationale lives there and not here:
 - **Design tokens are two-layer**: components reference the semantic layer
   (`--color-primary`), never raw primitives (`--cobalt-700`). Shared primitives
   live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).
+  **Never write a hex, `rgb()` or `hsl()` colour, a Tailwind default-palette
+  class (`bg-zinc-100`, `text-white`), an arbitrary colour or `font-[…]`, or a
+  `var(--…)` of a primitive in a component or a `.css` file** — it renders
+  correctly and fails nowhere visible until the next re-theme, so
+  `scripts/check-token-styling.mjs` fails `make verify-fast` on it
+  ([ADR-0066](../docs/adr/0066-token-only-styling-is-a-build-check.md)). If a
+  literal is unavoidable, put `token-exception: <why>` in a comment on or above
+  the line; a marker with no reason, or one excusing nothing, fails too.
   Which token an element should use is a meaning, not a value:
   [docs/design.md](../docs/design.md).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:

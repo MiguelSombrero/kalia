@@ -451,7 +451,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
   and a small set of shared primitives in `components/ui/` — the seam for a
-  possible future design-system extraction. The identity is "Can art, square"
+  possible future design-system extraction. The build fails on a colour or
+  typeface a component takes from outside the semantic layer
+  ([ADR-0066](adr/0066-token-only-styling-is-a-build-check.md)). The identity
+  is "Can art, square"
   ([ADR-0064](adr/0064-visual-identity-can-art-square.md)): a white page,
   hairline ink edges, one cobalt action colour, success and destructive state
   colours, Archivo run wide for display, square corners and no shadows, with
@@ -763,6 +766,7 @@ the failure back to the agent without blocking
 | [ADR-0061](adr/0061-brute-force-lockout-is-temporary-and-disclosed.md) | Brute-force lockout is temporary, growing, and disclosed to the person locked out | accepted | 2026-09-19 |
 | [ADR-0064](adr/0064-visual-identity-can-art-square.md) | Kalia's identity had outgrown the catalog it was chosen for, so it becomes Can art drawn square, with beer styles coloured by group | accepted | 2026-10-03 |
 | [ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md) | Kalia has no beer pictures and no mark in its own app, so a beer is shown by its strength on its style colour, a person by initials, and the mark is a cellar rack | accepted | 2026-10-03 |
+| [ADR-0066](adr/0066-token-only-styling-is-a-build-check.md) | Styling outside the semantic token layer fails the build, through a dependency-free checker rather than an ESLint rule | accepted | 2026-10-03 |
 
 ### Engineering process and documentation
 
