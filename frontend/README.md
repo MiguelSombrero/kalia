@@ -254,6 +254,8 @@ Why the rationale lives there and not here:
 - **Design tokens are two-layer**: components reference the semantic layer
   (`--color-primary`), never raw primitives (`--mint-600`). Shared primitives
   live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).
+  Which token an element should use is a meaning, not a value:
+  [docs/design.md](../docs/design.md).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
   `dialog.tsx` wraps `@radix-ui/react-dialog`** for the focus trap,
   focus restore, `Escape` handling and `aria-modal` inerting a modal needs,

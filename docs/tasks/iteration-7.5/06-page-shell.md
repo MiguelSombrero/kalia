@@ -142,4 +142,7 @@ Decided with the product owner in refinement, 2026-10-01:
 - [ ] The findings [task 02](02-design-audit-baseline.md) recorded against the
       header, footer and page frame are each fixed or carry a written decision
       not to fix them
+- [ ] [`docs/design.md`](../../design.md)'s *Layout principles* section holds
+      the principles the shell establishes for every page — and only those; a
+      rule for one page stays in that page's task and ADR
 - [ ] `make verify` is green

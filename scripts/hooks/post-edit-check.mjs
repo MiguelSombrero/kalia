@@ -24,6 +24,10 @@ const ROUTES = [
   { checker: "check-adrs.mjs", covers: (p) => p.startsWith("docs/adr/") || p === "docs/architecture.md" },
   { checker: "check-tasks.mjs", covers: (p) => p.startsWith("docs/tasks/") || p === "docs/roadmap.md" },
   {
+    checker: "check-design-tokens.mjs",
+    covers: (p) => p === "docs/design.md" || p === "frontend/app/globals.css",
+  },
+  {
     checker: "check-comments.mjs",
     covers: (p) =>
       (p.startsWith("backend/src/") && p.endsWith(".java")) ||

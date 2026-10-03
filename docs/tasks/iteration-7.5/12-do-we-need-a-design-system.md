@@ -134,6 +134,10 @@ starts; the questions above are the decision itself.
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md),
       `docs/architecture.md` §5 and `frontend/README.md` — and the tasks that
       build it are written, not started
+- [ ] [`docs/design.md`](../../design.md)'s *Not covered here* entry for
+      this task states the decision; if the answer is yes, the ADR says
+      whether the design system's documentation contains `docs/design.md` or
+      is contained by it, and the tasks it writes resolve the two into one
 - [ ] `docs/architecture.md` §5's "seam for a possible future design-system
       extraction" wording is replaced by whatever is now true, since it is the
       sentence this task exists to resolve

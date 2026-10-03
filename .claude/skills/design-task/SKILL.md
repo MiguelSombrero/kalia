@@ -25,10 +25,9 @@ rank them in a way that pre-empts the pick.
    here — `CLAUDE.md` "Refine in one PR, implement in another".
 2. Read what binds the choice: the task's `Why` and `Constraints`, the audit
    or problem statement it cites, the ADR that recorded any earlier design
-   choice it must sit with, and wherever
-   [ADR-0062](../../../docs/adr/0062-a-design-task-is-a-skill-and-a-marker.md)
-   says standing design intent lives. A direction that contradicts an accepted
-   choice is a new decision, not a fourth option.
+   choice it must sit with, and [`docs/design.md`](../../../docs/design.md),
+   where standing design intent lives. A direction that contradicts an
+   accepted choice is a new decision, not a fourth option.
 3. Branch off up-to-date `dev` and write `.claude/session-checkpoint.md`, both
    exactly as `implement-task` steps 2–3 say. Add a line per round to the
    checkpoint as it happens — the mockups are not kept, so the checkpoint is
@@ -73,8 +72,10 @@ rank them in a way that pre-empts the pick.
    shown, across every round, each described well enough that a reader who
    never saw the mockup understands what it was; the one chosen; and why each
    other was rejected. Standing intent — what later tasks are held against —
-   goes where task 14 decided, not into this ADR. The choice does **not** go in
-   the task file: it is the request and is frozen at completion
+   goes in [`docs/design.md`](../../../docs/design.md), not into this ADR,
+   including a meaning row for every semantic token the choice adds
+   (`scripts/check-design-tokens.mjs` fails without one). The choice does
+   **not** go in the task file: it is the request and is frozen at completion
    ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
 9. **Hand off to `implement-task`**, resuming at its step 4 and running it
    through its step 11 — not its step 12, which opens the pull request and
