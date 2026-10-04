@@ -2,7 +2,7 @@
 // and password-reset pages Keycloak renders on a different origin must appear
 // in the locale the visitor was reading and meet the app's WCAG 2.1 AA bar.
 import type { Page } from "@playwright/test";
-import { expect, test } from "./support/keycloakAccount";
+import { expect, test, uniqueUsername } from "./support/keycloakAccount";
 import { waitForMessageTo } from "./support/mailpit";
 import { expectNoA11yViolations } from "./support/a11y";
 import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
@@ -92,7 +92,7 @@ test.describe("the locale survives the round trip", () => {
 
 test.describe("the verification email follows the same language", () => {
   test("registering from /fi sends a Finnish verification email", async ({ page, request }) => {
-    const username = `fi-signup-${Date.now()}`;
+    const username = uniqueUsername("fi-signup");
     const email = `${username}@example.com`;
 
     await page.goto(`${FRONTEND_ORIGIN}/fi/sign-up`);

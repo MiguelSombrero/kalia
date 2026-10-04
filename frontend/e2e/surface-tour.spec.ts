@@ -7,6 +7,7 @@ import {
   signIn,
   test,
   type KeycloakAccount,
+  uniqueUsername,
 } from "./support/keycloakAccount";
 import { KEYCLOAK_ORIGIN } from "./support/origins";
 import { expectShellTargetsReachable } from "./support/shell";
@@ -139,7 +140,7 @@ for (const viewport of VIEWPORTS) {
       baseURL,
     }) => {
       const account: KeycloakAccount = {
-        username: `e2e-tour-${viewport.name}-${Date.now()}`,
+        username: uniqueUsername(`e2e-tour-${viewport.name}`),
         password: "testuser123",
       };
       const created = await createKeycloakUser(request, await keycloakAdminToken(request), account);

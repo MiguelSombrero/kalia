@@ -7,6 +7,7 @@ import {
   createUnverifiedKeycloakUser,
   keycloakAdminToken,
   sendActionsEmail,
+  uniqueUsername,
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
@@ -17,7 +18,7 @@ test("Keycloak sends a readable verification email whose link lands back on the 
   request,
 }) => {
   const adminToken = await keycloakAdminToken(request);
-  const username = `mailtest-${Date.now()}`;
+  const username = uniqueUsername("mailtest");
   const email = `${username}@example.com`;
   const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
 

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { expect, request, test as base, type APIRequestContext, type Page } from "@playwright/test";
 import Redis from "ioredis";
 import { KEYCLOAK_ORIGIN } from "./origins";
@@ -7,6 +8,12 @@ const REALM = "kalia";
 const ACCOUNT_PASSWORD = "testuser123";
 
 export type KeycloakAccount = { username: string; password: string };
+
+// Do not go back to a bare `Date.now()` suffix: `--repeat-each` starts copies
+// of one test on parallel workers in the same millisecond, and the loser's
+// registration is refused while it goes on to read the winner's email.
+export const uniqueUsername = (prefix: string): string =>
+  `${prefix}-${Date.now()}-${randomUUID().slice(0, 8)}`;
 
 export const keycloakAdminToken = async (apiRequest: APIRequestContext): Promise<string> => {
   const adminUsername = process.env.KEYCLOAK_ADMIN ?? "admin";
