@@ -36,10 +36,13 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
 Engineering work:
 
 - Observability: structured logs, metrics, tracing
-- Deployment target + IaC. **A prerequisite for the mobile client below**, not
-  merely adjacent to it: both the Spring API and Keycloak become
-  internet-facing, since a phone runs the OIDC flow against Keycloak itself and
-  calls the API directly. Today the API is bound to `127.0.0.1:8080`.
+- Deployment target + IaC. **A prerequisite for the mobile client reaching
+  anyone but its developer**, not merely adjacent to it: both the Spring API
+  and Keycloak become internet-facing, since a phone runs the OIDC flow against
+  Keycloak itself and calls the API directly. Today the API is bound to
+  `127.0.0.1:8080`, and [iteration 10](iteration-10.md) reaches it from one
+  phone without hosting, because hosting is parked as a cost (Mobile client
+  section below).
 - GDPR: account deletion, data export, and the consent story — becomes real
   the moment anyone but the author uses this
 - Search engine — PostgreSQL full-text is fine at this size; OpenSearch only if
@@ -84,13 +87,49 @@ Engineering work:
 ## Mobile client
 
 A React Native / Expo app is planned after [iteration 8](iteration-8.md),
-carrying at least the catalog, cellar, profile and feed. Nothing here is
-scheduled and nothing is decided. This section exists for a narrower reason:
-the decisions being made *now*, in iterations 5–8, are the API contract a
-second client would inherit, and a client that ships through an app store
-cannot be redeployed in lockstep with the backend. Choices that are reversible
-today stop being reversible then. Written up 2026-08-08 from an architecture
-analysis the product owner asked for.
+carrying at least the catalog, cellar, profile and feed. This section exists
+for a narrower reason: the decisions being made *now*, in iterations 5–8, are
+the API contract a second client would inherit, and a client that ships
+through an app store cannot be redeployed in lockstep with the backend.
+Choices that are reversible today stop being reversible then. Written up
+2026-08-08 from an architecture analysis the product owner asked for.
+
+**Scheduled 2026-10-04 as iterations [9](iteration-9.md)–[14](iteration-14.md)**,
+with mobile as Kalia's primary UI and the web maintained without being held at
+feature parity. The analysis below stays as the reasoning those iterations
+draw on; what each takes from it:
+
+| Item below | Taken by |
+|---|---|
+| Decisions 1–5 and 8: direct calls, compatibility policy, Keycloak client, repo layout, testing strategy | [Iteration 9](iteration-9.md), except the token format (5), which is [iteration 11](iteration-11.md)'s |
+| Decision 6, offline behaviour | [Iteration 12](iteration-12.md) |
+| Decisions 7 and 9, push notifications and public API exposure | Parked — they need money, below |
+| Minimum-supported-version check and kill switch | [Iteration 9](iteration-9.md)'s app-config endpoint |
+| Barcode scanning | [Iteration 14](iteration-14.md) |
+| Beer images | Unscheduled — storage can stay free, but it is the heaviest item left |
+| Crash reporting | [Iteration 10](iteration-10.md), within the no-cost constraint |
+| Process scaling to a third codebase; ADR-0012 revisited | [Iteration 9](iteration-9.md) |
+
+**The plan adds no cost and puts no payment card on file anywhere**, at the
+product owner's direction. Iteration 10 therefore installs the app on the
+product owner's own iPhone with a free Apple ID through Xcode — own device
+only, and an install that expires after seven days — and reaches the backend
+on the developer's Mac rather than a hosted one. Each item in this list is
+blocked by a cost rather than by design, and is parked until the product owner
+decides to spend:
+
+- **Apple Developer Program (yearly fee):** TestFlight and any tester on an
+  iPhone, push notifications, universal links, and installs that do not
+  expire.
+- **Google Play Console (one-time fee):** Play distribution. An APK handed to
+  an Android tester is free, but useless without a backend they can reach.
+- **Hosting and a domain:** a backend anyone else can reach, a shared
+  public-cellar link that opens for its recipient, and decision 9 below.
+- **EAS cloud builds and over-the-air updates**, which matter only once there
+  is distribution to update.
+- **A public store release:** listings, a privacy policy and privacy labels,
+  an age rating for alcohol references, in-app account deletion, and store
+  review.
 
 ### What already works in mobile's favour
 
