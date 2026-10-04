@@ -109,8 +109,10 @@ persists across restarts ([iteration 6.5 task
 01](../docs/tasks/iteration-6.5/01-persist-keycloak-state.md)), so a
 worker's `account` is created once and reused on every later run — never
 recreated, never deleted. A spec that registers a new account (`sign-up.spec.ts`,
-`keycloak-email.spec.ts`, `keycloak-branding.spec.ts`) names it with a
-timestamp and never deletes it either: those accounts accumulate as harmless
+`keycloak-email.spec.ts`, `keycloak-branding.spec.ts`) names it with
+`uniqueUsername` (`e2e/support/keycloakAccount.ts`) — a timestamp plus a
+random suffix, since `--repeat-each` starts copies of one test in the same
+millisecond — and never deletes it either: those accounts accumulate as harmless
 leftover data rather than being cleaned up, so a registration spec run twice
 never collides with its own prior run on an already-registered address. The
 only thing that clears any of this is `docker compose down -v`, which is not
@@ -341,7 +343,13 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   why sign-out is `federatedSignOut`, not a route handler —
   [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)). **`curl` does not
   enforce CSP and will happily follow the redirect**, so this only reproduces
-  in a browser — check the console, not just the response headers.
+  in a browser — check the console, not just the response headers. **Until
+  the page hydrates, a Server Action form *is* a real form**: clicked then,
+  it posts natively, the action runs, and only its redirect is blocked — so
+  sign-out deletes the local session, leaves Keycloak's, and the page sits
+  there still showing the user signed in. Do not swap `AuthSubmitButton`
+  (`features/auth/`) back for a plain submit button on a form whose action
+  redirects cross-origin; it stays disabled until hydration commits.
 - **`headers()` in `next.config.ts` is baked in at build time**, not read per
   request: a `process.env` value there is frozen to whatever was set during
   `next build`, so the CSP cannot be driven by a runtime environment

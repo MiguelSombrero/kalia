@@ -13,6 +13,7 @@ import {
   keycloakAdminToken,
   signIn,
   test,
+  uniqueUsername,
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
@@ -84,7 +85,7 @@ test.describe("self-registration", () => {
     request,
     valkey,
   }) => {
-    const username = `signup-${Date.now()}`;
+    const username = uniqueUsername("signup");
     const email = `${username}@example.com`;
     const password = "correct-horse-battery";
 
@@ -152,7 +153,7 @@ test.describe("self-registration", () => {
     request,
     account,
   }) => {
-    const username = `foreign-session-${Date.now()}`;
+    const username = uniqueUsername("foreign-session");
     const email = `${username}@example.com`;
 
     await startSignUp(page);
@@ -189,7 +190,7 @@ test.describe("self-registration", () => {
     request,
   }) => {
     const adminToken = await keycloakAdminToken(request);
-    const username = `unverified-${Date.now()}`;
+    const username = uniqueUsername("unverified");
     const email = `${username}@example.com`;
     const password = "correct-horse-battery";
     const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
@@ -221,7 +222,7 @@ test.describe("self-registration", () => {
 
     await startSignUp(page);
     await fillProfileFields(page, {
-      username: `duplicate-${Date.now()}`,
+      username: uniqueUsername("duplicate"),
       email: existingEmail,
     });
     await page.getByRole("button", { name: /register|sign.?up/i }).click();
@@ -249,7 +250,7 @@ test.describe("self-registration", () => {
     const response = await request.post(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users`, {
       headers: { Authorization: `Bearer ${adminToken}` },
       data: {
-        username: `admin-duplicate-${Date.now()}`,
+        username: uniqueUsername("admin-duplicate"),
         email: `${account.username}@example.com`,
         enabled: true,
         emailVerified: true,

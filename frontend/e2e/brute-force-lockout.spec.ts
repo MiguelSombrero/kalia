@@ -2,7 +2,7 @@
 // ADR-0061) — never the shared per-worker account (./support/keycloakAccount.ts),
 // which every other spec on the same worker relies on staying signed-in-able.
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import { createKeycloakUser, keycloakAdminToken } from "./support/keycloakAccount";
+import { createKeycloakUser, keycloakAdminToken, uniqueUsername } from "./support/keycloakAccount";
 import { KEYCLOAK_ORIGIN } from "./support/origins";
 
 const REALM = "kalia";
@@ -61,7 +61,7 @@ const submitBrowserSignIn = async (
 
 test("locks the account after repeated failed sign-ins, says so, and recovers on its own", async ({ request }) => {
   const adminToken = await keycloakAdminToken(request);
-  const username = `brute-force-e2e-${Date.now()}`;
+  const username = uniqueUsername("brute-force-e2e");
   const created = await createKeycloakUser(request, adminToken, { username, password: GOOD_PASSWORD });
   expect(created, `could not create Keycloak user ${username}`).toBeTruthy();
 

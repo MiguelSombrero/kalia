@@ -107,6 +107,35 @@ every test that uses the shared `test` fixture — how, and what a spec has to
 do to opt in, is in [frontend/README.md](../frontend/README.md). That `del` is
 still the one-line escape hatch if a spec ever registers outside it.
 
+**After clicking Sign out, `Sign in` never appears; the snapshot still shows
+the signed-in header (and maybe a loading skeleton), and the call log says
+`waiting for http://localhost:3000/en navigation to finish`.** Not a slow
+Keycloak: the click landed before the page hydrated, so the browser posted
+the Server Action form natively — `multipart/form-data`, no `Next-Action`
+header — and `form-action 'self'` blocked its redirect to Keycloak (*"Sending
+form data to 'http://localhost:3000/en' violates … form-action 'self'"* in
+the console). The local session is gone by then and Keycloak's is not, and
+the page never moves. Measured 7 failures in 16 on `sign-up.spec.ts`'s "sign
+in again" (`--repeat-each=8`, `445984f`, 2026-10-04), plus one in a full
+`make verify`; forced every time by delaying `/_next/static/chunks/**/*.js`.
+The auth buttons are now disabled until hydration, so Playwright's click
+waits for them — a recurrence means a cross-origin Server Action form has a
+plain submit button again ([frontend/README.md](../frontend/README.md)'s
+traps, [ADR-0025](adr/0025-authjs-valkey-adapter.md)'s 2026-10-04 amendment).
+Raising the expect timeout does not help: nothing is still in flight.
+
+**Under `--repeat-each`, a registering spec lands back on Kalia signed out
+— `getByRole('link', { name: /^Profile: / })` not found — while other
+copies of the same test pass.** Two copies picked the same timestamped
+username in the same millisecond. In the trace, the loser's registration
+`POST` answers `200` (the form re-rendered: username taken) rather than `302`
+to `VERIFY_EMAIL`, yet its Mailpit lookup finds the winner's message; opening
+that link in a browser with no Keycloak auth session ends on an info page
+whose "Back to application" goes to `/` signed out (observed 2026-10-04: 4
+of 8, then 1 of 8). Registering specs name accounts with `uniqueUsername`
+(`frontend/e2e/support/keycloakAccount.ts`); a new one that uses a bare
+`Date.now()` brings this back.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by

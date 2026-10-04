@@ -5,6 +5,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { federatedSignOut, startSignIn } from "./actions";
+import { AuthSubmitButton } from "./AuthSubmitButton";
 
 export type AuthPlacement = "bar" | "phone" | "menu";
 
@@ -24,9 +25,9 @@ export const AuthStatus = async ({ locale, name, placement }: Props) => {
       <div className={cn("flex gap-2", placement === "menu" ? "flex-col" : "items-center")}>
         <form action={startSignIn} className={block}>
           <input type="hidden" name="locale" value={locale} />
-          <button type="submit" className={cn(buttonVariants("primary"), block)}>
+          <AuthSubmitButton className={cn(buttonVariants("primary"), block)}>
             {t("auth.signIn")}
-          </button>
+          </AuthSubmitButton>
         </form>
         {placement !== "phone" && (
           <Link href={`/${locale}/sign-up`} className={cn(buttonVariants("outline"), block)}>
@@ -49,9 +50,9 @@ export const AuthStatus = async ({ locale, name, placement }: Props) => {
   );
   const signOut = (
     <form action={federatedSignOut} className={block}>
-      <button type="submit" className={cn(buttonVariants("outline"), block)}>
+      <AuthSubmitButton className={cn(buttonVariants("outline"), block)}>
         {t("auth.signOut")}
-      </button>
+      </AuthSubmitButton>
     </form>
   );
 

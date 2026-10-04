@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { startSignUp } from "./actions";
+import { AuthSubmitButton } from "./AuthSubmitButton";
 
 type Props = { locale: Locale; error?: string };
 
@@ -25,9 +26,7 @@ export const SignUpForm = async ({ locale, error }: Props) => {
         <input type="checkbox" name="agree" required className="mt-1" />
         <span>{t("signUp.agree")}</span>
       </label>
-      <Button type="submit" variant="primary">
-        {t("signUp.action")}
-      </Button>
+      <AuthSubmitButton className={buttonVariants("primary")}>{t("signUp.action")}</AuthSubmitButton>
     </form>
   );
 };

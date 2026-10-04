@@ -5,6 +5,8 @@
 - **Amended:** 2026-08-07 by [ADR-0030](0030-per-session-token-storage.md) —
   the token set is stored per session rather than per user, and the sign-out
   Server Action this ADR calls `signOutEverywhere` is now `federatedSignOut`
+- **Amended:** 2026-10-04 — "requires JavaScript" also means "requires
+  hydration": the auth forms' submit buttons stay disabled until it commits
 
 ## Context
 
@@ -141,6 +143,21 @@ cost: auth now requires JavaScript — see Consequences.
   fallback (a real form navigation) is precisely what `form-action 'self'`
   blocks. Catalog browsing is unaffected — it uses native GET forms and
   plain links, and still works with JS disabled.
+
+  > **Amended 2026-10-04.** **JavaScript that has loaded but not yet
+  > hydrated counts as no JavaScript, so the auth forms' submit buttons are
+  > disabled until hydration commits.** Clicked earlier, a Server Action
+  > form submits natively: the action runs and deletes the local session,
+  > and only then is its redirect to Keycloak blocked — the half sign-out
+  > the Evidence below records, reached with one click instead of two, and
+  > on the still-signed-in page the click came from. A slow connection or a
+  > page still streaming is enough; it surfaced as an intermittent E2E
+  > failure. Rejected: widening `form-action` instead, for the reasons
+  > given under Alternatives; and a test-only wait for hydration, which
+  > leaves the half sign-out reachable by real users. Disabling makes the
+  > JavaScript requirement visible rather than adding a no-JS path, so a
+  > visitor without JavaScript now sees a disabled button rather than one
+  > that silently fails — the requirement itself stands.
 - **Revisit trigger:** if Auth.js ships an official adapter for a
   self-hosted Redis-protocol server, or once `next-auth` v5 reaches a stable
   release, re-check whether either changes this decision's cost side.
