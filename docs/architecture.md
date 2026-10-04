@@ -468,6 +468,11 @@ The shape of the frontend. Day-to-day rules for writing it live in
   toast's live-region/timing contract rather than either's appearance.
   `BeerSlot`, `PersonSlot`, `Icon` and `KaliaMark` are further primitives in
   `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)).
+  **Every page renders through `Page`** (`components/ui/page.tsx`), inside
+  the layout's sticky header and slim footer ([ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md)):
+  it is the `<main>` the skip link targets and the one place a page's width
+  (text, wide or narrow) is chosen, so no page writes a container of its own.
+  The phone menu is a plain disclosure, not a Radix primitive.
   The two slots draw from data a surface already holds, so the API has no image
   field, and the icons are hand-drawn rather than a library. The favicon is
   `app/icon.svg` with a 32 px PNG fallback and the apple-touch icon, both
@@ -767,6 +772,7 @@ the failure back to the agent without blocking
 | [ADR-0064](adr/0064-visual-identity-can-art-square.md) | Kalia's identity had outgrown the catalog it was chosen for, so it becomes Can art drawn square, with beer styles coloured by group | accepted | 2026-10-03 |
 | [ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md) | Kalia has no beer pictures and no mark in its own app, so a beer is shown by its strength on its style colour, a person by initials, and the mark is a cellar rack | accepted | 2026-10-03 |
 | [ADR-0066](adr/0066-token-only-styling-is-a-build-check.md) | Styling outside the semantic token layer fails the build, through a dependency-free checker rather than an ESLint rule | accepted | 2026-10-03 |
+| [ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md) | Every page sits in one sticky bar and one `Page` component, with a Menu button on a phone, so that header and pages share a frame | accepted | 2026-10-04 |
 
 ### Engineering process and documentation
 

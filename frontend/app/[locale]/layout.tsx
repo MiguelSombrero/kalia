@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
-import { LocaleSwitcher } from "@/features/i18n";
-import { AuthStatus } from "@/features/auth";
-import { SiteNav } from "@/features/navigation";
 import { Providers } from "../providers";
+import { SiteFooter } from "./SiteFooter";
+import { SiteHeader } from "./SiteHeader";
 import "../globals.css";
 
 const archivo = Archivo({
@@ -51,19 +50,9 @@ const RootLayout = async ({ children, params }: Props) => {
           {t("a11y.skipToContent")}
         </a>
         <Providers locale={locale}>
-          <header className="flex flex-wrap items-center justify-between gap-4 p-4 text-sm">
-            <SiteNav locale={locale} />
-            <div className="flex items-center gap-4">
-              <AuthStatus locale={locale} />
-              <LocaleSwitcher locale={locale} />
-            </div>
-          </header>
-          {/* Plain wrapper, not <main> — every page under {children} already
-              renders its own <main>; this just gives the skip link a
-              focusable target (WCAG technique SCR28). */}
-          <div id="main-content" tabIndex={-1} className="focus:outline-none">
-            {children}
-          </div>
+          <SiteHeader locale={locale} />
+          {children}
+          <SiteFooter locale={locale} />
         </Providers>
       </body>
     </html>

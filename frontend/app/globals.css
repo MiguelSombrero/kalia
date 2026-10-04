@@ -104,6 +104,9 @@
   --text-label: 0.75rem;
   --text-label--line-height: 1rem;
   --text-label--letter-spacing: 0.12em;
+  --text-wordmark: 0.875rem;
+  --text-wordmark--line-height: 1rem;
+  --text-wordmark--letter-spacing: 0.3em;
 
   --radius-control: 0;
   --radius-surface: 0;
@@ -129,4 +132,11 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
+}
+
+/* The skip link's target is a container, not a control: focus lands on it
+   without it being something to operate, so it carries no ring. Unlayered,
+   because the rule above is, and an unlayered rule beats a utility. */
+main:focus-visible {
+  outline: none;
 }

@@ -1,7 +1,8 @@
 # Task 06: The page shell every page sits in
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
+- **PR:** #316
 - **Covers:** DW-3, DW-4
 - **Kind:** design
 
@@ -119,30 +120,30 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives — at minimum for the
+- [x] The product owner chose from built alternatives — at minimum for the
       header and for the phone-width navigation
-- [ ] No page restates the container: every page renders through the `Page`
+- [x] No page restates the container: every page renders through the `Page`
       component, and the `mx-auto flex min-h-screen max-w-…` string appears in
       one place rather than seven
-- [ ] No page is taller than its content requires — the `min-h-screen`-under-a-
+- [x] No page is taller than its content requires — the `min-h-screen`-under-a-
       header problem is gone, verified in a browser at both agreed widths
       rather than by reading the classes
-- [ ] The skip link still moves focus to the main content, and
+- [x] The skip link still moves focus to the main content, and
       `SiteNav`'s `aria-current="page"` still marks exactly the active
       destination — both covered by the existing vitest tests, updated rather
       than deleted, plus a Playwright assertion that the skip link works in a
       real browser
-- [ ] If phone navigation becomes an interactive widget, its focus and
+- [x] If phone navigation becomes an interactive widget, its focus and
       keyboard behaviour are covered by a `jest-axe` test and an E2E test that
       opens it with the keyboard alone, and any new dependency's version is
       pinned in `frontend/package.json` only
-- [ ] Every interactive element in the shell is at least 24×24 CSS pixels at
+- [x] Every interactive element in the shell is at least 24×24 CSS pixels at
       both agreed widths, asserted by a test
-- [ ] The `@axe-core/playwright` scans pass on every page at both widths
-- [ ] The findings [task 02](02-design-audit-baseline.md) recorded against the
+- [x] The `@axe-core/playwright` scans pass on every page at both widths
+- [x] The findings [task 02](02-design-audit-baseline.md) recorded against the
       header, footer and page frame are each fixed or carry a written decision
       not to fix them
-- [ ] [`docs/design.md`](../../design.md)'s *Layout principles* section holds
+- [x] [`docs/design.md`](../../design.md)'s *Layout principles* section holds
       the principles the shell establishes for every page — and only those; a
       rule for one page stays in that page's task and ADR
-- [ ] `make verify` is green
+- [x] `make verify` is green

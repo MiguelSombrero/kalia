@@ -264,6 +264,12 @@ Why the rationale lives there and not here:
   the line; a marker with no reason, or one excusing nothing, fails too.
   Which token an element should use is a meaning, not a value:
   [docs/design.md](../docs/design.md).
+- **A page renders through `<Page>` and writes no container of its own.**
+  `<Page width="text" | "wide" | "narrow">` from `components/ui/page.tsx` is the
+  `<main>`, the skip link's target and the page's column, so a route's
+  `page.tsx`, `loading.tsx`, `error.tsx` and `not-found.tsx` all wrap their
+  content in it rather than in a `<main className="mx-auto …">`
+  ([ADR-0067](../docs/adr/0067-page-shell-sticky-bar-and-page-component.md)).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
   `dialog.tsx` wraps `@radix-ui/react-dialog`** for the focus trap,
   focus restore, `Escape` handling and `aria-modal` inerting a modal needs,

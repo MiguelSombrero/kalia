@@ -10,6 +10,7 @@ import {
 import { AddToCellarButton } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
+import { Page } from "@/components/ui/page";
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
 
@@ -52,7 +53,7 @@ const BeersPage = async ({ params, searchParams }: Props) => {
   const isSignedIn = Boolean(session?.user);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 p-6 sm:p-8">
+    <Page width="wide">
       <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
         {t("catalog.title")}
       </h1>
@@ -70,7 +71,7 @@ const BeersPage = async ({ params, searchParams }: Props) => {
         )}
       />
       <Pagination locale={locale} params={beerParams} result={result} />
-    </main>
+    </Page>
   );
 };
 

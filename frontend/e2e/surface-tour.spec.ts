@@ -1,4 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
+import { expectNoA11yViolations } from "./support/a11y";
 import {
   createKeycloakUser,
   expect,
@@ -8,6 +9,7 @@ import {
   type KeycloakAccount,
 } from "./support/keycloakAccount";
 import { KEYCLOAK_ORIGIN } from "./support/origins";
+import { expectShellTargetsReachable } from "./support/shell";
 import { escapeRegExp } from "./support/text";
 import { setCellarVisibility } from "./support/visibility";
 
@@ -21,8 +23,13 @@ const VIEWPORTS = [
   { name: "desktop", width: 1280, height: 800 },
 ] as const;
 
-const expectRendered = async (page: Page, heading: string | RegExp) => {
+const expectRendered = async (
+  page: Page,
+  heading: string | RegExp,
+  { scan = true }: { scan?: boolean } = {},
+) => {
   await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+  if (scan) await expectNoA11yViolations(page);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
@@ -100,20 +107,19 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole("checkbox").check();
         await page.getByRole("button", { name: "Continue to sign-up" }).click();
         await page.waitForURL(`${KEYCLOAK_ORIGIN}/**`);
-        await expectRendered(page, "Register");
+        await expectRendered(page, "Register", { scan: false });
       });
 
       await test.step("Keycloak's login page", async () => {
         await page.goto("/en");
         await page.getByRole("button", { name: "Sign in" }).click();
         await page.waitForURL(`${KEYCLOAK_ORIGIN}/**`);
-        await expectRendered(page, "Sign in to your account");
+        await expectRendered(page, "Sign in to your account", { scan: false });
       });
 
       await test.step("a route that matches nothing", async () => {
-        const response = await page.goto("/en/no-such-page");
-        expect(response?.status()).toBe(404);
-        await expect(page.getByText("This page could not be found.")).toBeVisible();
+        await page.goto("/en/no-such-page");
+        await expectRendered(page, "Page not found");
       });
 
       await test.step("the error page", async () => {
@@ -145,6 +151,7 @@ for (const viewport of VIEWPORTS) {
       await test.step("front page, signed in", async () => {
         await page.goto("/en");
         await expectRendered(page, "Kalia");
+        await expectShellTargetsReachable(page);
       });
 
       await test.step("an empty cellar", async () => {

@@ -5,6 +5,7 @@ import { getPublicCellar, PublicCellarView, resolvePublicCellarBeers } from "@/f
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
+import { Page } from "@/components/ui/page";
 
 type Props = { params: Promise<{ locale: string; username: string }> };
 
@@ -60,12 +61,12 @@ const PublicCellarPage = async ({ params }: Props) => {
   const isOwner = viewerProfile?.username === cellar.username;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 sm:p-8">
+    <Page>
       <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
         {t("cellar.public.heading", { username: cellar.username })}
       </h1>
       <PublicCellarView locale={locale} beers={beers} isOwner={isOwner} />
-    </main>
+    </Page>
   );
 };
 

@@ -10,7 +10,10 @@
     "label": "Main navigation",
     "home": "Home",
     "catalog": "Catalog",
-    "cellar": "Cellar"
+    "cellar": "Cellar",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
   },
   "feed": {
     "loading": "Loading recent activity…",

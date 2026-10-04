@@ -1,13 +1,14 @@
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { PublicCellarSkeleton } from "./PublicCellarSkeleton";
+import { Page } from "@/components/ui/page";
 
 const PublicCellarLoading = async () => {
   const locale = await resolveLocaleFromHeaders();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 sm:p-8">
+    <Page>
       <PublicCellarSkeleton locale={locale} />
-    </main>
+    </Page>
   );
 };
 

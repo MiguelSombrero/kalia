@@ -142,6 +142,9 @@ decides the URL built on it.
 - [ADR-0066](0066-token-only-styling-is-a-build-check.md) — a colour or
   typeface outside the semantic token layer fails the build, through a
   `scripts/` checker rather than an ESLint rule.
+- [ADR-0067](0067-page-shell-sticky-bar-and-page-component.md) — every page
+  sits in one sticky bar and one `Page` component with a Menu button on a
+  phone; header and pages share one frame and its left edge.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a

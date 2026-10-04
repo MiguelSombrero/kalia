@@ -140,6 +140,7 @@ two-layer rule they sit in is
 | `--text-title` | A page title on a phone, and a dialog title. | The page's `h1` below `md`, and `DialogTitle`. Sized so every word of today's Finnish titles fits a 375px column. |
 | `--text-heading` | A section heading inside a page. | `h2`s that divide a page, in the display face. |
 | `--text-label` | Small tracked capitals that label rather than read. | Button text, badges, navigation and other one- or two-word labels, always `uppercase` and `font-semibold`. Never for a sentence. |
+| `--text-wordmark` | The name Kalia, set beside the mark. | The wordmark in the header, `uppercase` and `font-semibold`, in the working face at normal width and spaced wider than a label. Never for anything else: titles are `--font-display`, labels are `--text-label`. |
 
 ### Shape
 
@@ -246,11 +247,41 @@ Measured in the running app at 375px, where the content column is 343px wide:
 
 ## Layout principles
 
-*Not yet written.* The principles that hold on every page rather than on one —
-container width, rhythm, how a page reads at a phone width and a desktop
-width — arrive with the page shell in
-[task 06](tasks/iteration-7.5/06-page-shell.md). A rule that holds for one
-page only belongs in that page's own task and ADR, not here.
+What holds on every page rather than on one. A rule that holds for one page
+only belongs in that page's own task and ADR, not here. Chosen from built
+alternatives in [iteration 7.5 task 06](tasks/iteration-7.5/06-page-shell.md);
+the directions that were rejected, and why, are
+[ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md). The widths
+and the breakpoint live in `frontend/components/ui/page.tsx` and
+`frontend/app/[locale]/SiteHeader.tsx`, not here.
+
+- **A page is a `Page` and one of three widths, and never a container of its
+  own.** *Text* is for reading a list or a short page, *wide* for a page whose
+  content is a grid that wants the whole frame, *narrow* for a form or a
+  message. A new page picks one of these; it does not invent a fourth.
+- **The header, every page and the footer share one frame, and every width is
+  flush to its left edge.** A page's title starts where the wordmark above it
+  starts, whichever width the page chose. A narrow page is not centred.
+- **A page is as tall as its content.** Nothing is given a viewport height to
+  fill the window; the space between the header and the footer belongs to the
+  page, so a short page ends on the footer and a message sits at the top of the
+  page, not in the middle of an empty one.
+- **The header is one row, always on screen, at every width.** It holds the
+  mark and wordmark as the way home, the destinations, and the account actions.
+  Below the large breakpoint the destinations move behind one Menu button and
+  the row does not grow or wrap; the phone is not a second, taller header.
+- **Sign in is the one filled control in the header**, and Create an account is
+  outlined beside it. They are the two ways into the product and are never as
+  quiet as the navigation.
+- **A control has one home.** Language and account live in the header and, on a
+  phone, its menu; the footer repeats neither. A destination may appear in both
+  the header and the menu because the menu is the header on a phone.
+- **The footer carries identity and nothing that does a job**: the mark and the
+  tagline. It is there so no page ends in empty paper, not to be navigated from.
+- **Every page is laid out for 375 and 1280 wide, and everything in the shell
+  can be tapped.** Header, menu and footer controls are comfortably above the
+  iteration's smallest target; a page's own controls are held to the same
+  floor by its own task.
 
 ## Imagery and the mark
 

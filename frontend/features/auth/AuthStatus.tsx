@@ -1,60 +1,66 @@
 import Link from "next/link";
-import { auth } from "@/auth";
+import { buttonVariants } from "@/components/ui/button";
+import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { cn } from "@/lib/cn";
 import { federatedSignOut, startSignIn } from "./actions";
 
-type Props = { locale: Locale };
+export type AuthPlacement = "bar" | "phone" | "menu";
 
-/** Server component: reads the session directly, no client-side session context needed. */
-export const AuthStatus = async ({ locale }: Props) => {
-  const session = await auth();
+type Props = {
+  locale: Locale;
+  /** The signed-in visitor's display name, or null when signed out. */
+  name: string | null;
+  placement: AuthPlacement;
+};
+
+export const AuthStatus = async ({ locale, name, placement }: Props) => {
   const { t } = await getTranslation(locale);
+  const block = placement === "menu" ? "w-full" : "";
 
-  if (!session?.user) {
+  if (name === null) {
     return (
-      <div className="flex items-center gap-2">
-        <form action={startSignIn}>
+      <div className={cn("flex gap-2", placement === "menu" ? "flex-col" : "items-center")}>
+        <form action={startSignIn} className={block}>
           <input type="hidden" name="locale" value={locale} />
-          <button type="submit" className="text-muted-foreground hover:underline">
+          <button type="submit" className={cn(buttonVariants("primary"), block)}>
             {t("auth.signIn")}
           </button>
         </form>
-        <Link href={`/${locale}/sign-up`} className="text-muted-foreground hover:underline">
-          {t("auth.signUp")}
-        </Link>
+        {placement !== "phone" && (
+          <Link href={`/${locale}/sign-up`} className={cn(buttonVariants("outline"), block)}>
+            {t("auth.signUp")}
+          </Link>
+        )}
       </div>
     );
   }
 
-  const name = session.user.name ?? session.user.email ?? "";
+  const profileLink = (
+    <Link
+      href={`/${locale}/profile`}
+      aria-label={t("auth.profileLink", { name })}
+      className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 text-foreground"
+    >
+      <PersonSlot username={name} size="sm" />
+      {placement === "bar" && <span className="text-sm">{name}</span>}
+    </Link>
+  );
+  const signOut = (
+    <form action={federatedSignOut} className={block}>
+      <button type="submit" className={cn(buttonVariants("outline"), block)}>
+        {t("auth.signOut")}
+      </button>
+    </form>
+  );
+
+  if (placement === "phone") return profileLink;
+  if (placement === "menu") return signOut;
   return (
     <div className="flex items-center gap-2">
-      {/* One accessible name covers both the destination and the user,
-          naming the icon and the visible username as one link rather than
-          two separate accessible elements. */}
-      <Link
-        href={`/${locale}/profile`}
-        aria-label={t("auth.profileLink", { name })}
-        className="flex items-center gap-1.5 text-muted-foreground hover:underline"
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 20 20"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          className="h-4 w-4"
-        >
-          <path d="M10 10a3 3 0 100-6 3 3 0 000 6zM4 17a6 6 0 0112 0" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span>{name}</span>
-      </Link>
-      <form action={federatedSignOut}>
-        <button type="submit" className="text-muted-foreground hover:underline">
-          {t("auth.signOut")}
-        </button>
-      </form>
+      {profileLink}
+      {signOut}
     </div>
   );
 };
