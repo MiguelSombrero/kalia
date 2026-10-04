@@ -32,6 +32,11 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
 - **Adding a beer from the cellar** — a search-and-add flow inside the cellar,
   rather than only a route into the catalog
   ([iteration 7.5 task 09](iteration-7.5/09-cellar-layout.md)).
+- **A cellar's oldest vintage and last addition on the front page.** The chosen
+  front page showed both in *My cellar*, but today they need one request per
+  beer in the cellar on every visit, so they were left out until the API can
+  answer them in one
+  ([ADR-0068](../adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
 
 Engineering work:
 
