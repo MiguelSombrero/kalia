@@ -10,7 +10,10 @@
     "label": "Päänavigaatio",
     "home": "Etusivu",
     "catalog": "Oluet",
-    "cellar": "Kellari"
+    "cellar": "Kellari",
+    "menu": "Valikko",
+    "closeMenu": "Sulje valikko",
+    "language": "Kieli"
   },
   "feed": {
     "loading": "Ladataan viimeaikaista toimintaa…",

@@ -23,7 +23,7 @@ export const LocaleSwitcher = ({ locale: currentLocale }: Props) => {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Language" className="flex gap-2 text-sm">
+    <nav aria-label="Language" className="flex text-sm">
       {locales.map((locale) => (
         <Link
           key={locale}
@@ -32,8 +32,8 @@ export const LocaleSwitcher = ({ locale: currentLocale }: Props) => {
           aria-label={localeNames[locale]}
           className={
             locale === currentLocale
-              ? "font-semibold text-foreground underline underline-offset-2"
-              : "text-muted-foreground hover:underline"
+              ? "inline-flex min-h-9 min-w-9 items-center justify-center px-1.5 font-bold text-foreground underline underline-offset-4"
+              : "inline-flex min-h-9 min-w-9 items-center justify-center px-1.5 text-muted-foreground hover:underline"
           }
         >
           {locale.toUpperCase()}

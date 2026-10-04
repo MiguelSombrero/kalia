@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { SignUpForm } from "@/features/auth";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
+import { Page } from "@/components/ui/page";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -27,13 +28,13 @@ const SignUpPage = async ({ params, searchParams }: Props) => {
   const { error } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 p-6 sm:p-8">
+    <Page width="narrow">
       <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
         {t("signUp.title")}
       </h1>
       <p className="text-muted-foreground">{t("signUp.hint")}</p>
       <SignUpForm locale={locale} error={error} />
-    </main>
+    </Page>
   );
 };
 

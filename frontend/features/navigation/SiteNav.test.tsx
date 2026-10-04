@@ -59,6 +59,14 @@ describe("SiteNav", () => {
     expect(screen.getByRole("link", { name: "nav.catalog" })).not.toHaveAttribute("aria-current");
   });
 
+  it("marks the same link current in the menu variant", () => {
+    usePathname.mockReturnValue("/en/beers");
+    render(<SiteNav locale="en" variant="menu" />);
+
+    expect(screen.getByRole("link", { name: "nav.catalog" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "nav.home" })).not.toHaveAttribute("aria-current");
+  });
+
   it("has no axe violations", async () => {
     usePathname.mockReturnValue("/en/beers");
     const { container } = render(<SiteNav locale="en" />);

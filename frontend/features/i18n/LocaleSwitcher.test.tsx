@@ -29,7 +29,7 @@ describe("LocaleSwitcher", () => {
 
     const english = screen.getByRole("link", { name: "English" });
     expect(english).toHaveAttribute("aria-current", "page");
-    expect(english).toHaveClass("font-semibold");
+    expect(english).toHaveClass("font-bold");
     expect(screen.getByRole("link", { name: "Suomi" })).not.toHaveAttribute("aria-current");
   });
 

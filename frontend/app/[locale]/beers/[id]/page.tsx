@@ -6,6 +6,7 @@ import { BeerDetailsCard, getBeer } from "@/features/catalog";
 import { AddToCellarButton } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
+import { Page } from "@/components/ui/page";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
 
@@ -28,7 +29,7 @@ const BeerPage = async ({ params }: Props) => {
   const { t } = await getTranslation(locale);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6 sm:p-8">
+    <Page>
       <Link
         href={`/${locale}/beers`}
         className="text-sm text-muted-foreground underline underline-offset-2"
@@ -47,7 +48,7 @@ const BeerPage = async ({ params }: Props) => {
           />
         }
       />
-    </main>
+    </Page>
   );
 };
 
