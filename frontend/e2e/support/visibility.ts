@@ -12,7 +12,9 @@ const CONFIRMATION: Record<"Only me" | "Anyone with the link", string> = {
  * already checked to the requested value, so this checks first rather than
  * waiting on a response a no-op toggle would never send — real whenever a
  * spec shares a per-worker account with others that may have already left
- * it in that state.
+ * it in that state. The confirmation is looked for in the visible main only:
+ * Next keeps the front page just left mounted but hidden, and its My cellar
+ * panel says the same sentence.
  */
 export const setCellarVisibility = async (
   page: Page,
@@ -23,7 +25,7 @@ export const setCellarVisibility = async (
 
   const radio = page.getByRole("radio", { name: option });
   if (await radio.isChecked()) {
-    await expect(page.getByText(CONFIRMATION[option])).toBeVisible();
+    await expect(page.getByRole("main").getByText(CONFIRMATION[option])).toBeVisible();
     return;
   }
 
@@ -34,6 +36,6 @@ export const setCellarVisibility = async (
       response.status() === 200,
   );
   await radio.check();
-  await expect(page.getByText(CONFIRMATION[option])).toBeVisible();
+  await expect(page.getByRole("main").getByText(CONFIRMATION[option])).toBeVisible();
   await committed;
 };

@@ -6,7 +6,7 @@ import { expectNoA11yViolations } from "./support/a11y";
 test("root redirects to the English catalog by default", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/en$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Kalia" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Craft beer management for enthusiasts." })).toBeVisible();
 
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();

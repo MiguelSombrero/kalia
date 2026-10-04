@@ -120,7 +120,7 @@ two-layer rule they sit in is
 | `--color-divider` | A quiet rule between lines of one list, and the fill of something not there yet. | Separating rows inside a surface, and the blocks of a loading skeleton. Never an object's edge — that is `--color-border`. |
 | `--color-primary` | Kalia's one action colour: cobalt. | The fill of the single main action in a view, and the hover cue on anything else that can be activated. Used sparingly, so it keeps meaning "act here". |
 | `--color-primary-foreground` | Text and icons placed on `--color-primary`. | Whenever something sits on a primary fill; never on its own. |
-| `--color-accent` | A soft cobalt tint for an attribute that labels rather than acts. | The strength badge. A beer's style is not an accent; it has its own colour below. |
+| `--color-accent` | A soft cobalt tint for an attribute that labels rather than acts. | The strength badge, the "You" tag on the visitor's own feed entries, and the one-time highlight on feed entries just shown. A beer's style is not an accent; it has its own colour below. |
 | `--color-accent-foreground` | Text placed on `--color-accent`. | Whenever something sits on an accent fill; never on its own. |
 | `--color-success` | Something the visitor asked for worked. | The icon cell of a toast reporting success. Not decoration, and never a second action colour. |
 | `--color-success-foreground` | Text and icons placed on `--color-success`. | Whenever something sits on a success fill; never on its own. |
@@ -148,6 +148,12 @@ two-layer rule they sit in is
 |---|---|---|
 | `--radius-control` | The corner of anything that can be operated or that labels: buttons, fields, badges, skeleton blocks. | Every control. Square in this identity; it is a token so the next identity can change it in one place. |
 | `--radius-surface` | The corner of a plane: a card, a dialog, a toast. | Every surface. Square in this identity, for the same reason. |
+
+### Motion
+
+| Token | Means | Reach for it when |
+|---|---|---|
+| `--animate-feed-reveal` | Content the visitor just asked to see, highlighted once so the eye finds it. | Feed entries shown by pressing "N new". Only under `motion-safe:`, so `prefers-reduced-motion` skips it; never on content that arrived without being asked for. |
 
 There is no elevation token: nothing in this identity casts a shadow. A dialog
 or a toast is told from the page by its ink edge and, for a dialog, the scrim.
@@ -204,6 +210,8 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-muted-foreground` | `--color-surface` | text |
 | `--color-primary-foreground` | `--color-primary` | text |
 | `--color-accent-foreground` | `--color-accent` | text |
+| `--color-foreground` | `--color-accent` | text |
+| `--color-muted-foreground` | `--color-accent` | text |
 | `--color-success-foreground` | `--color-success` | text |
 | `--color-destructive-foreground` | `--color-destructive` | text |
 | `--color-style-foreground` | `--color-style` | text |

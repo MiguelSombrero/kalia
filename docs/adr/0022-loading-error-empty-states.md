@@ -7,6 +7,9 @@
   second call site and triggered the revisit condition this ADR named. The
   `console.error` statements here describe what was true when written; the
   boundary now calls `logger.error`
+- **Amended:** 2026-10-04 by [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)
+  — a failing first read of the front page's feed renders inside the page
+  under its masthead; `error.tsx` still covers every route's other failures
 
 ## Context
 

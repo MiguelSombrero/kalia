@@ -20,6 +20,14 @@ test("a new event surfaces behind a control on a front page already open, withou
   test.setTimeout(60_000);
 
   await watcher.goto("/en");
+  await watcher.evaluate(() => document.fonts.ready);
+  // What the reader is looking at when the control appears. The heading exists
+  // even on an empty feed; the first entry only when the feed has one.
+  const feed = watcher.getByRole("region", { name: "Latest additions" });
+  const headingBefore = await feed.getByRole("heading", { level: 2 }).boundingBox();
+  const firstEntryBefore = (await feed.getByRole("listitem").count())
+    ? await feed.getByRole("listitem").first().boundingBox()
+    : null;
 
   const actorContext = await browser.newContext();
   const actor = await actorContext.newPage();
@@ -38,6 +46,13 @@ test("a new event surfaces behind a control on a front page already open, withou
 
     const control = watcher.getByRole("button", { name: /new events?$/ });
     await expect(control).toBeVisible({ timeout: 30_000 });
+    expect((await feed.getByRole("heading", { level: 2 }).boundingBox())?.y).toBe(headingBefore?.y);
+    if (firstEntryBefore) {
+      expect(
+        (await feed.getByRole("listitem").first().boundingBox())?.y,
+        "the new-events control moved the entry beneath it",
+      ).toBe(firstEntryBefore.y);
+    }
     await control.click();
 
     // The feed is global shared state other specs add to concurrently, so

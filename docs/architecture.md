@@ -485,7 +485,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
   route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
-  covering every route.
+  covering every route. A section that can fail while the rest of its page
+  stands renders its own failure in place instead: the front page's feed
+  ([ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
   `:focus-visible` styling and a skip-to-content link. The non-native
   widgets — the add/edit-bottle and remove-confirmation modals, and the
@@ -773,6 +775,7 @@ the failure back to the agent without blocking
 | [ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md) | Kalia has no beer pictures and no mark in its own app, so a beer is shown by its strength on its style colour, a person by initials, and the mark is a cellar rack | accepted | 2026-10-03 |
 | [ADR-0066](adr/0066-token-only-styling-is-a-build-check.md) | Styling outside the semantic token layer fails the build, through a dependency-free checker rather than an ESLint rule | accepted | 2026-10-03 |
 | [ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md) | Every page sits in one sticky bar and one `Page` component, with a Menu button on a phone, so that header and pages share a frame | accepted | 2026-10-04 |
+| [ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md) | The front page is one column, a pitch or the visitor's cellar above a ruled feed, so that the feed starts on the first screen for both audiences | accepted | 2026-10-04 |
 
 ### Engineering process and documentation
 

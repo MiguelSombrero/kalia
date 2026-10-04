@@ -6,7 +6,7 @@ const HomeLoading = async () => {
   const locale = await resolveLocaleFromHeaders();
 
   return (
-    <Page>
+    <Page width="wide">
       <FeedSkeleton locale={locale} />
     </Page>
   );
