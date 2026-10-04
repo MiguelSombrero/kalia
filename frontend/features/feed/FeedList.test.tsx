@@ -89,6 +89,7 @@ const renderList = (
   locale: Locale = "en",
   emptyState: ReactNode = <p>empty</p>,
   queryClient: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  viewerUsername?: string,
 ) => {
   const i18n = createInstance();
   i18n.use(initReactI18next).init({
@@ -104,6 +105,7 @@ const renderList = (
           now="2026-09-13T12:00:00.000Z"
           initialPage={initialPage}
           emptyState={emptyState}
+          viewerUsername={viewerUsername}
         />
       </I18nextProvider>
     </QueryClientProvider>,
@@ -604,6 +606,104 @@ describe("FeedList live polling", () => {
       vi.useRealTimers();
 
       expect(await axe(container)).toHaveNoViolations();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("FeedList revealing waiting entries", () => {
+  const stubMotionPreference = (reduce: boolean) =>
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({ matches: reduce && query.includes("reduce"), media: query })),
+    );
+
+  // jsdom lays nothing out, so every rect is at 0 and scrollIntoView does not
+  // exist; these stand in for a list the reader has scrolled up past.
+  const placeListAbovePinnedHeader = () => {
+    const list = screen.getAllByRole("list")[0];
+    list.getBoundingClientRect = () => ({ top: -400 }) as DOMRect;
+    const scrollIntoView = vi.fn();
+    list.scrollIntoView = scrollIntoView;
+    return scrollIntoView;
+  };
+
+  const revealOne = async () => {
+    pollFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
+    await advancePoll();
+    act(() => screen.getByRole("button", { name: "1 new event" }).click());
+  };
+
+  it("tags the visitor's own entries", () => {
+    renderList(
+      { content: [line("c2", "ada"), line("c1", "alice")], nextCursor: undefined, startOver: false },
+      "en",
+      <p>empty</p>,
+      undefined,
+      "ada",
+    );
+
+    const [own, other] = screen.getAllByRole("listitem");
+    expect(own).toHaveTextContent("You");
+    expect(other).not.toHaveTextContent("You");
+  });
+
+  it("highlights only the entries it just showed", async () => {
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      await revealOne();
+
+      const [shown, earlier] = screen.getAllByRole("listitem");
+      expect(shown).toHaveTextContent("bob");
+      expect(shown.className).toContain("motion-safe:animate-feed-reveal");
+      expect(earlier.className).not.toContain("motion-safe:animate-feed-reveal");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("scrolls back up to the entries it showed when the reader had scrolled past them", async () => {
+    stubMotionPreference(false);
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      const scrollIntoView = placeListAbovePinnedHeader();
+      await revealOne();
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: "start", behavior: "smooth" });
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("jumps instead of animating the scroll when the reader prefers reduced motion", async () => {
+    stubMotionPreference(true);
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      const scrollIntoView = placeListAbovePinnedHeader();
+      await revealOne();
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: "start", behavior: "auto" });
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("does not scroll when the entries it showed are already in view", async () => {
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      const list = screen.getAllByRole("list")[0];
+      const scrollIntoView = vi.fn();
+      list.scrollIntoView = scrollIntoView;
+      await revealOne();
+
+      expect(scrollIntoView).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }

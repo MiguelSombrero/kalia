@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { cardVariants } from "@/components/ui/card";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
@@ -11,7 +12,13 @@ import { FEED_LIST_CAP, STALLED_AFTER_FAILURES } from "./constants";
 import { useOlderFeed, usePollFeed } from "./hooks/useFeed";
 import type { FeedLine, FeedPage } from "./types";
 
-type Props = { locale: Locale; now: string; initialPage: FeedPage; emptyState: ReactNode };
+type Props = {
+  locale: Locale;
+  now: string;
+  initialPage: FeedPage;
+  emptyState: ReactNode;
+  viewerUsername?: string;
+};
 
 const capped = (lines: FeedLine[]): FeedLine[] => lines.slice(0, FEED_LIST_CAP);
 
@@ -24,7 +31,7 @@ const capped = (lines: FeedLine[]): FeedLine[] => lines.slice(0, FEED_LIST_CAP);
  * between this component and it: a feed that starts empty must keep polling
  * and can still go live on its own, which page.tsx alone deciding cannot do.
  */
-export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
+export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername }: Props) => {
   const { t } = useTranslation();
   const [renderedAt] = useState(() => new Date(now));
   const { data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
@@ -53,6 +60,8 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
   const [sinceCursor, setSinceCursor] = useState(() => initialPage.content[0]?.cursor ?? "");
   const [pendingLines, setPendingLines] = useState<FeedLine[]>([]);
   const [revealedLines, setRevealedLines] = useState<FeedLine[]>([]);
+  const [freshCursors, setFreshCursors] = useState<ReadonlySet<string>>(new Set());
+  const listRef = useRef<HTMLUListElement>(null);
   const poll = usePollFeed(sinceCursor);
 
   // ADR-0060: delivery is at-least-once, so a redelivered event must be
@@ -91,8 +100,21 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
 
   const revealPending = () => {
     setRevealedLines((prev) => capped([...pendingLines, ...prev]));
+    setFreshCursors(new Set(pendingLines.map((line) => line.cursor)));
     setPendingLines([]);
   };
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (freshCursors.size === 0 || !list) {
+      return;
+    }
+    if (list.getBoundingClientRect().top >= (parseFloat(getComputedStyle(list).scrollMarginTop) || 0)) {
+      return;
+    }
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    list.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  }, [freshCursors]);
 
   const isStalled = poll.consecutiveFailures >= STALLED_AFTER_FAILURES;
   const lines = useMemo(() => capped([...revealedLines, ...historyLines]), [revealedLines, historyLines]);
@@ -121,58 +143,79 @@ export const FeedList = ({ locale, now, initialPage, emptyState }: Props) => {
   }, [canLoadMore]);
 
   return (
-    <div className="flex flex-col gap-4">
-      {pendingLines.length > 0 && (
-        <div role="status">
-          <Button type="button" variant="outline" onClick={revealPending}>
-            {t("feed.live.newEvents", { count: pendingLines.length })}
-          </Button>
-        </div>
-      )}
-      {lines.length === 0 ? (
-        // Never alongside the control above: "Nothing here yet" beside "1 new
-        // event" would tell the visitor two contradictory things at once.
-        pendingLines.length === 0 && emptyState
-      ) : (
-        <>
-          <ul className="flex flex-col gap-3">
-            {lines.map((line) => (
-              <FeedLineRow key={line.cursor} line={line} locale={locale} now={renderedAt} />
-            ))}
-          </ul>
-          {canLoadMore && (
-            <div ref={sentinelRef} role="status" className="py-2 text-center text-sm text-muted-foreground">
-              {isFetchingNextPage && t("feed.loadingMore")}
-            </div>
-          )}
-        </>
-      )}
-      {(isFetchNextPageError || isOlderCursorExpired) && (
-        <div
-          role="status"
-          className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
-        >
-          <span>{t(isOlderCursorExpired ? "feed.older.cursorExpired" : "feed.older.failed")}</span>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={isOlderCursorExpired ? () => window.location.reload() : () => fetchNextPage()}
+    <>
+      {/* Do not change the header's or the feed heading's height without these
+          offsets: top-25 is the header (3.5rem) plus the heading (2.75rem),
+          -top-11 lays the bar exactly over that heading, and the list's
+          scroll-mt-28 stops a reveal's scroll with the heading in view. */}
+      <div className="sticky top-25 z-10 h-0">
+        {pendingLines.length > 0 && (
+          <div role="status">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={revealPending}
+              className="absolute inset-x-0 -top-11 min-h-11"
+            >
+              <Icon name="arrow" className="-rotate-90" />
+              {t("feed.live.newEvents", { count: pendingLines.length })}
+            </Button>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col gap-4">
+        {lines.length === 0 ? (
+          // Never alongside the control above: "Nothing here yet" beside "1 new
+          // event" would tell the visitor two contradictory things at once.
+          pendingLines.length === 0 && emptyState
+        ) : (
+          <>
+            <ul ref={listRef} className="flex scroll-mt-28 flex-col">
+              {lines.map((line) => (
+                <FeedLineRow
+                  key={line.cursor}
+                  line={line}
+                  locale={locale}
+                  now={renderedAt}
+                  isOwn={viewerUsername !== undefined && line.username === viewerUsername}
+                  isFresh={freshCursors.has(line.cursor)}
+                />
+              ))}
+            </ul>
+            {canLoadMore && (
+              <div ref={sentinelRef} role="status" className="py-2 text-center text-sm text-muted-foreground">
+                {isFetchingNextPage && t("feed.loadingMore")}
+              </div>
+            )}
+          </>
+        )}
+        {(isFetchNextPageError || isOlderCursorExpired) && (
+          <div
+            role="status"
+            className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
           >
-            {t(isOlderCursorExpired ? "feed.older.reload" : "feed.older.retry")}
-          </Button>
-        </div>
-      )}
-      {isStalled && (
-        <div
-          role="status"
-          className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
-        >
-          <span>{t("feed.live.stalled")}</span>
-          <Button type="button" variant="outline" onClick={() => poll.refetch()}>
-            {t("feed.live.retry")}
-          </Button>
-        </div>
-      )}
-    </div>
+            <span>{t(isOlderCursorExpired ? "feed.older.cursorExpired" : "feed.older.failed")}</span>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={isOlderCursorExpired ? () => window.location.reload() : () => fetchNextPage()}
+            >
+              {t(isOlderCursorExpired ? "feed.older.reload" : "feed.older.retry")}
+            </Button>
+          </div>
+        )}
+        {isStalled && (
+          <div
+            role="status"
+            className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
+          >
+            <span>{t("feed.live.stalled")}</span>
+            <Button type="button" variant="outline" onClick={() => poll.refetch()}>
+              {t("feed.live.retry")}
+            </Button>
+          </div>
+        )}
+      </div>
+    </>
   );
 };

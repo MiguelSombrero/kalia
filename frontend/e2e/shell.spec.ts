@@ -32,6 +32,9 @@ for (const viewport of VIEWPORTS) {
 
     test("the skip link moves focus to the main content", async ({ page }) => {
       await page.goto("/en");
+      // While a page streams, its loading fallback's <main> and the page's own
+      // coexist for a moment; the skip link has one target only once they don't.
+      await expect(page.locator("main#main-content")).toHaveCount(1);
 
       await page.keyboard.press("Tab");
       await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();

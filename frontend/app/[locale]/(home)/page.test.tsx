@@ -16,18 +16,30 @@ const line = (username: string, cursor: string) => ({
 
 const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
+const { listCellarEntries } = vi.hoisted(() => ({ listCellarEntries: vi.fn() }));
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
-// FeedList is a client component with its own test, including which of
-// `emptyState` or the list it renders — this stands in for it, records what
-// the page handed it (which is the part Home is responsible for), and always
-// renders `emptyState` so this file can assert on what Home built for it.
-const { feedListProps } = vi.hoisted(() => ({ feedListProps: vi.fn() }));
+// FeedList, FeedError and CellarSummary are client components with their own
+// tests. These stand-ins record what the page handed them, which is the part
+// Home is responsible for; the FeedList one always renders `emptyState` so
+// this file can assert on what Home built for it.
+const { feedListProps, cellarSummaryProps } = vi.hoisted(() => ({
+  feedListProps: vi.fn(),
+  cellarSummaryProps: vi.fn(),
+}));
 
 vi.mock("@/features/feed", () => ({
   readFeed,
   FeedList: (props: { emptyState: ReactNode }) => {
     feedListProps(props);
     return <div data-testid="feed-list">{props.emptyState}</div>;
+  },
+  FeedError: () => <div role="alert">feed failed</div>,
+}));
+vi.mock("@/features/cellar", () => ({
+  listCellarEntries,
+  CellarSummary: (props: unknown) => {
+    cellarSummaryProps(props);
+    return <div data-testid="cellar-summary" />;
   },
 }));
 vi.mock("@/features/profile", () => ({ getProfile }));
@@ -36,10 +48,26 @@ vi.mock("@/auth", () => ({ auth }));
 import Home, { generateMetadata } from "./page";
 
 const params = Promise.resolve({ locale: "en" });
+const emptyFeed: FeedPage = { content: [], nextCursor: undefined, startOver: false };
+const cellarRow = (beerId: string, bottleCount: number) => ({
+  entryId: `entry-${beerId}`,
+  beerId,
+  beerName: beerId,
+  breweryName: "Brewery",
+  style: "IPA",
+  abv: 6,
+  bottleCount,
+});
+
+const signInAs = (username: string, cellarPublic: boolean) => {
+  auth.mockResolvedValue({ user: { name: username } });
+  getProfile.mockResolvedValue({ username, cellarPublic });
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
   auth.mockResolvedValue(null);
+  listCellarEntries.mockResolvedValue([]);
 });
 
 describe("generateMetadata", () => {
@@ -51,8 +79,29 @@ describe("generateMetadata", () => {
   });
 });
 
-describe("Home", () => {
-  it("hands the feed it read to the feed list", async () => {
+describe("Home, signed out", () => {
+  it("opens on the tagline as its heading, what the feed is, and how Kalia works", async () => {
+    readFeed.mockResolvedValue({ content: [line("ada", "c1")], nextCursor: undefined, startOver: false });
+
+    const { container } = render(await Home({ params }));
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Craft beer management for enthusiasts." }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("This is where cellars people have chosen to make public show what they're adding."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "How Kalia works" })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+      "01Find a beerSearch the catalog.",
+      "02Cellar itCount every bottle and note its vintage.",
+      "03Share itMake your cellar public and your additions appear here.",
+    ]);
+    expect(screen.queryByTestId("cellar-summary")).not.toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("hands the feed it read to the feed list under its heading, with no viewer to tag", async () => {
     const page: FeedPage = {
       content: [line("newer-user", "c2"), line("older-user", "c1")],
       nextCursor: undefined,
@@ -60,49 +109,74 @@ describe("Home", () => {
     };
     readFeed.mockResolvedValue(page);
 
-    const { container } = render(await Home({ params }));
+    render(await Home({ params }));
 
-    expect(screen.getByText("Kalia")).toBeInTheDocument();
-    expect(screen.getByTestId("feed-list")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Latest additions" })).toBeInTheDocument();
     expect(feedListProps).toHaveBeenCalledWith(
-      expect.objectContaining({ locale: "en", initialPage: page }),
+      expect.objectContaining({ locale: "en", initialPage: page, viewerUsername: undefined }),
     );
-    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("builds the empty state for a signed-out visitor, with no private-cellar hint", async () => {
-    readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
+  it("builds an empty state that invites creating an account and does not repeat the pitch", async () => {
+    readFeed.mockResolvedValue(emptyFeed);
 
     const { container } = render(await Home({ params }));
 
-    expect(screen.getByText("Nothing here yet.")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Your own cellar is private, so your additions won't show up here."),
-    ).not.toBeInTheDocument();
+    const empty = screen.getByTestId("feed-list");
+    expect(empty).toHaveTextContent("Nothing here yet.");
+    expect(empty).not.toHaveTextContent("This is where cellars people have chosen");
+    expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/en/sign-up");
     expect(await axe(container)).toHaveNoViolations();
   });
+});
 
-  it("builds a differing empty state for a signed-in visitor whose own cellar is private", async () => {
-    readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
-    auth.mockResolvedValue({ user: { name: "Ada" } });
-    getProfile.mockResolvedValue({ username: "ada", cellarPublic: false });
+describe("Home, signed in", () => {
+  it("replaces the pitch with the visitor's cellar and keeps a heading for the page", async () => {
+    readFeed.mockResolvedValue({ content: [line("ada", "c1")], nextCursor: undefined, startOver: false });
+    signInAs("ada", true);
+    listCellarEntries.mockResolvedValue([cellarRow("kbs", 3), cellarRow("orval", 4)]);
 
     render(await Home({ params }));
 
-    expect(screen.getByText("Nothing here yet.")).toBeInTheDocument();
-    expect(
-      screen.getByText("Your own cellar is private, so your additions won't show up here."),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Kalia" })).toHaveClass("sr-only");
+    expect(screen.queryByRole("heading", { name: "How Kalia works" })).not.toBeInTheDocument();
+    expect(cellarSummaryProps).toHaveBeenCalledWith({
+      locale: "en",
+      cellarPublic: true,
+      counts: { bottles: 7, beers: 2 },
+    });
+    expect(feedListProps).toHaveBeenCalledWith(expect.objectContaining({ viewerUsername: "ada" }));
+  });
+
+  it("still shows the cellar, without figures, when the cellar cannot be read", async () => {
+    readFeed.mockResolvedValue(emptyFeed);
+    signInAs("ada", true);
+    listCellarEntries.mockRejectedValue(apiError("network", "could not reach the backend"));
+
+    render(await Home({ params }));
+
+    expect(cellarSummaryProps).toHaveBeenCalledWith(expect.objectContaining({ counts: null }));
+  });
+
+  it("explains an empty feed, and why the visitor's own additions are missing when their cellar is private", async () => {
+    readFeed.mockResolvedValue(emptyFeed);
+    signInAs("ada", false);
+
+    render(await Home({ params }));
+
+    const empty = screen.getByTestId("feed-list");
+    expect(empty).toHaveTextContent("This is where cellars people have chosen to make public");
+    expect(empty).toHaveTextContent("Your own cellar is private, so your additions won't show up here.");
     expect(screen.getByRole("link", { name: "Make your cellar public" })).toHaveAttribute(
       "href",
       "/en/profile",
     );
+    expect(screen.queryByRole("link", { name: "Create an account" })).not.toBeInTheDocument();
   });
 
-  it("does not show the private-cellar hint to a signed-in visitor whose cellar is already public", async () => {
-    readFeed.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
-    auth.mockResolvedValue({ user: { name: "Ada" } });
-    getProfile.mockResolvedValue({ username: "ada", cellarPublic: true });
+  it("does not show the private-cellar hint when the visitor's cellar is already public", async () => {
+    readFeed.mockResolvedValue(emptyFeed);
+    signInAs("ada", true);
 
     render(await Home({ params }));
 
@@ -110,10 +184,21 @@ describe("Home", () => {
       screen.queryByText("Your own cellar is private, so your additions won't show up here."),
     ).not.toBeInTheDocument();
   });
+});
 
-  it("propagates a feed read failure to the app's error boundary", async () => {
+describe("Home, when the feed cannot be read", () => {
+  it("keeps the masthead and shows the failure where the feed would be, instead of the route's error page", async () => {
     readFeed.mockRejectedValue(apiError("network", "could not reach the backend"));
 
-    await expect(Home({ params })).rejects.toThrow();
+    const { container } = render(await Home({ params }));
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Craft beer management for enthusiasts." }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Latest additions" })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("feed failed");
+    expect(screen.queryByTestId("feed-list")).not.toBeInTheDocument();
+    expect(screen.queryByText("Something went wrong")).not.toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

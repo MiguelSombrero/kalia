@@ -1,6 +1,6 @@
 # Task 07: Front page layout
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -107,20 +107,20 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives for the page's basic
+- [x] The product owner chose from built alternatives for the page's basic
       shape, looked at with real feed data rather than placeholder text
-- [ ] Signed-out and signed-in front pages are both covered — either as one
+- [x] Signed-out and signed-in front pages are both covered — either as one
       layout that demonstrably works for both, or as two
-- [ ] The page's loading skeleton matches the layout that ships, and its
+- [x] The page's loading skeleton matches the layout that ships, and its
       colocated vitest test asserts the match rather than the old shape
-- [ ] Empty feed, failing feed and loaded feed each render deliberately, each
+- [x] Empty feed, failing feed and loaded feed each render deliberately, each
       covered by a test — the failing one asserting that the masthead is
       still rendered and the route's `error.tsx` is not
-- [ ] New entries arrive without moving content the reader is already looking
+- [x] New entries arrive without moving content the reader is already looking
       at, verified in a browser and covered by a Playwright assertion
-- [ ] `prefers-reduced-motion` is honoured by anything this task animates
-- [ ] The page works at both agreed widths, and the
+- [x] `prefers-reduced-motion` is honoured by anything this task animates
+- [x] The page works at both agreed widths, and the
       `@axe-core/playwright` scan passes at both
-- [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the front
+- [x] The findings [task 02](02-design-audit-baseline.md) recorded on the front
       page are each fixed or carry a written decision not to fix them
-- [ ] `make verify` is green
+- [x] `make verify` is green

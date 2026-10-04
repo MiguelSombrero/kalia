@@ -18,11 +18,14 @@
   "feed": {
     "loading": "Loading recent activity…",
     "loadingMore": "Loading more…",
+    "heading": "Latest additions",
     "line": {
-      "withVintage_one": "added {{count}} bottle of a {{vintage}} {{beerName}} to their cellar",
-      "withVintage_other": "added {{count}} bottles of a {{vintage}} {{beerName}} to their cellar",
-      "withoutVintage_one": "added {{count}} bottle of {{beerName}} to their cellar",
-      "withoutVintage_other": "added {{count}} bottles of {{beerName}} to their cellar"
+      "added_one": "added {{count}} bottle",
+      "added_other": "added {{count}} bottles",
+      "bottles_one": "bottle",
+      "bottles_other": "bottles",
+      "vintage": "vintage {{vintage}}",
+      "you": "You"
     },
     "empty": {
       "title": "Nothing here yet.",
@@ -41,6 +44,34 @@
       "retry": "Try again",
       "cursorExpired": "Couldn't load more history — refresh the page to continue.",
       "reload": "Refresh page"
+    },
+    "error": {
+      "message": "Couldn't load recent activity.",
+      "retry": "Try again"
+    }
+  },
+  "home": {
+    "how": {
+      "heading": "How Kalia works",
+      "find": {
+        "title": "Find a beer",
+        "body": "Search the catalog."
+      },
+      "cellar": {
+        "title": "Cellar it",
+        "body": "Count every bottle and note its vintage."
+      },
+      "share": {
+        "title": "Share it",
+        "body": "Make your cellar public and your additions appear here."
+      }
+    },
+    "cellar": {
+      "bottles_one": "bottle",
+      "bottles_other": "bottles",
+      "beers_one": "beer",
+      "beers_other": "beers",
+      "open": "Open my cellar"
     }
   },
   "catalog": {

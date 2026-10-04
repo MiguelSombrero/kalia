@@ -18,11 +18,14 @@
   "feed": {
     "loading": "Ladataan viimeaikaista toimintaa…",
     "loadingMore": "Ladataan lisää…",
+    "heading": "Viimeisimmät lisäykset",
     "line": {
-      "withVintage_one": "lisäsi kellariinsa {{count}} pullon vuoden {{vintage}} olutta {{beerName}}",
-      "withVintage_other": "lisäsi kellariinsa {{count}} pulloa vuoden {{vintage}} olutta {{beerName}}",
-      "withoutVintage_one": "lisäsi kellariinsa {{count}} pullon olutta {{beerName}}",
-      "withoutVintage_other": "lisäsi kellariinsa {{count}} pulloa olutta {{beerName}}"
+      "added_one": "lisäsi kellariinsa {{count}} pullon",
+      "added_other": "lisäsi kellariinsa {{count}} pulloa",
+      "bottles_one": "pullo",
+      "bottles_other": "pulloa",
+      "vintage": "vuosikerta {{vintage}}",
+      "you": "Sinä"
     },
     "empty": {
       "title": "Ei vielä mitään.",
@@ -41,6 +44,34 @@
       "retry": "Yritä uudelleen",
       "cursorExpired": "Vanhempien tapahtumien lataus ei onnistu enää — päivitä sivu jatkaaksesi.",
       "reload": "Päivitä sivu"
+    },
+    "error": {
+      "message": "Viimeaikaisen toiminnan lataus ei onnistunut.",
+      "retry": "Yritä uudelleen"
+    }
+  },
+  "home": {
+    "how": {
+      "heading": "Näin Kalia toimii",
+      "find": {
+        "title": "Etsi olut",
+        "body": "Hae olut luettelosta."
+      },
+      "cellar": {
+        "title": "Kellaroi",
+        "body": "Pidä kirjaa jokaisesta pullosta ja sen vuosikerrasta."
+      },
+      "share": {
+        "title": "Jaa",
+        "body": "Tee kellaristasi julkinen, niin lisäyksesi näkyvät täällä."
+      }
+    },
+    "cellar": {
+      "bottles_one": "pullo",
+      "bottles_other": "pulloa",
+      "beers_one": "olut",
+      "beers_other": "olutta",
+      "open": "Avaa kellari"
     }
   },
   "catalog": {

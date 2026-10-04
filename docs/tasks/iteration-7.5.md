@@ -40,13 +40,14 @@ restyling what is already there.
 | [04](iteration-7.5/04-imagery-iconography-and-the-mark.md) | Imagery, iconography and the Kalia mark | done |
 | [05](iteration-7.5/05-token-only-styling-enforced.md) | Make token-only styling a rule the build enforces | done |
 | [06](iteration-7.5/06-page-shell.md) | The page shell every page sits in | done |
-| [07](iteration-7.5/07-front-page-layout.md) | Front page layout | refined |
+| [07](iteration-7.5/07-front-page-layout.md) | Front page layout | done |
 | [08](iteration-7.5/08-catalog-layout.md) | Catalog layout | refined |
 | [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | refined |
 | [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | refined |
 | [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | refined |
 | [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | refined |
 | [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | refined |
+| [15](iteration-7.5/15-feed-line-carries-beer-facts.md) | A feed line carries its beer's style, strength and id | needs-refinement |
 
 **Every task here is a prototyping task, and that is what makes this iteration
 unusual.** The right palette, the right layout and the right amount of

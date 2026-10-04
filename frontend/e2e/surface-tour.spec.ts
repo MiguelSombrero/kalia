@@ -51,7 +51,7 @@ const expectContained = async (row: Locator) => {
 };
 
 const SIGNED_OUT_SURFACES = [
-  { surface: "front page", path: "/en", heading: "Kalia" },
+  { surface: "front page", path: "/en", heading: "Craft beer management for enthusiasts." },
   { surface: "catalog list", path: "/en/beers", heading: "Beer catalog" },
   { surface: "beer not found", path: "/en/beers/00000000-0000-0000-0000-000000000000", heading: "Beer not found" },
   { surface: "signed-out cellar", path: "/en/cellar", heading: "My cellar" },

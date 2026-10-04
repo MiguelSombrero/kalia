@@ -110,6 +110,18 @@
 
   --radius-control: 0;
   --radius-surface: 0;
+
+  --animate-feed-reveal: feed-reveal 2.4s ease-out;
+}
+
+@keyframes feed-reveal {
+  0%,
+  30% {
+    background-color: var(--color-accent);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 body {

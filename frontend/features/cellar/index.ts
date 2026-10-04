@@ -1,5 +1,6 @@
 export { AddToCellarButton } from "./AddToCellarButton";
 export { CellarList } from "./CellarList";
+export { CellarSummary } from "./CellarSummary";
 export { PublicCellarView } from "./PublicCellarView";
 export { SignInPrompt } from "./SignInPrompt";
 export { getPublicCellar, listCellarEntries, resolvePublicCellarBeers } from "./api";
