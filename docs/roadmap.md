@@ -24,6 +24,17 @@ then a feed of what people are putting in theirs — then a catalog that grows
 past its seed data. Everything further out is in
 [the backlog](tasks/backlog.md).
 
+From iteration 9 on, **mobile is Kalia's primary UI**: an Expo app with a
+design of its own rather than the web's, built on the foundations iteration 9
+lays and then feature by feature in the same dependency order — catalog,
+cellar, social — before what only a phone can do. The web keeps working and is
+not held at feature parity. The plan adds no cost: the app runs on the product
+owner's own iPhone and on simulators against the local stack, and everything
+that needs paid accounts or hosting is parked in
+[the backlog](tasks/backlog.md#mobile-client) until that changes. Iterations
+9–14 list planned tasks as one line each; their task files are written at
+refinement.
+
 **Definition of done (every issue):**
 
 - every acceptance criterion in the task file checked off, each verified the
@@ -55,5 +66,11 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [7 — Front page activity feed](tasks/iteration-7.md) | The front page shows what people add to their cellars, live | ✅ Done |
 | [7.5 — Design sprint](tasks/iteration-7.5.md) | Kalia looks designed rather than defaulted | ⬜ Todo |
 | [8 — Catalog beyond seed data](tasks/iteration-8.md) | Users add the beers they cannot find | ⬜ Todo |
+| [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ⬜ Todo |
+| [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ⬜ Todo |
+| [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ⬜ Todo |
+| [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
+| [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |
+| [14 — Scan the bottle in your hand](tasks/iteration-14.md) | A barcode puts a beer in the cellar | ⬜ Todo |
 
 Unscheduled work: [Backlog](tasks/backlog.md) · [Quality backlog](tasks/quality-backlog.md)
