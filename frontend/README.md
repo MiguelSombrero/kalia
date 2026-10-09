@@ -152,7 +152,7 @@ Why the rationale lives there and not here:
 - **A feature never reaches into another feature — `app/` composes them.**
   When one feature's page needs another's affordance (the catalog's pages
   carry cellar's add-to-cellar button), the host component takes a slot —
-  `BeerList`'s `renderActions` render prop, `BeerDetailsCard`'s `actions`
+  `BeerList`'s `renderActions` render prop, `BeerDetailsView`'s `actions`
   node — and the route in `app/` fills it from the other feature's barrel.
   The host stays unaware the other feature exists. Enforced by the same
   `eslint-plugin-boundaries` rule as above, so the alternative fails `npm run

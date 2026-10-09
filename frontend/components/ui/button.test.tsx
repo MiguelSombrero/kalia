@@ -39,4 +39,17 @@ describe("Button", () => {
       `${buttonVariants("outline")} extra`,
     );
   });
+
+  it("is smaller in its compact size and still above the 24×24 target floor", () => {
+    render(
+      <Button variant="outline" size="compact">
+        Add
+      </Button>,
+    );
+
+    const className = screen.getByRole("button", { name: "Add" }).className;
+    expect(className).toBe(buttonVariants("outline", "compact"));
+    expect(className).toContain("min-h-8");
+    expect(className).not.toContain("min-h-10");
+  });
 });

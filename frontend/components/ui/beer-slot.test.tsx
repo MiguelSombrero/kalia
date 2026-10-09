@@ -48,4 +48,10 @@ describe("BeerSlot", () => {
 
     expect(container.firstElementChild?.className).toContain("extra");
   });
+
+  it("writes the strength with the locale's decimal separator", () => {
+    const { container } = render(<BeerSlot variant="band" beerStyle="Quadrupel" abv={10.2} locale="fi" />);
+
+    expect(container.firstElementChild).toHaveTextContent("10,2%");
+  });
 });

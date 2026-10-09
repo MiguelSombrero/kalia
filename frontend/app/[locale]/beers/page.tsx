@@ -1,35 +1,22 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   BeerList,
-  type BeerSearchParams,
+  catalogColumns,
+  catalogHref,
+  catalogTitle,
   Pagination,
+  parseBeerSearchParams,
+  type RawSearchParams,
+  ResultSummary,
   searchBeers,
   SearchFilters,
 } from "@/features/catalog";
-import { AddToCellarButton } from "@/features/cellar";
+import { AddToCellarButton, heldBottlesByBeerOrNone } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { Page } from "@/components/ui/page";
-
-type RawSearchParams = Record<string, string | string[] | undefined>;
-
-const first = (value: string | string[] | undefined): string | undefined => {
-  return Array.isArray(value) ? value[0] : value;
-};
-
-const toBeerSearchParams = (raw: RawSearchParams): BeerSearchParams => {
-  return {
-    query: first(raw.query),
-    style: first(raw.style),
-    country: first(raw.country),
-    minAbv: first(raw.minAbv),
-    maxAbv: first(raw.maxAbv),
-    page: first(raw.page),
-    size: first(raw.size),
-    sort: first(raw.sort),
-  };
-};
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -44,33 +31,48 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 
 const BeersPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
-  const beerParams = toBeerSearchParams(await searchParams);
-  const [result, session, { t }] = await Promise.all([
+  const beerParams = parseBeerSearchParams(await searchParams);
+  const session = auth();
+  const [result, signedIn, heldBottles, { t }] = await Promise.all([
     searchBeers(beerParams),
-    auth(),
+    session.then((current) => Boolean(current?.user)),
+    session.then((current) => (current?.user ? heldBottlesByBeerOrNone() : undefined)),
     getTranslation(locale),
   ]);
-  const isSignedIn = Boolean(session?.user);
+  if (result.content.length === 0 && result.totalElements > 0) {
+    redirect(catalogHref(locale, { ...beerParams, page: String(result.totalPages - 1) }));
+  }
+  const isSignedIn = signedIn;
 
   return (
     <Page width="wide">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+      <h1 className={catalogTitle}>
         {t("catalog.title")}
       </h1>
-      <SearchFilters locale={locale} params={beerParams} />
-      <BeerList
-        locale={locale}
-        beers={result.content}
-        renderActions={(beer) => (
-          <AddToCellarButton
+      <div className={catalogColumns}>
+        <div className="md:sticky md:top-20">
+          <SearchFilters locale={locale} params={beerParams} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4">
+          <ResultSummary locale={locale} params={beerParams} totalElements={result.totalElements} />
+          <BeerList
             locale={locale}
-            beerId={beer.id}
-            beerName={beer.name}
-            isSignedIn={isSignedIn}
+            beers={result.content}
+            search={beerParams}
+            heldBottles={heldBottles}
+            renderActions={(beer) => (
+              <AddToCellarButton
+                locale={locale}
+                beerId={beer.id}
+                beerName={beer.name}
+                isSignedIn={isSignedIn}
+                compact
+              />
+            )}
           />
-        )}
-      />
-      <Pagination locale={locale} params={beerParams} result={result} />
+          <Pagination locale={locale} params={beerParams} result={result} />
+        </div>
+      </div>
     </Page>
   );
 };

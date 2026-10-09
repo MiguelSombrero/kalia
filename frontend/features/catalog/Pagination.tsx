@@ -34,13 +34,9 @@ export const Pagination = async ({
   const linkClasses = buttonVariants("outline");
 
   return (
-    <nav aria-label={t("catalog.pagination.label")} className="flex items-center justify-between">
+    <nav aria-label={t("catalog.pagination.label")} className="flex flex-wrap items-center justify-between gap-3">
       <span className="text-sm text-muted-foreground">
-        {t("catalog.pagination.summary", {
-          page: result.page + 1,
-          totalPages: result.totalPages,
-          count: result.totalElements,
-        })}
+        {t("catalog.pagination.summary", { page: result.page + 1, totalPages: result.totalPages })}
       </span>
       <div className="flex gap-2">
         {result.page > 0 && (

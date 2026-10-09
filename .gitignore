@@ -28,6 +28,12 @@ build/
 # describes
 .claude/session-checkpoint.md
 
+# Loose agent drafts directly under .claude/ (a pull request description
+# written for `gh pr create --body-file`, notes) — scratch for one session.
+# The tracked Markdown here lives in rules/ and skills/, which this does not
+# reach.
+.claude/*.md
+
 # AI-agent working docs (superpowers skill: brainstorming companion,
 # specs, implementation plans) — process scratch, not project
 # documentation. Durable design decisions belong in docs/ (ADRs,

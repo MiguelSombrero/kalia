@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getPublicCellar,
+  heldBottlesByBeer,
+  heldBottlesByBeerOrNone,
   listCellarBottles,
   listCellarEntries,
   removeCellarBottle,
@@ -115,6 +117,27 @@ const fromCatalog = (beersById: Map<string, unknown>) => (ids: string[]) =>
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("heldBottlesByBeer", () => {
+  it("counts bottles by beer without looking the beers up, skipping an emptied entry", async () => {
+    const { fetchMock, batchCalls } = stubCellarFetch({
+      entries: [entry({ quantity: 3 }), entry({ id: secondEntryId, beerId: secondBeerId, quantity: 0 })],
+    });
+
+    await expect(heldBottlesByBeer()).resolves.toEqual(new Map([[beerId, 3]]));
+    expect(batchCalls).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws when the entries lookup fails, and the OrNone form logs it and gives nothing", async () => {
+    stubCellarFetch({ entries: 500 });
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    await expect(heldBottlesByBeer()).rejects.toThrow("status 500");
+    await expect(heldBottlesByBeerOrNone()).resolves.toBeUndefined();
+    expect(consoleError).toHaveBeenCalledOnce();
+  });
 });
 
 describe("listCellarEntries", () => {

@@ -27,7 +27,15 @@ import { useAddBottle } from "./hooks/useBottles";
 const fieldClasses =
   "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
-export const AddBottleDialog = ({ beerId, beerName }: { beerId: string; beerName: string }) => {
+export const AddBottleDialog = ({
+  beerId,
+  beerName,
+  compact = false,
+}: {
+  beerId: string;
+  beerName: string;
+  compact?: boolean;
+}) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const addBottle = useAddBottle();
@@ -75,7 +83,12 @@ export const AddBottleDialog = ({ beerId, beerName }: { beerId: string; beerName
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger className={buttonVariants("outline")}>{t("cellar.add.action")}</DialogTrigger>
+      <DialogTrigger
+        className={compact ? buttonVariants("outline", "compact") : buttonVariants("primary")}
+        aria-label={compact ? t("cellar.add.actionFor", { beer: beerName }) : undefined}
+      >
+        {compact ? t("cellar.add.actionShort") : t("cellar.add.action")}
+      </DialogTrigger>
       <DialogContent aria-describedby={`${ids}-description`}>
         <DialogTitle>{t("cellar.add.title")}</DialogTitle>
         <DialogDescription id={`${ids}-description`}>

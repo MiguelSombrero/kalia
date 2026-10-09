@@ -286,6 +286,12 @@ and the breakpoint live in `frontend/components/ui/page.tsx` and
   the header and the menu because the menu is the header on a phone.
 - **The footer carries identity and nothing that does a job**: the mark and the
   tagline. It is there so no page ends in empty paper, not to be navigated from.
+- **A form shows one submit button at a time, and it comes last.** Its place
+  says what it sends: everything above it. A form that folds part of itself
+  away on a phone keeps that one button outside the fold rather than giving
+  the fold a second one. Chosen in
+  [iteration 7.5 task 08](tasks/iteration-7.5/08-catalog-layout.md)
+  ([ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
 - **Every page is laid out for 375 and 1280 wide, and everything in the shell
   can be tapped.** Header, menu and footer controls are comfortably above the
   iteration's smallest target; a page's own controls are held to the same

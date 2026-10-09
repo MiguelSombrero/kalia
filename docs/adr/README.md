@@ -148,6 +148,9 @@ decides the URL built on it.
 - [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)
   — the front page is one column: the pitch or the visitor's cellar above a
   feed of ruled rows, with "N new" laid over it and failures kept in the page.
+- [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)
+  — the catalog is one column of ruled rows beside a filter column that folds
+  on a phone under one Search button; a beer's page is its band and linked facts.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a

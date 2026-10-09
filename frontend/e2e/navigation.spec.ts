@@ -67,7 +67,7 @@ test("keeps the current page indicated on a nested catalog route", async ({ page
   await page.getByLabel("Search").fill("Westvleteren");
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByRole("link", { name: "Westvleteren 12", exact: true }).click();
-  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+\?query=Westvleteren\b/);
 
   await expectCurrentPage(page, "Catalog");
 });

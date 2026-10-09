@@ -1,6 +1,6 @@
 # Task 08: Catalog layout
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -104,27 +104,27 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives for the results
+- [x] The product owner chose from built alternatives for the results
       presentation and for the filters at phone width
-- [ ] Both surfaces — list and details — ship, with the components they share
+- [x] Both surfaces — list and details — ship, with the components they share
       changed once rather than diverging
-- [ ] Filters still produce a shareable URL and `SearchFilters` is still a
+- [x] Filters still produce a shareable URL and `SearchFilters` is still a
       server component, or the decision to change that is recorded in an ADR
       that supersedes the reasoning in
       [architecture.md §5](../../architecture.md)
-- [ ] `BeerListSkeleton` and `BeerDetailsSkeleton` match the layouts that ship,
+- [x] `BeerListSkeleton` and `BeerDetailsSkeleton` match the layouts that ship,
       with their colocated vitest tests asserting the new shapes
-- [ ] The empty state, the beer not-found page and a result set of exactly one
+- [x] The empty state, the beer not-found page and a result set of exactly one
       each render deliberately, covered by tests
-- [ ] A beer's details page reached from a filtered, paged search links back
+- [x] A beer's details page reached from a filtered, paged search links back
       to that same search, covered by a test that asserts the link's
       parameters
-- [ ] The result count shows before the results and reads correctly in both
+- [x] The result count shows before the results and reads correctly in both
       locales for one result and for many, covered by a test
-- [ ] A card's action is operable by keyboard and does not fight the card's own
+- [x] A card's action is operable by keyboard and does not fight the card's own
       link, covered by a test that drives it with the keyboard alone
-- [ ] Both surfaces work at both agreed widths and the
+- [x] Both surfaces work at both agreed widths and the
       `@axe-core/playwright` scans pass at both
-- [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the
+- [x] The findings [task 02](02-design-audit-baseline.md) recorded on the
       catalog are each fixed or carry a written decision not to fix them
-- [ ] `make verify` is green
+- [x] `make verify` is green

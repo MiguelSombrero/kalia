@@ -488,6 +488,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   covering every route. A section that can fail while the rest of its page
   stands renders its own failure in place instead: the front page's feed
   ([ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
+  Something only decorating a page is left out when its read fails: the
+  catalog's cellar marker
+  ([ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
   `:focus-visible` styling and a skip-to-content link. The non-native
   widgets — the add/edit-bottle and remove-confirmation modals, and the
@@ -776,6 +779,7 @@ the failure back to the agent without blocking
 | [ADR-0066](adr/0066-token-only-styling-is-a-build-check.md) | Styling outside the semantic token layer fails the build, through a dependency-free checker rather than an ESLint rule | accepted | 2026-10-03 |
 | [ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md) | Every page sits in one sticky bar and one `Page` component, with a Menu button on a phone, so that header and pages share a frame | accepted | 2026-10-04 |
 | [ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md) | The front page is one column, a pitch or the visitor's cellar above a ruled feed, so that the feed starts on the first screen for both audiences | accepted | 2026-10-04 |
+| [ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md) | The catalog is one ruled column of beers beside a filter column that folds on a phone, with one Search button that always comes last | accepted | 2026-10-09 |
 
 ### Engineering process and documentation
 

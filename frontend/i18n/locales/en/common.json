@@ -93,7 +93,16 @@
       "sortAbvAsc": "ABV (low → high)",
       "sortAbvDesc": "ABV (high → low)",
       "sortStyleAsc": "Style (A–Z)",
-      "submit": "Search"
+      "submit": "Search",
+      "strengthLabel": "Strength %",
+      "minShort": "min",
+      "maxShort": "max",
+      "toggle": "Filters",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter: {{filter}}",
+      "atLeast": "at least {{abv}}",
+      "atMost": "at most {{abv}}",
+      "queryChip": "“{{query}}”"
     },
     "empty": {
       "title": "No beers match your search.",
@@ -102,16 +111,27 @@
     },
     "pagination": {
       "label": "Pagination",
-      "summary_one": "Page {{page}} of {{totalPages}} ({{count}} beer)",
-      "summary_other": "Page {{page}} of {{totalPages}} ({{count}} beers)",
+      "summary": "Page {{page}} of {{totalPages}}",
       "previous": "← Previous",
       "next": "Next →"
-    }
+    },
+    "resultCount_one": "{{count}} beer",
+    "resultCount_other": "{{count}} beers",
+    "inCellar": "{{count}} in your cellar"
   },
   "beer": {
     "backToCatalog": "← Back to catalog",
+    "backToResults": "← Back to results",
     "style": "Style",
-    "abv": "ABV"
+    "strength": "Strength",
+    "brewery": "Brewery",
+    "brewedIn": "Brewed in",
+    "allOfStyle": "Every {{style}} ({{count}})",
+    "allFromCountry": "Everything from {{country}} ({{count}})",
+    "sameStyle": "Same style · {{style}}",
+    "inYourCellar_one": "In your cellar: {{count}} bottle",
+    "inYourCellar_other": "In your cellar: {{count}} bottles",
+    "openInCellar": "Open my cellar"
   },
   "notFound": {
     "pageTitle": "Beer not found — Kalia",
@@ -204,7 +224,9 @@
       "error": {
         "quantityRange": "Choose between 1 and 24 bottles.",
         "failed": "Could not add to your cellar. Please try again."
-      }
+      },
+      "actionShort": "Add",
+      "actionFor": "Add to cellar: {{beer}}"
     },
     "edit": {
       "action": "Edit",

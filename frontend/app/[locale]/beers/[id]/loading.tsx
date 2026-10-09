@@ -6,7 +6,7 @@ const BeerLoading = async () => {
   const locale = await resolveLocaleFromHeaders();
 
   return (
-    <Page>
+    <Page width="wide">
       <BeerDetailsSkeleton locale={locale} />
     </Page>
   );

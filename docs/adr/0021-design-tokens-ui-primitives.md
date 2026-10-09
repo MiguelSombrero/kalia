@@ -17,6 +17,11 @@
   13](../tasks/iteration-6/13-bottle-removal-lost-on-navigation.md))
 - **Amended:** 2026-10-03 by [ADR-0066](0066-token-only-styling-is-a-build-check.md)
   — the two-layer rule is now a build check rather than a convention
+- **Amended:** 2026-10-09 by [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)
+  — the catalog's examples below are out of date: its result rows and a beer's
+  facts are ruled lines now and no longer wear `Card`'s classes. The rule they
+  illustrate stands, and `BeerList`'s `<li>` still carries the stretched link,
+  hover and `focus-within` ring itself
 
 ## Context
 
