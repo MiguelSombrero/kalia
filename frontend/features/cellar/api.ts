@@ -1,4 +1,5 @@
 import { apiError } from "@/lib/api/api-error";
+import { logger } from "@/lib/logger";
 import { getBeer, getBeersByIds } from "@/lib/api/generated/catalog/catalog";
 import type { BeerSummaryDto } from "@/lib/api/generated/models";
 import {
@@ -36,6 +37,28 @@ export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
     .filter((row): row is CellarBeerRow => row !== null && row.bottleCount > 0)
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
+
+/** Bottles the caller holds, by beer id — the cellar marker on catalog pages,
+ *  so it skips the catalog lookup `listCellarEntries` makes. */
+export const heldBottlesByBeer = async (): Promise<Map<string, number>> => {
+  const response = await generatedListEntries();
+  if (response.status !== 200) {
+    throw apiError("http", `Cellar entries lookup failed with status ${response.status}`, {
+      status: response.status,
+    });
+  }
+  return new Map(
+    response.data.filter((entry) => entry.quantity > 0).map((entry) => [entry.beerId, entry.quantity]),
+  );
+};
+
+/** `heldBottlesByBeer`, or nothing when the read fails: the marker only
+ *  decorates a catalog page, so a failure leaves it out (ADR-0069). */
+export const heldBottlesByBeerOrNone = (): Promise<Map<string, number> | undefined> =>
+  heldBottlesByBeer().catch((error: unknown) => {
+    logger.error(error);
+    return undefined;
+  });
 
 // Matches the backend's CatalogController.MAX_BATCH_IDS (ADR-0042) — named
 // once here so the two can't drift silently out of step.

@@ -26,13 +26,19 @@ test("search for a beer by name and open its detail page", async ({ page }) => {
   await expectNoA11yViolations(page);
 
   await page.getByRole("link", { name: "Westvleteren 12", exact: true }).click();
-  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+$/);
+  // The search rides along on the beer's URL, so its page can link back to it (ADR-0069).
+  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+\?query=Westvleteren\b/);
 
   await expect(page.getByRole("heading", { level: 1, name: "Westvleteren 12" })).toBeVisible();
-  await expect(page.getByText("Brouwerij Westvleteren", { exact: false })).toBeVisible();
-  await expect(page.getByText("Quadrupel", { exact: true })).toBeVisible();
-  await expect(page.getByText("10.2 %")).toBeVisible();
+  await expect(page.getByText("Brouwerij Westvleteren", { exact: false }).first()).toBeVisible();
+  const facts = page.locator("main dl");
+  await expect(facts.getByText("Quadrupel", { exact: true })).toBeVisible();
+  await expect(facts.getByText("10.2 %")).toBeVisible();
   await expectNoA11yViolations(page);
+
+  await page.getByRole("link", { name: "← Back to results" }).click();
+  await expect(page).toHaveURL(/\/en\/beers\?query=Westvleteren\b/);
+  await expect(page.getByLabel("Search")).toHaveValue("Westvleteren");
 });
 
 test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) => {
@@ -40,8 +46,8 @@ test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) =
 
   await page.getByLabel("Style").fill("Quadrupel");
   await page.getByLabel("Country").fill("Belgium");
-  await page.getByLabel("Min ABV %").fill("9");
-  await page.getByLabel("Max ABV %").fill("12");
+  await page.getByRole("spinbutton", { name: "Min ABV %" }).fill("9");
+  await page.getByRole("spinbutton", { name: "Max ABV %" }).fill("12");
   await page.getByRole("button", { name: "Search" }).click();
 
   await expect(page.getByRole("link", { name: "Westvleteren 12", exact: true })).toBeVisible();
@@ -54,7 +60,7 @@ test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) =
   await page.getByRole("link", { name: "Rochefort 10", exact: true }).click();
 
   await expect(page.getByRole("heading", { level: 1, name: "Rochefort 10" })).toBeVisible();
-  await expect(page.getByText("11.3 %")).toBeVisible();
+  await expect(page.locator("main dl").getByText("11.3 %")).toBeVisible();
 });
 
 test("searches and opens a beer detail page in Finnish", async ({ page }) => {
@@ -67,16 +73,17 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
   await expect(page).toHaveURL(/query=Westvleteren/);
 
   await page.getByRole("link", { name: "Westvleteren 12", exact: true }).click();
-  await expect(page).toHaveURL(/\/fi\/beers\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/fi\/beers\/[0-9a-f-]+\?query=Westvleteren\b/);
 
   await expect(page.getByRole("heading", { level: 1, name: "Westvleteren 12" })).toBeVisible();
-  await expect(page.getByText("Tyyli")).toBeVisible();
-  await expect(page.getByText("Alkoholi")).toBeVisible();
+  await expect(page.getByText("Tyyli", { exact: true })).toBeVisible();
+  await expect(page.getByText("Alkoholi", { exact: true })).toBeVisible();
+  await expect(page.locator("main dl").getByText("10,2 %")).toBeVisible();
 
   await page.getByRole("link", { name: "Suomi" }).waitFor();
   await page.getByRole("link", { name: "English" }).click();
-  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+$/);
-  await expect(page.getByText("Style")).toBeVisible();
+  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]+/);
+  await expect(page.getByText("Style", { exact: true })).toBeVisible();
 });
 
 // Covers that paging works, not a regression guard: Playwright's Chromium

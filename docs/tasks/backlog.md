@@ -37,6 +37,21 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   beer in the cellar on every visit, so they were left out until the API can
   answer them in one
   ([ADR-0068](../adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
+- **Finish an add begun before signing in.** A signed-out visitor who presses
+  *Add* on a beer is sent through sign-in and lands back on that beer with
+  nothing added, so they press it again (AUD-22 in
+  [the iteration 7.5 audit](iteration-7.5/audit.md)). Carrying the intent
+  through Keycloak, and reopening the add dialog on return, is a flow change
+  that [iteration 7.5 task 08](iteration-7.5/08-catalog-layout.md) left out of
+  a layout task
+  ([ADR-0069](../adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
+- **A beer's description is stored but unused.** `catalog.beer.description`
+  and the optional `description` on `BeerDetailsDto` still exist, but no page
+  shows them since [iteration 7.5 task 08](iteration-7.5/08-catalog-layout.md):
+  the seed's descriptions were written for the demo, and the real catalog
+  source [iteration 8](iteration-8.md) brings in is not expected to carry one.
+  Remove the column, the DTO field and the seed values together, once
+  iteration 8 has settled what a beer's data source provides.
 
 Engineering work:
 

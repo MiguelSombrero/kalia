@@ -3,5 +3,5 @@ export { CellarList } from "./CellarList";
 export { CellarSummary } from "./CellarSummary";
 export { PublicCellarView } from "./PublicCellarView";
 export { SignInPrompt } from "./SignInPrompt";
-export { getPublicCellar, listCellarEntries, resolvePublicCellarBeers } from "./api";
+export { getPublicCellar, heldBottlesByBeerOrNone, listCellarEntries, resolvePublicCellarBeers } from "./api";
 export type { CellarBeerRow, PublicCellar, PublicCellarBeer } from "./types";

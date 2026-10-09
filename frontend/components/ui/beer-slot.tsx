@@ -1,4 +1,5 @@
 import type { HTMLAttributes } from "react";
+import type { Locale } from "@/i18n/settings";
 import { beerStyleGroup } from "@/lib/beerStyle";
 import { cn } from "@/lib/cn";
 
@@ -8,9 +9,11 @@ type BeerSlotProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
   variant: BeerSlotVariant;
   beerStyle?: string;
   abv?: number;
+  /** Writes the strength's decimal separator as this locale does. */
+  locale?: Locale;
 };
 
-export const BeerSlot = ({ variant, beerStyle, abv, className, ...props }: BeerSlotProps) => {
+export const BeerSlot = ({ variant, beerStyle, abv, locale = "en", className, ...props }: BeerSlotProps) => {
   const group = beerStyleGroup(beerStyle ?? "");
 
   if (variant === "strip") {
@@ -37,7 +40,9 @@ export const BeerSlot = ({ variant, beerStyle, abv, className, ...props }: BeerS
       {...props}
     >
       <div className="flex h-full items-end gap-[2cqw] p-[4cqw]">
-        <span className="font-display text-[26cqw] font-extrabold leading-[0.78]">{abv}</span>
+        <span className="font-display text-[26cqw] font-extrabold leading-[0.78]">
+          {new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(abv)}
+        </span>
         <span className="font-display text-[9cqw] font-extrabold leading-none">%</span>
       </div>
     </div>

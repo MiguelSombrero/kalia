@@ -70,10 +70,13 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   await cards.nth(CATALOG_CARD.addFromList).getByRole("button", { name: "Add to cellar" }).click();
   await addBottles(page, 2);
   expect(await stillSameDocument(), "adding from the list reloaded the page").toBe(true);
+  // The cellar marker appearing is how an add from the catalog confirms itself (ADR-0069).
+  await expect(cards.nth(CATALOG_CARD.addFromList).getByText(/\d+ in your cellar/)).toBeVisible();
 
   await cards.nth(CATALOG_CARD.addFromDetail).getByRole("heading").getByRole("link").click();
   await expect(page.getByRole("heading", { level: 1, name: detailBeer })).toBeVisible();
-  await page.getByRole("button", { name: "Add to cellar" }).click();
+  // exact: the beers of the same style below carry "Add to cellar: <beer>".
+  await page.getByRole("button", { name: "Add to cellar", exact: true }).click();
   await addBottles(page, 1);
 
   expect(await bottleCount(page, listBeer)).toBe(listBefore + 2);

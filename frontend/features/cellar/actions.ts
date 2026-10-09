@@ -57,6 +57,9 @@ export const listCellarBottlesAction = async (entryId: string): Promise<Bottle[]
 export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[]> => {
   const created = await addBottlesToCellar(request);
   revalidatePath("/[locale]/cellar", "page");
+  // The catalog's cellar marker is how an add from there confirms itself.
+  revalidatePath("/[locale]/beers", "page");
+  revalidatePath("/[locale]/beers/[id]", "page");
   return created;
 };
 

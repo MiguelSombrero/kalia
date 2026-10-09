@@ -93,7 +93,16 @@
       "sortAbvAsc": "Alkoholi (matala → korkea)",
       "sortAbvDesc": "Alkoholi (korkea → matala)",
       "sortStyleAsc": "Tyyli (A–Ö)",
-      "submit": "Hae"
+      "submit": "Hae",
+      "strengthLabel": "Alkoholi %",
+      "minShort": "väh.",
+      "maxShort": "enint.",
+      "toggle": "Suodattimet",
+      "clearAll": "Tyhjennä kaikki",
+      "removeFilter": "Poista suodatin: {{filter}}",
+      "atLeast": "vähintään {{abv}}",
+      "atMost": "enintään {{abv}}",
+      "queryChip": "”{{query}}”"
     },
     "empty": {
       "title": "Hakuehdoilla ei löytynyt oluita.",
@@ -102,16 +111,27 @@
     },
     "pagination": {
       "label": "Sivutus",
-      "summary_one": "Sivu {{page}} / {{totalPages}} ({{count}} olut)",
-      "summary_other": "Sivu {{page}} / {{totalPages}} ({{count}} olutta)",
+      "summary": "Sivu {{page}} / {{totalPages}}",
       "previous": "← Edellinen",
       "next": "Seuraava →"
-    }
+    },
+    "resultCount_one": "{{count}} olut",
+    "resultCount_other": "{{count}} olutta",
+    "inCellar": "{{count}} kellarissasi"
   },
   "beer": {
     "backToCatalog": "← Takaisin tarjontaan",
+    "backToResults": "← Takaisin hakutuloksiin",
     "style": "Tyyli",
-    "abv": "Alkoholi"
+    "strength": "Alkoholi",
+    "brewery": "Panimo",
+    "brewedIn": "Valmistettu",
+    "allOfStyle": "Kaikki: {{style}} ({{count}})",
+    "allFromCountry": "Kaikki maasta {{country}} ({{count}})",
+    "sameStyle": "Samaa tyyliä · {{style}}",
+    "inYourCellar_one": "Kellarissasi: {{count}} pullo",
+    "inYourCellar_other": "Kellarissasi: {{count}} pulloa",
+    "openInCellar": "Avaa kellari"
   },
   "notFound": {
     "pageTitle": "Olutta ei löytynyt — Kalia",
@@ -204,7 +224,9 @@
       "error": {
         "quantityRange": "Valitse 1–24 pulloa.",
         "failed": "Kellariin lisääminen epäonnistui. Yritä uudelleen."
-      }
+      },
+      "actionShort": "Lisää",
+      "actionFor": "Lisää kellariin: {{beer}}"
     },
     "edit": {
       "action": "Muokkaa",

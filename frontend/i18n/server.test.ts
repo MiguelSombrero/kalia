@@ -19,22 +19,15 @@ describe("getTranslation", () => {
   it("interpolates and pluralizes", async () => {
     const { t } = await getTranslation("en");
 
-    expect(t("catalog.pagination.summary", { page: 1, totalPages: 3, count: 1 })).toBe(
-      "Page 1 of 3 (1 beer)",
-    );
-    expect(t("catalog.pagination.summary", { page: 1, totalPages: 3, count: 5 })).toBe(
-      "Page 1 of 3 (5 beers)",
-    );
+    expect(t("catalog.pagination.summary", { page: 1, totalPages: 3 })).toBe("Page 1 of 3");
+    expect(t("catalog.resultCount", { count: 1 })).toBe("1 beer");
+    expect(t("catalog.resultCount", { count: 5 })).toBe("5 beers");
   });
 
   it("pluralizes Finnish partitive forms", async () => {
     const { t } = await getTranslation("fi");
 
-    expect(t("catalog.pagination.summary", { page: 1, totalPages: 3, count: 1 })).toBe(
-      "Sivu 1 / 3 (1 olut)",
-    );
-    expect(t("catalog.pagination.summary", { page: 1, totalPages: 3, count: 5 })).toBe(
-      "Sivu 1 / 3 (5 olutta)",
-    );
+    expect(t("catalog.resultCount", { count: 1 })).toBe("1 olut");
+    expect(t("catalog.resultCount", { count: 5 })).toBe("5 olutta");
   });
 });

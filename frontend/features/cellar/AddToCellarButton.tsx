@@ -9,24 +9,32 @@ export const AddToCellarButton = async ({
   beerId,
   beerName,
   isSignedIn,
+  compact = false,
 }: {
   locale: Locale;
   beerId: string;
   beerName: string;
   isSignedIn: boolean;
+  /** A small outline "Add" for a row of a list, named for its beer. */
+  compact?: boolean;
 }) => {
   const { t } = await getTranslation(locale);
 
   if (isSignedIn) {
-    return <AddBottleDialog beerId={beerId} beerName={beerName} />;
+    return <AddBottleDialog beerId={beerId} beerName={beerName} compact={compact} />;
   }
 
   return (
     <form action={startCellarSignIn}>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="beerId" value={beerId} />
-      <Button type="submit" variant="outline">
-        {t("cellar.add.action")}
+      <Button
+        type="submit"
+        variant={compact ? "outline" : "primary"}
+        size={compact ? "compact" : "default"}
+        aria-label={compact ? t("cellar.add.actionFor", { beer: beerName }) : undefined}
+      >
+        {compact ? t("cellar.add.actionShort") : t("cellar.add.action")}
       </Button>
     </form>
   );

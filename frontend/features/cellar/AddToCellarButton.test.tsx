@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./actions", () => ({ startCellarSignIn: vi.fn() }));
 vi.mock("./AddBottleDialog", () => ({
-  AddBottleDialog: ({ beerId }: { beerId: string }) => <div data-testid="dialog">{beerId}</div>,
+  AddBottleDialog: ({ beerId, compact }: { beerId: string; compact?: boolean }) => (
+    <div data-testid="dialog" data-compact={String(Boolean(compact))}>
+      {beerId}
+    </div>
+  ),
 }));
 
 import { AddToCellarButton } from "./AddToCellarButton";
@@ -50,5 +54,30 @@ describe("AddToCellarButton", () => {
 
     expect(screen.getByRole("button", { name: "Lisää kellariin" })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("is the page's primary action when it stands on its own", async () => {
+    render(await AddToCellarButton({ locale: "en", isSignedIn: false, ...props }));
+
+    expect(screen.getByRole("button", { name: "Add to cellar" }).className).toContain("bg-primary");
+  });
+
+  // Label in name (WCAG 2.5.3): the visible "Add" opens the accessible name,
+  // which says which beer of a list it adds.
+  it("is a small outline Add named for its beer in a row of a list", async () => {
+    const { container } = render(
+      await AddToCellarButton({ locale: "en", isSignedIn: false, compact: true, ...props }),
+    );
+
+    const button = screen.getByRole("button", { name: "Add to cellar: Westvleteren 12" });
+    expect(button).toHaveTextContent(/^Add$/);
+    expect(button.className).not.toContain("bg-primary");
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("passes the compact form on to the dialog for a signed-in visitor", async () => {
+    render(await AddToCellarButton({ locale: "en", isSignedIn: true, compact: true, ...props }));
+
+    expect(screen.getByTestId("dialog")).toHaveAttribute("data-compact", "true");
   });
 });
