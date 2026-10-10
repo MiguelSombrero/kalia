@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-16
+- **Amended:** 2026-10-10 by [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) — `useCellarBottles` and its invalidations are gone with the per-entry read; the mutation hooks remain the example
 
 ## Context
 

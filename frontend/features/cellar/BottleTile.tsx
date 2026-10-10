@@ -23,7 +23,6 @@ export const BottleTile = ({
 }: {
   locale: Locale;
   bottle: Bottle;
-  /** The bottle's place among its beer's bottles, counting from 1. */
   number: number;
   beerName: string;
   owner: boolean;

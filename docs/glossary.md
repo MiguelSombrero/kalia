@@ -96,7 +96,6 @@ read of a cellar its owner has made public. Reads `catalog` (beer existence),
 | `Entry` | The **aggregate root**: one row per `(user, catalog beer)`, owning the individual `Bottle`s beneath it. A pure grouping, not something a user keeps — it is deleted when its last bottle is removed, so no reader ever sees a zero-quantity entry. `quantity()` is `COUNT(*)` over its bottles, never stored. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
 | `Bottle` | One **physical container** a user owns, with its own brewed and best-before dates and a `ContainerType`. A non-root entity: written only through its `Entry`, no repository of its own. May be a can or a keg — "bottle" here is the general word for the owned unit, not the container kind. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
 | `ContainerType` | The kind of container a `Bottle` is: `BOTTLE`, `CAN` or `KEG`. `BOTTLE` is one value of this enum; a `Bottle` whose `ContainerType` is `CAN` is still a `Bottle`. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) |
-| `EntrySummary` | A read-model projection: one `Entry` with its derived `quantity`, for a list that must not load every bottle just to count them. | [architecture.md §4](architecture.md#4-api-design) |
 | `EntryRepository` | Persistence for the `Entry` aggregate. Every lookup is keyed on an already-resolved owner id, so another user's entry and a missing one are indistinguishable. | [ADR-0050](adr/0050-public-cellar-addressing.md) |
 | `InvalidBottleException` | A domain exception for bottle data that cannot be accepted: a future brewed date, a best-before date not after the brewed date, a non-positive add quantity. | [ADR-0014](adr/0014-shared-exception-handling.md) |
 
@@ -143,8 +142,7 @@ and they drift from the Java names that produced them.
 |---|---|
 | `/cellar` (singular) | The **caller's own** cellar — the user is implied by the bearer token ([ADR-0028](adr/0028-resource-server-and-current-user.md)). |
 | `/cellars/{username}` (plural) | **Someone's** cellar, addressed by name; the one cellar route a signed-out caller may reach, and only when its owner has made it public ([ADR-0050](adr/0050-public-cellar-addressing.md)). |
-| `/cellar/entries/{entryId}/bottles` | One entry's bottles. Elsewhere a bottle is addressed by its own id, never nested under its entry. |
-| `/cellar/bottles`, `/cellar/bottles/{id}` | Add / update / remove a bottle. `POST` answers with an array — it creates `quantity` independently editable rows, never a stored count. |
+| `/cellar/bottles`, `/cellar/bottles/{id}` | Add / update / remove a bottle, addressed by its own id, never nested under its entry. `POST` answers with an array — it creates `quantity` independently editable rows, never a stored count. |
 | `/profile/visibility` | Change whether the caller's cellar is public. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
 

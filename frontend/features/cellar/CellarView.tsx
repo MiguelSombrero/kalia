@@ -9,7 +9,6 @@ import type { CellarBeer } from "./types";
 
 const EMPTY_STEPS = ["cellar.empty.step1", "cellar.empty.step2", "cellar.empty.step3"] as const;
 
-/** The signed-in owner's own cellar. */
 export const CellarView = async ({
   locale,
   beers,

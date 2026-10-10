@@ -28,7 +28,6 @@ import { useAddBottle } from "./hooks/useBottles";
 const fieldClasses =
   "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
-/** How the dialog's trigger looks where it is placed. */
 export type AddBottleTrigger = "default" | "compact" | "tile";
 
 const triggerClasses: Record<AddBottleTrigger, string> = {

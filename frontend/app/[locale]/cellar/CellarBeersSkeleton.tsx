@@ -1,7 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { beerBlock, bottleTiles, cellarTools } from "@/features/cellar";
 
-/** The sort control and two beers of tiles, shared by both cellar skeletons. */
 export const CellarBeersSkeleton = ({ withFindBeers }: { withFindBeers: boolean }) => (
   <>
     <div className={cellarTools}>

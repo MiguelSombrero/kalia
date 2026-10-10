@@ -10,7 +10,6 @@ export const defaultCellarSort: CellarSort = "name";
 export const toCellarSort = (value: string | null | undefined): CellarSort =>
   cellarSorts.find((sort) => sort === value) ?? defaultCellarSort;
 
-/** Date-only ISO strings, earliest first, a missing date last. */
 const compareDates = (a?: string, b?: string): number => {
   if (a === b) return 0;
   if (!a) return 1;

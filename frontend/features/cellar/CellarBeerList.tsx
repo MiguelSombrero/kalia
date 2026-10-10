@@ -21,8 +21,8 @@ const fieldClasses = "w-full rounded-control border border-border bg-surface px-
 
 /**
  * The beers of one cellar, owner's or public, in the order the URL's `sort`
- * names. Sorting rewrites the URL in place rather than navigating, so the
- * list reorders without a server round trip and focus stays on the control.
+ * names. Do not swap the in-place URL rewrite for a navigation: that refetches
+ * the cellar from the server and drops focus from the control (ADR-0070).
  */
 export const CellarBeerList = ({
   locale,

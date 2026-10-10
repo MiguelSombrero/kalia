@@ -111,10 +111,10 @@ two-layer rule they sit in is
 
 | Token | Means | Reach for it when |
 |---|---|---|
-| `--color-background` | The page itself — the ground every surface sits on. | Only the document body uses it; a component that wants to sit "on the page" leaves its background unset rather than repeating this. |
+| `--color-background` | The page itself — the ground every surface sits on. | Only the document body uses it as a fill; a component that wants to sit "on the page" leaves its background unset rather than repeating this. As text it is the paper showing through an ink tag. |
 | `--color-surface` | A plane that holds one thing: a card, a dialog, a toast, a form field. | Content or an input needs to read as its own object. It shares the page's colour, so an edge in `--color-border` is what makes it one. |
 | `--color-surface-sunken` | A well: a quieter plane set into a surface or the page. | Hovering an outline control, or grouping rows inside a card. Never for an object that should stand out. |
-| `--color-foreground` | Primary text, and anything that must read at full strength. | Body copy, headings, values. Also the dialog scrim, at reduced opacity. |
+| `--color-foreground` | Primary text, and anything that must read at full strength. | Body copy, headings, values. Also the dialog scrim, at reduced opacity, and the fill of an ink tag: a flag a reader must not miss, such as a bottle past its best-before. Never a second action colour. |
 | `--color-muted-foreground` | Secondary text: supporting, never essential to the task. | Labels, metadata, helper text, empty-state explanations — text a reader may skip. |
 | `--color-border` | An object's edge, drawn in ink. | Every card, dialog, toast, field, badge and button outline: the hairline that makes a white plane read as a thing on a white page. Strong enough for WCAG's 3:1 for a control's boundary. |
 | `--color-divider` | A quiet rule between lines of one list, and the fill of something not there yet. | Separating rows inside a surface, and the blocks of a loading skeleton. Never an object's edge — that is `--color-border`. |
@@ -211,6 +211,7 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-primary-foreground` | `--color-primary` | text |
 | `--color-accent-foreground` | `--color-accent` | text |
 | `--color-foreground` | `--color-accent` | text |
+| `--color-background` | `--color-foreground` | text |
 | `--color-muted-foreground` | `--color-accent` | text |
 | `--color-success-foreground` | `--color-success` | text |
 | `--color-destructive-foreground` | `--color-destructive` | text |

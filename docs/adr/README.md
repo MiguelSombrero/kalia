@@ -151,6 +151,9 @@ decides the URL built on it.
 - [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)
   — the catalog is one column of ruled rows beside a filter column that folds
   on a phone under one Search button; a beer's page is its band and linked facts.
+- [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
+  — the cellar is a sortable list of beers beside their style band, every
+  bottle a tile headed by its vintage; the owner's read carries all bottles.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a

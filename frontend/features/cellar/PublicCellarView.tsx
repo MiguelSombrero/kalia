@@ -8,10 +8,7 @@ import { CellarCounts } from "./CellarCounts";
 import { cellarHead, cellarTitle } from "./layout";
 import type { CellarBeer } from "./types";
 
-/**
- * A public cellar: the owner's page without its controls (ADR-0070). A stranger
- * also gets a word on what Kalia is, since this is the page shared outwards.
- */
+/** A public cellar: the owner's page without its controls (ADR-0070). */
 export const PublicCellarView = async ({
   locale,
   username,
