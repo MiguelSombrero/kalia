@@ -24,6 +24,12 @@ describe("getTranslation", () => {
     expect(t("catalog.resultCount", { count: 5 })).toBe("5 beers");
   });
 
+  it("interpolates a value as written, leaving escaping to React", async () => {
+    const { t } = await getTranslation("en");
+
+    expect(t("cellar.add.tileFor", { beer: "Konrad's Stout" })).toBe("Add bottle: Konrad's Stout");
+  });
+
   it("pluralizes Finnish partitive forms", async () => {
     const { t } = await getTranslation("fi");
 

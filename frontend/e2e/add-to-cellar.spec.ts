@@ -90,12 +90,16 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   });
   await expect(bottleList).toBeVisible();
 
-  await bottleList.getByRole("button", { name: /^Edit Bottle/ }).first().click();
+  const editedTile = bottleList.getByRole("listitem").filter({ has: page.getByRole("button", { name: /^Edit Bottle/ }) }).first();
+  const editedName = await editedTile.getByRole("button", { name: /^Edit / }).getAttribute("aria-label");
+  await editedTile.getByRole("button", { name: /^Edit / }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByLabel("Container").selectOption("CAN");
   await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
-  await expect(bottleList.getByText(/^Can \d+$/).first()).toBeVisible();
+  // The edit renames its tile's trigger ("Edit Bottle 1 …" becomes "Edit Can N …"),
+  // so the old name disappearing proves this bottle changed, not some earlier CAN.
+  await expect(bottleList.getByRole("button", { name: editedName!, exact: true })).toHaveCount(0);
 
   const beforeRemove = await bottleCount(page, listBeer);
   await expect(bottleList).toBeVisible();

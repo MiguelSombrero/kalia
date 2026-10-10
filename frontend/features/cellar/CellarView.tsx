@@ -19,7 +19,6 @@ export const CellarView = async ({
   /** Null when the profile could not be read: the visibility line is left out. */
   visibility: { username: string; cellarPublic: boolean } | null;
 }) => {
-  const cellarPublic = visibility?.cellarPublic;
   const { t } = await getTranslation(locale);
 
   return (
@@ -30,14 +29,14 @@ export const CellarView = async ({
         {visibility && (
           <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-muted-foreground">
             <span className="font-semibold text-foreground">
-              {cellarPublic ? t("cellar.visibility.public") : t("cellar.visibility.private")}
+              {visibility.cellarPublic ? t("cellar.visibility.public") : t("cellar.visibility.private")}
             </span>
-            <span>{cellarPublic ? t("cellar.visibility.publicLine") : t("cellar.visibility.privateLine")}</span>
+            <span>{visibility.cellarPublic ? t("cellar.visibility.publicLine") : t("cellar.visibility.privateLine")}</span>
             <Link
               href={visibility.cellarPublic ? `/cellars/${visibility.username}` : `/${locale}/profile`}
               className="inline-block py-0.5 text-foreground underline underline-offset-2"
             >
-              {cellarPublic ? t("cellar.visibility.view") : t("cellar.visibility.change")}
+              {visibility.cellarPublic ? t("cellar.visibility.view") : t("cellar.visibility.change")}
             </Link>
           </p>
         )}

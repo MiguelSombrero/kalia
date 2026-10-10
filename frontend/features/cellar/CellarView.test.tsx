@@ -16,6 +16,7 @@ vi.mock("./bottleDateRules", async (importOriginal) => ({
 }));
 
 import { CellarView } from "./CellarView";
+import { useBottleRemovalStore } from "./store";
 import type { CellarBeer } from "./types";
 
 const westvleteren: CellarBeer = {
@@ -47,6 +48,18 @@ describe("CellarView", () => {
     // One bottle is past; the one on its best-before day is not counted.
     expect(screen.getByText('cellar.pastBestBefore {"count":1}')).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("counts only the bottles still shown while a removal is in flight", async () => {
+    useBottleRemovalStore.setState({ removing: [{ bottleId: "w1", entryId: "e1" }], outcome: null });
+    try {
+      await renderView([westvleteren], { username: "ada", cellarPublic: true });
+
+      expect(screen.getByText(/cellar\.count\.beers \{"count":1\}/)).toHaveTextContent('cellar.entry.bottleCount {"count":1}');
+      expect(screen.queryByText(/cellar\.pastBestBefore/)).not.toBeInTheDocument();
+    } finally {
+      useBottleRemovalStore.setState({ removing: [], outcome: null });
+    }
   });
 
   it("says a public cellar is public and links to the share URL", async () => {
