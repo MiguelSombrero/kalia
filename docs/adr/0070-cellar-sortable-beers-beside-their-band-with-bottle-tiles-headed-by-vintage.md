@@ -102,6 +102,14 @@ list.
   to fill it, and offers *Browse the catalog* as its one primary action. The
   sign-in prompt offers *Sign in* and *Create an account*.
 
+- **Where the built page departs from the mockup, by agreement.** The product
+  owner signed the built page off against D at both widths on 2026-10-10,
+  accepting three differences. The band is the shared band of ADR-0065 at
+  its own proportions, a little shorter than the mockup's. In Finnish, Edit
+  and Remove stack even on a desktop, because *MUOKKAA* and *POISTA* do not
+  fit side by side in a tile; the buttons wrap only when their labels do not
+  fit. The bottle's age and the past tag arrive just after the rest of the
+  tile, once the page knows the visitor's day.
 - **Audit findings on these surfaces.** These are fixed:
   - AUD-28 and AUD-35: a phone row gives the name the whole width beside the
     strip, with the bottles below it.
