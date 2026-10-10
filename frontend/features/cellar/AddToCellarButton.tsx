@@ -21,7 +21,7 @@ export const AddToCellarButton = async ({
   const { t } = await getTranslation(locale);
 
   if (isSignedIn) {
-    return <AddBottleDialog beerId={beerId} beerName={beerName} compact={compact} />;
+    return <AddBottleDialog beerId={beerId} beerName={beerName} trigger={compact ? "compact" : "default"} />;
   }
 
   return (

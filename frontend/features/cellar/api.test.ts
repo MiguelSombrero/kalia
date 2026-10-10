@@ -3,13 +3,12 @@ import {
   getPublicCellar,
   heldBottlesByBeer,
   heldBottlesByBeerOrNone,
-  listCellarBottles,
   listCellarEntries,
   removeCellarBottle,
   resolvePublicCellarBeers,
   updateCellarBottle,
 } from "./api";
-import type { CellarBeerRow, PublicCellar } from "./types";
+import type { Bottle, CellarBeer, PublicCellar } from "./types";
 
 const beerId = "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f";
 const secondBeerId = "6a0b1b4f-2a3c-5d4e-9f5a-6b7c8d9e0f10";
@@ -38,8 +37,7 @@ const beerDetails = {
   brewery: { ...beerSummary.brewery, country: "Belgium", city: "Vleteren" },
 };
 
-const isEntriesUrl = (url: string) =>
-  url.includes("/api/v1/cellar") && !url.includes("/bottles");
+const isEntriesUrl = (url: string) => url.includes("/api/v1/cellar");
 const isBatchUrl = (url: string) => url.includes("/api/v1/beers/batch");
 
 const makeBeerId = (i: number) => `00000000-0000-4000-8000-${i.toString().padStart(12, "0")}`;
@@ -52,6 +50,15 @@ const makeBeerSummary = (i: number) => ({
   brewery: { id: "br", name: "Brewery" },
 });
 
+const bottle = (id: string, overrides: Partial<Bottle> = {}): Bottle => ({
+  id,
+  entryId,
+  containerType: "BOTTLE",
+  createdAt: "2026-01-01",
+  updatedAt: "2026-01-01",
+  ...overrides,
+});
+
 const makeEntries = (count: number) =>
   Array.from({ length: count }, (_, i) => ({
     id: `entry-${i}`,
@@ -59,6 +66,7 @@ const makeEntries = (count: number) =>
     quantity: 1,
     createdAt: "2026-01-01",
     updatedAt: "2026-01-01",
+    bottles: [bottle(`bottle-${i}`)],
   }));
 
 const entry = (overrides: Record<string, unknown> = {}) => ({
@@ -67,6 +75,7 @@ const entry = (overrides: Record<string, unknown> = {}) => ({
   quantity: 1,
   createdAt: "2026-01-01",
   updatedAt: "2026-01-01",
+  bottles: [bottle("bottle-1")],
   ...overrides,
 });
 
@@ -141,13 +150,16 @@ describe("heldBottlesByBeer", () => {
 });
 
 describe("listCellarEntries", () => {
-  it("merges each entry with its catalog beer, sorted by beer name", async () => {
+  it("merges each entry with its catalog beer, its bottles in vintage order", async () => {
+    const undated = bottle("undated");
+    const recent = bottle("recent", { brewedDate: "2025-05-14" });
+    const oldest = bottle("oldest", { brewedDate: "2021-10-04" });
     stubCellarFetch({
-      entries: [entry({ quantity: 2 })],
+      entries: [entry({ quantity: 3, bottles: [undated, recent, oldest] })],
       batch: () => [beerSummary],
     });
 
-    const expected: CellarBeerRow[] = [
+    const expected: CellarBeer[] = [
       {
         entryId,
         beerId,
@@ -155,7 +167,7 @@ describe("listCellarEntries", () => {
         breweryName: "Brouwerij Westvleteren",
         style: "Quadrupel",
         abv: 10.2,
-        bottleCount: 2,
+        bottles: [oldest, recent, undated],
       },
     ];
     await expect(listCellarEntries()).resolves.toEqual(expected);
@@ -175,7 +187,7 @@ describe("listCellarEntries", () => {
   });
 
   it("drops an entry whose last bottle has already been removed", async () => {
-    stubCellarFetch({ entries: [entry({ quantity: 0 })], batch: () => [beerSummary] });
+    stubCellarFetch({ entries: [entry({ quantity: 0, bottles: [] })], batch: () => [beerSummary] });
 
     await expect(listCellarEntries()).resolves.toEqual([]);
   });
@@ -316,50 +328,6 @@ describe("resolvePublicCellarBeers", () => {
     stubFetch(() => 404);
 
     await expect(resolvePublicCellarBeers(cellar)).resolves.toEqual([]);
-  });
-});
-
-describe("listCellarBottles", () => {
-  it("sorts bottles by brewed date, oldest first, with unknown dates last", async () => {
-    stubFetch(() => [
-      {
-        id: "bottle-recent",
-        entryId,
-        containerType: "BOTTLE",
-        brewedDate: "2024-01-01",
-        createdAt: "2026-01-01",
-        updatedAt: "2026-01-01",
-      },
-      {
-        id: "bottle-no-date",
-        entryId,
-        containerType: "KEG",
-        createdAt: "2026-01-01",
-        updatedAt: "2026-01-01",
-      },
-      {
-        id: "bottle-oldest",
-        entryId,
-        containerType: "BOTTLE",
-        brewedDate: "2020-01-01",
-        createdAt: "2026-01-01",
-        updatedAt: "2026-01-01",
-      },
-    ]);
-
-    const result = await listCellarBottles(entryId);
-
-    expect(result.map((bottle) => bottle.id)).toEqual([
-      "bottle-oldest",
-      "bottle-recent",
-      "bottle-no-date",
-    ]);
-  });
-
-  it("throws when the bottles lookup fails", async () => {
-    stubFetch(() => 500);
-
-    await expect(listCellarBottles(entryId)).rejects.toThrow("status 500");
   });
 });
 

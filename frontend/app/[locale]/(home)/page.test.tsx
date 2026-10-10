@@ -56,7 +56,13 @@ const cellarRow = (beerId: string, bottleCount: number) => ({
   breweryName: "Brewery",
   style: "IPA",
   abv: 6,
-  bottleCount,
+  bottles: Array.from({ length: bottleCount }, (_, index) => ({
+    id: `${beerId}-${index}`,
+    entryId: `entry-${beerId}`,
+    containerType: "BOTTLE",
+    createdAt: "2026-01-01",
+    updatedAt: "2026-01-01",
+  })),
 });
 
 const signInAs = (username: string, cellarPublic: boolean) => {

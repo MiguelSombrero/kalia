@@ -22,7 +22,18 @@ import type { Bottle } from "./types";
 const fieldClasses =
   "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
-export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerName: string }) => {
+export const EditBottleDialog = ({
+  bottle,
+  beerName,
+  triggerClassName,
+  triggerLabel,
+}: {
+  bottle: Bottle;
+  beerName: string;
+  triggerClassName: string;
+  /** Names which bottle, since every tile's trigger reads just "Edit". */
+  triggerLabel: string;
+}) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const updateBottle = useUpdateBottle();
@@ -74,7 +85,7 @@ export const EditBottleDialog = ({ bottle, beerName }: { bottle: Bottle; beerNam
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger className={buttonVariants("outline")}>
+      <DialogTrigger className={triggerClassName} aria-label={triggerLabel}>
         <svg
           aria-hidden="true"
           viewBox="0 0 20 20"

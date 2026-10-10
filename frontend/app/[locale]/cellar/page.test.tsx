@@ -7,6 +7,10 @@ vi.mock("@/features/cellar/api", () => ({
   listCellarEntries: vi.fn(async () => []),
 }));
 
+const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
+vi.mock("@/features/profile", () => ({ getProfile }));
+
+import type { ReactElement } from "react";
 import { listCellarEntries } from "@/features/cellar";
 import CellarPage, { generateMetadata } from "./page";
 
@@ -21,10 +25,33 @@ describe("CellarPage", () => {
 
   it("fetches the cellar when signed in", async () => {
     auth.mockResolvedValue({ user: { name: "Ada Lovelace" } });
+    getProfile.mockResolvedValue({ username: "ada", cellarPublic: false });
 
     await CellarPage({ params: Promise.resolve({ locale: "en" }) });
 
     expect(listCellarEntries).toHaveBeenCalledOnce();
+  });
+
+  it("hands the cellar the owner's visibility from their profile", async () => {
+    auth.mockResolvedValue({ user: { name: "Ada Lovelace" } });
+    getProfile.mockResolvedValue({ username: "ada", cellarPublic: true });
+
+    const page = (await CellarPage({ params: Promise.resolve({ locale: "en" }) })) as ReactElement<{
+      children: ReactElement<{ visibility: unknown }>;
+    }>;
+
+    expect(page.props.children.props.visibility).toEqual({ username: "ada", cellarPublic: true });
+  });
+
+  it("still renders the cellar, without its visibility, when the profile cannot be read", async () => {
+    auth.mockResolvedValue({ user: { name: "Ada Lovelace" } });
+    getProfile.mockRejectedValue(new Error("profile down"));
+
+    const page = (await CellarPage({ params: Promise.resolve({ locale: "en" }) })) as ReactElement<{
+      children: ReactElement<{ visibility: unknown }>;
+    }>;
+
+    expect(page.props.children.props.visibility).toBeNull();
   });
 
   it("does not fetch the cellar when signed out", async () => {

@@ -161,7 +161,11 @@
     "loading": "Loading your cellar…",
     "empty": {
       "title": "Your cellar is empty.",
-      "hint": "Beers you add to your cellar will show up here."
+      "hint": "Find a beer in the catalog and add the bottles you own. Kalia keeps track of how old each one is.",
+      "step1": "Find a beer in the catalog",
+      "step2": "Add your bottles, with dates if you know them",
+      "step3": "See which bottle to open first",
+      "action": "Browse the catalog"
     },
     "signIn": {
       "title": "Sign in to see your cellar",
@@ -176,18 +180,17 @@
       "empty": {
         "title": "This cellar is empty.",
         "hint": "There are no beers in this cellar yet."
-      }
+      },
+      "lastAdded": "Last added {{date}}",
+      "about": "Kalia keeps track of the beers people own and how old each bottle is.",
+      "browse": "Browse the catalog"
     },
     "entry": {
       "bottleCount_one": "{{count}} bottle",
       "bottleCount_other": "{{count}} bottles"
     },
     "bottle": {
-      "loading": "Loading bottles…",
-      "error": "Could not load bottles. Please try again.",
       "list": "Bottles of {{beer}}",
-      "brewed": "brewed {{relative}}",
-      "bestBefore": "best before {{relative}}",
       "container": {
         "BOTTLE": "Bottle",
         "CAN": "Can",
@@ -206,7 +209,16 @@
         "toast": "Bottle removed.",
         "toastLastBottle": "Bottle removed. That beer is no longer in your cellar.",
         "error": "Could not remove the bottle. Please try again."
-      }
+      },
+      "number": "{{container}} {{number}}",
+      "vintage": "Vintage",
+      "vintageUnknown": "Vintage unknown",
+      "brewedLabel": "Brewed",
+      "bestBeforeOn": "Best before {{date}}",
+      "noDates": "No dates entered",
+      "pastBestBefore": "Past best before",
+      "editFor": "Edit {{bottle}} of {{beer}}",
+      "removeFor": "Remove {{bottle}} of {{beer}}"
     },
     "add": {
       "action": "Add to cellar",
@@ -226,7 +238,9 @@
         "failed": "Could not add to your cellar. Please try again."
       },
       "actionShort": "Add",
-      "actionFor": "Add to cellar: {{beer}}"
+      "actionFor": "Add to cellar: {{beer}}",
+      "tile": "Add bottle",
+      "tileFor": "Add bottle: {{beer}}"
     },
     "edit": {
       "action": "Edit",
@@ -241,6 +255,29 @@
       "error": {
         "failed": "Could not save changes. Please try again."
       }
+    },
+    "count": {
+      "beers_one": "{{count}} beer",
+      "beers_other": "{{count}} beers"
+    },
+    "pastBestBefore_one": "{{count}} past best before",
+    "pastBestBefore_other": "{{count}} past best before",
+    "findBeers": "Find beers",
+    "visibility": {
+      "public": "Public",
+      "publicLine": "Anyone with the link can see it.",
+      "view": "View your public cellar",
+      "private": "Private",
+      "privateLine": "Only you can see it.",
+      "change": "Change on your profile"
+    },
+    "sort": {
+      "label": "Sort by",
+      "name": "Name",
+      "style": "Style",
+      "abv": "Strength",
+      "bottles": "Bottles",
+      "bestBefore": "Best before"
     }
   },
   "profile": {

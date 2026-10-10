@@ -1,12 +1,13 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export type BadgeVariant = "neutral" | "accent" | "style";
+export type BadgeVariant = "neutral" | "accent" | "style" | "ink";
 
 const variantClasses: Record<BadgeVariant, string> = {
   neutral: "bg-surface text-foreground",
   accent: "bg-accent text-accent-foreground",
   style: "bg-style text-style-foreground",
+  ink: "border-foreground bg-foreground text-background",
 };
 
 export const badgeVariants = (variant: BadgeVariant = "neutral"): string => {

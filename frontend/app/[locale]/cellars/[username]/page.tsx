@@ -42,11 +42,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 const PublicCellarPage = async ({ params }: Props) => {
   const { locale: rawLocale, username } = await params;
   const locale = toLocale(rawLocale);
-  const [cellar, session, { t }] = await Promise.all([
-    getPublicCellar(username),
-    auth(),
-    getTranslation(locale),
-  ]);
+  const [cellar, session] = await Promise.all([getPublicCellar(username), auth()]);
 
   if (!cellar) {
     notFound();
@@ -61,11 +57,8 @@ const PublicCellarPage = async ({ params }: Props) => {
   const isOwner = viewerProfile?.username === cellar.username;
 
   return (
-    <Page>
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-        {t("cellar.public.heading", { username: cellar.username })}
-      </h1>
-      <PublicCellarView locale={locale} beers={beers} isOwner={isOwner} />
+    <Page width="wide">
+      <PublicCellarView locale={locale} username={cellar.username} beers={beers} isOwner={isOwner} />
     </Page>
   );
 };

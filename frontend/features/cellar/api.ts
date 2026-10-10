@@ -4,22 +4,15 @@ import { getBeer, getBeersByIds } from "@/lib/api/generated/catalog/catalog";
 import type { BeerSummaryDto } from "@/lib/api/generated/models";
 import {
   addBottles as generatedAddBottles,
-  listBottles as generatedListBottles,
   listEntries as generatedListEntries,
   removeBottle as generatedRemoveBottle,
   updateBottle as generatedUpdateBottle,
 } from "@/lib/api/generated/cellar/cellar";
 import { read as generatedReadPublicCellar } from "@/lib/api/generated/public-cellar/public-cellar";
-import type {
-  AddBottlesRequest,
-  Bottle,
-  CellarBeerRow,
-  PublicCellar,
-  PublicCellarBeer,
-  UpdateBottleRequest,
-} from "./types";
+import { inVintageOrder } from "./cellarOrder";
+import type { AddBottlesRequest, Bottle, CellarBeer, PublicCellar, UpdateBottleRequest } from "./types";
 
-export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
+export const listCellarEntries = async (): Promise<CellarBeer[]> => {
   const response = await generatedListEntries();
   // Narrowed on `response.status` itself (a status literal per branch), not a
   // derived variable — that's what lets TS discriminate `response.data`.
@@ -34,7 +27,7 @@ export const listCellarEntries = async (): Promise<CellarBeerRow[]> => {
     .map((entry) => toRow(entry, beersById.get(entry.beerId)))
     // A left join can hand back an entry every one of whose bottles has
     // since been removed — nothing to show for it.
-    .filter((row): row is CellarBeerRow => row !== null && row.bottleCount > 0)
+    .filter((row): row is CellarBeer => row !== null && row.bottles.length > 0)
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
 
@@ -96,9 +89,9 @@ const fetchBeerChunk = async (ids: string[]): Promise<BeerSummaryDto[]> => {
 };
 
 const toRow = (
-  entry: { id: string; beerId: string; quantity: number },
+  entry: { id: string; beerId: string; bottles: Bottle[] },
   beer: BeerSummaryDto | undefined,
-): CellarBeerRow | null => {
+): CellarBeer | null => {
   if (!beer) {
     return null;
   }
@@ -109,7 +102,7 @@ const toRow = (
     breweryName: beer.brewery.name,
     style: beer.style,
     abv: beer.abv,
-    bottleCount: entry.quantity,
+    bottles: inVintageOrder(entry.bottles),
   };
 };
 
@@ -132,16 +125,16 @@ export const getPublicCellar = async (username: string): Promise<PublicCellar | 
 
 export const resolvePublicCellarBeers = async (
   cellar: PublicCellar,
-): Promise<PublicCellarBeer[]> => {
+): Promise<CellarBeer[]> => {
   const rows = await Promise.all(cellar.entries.map(toPublicCellarBeer));
   return rows
-    .filter((row): row is PublicCellarBeer => row !== null && row.bottles.length > 0)
+    .filter((row): row is CellarBeer => row !== null && row.bottles.length > 0)
     .sort((a, b) => a.beerName.localeCompare(b.beerName));
 };
 
 const toPublicCellarBeer = async (
   entry: PublicCellar["entries"][number],
-): Promise<PublicCellarBeer | null> => {
+): Promise<CellarBeer | null> => {
   const beerResponse = await getBeer(entry.beerId);
   // Widened via Number() for the same reason as toRow above: the generated
   // getBeer type documents only a 200 branch.
@@ -164,20 +157,8 @@ const toPublicCellarBeer = async (
     breweryName: beer.brewery.name,
     style: beer.style,
     abv: beer.abv,
-    bottles: [...entry.bottles].sort((a, b) => compareBrewedDate(a.brewedDate, b.brewedDate)),
+    bottles: inVintageOrder(entry.bottles),
   };
-};
-
-export const listCellarBottles = async (entryId: string): Promise<Bottle[]> => {
-  const response = await generatedListBottles(entryId);
-  if (response.status !== 200) {
-    throw apiError(
-      "http",
-      `Bottle lookup for cellar entry ${entryId} failed with status ${response.status}`,
-      { status: response.status },
-    );
-  }
-  return [...response.data].sort((a, b) => compareBrewedDate(a.brewedDate, b.brewedDate));
 };
 
 export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bottle[]> => {
@@ -210,11 +191,4 @@ export const removeCellarBottle = async (id: string): Promise<void> => {
       status: response.status,
     });
   }
-};
-
-const compareBrewedDate = (a?: string, b?: string): number => {
-  if (!a && !b) return 0;
-  if (!a) return 1;
-  if (!b) return -1;
-  return a < b ? -1 : a > b ? 1 : 0;
 };

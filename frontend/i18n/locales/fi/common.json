@@ -161,7 +161,11 @@
     "loading": "Ladataan kellaria…",
     "empty": {
       "title": "Kellarisi on tyhjä.",
-      "hint": "Kellariin lisäämäsi oluet näkyvät täällä."
+      "hint": "Etsi olut luettelosta ja lisää omistamasi pullot. Kalia pitää kirjaa siitä, kuinka vanha kukin pullo on.",
+      "step1": "Etsi olut luettelosta",
+      "step2": "Lisää pullosi ja niiden päivämäärät, jos tiedät ne",
+      "step3": "Näe, mikä pullo kannattaa avata ensin",
+      "action": "Selaa oluita"
     },
     "signIn": {
       "title": "Kirjaudu sisään nähdäksesi kellarisi",
@@ -176,18 +180,17 @@
       "empty": {
         "title": "Tämä kellari on tyhjä.",
         "hint": "Tässä kellarissa ei ole vielä oluita."
-      }
+      },
+      "lastAdded": "Viimeksi lisätty {{date}}",
+      "about": "Kaliassa pidetään kirjaa omistetuista oluista ja siitä, kuinka vanha kukin pullo on.",
+      "browse": "Selaa oluita"
     },
     "entry": {
       "bottleCount_one": "{{count}} pullo",
       "bottleCount_other": "{{count}} pulloa"
     },
     "bottle": {
-      "loading": "Ladataan pulloja…",
-      "error": "Pullojen lataus epäonnistui. Yritä uudelleen.",
       "list": "Oluen {{beer}} pullot",
-      "brewed": "valmistettu {{relative}}",
-      "bestBefore": "parasta ennen {{relative}}",
       "container": {
         "BOTTLE": "Pullo",
         "CAN": "Tölkki",
@@ -206,7 +209,16 @@
         "toast": "Pullo poistettu.",
         "toastLastBottle": "Pullo poistettu. Olut ei ole enää kellarissasi.",
         "error": "Pullon poisto epäonnistui. Yritä uudelleen."
-      }
+      },
+      "number": "{{container}} {{number}}",
+      "vintage": "Vuosikerta",
+      "vintageUnknown": "Vuosikerta ei tiedossa",
+      "brewedLabel": "Panopäivä",
+      "bestBeforeOn": "Parasta ennen {{date}}",
+      "noDates": "Ei päivämääriä",
+      "pastBestBefore": "Yli parasta ennen",
+      "editFor": "Muokkaa: {{beer}}, {{bottle}}",
+      "removeFor": "Poista: {{beer}}, {{bottle}}"
     },
     "add": {
       "action": "Lisää kellariin",
@@ -226,7 +238,9 @@
         "failed": "Kellariin lisääminen epäonnistui. Yritä uudelleen."
       },
       "actionShort": "Lisää",
-      "actionFor": "Lisää kellariin: {{beer}}"
+      "actionFor": "Lisää kellariin: {{beer}}",
+      "tile": "Lisää pullo",
+      "tileFor": "Lisää pullo: {{beer}}"
     },
     "edit": {
       "action": "Muokkaa",
@@ -241,6 +255,29 @@
       "error": {
         "failed": "Muutosten tallennus epäonnistui. Yritä uudelleen."
       }
+    },
+    "count": {
+      "beers_one": "{{count}} olut",
+      "beers_other": "{{count}} olutta"
+    },
+    "pastBestBefore_one": "{{count}} yli parasta ennen",
+    "pastBestBefore_other": "{{count}} yli parasta ennen",
+    "findBeers": "Etsi oluita",
+    "visibility": {
+      "public": "Julkinen",
+      "publicLine": "Kuka tahansa linkin saanut näkee sen.",
+      "view": "Näytä julkinen kellarisi",
+      "private": "Yksityinen",
+      "privateLine": "Vain sinä näet sen.",
+      "change": "Muuta profiilissa"
+    },
+    "sort": {
+      "label": "Järjestä",
+      "name": "Nimi",
+      "style": "Tyyli",
+      "abv": "Vahvuus",
+      "bottles": "Pullot",
+      "bestBefore": "Parasta ennen"
     }
   },
   "profile": {

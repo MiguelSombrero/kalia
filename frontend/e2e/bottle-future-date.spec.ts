@@ -52,10 +52,9 @@ test("a bottle brewed on the local today is accepted while the UTC calendar date
   // Clean up: the shared per-worker account (keycloakAccount.ts) would
   // otherwise keep this bottle around indefinitely.
   await page.goto("/en/cellar");
-  await page.getByRole("button", { name: beerNamePattern }).click();
   const bottleList = page.getByRole("list", { name: new RegExp(`Bottles of ${beerNamePattern.source}`) });
   await expect(bottleList).toBeVisible();
-  await bottleList.getByRole("button", { name: "Remove" }).last().click();
+  await bottleList.getByRole("button", { name: /^Remove / }).last().click();
   await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 });

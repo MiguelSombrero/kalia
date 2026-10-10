@@ -22,12 +22,12 @@ const bottleCount = async (page: Page, beerName: string): Promise<number> => {
     page.getByRole("banner").getByRole("button", { name: "Sign out" }),
     "landed on the cellar page signed out",
   ).toBeVisible();
-  const row = page.getByRole("button", { name: new RegExp(escapeRegExp(beerName)) });
-  if ((await row.count()) === 0) {
+  const beer = page.getByRole("region", { name: beerName, exact: true });
+  if ((await beer.count()) === 0) {
     return 0;
   }
-  const label = (await row.first().textContent()) ?? "";
-  return Number(/(\d+)\s+bottles?/.exec(label)?.[1] ?? 0);
+  const label = (await beer.getByText(/^\d+ bottles?$/).textContent()) ?? "";
+  return Number(/(\d+)/.exec(label)?.[1] ?? 0);
 };
 
 // A full document reload would reset this, so reading it back afterwards is
@@ -85,24 +85,21 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   // Edit one of the bottles just added, then remove another — continuing
   // the same signed-in session rather than a separate spec.
   await page.goto("/en/cellar");
-  await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
   const bottleList = page.getByRole("list", {
     name: new RegExp(`Bottles of ${escapeRegExp(listBeer)}`),
   });
   await expect(bottleList).toBeVisible();
 
-  await bottleList.getByRole("button", { name: "Edit" }).first().click();
+  await bottleList.getByRole("button", { name: /^Edit Bottle/ }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByLabel("Container").selectOption("CAN");
   await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
-  await expect(bottleList.getByText("Can")).toBeVisible();
+  await expect(bottleList.getByText(/^Can \d+$/).first()).toBeVisible();
 
-  // bottleCount() navigates to /en/cellar itself, collapsing the row again.
   const beforeRemove = await bottleCount(page, listBeer);
-  await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
   await expect(bottleList).toBeVisible();
-  await bottleList.getByRole("button", { name: "Remove" }).first().click();
+  await bottleList.getByRole("button", { name: /^Remove / }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
@@ -119,9 +116,8 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   // A confirmed removal must survive navigating away and a hard reload:
   // nothing about it is left pending after the dialog closes.
   const beforeSecondRemove = await bottleCount(page, listBeer);
-  await page.getByRole("button", { name: new RegExp(escapeRegExp(listBeer)) }).click();
   await expect(bottleList).toBeVisible();
-  await bottleList.getByRole("button", { name: "Remove" }).first().click();
+  await bottleList.getByRole("button", { name: /^Remove / }).first().click();
   await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
 
@@ -135,6 +131,30 @@ test("signs in, adds bottles from the list and the detail page, and sees both in
   expect(await bottleCount(page, listBeer), "bottle reappeared after a hard reload").toBe(
     beforeSecondRemove - 1,
   );
+});
+
+test("adds another bottle of a beer already held from that beer's Add bottle tile in the cellar", async ({
+  page,
+  account,
+}) => {
+  await page.goto("/en/beers");
+  await signIn(page, account);
+  await page.goto("/en/beers");
+  const card = page.getByRole("listitem").nth(CATALOG_CARD.addFromList);
+  const beer = (await card.getByRole("heading").textContent())!.trim();
+  if ((await bottleCount(page, beer)) === 0) {
+    await page.goto("/en/beers");
+    await card.getByRole("button", { name: "Add to cellar" }).click();
+    await addBottles(page, 1);
+  }
+  const before = await bottleCount(page, beer);
+
+  await page.getByRole("button", { name: `Add bottle: ${beer}` }).click();
+  await expect(page.getByRole("dialog", { name: "Add to cellar" })).toBeVisible();
+  await addBottles(page, 1);
+
+  await expect(page.getByRole("region", { name: beer, exact: true }).getByText(`${before + 1} bottles`)).toBeVisible();
+  expect(await bottleCount(page, beer)).toBe(before + 1);
 });
 
 test("the open add-to-cellar dialog has no accessibility violations", async ({ page, account }) => {

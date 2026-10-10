@@ -40,7 +40,12 @@ const renderDialog = (locale: Locale = "en", initialBottle: Bottle = bottle) => 
   const tree = (forBottle: Bottle) => (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <EditBottleDialog bottle={forBottle} beerName="Westvleteren 12" />
+        <EditBottleDialog
+          bottle={forBottle}
+          beerName="Westvleteren 12"
+          triggerClassName="tile-action"
+          triggerLabel={locale === "en" ? "Edit Bottle 1 of Westvleteren 12" : "Muokkaa: Westvleteren 12, Pullo 1"}
+        />
       </I18nextProvider>
     </QueryClientProvider>
   );
@@ -54,7 +59,9 @@ const renderDialog = (locale: Locale = "en", initialBottle: Bottle = bottle) => 
 
 const openDialog = async (locale: Locale = "en") => {
   const rendered = renderDialog(locale);
-  const trigger = screen.getByRole("button", { name: locale === "en" ? "Edit" : "Muokkaa" });
+  const trigger = screen.getByRole("button", {
+    name: locale === "en" ? "Edit Bottle 1 of Westvleteren 12" : "Muokkaa: Westvleteren 12, Pullo 1",
+  });
   fireEvent.click(trigger);
   await screen.findByRole("dialog");
   return { ...rendered, trigger };
@@ -84,7 +91,7 @@ describe("EditBottleDialog", () => {
 
   it("reflects the latest bottle values on reopen, not the ones from first mount", async () => {
     const { rerenderWithBottle } = renderDialog();
-    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit Bottle 1 of Westvleteren 12" }));
     await screen.findByRole("dialog");
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
@@ -94,7 +101,7 @@ describe("EditBottleDialog", () => {
     // props, not a remount.
     rerenderWithBottle({ ...bottle, containerType: "CAN", brewedDate: "2024-06-01" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit Bottle 1 of Westvleteren 12" }));
     await screen.findByRole("dialog");
 
     expect(screen.getByLabelText("Container")).toHaveValue("CAN");

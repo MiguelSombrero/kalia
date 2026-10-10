@@ -41,6 +41,9 @@ const expectContained = async (row: Locator) => {
   const escaping = await row.evaluate((element) => {
     const bounds = element.getBoundingClientRect();
     return [...element.querySelectorAll<HTMLElement>("*")]
+      // sr-only text is clipped to a 1px box on purpose, so it always "overflows";
+      // an element hidden at this width has no box at all and sits at 0,0.
+      .filter((child) => !child.classList.contains("sr-only") && child.getClientRects().length > 0)
       .filter((child) => {
         const box = child.getBoundingClientRect();
         const overflowsItself = child.scrollWidth > child.clientWidth + 1 && getComputedStyle(child).display !== "inline";
@@ -173,12 +176,11 @@ for (const viewport of VIEWPORTS) {
       await test.step("a populated cellar", async () => {
         await page.goto("/en/cellar");
         await expectRendered(page, "My cellar");
-        const row = page.getByRole("button", { name: new RegExp(escapeRegExp(beerName)) });
-        await expect(row).toBeVisible();
-        await expectContained(row);
-        await row.click();
-        await expect(page.getByRole("button", { name: "Edit" }).first()).toBeVisible();
-        await expect(page.getByRole("button", { name: "Remove" }).first()).toBeVisible();
+        const beer = page.getByRole("region", { name: beerName, exact: true });
+        await expect(beer).toBeVisible();
+        await expectContained(beer);
+        await expect(beer.getByRole("button", { name: /^Edit / }).first()).toBeVisible();
+        await expect(beer.getByRole("button", { name: /^Remove / }).first()).toBeVisible();
       });
 
       await setCellarVisibility(page, "Anyone with the link");
@@ -209,9 +211,7 @@ for (const viewport of VIEWPORTS) {
           const strangerPage = await stranger.newPage();
           await strangerPage.goto(`/en/cellars/${account.username}`);
           await expectRendered(strangerPage, `${account.username}'s cellar`);
-          await expect(
-            strangerPage.getByRole("button", { name: new RegExp(escapeRegExp(beerName)) }),
-          ).toBeVisible();
+          await expect(strangerPage.getByRole("heading", { level: 2, name: beerName })).toBeVisible();
         } finally {
           await stranger.close();
         }

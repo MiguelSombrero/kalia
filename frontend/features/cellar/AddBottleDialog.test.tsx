@@ -11,7 +11,7 @@ import { getOptions, type Locale } from "@/i18n/settings";
 const { addBottlesAction } = vi.hoisted(() => ({ addBottlesAction: vi.fn() }));
 vi.mock("./actions", () => ({ addBottlesAction, listCellarBottlesAction: vi.fn() }));
 
-import { AddBottleDialog } from "./AddBottleDialog";
+import { AddBottleDialog, type AddBottleTrigger } from "./AddBottleDialog";
 
 const created = [
   {
@@ -23,7 +23,7 @@ const created = [
   },
 ];
 
-const renderDialog = (locale: Locale = "en") => {
+const renderDialog = (locale: Locale = "en", trigger?: AddBottleTrigger) => {
   const i18n = createInstance();
   i18n.use(initReactI18next).init({
     ...getOptions(locale),
@@ -36,7 +36,7 @@ const renderDialog = (locale: Locale = "en") => {
   return render(
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <AddBottleDialog beerId="beer-1" beerName="Westvleteren 12" />
+        <AddBottleDialog beerId="beer-1" beerName="Westvleteren 12" trigger={trigger} />
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -218,5 +218,18 @@ describe("AddBottleDialog", () => {
 
     expect(quantityField()).toHaveAttribute("aria-invalid", "true");
     expect(await axe(document.body)).toHaveNoViolations();
+  });
+
+  it.each([
+    ["en", "Add bottle: Westvleteren 12", "Add bottle"],
+    ["fi", "Lisää pullo: Westvleteren 12", "Lisää pullo"],
+  ] as const)("opens from a cellar's Add bottle tile, named for its beer (%s)", async (locale, name, visible) => {
+    const { container } = renderDialog(locale, "tile");
+
+    const trigger = screen.getByRole("button", { name });
+    expect(trigger).toHaveTextContent(visible);
+    fireEvent.click(trigger);
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
