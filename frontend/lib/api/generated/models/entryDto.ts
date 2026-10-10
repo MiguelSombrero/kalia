@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { BottleDto } from './bottleDto';
 
 /**
  * A cellar entry: one catalog beer the caller owns bottles of
@@ -15,4 +16,5 @@ export interface EntryDto {
   quantity: number;
   createdAt: string;
   updatedAt: string;
+  bottles: BottleDto[];
 }

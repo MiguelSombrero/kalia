@@ -414,7 +414,7 @@ export const getListEntriesUrl = () => {
 }
 
 /**
- * Every entry the caller owns, each with its derived quantity. Not paginated.
+ * Every entry the caller owns, each with its bottles and derived quantity. Not paginated.
  * @summary List the caller's cellar
  */
 export const listEntries = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<listEntriesResponse> => {
@@ -495,131 +495,6 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListEntriesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type listBottlesResponse200 = {
-  data: BottleDto[]
-  status: 200
-}
-
-export type listBottlesResponse401 = {
-  data: void
-  status: 401
-}
-
-export type listBottlesResponse404 = {
-  data: ProblemDetail
-  status: 404
-}
-
-export type listBottlesResponseSuccess = (listBottlesResponse200) & {
-  headers: Headers;
-};
-export type listBottlesResponseError = (listBottlesResponse401 | listBottlesResponse404) & {
-  headers: Headers;
-};
-
-export type listBottlesResponse = (listBottlesResponseSuccess | listBottlesResponseError)
-
-export const getListBottlesUrl = (entryId: string,) => {
-
-
-
-
-  return `/api/v1/cellar/entries/${entryId}/bottles`
-}
-
-/**
- * 404 when the entry does not exist or belongs to someone else.
- * @summary List one entry's bottles
- */
-export const listBottles = async (entryId: string, options?: Parameters<typeof kaliaFetch>[1]): Promise<listBottlesResponse> => {
-
-  return kaliaFetch<listBottlesResponse>(getListBottlesUrl(entryId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListBottlesQueryKey = (entryId: string,) => {
-    return [
-    `/api/v1/cellar/entries/${entryId}/bottles`
-    ] as const;
-    }
-
-
-export const getListBottlesQueryOptions = <TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListBottlesQueryKey(entryId);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBottles>>> = ({ signal }) => listBottles(entryId, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: entryId !== null && entryId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListBottlesQueryResult = NonNullable<Awaited<ReturnType<typeof listBottles>>>
-export type ListBottlesQueryError = void | ProblemDetail
-
-
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
- entryId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listBottles>>,
-          TError,
-          Awaited<ReturnType<typeof listBottles>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
- entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listBottles>>,
-          TError,
-          Awaited<ReturnType<typeof listBottles>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
- entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List one entry's bottles
- */
-
-export function useListBottles<TData = Awaited<ReturnType<typeof listBottles>>, TError = void | ProblemDetail>(
- entryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBottles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListBottlesQueryOptions(entryId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

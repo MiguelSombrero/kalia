@@ -38,8 +38,6 @@ class OpenApiSecuritySchemeIT {
 		String body = apiDocs();
 
 		assertThat(securitySchemeNames(body, "$.paths['/api/v1/cellar'].get.security")).contains("oauth2");
-		assertThat(securitySchemeNames(body, "$.paths['/api/v1/cellar/entries/{entryId}/bottles'].get.security"))
-				.contains("oauth2");
 		assertThat(securitySchemeNames(body, "$.paths['/api/v1/cellar/bottles'].post.security")).contains("oauth2");
 		assertThat(securitySchemeNames(body, "$.paths['/api/v1/cellar/bottles/{id}'].patch.security"))
 				.contains("oauth2");

@@ -2,7 +2,6 @@ package fi.kalia.cellar.web;
 
 import fi.kalia.cellar.application.BeerNotFoundException;
 import fi.kalia.cellar.application.BottleNotFoundException;
-import fi.kalia.cellar.application.EntryNotFoundException;
 import fi.kalia.cellar.application.PublicCellarNotFoundException;
 import fi.kalia.cellar.domain.InvalidBottleException;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "fi.kalia.cellar.web")
 class CellarExceptionHandler {
 
-	@ExceptionHandler({BeerNotFoundException.class, EntryNotFoundException.class, BottleNotFoundException.class,
+	@ExceptionHandler({BeerNotFoundException.class, BottleNotFoundException.class,
 			PublicCellarNotFoundException.class})
 	ProblemDetail notFound(RuntimeException e) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());

@@ -53,16 +53,9 @@ class CellarApiIT {
 	}
 
 	@Test
-	void aRequestCarryingUserAsTokenGets404NeverForbiddenForUserBsEntryOrBottle() {
+	void aRequestCarryingUserAsTokenGets404NeverForbiddenForUserBsBottle() {
 		String bottleJson = addBottle(USER_A, beerId, "BOTTLE", null, null);
-		UUID entryId = entryIdOf(bottleJson);
 		UUID bottleId = idOf(bottleJson);
-
-		client.get().uri("/api/v1/cellar/entries/{entryId}/bottles", entryId)
-				.header("Authorization", USER_B)
-				.exchange()
-				.expectStatus().isNotFound()
-				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 
 		client.method(HttpMethod.PATCH).uri("/api/v1/cellar/bottles/{id}", bottleId)
 				.header("Authorization", USER_B)
@@ -79,17 +72,29 @@ class CellarApiIT {
 				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 
 		// Still there — user B's rejected requests changed nothing.
-		client.get().uri("/api/v1/cellar/entries/{entryId}/bottles", entryId)
+		client.get().uri("/api/v1/cellar")
 				.header("Authorization", USER_A)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1));
+				.value(body -> assertThat((int) JsonPath.read(body, "$[0].bottles.length()")).isEqualTo(1));
 	}
 
 	@Test
-	void listsEntriesWithDerivedQuantityAndNoEmbeddedBottles() {
+	void theCellarListShowsOnlyTheCallersOwnEntries() {
 		addBottle(USER_A, beerId, "BOTTLE", null, null);
+
+		client.get().uri("/api/v1/cellar")
+				.header("Authorization", USER_B)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((int) JsonPath.read(body, "$.length()")).isZero());
+	}
+
+	@Test
+	void listsEntriesWithDerivedQuantityAndTheirBottles() {
+		String first = addBottle(USER_A, beerId, "BOTTLE", "2024-03-01", "2029-03-01");
 		addBottle(USER_A, beerId, "CAN", null, null);
 
 		client.get().uri("/api/v1/cellar")
@@ -101,7 +106,13 @@ class CellarApiIT {
 					assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1);
 					assertThat((String) JsonPath.read(body, "$[0].beerId")).isEqualTo(beerId.toString());
 					assertThat((int) JsonPath.read(body, "$[0].quantity")).isEqualTo(2);
-					assertThat(body).doesNotContain("\"bottles\"");
+					assertThat((List<String>) JsonPath.read(body, "$[0].bottles[*].containerType"))
+							.containsExactly("BOTTLE", "CAN");
+					assertThat((String) JsonPath.read(body, "$[0].bottles[0].id")).isEqualTo(idOf(first).toString());
+					assertThat((String) JsonPath.read(body, "$[0].bottles[0].entryId"))
+							.isEqualTo(entryIdOf(first).toString());
+					assertThat((String) JsonPath.read(body, "$[0].bottles[0].brewedDate")).isEqualTo("2024-03-01");
+					assertThat((String) JsonPath.read(body, "$[0].bottles[0].bestBeforeDate")).isEqualTo("2029-03-01");
 				});
 	}
 
@@ -149,23 +160,6 @@ class CellarApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> assertThat((String) JsonPath.read(body, "$.id")).isEqualTo(bottleId.toString()));
-	}
-
-	@Test
-	void listsOneEntrysBottles() {
-		String bottleJson = addBottle(USER_A, beerId, "KEG", null, null);
-		UUID entryId = entryIdOf(bottleJson);
-
-		client.get().uri("/api/v1/cellar/entries/{entryId}/bottles", entryId)
-				.header("Authorization", USER_A)
-				.exchange()
-				.expectStatus().isOk()
-				.expectBody(String.class)
-				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1);
-					assertThat((String) JsonPath.read(body, "$[0].containerType")).isEqualTo("KEG");
-					assertThat((String) JsonPath.read(body, "$[0].entryId")).isEqualTo(entryId.toString());
-				});
 	}
 
 	@Test

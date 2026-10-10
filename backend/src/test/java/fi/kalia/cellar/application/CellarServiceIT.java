@@ -16,7 +16,6 @@ import fi.kalia.cellar.domain.Bottle;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
-import fi.kalia.cellar.domain.EntrySummary;
 import fi.kalia.cellar.domain.InvalidBottleException;
 import jakarta.persistence.EntityManagerFactory;
 import java.time.Instant;
@@ -174,27 +173,29 @@ class CellarServiceIT {
 	}
 
 	@Test
-	void listEntriesReportsOnlyTheCallersEntriesWithTheirDerivedQuantity() {
+	void listEntriesReturnsOnlyTheCallersEntriesEachWithItsBottles() {
 		UUID owner = UUID.randomUUID();
 		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		service.addBottles(owner, beerId, 1, ContainerType.CAN, null, null);
 		service.addBottles(UUID.randomUUID(), beerId, 1, ContainerType.KEG, null, null);
+		testEntityManager.flush();
+		testEntityManager.clear();
 
-		List<EntrySummary> summaries = service.listEntries(owner);
+		List<Entry> cellar = service.listEntries(owner);
 
-		assertThat(summaries).hasSize(1);
-		assertThat(summaries.get(0).getQuantity()).isEqualTo(2);
+		assertThat(cellar).hasSize(1);
+		assertThat(cellar.getFirst().getBottles()).extracting(Bottle::getContainerType)
+				.containsExactly(ContainerType.BOTTLE, ContainerType.CAN);
 	}
 
+	// ADR-0034: an entry outlives no bottle, so one that slips through empty is
+	// a bug to hide from the owner's list, not a zero-quantity row to show.
 	@Test
-	void listBottlesReturnsAnEntrysBottles() {
+	void listEntriesLeavesOutAnEntryWithNoBottles() {
 		UUID owner = UUID.randomUUID();
-		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
-		Entry entry = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow();
+		entries.saveAndFlush(Entry.create(owner, beerId));
 
-		List<Bottle> result = service.listBottles(owner, entry.getId());
-
-		assertThat(result).hasSize(1);
+		assertThat(service.listEntries(owner)).isEmpty();
 	}
 
 	@Test
@@ -213,16 +214,6 @@ class CellarServiceIT {
 	@Test
 	void readPublicCellarIsEmptyForAnOwnerWithNoCellar() {
 		assertThat(service.readPublicCellar(UUID.randomUUID())).isEmpty();
-	}
-
-	@Test
-	void refusesToListBottlesOfAnEntryOwnedBySomeoneElse() {
-		UUID owner = UUID.randomUUID();
-		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
-		Entry entry = entries.findByUserIdAndBeerId(owner, beerId).orElseThrow();
-
-		assertThatThrownBy(() -> service.listBottles(UUID.randomUUID(), entry.getId()))
-				.isInstanceOf(EntryNotFoundException.class);
 	}
 
 	@Test

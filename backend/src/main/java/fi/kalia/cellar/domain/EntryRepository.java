@@ -12,11 +12,6 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 
 	Optional<Entry> findByUserIdAndBeerId(UUID userId, UUID beerId);
 
-	// Takes userId rather than checking existence first, so someone else's
-	// entry and a nonexistent one both read as "not found".
-	@EntityGraph(attributePaths = "bottles")
-	Optional<Entry> findByIdAndUserId(UUID id, UUID userId);
-
 	// Bottles eager-loaded: DTO mapping runs outside the service transaction
 	// (backend/README.md). Keyed on an already-resolved owner id — never relax
 	// to load-then-filter, which turns a 404 into a 200 (ADR-0050).
@@ -30,19 +25,5 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	// load-by-id plus an after-the-fact check.
 	@Query("select b.entry from Bottle b where b.id = :bottleId and b.entry.userId = :userId")
 	Optional<Entry> findByBottleIdAndUserId(@Param("bottleId") UUID bottleId, @Param("userId") UUID userId);
-
-	// Quantity is derived by counting bottles, never stored (architecture.md
-	// §3); grouping here keeps it one query instead of one per entry. Inner
-	// join, not left: an entry outlives no bottle (ADR-0034), so a zero here
-	// would be a bug to hide, not a row to show.
-	@Query("""
-			select e.id as id, e.beerId as beerId, count(b) as quantity,
-			       e.createdAt as createdAt, e.updatedAt as updatedAt
-			from Entry e join e.bottles b
-			where e.userId = :userId
-			group by e.id, e.beerId, e.createdAt, e.updatedAt
-			order by e.createdAt
-			""")
-	List<EntrySummary> findSummariesByUserId(@Param("userId") UUID userId);
 
 }
