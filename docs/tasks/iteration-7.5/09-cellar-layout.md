@@ -39,6 +39,19 @@ Includes the add-, edit- and remove-bottle dialogs, the removal-outcome toast,
 the sign-in prompt shown to a signed-out visitor, the empty cellar, and
 `CellarListSkeleton`/`PublicCellarSkeleton`.
 
+Added by the product owner during design, 2026-10-10, once the shape was
+chosen:
+
+- **Sorting a cellar** by beer name, style, strength, bottle count and
+  best-before, on both surfaces. The chosen order survives a reload and is
+  carried in the page's URL, so a shared public-cellar link can carry it too.
+- **Adding another bottle of a beer already in the cellar from the cellar
+  itself**, through the same add-bottle dialog the catalog opens.
+- **The owner's cellar read returns each entry's bottles**, the shape the
+  public cellar read already has, so every bottle is on the page without a
+  fetch per beer. The read that lists one entry's bottles then has no caller
+  and is removed.
+
 **Audit findings on these surfaces** ([the audit](audit.md), [DW-5](../iteration-7.5.md)): [AUD-28](audit.md), [AUD-29](audit.md), [AUD-30](audit.md), [AUD-31](audit.md), [AUD-32](audit.md), [AUD-33](audit.md), [AUD-34](audit.md), [AUD-35](audit.md), the cellars' share of [AUD-06](audit.md), [AUD-07](audit.md), [AUD-09](audit.md), [AUD-45](audit.md), [AUD-47](audit.md); keeps [AUD-49](audit.md), [AUD-53](audit.md), [AUD-54](audit.md), [AUD-55](audit.md). [AUD-30](audit.md), [AUD-31](audit.md), [AUD-32](audit.md), [AUD-33](audit.md), [AUD-34](audit.md) are product findings: the task records for each whether it is fixed or becomes a [backlog](../backlog.md) entry.
 
 ## Non-goals
@@ -51,10 +64,8 @@ the sign-in prompt shown to a signed-out visitor, the empty cellar, and
   [ADR-0049](../../adr/0049-profile-module-and-public-identity.md) and
   [ADR-0050](../../adr/0050-public-cellar-addressing.md), and the uniform 404
   is not this task's to soften.
-- Sorting or filtering a cellar *by the user* — controls a person uses to
-  reorder or narrow their cellar. If prototyping shows the cellar needs them,
-  that is a finding to record and schedule, not something to build under a
-  layout task. The cellar's *default* order is in scope (Constraints).
+- Filtering a cellar *by the user* — a control that narrows it. Sorting was a
+  non-goal too until the product owner moved it into Scope on 2026-10-10.
 - An in-cellar way to find and add a beer. A [backlog](../backlog.md) entry.
 
 ## Constraints
@@ -105,7 +116,9 @@ Decided with the product owner in refinement, 2026-10-01:
   ([ADR-0012](../../adr/0012-orval-api-client.md)) and the doc-sync that goes
   with it. *Which* order is the default is prototyped.
 - **Adding a bottle still happens from the catalog**, and the cellar —
-  especially an empty one — offers a clear route into it.
+  especially an empty one — offers a clear route into it. *Amended
+  2026-10-10:* a beer's first bottle still comes from the catalog; further
+  bottles of a beer already held may also be added from the cellar (Scope).
 - **The empty cellar is a new user's first run.** Sign-up ends signed in, and
   the first cellar a new person opens is empty
   ([iteration 6.5](../iteration-6.5.md) DW-3), so this task owns that moment
@@ -146,4 +159,13 @@ Decided with the product owner in refinement, 2026-10-01:
       `@axe-core/playwright` scans pass at both
 - [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the
       cellar surfaces are each fixed or carry a written decision not to fix them
+- [ ] The cellar sorts by name, style, strength, bottle count and best-before
+      on both surfaces, each order asserted by a frontend test, the chosen
+      order kept in the URL, and the control operable by keyboard alone
+- [ ] Another bottle of a beer already in the cellar can be added from the
+      cellar through the existing add-bottle dialog, covered by vitest and
+      Playwright
+- [ ] The owner's cellar read returns each entry's bottles and the
+      per-entry bottles read is gone, covered by backend tests, with the
+      regenerated API client committed
 - [ ] `make verify` is green
