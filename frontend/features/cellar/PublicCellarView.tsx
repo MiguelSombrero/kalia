@@ -1,50 +1,69 @@
 import Link from "next/link";
-import { cardVariants } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
+import { buttonVariants } from "@/components/ui/button";
+import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { cn } from "@/lib/cn";
-import { PublicBeerRow } from "./PublicBeerRow";
-import type { PublicCellarBeer } from "./types";
+import { CellarBeerList } from "./CellarBeerList";
+import { CellarCounts } from "./CellarCounts";
+import { cellarHead, cellarTitle } from "./layout";
+import type { CellarBeer } from "./types";
 
+/** A public cellar: the owner's page without its controls (ADR-0070). */
 export const PublicCellarView = async ({
   locale,
+  username,
   beers,
   isOwner,
 }: {
   locale: Locale;
-  beers: PublicCellarBeer[];
+  username: string;
+  beers: CellarBeer[];
   isOwner: boolean;
 }) => {
   const { t } = await getTranslation(locale);
+  const lastAdded = beers
+    .flatMap((beer) => beer.bottles.map((bottle) => bottle.createdAt))
+    .sort()
+    .at(-1);
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       {isOwner && (
-        <p className={cn(cardVariants, "p-4 text-sm text-muted-foreground")}>
-          {t("cellar.public.ownerBanner")}{" "}
-          <Link
-            href={`/${locale}/cellar`}
-            className="font-medium text-foreground underline underline-offset-2"
-          >
+        <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-surface border border-border px-4 py-3 text-foreground">
+          <span>{t("cellar.public.ownerBanner")}</span>
+          <Link href={`/${locale}/cellar`} className="inline-block py-0.5 font-medium underline underline-offset-2">
             {t("cellar.public.ownerBannerLink")}
           </Link>
         </p>
       )}
-
-      {beers.length === 0 ? (
-        <EmptyState title={t("cellar.public.empty.title")}>
-          {t("cellar.public.empty.hint")}
-        </EmptyState>
+      <div className="flex items-start gap-4">
+        <PersonSlot username={username} size="md" />
+        <div className={cellarHead}>
+          <h1 className={cellarTitle}>{t("cellar.public.heading", { username })}</h1>
+          {beers.length > 0 && <CellarCounts beers={beers} lastAdded={lastAdded} locale={locale} />}
+        </div>
+      </div>
+      {beers.length > 0 ? (
+        <CellarBeerList locale={locale} beers={beers} owner={false} />
       ) : (
-        <ul className="flex flex-col gap-3">
-          {beers.map((beer) => (
-            <li key={beer.entryId}>
-              <PublicBeerRow locale={locale} row={beer} />
-            </li>
-          ))}
-        </ul>
+        <section className="flex flex-col gap-2 border-t border-border pt-6">
+          <h2 className="text-2xl font-bold text-foreground">{t("cellar.public.empty.title")}</h2>
+          <p className="text-muted-foreground">{t("cellar.public.empty.hint")}</p>
+        </section>
       )}
-    </div>
+      {!isOwner && (
+        <section className="flex flex-col gap-3 border-t border-border pt-5">
+          <p className="font-semibold text-foreground">{t("cellar.public.about")}</p>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/${locale}/beers`} className={buttonVariants("outline")}>
+              {t("cellar.public.browse")}
+            </Link>
+            <Link href={`/${locale}/sign-up`} className={buttonVariants("outline")}>
+              {t("auth.signUp")}
+            </Link>
+          </div>
+        </section>
+      )}
+    </>
   );
 };

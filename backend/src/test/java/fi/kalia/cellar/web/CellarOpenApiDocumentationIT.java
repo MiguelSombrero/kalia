@@ -31,8 +31,6 @@ class CellarOpenApiDocumentationIT {
 
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar'].get.summary"))
 				.isEqualTo("List the caller's cellar");
-		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/entries/{entryId}/bottles'].get.summary"))
-				.isEqualTo("List one entry's bottles");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles'].post.summary"))
 				.isEqualTo("Add bottles");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].patch.summary"))
@@ -79,7 +77,8 @@ class CellarOpenApiDocumentationIT {
 		String body = apiDocs();
 
 		List<String> entryRequired = JsonPath.read(body, "$.components.schemas.EntryDto.required");
-		assertThat(entryRequired).containsExactlyInAnyOrder("id", "beerId", "quantity", "createdAt", "updatedAt");
+		assertThat(entryRequired)
+				.containsExactlyInAnyOrder("id", "beerId", "quantity", "createdAt", "updatedAt", "bottles");
 
 		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.BottleDto.required");
 		// springdoc does not infer "required" from Java non-nullability alone —
@@ -93,8 +92,6 @@ class CellarOpenApiDocumentationIT {
 		String body = apiDocs();
 
 		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar'].get.responses.200")).isNotNull();
-		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/entries/{entryId}/bottles'].get.responses.200"))
-				.isNotNull();
 		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles'].post.responses.201")).isNotNull();
 		assertThat((Object) JsonPath.read(body, "$.paths['/api/v1/cellar/bottles/{id}'].patch.responses.200"))
 				.isNotNull();

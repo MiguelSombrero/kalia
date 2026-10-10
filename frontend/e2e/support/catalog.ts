@@ -18,6 +18,8 @@ export const CATALOG_CARD = {
   frontPageFeed: 12,
   /** live-front-page.spec.ts — only needs its own addition to be findable. */
   liveFrontPage: 13,
+  /** cellar-layout.spec.ts — adds dated bottles, and removes them again. */
+  cellarLayout: 18,
 } as const;
 
 // bottle-future-date.spec.ts deliberately borrows `addFromList` rather than

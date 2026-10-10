@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./actions", () => ({ startCellarSignIn: vi.fn() }));
 vi.mock("./AddBottleDialog", () => ({
-  AddBottleDialog: ({ beerId, compact }: { beerId: string; compact?: boolean }) => (
-    <div data-testid="dialog" data-compact={String(Boolean(compact))}>
+  AddBottleDialog: ({ beerId, trigger }: { beerId: string; trigger?: string }) => (
+    <div data-testid="dialog" data-trigger={trigger}>
       {beerId}
     </div>
   ),
@@ -78,6 +78,6 @@ describe("AddToCellarButton", () => {
   it("passes the compact form on to the dialog for a signed-in visitor", async () => {
     render(await AddToCellarButton({ locale: "en", isSignedIn: true, compact: true, ...props }));
 
-    expect(screen.getByTestId("dialog")).toHaveAttribute("data-compact", "true");
+    expect(screen.getByTestId("dialog")).toHaveAttribute("data-trigger", "compact");
   });
 });

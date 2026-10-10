@@ -78,7 +78,7 @@ const Home = async ({ params }: Props) => {
             cellarPublic={viewerProfile.cellarPublic}
             counts={
               cellarRows && {
-                bottles: cellarRows.reduce((sum, row) => sum + row.bottleCount, 0),
+                bottles: cellarRows.reduce((sum, row) => sum + row.bottles.length, 0),
                 beers: cellarRows.length,
               }
             }

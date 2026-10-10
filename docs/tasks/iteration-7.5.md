@@ -42,7 +42,7 @@ restyling what is already there.
 | [06](iteration-7.5/06-page-shell.md) | The page shell every page sits in | done |
 | [07](iteration-7.5/07-front-page-layout.md) | Front page layout | done |
 | [08](iteration-7.5/08-catalog-layout.md) | Catalog layout | done |
-| [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | refined |
+| [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | done |
 | [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | refined |
 | [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | refined |
 | [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | refined |

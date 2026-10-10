@@ -252,8 +252,7 @@ GET    /api/v1/feed?size=&since=&before=            -> the most recent events, o
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
-GET    /api/v1/cellar                              -> the caller's entries, each with a derived quantity
-GET    /api/v1/cellar/entries/{entryId}/bottles     -> one entry's bottles
+GET    /api/v1/cellar                              -> the caller's entries, each with its bottles and a derived quantity
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
@@ -262,8 +261,9 @@ PATCH  /api/v1/profile/visibility                   -> change whether the caller
 ```
 
 The cellar's endpoints (iteration 5) are two-level, following the data model in
-[§3](#3-backend-modules): one entry per catalog beer under `/api/v1/cellar`, its
-bottles read separately per entry. `POST` answers with an array because it
+[§3](#3-backend-modules): one entry per catalog beer under `/api/v1/cellar`, each
+carrying its bottles, so the cellar page shows every bottle from one read
+([ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)). `POST` answers with an array because it
 creates `quantity` independently editable rows sharing one set of dates, never
 a stored count — the two-level model's whole point
 ([ADR-0006](adr/0006-cellar-first.md)). A bottle is addressed by its own id
@@ -413,9 +413,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
   shareable/navigational state in URL search params (catalog filters,
-  pagination), ephemeral UI state in feature-scoped Zustand stores. A
+  pagination, the cellar's sort), ephemeral UI state in feature-scoped Zustand stores. A
   component never calls `useQuery`/`useMutation` directly — always a
-  feature-owned hook wrapping it (`useCellarBottles`,
+  feature-owned hook wrapping it (`useAddBottle`,
   [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md)). Forms
   follow the same split — navigate → native GET form, mutate/validate →
   react-hook-form + Zod.
@@ -490,7 +490,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   ([ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
   Something only decorating a page is left out when its read fails: the
   catalog's cellar marker
-  ([ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
+  ([ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md))
+  and the cellar's visibility line
+  ([ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)).
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
   `:focus-visible` styling and a skip-to-content link. The non-native
   widgets — the add/edit-bottle and remove-confirmation modals, and the
@@ -780,6 +782,7 @@ the failure back to the agent without blocking
 | [ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md) | Every page sits in one sticky bar and one `Page` component, with a Menu button on a phone, so that header and pages share a frame | accepted | 2026-10-04 |
 | [ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md) | The front page is one column, a pitch or the visitor's cellar above a ruled feed, so that the feed starts on the first screen for both audiences | accepted | 2026-10-04 |
 | [ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md) | The catalog is one ruled column of beers beside a filter column that folds on a phone, with one Search button that always comes last | accepted | 2026-10-09 |
+| [ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) | The cellar is a sortable list of beers, each beside its style band with every bottle shown as a tile headed by its vintage | accepted | 2026-10-10 |
 
 ### Engineering process and documentation
 

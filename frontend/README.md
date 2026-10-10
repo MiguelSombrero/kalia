@@ -189,7 +189,7 @@ Why the rationale lives there and not here:
 
 - **Client-component data goes through TanStack Query** — `useQuery`/`useMutation`,
   never hand-rolled `fetch` + `useState` ([ADR-0008](../docs/adr/0008-tanstack-query.md)).
-  A component calls a feature-owned hook wrapping it (`useCellarBottles`),
+  A component calls a feature-owned hook wrapping it (`useAddBottle`),
   never `useQuery`/`useMutation` directly — the hook owns the query key and
   any `invalidateQueries` a sibling mutation needs against it
   ([ADR-0041](../docs/adr/0041-tanstack-query-feature-owned-hooks.md)).

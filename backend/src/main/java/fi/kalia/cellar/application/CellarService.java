@@ -5,7 +5,6 @@ import fi.kalia.cellar.domain.Bottle;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
-import fi.kalia.cellar.domain.EntrySummary;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -25,20 +24,14 @@ public class CellarService {
 
 	private final CatalogApi catalog;
 
-	public List<EntrySummary> listEntries(UUID userId) {
-		return entries.findSummariesByUserId(userId);
+	public List<Entry> listEntries(UUID userId) {
+		return entries.findWithBottlesByUserId(userId).stream().filter(entry -> !entry.isEmpty()).toList();
 	}
 
 	// The caller has already been resolved to a public cellar's owner id by
 	// profile (ADR-0050); this only loads it.
 	public List<Entry> readPublicCellar(UUID ownerId) {
 		return entries.findWithBottlesByUserId(ownerId);
-	}
-
-	public List<Bottle> listBottles(UUID userId, UUID entryId) {
-		Entry entry = entries.findByIdAndUserId(entryId, userId)
-				.orElseThrow(() -> new EntryNotFoundException(entryId));
-		return entry.getBottles();
 	}
 
 	// ADR-0057; each retry's own transaction is verified by ConcurrentAddBottleApiIT.

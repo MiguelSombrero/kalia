@@ -25,6 +25,13 @@ describe("Badge", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("renders the ink variant as white on ink, for a flag a reader must not miss", async () => {
+    const { container } = render(<Badge variant="ink">Past best before</Badge>);
+
+    expect(screen.getByText("Past best before").className).toContain("bg-foreground text-background");
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("defaults to the neutral variant", () => {
     render(<Badge>Quadrupel</Badge>);
 

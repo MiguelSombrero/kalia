@@ -12,6 +12,7 @@ describe("SignInPrompt", () => {
 
     expect(screen.getByText("Sign in to see your cellar")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/en/sign-up");
     expect(await axe(container)).toHaveNoViolations();
   });
 

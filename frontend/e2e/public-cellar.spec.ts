@@ -56,7 +56,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
     page.getByRole("heading", { level: 1, name: `${account.username}'s cellar` }),
   ).toBeVisible();
   await expect(page.getByText("This is how others see your cellar.")).toBeVisible();
-  await expect(page.getByRole("button", { name: new RegExp(beerName) })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: beerName })).toBeVisible();
   await expectNoA11yViolations(page);
 
   // A genuine sign-out — not a cleared cookie — then the locale-less share URL
@@ -69,7 +69,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
   await expect(
     page.getByRole("heading", { level: 1, name: `${account.username}'s cellar` }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: new RegExp(beerName) })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: beerName })).toBeVisible();
   await expect(page.getByText("This is how others see your cellar.")).toHaveCount(0);
   await expectNoA11yViolations(page);
 

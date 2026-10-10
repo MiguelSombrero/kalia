@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import {
   type AddBottleFormValues,
@@ -27,14 +28,22 @@ import { useAddBottle } from "./hooks/useBottles";
 const fieldClasses =
   "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
+export type AddBottleTrigger = "default" | "compact" | "tile";
+
+const triggerClasses: Record<AddBottleTrigger, string> = {
+  default: buttonVariants("primary"),
+  compact: buttonVariants("outline", "compact"),
+  tile: "flex min-h-32 w-full flex-col items-center justify-center gap-1.5 rounded-surface border border-dashed border-border text-label font-semibold uppercase text-foreground hover:bg-surface-sunken hover:text-primary",
+};
+
 export const AddBottleDialog = ({
   beerId,
   beerName,
-  compact = false,
+  trigger = "default",
 }: {
   beerId: string;
   beerName: string;
-  compact?: boolean;
+  trigger?: AddBottleTrigger;
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -84,10 +93,21 @@ export const AddBottleDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger
-        className={compact ? buttonVariants("outline", "compact") : buttonVariants("primary")}
-        aria-label={compact ? t("cellar.add.actionFor", { beer: beerName }) : undefined}
+        className={triggerClasses[trigger]}
+        aria-label={
+          trigger === "compact"
+            ? t("cellar.add.actionFor", { beer: beerName })
+            : trigger === "tile"
+              ? t("cellar.add.tileFor", { beer: beerName })
+              : undefined
+        }
       >
-        {compact ? t("cellar.add.actionShort") : t("cellar.add.action")}
+        {trigger === "tile" && <Icon name="plus" />}
+        {trigger === "compact"
+          ? t("cellar.add.actionShort")
+          : trigger === "tile"
+            ? t("cellar.add.tile")
+            : t("cellar.add.action")}
       </DialogTrigger>
       <DialogContent aria-describedby={`${ids}-description`}>
         <DialogTitle>{t("cellar.add.title")}</DialogTitle>

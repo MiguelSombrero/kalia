@@ -78,7 +78,7 @@ class CellarPersistenceIT {
 		entries.saveAndFlush(entry);
 		testEntityManager.clear();
 
-		Entry reloaded = entries.findByIdAndUserId(entry.getId(), userId).orElseThrow();
+		Entry reloaded = entries.findWithBottlesByUserId(userId).getFirst();
 		Bottle persisted = reloaded.getBottles().getFirst();
 		UUID bottleId = persisted.getId();
 		reloaded.removeBottle(persisted);
@@ -99,40 +99,20 @@ class CellarPersistenceIT {
 	}
 
 	@Test
-	void findByIdAndUserIdFindsNothingForAnotherUsersEntry() {
-		UUID owner = UUID.randomUUID();
-		Entry entry = entries.saveAndFlush(Entry.create(owner, UUID.randomUUID()));
-
-		assertThat(entries.findByIdAndUserId(entry.getId(), owner)).isPresent();
-		assertThat(entries.findByIdAndUserId(entry.getId(), UUID.randomUUID())).isEmpty();
-	}
-
-	@Test
-	void findSummariesByUserIdReportsDerivedQuantityWithoutLoadingBottles() {
+	void findWithBottlesByUserIdReturnsOnlyThatUsersEntriesWithBottlesLoaded() {
 		UUID userId = UUID.randomUUID();
-		Entry withTwoBottles = entries.save(Entry.create(userId, UUID.randomUUID()));
-		withTwoBottles.addBottles(2, ContainerType.BOTTLE, null, null);
-		entries.saveAndFlush(withTwoBottles);
-		entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID())); // another user
+		Entry mine = entries.save(Entry.create(userId, UUID.randomUUID()));
+		mine.addBottles(2, ContainerType.BOTTLE, null, null);
+		entries.saveAndFlush(mine);
+		Entry theirs = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		theirs.addBottles(1, ContainerType.CAN, null, null);
+		entries.saveAndFlush(theirs);
+		testEntityManager.clear();
 
-		List<EntrySummary> summaries = entries.findSummariesByUserId(userId);
+		List<Entry> found = entries.findWithBottlesByUserId(userId);
 
-		assertThat(summaries).hasSize(1);
-		assertThat(summaries.getFirst().getId()).isEqualTo(withTwoBottles.getId());
-		assertThat(summaries.getFirst().getQuantity()).isEqualTo(2L);
-	}
-
-	// ADR-0034: an entry with no bottles is not a zero-quantity row to show —
-	// it should not exist. Even if one slips in, the summary query's inner
-	// join keeps it out of every reader.
-	@Test
-	void findSummariesByUserIdOmitsAnEntryThatHasNoBottles() {
-		UUID userId = UUID.randomUUID();
-		Entry empty = entries.saveAndFlush(Entry.create(userId, UUID.randomUUID()));
-
-		List<EntrySummary> summaries = entries.findSummariesByUserId(userId);
-
-		assertThat(summaries).noneMatch(s -> s.getId().equals(empty.getId()));
+		assertThat(found).extracting(Entry::getId).containsExactly(mine.getId());
+		assertThat(found.getFirst().getBottles()).hasSize(2);
 	}
 
 	@Test
@@ -148,7 +128,7 @@ class CellarPersistenceIT {
 		entries.saveAndFlush(other);
 		testEntityManager.clear();
 
-		List<Bottle> bottles = entries.findByIdAndUserId(entry.getId(), userId).orElseThrow().getBottles();
+		List<Bottle> bottles = entries.findWithBottlesByUserId(userId).getFirst().getBottles();
 
 		assertThat(bottles).extracting(Bottle::getContainerType)
 				.containsExactly(ContainerType.BOTTLE, ContainerType.CAN);

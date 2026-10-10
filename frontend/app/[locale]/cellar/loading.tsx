@@ -6,7 +6,7 @@ const CellarLoading = async () => {
   const locale = await resolveLocaleFromHeaders();
 
   return (
-    <Page>
+    <Page width="wide">
       <CellarListSkeleton locale={locale} />
     </Page>
   );

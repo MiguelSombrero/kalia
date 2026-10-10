@@ -1,4 +1,4 @@
-import type { PublicCellarBottleDto } from "@/lib/api/generated/models";
+import type { BottleDto } from "@/lib/api/generated/models";
 
 // Re-exports of orval-generated types (ADR-0012) under this feature's names.
 export type {
@@ -15,28 +15,17 @@ export type {
 // container types gets them from here rather than retyping the list.
 export { BottleDtoContainerType as containerTypeValues } from "@/lib/api/generated/models";
 
-/** One cellar entry merged with the catalog beer it points at. */
-export type CellarBeerRow = {
-  entryId: string;
-  beerId: string;
-  beerName: string;
-  breweryName: string;
-  style: string;
-  abv: number;
-  bottleCount: number;
-};
-
 /**
- * One public-cellar entry merged with the catalog beer it points at. Carries
- * the bottles inline — the public read returns them with the entry, unlike the
- * owner's cellar where a row lazy-loads its bottles on expand.
+ * One cellar entry merged with the catalog beer it points at, with its
+ * bottles in vintage order. The owner's cellar and a public cellar share it.
  */
-export type PublicCellarBeer = {
+export type CellarBeer = {
   entryId: string;
   beerId: string;
   beerName: string;
   breweryName: string;
   style: string;
   abv: number;
-  bottles: PublicCellarBottleDto[];
+  /** A public cellar's bottles are its own DTO, field-for-field alike (ADR-0050). */
+  bottles: BottleDto[];
 };

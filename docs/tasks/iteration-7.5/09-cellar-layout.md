@@ -1,6 +1,6 @@
 # Task 09: Cellar layout
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -135,37 +135,37 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives for the cellar's basic
+- [x] The product owner chose from built alternatives for the cellar's basic
       shape, looked at with both a small cellar and a large one
-- [ ] Both surfaces ship, with their shared components changed once rather than
+- [x] Both surfaces ship, with their shared components changed once rather than
       diverging, and the public cellar's design decision — variant or its own
       page — is visible in the code rather than implied
-- [ ] A cellar that is not public is still indistinguishable from a username
+- [x] A cellar that is not public is still indistinguishable from a username
       that does not exist, covered by the existing test that pins it
-- [ ] Add, edit and remove still work from every place they are offered, still
+- [x] Add, edit and remove still work from every place they are offered, still
       behind their Radix primitives, covered by the existing vitest and
       Playwright suites updated rather than deleted
-- [ ] `CellarListSkeleton` and `PublicCellarSkeleton` match the layouts that
+- [x] `CellarListSkeleton` and `PublicCellarSkeleton` match the layouts that
       ship, with their colocated tests asserting the new shapes
-- [ ] Empty cellar, empty public cellar, and the signed-out sign-in prompt each
+- [x] Empty cellar, empty public cellar, and the signed-out sign-in prompt each
       render deliberately, covered by tests, and the empty cellar links into
       the catalog
-- [ ] A bottle past its best-before is visibly marked and one on its
+- [x] A bottle past its best-before is visibly marked and one on its
       best-before day is not, judged on the user's local day, covered by a
       test that pins the boundary
-- [ ] If the default order changed, it is asserted by a frontend test, and any
+- [x] If the default order changed, it is asserted by a frontend test, and any
       backend change behind it by backend tests of its own
-- [ ] Both surfaces work at both agreed widths and the
+- [x] Both surfaces work at both agreed widths and the
       `@axe-core/playwright` scans pass at both
-- [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the
+- [x] The findings [task 02](02-design-audit-baseline.md) recorded on the
       cellar surfaces are each fixed or carry a written decision not to fix them
-- [ ] The cellar sorts by name, style, strength, bottle count and best-before
+- [x] The cellar sorts by name, style, strength, bottle count and best-before
       on both surfaces, each order asserted by a frontend test, the chosen
       order kept in the URL, and the control operable by keyboard alone
-- [ ] Another bottle of a beer already in the cellar can be added from the
+- [x] Another bottle of a beer already in the cellar can be added from the
       cellar through the existing add-bottle dialog, covered by vitest and
       Playwright
-- [ ] The owner's cellar read returns each entry's bottles and the
+- [x] The owner's cellar read returns each entry's bottles and the
       per-entry bottles read is gone, covered by backend tests, with the
       regenerated API client committed
-- [ ] `make verify` is green
+- [x] `make verify` is green

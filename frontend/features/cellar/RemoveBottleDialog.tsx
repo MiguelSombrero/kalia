@@ -20,11 +20,16 @@ export const RemoveBottleDialog = ({
   entryId,
   beerName,
   lastBottle,
+  triggerClassName,
+  triggerLabel,
 }: {
   bottle: Bottle;
   entryId: string;
   beerName: string;
   lastBottle: boolean;
+  triggerClassName: string;
+  /** Names which bottle, since every tile's trigger reads just "Remove". */
+  triggerLabel: string;
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -40,17 +45,17 @@ export const RemoveBottleDialog = ({
     // A plain promise chain, not `mutate`'s own onSuccess/onError options:
     // those are dropped if this component unmounts before the request
     // settles, which `startRemoving` above makes happen immediately (it
-    // hides this row, and BottleList stops rendering it). The chain here
+    // hides this bottle, so its tile unmounts). The chain here
     // runs regardless, since it isn't tied to this component's lifecycle.
     removeBottle
-      .mutateAsync({ id: bottle.id, entryId })
+      .mutateAsync({ id: bottle.id })
       .then(() => finishRemoving(removal, { lastBottle }))
       .catch(() => finishRemoving(removal, { failed: true }));
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className={buttonVariants("outline")}>
+      <DialogTrigger className={triggerClassName} aria-label={triggerLabel}>
         <svg
           aria-hidden="true"
           viewBox="0 0 20 20"

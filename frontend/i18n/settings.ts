@@ -17,4 +17,7 @@ export const getOptions = (locale: Locale = defaultLocale, namespace: string = d
   lng: locale,
   ns: namespace,
   defaultNS: defaultNamespace,
+  // React escapes what it renders; i18next escaping on top turns "Konrad's
+  // Stout" into "Konrad&#39;s Stout" in text and aria-labels alike.
+  interpolation: { escapeValue: false },
 });

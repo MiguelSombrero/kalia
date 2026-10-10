@@ -49,20 +49,9 @@ class CellarController {
 	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "List the caller's cellar",
-			description = "Every entry the caller owns, each with its derived quantity. Not paginated.")
+			description = "Every entry the caller owns, each with its bottles and derived quantity. Not paginated.")
 	List<EntryDto> listEntries() {
 		return cellar.listEntries(identity.requireCurrentUserId()).stream().map(EntryDto::from).toList();
-	}
-
-	@GetMapping("/entries/{entryId}/bottles")
-	@ResponseStatus(HttpStatus.OK)
-	@Operation(summary = "List one entry's bottles",
-			description = "404 when the entry does not exist or belongs to someone else.")
-	@ApiResponse(responseCode = "404", description = "The entry does not exist or belongs to someone else",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-					schema = @Schema(implementation = ProblemDetail.class)))
-	List<BottleDto> listBottles(@Parameter(description = "Entry id") @PathVariable UUID entryId) {
-		return cellar.listBottles(identity.requireCurrentUserId(), entryId).stream().map(BottleDto::from).toList();
 	}
 
 	@PostMapping("/bottles")
