@@ -102,6 +102,31 @@ list.
   to fill it, and offers *Browse the catalog* as its one primary action. The
   sign-in prompt offers *Sign in* and *Create an account*.
 
+- **Audit findings on these surfaces.** These are fixed:
+  - AUD-28 and AUD-35: a phone row gives the name the whole width beside the
+    strip, with the bottles below it.
+  - AUD-29: every tile is numbered, and headed by its vintage when one is
+    known.
+  - AUD-30: the empty cellar has its steps and *Browse the catalog*, and a
+    filled one has *Find beers*.
+  - AUD-31: a beer's name links to its page, and the counts line gives the
+    totals.
+  - AUD-32: the visibility line, with its link.
+  - AUD-33: *Create an account* sits beside *Sign in*.
+  - AUD-34: a stranger sees whose cellar it is, its counts, when a bottle was
+    last added, and a word on what Kalia is.
+  - The cellars' share of AUD-06, AUD-07 and AUD-47. Nothing in either cellar
+    is under 24px; the title uses the display scale and each beer an `h2`; the
+    skeletons draw the head, the sort control and two beers of tiles.
+  - The cellars' share of AUD-09. A beer is a ruled section, not a box. A
+    bottle is the one outlined object, and a dashed outline means adding one.
+    Only the owner's banner keeps a plain outline.
+
+  The cellars' share of AUD-45 needed nothing here: a cellar that is not
+  public renders the shared not-found page, and the uniform 404 holds.
+  AUD-49, AUD-53, AUD-54 and AUD-55 are kept. The tile's buttons are 40px tall
+  with a label and an icon.
+
 ## Alternatives considered
 
 **A, "Ledger".** The catalog's ruled row, with the bottle count as the button
@@ -170,3 +195,20 @@ Measured at 375px in Finnish, half a tile was about 78px wide, and the icon
 plus *MUOKKAA* in tracked capitals needed about 95px, so *POISTA* overflowed
 the tile. The real layout would have broken the same way. Stacking the two
 buttons on a phone, as in B2 and D, keeps every label inside its tile.
+
+The built page was measured in Chromium against the compose stack, signed in
+as the seeded test account (five beers, eighteen bottles):
+
+- **375×812, Finnish:** the first tile begins at 458px. Tiles are 157px wide,
+  and Edit and Remove stack at 155×40px each. Nothing scrolls sideways, and no
+  control in the page is under 24px.
+- **1280×800, Finnish:** the first tile begins at 439px. Tiles are 183px
+  wide. *MUOKKAA* and *POISTA* do not fit side by side there, so they stack at
+  181×40px each.
+- **1280×800, English:** *Edit* and *Remove* fit side by side, as in the
+  mockup. The buttons wrap only when their labels do not fit.
+
+`e2e/cellar-layout.spec.ts` holds two checks at both agreed widths in a UTC+14
+time zone. A bottle past its best-before is marked and one on its best-before
+day is not, and no tile or tile button escapes its beer. Sorting by keyboard
+writes `sort` to the URL and survives a reload.
