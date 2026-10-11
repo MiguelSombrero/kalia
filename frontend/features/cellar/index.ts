@@ -1,4 +1,5 @@
 export { AddToCellarButton } from "./AddToCellarButton";
+export { cellarCounts, type CellarTotals } from "./cellarTotals";
 export { CellarSummary } from "./CellarSummary";
 export { CellarView } from "./CellarView";
 export { beerBlock, bottleTiles, cellarHead, cellarTitle, cellarTools } from "./layout";

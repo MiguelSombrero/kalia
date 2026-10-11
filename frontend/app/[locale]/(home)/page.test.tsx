@@ -35,7 +35,8 @@ vi.mock("@/features/feed", () => ({
   },
   FeedError: () => <div role="alert">feed failed</div>,
 }));
-vi.mock("@/features/cellar", () => ({
+vi.mock("@/features/cellar", async (importOriginal) => ({
+  cellarCounts: (await importOriginal<typeof import("@/features/cellar")>()).cellarCounts,
   listCellarEntries,
   CellarSummary: (props: unknown) => {
     cellarSummaryProps(props);

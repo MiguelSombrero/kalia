@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
+import { ErrorAlert } from "@/components/ui/error-alert";
 
 export const FeedError = () => {
   const { t } = useTranslation();
@@ -12,12 +12,9 @@ export const FeedError = () => {
   const [isRetrying, startRetry] = useTransition();
 
   return (
-    <div role="alert" className="mt-4 flex border border-border bg-surface">
-      <div className="flex w-12 shrink-0 items-center justify-center bg-destructive text-destructive-foreground">
-        <Icon name="close" strokeWidth={2.5} />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-3 px-4 py-3.5">
-        <p className="text-foreground">{t("feed.error.message")}</p>
+    <ErrorAlert
+      className="mt-4"
+      action={
         <Button
           type="button"
           variant="outline"
@@ -26,7 +23,9 @@ export const FeedError = () => {
         >
           {t("feed.error.retry")}
         </Button>
-      </div>
-    </div>
+      }
+    >
+      {t("feed.error.message")}
+    </ErrorAlert>
   );
 };

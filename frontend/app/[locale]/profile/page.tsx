@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
+import { cellarCounts, listCellarEntries } from "@/features/cellar";
 import { getProfile, ProfileView, SignInPrompt } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
@@ -16,18 +17,24 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 const ProfilePage = async ({ params }: Props) => {
   const locale = toLocale((await params).locale);
   const session = await auth();
-  const { t } = await getTranslation(locale);
+
+  if (!session?.user) {
+    const { t } = await getTranslation(locale);
+    return (
+      <Page>
+        <h1 className="font-display text-title font-extrabold text-balance text-foreground md:text-display">
+          {t("profile.title")}
+        </h1>
+        <SignInPrompt locale={locale} />
+      </Page>
+    );
+  }
+
+  const [profile, beers] = await Promise.all([getProfile(), listCellarEntries().catch(() => null)]);
 
   return (
-    <Page>
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-        {t("profile.title")}
-      </h1>
-      {session?.user ? (
-        <ProfileView profile={await getProfile()} />
-      ) : (
-        <SignInPrompt locale={locale} />
-      )}
+    <Page width="wide">
+      <ProfileView locale={locale} profile={profile} counts={beers && cellarCounts(beers)} />
     </Page>
   );
 };

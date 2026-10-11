@@ -1,5 +1,5 @@
 import { customFetch } from "@auth/core";
-import Keycloak from "next-auth/providers/keycloak";
+import Keycloak, { type KeycloakProfile } from "next-auth/providers/keycloak";
 import { createInternalKeycloakFetch } from "./internalKeycloakFetch";
 
 // `issuer` must stay Keycloak's public `iss` (KC_HOSTNAME): oauth4webapi's
@@ -21,6 +21,13 @@ const keycloakOptions = {
   issuer: process.env.AUTH_KEYCLOAK_ISSUER,
   // Pinned by keycloakOptions.test.ts. ADR-0033: safe within one shared realm/client.
   allowDangerousEmailAccountLinking: true,
+  // ADR-0071: a person is named by their username everywhere. Auth.js's default
+  // prefers the `name` claim, which is Keycloak's first and last name.
+  profile: (profile: KeycloakProfile) => ({
+    id: profile.sub,
+    name: profile.preferred_username,
+    email: profile.email,
+  }),
   [customFetch]: fetchViaInternalKeycloak,
 };
 

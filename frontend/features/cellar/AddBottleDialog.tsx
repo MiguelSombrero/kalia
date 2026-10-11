@@ -5,6 +5,8 @@ import { useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ErrorAlert } from "@/components/ui/error-alert";
+import { FieldError, fieldClasses } from "@/components/ui/field";
 import {
   Dialog,
   DialogClose,
@@ -24,9 +26,6 @@ import {
 } from "./addBottleSchema";
 import { todayIso } from "./bottleDateRules";
 import { useAddBottle } from "./hooks/useBottles";
-
-const fieldClasses =
-  "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
 export type AddBottleTrigger = "default" | "compact" | "tile";
 
@@ -150,9 +149,9 @@ export const AddBottleDialog = ({
               {...form.register("brewedDate")}
             />
             {errors.brewedDate && (
-              <p id={`${ids}-brewedDate-error`} className="mt-1 text-sm text-foreground">
+              <FieldError id={`${ids}-brewedDate-error`}>
                 {t(errors.brewedDate.message ?? "")}
-              </p>
+              </FieldError>
             )}
           </div>
 
@@ -169,9 +168,9 @@ export const AddBottleDialog = ({
               {...form.register("bestBeforeDate")}
             />
             {errors.bestBeforeDate && (
-              <p id={`${ids}-bestBeforeDate-error`} className="mt-1 text-sm text-foreground">
+              <FieldError id={`${ids}-bestBeforeDate-error`}>
                 {t(errors.bestBeforeDate.message ?? "")}
-              </p>
+              </FieldError>
             )}
           </div>
 
@@ -211,16 +210,16 @@ export const AddBottleDialog = ({
               </Button>
             </div>
             {errors.quantity && (
-              <p id={`${ids}-quantity-error`} className="mt-1 text-sm text-foreground">
+              <FieldError id={`${ids}-quantity-error`}>
                 {t(errors.quantity.message ?? "")}
-              </p>
+              </FieldError>
             )}
           </div>
 
           {addBottle.isError && (
-            <p role="alert" className="text-sm text-foreground">
+            <ErrorAlert>
               {t("cellar.add.error.failed")}
-            </p>
+            </ErrorAlert>
           )}
 
           <div className="mt-2 flex justify-end gap-2">

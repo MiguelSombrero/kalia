@@ -284,25 +284,72 @@
     "title": "Profile",
     "pageTitle": "Profile — Kalia",
     "loading": "Loading your profile…",
+    "name": {
+      "label": "Your name on Kalia",
+      "note": "People see this name on your cellar and on Kalia's front page. It is also your cellar's address, so it can't be changed."
+    },
     "signIn": {
       "title": "Sign in to see your profile",
-      "hint": "Your profile shows your username and whether your cellar is public.",
+      "hint": "Your profile is where you choose who can see your cellar.",
       "action": "Sign in"
     },
     "visibility": {
-      "legend": "Who can see your cellar?",
+      "heading": "Who can see your cellar?",
       "private": "Only me",
       "public": "Anyone with the link",
-      "statePrivate": "Only you can see your cellar.",
+      "current": "Current",
+      "privateShows": {
+        "alone": "Your cellar is visible to you alone",
+        "notFound": "Its address shows Kalia's not-found page, to everyone",
+        "noFeed": "Nothing you add appears on the front page"
+      },
+      "publicShows": {
+        "cellar": "Your {{beers}} and {{bottles}}, with their dates",
+        "cellarUncounted": "Your beers and bottles, with their dates",
+        "feed": "Your additions on Kalia's front page, including ones made while private",
+        "never": "Never your email or your account details"
+      },
+      "confirm": {
+        "question": "Publish your cellar?",
+        "body": "Anyone with the link will see what is listed above. You can make it private again at any time.",
+        "publish": "Publish cellar",
+        "keep": "Keep private"
+      },
+      "saved": {
+        "public": "Saved. Your cellar is public.",
+        "private": "Saved. Your cellar is private."
+      },
       "statePublic": "Anyone with the link can see your cellar, and your additions appear on Kalia's front page.",
       "error": "Could not update your cellar visibility. Please try again.",
-      "viewLink": "View your public cellar"
+      "address": {
+        "label": "Your public cellar",
+        "copy": "Copy link",
+        "copied": "Link copied.",
+        "copyError": "Could not copy the link. Please try again.",
+        "open": "Open",
+        "openLabel": "Open your public cellar"
+      }
     }
   },
   "signUp": {
     "pageTitle": "Create an account — Kalia",
     "title": "Create your account",
-    "hint": "You'll set your email and password, and pick a username, on Keycloak's own sign-up page next.",
+    "lead": "Three steps. The first one is on this page.",
+    "steps": {
+      "here": {
+        "where": "Here",
+        "what": "Confirm you're old enough to use a beer app"
+      },
+      "next": {
+        "where": "Next page",
+        "what": "Choose a username and give your email",
+        "note": "Your username becomes your public name on Kalia and can't be changed."
+      },
+      "inbox": {
+        "where": "Your inbox",
+        "what": "Open the link we email you, then set your password"
+      }
+    },
     "agree": "I'm old enough to use a beer app.",
     "action": "Continue to sign-up",
     "error": {

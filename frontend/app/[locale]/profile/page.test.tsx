@@ -6,7 +6,11 @@ vi.mock("@/auth", () => ({ auth, handlers: {}, signIn: vi.fn(), signOut: vi.fn()
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(async () => ({ username: "ada", cellarPublic: false })),
 }));
+vi.mock("@/features/cellar/api", () => ({
+  listCellarEntries: vi.fn(async () => []),
+}));
 
+import { listCellarEntries } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import ProfilePage, { generateMetadata } from "./page";
 
@@ -17,22 +21,32 @@ import ProfilePage, { generateMetadata } from "./page";
 describe("ProfilePage", () => {
   afterEach(() => {
     vi.mocked(getProfile).mockClear();
+    vi.mocked(listCellarEntries).mockClear();
   });
 
-  it("fetches the profile when signed in", async () => {
-    auth.mockResolvedValue({ user: { name: "Ada Lovelace" } });
+  it("fetches the profile and the owner's cellar to count it when signed in", async () => {
+    auth.mockResolvedValue({ user: { name: "ada" } });
 
     await ProfilePage({ params: Promise.resolve({ locale: "en" }) });
 
     expect(getProfile).toHaveBeenCalledOnce();
+    expect(listCellarEntries).toHaveBeenCalledOnce();
   });
 
-  it("does not fetch the profile when signed out", async () => {
+  it("still renders the profile when the cellar cannot be counted", async () => {
+    auth.mockResolvedValue({ user: { name: "ada" } });
+    vi.mocked(listCellarEntries).mockRejectedValueOnce(new Error("backend down"));
+
+    await expect(ProfilePage({ params: Promise.resolve({ locale: "en" }) })).resolves.toBeTruthy();
+  });
+
+  it("fetches neither the profile nor the cellar when signed out", async () => {
     auth.mockResolvedValue(null);
 
     await ProfilePage({ params: Promise.resolve({ locale: "en" }) });
 
     expect(getProfile).not.toHaveBeenCalled();
+    expect(listCellarEntries).not.toHaveBeenCalled();
   });
 });
 

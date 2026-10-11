@@ -18,16 +18,24 @@ describe("SignUpForm", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("shows the agreement error", async () => {
-    render(await SignUpForm({ locale: "en", error: "agree-required" }));
+  it("puts the agreement error on the checkbox it is about", async () => {
+    const { container } = render(await SignUpForm({ locale: "en", error: "agree-required" }));
 
+    const box = screen.getByRole("checkbox", { name: /old enough/i });
+    expect(box).toBeInvalid();
+    expect(box).toHaveAccessibleDescription("Please confirm you're old enough to use a beer app.");
     expect(screen.getByRole("alert")).toHaveTextContent("old enough");
+    expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("shows the rate-limit error", async () => {
-    render(await SignUpForm({ locale: "en", error: "rate-limited" }));
+  it("shows the rate-limit error as a box above the button, with the checkbox left valid", async () => {
+    const { container } = render(await SignUpForm({ locale: "en", error: "rate-limited" }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Too many sign-up attempts");
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Too many sign-up attempts");
+    expect(alert.compareDocumentPosition(screen.getByRole("button"))).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(screen.getByRole("checkbox")).not.toBeInvalid();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("renders in Finnish", async () => {

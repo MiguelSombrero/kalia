@@ -5,6 +5,8 @@ import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ErrorAlert } from "@/components/ui/error-alert";
+import { FieldError, fieldClasses } from "@/components/ui/field";
 import {
   Dialog,
   DialogClose,
@@ -18,9 +20,6 @@ import { todayIso } from "./bottleDateRules";
 import { type EditBottleFormValues, editBottleSchema } from "./editBottleSchema";
 import { useUpdateBottle } from "./hooks/useBottles";
 import type { Bottle } from "./types";
-
-const fieldClasses =
-  "mt-1 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
 export const EditBottleDialog = ({
   bottle,
@@ -142,9 +141,9 @@ export const EditBottleDialog = ({
               {...form.register("brewedDate")}
             />
             {errors.brewedDate && (
-              <p id={`${ids}-brewedDate-error`} className="mt-1 text-sm text-foreground">
+              <FieldError id={`${ids}-brewedDate-error`}>
                 {t(errors.brewedDate.message ?? "")}
-              </p>
+              </FieldError>
             )}
           </div>
 
@@ -161,16 +160,16 @@ export const EditBottleDialog = ({
               {...form.register("bestBeforeDate")}
             />
             {errors.bestBeforeDate && (
-              <p id={`${ids}-bestBeforeDate-error`} className="mt-1 text-sm text-foreground">
+              <FieldError id={`${ids}-bestBeforeDate-error`}>
                 {t(errors.bestBeforeDate.message ?? "")}
-              </p>
+              </FieldError>
             )}
           </div>
 
           {updateBottle.isError && (
-            <p role="alert" className="text-sm text-foreground">
+            <ErrorAlert>
               {t("cellar.edit.error.failed")}
-            </p>
+            </ErrorAlert>
           )}
 
           <div className="mt-2 flex justify-end gap-2">

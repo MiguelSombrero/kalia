@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
+import { expectNoSidewaysScroll } from "./support/layout";
 import {
   createKeycloakUser,
   expect,
@@ -31,10 +32,7 @@ const expectRendered = async (
 ) => {
   await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
   if (scan) await expectNoA11yViolations(page);
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow, "the page scrolls sideways").toBeLessThanOrEqual(0);
+  await expectNoSidewaysScroll(page);
 };
 
 const expectContained = async (row: Locator) => {
@@ -166,7 +164,7 @@ for (const viewport of VIEWPORTS) {
 
       await test.step("profile", async () => {
         await page.goto("/en/profile");
-        await expectRendered(page, "Profile");
+        await expectRendered(page, account.username);
         await expect(page.getByRole("radio", { name: "Only me" })).toBeChecked();
         await expect(page.getByRole("radio", { name: "Anyone with the link" })).toBeVisible();
       });

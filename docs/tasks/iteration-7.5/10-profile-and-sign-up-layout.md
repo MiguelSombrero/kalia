@@ -1,6 +1,6 @@
 # Task 10: Profile and sign-up layout
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3, DW-4, DW-5
 - **Kind:** design
@@ -120,27 +120,27 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives for the profile page and
+- [x] The product owner chose from built alternatives for the profile page and
       for how cellar visibility is presented
-- [ ] The visibility control's consequence is visible from the profile — or the
+- [x] The visibility control's consequence is visible from the profile — or the
       decision that it should not be is recorded
-- [ ] Toggling visibility still publishes and unpublishes the public cellar,
+- [x] Toggling visibility still publishes and unpublishes the public cellar,
       and a non-public cellar is still indistinguishable from a missing one,
       covered by the existing tests updated rather than deleted
-- [ ] The sign-up page renders in the new identity and the shared single-form
+- [x] The sign-up page renders in the new identity and the shared single-form
       layout, and anything it states about credentials matches what Keycloak
       enforces — verified against the running realm in a browser, not against
       the copy
-- [ ] `ProfileViewSkeleton` matches the layout that ships, with its test
+- [x] `ProfileViewSkeleton` matches the layout that ships, with its test
       asserting the new shape
-- [ ] The signed-out profile prompt, the `agree-required` error and the
+- [x] The signed-out profile prompt, the `agree-required` error and the
       `rate-limited` error each render deliberately, covered by tests
-- [ ] All three surfaces work at both agreed widths and the
+- [x] All three surfaces work at both agreed widths and the
       `@axe-core/playwright` scans pass at each
-- [ ] The findings [task 02](02-design-audit-baseline.md) recorded on the
+- [x] The findings [task 02](02-design-audit-baseline.md) recorded on the
       profile and sign-up pages are each fixed or carry a written decision not
       to fix them
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

@@ -17,7 +17,7 @@ const localeCellarUrl = (account: KeycloakAccount) => `/en/cellars/${account.use
 const signOut = async (page: Page) => {
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Profile: Test User" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /^Profile: / })).toHaveCount(0);
 };
 
 // Puts at least one beer in the cellar so the public page has something to
@@ -50,7 +50,7 @@ test("a public cellar is readable signed-out from its link, and private reveals 
 
   // The owner reaches their public cellar from the profile, and is the only
   // caller who sees the "this is how others see it" banner.
-  await page.getByRole("link", { name: "View your public cellar" }).click();
+  await page.getByRole("link", { name: "Open your public cellar" }).click();
   await expect(page).toHaveURL(new RegExp(`${localeCellarUrlPath}$`));
   await expect(
     page.getByRole("heading", { level: 1, name: `${account.username}'s cellar` }),

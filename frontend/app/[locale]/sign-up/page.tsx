@@ -11,6 +11,8 @@ type Props = {
   searchParams: Promise<{ error?: string }>;
 };
 
+const STEPS = ["here", "next", "inbox"] as const;
+
 export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
   const locale = toLocale((await params).locale);
   const { t } = await getTranslation(locale);
@@ -29,10 +31,31 @@ const SignUpPage = async ({ params, searchParams }: Props) => {
 
   return (
     <Page width="narrow">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-        {t("signUp.title")}
-      </h1>
-      <p className="text-muted-foreground">{t("signUp.hint")}</p>
+      <div className="flex flex-col gap-3">
+        <h1 className="font-display text-title font-extrabold text-balance text-foreground md:text-display">
+          {t("signUp.title")}
+        </h1>
+        <p className="text-muted-foreground">{t("signUp.lead")}</p>
+      </div>
+      <ol className="border-t border-border">
+        {STEPS.map((step, index) => (
+          <li
+            key={step}
+            className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 gap-y-1 border-b border-divider py-3.5"
+          >
+            <span aria-hidden="true" className="row-span-3 font-display text-title font-bold text-foreground">
+              {index + 1}
+            </span>
+            <span className="text-label font-semibold uppercase text-muted-foreground">
+              {t(`signUp.steps.${step}.where`)}
+            </span>
+            <span className="font-semibold text-foreground">{t(`signUp.steps.${step}.what`)}</span>
+            {step === "next" && (
+              <span className="text-sm text-muted-foreground">{t("signUp.steps.next.note")}</span>
+            )}
+          </li>
+        ))}
+      </ol>
       <SignUpForm locale={locale} error={error} />
     </Page>
   );
