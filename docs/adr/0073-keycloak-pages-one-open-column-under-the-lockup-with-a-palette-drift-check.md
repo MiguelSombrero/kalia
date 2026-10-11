@@ -179,6 +179,8 @@ anyway. Refinement chose the checker.
 
 ## Evidence
 
+The product owner compared the built pages in the browser pane with direction B's mockup at both widths on 2026-10-11 and signed them off as matching.
+
 Measured against the compose stack (Keycloak 26.7.0) on 2026-10-11, from the
 built theme's pages captured in Chromium in both locales:
 
