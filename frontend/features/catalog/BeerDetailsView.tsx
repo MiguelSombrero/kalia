@@ -2,11 +2,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BeerSlot } from "@/components/ui/beer-slot";
+import { PageTitle } from "@/components/ui/page-title";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { beerStyleGroup } from "@/lib/beerStyle";
-import { catalogTitle, detailsHead, factRow } from "./layout";
+import { detailsHead, factRow } from "./layout";
 import { catalogHref } from "./links";
 import type { BeerDetails } from "./types";
 
@@ -41,9 +42,9 @@ export const BeerDetailsView = async ({
       <div className={detailsHead}>
         <div className="flex flex-col gap-5">
           <header className="flex flex-col gap-1.5">
-            <h1 className={catalogTitle}>
+            <PageTitle>
               {beer.name}
-            </h1>
+            </PageTitle>
             <p className="text-lg text-muted-foreground">
               {beer.brewery.name} — {breweryLocation(beer.brewery.city, country)}
             </p>

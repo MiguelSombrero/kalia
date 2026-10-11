@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import { useTranslation } from "react-i18next";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { Toast, ToastDescription, ToastProvider, ToastViewport, type ToastVariant } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import { useChangeVisibility } from "./hooks/useProfile";
@@ -115,9 +116,9 @@ export const VisibilityControl = ({ username, initialCellarPublic, counts }: Pro
 
   return (
     <section aria-labelledby={`${ids}-heading`} className="flex flex-col gap-4">
-      <h2 id={`${ids}-heading`} className="font-display text-heading font-bold text-foreground">
+      <SectionHeading level={2} look="heading" id={`${ids}-heading`}>
         {t("profile.visibility.heading")}
-      </h2>
+      </SectionHeading>
 
       <div className="grid gap-x-4 md:grid-cols-2">
         <div role="radiogroup" aria-labelledby={`${ids}-heading`} className={cn(visibilityTiles, "md:col-span-2")}>

@@ -6,6 +6,4 @@ export const nameTag =
 
 export const nameTagSlot = "md:size-32 md:text-display";
 
-export const nameTagName = "col-span-2 font-display text-title font-bold text-foreground md:text-name";
-
 export const visibilityTiles = "grid gap-3 md:grid-cols-2 md:gap-4";

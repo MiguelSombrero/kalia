@@ -4,6 +4,7 @@ import { getTranslation } from "@/i18n/server";
 import { cn } from "@/lib/cn";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 
 // The generic not-found for the [locale] subtree: a `notFound()` with no
 // closer boundary lands here. It says nothing about what was missing — a
@@ -14,9 +15,7 @@ const LocaleNotFound = async () => {
 
   return (
     <Page width="narrow">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-        {t("notFound.generic.title")}
-      </h1>
+      <PageTitle>{t("notFound.generic.title")}</PageTitle>
       <p className="text-muted-foreground">{t("notFound.generic.message")}</p>
       <Link
         href={`/${locale}`}

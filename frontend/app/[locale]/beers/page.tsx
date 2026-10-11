@@ -5,7 +5,6 @@ import {
   BeerList,
   catalogColumns,
   catalogHref,
-  catalogTitle,
   Pagination,
   parseBeerSearchParams,
   type RawSearchParams,
@@ -17,6 +16,7 @@ import { AddToCellarButton, heldBottlesByBeerOrNone } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -46,9 +46,9 @@ const BeersPage = async ({ params, searchParams }: Props) => {
 
   return (
     <Page width="wide">
-      <h1 className={catalogTitle}>
+      <PageTitle>
         {t("catalog.title")}
-      </h1>
+      </PageTitle>
       <div className={catalogColumns}>
         <div className="md:sticky md:top-20">
           <SearchFilters locale={locale} params={beerParams} />

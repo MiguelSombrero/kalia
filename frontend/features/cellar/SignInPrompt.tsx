@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { startCellarSignIn } from "./actions";
@@ -9,7 +10,7 @@ export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
 
   return (
     <section className="flex max-w-xl flex-col items-start gap-4 border-t border-border pt-6">
-      <h2 className="text-2xl font-bold text-foreground">{t("cellar.signIn.title")}</h2>
+      <SectionHeading level={2} look="heading">{t("cellar.signIn.title")}</SectionHeading>
       <p className="text-muted-foreground">{t("cellar.signIn.hint")}</p>
       <div className="flex flex-wrap items-center gap-2">
         <form action={startCellarSignIn}>

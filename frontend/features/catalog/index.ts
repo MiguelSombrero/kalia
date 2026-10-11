@@ -6,4 +6,4 @@ export { BeerDetailsView } from "./BeerDetailsView";
 export { searchBeers, getBeer } from "./api";
 export { beerHref, catalogHref, hasSearch, parseBeerSearchParams, type RawSearchParams } from "./links";
 export type { BeerSearchParams } from "./types";
-export { beerRowFrame, beerRowSide, catalogColumns, catalogTitle, detailsHead, factRow } from "./layout";
+export { beerRowFrame, beerRowSide, catalogColumns, detailsHead, factRow } from "./layout";

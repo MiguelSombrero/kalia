@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { buttonVariants } from "@/components/ui/button";
+import { SectionHeading } from "@/components/ui/section-heading";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 
@@ -20,9 +21,9 @@ export const CellarSummary = ({ locale, counts, cellarPublic }: Props) => {
 
   return (
     <section aria-labelledby="cellar-summary-heading" className="flex flex-col gap-3.5">
-      <h2 id="cellar-summary-heading" className="text-label font-semibold uppercase text-foreground">
+      <SectionHeading level={2} look="label" id="cellar-summary-heading">
         {t("cellar.title")}
-      </h2>
+      </SectionHeading>
       <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start md:gap-10">
         {counts && (
           <div className="grid grid-cols-2 border-y border-border">

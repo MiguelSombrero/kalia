@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-11
+- **Amended:** 2026-10-11 — `scripts/check-headings.mjs` now checks the heading
+  rule; see the amended Consequences entry and "How the decision is followed"
 
 ## Context
 
@@ -137,6 +139,12 @@ writing once the answer says where a recurring look should go.
   fails no build. It is caught by review, or by the next inventory, which is
   how it went uncaught through four layout tasks. Task 17 is where a check for
   headings is proposed, if one is wanted.
+
+  > **Amended 2026-10-11.** No longer true for headings: a literal `<h1>` or
+  > `<h2>` in `frontend/app/` or `frontend/features/` fails
+  > `scripts/check-headings.mjs`, so a page title comes from `PageTitle` and a
+  > section heading from `SectionHeading`. A heading whose tag is chosen at
+  > runtime is still review's to catch.
 - Bad, because nobody, human or agent, can see every primitive in one place.
   Choosing between two similar ones means reading their source.
 - Neutral, because ADR-0021's "extraction seam" sentence is now historical.
@@ -164,6 +172,11 @@ hand. The check that would cover it is a lint or `scripts/` rule that a page's
 `<h1>`, or a section's `<h2>`, outside `components/ui/` takes its classes from
 the shared primitive. It is named here, not written: whether it earns its
 place is task 17's question.
+
+> **Amended 2026-10-11.** It was written, as `scripts/check-headings.mjs`, run
+> by `make verify` and CI's heading check. Rather than inspect classes, it
+> fails the hand-written element itself, with an allowlist naming each heading
+> that is neither a page title nor a section heading.
 
 ## Evidence
 

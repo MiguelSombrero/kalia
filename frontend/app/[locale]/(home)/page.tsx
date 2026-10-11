@@ -3,12 +3,13 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { CellarSummary, cellarCounts, listCellarEntries } from "@/features/cellar";
 import { FeedError, FeedList, readFeed } from "@/features/feed";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
-import { cn } from "@/lib/cn";
 import { logger } from "@/lib/logger";
 import { feedHeadingRow, mastheadGrid } from "./frontPageLayout";
 
@@ -72,7 +73,7 @@ const Home = async ({ params }: Props) => {
     <Page width="wide">
       {viewerProfile ? (
         <>
-          <h1 className="sr-only">{t("app.name")}</h1>
+          <PageTitle className="sr-only">{t("app.name")}</PageTitle>
           <CellarSummary
             locale={locale}
             cellarPublic={viewerProfile.cellarPublic}
@@ -82,15 +83,13 @@ const Home = async ({ params }: Props) => {
       ) : (
         <div className="flex flex-col gap-6">
           <div className={mastheadGrid}>
-            <h1 className="font-display text-title font-extrabold text-balance text-foreground md:text-display">
-              {t("app.tagline")}
-            </h1>
+            <PageTitle>{t("app.tagline")}</PageTitle>
             <p className="text-muted-foreground">{t("feed.empty.hint")}</p>
           </div>
           <section aria-labelledby="how-heading" className="flex flex-col gap-1.5">
-            <h2 id="how-heading" className="text-label font-semibold uppercase text-foreground">
+            <SectionHeading level={2} look="label" id="how-heading">
               {t("home.how.heading")}
-            </h2>
+            </SectionHeading>
             <ol className="border-t border-border md:grid md:grid-cols-3 md:gap-x-8 md:border-b md:border-divider">
               {HOW_STEPS.map((step, index) => (
                 <li
@@ -110,9 +109,9 @@ const Home = async ({ params }: Props) => {
       )}
 
       <section aria-labelledby="feed-heading" className="flex flex-col">
-        <h2 id="feed-heading" className={cn(feedHeadingRow, "text-label font-semibold uppercase text-foreground")}>
+        <SectionHeading level={2} look="label" id="feed-heading" className={feedHeadingRow}>
           {t("feed.heading")}
-        </h2>
+        </SectionHeading>
         {page ? (
           <FeedList
             locale={locale}

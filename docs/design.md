@@ -139,13 +139,13 @@ two-layer rule they sit in is
 
 | Token | Means | Reach for it when |
 |---|---|---|
-| `--font-display` | The voice of the page: Archivo run wide, used large and briefly. | Page titles and dialog titles. Never for body text or controls. |
+| `--font-display` | The voice of the page: Archivo run wide, used large and briefly. | Page titles, dialog titles and `SectionHeading`'s `heading` look. Never for body text or controls. |
 | `--font-sans` | The working face: the same family at normal width, for everything read or operated. | Everything not set in the display face — the body's default, so it rarely needs naming. |
-| `--text-display` | A page title at desktop width. | The page's one `h1`, from the `md` breakpoint up. |
-| `--text-name` | A person's username as the title of their own profile, at desktop width. | Only the profile's `h1`, from the `md` breakpoint up; below it the name takes `--text-title` like any page title. Larger than `--text-display` because the profile is the one page about a name. |
+| `--text-display` | A page title at desktop width. | The page's one `h1`, from the `md` breakpoint up. `PageTitle` in `components/ui/` renders it; a page never sets it by hand. |
+| `--text-name` | A person's username as the title of their own profile, at desktop width. | Only the profile's `h1`, from the `md` breakpoint up, as `PageTitle size="name"`; below it the name takes `--text-title` like any page title. Larger than `--text-display` because the profile is the one page about a name. |
 | `--text-title` | A page title on a phone, and a dialog title. | The page's `h1` below `md`, and `DialogTitle`. Sized so every word of today's Finnish titles fits a 375px column. |
-| `--text-heading` | A section heading inside a page. | `h2`s that divide a page, in the display face. |
-| `--text-label` | Small tracked capitals that label rather than read. | Button text, badges, navigation and other one- or two-word labels, always `uppercase` and `font-semibold`. Never for a sentence. |
+| `--text-heading` | A section heading inside a page. | A section is headed by `SectionHeading` in `components/ui/`, in one of two looks. This token, in the display face, is the `heading` look: for a section whose heading is read as a sentence and which stands as a block of its own, such as an empty cellar, a sign-in prompt or the profile's visibility choice. The `label` look is `--text-label`: for a section whose heading only names the list or rack directly under it, such as the front page's feed, a beer's same-style list and the cellar summary. |
+| `--text-label` | Small tracked capitals that label rather than read. | Button text, badges, navigation and other one- or two-word labels, always `uppercase` and `font-semibold`, and `SectionHeading`'s `label` look. Never for a sentence. |
 | `--text-wordmark` | The name Kalia, set beside the mark. | The wordmark in the header, `uppercase` and `font-semibold`, in the working face at normal width and spaced wider than a label. Never for anything else: titles are `--font-display`, labels are `--text-label`. |
 
 ### Shape
