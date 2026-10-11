@@ -1,4 +1,4 @@
-# ADR-0073: Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's
+# ADR-0074: Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's
 
 - **Status:** accepted
 - **Date:** 2026-10-11

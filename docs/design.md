@@ -59,11 +59,11 @@ anything a visitor sees; the `design-task` skill and
 - **Rules for writing a component** —
   [frontend/README.md](../frontend/README.md) conventions. This file says
   which token to reach for; the README says how to reach.
-- **Component documentation.** Whether `components/ui/` becomes a design
-  system, and where that would be documented, is
-  [iteration 7.5 task 12](tasks/iteration-7.5/12-do-we-need-a-design-system.md)'s
-  question; if it says yes, its ADR decides which of the two documents
-  contains the other.
+- **Component documentation.** There is none, by decision: `components/ui/`
+  stays the web app's own primitives rather than a design system, a look that
+  recurs becomes a primitive there rather than a rule here, and a primitive's
+  props are documented by its source and test
+  ([ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)).
 - **UX copy and tone of voice** — out of scope for the redesign
   ([iteration 7.5](tasks/iteration-7.5.md)), and a translation-policy question
   under [ADR-0011](adr/0011-i18next-localization.md) when it is taken up.
@@ -321,7 +321,7 @@ and the breakpoint live in `frontend/components/ui/page.tsx` and
   sets them, which link home, and a hairline rule. Every one of them starts at
   the same height, and none of them carries a second language control. Chosen
   in [iteration 7.5 task 11](tasks/iteration-7.5/11-keycloak-pages-carry-the-identity.md)
-  ([ADR-0073](adr/0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
+  ([ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 - **Every page is laid out for 375 and 1280 wide, and everything in the shell
   can be tapped.** Header, menu and footer controls are comfortably above the
   iteration's smallest target; a page's own controls are held to the same

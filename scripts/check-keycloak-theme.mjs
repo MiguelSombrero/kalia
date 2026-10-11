@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Holds the Keycloak login theme's colours and mark to the app's (ADR-0073).
+// Holds the Keycloak login theme's colours and mark to the app's (ADR-0074).
 // Named colours (`white`, `red`) in login.css are not detected; only hex and
 // colour functions are.
 

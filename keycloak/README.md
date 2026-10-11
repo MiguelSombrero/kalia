@@ -18,7 +18,7 @@ file is applied and kept from drifting:
 
 `parent=keycloak.v2`, that theme's own `styles.css` kept on the list, and one
 `login.css` layered after it ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md),
-laid out by [ADR-0073](../docs/adr/0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
+laid out by [ADR-0074](../docs/adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
 `messages/` overrides one key ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
 

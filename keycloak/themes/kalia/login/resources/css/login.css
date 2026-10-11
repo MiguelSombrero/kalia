@@ -1,4 +1,4 @@
-/* ADR-0073. Each --kalia-color-* copies globals.css's --color-* of the same
+/* ADR-0074. Each --kalia-color-* copies globals.css's --color-* of the same
    name; scripts/check-keycloak-theme.mjs fails on any other colour literal. */
 :root {
   --kalia-color-background: #ffffff;

@@ -1,6 +1,6 @@
 # Task 12: Do we need a design system?
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-8
 
@@ -121,29 +121,29 @@ starts; the questions above are the decision itself.
 
 ## Acceptance criteria
 
-- [ ] An inventory of what the redesign produced exists — every shared
+- [x] An inventory of what the redesign produced exists — every shared
       component, where it is used, and whether it recurred or was a one-off —
       as the evidence the decision cites
-- [ ] An ADR records the decision, names the rejected alternatives, and states
+- [x] An ADR records the decision, names the rejected alternatives, and states
       at least one Bad or Neutral consequence, passing
       `node scripts/check-adrs.mjs`
-- [ ] If the answer is no, the ADR states a revisit trigger that can fire — a
+- [x] If the answer is no, the ADR states a revisit trigger that can fire — a
       condition someone would notice — rather than a date or an intention
-- [ ] If the answer is yes, the ADR states what gets built, where it lives,
+- [x] If the answer is yes, the ADR states what gets built, where it lives,
       which facts move into it and which stay in
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md),
       `docs/architecture.md` §5 and `frontend/README.md` — and the tasks that
-      build it are written, not started
-- [ ] [`docs/design.md`](../../design.md)'s *Not covered here* entry for
+      build it are written, not started — N/A: the answer is no
+- [x] [`docs/design.md`](../../design.md)'s *Not covered here* entry for
       this task states the decision; if the answer is yes, the ADR says
       whether the design system's documentation contains `docs/design.md` or
       is contained by it, and the tasks it writes resolve the two into one
-- [ ] `docs/architecture.md` §5's "seam for a possible future design-system
+- [x] `docs/architecture.md` §5's "seam for a possible future design-system
       extraction" wording is replaced by whatever is now true, since it is the
       sentence this task exists to resolve
-- [ ] The ADR names the test or check that would prove the decision is being
+- [x] The ADR names the test or check that would prove the decision is being
       followed, if any, without writing it here
-- [ ] `node scripts/check-adrs.mjs` and `node scripts/check-tasks.mjs` pass
+- [x] `node scripts/check-adrs.mjs` and `node scripts/check-tasks.mjs` pass
 
 ## Notes
 

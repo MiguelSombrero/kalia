@@ -60,13 +60,13 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   and touches the seed script, the sign-up restart check and the specs that
   fill the form. [Iteration 7.5 task 11](iteration-7.5/11-keycloak-pages-carry-the-identity.md)
   kept it out of a visual task (AUD-39 in [the audit](iteration-7.5/audit.md),
-  [ADR-0073](../adr/0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
+  [ADR-0074](../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 - **Every Keycloak page is titled "Sign in to Kalia"**, registration and
   password reset included, and the Finnish title reads "Kirjaudu Kalia"
   (AUD-42). Keycloak sets one title for every page from its `loginTitle`
   message, so a title per page needs Kalia's own copy of keycloak.v2's
   `template.ftl`, the FreeMarker [ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)
-  declined ([ADR-0073](../adr/0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
+  declined ([ADR-0074](../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 
 Engineering work:
 

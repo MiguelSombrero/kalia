@@ -22,6 +22,9 @@
   facts are ruled lines now and no longer wear `Card`'s classes. The rule they
   illustrate stands, and `BeerList`'s `<li>` still carries the stretched link,
   hover and `focus-within` ring itself
+- **Amended:** 2026-10-11 by [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)
+  — `components/ui/` is no longer a seam for a future design system; it stays
+  the web app's own primitives
 
 ## Context
 
@@ -85,6 +88,13 @@ no new dependency.**
 
 Spacing and border-radius deliberately use Tailwind's default scale with no
 new tokens — unlike colour and type, they are not a re-theming concern.
+
+> **Amended 2026-10-11** by
+> [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md).
+> The extraction-seam bullet above is answered: there is no design system to
+> extract `components/ui/` into, because the second client the roadmap now
+> plans is native and cannot render it. The folder stays the web app's own,
+> and its `lib/`-only boundary stays for its own sake.
 
 > **Superseded in part 2026-10-03** by
 > [ADR-0064](0064-visual-identity-can-art-square.md). The identity is no

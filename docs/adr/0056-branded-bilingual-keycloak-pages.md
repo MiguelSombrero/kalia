@@ -4,7 +4,7 @@
 - **Date:** 2026-09-08
 - **Amended:** 2026-09-19 by [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md)
   — the theme now overrides one message key
-- **Amended:** 2026-10-11 by [ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
+- **Amended:** 2026-10-11 by [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
   — the theme also lays the page out, hides the language menu, and links home
 
 ## Context
@@ -56,7 +56,7 @@ own and overrides none of Keycloak's.**
   WCAG-checked focus behaviour, stays stock. Reproducing Kalia's design
   system inside Keycloak is explicitly not the bar — "recognisably Kalia" is.
 
-  > **Amended 2026-10-11 ([ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
+  > **Amended 2026-10-11 ([ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
   > The theme now goes past custom properties in three places. It overrides
   > two PatternFly layout properties, the vertical centring and the column
   > width, through Kalia classes added to keycloak.v2's documented `kcLogin`
@@ -161,7 +161,7 @@ on an English-default browser would get an English login page. Passing
   mint hex is duplicated there by hand, and a re-theme has two places to
   touch. Accepted as the cost of the pages being Keycloak's, not the app's.
 
-  > **Amended 2026-10-11 ([ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
+  > **Amended 2026-10-11 ([ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
   > The copy is still by hand, but no longer silent: each colour in `login.css`
   > is named after the `globals.css` token it copies, and
   > `scripts/check-keycloak-theme.mjs` fails the build when one drifts.

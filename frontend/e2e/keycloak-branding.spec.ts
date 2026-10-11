@@ -1,4 +1,4 @@
-// Kalia-branded, bilingual Keycloak pages (ADR-0056, ADR-0073): the login,
+// Kalia-branded, bilingual Keycloak pages (ADR-0056, ADR-0074): the login,
 // registration, email-verification and password-reset pages Keycloak renders
 // on a different origin must appear in the locale the visitor was reading, in
 // Kalia's identity, and meet the app's WCAG 2.1 AA bar at both agreed widths.
@@ -9,7 +9,7 @@ import { expectNoA11yViolations } from "./support/a11y";
 import { expectNoSidewaysScroll } from "./support/layout";
 import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
-// headerTop is where every Keycloak page's lockup starts (ADR-0073: the same
+// headerTop is where every Keycloak page's lockup starts (ADR-0074: the same
 // height on every page, never centred vertically).
 const VIEWPORTS = [
   { name: "phone", width: 375, height: 812, headerTop: 32 },
