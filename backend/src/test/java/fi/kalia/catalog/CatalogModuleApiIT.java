@@ -39,7 +39,7 @@ class CatalogModuleApiIT {
 	}
 
 	@Test
-	void resolvesNameAndBreweryForEachRequestedBeer() {
+	void resolvesNameBreweryStyleAndStrengthForEachRequestedBeer() {
 		List<Beer> seeded = beers.findAll(Pageable.ofSize(2)).getContent();
 		Beer first = seeded.get(0);
 		Beer second = seeded.get(1);
@@ -48,9 +48,11 @@ class CatalogModuleApiIT {
 
 		assertThat(summaries).hasSize(2);
 		assertThat(summaries.get(first.getId()))
-				.isEqualTo(new BeerSummary(first.getId(), first.getName(), first.getBrewery().getName()));
+				.isEqualTo(new BeerSummary(first.getId(), first.getName(), first.getBrewery().getName(),
+						first.getStyle(), first.getAbv()));
 		assertThat(summaries.get(second.getId()))
-				.isEqualTo(new BeerSummary(second.getId(), second.getName(), second.getBrewery().getName()));
+				.isEqualTo(new BeerSummary(second.getId(), second.getName(), second.getBrewery().getName(),
+						second.getStyle(), second.getAbv()));
 	}
 
 	@Test

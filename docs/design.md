@@ -378,9 +378,8 @@ rejected there are [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on
   known it is a band of the beer's style colour with the strength set large,
   like the figure on a specimen label. In a list, where only the style is
   known, it is a thin strip of that colour beside the row. Where neither is
-  known, as on the front page feed today, there is no slot and the row is
-  text. A layout reserves room for a slot only when the data to fill it
-  exists; it never leaves an empty box.
+  known, there is no slot and the row is text. A layout reserves room for a
+  slot only when the data to fill it exists; it never leaves an empty box.
 - **A person's slot stands in for their photograph.** It is their initials in
   a hairline square, with no colour. Colour in this identity has two jobs,
   telling beer styles apart and marking the one action, so a person is not
@@ -388,7 +387,8 @@ rejected there are [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on
   but the mark.
 - **Both are decorative.** A beer's strength and a person's name are always
   written beside them as text, so the slots are hidden from assistive
-  technology rather than named.
+  technology rather than named. A feed entry writes the strength for assistive
+  technology only, since its band already shows it to the eye.
 - **They are the frames an upload will later fill.** The band and the square
   are the shapes a beer photograph and a profile picture would go in, so
   adding uploads later changes what is inside the frame and not the layout

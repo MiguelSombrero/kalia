@@ -22,6 +22,9 @@ describe("PersonSlot", () => {
 
     rerender(<PersonSlot username="Aino" size="sm" />);
     expect(screen.getByText("A").className).toContain("size-9");
+
+    rerender(<PersonSlot username="Aino" size="xs" />);
+    expect(screen.getByText("A").className).toContain("size-6");
   });
 
   it("merges a custom className", () => {

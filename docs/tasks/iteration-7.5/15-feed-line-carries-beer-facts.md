@@ -1,7 +1,8 @@
 # Task 15: A feed line carries its beer's style, strength and id
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
+- **PR:** #342
 - **Covers:** none
 
 ## Why
@@ -93,14 +94,14 @@ Decided with the product owner in refinement, 2026-10-11:
 
 ## Acceptance criteria
 
-- [ ] The feed API returns each line's beer id, style and strength, covered by
+- [x] The feed API returns each line's beer id, style and strength, covered by
       the feed's integration test and reflected in the regenerated client
-- [ ] A front-page feed entry shows its beer's style band and links the beer's
+- [x] A front-page feed entry shows its beer's style band and links the beer's
       name to the beer's own page, covered by a component test and seen in a
       browser at both agreed widths
-- [ ] The front page's loading skeleton carries the band's shape in its row
-- [ ] No style band overflows at either width in either locale, checked in a
+- [x] The front page's loading skeleton carries the band's shape in its row
+- [x] No style band overflows at either width in either locale, checked in a
       browser against KBS at 12.0%
-- [ ] ADR-0068, ADR-0065 and `docs/design.md` describe the feed row that ships
-- [ ] The product owner has signed off the built row at both agreed widths
-- [ ] `make verify` is green
+- [x] ADR-0068, ADR-0065 and `docs/design.md` describe the feed row that ships
+- [x] The product owner has signed off the built row at both agreed widths
+- [x] `make verify` is green

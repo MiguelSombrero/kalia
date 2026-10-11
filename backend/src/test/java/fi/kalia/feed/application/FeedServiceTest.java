@@ -12,6 +12,7 @@ import fi.kalia.catalog.CatalogApi;
 import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.ProfileApi;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -46,6 +47,24 @@ class FeedServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new FeedService(lines, catalog, profile, codec);
+	}
+
+	@Test
+	void aLineIsResolvedToTheBeerAsTheCatalogDescribesIt() {
+		FeedLine line = line();
+		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
+				.willReturn(List.of(line));
+		given(catalog.getBeerSummaries(any())).willReturn(Map.of(line.getBeerId(), new BeerSummary(line.getBeerId(),
+				"KBS", "Founders Brewing Co.", "Imperial Stout", new BigDecimal("12.0"))));
+		given(profile.publicUsernames(any())).willReturn(Map.of(line.getUserId(), "alice"));
+
+		FeedLineView view = service.readRecent(20).lines().getFirst();
+
+		assertThat(view.beerId()).isEqualTo(line.getBeerId());
+		assertThat(view.beerName()).isEqualTo("KBS");
+		assertThat(view.brewery()).isEqualTo("Founders Brewing Co.");
+		assertThat(view.style()).isEqualTo("Imperial Stout");
+		assertThat(view.abv()).isEqualByComparingTo("12.0");
 	}
 
 	@Test
@@ -269,7 +288,8 @@ class FeedServiceTest {
 	private static Map<UUID, BeerSummary> beerSummaries(FeedLine... resolvable) {
 		Map<UUID, BeerSummary> beers = new HashMap<>();
 		for (FeedLine line : resolvable) {
-			beers.put(line.getBeerId(), new BeerSummary(line.getBeerId(), "Beer", "Brewery"));
+			beers.put(line.getBeerId(), new BeerSummary(line.getBeerId(), "Beer", "Brewery", "IPA",
+					new BigDecimal("6.5")));
 		}
 		return beers;
 	}

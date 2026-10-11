@@ -41,8 +41,8 @@ class FeedOpenApiDocumentationIT {
 		List<String> lineRequired = JsonPath.read(body, "$.components.schemas.FeedLineDto.required");
 		// springdoc does not infer "required" from Java non-nullability alone —
 		// brewedDate is @Nullable and must stay out of this list.
-		assertThat(lineRequired).containsExactlyInAnyOrder("username", "beerName", "brewery", "quantity",
-				"occurredAt", "cursor");
+		assertThat(lineRequired).containsExactlyInAnyOrder("username", "beerId", "beerName", "brewery", "style",
+				"abv", "quantity", "occurredAt", "cursor");
 
 		List<String> pageRequired = JsonPath.read(body, "$.components.schemas.FeedPageDto.required");
 		assertThat(pageRequired).containsExactlyInAnyOrder("content", "startOver");

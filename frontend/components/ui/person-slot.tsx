@@ -2,9 +2,10 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 import { initialsOf } from "@/lib/initials";
 
-export type PersonSlotSize = "sm" | "md" | "lg";
+export type PersonSlotSize = "xs" | "sm" | "md" | "lg";
 
 const sizeClasses: Record<PersonSlotSize, string> = {
+  xs: "size-6 text-[0.625rem]",
   sm: "size-9 text-label",
   md: "size-12 text-base",
   lg: "size-24 text-title",

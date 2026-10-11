@@ -22,7 +22,7 @@ describe("FeedSkeleton", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("draws its rows on a feed entry's own frame, each with the person slot's square, three lines and a count", async () => {
+  it("draws its rows on a feed entry's own frame, each with the style band's shape, three lines and a count", async () => {
     const { container } = render(await FeedSkeleton({ locale: "en" }));
 
     const rows = container.querySelectorAll("li");
@@ -30,8 +30,9 @@ describe("FeedSkeleton", () => {
     for (const row of rows) {
       expect(row.className).toBe(feedRowFrame);
       const [slot, lines, count] = Array.from(row.children);
-      expect(slot.className).toContain("size-9");
+      expect(slot.className).toContain("aspect-[16/7]");
       expect(lines.children).toHaveLength(3);
+      expect(lines.firstElementChild?.firstElementChild?.className).toContain("size-6");
       expect(count.className).toContain("self-center");
     }
   });

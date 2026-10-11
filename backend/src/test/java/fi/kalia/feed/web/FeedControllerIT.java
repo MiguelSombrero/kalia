@@ -13,11 +13,13 @@ import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,6 +80,22 @@ class FeedControllerIT {
 
 		List<String> usernames = JsonPath.read(body, "$.content[*].username");
 		assertThat(usernames.indexOf("newer-user")).isLessThan(usernames.indexOf("older-user"));
+	}
+
+	@Test
+	void aLineCarriesItsBeersIdStyleAndStrengthFromTheCatalog() {
+		Beer beer = catalogBeers.get(0);
+		recordLine(makePublicProfile("beer-facts-user"), beer.getId(), 1, Instant.now());
+
+		String body = readFeedWithSize(MAX_SIZE);
+
+		List<Map<String, Object>> served = JsonPath.read(body, "$.content[?(@.username == 'beer-facts-user')]");
+		assertThat(served).singleElement().satisfies(line -> {
+			assertThat(line).containsEntry("beerId", beer.getId().toString())
+					.containsEntry("beerName", beer.getName())
+					.containsEntry("style", beer.getStyle());
+			assertThat(new BigDecimal(line.get("abv").toString())).isEqualByComparingTo(beer.getAbv());
+		});
 	}
 
 	@Test

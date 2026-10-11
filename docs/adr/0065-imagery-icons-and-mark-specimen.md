@@ -4,6 +4,10 @@
 - **Date:** 2026-10-03
 - **Amended:** 2026-10-11 by [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) — the
   mark is no longer the rack; its bullet below points there
+- **Amended:** 2026-10-11 — [task 15](../tasks/iteration-7.5/15-feed-line-carries-beer-facts.md)
+  gave the feed line a style and ABV, so the feed draws the band
+  ([ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md));
+  the bullets below that said it draws nothing point there
 
 ## Context
 
@@ -37,9 +41,11 @@ hand-drawn icons for the few jobs a word cannot do.** This is direction C,
 - **A beer's slot says only what the surface knows.** Where the ABV is known
   it is a band of the beer's style colour with the ABV as the large figure. In
   a list, where only the style is known, it is a thin strip of that colour
-  beside the row. Where neither is known, as in the feed, nothing is drawn and
-  the row is text. Layouts therefore reserve a band or a strip *when the data
-  exists*, never a fixed picture box.
+  beside the row. Where neither is known, nothing is drawn and the row is
+  text. The feed was that case until task 15; it now draws the band
+  ([ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
+  Layouts therefore reserve a band or a strip *when the data exists*, never a
+  fixed picture box.
 - **A person's slot is initials, with no colour.** Colour in this identity
   belongs to beers and to the one action, so two people are told apart by
   their initials alone. The slot is square.
@@ -71,7 +77,8 @@ hand-drawn icons for the few jobs a word cannot do.** This is direction C,
   raster check's allowlist stays empty.
 - **No API changes.** The feed stays without a style or ABV, so a feed line
   shows no beer imagery. Adding them to the feed is a backend change outside
-  this iteration.
+  this iteration. Task 15 later added them, read from the catalog when the
+  feed is read, within the same iteration.
 
 ## Alternatives considered
 
@@ -127,8 +134,8 @@ carries the rack across.
   picture that does not exist.
 - Good, because the slots are reserved by shape, so a photo can later fill the
   band or the square without moving anything around it.
-- Bad, because the feed shows no beer imagery. A front page of sentences stays
-  a column of sentences, and that part of the audit's finding is answered by
+- Bad, because the feed shows no beer imagery (until task 15). A front page of
+  sentences stays a column of sentences, and that part of the audit's finding is answered by
   type and spacing in [task 07](../tasks/iteration-7.5/07-front-page-layout.md)
   and not by pictures.
 - Bad, because a page of lists risks reading as a spreadsheet. Hierarchy has to
@@ -145,8 +152,9 @@ carries the rack across.
 - Neutral, because the Keycloak pages keep the snifter until task 11 replaces
   it, so for now the two origins show different marks.
 - **Revisit trigger:** the feed carrying a style and ABV would let its lines
-  show the same band or strip as the catalog; user-uploaded photos arriving
-  should make the band and the square their frames.
+  show the same band or strip as the catalog (fired with task 15, 2026-10-11);
+  user-uploaded photos arriving should make the band and the square their
+  frames.
 
 ## Evidence
 
