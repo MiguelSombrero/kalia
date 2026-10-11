@@ -32,6 +32,7 @@ describe("FeedSkeleton", () => {
       const [slot, lines, count] = Array.from(row.children);
       expect(slot.className).toContain("aspect-[16/7]");
       expect(lines.children).toHaveLength(3);
+      expect(lines.firstElementChild?.firstElementChild?.className).toContain("size-6");
       expect(count.className).toContain("self-center");
     }
   });

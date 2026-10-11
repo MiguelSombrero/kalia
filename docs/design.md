@@ -387,7 +387,8 @@ rejected there are [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on
   but the mark.
 - **Both are decorative.** A beer's strength and a person's name are always
   written beside them as text, so the slots are hidden from assistive
-  technology rather than named.
+  technology rather than named. A feed entry writes the strength for assistive
+  technology only, since its band already shows it to the eye.
 - **They are the frames an upload will later fill.** The band and the square
   are the shapes a beer photograph and a profile picture would go in, so
   adding uploads later changes what is inside the frame and not the layout

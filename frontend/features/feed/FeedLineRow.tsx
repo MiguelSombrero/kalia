@@ -30,7 +30,7 @@ export const FeedLineRow = ({ line, locale, now, isOwn = false, isFresh = false 
           <p className="min-w-0 text-sm text-foreground">
             <Link
               href={`/cellars/${line.username}`}
-              className="inline-block py-0.5 font-semibold text-foreground hover:underline hover:underline-offset-2"
+              className="inline-block max-w-full py-0.5 font-semibold wrap-anywhere text-foreground hover:underline hover:underline-offset-2"
             >
               {line.username}
             </Link>

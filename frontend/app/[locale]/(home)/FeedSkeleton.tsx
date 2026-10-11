@@ -31,7 +31,10 @@ export const FeedSkeleton = async ({ locale }: { locale: Locale }) => {
             <li key={index} className={feedRowFrame}>
               <Skeleton className="aspect-[16/7] w-full" />
               <div className="flex min-w-0 flex-col gap-0.5">
-                <Skeleton className="h-6 w-40" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="size-6 shrink-0" />
+                  <Skeleton className="h-6 w-32" />
+                </div>
                 <Skeleton className="h-6.5 w-3/5 md:h-7.5" />
                 <Skeleton className="h-5 w-2/5" />
               </div>
