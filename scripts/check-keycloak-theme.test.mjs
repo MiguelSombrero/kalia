@@ -80,7 +80,7 @@ test("compares #rgb and #rrggbb as the same colour", () => {
 });
 
 test("fails when a shared colour names a token the app does not have", () => {
-  withFixture({ login: loginCss.replace("}", "  --kalia-color-mint: #2f6f5e;\n}") }, ({ failures }) => {
+  withFixture({ login: loginCss.replace("  --kalia-color-primary: #2b37c9;", "  --kalia-color-primary: #2b37c9;\n  --kalia-color-mint: #2f6f5e;") }, ({ failures }) => {
     assert.deepEqual(failures, [
       "keycloak/themes/kalia/login/resources/css/login.css: --kalia-color-mint claims --color-mint, which frontend/app/globals.css does not resolve to a #hex colour",
     ]);
