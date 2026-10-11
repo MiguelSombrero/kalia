@@ -1,6 +1,6 @@
 # Task 16: A Kalia mark that is unmistakably Kalia's
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-2
 - **Kind:** design
@@ -29,8 +29,9 @@ to change it again.
 ## Scope
 
 A new Kalia mark, arrived at by deliberately broad exploration rather than
-by refining the rack: several genuinely different ideas built and looked at
-first, then the chosen one worked into variations, then a final form.
+by refining the rack: genuinely different ideas built and looked at first,
+then the chosen one worked into variations until the product owner settles on
+a final form.
 
 The outcome covers the mark itself; how it sits beside the wordmark, as the
 header and footer hold them; and its compact square form, for the favicon and
@@ -41,10 +42,14 @@ Keycloak pages.
 
 ## Non-goals
 
-- **The palette and the typefaces.**
-  [ADR-0064](../../adr/0064-visual-identity-can-art-square.md) chose them and
-  this task works inside them; whether the mark may bend the identity's own
-  rules is an open question below, not a licence to reopen them.
+- **The page's palette and typefaces.**
+  [ADR-0064](../../adr/0064-visual-identity-can-art-square.md) chose them. The
+  mark may step outside them (Constraints); the rest of the app does not
+  follow it there.
+- **Lettering the wordmark.** The name stays set in the identity's own face;
+  only how the mark sits beside it is decided here.
+- **Motion.** The mark is static: no animated form, on load or as a loading
+  indicator.
 - **Imagery and the seven icons.** [ADR-0065](../../adr/0065-imagery-icons-and-mark-specimen.md)'s
   beer and person slots and its icon set stay as they are. If the new mark's
   drawing language visibly clashes with the icons, that is a finding for the
@@ -64,8 +69,7 @@ Keycloak pages.
   ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
 - **Hand-drawn SVG by an agent is acceptable output**, as task 04's refinement
   settled, and no dependency is taken on for appearance
-  ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)). A wordmark that
-  needs a font Kalia does not already load is a new dependency, and asks first.
+  ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)).
 - **No raster image is tracked.** The favicon PNGs are generated at build from
   the same drawing, so `scripts/check-no-raster-images.mjs`'s allowlist stays
   empty ([ADR-0065](../../adr/0065-imagery-icons-and-mark-specimen.md)).
@@ -73,8 +77,8 @@ Keycloak pages.
   draws the PNGs cannot read CSS variables, so the mark's colours are written
   as literals and a test pins them to `globals.css`
   ([ADR-0066](../../adr/0066-token-only-styling-is-a-build-check.md)). A new
-  colour in the mark is a new literal and a new pin, not a hardcoded value
-  slipped past the check.
+  colour in the mark joins `globals.css` as a primitive with its own pin, not
+  a hardcoded value slipped past the check.
 - **Changing an icon route fails silently.** `frontend/proxy.ts`'s matcher
   names the generated `icon`, `icon<n>` and `apple-icon` routes; a renamed or
   added one is redirected to a locale path that does not exist, and the page
@@ -88,42 +92,45 @@ Keycloak pages.
   from assistive technology, and any colour pairing it adds is declared in
   [`docs/design.md`](../../design.md) and passes `scripts/check-contrast.mjs`.
 
+Decided with the product owner in refinement, 2026-10-11:
+
+- **The brief is open.** The mark is not bound to the cellar idea the rack
+  expressed. The first round spans genuinely different subjects — the cellar,
+  a bottle or cap, time and ageing, a letterform from the name, something
+  Finnish — and the subject is chosen from what was built.
+- **The mark may break the identity's rules, in shape and in colour.** Curves,
+  any geometry, the style colours or a colour of its own are all allowed in the
+  mark.
+- **A colour the mark brings belongs to the mark alone.** It is not used
+  anywhere else in the app, so the page keeps its one action colour and
+  ADR-0064 is not reopened through the mark.
+- **The wordmark stays as it is set today.** Only the lockup — how mark and
+  name sit together in size, spacing and alignment — is in scope.
+- **The first round is six distinct concepts, and rounds are not capped.**
+  Each concept is shown at 16 px, in the header and footer at both agreed
+  widths, and large. Variations of the chosen one follow for as many rounds as
+  the product owner asks for; the task's exploration ends when they choose a
+  final form, not after a set number of rounds.
+- **Uniqueness is the product owner's judgement.** No comparison wall or
+  logo search is part of the task.
+- **The mark is static.**
+- **It runs before [task 11](11-keycloak-pages-carry-the-identity.md)**, after
+  [task 10](10-profile-and-sign-up-layout.md), so the Keycloak pages take on
+  the mark once.
+- **The choice gets its own ADR**, and ADR-0065's mark bullet is amended to
+  point at it, since decisions on one subject stay separate documents
+  ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)).
+
 ## Open questions
 
-- **What should the mark say?** The rack said "cellar". Is that still the idea
-  to express, drawn freshly, or is the brief open — beer, a bottle or cap,
-  time and ageing, a letterform from the name, something Finnish, the social
-  side? Is there a story behind the name Kalia the mark should draw on?
-- **How far may it bend the identity?** ADR-0064's world is square corners,
-  hairlines, ink and one cobalt. May the mark use a curve, a second colour, or
-  the style colours — or does a mark that obeys every rule of the page it sits
-  on risk looking as generic as the rack?
-- **Is the wordmark in scope?** Only how the mark sits beside it, or also
-  custom-lettering the name rather than setting it in Archivo?
-- **How broad is "broad"?** A proposal to accept or change: a first round of
-  at least six distinct concepts, each shown at 16 px, in the header and footer
-  at both agreed widths and large; then two or three variations of the chosen
-  one; then the final form.
-- **How is "unique" checked?** A proposal: the shortlisted concepts are set
-  beside the marks of the beer platforms a Kalia user already knows — Untappd,
-  Vivino, RateBeer, BeerAdvocate — and the app-launcher grid, and any that
-  reads as a cousin of one is dropped. Is that enough, and are there marks the
-  product owner wants on that wall?
-- **Where does this run in the iteration?** Before
-  [task 11](11-keycloak-pages-carry-the-identity.md) is the obvious place, so
-  the Keycloak pages take on the mark once; the index places it there. Should
-  it also go ahead of [task 10](10-profile-and-sign-up-layout.md)?
-- **Does the mark ever move?** An animated form — on load, or as a loading
-  indicator — or strictly static, as now?
-- **A new ADR, or an amendment of ADR-0065?** The constraint above assumes a
-  new ADR, since the decision now has rejected alternatives of its own
-  ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)).
+**None.**
 
 ## Acceptance criteria
 
-- [ ] The product owner chose the mark from built alternatives, in at least
-      two rounds: distinct concepts first, then variations of the chosen one —
-      each shown at 16 px, in the header and footer, and large
+- [ ] The product owner chose the mark from built alternatives: a first
+      round of six distinct concepts, then variations of the chosen one until
+      a final form — each shown at 16 px, in the header and footer at both
+      agreed widths, and large
 - [ ] The chosen mark replaces the rack in the header and the footer, seen in
       a browser at both agreed widths, and the `KaliaMark` vitest test
       describes the new drawing
