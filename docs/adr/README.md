@@ -161,6 +161,9 @@ decides the URL built on it.
 - [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md)
   — the mark is a coral-lined bottle pouring beer into foam on a deep teal
   tile, in colours of its own that nothing else in the app uses.
+- [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)
+  — no design system, package or component catalogue: `components/ui/` stays
+  the web app's own, and a look that recurs becomes a primitive, not a rule.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a
