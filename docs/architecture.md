@@ -450,8 +450,11 @@ The shape of the frontend. Day-to-day rules for writing it live in
   `keycloak/themes/kalia/`.
 - **Visual design is token-driven** ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)):
   Tailwind CSS with a two-layer CSS custom-property system, light mode only,
-  and a small set of shared primitives in `components/ui/` — the seam for a
-  possible future design-system extraction. The build fails on a colour or
+  and a small set of shared primitives in `components/ui/` — the web app's
+  own, not a design system or a package: a native client cannot render them,
+  and a look that recurs becomes a primitive there rather than a documented
+  rule ([ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)).
+  The build fails on a colour or
   typeface a component takes from outside the semantic layer
   ([ADR-0066](adr/0066-token-only-styling-is-a-build-check.md)). The identity
   is "Can art, square"
@@ -794,6 +797,7 @@ the failure back to the agent without blocking
 | [ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) | The cellar is a sortable list of beers, each beside its style band with every bottle shown as a tile headed by its vintage | accepted | 2026-10-10 |
 | [ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md) | The profile is a name tag above two visibility choices that each list what they show, and every error in Kalia uses one style | accepted | 2026-10-11 |
 | [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) | The rack read as any app launcher, so Kalia's mark is a bottle pouring into foam on a deep teal tile | accepted | 2026-10-11 |
+| [ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md) | A design system would serve a consumer that will never exist, so `components/ui/` stays the web app's own primitives | accepted | 2026-10-11 |
 
 ### Engineering process and documentation
 

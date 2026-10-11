@@ -34,7 +34,9 @@ tasks run under the `design-task` skill
 - **Design: motion and haptics** — what moves, what is felt, and respecting
   reduce-motion.
 - **Decision: the design token format** — one platform-neutral source for both
-  platforms, building on [iteration 7.5 task 12](iteration-7.5/12-do-we-need-a-design-system.md).
+  platforms, building on [ADR-0073](../adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md),
+  which this decision reopens if the platforms turn out to need shared
+  component contracts as well as shared tokens.
 - **Token pipeline** — implementing that decision, with
   [ADR-0066](../adr/0066-token-only-styling-is-a-build-check.md)'s check
   extended to mobile.

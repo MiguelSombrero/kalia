@@ -46,7 +46,9 @@ restyling what is already there.
 | [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | done |
 | [16](iteration-7.5/16-kalia-mark-redesign.md) | A Kalia mark that is unmistakably Kalia's | done |
 | [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | refined |
-| [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | refined |
+| [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | done |
+| [17](iteration-7.5/17-one-title-and-one-heading-style.md) | A page title and a section heading each have one style | needs-refinement |
+| [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md) | Empty states and the sign-in prompt each have one shape | needs-refinement |
 | [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | refined |
 | [15](iteration-7.5/15-feed-line-carries-beer-facts.md) | A feed line carries its beer's style, strength and id | needs-refinement |
 
@@ -102,6 +104,12 @@ rather than a preference:
   are built before the system is named, so anything extracted in
   [12](iteration-7.5/12-do-we-need-a-design-system.md) is extracted from code
   that already exists.
+- **[17](iteration-7.5/17-one-title-and-one-heading-style.md) and
+  [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md)
+  follow [12](iteration-7.5/12-do-we-need-a-design-system.md)**, which wrote
+  them from the drift its inventory found, and come before
+  [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) because they
+  change surfaces that task re-verifies.
 
 Depends on [iteration 6.5](iteration-6.5.md) and [iteration 7](iteration-7.md),
 and this is a real dependency rather than a numbering artefact.
