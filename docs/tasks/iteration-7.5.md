@@ -47,9 +47,9 @@ restyling what is already there.
 | [16](iteration-7.5/16-kalia-mark-redesign.md) | A Kalia mark that is unmistakably Kalia's | done |
 | [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | done |
 | [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | done |
-| [17](iteration-7.5/17-one-title-and-one-heading-style.md) | A page title and a section heading each have one style | needs-refinement |
-| [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md) | Empty states and the sign-in prompt each have one shape | needs-refinement |
 | [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | done |
+| [17](iteration-7.5/17-one-title-and-one-heading-style.md) | A page title and a section heading each have one style | refined |
+| [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md) | Empty states and the sign-in prompt each have one shape | refined |
 | [15](iteration-7.5/15-feed-line-carries-beer-facts.md) | A feed line carries its beer's style, strength and id | in-progress |
 
 **Every task here is a prototyping task, and that is what makes this iteration
@@ -107,9 +107,12 @@ rather than a preference:
 - **[17](iteration-7.5/17-one-title-and-one-heading-style.md) and
   [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md)
   follow [12](iteration-7.5/12-do-we-need-a-design-system.md)**, which wrote
-  them from the drift its inventory found, and come before
-  [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) because they
-  change surfaces that task re-verifies.
+  them from the drift its inventory found. They were planned to come before
+  [13](iteration-7.5/13-accessibility-and-contrast-reverified.md), because they
+  change surfaces that task re-verifies, but 13 landed first; each instead
+  carries 13's Playwright accessibility scans as one of its own acceptance
+  criteria. 17 precedes 18 because 18's empty state and sign-in prompt are
+  built on 17's section heading.
 
 Depends on [iteration 6.5](iteration-6.5.md) and [iteration 7](iteration-7.md),
 and this is a real dependency rather than a numbering artefact.

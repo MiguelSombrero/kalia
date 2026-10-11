@@ -1,6 +1,6 @@
 # Task 18: Empty states and the sign-in prompt each have one shape
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** none
 
@@ -29,10 +29,10 @@ stopped recurring is not kept as if it might.
 
 ## Scope
 
-An empty state has one shape across the app, and the catalog and both cellar
-views use it. A sign-in prompt is one primitive that the cellar and the profile
-each fill with their own strings and action. `Card` is either removed or kept
-for a named use.
+`EmptyState` takes the cellar's ruled shape, and the catalog's empty search and
+both cellar views render through it. A sign-in prompt is one primitive in
+`components/ui/` that the cellar and the profile each fill with their own
+strings and Server Action. `card.tsx` is removed.
 
 ## Non-goals
 
@@ -43,6 +43,8 @@ for a named use.
   ([iteration 7.5](../iteration-7.5.md)).
 - The skeletons ([ADR-0022](../../adr/0022-loading-error-empty-states.md)),
   which already share one primitive.
+- The look of a section heading, which
+  [task 17](17-one-title-and-one-heading-style.md) settles.
 
 ## Constraints
 
@@ -55,32 +57,54 @@ for a named use.
 - Styling stays inside the semantic token layer
   ([ADR-0066](../../adr/0066-token-only-styling-is-a-build-check.md)).
 
+Decided in refinement on 2026-10-11, together with task 17:
+
+- **Task 17 comes first, and this task builds on it.** The heading in an
+  empty state and in the sign-in prompt is a `SectionHeading` in its `heading`
+  look, at the level the caller passes. Task 17 has already moved the four
+  hand-written headings to it in place; this task moves them into the
+  primitives.
+- **The cellar's ruled block wins.** A top rule, a `SectionHeading`, a muted
+  hint, then optional content and an action, as ADR-0070 laid out. No
+  `design-task` round: the product owner chose this shape in ADR-0070, and the
+  catalog mockup chosen in ADR-0069 (A3) had a ruled block for the empty
+  search too; the dashed card was kept only by agreement. The catalog's empty
+  search changes visibly, and ADR-0069's "by agreement" difference is amended
+  to say it was closed here
+  ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
+- **The sign-in prompt is the same shape.** It is built from `EmptyState`
+  rather than as a second block, with a sign-in button posting to the caller's
+  Server Action and a link to sign-up.
+- **`card.tsx` is removed.** Once `EmptyState` stops using `cardVariants`, its
+  only users are the feed's two status rows, in one file. They get a local
+  constant in `FeedList`, and nothing imports `components/ui/card`.
+- **This task stays in iteration 7.5.** It consumes task 17's
+  `SectionHeading` and changes surfaces this iteration redesigned. No
+  `Done when` criterion depends on it, so it covers none.
+
 ## Open questions
 
-- **Which empty state wins?** The cellar's ruled block, the catalog's dashed
-  card, or a third shape. ADR-0069 kept the dashed card by agreement. Choosing
-  between built alternatives is a `design-task` round, which would make this
-  `Kind: design`.
-- **`Card`: remove, or keep for the feed?** The feed's "N new" and error rows
-  are the only places that still wear its classes.
-- **Does this belong in iteration 7.5?** No `Done when` criterion requires it.
-  It could equally open [iteration 8](../iteration-8.md), where the
-  add-a-beer form is the first new screen to reach for these primitives.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The catalog's empty search and both cellar views' empty states render
-      through one primitive, covered by that primitive's colocated test with a
-      `jest-axe` assertion and seen in a browser at both agreed widths
+      through `EmptyState` in the ruled shape, covered by its colocated test
+      with a `jest-axe` assertion, and seen in a browser at both agreed widths
+      in both locales
 - [ ] One sign-in prompt primitive serves the cellar and the profile, each
       signing in with its own Server Action, covered by a component test, and
       exercised in a browser signed out on both pages
-- [ ] `Card` is either gone with no remaining import, or kept and used by name
-      for the reason the product owner gives
+- [ ] `components/ui/card.tsx` is gone and nothing imports it
+- [ ] [Task 13](13-accessibility-and-contrast-reverified.md)'s Playwright
+      accessibility scans and heading-structure test pass against the changed
+      pages
+- [ ] ADR-0069 is amended to record that the empty search left the dashed card
 - [ ] `make verify` is green
 
 ## Notes
 
 Written by [task 12](12-do-we-need-a-design-system.md) on 2026-10-11, at the
 product owner's request that the drift its inventory found be scheduled rather
-than only recorded.
+than only recorded. Refined on 2026-10-11 together with
+[task 17](17-one-title-and-one-heading-style.md).
