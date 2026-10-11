@@ -2,8 +2,10 @@ package fi.kalia.feed.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -22,8 +24,8 @@ class FeedDtoSerializationIT {
 
 	@Test
 	void omitsNullBrewedDateFromFeedLineJson() throws Exception {
-		FeedLineDto line = new FeedLineDto("alice", "AleSmith IPA", "AleSmith Brewing Company", 6, null,
-				Instant.now(), "cursor-value");
+		FeedLineDto line = new FeedLineDto("alice", UUID.randomUUID(), "AleSmith IPA", "AleSmith Brewing Company",
+				"American IPA", new BigDecimal("7.0"), 6, null, Instant.now(), "cursor-value");
 
 		String json = feedLineJson.write(line).getJson();
 

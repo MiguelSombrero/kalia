@@ -29,8 +29,8 @@ export const FeedSkeleton = async ({ locale }: { locale: Locale }) => {
         <ul>
           {Array.from({ length: FEED_SKELETON_ROWS }).map((_, index) => (
             <li key={index} className={feedRowFrame}>
-              <Skeleton className="size-9 shrink-0" />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <Skeleton className="aspect-[16/7] w-full" />
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <Skeleton className="h-6 w-40" />
                 <Skeleton className="h-6.5 w-3/5 md:h-7.5" />
                 <Skeleton className="h-5 w-2/5" />

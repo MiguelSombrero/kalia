@@ -11,8 +11,11 @@ const page = (): FeedPage => ({
   content: [
     {
       username: "alice",
+      beerId: "beer-1",
       beerName: "AleSmith IPA",
       brewery: "AleSmith Brewing",
+      style: "American IPA",
+      abv: 7,
       quantity: 1,
       occurredAt: "2026-09-13T11:56:00.000Z",
       cursor: "c1",

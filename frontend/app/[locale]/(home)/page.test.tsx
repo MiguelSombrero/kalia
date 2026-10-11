@@ -7,8 +7,11 @@ import { apiError } from "@/lib/api/api-error";
 
 const line = (username: string, cursor: string) => ({
   username,
+  beerId: "beer-1",
   beerName: "AleSmith IPA",
   brewery: "AleSmith Brewing",
+  style: "American IPA",
+  abv: 7,
   quantity: 2,
   occurredAt: "2026-09-13T11:56:00.000Z",
   cursor,

@@ -124,8 +124,8 @@ public class FeedService {
 	}
 
 	private FeedLineView toView(FeedLine line, String username, BeerSummary beer) {
-		return new FeedLineView(cursorCodec.encode(line.getSequenceNumber()), username, beer.name(), beer.brewery(),
-				line.getQuantity(), line.getBrewedDate(), line.getOccurredAt());
+		return new FeedLineView(cursorCodec.encode(line.getSequenceNumber()), username, beer.id(), beer.name(),
+				beer.brewery(), beer.style(), beer.abv(), line.getQuantity(), line.getBrewedDate(), line.getOccurredAt());
 	}
 
 }

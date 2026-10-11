@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-04
+- **Amended:** 2026-10-11 — [task 15](../tasks/iteration-7.5/15-feed-line-carries-beer-facts.md)
+  widened the feed line, so a feed entry now leads with its beer's style band
+  and links to the beer's own page; the Decision's feed-entry bullets, the
+  revisit trigger and the Evidence describe the row that ships
 
 ## Context
 
@@ -44,11 +48,8 @@ empty, failing or loading feed. The identity is
 
 **The front page is one `wide` column. At its top sits the pitch for a
 signed-out visitor or the visitor's own cellar for a signed-in one, and under
-it the feed, headed "Latest additions", as ruled rows. Feed entries do not
-carry the beer's style colour yet; that waits for the feed line to carry the
-beer's style, strength and id
-([task 15](../tasks/iteration-7.5/15-feed-line-carries-beer-facts.md)).** This
-is direction A4, the product owner's choice from seven built directions across
+it the feed, headed "Latest additions", as ruled rows, each led by a band in
+its beer's style colour.** This is direction A4, the product owner's choice from seven built directions across
 four rounds.
 
 - **One layout for both audiences, with a different top.** Signed out, the top
@@ -58,13 +59,18 @@ four rounds.
   counts, whether their cellar is public (with the way to change it when it is
   not), and Open my cellar. The top carries no Create an account or Sign in,
   no catalog count and no search; those belong to the header and the catalog.
-- **A feed entry is a ruled row, not a card.** It has the person's initials
-  square, the username as a link to their cellar, the time, the beer's name as
-  the row's heading-weight line, the brewery and vintage beneath, and the
-  bottle count as a figure at the right. The sentence the row replaces
-  survives for assistive technology: "added N bottles" is read after the
-  username. The signed-in visitor's own entries carry a "You" tag. Until task
-  15, the beer's name links to a catalog search for that name.
+- **A feed entry is a ruled row, not a card.** It leads with the beer's slot
+  from [ADR-0065](0065-imagery-icons-and-mark-specimen.md), the band of its
+  style colour with its strength set large, at both widths. Beside it are the
+  person's initials in a 24px square before the username, which links to their
+  cellar, and the time. Under them comes the beer's name as the row's
+  heading-weight line, linking to the beer's own page, then the brewery, style
+  and vintage. The bottle count is a figure at the right. The sentence the row
+  replaces survives for assistive technology: "added N bottles" is read after
+  the username, and the strength after the style. The signed-in visitor's own
+  entries carry a "You" tag. The band is not the cellar's band-on-desktop,
+  strip-on-phone split
+  ([ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)).
 - **"N new" never moves what the reader is looking at.** It is a full-width
   primary bar pinned under the header, laid over the feed's heading rather than
   inserted above the list. Pressing it shows the waiting entries at the top,
@@ -77,13 +83,14 @@ four rounds.
   failing first read shows the error and Try again where the feed would be.
   The masthead stays, and the route's `error.tsx` is no longer what a feed
   failure shows. The loading skeleton has the signed-out top's shape and the
-  row's grid, because the skeleton renders before anyone knows who is
+  row's grid, band included, because the skeleton renders before anyone knows who is
   signed in. The page and its skeleton live in an `app/[locale]/(home)` route
   group: a `loading.tsx` beside the locale layout is the fallback for every
   route under it, so the front page's skeleton was briefly showing on the
   cellar and the not-found pages too.
 - **What the chosen mockup showed that does not ship with this decision.** The
-  style band and the beer's own page link wait for task 15. The oldest-vintage
+  style band and the beer's own page link waited for task 15, which shipped
+  them on 2026-10-11. The oldest-vintage
   and last-added figures in *My cellar* wait for a cellar summary the API does
   not have; they are in [the backlog](../tasks/backlog.md). The product owner
   agreed both on 2026-10-04.
@@ -148,7 +155,7 @@ stop spilling out of the box, which became A4.
   the site, and the beer's name is now something to follow.
 - Bad, because the chosen direction ships without its loudest feature until
   task 15 widens the feed line, a change in a module this iteration does not
-  own.
+  own. Task 15 shipped it on 2026-10-11.
 - Bad, because a signed-out phone visitor sees Sign in but not Create an
   account without opening the menu. AUD-14 is only partly fixed, by decision.
 - Neutral, because feed rows are 960px wide on a desktop, so the bottle count
@@ -157,9 +164,9 @@ stop spilling out of the box, which became A4.
 - Neutral, because How Kalia works adds new copy in both languages, which
   iteration 7.5 otherwise keeps out of scope; the layout needed a heading and
   three steps to explain the page.
-- **Revisit trigger:** task 15 landing (the row gains the band, and the person
-  square shrinks beside the username), or a cellar summary in the API (the two
-  deferred figures return).
+- **Revisit trigger:** a cellar summary in the API (the two deferred figures
+  return). The other trigger, task 15 landing, fired on 2026-10-11 and is
+  recorded in the amendment above.
 
 ## Evidence
 
@@ -179,3 +186,12 @@ spare. The same measurement flagged an oversized "1000.25" as 38px over, so the
 check can fail. Round 4 drew the band with that geometry and all 20 entries fit
 at both widths in both languages. The band is not in the shipped page yet (see
 Decision), and these numbers are what task 15 inherits.
+
+The built row, measured in a browser on 2026-10-11 against the seeded catalog,
+with KBS at 12.0% (the strongest beer, drawn "12%") as the newest entry. The
+band is 104×46px at 375×812 and 136×60px at 1280×800, the widths A4 drew. KBS's
+figure leaves 47px and 62px to spare, and the tightest band in the feed,
+Rochefort 10 at 11.3% ("11,3" in Finnish), leaves 19px and 25px, in both
+languages. Two-letter initials leave 3px either side in the 24px square, and
+nothing scrolls sideways. The first feed entry starts 573px down on a phone
+(593px in Finnish) and 461px on a desktop.

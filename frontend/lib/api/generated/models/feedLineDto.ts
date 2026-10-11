@@ -11,8 +11,13 @@
 export interface FeedLineDto {
   /** The owner's username, as copied from the identity provider */
   username: string;
+  beerId: string;
   beerName: string;
   brewery: string;
+  /** The beer's style as the catalog records it now */
+  style: string;
+  /** Alcohol by volume, percent, as the catalog records it now */
+  abv: number;
   quantity: number;
   /** Null when not recorded */
   brewedDate?: string;

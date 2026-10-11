@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
@@ -13,8 +13,11 @@ const now = new Date("2026-09-13T12:00:00.000Z");
 
 const line: FeedLine = {
   username: "MiguelSombrero",
+  beerId: "0b7c5c8e-3f2a-4d7e-9a51-6c2e8f4b1d90",
   beerName: "AleSmith IPA",
   brewery: "AleSmith Brewing",
+  style: "American IPA",
+  abv: 7.25,
   quantity: 6,
   brewedDate: "2019-03-15",
   occurredAt: "2026-09-13T11:56:00.000Z",
@@ -51,13 +54,31 @@ describe("FeedLineRow", () => {
     );
   });
 
-  it("links the beer's name to a catalog search for it", () => {
+  it("links the beer's name to the beer's own page", () => {
     renderLine(line);
 
     expect(screen.getByRole("link", { name: "AleSmith IPA" })).toHaveAttribute(
       "href",
-      "/en/beers?query=AleSmith%20IPA",
+      "/en/beers/0b7c5c8e-3f2a-4d7e-9a51-6c2e8f4b1d90",
     );
+  });
+
+  it("leads with a band in the beer's style colour carrying its strength, hidden from assistive technology", () => {
+    const { container } = renderLine(line, "fi");
+
+    const band = container.querySelector("li > [data-beer-style]");
+    expect(band).toBe(screen.getByRole("listitem").firstElementChild);
+    expect(band).toHaveAttribute("data-beer-style", "ipa");
+    expect(band).toHaveAttribute("aria-hidden", "true");
+    expect(band).toHaveTextContent("7,25%");
+  });
+
+  it("names the beer's style beside its brewery and reads its strength to assistive technology", () => {
+    renderLine(line);
+
+    const meta = screen.getByText(/^AleSmith Brewing · American IPA/);
+    expect(meta).toHaveTextContent("AleSmith Brewing · American IPA, 7.25 % · vintage 2019");
+    expect(within(meta).getByText(", 7.25 %")).toHaveClass("sr-only");
   });
 
   it("reads who added how many bottles before naming the beer, in English", () => {
@@ -65,21 +86,22 @@ describe("FeedLineRow", () => {
 
     const item = screen.getByRole("listitem");
     expect(item).toHaveTextContent(/MiguelSombrero added 6 bottles · 4 minutes agoAleSmith IPA/);
-    expect(screen.getByText("AleSmith Brewing · vintage 2019")).toBeInTheDocument();
   });
 
-  it("names the brewery alone when no brewed date was recorded", () => {
+  it("leaves the vintage out when no brewed date was recorded", () => {
     renderLine({ ...line, quantity: 1, brewedDate: undefined });
 
     expect(screen.getByText("added 1 bottle")).toBeInTheDocument();
-    expect(screen.getByText("AleSmith Brewing")).toBeInTheDocument();
+    expect(screen.getByText(/^AleSmith Brewing/)).toHaveTextContent(/^AleSmith Brewing · American IPA, 7.25 %$/);
   });
 
   it("reads who added how many bottles, in Finnish", () => {
     renderLine(line, "fi");
 
     expect(screen.getByText("lisäsi kellariinsa 6 pulloa")).toBeInTheDocument();
-    expect(screen.getByText("AleSmith Brewing · vuosikerta 2019")).toBeInTheDocument();
+    expect(screen.getByText(/^AleSmith Brewing/)).toHaveTextContent(
+      "AleSmith Brewing · American IPA, 7,25 % · vuosikerta 2019",
+    );
   });
 
   it("shows the bottle count as a figure hidden from assistive technology, which reads it in the sentence", () => {

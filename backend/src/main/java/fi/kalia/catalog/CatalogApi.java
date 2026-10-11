@@ -29,7 +29,8 @@ public class CatalogApi {
 		Assert.isTrue(beerIds.size() <= MAX_BATCH_IDS, "beerIds must not exceed " + MAX_BATCH_IDS);
 		return catalog.getBeers(beerIds).stream()
 				.collect(Collectors.toMap(Beer::getId,
-						beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName())));
+						beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
+								beer.getStyle(), beer.getAbv())));
 	}
 
 }

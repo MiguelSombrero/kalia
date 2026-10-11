@@ -12,6 +12,7 @@ import fi.kalia.catalog.CatalogApi;
 import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.ProfileApi;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -269,7 +270,8 @@ class FeedServiceTest {
 	private static Map<UUID, BeerSummary> beerSummaries(FeedLine... resolvable) {
 		Map<UUID, BeerSummary> beers = new HashMap<>();
 		for (FeedLine line : resolvable) {
-			beers.put(line.getBeerId(), new BeerSummary(line.getBeerId(), "Beer", "Brewery"));
+			beers.put(line.getBeerId(), new BeerSummary(line.getBeerId(), "Beer", "Brewery", "IPA",
+					new BigDecimal("6.5")));
 		}
 		return beers;
 	}
