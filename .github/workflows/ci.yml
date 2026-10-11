@@ -198,6 +198,23 @@ jobs:
       - name: Self-test the contrast checker against fixtures
         run: node --test scripts/check-contrast.test.mjs
 
+  keycloak-theme-check:
+    name: Keycloak theme check
+    # Unconditional for the same reason as the contrast check above: a colour
+    # in frontend/app/globals.css and its copy in the Keycloak theme's
+    # login.css can land in pushes the changes filter classifies differently,
+    # and this costs a few seconds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Verify the Keycloak theme's colours and mark still match the app's (see ADR-0073)
+        run: node scripts/check-keycloak-theme.mjs
+      - name: Self-test the Keycloak theme checker against fixtures
+        run: node --test scripts/check-keycloak-theme.test.mjs
+
   raster-image-check:
     name: Raster image check
     # Unconditional: an image can be committed under any path, including ones

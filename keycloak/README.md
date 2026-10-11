@@ -16,28 +16,41 @@ file is applied and kept from drifting:
 
 ## The `kalia` login theme
 
-Deliberately minimal ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)):
 `parent=keycloak.v2`, that theme's own `styles.css` kept on the list, and one
-`login.css` layered after it that sets the brand colour, the cream background
-and the Kalia wordmark (`resources/img/kalia-logo.svg`, shown via
-`#kc-header-wrapper`). No FreeMarker, no `messages/` — Keycloak's own `en`/`fi`
-bundles translate the pages, and `realm-export.json`'s
-`internationalizationEnabled` / `supportedLocales` / `defaultLocale` turn them
-on. The brand hex values are copied from `frontend/app/globals.css` by hand;
-they are not wired to the design tokens.
+`login.css` layered after it ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md),
+laid out by [ADR-0073](../docs/adr/0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
+No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
+`messages/` overrides one key ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
+
+| Piece | Where |
+|---|---|
+| Palette, type, corners, edges, alerts | `login.css` `:root`: PatternFly's and keycloak.v2's documented custom properties |
+| The open column and its top alignment | `login.css` `.kalia-login` / `.kalia-container`, classes added through `theme.properties`' `kcLogin` / `kcLoginContainer` keys |
+| The lockup, title, link heights, button labels, hidden language menu | `login.css`, through Keycloak's `kc-` element ids |
+| The mark | `resources/img/kalia-mark.svg`, a copy of `frontend/app/icon.svg` |
+| The wordmark and the link home | the realm's `displayNameHtml` in `realm-export.json` |
+
+**Changing a colour.** Each one is declared once at the top of `login.css` as
+`--kalia-color-<name>`, a copy of `--color-<name>` in
+`frontend/app/globals.css`; everything else refers to those. Change the app's
+token and the copy together. `scripts/check-keycloak-theme.mjs` fails on a
+copy that no longer matches, on a colour literal anywhere else in the file,
+and on a mark that differs from the app's. A new colour gets a
+`--kalia-color-*` name that the app's `@theme` block also has.
 
 **On a Keycloak image bump** (`Dockerfile` `FROM` and `keycloak-config-cli` in
-`docker-compose.yml`), re-check the theme by eye: bring the stack up, open the
-login and registration pages in both locales, confirm the logo, colours and
-Finnish still render. `login.css` only touches keycloak.v2's documented CSS
-custom properties (`--keycloak-card-top-color`, `--keycloak-bg-logo-url`) and
-PatternFly globals, but nothing fails loudly if that theme's markup changes.
-`frontend/e2e/keycloak-branding.spec.ts` covers the language and accessibility,
-not the look.
+`docker-compose.yml`), run `frontend/e2e/keycloak-branding.spec.ts` and look at
+the four pages at 375 and 1280 in both locales. The spec checks each page's
+language, the lockup and its mark, the column's width and position, the hidden
+language menu, sideways scroll, the axe scan and computed contrast. What it
+cannot judge is whether the page still looks like Kalia: a keycloak.v2 markup
+change that drops a style without moving the column passes it.
 
 ## Checks
 
 `scripts/check-keycloak-realm-config.mjs` asserts the running realm still
 matches `realm-export.json`; `scripts/check-keycloak-signin.mjs` asserts it
-accepts a sign-in. Both run in `make keycloak-check` and in CI. See
+accepts a sign-in. Both run in `make keycloak-check` and in CI.
+`scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's colours
+and mark to the app's, in `make check` and CI's `keycloak-theme-check` job. See
 [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity).

@@ -4,6 +4,8 @@
 - **Date:** 2026-09-08
 - **Amended:** 2026-09-19 by [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md)
   — the theme now overrides one message key
+- **Amended:** 2026-10-11 by [ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
+  — the theme also lays the page out, hides the language menu, and links home
 
 ## Context
 
@@ -53,6 +55,16 @@ own and overrides none of Keycloak's.**
   the app's light-only palette. Every form control, and PatternFly's
   WCAG-checked focus behaviour, stays stock. Reproducing Kalia's design
   system inside Keycloak is explicitly not the bar — "recognisably Kalia" is.
+
+  > **Amended 2026-10-11 ([ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
+  > The theme now goes past custom properties in three places. It overrides
+  > two PatternFly layout properties, the vertical centring and the column
+  > width, through Kalia classes added to keycloak.v2's documented `kcLogin`
+  > and `kcLoginContainer` theme.properties keys. It hides Keycloak's language
+  > menu. It styles the lockup, the page title, link heights and button labels
+  > through Keycloak's own `kc-` element ids. The realm's `displayNameHtml`
+  > makes the lockup a link home. Form controls keep PatternFly's behaviour and
+  > focus handling; only their colours, corners and label case change.
 - **`loginTheme`, `internationalizationEnabled`, `supportedLocales`
   (`en`, `fi`) and `defaultLocale` (`en`) are realm settings** in
   `keycloak/realm-export.json`, so they inherit
@@ -148,6 +160,11 @@ on an English-default browser would get an English login page. Passing
   does not reach `keycloak/themes/kalia/login/resources/css/login.css`; the
   mint hex is duplicated there by hand, and a re-theme has two places to
   touch. Accepted as the cost of the pages being Keycloak's, not the app's.
+
+  > **Amended 2026-10-11 ([ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
+  > The copy is still by hand, but no longer silent: each colour in `login.css`
+  > is named after the `globals.css` token it copies, and
+  > `scripts/check-keycloak-theme.mjs` fails the build when one drifts.
 - Neutral, because the explicit `redirectTo` changes one existing behaviour:
   clicking "Sign in" in the header from a deep page (`/fi/beers/<id>`) now
   returns to `/fi` rather than back to that page, since the header form cannot

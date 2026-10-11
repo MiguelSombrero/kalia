@@ -312,9 +312,16 @@ and the breakpoint live in `frontend/components/ui/page.tsx` and
 - **A page that is one form is a narrow page, flush left like every other.**
   Sign-up is the model: a title, what happens next as numbered steps when the
   form starts a sequence, the fields, and the one button filling the column.
-  Keycloak's own pages follow it as closely as their theme allows. Chosen in
+  Chosen in
   [iteration 7.5 task 10](tasks/iteration-7.5/10-profile-and-sign-up-layout.md)
   ([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
+- **Keycloak's pages are the same single form with no frame around it.** They
+  have no header or footer of Kalia's to sit flush against, so the form column
+  is centred in the window instead, under the mark and wordmark as the header
+  sets them, which link home, and a hairline rule. Every one of them starts at
+  the same height, and none of them carries a second language control. Chosen
+  in [iteration 7.5 task 11](tasks/iteration-7.5/11-keycloak-pages-carry-the-identity.md)
+  ([ADR-0073](adr/0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 - **Every page is laid out for 375 and 1280 wide, and everything in the shell
   can be tapped.** Header, menu and footer controls are comfortably above the
   iteration's smallest target; a page's own controls are held to the same
@@ -419,6 +426,7 @@ wide display face is for page titles, so the wordmark labels and does not
 shout. The mark stands alone, without the name, wherever there is only room
 for a square: the browser tab and the home-screen icon.
 
-The Keycloak pages still show the snifter drawn for them in iteration 6.5 until
-[task 11](tasks/iteration-7.5/11-keycloak-pages-carry-the-identity.md) carries
-this mark across.
+Keycloak's pages carry the same mark and wordmark in the same lockup. No
+typeface is loaded on Keycloak's origin, so there the wordmark, like every
+other word, is set in the visitor's system face: the same shape and spacing,
+not the same letters.

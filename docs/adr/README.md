@@ -213,6 +213,10 @@ in one place, read
 - [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md) — repeated
   failed sign-ins lock an account temporarily, never permanently, and the
   kalia theme overrides Keycloak's own generic lockout message to say so.
+- [ADR-0073](0073-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
+  — Keycloak's pages drop the card for one narrow column under Kalia's lockup,
+  which links home; a `scripts/` check holds the theme's colours and mark to
+  the app's.
 
 ## Configuration, security and operations
 

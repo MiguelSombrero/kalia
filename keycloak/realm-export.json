@@ -2,6 +2,7 @@
   "realm": "kalia",
   "enabled": true,
   "displayName": "Kalia",
+  "displayNameHtml": "<a href=\"$(env:FRONTEND_URL)\">Kalia</a>",
   "sslRequired": "$(env:KEYCLOAK_SSL_REQUIRED)",
   "loginTheme": "kalia",
   "internationalizationEnabled": true,
