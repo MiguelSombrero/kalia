@@ -23,8 +23,8 @@ restyling what is already there.
   or carries a written decision not to fix it.
 - **DW-6:** A component that hardcodes a colour or a font instead of using a
   semantic token fails the build.
-- **DW-7:** The redesigned app passes WCAG 2.1 AA the way it did before the
-  redesign, and [ADR-0021](../adr/0021-design-tokens-ui-primitives.md)'s
+- **DW-7:** The redesigned app passes WCAG 2.2 AA, as it passed 2.1 AA
+  before the redesign, and [ADR-0021](../adr/0021-design-tokens-ui-primitives.md)'s
   contrast evidence describes the palette that actually ships.
 - **DW-8:** Whether `components/ui/` becomes a design system is a recorded
   decision rather than an open question.
@@ -139,7 +139,8 @@ identity rather than converted to it, which is the first honest test of whether
   holds, because a redesign aimed at phones could pass 2.1 AA and still be
   uncomfortable to tap. Tasks 06–10 design to it;
   [task 13](iteration-7.5/13-accessibility-and-contrast-reverified.md)
-  enforces it and records the raise in an ADR.
+  enforces it and records the raise in an ADR. Re-refined on 2026-10-11, that
+  raise widens to all of WCAG 2.2 AA, which task 13 adopts as Kalia's bar.
 - **Contrast becomes a build check**, built by
   [task 03](iteration-7.5/03-visual-identity.md) so that the new palette lands
   already guarded.
