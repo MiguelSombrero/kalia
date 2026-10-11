@@ -1,6 +1,6 @@
 # Task 17: A page title and a section heading each have one style
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3
 
@@ -109,26 +109,26 @@ Decided in refinement on 2026-10-11:
 
 ## Acceptance criteria
 
-- [ ] Every page title in the app renders through `PageTitle` and every section
+- [x] Every page title in the app renders through `PageTitle` and every section
       heading through `SectionHeading`; `catalogTitle`, `cellarTitle` and
       `nameTagName` are gone, and a grep for `text-3xl` and `text-2xl` on a
       heading in `app/` and `features/` returns nothing
-- [ ] The heading check fails its fixtures for a hand-written `<h1>` and `<h2>`,
+- [x] The heading check fails its fixtures for a hand-written `<h1>` and `<h2>`,
       passes on the repository, and runs in `make verify` and CI
-- [ ] `PageTitle` and `SectionHeading` each have a colocated component test
+- [x] `PageTitle` and `SectionHeading` each have a colocated component test
       covering every size or look and, for `SectionHeading`, the level the
       caller passes, with a `jest-axe` assertion
-- [ ] The error page and the not-found page show their titles in the identity,
+- [x] The error page and the not-found page show their titles in the identity,
       seen in a browser at both agreed widths
-- [ ] The four section headings that moved show in the display face, and every
+- [x] The four section headings that moved show in the display face, and every
       other page title and section heading renders as before, seen in a
       browser at both agreed widths in both locales
-- [ ] [Task 13](13-accessibility-and-contrast-reverified.md)'s Playwright
+- [x] [Task 13](13-accessibility-and-contrast-reverified.md)'s Playwright
       accessibility scans and heading-structure test pass against the changed
       pages
-- [ ] `docs/design.md`'s `--text-heading` row describes both looks a section
+- [x] `docs/design.md`'s `--text-heading` row describes both looks a section
       heading takes, and ADR-0073 is amended to name the check
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 
