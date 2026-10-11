@@ -1,6 +1,6 @@
 # Task 11: Carry the identity into the Keycloak pages
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-3
 
@@ -110,21 +110,21 @@ Decided with the product owner in refinement, 2026-10-01:
 
 ## Acceptance criteria
 
-- [ ] All four Keycloak-rendered pages — login, registration, email
+- [x] All four Keycloak-rendered pages — login, registration, email
       verification, password reset — render in the new identity, verified in a
       browser at both agreed widths against the running stack, not by reading
       CSS
-- [ ] A check fails when the two copies of the palette diverge — demonstrated
+- [x] A check fails when the two copies of the palette diverge — demonstrated
       by a fixture test that changes one and asserts the failure, following
       `check-keycloak-realm-config.mjs`'s precedent — and it runs in
       `make verify` and in CI
-- [ ] The theme still layers over stock `keycloak.v2` and still touches only
+- [x] The theme still layers over stock `keycloak.v2` and still touches only
       documented hooks, or the decision to go further is recorded as an
       amendment with its upgrade cost stated
-- [ ] `keycloak-branding.spec.ts` axe-scans all four pages at both agreed
+- [x] `keycloak-branding.spec.ts` axe-scans all four pages at both agreed
       widths and passes, and contrast on the re-themed pages is also computed
       against WCAG 2.1 AA, since the drift check compares colours, not
       pairings
-- [ ] Both locales still render correctly on all four pages
+- [x] Both locales still render correctly on all four pages
       ([ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md))
-- [ ] `make verify` is green
+- [x] `make verify` is green

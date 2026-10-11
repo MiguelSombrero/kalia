@@ -52,6 +52,21 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   source [iteration 8](iteration-8.md) brings in is not expected to carry one.
   Remove the column, the DTO field and the seed values together, once
   iteration 8 has settled what a beer's data source provides.
+- **Registration asks for a first and last name Kalia never shows.**
+  Keycloak's registration form requires both, while every Kalia surface names
+  a person by username ([ADR-0071](../adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
+  Dropping them is a change to the realm's user profile and to what
+  registration asks for ([ADR-0055](../adr/0055-self-registration-via-keycloak.md)),
+  and touches the seed script, the sign-up restart check and the specs that
+  fill the form. [Iteration 7.5 task 11](iteration-7.5/11-keycloak-pages-carry-the-identity.md)
+  kept it out of a visual task (AUD-39 in [the audit](iteration-7.5/audit.md),
+  [ADR-0074](../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
+- **Every Keycloak page is titled "Sign in to Kalia"**, registration and
+  password reset included, and the Finnish title reads "Kirjaudu Kalia"
+  (AUD-42). Keycloak sets one title for every page from its `loginTitle`
+  message, so a title per page needs Kalia's own copy of keycloak.v2's
+  `template.ftl`, the FreeMarker [ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)
+  declined ([ADR-0074](../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 
 Engineering work:
 

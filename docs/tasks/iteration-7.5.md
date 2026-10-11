@@ -45,7 +45,7 @@ restyling what is already there.
 | [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | done |
 | [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | done |
 | [16](iteration-7.5/16-kalia-mark-redesign.md) | A Kalia mark that is unmistakably Kalia's | done |
-| [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | refined |
+| [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | done |
 | [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | done |
 | [17](iteration-7.5/17-one-title-and-one-heading-style.md) | A page title and a section heading each have one style | needs-refinement |
 | [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md) | Empty states and the sign-in prompt each have one shape | needs-refinement |

@@ -119,7 +119,7 @@ export function checkContrast(root) {
   return { failures, results };
 }
 
-function parseBlocks(css) {
+export function parseBlocks(css) {
   const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
   const blocks = [];
   for (const m of source.matchAll(/([^{};]+)\{([^{}]*)\}/g)) {
@@ -130,7 +130,7 @@ function parseBlocks(css) {
   return blocks;
 }
 
-function resolveColour(token, scope, seen = new Set()) {
+export function resolveColour(token, scope, seen = new Set()) {
   if (seen.has(token)) return null;
   seen.add(token);
   const value = scope.get(token);

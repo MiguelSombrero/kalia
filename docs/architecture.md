@@ -614,8 +614,13 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 - **Those Keycloak pages are branded and bilingual**
   ([ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)): a minimal
   `keycloak.v2` child theme (`keycloak/themes/kalia/`, baked into the
-  Keycloak image) for the logo, cream ground and mint primary, and the
-  realm's own `en`/`fi` internationalisation for the words. The sign-in
+  Keycloak image) that lays the form out as one narrow column under Kalia's
+  mark and wordmark, a link home, in the app's palette
+  ([ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)),
+  and the realm's own `en`/`fi` internationalisation for the words. The
+  theme's colours are named copies of `frontend/app/globals.css` tokens, and
+  its mark a copy of `frontend/app/icon.svg`; `scripts/check-keycloak-theme.mjs`
+  fails `make check` and CI when either drifts. The sign-in
   Server Actions pass `ui_locales` so Keycloak renders in the locale the
   visitor was reading; `loginTheme` and the i18n settings are realm
   configuration under [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s
@@ -665,7 +670,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | Neither rule has a production violator either, so the same no-violator-passes-vacuously risk applies and both get the same fixture treatment |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language and WCAG 2.1 AA of the Keycloak pages reached from each locale (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md)); every surface a visitor can reach, rendered at 375×812 and at 1280×800, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`), plus the WCAG 2.1 AA scans covered above |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.1 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, rendered at 375×812 and at 1280×800, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`), plus the WCAG 2.1 AA scans covered above |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -798,6 +803,7 @@ the failure back to the agent without blocking
 | [ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md) | The profile is a name tag above two visibility choices that each list what they show, and every error in Kalia uses one style | accepted | 2026-10-11 |
 | [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) | The rack read as any app launcher, so Kalia's mark is a bottle pouring into foam on a deep teal tile | accepted | 2026-10-11 |
 | [ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md) | A design system would serve a consumer that will never exist, so `components/ui/` stays the web app's own primitives | accepted | 2026-10-11 |
+| [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md) | Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's | accepted | 2026-10-11 |
 
 ### Engineering process and documentation
 

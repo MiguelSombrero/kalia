@@ -1,50 +1,145 @@
-/* Kalia login theme override — layered after keycloak.v2's own styles.css
- * (theme.properties). Scope is deliberately tiny (ADR-0056): the brand
- * colour, the cream ground, and the Kalia wordmark in the header. Everything
- * else is stock keycloak.v2, including every form control and the WCAG-checked
- * PatternFly focus behaviour. */
-
+/* ADR-0074. Each --kalia-color-* copies globals.css's --color-* of the same
+   name; scripts/check-keycloak-theme.mjs fails on any other colour literal. */
 :root {
-  /* mint-600 / cream-50 / charcoal-900 — the semantic values from
-     frontend/app/globals.css. Driving PatternFly's own global primary token
-     re-colours the primary button, links and focus ring in one place. */
-  --pf-v5-global--primary-color--100: #2f6f5e;
-  --pf-v5-global--primary-color--200: #24564a;
-  --pf-v5-global--link--Color: #2f6f5e;
-  --pf-v5-global--link--Color--hover: #24564a;
+  --kalia-color-background: #ffffff;
+  --kalia-color-foreground: #121212;
+  --kalia-color-muted-foreground: #555555;
+  --kalia-color-border: #121212;
+  --kalia-color-divider: #e2e0d8;
+  --kalia-color-surface-sunken: #f2f1ec;
+  --kalia-color-primary: #2b37c9;
+  --kalia-color-destructive: #c8223a;
+  --kalia-color-success: #17793b;
+  --kalia-color-focus-ring: #2b37c9;
+  --kalia-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  /* keycloak.v2's own hooks: the card's top accent bar and the page
-     background image (dropped for a flat cream ground). */
-  --keycloak-card-top-color: #2f6f5e;
+  --pf-v5-global--FontFamily--text: var(--kalia-font);
+  --pf-v5-global--FontFamily--text--vf: var(--kalia-font);
+  --pf-v5-global--FontFamily--heading: var(--kalia-font);
+  --pf-v5-global--FontFamily--heading--vf: var(--kalia-font);
+
+  --pf-v5-global--primary-color--100: var(--kalia-color-primary);
+  --pf-v5-global--primary-color--200: color-mix(in srgb, var(--kalia-color-primary) 90%, var(--kalia-color-background));
+  --pf-v5-global--link--Color: var(--kalia-color-primary);
+  --pf-v5-global--link--Color--hover: var(--kalia-color-primary);
+  --pf-v5-global--link--Color--visited: var(--kalia-color-primary);
+  --pf-v5-global--Color--100: var(--kalia-color-foreground);
+  --pf-v5-global--Color--200: var(--kalia-color-muted-foreground);
+  --pf-v5-global--BackgroundColor--100: var(--kalia-color-background);
+  --pf-v5-global--BorderColor--100: var(--kalia-color-divider);
+  --pf-v5-global--BorderColor--200: var(--kalia-color-border);
+  --pf-v5-global--BorderColor--300: var(--kalia-color-border);
+  --pf-v5-global--danger-color--100: var(--kalia-color-destructive);
+  --pf-v5-global--danger-color--200: var(--kalia-color-foreground);
+  --pf-v5-global--warning-color--100: var(--kalia-color-border);
+  --pf-v5-global--warning-color--200: var(--kalia-color-foreground);
+  --pf-v5-global--success-color--100: var(--kalia-color-success);
+  --pf-v5-global--info-color--100: var(--kalia-color-border);
+  --pf-v5-global--palette--red-50: var(--kalia-color-background);
+  --pf-v5-global--palette--gold-50: var(--kalia-color-surface-sunken);
+  --pf-v5-global--palette--blue-50: var(--kalia-color-surface-sunken);
+  --pf-v5-global--palette--green-50: var(--kalia-color-surface-sunken);
+  --pf-v5-global--BorderRadius--sm: 0;
+  --pf-v5-global--BorderRadius--lg: 0;
+
+  --keycloak-card-top-color: transparent;
   --keycloak-bg-logo-url: none;
 }
 
 .login-pf body,
 body#keycloak-bg {
-  background: #faf3e9;
+  background: var(--kalia-color-background);
+  color: var(--kalia-color-foreground);
 }
 
-/* keycloak.v2 leaves form controls with the browser's default focus outline;
-   match frontend/app/globals.css's own :focus-visible rule instead. */
 :focus-visible {
-  outline: 2px solid #2f6f5e;
+  outline: 2px solid var(--kalia-color-focus-ring);
   outline-offset: 2px;
 }
 
-/* The header wrapper renders realm.displayNameHtml (empty here); repurpose it
-   as the Kalia wordmark. A decorative CSS background needs no alt text, and
-   the page's own <title> and <h1> carry the accessible name. */
-#kc-header-wrapper {
-  width: 220px;
-  height: 60px;
-  margin: 0 auto;
-  padding: 0;
-  font-size: 0;
-  background: url("../img/kalia-logo.svg") center / contain no-repeat;
+.kalia-login {
+  align-items: flex-start;
+  --pf-v5-c-login--PaddingTop: 32px;
+  --pf-v5-c-login__header--PaddingLeft: 0;
+  --pf-v5-c-login__header--PaddingRight: 0;
+  --pf-v5-c-login__header--c-brand--MarginBottom: 0;
+  --pf-v5-c-login__header--c-brand--xl--MarginBottom: 0;
+  --pf-v5-c-login__header--xl--MarginTop: 48px;
+  --pf-v5-c-login__main--BoxShadow: none;
+  --pf-v5-c-login__main--BackgroundColor: transparent;
+  --pf-v5-c-login__main-header--PaddingTop: 0;
+  --pf-v5-c-login__main-header--PaddingLeft: 0;
+  --pf-v5-c-login__main-header--PaddingRight: 0;
+  --pf-v5-c-login__main-body--PaddingLeft: 0;
+  --pf-v5-c-login__main-body--PaddingRight: 0;
 }
 
-/* White-on-cream is invisible; keep any real text charcoal. */
-#kc-header-wrapper,
-.pf-v5-c-login__main-header h1 {
-  color: #2b2725 !important;
+.kalia-container {
+  grid-template-columns: minmax(0, 28rem);
+  padding-inline: 16px;
+}
+
+#kc-header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--kalia-color-border);
+}
+
+#kc-header-wrapper {
+  font-family: var(--kalia-font);
+  color: var(--kalia-color-foreground) !important;
+  text-align: left;
+}
+
+#kc-header-wrapper a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1rem;
+  letter-spacing: 0.3em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+#kc-header-wrapper a::before {
+  content: "";
+  flex: none;
+  width: 32px;
+  height: 32px;
+  background: url("../img/kalia-mark.svg") center / contain no-repeat;
+}
+
+#kc-page-title {
+  grid-column: 1 / -1;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+  #kc-page-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* Keycloak's language menu, the only element it renders after the title. */
+#kc-page-title + div {
+  display: none;
+}
+
+#keycloak-bg [type="submit"] {
+  min-height: 40px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#keycloak-bg main a:not([class]) {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
 }
