@@ -109,7 +109,13 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
     if (freshCursors.size === 0 || !list) {
       return;
     }
-    if (list.getBoundingClientRect().top >= (parseFloat(getComputedStyle(list).scrollMarginTop) || 0)) {
+    // The control that revealed these entries has just unmounted, which would
+    // drop focus to <body>; the list it revealed takes it instead.
+    list.focus({ preventScroll: true });
+    const clearance =
+      (parseFloat(getComputedStyle(list).scrollMarginTop) || 0) +
+      (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0);
+    if (list.getBoundingClientRect().top >= clearance) {
       return;
     }
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -147,10 +153,11 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
       {/* Do not change the header's or the feed heading's height without these
           offsets: top-25 is the header (3.5rem) plus the heading (2.75rem),
           -top-11 lays the bar exactly over that heading, and the list's
-          scroll-mt-28 stops a reveal's scroll with the heading in view. */}
+          scroll-mt-12, added to the document's 4rem scroll padding
+          (globals.css), stops a reveal's scroll with the heading in view. */}
       <div className="sticky top-25 z-10 h-0">
         {pendingLines.length > 0 && (
-          <div role="status">
+          <div role="status" data-new-events>
             <Button
               type="button"
               variant="primary"
@@ -170,7 +177,7 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
           pendingLines.length === 0 && emptyState
         ) : (
           <>
-            <ul ref={listRef} className="flex scroll-mt-28 flex-col">
+            <ul ref={listRef} tabIndex={-1} className="flex scroll-mt-12 flex-col">
               {lines.map((line) => (
                 <FeedLineRow
                   key={line.cursor}

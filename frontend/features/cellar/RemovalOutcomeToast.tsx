@@ -5,7 +5,9 @@ import { Toast, ToastDescription, ToastProvider, ToastViewport } from "@/compone
 import { useBottleRemovalStore } from "./store";
 
 /**
- * Mounted once per cellar page (in CellarList). Reacts to the shared removal
+ * Mounted once per cellar page (in CellarView), outside the list: removing the
+ * last bottle empties the cellar, and a toast inside the list would unmount
+ * before it was ever announced. Reacts to the shared removal
  * store rather than owning any bottle-specific state itself, since one toast
  * at a time means the toast's content follows whichever removal most
  * recently settled, wherever in the page it was started.

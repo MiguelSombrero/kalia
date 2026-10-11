@@ -694,6 +694,21 @@ describe("FeedList revealing waiting entries", () => {
     }
   });
 
+  it("moves focus to the list it revealed, since the control that had it is gone", async () => {
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      const list = screen.getAllByRole("list")[0];
+      list.scrollIntoView = vi.fn();
+      await revealOne();
+
+      expect(screen.queryByRole("button", { name: "1 new event" })).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(list);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("does not scroll when the entries it showed are already in view", async () => {
     vi.useFakeTimers();
     try {

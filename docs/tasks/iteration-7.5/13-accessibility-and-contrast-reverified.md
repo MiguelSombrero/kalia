@@ -1,6 +1,6 @@
 # Task 13: Accessibility and contrast, re-verified across the redesign
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-7
 
@@ -166,45 +166,45 @@ Re-refined with the product owner on 2026-10-11, after an analysis found that
 
 ## Acceptance criteria
 
-- [ ] Every colour pairing the redesigned app actually uses is recomputed
+- [x] Every colour pairing the redesigned app actually uses is recomputed
       against WCAG 2.2 AA, whose contrast criteria are 2.1's unchanged, and
       [ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)'s Evidence
       table describes the palette that ships
-- [ ] `@axe-core/playwright` scans pass on every surface, the Keycloak pages
+- [x] `@axe-core/playwright` scans pass on every surface, the Keycloak pages
       included, at both agreed widths and in both locales, with
       `e2e/support/a11y.ts` scanning at WCAG 2.2 AA (`wcag22a`, `wcag22aa`
       added); any scoped exclusion names one selector and is recorded in the
       ADR and the quality backlog
-- [ ] The three agreed flows were walked by keyboard alone in both locales and
+- [x] The three agreed flows were walked by keyboard alone in both locales and
       the focus order through each is correct, with a Playwright test covering
       flow 1 end to end by keyboard
-- [ ] Every interactive element on every surface is at least 24×24 CSS pixels
+- [x] Every interactive element on every surface is at least 24×24 CSS pixels
       at both agreed widths, or meets success criterion 2.5.8's spacing
       exception, asserted by a Playwright test
-- [ ] No focused element on the three agreed flows is entirely hidden by the
+- [x] No focused element on the three agreed flows is entirely hidden by the
       sticky header, the feed's "N new" control or a toast at the phone width
       (2.4.11), asserted by a Playwright test
-- [ ] 2.5.7, 3.2.6, 3.3.7 and 3.3.8 were walked in both locales, 3.3.8 on the
+- [x] 2.5.7, 3.2.6, 3.3.7 and 3.3.8 were walked in both locales, 3.3.8 on the
       Keycloak login and registration pages, and the result of each is
       recorded as the ADR's evidence
-- [ ] An ADR records WCAG 2.2 AA as Kalia's bar, with staying at 2.1 AA and
+- [x] An ADR records WCAG 2.2 AA as Kalia's bar, with staying at 2.1 AA and
       2.1 AA plus 2.5.8 alone as the rejected alternatives, passing
       `node scripts/check-adrs.mjs`, and
       [architecture.md §5](../../architecture.md)'s accessibility bullet
       states the bar that is actually enforced
-- [ ] Every live document, code comment and CI step name that names the bar
+- [x] Every live document, code comment and CI step name that names the bar
       names WCAG 2.2 AA; accepted ADRs that name it are amended rather than
       rewritten ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)),
       and finished task files are left as they were
-- [ ] Everything the redesign made interactive is operable without a mouse,
+- [x] Everything the redesign made interactive is operable without a mouse,
       and everything it animates respects `prefers-reduced-motion`, covered by
       a test
-- [ ] Heading structure is coherent across surfaces — one `h1` per page and no
+- [x] Heading structure is coherent across surfaces — one `h1` per page and no
       skipped levels — asserted by a test rather than by inspection
-- [ ] Every finding is fixed, scheduled as its own task, or recorded in
+- [x] Every finding is fixed, scheduled as its own task, or recorded in
       [the quality backlog](../quality-backlog.md) with an ID; none is left
       only in a PR description
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

@@ -19,7 +19,7 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 export const buttonVariants = (variant: ButtonVariant = "primary", size: ButtonSize = "default"): string => {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-control border text-label font-semibold uppercase transition-colors",
+    "inline-flex items-center justify-center gap-2 rounded-control border text-label font-semibold uppercase motion-safe:transition-colors",
     sizeClasses[size],
     variantClasses[variant],
   );

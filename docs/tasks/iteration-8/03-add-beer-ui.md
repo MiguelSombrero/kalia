@@ -50,7 +50,7 @@ now exists. Both locales, and the loading, error and duplicate states.
   including validation messages.
 - Design tokens only ([ADR-0021](../../adr/0021-design-tokens-ui-primitives.md)),
   loading/error/empty states per
-  [ADR-0022](../../adr/0022-loading-error-empty-states.md), WCAG 2.1 AA at the
+  [ADR-0022](../../adr/0022-loading-error-empty-states.md), WCAG 2.2 AA at the
   three existing layers.
 
 ## Open questions

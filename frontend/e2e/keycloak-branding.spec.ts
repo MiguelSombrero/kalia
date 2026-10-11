@@ -1,7 +1,7 @@
 // Kalia-branded, bilingual Keycloak pages (ADR-0056, ADR-0074): the login,
 // registration, email-verification and password-reset pages Keycloak renders
 // on a different origin must appear in the locale the visitor was reading, in
-// Kalia's identity, and meet the app's WCAG 2.1 AA bar at both agreed widths.
+// Kalia's identity, and meet the app's WCAG 2.2 AA bar at both agreed widths.
 import type { Page } from "@playwright/test";
 import { expect, test, uniqueUsername } from "./support/keycloakAccount";
 import { waitForMessageTo } from "./support/mailpit";
@@ -82,7 +82,7 @@ const contrast = (a: Rgb, b: Rgb): number => {
 };
 
 // axe checks text contrast but not a control's edge or the focus ring, the
-// two non-text pairings WCAG 2.1 AA (1.4.11) holds to 3:1, so those are
+// two non-text pairings WCAG 2.2 AA (1.4.11) holds to 3:1, so those are
 // computed from the rendered page here. Text pairings are computed too, from
 // the same colours, so a palette that drifts fails here with the pairing named.
 const expectRenderedContrast = async (page: Page) => {

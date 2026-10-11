@@ -4,6 +4,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
+import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import { cellarHead, cellarTitle } from "./layout";
 import type { CellarBeer } from "./types";
 
@@ -65,6 +66,7 @@ export const CellarView = async ({
           </Link>
         </section>
       )}
+      <RemovalOutcomeToast />
     </>
   );
 };

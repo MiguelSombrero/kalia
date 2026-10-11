@@ -12,7 +12,7 @@ export const ToastProvider = ToastPrimitive.Provider;
 export const ToastViewport = ({ className, ...props }: ComponentProps<typeof ToastPrimitive.Viewport>) => {
   return (
     <ToastPrimitive.Viewport
-      className={cn("fixed bottom-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2", className)}
+      className={cn("fixed right-4 bottom-4 left-4 z-50 flex max-w-sm flex-col gap-2 sm:left-auto sm:w-full", className)}
       {...props}
     />
   );
@@ -30,6 +30,7 @@ type ToastProps = ComponentProps<typeof ToastPrimitive.Root> & { variant: ToastV
 export const Toast = ({ variant, className, children, ...props }: ToastProps) => {
   return (
     <ToastPrimitive.Root
+      data-toast
       data-variant={variant}
       className={cn(cardVariants, "flex items-stretch overflow-hidden", className)}
       {...props}

@@ -13,7 +13,6 @@ import { AddBottleDialog } from "./AddBottleDialog";
 import { BottleTile } from "./BottleTile";
 import { cellarSorts, type CellarSort, sortCellar, toCellarSort } from "./cellarOrder";
 import { beerBlock, bottleTiles, cellarTools } from "./layout";
-import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import { isBottleHidden, useBottleRemovalStore } from "./store";
 import type { CellarBeer } from "./types";
 
@@ -76,7 +75,6 @@ export const CellarBeerList = ({
           <CellarBeerBlock key={beer.entryId} locale={locale} beer={beer} owner={owner} />
         ))}
       </div>
-      {owner && <RemovalOutcomeToast />}
     </>
   );
 };
@@ -94,7 +92,7 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
   }
 
   return (
-    <section aria-labelledby={headingId} className={beerBlock}>
+    <section aria-labelledby={headingId} tabIndex={-1} className={beerBlock}>
       <BeerSlot
         variant="band"
         beerStyle={beer.style}

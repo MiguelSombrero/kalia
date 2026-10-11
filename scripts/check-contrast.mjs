@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Every colour pairing docs/design.md declares, and every beer-style colour
-// globals.css defines, meets WCAG 2.1 AA. jsdom cannot evaluate rendered
+// globals.css defines, meets WCAG 2.2 AA. jsdom cannot evaluate rendered
 // colour, so without this a token that breaks contrast passes every unit test
 // and fails only in Playwright (ADR-0021's Bad consequence). Plain Node with no
 // dependencies, self-tested against fixtures like check-design-tokens.mjs.
@@ -15,7 +15,7 @@ const NEEDS = { text: 4.5, "non-text": 3 };
 /**
  * @param {string} a hex colour, #rgb or #rrggbb
  * @param {string} b hex colour, #rgb or #rrggbb
- * @returns {number} WCAG 2.1 contrast ratio, 1–21
+ * @returns {number} WCAG 2.2 contrast ratio, 1–21
  */
 export function contrastRatio(a, b) {
   const [x, y] = [luminance(a), luminance(b)];
@@ -162,7 +162,7 @@ const invokedDirectly =
 
 if (invokedDirectly) {
   const { failures, results } = checkContrast(resolve(SELF_DIR, ".."));
-  console.log("Checking WCAG 2.1 AA contrast of docs/design.md's pairings and globals.css's beer-style colours\n");
+  console.log("Checking WCAG 2.2 AA contrast of docs/design.md's pairings and globals.css's beer-style colours\n");
   for (const r of results) {
     console.log(`  ${r.ratio >= r.needs ? "ok  " : "FAIL"}  ${r.ratio.toFixed(2).padStart(5)}:1  (needs ${r.needs}:1)  ${r.label}`);
   }

@@ -17,6 +17,7 @@ vi.mock("./actions", () => ({ removeBottleAction }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams() }));
 
 import { CellarBeerList } from "./CellarBeerList";
+import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import { useBottleRemovalStore } from "./store";
 import type { CellarBeer } from "./types";
 
@@ -45,6 +46,7 @@ const renderCellar = async (locale: Locale) => {
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <CellarBeerList locale={locale} beers={[beer]} owner />
+        <RemovalOutcomeToast />
       </I18nextProvider>
     </QueryClientProvider>,
   );

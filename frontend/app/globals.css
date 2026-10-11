@@ -143,6 +143,20 @@
   }
 }
 
+/* Do not change the header's height (3.5rem) or the feed's new-entries
+   control without these: a control focused by Tab, or a skip-link target, is
+   scrolled into view only as far as the padding, so less leaves it under the
+   sticky bar, the control or a toast (WCAG 2.4.11). */
+html {
+  scroll-padding-top: 4rem;
+}
+html:has([data-new-events]) {
+  scroll-padding-top: 7rem;
+}
+html:has([data-toast][data-state="open"]) {
+  scroll-padding-bottom: 7rem;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
