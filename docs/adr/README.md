@@ -154,6 +154,9 @@ decides the URL built on it.
 - [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
   — the cellar is a sortable list of beers beside their style band, every
   bottle a tile headed by its vintage; the owner's read carries all bottles.
+- [ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)
+  — the profile is a name tag above two visibility choices that list what they
+  show, going public asks first, saves report in a toast; one error style app-wide.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a
