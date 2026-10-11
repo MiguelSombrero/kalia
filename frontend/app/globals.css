@@ -27,6 +27,11 @@
   --orange-400: #ff8a3d;
   --pink-300: #ffa3c8;
 
+  --teal-800: #005b57;
+  --sun-300: #ffd84a;
+  --sun-500: #f2b900;
+  --coral-400: #ff7a59;
+
   /* Semantic aliases. `node scripts/check-contrast.mjs` holds every pairing
      docs/design.md declares, and every beer-style block below, to WCAG AA. */
   --background: var(--white);
@@ -51,6 +56,13 @@
      which block a style name gets. */
   --style: var(--paper-300);
   --style-foreground: var(--ink-950);
+
+  /* The mark's own colours, used nowhere else in the app (docs/design.md, The mark). */
+  --mark-tile: var(--teal-800);
+  --mark-beer: var(--sun-300);
+  --mark-streak: var(--sun-500);
+  --mark-bottle: var(--coral-400);
+  --mark-foam: var(--white);
 }
 
 [data-beer-style="stout"] { --style: var(--roast-950); --style-foreground: var(--white); }
@@ -85,6 +97,11 @@
   --color-focus-ring: var(--focus-ring);
   --color-style: var(--style);
   --color-style-foreground: var(--style-foreground);
+  --color-mark-tile: var(--mark-tile);
+  --color-mark-beer: var(--mark-beer);
+  --color-mark-streak: var(--mark-streak);
+  --color-mark-bottle: var(--mark-bottle);
+  --color-mark-foam: var(--mark-foam);
 
   /* --font-archivo comes from next/font/google in app/[locale]/layout.tsx,
      loaded with its wdth axis; the display face is the same family run wide. */

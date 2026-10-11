@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-03
+- **Amended:** 2026-10-11 by [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) — the
+  mark is no longer the rack; its bullet below points there
 
 ## Context
 
@@ -59,6 +61,9 @@ hand-drawn icons for the few jobs a word cannot do.** This is direction C,
   tracked. The mark exists as a component the app can render, so it no longer
   lives only under `keycloak/themes/`. Which form the page header holds, and
   where it sits, is [task 06](../tasks/iteration-7.5/06-page-shell.md)'s.
+  *Amended 2026-10-11:* the rack is replaced by a bottle pouring into foam on
+  a deep teal tile, chosen on its own in
+  [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md).
 - **The favicon is an SVG, with generated PNGs beside it.** The Next.js
   default `favicon.ico` is removed; an SVG serves the tab, a 32 px PNG serves
   browsers that ignore an SVG there, and a 180 px PNG serves iOS. Both PNGs are

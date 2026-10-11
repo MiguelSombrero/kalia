@@ -129,6 +129,11 @@ two-layer rule they sit in is
 | `--color-focus-ring` | Where keyboard focus is. | Only `:focus-visible` outlines. It carries no other meaning, so it is never reused for decoration. |
 | `--color-style` | The colour of a beer's style group. | A style badge, or anything else that labels a beer by its style. The element carries `data-beer-style` set from `beerStyleGroup()` in `lib/beerStyle.ts`; without it, it takes the grey of *Anything else*. See [Style groups](#style-groups). |
 | `--color-style-foreground` | Text placed on `--color-style`. | Whenever something sits on a style fill; never on its own. Ink or white, whichever the group's colour needs. |
+| `--color-mark-tile` | The mark's ground: the square its scene is drawn on. | Only inside the mark. Never a page, surface or label colour. |
+| `--color-mark-beer` | The beer in the mark, in the bottle and falling from it. | Only inside the mark. It is not a style colour and never an accent. |
+| `--color-mark-streak` | The darker runs in the falling beer. | Only inside the mark. |
+| `--color-mark-bottle` | The bottle's outline in the mark. | Only inside the mark. Never an action or an error colour, warm as it is. |
+| `--color-mark-foam` | The foam the beer lands in, and the light on the bottle's empty glass. | Only inside the mark. It is the page's white, kept as the mark's own so that changing the page never changes the mark. |
 
 ### Type
 
@@ -224,11 +229,20 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-focus-ring` | `--color-background` | non-text |
 | `--color-focus-ring` | `--color-surface` | non-text |
 | `--color-focus-ring` | `--color-surface-sunken` | non-text |
+| `--color-mark-tile` | `--color-background` | non-text |
+| `--color-mark-bottle` | `--color-mark-tile` | non-text |
+| `--color-mark-beer` | `--color-mark-tile` | non-text |
+| `--color-mark-foam` | `--color-mark-tile` | non-text |
 
 What the check cannot see: a fill drawn at reduced opacity (a primary or
 destructive button's hover, the dialog scrim) is a blend of two tokens, not a
 token. Those stay close enough to their solid pairing to pass, and the
 Playwright `@axe-core/playwright` scans remain the check on the rendered page.
+
+The mark is held part by part against what each part is seen on: the tile
+against the page, and the bottle's edge, the beer and the foam against the
+tile. The darker runs in the beer, and the bottle's edge where it meets the
+beer inside it, are texture within one part and are not held.
 
 ## Typography across the two locales
 
@@ -342,7 +356,10 @@ surface does not know the fact, nothing is drawn.
 Chosen from built alternatives in
 [iteration 7.5 task 04](tasks/iteration-7.5/04-imagery-iconography-and-the-mark.md);
 the directions that were rejected, and why, are
-[ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md).
+[ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md). The mark was chosen
+again on its own in
+[task 16](tasks/iteration-7.5/16-kalia-mark-redesign.md), and the directions
+rejected there are [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md).
 
 ### What each placeholder stands in for
 
@@ -356,7 +373,8 @@ the directions that were rejected, and why, are
 - **A person's slot stands in for their photograph.** It is their initials in
   a hairline square, with no colour. Colour in this identity has two jobs,
   telling beer styles apart and marking the one action, so a person is not
-  given a third.
+  given a third. The mark's own colours are outside both, and are used nowhere
+  but the mark.
 - **Both are decorative.** A beer's strength and a person's name are always
   written beside them as text, so the slots are hidden from assistive
   technology rather than named.
@@ -378,13 +396,23 @@ Navigation tabs, container types, edit, remove and visibility stay words.
 
 ### The mark
 
-The mark is a cellar rack: nine square cells, eight in ink and one in the
-action colour. The cellar is the product, and the one filled cell is the bottle
-you own; the single accent is the same restraint the whole identity shows with
-its one action colour. It is square, ruled and quiet, which is what Kalia is
-meant to feel like, and it holds up when it is the size of a browser tab. It
-deliberately carries no glass: a drinking vessel would say "beer" where the mark
-should say "a place where beer is kept".
+The mark is a bottle being poured. A clear bottle, outlined in coral, is
+tipped neck-down and empties a sheet of yellow beer that falls into a billow
+of white foam, all on a deep teal square. The bottle is what a cellar keeps,
+and the pour is the moment it was kept for: Kalia is about laying beer down,
+and this is what laying it down is for. The bottle carries no label, so beer
+fills it from base to neck and its shape alone says "bottle".
+
+It is a scene on its own tile, so it is its own square form: the browser tab
+and the home-screen icon show the mark itself, and it keeps its edge on a dark
+tab as on a light one. At the size of a browser tab it comes down to a teal
+square with a yellow fall into white.
+
+Its colours belong to it alone. The teal, the yellows, the coral and the
+foam's white are used nowhere else in the app, so the page keeps its one action
+colour and the style colours keep their meaning; the mark is the one place the
+identity is bright. Each part of it is held to the contrast bar for graphics
+against what it is seen on.
 
 Beside it the name is set in capitals at normal width and widely spaced. The
 wide display face is for page titles, so the wordmark labels and does not

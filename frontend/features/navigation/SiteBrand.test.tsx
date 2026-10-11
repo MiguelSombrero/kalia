@@ -9,6 +9,7 @@ describe("SiteBrand", () => {
 
     const link = screen.getByRole("link", { name: "Kalia, Etusivu" });
     expect(link).toHaveAttribute("href", "/fi");
+    expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     expect(await axe(container)).toHaveNoViolations();
   });
 });
