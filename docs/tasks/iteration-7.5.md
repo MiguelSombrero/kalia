@@ -44,6 +44,7 @@ restyling what is already there.
 | [08](iteration-7.5/08-catalog-layout.md) | Catalog layout | done |
 | [09](iteration-7.5/09-cellar-layout.md) | Cellar layout | done |
 | [10](iteration-7.5/10-profile-and-sign-up-layout.md) | Profile and sign-up layout | refined |
+| [16](iteration-7.5/16-kalia-mark-redesign.md) | A Kalia mark that is unmistakably Kalia's | needs-refinement |
 | [11](iteration-7.5/11-keycloak-pages-carry-the-identity.md) | Carry the identity into the Keycloak pages | refined |
 | [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | refined |
 | [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | refined |
