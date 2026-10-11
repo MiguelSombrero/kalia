@@ -47,7 +47,9 @@ for (const viewport of VIEWPORTS) {
     for (const path of SHORT_PAGES) {
       test(`${path} is no taller than its content, and the footer closes it`, async ({ page }) => {
         await page.goto(path);
-        await expect(page.getByRole("main")).toBeVisible();
+        // A cold route can still show its loading skeleton once goto resolves;
+        // no skeleton has an <h1>, so measuring before one appears measures it.
+        await expect(page.getByRole("main").getByRole("heading", { level: 1 })).toBeVisible();
 
         const { scrollHeight, innerHeight } = await page.evaluate(() => ({
           scrollHeight: document.documentElement.scrollHeight,
@@ -148,10 +150,12 @@ for (const viewport of VIEWPORTS) {
 
       test("the menu holds Create an account and the language switch", async ({ page }) => {
         await page.goto("/en");
-        await expect(page.getByRole("link", { name: "Create an account" })).toBeHidden();
+        // Scoped to the header: an empty feed adds its own sign-up link to <main>.
+        const createAccount = page.getByRole("banner").getByRole("link", { name: "Create an account" });
+        await expect(createAccount).toBeHidden();
 
         await page.getByRole("button", { name: "Menu" }).click();
-        await expect(page.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/en/sign-up");
+        await expect(createAccount).toHaveAttribute("href", "/en/sign-up");
         await page.getByRole("link", { name: "Suomi" }).click();
 
         await expect(page).toHaveURL(/\/fi$/);
@@ -164,7 +168,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole("button", { name: "Menu" })).toBeHidden();
         await expect(page.getByRole("navigation", { name: MAIN_NAV.en }).getByRole("link")).toHaveCount(3);
         await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
-        await expect(page.getByRole("link", { name: "Create an account" })).toBeVisible();
+        await expect(page.getByRole("banner").getByRole("link", { name: "Create an account" })).toBeVisible();
       });
     }
 
