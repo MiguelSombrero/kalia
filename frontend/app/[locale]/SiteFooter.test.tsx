@@ -11,6 +11,8 @@ describe("SiteFooter", () => {
     expect(screen.getByText("Käsityöoluiden hallintaa olutharrastajille.")).toBeInTheDocument();
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(container.querySelector("footer svg")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -1,16 +1,23 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+import { markShapes } from "@/lib/kaliaMark";
 import { KaliaMark } from "./kalia-mark";
 
 describe("KaliaMark", () => {
-  it("draws nine cells of the rack, one of them in the action colour", () => {
+  it("draws a bottle pouring beer into foam on a full tile, in the mark's own colours only", () => {
     const { container } = render(<KaliaMark />);
 
-    const cells = container.querySelectorAll("rect");
-    expect(cells).toHaveLength(9);
-    expect(container.querySelectorAll("rect.fill-primary")).toHaveLength(1);
-    expect(container.querySelectorAll("rect.fill-foreground")).toHaveLength(8);
+    const tile = container.querySelector("rect.fill-mark-tile");
+    expect(tile).toHaveAttribute("width", "64");
+    expect(tile).toHaveAttribute("height", "64");
+    expect(container.querySelector("path.stroke-mark-bottle")).toHaveAttribute("transform");
+    expect(container.querySelectorAll("path.fill-mark-beer")).toHaveLength(2);
+    expect(container.querySelectorAll("circle.fill-mark-foam").length).toBeGreaterThan(0);
+
+    const painted = [...container.querySelectorAll("rect, circle, path")];
+    expect(painted).toHaveLength(markShapes.length);
+    expect(painted.every((shape) => /\b(fill|stroke)-mark-/.test(shape.getAttribute("class") ?? ""))).toBe(true);
   });
 
   it("is hidden from assistive technology when it sits beside the wordmark", async () => {

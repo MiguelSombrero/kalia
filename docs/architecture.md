@@ -467,7 +467,8 @@ The shape of the frontend. Day-to-day rules for writing it live in
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
   toast's live-region/timing contract rather than either's appearance.
   `BeerSlot`, `PersonSlot`, `Icon` and `KaliaMark` are further primitives in
-  `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)),
+  `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md);
+  the mark's drawing, [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md)),
   and so are `FieldError` with `fieldClasses` and `ErrorAlert`, the one error
   style every form and section uses
   ([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
@@ -479,7 +480,8 @@ The shape of the frontend. Day-to-day rules for writing it live in
   The two slots draw from data a surface already holds, so the API has no image
   field, and the icons are hand-drawn rather than a library. The favicon is
   `app/icon.svg` with a 32 px PNG fallback and the apple-touch icon, both
-  generated at build, so no raster is tracked. A generated icon's URL has no
+  generated at build, so no raster is tracked; all three are the one drawing
+  in `lib/kaliaMark.ts`, which the `KaliaMark` component also paints. A generated icon's URL has no
   extension, so `proxy.ts` excludes that family from the locale redirect by
   name; a new extensionless generated route needs the same.
   What the identity is meant to feel like, what each semantic token means, and
@@ -791,6 +793,7 @@ the failure back to the agent without blocking
 | [ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md) | The catalog is one ruled column of beers beside a filter column that folds on a phone, with one Search button that always comes last | accepted | 2026-10-09 |
 | [ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) | The cellar is a sortable list of beers, each beside its style band with every bottle shown as a tile headed by its vintage | accepted | 2026-10-10 |
 | [ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md) | The profile is a name tag above two visibility choices that each list what they show, and every error in Kalia uses one style | accepted | 2026-10-11 |
+| [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) | The rack read as any app launcher, so Kalia's mark is a bottle pouring into foam on a deep teal tile | accepted | 2026-10-11 |
 
 ### Engineering process and documentation
 

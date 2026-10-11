@@ -1,6 +1,6 @@
 # Task 16: A Kalia mark that is unmistakably Kalia's
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** DW-2
 - **Kind:** design
@@ -127,29 +127,29 @@ Decided with the product owner in refinement, 2026-10-11:
 
 ## Acceptance criteria
 
-- [ ] The product owner chose the mark from built alternatives: a first
+- [x] The product owner chose the mark from built alternatives: a first
       round of six distinct concepts, then variations of the chosen one until
       a final form — each shown at 16 px, in the header and footer at both
       agreed widths, and large
-- [ ] The chosen mark replaces the rack in the header and the footer, seen in
+- [x] The chosen mark replaces the rack in the header and the footer, seen in
       a browser at both agreed widths, and the `KaliaMark` vitest test
       describes the new drawing
-- [ ] The favicon and `apple-touch-icon` are the new mark, verified in a
+- [x] The favicon and `apple-touch-icon` are the new mark, verified in a
       browser rather than by reading the markup, and `e2e/app-icons.spec.ts`
       passes against the links the page emits
-- [ ] The mark is named where it is the home link and hidden elsewhere,
+- [x] The mark is named where it is the home link and hidden elsewhere,
       asserted by a `jest-axe` test on the components that render it
-- [ ] Any colour the mark uses is pinned to `globals.css` by
+- [x] Any colour the mark uses is pinned to `globals.css` by
       `kaliaMark.test.ts`, and any pairing it adds is declared in
       [`docs/design.md`](../../design.md) and passes
       `scripts/check-contrast.mjs`
-- [ ] No raster file is tracked and no dependency is added to
+- [x] No raster file is tracked and no dependency is added to
       `frontend/package.json`
-- [ ] The choice and the rejected concepts are recorded in an ADR, and
+- [x] The choice and the rejected concepts are recorded in an ADR, and
       ADR-0065's mark bullet points at it
-- [ ] [`docs/design.md`](../../design.md)'s *Imagery and the mark* section says
+- [x] [`docs/design.md`](../../design.md)'s *Imagery and the mark* section says
       what the new mark means, as intent, with no file paths or values
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

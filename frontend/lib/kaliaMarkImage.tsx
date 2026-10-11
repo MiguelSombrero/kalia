@@ -1,15 +1,11 @@
 import { ImageResponse } from "next/og";
-import { markAccent, markCells, markInk, markPaper } from "./kaliaMark";
+import { markSvg } from "./kaliaMark";
 
 export const kaliaMarkImage = (px: number) =>
   new ImageResponse(
     (
-      <svg width={px} height={px} viewBox="0 0 64 64">
-        <rect width="64" height="64" fill={markPaper} />
-        {markCells.map(({ x, y, size, accent }) => (
-          <rect key={`${x}-${y}`} x={x} y={y} width={size} height={size} fill={accent ? markAccent : markInk} />
-        ))}
-      </svg>
+      // eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders through Satori, not the browser; next/image does not apply
+      <img src={`data:image/svg+xml;base64,${btoa(markSvg())}`} width={px} height={px} alt="" />
     ),
     { width: px, height: px },
   );
