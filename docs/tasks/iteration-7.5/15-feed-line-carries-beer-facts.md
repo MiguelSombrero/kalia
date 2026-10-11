@@ -1,6 +1,6 @@
 # Task 15: A feed line carries its beer's style, strength and id
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **PR:** #342
 - **Covers:** none
@@ -103,5 +103,5 @@ Decided with the product owner in refinement, 2026-10-11:
 - [x] No style band overflows at either width in either locale, checked in a
       browser against KBS at 12.0%
 - [x] ADR-0068, ADR-0065 and `docs/design.md` describe the feed row that ships
-- [ ] The product owner has signed off the built row at both agreed widths
+- [x] The product owner has signed off the built row at both agreed widths
 - [x] `make verify` is green
