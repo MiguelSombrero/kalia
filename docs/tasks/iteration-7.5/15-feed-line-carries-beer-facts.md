@@ -1,6 +1,6 @@
 # Task 15: A feed line carries its beer's style, strength and id
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** none
 
@@ -43,22 +43,64 @@ band and link the beer to its own page, as ADR-0068 describes.
   ([ADR-0012](../../adr/0012-orval-api-client.md)).
 - The band's geometry and the measurements it must hold are in ADR-0068's
   Evidence.
+- The agreed widths are the iteration-wide decision recorded in
+  [the iteration index](../iteration-7.5.md).
+- [ADR-0019](../../adr/0019-adr-format-and-conventions.md): an accepted ADR is
+  amended, not rewritten. ADR-0068's revisit trigger fires with this task, and
+  both it and [ADR-0065](../../adr/0065-imagery-icons-and-mark-specimen.md)
+  say the feed draws no beer slot, as does `docs/design.md` under "What each
+  placeholder stands in for". All three are amended in the implementing pull
+  request.
+- [Task 13](13-accessibility-and-contrast-reverified.md) re-verified the front
+  page before this task changes it, so the front page's WCAG 2.2 AA scan must
+  stay green on the changed row. The band is decorative and hidden from
+  assistive technology, like every beer slot.
+
+Decided with the product owner in refinement, 2026-10-11:
+
+- **A feed line shows the beer's *current* style and strength**, resolved from
+  the catalog when the feed is read, exactly as its name and brewery already
+  are. Nothing new is recorded when a bottle is added, `BottleAdded` and
+  `feed.line` keep their shape, and a strength corrected in the catalog later
+  reads corrected in the feed too.
+- **The facts come through `catalog`'s module API.** The `BeerSummary` record
+  that `CatalogApi.getBeerSummaries` returns gains the beer's style and ABV;
+  the feed reads nothing else from `catalog`.
+- **`FeedLineDto` gains `beerId`, `style` and `abv`**, named as the catalog's
+  own `BeerSummaryDto` names them, and all three are required: a beer cannot
+  exist without a style and an ABV, and a line whose beer no longer resolves is
+  already dropped.
+- **The beer's name links to `/{locale}/beers/{beerId}`**, replacing the
+  catalog search ADR-0068 used in the meantime.
+- **The row carries the band at both agreed widths**, as direction A4 drew it,
+  with the person's square shrinking beside the username (ADR-0068's revisit
+  trigger). It is not the cellar's band-on-desktop, strip-on-phone split
+  ([ADR-0070](../../adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)).
+  The product owner signs off the built row at both widths in the pull
+  request.
+- **The front page's loading skeleton gains the band's shape** in its row
+  grid, because a skeleton not matched to the row it stands in for is a silent
+  regression ([ADR-0022](../../adr/0022-loading-error-empty-states.md)).
+- **The task stays in iteration 7.5.** It completes the front page the product
+  owner chose, and iteration 8's catalog editing changes nothing here, given
+  the first decision above.
+- **The overflow check uses KBS at 12.0%**, the strongest beer in the seeded
+  catalog.
 
 ## Open questions
 
-- Should a feed line show a beer's *current* style and strength from the
-  catalog, or the ones it had when the bottle was added? They differ only if
-  the catalog is edited, which [iteration 8](../iteration-8.md) makes possible.
-- Does this belong in iteration 7.5 at all, or in iteration 8 beside the
-  catalog changes it would meet?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] The feed API returns each line's beer style, strength and id, covered by
+- [ ] The feed API returns each line's beer id, style and strength, covered by
       the feed's integration test and reflected in the regenerated client
 - [ ] A front-page feed entry shows its beer's style band and links the beer's
       name to the beer's own page, covered by a component test and seen in a
       browser at both agreed widths
+- [ ] The front page's loading skeleton carries the band's shape in its row
 - [ ] No style band overflows at either width in either locale, checked in a
-      browser against the catalog's strongest beer
+      browser against KBS at 12.0%
+- [ ] ADR-0068, ADR-0065 and `docs/design.md` describe the feed row that ships
+- [ ] The product owner has signed off the built row at both agreed widths
 - [ ] `make verify` is green
