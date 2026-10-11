@@ -136,6 +136,24 @@ of 8, then 1 of 8). Registering specs name accounts with `uniqueUsername`
 (`frontend/e2e/support/keycloakAccount.ts`); a new one that uses a bare
 `Date.now()` brings this back.
 
+**A spec fails only against a brand-new stack (`docker compose down -v`), and
+passes once other specs have run.** It depends on data another spec leaves
+behind. Observed 2026-10-11 in `shell.spec.ts` run alone on an empty database:
+`getByRole('link', { name: 'Create an account' })` hit a strict-mode
+violation, *resolved to 2 elements*, the second under `#main-content`. An empty
+front-page feed renders its own sign-up link beside the header's, so the
+checks were reliable only once the feed had entries. Scope a shell assertion to
+`getByRole("banner")`; reproduce by running the one file right after
+`down -v && make up`.
+
+**A short page's height check fails with `scrollHeight` 907 against an
+800-pixel window, and passes on a rerun.** It measured the loading skeleton:
+the first request to a route after the frontend starts can resolve `goto`
+while one or two skeleton `<main>`s are still in the DOM, and the page's own
+content arrives later. Traced 2026-10-11 on `/en/beers/<unknown id>` by
+restarting the frontend container before each run. Wait for something only the
+settled page has, such as its `<h1>`, before measuring layout.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by
