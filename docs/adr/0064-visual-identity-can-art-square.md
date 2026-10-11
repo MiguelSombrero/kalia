@@ -6,6 +6,9 @@
   its palette, its typefaces, its claim that border-radius is not a re-theming
   concern, and its contrast evidence; its two-layer token rule, its primitives
   and its light-only decision stand
+- **Amended:** 2026-10-11 by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)
+  — contrast is held to WCAG 2.2 AA, and the Evidence below was recomputed
+  against the finished redesign
 
 ## Context
 
@@ -76,6 +79,10 @@ style coloured by one of twelve style groups.**
   beer-style block, from the values in `globals.css`, and fails `make verify`
   and CI below AA. It replaces "computed by hand before committing" with a
   check that runs on every change to either file.
+
+  > **Amended 2026-10-11** by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md): the bar is
+  > WCAG 2.2 AA. Its contrast criteria and formula are 2.1's unchanged, so
+  > the check is the same check under the new name.
 - **Light only, as before.** F is a light design; dark mode stays closed, as
   the iteration recorded.
 
@@ -216,6 +223,25 @@ nothing else in the repository parses.
 | belgian-dark, ipa, pale-ale (ink text) | 5.49, 14.70, 12.27:1 | 4.5:1 |
 | english-ale (white text) | 5.45:1 | 4.5:1 |
 | strong-ale, sour (ink text) | 7.99, 10.10:1 | 4.5:1 |
+
+> **Amended 2026-10-11** by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md), recomputed by
+> `node scripts/check-contrast.mjs` once every redesigned surface had landed,
+> against WCAG 2.2 AA. Every ratio in the table above still holds. An audit
+> of the colour utilities every component uses found three pairings the app
+> renders that `docs/design.md` had not declared, now declared so the build
+> checks them, and one declared pairing the table above leaves out:
+>
+> | Pairing | Ratio | Needs |
+> |---|---|---|
+> | muted-foreground on surface-sunken (a hovered tile's secondary text), new | 6.59:1 | 4.5:1 |
+> | primary as text on background, and on surface (hovered links), new | 8.42:1 | 4.5:1 |
+> | primary as text on surface-sunken (a hovered tile's label), new | 7.45:1 | 4.5:1 |
+> | muted-foreground on accent (a fresh feed row) | 6.01:1 | 4.5:1 |
+>
+> Two blends the check cannot see, computed by hand: white on primary at 90 %
+> over white (a primary button's hover) is 6.74:1, and white on destructive at
+> 90 % is 4.88:1. The mark's tile, bottle, beer and foam measure 7.97, 3.11,
+> 5.76 and 7.97:1 against what each is seen on.
 
 Every direction in every round showed its own palette's ratios, computed from
 its values, before the product owner saw it. All passed AA; none was shown

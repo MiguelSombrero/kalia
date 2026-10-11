@@ -293,12 +293,18 @@ Why the rationale lives there and not here:
 - Component tests live next to the component (`page.test.tsx` beside `page.tsx`).
 - Every full `render(...)` adds `import { axe } from "jest-axe";` then
   `expect(await axe(container)).toHaveNoViolations();` (matcher registered
-  once in `vitest.setup.ts`). WCAG 2.1 AA is the bar, enforced at three
-  layers: `eslint-plugin-jsx-a11y` at lint time, `jest-axe` here, and
-  `@axe-core/playwright` scanning real pages at E2E time, through
+  once in `vitest.setup.ts`). WCAG 2.2 AA is the bar
+  ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)),
+  enforced at three layers: `eslint-plugin-jsx-a11y` at lint time, `jest-axe`
+  here, and `@axe-core/playwright` scanning real pages at E2E time, through
   `e2e/support/a11y.ts`'s `expectNoA11yViolations` — a spec calls that rather
   than building its own `AxeBuilder`, so the tag scope stays one decision
-  instead of one per file. All three ride the existing lint/test/e2e
+  instead of one per file. **2.2's checks need layout, which jsdom does not
+  do, so they run only at E2E:** axe's `target-size` there, and Focus Not
+  Obscured as `e2e/support/keyboard.ts`'s `tabTo`, which asserts it at every
+  Tab stop. A sticky or fixed element added to a page belongs on a keyboard
+  flow in `e2e/keyboard-flows.spec.ts`, or nothing checks that it hides no
+  focused control. All three ride the existing lint/test/e2e
   commands — there is no separate a11y gate to forget.
 - **`jose`'s `SignJWT`/`sign()` throws under this project's default Vitest
   environment** (`jsdom`, set in `vitest.config.ts`): `TypeError: payload

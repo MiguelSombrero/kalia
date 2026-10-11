@@ -32,7 +32,7 @@ anything a visitor sees; the `design-task` skill and
   `make check`, with a fixture self-test
   (`scripts/check-design-tokens.test.mjs`) because nothing in the real tree
   would otherwise trip it. Add the row in the same pull request as the token.
-- **Every pairing under [Contrast pairings](#contrast-pairings) meets WCAG 2.1
+- **Every pairing under [Contrast pairings](#contrast-pairings) meets WCAG 2.2
   AA**, and so does every beer-style colour. `scripts/check-contrast.mjs`
   computes each from `globals.css`'s values and fails the build below AA; it
   runs in CI (the `contrast-check` job) and under `make check`, with its own
@@ -202,7 +202,7 @@ in the same pull request.
 ## Contrast pairings
 
 Every foreground-on-background pairing the app uses, which
-`scripts/check-contrast.mjs` holds to WCAG 2.1 AA in `make verify` and CI:
+`scripts/check-contrast.mjs` holds to WCAG 2.2 AA in `make verify` and CI:
 4.5:1 for `text`, 3:1 for `non-text` (a control's boundary or a focus
 indicator). Every `[data-beer-style]` block is checked as well, without being
 listed here. A new pairing gets a row in the pull request that introduces it.
@@ -214,6 +214,7 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-foreground` | `--color-surface-sunken` | text |
 | `--color-muted-foreground` | `--color-background` | text |
 | `--color-muted-foreground` | `--color-surface` | text |
+| `--color-muted-foreground` | `--color-surface-sunken` | text |
 | `--color-primary-foreground` | `--color-primary` | text |
 | `--color-accent-foreground` | `--color-accent` | text |
 | `--color-foreground` | `--color-accent` | text |
@@ -222,6 +223,9 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-success-foreground` | `--color-success` | text |
 | `--color-destructive-foreground` | `--color-destructive` | text |
 | `--color-style-foreground` | `--color-style` | text |
+| `--color-primary` | `--color-background` | text |
+| `--color-primary` | `--color-surface` | text |
+| `--color-primary` | `--color-surface-sunken` | text |
 | `--color-primary` | `--color-background` | non-text |
 | `--color-destructive` | `--color-background` | non-text |
 | `--color-border` | `--color-background` | non-text |

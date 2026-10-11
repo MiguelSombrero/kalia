@@ -73,7 +73,7 @@ function withFixture({ css = globalsCss, design = designMd } = {}, assertions) {
   }
 }
 
-test("computes WCAG 2.1 relative-luminance contrast", () => {
+test("computes WCAG 2.2 relative-luminance contrast", () => {
   assert.equal(contrastRatio("#000000", "#ffffff"), 21);
   assert.equal(contrastRatio("#fff", "#000"), 21);
   assert.equal(contrastRatio("#777777", "#ffffff").toFixed(2), "4.48");

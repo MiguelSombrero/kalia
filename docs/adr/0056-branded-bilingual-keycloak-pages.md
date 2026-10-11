@@ -6,6 +6,8 @@
   — the theme now overrides one message key
 - **Amended:** 2026-10-11 by [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
   — the theme also lays the page out, hides the language menu, and links home
+- **Amended:** 2026-10-11 by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)
+  — Keycloak's pages are inside the app's accessibility enforcement, at WCAG 2.2 AA
 
 ## Context
 
@@ -38,6 +40,10 @@ The forces on the answer:
 - Keycloak's pages are outside the app's WCAG 2.1 AA enforcement
   (`docs/architecture.md` §7), which makes an unchecked login page the weakest
   page in the product.
+
+  > **Amended 2026-10-11 ([ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)).** No longer
+  > true: the bar is now WCAG 2.2 AA, and every Keycloak page is scanned under
+  > it at both agreed widths and in both locales like any other page.
 
 ## Decision
 

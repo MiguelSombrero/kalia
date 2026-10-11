@@ -6,7 +6,7 @@
 > seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
 > design system (tokens, shared primitives, loading/error/empty states,
-> WCAG 2.1 AA), production-readiness foundations (logging, exception
+> WCAG 2.2 AA), production-readiness foundations (logging, exception
 > handling, config, security headers, dependency scanning) are in place,
 > users can sign in and out via Keycloak, and a signed-in user can add,
 > edit and remove bottles in their own personal beer cellar, grouped by
@@ -227,7 +227,7 @@ manifest already says.
   override once `npm audit` stays clean without it (the same `js-yaml`
   override was dropped once orval bundled the fix itself)
 - eslint-plugin-jsx-a11y, jest-axe (+ @types/jest-axe), @axe-core/playwright —
-  WCAG 2.1 AA enforcement at lint/unit/E2E time (iteration 2 task 7)
+  WCAG 2.2 AA enforcement at lint/unit/E2E time (ADR-0075)
 - eslint-plugin-boundaries (import boundaries between `app/`, `features/`,
   `components/ui/` and `lib/`, checked by `npm run lint` — see ADR-0012)
 - next-auth 5, still a beta line (Auth.js — OIDC Authorization Code + PKCE

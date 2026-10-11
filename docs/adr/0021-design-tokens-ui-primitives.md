@@ -25,6 +25,9 @@
 - **Amended:** 2026-10-11 by [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)
   — `components/ui/` is no longer a seam for a future design system; it stays
   the web app's own primitives
+- **Amended:** 2026-10-11 by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)
+  — the accessibility bar named below is WCAG 2.2 AA, and the contrast
+  evidence this ADR points to was recomputed against it
 
 ## Context
 
@@ -116,6 +119,9 @@ new tokens — unlike colour and type, they are not a re-theming concern.
 > the WCAG 2.1 AA dialog contract this project holds itself to, and every item
 > in it fails silently — the dialog looks correct while being unusable by
 > keyboard or screen reader.
+>
+> **Amended 2026-10-11** by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md): the bar is now
+> WCAG 2.2 AA. The dialog contract above is unchanged by the raise.
 
 > **Amended 2026-08-23.** **`components/ui/toast.tsx` is a second primitive
 > built on a third-party dependency — `@radix-ui/react-toast` 1.2.15 —
@@ -275,6 +281,11 @@ runtime by the existing `@axe-core/playwright` E2E scans:
 > no longer ships. [ADR-0064](0064-visual-identity-can-art-square.md)'s
 > Evidence holds the pairings that do, and `scripts/check-contrast.mjs` now
 > checks them on every build.
+>
+> **Amended 2026-10-11** by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md). That evidence was
+> recomputed against WCAG 2.2 AA, whose contrast criteria are 2.1's unchanged,
+> after the redesign's last surface landed; it now covers every pairing the
+> app renders, and stays the one record of the palette that ships.
 
 **The palette was chosen with the product owner through iterative mockups**,
 not proposed whole: palette comparison → restrained/whitespace pass →

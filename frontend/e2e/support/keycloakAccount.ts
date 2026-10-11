@@ -171,6 +171,20 @@ const ensureKeycloakAccount = async (
   expect(winner, `could not create Keycloak user ${account.username}`).toBeTruthy();
 };
 
+/**
+ * A new account of its own for a test that must start from an empty, private
+ * cellar, or that must not share the worker `account` below.
+ */
+export const createFreshAccount = async (
+  apiRequest: APIRequestContext,
+  prefix: string,
+): Promise<KeycloakAccount> => {
+  const account: KeycloakAccount = { username: uniqueUsername(prefix), password: ACCOUNT_PASSWORD };
+  const created = await createKeycloakUser(apiRequest, await keycloakAdminToken(apiRequest), account);
+  expect(created, `could not create Keycloak user ${account.username}`).toBeTruthy();
+  return account;
+};
+
 export const signIn = async (page: Page, account: KeycloakAccount): Promise<void> => {
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.locator("#username").waitFor();

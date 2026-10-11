@@ -1,7 +1,8 @@
 // Exercises the confirm-then-remove flow end to end: the beer blocks, their
 // tiles, RemoveBottleDialog and RemovalOutcomeToast coordinate through the
 // shared removal store, so this test renders the real composition
-// (CellarBeerList) rather than any one component in isolation.
+// (CellarBeerList beside the toast, as CellarView mounts them) rather than any
+// one component in isolation.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { buttonVariants } from "@/components/ui/button";
 import { fireEvent, render, screen, within } from "@testing-library/react";
@@ -21,6 +22,7 @@ vi.mock("./actions", () => ({ removeBottleAction }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams() }));
 
 import { CellarBeerList } from "./CellarBeerList";
+import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import { useBottleRemovalStore } from "./store";
 import type { Bottle, CellarBeer } from "./types";
 
@@ -63,7 +65,10 @@ const renderCellar = () => {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <CellarBeerList locale="en" beers={[westvleteren, sahti]} owner />
+      <main id="main-content" tabIndex={-1}>
+        <CellarBeerList locale="en" beers={[westvleteren, sahti]} owner />
+      </main>
+      <RemovalOutcomeToast />
     </QueryClientProvider>,
   );
 };
@@ -143,5 +148,53 @@ describe("bottle removal with an upfront confirmation", () => {
     );
     await waitFor(() => expect(screen.getByText(TOAST_LAST_BOTTLE)).toBeInTheDocument());
     expect(screen.queryByText(TOAST)).not.toBeInTheDocument();
+  });
+
+  it("keeps focus on the beer's block once a bottle's own controls are gone", async () => {
+    renderCellar();
+
+    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("region", { name: "Pihtiputaan Sahti" })),
+    );
+  });
+
+  it("moves focus to the next beer once the beer itself is gone", async () => {
+    renderCellar();
+
+    fireEvent.click(bottleListFor("Westvleteren 12").getByRole("button", { name: REMOVE }));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("region", { name: "Pihtiputaan Sahti" })),
+    );
+  });
+
+  it("moves focus to the page's main once the cellar has no beer left to show", async () => {
+    renderCellar();
+
+    for (const beer of ["Westvleteren 12", "Pihtiputaan Sahti", "Pihtiputaan Sahti"]) {
+      fireEvent.click(removeButtonsFor(beer)[0]!);
+      await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+      fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    }
+
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("main")));
+  });
+
+  it("returns focus to the remove control when the removal is canceled", async () => {
+    renderCellar();
+
+    const trigger = removeButtonsFor("Pihtiputaan Sahti")[0]!;
+    fireEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    fireEvent.click(confirmDialog().getByRole("button", { name: CANCEL }));
+
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
   });
 });

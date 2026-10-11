@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -37,9 +37,14 @@ export const RemoveBottleDialog = ({
   const startRemoving = useBottleRemovalStore((state) => state.startRemoving);
   const finishRemoving = useBottleRemovalStore((state) => state.finishRemoving);
   const ids = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
+  // The beer's block, then the beers beside it, in the order focus should try them.
+  const focusAfterRemoval = useRef<(Element | null)[]>([]);
 
   const onConfirm = () => {
     const removal = { bottleId: bottle.id, entryId };
+    const entry = trigger.current?.closest("section") ?? null;
+    focusAfterRemoval.current = [entry, entry?.nextElementSibling ?? null, entry?.previousElementSibling ?? null];
     setIsOpen(false);
     startRemoving(removal);
     // A plain promise chain, not `mutate`'s own onSuccess/onError options:
@@ -55,7 +60,7 @@ export const RemoveBottleDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className={triggerClassName} aria-label={triggerLabel}>
+      <DialogTrigger ref={trigger} className={triggerClassName} aria-label={triggerLabel}>
         <svg
           aria-hidden="true"
           viewBox="0 0 20 20"
@@ -72,7 +77,17 @@ export const RemoveBottleDialog = ({
         </svg>
         {t("cellar.bottle.remove.action")}
       </DialogTrigger>
-      <DialogContent aria-describedby={`${ids}-description`}>
+      <DialogContent
+        aria-describedby={`${ids}-description`}
+        onCloseAutoFocus={(event) => {
+          // Radix returns focus to the trigger, which a confirmed removal has
+          // just unmounted, so focus would fall to <body>.
+          if (focusAfterRemoval.current.length === 0) return;
+          event.preventDefault();
+          const target = focusAfterRemoval.current.find((element) => element?.isConnected);
+          ((target as HTMLElement | undefined) ?? document.getElementById("main-content"))?.focus();
+        }}
+      >
         <DialogTitle>{t("cellar.bottle.remove.confirmTitle")}</DialogTitle>
         <DialogDescription id={`${ids}-description`}>
           {t("cellar.bottle.remove.confirmDescription", { beer: beerName })}

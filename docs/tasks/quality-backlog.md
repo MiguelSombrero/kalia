@@ -226,6 +226,20 @@ they're already cross-referenced from merged PRs and
   option is its `check-claude-md.mjs`, advisory first. Deciding between them
   is a product-owner call and an ADR, not a trim.
 
+- **SHOULD-32** *(confirmed 2026-10-11)* **[needs decision]** — the app's own
+  links to a public cellar carry no locale, so a visitor reading `/fi` whose
+  browser asks for English lands on the English cellar page: the feed's
+  username link (`frontend/features/feed/FeedLineRow.tsx`), the profile's
+  "Open" link (`frontend/features/profile/VisibilityControl.tsx`) and the
+  cellar's "View" link (`frontend/features/cellar/CellarView.tsx`).
+  [ADR-0050](../adr/0050-public-cellar-addressing.md) makes the locale-less
+  address the one offered for copying and given to external consumers; it
+  does not say whether links *inside* the app should use it too. Prefixing
+  the in-app links with the current locale while keeping the copied address
+  locale-less is two-line work per link once decided. Found by the bilingual
+  keyboard walk of [iteration 7.5 task 13](iteration-7.5/13-accessibility-and-contrast-reverified.md),
+  whose Finnish flows now run with a Finnish browser language.
+
 ## COULD
 
 - **COULD-17** *(confirmed 2026-08-30)* **[needs decision]** — `MAX_PAGE`
@@ -289,6 +303,21 @@ they're already cross-referenced from merged PRs and
   decisions" over a list of seven (ADR-0025, 0028, 0029, 0030, 0031, 0033,
   0043); ADR-0043 was added later without updating the count.
   `docs/adr/README.md:107`.
+
+- **COULD-26** *(confirmed 2026-10-11)* — Keycloak's password-reset page
+  marks its username field `autocomplete="off"`, so a browser or password
+  manager will not offer the username it already holds. Not a WCAG 2.2
+  failure — the page asks for nothing to be recalled that 3.3.8 protects, and
+  the login and registration fields carry proper `autocomplete` values — but
+  it is stock `keycloak.v2` markup the theme does not touch
+  ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
+- **COULD-27** *(confirmed 2026-10-11)* — one run of
+  `frontend/e2e/keyboard-flows.spec.ts`, started seconds after the frontend
+  container was rebuilt, had axe report `document-title` on the profile page
+  after a save: the document briefly had no `<title>`. Twelve repeats of the
+  same flow and a MutationObserver watching for an empty title across the
+  save did not reproduce it. Worth a look if it recurs, starting from how
+  Next.js streams metadata on a cold server.
 
 ## Retired
 

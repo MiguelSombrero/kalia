@@ -50,7 +50,7 @@ export const SearchFilters = async ({
             {t("catalog.filters.toggle")}
             {folded > 0 && ` · ${folded}`}
           </span>
-          <Icon name="plus" className="size-5 transition-transform group-open:rotate-45" />
+          <Icon name="plus" className="size-5 group-open:rotate-45 motion-safe:transition-transform" />
         </summary>
         <div className="flex flex-col gap-4 pb-4 md:pb-0">
           <div>

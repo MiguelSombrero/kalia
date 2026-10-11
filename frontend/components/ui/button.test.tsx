@@ -52,4 +52,11 @@ describe("Button", () => {
     expect(className).toContain("min-h-8");
     expect(className).not.toContain("min-h-10");
   });
+
+  it("fades its hover colour only when motion is allowed", () => {
+    const classes = buttonVariants().split(" ");
+
+    expect(classes).toContain("motion-safe:transition-colors");
+    expect(classes.filter((c) => c.startsWith("transition"))).toEqual([]);
+  });
 });

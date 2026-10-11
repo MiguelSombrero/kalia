@@ -164,6 +164,9 @@ decides the URL built on it.
 - [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)
   — no design system, package or component catalogue: `components/ui/` stays
   the web app's own, and a look that recurs becomes a primitive, not a rule.
+- [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md) — the bar is WCAG
+  2.2 AA: axe scans at its tags, and Playwright asserts focus never hides
+  under a sticky bar along three keyboard flows.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a

@@ -24,7 +24,7 @@ const eslintConfig = defineConfig([
   // Catches incorrect TanStack Query usage (unstable query keys, misused
   // hooks) at lint time — part of the ADR-0008 standard.
   ...pluginQuery.configs["flat/recommended"],
-  // Full ruleset (iteration 2, task 7 — WCAG 2.1 AA); supersedes the 6-rule
+  // Full ruleset (WCAG 2.2 AA, ADR-0075); supersedes the 6-rule
   // subset eslint-config-next enables by default. "recommended", not
   // "strict": strict targets custom-widget authoring concerns (this app has
   // no custom interactive widgets — every control is native HTML). Only

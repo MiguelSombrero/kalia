@@ -87,7 +87,8 @@ describe("CellarView", () => {
     const { container } = await renderView([], { username: "ada", cellarPublic: false });
 
     expect(screen.getByRole("heading", { level: 2, name: "Your cellar is empty." })).toBeInTheDocument();
-    const steps = within(screen.getByRole("list")).getAllByRole("listitem");
+    const empty = screen.getByRole("heading", { level: 2, name: "Your cellar is empty." }).closest("section")!;
+    const steps = within(within(empty).getByRole("list")).getAllByRole("listitem");
     expect(steps.map((step) => step.textContent)).toEqual([
       "1Find a beer in the catalog",
       "2Add your bottles, with dates if you know them",
@@ -96,5 +97,13 @@ describe("CellarView", () => {
     expect(screen.getByRole("link", { name: "Browse the catalog" })).toHaveAttribute("href", "/en/beers");
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("keeps the removal outcome toast mounted once the cellar is empty", async () => {
+    // Removing the last bottle re-renders the page with no beers; a toast
+    // mounted inside the list would be gone before it was announced.
+    await renderView([], { username: "ada", cellarPublic: false });
+
+    expect(screen.getByRole("region", { name: /Notifications/ })).toBeInTheDocument();
   });
 });

@@ -6,7 +6,7 @@ export const Skeleton = ({ className, ...props }: HTMLAttributes<HTMLDivElement>
     <div
       {...props}
       aria-hidden="true"
-      className={cn("animate-pulse rounded-control bg-divider", className)}
+      className={cn("motion-safe:animate-pulse rounded-control bg-divider", className)}
     />
   );
 };

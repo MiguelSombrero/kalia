@@ -464,7 +464,7 @@ The shape of the frontend. Day-to-day rules for writing it live in
   every beer style coloured by its style group — `lib/beerStyle.ts` maps a
   style name to a group and `globals.css` holds each group's colour.
   `scripts/check-contrast.mjs` holds every declared colour pairing and every
-  style colour to WCAG 2.1 AA in the build. No third-party component library;
+  style colour to WCAG 2.2 AA in the build. No third-party component library;
   the two UI dependencies are `@radix-ui/react-dialog` and
   `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
@@ -502,8 +502,12 @@ The shape of the frontend. Day-to-day rules for writing it live in
   ([ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md))
   and the cellar's visibility line
   ([ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)).
-- **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
-  `:focus-visible` styling and a skip-to-content link. The non-native
+- **Accessibility, WCAG 2.2 AA**
+  ([ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)): native
+  semantic HTML/ARIA, explicit `:focus-visible` styling and a skip-to-content
+  link. Scroll padding on the document keeps a control focused by Tab out
+  from under the sticky header, the feed's "N new" control and an open toast
+  (2.4.11). The non-native
   widgets — the add/edit-bottle and remove-confirmation modals, and the
   removal-outcome and profile toasts — get their focus trap, `aria-modal` and live-region
   behaviour from Radix rather than hand-rolled ARIA
@@ -669,8 +673,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly") |
 | `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | Neither rule has a production violator either, so the same no-violator-passes-vacuously risk applies and both get the same fixture treatment |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
-| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.1 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.1 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, rendered at 375×812 and at 1280×800, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`), plus the WCAG 2.1 AA scans covered above |
+| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`frontend/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`frontend/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -804,6 +808,7 @@ the failure back to the agent without blocking
 | [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) | The rack read as any app launcher, so Kalia's mark is a bottle pouring into foam on a deep teal tile | accepted | 2026-10-11 |
 | [ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md) | A design system would serve a consumer that will never exist, so `components/ui/` stays the web app's own primitives | accepted | 2026-10-11 |
 | [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md) | Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's | accepted | 2026-10-11 |
+| [ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md) | WCAG 2.1 AA could pass a redesign that hid focus under its sticky bars and was cramped to tap, so Kalia's bar becomes WCAG 2.2 AA | accepted | 2026-10-11 |
 
 ### Engineering process and documentation
 
