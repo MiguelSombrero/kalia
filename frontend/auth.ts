@@ -3,6 +3,7 @@ import { buildKeycloakProvider } from "@/lib/auth/keycloakOptions";
 import { sidFromIdToken } from "@/lib/auth/sessionId";
 import { createdSession } from "@/lib/auth/signInContext";
 import { putSessionAccount, putSessionSid, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
+import { logger } from "@/lib/logger";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: valkeyAdapter,
@@ -38,11 +39,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // to the application, since the Adapter interface has no updateAccount.
     // Nothing fails loudly without it — sign-in still succeeds but reaches
     // no protected endpoint later.
-    signIn: async ({ user, account }) => {
+    signIn: async ({ user, account, profile }) => {
       // "credentials" is the one provider type the Adapter's account model
       // does not cover; this app has no such provider, so it cannot occur.
       if (!account || !user.id || account.type === "credentials") {
         return;
+      }
+      // Do not remove: Auth.js never rewrites a returning user's stored name,
+      // so a user stored under another name would keep it in the header.
+      // Caught, because a throw here would skip filing the tokens below.
+      const username = profile?.preferred_username;
+      if (username && user.name !== username) {
+        try {
+          await valkeyAdapter.updateUser?.({ id: user.id, name: username });
+        } catch (error) {
+          logger.error(error);
+        }
       }
       const session = createdSession();
       // No session means Auth.js reused an existing one; its tokens stay

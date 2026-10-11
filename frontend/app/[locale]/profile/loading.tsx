@@ -6,7 +6,7 @@ const ProfileLoading = async () => {
   const locale = await resolveLocaleFromHeaders();
 
   return (
-    <Page>
+    <Page width="wide">
       <ProfileViewSkeleton locale={locale} />
     </Page>
   );

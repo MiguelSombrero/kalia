@@ -97,6 +97,8 @@
 
   --text-display: 3rem;
   --text-display--line-height: 1;
+  --text-name: 4rem;
+  --text-name--line-height: 0.95;
   --text-title: 1.75rem;
   --text-title--line-height: 1.1;
   --text-heading: 1.5rem;

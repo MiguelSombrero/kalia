@@ -467,7 +467,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   and `components/ui/toast.tsx`, taken on for a modal's focus management and a
   toast's live-region/timing contract rather than either's appearance.
   `BeerSlot`, `PersonSlot`, `Icon` and `KaliaMark` are further primitives in
-  `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)).
+  `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)),
+  and so are `FieldError` with `fieldClasses` and `ErrorAlert`, the one error
+  style every form and section uses
+  ([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
   **Every page renders through `Page`** (`components/ui/page.tsx`), inside
   the layout's sticky header and slim footer ([ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md)):
   it is the `<main>` the skip link targets and the one place a page's width
@@ -486,7 +489,8 @@ The shape of the frontend. Day-to-day rules for writing it live in
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
   route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
   covering every route. A section that can fail while the rest of its page
-  stands renders its own failure in place instead: the front page's feed
+  stands renders its own failure in place instead, as an `ErrorAlert`: the
+  front page's feed
   ([ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
   Something only decorating a page is left out when its read fails: the
   catalog's cellar marker
@@ -496,7 +500,7 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Accessibility, WCAG 2.1 AA**: native semantic HTML/ARIA, explicit
   `:focus-visible` styling and a skip-to-content link. The non-native
   widgets — the add/edit-bottle and remove-confirmation modals, and the
-  removal-outcome toast — get their focus trap, `aria-modal` and live-region
+  removal-outcome and profile toasts — get their focus trap, `aria-modal` and live-region
   behaviour from Radix rather than hand-rolled ARIA
   ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). How enforcement is
   layered across lint, unit and E2E tests:
@@ -512,7 +516,10 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   Valkey (a Redis-API-compatible key-value store) — [ADR-0025](adr/0025-authjs-valkey-adapter.md)
   records why, including the internal/public Keycloak-address split this
   docker-compose stack requires. Signing in and out (including full
-  Keycloak SSO logout) is built (iteration 4 task 2).
+  Keycloak SSO logout) is built (iteration 4 task 2). The session names the
+  user by Keycloak's `preferred_username`, the same username the profile, the
+  feed and a public cellar show, never by Keycloak's first and last name
+  ([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
 - **The backend is an OAuth2 resource server**
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)): it validates
   each bearer token's signature, issuer and `kalia-backend` audience, and the
@@ -783,6 +790,7 @@ the failure back to the agent without blocking
 | [ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md) | The front page is one column, a pitch or the visitor's cellar above a ruled feed, so that the feed starts on the first screen for both audiences | accepted | 2026-10-04 |
 | [ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md) | The catalog is one ruled column of beers beside a filter column that folds on a phone, with one Search button that always comes last | accepted | 2026-10-09 |
 | [ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) | The cellar is a sortable list of beers, each beside its style band with every bottle shown as a tile headed by its vintage | accepted | 2026-10-10 |
+| [ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md) | The profile is a name tag above two visibility choices that each list what they show, and every error in Kalia uses one style | accepted | 2026-10-11 |
 
 ### Engineering process and documentation
 

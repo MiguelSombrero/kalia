@@ -124,7 +124,7 @@ two-layer rule they sit in is
 | `--color-accent-foreground` | Text placed on `--color-accent`. | Whenever something sits on an accent fill; never on its own. |
 | `--color-success` | Something the visitor asked for worked. | The icon cell of a toast reporting success. Not decoration, and never a second action colour. |
 | `--color-success-foreground` | Text and icons placed on `--color-success`. | Whenever something sits on a success fill; never on its own. |
-| `--color-destructive` | Something is removed for good, or something failed. | The confirm button of a removal that cannot be undone, and the icon cell of a toast reporting failure. Never for a merely cautious action. |
+| `--color-destructive` | Something is removed for good, or something failed. | The confirm button of a removal that cannot be undone, the red square of every error (see [Feedback and errors](#feedback-and-errors)), and the edge of a field whose value is wrong. Never for a merely cautious action, and never for the words of an error. |
 | `--color-destructive-foreground` | Text and icons placed on `--color-destructive`. | Whenever something sits on a destructive fill; never on its own. |
 | `--color-focus-ring` | Where keyboard focus is. | Only `:focus-visible` outlines. It carries no other meaning, so it is never reused for decoration. |
 | `--color-style` | The colour of a beer's style group. | A style badge, or anything else that labels a beer by its style. The element carries `data-beer-style` set from `beerStyleGroup()` in `lib/beerStyle.ts`; without it, it takes the grey of *Anything else*. See [Style groups](#style-groups). |
@@ -137,6 +137,7 @@ two-layer rule they sit in is
 | `--font-display` | The voice of the page: Archivo run wide, used large and briefly. | Page titles and dialog titles. Never for body text or controls. |
 | `--font-sans` | The working face: the same family at normal width, for everything read or operated. | Everything not set in the display face — the body's default, so it rarely needs naming. |
 | `--text-display` | A page title at desktop width. | The page's one `h1`, from the `md` breakpoint up. |
+| `--text-name` | A person's username as the title of their own profile, at desktop width. | Only the profile's `h1`, from the `md` breakpoint up; below it the name takes `--text-title` like any page title. Larger than `--text-display` because the profile is the one page about a name. |
 | `--text-title` | A page title on a phone, and a dialog title. | The page's `h1` below `md`, and `DialogTitle`. Sized so every word of today's Finnish titles fits a 375px column. |
 | `--text-heading` | A section heading inside a page. | `h2`s that divide a page, in the display face. |
 | `--text-label` | Small tracked capitals that label rather than read. | Button text, badges, navigation and other one- or two-word labels, always `uppercase` and `font-semibold`. Never for a sentence. |
@@ -217,6 +218,7 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-destructive-foreground` | `--color-destructive` | text |
 | `--color-style-foreground` | `--color-style` | text |
 | `--color-primary` | `--color-background` | non-text |
+| `--color-destructive` | `--color-background` | non-text |
 | `--color-border` | `--color-background` | non-text |
 | `--color-border` | `--color-surface` | non-text |
 | `--color-focus-ring` | `--color-background` | non-text |
@@ -293,10 +295,41 @@ and the breakpoint live in `frontend/components/ui/page.tsx` and
   the fold a second one. Chosen in
   [iteration 7.5 task 08](tasks/iteration-7.5/08-catalog-layout.md)
   ([ADR-0069](adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
+- **A page that is one form is a narrow page, flush left like every other.**
+  Sign-up is the model: a title, what happens next as numbered steps when the
+  form starts a sequence, the fields, and the one button filling the column.
+  Keycloak's own pages follow it as closely as their theme allows. Chosen in
+  [iteration 7.5 task 10](tasks/iteration-7.5/10-profile-and-sign-up-layout.md)
+  ([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
 - **Every page is laid out for 375 and 1280 wide, and everything in the shell
   can be tapped.** Header, menu and footer controls are comfortably above the
   iteration's smallest target; a page's own controls are held to the same
   floor by its own task.
+
+## Feedback and errors
+
+How Kalia tells a visitor what happened. Chosen in
+[iteration 7.5 task 10](tasks/iteration-7.5/10-profile-and-sign-up-layout.md)
+([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
+
+- **A red square with a white cross means "error", everywhere.** It is the
+  one sign for something gone wrong, at three sizes. Nothing else is drawn in
+  `--color-destructive` except the confirm button of a removal.
+- **An error about one field sits on that field.** The field's edge turns
+  `--color-destructive`, and a line under it starts with the small red square
+  and says what to fix. The line is tied to the field, so assistive technology
+  reads it with the field. The words are in `--color-foreground`, never red.
+- **An error about a whole action is a box above that action's button**: an
+  ink edge, the red cell with the cross, and the message. A failure to load
+  part of a page is the same box where that part would be, with a way to try
+  again.
+- **The outcome of something already done is a toast, and it goes away.** A
+  toast reports success in green or failure in red, the cell beside the
+  message, and dismisses itself. Nothing about a save stays on the page once
+  the toast is gone; the page's own state already shows what is now true.
+- **A choice that publishes something asks first. Undoing it does not.**
+  Making a cellar public asks once, inline, and lists what becomes visible;
+  making it private happens at once.
 
 ## Imagery and the mark
 

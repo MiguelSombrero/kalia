@@ -284,25 +284,72 @@
     "title": "Profiili",
     "pageTitle": "Profiili — Kalia",
     "loading": "Ladataan profiilia…",
+    "name": {
+      "label": "Nimesi Kaliassa",
+      "note": "Tämä nimi näkyy kellarissasi ja Kalian etusivulla. Se on myös kellarisi osoite, joten sitä ei voi vaihtaa."
+    },
     "signIn": {
       "title": "Kirjaudu sisään nähdäksesi profiilisi",
-      "hint": "Profiilissasi näkyy käyttäjänimesi ja onko kellarisi julkinen.",
+      "hint": "Profiilissasi valitset, kuka näkee kellarisi.",
       "action": "Kirjaudu sisään"
     },
     "visibility": {
-      "legend": "Kuka näkee kellarisi?",
+      "heading": "Kuka näkee kellarisi?",
       "private": "Vain minä",
       "public": "Kuka tahansa linkin saanut",
-      "statePrivate": "Vain sinä näet kellarisi.",
+      "current": "Käytössä",
+      "privateShows": {
+        "alone": "Vain sinä näet kellarisi",
+        "notFound": "Sen osoitteessa näkyy kaikille Kalian ”sivua ei löytynyt” -sivu",
+        "noFeed": "Lisäyksesi eivät näy etusivulla"
+      },
+      "publicShows": {
+        "cellar": "{{beers}} ja {{bottles}} päivämäärineen",
+        "cellarUncounted": "Oluesi ja pullosi päivämäärineen",
+        "feed": "Lisäyksesi Kalian etusivulla, myös yksityisenä tehdyt",
+        "never": "Ei koskaan sähköpostiosoitettasi tai tilisi tietoja"
+      },
+      "confirm": {
+        "question": "Julkaistaanko kellarisi?",
+        "body": "Kuka tahansa linkin saanut näkee yllä luetellut asiat. Voit palauttaa kellarin yksityiseksi milloin tahansa.",
+        "publish": "Julkaise kellari",
+        "keep": "Pidä yksityisenä"
+      },
+      "saved": {
+        "public": "Tallennettu. Kellarisi on julkinen.",
+        "private": "Tallennettu. Kellarisi on yksityinen."
+      },
       "statePublic": "Kuka tahansa linkin saanut näkee kellarisi, ja lisäyksesi näkyvät Kalian etusivulla.",
       "error": "Näkyvyyden päivitys epäonnistui. Yritä uudelleen.",
-      "viewLink": "Näytä julkinen kellarisi"
+      "address": {
+        "label": "Julkinen kellarisi",
+        "copy": "Kopioi linkki",
+        "copied": "Linkki kopioitu.",
+        "copyError": "Linkin kopiointi epäonnistui. Yritä uudelleen.",
+        "open": "Avaa",
+        "openLabel": "Avaa julkinen kellarisi"
+      }
     }
   },
   "signUp": {
     "pageTitle": "Luo tili — Kalia",
     "title": "Luo tili",
-    "hint": "Asetat sähköpostiosoitteesi, salasanasi ja käyttäjätunnuksesi seuraavaksi Keycloakin omalla rekisteröitymissivulla.",
+    "lead": "Kolme vaihetta, joista ensimmäinen on tällä sivulla.",
+    "steps": {
+      "here": {
+        "where": "Tässä",
+        "what": "Vahvista, että olet tarpeeksi vanha käyttämään olutsovellusta"
+      },
+      "next": {
+        "where": "Seuraava sivu",
+        "what": "Valitse käyttäjätunnus ja anna sähköpostiosoitteesi",
+        "note": "Käyttäjätunnuksesta tulee julkinen nimesi Kaliassa, eikä sitä voi vaihtaa."
+      },
+      "inbox": {
+        "where": "Sähköpostisi",
+        "what": "Avaa sähköpostiisi lähettämämme linkki ja aseta salasana"
+      }
+    },
     "agree": "Olen tarpeeksi vanha käyttämään olutsovellusta.",
     "action": "Jatka rekisteröitymiseen",
     "error": {

@@ -23,4 +23,13 @@ describe("keycloakOptions", () => {
     expect(register.options!.clientId).toBe(signIn.options!.clientId);
     expect(register.options!.issuer).toBe(signIn.options!.issuer);
   });
+
+  // Pins ADR-0071's one name everywhere; see keycloakOptions.ts for why it is needed.
+  it("names the user by their Keycloak username", () => {
+    const profile = buildKeycloakProvider().options!.profile!;
+
+    expect(
+      profile({ sub: "kc-1", preferred_username: "ada", name: "Ada Lovelace", email: "ada@example.test" } as never, {} as never),
+    ).toEqual({ id: "kc-1", name: "ada", email: "ada@example.test" });
+  });
 });

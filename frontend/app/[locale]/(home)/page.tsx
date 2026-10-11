@@ -3,7 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
-import { CellarSummary, listCellarEntries } from "@/features/cellar";
+import { CellarSummary, cellarCounts, listCellarEntries } from "@/features/cellar";
 import { FeedError, FeedList, readFeed } from "@/features/feed";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
@@ -76,12 +76,7 @@ const Home = async ({ params }: Props) => {
           <CellarSummary
             locale={locale}
             cellarPublic={viewerProfile.cellarPublic}
-            counts={
-              cellarRows && {
-                bottles: cellarRows.reduce((sum, row) => sum + row.bottles.length, 0),
-                beers: cellarRows.length,
-              }
-            }
+            counts={cellarRows && cellarCounts(cellarRows)}
           />
         </>
       ) : (
