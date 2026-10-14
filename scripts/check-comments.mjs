@@ -37,9 +37,9 @@
 //     `.ts`/`.tsx` under frontend/, except frontend/lib/api/generated
 //     (orval output, out of ADR-0017's Decision by name) and build/tooling
 //     directories (node_modules, .next, target, coverage, dist, build,
-//     playwright-report, test-results). The `.mjs` files under scripts/ are
-//     held to the hard tier but left out of the advisory counts, since
-//     ADR-0017's 0.09 baseline was measured without them.
+//     playwright-report, test-results). The `.mjs` files under scripts/ and
+//     frontend/ are held to the hard tier but left out of the advisory
+//     counts, since ADR-0017's 0.09 baseline was measured without them.
 //   - A line's classification comes only from how it *starts*, once
 //     trimmed: `//` or `/*` makes the whole line a comment line (a `/*...*/`
 //     opener stays "comment" on every line up to and including the one
@@ -66,6 +66,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SCAN_ROOTS = [
   { dir: resolve(ROOT, "backend/src"), extensions: [".java"], counted: true },
   { dir: resolve(ROOT, "frontend"), extensions: [".ts", ".tsx"], counted: true },
+  { dir: resolve(ROOT, "frontend"), extensions: [".mjs"], counted: false },
   { dir: resolve(ROOT, "scripts"), extensions: [".mjs"], counted: false },
 ];
 const ADVISORY = process.argv.includes("--advisory");

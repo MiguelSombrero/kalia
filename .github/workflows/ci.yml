@@ -69,7 +69,7 @@ jobs:
           # how they run; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
           # keycloak/, postgres/ and the seed script with its helper feed the
-          # keycloak, postgres and keycloak-seed services e2e signs in through.
+          # keycloak, postgres and keycloak-seed services e2e's stack starts.
           shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
 
           # What keycloak-realm-check below can be affected by: the services

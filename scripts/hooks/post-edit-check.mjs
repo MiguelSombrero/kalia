@@ -21,6 +21,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const FRONTEND = resolve(ROOT, "frontend");
 const ESLINT = resolve(FRONTEND, "node_modules/.bin/eslint");
+const VITEST = resolve(FRONTEND, "node_modules/.bin/vitest");
 
 const checker = (name) => ({
   label: `node scripts/${name}`,
@@ -37,9 +38,17 @@ const eslint = (rel) => {
   };
 };
 
+// The real tree passes eslint.config.mjs's rules, so linting it shows nothing
+// about a selector broken by the edit; its self-test does.
+const eslintRules = {
+  label: "vitest run eslint.config.test.ts (in frontend/)",
+  run: () =>
+    existsSync(VITEST) && execFileSync(VITEST, ["run", "eslint.config.test.ts"], { cwd: FRONTEND, stdio: "pipe" }),
+};
+
 const isFrontendSource = (p) =>
   p.startsWith("frontend/") &&
-  /\.tsx?$/.test(p) &&
+  /\.(tsx?|mjs)$/.test(p) &&
   !p.startsWith("frontend/lib/api/generated/") &&
   !p.includes("/node_modules/");
 
@@ -105,6 +114,7 @@ if (rel.startsWith("..") || rel.startsWith(sep)) process.exit(0);
 
 const checks = ROUTES.filter((r) => r.covers(rel)).map((r) => r.check);
 if (isFrontendSource(rel)) checks.push(eslint(rel));
+if (rel === "frontend/eslint.config.mjs") checks.push(eslintRules);
 if (checks.length === 0) process.exit(0);
 
 const failures = [];

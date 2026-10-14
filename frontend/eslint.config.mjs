@@ -18,10 +18,10 @@ const componentsUi = { element: { type: "components-ui" } };
 const lib = [{ element: { type: "lib" } }, { file: { categories: "lib-root" } }];
 const generatedApi = { element: { type: "generated-api" } };
 
-// Convention (iteration 2, task 4): prefer arrow functions over function
-// declarations/expressions — see frontend/README.md. A const because a later
-// config object that sets `no-restricted-syntax` replaces these options rather
-// than adding to them, so the heading rule below has to repeat them.
+// Prefer arrow functions over function declarations/expressions — see
+// frontend/README.md. A const because a later config object that sets
+// `no-restricted-syntax` replaces these options rather than adding to them, so
+// the heading rule below has to repeat them.
 const codeStyleSyntax = [
   {
     selector: "FunctionDeclaration",
@@ -63,8 +63,8 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "no-restricted-syntax": ["error", ...codeStyleSyntax],
-      // Convention (iteration 3, task 9): call sites go through lib/logger.ts
-      // instead of console.* directly — see frontend/README.md.
+      // Call sites go through lib/logger.ts instead of console.* directly —
+      // see frontend/README.md.
       "no-console": "error",
       // Convention (ADR-0037): type over interface.
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
