@@ -81,7 +81,7 @@ describe("PublicCellarView", () => {
   it("renders the empty state for a public cellar with nothing in it", async () => {
     const { container } = await renderView({ beers: [] });
 
-    expect(screen.getByText("This cellar is empty.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "This cellar is empty." })).toBeInTheDocument();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });

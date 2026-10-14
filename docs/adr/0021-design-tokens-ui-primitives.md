@@ -28,6 +28,9 @@
 - **Amended:** 2026-10-11 by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)
   — the accessibility bar named below is WCAG 2.2 AA, and the contrast
   evidence this ADR points to was recomputed against it
+- **Amended:** 2026-10-14 — `Card` is removed; its classes live on as
+  `surfaceVariants` in `components/ui/surface.ts`
+  ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md))
 
 ## Context
 
@@ -85,6 +88,14 @@ no new dependency.**
   `BeerDetailsCard`'s `<dl>` keep their own tags and layer `Card`'s classes
   on via `className`. A primitive that swallowed those would trade
   accessibility for tidiness.
+
+  > **Amended 2026-10-14** ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md)): the `Card` component
+  > is removed, since nothing rendered it. Its classes are still one look
+  > that recurs — the edge and plane of the dialog, the error alert, the
+  > toast and the feed's two status rows — so they stay one definition,
+  > renamed `surfaceVariants` in `components/ui/surface.ts` after the
+  > `--color-surface` token they draw. The rule above applies to it
+  > unchanged: it is classes a caller layers on, never an element.
 - **`components/ui/` is the extraction seam** the roadmap flags for a possible
   future design system: self-contained today, movable to its own package later
   without rework.

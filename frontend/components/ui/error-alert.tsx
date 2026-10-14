@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { cardVariants } from "./card";
+import { surfaceVariants } from "./surface";
 import { Icon } from "./icon";
 
 type ErrorAlertProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "role"> & {
@@ -10,7 +10,7 @@ type ErrorAlertProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "role">
 
 export const ErrorAlert = ({ children, action, className, ...props }: ErrorAlertProps) => {
   return (
-    <div role="alert" className={cn(cardVariants, "flex items-stretch", className)} {...props}>
+    <div role="alert" className={cn(surfaceVariants, "flex items-stretch", className)} {...props}>
       <span
         aria-hidden="true"
         className="flex w-12 shrink-0 items-center justify-center border-r border-border bg-destructive text-destructive-foreground"

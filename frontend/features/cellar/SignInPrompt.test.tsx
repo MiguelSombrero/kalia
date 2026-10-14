@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./actions", () => ({ startCellarSignIn: vi.fn() }));
 
+import { startCellarSignIn } from "./actions";
 import { SignInPrompt } from "./SignInPrompt";
 
 describe("SignInPrompt", () => {
@@ -24,5 +25,14 @@ describe("SignInPrompt", () => {
     // Carried to the sign-in action so Keycloak renders in this locale.
     expect(container.querySelector('input[name="locale"]')).toHaveValue("fi");
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("signs in through the cellar's own Server Action", async () => {
+    render(await SignInPrompt({ locale: "en" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+    await waitFor(() => expect(startCellarSignIn).toHaveBeenCalled());
+    expect(vi.mocked(startCellarSignIn).mock.lastCall?.[0]?.get("locale")).toBe("en");
   });
 });

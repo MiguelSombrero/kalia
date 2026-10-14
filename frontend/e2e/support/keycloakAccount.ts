@@ -178,8 +178,9 @@ const ensureKeycloakAccount = async (
 export const createFreshAccount = async (
   apiRequest: APIRequestContext,
   prefix: string,
+  username: string = uniqueUsername(prefix),
 ): Promise<KeycloakAccount> => {
-  const account: KeycloakAccount = { username: uniqueUsername(prefix), password: ACCOUNT_PASSWORD };
+  const account: KeycloakAccount = { username, password: ACCOUNT_PASSWORD };
   const created = await createKeycloakUser(apiRequest, await keycloakAdminToken(apiRequest), account);
   expect(created, `could not create Keycloak user ${account.username}`).toBeTruthy();
   return account;

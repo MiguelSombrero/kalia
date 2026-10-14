@@ -10,6 +10,9 @@
 - **Amended:** 2026-10-04 by [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)
   — a failing first read of the front page's feed renders inside the page
   under its masthead; `error.tsx` still covers every route's other failures
+- **Amended:** 2026-10-14 — `EmptyState` is no longer the dashed card; it is
+  the cellar's ruled block, and every empty state but the front page feed's
+  renders through it ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md))
 
 ## Context
 
@@ -52,6 +55,17 @@ and a single `app/[locale]/error.tsx` is the app-wide error boundary.**
   `EmptyState` (required `title` plus a `children` slot, in the dashed-card
   chrome `BeerList` already used). `EmptyState` is an extraction of existing
   markup, not new visual design.
+
+  > **Amended 2026-10-14** ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md)): `EmptyState` now has
+  > the ruled shape
+  > [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
+  > laid out for the cellar — a top rule, a `SectionHeading` at the level its
+  > caller passes, a muted hint, then optional content and an action — rather
+  > than the dashed card. The catalog's empty search, both cellar views and
+  > the signed-out `SignInPrompt` render through it. The front page feed's
+  > empty rack
+  > ([ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md))
+  > is not a message block and stays its own.
 - **Route files stay thin** and delegate to feature compositions, matching the
   existing convention: `beers/loading.tsx` renders `<BeerListSkeleton />`, and
   so on.
