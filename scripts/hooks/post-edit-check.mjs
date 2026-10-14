@@ -118,10 +118,15 @@ if (rel.startsWith("..") || rel.startsWith(sep)) process.exit(0);
 // everywhere else in this hook, is safe because the cells it rewrites are
 // copies with one right answer (ADR-0076).
 const synced = [];
+const failures = [];
 if (/^docs\/(adr\/|tasks\/|architecture\.md$|roadmap\.md$)/.test(rel)) {
-  for (const { path, text } of syncIndexes(ROOT)) {
-    writeFileSync(resolve(ROOT, path), text);
-    synced.push(path);
+  try {
+    for (const { path, text } of syncIndexes(ROOT)) {
+      writeFileSync(resolve(ROOT, path), text);
+      synced.push(path);
+    }
+  } catch (error) {
+    failures.push(`$ node scripts/sync-indexes.mjs\n${error.message}`);
   }
 }
 
@@ -129,7 +134,6 @@ const checks = ROUTES.filter((r) => r.covers(rel)).map((r) => r.check);
 if (isFrontendSource(rel)) checks.push(eslint(rel));
 if (rel === "frontend/eslint.config.mjs") checks.push(eslintRules);
 
-const failures = [];
 for (const { label, run } of checks) {
   try {
     run();

@@ -1,13 +1,9 @@
 #!/usr/bin/env node
 // Rewrites the cells of the index tables that mirror a file — an ADR's title,
 // status and date in docs/architecture.md, a task's title and status in its
-// iteration's `## Tasks` table — from that file (ADR-0076). Plain Node with no
-// dependencies, like the check-*.mjs checkers.
-//
-// Only rows that already exist change. Which of the two ADR tables a row sits
-// in, and the order of an iteration's rows, carry meaning no file holds, so
-// adding a row stays a hand step that check-adrs.mjs and check-tasks.mjs fail
-// when it is missed.
+// iteration's `## Tasks` table — from that file. Plain Node with no
+// dependencies, like the check-*.mjs checkers. Never adds or moves a row:
+// ADR-0076.
 //
 // Writes by default. `--check` writes nothing and exits non-zero when a cell
 // is out of date, which is how `make check` runs it.
@@ -21,8 +17,10 @@ import { templatedIterations } from "./check-tasks.mjs";
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 
 const ADR_INDEX_HEADING = /^## \d+\. Architecture decision records$/m;
-const ADR_ROW = /^\| (\[ADR-\d{4}\]\(adr\/([^)]+)\)) \|.*\|$/;
-const TASK_ROW = /^\| (\[\d{2}\]\((iteration-\d+(?:\.\d+)?\/[^)]+)\)) \|.*\|$/;
+// Loose about spacing, because check-adrs.mjs and check-tasks.mjs accept any
+// row that carries the link: a row this skipped would never be synced at all.
+const ADR_ROW = /^\|\s*(\[ADR-\d{4}\]\(adr\/([^)]+)\))\s*\|/;
+const TASK_ROW = /^\|\s*(\[\d{2}\]\((iteration-\d+(?:\.\d+)?\/[^)]+)\))\s*\|/;
 
 const field = (text, name) => text.match(new RegExp(`^- \\*\\*${name}:\\*\\* (.+)$`, "m"))?.[1]?.trim();
 const row = (link, cells) => `| ${link} | ${cells.map((c) => c.replace(/\|/g, "\\|")).join(" | ")} |`;
@@ -73,7 +71,13 @@ function syncRows(root, path, stale, from, rewrite) {
   const text = readFileSync(full, "utf8");
   const start = text.search(from);
   if (start === -1) return;
-  const synced = text.slice(0, start) + text.slice(start).split("\n").map(rewrite).join("\n");
+  const synced =
+    text.slice(0, start) +
+    text
+      .slice(start)
+      .split("\n")
+      .map((line) => (line.endsWith("\r") ? `${rewrite(line.slice(0, -1))}\r` : rewrite(line)))
+      .join("\n");
   if (synced !== text) stale.push({ path, text: synced });
 }
 

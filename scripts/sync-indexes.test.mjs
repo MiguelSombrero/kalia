@@ -94,3 +94,16 @@ test("reports nothing once the cells match", (t) => {
 
   assert.deepEqual(syncIndexes(root), []);
 });
+
+test("syncs a row however it is spaced, and keeps CRLF line endings", (t) => {
+  const root = fixture();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(
+    resolve(root, "docs/tasks/iteration-1.md"),
+    "## Tasks\r\n\r\n| ID | Task | Status |\r\n|---|---|---|\r\n|[01](iteration-1/01-alpha.md)|Alpha|refined\r\n",
+  );
+
+  const [synced] = syncIndexes(root).filter(({ path }) => path === "docs/tasks/iteration-1.md");
+
+  assert.match(synced.text, /\| \[01\]\(iteration-1\/01-alpha\.md\) \| Alpha \| done \|\r\n/);
+});
