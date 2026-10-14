@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-09
+- **Amended:** 2026-10-14 — an empty search no longer shows the dashed
+  `EmptyState` card; it shows the ruled block the mockup had
+  ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md))
 
 ## Context
 
@@ -101,6 +104,13 @@ product owner kept marking the beers a visitor holds in scope.
   written with a decimal comma everywhere, the band included. And a desktop
   browser without `::details-content` shows the filters folded behind their
   summary.
+
+  > **Amended 2026-10-14** ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md)): the first of those
+  > differences is closed. `EmptyState` took the cellar's ruled shape from
+  > [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md),
+  > so an empty search now shows a top rule, a section heading and a muted
+  > hint under the result summary, as A3 did, rather than the dashed, centred
+  > card. The other two differences stand.
 - **Audit findings on these surfaces.** AUD-18, AUD-19, AUD-20, AUD-21,
   AUD-23, AUD-24, AUD-25, AUD-26, AUD-27 and AUD-58 are fixed. An out-of-range
   page now redirects to the last page that has results. The catalog's share

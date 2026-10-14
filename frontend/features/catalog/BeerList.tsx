@@ -34,14 +34,20 @@ export const BeerList = async ({
 
   if (beers.length === 0) {
     return (
-      <EmptyState title={t("catalog.empty.title")}>
-        {t("catalog.empty.hintPrefix")}{" "}
-        {/* Do not swap for next/link: query-only navigation (frontend/README.md traps). */}
-        <a href={catalogHref(locale)} className="font-medium underline underline-offset-2">
-          {t("catalog.empty.clearLink")}
-        </a>
-        .
-      </EmptyState>
+      <EmptyState
+        title={t("catalog.empty.title")}
+        headingLevel={headingLevel}
+        hint={
+          <>
+            {t("catalog.empty.hintPrefix")}{" "}
+            {/* Do not swap for next/link: query-only navigation (frontend/README.md traps). */}
+            <a href={catalogHref(locale)} className="font-medium underline underline-offset-2">
+              {t("catalog.empty.clearLink")}
+            </a>
+            .
+          </>
+        }
+      />
     );
   }
 

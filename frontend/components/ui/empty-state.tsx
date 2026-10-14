@@ -1,17 +1,24 @@
 import type { HTMLAttributes, ReactNode } from "react";
-import { cardVariants } from "./card";
 import { cn } from "@/lib/cn";
+import { SectionHeading } from "./section-heading";
 
-type EmptyStateProps = HTMLAttributes<HTMLDivElement> & {
+type EmptyStateProps = Omit<HTMLAttributes<HTMLElement>, "title"> & {
   title: string;
+  headingLevel: 2 | 3;
+  hint: ReactNode;
+  action?: ReactNode;
   children?: ReactNode;
 };
 
-export const EmptyState = ({ title, children, className, ...props }: EmptyStateProps) => {
+export const EmptyState = ({ title, headingLevel, hint, action, children, className, ...props }: EmptyStateProps) => {
   return (
-    <div className={cn(cardVariants, "border-dashed p-12 text-center", className)} {...props}>
-      <p className="text-lg font-medium text-foreground">{title}</p>
-      {children && <div className="mt-2 text-sm text-muted-foreground">{children}</div>}
-    </div>
+    <section className={cn("flex flex-col items-start gap-4 border-t border-border pt-6", className)} {...props}>
+      <SectionHeading level={headingLevel} look="heading">
+        {title}
+      </SectionHeading>
+      <p className="max-w-prose text-muted-foreground">{hint}</p>
+      {children}
+      {action}
+    </section>
   );
 };

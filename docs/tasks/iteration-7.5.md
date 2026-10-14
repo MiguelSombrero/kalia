@@ -49,7 +49,7 @@ restyling what is already there.
 | [12](iteration-7.5/12-do-we-need-a-design-system.md) | Do we need a design system? | done |
 | [13](iteration-7.5/13-accessibility-and-contrast-reverified.md) | Accessibility and contrast, re-verified across the redesign | done |
 | [17](iteration-7.5/17-one-title-and-one-heading-style.md) | A page title and a section heading each have one style | done |
-| [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md) | Empty states and the sign-in prompt each have one shape | refined |
+| [18](iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md) | Empty states and the sign-in prompt each have one shape | done |
 | [15](iteration-7.5/15-feed-line-carries-beer-facts.md) | A feed line carries its beer's style, strength and id | done |
 
 **Every task here is a prototyping task, and that is what makes this iteration

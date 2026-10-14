@@ -297,7 +297,12 @@ Why the rationale lives there and not here:
   appearance ([ADR-0065](../docs/adr/0065-imagery-icons-and-mark-specimen.md)).
 - **Loading/error/empty states have a fixed shape**: `loading.tsx` per route
   with a shape-matched skeleton, one `app/[locale]/error.tsx` app-wide,
-  `EmptyState` for no-results ([ADR-0022](../docs/adr/0022-loading-error-empty-states.md)).
+  `EmptyState` for an empty list or section, and `SignInPrompt` — an
+  `EmptyState` with a sign-in button and a sign-up link — for a page that
+  needs signing in. Both are in `components/ui/`, so a feature fills
+  `SignInPrompt` with its own strings and its own sign-in Server Action
+  rather than copying it
+  ([ADR-0022](../docs/adr/0022-loading-error-empty-states.md)).
 
 **Testing**
 

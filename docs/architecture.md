@@ -495,7 +495,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **Loading, error and empty states have a standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)): a `loading.tsx` per
   route with a shape-matched skeleton, and one `app/[locale]/error.tsx`
-  covering every route. A section that can fail while the rest of its page
+  covering every route. An empty list and a signed-out page are both the
+  ruled `EmptyState` from `components/ui/`, the latter as `SignInPrompt`; the
+  front page feed's empty rack is the one empty state that is not. A section that can fail while the rest of its page
   stands renders its own failure in place instead, as an `ErrorAlert`: the
   front page's feed
   ([ADR-0068](adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).

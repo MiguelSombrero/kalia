@@ -3,7 +3,7 @@
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/cn";
-import { cardVariants } from "./card";
+import { surfaceVariants } from "./surface";
 import { buttonVariants } from "./button";
 import { Icon } from "./icon";
 
@@ -32,7 +32,7 @@ export const Toast = ({ variant, className, children, ...props }: ToastProps) =>
     <ToastPrimitive.Root
       data-toast
       data-variant={variant}
-      className={cn(cardVariants, "flex items-stretch overflow-hidden", className)}
+      className={cn(surfaceVariants, "flex items-stretch overflow-hidden", className)}
       {...props}
     >
       <span

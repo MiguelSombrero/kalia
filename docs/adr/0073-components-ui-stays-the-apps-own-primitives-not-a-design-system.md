@@ -4,6 +4,9 @@
 - **Date:** 2026-10-11
 - **Amended:** 2026-10-11 — `scripts/check-headings.mjs` now checks the heading
   rule; see the amended Consequences entry and "How the decision is followed"
+- **Amended:** 2026-10-14 — the inventory's `card` row missed three users
+  inside `components/ui/`, so `cardVariants` was kept as `surfaceVariants`
+  rather than removed; see the note under the inventory
 - **Amended:** 2026-10-14 — the heading rule moved from that script into
   `frontend/eslint.config.mjs`; see the second amendment to "How the decision
   is followed"
@@ -221,6 +224,17 @@ source in total, excluding tests.
 | `card` | `Card`, `cardVariants` | iteration 2 | 1 | **Looked shared, was not.** `Card` itself has no users; `cardVariants` is used in `FeedList` and inside `EmptyState`. The catalog stopped using it under [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md) |
 | `empty-state` | `EmptyState` | iteration 2 | 1 | One-off: the catalog's empty search, by agreement in ADR-0069. Its dashed, centred card predates the identity |
 | `relative-time` | `RelativeTime` | iteration 7 | 1 | One-off: the feed |
+
+> **Amended 2026-10-14** ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md)): the `card` row counted
+> importers outside `components/ui/` only, and so missed that `cardVariants`
+> is also the surface of `Dialog`, `ErrorAlert` and `Toast`. It had recurred.
+> `Card` was removed, and the classes moved to `components/ui/surface.ts` as
+> `surfaceVariants`, which those three and `FeedList` import. The
+> `empty-state` row is no longer a one-off: the catalog's empty search, both
+> cellar views and the sign-in prompt render through it. The table below's
+> empty state and sign-in prompt rows are primitives now, `EmptyState` and
+> `SignInPrompt`, which the cellar and the profile fill with their own
+> strings and Server Action.
 
 **Recurring looks that are not primitives**, found by grouping identical
 `className` literals across files and reading every `<h1>` and `<h2>` outside

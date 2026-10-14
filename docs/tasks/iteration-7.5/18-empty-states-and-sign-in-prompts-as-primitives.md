@@ -1,6 +1,6 @@
 # Task 18: Empty states and the sign-in prompt each have one shape
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [7.5](../iteration-7.5.md)
 - **Covers:** none
 
@@ -88,19 +88,19 @@ Decided in refinement on 2026-10-11, together with task 17:
 
 ## Acceptance criteria
 
-- [ ] The catalog's empty search and both cellar views' empty states render
+- [x] The catalog's empty search and both cellar views' empty states render
       through `EmptyState` in the ruled shape, covered by its colocated test
       with a `jest-axe` assertion, and seen in a browser at both agreed widths
       in both locales
-- [ ] One sign-in prompt primitive serves the cellar and the profile, each
+- [x] One sign-in prompt primitive serves the cellar and the profile, each
       signing in with its own Server Action, covered by a component test, and
       exercised in a browser signed out on both pages
-- [ ] `components/ui/card.tsx` is gone and nothing imports it
-- [ ] [Task 13](13-accessibility-and-contrast-reverified.md)'s Playwright
+- [x] `components/ui/card.tsx` is gone and nothing imports it
+- [x] [Task 13](13-accessibility-and-contrast-reverified.md)'s Playwright
       accessibility scans and heading-structure test pass against the changed
       pages
-- [ ] ADR-0069 is amended to record that the empty search left the dashed card
-- [ ] `make verify` is green
+- [x] ADR-0069 is amended to record that the empty search left the dashed card
+- [x] `make verify` is green
 
 ## Notes
 
