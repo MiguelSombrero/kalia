@@ -13,9 +13,11 @@
 // ADR-0046 records for /code-review cannot happen here.
 
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, relative, resolve, sep } from "node:path";
+
+import { syncIndexes } from "../sync-indexes.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -112,10 +114,20 @@ if (!filePath) process.exit(0);
 const rel = relative(ROOT, resolve(filePath));
 if (rel.startsWith("..") || rel.startsWith(sep)) process.exit(0);
 
+// Before the checkers, so they judge the synced index. Writing here, unlike
+// everywhere else in this hook, is safe because the cells it rewrites are
+// copies with one right answer (ADR-0076).
+const synced = [];
+if (/^docs\/(adr\/|tasks\/|architecture\.md$|roadmap\.md$)/.test(rel)) {
+  for (const { path, text } of syncIndexes(ROOT)) {
+    writeFileSync(resolve(ROOT, path), text);
+    synced.push(path);
+  }
+}
+
 const checks = ROUTES.filter((r) => r.covers(rel)).map((r) => r.check);
 if (isFrontendSource(rel)) checks.push(eslint(rel));
 if (rel === "frontend/eslint.config.mjs") checks.push(eslintRules);
-if (checks.length === 0) process.exit(0);
 
 const failures = [];
 for (const { label, run } of checks) {
@@ -126,21 +138,31 @@ for (const { label, run } of checks) {
     failures.push(`$ ${label}\n${output.trim()}`);
   }
 }
-if (failures.length === 0) process.exit(0);
+if (failures.length === 0 && synced.length === 0) process.exit(0);
 
 // Reported, never failed. A checker legitimately goes red mid-task — a task
 // file exists before its index row does — so blocking the turn would fight
 // the work rather than guard it. `make verify-fast` and CI stay the gates
 // that actually fail (ADR-0046).
-const report = failures.join("\n\n");
+const notes = [];
+if (synced.length > 0) {
+  notes.push(
+    `The hook copied titles and statuses into ${synced.join(", ")} from the files they index ` +
+      `(ADR-0076). Re-read a synced file before editing it, and change a title or status in its own file, never in the index.`,
+  );
+}
+if (failures.length > 0) {
+  notes.push(
+    `A repository checker fails after your edit to ${rel}. Fix it before ` +
+      `moving on rather than leaving it for \`make verify\` or CI:\n\n${failures.join("\n\n")}`,
+  );
+}
 console.log(
   JSON.stringify({
-    systemMessage: `Checker failing after editing ${rel} — see the agent context for details.`,
-    hookSpecificOutput: {
-      hookEventName: "PostToolUse",
-      additionalContext:
-        `A repository checker fails after your edit to ${rel}. Fix it before ` +
-        `moving on rather than leaving it for \`make verify\` or CI:\n\n${report}`,
-    },
+    systemMessage:
+      failures.length > 0
+        ? `Checker failing after editing ${rel} — see the agent context for details.`
+        : `Synced index cells in ${synced.join(", ")}.`,
+    hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: notes.join("\n\n") },
   }),
 );

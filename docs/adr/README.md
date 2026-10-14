@@ -287,3 +287,6 @@ to bound.
   intent lives in `docs/design.md`, outside the three homes on the glossary's
   model: meaning and intent, never a value, with every semantic token's
   meaning row checked by the build.
+- [ADR-0076](0076-index-cells-are-synced-from-their-files.md) — an index row's
+  title, status and date are copied from the file it links by a script, never
+  kept by hand; adding the row, and placing it, stay hand steps.

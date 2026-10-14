@@ -59,11 +59,14 @@ no `iteration-N/` directory at all is.
 
 - **`## Done when` gets its own heading** so it can no longer end up buried
   mid-list, which is what happened in `iteration-4.md`.
-- **The table is the only place per-task status lives.** The checker compares
-  each row against its task file's `Status` and fails on a mismatch, and fails
-  on a row with no file or a file with no row.
-- **The Task column must match the task file's H1 title**, for the same reason
-  the ADR index must match: two copies of a title drift silently.
+- **The task file's `Status` is the one to edit.** `scripts/sync-indexes.mjs`
+  copies it and the title into the row — the edit-time hook runs it, and
+  `make check` fails a row that disagrees
+  ([ADR-0076](../adr/0076-index-cells-are-synced-from-their-files.md)). The
+  checker fails on a row with no file or a file with no row; adding the row,
+  in the order the tasks run, is a hand step.
+- **The Task column is the task file's H1 title**, copied by the same sync:
+  two copies of a title kept by hand drift silently.
 - Grouping (`## Maintenance`, `## Backend`) is allowed but must be a real `##`
   heading, never bold text pretending to be one — iterations 3 and 4 each
   picked a different one of those.

@@ -126,7 +126,7 @@ export function checkTasks(root) {
 
       const h1 = text.match(/^# Task (\d{2}): (.+)$/m);
       if (!h1) { fail(name, "no H1 matching '# Task NN: Title'"); continue; }
-      const [, id, title] = h1;
+      const [, id] = h1;
       if (!file.startsWith(`${id}-`)) fail(name, `H1 id "${id}" does not match the filename`);
 
       const status = text.match(/^- \*\*Status:\*\* (.+)$/m)?.[1];
@@ -199,16 +199,9 @@ export function checkTasks(root) {
         }
       }
 
-      const row = rows.find((l) => l.includes(`${iteration}/${file})`));
-      if (!row) {
+      // The row's title and status cells are sync-indexes.mjs's (ADR-0076).
+      if (!rows.some((l) => l.includes(`${iteration}/${file})`))) {
         fail(name, `no row in ${indexName}'s '## Tasks' table`);
-      } else {
-        const cells = row.split("|").map((c) => c.trim());
-        // | [NN](iteration-N/NN-slug.md) | Title | Status |
-        if (cells[2] !== title) fail(name, `index title "${cells[2]}" does not match H1 "${title}"`);
-        if (status && cells[3] !== status) {
-          fail(name, `index status "${cells[3]}" does not match file status "${status}"`);
-        }
       }
     }
 

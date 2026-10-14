@@ -6,7 +6,7 @@
 
 .PHONY: help up down restart logs ps backend-test backend-verify frontend-test \
         frontend-build frontend-e2e lint check api-drift keycloak-check verify \
-        verify-fast install-hooks next-adr
+        verify-fast install-hooks next-adr sync-indexes
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -43,7 +43,7 @@ frontend-e2e: ## Run frontend E2E tests (needs the stack up)
 lint: ## Lint the frontend
 	(cd frontend && npm run lint)
 
-check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster checks and their self-tests
+check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/index checks and their self-tests
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
@@ -53,6 +53,7 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 	node scripts/check-contrast.mjs
 	node scripts/check-keycloak-theme.mjs
 	node scripts/check-no-raster-images.mjs
+	node scripts/sync-indexes.mjs --check
 	node --test scripts/*.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
@@ -90,6 +91,9 @@ install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-pu
 	fi; \
 	install -m 755 scripts/hooks/pre-push "$$dest"; \
 	echo "installed $$dest (a copy — re-run after editing scripts/hooks/pre-push)"
+
+sync-indexes: ## Copy each ADR's and task's title and status into its index row
+	node scripts/sync-indexes.mjs
 
 next-adr: ## Print the next unused ADR number (scans every branch, not just this one)
 	@git fetch --quiet --prune origin 2>/dev/null || echo "warning: fetch failed — remote-tracking refs may be stale" >&2

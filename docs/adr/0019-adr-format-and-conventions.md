@@ -4,6 +4,9 @@
 - **Date:** 2026-07-26
 - **Amended:** 2026-07-27 — `scripts/check-adrs.mjs` now enforces the index
   and status checks in CI; see the updated Consequences entry
+- **Amended:** 2026-10-14 by
+  [ADR-0076](0076-index-cells-are-synced-from-their-files.md) — an index row's
+  title and status are synced from the ADR rather than checked against it
 
 ## Context
 
@@ -138,6 +141,11 @@ section that does not state its decision, and the next ADR copies it.
   that the Decision section actually opens with the verdict, which is a
   semantic property the original ADR-0018 problem turned on and no
   mechanical check here verifies.
+
+  > **Amended 2026-10-14.** A row's title and status no longer drift to be
+  > caught: `scripts/sync-indexes.mjs` copies them from the ADR
+  > ([ADR-0076](0076-index-cells-are-synced-from-their-files.md)), and
+  > `check-adrs.mjs` checks only that the row exists.
 - **Revisit trigger:** if an ADR is written after this and still lands with an
   empty or absent `Alternatives considered`, the section is not carrying its
   weight and the gap belongs in a mechanical check rather than a written rule

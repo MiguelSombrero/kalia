@@ -44,7 +44,8 @@ refinement.
   frontend by ESLint); lint/format clean
 - **doc-sync check:** affected sections of `docs/` re-read and updated in the
   same PR — or explicitly confirmed accurate in the PR description
-- task status set to `done` in the task file and its iteration index
+- task status set to `done` in the task file, and synced into its iteration
+  index (`make sync-indexes`; the edit-time hook does it for an agent)
 
 **Iteration DoD gate:** see [CLAUDE.md](../CLAUDE.md)'s workflow bullet of the
 same name; `scripts/check-tasks.mjs` checks its planning-time half
