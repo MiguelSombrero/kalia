@@ -2,28 +2,28 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–6.5 complete — a visitor can browse and search the
-> seeded beer catalog end to end (verified: find "Westvleteren" by name,
-> filter Belgian quads 9–12 % ABV, open beer details), the UI has its own
-> design system (tokens, shared primitives, loading/error/empty states,
-> WCAG 2.2 AA), production-readiness foundations (logging, exception
-> handling, config, security headers, dependency scanning) are in place,
-> users can sign in and out via Keycloak, and a signed-in user can add,
-> edit and remove bottles in their own personal beer cellar, grouped by
-> beer with brewed/best-before dates. A user now has a profile and can make
-> that cellar public: anyone with the link — signed in or not — can browse
-> it, and set back to private it leaks nothing, not even that it exists.
-> Someone other than the author can now sign up for their own account with
-> an email address and a password, verify it, and reach their own empty
-> cellar — Keycloak's realm and every account in it now survive a restart,
-> the branded sign-up and sign-in pages appear in the visitor's own
-> language, and what happens when a sign-up's email already belongs to an
-> account is a decision recorded in an ADR. The front page now shows a live
-> feed of what people are adding to their public cellars, newest first,
-> updating without a reload as new events arrive (iteration 7). Next: a
-> design sprint so Kalia looks designed rather than defaulted (iteration
-> 7.5). Implementation proceeds one issue at a time. See
-> [docs/roadmap.md](docs/roadmap.md) for what gets built and in which order.
+> **Status:** iterations 0–7.5 complete — a visitor can browse and search
+> the seeded beer catalog end to end (verified: find "Westvleteren" by name,
+> filter Belgian quads 9–12 % ABV, open beer details), production-readiness
+> foundations (logging, exception handling, config, security headers,
+> dependency scanning) are in place, users can sign in and out via Keycloak,
+> and a signed-in user can add, edit and remove bottles in their own personal
+> beer cellar, grouped by beer with brewed/best-before dates. A user has a
+> profile and can make that cellar public: anyone with the link — signed in
+> or not — can browse it, and set back to private it leaks nothing, not even
+> that it exists. Someone other than the author can sign up for their own
+> account with an email address and a password, verify it, and reach their
+> own empty cellar, on branded sign-up and sign-in pages in the visitor's own
+> language. The front page shows a live feed of what people are adding to
+> their public cellars, newest first, updating without a reload (iteration
+> 7). Every surface has since been laid out again in an identity the product
+> owner picked from prototyped alternatives — "Can art, square" — with
+> token-only styling and colour contrast enforced by the build, WCAG 2.2 AA
+> checked at lint, unit and end-to-end level, and every page usable at a
+> phone and a desktop width (iteration 7.5). Next: a catalog that grows past
+> its seed data (iteration 8). Implementation proceeds one issue at a time.
+> See [docs/roadmap.md](docs/roadmap.md) for what gets built and in which
+> order.
 
 ## Goal
 
@@ -133,6 +133,8 @@ In roadmap order, a user can:
   _(iteration 6.5)_
 - See a live front-page feed of what people are adding to their public
   cellars, updating without a reload _(iteration 7)_
+- Use all of it in Kalia's own visual identity, at a phone or a desktop
+  width _(iteration 7.5)_
 
 Then:
 

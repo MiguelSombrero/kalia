@@ -64,7 +64,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [6 — User profile and public cellars](tasks/iteration-6.md) | A cellar can be made public and browsed by anyone | ✅ Done |
 | [6.5 — Sign-up](tasks/iteration-6.5.md) | Someone other than the author can create an account | ✅ Done |
 | [7 — Front page activity feed](tasks/iteration-7.md) | The front page shows what people add to their cellars, live | ✅ Done |
-| [7.5 — Design sprint](tasks/iteration-7.5.md) | Kalia looks designed rather than defaulted | ⬜ Todo |
+| [7.5 — Design sprint](tasks/iteration-7.5.md) | Kalia looks designed rather than defaulted | ✅ Done |
 | [8 — Catalog beyond seed data](tasks/iteration-8.md) | Users add the beers they cannot find | ⬜ Todo |
 | [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ⬜ Todo |
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ⬜ Todo |
