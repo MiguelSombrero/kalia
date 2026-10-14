@@ -43,87 +43,11 @@ they're already cross-referenced from merged PRs and
 
 ## MUST
 
-- **MUST-10** *(confirmed 2026-10-14)* **[needs decision]** — the feed's
-  at-least-once delivery is documented but not configured.
-  `docs/architecture.md:229-231`, ADR-0058:35-41 and the comment at
-  `backend/src/main/java/fi/kalia/feed/application/FeedService.java:42-44`
-  rely on Spring Modulith redelivering a failed publication, but
-  `backend/src/main/resources/application.properties` sets no
-  `spring.modulith.events.*` key (`republish-outstanding-events-on-restart`
-  defaults to `false`) and nothing uses `IncompleteEventPublications`. One
-  failed `FeedEventListener.on` (`feed/application/FeedEventListener.java:17-21`),
-  for example on a database hiccup, loses that feed line for good, and the
-  `existsByEventId` idempotency guard defends against a redelivery that never
-  comes. With the default completion mode, `event_publication` also grows
-  without bound. Remediations: republish on restart, a scheduled resubmission
-  of stale publications, a completion mode that prunes, or rewording the docs
-  to at-most-once.
-- **MUST-11** *(confirmed 2026-10-14)* — `docs/architecture.md` §2's diagram
-  (lines 58-75) routes every backend call Browser → UI → `RH[Route handlers
-  /api/*]` → API, but the only route handlers are the two auth ones (§5,
-  `docs/architecture.md:392-399`); backend calls go from server components and
-  Server Actions. It also draws no `API --> FED` edge though `/api/v1/feed`
-  exists (`:73`), and only one (`FED --> CEL`, `:74`) of the seven
-  inter-module edges §3's table lists. `ArchitectureDocumentationTest.java:119-142`
-  parses only §2's node set, never its edges, so it passes — the same class of
-  drift as retired MUST-1.
-- **MUST-12** *(confirmed 2026-10-14)* — brewery is listed as a built search
-  filter in `README.md:124` and `docs/architecture.md:26`, but the UI has
-  never offered one: `frontend/features/catalog/api.ts`'s `PARAM_KEYS` and
-  `SearchFilters.tsx` have no brewery field, and `BeerSpecifications.java:28-31`
-  matches `query` against the beer name only. ADR-0069:169 treats a brewery
-  filter as future work. Same class as retired MUST-7.
-- **MUST-13** *(confirmed 2026-10-14)* — the list of routes reachable without
-  a token is stated three times and none matches `SecurityConfig.java:46-59`:
-  `docs/architecture.md:356-358` omits `GET /api/v1/cellars/*`;
-  `docs/architecture.md:542-545` omits the feed; `backend/README.md:232-234`
-  omits both. `FeedController.java:25` cites ADR-0028 for being public, and
-  ADR-0028 never mentions the feed. A reviewer checking a new `permitAll`
-  against the docs works from an incomplete list. One home, pointers from the
-  others (ADR-0020).
-- **MUST-14** *(confirmed 2026-10-14)* — iteration 9 plans work that is
-  already done: `docs/tasks/iteration-9.md:69-70` schedules "`/breweries`
-  paginated (quality backlog COULD-4)", and `docs/tasks/backlog.md:292-294`
-  says `/api/v1/breweries` "returns the whole table unpaginated". It
-  paginates (`CatalogController.java:100-107`, ADR-0045); COULD-4 was retired
-  into iteration-5.5 task 07.
-- **MUST-15** *(confirmed 2026-10-14)* — `docs/ci-playbook.md:180-182` ("When
-  you bump a pinned version, the table is part of the change") and `:13-15`
-  tell an agent to keep versions in the README tech-stack table, the opposite
-  of ADR-0020's 2026-09-11 amendment that made it "an inventory, not a version
-  list" (`README.md:175-184`, `CLAUDE.md` "New dependencies").
-- **MUST-16** *(confirmed 2026-10-14)* — `backend/README.md:18-22`'s
-  hot-reload recipe runs a bare `docker compose up -d` and then
-  `mvn spring-boot:run`; the bare `up` also starts the `backend` container on
-  `127.0.0.1:8080` (`docker-compose.yml:31-37`), so the native run fails on a
-  taken port. The recipe should name only the services it needs.
+*None open — every MUST from the 2026-10-14 sweep was lifted into
+[iteration 8](iteration-8.md).*
 
 ## SHOULD
 
-- **SHOULD-12** *(confirmed 2026-10-14)* — `docs/architecture.md` names a
-  finished iteration as the one under construction: "Next (iteration 6.5, in
-  progress)" at lines 37-38, a "Built:" list (`:24-35`) with nothing from
-  iterations 7 or 7.5, and "Last updated: 2026-09-05" at line 3 — though 6.5,
-  7 and 7.5 are all done (`docs/roadmap.md:66-68`). The iteration tags in the
-  module table (`:129-131`) and "The cellar's endpoints (iteration 5)"
-  (`:263`) remain. The document's own contract at lines 3-4 is "describes
-  **what is built**, plus the iteration currently being built".
-  `ArchitectureDocumentationTest` guards the module set but nothing guards
-  this prose; SHOULD-59 is why it keeps recurring.
-- **SHOULD-15** *(confirmed 2026-10-14)* **[needs decision]** —
-  `features/cellar` depends on the catalog subdomain invisibly to the boundary
-  rule documented as enforcing exactly this: `frontend/features/cellar/api.ts:3`
-  imports the catalog's `getBeer` and `getBeersByIds` because
-  `eslint.config.mjs:150-153` lets any feature's `api.ts` import the *whole*
-  generated client. The cost is already visible as 404-handling at
-  `frontend/features/cellar/api.ts:135-151` re-implementing
-  `frontend/features/catalog/api.ts:66-79`, and
-  `docs/architecture.md:387-391` claims these boundaries are "enforced rather than
-  agreed". Three valid paths: let `app/` compose the join, permit a declared
-  feature→feature edge, or narrow the `generated-api` policy to a feature's own
-  tag. [iteration-6 task 09](iteration-6/09-batch-beer-lookup-for-cellar.md)
-  changes the transport but keeps this import direction, so it does not resolve
-  it.
 - **SHOULD-16** *(confirmed 2026-10-14)* **[needs decision]** — the deliberate
   no-cross-schema-foreign-keys rule (`docs/architecture.md:118`) leaves a
   catalog beer's disappearance handled only by silently dropping the row —
@@ -138,23 +62,9 @@ they're already cross-referenced from merged PRs and
   cost. Competing remediations: a catalog deletion event driving cellar
   cleanup, a stated-and-tested no-hard-delete invariant, or accepting orphans
   and moving the drop logic server-side before iteration 6 adds a second
-  consumer.
-- **SHOULD-17** *(confirmed 2026-10-14)* — the two-level bottle model is cited
-  to ADR-0006 ("Cellar first — store flow deferred to backlog"), whose own
-  2026-08-08 amendment supersedes its cellar-shape description; the decision is
-  ADR-0034. `docs/architecture.md:266-269`.
-- **SHOULD-18** *(confirmed 2026-10-14)* — both quality-backlog links in the
-  iteration-5.5 index are broken: `docs/tasks/iteration-5.5.md:3` and `:11`
-  link `tasks/quality-backlog.md` from inside `docs/tasks/`, resolving to
-  `docs/tasks/tasks/quality-backlog.md`. These are the only two broken relative
-  links in the whole doc set.
-- **SHOULD-19** *(confirmed 2026-10-14)* — `docs/architecture.md` §7's testing
-  table (lines 667-681) omits `ArchitectureDocumentationTest`, the test that
-  parses §2's mermaid block and §3's table and fails the build when they
-  disagree with Spring Modulith's own view. It is the mechanism that makes
-  §2/§3 trustworthy, §7 is its "shape" home, and a reader editing §3's table
-  gets no warning from `docs/` that a test will fail.
-  `backend/README.md:153-158` documents it.
+  consumer. [Iteration-8 task 10](iteration-8/10-cellar-reads-joined-in-the-backend.md)
+  moves the cellar's drop server-side and logs it, which leaves only the
+  policy itself open here.
 - **SHOULD-20** *(confirmed 2026-10-14)* **[needs decision]** — the rationale
   for taking on the two Radix dependencies is stated at length in four places
   and the copies already disagree: `README.md:208-212` cites the 2026-08-22/23
@@ -282,76 +192,6 @@ they're already cross-referenced from merged PRs and
   option is its `check-claude-md.mjs`, advisory first. Deciding between them
   is a product-owner call and an ADR, not a trim.
 
-- **SHOULD-32** *(confirmed 2026-10-11)* **[needs decision]** — the app's own
-  links to a public cellar carry no locale, so a visitor reading `/fi` whose
-  browser asks for English lands on the English cellar page: the feed's
-  username link (`frontend/features/feed/FeedLineRow.tsx`), the profile's
-  "Open" link (`frontend/features/profile/VisibilityControl.tsx`) and the
-  cellar's "View" link (`frontend/features/cellar/CellarView.tsx`).
-  [ADR-0050](../adr/0050-public-cellar-addressing.md) makes the locale-less
-  address the one offered for copying and given to external consumers; it
-  does not say whether links *inside* the app should use it too. Prefixing
-  the in-app links with the current locale while keeping the copied address
-  locale-less is two-line work per link once decided. Found by the bilingual
-  keyboard walk of [iteration 7.5 task 13](iteration-7.5/13-accessibility-and-contrast-reverified.md),
-  whose Finnish flows now run with a Finnish browser language.
-
-- **SHOULD-33** *(confirmed 2026-10-14)* **[needs decision]** — the front
-  page's feed can show "Nothing here yet" while public events exist.
-  `FeedService.readRecent` (`backend/src/main/java/fi/kalia/feed/application/FeedService.java:56-62`)
-  reads `size+1` rows and only then drops lines from private cellars
-  (`:114-124`); cellars are private by default, so when the newest 21 lines
-  are all private the first page is empty but carries a `nextCursor`.
-  `frontend/features/feed/FeedList.tsx:134` sets `canLoadMore` only when
-  `lines.length > 0`, and `:174-177` renders the empty state — no way to reach
-  the older public lines. ADR-0059 accepts short pages, not this all-empty
-  one. Fill the page on the backend, or fetch the next page on the frontend.
-- **SHOULD-34** *(confirmed 2026-10-14)* — the anonymous public cellar page
-  makes one `getBeer` call per entry in an unbounded `Promise.all`
-  (`frontend/features/cellar/api.ts:126-162`), while the owner's cellar
-  already uses the chunked batch lookup (`:63-89`). One unauthenticated page
-  view fans out to N backend requests. Iteration-6 tasks 09 and 14 both
-  scoped this out as "a separate task" that was never written.
-- **SHOULD-35** *(confirmed 2026-10-14)* **[needs decision]** — the
-  cellar↔catalog join, the orphan drop and the sort live in the frontend
-  (`frontend/features/cellar/api.ts:15-32`, `:126-162`) under the
-  "client-agnostic resources" rule (`docs/architecture.md:349-355`). From
-  iteration 9 mobile is the primary UI and iteration 12 adds an offline cellar
-  (`docs/roadmap.md:27-31`), so every client would re-implement the join. The
-  backend `cellar` module already depends on catalog through `CatalogApi`,
-  whose `getBeerSummaries` serves feed's server-side join. Related to
-  SHOULD-15, SHOULD-16 and SHOULD-34.
-- **SHOULD-36** *(confirmed 2026-10-14)* — the catalog's own search form can
-  produce a 400 and the generic error page: the ABV inputs
-  (`frontend/features/catalog/SearchFilters.tsx:89-112`) have no `max` and no
-  min ≤ max check, the query input (`:36-42`) has no `maxLength`, and
-  `frontend/features/catalog/api.ts:44-54` normalizes only `sort`. Min 8 /
-  max 5, an ABV over 100, a query over 100 characters, or a hand-edited `page`,
-  `size` or non-numeric ABV reaches `CatalogController.java:68-70,77,111-116`
-  as a 400 and lands on `app/[locale]/error.tsx`, whose Retry fails again.
-  Iteration-7 task 16 skipped these parameters for want of evidence; this is it.
-- **SHOULD-37** *(confirmed 2026-10-14)* — every anonymous
-  `GET /api/v1/cellars/{username}` runs
-  `ProfileRepository.findFirstByUsernameOrderByCreatedAtDesc`
-  (`profile/domain/ProfileRepository.java:12`) as a full scan and sort —
-  `V006__profile_schema.sql:8-14` has no index on `username` — and the path
-  variable has no `@Size` (`cellar/web/PublicCellarController.java:49`) on a
-  `permitAll` route, against ADR-0042's bounded-parameter rule.
-- **SHOULD-38** *(confirmed 2026-10-14)* **[needs decision]** — a username is
-  the public cellar address and the owner check, but it is not unique: `V006`
-  has no `UNIQUE` constraint and `ProfileRepository.java:9-12` picks the
-  newest match; the feed resolves names by user id but links by username
-  (`frontend/features/feed/FeedLineRow.tsx:32`), and
-  `app/[locale]/cellars/[username]/page.tsx:57` decides `isOwner` by comparing
-  usernames. With open self-registration (ADR-0055), a deleted account's
-  username claimed by someone else points the old owner's feed lines at the
-  new person's cellar, though ADR-0049:100-101 says the URL "can never break".
-- **SHOULD-39** *(confirmed 2026-10-14)* — the cellar sign-in open-redirect
-  guard has no test: `beerReturnPath` and `UUID_PATTERN`
-  (`frontend/features/cellar/actions.ts:34-49`) stop a caller-supplied value
-  reaching `signIn`'s `redirectTo`, but the only tests that touch them mock
-  `./actions` (`features/cellar/AddToCellarButton.test.tsx:5`,
-  `SignInPrompt.test.tsx`).
 - **SHOULD-40** *(confirmed 2026-10-14)* **[needs decision]** — `profile`
   resolves the caller from the token itself:
   `profile/web/ProfileController.java:60-74` re-decodes the JWT, duplicating
@@ -364,34 +204,6 @@ they're already cross-referenced from merged PRs and
   only the id, and ADR-0049:52 keeps `profile` a leaf. Widen `IdentityApi` and
   allow the edge, or keep the exception, document it in §3 and guard `Jwt`
   use with ArchUnit.
-- **SHOULD-41** *(confirmed 2026-10-14)* — ADR-0053:46-49 says an event
-  carries "ids and `occurredAt`, never a copy of anything that can change",
-  but `cellar/BottleAdded.java:14-15` carries `quantity` and `brewedDate`, and
-  `brewedDate` is editable (`cellar/domain/Bottle.java:72-79`). ADR-0058
-  adopted the opposite; ADR-0053 was never amended, against ADR-0019's "amend,
-  do not rewrite".
-- **SHOULD-42** *(confirmed 2026-10-14)* — `moduleRootReachesDomainThroughApplication`
-  (`backend/src/test/java/fi/kalia/ArchitectureTest.java:205-213`) only
-  requires a module-root class that touches `domain` to *also* touch
-  `application`, so a root API injecting both `CatalogService` and
-  `BeerRepository` passes — the case `docs/architecture.md:116-118` and
-  ADR-0007 say is enforced. The fixture
-  `archfixture/badmodule/ModuleRootReachingIntoDomain.java` covers only the
-  no-application case.
-- **SHOULD-43** *(confirmed 2026-10-14)* — `profile`'s retry protection
-  depends on a configuration class inside `cellar`: the only
-  `@EnableResilientMethods` is `cellar/application/RetryConfig.java:6-9`, and
-  `profile/application/ProfileService.java:50` and `:59` rely on it for
-  ADR-0057's race protection. An `@ApplicationModuleTest` of `profile`, or
-  moving cellar's config, silently drops the retries; Modulith cannot see the
-  dependency. Belongs in application-level configuration.
-- **SHOULD-44** *(confirmed 2026-10-14)* — `feed/web/FeedController.java:34-38`
-  sets `MAX_SIZE = 99` from the private `MAX_BATCH_IDS` in `CatalogApi.java:19`
-  and `ProfileApi.java:19`, tied only by a comment (also
-  `FeedService.java:51-54`); lowering either cap turns the anonymous feed into
-  a 500 via `Assert.isTrue`. The frontend mirrors `CatalogController.java:52`
-  the same way (`features/cellar/api.ts:56-58`). Publish the caps on the module
-  APIs, or have the APIs chunk.
 - **SHOULD-45** *(confirmed 2026-10-14)* **[needs decision]** — the
   public-cellar visibility rule lives in the web layer:
   `PublicCellarController.java:49-52` resolves visibility and throws, while
@@ -399,13 +211,6 @@ they're already cross-referenced from merged PRs and
   user's cellar by id unchecked. `feed` enforces the same rule in its
   application layer (`FeedService.java:114-123`). Moving it conflicts with
   `backend/README.md:237-238` ("a public read takes a resolved owner id").
-- **SHOULD-46** *(confirmed 2026-10-14)* — route knowledge is duplicated
-  across features: `/cellars/${username}` is built in `FeedLineRow.tsx:32`,
-  `VisibilityControl.tsx:31` and `CellarView.tsx:39`; `/${locale}/beers/${id}`
-  in `FeedLineRow.tsx:50`, `CellarBeerList.tsx:109` and `cellar/actions.ts:48`,
-  while `features/catalog/links.ts:17` owns `beerHref`. This breaks
-  `frontend/README.md:145-146` ("moves to lib once a second feature uses it")
-  and makes SHOULD-32's fix N separate edits.
 - **SHOULD-47** *(confirmed 2026-10-14)* **[needs decision]** — the feed
   cursor's signing key is generated per process, in memory
   (`feed/application/FeedCursorCodec.java:12-35`), contradicting "must not
@@ -415,36 +220,6 @@ they're already cross-referenced from merged PRs and
   `frontend/features/feed/actions.ts:37-52` turns into `startOver` and
   `FeedList.tsx:79-83` into `window.location.reload()` — every 15 s. A mobile
   offline cache would hold dead cursors.
-- **SHOULD-48** *(confirmed 2026-10-14)* — the frontend import-boundary rules
-  `docs/architecture.md:388-391` presents as the counterpart of Modulith
-  verification have no violating fixture, so a silent no-op goes unnoticed —
-  SHOULD-15 shows the config already lets a cross-subdomain edge through.
-  Iteration 9's workspaces change (`docs/tasks/backlog.md:146`, `:237-240`)
-  rewrites the element patterns, which is when that is likeliest. Parked in
-  `docs/tasks/backlog.md:109-120` but never listed here.
-- **SHOULD-49** *(confirmed 2026-10-14)* — `docs/architecture.md:297-302`
-  says a feed line carries "username, beer name, brewery, bottle count,
-  vintage, the instant and … cursor", but `FeedLineDto.java:12-27` also carries
-  `beerId`, `style` and `abv` (iteration-7.5 task 15). `docs/glossary.md:105-106`
-  says feed reads only "a beer's name and brewery", and `:158` omits
-  `FeedPageDto.startOver`.
-- **SHOULD-50** *(confirmed 2026-10-14)* — the backend module list is
-  restated and has drifted: `backend/README.md:3-4` names "`catalog`,
-  `identity`, and `cellar` from iteration 5" (no `profile`, no `feed`) and
-  pins "Spring Boot 4.1" in prose; `README.md:165-167` still uses future tense
-  ("as iteration 6 adds it", "as iteration 7 adds it"), and `README.md:280-286`
-  and `docs/architecture.md` §3 carry their own copies. One home, pointers
-  from the others.
-- **SHOULD-51** *(confirmed 2026-10-14)* — `README.md:190` and
-  `docs/architecture.md:671` say "JUnit 5", but Spring Boot 4.1.1
-  (`backend/pom.xml:8`) manages `junit-jupiter` 6.0.3 — a major version the
-  README's own rule keeps "where the number is the point".
-- **SHOULD-52** *(confirmed 2026-10-14)* — `backend/README.md:131` says
-  `ArchitectureRulesRejectViolationsTest` "runs four of those rules"; it runs
-  eight (`ArchitectureRulesRejectViolationsTest.java:19-61`). And
-  `docs/architecture.md:676` says the fixture covers "noClasses() rules — and
-  only those", though `classes().should()` rules are fixtured too, as
-  `backend/README.md:135-137` itself says.
 - **SHOULD-53** *(confirmed 2026-10-14)* — the root README's "in roadmap
   order" feature list (`README.md:122-146`) never mentions iterations 9–14,
   which make mobile Kalia's primary UI (`docs/roadmap.md:27-36`, `:70-75`) —
@@ -496,7 +271,9 @@ they're already cross-referenced from merged PRs and
   status and feature list and `docs/architecture.md`'s "Next" line drift at
   every close: #196 (product owner: "Update status in README.md"), #231 and
   #306 were each follow-up doc-sync PRs for iterations 5.5, 6 and 7, and
-  SHOULD-12 is the drift still standing after 7 and 7.5.
+  SHOULD-12 was the drift still standing after 7 and 7.5 (lifted into
+  [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md), which
+  fixes the drift but not this cause).
 - **SHOULD-60** *(confirmed 2026-10-14)* — `CLAUDE.md`'s "A decision earns an
   ADR" bullet states only ADR-0032's first test, not its 2026-08-08 and
   2026-09-04 amendments (the task file or another existing home is enough;
@@ -508,15 +285,6 @@ they're already cross-referenced from merged PRs and
 
 ## COULD
 
-- **COULD-17** *(confirmed 2026-10-14)* **[needs decision]** — `MAX_PAGE`
-  10,000 combined with `MAX_PAGE_SIZE` 100 admits `OFFSET 1_000_000` on an
-  endpoint `SecurityConfig` makes `permitAll()`
-  (`backend/src/main/java/fi/kalia/catalog/web/CatalogController.java:48-49`).
-  The Javadoc's justification — past this index a request cannot land on real
-  data — holds only while the catalog has fewer than ~10,001 beers, which
-  iteration 8 changes. Each such request makes Postgres run the trigram match,
-  produce a `COUNT(*)`, then discard a million rows. Lowering `MAX_PAGE`,
-  keyset pagination and rate limiting answer different concerns.
 - **COULD-18** *(confirmed 2026-10-14)* — `X-Content-Type-Options: nosniff` is
   the one standard header missing from ADR-0016's otherwise deliberate set
   (CSP, `X-Frame-Options`, `Referrer-Policy`, HSTS, `Permissions-Policy`), and
@@ -524,14 +292,6 @@ they're already cross-referenced from merged PRs and
   `frontend/next.config.ts:24`. Hardening rather than a hole — nothing serves
   sniffable content today — but with `script-src 'unsafe-inline'` accepted, the
   CSP would not stop a sniffed-into-HTML response.
-- **COULD-19** *(confirmed 2026-10-14)* — an access token with no recorded
-  expiry is treated as fresh forever: `hasExpired` returns `false` unless
-  `expires_at` is a number, so a stored account missing that field never
-  triggers `renew()` and the BFF sends a dead token indefinitely — every
-  backend call 401s, the user sees an empty cellar, and ADR-0029's refresh path
-  is silently dead for that session. `frontend/lib/api/accessToken.ts:68-70`. The
-  behaviour is documented and deliberate; the deliberate choice is the
-  fail-open direction.
 - **COULD-20** *(confirmed 2026-10-14)* **[needs decision]** — a
   caller-supplied `Authorization` header silently overrides the session's
   token: `withAccessToken` returns `options` untouched when one is already set
@@ -586,26 +346,6 @@ they're already cross-referenced from merged PRs and
   save did not reproduce it. Worth a look if it recurs, starting from how
   Next.js streams metadata on a cold server.
 
-- **COULD-28** *(confirmed 2026-10-14)* — the generated client interpolates
-  path parameters into URLs unencoded (`` `/api/v1/cellars/${username}` `` at
-  `frontend/lib/api/generated/public-cellar/public-cellar.ts:73`; likewise
-  `cellar/cellar.ts:202,305` and `catalog/catalog.ts:311`), and
-  `lib/api/mutator.ts:23-27` attaches the caller's bearer token to whatever URL
-  results. The public-cellar page passes the raw route parameter
-  (`app/[locale]/cellars/[username]/page.tsx:15,45`) and the bottle actions
-  pass client-supplied ids unvalidated (`features/cellar/actions.ts:60-72`);
-  only `features/catalog/api.ts:67` checks its id. A crafted path can steer the
-  BFF to a different backend route with the visitor's token. No data crosses
-  users today — the backend authorizes by token — but it is a confused-deputy
-  primitive a future route inherits. Verified in code, not against a live stack.
-- **COULD-29** *(confirmed 2026-10-14)* — no test pins which routes are
-  reachable without a token: nothing compares the handler mappings with an
-  allow-list, and `ArchitectureTest.onlyIdentityConfiguresWebSecurity` checks
-  where the chain lives, not what it permits. `/api/v1/beers/*` and
-  `/api/v1/cellars/*` are single-segment wildcards (`SecurityConfig.java:46,52`)
-  whose comment guards against sub-resources only, so a future
-  `GET /api/v1/cellars/mine` would be anonymous with no failing test —
-  `/api/v1/beers/batch` is already public this way, intentionally.
 - **COULD-30** *(confirmed 2026-10-14)* **[needs decision]** — removing a
   beer's last bottle deletes the entry (`CellarService.java:55-63`), `Entry`
   has no `@Version`, and `bottle.entry_id` is `ON DELETE CASCADE`
@@ -613,25 +353,6 @@ they're already cross-referenced from merged PRs and
   beer (`:40-45`) commits first, the delete cascades over the bottle just
   added — a request that already returned 201, whose `BottleAdded` feed line
   stays. Only the owner can trigger it (two tabs), but the loss is silent.
-- **COULD-31** *(confirmed 2026-10-14)* — the "no empty entry" rule
-  (ADR-0034) is re-checked inconsistently: `CellarService.listEntries` filters
-  empty entries (`CellarService.java:27-29`) but `readPublicCellar` does not
-  (`:33-35`), and the frontend filters again at `features/cellar/api.ts:30`,
-  `:44` and `:131` under a comment about a "left join" query that no longer
-  exists. The duplicated row mapping in `toRow` (`:91-107`) and
-  `toPublicCellarBeer` (`:135-162`) adds to the drift.
-- **COULD-32** *(confirmed 2026-10-14)* — `ProfileService.isCellarPublic`
-  (`profile/application/ProfileService.java:24-26`) is referenced only by tests.
-- **COULD-33** *(confirmed 2026-10-14)* — `CellarService` (`:20`) and
-  `ProfileService` (`:18`) put a class-level read-write `@Transactional` over
-  their read methods, so the anonymous public-cellar path opens read-write
-  transactions; `CatalogService` and `FeedService` mark their reads
-  `readOnly = true`.
-- **COULD-34** *(confirmed 2026-10-14)* — the "brewed in the future" check
-  (`cellar/domain/Bottle.java:81-87`) calls `LocalDate.now()` in the JVM's
-  default zone while its comment's "+14:00 max offset" argument assumes UTC —
-  true of the container today, never pinned — and with no injectable `Clock`
-  the rule cannot be tested at a fixed instant.
 - **COULD-35** *(confirmed 2026-10-14)* — the front page
   (`app/[locale]/(home)/page.tsx:43`) and the profile page
   (`app/[locale]/profile/page.tsx:32`) call `listCellarEntries()`, with its
@@ -643,9 +364,6 @@ they're already cross-referenced from merged PRs and
   including lines polled in later, and `formatRelativeInstant` clamps a
   negative age to zero (`lib/relativeInstant.ts:26`), so a line polled in
   three hours after load says "just now" and older lines never age.
-- **COULD-37** *(confirmed 2026-10-14)* — switching language drops the
-  current search: `features/i18n/LocaleSwitcher.tsx:7-15,23` builds its link
-  from `usePathname()` only, so `/en/beers?query=ipa` becomes `/fi/beers`.
 - **COULD-38** *(confirmed 2026-10-14)* — accepted ADRs still cite the
   removed store and false compose facts with no `Amended` note: ADR-0002:8 and
   :24-25, ADR-0003:15-16 and :21-23, and ADR-0007:59-60 cite cart, ordering and
@@ -808,3 +526,42 @@ live section they came from.
 - ~~MUST-4~~ (the root README called `@radix-ui/react-dialog` the one UI dependency while `@radix-ui/react-toast` was a second) — resolved: confirmed 2026-10-14 that `README.md:208-212` names both as "the only two UI dependencies", consistent with `docs/architecture.md` and `frontend/README.md`. The rationale duplication around them stays open as SHOULD-20.
 - ~~MUST-6~~ (the ADR index labelled ADR-0045's link "ADR-0046") — resolved: confirmed 2026-10-14 that `docs/adr/README.md:114` labels it ADR-0045 and a scan of every `[ADR-NNNN]` link across the docs, `CLAUDE.md`, the READMEs and `.claude/` finds no label/target mismatch.
 - ~~SHOULD-21~~ (the root README's roadmap-order feature list skipped iteration 6.5) — resolved: confirmed 2026-10-14 that `README.md:132-133` lists iteration 6.5. The same class of gap recurs for iterations 9–14 as SHOULD-53.
+- ~~MUST-10~~ (the feed's documented at-least-once delivery was never configured, so a failed listener lost its line and `event_publication` grew forever) — lifted into [iteration-8 task 06](iteration-8/06-feed-events-delivered-at-least-once.md). `[needs decision]` resolved by the product owner on 2026-10-14: republish on restart, scheduled resubmission of stale publications, and a completion mode that prunes.
+- ~~MUST-11~~ (`docs/architecture.md` §2's diagram drew a route-handler hop that does not exist and one of seven inter-module edges, and its test checked nodes only) — lifted into [iteration-8 task 14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md).
+- ~~MUST-12~~ (brewery listed as a built search filter that the UI never offered) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~MUST-13~~ (the anonymous-route list stated three times, none matching `SecurityConfig`) — lifted into [iteration-8 task 12](iteration-8/12-public-routes-one-list-pinned-by-a-test.md). Merged with COULD-29.
+- ~~MUST-14~~ (iteration 9 scheduled `/breweries` pagination that already exists) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~MUST-15~~ (`docs/ci-playbook.md` told agents to keep versions in the README table, against ADR-0020) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~MUST-16~~ (`backend/README.md`'s hot-reload recipe started the backend container on the port the native run needs) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-12~~ (`docs/architecture.md` named iteration 6.5 as in progress and listed nothing built since) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md). The recurrence cause stays open as SHOULD-59.
+- ~~SHOULD-15~~ (`features/cellar` importing the catalog's generated client, invisible to the boundary rule) — lifted into [iteration-8 task 10](iteration-8/10-cellar-reads-joined-in-the-backend.md). Its `[needs decision]` needs no separate answer: moving the join to the backend (SHOULD-35's decision) removes the import.
+- ~~SHOULD-17~~ (the two-level bottle model cited to ADR-0006 instead of ADR-0034) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-18~~ (two broken quality-backlog links in the iteration-5.5 index) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-19~~ (§7's testing table omitting `ArchitectureDocumentationTest`) — lifted into [iteration-8 task 14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md).
+- ~~SHOULD-32~~ (in-app links to a public cellar carrying no locale) — lifted into [iteration-8 task 13](iteration-8/13-in-app-links-keep-the-readers-language.md). `[needs decision]` resolved by the product owner on 2026-10-14: in-app links carry the current locale; the copied address stays locale-less (an ADR-0050 amendment).
+- ~~SHOULD-33~~ (the front page's feed showing "Nothing here yet" while public lines exist) — lifted into [iteration-8 task 07](iteration-8/07-front-page-feed-reaches-public-lines.md). `[needs decision]` resolved by the product owner on 2026-10-14: the backend fills the page.
+- ~~SHOULD-34~~ (the anonymous public cellar making one `getBeer` call per entry) — lifted into [iteration-8 task 10](iteration-8/10-cellar-reads-joined-in-the-backend.md).
+- ~~SHOULD-35~~ (the cellar↔catalog join living in the frontend, so every client would re-implement it) — lifted into [iteration-8 task 10](iteration-8/10-cellar-reads-joined-in-the-backend.md). `[needs decision]` resolved by the product owner on 2026-10-14: the backend returns the joined cellar through `CatalogApi`.
+- ~~SHOULD-36~~ (the catalog search form sending values the API answers with a 400) — lifted into [iteration-8 task 08](iteration-8/08-catalog-search-bounded-end-to-end.md).
+- ~~SHOULD-37~~ (the username lookup on an anonymous route unindexed and its path variable unbounded) — lifted into [iteration-8 task 09](iteration-8/09-a-username-is-a-permanent-address.md).
+- ~~SHOULD-38~~ (usernames not unique, so a reclaimed name redirects old feed links to a new person) — lifted into [iteration-8 task 09](iteration-8/09-a-username-is-a-permanent-address.md). `[needs decision]` resolved by the product owner on 2026-10-14: unique, and a deleted account's username is never reused.
+- ~~SHOULD-39~~ (the cellar sign-in open-redirect guard untested) — lifted into [iteration-8 task 11](iteration-8/11-the-bff-forwards-only-what-it-checked.md).
+- ~~SHOULD-41~~ (ADR-0053 never amended for `BottleAdded` carrying the editable `brewedDate`) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-42~~ (`moduleRootReachesDomainThroughApplication` passing a root that reaches `domain` directly alongside `application`) — lifted into [iteration-8 task 14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md).
+- ~~SHOULD-43~~ (`profile`'s retries enabled only by a configuration class inside `cellar`) — lifted into [iteration-8 task 15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md).
+- ~~SHOULD-44~~ (the feed's `MAX_SIZE` tied to two private batch caps by a comment) — lifted into [iteration-8 task 07](iteration-8/07-front-page-feed-reaches-public-lines.md).
+- ~~SHOULD-46~~ (cellar and beer route strings built separately in several features) — lifted into [iteration-8 task 13](iteration-8/13-in-app-links-keep-the-readers-language.md).
+- ~~SHOULD-48~~ (the frontend import-boundary rules having no violating fixture) — lifted into [iteration-8 task 14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md).
+- ~~SHOULD-49~~ (feed-line fields and `startOver` missing from `docs/architecture.md` and the glossary) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-50~~ (the backend module list restated and drifted across three READMEs) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-51~~ ("JUnit 5" where Jupiter 6 runs) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~SHOULD-52~~ (wrong rule counts and fixture scope for `ArchitectureRulesRejectViolationsTest`) — lifted into [iteration-8 task 16](iteration-8/16-docs-describe-what-is-built.md).
+- ~~COULD-17~~ (`MAX_PAGE` × `MAX_PAGE_SIZE` allowing an anonymous `OFFSET 1_000_000`) — lifted into [iteration-8 task 08](iteration-8/08-catalog-search-bounded-end-to-end.md). `[needs decision]` resolved by the product owner on 2026-10-14: lower `MAX_PAGE`.
+- ~~COULD-19~~ (an access token with no recorded expiry treated as fresh forever) — lifted into [iteration-8 task 11](iteration-8/11-the-bff-forwards-only-what-it-checked.md).
+- ~~COULD-28~~ (generated-client path parameters interpolated unencoded, with the caller's token attached) — lifted into [iteration-8 task 11](iteration-8/11-the-bff-forwards-only-what-it-checked.md).
+- ~~COULD-29~~ (no test pinning which routes are reachable without a token) — lifted into [iteration-8 task 12](iteration-8/12-public-routes-one-list-pinned-by-a-test.md).
+- ~~COULD-31~~ (the "no empty entry" rule re-checked inconsistently across tiers) — lifted into [iteration-8 task 10](iteration-8/10-cellar-reads-joined-in-the-backend.md).
+- ~~COULD-32~~ (`ProfileService.isCellarPublic` referenced only by tests) — lifted into [iteration-8 task 15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md).
+- ~~COULD-33~~ (read methods of `CellarService` and `ProfileService` opening read-write transactions) — lifted into [iteration-8 task 15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md).
+- ~~COULD-34~~ (the future-date check reading the JVM's default clock and zone) — lifted into [iteration-8 task 15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md).
+- ~~COULD-37~~ (switching language dropping the current search) — lifted into [iteration-8 task 13](iteration-8/13-in-app-links-keep-the-readers-language.md).
