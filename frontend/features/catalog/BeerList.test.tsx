@@ -74,9 +74,15 @@ describe("BeerList", () => {
   it("shows an empty state with a way back when nothing matches, as a plain anchor", async () => {
     const { container } = render(await BeerList({ locale: "en", beers: [] }));
 
-    expect(screen.getByText(/no beers match/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /no beers match/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /clear/i })).toHaveAttribute("href", "/en/beers");
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("heads the empty state at the level its rows would take", async () => {
+    render(await BeerList({ locale: "en", beers: [], headingLevel: 3 }));
+
+    expect(screen.getByRole("heading", { level: 3, name: /no beers match/i })).toBeInTheDocument();
   });
 
   it("renders in Finnish with a decimal comma and locale-prefixed links", async () => {

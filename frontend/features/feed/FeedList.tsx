@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { cardVariants } from "@/components/ui/card";
+import { surfaceVariants } from "@/components/ui/surface";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { FeedLineRow } from "./FeedLineRow";
@@ -199,7 +199,7 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
         {(isFetchNextPageError || isOlderCursorExpired) && (
           <div
             role="status"
-            className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
+            className={cn(surfaceVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
           >
             <span>{t(isOlderCursorExpired ? "feed.older.cursorExpired" : "feed.older.failed")}</span>
             <Button
@@ -214,7 +214,7 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
         {isStalled && (
           <div
             role="status"
-            className={cn(cardVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
+            className={cn(surfaceVariants, "flex items-center justify-between gap-4 p-4 text-sm text-foreground")}
           >
             <span>{t("feed.live.stalled")}</span>
             <Button type="button" variant="outline" onClick={() => poll.refetch()}>

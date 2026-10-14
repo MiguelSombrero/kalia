@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { CellarBeerList } from "./CellarBeerList";
@@ -48,10 +48,7 @@ export const PublicCellarView = async ({
       {beers.length > 0 ? (
         <CellarBeerList locale={locale} beers={beers} owner={false} />
       ) : (
-        <section className="flex flex-col gap-2 border-t border-border pt-6">
-          <SectionHeading level={2} look="heading">{t("cellar.public.empty.title")}</SectionHeading>
-          <p className="text-muted-foreground">{t("cellar.public.empty.hint")}</p>
-        </section>
+        <EmptyState title={t("cellar.public.empty.title")} headingLevel={2} hint={t("cellar.public.empty.hint")} />
       )}
       {!isOwner && (
         <section className="flex flex-col gap-3 border-t border-border pt-5">

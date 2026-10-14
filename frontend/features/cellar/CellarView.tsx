@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageTitle } from "@/components/ui/page-title";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { CellarBeerList } from "./CellarBeerList";
@@ -47,9 +47,16 @@ export const CellarView = async ({
       {beers.length > 0 ? (
         <CellarBeerList locale={locale} beers={beers} owner />
       ) : (
-        <section className="flex flex-col items-start gap-4 border-t border-border pt-6">
-          <SectionHeading level={2} look="heading">{t("cellar.empty.title")}</SectionHeading>
-          <p className="max-w-prose text-muted-foreground">{t("cellar.empty.hint")}</p>
+        <EmptyState
+          title={t("cellar.empty.title")}
+          headingLevel={2}
+          hint={t("cellar.empty.hint")}
+          action={
+            <Link href={`/${locale}/beers`} className={buttonVariants("primary")}>
+              {t("cellar.empty.action")}
+            </Link>
+          }
+        >
           <ol className="w-full max-w-xl border-t border-divider">
             {EMPTY_STEPS.map((step, index) => (
               <li key={step} className="flex items-center gap-3.5 border-b border-divider py-2.5 text-foreground">
@@ -63,10 +70,7 @@ export const CellarView = async ({
               </li>
             ))}
           </ol>
-          <Link href={`/${locale}/beers`} className={buttonVariants("primary")}>
-            {t("cellar.empty.action")}
-          </Link>
-        </section>
+        </EmptyState>
       )}
       <RemovalOutcomeToast />
     </>
