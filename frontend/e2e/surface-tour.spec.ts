@@ -2,7 +2,7 @@ import type { Locator, Page } from "@playwright/test";
 import { expectCoherentHeadings, expectNoA11yViolations } from "./support/a11y";
 import { copyFor, LOCALES, type Locale } from "./support/copy";
 import { expectNoSidewaysScroll } from "./support/layout";
-import { createFreshAccount, expect, signIn, test } from "./support/keycloakAccount";
+import { createFreshAccount, expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
 import { KEYCLOAK_ORIGIN } from "./support/origins";
 import { expectShellTargetsReachable } from "./support/shell";
 import { escapeRegExp } from "./support/text";
@@ -148,7 +148,10 @@ for (const viewport of VIEWPORTS) {
         browser,
         baseURL,
       }) => {
-        const account = await createFreshAccount(request, `e2e-tour-${locale}-${viewport.name}`);
+        // No hyphens: each is a break opportunity, and only an unbroken
+        // username shows whether a title holding it can push the page sideways.
+        const prefix = `e2e-tour-${locale}-${viewport.name}`;
+        const account = await createFreshAccount(request, prefix, uniqueUsername(prefix).replaceAll("-", ""));
 
         await page.goto("/en");
         await signIn(page, account);

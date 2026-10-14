@@ -1,7 +1,7 @@
 // The frames the cellar pages and their skeletons share, so a skeleton cannot
 // drift from the layout it stands in for (ADR-0022).
 
-export const cellarHead = "flex flex-col gap-2.5";
+export const cellarHead = "flex min-w-0 flex-col gap-2.5";
 
 export const cellarTools = "flex flex-wrap items-end justify-between gap-3";
 
