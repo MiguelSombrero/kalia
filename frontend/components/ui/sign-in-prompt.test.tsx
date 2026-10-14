@@ -10,6 +10,7 @@ const renderPrompt = (signInAction: (formData: FormData) => Promise<void> = asyn
       hint="Your cellar is yours alone."
       signInLabel="Sign in"
       signUpLabel="Create an account"
+      signUpHref="/fi/sign-up"
       signInAction={signInAction}
       locale="fi"
       headingLevel={2}

@@ -7,6 +7,7 @@ type SignInPromptProps = {
   hint: string;
   signInLabel: string;
   signUpLabel: string;
+  signUpHref: string;
   signInAction: (formData: FormData) => Promise<void>;
   locale: string;
   headingLevel: 2 | 3;
@@ -17,6 +18,7 @@ export const SignInPrompt = ({
   hint,
   signInLabel,
   signUpLabel,
+  signUpHref,
   signInAction,
   locale,
   headingLevel,
@@ -35,7 +37,7 @@ export const SignInPrompt = ({
               {signInLabel}
             </Button>
           </form>
-          <Link href={`/${locale}/sign-up`} className={buttonVariants("outline")}>
+          <Link href={signUpHref} className={buttonVariants("outline")}>
             {signUpLabel}
           </Link>
         </div>

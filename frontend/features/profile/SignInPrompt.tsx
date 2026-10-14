@@ -12,6 +12,7 @@ export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
       hint={t("profile.signIn.hint")}
       signInLabel={t("profile.signIn.action")}
       signUpLabel={t("auth.signUp")}
+      signUpHref={`/${locale}/sign-up`}
       signInAction={startProfileSignIn}
       locale={locale}
       headingLevel={2}

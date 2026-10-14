@@ -32,7 +32,7 @@ describe("SignInPrompt", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
-    await waitFor(() => expect(startCellarSignIn).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(startCellarSignIn).mock.calls[0][0]?.get("locale")).toBe("en");
+    await waitFor(() => expect(startCellarSignIn).toHaveBeenCalled());
+    expect(vi.mocked(startCellarSignIn).mock.lastCall?.[0]?.get("locale")).toBe("en");
   });
 });

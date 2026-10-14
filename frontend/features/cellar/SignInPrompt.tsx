@@ -12,6 +12,7 @@ export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
       hint={t("cellar.signIn.hint")}
       signInLabel={t("cellar.signIn.action")}
       signUpLabel={t("auth.signUp")}
+      signUpHref={`/${locale}/sign-up`}
       signInAction={startCellarSignIn}
       locale={locale}
       headingLevel={2}
