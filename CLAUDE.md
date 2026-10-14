@@ -165,8 +165,8 @@ The gates themselves:
   plugin names as required steps, since most are not bundled and may be absent
   for a future session or contributor.
 - **Verify each acceptance criterion by running what it says verifies it**,
-  then tick it and set the status to `done` in both the task file and its
-  iteration index, in the PR that completes it. A criterion you cannot
+  then tick it and set the task file's status to `done` in the PR that
+  completes it (ADR-0076 syncs the index). A criterion you cannot
   honestly tick means the task isn't done. (Iterations 0–4 predate task files:
   tick in `docs/tasks/iteration-N.md`.)
 - **Iteration DoD gate:** never declare an iteration complete because its last

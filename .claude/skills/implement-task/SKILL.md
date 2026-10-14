@@ -83,8 +83,9 @@ their own condition from that ADR before they apply.
     why at least one is an automated test. Tick a box only after seeing that
     check pass; if it fails, fix it and run it again. A criterion you cannot
     honestly tick means the task is not done, not that the box is optimistic
-    — `CLAUDE.md`'s roadmap-task bullet. Only then set the status to `done`,
-    in the task file and its iteration index; and if this was the iteration's
+    — `CLAUDE.md`'s roadmap-task bullet. Only then set the task file's status
+    to `done` (`scripts/sync-indexes.mjs` copies it into the iteration index);
+    and if this was the iteration's
     last task, verify its "Done when" the same way — by running each
     criterion — before updating that iteration's `Status` in
     `docs/roadmap.md`, per "Iteration DoD gate".

@@ -67,10 +67,13 @@ findings are advisory, never fail, and print only with `--advisory`. Delete the 
 `.claude/rules/code-comments.md` and
 [ADR-0017](adr/0017-code-comment-policy.md).
 
-## Static checks — `check-adrs.mjs` / `check-tasks.mjs`
+## Static checks — `check-adrs.mjs` / `check-tasks.mjs` / `sync-indexes.mjs`
 
 The checker output names the file and the missing thing; it is precise enough
-to act on directly. The one failure it cannot phrase helpfully is a **number
+to act on directly. **"An index cell disagrees with the file it mirrors"** is
+fixed by `make sync-indexes`, never by editing the cell
+([ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md)); it means the
+file changed somewhere the edit-time hook did not run. The one failure it cannot phrase helpfully is a **number
 collision**, which arrives as a merge conflict in
 [architecture.md](architecture.md)'s ADR index rather than as a checker
 message: two branches each claimed the next number, because each read only

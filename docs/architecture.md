@@ -718,9 +718,11 @@ updated if behavior or architecture changed.
 ## 9. Architecture decision records
 
 All decisions live in [adr/](adr/); the tables below are the index. Add a row
-when adding an ADR, and update the status column when a later ADR changes an
-earlier one. New ADRs follow [template.md](adr/template.md); the format and
-the rules behind it are
+when adding an ADR, in the table it belongs to. Its title, status and date
+cells are copied from the ADR by `scripts/sync-indexes.mjs`, so a status is
+changed in the ADR, never here
+([ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md)). New ADRs
+follow [template.md](adr/template.md); the format and the rules behind it are
 [ADR-0019](adr/0019-adr-format-and-conventions.md), and what earns an ADR in
 the first place is [ADR-0032](adr/0032-when-a-decision-earns-an-adr.md).
 
@@ -737,18 +739,20 @@ a decision is recorded in that ADR's own `Supersedes` / `Superseded-by` /
 prose had already drifted apart before this rule existed.
 
 CI runs `scripts/check-adrs.mjs` on every push, verifying that every ADR has
-a matching index row here (title and status), that it is also listed in
+an index row here, that it is also listed in
 [adr/README.md](adr/README.md), and that ADRs following the template keep a
 `Bad`/`Neutral` consequence — through `make check`, which the "Static checks"
 job in [ci.yml](../.github/workflows/ci.yml) runs with every other
 dependency-free checker. Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
-([ADR-0026](adr/0026-task-file-format.md)), and `scripts/check-comments.mjs`
+([ADR-0026](adr/0026-task-file-format.md)), `scripts/sync-indexes.mjs --check`
+fails an index cell that disagrees with its file, and `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
-([ADR-0017](adr/0017-code-comment-policy.md)). All three also run locally —
+([ADR-0017](adr/0017-code-comment-policy.md)). All of them also run locally —
 inside `make verify`, and at edit time via a `PostToolUse` hook that reports
-the failure back to the agent without blocking — the same hook runs ESLint
-on an edited frontend file
+the failure back to the agent without blocking. The same hook runs ESLint on
+an edited frontend file, and syncs the index cells itself after an edit under
+`docs/adr/` or `docs/tasks/`
 ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
 ### Product and system architecture
@@ -839,3 +843,4 @@ reasons and its rate is worth watching independently
 | [ADR-0051](adr/0051-process-retrospection-belongs-to-the-sweep.md) | Process retrospection belongs to the sweep, not to every task | accepted | 2026-08-30 |
 | [ADR-0062](adr/0062-a-design-task-is-a-skill-and-a-marker.md) | A design task has no known outcome, so it runs under a skill and a template marker | accepted | 2026-09-29 |
 | [ADR-0063](adr/0063-design-intent-has-its-own-document.md) | Kalia's design intent has its own document, which holds meaning and never values | accepted | 2026-10-03 |
+| [ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md) | An index cell that mirrors a file is synced from that file, not kept in step by hand | accepted | 2026-10-14 |

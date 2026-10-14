@@ -6,8 +6,8 @@
 //
 // Two tiers of check:
 //   - Universal, on every ADR: a row exists in docs/architecture.md's ADR
-//     index with matching title and status, the ADR is also listed in the
-//     grouped index
+//     index (its title, status and date cells are sync-indexes.mjs's, per
+//     ADR-0076), the ADR is also listed in the grouped index
 //     docs/adr/README.md, Status is a vocabulary token, and whichever of the
 //     five canonical headings are present appear in canonical order with no
 //     unknown heading interspersed.
@@ -62,9 +62,7 @@ console.log(
 for (const file of files) {
   const text = readFileSync(resolve(ADR_DIR, file), "utf8");
 
-  const h1 = text.match(/^# ADR-(\d{4}): (.+)$/m);
-  if (!h1) { fail(file, "no H1 matching '# ADR-NNNN: Title'"); continue; }
-  const [, id, title] = h1;
+  if (!/^# ADR-\d{4}: .+$/m.test(text)) { fail(file, "no H1 matching '# ADR-NNNN: Title'"); continue; }
 
   const status = text.match(/^- \*\*Status:\*\* (.+)$/m)?.[1];
   if (!status) fail(file, "no '- **Status:** ...' metadata line");
@@ -72,20 +70,8 @@ for (const file of files) {
     fail(file, `Status "${status}" is not one of: ${STATUS_TOKENS.join(", ")}`);
   }
 
-  const row = archLines.find((l) => l.startsWith("|") && l.includes(`adr/${file})`));
-  if (!row) {
+  if (!archLines.some((l) => l.startsWith("|") && l.includes(`adr/${file})`))) {
     fail(file, `no row in docs/architecture.md's ADR index (looked for a link to adr/${file})`);
-  } else {
-    const cells = row.split("|").map((c) => c.trim());
-    // | [ADR-nnnn](adr/file.md) | Title | Status | Date |
-    const rowTitle = cells[2];
-    const rowStatus = cells[3];
-    if (rowTitle !== title) {
-      fail(file, `index title "${rowTitle}" does not match H1 "${title}"`);
-    }
-    if (status && rowStatus !== status) {
-      fail(file, `index status "${rowStatus}" does not match file status "${status}"`);
-    }
   }
 
   if (!readmeText.includes(`](${file})`)) {

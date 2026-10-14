@@ -4,6 +4,10 @@
 - **Date:** 2026-08-30
 - **Amended:** 2026-10-14 — the edit-time hook also runs ESLint on an edited
   frontend source file
+- **Amended:** 2026-10-14 by
+  [ADR-0076](0076-index-cells-are-synced-from-their-files.md) — the hook
+  writes one thing: it syncs index cells after an edit under `docs/adr/` or
+  `docs/tasks/`
 
 ## Context
 
