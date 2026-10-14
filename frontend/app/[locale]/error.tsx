@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 
 const ErrorPage = ({
   error,
@@ -21,9 +22,7 @@ const ErrorPage = ({
 
   return (
     <Page width="narrow">
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-        {t("error.title")}
-      </h1>
+      <PageTitle>{t("error.title")}</PageTitle>
       <p className="text-muted-foreground">{t("error.message")}</p>
       <Button variant="primary" className="self-start" onClick={unstable_retry}>
         {t("error.retry")}

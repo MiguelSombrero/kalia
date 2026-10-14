@@ -39,6 +39,14 @@ const ROUTES = [
         !p.includes("/node_modules/")),
   },
   {
+    checker: "check-headings.mjs",
+    covers: (p) =>
+      p === "scripts/check-headings.mjs" ||
+      ((p.startsWith("frontend/app/") || p.startsWith("frontend/features/")) &&
+        p.endsWith(".tsx") &&
+        !/\.(test|spec)\.tsx$/.test(p)),
+  },
+  {
     checker: "check-comments.mjs",
     covers: (p) =>
       (p.startsWith("backend/src/") && p.endsWith(".java")) ||

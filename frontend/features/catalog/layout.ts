@@ -1,9 +1,6 @@
 // The frames the catalog's pages and their skeletons share, so a skeleton
 // cannot drift from the layout it stands in for (ADR-0022).
 
-export const catalogTitle =
-  "font-display text-title font-extrabold text-balance text-foreground md:text-display";
-
 /** Filters beside the results from md; stacked above them on a phone. */
 export const catalogColumns =
   "flex flex-col gap-6 md:grid md:grid-cols-[15rem_minmax(0,1fr)] md:items-start md:gap-12";

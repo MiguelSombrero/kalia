@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { catalogTitle } from "@/features/catalog";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { getTranslation } from "@/i18n/server";
 import { cn } from "@/lib/cn";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 
 const BeerNotFound = async () => {
   const locale = await resolveLocaleFromHeaders();
@@ -12,7 +12,7 @@ const BeerNotFound = async () => {
 
   return (
     <Page width="narrow">
-      <h1 className={catalogTitle}>{t("notFound.title")}</h1>
+      <PageTitle>{t("notFound.title")}</PageTitle>
       <p className="text-muted-foreground">{t("notFound.message")}</p>
       <Link href={`/${locale}/beers`} className={cn(buttonVariants("outline"), "self-start")}>
         {t("notFound.backLink")}

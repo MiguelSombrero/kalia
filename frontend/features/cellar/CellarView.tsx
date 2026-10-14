@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { PageTitle } from "@/components/ui/page-title";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
 import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
-import { cellarHead, cellarTitle } from "./layout";
+import { cellarHead } from "./layout";
 import type { CellarBeer } from "./types";
 
 const EMPTY_STEPS = ["cellar.empty.step1", "cellar.empty.step2", "cellar.empty.step3"] as const;
@@ -25,7 +27,7 @@ export const CellarView = async ({
   return (
     <>
       <div className={cellarHead}>
-        <h1 className={cellarTitle}>{t("cellar.title")}</h1>
+        <PageTitle>{t("cellar.title")}</PageTitle>
         {beers.length > 0 && <CellarCounts beers={beers} locale={locale} />}
         {visibility && (
           <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-muted-foreground">
@@ -46,7 +48,7 @@ export const CellarView = async ({
         <CellarBeerList locale={locale} beers={beers} owner />
       ) : (
         <section className="flex flex-col items-start gap-4 border-t border-border pt-6">
-          <h2 className="text-2xl font-bold text-foreground">{t("cellar.empty.title")}</h2>
+          <SectionHeading level={2} look="heading">{t("cellar.empty.title")}</SectionHeading>
           <p className="max-w-prose text-muted-foreground">{t("cellar.empty.hint")}</p>
           <ol className="w-full max-w-xl border-t border-divider">
             {EMPTY_STEPS.map((step, index) => (

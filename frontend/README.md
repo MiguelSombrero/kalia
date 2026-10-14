@@ -272,6 +272,15 @@ Why the rationale lives there and not here:
   `page.tsx`, `loading.tsx`, `error.tsx` and `not-found.tsx` all wrap their
   content in it rather than in a `<main className="mx-auto …">`
   ([ADR-0067](../docs/adr/0067-page-shell-sticky-bar-and-page-component.md)).
+- **A page title is `PageTitle` and a section heading is `SectionHeading`**,
+  from `components/ui/`; no page or feature writes an `<h1>` or `<h2>` itself.
+  `PageTitle` always renders the `h1`, at the page title's sizes or, with
+  `size="name"`, the profile's username. `SectionHeading` renders the `level`
+  its caller passes, in the `heading` or `label` look ([docs/design.md](../docs/design.md)
+  says which). `scripts/check-headings.mjs` fails `make verify-fast` on a
+  hand-written one; a heading that is neither, such as a beer's name heading
+  its own row, goes in that script's `ALLOWLIST` with its reason
+  ([ADR-0073](../docs/adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
   `dialog.tsx` wraps `@radix-ui/react-dialog`** for the focus trap,
   focus restore, `Escape` handling and `aria-modal` inerting a modal needs,

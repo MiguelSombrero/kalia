@@ -5,6 +5,7 @@ import { getProfile, ProfileView, SignInPrompt } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,9 +23,7 @@ const ProfilePage = async ({ params }: Props) => {
     const { t } = await getTranslation(locale);
     return (
       <Page>
-        <h1 className="font-display text-title font-extrabold text-balance text-foreground md:text-display">
-          {t("profile.title")}
-        </h1>
+        <PageTitle>{t("profile.title")}</PageTitle>
         <SignInPrompt locale={locale} />
       </Page>
     );

@@ -17,6 +17,7 @@ import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { cn } from "@/lib/cn";
 
 const SAME_STYLE_SHOWN = 5;
@@ -79,9 +80,9 @@ const BeerPage = async ({ params, searchParams }: Props) => {
       />
       {others.length > 0 && (
         <section aria-labelledby="same-style-heading" className="flex flex-col gap-3">
-          <h2 id="same-style-heading" className="text-label font-semibold uppercase text-foreground">
+          <SectionHeading level={2} look="label" id="same-style-heading">
             {t("beer.sameStyle", { style: beer.style })}
-          </h2>
+          </SectionHeading>
           <BeerList
             locale={locale}
             beers={others}

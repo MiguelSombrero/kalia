@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
+import { SectionHeading } from "@/components/ui/section-heading";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
-import { cellarHead, cellarTitle } from "./layout";
+import { cellarHead } from "./layout";
 import type { CellarBeer } from "./types";
 
 /** A public cellar: the owner's page without its controls (ADR-0070). */
@@ -39,7 +41,7 @@ export const PublicCellarView = async ({
       <div className="flex items-start gap-4">
         <PersonSlot username={username} size="md" />
         <div className={cellarHead}>
-          <h1 className={cellarTitle}>{t("cellar.public.heading", { username })}</h1>
+          <PageTitle>{t("cellar.public.heading", { username })}</PageTitle>
           {beers.length > 0 && <CellarCounts beers={beers} lastAdded={lastAdded} locale={locale} />}
         </div>
       </div>
@@ -47,7 +49,7 @@ export const PublicCellarView = async ({
         <CellarBeerList locale={locale} beers={beers} owner={false} />
       ) : (
         <section className="flex flex-col gap-2 border-t border-border pt-6">
-          <h2 className="text-2xl font-bold text-foreground">{t("cellar.public.empty.title")}</h2>
+          <SectionHeading level={2} look="heading">{t("cellar.public.empty.title")}</SectionHeading>
           <p className="text-muted-foreground">{t("cellar.public.empty.hint")}</p>
         </section>
       )}

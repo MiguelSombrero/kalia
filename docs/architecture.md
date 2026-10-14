@@ -456,7 +456,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   rule ([ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)).
   The build fails on a colour or
   typeface a component takes from outside the semantic layer
-  ([ADR-0066](adr/0066-token-only-styling-is-a-build-check.md)). The identity
+  ([ADR-0066](adr/0066-token-only-styling-is-a-build-check.md)), and on a page
+  title or section heading written by hand rather than through `PageTitle` or
+  `SectionHeading` (`scripts/check-headings.mjs`). The identity
   is "Can art, square"
   ([ADR-0064](adr/0064-visual-identity-can-art-square.md)): a white page,
   hairline ink edges, one cobalt action colour, success and destructive state

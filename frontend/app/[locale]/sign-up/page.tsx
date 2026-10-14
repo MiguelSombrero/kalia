@@ -5,6 +5,7 @@ import { SignUpForm } from "@/features/auth";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -32,9 +33,7 @@ const SignUpPage = async ({ params, searchParams }: Props) => {
   return (
     <Page width="narrow">
       <div className="flex flex-col gap-3">
-        <h1 className="font-display text-title font-extrabold text-balance text-foreground md:text-display">
-          {t("signUp.title")}
-        </h1>
+        <PageTitle>{t("signUp.title")}</PageTitle>
         <p className="text-muted-foreground">{t("signUp.lead")}</p>
       </div>
       <ol className="border-t border-border">

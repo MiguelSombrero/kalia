@@ -1,7 +1,8 @@
+import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { nameTag, nameTagName, nameTagSlot } from "./layout";
+import { nameTag, nameTagSlot } from "./layout";
 import type { Profile } from "./types";
 import { type CellarTotals, VisibilityControl } from "./VisibilityControl";
 
@@ -17,7 +18,7 @@ export const ProfileView = async ({ locale, profile, counts }: Props) => {
         <span className="self-end text-label font-semibold uppercase text-muted-foreground">
           {t("profile.name.label")}
         </span>
-        <h1 className={nameTagName}>{profile.username}</h1>
+        <PageTitle size="name" className="col-span-2">{profile.username}</PageTitle>
         <p className="col-span-2 border-t border-divider pt-3 text-foreground">{t("profile.name.note")}</p>
       </div>
       <VisibilityControl

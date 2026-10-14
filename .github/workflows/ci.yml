@@ -181,6 +181,22 @@ jobs:
       - name: Self-test the token styling checker against fixtures
         run: node --test scripts/check-token-styling.test.mjs
 
+  heading-check:
+    name: Heading check
+    # Unconditional for the same reason as the token styling check above: a
+    # page's headings can change in a push the changes filter classifies as
+    # anything, and this costs a few seconds.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Verify every page title and section heading comes from components/ui/ (see ADR-0073)
+        run: node scripts/check-headings.mjs
+      - name: Self-test the heading checker against fixtures
+        run: node --test scripts/check-headings.test.mjs
+
   contrast-check:
     name: Contrast check
     # Unconditional for the same reason as the design token check above: a
