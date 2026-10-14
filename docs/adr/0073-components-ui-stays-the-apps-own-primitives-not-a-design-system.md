@@ -4,6 +4,9 @@
 - **Date:** 2026-10-11
 - **Amended:** 2026-10-11 — `scripts/check-headings.mjs` now checks the heading
   rule; see the amended Consequences entry and "How the decision is followed"
+- **Amended:** 2026-10-14 — the heading rule moved from that script into
+  `frontend/eslint.config.mjs`; see the second amendment to "How the decision
+  is followed"
 
 ## Context
 
@@ -145,6 +148,9 @@ writing once the answer says where a recurring look should go.
   > `scripts/check-headings.mjs`, so a page title comes from `PageTitle` and a
   > section heading from `SectionHeading`. A heading whose tag is chosen at
   > runtime is still review's to catch.
+  >
+  > **Amended 2026-10-14.** The failing check is now an ESLint rule rather
+  > than that script; what it fails is unchanged.
 - Bad, because nobody, human or agent, can see every primitive in one place.
   Choosing between two similar ones means reading their source.
 - Neutral, because ADR-0021's "extraction seam" sentence is now historical.
@@ -177,6 +183,19 @@ place is task 17's question.
 > by `make verify` and CI's heading check. Rather than inspect classes, it
 > fails the hand-written element itself, with an allowlist naming each heading
 > that is neither a page title nor a section heading.
+
+> **Amended 2026-10-14.** The rule is now two `no-restricted-syntax` selectors
+> in `frontend/eslint.config.mjs`, scoped to `app/` and `features/`, pinned by
+> `frontend/eslint.config.test.ts`. A heading that is neither a page title nor
+> a section heading carries an `eslint-disable-next-line` comment stating why,
+> and `reportUnusedDisableDirectives` fails one left behind — the script's
+> allowlist and its stale-entry rule, without a script. ESLint was the
+> alternative [ADR-0066](0066-token-only-styling-is-a-build-check.md) rejected
+> for token styling, and neither of its reasons carries over here: a heading
+> has no `.css` half for ESLint to miss, and the `PostToolUse` hook now runs
+> ESLint on an edited frontend file, so the edit-time feedback ADR-0066 kept
+> the script for still reaches the agent. In exchange the rule reports in an
+> editor, and one fewer bespoke script and CI job exists to maintain.
 
 ## Evidence
 

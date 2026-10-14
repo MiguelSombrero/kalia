@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 // Fixture-driven self-test for check-glossary.mjs. The check it exercises
 // never fires against the real tree once the glossary is current, so without
-// this a broken checker would stay green forever (iteration 6 task 08). Runs
-// in CI beside `node scripts/check-glossary.mjs` — see the glossary-check
-// job and `make check`.
+// this a broken checker would stay green forever. Runs beside
+// `node scripts/check-glossary.mjs` in `make check`, hence CI.
 
 import test from "node:test";
 import assert from "node:assert/strict";

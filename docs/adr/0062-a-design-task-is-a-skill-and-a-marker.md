@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-29
+- **Amended:** 2026-10-14 — `.gitignore` ignores every raster image, so the
+  rule is enforced before a commit rather than only after a push
 
 ## Context
 
@@ -60,6 +62,13 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   `make verify` and CI on any raster image git tracks outside an allowlist of
   directories that starts empty. A task that ships a raster asset adds its
   directory to the allowlist, so the exception is visible in its diff.
+
+  > **Amended 2026-10-14.** That check notices an image only once git tracks
+  > it, and by the time CI runs, the push has already published it. So
+  > `.gitignore` now ignores every raster extension, and `git add -A` skips a
+  > capture before it is ever committed; only a deliberate `git add -f` gets
+  > one in, which the check still fails. A directory of shipped assets is
+  > un-ignored with `!dir/**` in the same diff that allowlists it.
 - **Prototypes do not survive in the repository.** No mockup code is committed;
   the ADR's description of each direction is the record.
 - **Directions and rounds.** Three directions in the first round. Rounds are

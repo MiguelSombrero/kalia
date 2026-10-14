@@ -8,6 +8,8 @@
   file is read; this ADR keeps the reasoning and the census
 - **Amended:** 2026-08-15 — the policy gained a mechanism,
   `scripts/check-comments.mjs` (iteration 5 task 18)
+- **Amended:** 2026-10-14 — `scripts/check-comments.mjs` prints its advisory
+  findings only with `--advisory`, and holds `scripts/` to its hard tier
 
 ## Context
 
@@ -150,6 +152,13 @@ pointer: one line naming the ADR or doc section.
 > load-bearing rather than excess, stays a review call no script can make —
 > the checker's own header states that limit, and `/quality-sweep` covers it
 > at a coarser grain.
+
+> **Amended 2026-10-14.** The advisory findings print only with
+> `node scripts/check-comments.mjs --advisory`. Printed on every run they came
+> to 147 lines, which buried the hard tier's output and went unread; the
+> sweep is the reader they serve. The hard tier now also reads the `.mjs`
+> files under `scripts/`, which carried the narration it bans; they stay out
+> of the ratio, since the 0.09 baseline was measured without them.
 
 ## Consequences
 

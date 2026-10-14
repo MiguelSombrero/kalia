@@ -43,18 +43,17 @@ frontend-e2e: ## Run frontend E2E tests (needs the stack up)
 lint: ## Lint the frontend
 	(cd frontend && npm run lint)
 
-check: ## Run doc/task/comment/glossary/design-token/token-styling/heading/contrast/keycloak-theme consistency checks
+check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster checks and their self-tests
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
 	node scripts/check-glossary.mjs
 	node scripts/check-design-tokens.mjs
 	node scripts/check-token-styling.mjs
-	node scripts/check-headings.mjs
 	node scripts/check-contrast.mjs
 	node scripts/check-keycloak-theme.mjs
 	node scripts/check-no-raster-images.mjs
-	node --test scripts/check-glossary.test.mjs scripts/check-design-tokens.test.mjs scripts/check-token-styling.test.mjs scripts/check-headings.test.mjs scripts/check-contrast.test.mjs scripts/check-keycloak-theme.test.mjs scripts/check-tasks.test.mjs scripts/check-no-raster-images.test.mjs scripts/check-keycloak-realm-config.test.mjs scripts/check-signup-survives-restart.test.mjs scripts/keycloak-admin.test.mjs
+	node --test scripts/*.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build backend postgres
@@ -71,13 +70,14 @@ api-drift: ## Fail if the committed API client has drifted from the live spec (n
 # the admin console fails the check instead of being healed and never reported
 # (ADR-0054). With nothing running, a fresh realm is imported first so the
 # check has something to compare against.
-keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from keycloak/realm-export.json, or forgets a self-registered account across a restart (needs Docker)
+keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from keycloak/realm-export.json, or loses an account to a fresh container (needs Docker)
 	@docker compose ps --status running --quiet keycloak | grep -q . \
 	    || docker compose up -d --build --wait --wait-timeout 120 postgres keycloak keycloak-config
 	node scripts/check-keycloak-realm-config.mjs
 	docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123
-	node scripts/check-signup-survives-restart.mjs
+	docker compose up -d --force-recreate --no-deps --wait --wait-timeout 120 keycloak
+	node scripts/check-keycloak-signin.mjs testuser testuser123
 
 verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 

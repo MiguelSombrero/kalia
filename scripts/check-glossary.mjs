@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Guards the drift iteration 6 task 08 was written about: a backend `domain`
-// type is added and no document says what it means, so the ubiquitous
-// language lives only in the code — which this project cannot rely on,
-// because the agent that wrote it keeps no memory between sessions. Sibling
-// of check-adrs.mjs / check-tasks.mjs / check-comments.mjs: plain Node, no
-// dependencies, so it runs in CI without an npm install.
+// Guards against this drift: a backend `domain` type is added and no document
+// says what it means, so the ubiquitous language lives only in the code —
+// which this project cannot rely on, because the agent that wrote it keeps no
+// memory between sessions. Sibling of check-adrs.mjs / check-tasks.mjs /
+// check-comments.mjs: plain Node, no dependencies, so it runs in CI without an
+// npm install.
 //
 // Unlike those three it ships a fixture-driven self-test
 // (check-glossary.test.mjs), because nothing in the real tree would ever

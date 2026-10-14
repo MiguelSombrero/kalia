@@ -19,8 +19,8 @@ in an ADR.
 - **Every type in a backend `domain` package has a row** in its module's
   *Domain types* table below. `scripts/check-glossary.mjs` fails the build
   when one does not, and fails when a table lists a type that no longer
-  exists; it runs in CI (the `glossary-check` job) and under `make check`,
-  with a fixture self-test (`scripts/check-glossary.test.mjs`) because nothing
+  exists; it runs under `make check`, hence CI's static-checks job, with a
+  fixture self-test (`scripts/check-glossary.test.mjs`) because nothing
   in the real tree would otherwise trip it. Add the row in the same pull
   request as the type.
 - **The other sections are review-maintained.** Cross-module collisions, the

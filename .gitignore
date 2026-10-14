@@ -47,6 +47,23 @@ Screenshot*
 Screen Shot*
 screenshots/
 
+# Every raster image, wherever it lands, so `git add -A` skips a capture before
+# it is committed — scripts/check-no-raster-images.mjs only notices once git
+# already tracks one, and by CI the push has published it. A directory of
+# raster assets the project ships is un-ignored here with `!dir/**` in the same
+# diff that adds it to that script's ALLOWED_DIRS.
+*.[pP][nN][gG]
+*.[jJ][pP][gG]
+*.[jJ][pP][eE][gG]
+*.[gG][iI][fF]
+*.[wW][eE][bB][pP]
+*.[hH][eE][iI][cC]
+*.[hH][eE][iI][fF]
+*.[aA][vV][iI][fF]
+*.[bB][mM][pP]
+*.[tT][iI][fF]
+*.[tT][iI][fF][fF]
+
 # Playwright writes here when run from the repository root rather than frontend/.
 /test-results/
 /playwright-report/

@@ -458,7 +458,7 @@ The shape of the frontend. Day-to-day rules for writing it live in
   typeface a component takes from outside the semantic layer
   ([ADR-0066](adr/0066-token-only-styling-is-a-build-check.md)), and on a page
   title or section heading written by hand rather than through `PageTitle` or
-  `SectionHeading` (`scripts/check-headings.mjs`). The identity
+  `SectionHeading` (an ESLint rule in `frontend/eslint.config.mjs`). The identity
   is "Can art, square"
   ([ADR-0064](adr/0064-visual-identity-can-art-square.md)): a white page,
   hairline ink edges, one cobalt action colour, success and destructive state
@@ -737,14 +737,16 @@ prose had already drifted apart before this rule existed.
 CI runs `scripts/check-adrs.mjs` on every push, verifying that every ADR has
 a matching index row here (title and status), that it is also listed in
 [adr/README.md](adr/README.md), and that ADRs following the template keep a
-`Bad`/`Neutral` consequence — see the "ADR index check" job in
-[ci.yml](../.github/workflows/ci.yml). Its sibling `scripts/check-tasks.mjs`
+`Bad`/`Neutral` consequence — through `make check`, which the "Static checks"
+job in [ci.yml](../.github/workflows/ci.yml) runs with every other
+dependency-free checker. Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
 ([ADR-0026](adr/0026-task-file-format.md)), and `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
 ([ADR-0017](adr/0017-code-comment-policy.md)). All three also run locally —
 inside `make verify`, and at edit time via a `PostToolUse` hook that reports
-the failure back to the agent without blocking
+the failure back to the agent without blocking — the same hook runs ESLint
+on an edited frontend file
 ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
 ### Product and system architecture

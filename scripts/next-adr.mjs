@@ -7,7 +7,7 @@
 // exists because that was learned twice. ADR-0034 was written twice under one
 // number by two sessions reading the same directory. Then this script's own
 // first version, which read only the directory, returned 0045 for an ADR that
-// landed on dev from a concurrently open pull request while this one was
+// landed on dev from a concurrently open branch while this one was
 // being written — a number is taken the moment another *branch* claims it,
 // not when it reaches dev. So every remote-tracking ref is scanned too.
 //

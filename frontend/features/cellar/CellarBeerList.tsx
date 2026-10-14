@@ -103,6 +103,7 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
       <BeerSlot variant="strip" beerStyle={beer.style} className="md:hidden" />
       <div className="flex min-w-0 flex-col gap-3.5">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+          {/* eslint-disable-next-line no-restricted-syntax -- a beer's name heads its own row: neither a page title nor a section heading */}
           <h2 id={headingId} className="text-xl/snug font-bold text-foreground">
             <Link
               href={`/${locale}/beers/${beer.beerId}`}
