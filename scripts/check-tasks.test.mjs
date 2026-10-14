@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Fixture-driven self-test for check-tasks.mjs's `Kind` rule (iteration 7.5
-// task 01). The rule can only fire on a task file that is wrong, and the real
-// tree never holds one, so without this a checker that stopped enforcing it
-// would stay green — the reason check-glossary.test.mjs exists. Runs in CI
-// beside `node scripts/check-tasks.mjs` and in `make check`.
+// Fixture-driven self-test for check-tasks.mjs's `Kind` rule (ADR-0062). The
+// rule can only fire on a task file that is wrong, and the real tree never
+// holds one, so without this a checker that stopped enforcing it would stay
+// green — the reason check-glossary.test.mjs exists. Runs beside
+// `node scripts/check-tasks.mjs` in `make check`, hence CI.
 
 import test from "node:test";
 import assert from "node:assert/strict";

@@ -18,7 +18,33 @@ const componentsUi = { element: { type: "components-ui" } };
 const lib = [{ element: { type: "lib" } }, { file: { categories: "lib-root" } }];
 const generatedApi = { element: { type: "generated-api" } };
 
+// Prefer arrow functions over function declarations/expressions — see
+// frontend/README.md. A const because a later config object that sets
+// `no-restricted-syntax` replaces these options rather than adding to them, so
+// the heading rule below has to repeat them.
+const codeStyleSyntax = [
+  {
+    selector: "FunctionDeclaration",
+    message:
+      "Prefer arrow functions: const name = () => { … } (frontend convention).",
+  },
+  {
+    selector: "FunctionExpression",
+    message: "Prefer arrow functions over function expressions (frontend convention).",
+  },
+  // Convention (ADR-0037): no classes, enforced directly rather than as
+  // a side effect of the function-style rules above, which only reach
+  // a class's methods and miss a bodyless one.
+  {
+    selector: "ClassDeclaration",
+    message: "No classes: discriminated unions, type guards and factory functions instead (ADR-0037).",
+  },
+];
+
 const eslintConfig = defineConfig([
+  {
+    linterOptions: { reportUnusedDisableDirectives: "error" },
+  },
   ...nextVitals,
   ...nextTs,
   // Catches incorrect TanStack Query usage (unstable query keys, misused
@@ -36,35 +62,37 @@ const eslintConfig = defineConfig([
   },
   {
     rules: {
-      // Convention (iteration 2, task 4): prefer arrow functions over
-      // function declarations/expressions — see frontend/README.md.
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "FunctionDeclaration",
-          message:
-            "Prefer arrow functions: const name = () => { … } (frontend convention).",
-        },
-        {
-          selector: "FunctionExpression",
-          message: "Prefer arrow functions over function expressions (frontend convention).",
-        },
-        // Convention (ADR-0037): no classes, enforced directly rather than as
-        // a side effect of the function-style rules above, which only reach
-        // a class's methods and miss a bodyless one.
-        {
-          selector: "ClassDeclaration",
-          message: "No classes: discriminated unions, type guards and factory functions instead (ADR-0037).",
-        },
-      ],
-      // Convention (iteration 3, task 9): call sites go through lib/logger.ts
-      // instead of console.* directly — see frontend/README.md.
+      "no-restricted-syntax": ["error", ...codeStyleSyntax],
+      // Call sites go through lib/logger.ts instead of console.* directly —
+      // see frontend/README.md.
       "no-console": "error",
       // Convention (ADR-0037): type over interface.
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       // Keeps the zero-inline-script survey behind ADR-0016's CSP true
       // between sweeps, instead of relying on someone re-running it by hand.
       "react/no-danger": "error",
+    },
+  },
+  // A page title is `PageTitle` and a section heading `SectionHeading`
+  // (ADR-0073). A heading that is neither carries an
+  // `eslint-disable-next-line no-restricted-syntax -- <why>` comment, and an
+  // exception left behind after its heading goes fails as unused.
+  {
+    files: ["app/**/*.tsx", "features/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/*.spec.tsx"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        ...codeStyleSyntax,
+        {
+          selector: "JSXOpeningElement[name.name='h1']",
+          message: "Use `PageTitle` from components/ui/ rather than a hand-written <h1> (ADR-0073).",
+        },
+        {
+          selector: "JSXOpeningElement[name.name='h2']",
+          message: "Use `SectionHeading` from components/ui/ rather than a hand-written <h2> (ADR-0073).",
+        },
+      ],
     },
   },
   {

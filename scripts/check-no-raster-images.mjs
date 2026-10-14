@@ -12,8 +12,9 @@
 //
 // A name-based check cannot tell a capture from a logo, so the line is drawn by
 // where a file lives rather than what it is. No directory is allowed today.
-// A task that ships a raster asset (iteration 7.5 task 04) adds its directory
-// to ALLOWED_DIRS, which puts the decision in the diff where review sees it.
+// A task that ships a raster asset adds its directory to ALLOWED_DIRS, which
+// puts the decision in the diff where review sees it, and un-ignores it in
+// .gitignore, which ignores every raster image so `git add` skips a capture.
 
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";

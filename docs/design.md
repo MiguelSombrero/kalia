@@ -28,15 +28,14 @@ anything a visitor sees; the `design-task` skill and
   through Tailwind utilities. A Tailwind sub-property such as
   `--text-label--letter-spacing` belongs to its token's row rather than
   having one of its own. `scripts/check-design-tokens.mjs` fails the build in
-  both directions; it runs in CI (the `design-token-check` job) and under
-  `make check`, with a fixture self-test
-  (`scripts/check-design-tokens.test.mjs`) because nothing in the real tree
-  would otherwise trip it. Add the row in the same pull request as the token.
+  both directions; it runs under `make check`, hence CI's static-checks job,
+  with a fixture self-test (`scripts/check-design-tokens.test.mjs`) because
+  nothing in the real tree would otherwise trip it. Add the row in the same pull request as the token.
 - **Every pairing under [Contrast pairings](#contrast-pairings) meets WCAG 2.2
   AA**, and so does every beer-style colour. `scripts/check-contrast.mjs`
   computes each from `globals.css`'s values and fails the build below AA; it
-  runs in CI (the `contrast-check` job) and under `make check`, with its own
-  fixture self-test.
+  runs under `make check`, hence CI's static-checks job, with its own fixture
+  self-test.
 - **Everything else is review-maintained.** Whether a feel statement still
   describes what ships, or a layout principle is still followed, is a
   reviewer's call — a checker that judged it would be guessing.

@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-30
+- **Amended:** 2026-10-14 — the edit-time hook also runs ESLint on an edited
+  frontend source file
 
 ## Context
 
@@ -76,6 +78,13 @@ What this covers, and what it does not:
   legitimately goes red mid-task — a task file exists before its index row
   does — and a hook that fought that would be disabled within a week.
   `verify-fast` and CI stay the gates that actually fail.
+
+  > **Amended 2026-10-14.** On an edited frontend `.ts`/`.tsx` file the hook
+  > also runs ESLint on that one file, reported the same way. The heading
+  > rule moved from a checker into ESLint
+  > ([ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)),
+  > and without this the hook would have stopped reaching it. Linting one
+  > file costs two to four seconds, against about 40 ms for a checker.
 - **The hook resolves the repository root from its own file location, never
   from the session's working directory.** Each worktree carries its own
   `.claude/settings.json` pointing at its own copy of the script, so a hook

@@ -277,9 +277,11 @@ Why the rationale lives there and not here:
   `PageTitle` always renders the `h1`, at the page title's sizes or, with
   `size="name"`, the profile's username. `SectionHeading` renders the `level`
   its caller passes, in the `heading` or `label` look ([docs/design.md](../docs/design.md)
-  says which). `scripts/check-headings.mjs` fails `make verify-fast` on a
-  hand-written one; a heading that is neither, such as a beer's name heading
-  its own row, goes in that script's `ALLOWLIST` with its reason
+  says which). ESLint (`no-restricted-syntax` in `eslint.config.mjs`) fails
+  a hand-written one in `app/` or `features/`; a heading that is neither, such
+  as a beer's name heading its own row, takes
+  `{/* eslint-disable-next-line no-restricted-syntax -- <why> */}` on the line
+  above, and one left behind after its heading goes fails as unused
   ([ADR-0073](../docs/adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
   `dialog.tsx` wraps `@radix-ui/react-dialog`** for the focus trap,

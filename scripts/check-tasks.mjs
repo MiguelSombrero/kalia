@@ -24,7 +24,7 @@
 //     moves it on — which no script can verify, since it cannot see who wrote
 //     the line; the PR that changes it is what does.
 //
-// Coverage (ADR-0026's 2026-08-15 amendment, iteration 5 task 16): an
+// Coverage (ADR-0026's 2026-08-15 amendment): an
 // iteration's `## Done when` may enumerate criteria as `- **DW-N:** ...`
 // instead of prose. It is opt-in per iteration, the same way the whole file
 // is opt-in per repo: an iteration with no `DW-N` id is exempt, exactly like

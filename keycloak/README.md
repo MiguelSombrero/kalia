@@ -50,7 +50,9 @@ change that drops a style without moving the column passes it.
 
 `scripts/check-keycloak-realm-config.mjs` asserts the running realm still
 matches `realm-export.json`; `scripts/check-keycloak-signin.mjs` asserts it
-accepts a sign-in. Both run in `make keycloak-check` and in CI.
-`scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's colours
-and mark to the app's, in `make check` and CI's `keycloak-theme-check` job. See
+accepts a sign-in, and again after Keycloak's container is recreated, which
+proves accounts live in Postgres rather than the container. Both run in
+`make keycloak-check` and in CI, whenever a push touches Keycloak's inputs.
+`scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's
+colours and mark to the app's, in `make check`, hence CI. See
 [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity).

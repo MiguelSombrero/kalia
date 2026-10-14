@@ -30,6 +30,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      keycloak: ${{ steps.filter.outputs.keycloak }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,19 +43,21 @@ jobs:
         # like docker-compose.yml or this workflow) runs everything. A missed
         # run is a broken merge; a redundant run costs a few free minutes.
         run: |
-          if [ "${GITHUB_REF_NAME}" = "dev" ] || [ "${GITHUB_REF_NAME}" = "main" ]; then
-            echo "on ${GITHUB_REF_NAME}: running everything"
+          everything() {
+            echo "$1: running everything"
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "keycloak=true" >> "$GITHUB_OUTPUT"
             exit 0
+          }
+
+          if [ "${GITHUB_REF_NAME}" = "dev" ] || [ "${GITHUB_REF_NAME}" = "main" ]; then
+            everything "on ${GITHUB_REF_NAME}"
           fi
 
           base=$(git merge-base origin/dev HEAD 2>/dev/null || true)
           if [ -z "$base" ] || [ "$base" = "$(git rev-parse HEAD)" ]; then
-            echo "no usable merge base with origin/dev: running everything"
-            echo "backend=true" >> "$GITHUB_OUTPUT"
-            echo "frontend=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            everything "no usable merge base with origin/dev"
           fi
 
           changed=$(git diff --name-only "$base" HEAD)
@@ -65,10 +68,14 @@ jobs:
           # docker-compose.yml builds and wires both; this workflow defines
           # how they run; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
-          # keycloak/, postgres/ and the three keycloak scripts feed
-          # docker-compose.yml's keycloak and postgres services, which
-          # keycloak-realm-check below asserts against.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
+          # keycloak/, postgres/ and the seed script with its helper feed the
+          # keycloak, postgres and keycloak-seed services e2e's stack starts.
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
+
+          # What keycloak-realm-check below can be affected by: the services
+          # it starts and the scripts it runs. Neither backend/ nor frontend/
+          # is among them.
+          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing
@@ -77,220 +84,35 @@ jobs:
           # explicitly exempt.
           backend=false
           frontend=false
+          keycloak=false
           if [ -n "$shared" ]; then
             backend=true
             frontend=true
           fi
+          if [ -n "$keycloak_inputs" ]; then keycloak=true; fi
           if echo "$changed" | grep -q '^backend/'; then backend=true; fi
           if echo "$changed" | grep -q '^frontend/'; then frontend=true; fi
 
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
-          echo "Result: backend=$backend frontend=$frontend"
+          echo "keycloak=$keycloak" >> "$GITHUB_OUTPUT"
+          echo "Result: backend=$backend frontend=$frontend keycloak=$keycloak"
 
-  adr-index-check:
-    name: ADR index check
-    # No backend/frontend build tooling involved, so this runs unconditionally
-    # rather than behind the changes filter above — docs/ isn't classified by
-    # that filter at all, and the check itself costs a few seconds.
+  static-checks:
+    name: Static checks
+    # Unconditional: these read docs/, scripts/, backend/src and frontend/
+    # together, and the changes filter above classifies none of that as one
+    # unit — a backend `domain` type can land in a push it calls
+    # frontend-only. The whole set takes about a second, so one job running
+    # the Makefile's list keeps that list in exactly one place.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-      - name: Verify ADR index and structure (see ADR-0019)
-        run: node scripts/check-adrs.mjs
-
-  task-index-check:
-    name: Task index check
-    # Unconditional for the same reason as the ADR check above: docs/ isn't
-    # classified by the changes filter, and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify task files and iteration indexes (see ADR-0026)
-        run: node scripts/check-tasks.mjs
-      - name: Self-test the task checker's Kind rule against fixtures
-        run: node --test scripts/check-tasks.test.mjs
-
-  comment-policy-check:
-    name: Comment policy check
-    # Unconditional for the same reason as the two checks above: backend/src
-    # and frontend/ aren't classified as one unit by the changes filter (a
-    # frontend-only push would skip a backend-only violation), and this costs
-    # a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify code comments carry only what the repo cannot (see ADR-0017)
-        run: node scripts/check-comments.mjs
-
-  glossary-check:
-    name: Glossary check
-    # Unconditional for the same reason as the three checks above: a backend
-    # `domain` type can be added in a push the changes filter classifies as
-    # frontend-only, and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify every backend domain type has a glossary entry (see docs/glossary.md)
-        run: node scripts/check-glossary.mjs
-      - name: Self-test the glossary checker against fixtures
-        run: node --test scripts/check-glossary.test.mjs
-
-  design-token-check:
-    name: Design token check
-    # Unconditional for the same reason as the glossary check above: a token
-    # added to frontend/app/globals.css and its meaning row in docs/design.md
-    # can land in pushes the changes filter classifies differently, and this
-    # costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify every semantic token has a meaning row (see docs/design.md)
-        run: node scripts/check-design-tokens.mjs
-      - name: Self-test the design token checker against fixtures
-        run: node --test scripts/check-design-tokens.test.mjs
-
-  token-styling-check:
-    name: Token styling check
-    # Unconditional for the same reason as the design token check above: a
-    # component's classes can change in a push the changes filter classifies
-    # as anything, and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify no component styles itself outside the semantic token layer (see ADR-0066)
-        run: node scripts/check-token-styling.mjs
-      - name: Self-test the token styling checker against fixtures
-        run: node --test scripts/check-token-styling.test.mjs
-
-  heading-check:
-    name: Heading check
-    # Unconditional for the same reason as the token styling check above: a
-    # page's headings can change in a push the changes filter classifies as
-    # anything, and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-      - name: Verify every page title and section heading comes from components/ui/ (see ADR-0073)
-        run: node scripts/check-headings.mjs
-      - name: Self-test the heading checker against fixtures
-        run: node --test scripts/check-headings.test.mjs
-
-  contrast-check:
-    name: Contrast check
-    # Unconditional for the same reason as the design token check above: a
-    # colour in frontend/app/globals.css and the pairing that uses it in
-    # docs/design.md can land in pushes the changes filter classifies
-    # differently, and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify every declared pairing and beer-style colour meets WCAG 2.2 AA (see docs/design.md)
-        run: node scripts/check-contrast.mjs
-      - name: Self-test the contrast checker against fixtures
-        run: node --test scripts/check-contrast.test.mjs
-
-  keycloak-theme-check:
-    name: Keycloak theme check
-    # Unconditional for the same reason as the contrast check above: a colour
-    # in frontend/app/globals.css and its copy in the Keycloak theme's
-    # login.css can land in pushes the changes filter classifies differently,
-    # and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify the Keycloak theme's colours and mark still match the app's (see ADR-0074)
-        run: node scripts/check-keycloak-theme.mjs
-      - name: Self-test the Keycloak theme checker against fixtures
-        run: node --test scripts/check-keycloak-theme.test.mjs
-
-  raster-image-check:
-    name: Raster image check
-    # Unconditional: an image can be committed under any path, including ones
-    # the changes filter classifies as not code, and this costs a few seconds.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Verify git tracks no raster image (see ADR-0062)
-        run: node scripts/check-no-raster-images.mjs
-      - name: Self-test the raster image checker against fixtures
-        run: node --test scripts/check-no-raster-images.test.mjs
-
-  realm-config-checker-self-test:
-    name: Realm-config checker self-test
-    # Unconditional and cheap, like the checks above. check-keycloak-realm-config.mjs
-    # itself only runs with a live Keycloak (keycloak-realm-check below), and on
-    # a freshly imported realm it always passes — so this fixture test is the
-    # only thing that catches the checker losing its ability to detect drift
-    # (ADR-0054).
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Self-test the realm-config checker against fixtures
-        run: node --test scripts/check-keycloak-realm-config.test.mjs
-
-  signup-restart-checker-self-test:
-    name: Signup-restart checker self-test
-    # Same reasoning as realm-config-checker-self-test above: check-signup-survives-restart.mjs
-    # itself only runs with a live stack (keycloak-realm-check below), so this
-    # pins its HTML-form and cookie-jar parsing without needing one.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Self-test the signup-restart checker against fixtures
-        run: node --test scripts/check-signup-survives-restart.test.mjs
-
-  keycloak-admin-checker-self-test:
-    name: Keycloak admin helper self-test
-    # Same reasoning as the two self-tests above: fetchToken/withRetry in
-    # scripts/keycloak-admin.mjs only run for real against a live Keycloak
-    # (keycloak-realm-check below, through the three scripts that import
-    # them), so this pins their retry/exhaustion behavior against a stubbed
-    # fetch instead.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Self-test the shared Keycloak admin-token/retry helper
-        run: node --test scripts/keycloak-admin.test.mjs
+      - name: Run every dependency-free checker and its fixture self-test
+        run: make check
 
   backend:
     name: Backend (Maven)
@@ -405,11 +227,8 @@ jobs:
 
   keycloak-realm-check:
     name: Keycloak realm check
-    # docker-compose.yml, keycloak/ and postgres/ are in the changes job's
-    # `shared` list above, so a change to any of them runs this even when
-    # neither backend/ nor frontend/ itself changed.
     needs: [changes]
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+    if: needs.changes.outputs.keycloak == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -424,8 +243,14 @@ jobs:
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
-      - name: Verify a self-registered account survives a Keycloak restart
-        run: node scripts/check-signup-survives-restart.mjs
+      # Recreated rather than restarted: a restart keeps the container's own
+      # filesystem, so only a fresh container proves the account lives in
+      # Postgres. --no-deps leaves keycloak-seed alone, so nothing re-creates
+      # the account behind the check's back.
+      - name: Verify accounts survive a fresh Keycloak container
+        run: |
+          docker compose up -d --force-recreate --no-deps --wait --wait-timeout 120 keycloak
+          node scripts/check-keycloak-signin.mjs testuser testuser123
 
   vulnerability-scan:
     # Deliberately not gated behind `changes` (contrast api-client-drift and

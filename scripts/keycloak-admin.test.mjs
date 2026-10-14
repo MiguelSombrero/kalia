@@ -4,9 +4,7 @@
 // keycloak-check`, which exercises them through the three scripts that
 // import them) — this pins their retry counting, exhaustion, and
 // error-message plumbing against a stubbed fetch instead, the same reasoning
-// as check-keycloak-realm-config.test.mjs and
-// check-signup-survives-restart.test.mjs. Runs in `make check` and CI's
-// keycloak-admin-checker-self-test job.
+// as check-keycloak-realm-config.test.mjs. Runs in `make check`, hence CI.
 
 import test from "node:test";
 import assert from "node:assert/strict";

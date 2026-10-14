@@ -3,8 +3,7 @@
 // only runs with a live Keycloak (`make keycloak-check`), and on a stack
 // keycloak-config just imported it passes trivially — so without this, a
 // checker that had stopped detecting drift would stay green until someone
-// hit real drift in the admin console. Runs in `make check` and CI's
-// realm-config-checker-self-test job, beside check-glossary.test.mjs.
+// hit real drift in the admin console. Runs in `make check`, hence CI.
 
 import test from "node:test";
 import assert from "node:assert/strict";

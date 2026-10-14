@@ -2,32 +2,32 @@
 // Guards the drift ADR-0017 named but left unguarded: "Nothing checks a
 // comment against the ADR it paraphrases." Sibling of check-adrs.mjs and
 // check-tasks.mjs, same shape and no-dependency constraint so it runs in CI
-// without an npm install. Measured 2026-08-15 (iteration 5 task 18): the
-// hand-written comment ratio had returned to at or above ADR-0017's
-// pre-sweep 0.13, seven files carried more comment lines than code, 92
-// comments named an ADR with nothing keeping the two in lockstep, and
-// process narration CLAUDE.md already banned was live in the tree.
+// without an npm install. Measured 2026-08-15: the hand-written comment ratio
+// had returned to at or above ADR-0017's pre-sweep 0.13, seven files carried
+// more comment lines than code, 92 comments named an ADR with nothing keeping
+// the two in lockstep, and process narration CLAUDE.md already banned was live
+// in the tree.
 //
-// Two tiers, matching the product-owner decision that only process
-// narration is unambiguous enough to fail a build on (task 18 Constraints):
-//   - Hard: a comment line matching one of the narration patterns below
-//     fails the build. Each traces to a real instance found in the sweep —
-//     `task N`/`iteration N` (CellarService.java named "iteration 8"),
-//     `PR #N`/`pull request`, `used to be`/`formerly`/`renamed from`
-//     (e2e/sign-in-out.spec.ts narrated a fixed defect as "previously").
-//     Deliberately excludes `previously` and `no longer`: both have
-//     legitimate uses describing external state rather than change history
-//     (lib/auth/valkeyAdapter.ts's "no longer exists" is about a Keycloak
-//     session, not a rewritten Kalia one) and would false-positive on that
-//     class of comment.
-//   - Advisory, always exits zero: a comment block naming an ADR that runs
-//     more than one line (ADR-0017 allows a one-line pointer only), any file
-//     whose comment lines outnumber its code lines, and the repository-wide
-//     ratio. No ratio threshold hard-fails — signInContext.ts's 21-line
-//     comment against 12 lines of code is exactly what ADR-0017 protects
-//     (external Auth.js behaviour plus a "do not" warning for a failure
-//     that is otherwise silent), and failing the build on it would push
-//     agents toward deleting a load-bearing warning to get green.
+// Two tiers, because only process narration is unambiguous enough to fail a
+// build on:
+//   - Hard: a comment line matching one of HARD_PATTERNS below fails the
+//     build. Each traces to a real instance found in the sweep — a roadmap
+//     reference in CellarService.java, and e2e/sign-in-out.spec.ts narrating
+//     a fixed defect. Deliberately excludes `previously` and `no longer`:
+//     both have legitimate uses describing external state rather than change
+//     history (lib/auth/valkeyAdapter.ts's "no longer exists" is about a
+//     Keycloak session, not a rewritten Kalia one) and would false-positive
+//     on that class of comment.
+//   - Advisory, printed only with `--advisory` and never failing: a comment
+//     block naming an ADR that runs more than one line (ADR-0017 allows a
+//     one-line pointer only), any file whose comment lines outnumber its code
+//     lines, and the repository-wide ratio. No ratio threshold hard-fails —
+//     signInContext.ts's 21-line comment against 12 lines of code is exactly
+//     what ADR-0017 protects (external Auth.js behaviour plus a "do not"
+//     warning for a failure that is otherwise silent), and failing the build
+//     on it would push agents toward deleting a load-bearing warning to get
+//     green. Off by default: measured 2026-10-14 it was 147 lines on every
+//     run, which buried the hard tier's output; /quality-sweep reads it.
 //
 // Counting method (pinned so the ratio is reproducible — ADR-0017's own
 // 0.09 could not be recomputed from its text, and two independent passes
@@ -37,7 +37,9 @@
 //     `.ts`/`.tsx` under frontend/, except frontend/lib/api/generated
 //     (orval output, out of ADR-0017's Decision by name) and build/tooling
 //     directories (node_modules, .next, target, coverage, dist, build,
-//     playwright-report, test-results).
+//     playwright-report, test-results). The `.mjs` files under scripts/ and
+//     frontend/ are held to the hard tier but left out of the advisory
+//     counts, since ADR-0017's 0.09 baseline was measured without them.
 //   - A line's classification comes only from how it *starts*, once
 //     trimmed: `//` or `/*` makes the whole line a comment line (a `/*...*/`
 //     opener stays "comment" on every line up to and including the one
@@ -62,9 +64,12 @@ import { dirname, extname, resolve, relative } from "node:path";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const SCAN_ROOTS = [
-  { dir: resolve(ROOT, "backend/src"), extensions: [".java"] },
-  { dir: resolve(ROOT, "frontend"), extensions: [".ts", ".tsx"] },
+  { dir: resolve(ROOT, "backend/src"), extensions: [".java"], counted: true },
+  { dir: resolve(ROOT, "frontend"), extensions: [".ts", ".tsx"], counted: true },
+  { dir: resolve(ROOT, "frontend"), extensions: [".mjs"], counted: false },
+  { dir: resolve(ROOT, "scripts"), extensions: [".mjs"], counted: false },
 ];
+const ADVISORY = process.argv.includes("--advisory");
 const IGNORED_DIRS = new Set([
   "node_modules", ".next", "target", "coverage", "dist", "build",
   "playwright-report", "test-results",
@@ -149,7 +154,9 @@ function toBlocks(lineNumbers) {
   return blocks;
 }
 
-const files = SCAN_ROOTS.flatMap(({ dir, extensions }) => listFiles(dir, extensions));
+const files = SCAN_ROOTS.flatMap(({ dir, extensions, counted }) =>
+  listFiles(dir, extensions).map((path) => ({ path, counted })),
+);
 console.log(`Checking ${files.length} hand-written source file(s) against the code-comment policy (ADR-0017)\n`);
 
 /** `n / d` as a fixed-point string, or "n/a" rather than Infinity/NaN when `d` is 0. */
@@ -158,7 +165,7 @@ const formatRatio = (n, d) => (d === 0 ? "n/a" : (n / d).toFixed(2));
 let totalCode = 0;
 let totalComment = 0;
 
-for (const path of files) {
+for (const { path, counted } of files) {
   const rel = relative(ROOT, path);
   const fileText = readFileSync(path, "utf8");
   const { lines, codeLines, commentLines } = classify(fileText);
@@ -169,6 +176,8 @@ for (const path of files) {
       if (re.test(lineText)) fail(rel, lineNo, `comment reads as process narration (matches "${name}")`);
     }
   }
+
+  if (!counted) continue;
 
   for (const block of toBlocks(commentLines)) {
     if (block.length <= 1) continue;
@@ -187,8 +196,12 @@ for (const path of files) {
 
 advise(`repository-wide hand-written ratio: ${formatRatio(totalComment, totalCode)} (${totalComment} comment / ${totalCode} code lines; ADR-0017's post-sweep baseline was 0.09)`);
 
-console.log("Advisory (never fails the build):");
-for (const msg of advisories) console.log(`  ADVISE ${msg}`);
+if (ADVISORY) {
+  console.log("Advisory (never fails the build):");
+  for (const msg of advisories) console.log(`  ADVISE ${msg}`);
+} else {
+  console.log(`${advisories.length} advisory finding(s) hidden; \`--advisory\` prints them.`);
+}
 
 console.log(failures === 0 ? "\nOK\n" : `\n${failures} failure(s)\n`);
 process.exit(failures === 0 ? 0 : 1);

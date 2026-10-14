@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-11
+- **Amended:** 2026-10-14 — the checker runs in CI's single static-checks job
 
 ## Context
 
@@ -79,6 +80,9 @@ column", the product owner's choice from three directions built in one round.
   have, on any colour literal outside those declarations, and on a mark that
   is not the app's. It runs in `make check`, hence `make verify`, and in CI's
   `keycloak-theme-check` job, with a fixture self-test.
+
+  > **Amended 2026-10-14.** CI's dependency-free checkers now run as one
+  > `static-checks` job calling `make check`, so this one runs there.
 - **The rendered pages are checked.** `e2e/keycloak-branding.spec.ts` visits
   all four pages in both locales at 375×812 and 1280×800. On each it checks
   the lockup, its link and its mark, the column's width, its centring and the

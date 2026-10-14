@@ -59,15 +59,15 @@ plugin and the verification of each rule is
 
 `make verify-fast` runs this lint, so a pre-push hook catches it.
 
-## Comment policy check
+## Static checks — `check-comments.mjs`
 
 **A comment names a task, an iteration, a PR, or how the code used to be.**
-Those patterns hard-fail; the ratio and ADR-block findings are advisory and
-never fail. Delete the narration — the policy and its test are
+Those patterns hard-fail, in `scripts/*.mjs` too; the ratio and ADR-block
+findings are advisory, never fail, and print only with `--advisory`. Delete the narration — the policy and its test are
 `.claude/rules/code-comments.md` and
 [ADR-0017](adr/0017-code-comment-policy.md).
 
-## ADR index check / Task index check
+## Static checks — `check-adrs.mjs` / `check-tasks.mjs`
 
 The checker output names the file and the missing thing; it is precise enough
 to act on directly. The one failure it cannot phrase helpfully is a **number
