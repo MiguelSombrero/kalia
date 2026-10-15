@@ -16,24 +16,32 @@ the catalog is visible to every user forever, not just to whoever added it.
 
 ## Scope
 
-Creating a beer in the catalog from an authenticated request, under whatever
-model [task 01](01-catalog-data-source.md) settles, with duplicates caught
+Creating a beer in Kalia's own catalog from an authenticated request. After
+[task 17](17-seed-the-catalog-from-wikidata.md), that catalog also holds about
+15k beers imported from Wikidata. A created beer is visible to everyone at
+once, records who added it, and is recorded as user-added. A duplicate is
+caught whatever the existing beer's source — imported, seeded or user-added —
 rather than accumulated.
 
 ## Non-goals
 
 - Any UI — [task 03](03-add-beer-ui.md).
-- Editing or deleting an existing beer, unless
-  [task 01](01-catalog-data-source.md) decides editing is part of the model.
-- Breweries as user-created data, if the decision does not require it.
-- Admin tooling or a moderation queue beyond what task 01 decides. If
-  moderation is chosen, its workflow is its own task.
+- Editing or deleting an existing beer. [Task 01](01-catalog-data-source.md)
+  decided that iteration 8 only adds beers; editing is in the
+  [backlog](../backlog.md).
+- A moderation queue or review workflow. Task 01 decided that added beers are
+  visible at once.
+- A barcode field — [iteration 14](../iteration-14.md).
 
 ## Constraints
 
 - **This task cannot be refined before [task 01](01-catalog-data-source.md) is
-  done.** Its Scope and Open questions are written against a model that has not
-  been chosen yet and get rewritten when it is.
+  done**, and it is built after
+  [task 17](17-seed-the-catalog-from-wikidata.md). Duplicate detection has to
+  be designed against the imported catalog, not the 54-beer seed.
+- Task 01's decisions bind this task. The contributor is recorded. A
+  user-added row is marked user-added, using the provenance columns task 17
+  introduces.
 - Catalog reads stay public; this write requires authentication
   ([ADR-0028](../../adr/0028-resource-server-and-current-user.md)). Default
   deny means the new route is protected unless deliberately listed otherwise.
@@ -48,34 +56,35 @@ rather than accumulated.
 ## Open questions
 
 1. **What makes two beers the same beer?** Name plus brewery is the obvious
-   answer and wrong often enough to matter — "IPA" from a brewery with three of
-   them, the same beer spelled two ways, a rebrew under a new name. Whatever is
-   chosen becomes a database constraint, so it wants deciding rather than
-   discovering.
+   answer, and it is wrong often enough to matter. Examples: "IPA" from a
+   brewery with three of them, the same beer spelled two ways, a rebrew under a
+   new name. The imported catalog adds a new case: a beer named in another
+   language, such as "Westvleteren Twaalf" for "Westvleteren 12". Whether
+   [task 17](17-seed-the-catalog-from-wikidata.md) keeps aliases decides how
+   much a check can see. Whatever is chosen becomes a database constraint, so
+   it wants deciding rather than discovering.
 2. **What happens on a duplicate** — refuse with a pointer to the existing
    beer, or return the existing one as if it had been created? The second is
    friendlier and hides a user's mistake from them.
 3. **Which fields are required?** The catalog's read model has brewery,
-   country, style, ABV, description and price. Requiring all of them stops a
-   user adding the beer in their hand; requiring none fills the catalog with
-   name-only rows.
-4. **Is the brewery picked from existing ones, or can it be created too?** A
-   new beer from a brewery Kalia does not know is the common case, not the edge
-   one.
-5. **Does the price field make sense for a user-added beer at all?** It exists
-   because the original vision included a store, which it no longer does.
-6. **Is the contributor recorded?** Useful for moderation and attribution, and
-   it makes catalog data personal data.
-7. **Is a barcode one of the fields?** Follows
-   [task 01](01-catalog-data-source.md) question 6. If the answer there is yes,
-   this task decides whether it is required, optional or unique — and a
-   barcode is a stronger answer to question 1 above than name-plus-brewery is,
-   since it identifies the product rather than the words used for it.
+   country, style, ABV and description. If task 17 imports only complete rows,
+   every imported beer has an ABV and a style. Should a user-added beer meet
+   the same bar, or may it say less than its imported neighbours?
+4. **Is the brewery picked from existing ones, or can it be created too?** The
+   import brings thousands of breweries, but a new beer from a brewery Kalia
+   does not know is still common. If a user can create a brewery, what makes
+   two breweries the same?
+5. **What happens to the contributor record when its user deletes their
+   account?** Task 01 decided the contributor is recorded, which makes catalog
+   rows personal data. Is the beer kept with the link removed, or does it go?
 
 ## Acceptance criteria
 
 - [ ] An authenticated request creates a beer that then appears in search and
       at its detail endpoint — integration test against a real database
+- [ ] A created beer records its contributor and is marked user-added, and a
+      duplicate of an imported beer is caught as well as a duplicate of a
+      user-added one — integration test
 - [ ] An unauthenticated request is refused, while catalog reads still answer
       anonymously — one test covering both, so opening the catalog to writes
       cannot silently close it to readers
