@@ -1,6 +1,6 @@
 # Task 04: Decide whether and how the catalog is cached
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -31,6 +31,12 @@ recording the verdict either way: if caching is warranted, which layers, what
 is cached, how stale a read may be, how entries are invalidated and which
 provider; if it is not, the measurement and the threshold that would reopen the
 question.
+
+If caching is warranted, the layers and the provider are not chosen here in
+advance. The ADR lays out the candidates and their costs: a backend read cache,
+HTTP `Cache-Control`/`ETag`, or Next.js data caching in the BFF, and an
+in-process cache or a shared store (the frontend's Valkey, or its own). The
+product owner picks.
 
 ## Non-goals
 
@@ -68,37 +74,37 @@ question.
   user. A shared cache whose key misses a user-dependent part of the response
   serves one user's data to another, and fails silently.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The threshold.** Catalog search and beer detail are measured at the
+  imported size (about 15k beers) and at a generated catalog of 150k beers,
+  which stands in for growth, at 20 concurrent requests. Indexes are first
+  confirmed to be in use. A cache is warranted only if p95 server time breaks
+  the 300 ms budget at either size. Whatever the verdict, the 150k result is
+  recorded as the threshold that reopens the question. Measuring only the
+  imported size was rejected, because it says nothing about growth.
+- **A recorded one-off, not a committed benchmark.** The method is written
+  into `docs/architecture.md` well enough to repeat. The existing planner
+  integration tests, such as `BeerSearchIndexIT`, stay the committed,
+  repeatable guard. A committed load test was rejected: it would be a new
+  dependency, and one more thing to maintain.
+- **How stale a read may be is already decided.** A beer a user adds is
+  visible to everyone at once ([ADR-0077](../../adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)),
+  so a cache evicts on write. Expiring entries after a time cannot meet that.
+- **Two defaults, if caching is adopted:** a cache outage falls through to the
+  database rather than failing the read, and hits and misses are exposed
+  through Actuator.
+
 ## Open questions
 
-1. **What does "measurements demand it" mean in numbers?** The budget is
-   <300 ms server time. At what catalog size, what concurrency, and against
-   which data — the imported catalog as it is, or a larger generated one
-   standing in for future growth?
-2. **Is the measurement a committed, repeatable benchmark or a one-off recorded
-   in the decision?** A committed benchmark lets the "until measured" condition
-   be checked again later, and may itself be a new dependency.
-3. **Which layers, if any?** A backend read cache over catalog search and
-   detail; HTTP `Cache-Control`/`ETag` on the public catalog endpoints; Next.js data
-   caching in the BFF. Each has its own invalidation story, and caching at two
-   layers multiplies the ways a read can be stale.
-4. **How stale may a catalog read be?** [Task 02](02-add-beer-api.md) requires
-   a created beer to appear in search immediately. Immediately for its creator
-   only, or for everyone? The answer decides between evicting on write and
-   simply expiring entries after a time.
-5. **In-process or shared store?** In-process is simplest and diverges across
-   instances. A shared store means the backend takes its first dependency on a
-   key-value store, and raises whether it shares the frontend's Valkey or gets
-   its own.
-6. **What happens when the cache is unavailable?** Fall through to the
-   database, or fail the read?
-7. **How will anyone know the cache is earning its keep?** Hit and miss rates
-   through Actuator are the obvious signal, and a cache nobody measures tends
-   never to get removed.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] Catalog read latency is measured at the catalog size task 01's decision
-      implies, and the method is written down well enough to repeat
+- [ ] Catalog search and detail latency is measured at the imported size and
+      at a generated 150k, at 20 concurrent requests, with index use
+      confirmed. The p95 numbers and a method someone else can repeat are
+      written down
 - [ ] Either an ADR adopts caching (layers, what is cached, staleness,
       invalidation, provider, and the rejected alternatives) and passes
       `node scripts/check-adrs.mjs`; or `docs/architecture.md` records the
@@ -115,9 +121,9 @@ question.
 
 Like [task 01](01-catalog-data-source.md), this task produces no production code
 and so **no new automated test**. That is the same deliberate exception to
-[ADR-0026](../../adr/0026-task-file-format.md), for the same reason. If question
-2 is answered with a committed benchmark, the benchmark becomes this task's
-test and the exception falls away.
+[ADR-0026](../../adr/0026-task-file-format.md), for the same reason. Refinement
+chose a recorded one-off measurement over a committed benchmark, so the
+exception stands.
 
 Seeded as a placeholder before refinement so that caching is weighed in the
 iteration that changes the catalog, rather than discovered later.

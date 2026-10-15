@@ -30,7 +30,12 @@ its keep.
 - **This task cannot be refined before [task 04](04-catalog-caching-decision.md)
   is done**, and is set to `dropped` if task 04 concludes "not yet". Its Scope
   and Open questions are placeholders, and task 04 rewrites them, or splits
-  this task per layer, against the decision.
+  this task per layer, against the decision. It was deliberately left
+  `needs-refinement` when the rest of iteration 8 was refined on 2026-10-15.
+- Task 04's refinement already fixed three things a cache built here must do:
+  evict on write, fall through to the database when the cache is unavailable,
+  and expose hits and misses through Actuator. They are recorded once, in
+  [task 04](04-catalog-caching-decision.md)'s Constraints.
 - It builds on [task 02](02-add-beer-api.md)'s write path, which must exist
   before invalidation can be wired to it.
 - The existing catalog search and detail endpoints keep their contract.

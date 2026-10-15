@@ -1,6 +1,6 @@
 # Task 10: Cellar reads arrive joined with their beers, from the backend
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -66,9 +66,9 @@ considered and rejected, because every iteration-9+ client would inherit it.
   ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)).
 - `cellar` reaches `catalog` only through `CatalogApi`, never its domain or
   repositories ([ADR-0007](../../adr/0007-backend-package-structure.md),
-  `ModularityTest`). `CatalogApi`'s batch cap applies; see
-  [task 07](07-front-page-feed-reaches-public-lines.md) question 3 for whether
-  it chunks.
+  `ModularityTest`). `CatalogApi` chunks a lookup larger than its batch cap
+  ([task 07](07-front-page-feed-reaches-public-lines.md)), so a large cellar
+  is served rather than refused.
 - Responses are DTOs, never entities (`HttpBoundaryTest`), and the generated
   client is regenerated, never hand-edited
   ([ADR-0012](../../adr/0012-orval-api-client.md)).
@@ -78,20 +78,22 @@ considered and rejected, because every iteration-9+ client would inherit it.
 - The public cellar response is anonymous and must expose nothing about a beer
   or a bottle that the current public page does not already show.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **An entry carries exactly the beer facts the cellar UI shows today**, and
+  nothing more.
+- **The backend returns a stable default order, and the user-chosen sort
+  stays client-side** ([ADR-0070](../../adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)),
+  so a UI re-sorts without a round trip.
+- **Owner and public responses stay separate shapes that share one nested
+  beer-facts DTO.** The public response must be able to show less than the
+  owner's.
+- **Each feature's `api.ts` may import only its own generated tag.** That
+  turns `features/cellar`'s catalog import from allowed into a lint error.
+
 ## Open questions
 
-1. **Which beer facts does an entry carry?** Exactly what the cellar UI shows
-   today, or the full `BeerSummary` that `feed` uses?
-2. **Does the backend own the default order, or only the join?** A server
-   order every client shares is consistent; a client-side sort is what lets a
-   UI re-sort without a round trip.
-3. **Is this one contract change or two?** Owner and public responses could
-   share an entry shape or stay separate. They differ today
-   (`EntryDto` versus `PublicCellarEntryDto`).
-4. **What does narrowing the frontend boundary rule look like once
-   `features/cellar` no longer needs the catalog's client?** Restricting each
-   feature to its own generated tag is the option SHOULD-15 named, and it
-   would turn this import from allowed into a lint error.
+**None.**
 
 ## Acceptance criteria
 
@@ -106,8 +108,8 @@ considered and rejected, because every iteration-9+ client would inherit it.
 - [ ] An entry whose beer no longer resolves is left out and logged —
       integration test
 - [ ] `features/cellar` no longer imports the catalog's generated client, and
-      the lint rule decided in question 4 would reject that import —
-      lint fixture or ESLint test
+      the lint rule restricting each feature's `api.ts` to its own generated
+      tag would reject that import — lint fixture or ESLint test
 - [ ] The own and public cellar pages render as before at both agreed widths,
       in a browser — the existing Playwright specs pass
 - [ ] An ADR records where the join lives and why; `docs/architecture.md`

@@ -1,7 +1,8 @@
 # Task 03: Adding a beer from search
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
+- **Kind:** design
 
 ## Why
 
@@ -20,6 +21,21 @@ has to look for.
 Adding a beer to the catalog from the app — the form, its validation, and the
 route from a search that found nothing to that form and back to the beer that
 now exists. Both locales, and the loading, error and duplicate states.
+
+The interaction is a design choice the product owner makes from built
+alternatives, not one settled in advance. At least three questions are decided
+that way:
+
+- where the "add a beer" affordance lives: on the empty search result, on the
+  catalog page, in the navigation, or some combination;
+- whether the form is its own page or a dialog over the search;
+- where the user lands once the beer exists, for example its detail page, the
+  search, or straight into adding a bottle.
+
+The directions built for that choice also show how the form does three things
+it must: carry the search term in, show the brewery's similarly named beers
+before the user submits, and create a brewery the catalog lacks without
+leaving the form.
 
 ## Non-goals
 
@@ -56,57 +72,63 @@ now exists. Both locales, and the loading, error and duplicate states.
   loading/error/empty states per
   [ADR-0022](../../adr/0022-loading-error-empty-states.md), WCAG 2.2 AA at the
   three existing layers.
+- **This is a design task**
+  ([ADR-0062](../../adr/0062-a-design-task-is-a-skill-and-a-marker.md)). It
+  runs under the `design-task` skill: directions are built, the product owner
+  chooses, an ADR records the choice, and the same task then builds it.
+  Choices already recorded in [`docs/design.md`](../../design.md) and
+  [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md)'s
+  page shell bind every direction.
+
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The form asks for what [task 02](02-add-beer-api.md) requires and nothing
+  more:** a name, a brewery, a style and an ABV. The brewery is picked, or
+  created in the form with a name, a country from a list and an optional
+  city. The style is picked from the catalog's styles. There is no
+  description field.
+- **A duplicate beer says the beer is already in the catalog and links to
+  it**, built on task 02's `409` carrying the existing beer's id. A duplicate
+  brewery is handled the same way. Neither is shown as a generic error.
+- **A beer's page does not say who added it.** Showing the contributor was
+  rejected. Cellars are private by default, and a username on the page of
+  every beer a user added would expose them where they may not expect it.
+  The contributor is recorded only for tracing and removal, and
+  [task 02](02-add-beer-api.md) keeps it out of every read response.
 
 ## Open questions
 
-The product owner wants a say in the interaction and the copy here.
-
-1. **Where does the affordance live?** On the empty search result, in the
-   navigation, on both? The empty state is where the need is felt; a permanent
-   entry point is findable when the need is remembered later.
-2. **Is the form a page or a dialog?** A page survives a reload and can be
-   linked; a dialog keeps the search behind it.
-3. **Does the search term carry into the form?** Someone who just searched
-   "Bigfoot" should not retype it — but the search box holds a query, not
-   necessarily a beer name.
-4. **What happens after the beer is created** — land on its detail page, return
-   to the search, or go straight to adding a bottle of it to the cellar? The
-   third is what the user actually wanted, and it is the one that couples this
-   task to the cellar.
-5. **How is a duplicate presented?** "That beer already exists" with a link is
-   the useful version, and it depends on what
-   [task 02](02-add-beer-api.md) question 2 decides the API returns.
-6. **How much does the form ask for?** Every optional field it shows is a field
-   most contributors will leave blank, and a form that asks for little produces
-   a catalog that says little. A user-added beer will sit beside about 15k
-   imported ones that all have an ABV and a style, so the answer follows
-   [task 02](02-add-beer-api.md) question 3.
-7. **Does a beer's page say who added it?** Task 01 decided the contributor is
-   recorded. Showing it credits the contributor and makes a bad row traceable,
-   but it puts a user's name on a public page they may not expect. Not showing
-   it keeps the record for removal only.
-
-An answer of "your call" to any of these is a fine answer and turns into a
-constraint above.
+**None.**
 
 ## Acceptance criteria
 
+- [ ] The product owner chose from built alternatives, at minimum where the
+      affordance lives, whether the form is a page or a dialog, and where the
+      user lands after creating the beer. An ADR records the directions and
+      the choice, and the product owner signed off the built flow in the
+      browser pane at both agreed widths
 - [ ] A signed-in user who searches for a beer that does not exist can reach
-      the form from that empty state — component test, and Playwright covering
-      the route
-- [ ] Submitting a valid beer creates it, and the user reaches it without a
-      full page reload — Playwright covering search → not found → add →
-      the new beer, continuing into adding a bottle of it to the cellar
-- [ ] Submitting a duplicate shows the agreed message rather than a generic
-      error or a second beer — component test with the API's duplicate
-      response
+      the form from that empty state, with the search term carried into it —
+      component test, and Playwright covering the route
+- [ ] Submitting a valid beer creates it, and the user lands where the chosen
+      direction says without a full page reload — Playwright covering search →
+      not found → add → the new beer, continuing into adding a bottle of it to
+      the cellar
+- [ ] A beer whose brewery the catalog lacks can be added, creating the
+      brewery in the same flow — Playwright
+- [ ] The brewery's similarly named beers are shown before submitting —
+      component test
+- [ ] Submitting a duplicate says the beer is already in the catalog and links
+      to it, rather than showing a generic error or creating a second beer —
+      component test with the API's `409` response
 - [ ] Invalid input is caught client-side, and a server-side rejection the
       client did not predict is still shown to the user rather than swallowed —
       component test for the second case, confirmed to fail against a form that
       only handles its own validation
 - [ ] A signed-out visitor is invited to sign in rather than shown a form that
       will fail — component test
-- [ ] Every rendered state passes `axe` with no violations, in both locales
+- [ ] Every rendered state passes `axe` with no violations, in both locales and
+      at both agreed widths
 - [ ] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes

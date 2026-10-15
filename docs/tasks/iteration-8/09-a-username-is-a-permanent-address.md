@@ -1,6 +1,6 @@
 # Task 09: A username belongs to one person, permanently
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -56,7 +56,7 @@ id, was considered and rejected.
   ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)) and Kalia
   copies it into `profile` on first use (`ProfileService.currentProfile`).
   Keycloak can therefore accept a name that Kalia has reserved, and that
-  conflict has to have an answer (question 1).
+  conflict has to have an answer, decided below.
 - `profile` stays a leaf module
   ([ADR-0049](../../adr/0049-profile-module-and-public-identity.md):52).
 - `currentProfile` already retries on `DataIntegrityViolationException` for
@@ -68,26 +68,36 @@ id, was considered and rejected.
   [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md) allows editing
   V006 at this stage.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **A newcomer whose Keycloak username Kalia has reserved sees a page saying
+  the name is taken**, with a way to sign out. The case is rare, and this is
+  the honest answer. Prompting for a different Kalia username, and blocking
+  the name in Keycloak at registration, were rejected.
+- **The profile row is kept forever, and that is the reservation.** Kalia
+  gets no signal when an account is deleted, so no "departed" marker is
+  added. [Task 02](02-add-beer-api.md)'s contributor link relies on the same
+  fact.
+- **Uniqueness is case-insensitive and enforced by Kalia itself**, with a
+  unique index on `lower(username)`. It does not rely on Keycloak lowercasing
+  usernames.
+- **The constraint and the index go into `V006__profile_schema.sql`**, as
+  [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md) as amended
+  on 2026-08-29 allows while nothing is deployed. No migration handles
+  existing duplicates: a developer's database is recreated instead.
+
 ## Open questions
 
-1. **What does a person see when Keycloak lets them register a username Kalia
-   has reserved?** They have an account and no profile. Do they get an error
-   page, a prompt to pick another Kalia username, or is the name blocked in
-   Keycloak at registration?
-2. **How is a username reserved once its Keycloak account is gone?** Kalia
-   has no deletion signal today. Is the old profile row kept forever (which
-   reserves the name for free), or does something mark it as departed?
-3. **Is uniqueness case-insensitive?** Keycloak lowercases usernames.
-   Whether Kalia relies on that or enforces it itself changes the constraint.
-4. **How are existing duplicates handled when the constraint arrives?** Dev
-   data only, but the migration has to say what it does with them.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A second profile with an existing username is refused by the database —
       integration test, including the concurrent case
 - [ ] A username whose account no longer exists is not assigned to a new
-      account; the new account gets the behaviour question 1 decides —
+      account, and the new account is shown the page saying the name is taken
+      — integration test, plus a component test of the page in both locales
+- [ ] A username differing from an existing one only in case is refused —
       integration test
 - [ ] The username lookup uses an index — integration test asserting the
       query plan, or the migration's index checked by a schema test

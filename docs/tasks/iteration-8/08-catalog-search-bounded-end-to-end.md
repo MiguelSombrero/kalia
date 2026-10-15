@@ -1,6 +1,6 @@
 # Task 08: Catalog search never lands on the error page
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -59,29 +59,38 @@ considered and rejected.
 - Any message a user reads is bilingual
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The bound is an offset of at most 10,000 rows** (`page × size`), on
+  beer search and on `GET /api/v1/breweries` alike. That keeps the cost of one
+  request fixed however large the catalog grows. A visitor who wants more than
+  that narrows the search.
+- **A hand-edited bad value is dropped, and the search page says so.** A
+  bilingual note says that a filter was ignored. Dropping it silently was
+  rejected.
+- **A minimum ABV above the maximum is swapped silently.** The intent is
+  unambiguous.
+- **A page past the last one shows an empty result with a link back to page
+  1**, not a redirect.
+
 ## Open questions
 
-1. **What is the new `MAX_PAGE`?** It needs a number, and a reason that
-   survives the catalog growing.
-2. **What does a hand-edited bad value do: silently dropped or clamped, or a
-   message on the search page?** Dropping is quiet. A message tells the
-   visitor that their filter was ignored.
-3. **Min greater than max: swap them, refuse, or show a message?** The browser
-   can enforce `max` on a number input, but not "min ≤ max" without
-   JavaScript.
-4. **A page past the last one:** an empty result page with a link back, or a
-   redirect to the last page?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] Min ABV greater than max, an ABV over 100, an over-long query, and a
-      hand-edited non-numeric ABV, `page` or `size` each render the search
-      page as question 2 decides, never `error.tsx` — Playwright spec covering
-      each, confirmed to fail against today's build
+- [ ] An ABV over 100, an over-long query, and a hand-edited non-numeric ABV,
+      `page` or `size` each render the search page with that value dropped and
+      the note that it was ignored, never `error.tsx`. Min ABV greater than max
+      is swapped — Playwright spec covering each, confirmed to fail against
+      today's build
+- [ ] A page past the last one shows an empty result with a link to page 1 —
+      Playwright spec
 - [ ] `features/catalog/api.ts` normalizes every search parameter it forwards,
       not only `sort` — vitest unit tests
-- [ ] A page index past the new `MAX_PAGE` is refused with `problem+json`, and
-      the bound is documented on the handler — integration test
+- [ ] A beer or brewery request whose offset exceeds 10,000 rows is refused
+      with `problem+json`, and the bound is documented on both handlers —
+      integration test
 - [ ] The search API's existing contract for valid parameters is unchanged —
       the existing `CatalogApiIT` suite passes unmodified
 - [ ] `mvn clean verify`, `npm test` and `npm run test:e2e` are green

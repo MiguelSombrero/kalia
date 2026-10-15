@@ -1,6 +1,6 @@
 # Task 07: The front page's feed reaches public lines past private ones
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -58,18 +58,26 @@ onward when a page comes back empty was considered and rejected.
   to work rather than parameters).
 - The page response keeps its contract (`lines`, `nextCursor`, `startOver`).
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **One request scans at most 10 batches.** When it reaches that bound, it
+  returns the lines it found, which may be none, together with a
+  `nextCursor`. The front page then offers "load more" whenever a
+  `nextCursor` exists, even with zero lines, and never shows the empty state
+  while one does. Today's dead end becomes one more click.
+- **`readBefore` fills its page the same way. `readSince` does not.** A poll
+  that finds nothing new is normal, and an older page has the same empty-page
+  problem as the first.
+- **`CatalogApi` and `ProfileApi` chunk a large batch internally** rather than
+  publishing their caps. That removes the coupling SHOULD-44 is about, and the
+  feed's page size no longer has to fit under them.
+  [Task 10](10-cellar-reads-joined-in-the-backend.md)'s whole-cellar join
+  relies on the same chunking, since a cellar can hold more beers than one
+  batch.
+
 ## Open questions
 
-1. **What bounds the scan, and what does a page say when it hits the bound?**
-   An empty page with a `nextCursor` is today's bug; a short page with one is
-   ADR-0059's accepted case.
-2. **Do `readBefore` and `readSince` fill too?** A poll (`since`) that returns
-   nothing new is normal, and an older page (`before`) has the same empty-page
-   problem as the first.
-3. **Publish the batch caps on `CatalogApi` and `ProfileApi`, or have those
-   APIs chunk internally?** Publishing keeps the feed's cap honest. Chunking
-   removes the coupling, and with it the reason the feed needs a cap that
-   small.
+**None.**
 
 ## Acceptance criteria
 
@@ -78,9 +86,14 @@ onward when a page comes back empty was considered and rejected.
       confirmed to fail against today's `readRecent`
 - [ ] The scan bound holds: a long run of private lines costs a bounded number
       of rows per request — integration test
-- [ ] Lowering `CatalogApi`'s or `ProfileApi`'s batch cap below the feed's
-      page size fails a test rather than turning the feed into a 500 at
-      runtime — unit or integration test
+- [ ] A lookup of more ids than `CatalogApi`'s or `ProfileApi`'s batch cap is
+      served in chunks rather than refused, so lowering either cap can no
+      longer turn the feed into a 500 — unit test
+- [ ] An older page (`before`) fills the same way as the first — integration
+      test
+- [ ] A page with no lines but a `nextCursor` offers "load more" rather than
+      the empty state — component test, confirmed to fail against today's
+      `FeedList`
 - [ ] The front page shows the public line rather than the empty state, in a
       browser against the full stack — Playwright spec
 - [ ] `mvn clean verify` and `npm test` are green

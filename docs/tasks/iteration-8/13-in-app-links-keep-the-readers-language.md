@@ -1,6 +1,6 @@
 # Task 13: Links inside the app keep the reader's language
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -61,11 +61,15 @@ rewrite).
 - Locales come from the validated list, never an `as Locale` assertion
   (iteration-5.5 task 09).
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The switcher carries every query parameter.** On the catalog, every one of
+  them is search state. A stale parameter carried onto another page is
+  harmless.
+
 ## Open questions
 
-1. **Does the switcher carry every query parameter, or only those the target
-   page knows?** On the catalog, all of them are search state. A stale
-   parameter carried onto another page is harmless but untidy.
+**None.**
 
 ## Acceptance criteria
 

@@ -1,6 +1,6 @@
 # Task 11: The BFF forwards only what it has checked, and fails closed on tokens
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -67,28 +67,31 @@ a dead token.
 - A test that mocks `./actions` cannot test the guard inside it. The new tests
   call the real module.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The path is fixed centrally, for every route**, so routes nobody has
+  written yet are protected too. Validating at each call site was rejected.
+  Orval's configuration is preferred. If it cannot encode path parameters,
+  the mutator refuses any path that a parameter could have reshaped.
+- **A token with no recorded expiry is renewed immediately.** If renewal
+  fails, the session ends, through
+  [ADR-0029](../../adr/0029-silent-token-refresh.md)'s existing failure path.
+
 ## Open questions
 
-1. **Where is the path fixed: encoding in the mutator for every route, or
-   validating at each call site?** The mutator protects routes nobody has
-   written yet. Call-site checks give a better error, but only where someone
-   remembered to add one.
-2. **What does a token with no expiry do: renew immediately, or end the
-   session?** Renewing is the gentler option. Ending the session is the
-   honest one if the stored account is corrupt.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A path parameter containing `/`, `..`, `?` or `#` cannot make the BFF
       call any route other than the one its function names — vitest tests on
-      the mutator or the call sites (question 1), confirmed to fail against
-      today's interpolation
+      the central fix, confirmed to fail against today's interpolation
 - [ ] `beerReturnPath` refuses an off-site URL, a protocol-relative URL and a
       non-UUID id, and accepts a valid beer id — vitest tests against the real
       module, confirmed to fail with the guard removed
-- [ ] A stored account with no `expires_at` behaves as question 2 decides
-      rather than sending its token unchanged — vitest test, confirmed to
-      fail against today's `hasExpired`
+- [ ] A stored account with no `expires_at` is renewed rather than sending its
+      token unchanged, and its session ends if renewal fails — vitest tests,
+      confirmed to fail against today's `hasExpired`
 - [ ] Signing in from a beer page still returns there, in a browser — the
       existing Playwright sign-in spec passes
 - [ ] `npm test` and `npm run test:e2e` are green

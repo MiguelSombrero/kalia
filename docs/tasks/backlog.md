@@ -23,6 +23,11 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   [Iteration 8 task 01](iteration-8/01-catalog-data-source.md) decided that
   iteration 8 only adds beers. Editing raises who may change a row others
   rely on, and what a later re-import does to a row a user has changed.
+- **Other-language names for a beer.** Wikidata labels a beer in several
+  languages, and [iteration 8 task 17](iteration-8/17-seed-the-catalog-from-wikidata.md)
+  imports one name per beer and keeps no aliases. A search for "Westvleteren 12"
+  cannot find a beer imported as "Westvleteren Twaalf". Aliases would be a
+  schema change that search and the duplicate check would both have to read.
 - **User-uploaded images** — avatars and beer photos. Storage, a CDN,
   responsive variants, moderation and a GDPR surface (the mobile section below
   names the first four). The product owner expects them eventually, so
@@ -83,7 +88,9 @@ Engineering work:
   phone without hosting, because hosting is parked as a cost (Mobile client
   section below).
 - GDPR: account deletion, data export, and the consent story — becomes real
-  the moment anyone but the author uses this
+  the moment anyone but the author uses this. What deletion does to a beer the
+  user added is already decided in
+  [iteration 8 task 02](iteration-8/02-add-beer-api.md)
 - Search engine — PostgreSQL full-text is fine at this size; OpenSearch only if
   faceted search outgrows it
 - Minimum length for the catalog search term. Shorter than three characters
