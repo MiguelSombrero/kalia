@@ -151,6 +151,14 @@ TypeScript vocabulary a client meets — is catalogued in
   [backend/README.md](../backend/README.md) database migrations). Seed data
   (~50–100 beers) ships as versioned migrations for deterministic dev/test
   environments.
+- **The catalog's data source is Kalia itself, seeded once from Wikidata**
+  ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
+  Today the catalog is still the seed migration above. The decided import
+  ([iteration 8 task 17](tasks/iteration-8/17-seed-the-catalog-from-wikidata.md))
+  adds beers and breweries from a committed Wikidata snapshot, keeps the seed,
+  and gives every row a recorded source. No catalog read ever calls an
+  external service. Until that import lands, the data model below is
+  unchanged.
 - One PostgreSQL extension is required: `pg_trgm`, installed into `public` by
   the catalog migrations for the search indexes in the data model below.
 - Spring Modulith's event publication registry uses the JDBC flavor (not JPA),
@@ -709,6 +717,12 @@ updated if behavior or architecture changed.
 - **Seed data over admin UI/import**: deterministic environments now, at the
   cost of a catalog that cannot grow without a migration — the ceiling
   iteration 8 removes.
+- **An owned catalog seeded once from Wikidata, over a live external source**
+  ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)):
+  no runtime dependency, and no licence obligations under CC0, at the cost of
+  a snapshot that ages, coverage skewed by who edited Wikidata, no barcodes,
+  and an openly accepted provenance risk. Most imported ABVs trace back to
+  Untappd.
 - **No backend read-caching yet**: PostgreSQL with indexes is plenty at this
   scale; add caching only after measuring. This is about the backend's own
   reads — the Valkey in this stack is the frontend's session store
@@ -819,6 +833,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md) | A design system would serve a consumer that will never exist, so `components/ui/` stays the web app's own primitives | accepted | 2026-10-11 |
 | [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md) | Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's | accepted | 2026-10-11 |
 | [ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md) | WCAG 2.1 AA could pass a redesign that hid focus under its sticky bars and was cramped to tap, so Kalia's bar becomes WCAG 2.2 AA | accepted | 2026-10-11 |
+| [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) | A catalog that could only grow by migration is seeded once from Wikidata and owned by Kalia, taking facts only and recording each row's source | accepted | 2026-10-15 |
 
 ### Engineering process and documentation
 

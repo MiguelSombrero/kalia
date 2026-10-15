@@ -1,6 +1,6 @@
 # Task 01: Decide where catalog data comes from
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -105,21 +105,21 @@ them is under Notes; the ADR records the reasoning.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the chosen model, the two rejected ones and what each
+- [x] An ADR records the chosen model, the two rejected ones and what each
       would have cost, and passes `node scripts/check-adrs.mjs`
-- [ ] The ADR names what happens if the chosen source becomes unavailable —
+- [x] The ADR names what happens if the chosen source becomes unavailable —
       the question the seeded catalog never had to answer
-- [ ] The ADR names every source evaluated (beer.db, Open Brewery DB, Open Food
+- [x] The ADR names every source evaluated (beer.db, Open Brewery DB, Open Food
       Facts, Wikidata) with its licence and why it was or was not chosen. It
       also records Wikidata's Untappd-derived provenance, the risk accepted and
       the mitigations above.
-- [ ] `docs/architecture.md` describes the catalog's data source and, where the
+- [x] `docs/architecture.md` describes the catalog's data source and, where the
       decision changes it, the catalog's shape
-- [ ] Tasks [02](02-add-beer-api.md) and [03](03-add-beer-ui.md) have their
+- [x] Tasks [02](02-add-beer-api.md) and [03](03-add-beer-ui.md) have their
       Scope and Open questions rewritten against the decision before either is
       refined — the decision is worthless if the tasks behind it still describe
       a different model
-- [ ] Any test the decision invalidates is identified, and the seed migration's
+- [x] Any test the decision invalidates is identified, and the seed migration's
       fate is stated explicitly rather than left to whoever implements task 02
 
 ## Notes

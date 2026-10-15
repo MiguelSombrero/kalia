@@ -14,7 +14,7 @@ comes from in the long run is recorded as a decision rather than left open.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-8/01-catalog-data-source.md) | Decide where catalog data comes from | refined |
+| [01](iteration-8/01-catalog-data-source.md) | Decide where catalog data comes from | done |
 | [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | needs-refinement |
 | [02](iteration-8/02-add-beer-api.md) | Add-a-beer API | needs-refinement |
 | [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | needs-refinement |

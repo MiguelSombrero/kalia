@@ -48,6 +48,14 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0006](0006-cellar-first.md) — authentication then the personal cellar.
   *(Amended: the store and reviews questions it defers are closed.)*
 
+## Catalog
+
+- [ADR-0077](0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)
+  — the catalog is seeded once from a pinned Wikidata snapshot and owned by
+  Kalia from then on. It takes facts only, nothing from Untappd. Every row
+  records its source, and Wikidata's Untappd-derived provenance is an openly
+  accepted risk.
+
 ## Cellar
 
 - [ADR-0034](0034-cellar-two-level-bottle-model.md) — the cellar holds one row
