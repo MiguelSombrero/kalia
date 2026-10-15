@@ -19,6 +19,10 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
 - Recommendations ("if you liked this IPA…")
 - Following other users, so a feed can be personal rather than global
 - Admin UI + role-based access for catalog management
+- **Editing a catalog beer** — correcting a wrong ABV, a misspelt name.
+  [Iteration 8 task 01](iteration-8/01-catalog-data-source.md) decided that
+  iteration 8 only adds beers. Editing raises who may change a row others
+  rely on, and what a later re-import does to a row a user has changed.
 - **User-uploaded images** — avatars and beer photos. Storage, a CDN,
   responsive variants, moderation and a GDPR surface (the mobile section below
   names the first four). The product owner expects them eventually, so
@@ -278,11 +282,13 @@ required.
 - **Barcode scanning** is the one thing a mobile cellar app does that the web
   cannot: scan the bottle in your hand and it is in your cellar. It needs an
   EAN/UPC column on `catalog.beer`, which is why
-  [iteration 8 task 01](iteration-8/01-catalog-data-source.md) now asks whether
+  [iteration 8 task 01](iteration-8/01-catalog-data-source.md) asked whether
   a candidate data source carries barcodes. **The trap:** the column itself can
   be migrated in at any time, so this looks deferrable — but nobody re-scans a
   catalog of beers that already exist, so a source chosen without barcodes
-  leaves the feature permanently half-covered.
+  leaves the feature permanently half-covered. Task 01 chose Wikidata, which
+  has almost no barcodes, knowingly; [iteration 14](iteration-14.md) records
+  the route by which scanning fills the gap.
 - **Crash reporting**, which the observability item above does not cover — that
   one is server-shaped. Device identifiers and push tokens are personal data,
   so this lands on the GDPR item too.

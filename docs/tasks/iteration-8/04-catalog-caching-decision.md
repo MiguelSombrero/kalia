@@ -11,12 +11,14 @@ it" ([architecture.md §1](../../architecture.md#non-functional-requirements),
 [§8](../../architecture.md#8-trade-offs-made-explicit)). That stance was
 measured against a catalog of ~50–100 seeded beers that never changed.
 
-This iteration removes both halves of that premise. Depending on what
-[task 01](01-catalog-data-source.md) decides, the catalog becomes a large
-imported dataset, a live external API with rate limits and its own outages, or
-a table that grows with every user. Any of the three can move catalog reads
-from "plenty fast" to "needs help", and the external-API model may need a cache
-for availability no matter how fast it is.
+This iteration removes both halves of that premise.
+[Task 01](01-catalog-data-source.md) decided that the catalog is seeded from
+Wikidata, about 15k beers and thousands of breweries imported by
+[task 17](17-seed-the-catalog-from-wikidata.md), and grows with every beer a
+user adds. Nothing at runtime calls an external source, so there is no
+availability case for a cache. The question is speed alone: whether a catalog
+roughly 270 times larger moves catalog reads from "plenty fast" to "needs
+help".
 
 The stance said *measure first*, and the iteration that changes the catalog's
 size and source is the moment to do it, before users notice, rather than
@@ -44,8 +46,9 @@ question.
 ## Constraints
 
 - **This task cannot be refined before [task 01](01-catalog-data-source.md) is
-  done.** What is measured, and whether an external source needs shielding,
-  both depend on its answer.
+  done.** What is measured depends on its answer, and the measurement runs
+  against [task 17](17-seed-the-catalog-from-wikidata.md)'s imported catalog
+  rather than generated rows.
 - **"Not yet" is a valid outcome**, and the default one the architecture
   already commits to. If it is the answer, [task 05](05-cache-catalog-reads.md)
   is set to `dropped` rather than built anyway.
@@ -69,13 +72,13 @@ question.
 
 1. **What does "measurements demand it" mean in numbers?** The budget is
    <300 ms server time. At what catalog size, what concurrency, and against
-   which data — generated rows, or task 01's actual source?
+   which data — the imported catalog as it is, or a larger generated one
+   standing in for future growth?
 2. **Is the measurement a committed, repeatable benchmark or a one-off recorded
    in the decision?** A committed benchmark lets the "until measured" condition
    be checked again later, and may itself be a new dependency.
 3. **Which layers, if any?** A backend read cache over catalog search and
-   detail; a cache in front of an external source, only if task 01 picks one;
-   HTTP `Cache-Control`/`ETag` on the public catalog endpoints; Next.js data
+   detail; HTTP `Cache-Control`/`ETag` on the public catalog endpoints; Next.js data
    caching in the BFF. Each has its own invalidation story, and caching at two
    layers multiplies the ways a read can be stale.
 4. **How stale may a catalog read be?** [Task 02](02-add-beer-api.md) requires
@@ -87,8 +90,7 @@ question.
    key-value store, and raises whether it shares the frontend's Valkey or gets
    its own.
 6. **What happens when the cache is unavailable?** Fall through to the
-   database, or fail the read. For an external source, is a stale cached copy
-   preferable to no catalog at all?
+   database, or fail the read?
 7. **How will anyone know the cache is earning its keep?** Hit and miss rates
    through Actuator are the obvious signal, and a cache nobody measures tends
    never to get removed.

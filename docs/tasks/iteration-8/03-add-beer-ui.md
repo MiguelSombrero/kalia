@@ -23,9 +23,13 @@ now exists. Both locales, and the loading, error and duplicate states.
 
 ## Non-goals
 
-- Editing a beer, unless [task 01](01-catalog-data-source.md) put editing in
-  the model.
-- A moderation UI, if moderation was chosen. Its own task.
+- Editing a beer. [Task 01](01-catalog-data-source.md) decided that iteration
+  8 only adds beers; editing is in the [backlog](../backlog.md).
+- A moderation UI. Task 01 decided that an added beer is visible to everyone
+  at once.
+- Scanning a barcode into the form — [iteration 14](../iteration-14.md).
+- The Wikidata credit, which [task 17](17-seed-the-catalog-from-wikidata.md)
+  places.
 - Adding a beer straight into the cellar in one step, skipping the catalog. The
   beer exists for everyone; the bottle is yours. Collapsing the two hides that.
 
@@ -74,7 +78,13 @@ The product owner wants a say in the interaction and the copy here.
    [task 02](02-add-beer-api.md) question 2 decides the API returns.
 6. **How much does the form ask for?** Every optional field it shows is a field
    most contributors will leave blank, and a form that asks for little produces
-   a catalog that says little.
+   a catalog that says little. A user-added beer will sit beside about 15k
+   imported ones that all have an ABV and a style, so the answer follows
+   [task 02](02-add-beer-api.md) question 3.
+7. **Does a beer's page say who added it?** Task 01 decided the contributor is
+   recorded. Showing it credits the contributor and makes a bad row traceable,
+   but it puts a user's name on a public page they may not expect. Not showing
+   it keeps the record for removal only.
 
 An answer of "your call" to any of these is a fine answer and turns into a
 constraint above.

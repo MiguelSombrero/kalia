@@ -14,7 +14,8 @@ comes from in the long run is recorded as a decision rather than left open.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-8/01-catalog-data-source.md) | Decide where catalog data comes from | needs-refinement |
+| [01](iteration-8/01-catalog-data-source.md) | Decide where catalog data comes from | refined |
+| [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | needs-refinement |
 | [02](iteration-8/02-add-beer-api.md) | Add-a-beer API | needs-refinement |
 | [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | needs-refinement |
 | [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | needs-refinement |
@@ -34,7 +35,10 @@ comes from in the long run is recorded as a decision rather than left open.
 Task 01 is a decision, not an implementation, and it comes first because its
 answer changes how much tasks 02 and 03 have to build: a catalog fed by an
 external API needs user contributions to reconcile against it, and one Kalia
-owns outright does not.
+owns outright does not. Its answer, refined on 2026-10-15, is a one-time seed
+from Wikidata that Kalia then owns. Task 17 builds that import. It is listed
+second, ahead of 02, because duplicate detection has to be designed against
+the catalog users will actually add to.
 
 Tasks 04 and 05 exist because that same answer changes the catalog's size and
 source, which is what the architecture's "no cache until measured" stance was

@@ -28,9 +28,16 @@ Task files are written at refinement
   way to Settings.
 - **Scan, then add to the cellar.**
 - **Scan an unknown beer, then add it to the catalog**, prefilled.
-- **Barcodes for the seeded catalog**, if the data source chosen in
-  [iteration 8 task 01](iteration-8/01-catalog-data-source.md) carries them.
+- **Barcodes for the imported catalog.** The source chosen in
+  [iteration 8 task 01](iteration-8/01-catalog-data-source.md), Wikidata,
+  carries almost none: 3 of about 19.8k beers on 2026-10-15. Imported beers
+  therefore gain barcodes only as users scan them. The candidate route
+  recorded at that refinement is one lookup per scan against Open Food Facts,
+  the one evaluated source with barcodes. It would pre-fill the add-a-beer form
+  and store the barcode in a table of its own. Open Food Facts is ODbL, so
+  attribution and share-alike apply to what is taken from it; that is this
+  iteration's decision to weigh.
 
-Depends on that task's answer, which already asks whether a candidate source
-carries barcodes: a catalog nobody re-scans stays half-covered if its source
-has none ([backlog](backlog.md#product-gaps-mobile-makes-urgent)).
+The product owner chose a source without barcodes knowingly. The trap the
+[backlog](backlog.md#product-gaps-mobile-makes-urgent) names, a catalog nobody
+re-scans staying half-covered, is the accepted cost of that choice.
