@@ -1,6 +1,6 @@
 # Task 17: Seed the catalog from Wikidata
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -53,44 +53,79 @@ updated.
 - Any new tool or library is a version question for the product owner
   ([CLAUDE.md](../../../CLAUDE.md)).
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **Strict rows.** Only beers with an ABV, a specific style and a
+  manufacturer that is a brewery are imported, about 14.7k. `abv` and
+  `style` stay `NOT NULL` and the API contract is unchanged. Making them
+  nullable to admit about 4k more was rejected.
+  [Task 02](02-add-beer-api.md) holds a user-added beer to the same bar.
+- **Styles map onto Kalia's own list, and Wikidata extends it.** A committed
+  mapping takes each of Wikidata's style classes to a Kalia style name. The
+  seed's names are the base, and labels are folded into them only where they
+  are the same style under another spelling or casing. A well-known style
+  Kalia does not have yet, such as NEIPA, is added to the list rather than
+  forced onto a broader one. The seed's list must not limit what styles
+  exist. **Where it is unclear whether two styles should merge, ask the
+  product owner during implementation; do not decide alone.** The styles in
+  the catalog after the import are the vocabulary a user picks from
+  ([task 02](02-add-beer-api.md)). Keeping Wikidata's labels as they are, and
+  free-text styles, were rejected.
+- **One name per beer, no aliases.** The name is the English label if there
+  is one. Otherwise it is the multilingual (`mul`) label, then the label in
+  the language of the beer's country of origin, then the first label in a
+  fixed language order. Other labels are not kept. Aliases are a
+  [backlog](../backlog.md) item.
+- **Every Wikidata brewery that has a country is imported** (about 5.07k),
+  not only those that make an imported beer, so that
+  [task 02](02-add-beer-api.md)'s brewery picker knows breweries whose beers
+  Wikidata lacks.
+- **A brewery is unique by its normalised name and country**, replacing
+  today's worldwide-unique `name`. The same rule decides when a brewery a
+  user creates is a duplicate ([task 02](02-add-beer-api.md)).
+- **Seeded rows are matched by a hand-reviewed list.** A committed list maps
+  each of the 20 seeded breweries and 54 seeded beers to its QID, or records
+  that it has none. A matched beer is skipped. A matched brewery keeps its
+  seeded row, and the imported beers of that brewery (BrewDog's, for example)
+  attach to it. Matching on a normalised-name rule, alone or with reviewed
+  exceptions, was rejected.
+- **Bad ABVs.** A negative ABV, or one above the API's own bound of 100,
+  drops the beer. 0% (alcohol-free) and values above 20% are kept, because
+  both are real. The 19 beers with conflicting ABVs are dropped rather than
+  guessed.
+- **Beers that [task 02](02-add-beer-api.md)'s sameness rule treats as one**
+  (same brewery, same normalised name) are reduced to one at import. Without
+  that, task 02's unique index cannot be created over the imported catalog.
+- **Tooling: a dependency-free Node script producing a generated SQL
+  migration.** The extractor and the converter live beside the existing
+  checkers in `scripts/`, with their own `.test.mjs`. The snapshot is
+  committed as JSON and holds only the fields the import takes, so no
+  Untappd field is ever in it. The output is a generated SQL migration in
+  the catalog's migration directory. A Java tool, and a Java migration
+  loading a CSV, were rejected: the data load would become code.
+- **Schema changes go into `V003__catalog_schema.sql`**, the provenance
+  columns and the brewery uniqueness among them. That is
+  [ADR-0036](../../adr/0036-pre-deployment-migration-edits.md) as amended
+  on 2026-08-29. `V004__catalog_seed_data.sql` stays unchanged, as task 01
+  decided, so any value a seeded row needs in a new column has to come from
+  somewhere other than an edit to V004.
+- **Tests assert properties, not counts.** A catalog test that counted
+  migration data now asserts that every result satisfies its filter, that
+  the order holds, and that totals equal a direct SQL count. Seeded
+  identities, such as Westvleteren by id, stay exact. Tests run against the
+  real migrated catalog, imported rows included. Moving them to test-only
+  fixture data was rejected. The import may add **at most about 15 s** to
+  `mvn verify`.
+- **The Wikidata credit** is a line in the site footer on every page, and a
+  "Credits" section at the end of the repository's `README.md`. The footer
+  line links to wikidata.org and never to an item page, because an item page
+  shows the beer's Untappd ID and link. Wording, adjustable in review: en
+  "Beer data includes facts from Wikidata (CC0).", fi "Oluttiedoissa on
+  Wikidatan tietoja (CC0)."
+
 ## Open questions
 
-1. **Strict or partial rows?** Importing only beers that have an ABV and a
-   specific style keeps `abv` and `style` NOT NULL and the API contract
-   unchanged, and still yields about 14.7k beers. Making them nullable admits
-   about 4k more, and changes the contract.
-2. **Which style vocabulary?** Wikidata has 166 style classes, including NEIPA,
-   Double NEIPA and Triple IPA. Keep its labels as the style text, or map them
-   onto a shorter Kalia list? The answer shapes the style filter users see.
-3. **Which name, and are other names kept?** Most beers have no English label
-   ("Westvleteren Twaalf"). Which language wins when there are several? Are
-   the other labels kept as aliases so that a search for "Westvleteren 12"
-   finds the beer? Aliases would be a schema change.
-4. **Which breweries?** Only breweries that make an imported beer, or all of
-   Wikidata's ~5.2k so that [task 02](02-add-beer-api.md) has more to pick
-   from? Only about 40% have a city.
-5. **Brewery uniqueness.** `catalog.brewery.name` is unique worldwide today,
-   and imported names collide across countries. Should it change to
-   `(name, country)`?
-6. **What counts as matching a seeded row?** An exact normalised name plus
-   brewery, a hand-reviewed list, or both? The rule decides whether Orval is
-   imported a second time.
-7. **Bad values.** 110 beers have an ABV of 0 or below, or above 20%, and 19
-   have conflicting ABVs. Should they be dropped, clamped, or kept when one
-   value has a reference?
-8. **Where does the import tooling live, and in what?** A dependency-free Node
-   script beside the existing checkers in `scripts/`, or a Java tool in
-   `backend/`? Where does the committed snapshot live, and in what format?
-9. **SQL migration or a Java migration loading a CSV?** About 15k beers and
-   about 5k breweries make a generated SQL migration of a few megabytes. A
-   Java-based migration with `COPY` is smaller to review but is code rather
-   than data.
-10. **Tests against a large catalog.** Catalog tests assert exact counts over
-    migration data (54 beers, 20 breweries, 3 results). Should they move to
-    their own fixture data, or assert relative results? How much CI time may
-    the larger catalog add?
-11. **The Wikidata credit.** Where is it shown — the footer, the catalog page,
-    every imported beer — and in what words, in both locales?
+**None.**
 
 ## Acceptance criteria
 
@@ -106,10 +141,12 @@ updated.
       detail shows its brewery. Every imported row carries source `wikidata`
       and its QID. Every seeded beer keeps its original id. All three are
       covered by an integration test against a real database.
-- [ ] Wikidata is credited where question 11 decides — a component test in
-      both locales
+- [ ] The footer credits Wikidata and links to wikidata.org — a component
+      test in both locales — and `README.md` ends with a Credits section
 - [ ] Every test the larger catalog broke is updated rather than deleted, and
-      `make verify` is green
+      asserts properties rather than counts. `make verify` is green, and the
+      import adds no more than about 15 s to `mvn verify`, with the before and
+      after timings in the PR
 - [ ] `docs/architecture.md`'s data model and §8 seed-data trade-off describe
       the imported catalog, and `backend/README.md` says how to regenerate the
       migration from the snapshot

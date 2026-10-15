@@ -1,6 +1,6 @@
 # Task 15: Backend services stop leaning on hidden setup
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -58,11 +58,17 @@ method is gone.
 - `readOnly = true` on a method that writes fails at runtime, not at compile
   time. Every method marked read-only must be checked to perform no writes.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The shared `Clock` bean is UTC**, matching the "+14:00 max offset"
+  argument in `Bottle`'s comment. It lives in the root `fi.kalia` package
+  beside `RequiredConfigurationValidator`, outside every module, and the
+  moved `@EnableResilientMethods` goes there too. Keeping the JVM's default
+  zone was rejected: it matches today's behaviour only by accident.
+
 ## Open questions
 
-1. **Where does the shared `Clock` bean live, and in which zone?** UTC matches
-   the comment's argument. The JVM's default matches today's behaviour by
-   accident.
+**None.**
 
 ## Acceptance criteria
 

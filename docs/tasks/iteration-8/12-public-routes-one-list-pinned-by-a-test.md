@@ -1,6 +1,6 @@
 # Task 12: Which routes are public is one list, pinned by a test
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -56,18 +56,21 @@ anonymous set differs from that list.
   production exposure is already pinned elsewhere (iteration-5.5 task 08), and
   the new test must not contradict that.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **The home is `docs/architecture.md` §6.** The list is shape, not how-to.
+  `backend/README.md` and the other section point to it.
+- **[ADR-0059](../../adr/0059-feed-respects-cellar-visibility.md) is what
+  makes the feed safe to serve anonymously**, but no ADR says outright that it
+  is anonymous. ADR-0059 gets a one-sentence amendment saying so, and
+  `FeedController` cites ADR-0059.
+- **The test probes every mapped handler anonymously.** It catches a matcher
+  that matches more than intended, which comparing matchers with handler
+  mappings would miss.
+
 ## Open questions
 
-1. **Which document is the home: `docs/architecture.md` §6, or
-   `backend/README.md`?** It is shape rather than how-to, which points at
-   §6.
-2. **Which ADR justifies the feed being public?** Most likely
-   [ADR-0059](../../adr/0059-feed-respects-cellar-visibility.md).
-   `FeedController`'s citation is corrected to whichever it is.
-3. **Does the test probe each mapped handler anonymously, or compare the
-   security chain's matchers with the handler mappings?** Probing catches
-   what a request actually experiences. Comparing is cheaper and misses a
-   matcher that matches more than intended.
+**None.**
 
 ## Acceptance criteria
 
@@ -76,9 +79,10 @@ anonymous set differs from that list.
       `GET /api/v1/cellars/mine` and watching it fail
 - [ ] Every route on the allow-list answers without a token, and every other
       mapped route answers 401 without one — the same test
-- [ ] The anonymous route list appears in one documented home, and the other
-      two places point to it
-- [ ] `FeedController`'s ADR citation names the ADR that actually decides it
+- [ ] The anonymous route list appears in `docs/architecture.md` §6, and the
+      other two places point to it
+- [ ] ADR-0059 is amended to say the feed is anonymous, `FeedController` cites
+      it, and `node scripts/check-adrs.mjs` passes
 - [ ] `mvn clean verify` is green
 
 ## Notes

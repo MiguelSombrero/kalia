@@ -1,6 +1,6 @@
 # Task 02: Add-a-beer API
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -23,6 +23,11 @@ once, records who added it, and is recorded as user-added. A duplicate is
 caught whatever the existing beer's source — imported, seeded or user-added —
 rather than accumulated.
 
+When the beer's brewery is not in the catalog yet, the same flow creates the
+brewery too. The API also answers the two reads the form in
+[task 03](03-add-beer-ui.md) needs: finding a brewery by name, and the styles
+a beer may have.
+
 ## Non-goals
 
 - Any UI — [task 03](03-add-beer-ui.md).
@@ -32,6 +37,7 @@ rather than accumulated.
 - A moderation queue or review workflow. Task 01 decided that added beers are
   visible at once.
 - A barcode field — [iteration 14](../iteration-14.md).
+- A description on a user-added beer. See Constraints.
 
 ## Constraints
 
@@ -53,30 +59,47 @@ rather than accumulated.
 - The existing search and detail endpoints keep their contract. A catalog that
   grows must not change shape.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **Two beers are the same when they have the same brewery and the same name
+  after case, whitespace and punctuation are folded.** A unique index on that
+  normalised form enforces it, in place of today's case-sensitive
+  `UNIQUE (brewery_id, name)`. The index does not catch two spellings of one
+  name, so [task 03](03-add-beer-ui.md)'s form shows the brewery's
+  similarly named beers before the user submits. Keeping today's exact rule,
+  and the normalised rule without the hint, were rejected.
+  [Task 17](17-seed-the-catalog-from-wikidata.md) has already reduced
+  imported beers to one per normalised name, so the index can be created.
+- **A duplicate is refused with `409` `problem+json` carrying the existing
+  beer's id.** Answering as if the beer had been created was rejected, because
+  it hides the user's mistake from them.
+- **A user-added beer meets the imported catalog's bar.** It has a name, a
+  brewery, a style and an ABV, all required. The style is one the catalog
+  already has, which is [task 17](17-seed-the-catalog-from-wikidata.md)'s
+  vocabulary, and the API refuses any other. The ABV is within the bounds the
+  search API already uses (0–100).
+- **No description.** A user-added beer carries facts only, as the import
+  does. A free-text field everyone sees at once, with no review queue and no
+  editing, is where abuse would land.
+- **The brewery is picked, or created in the same flow.** A new brewery has a
+  name, a country picked from a fixed list rather than typed, and an optional
+  city. The country is stored in the same English form the catalog already
+  uses, so the country filter still matches. A brewery is a duplicate when its
+  normalised name and country match an existing one
+  ([task 17](17-seed-the-catalog-from-wikidata.md)'s rule). It is refused the
+  same way as a duplicate beer, with the existing brewery's id. Allowing only
+  existing breweries, and a free-text name the backend finds or creates, were
+  rejected.
+- **The contributor is recorded and never exposed.** No read response
+  carries it, so no page can show it ([task 03](03-add-beer-ui.md)). Kalia
+  gets no signal when an account is deleted and keeps profiles forever
+  ([task 09](09-a-username-is-a-permanent-address.md)), so the link stays.
+  When account deletion arrives ([backlog](../backlog.md)), the beer is kept
+  and the contributor link removed.
+
 ## Open questions
 
-1. **What makes two beers the same beer?** Name plus brewery is the obvious
-   answer, and it is wrong often enough to matter. Examples: "IPA" from a
-   brewery with three of them, the same beer spelled two ways, a rebrew under a
-   new name. The imported catalog adds a new case: a beer named in another
-   language, such as "Westvleteren Twaalf" for "Westvleteren 12". Whether
-   [task 17](17-seed-the-catalog-from-wikidata.md) keeps aliases decides how
-   much a check can see. Whatever is chosen becomes a database constraint, so
-   it wants deciding rather than discovering.
-2. **What happens on a duplicate** — refuse with a pointer to the existing
-   beer, or return the existing one as if it had been created? The second is
-   friendlier and hides a user's mistake from them.
-3. **Which fields are required?** The catalog's read model has brewery,
-   country, style, ABV and description. If task 17 imports only complete rows,
-   every imported beer has an ABV and a style. Should a user-added beer meet
-   the same bar, or may it say less than its imported neighbours?
-4. **Is the brewery picked from existing ones, or can it be created too?** The
-   import brings thousands of breweries, but a new beer from a brewery Kalia
-   does not know is still common. If a user can create a brewery, what makes
-   two breweries the same?
-5. **What happens to the contributor record when its user deletes their
-   account?** Task 01 decided the contributor is recorded, which makes catalog
-   rows personal data. Is the beer kept with the link removed, or does it go?
+**None.**
 
 ## Acceptance criteria
 
@@ -88,9 +111,20 @@ rather than accumulated.
 - [ ] An unauthenticated request is refused, while catalog reads still answer
       anonymously — one test covering both, so opening the catalog to writes
       cannot silently close it to readers
-- [ ] A duplicate is handled as question 2 decides, and cannot produce two rows
-      — integration test, plus a database constraint proving it under
-      concurrent inserts rather than only in application code
+- [ ] A duplicate beer, including one differing only in case, whitespace or
+      punctuation, is refused with `409` `problem+json` carrying the existing
+      beer's id, and cannot produce two rows — integration test, plus a
+      database constraint proving it under concurrent inserts rather than only
+      in application code
+- [ ] A beer whose brewery is new creates that brewery, and a duplicate
+      brewery (same normalised name and country) is refused the same way —
+      integration test
+- [ ] A style the catalog does not have, or a missing ABV, is refused —
+      integration test. The create request has no description field
+- [ ] No catalog read response carries the contributor — integration test
+      against the search and detail responses
+- [ ] Breweries can be found by name, and the catalog's styles listed, through
+      the API — integration test
 - [ ] Invalid and out-of-range fields are refused with `problem+json` listing
       the violations — integration test
 - [ ] A beer created through the API can immediately be added to a cellar —

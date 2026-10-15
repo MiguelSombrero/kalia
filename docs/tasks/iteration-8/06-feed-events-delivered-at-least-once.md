@@ -1,6 +1,6 @@
 # Task 06: Feed events are delivered at least once, as documented
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -57,18 +57,27 @@ the documentation to at-most-once was considered and rejected.
 - Listener tests must poll the repository rather than
   `verify(spy, timeout)`, which races the listener's own commit.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **Resubmission runs every 60 seconds** and resubmits publications that have
+  been incomplete for more than 60 seconds. A listener takes milliseconds, so
+  this never resubmits one that is still running, and a failed feed line
+  arrives about two minutes late at worst.
+- **Completion mode `DELETE`.** Nothing reads an archive, and `ARCHIVE` moves
+  the unbounded growth into a second table rather than ending it.
+- **A poison event stops after 5 attempts.** It is then logged at `ERROR`
+  with its event id and left in the registry for inspection, not resubmitted
+  forever. How attempts are counted is the implementation's choice.
+- **The mechanism earns its own ADR**
+  ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)), with
+  rewording the documentation to at-most-once as the rejected alternative.
+  [ADR-0058](../../adr/0058-feed-event-recording-model.md) gets an amendment
+  that points to it, not a rewrite
+  ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
+
 ## Open questions
 
-1. **How often does resubmission run, and how old must a publication be?**
-   Too short, and it resubmits a publication whose listener is still running;
-   too long, and a feed line arrives minutes late.
-2. **`DELETE` or `ARCHIVE` completion mode?** `ARCHIVE` keeps an audit trail
-   in a second table that then grows without bound itself.
-3. **What happens to an event that fails every time?** With unlimited
-   resubmission, one poison event fails on every run, forever. Does it stop
-   after N attempts, and what is logged when it does?
-4. **Does this amend ADR-0058, or earn its own ADR?** ADR-0058 assumed
-   redelivery without choosing a mechanism, and this task chooses one.
+**None.**
 
 ## Acceptance criteria
 
@@ -79,11 +88,14 @@ the documentation to at-most-once was considered and rejected.
       after the next start — integration test
 - [ ] Redelivering an already-recorded event does not create a second feed
       line — integration test
-- [ ] Completed publications are removed (or archived, per question 2) rather
-      than accumulating in `event_publication` — integration test
-- [ ] `docs/architecture.md`, ADR-0058 and the `FeedService` comment describe
-      the configured mechanism, and none still describes redelivery that does
-      not exist
+- [ ] Completed publications are removed rather than accumulating in
+      `event_publication` — integration test
+- [ ] An event whose listener fails every time stops being resubmitted after
+      5 attempts and is logged at `ERROR` with its event id — integration test
+- [ ] A new ADR records the delivery mechanism. ADR-0058 is amended to point
+      to it, and `docs/architecture.md` and the `FeedService` comment describe
+      the configured mechanism. None still describes redelivery that does not
+      exist, and `node scripts/check-adrs.mjs` passes
 - [ ] `mvn clean verify` is green
 
 ## Notes

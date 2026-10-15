@@ -1,6 +1,6 @@
 # Task 14: Every boundary guard catches what the docs say it catches
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -69,29 +69,35 @@ that proves it fires. §7 lists the documentation test.
 - `docs/architecture.md` §2/§3 must keep agreeing with `ModularityTest`'s view
   of the modules.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **One "Next.js server" node replaces `RH`.** Server components and Server
+  Actions run in one process behind one trust boundary, so the test expects
+  that node's edges.
+- **Each frontend rule is proven by linting committed fixture files** through
+  ESLint's Node API in a vitest test, with each expected to produce a
+  specific error. That mirrors `archfixture`, and tests the real
+  configuration rather than a copy of a rule. `RuleTester` was rejected.
+
 ## Open questions
 
-1. **What replaces the `RH` node?** Server components and Server Actions as
-   one "Next.js server" node, or as two nodes? The answer decides which edges
-   the test expects.
-2. **How is the frontend fixture run: an ESLint `RuleTester`, or linting a
-   committed fixture file that must produce specific errors?** The second
-   mirrors `archfixture`. The first is lighter but tests the rule config less
-   directly.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] Removing or adding an inter-module edge in §2's diagram so that it
       disagrees with Modulith fails `ArchitectureDocumentationTest` — confirmed
       by editing the diagram on a scratch branch
-- [ ] §2's diagram has no route-handler hop for backend calls, and draws
-      every inter-module edge §3 lists, including `API --> FED`
+- [ ] §2's diagram has no route-handler hop for backend calls, draws backend
+      calls from one Next.js server node, and draws every inter-module edge §3
+      lists, including `API --> FED`
 - [ ] A module-root class injecting both an application service and a domain
       repository fails `ArchitectureRulesRejectViolationsTest` — new fixture,
       confirmed to pass against today's rule and fail against the tightened
       one
-- [ ] Each frontend boundary rule in `eslint.config.mjs` has a violating
-      fixture that the frontend test suite proves is rejected
+- [ ] Each frontend boundary rule in `eslint.config.mjs` has a committed
+      violating fixture, linted through ESLint's Node API in a vitest test
+      that expects the rule's error
 - [ ] §7's testing table lists `ArchitectureDocumentationTest`
 - [ ] `mvn clean verify` and `npm test` are green
 

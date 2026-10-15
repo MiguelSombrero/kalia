@@ -1,6 +1,6 @@
 # Task 16: The documentation describes what is built
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -93,19 +93,24 @@ SHOULD-18's fails the build.
 - The link checker follows the existing `scripts/check-*.mjs` pattern: it has
   no dependencies, has its own `.test.mjs`, and is run by `make check`.
 
+**Decided at refinement, 2026-10-15** (product owner):
+
+- **`docs/architecture.md` §3 owns the backend module list.** Its table is the
+  one `ArchitectureDocumentationTest` already checks. `backend/README.md` and
+  `README.md` point to it.
+- **The link checker covers every tracked Markdown file**, including the
+  READMEs, `CLAUDE.md` and `.claude/`. Those are the links agents actually
+  follow.
+
 ## Open questions
 
-1. **Which home owns the backend module list?** `docs/architecture.md` §3
-   already has the table that `ArchitectureDocumentationTest` checks, which
-   makes it the natural one.
-2. **Does the link checker cover only `docs/`, or every Markdown file in the
-   repository** (READMEs, `CLAUDE.md`, `.claude/`)?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A relative Markdown link that resolves to no file fails `make check` —
-      the checker's own `.test.mjs` self-test, plus a clean run over today's
-      repository
+- [ ] A relative Markdown link that resolves to no file, in any tracked
+      Markdown file, fails `make check` — the checker's own `.test.mjs`
+      self-test, plus a clean run over today's repository
 - [ ] `backend/README.md`'s hot-reload recipe, run as written on a stopped
       stack, starts the backend natively on `:8080` — verified by running it
 - [ ] No document lists brewery as a built filter or `/breweries` as
