@@ -93,6 +93,17 @@ containers come up healthy. The 5-minute default overran on `dev` itself
 still overruns, the build itself is the thing to speed up (layer-cache the
 image in a CI step, then `docker compose up` without `--build`), not the timer.
 
+**`Error: Process from config.webServer was not able to start. Exit code: 1`
+— no test ran.** This is the same `docker compose up --build` failing outright
+rather than slowly. The cause is in the `[WebServer]` lines above it, not in
+Playwright's message. Search the log for `BUILD FAILURE`. One cause seen so
+far is the backend image's `mvn -B dependency:go-offline` failing with `Could
+not transfer artifact …` from Maven Central: a transient registry failure,
+unrelated to the diff. A Markdown-only PR hit it in run `38698155228`. Re-run
+the failed job (`gh run rerun <id> --failed`). Fix something only if the same
+artifact fails again, because then the cause is the dependency, not the
+network.
+
 **Several registration specs time out waiting for `#username`, each passes in
 isolation, and which ones fail moves between runs.** The shared `/sign-up`
 rate limit is spent. It is one counter for every visitor, 20 attempts per 10
