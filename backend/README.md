@@ -185,6 +185,27 @@ wipes it. Forward-only — an applied migration is never edited, and undoing one
 is a new migration — resumes the moment a database exists whose schema state
 outlives a developer's machine or CI.
 
+### The Wikidata import (`V008`)
+
+`catalog/V008__catalog_wikidata_import.sql` is generated — **do not edit it by
+hand**; `make check` fails when it differs from what the committed inputs
+produce ([ADR-0077](../docs/adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
+Its inputs live in `scripts/wikidata/`: the snapshot and the three hand-reviewed
+mappings (styles, seeded rows, brewery countries). To change a rule or a
+mapping, edit the generator or the mapping and regenerate, from the repository
+root, without network access:
+
+```bash
+node scripts/wikidata-migration.mjs        # rewrites V008, prints what it dropped and why
+node scripts/wikidata-migration.mjs --check
+```
+
+A new style class or a new collision with a seeded row stops the generator with
+the entry to add. Re-taking the snapshot (`node scripts/wikidata-extract.mjs`)
+queries Wikidata and is a new task, not a routine step: the import only ever
+adds rows. Like any edited migration before the first deployment, a changed
+`V008` needs `docker compose down -v` on an existing local database.
+
 ## Code conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning —

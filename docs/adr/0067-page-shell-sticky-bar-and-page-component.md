@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-04
+- **Amended:** 2026-10-18 by
+  [ADR-0077](0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)
+  — the footer carries one link, the Wikidata credit
 
 ## Context
 
@@ -58,6 +61,12 @@ owner chose between.
 - **The footer carries identity and nothing that does a job.** The mark and
   the tagline, and no controls. Language and account live in the header and the
   menu only, so each control has one home.
+
+  > **Amended 2026-10-18.** The footer also credits Wikidata on every page, with
+  > one link to wikidata.org, because the catalog includes facts imported from it
+  > ([ADR-0077](0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
+  > The link is attribution, not a control: it is the footer's only link, and
+  > language and account still live in the header and the menu.
 - **Pages the router cannot find render in the shell.** A catch-all route under
   the locale raises the locale's own not-found page, so a mistyped URL gets
   Kalia's header and footer rather than the framework's default. The error and

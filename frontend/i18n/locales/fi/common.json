@@ -4,7 +4,12 @@
   },
   "app": {
     "name": "Kalia",
-    "tagline": "Käsityöoluiden hallintaa olutharrastajille."
+    "tagline": "Käsityöoluiden hallintaa olutharrastajille.",
+    "dataCredit": {
+      "before": "Oluttiedoissa on",
+      "source": "Wikidatan",
+      "after": "tietoja (CC0)."
+    }
   },
   "nav": {
     "label": "Päänavigaatio",

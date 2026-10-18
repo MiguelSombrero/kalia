@@ -148,17 +148,26 @@ TypeScript vocabulary a client meets — is catalogued in
   ([ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md)).
 - Flyway owns the schema, with migrations per module directory plus `common/`
   for cross-module infrastructure (layout and version-numbering rules:
-  [backend/README.md](../backend/README.md) database migrations). Seed data
-  (~50–100 beers) ships as versioned migrations for deterministic dev/test
-  environments.
+  [backend/README.md](../backend/README.md) database migrations). The
+  catalog's data ships as versioned migrations, so every environment holds the
+  same catalog: a hand-written seed of 54 beers from 20 breweries (`V004`),
+  and about 13.5k beers and 4.9k breweries imported from Wikidata (`V008`).
 - **The catalog's data source is Kalia itself, seeded once from Wikidata**
   ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
-  Today the catalog is still the seed migration above. The decided import
-  ([iteration 8 task 17](tasks/iteration-8/17-seed-the-catalog-from-wikidata.md))
-  adds beers and breweries from a committed Wikidata snapshot, keeps the seed,
-  and gives every row a recorded source. No catalog read ever calls an
-  external service. Until that import lands, the data model below is
-  unchanged.
+  `V008` is generated, never hand-edited: `scripts/wikidata-migration.mjs`
+  builds it from the committed snapshot `scripts/wikidata/snapshot.json`,
+  which `scripts/wikidata-extract.mjs` took once, offline. The import's rules
+  ([iteration 8 task 17](tasks/iteration-8/17-seed-the-catalog-from-wikidata.md)
+  and ADR-0077's amendment) live in the generator, and the mappings it
+  applies are committed beside the snapshot: Wikidata's style classes onto
+  Kalia's styles (`styles.json`), each seeded row to its Wikidata item
+  (`seed-matches.json`), and four hand-reviewed brewery countries
+  (`brewery-countries.json`). The seed's rows are never changed: an imported
+  beer matching one is skipped, and an imported beer of a seeded brewery
+  attaches to the seeded row. `make check` fails if the generated migration
+  no longer matches the snapshot, or if the snapshot, the migration or the
+  schema could carry anything from Untappd. No catalog read ever calls an
+  external service.
 - One PostgreSQL extension is required: `pg_trgm`, installed into `public` by
   the catalog migrations for the search indexes in the data model below.
 - Spring Modulith's event publication registry uses the JDBC flavor (not JPA),
@@ -169,8 +178,8 @@ TypeScript vocabulary a client meets — is catalogued in
 ### Data model sketch
 
 ```
-catalog.brewery(id, name, country, city, created_at)
-catalog.beer(id, brewery_id, name, style, abv, description, created_at)
+catalog.brewery(id, name, country, city, source, wikidata_qid, created_at) — unique (fold_name(name), lower(country)), unique (wikidata_qid)
+catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, created_at) — unique (brewery_id, name), unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at)
@@ -178,7 +187,17 @@ feed.line(id, event_id, user_id, beer_id, quantity, brewed_date, occurred_at, se
 ```
 
 `style` starts as an indexed text column; normalize into its own table only
-if style metadata appears.
+if style metadata appears. Its vocabulary is the seed's styles extended by the
+import's style mapping.
+
+**Every catalog row records where it came from**
+([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
+`source` is `SEED`, `WIKIDATA` or `USER`, and an imported row, and only an
+imported one, carries the Wikidata item it came from in `wikidata_qid`. Every
+Wikidata-sourced row can therefore be found, or removed, in one statement. A
+brewery is unique by its name, with case, whitespace and punctuation folded by
+`catalog.fold_name()`, within its country. Seeded beers and breweries keep the
+ids `V004` gave them, so cellar entries that point at them survive the import.
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
@@ -714,9 +733,11 @@ updated if behavior or architecture changed.
   services later. Cost: discipline required at boundaries.
 - **BFF over direct API calls**: an extra hop and a bit of proxy code, in
   exchange for no tokens in the browser and no CORS surface.
-- **Seed data over admin UI/import**: deterministic environments now, at the
-  cost of a catalog that cannot grow without a migration — the ceiling
-  iteration 8 removes.
+- **Migrations over an admin UI or a runtime import**: every environment holds
+  the same catalog, seed and Wikidata import alike, at the cost of a catalog
+  that grows only by migration until users can add beers, which is the rest
+  of iteration 8. The import costs about 1.4 MB of generated SQL in the
+  repository and a few seconds on every fresh database's migration.
 - **An owned catalog seeded once from Wikidata, over a live external source**
   ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)):
   no runtime dependency, and no licence obligations under CC0, at the cost of

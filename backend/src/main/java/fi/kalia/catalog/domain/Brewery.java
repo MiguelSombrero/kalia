@@ -1,6 +1,8 @@
 package fi.kalia.catalog.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -28,12 +30,18 @@ public class Brewery {
 
 	private @Nullable String city;
 
+	@Enumerated(EnumType.STRING)
+	private CatalogSource source;
+
+	private @Nullable String wikidataQid;
+
 	private Instant createdAt;
 
 	private Brewery(String name, String country, @Nullable String city) {
 		this.name = name;
 		this.country = country;
 		this.city = city;
+		this.source = CatalogSource.USER;
 		this.createdAt = Instant.now();
 	}
 

@@ -15,7 +15,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-8/01-catalog-data-source.md) | Decide where catalog data comes from | done |
-| [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | refined |
+| [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | done |
 | [02](iteration-8/02-add-beer-api.md) | Add-a-beer API | refined |
 | [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | refined |
 | [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | refined |

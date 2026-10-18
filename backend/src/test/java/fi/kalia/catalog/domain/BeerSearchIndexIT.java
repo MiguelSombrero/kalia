@@ -26,16 +26,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 // Asserts plans, not results: BeerSpecificationsIT covers what the filters
 // return, and an index the planner never picks returns the same rows as one it
 // does. The SQL is captured from Hibernate so the plan is of the statement the
-// search endpoint really issues, and the catalog is grown past the seed data's
-// 54 beers because at that size a full scan wins whatever indexes exist.
+// search endpoint really issues. The plans are judged against the migrated
+// catalog itself, Wikidata import included: at the seed's 54 beers alone a full
+// scan wins whatever indexes exist.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({TestcontainersConfiguration.class, BeerSearchIndexIT.SqlCaptureConfiguration.class})
 class BeerSearchIndexIT {
-
-	private static final int SEEDED_BREWERIES = 2_000;
-
-	private static final int SEEDED_BEERS = 10_000;
 
 	// CatalogController's defaults, so the plan is of the query the endpoint issues.
 	private static final Pageable FIRST_PAGE = PageRequest.of(0, 20,
@@ -52,29 +49,17 @@ class BeerSearchIndexIT {
 	@Autowired
 	private CapturedSql capturedSql;
 
+	// Statistics as a long-running database would have them; a freshly migrated
+	// one has none until autovacuum gets round to it.
 	@BeforeEach
-	void growTheCatalog() {
-		jdbc.update("""
-				INSERT INTO catalog.brewery (name, country)
-				SELECT 'Seeded Brewery ' || g,
-				       (ARRAY['Belgium', 'Germany', 'USA', 'Finland', 'Czechia'])[1 + (g % 5)]
-				FROM generate_series(1, ?) g
-				""", SEEDED_BREWERIES);
-		jdbc.update("""
-				INSERT INTO catalog.beer (brewery_id, name, style, abv)
-				SELECT b.id, 'Seeded Beer ' || g,
-				       (ARRAY['IPA', 'Stout', 'Lager', 'Pilsner', 'Saison'])[1 + (g % 5)],
-				       5.0
-				FROM generate_series(1, ?) g
-				JOIN catalog.brewery b ON b.name = 'Seeded Brewery ' || (1 + (g % ?))
-				""", SEEDED_BEERS, SEEDED_BREWERIES);
+	void analyzeTheCatalog() {
 		jdbc.execute("ANALYZE catalog.beer");
 		jdbc.execute("ANALYZE catalog.brewery");
 	}
 
-	// The literal is the scale the product owner set for this task, deliberately
-	// not SEEDED_BEERS: shrinking the fixture to speed the suite up has to fail
-	// here rather than quietly weaken the three plan assertions below.
+	// The scale the product owner set for these plans: a catalog that shrank
+	// below it has to fail here rather than quietly weaken the three plan
+	// assertions below.
 	@Test
 	void catalogIsSeededToTheScaleTheIndexesAreJudgedAt() {
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog.beer", Long.class))

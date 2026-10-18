@@ -11,10 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.jspecify.annotations.Nullable;
 
-// Runs against real database and seed data: mocking the JPA Criteria API
-// would assert implementation calls, not filtering behavior.
+// Runs against the real migrated catalog, seed and Wikidata import alike:
+// mocking the JPA Criteria API would assert implementation calls, not filtering
+// behavior. Totals are read from the database rather than pinned, since the
+// import's size is the snapshot's business; seeded identities stay exact.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
@@ -26,6 +29,13 @@ class BeerSpecificationsIT {
 	@Autowired
 	private BreweryRepository breweries;
 
+	@Autowired
+	private JdbcTemplate jdbc;
+
+	private long count(String sql) {
+		return jdbc.queryForObject(sql, Long.class);
+	}
+
 	private List<Beer> search(@Nullable String query, @Nullable String style, @Nullable UUID breweryId,
 			@Nullable String country, @Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
 		return beers.findAll(BeerSpecifications.matching(
@@ -34,8 +44,10 @@ class BeerSpecificationsIT {
 
 	@Test
 	void emptyCriteriaMatchesEverything() {
-		assertThat(search(null, null, null, null, null, null)).hasSize(54);
-		assertThat(search("  ", "", null, " ", null, null)).hasSize(54);
+		long total = count("SELECT count(*) FROM catalog.beer");
+
+		assertThat(search(null, null, null, null, null, null)).hasSize((int) total);
+		assertThat(search("  ", "", null, " ", null, null)).hasSize((int) total);
 	}
 
 	@Test
@@ -58,8 +70,10 @@ class BeerSpecificationsIT {
 	void countryFilterMatchesBreweryCountryCaseInsensitively() {
 		List<Beer> finnish = search(null, null, null, "finland", null, null);
 
-		assertThat(finnish).hasSize(3);
-		assertThat(finnish).allSatisfy(
+		assertThat(finnish).hasSize((int) count("""
+				SELECT count(*) FROM catalog.beer b JOIN catalog.brewery br ON br.id = b.brewery_id
+				WHERE br.country = 'Finland'"""));
+		assertThat(finnish).isNotEmpty().allSatisfy(
 				beer -> assertThat(beer.getBrewery().getCountry()).isEqualTo("Finland"));
 	}
 
@@ -78,12 +92,13 @@ class BeerSpecificationsIT {
 
 	@Test
 	void abvBoundsAreInclusive() {
-		// KBS: strongest seed beer, exactly 12.0.
-		assertThat(search(null, null, null, null, new BigDecimal("12.0"), null))
-				.extracting(Beer::getName).containsExactly("KBS");
-		// Table Beer: weakest, exactly 3.0.
-		assertThat(search(null, null, null, null, null, new BigDecimal("3.0")))
-				.extracting(Beer::getName).containsExactly("Table Beer");
+		BigDecimal strongest = jdbc.queryForObject("SELECT max(abv) FROM catalog.beer", BigDecimal.class);
+		BigDecimal weakest = jdbc.queryForObject("SELECT min(abv) FROM catalog.beer", BigDecimal.class);
+
+		assertThat(search(null, null, null, null, strongest, null)).isNotEmpty()
+				.allSatisfy(beer -> assertThat(beer.getAbv()).isEqualByComparingTo(strongest));
+		assertThat(search(null, null, null, null, null, weakest)).isNotEmpty()
+				.allSatisfy(beer -> assertThat(beer.getAbv()).isEqualByComparingTo(weakest));
 	}
 
 	@Test
@@ -91,8 +106,16 @@ class BeerSpecificationsIT {
 		List<Beer> strongBelgianQuads = search(null, "Quadrupel", null, "Belgium",
 				new BigDecimal("10"), null);
 
+		assertThat(strongBelgianQuads).hasSize((int) count("""
+				SELECT count(*) FROM catalog.beer b JOIN catalog.brewery br ON br.id = b.brewery_id
+				WHERE b.style = 'Quadrupel' AND br.country = 'Belgium' AND b.abv >= 10"""));
+		assertThat(strongBelgianQuads).allSatisfy(beer -> {
+			assertThat(beer.getStyle()).isEqualTo("Quadrupel");
+			assertThat(beer.getBrewery().getCountry()).isEqualTo("Belgium");
+			assertThat(beer.getAbv()).isGreaterThanOrEqualTo(new BigDecimal("10"));
+		});
 		assertThat(strongBelgianQuads).extracting(Beer::getName)
-				.containsExactlyInAnyOrder("Westvleteren 12", "Rochefort 10", "St. Bernardus Abt 12");
+				.contains("Westvleteren 12", "Rochefort 10", "St. Bernardus Abt 12");
 	}
 
 	@Test

@@ -317,3 +317,12 @@ kalia/
 ## License
 
 See [LICENSE](LICENSE).
+
+## Credits
+
+Kalia's beer catalog includes facts — names, ABVs, styles, and breweries'
+countries and cities — imported once from [Wikidata](https://www.wikidata.org/),
+whose structured data is available under
+[CC0](https://creativecommons.org/publicdomain/zero/1.0/). Kalia credits it
+even though CC0 does not require it
+([ADR-0077](docs/adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).

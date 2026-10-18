@@ -53,6 +53,7 @@ signed-out visitor may read.
 |---|---|---|
 | `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id only. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) |
 | `Brewery` | The maker of beers, with a country and optional city. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `CatalogSource` | Where a beer or brewery row came from: `SEED` (the hand-written seed), `WIKIDATA` (the one-time import, with the item's QID beside it) or `USER` (added by a user). | [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerSpecifications` | A factory of JPA `Specification<Beer>` predicates built from a `BeerSearchCriteria`, with `LIKE` wildcards escaped. | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`. | [ADR-0007](adr/0007-backend-package-structure.md) |
