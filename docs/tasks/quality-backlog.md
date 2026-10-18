@@ -282,6 +282,29 @@ they're already cross-referenced from merged PRs and
   produced the amendment, and a worktree-isolation ADR in #248 (91cf5eb,
   "environment notes would be enough") a week later — both numbers since
   reissued to other decisions. A same-length rewording fixes it, which matters under SHOULD-31.
+- **SHOULD-61** *(confirmed 2026-10-18)* **[needs decision]** —
+  `CatalogService.listBreweries`
+  (`backend/src/main/java/fi/kalia/catalog/application/CatalogService.java:45-52`)
+  loads every brewery with `findAll()`, sorts them in Java with
+  `String.CASE_INSENSITIVE_ORDER` and only then paginates, so a request for one
+  page of 20 hydrates the whole table. Against the 20 seeded breweries that
+  cost nothing; once [iteration-8 task 17](iteration-8/17-seed-the-catalog-from-wikidata.md)'s
+  Wikidata import lands (PR #360) it is about 4,914 entities per
+  `GET /api/v1/breweries`, which `SecurityConfig` serves anonymously, so every
+  anonymous request pays it. [Task 08](iteration-8/08-catalog-search-bounded-end-to-end.md)'s
+  10,000-row offset cap does not bound this: the cost is the table, not the
+  page, and grows with every brewery added. [Task 02](iteration-8/02-add-beer-api.md)'s
+  brewery lookup by name will lean on the same data. The sort is in Java
+  deliberately — the code comment says DB collations disagree on punctuation
+  (e.g. "d'Orval"), and the Java order keeps the API ordering the same in every
+  environment — so the Java order is the contract any fix has to keep. Options,
+  not ranked: an `ORDER BY` under an ICU or `"C"`-collated expression, with the
+  page cut by the database; a stored sort key column (the normalised name,
+  maintained by the import and by task 02's create flow) with an index, which
+  makes the order independent of collation; or leaving the sort as is and
+  accepting the cost, with the catalog's size stated as a limit. Each changes
+  what "the order" means at the edges (accents, punctuation), which is the
+  product owner's call.
 
 ## COULD
 
