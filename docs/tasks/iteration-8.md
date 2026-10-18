@@ -47,7 +47,8 @@ Tasks 04 and 05 exist because that same answer changes the catalog's size and
 source, which is what the architecture's "no cache until measured" stance was
 waiting for. Task 04 measures and decides, and "not yet" is a valid answer that
 drops task 05. Task 05 comes after task 02, since a cache that does not evict
-on the new write path hides the very beer a user just added. Task 04 answered "not yet" on 2026-10-18
+on the new write path hides the very beer a user just added. Task 04
+answered "not yet" on 2026-10-18
 ([ADR-0078](../adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)),
 so task 05 is dropped. What the measurement did find goes to task 18 instead:
 two search shapes that break the budget at 150k beers for want of an index.

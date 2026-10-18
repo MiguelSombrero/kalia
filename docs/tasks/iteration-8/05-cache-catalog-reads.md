@@ -8,7 +8,7 @@
 **Dropped 2026-10-18 by the product owner: [task 04](04-catalog-caching-decision.md)
 concluded "not yet"** ([ADR-0078](../../adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)).
 Every catalog read that broke the 300 ms budget at 150k beers lacked an index
-or had a defect another task owns. [Task 18](18-catalog-search-served-by-an-index-at-150k.md)
+or had a defect already recorded elsewhere. [Task 18](18-catalog-search-served-by-an-index-at-150k.md)
 takes the index. The ADR records when the question reopens. The rest of this
 file is the placeholder as it stood.
 

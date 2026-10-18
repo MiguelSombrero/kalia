@@ -32,7 +32,7 @@ are anonymous, so no cache key may depend on the user.
 
 **The catalog stays uncached: every catalog read that breaks the 300 ms
 budget at 150k beers does so for want of an index or because of a defect
-another task already owns, and [task 05](../tasks/iteration-8/05-cache-catalog-reads.md)
+already recorded elsewhere, and [task 05](../tasks/iteration-8/05-cache-catalog-reads.md)
 is dropped.**
 
 The reads over budget at 150k, and where each one goes instead of a cache:
@@ -46,8 +46,9 @@ The reads over budget at 150k, and where each one goes instead of a cache:
   [task 08](../tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)
   already bounds it.
 - **The brewery list.** It loads and sorts every brewery in Java
-  ([ADR-0045](0045-brewery-list-paginates-in-application.md)), which quality
-  backlog SHOULD-61 already records.
+  ([ADR-0045](0045-brewery-list-paginates-in-application.md)). Quality
+  backlog SHOULD-61 already records this. It is still `[needs decision]` and
+  no task owns it yet.
 
 At the imported size, every read is within budget.
 
@@ -119,7 +120,8 @@ measuring, because it says nothing about growth.
 - Good, because the slow reads are fixed at their cause. A cache would have
   made them fast only on a hit, and left them unmeasured on a miss.
 - Bad, because at 150k beers the catalog's landing page and short searches
-  are over budget until task 18 lands. Today's 13.6k is far from that, but
+  are over budget until task 18 lands. The brewery list stays over budget
+  until SHOULD-61 is decided. Today's 13.6k is far from that, but
   nothing but the reopen trigger above watches the size.
 - Neutral, because the measurement is a recorded one-off, not a committed
   benchmark. Refinement rejected a load test as a new dependency.

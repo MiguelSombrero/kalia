@@ -43,7 +43,7 @@ account linking revisited, and the rest of that iteration's tasks.
 |---|---|
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
-| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers. At 150k beers, it holds once [task 18](tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)'s index lands. The question reopens past 150k beers, or when a read no index can serve goes over budget ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), [§7](#catalog-read-latency)) |
+| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers. It does not yet hold at 150k beers. Unfiltered pages and 1–2-character queries break it there, and they are [task 18](tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)'s. Deep pages are [task 08](tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)'s. The brewery list's sort in Java is quality backlog SHOULD-61. The question reopens past 150k beers, or when a read no index can serve goes over budget ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), [§7](#catalog-read-latency)) |
 | Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
 | Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
@@ -739,9 +739,15 @@ this measurement whenever the catalog's size or its queries change shape.
 records the latest run.
 
 1. **Set up an isolated database.** Run a scratch `postgres:18.4` and a
-   backend jar against it. Enable Tomcat's access log, unbuffered, with
-   pattern `%U %s %{ms}T`, so the last field is the server time in ms.
-   Flyway migrates the imported catalog.
+   backend jar against it. Leave the settings at their defaults, since the
+   figures depend on them:
+   - HikariCP's pool of 10, which queues 20 concurrent clients;
+   - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a
+     search to its generic plan.
+
+   Enable Tomcat's access log, unbuffered, with pattern `%U %s %{ms}T`, so
+   the last field is the server time in ms. Flyway migrates the imported
+   catalog.
 2. **Generate the larger catalog.** For the larger size, clone the imported
    catalog in SQL:
    - each brewery gets ten copies in its own country;
@@ -750,8 +756,9 @@ records the latest run.
      brewery;
 
    This keeps the style, country and name-trigram distributions the import
-   has. Generated rows default to `source = USER`, so they delete in one
-   statement. `VACUUM ANALYZE` both tables before measuring.
+   has. Generated rows default to `source = USER`. On a scratch database
+   that has no real user rows, they delete by that column, beers before
+   breweries. `VACUUM ANALYZE` both tables before measuring.
 3. **Confirm index use.** Capture the SQL Hibernate issues for each search
    shape, page and count, from the Postgres statement log. Run
    `EXPLAIN (ANALYZE, BUFFERS)` on it with representative values.
@@ -789,7 +796,7 @@ records the latest run.
 - **No catalog read cache, measured rather than assumed**
   ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)):
   - **What was measured:** at 150k beers, every catalog read that broke the
-    budget lacked an index or had a defect another task owns, so indexes
+    budget lacked an index or had a defect already recorded elsewhere, so indexes
     rather than a cache keep reads fast.
   - **What it saves:** no staleness, no invalidation on the add-a-beer
     path, and no new dependency.

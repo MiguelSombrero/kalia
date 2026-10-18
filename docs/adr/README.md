@@ -57,7 +57,7 @@ nobody has committed to becomes a constraint anyway.
   accepted risk.
 - [ADR-0078](0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
   — the catalog stays uncached. What broke 300 ms at 150k beers lacked an
-  index, or had a defect another task owns. The question reopens past 150k
+  index, or had a defect already recorded elsewhere. The question reopens past 150k
   beers.
 
 ## Cellar
