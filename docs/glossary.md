@@ -43,20 +43,22 @@ reader is a translation-policy question belonging with
 
 ## catalog
 
-Beers, breweries and styles, plus search and filtering. Depends on no other
-module. Its data is public by nature — a beer's attributes are catalog data a
-signed-out visitor may read.
+Beers, breweries and styles, plus search and filtering, and a signed-in user
+adding a beer the catalog lacks. Depends on `identity`, for the contributor a
+user-added row records. Its data is public by nature — a beer's attributes are
+catalog data a signed-out visitor may read; the contributor is never served.
 
 ### Domain types (`fi.kalia.catalog.domain`)
 
 | Type | Meaning in this module | Why |
 |---|---|---|
-| `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id only. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md) |
-| `Brewery` | The maker of beers, with a country and optional city. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id only. One a user adds (`addedBy`) has no description and records its **contributor**. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) |
+| `Brewery` | The maker of beers, with a country and optional city. One a user adds records its contributor too. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `Country` | A country a brewery can be in: an ISO 3166-1 code and the English name the catalog stores. `Country.ALL` is the fixed list a new brewery's country is picked from. | [architecture.md §3](architecture.md#3-backend-modules) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerSpecifications` | A factory of JPA `Specification<Beer>` predicates built from a `BeerSearchCriteria`, with `LIKE` wildcards escaped. | [ADR-0044](adr/0044-catalog-search-indexes.md) |
-| `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`. | [ADR-0007](adr/0007-backend-package-structure.md) |
-| `BreweryRepository` | Persistence for the `Brewery` entity. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`; the catalog's distinct styles; and the same-name duplicate check within a brewery. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `BreweryRepository` | Persistence for the `Brewery` entity, including the by-name lookup and the same-name-and-country duplicate check. | [ADR-0007](adr/0007-backend-package-structure.md) |
 
 ## identity
 
@@ -144,6 +146,7 @@ and they drift from the Java names that produced them.
 | `/cellars/{username}` (plural) | **Someone's** cellar, addressed by name; the one cellar route a signed-out caller may reach, and only when its owner has made it public ([ADR-0050](adr/0050-public-cellar-addressing.md)). |
 | `/cellar/bottles`, `/cellar/bottles/{id}` | Add / update / remove a bottle, addressed by its own id, never nested under its entry. `POST` answers with an array — it creates `quantity` independently editable rows, never a stored count. |
 | `/profile/visibility` | Change whether the caller's cellar is public. |
+| `/styles`, `/countries` | The vocabularies a beer is added with: every style a catalog beer has, and every country a brewery can be in. Public reads. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
 
 ### JSON field names
@@ -154,6 +157,8 @@ and they drift from the Java names that produced them.
 | `quantity` | On `EntryDto` / `PublicCellarEntryDto`: the derived bottle count (`COUNT(*)`). It maps to no database column and no stored domain field — it exists only at the API boundary. On `AddBottleRequestDto`: how many identical bottles to create (1–24). On `FeedLineDto`: the count frozen on one bulk-add act at the moment it happened — never recomputed, and unrelated to what the cellar holds now. |
 | `cellarPublic` | The wire name for cellar visibility, on `ProfileDto` and `ChangeVisibilityRequestDto`. |
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |
+| `existingBeerId`, `existingBreweryId` | On a `409` from `POST /beers`: the row the catalog already holds, which the refused beer or brewery duplicates. |
+| `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`. |
 | `content`, `nextCursor` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`: opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. |
 

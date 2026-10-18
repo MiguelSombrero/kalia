@@ -44,7 +44,7 @@ class SecurityConfig {
 						// Do not widen "/api/v1/beers/*" to "/**": a later sub-resource
 						// would turn silently public instead of staying authenticated.
 						.requestMatchers(HttpMethod.GET, "/api/v1/beers", "/api/v1/beers/*",
-								"/api/v1/breweries")
+								"/api/v1/breweries", "/api/v1/styles", "/api/v1/countries")
 						.permitAll()
 						// A public cellar is readable by anyone, including signed-out
 						// (ADR-0050). Single star: only the username segment, never a

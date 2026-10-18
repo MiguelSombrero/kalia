@@ -6,11 +6,13 @@ import fi.kalia.catalog.domain.BeerSearchCriteria;
 import fi.kalia.catalog.domain.BeerSpecifications;
 import fi.kalia.catalog.domain.Brewery;
 import fi.kalia.catalog.domain.BreweryRepository;
+import fi.kalia.catalog.domain.Country;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -42,13 +44,24 @@ public class CatalogService {
 		return beers.findByIdIn(ids);
 	}
 
-	public Page<Brewery> listBreweries(Pageable pageable) {
+	public Page<Brewery> listBreweries(@Nullable String nameQuery, Pageable pageable) {
+		List<Brewery> matching = nameQuery == null || nameQuery.isBlank()
+				? breweries.findAll()
+				: breweries.findByNameContainingIgnoreCase(nameQuery.strip());
 		// Sorted in Java: DB collations disagree on punctuation (e.g. "d'Orval"),
 		// this keeps the API ordering deterministic across environments.
-		List<Brewery> sorted = breweries.findAll().stream()
+		List<Brewery> sorted = matching.stream()
 				.sorted(Comparator.comparing(Brewery::getName, String.CASE_INSENSITIVE_ORDER))
 				.toList();
 		return paginate(sorted, pageable);
+	}
+
+	public List<String> listStyles() {
+		return beers.findDistinctStyles().stream().sorted(String.CASE_INSENSITIVE_ORDER).toList();
+	}
+
+	public List<Country> listCountries() {
+		return Country.ALL;
 	}
 
 	static <T> Page<T> paginate(List<T> sorted, Pageable pageable) {

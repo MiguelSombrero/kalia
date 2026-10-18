@@ -11,7 +11,7 @@ public class IdentityApi {
 
 	private final CurrentUserService currentUser;
 
-	/** Fails when the request is anonymous — every cellar route requires a token first (ADR-0028). */
+	/** Fails when the request is anonymous — call it only behind a route that requires a token (ADR-0028). */
 	public UUID requireCurrentUserId() {
 		return currentUser.require().id();
 	}

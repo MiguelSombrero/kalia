@@ -12,6 +12,14 @@
   same-bean self-invocation Spring's proxy-based retry cannot intercept. No
   shared helper: the annotation is one line, so "a shared note" (this one)
   is what the trigger's own wording asked for, not new machinery.
+- **Amended:** 2026-10-18 — `catalog.ContributionService.addBeer` carries the
+  same `@Retryable` shape for a create-or-refuse rather than a get-or-create:
+  its retry's duplicate check finds the concurrent winner's beer or brewery
+  and refuses with `409`, instead of the losing request's unique-index
+  violation surfacing as a message-less 500. It relies on the
+  `@EnableResilientMethods` that `cellar`'s `RetryConfig` already registers
+  for the whole application context; `ConcurrentAddBeerApiIT` fails if the
+  retry stops running.
 
 ## Context
 

@@ -28,6 +28,8 @@ public class Brewery {
 
 	private @Nullable String city;
 
+	private @Nullable UUID contributorId;
+
 	private Instant createdAt;
 
 	private Brewery(String name, String country, @Nullable String city) {
@@ -41,6 +43,13 @@ public class Brewery {
 		Assert.hasText(name, "name must not be blank");
 		Assert.hasText(country, "country must not be blank");
 		return new Brewery(name, country, city);
+	}
+
+	public static Brewery addedBy(UUID contributorId, String name, String country, @Nullable String city) {
+		Assert.notNull(contributorId, "contributorId must not be null");
+		Brewery brewery = create(name.strip(), country, city == null || city.isBlank() ? null : city.strip());
+		brewery.contributorId = contributorId;
+		return brewery;
 	}
 
 }
