@@ -193,7 +193,10 @@ import's style mapping.
 **Every catalog row records where it came from**
 ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
 `source` is `SEED`, `WIKIDATA` or `USER`, and an imported row, and only an
-imported one, carries the Wikidata item it came from in `wikidata_qid`. Every
+imported one, carries the Wikidata item it came from in `wikidata_qid`.
+Provenance lives in the schema alone: `Beer` and `Brewery` do not map either
+column, and a row the application inserts is marked `USER` by the column's
+default, which `V008` sets once the seed and the import have written theirs. Every
 Wikidata-sourced row can therefore be found, or removed, in one statement. A
 brewery is unique by its name, with case, whitespace and punctuation folded by
 `catalog.fold_name()`, within its country. Seeded beers and breweries keep the

@@ -1,8 +1,6 @@
 package fi.kalia.catalog.domain;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -40,11 +38,6 @@ public class Beer {
 
 	private @Nullable String description;
 
-	@Enumerated(EnumType.STRING)
-	private CatalogSource source;
-
-	private @Nullable String wikidataQid;
-
 	private Instant createdAt;
 
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
@@ -54,7 +47,6 @@ public class Beer {
 		this.style = style;
 		this.abv = abv;
 		this.description = description;
-		this.source = CatalogSource.USER;
 		this.createdAt = Instant.now();
 	}
 

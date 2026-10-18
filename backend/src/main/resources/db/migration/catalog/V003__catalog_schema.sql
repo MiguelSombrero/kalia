@@ -11,8 +11,9 @@ CREATE FUNCTION catalog.fold_name(name text) RETURNS text
     LANGUAGE sql IMMUTABLE PARALLEL SAFE
     RETURN regexp_replace(lower(name), '[[:space:][:punct:]]', '', 'g');
 
--- source records where a row came from (ADR-0077). Its default exists only so
--- V004's seed rows, which predate the column, are marked SEED; V008 drops it.
+-- source records where a row came from (ADR-0077). Its default marks V004's
+-- seed rows, which predate the column, as SEED; V008 changes it to USER, since
+-- the entities do not map the column and every row the app inserts is a user's.
 CREATE TABLE catalog.brewery (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name         text NOT NULL,
