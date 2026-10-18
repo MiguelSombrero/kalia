@@ -17,7 +17,7 @@ test("root redirects to the English catalog by default", async ({ page }) => {
 test("search for a beer by name and open its detail page", async ({ page }) => {
   await page.goto("/en/beers");
 
-  await page.getByLabel("Search").fill("Westvleteren");
+  await page.getByLabel("Search", { exact: true }).fill("Westvleteren");
   await page.getByRole("button", { name: "Search" }).click();
   await expect(page).toHaveURL(/query=Westvleteren/);
 
@@ -38,22 +38,22 @@ test("search for a beer by name and open its detail page", async ({ page }) => {
 
   await page.getByRole("link", { name: "← Back to results" }).click();
   await expect(page).toHaveURL(/\/en\/beers\?query=Westvleteren\b/);
-  await expect(page.getByLabel("Search")).toHaveValue("Westvleteren");
+  await expect(page.getByLabel("Search", { exact: true })).toHaveValue("Westvleteren");
 });
 
-test("filters Belgian quads between 9-12% ABV and opens one", async ({ page }) => {
+// A range narrow enough that its matches fit on the first page of the imported catalog.
+test("filters Belgian quads between 11-12% ABV and opens one", async ({ page }) => {
   await page.goto("/en/beers");
 
   await page.getByLabel("Style").fill("Quadrupel");
   await page.getByLabel("Country").fill("Belgium");
-  await page.getByRole("spinbutton", { name: "Min ABV %" }).fill("9");
+  await page.getByRole("spinbutton", { name: "Min ABV %" }).fill("11");
   await page.getByRole("spinbutton", { name: "Max ABV %" }).fill("12");
   await page.getByRole("button", { name: "Search" }).click();
 
-  await expect(page.getByRole("link", { name: "Westvleteren 12", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Rochefort 10", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "St. Bernardus Abt 12", exact: true })).toBeVisible();
-  // Out of range / wrong style / wrong country must not appear.
+  // Out of range (10.2 %) / wrong style / wrong country must not appear.
+  await expect(page.getByRole("link", { name: "Westvleteren 12", exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Duvel", exact: true })).toHaveCount(0);
   await expectNoA11yViolations(page);
 
@@ -68,7 +68,7 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "Oluet" })).toBeVisible();
   await expectNoA11yViolations(page);
-  await page.getByLabel("Haku").fill("Westvleteren");
+  await page.getByLabel("Haku", { exact: true }).fill("Westvleteren");
   await page.getByRole("button", { name: "Hae" }).click();
   await expect(page).toHaveURL(/query=Westvleteren/);
 
@@ -90,20 +90,20 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
 // doesn't trigger the prefetch that caused the bug (guard is Pagination.test.tsx).
 test("pages forward and back through the catalog", async ({ page }) => {
   await page.goto("/en/beers");
-  await expect(page.getByText("Page 1 of 3")).toBeVisible();
+  await expect(page.getByText(/^Page 1 of \d+$/)).toBeVisible();
   const firstOnPageOne = await page.locator("main a[href^='/en/beers/']").first().innerText();
 
   await page.getByRole("link", { name: "Next" }).click();
 
   await expect(page).toHaveURL(/[?&]page=1\b/);
-  await expect(page.getByText("Page 2 of 3")).toBeVisible();
+  await expect(page.getByText(/^Page 2 of \d+$/)).toBeVisible();
   const firstOnPageTwo = await page.locator("main a[href^='/en/beers/']").first().innerText();
   expect(firstOnPageTwo).not.toEqual(firstOnPageOne);
 
   await page.getByRole("link", { name: "Previous" }).click();
 
   await expect(page).toHaveURL(/[?&]page=0\b/);
-  await expect(page.getByText("Page 1 of 3")).toBeVisible();
+  await expect(page.getByText(/^Page 1 of \d+$/)).toBeVisible();
   expect(await page.locator("main a[href^='/en/beers/']").first().innerText()).toEqual(
     firstOnPageOne,
   );

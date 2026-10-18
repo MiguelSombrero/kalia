@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-15
+- **Amended:** 2026-10-18 — the import rules the product owner decided while
+  the import was built, for cases the data showed and refinement had not
+  covered; see the end of Decision
 
 ## Context
 
@@ -95,6 +98,29 @@ vocabulary, name and alias handling, brewery uniqueness, the treatment of bad
 values, or where the import tooling lives. Those are
 [task 17](../tasks/iteration-8/17-seed-the-catalog-from-wikidata.md)'s
 questions.
+
+> **Amended 2026-10-18.** Building the import turned up cases its refinement
+> had not decided. The product owner decided them as follows, and
+> `scripts/wikidata-migration.mjs` applies them:
+>
+> - **A beer Wikidata says several breweries make is dropped** (about 920,
+>   collaborations and owner-plus-brewery pairs alike). Attaching it to one
+>   brewery by rule was rejected: it would show some beers under the wrong
+>   brewery.
+> - **Breweries sharing a normalised name and country merge into one row**,
+>   the one making the most imported beers, and the others' beers attach to
+>   it. Dropping every brewery in such a group was rejected: it loses real
+>   breweries, such as Duvel Moortgat's two items.
+> - **A brewery with conflicting countries is dropped**, except the four that
+>   make imported beers, whose country is hand-reviewed in
+>   `scripts/wikidata/brewery-countries.json`. Dropping all of them was
+>   rejected: Moersleutel alone makes 417 of the beers.
+> - **A regional variant folds into its base style** (American IPA into IPA,
+>   English barley wine into Barleywine), as the seed already files its own
+>   beers. Keeping each variant as a style was rejected.
+> - **New England IPA's double, triple and session strengths stay styles of
+>   their own**, as New England IPA does. Folding them into Double, Triple
+>   and Session IPA was rejected.
 
 ## Alternatives considered
 

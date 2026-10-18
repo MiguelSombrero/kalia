@@ -1,0 +1,1560 @@
+{
+ "beerClasses": {
+  "head": {
+   "vars": [
+    "beer",
+    "class",
+    "untappdId",
+    "reviewScore"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     },
+     "untappdId": {
+      "xml:lang": "",
+      "type": "literal",
+      "value": "U-4242424"
+     },
+     "reviewScore": {
+      "xml:lang": "",
+      "type": "literal",
+      "value": "3.87/5"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q3"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q4"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q5"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q6"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q7"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q8"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q9"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2493192"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q10"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q11"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q12"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q13"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q14"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q15"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q16"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q17"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q18"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q44"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q19"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q19"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2493192"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q20"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q20"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q85745517"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q21"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q22"
+     },
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     }
+    }
+   ]
+  }
+ },
+ "beerAbvs": {
+  "head": {
+   "vars": [
+    "beer",
+    "amount",
+    "unit"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5.5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "0"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q11229"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q3"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "4.7"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q4"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "6"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q5"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "6.1"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q6"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "-1"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q7"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "150"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q8"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q8"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "6"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q9"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "25"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q10"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q11"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "8"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q12"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q13"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q14"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q15"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q16"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5.5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q17"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "11"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q9999"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q18"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q19"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q20"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "7"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q21"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q22"
+     },
+     "amount": {
+      "datatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "type": "literal",
+      "value": "5"
+     },
+     "unit": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2080811"
+     }
+    }
+   ]
+  }
+ },
+ "beerManufacturers": {
+  "head": {
+   "vars": [
+    "beer",
+    "manufacturer"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q3"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q4"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q5"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q6"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q7"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q8"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q9"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q10"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q200"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q11"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q101"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q12"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q12"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q101"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q13"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q102"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q14"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q15"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q16"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q17"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q18"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q19"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q20"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q21"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q104"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q22"
+     },
+     "manufacturer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q101"
+     }
+    }
+   ]
+  }
+ },
+ "beerCountries": {
+  "head": {
+   "vars": [
+    "beer",
+    "country"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q3"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q33"
+     }
+    }
+   ]
+  }
+ },
+ "beerLabels": {
+  "head": {
+   "vars": [
+    "beer",
+    "label"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "English Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1"
+     },
+     "label": {
+      "xml:lang": "nl",
+      "type": "literal",
+      "value": "Engelse Naam"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2"
+     },
+     "label": {
+      "xml:lang": "mul",
+      "type": "literal",
+      "value": "Multilingual Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2"
+     },
+     "label": {
+      "xml:lang": "de",
+      "type": "literal",
+      "value": "Deutscher Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q3"
+     },
+     "label": {
+      "xml:lang": "de",
+      "type": "literal",
+      "value": "Deutscher Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q3"
+     },
+     "label": {
+      "xml:lang": "fi",
+      "type": "literal",
+      "value": "Suomenkielinen Nimi"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q4"
+     },
+     "label": {
+      "xml:lang": "zz",
+      "type": "literal",
+      "value": "Zed Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q4"
+     },
+     "label": {
+      "xml:lang": "ja",
+      "type": "literal",
+      "value": "日本語の名前"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q5"
+     },
+     "label": {
+      "xml:lang": "zz",
+      "type": "literal",
+      "value": "Zed Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q5"
+     },
+     "label": {
+      "xml:lang": "ab",
+      "type": "literal",
+      "value": "Abkhaz Name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q6"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Negative ABV"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q7"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "ABV Above The Bound"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q8"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Conflicting ABVs"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q9"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Very Strong"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q10"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Made By A Shop"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q11"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Seeded Beer"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q12"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Collaboration"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q13"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Lesser Twin Beer"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q14"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Greater Twin Beer"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q15"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Greater Twin's Other Beer"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q16"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "english-name"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q17"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "ABV In Another Unit"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q18"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Just A Beer"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q19"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Two Styles"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q20"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Barrel-Aged IPA"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q21"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "From Two Countries"
+     }
+    },
+    {
+     "beer": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q22"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Seed's Other Beer"
+     }
+    }
+   ]
+  }
+ },
+ "breweries": {
+  "head": {
+   "vars": [
+    "brewery"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q101"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q102"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q104"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q105"
+     }
+    }
+   ]
+  }
+ },
+ "breweryCountries": {
+  "head": {
+   "vars": [
+    "brewery",
+    "country"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q55"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q101"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q31"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q102"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q55"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q55"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q104"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q55"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q104"
+     },
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q31"
+     }
+    }
+   ]
+  }
+ },
+ "breweryLocations": {
+  "head": {
+   "vars": [
+    "brewery",
+    "location"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     },
+     "location": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q900"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     },
+     "location": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q900"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     },
+     "location": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q901"
+     }
+    }
+   ]
+  }
+ },
+ "breweryLabels": {
+  "head": {
+   "vars": [
+    "brewery",
+    "label"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q100"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Fixture Brewery"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q101"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Seeded Brewery"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q102"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Twin Brewery"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q103"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Twin Brewery"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q104"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Two Countries Brewery"
+     }
+    },
+    {
+     "brewery": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q105"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Countryless Brewery"
+     }
+    }
+   ]
+  }
+ },
+ "countryLabels": {
+  "head": {
+   "vars": [
+    "country",
+    "label"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q55"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Netherlands"
+     }
+    },
+    {
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q31"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Belgium"
+     }
+    },
+    {
+     "country": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q33"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Finland"
+     }
+    }
+   ]
+  }
+ },
+ "locationLabels": {
+  "head": {
+   "vars": [
+    "location",
+    "label"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "location": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q900"
+     },
+     "label": {
+      "xml:lang": "nl",
+      "type": "literal",
+      "value": "Alkmaar"
+     }
+    },
+    {
+     "location": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q901"
+     },
+     "label": {
+      "xml:lang": "nl",
+      "type": "literal",
+      "value": "Heiloo"
+     }
+    }
+   ]
+  }
+ },
+ "styleClasses": {
+  "head": {
+   "vars": [
+    "class",
+    "label"
+   ]
+  },
+  "results": {
+   "bindings": [
+    {
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q1543214"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "India Pale Ale"
+     }
+    },
+    {
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q2493192"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "Imperial stout"
+     }
+    },
+    {
+     "class": {
+      "type": "uri",
+      "value": "http://www.wikidata.org/entity/Q85745517"
+     },
+     "label": {
+      "xml:lang": "en",
+      "type": "literal",
+      "value": "barrel-aged beer"
+     }
+    }
+   ]
+  }
+ }
+}

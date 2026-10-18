@@ -4,7 +4,12 @@
   },
   "app": {
     "name": "Kalia",
-    "tagline": "Craft beer management for enthusiasts."
+    "tagline": "Craft beer management for enthusiasts.",
+    "dataCredit": {
+      "before": "Beer data includes facts from",
+      "source": "Wikidata",
+      "after": "(CC0)."
+    }
   },
   "nav": {
     "label": "Main navigation",

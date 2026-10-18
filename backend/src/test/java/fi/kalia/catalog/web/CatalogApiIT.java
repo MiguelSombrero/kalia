@@ -11,6 +11,7 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import com.jayway.jsonpath.JsonPath;
@@ -23,6 +24,15 @@ class CatalogApiIT {
 	@Autowired
 	private RestTestClient client;
 
+	// The catalog is the migrated one, Wikidata import included, so expected
+	// totals and orderings are read from the database rather than pinned.
+	@Autowired
+	private JdbcTemplate jdbc;
+
+	private long count(String sql) {
+		return jdbc.queryForObject(sql, Long.class);
+	}
+
 	@Test
 	void listsBeersPaginatedAndSortedByNameByDefault() {
 		client.get().uri("/api/v1/beers?size=10")
@@ -30,13 +40,14 @@ class CatalogApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(54);
-					assertThat((int) JsonPath.read(body, "$.totalPages")).isEqualTo(6);
+					long total = count("SELECT count(*) FROM catalog.beer");
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo((int) total);
+					assertThat((int) JsonPath.read(body, "$.totalPages")).isEqualTo((int) ((total + 9) / 10));
 					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(0);
-					assertThat((java.util.List<?>) JsonPath.read(body, "$.content")).hasSize(10);
-					String first = JsonPath.read(body, "$.content[0].name");
-					String second = JsonPath.read(body, "$.content[1].name");
-					assertThat(first.compareToIgnoreCase(second)).isLessThanOrEqualTo(0);
+					// The database's collation decides the order, which is what the endpoint promises.
+					assertThat((List<String>) JsonPath.read(body, "$.content[*].name"))
+							.containsExactlyElementsOf(jdbc.queryForList(
+									"SELECT name FROM catalog.beer ORDER BY lower(name), id LIMIT 10", String.class));
 				});
 	}
 
@@ -48,7 +59,7 @@ class CatalogApiIT {
 				.expectBody(String.class)
 				.value(body -> {
 					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(3);
-					assertThat((java.util.List<String>) JsonPath.read(body, "$.content[*].brewery.name"))
+					assertThat((List<String>) JsonPath.read(body, "$.content[*].brewery.name"))
 							.containsOnly("Brouwerij Westvleteren");
 				});
 	}
@@ -60,23 +71,28 @@ class CatalogApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					java.util.List<String> names = JsonPath.read(body, "$.content[*].name");
-					assertThat(names).contains("Westvleteren 12", "Rochefort 10", "St. Bernardus Abt 12");
-					java.util.List<Double> abvs = JsonPath.read(body, "$.content[*].abv");
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo((int) count(
+							"SELECT count(*) FROM catalog.beer WHERE lower(style) = 'quadrupel' AND abv BETWEEN 9 AND 12"));
+					assertThat((List<String>) JsonPath.read(body, "$.content[*].style")).isNotEmpty()
+							.allSatisfy(style -> assertThat(style).isEqualTo("Quadrupel"));
+					List<Double> abvs = JsonPath.read(body, "$.content[*].abv");
 					assertThat(abvs).allSatisfy(abv -> assertThat(abv).isBetween(9.0, 12.0));
 				});
 	}
 
 	@Test
 	void filtersByBreweryCountry() {
-		client.get().uri("/api/v1/beers?country=Estonia")
+		client.get().uri("/api/v1/beers?country=Estonia&size=100")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(3);
-					assertThat((java.util.List<String>) JsonPath.read(body, "$.content[*].brewery.name"))
-							.containsOnly("Põhjala");
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo((int) count("""
+							SELECT count(*) FROM catalog.beer b JOIN catalog.brewery br ON br.id = b.brewery_id
+							WHERE lower(br.country) = 'estonia'"""));
+					assertThat((List<String>) JsonPath.read(body, "$.content[*].brewery.id")).isNotEmpty()
+							.isSubsetOf(jdbc.queryForList(
+									"SELECT id::text FROM catalog.brewery WHERE country = 'Estonia'", String.class));
 				});
 	}
 
@@ -86,30 +102,26 @@ class CatalogApiIT {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> {
-					assertThat((String) JsonPath.read(body, "$.content[0].name")).isEqualTo("KBS");
-					assertThat((double) JsonPath.read(body, "$.content[0].abv")).isEqualTo(12.0);
-				});
+				.value(body -> assertThat((double) JsonPath.read(body, "$.content[0].abv"))
+						.isEqualTo(jdbc.queryForObject("SELECT max(abv) FROM catalog.beer", Double.class)));
 	}
 
 	@Test
 	void sortsByStyleCaseInsensitively() {
-		client.get().uri("/api/v1/beers?sort=style,asc&size=54")
+		client.get().uri("/api/v1/beers?sort=style,asc&size=100")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> {
-					java.util.List<String> styles = JsonPath.read(body, "$.content[*].style");
-					assertThat(styles).isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
-					assertThat(styles.get(0)).isEqualTo("American Wild Ale");
-				});
+				.value(body -> assertThat((List<String>) JsonPath.read(body, "$.content[*].style"))
+						.containsExactlyElementsOf(jdbc.queryForList(
+								"SELECT style FROM catalog.beer ORDER BY lower(style), id LIMIT 100", String.class)));
 
 		client.get().uri("/api/v1/beers?sort=style,desc&size=1")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> assertThat((String) JsonPath.read(body, "$.content[0].style"))
-						.isEqualTo("Wild Ale"));
+				.value(body -> assertThat((String) JsonPath.read(body, "$.content[0].style")).isEqualTo(jdbc.queryForObject(
+						"SELECT style FROM catalog.beer ORDER BY lower(style) DESC LIMIT 1", String.class)));
 	}
 
 	@Test
@@ -259,7 +271,8 @@ class CatalogApiIT {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> assertThat((double) JsonPath.read(body, "$.content[0].abv")).isEqualTo(3.0));
+				.value(body -> assertThat((double) JsonPath.read(body, "$.content[0].abv"))
+						.isEqualTo(jdbc.queryForObject("SELECT min(abv) FROM catalog.beer", Double.class)));
 	}
 
 	@Test
@@ -322,12 +335,11 @@ class CatalogApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(20);
+					assertThat((int) JsonPath.read(body, "$.totalElements"))
+							.isEqualTo((int) count("SELECT count(*) FROM catalog.brewery"));
 					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(0);
-					java.util.List<String> names = JsonPath.read(body, "$.content[*].name");
-					assertThat(names).hasSize(20)
+					assertThat((List<String>) JsonPath.read(body, "$.content[*].name")).hasSize(100)
 							.isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
-					assertThat(names).contains("Brasserie Cantillon", "Põhjala");
 				});
 	}
 
@@ -338,8 +350,9 @@ class CatalogApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
-		assertThat((java.util.List<?>) JsonPath.read(firstPage, "$.content")).hasSize(8);
-		assertThat((int) JsonPath.read(firstPage, "$.totalPages")).isEqualTo(3);
+		assertThat((List<?>) JsonPath.read(firstPage, "$.content")).hasSize(8);
+		assertThat((int) JsonPath.read(firstPage, "$.totalPages"))
+				.isEqualTo((int) ((count("SELECT count(*) FROM catalog.brewery") + 7) / 8));
 		String lastOfFirstPage = JsonPath.read(firstPage, "$.content[7].name");
 
 		client.get().uri("/api/v1/breweries?page=1&size=8")
@@ -360,8 +373,9 @@ class CatalogApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((java.util.List<?>) JsonPath.read(body, "$.content")).isEmpty();
-					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(20);
+					assertThat((List<?>) JsonPath.read(body, "$.content")).isEmpty();
+					assertThat((int) JsonPath.read(body, "$.totalElements"))
+							.isEqualTo((int) count("SELECT count(*) FROM catalog.brewery"));
 				});
 	}
 

@@ -1,6 +1,6 @@
 # Task 17: Seed the catalog from Wikidata
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -129,25 +129,25 @@ updated.
 
 ## Acceptance criteria
 
-- [ ] The conversion is unit-tested over a small committed fixture. The fixture
+- [x] The conversion is unit-tested over a small committed fixture. The fixture
       covers label fallback, rejected and conflicting ABVs, a manufacturer that
       is not a brewery, a beer matching a seeded row, and an Untappd ID in the
       input that never reaches the output.
-- [ ] A check run in CI fails if the snapshot, the generated migration or the
+- [x] A check run in CI fails if the snapshot, the generated migration or the
       schema contains an Untappd identifier, URL or review score
-- [ ] Regenerating the migration from the committed snapshot reproduces the
+- [x] Regenerating the migration from the committed snapshot reproduces the
       committed file exactly — a check run in CI
-- [ ] After migration, an imported beer is found by catalog search and its
+- [x] After migration, an imported beer is found by catalog search and its
       detail shows its brewery. Every imported row carries source `wikidata`
       and its QID. Every seeded beer keeps its original id. All three are
       covered by an integration test against a real database.
-- [ ] The footer credits Wikidata and links to wikidata.org — a component
+- [x] The footer credits Wikidata and links to wikidata.org — a component
       test in both locales — and `README.md` ends with a Credits section
-- [ ] Every test the larger catalog broke is updated rather than deleted, and
+- [x] Every test the larger catalog broke is updated rather than deleted, and
       asserts properties rather than counts. `make verify` is green, and the
       import adds no more than about 15 s to `mvn verify`, with the before and
       after timings in the PR
-- [ ] `docs/architecture.md`'s data model and §8 seed-data trade-off describe
+- [x] `docs/architecture.md`'s data model and §8 seed-data trade-off describe
       the imported catalog, and `backend/README.md` says how to regenerate the
       migration from the snapshot
 
