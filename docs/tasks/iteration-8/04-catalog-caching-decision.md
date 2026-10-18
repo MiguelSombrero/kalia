@@ -1,6 +1,6 @@
 # Task 04: Decide whether and how the catalog is cached
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -101,18 +101,18 @@ product owner picks.
 
 ## Acceptance criteria
 
-- [ ] Catalog search and detail latency is measured at the imported size and
+- [x] Catalog search and detail latency is measured at the imported size and
       at a generated 150k, at 20 concurrent requests, with index use
       confirmed. The p95 numbers and a method someone else can repeat are
       written down
-- [ ] Either an ADR adopts caching (layers, what is cached, staleness,
+- [x] Either an ADR adopts caching (layers, what is cached, staleness,
       invalidation, provider, and the rejected alternatives) and passes
       `node scripts/check-adrs.mjs`; or `docs/architecture.md` records the
       measurement and the threshold that reopens the question, and
       [task 05](05-cache-catalog-reads.md) is set to `dropped`
-- [ ] `docs/architecture.md` §1's latency row and §8's caching trade-off
+- [x] `docs/architecture.md` §1's latency row and §8's caching trade-off
       describe the outcome rather than the pre-iteration stance
-- [ ] If caching is adopted, [task 05](05-cache-catalog-reads.md) has its Scope
+- [x] If caching is adopted, [task 05](05-cache-catalog-reads.md) has its Scope
       and Open questions rewritten against the decision before it is refined,
       split one task per layer if the decision spans more than one, and names
       the test that proves a newly added beer is never hidden by a stale entry

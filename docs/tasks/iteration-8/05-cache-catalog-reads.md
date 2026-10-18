@@ -1,9 +1,16 @@
 # Task 05: Cache catalog reads
 
-- **Status:** needs-refinement
+- **Status:** dropped
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
+
+**Dropped 2026-10-18 by the product owner: [task 04](04-catalog-caching-decision.md)
+concluded "not yet"** ([ADR-0078](../../adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)).
+Every catalog read that broke the 300 ms budget at 150k beers lacked an index
+or had a defect another task owns. [Task 18](18-catalog-search-served-by-an-index-at-150k.md)
+takes the index. The ADR records when the question reopens. The rest of this
+file is the placeholder as it stood.
 
 If [task 04](04-catalog-caching-decision.md) finds that the growing catalog
 needs a cache, someone has to build it. Building it is also where a correct
