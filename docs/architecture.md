@@ -913,6 +913,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md) | WCAG 2.1 AA could pass a redesign that hid focus under its sticky bars and was cramped to tap, so Kalia's bar becomes WCAG 2.2 AA | accepted | 2026-10-11 |
 | [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) | A catalog that could only grow by migration is seeded once from Wikidata and owned by Kalia, taking facts only and recording each row's source | accepted | 2026-10-15 |
 | [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md) | Catalog reads that break their budget at 150k beers lack an index, not a cache, so the catalog stays uncached | accepted | 2026-10-18 |
+| [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) | A brewery's country, shown in English to every reader, becomes an ISO 3166-1 code named in the reader's language by the runtime | accepted | 2026-10-22 |
 
 ### Engineering process and documentation
 
