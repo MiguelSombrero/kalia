@@ -2,7 +2,7 @@ import { Icon } from "@/components/ui/icon";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
-import { countryName } from "@/lib/country";
+import { countryName } from "./country";
 import { catalogHref } from "./links";
 import type { BeerSearchParams } from "./types";
 

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { countriesByName } from "@/lib/country";
+import { countriesByName } from "./country";
 import { catalogHref, hasFilters } from "./links";
 import { DEFAULT_SORT, SORT_OPTIONS, type BeerSearchParams } from "./types";
 

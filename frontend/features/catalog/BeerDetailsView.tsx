@@ -7,7 +7,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { beerStyleGroup } from "@/lib/beerStyle";
-import { countryName } from "@/lib/country";
+import { countryName } from "./country";
 import { detailsHead, factRow } from "./layout";
 import { catalogHref } from "./links";
 import type { BeerDetails } from "./types";
