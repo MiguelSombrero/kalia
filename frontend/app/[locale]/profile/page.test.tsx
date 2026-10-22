@@ -6,12 +6,23 @@ vi.mock("@/auth", () => ({ auth, handlers: {}, signIn: vi.fn(), signOut: vi.fn()
 vi.mock("@/features/profile/api", () => ({
   getProfile: vi.fn(async () => ({ username: "ada", cellarPublic: false })),
 }));
+// Throws like the real one, so the page never renders past it.
+const { redirect } = vi.hoisted(() => ({
+  redirect: vi.fn(() => {
+    throw new Error("NEXT_REDIRECT");
+  }),
+}));
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  redirect,
+}));
 vi.mock("@/features/cellar/api", () => ({
   listCellarEntries: vi.fn(async () => []),
 }));
 
 import { listCellarEntries } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
+import { apiError } from "@/lib/api/api-error";
 import ProfilePage, { generateMetadata } from "./page";
 
 // Do not render the full tree here: React suspends indefinitely on async
@@ -38,6 +49,14 @@ describe("ProfilePage", () => {
     vi.mocked(listCellarEntries).mockRejectedValueOnce(new Error("backend down"));
 
     await expect(ProfilePage({ params: Promise.resolve({ locale: "en" }) })).resolves.toBeTruthy();
+  });
+
+  it("sends a caller whose username another account holds to the page that says so", async () => {
+    auth.mockResolvedValue({ user: { name: "ada" } });
+    vi.mocked(getProfile).mockRejectedValueOnce(apiError("http", "status 409", { status: 409 }));
+
+    await expect(ProfilePage({ params: Promise.resolve({ locale: "en" }) })).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/en/username-taken");
   });
 
   it("fetches neither the profile nor the cellar when signed out", async () => {

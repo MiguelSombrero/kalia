@@ -108,16 +108,17 @@ const toRow = (
 
 // 404 — for an unknown username, a missing profile or a cellar that is not
 // public alike — is "nothing to show here", not a transport failure (ADR-0023,
-// ADR-0050): the caller renders the ordinary not-found page for it.
+// ADR-0050): the caller renders the ordinary not-found page for it. So is 400,
+// a username longer than any account can have.
 export const getPublicCellar = async (username: string): Promise<PublicCellar | null> => {
   const response = await generatedReadPublicCellar(username);
   // Widened via Number() so the 5xx branch below stays reachable: the
-  // generated type is a 200|404 union and a literal check would narrow it away.
+  // generated type is a 200|400|404 union and a literal check would narrow it away.
   const status = Number(response.status);
   if (response.status === 200) {
     return response.data;
   }
-  if (status === 404) {
+  if (status === 404 || status === 400) {
     return null;
   }
   throw apiError("http", `Public cellar lookup failed with status ${status}`, { status });

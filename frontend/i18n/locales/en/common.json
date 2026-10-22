@@ -336,6 +336,12 @@
       }
     }
   },
+  "usernameTaken": {
+    "pageTitle": "Username taken — Kalia",
+    "title": "This username is taken",
+    "message": "The username {{username}} already belongs to another Kalia account. A username stays with the person who first used it, even after their account is closed, so a link to their cellar never leads to someone else.",
+    "hint": "Sign out if you want to use Kalia with a different account."
+  },
   "signUp": {
     "pageTitle": "Create an account — Kalia",
     "title": "Create your account",
