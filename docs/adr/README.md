@@ -59,6 +59,10 @@ nobody has committed to becomes a constraint anyway.
   — the catalog stays uncached. What broke 300 ms at 150k beers lacked an
   index, or had a defect already recorded elsewhere. The question reopens past 150k
   beers.
+- [ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)
+  — a brewery's country is stored as an ISO 3166-1 code that every client
+  names in its reader's language from the runtime's CLDR data. A brewery
+  whose imported country has no code maps to where it stood, today.
 
 ## Cellar
 

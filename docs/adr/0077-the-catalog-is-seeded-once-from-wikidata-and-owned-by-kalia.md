@@ -5,6 +5,9 @@
 - **Amended:** 2026-10-18 — the import rules the product owner decided while
   the import was built, for cases the data showed and refinement had not
   covered; see the end of Decision
+- **Amended:** 2026-10-22 by [ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)
+  — a brewery's country is imported as an ISO 3166-1 code, and a brewery
+  whose country has no code maps to where it stood, today
 
 ## Context
 

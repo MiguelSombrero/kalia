@@ -17,6 +17,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [01](iteration-8/01-catalog-data-source.md) | Decide where catalog data comes from | done |
 | [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | done |
 | [02](iteration-8/02-add-beer-api.md) | Add-a-beer API | done |
+| [19](iteration-8/19-a-country-reads-in-the-readers-language.md) | A brewery's country reads in the reader's language | refined |
 | [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | refined |
 | [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | done |
 | [05](iteration-8/05-cache-catalog-reads.md) | Cache catalog reads | dropped |
@@ -42,6 +43,12 @@ second, ahead of 02, because duplicate detection has to be designed against
 the catalog users will actually add to. Task 03 is a design task: where
 adding a beer starts and where it ends are chosen from built alternatives
 ([ADR-0062](../adr/0062-a-design-task-is-a-skill-and-a-marker.md)).
+
+Task 19 was added on 2026-10-22. It stores a brewery's country as an ISO
+code that every page names in its reader's language
+([ADR-0079](../adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)).
+It is listed after 02, whose country list it builds on, and ahead of 03, so
+that the form task 03 builds picks a country by code from the start.
 
 Tasks 04 and 05 exist because that same answer changes the catalog's size and
 source, which is what the architecture's "no cache until measured" stance was
