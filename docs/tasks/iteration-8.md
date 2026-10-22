@@ -18,8 +18,9 @@ comes from in the long run is recorded as a decision rather than left open.
 | [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | done |
 | [02](iteration-8/02-add-beer-api.md) | Add-a-beer API | refined |
 | [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | refined |
-| [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | refined |
-| [05](iteration-8/05-cache-catalog-reads.md) | Cache catalog reads | needs-refinement |
+| [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | done |
+| [05](iteration-8/05-cache-catalog-reads.md) | Cache catalog reads | dropped |
+| [18](iteration-8/18-catalog-search-served-by-an-index-at-150k.md) | Catalog search stays within budget at 150k beers | needs-refinement |
 | [06](iteration-8/06-feed-events-delivered-at-least-once.md) | Feed events are delivered at least once, as documented | refined |
 | [07](iteration-8/07-front-page-feed-reaches-public-lines.md) | The front page's feed reaches public lines past private ones | refined |
 | [08](iteration-8/08-catalog-search-bounded-end-to-end.md) | Catalog search never lands on the error page | refined |
@@ -46,9 +47,11 @@ Tasks 04 and 05 exist because that same answer changes the catalog's size and
 source, which is what the architecture's "no cache until measured" stance was
 waiting for. Task 04 measures and decides, and "not yet" is a valid answer that
 drops task 05. Task 05 comes after task 02, since a cache that does not evict
-on the new write path hides the very beer a user just added. Task 05 stays
-`needs-refinement` until task 04 has measured, because its questions depend on
-the verdict.
+on the new write path hides the very beer a user just added. Task 04
+answered "not yet" on 2026-10-18
+([ADR-0078](../adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)),
+so task 05 is dropped. What the measurement did find goes to task 18 instead:
+two search shapes that break the budget at 150k beers for want of an index.
 
 The catalog has been ~50–100 seeded beers since iteration 1. Every iteration
 since has been built on the assumption that it never changes, which is the

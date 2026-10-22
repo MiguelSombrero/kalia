@@ -43,7 +43,7 @@ account linking revisited, and the rest of that iteration's tasks.
 |---|---|
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
-| Latency | Catalog search should feel instant (<300 ms server time) with proper indexing; no caching layer until measurements demand it |
+| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers. It does not yet hold at 150k beers. Unfiltered pages and 1–2-character queries break it there, and they are [task 18](tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)'s. Deep pages are [task 08](tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)'s. The brewery list's sort in Java is quality backlog SHOULD-61. The question reopens past 150k beers, or when a read no index can serve goes over budget ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), [§7](#catalog-read-latency)) |
 | Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
 | Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
@@ -729,6 +729,52 @@ reason — either would justify a dedicated `e2e/` package.
 Definition of done for every issue: tests written, all suites green, docs
 updated if behavior or architecture changed.
 
+### Catalog read latency
+
+Catalog reads are measured, not benchmarked in CI. `BeerSearchIndexIT` pins
+which index each filter's plan uses, but not how long the query takes. The
+latency budget in [§1](#non-functional-requirements) is checked by repeating
+this measurement whenever the catalog's size or its queries change shape.
+[ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
+records the latest run.
+
+1. **Set up an isolated database.** Run a scratch `postgres:18.4` and a
+   backend jar against it. Leave the settings at their defaults, since the
+   figures depend on them:
+   - HikariCP's pool of 10, which queues 20 concurrent clients;
+   - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a
+     search to its generic plan.
+
+   Enable Tomcat's access log, unbuffered, with pattern `%U %s %{ms}T`, so
+   the last field is the server time in ms. Flyway migrates the imported
+   catalog.
+2. **Generate the larger catalog.** For the larger size, clone the imported
+   catalog in SQL:
+   - each brewery gets ten copies in its own country;
+   - each generated beer copies a real beer's name with a numeric suffix,
+     plus its style, ABV and description, onto a copy of that beer's
+     brewery;
+
+   This keeps the style, country and name-trigram distributions the import
+   has. Generated rows default to `source = USER`. On a scratch database
+   that has no real user rows, they delete by that column, beers before
+   breweries. `VACUUM ANALYZE` both tables before measuring.
+3. **Confirm index use.** Capture the SQL Hibernate issues for each search
+   shape, page and count, from the Postgres statement log. Run
+   `EXPLAIN (ANALYZE, BUFFERS)` on it with representative values.
+4. **Load each scenario.** Drive each scenario separately with 20 concurrent
+   clients: 200 warm-up requests, then 2,000 measured. A dependency-free Node
+   script using `fetch` is enough. The scenarios are:
+   - an unfiltered page under the default sort, and under `sort=abv,desc`;
+   - name queries of 3+ characters and of 1–2 characters;
+   - the style filter, the country filter, and all three combined;
+   - beer detail;
+   - page 500;
+   - the brewery list.
+5. **Read the result.** Report p95 from the access-log lines each scenario
+   produced, as the median of three runs. A shape over 300 ms is first
+   checked for a missing index.
+
 ## 8. Trade-offs made explicit
 
 - **Modulith over microservices**: one deployable and one DB keeps ops trivial
@@ -747,11 +793,19 @@ updated if behavior or architecture changed.
   a snapshot that ages, coverage skewed by who edited Wikidata, no barcodes,
   and an openly accepted provenance risk. Most imported ABVs trace back to
   Untappd.
-- **No backend read-caching yet**: PostgreSQL with indexes is plenty at this
-  scale; add caching only after measuring. This is about the backend's own
-  reads — the Valkey in this stack is the frontend's session store
-  ([§6](#6-authentication-and-identity)), not a cache the
-  backend consults.
+- **No catalog read cache, measured rather than assumed**
+  ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)):
+  - **What was measured:** at 150k beers, every catalog read that broke the
+    budget lacked an index or had a defect already recorded elsewhere, so indexes
+    rather than a cache keep reads fast.
+  - **What it saves:** no staleness, no invalidation on the add-a-beer
+    path, and no new dependency.
+  - **The cost:** a guarded latency budget needs a repeat of the
+    [§7](#catalog-read-latency) measurement whenever the catalog's size or
+    its queries change shape. Only the plans are pinned by a test.
+  - **Scope:** this covers the backend's own reads. The Valkey in this stack
+    is the frontend's session store ([§6](#6-authentication-and-identity)),
+    not a cache the backend consults.
 
 ## 9. Architecture decision records
 
@@ -858,6 +912,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md) | Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's | accepted | 2026-10-11 |
 | [ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md) | WCAG 2.1 AA could pass a redesign that hid focus under its sticky bars and was cramped to tap, so Kalia's bar becomes WCAG 2.2 AA | accepted | 2026-10-11 |
 | [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) | A catalog that could only grow by migration is seeded once from Wikidata and owned by Kalia, taking facts only and recording each row's source | accepted | 2026-10-15 |
+| [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md) | Catalog reads that break their budget at 150k beers lack an index, not a cache, so the catalog stays uncached | accepted | 2026-10-18 |
 
 ### Engineering process and documentation
 
