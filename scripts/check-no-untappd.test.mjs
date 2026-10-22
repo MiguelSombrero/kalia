@@ -15,8 +15,8 @@ const snapshot = (beer = {}) =>
     beers: [{ qid: "Q1", name: "Fixture IPA", abvs: [5.5], styles: ["Q1543214"], manufacturers: ["Q100"], ...beer }],
   });
 
-const migration = `INSERT INTO catalog.brewery (name, country, city, source, wikidata_qid) VALUES
-    ('Fixture Brewery', 'Netherlands', NULL, 'WIKIDATA', 'Q100');
+const migration = `INSERT INTO catalog.brewery (name, country_code, city, source, wikidata_qid) VALUES
+    ('Fixture Brewery', 'NL', NULL, 'WIKIDATA', 'Q100');
 INSERT INTO catalog.beer (brewery_id, name, style, abv, source, wikidata_qid)
 SELECT b.id, v.name, v.style, v.abv, 'WIKIDATA', v.qid FROM (VALUES ('Q100', 'Fixture IPA', 'IPA', 5.5, 'Q1')) AS v;`;
 
