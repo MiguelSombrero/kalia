@@ -54,11 +54,11 @@ catalog data a signed-out visitor may read; the contributor is never served.
 |---|---|---|
 | `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id only. One a user adds (`addedBy`) has no description and records its **contributor**. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) |
 | `Brewery` | The maker of beers, with a country and optional city. One a user adds records its contributor too. | [ADR-0007](adr/0007-backend-package-structure.md) |
-| `Country` | A country a brewery can be in: an ISO 3166-1 code and the English name the catalog stores. `Country.ALL` is the fixed list a new brewery's country is picked from. | [architecture.md §3](architecture.md#3-backend-modules) |
+| `Country` | The countries a brewery can be in: `Country.CODES` lists every ISO 3166-1 alpha-2 code, the only form of a country the catalog stores. A new brewery's country is one of them. | [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerSpecifications` | A factory of JPA `Specification<Beer>` predicates built from a `BeerSearchCriteria`, with `LIKE` wildcards escaped. | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`; the catalog's distinct styles; and the same-name duplicate check within a brewery. | [ADR-0007](adr/0007-backend-package-structure.md) |
-| `BreweryRepository` | Persistence for the `Brewery` entity, including the by-name lookup and the same-name-and-country duplicate check. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `BreweryRepository` | Persistence for the `Brewery` entity, including the by-name lookup, the same-name-and-country duplicate check and the codes of the countries breweries are in. | [ADR-0007](adr/0007-backend-package-structure.md) |
 
 ## identity
 
@@ -147,6 +147,7 @@ and they drift from the Java names that produced them.
 | `/cellar/bottles`, `/cellar/bottles/{id}` | Add / update / remove a bottle, addressed by its own id, never nested under its entry. `POST` answers with an array — it creates `quantity` independently editable rows, never a stored count. |
 | `/profile/visibility` | Change whether the caller's cellar is public. |
 | `/styles`, `/countries` | The vocabularies a beer is added with: every style a catalog beer has, and every country a brewery can be in. Public reads. |
+| `/breweries/countries` | The countries the catalog has breweries in, which the catalog's country filter offers. A public read. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
 
 ### JSON field names
@@ -159,6 +160,7 @@ and they drift from the Java names that produced them.
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |
 | `existingBeerId`, `existingBreweryId` | On a `409` from `POST /beers`: the row the catalog already holds, which the refused beer or brewery duplicates. |
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
+| `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`. |
 | `content`, `nextCursor` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`: opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. |
 

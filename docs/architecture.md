@@ -161,8 +161,12 @@ TypeScript vocabulary a client meets — is catalogued in
   and ADR-0077's amendment) live in the generator, and the mappings it
   applies are committed beside the snapshot: Wikidata's style classes onto
   Kalia's styles (`styles.json`), each seeded row to its Wikidata item
-  (`seed-matches.json`), and four hand-reviewed brewery countries
-  (`brewery-countries.json`). The seed's rows are never changed: an imported
+  (`seed-matches.json`), four hand-reviewed brewery countries
+  (`brewery-countries.json`), each Wikidata country label to its ISO 3166-1
+  code (`country-codes.json`), and the present-day country of each brewery
+  whose label names a state with no code (`present-day-countries.json`,
+  [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)).
+  The seed's rows are never changed: an imported
   beer matching one is skipped, and an imported beer of a seeded brewery
   attaches to the seeded row. `make check` fails if the generated migration
   no longer matches the snapshot, or if the snapshot, the migration or the
@@ -178,7 +182,7 @@ TypeScript vocabulary a client meets — is catalogued in
 ### Data model sketch
 
 ```
-catalog.brewery(id, name, country, city, source, wikidata_qid, contributor_id, created_at) — unique (fold_name(name), lower(country)), unique (wikidata_qid)
+catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, created_at) — unique (fold_name(name), country_code), unique (wikidata_qid)
 catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
@@ -203,12 +207,18 @@ brewery is unique by its name, with case, whitespace and punctuation folded by
 its brewery. Seeded beers and breweries keep the ids `V004` gave them, so
 cellar entries that point at them survive the import.
 
+**A brewery's country is its ISO 3166-1 alpha-2 code, and nothing else**
+([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)).
+The API carries it as `countryCode`, and the frontend names it in the
+reader's language with `Intl.DisplayNames`, on the server. `V004` inserts its
+breweries by English name into a column `V003` keeps for them alone; `V008`
+gives those rows their codes and drops it.
+
 **A signed-in user can add a beer the catalog lacks**, and its brewery with it
 when that is missing too; the row is visible to everyone at once, with no
 review. It is held to the imported catalog's bar: a style the catalog already
 has, an ABV, and for a new brewery a country from a fixed list — every
-ISO 3166-1 entry, named in the English form the import uses so the country
-filter matches it. A user-added row records its contributor (the identity
+ISO 3166-1 code (`Country`). A user-added row records its contributor (the identity
 `sub`) in `contributor_id`, which no read response carries; only a `USER` row
 may have one, and it may be cleared while the row stays. Adding a beer or
 brewery that the unique indexes above already hold is refused rather than
@@ -218,8 +228,8 @@ same refusal ([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-creat
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
-functional B-tree indexes on `lower(beer.style)` and `lower(brewery.country)`
-([ADR-0044](adr/0044-catalog-search-indexes.md)).
+a functional B-tree index on `lower(beer.style)`, and a B-tree index on
+`brewery.country_code` ([ADR-0044](adr/0044-catalog-search-indexes.md)).
 
 **The cellar is two levels, not one** ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
 A catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle*
@@ -287,12 +297,13 @@ reordering on its own.
 REST, JSON, versioned under `/api/v1`. Built:
 
 ```
-GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
+GET    /api/v1/beers?query=&style=&breweryId=&countryCode=&minAbv=&maxAbv=&page=&size=&sort=  -> countryCode: one of /countries' codes, 400 otherwise
 GET    /api/v1/beers/{id}
 GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
 GET    /api/v1/breweries?query=&page=&size=          -> query: case-insensitive substring of the brewery's name
+GET    /api/v1/breweries/countries                  -> the ISO 3166-1 code of every country the catalog has a brewery in, which the catalog's country filter offers
 GET    /api/v1/styles                               -> every style a catalog beer has, the vocabulary a beer is added with
-GET    /api/v1/countries                            -> every country a brewery can be in: ISO 3166-1 code and the English name stored
+GET    /api/v1/countries                            -> every country a brewery can be in, as its ISO 3166-1 code
 GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 

@@ -3,11 +3,7 @@ package fi.kalia.catalog.domain;
 import java.util.List;
 import java.util.Set;
 
-/**
- * The countries a brewery can be in: every ISO 3166-1 alpha-2 code. The code is
- * all the catalog stores of a country; a client names it in its reader's
- * language (ADR-0079).
- */
+/** The countries a brewery can be in: every ISO 3166-1 alpha-2 code (ADR-0079). */
 public final class Country {
 
 	public static final String CODE_FORMAT = "[A-Z]{2}";
