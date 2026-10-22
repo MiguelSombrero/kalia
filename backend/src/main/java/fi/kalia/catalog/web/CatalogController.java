@@ -2,10 +2,18 @@ package fi.kalia.catalog.web;
 
 import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
+import fi.kalia.catalog.application.ContributionService;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.identity.IdentityApi;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -20,10 +28,16 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 // No @Validated here: Spring 6.1+ MVC validates constrained parameters natively,
@@ -31,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Catalog", description = "Search and browse the beer catalog")
+@Tag(name = "Catalog", description = "Search, browse and add to the beer catalog")
 class CatalogController {
 
 	private static final Set<String> SORTABLE = Set.of("name", "style", "abv");
@@ -52,6 +66,10 @@ class CatalogController {
 	private static final int MAX_BATCH_IDS = 100;
 
 	private final CatalogService catalog;
+
+	private final ContributionService contributions;
+
+	private final IdentityApi identity;
 
 	@GetMapping("/beers")
 	@Operation(summary = "Search beers", description = "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics.")
@@ -97,14 +115,59 @@ class CatalogController {
 		return catalog.getBeers(ids).stream().map(BeerSummaryDto::from).toList();
 	}
 
+	@PostMapping("/beers")
+	@ResponseStatus(HttpStatus.CREATED)
+	@SecurityRequirement(name = "oauth2")
+	@Operation(summary = "Add a beer", description = """
+			Adds a beer the catalog lacks, visible to everyone at once. Its brewery is either one \
+			the catalog has (breweryId) or one added with it (newBrewery). Two beers are the same \
+			when they share a brewery and a name with case, whitespace and punctuation ignored; \
+			two breweries when they share such a name and a country.\
+			""")
+	@ApiResponses({
+			@ApiResponse(responseCode = "400", description = """
+					A field is missing, out of range, not one of the listed styles or countries, or \
+					both or neither of breweryId and newBrewery are given; `errors` lists each one\
+					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = ProblemDetail.class))),
+			// Do not drop `content = @Content()` (backend/README.md traps).
+			@ApiResponse(responseCode = "401", description = "Missing or invalid bearer token", content = @Content()),
+			@ApiResponse(responseCode = "404", description = "No brewery with the given breweryId",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = ProblemDetail.class))),
+			@ApiResponse(responseCode = "409", description = """
+					The catalog already has this beer, named by the problem's `existingBeerId`, or \
+					already has the new brewery, named by `existingBreweryId`\
+					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = ProblemDetail.class)))})
+	BeerDetailsDto addBeer(@Valid @RequestBody AddBeerRequestDto request) {
+		return BeerDetailsDto.from(contributions.addBeer(identity.requireCurrentUserId(),
+				request.breweryChoice(), request.name(), request.style(), request.abv()));
+	}
+
 	@GetMapping("/breweries")
 	@Operation(summary = "List breweries", description = "Paginate the brewery list, sorted by name.")
 	PageDto<BreweryDto> listBreweries(
+			@Parameter(description = "Case-insensitive substring match on brewery name, at most " + MAX_FILTER_LENGTH + " characters")
+			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String query,
 			@Parameter(description = "Zero-based page index, 0-" + MAX_PAGE)
 			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_PAGE) int page,
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size) {
-		return PageDto.from(catalog.listBreweries(PageRequest.of(page, size)).map(BreweryDto::from));
+		return PageDto.from(catalog.listBreweries(query, PageRequest.of(page, size)).map(BreweryDto::from));
+	}
+
+	@GetMapping("/styles")
+	@Operation(summary = "List styles", description = "Every style a beer in the catalog has, sorted by name.")
+	List<String> listStyles() {
+		return catalog.listStyles();
+	}
+
+	@GetMapping("/countries")
+	@Operation(summary = "List countries",
+			description = "Every country a brewery can be in. Order is not significant: a client sorts by the name it shows.")
+	List<CountryDto> listCountries() {
+		return catalog.listCountries().stream().map(CountryDto::from).toList();
 	}
 
 	// See backend/README.md's "Every request parameter is bounded" convention.

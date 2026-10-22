@@ -1,16 +1,20 @@
 package fi.kalia.catalog.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @DataJpaTest
@@ -68,6 +72,38 @@ class CatalogPersistenceIT {
 				.containsEntry("source", "USER").containsEntry("wikidata_qid", null);
 		assertThat(provenance("catalog.beer", beer.getId()))
 				.containsEntry("source", "USER").containsEntry("wikidata_qid", null);
+	}
+
+	// The index, not ContributionService's own check, is what holds under
+	// concurrent inserts: this saves straight through the repository.
+	@Test
+	void theDatabaseRefusesASecondBeerOfTheSameFoldedNameAtOneBrewery() {
+		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "Finland", null));
+		beers.saveAndFlush(Beer.create(brewery, "Test I.P.A.", "IPA", new BigDecimal("6.5"), null));
+
+		assertThatThrownBy(() -> beers.saveAndFlush(
+				Beer.create(brewery, " test ipa", "IPA", new BigDecimal("6.5"), null)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void theDatabaseRefusesAContributorOnARowNotUserAdded() {
+		assertThatThrownBy(() -> jdbc.update(
+				"UPDATE catalog.beer SET contributor_id = gen_random_uuid() WHERE source = 'WIKIDATA'"))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	// Pins "the same English form the catalog already uses": an imported
+	// country spelled differently from the list would split the country filter.
+	@Test
+	void everyCountryTheCatalogHoldsIsListedOrNoLongerExists() {
+		Set<String> notOffered = Set.of("Austria–Hungary", "Czechoslovakia", "Dutch East Indies",
+				"East Germany", "German Reich", "Russian Empire", "Wales");
+		List<String> listed = Country.ALL.stream().map(Country::name).toList();
+
+		assertThat(jdbc.queryForList("SELECT DISTINCT country FROM catalog.brewery", String.class))
+				.allSatisfy(country -> assertThat(listed.contains(country) || notOffered.contains(country))
+						.as(country).isTrue());
 	}
 
 	private Map<String, Object> provenance(String table, UUID id) {
