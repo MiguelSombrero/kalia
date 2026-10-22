@@ -8,6 +8,7 @@ import {
   Pagination,
   parseBeerSearchParams,
   type RawSearchParams,
+  listBreweryCountries,
   ResultSummary,
   searchBeers,
   SearchFilters,
@@ -33,8 +34,9 @@ const BeersPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
   const beerParams = parseBeerSearchParams(await searchParams);
   const session = auth();
-  const [result, signedIn, heldBottles, { t }] = await Promise.all([
+  const [result, countryCodes, signedIn, heldBottles, { t }] = await Promise.all([
     searchBeers(beerParams),
+    listBreweryCountries(),
     session.then((current) => Boolean(current?.user)),
     session.then((current) => (current?.user ? heldBottlesByBeerOrNone() : undefined)),
     getTranslation(locale),
@@ -51,7 +53,7 @@ const BeersPage = async ({ params, searchParams }: Props) => {
       </PageTitle>
       <div className={catalogColumns}>
         <div className="md:sticky md:top-20">
-          <SearchFilters locale={locale} params={beerParams} />
+          <SearchFilters locale={locale} params={beerParams} countryCodes={countryCodes} />
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <ResultSummary locale={locale} params={beerParams} totalElements={result.totalElements} />

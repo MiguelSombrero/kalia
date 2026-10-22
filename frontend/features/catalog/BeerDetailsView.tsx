@@ -7,6 +7,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { beerStyleGroup } from "@/lib/beerStyle";
+import { countryName } from "@/lib/country";
 import { detailsHead, factRow } from "./layout";
 import { catalogHref } from "./links";
 import type { BeerDetails } from "./types";
@@ -35,7 +36,7 @@ export const BeerDetailsView = async ({
   actions?: ReactNode;
 }) => {
   const { t } = await getTranslation(locale);
-  const country = beer.brewery.country;
+  const country = countryName(beer.brewery.countryCode, locale);
 
   return (
     <article className="flex flex-col gap-8">
@@ -92,7 +93,7 @@ export const BeerDetailsView = async ({
           <dt className="text-muted-foreground">{t("beer.brewedIn")}</dt>
           <dd className="font-semibold text-foreground">{breweryLocation(beer.brewery.city, country)}</dd>
           <dd className={factLinkCell}>
-            <Link href={catalogHref(locale, { country })} className={factLink}>
+            <Link href={catalogHref(locale, { countryCode: beer.brewery.countryCode })} className={factLink}>
               {t("beer.allFromCountry", { country, count: countryCount })}
             </Link>
           </dd>

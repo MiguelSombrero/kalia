@@ -24,7 +24,7 @@ public class Brewery {
 
 	private String name;
 
-	private String country;
+	private String countryCode;
 
 	private @Nullable String city;
 
@@ -32,22 +32,22 @@ public class Brewery {
 
 	private Instant createdAt;
 
-	private Brewery(String name, String country, @Nullable String city) {
+	private Brewery(String name, String countryCode, @Nullable String city) {
 		this.name = name;
-		this.country = country;
+		this.countryCode = countryCode;
 		this.city = city;
 		this.createdAt = Instant.now();
 	}
 
-	public static Brewery create(String name, String country, @Nullable String city) {
+	public static Brewery create(String name, String countryCode, @Nullable String city) {
 		Assert.hasText(name, "name must not be blank");
-		Assert.hasText(country, "country must not be blank");
-		return new Brewery(name, country, city);
+		Assert.isTrue(Country.isListed(countryCode), "countryCode must be a listed ISO 3166-1 code");
+		return new Brewery(name, countryCode, city);
 	}
 
-	public static Brewery addedBy(UUID contributorId, String name, String country, @Nullable String city) {
+	public static Brewery addedBy(UUID contributorId, String name, String countryCode, @Nullable String city) {
 		Assert.notNull(contributorId, "contributorId must not be null");
-		Brewery brewery = create(name.strip(), country, city == null || city.isBlank() ? null : city.strip());
+		Brewery brewery = create(name.strip(), countryCode, city == null || city.isBlank() ? null : city.strip());
 		brewery.contributorId = contributorId;
 		return brewery;
 	}

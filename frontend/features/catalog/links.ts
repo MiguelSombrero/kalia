@@ -23,7 +23,7 @@ export const hasSearch = (params: BeerSearchParams): boolean => {
 
 /** Whether anything narrows the results; sort and page only reorder them. */
 export const hasFilters = (params: BeerSearchParams): boolean => {
-  return [params.query, params.style, params.country, params.minAbv, params.maxAbv].some(Boolean);
+  return [params.query, params.style, params.countryCode, params.minAbv, params.maxAbv].some(Boolean);
 };
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -37,7 +37,7 @@ export const parseBeerSearchParams = (raw: RawSearchParams): BeerSearchParams =>
   return {
     query: first(raw.query),
     style: first(raw.style),
-    country: first(raw.country),
+    countryCode: first(raw.countryCode),
     minAbv: first(raw.minAbv),
     maxAbv: first(raw.maxAbv),
     page: first(raw.page),

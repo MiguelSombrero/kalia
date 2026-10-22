@@ -15,7 +15,6 @@ export * from './bottleDtoContainerType';
 export * from './breweryDto';
 export * from './breweryRefDto';
 export * from './changeVisibilityRequestDto';
-export * from './countryDto';
 export * from './currentUserDto';
 export * from './entryDto';
 export * from './feedLineDto';

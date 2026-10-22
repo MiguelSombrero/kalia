@@ -39,13 +39,13 @@ describe("BeerList", () => {
       await BeerList({
         locale: "en",
         beers: [westvleteren12],
-        search: { country: "Belgium", sort: "abv,desc", page: "1" },
+        search: { countryCode: "BE", sort: "abv,desc", page: "1" },
       }),
     );
 
     expect(screen.getByRole("link", { name: "Westvleteren 12" })).toHaveAttribute(
       "href",
-      "/en/beers/b1?country=Belgium&page=1&sort=abv%2Cdesc",
+      "/en/beers/b1?countryCode=BE&page=1&sort=abv%2Cdesc",
     );
   });
 

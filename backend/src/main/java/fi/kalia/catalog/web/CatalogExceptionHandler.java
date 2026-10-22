@@ -48,7 +48,7 @@ class CatalogExceptionHandler {
 
 	@ExceptionHandler(UnknownCountryException.class)
 	ProblemDetail unknownCountry(UnknownCountryException e) {
-		return validationFailed("newBrewery.country", e.getMessage());
+		return validationFailed("newBrewery.countryCode", e.getMessage());
 	}
 
 	@ExceptionHandler(BreweryChoiceException.class)

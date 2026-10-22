@@ -46,10 +46,11 @@ test("filters Belgian quads between 11-12% ABV and opens one", async ({ page }) 
   await page.goto("/en/beers");
 
   await page.getByLabel("Style").fill("Quadrupel");
-  await page.getByLabel("Country").fill("Belgium");
+  await page.getByLabel("Country").selectOption({ label: "Belgium" });
   await page.getByRole("spinbutton", { name: "Min ABV %" }).fill("11");
   await page.getByRole("spinbutton", { name: "Max ABV %" }).fill("12");
   await page.getByRole("button", { name: "Search" }).click();
+  await expect(page).toHaveURL(/countryCode=BE/);
 
   await expect(page.getByRole("link", { name: "Rochefort 10", exact: true })).toBeVisible();
   // Out of range (10.2 %) / wrong style / wrong country must not appear.
@@ -61,6 +62,29 @@ test("filters Belgian quads between 11-12% ABV and opens one", async ({ page }) 
 
   await expect(page.getByRole("heading", { level: 1, name: "Rochefort 10" })).toBeVisible();
   await expect(page.locator("main dl").getByText("11.3 %")).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Everything from Belgium \(\d+\)$/ })).toHaveAttribute(
+    "href",
+    "/en/beers?countryCode=BE",
+  );
+});
+
+test("filters by a country named and sorted in Finnish, and names it so on a beer's page", async ({ page }) => {
+  await page.goto("/fi/beers");
+
+  const country = page.getByLabel("Maa");
+  const names = await country.locator("option").allTextContents();
+  expect(names.slice(1)).toEqual([...names.slice(1)].sort(new Intl.Collator("fi").compare));
+  await country.selectOption({ label: "Ruotsi" });
+  await page.getByRole("button", { name: "Hae" }).click();
+  await expect(page).toHaveURL(/countryCode=SE/);
+  await expect(page.getByRole("link", { name: "Poista suodatin: Ruotsi" })).toBeVisible();
+
+  await page.getByRole("main").getByRole("listitem").first().getByRole("heading").getByRole("link").click();
+  await expect(page.getByRole("link", { name: /^Kaikki maasta Ruotsi \(\d+\)$/ })).toHaveAttribute(
+    "href",
+    "/fi/beers?countryCode=SE",
+  );
+  await expect(page.locator("main dl").getByText(/Ruotsi$/).first()).toBeVisible();
 });
 
 test("searches and opens a beer detail page in Finnish", async ({ page }) => {

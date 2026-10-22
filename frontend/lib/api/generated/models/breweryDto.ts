@@ -11,6 +11,7 @@
 export interface BreweryDto {
   id: string;
   name: string;
-  country: string;
+  /** ISO 3166-1 alpha-2 code; a client names the country in its reader's language */
+  countryCode: string;
   city?: string;
 }

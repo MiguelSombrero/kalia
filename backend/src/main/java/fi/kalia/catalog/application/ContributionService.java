@@ -43,11 +43,13 @@ public class ContributionService {
 	}
 
 	private Brewery addBrewery(UUID contributorId, BreweryChoice.New added) {
-		Country country = Country.named(added.country()).orElseThrow(UnknownCountryException::new);
-		breweries.findIdBySameNameAndCountry(added.name(), country.name()).ifPresent(existingId -> {
+		if (!Country.isListed(added.countryCode())) {
+			throw new UnknownCountryException();
+		}
+		breweries.findIdBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existingId -> {
 			throw new DuplicateBreweryException(existingId);
 		});
-		return breweries.saveAndFlush(Brewery.addedBy(contributorId, added.name(), country.name(), added.city()));
+		return breweries.saveAndFlush(Brewery.addedBy(contributorId, added.name(), added.countryCode(), added.city()));
 	}
 
 	private String knownStyle(String style) {

@@ -49,7 +49,7 @@ const BeerPage = async ({ params, searchParams }: Props) => {
   const [{ t }, sameStyle, sameCountry, heldBottles] = await Promise.all([
     getTranslation(locale),
     searchBeers({ style: beer.style, sort: "abv,desc", size: String(SAME_STYLE_SHOWN + 1) }),
-    searchBeers({ country: beer.brewery.country, size: "1" }),
+    searchBeers({ countryCode: beer.brewery.countryCode, size: "1" }),
     heldBottlesRead,
   ]);
   const others = sameStyle.content.filter((other) => other.id !== beer.id).slice(0, SAME_STYLE_SHOWN);

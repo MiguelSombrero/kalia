@@ -29,6 +29,10 @@ public class CatalogService {
 	private final BreweryRepository breweries;
 
 	public Page<Beer> searchBeers(BeerSearchQuery query, Pageable pageable) {
+		if (query.countryCode() != null && !Country.isListed(query.countryCode())) {
+			throw new InvalidSearchParameterException(
+					"countryCode '%s' is not one of the listed countries".formatted(query.countryCode()));
+		}
 		return beers.findAll(BeerSpecifications.matching(toCriteria(query)), pageable);
 	}
 
@@ -60,8 +64,12 @@ public class CatalogService {
 		return beers.findDistinctStyles().stream().sorted(String.CASE_INSENSITIVE_ORDER).toList();
 	}
 
-	public List<Country> listCountries() {
-		return Country.ALL;
+	public List<String> listCountries() {
+		return Country.CODES;
+	}
+
+	public List<String> listBreweryCountries() {
+		return breweries.findDistinctCountryCodes();
 	}
 
 	static <T> Page<T> paginate(List<T> sorted, Pageable pageable) {
@@ -72,7 +80,7 @@ public class CatalogService {
 
 	private static BeerSearchCriteria toCriteria(BeerSearchQuery query) {
 		return new BeerSearchCriteria(query.query(), query.style(), query.breweryId(),
-				query.country(), query.minAbv(), query.maxAbv());
+				query.countryCode(), query.minAbv(), query.maxAbv());
 	}
 
 }

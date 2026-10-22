@@ -7,7 +7,6 @@ import fi.kalia.TestcontainersConfiguration;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +50,7 @@ class CatalogPersistenceIT {
 
 	@Test
 	void persistsAndReloadsABeer() {
-		Brewery brewery = breweries.save(Brewery.create("Test Brewery", "Finland", "Helsinki"));
+		Brewery brewery = breweries.save(Brewery.create("Test Brewery", "FI", "Helsinki"));
 		Beer saved = beers.save(Beer.create(
 				brewery, "Test IPA", "IPA", new BigDecimal("6.5"), "A test beer"));
 
@@ -65,7 +64,7 @@ class CatalogPersistenceIT {
 	// column default V008 sets, which nothing in Java would notice changing.
 	@Test
 	void aRowTheAppInsertsIsMarkedUserAddedWithNoQid() {
-		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "Finland", null));
+		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null));
 		Beer beer = beers.saveAndFlush(Beer.create(brewery, "Test IPA", "IPA", new BigDecimal("6.5"), null));
 
 		assertThat(provenance("catalog.brewery", brewery.getId()))
@@ -78,7 +77,7 @@ class CatalogPersistenceIT {
 	// concurrent inserts: this saves straight through the repository.
 	@Test
 	void theDatabaseRefusesASecondBeerOfTheSameFoldedNameAtOneBrewery() {
-		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "Finland", null));
+		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null));
 		beers.saveAndFlush(Beer.create(brewery, "Test I.P.A.", "IPA", new BigDecimal("6.5"), null));
 
 		assertThatThrownBy(() -> beers.saveAndFlush(
@@ -93,17 +92,23 @@ class CatalogPersistenceIT {
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
-	// Pins "the same English form the catalog already uses": an imported
-	// country spelled differently from the list would split the country filter.
 	@Test
-	void everyCountryTheCatalogHoldsIsListedOrNoLongerExists() {
-		Set<String> notOffered = Set.of("Austria–Hungary", "Czechoslovakia", "Dutch East Indies",
-				"East Germany", "German Reich", "Russian Empire", "Wales");
-		List<String> listed = Country.ALL.stream().map(Country::name).toList();
+	void everyBreweryIsInAListedCountryAndNoColumnNamesOne() {
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog.brewery WHERE country_code IS NULL", Long.class))
+				.isZero();
+		assertThat(jdbc.queryForList("SELECT DISTINCT country_code FROM catalog.brewery", String.class))
+				.isNotEmpty().allSatisfy(code -> assertThat(Country.isListed(code)).as(code).isTrue());
+		assertThat(jdbc.queryForList("""
+				SELECT column_name FROM information_schema.columns
+				WHERE table_schema = 'catalog' AND column_name LIKE '%country%'""", String.class))
+				.containsExactly("country_code");
+	}
 
-		assertThat(jdbc.queryForList("SELECT DISTINCT country FROM catalog.brewery", String.class))
-				.allSatisfy(country -> assertThat(listed.contains(country) || notOffered.contains(country))
-						.as(country).isTrue());
+	@Test
+	void theDatabaseRefusesACountryCodeThatIsNotTwoCapitals() {
+		assertThatThrownBy(() -> jdbc.update(
+				"UPDATE catalog.brewery SET country_code = 'Finland' WHERE source = 'SEED'"))
+				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	private Map<String, Object> provenance(String table, UUID id) {

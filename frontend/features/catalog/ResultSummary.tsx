@@ -2,12 +2,13 @@ import { Icon } from "@/components/ui/icon";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
+import { countryName } from "@/lib/country";
 import { catalogHref } from "./links";
 import type { BeerSearchParams } from "./types";
 
-type FilterKey = "query" | "style" | "country" | "minAbv" | "maxAbv";
+type FilterKey = "query" | "style" | "countryCode" | "minAbv" | "maxAbv";
 
-const FILTER_KEYS: readonly FilterKey[] = ["query", "style", "country", "minAbv", "maxAbv"];
+const FILTER_KEYS: readonly FilterKey[] = ["query", "style", "countryCode", "minAbv", "maxAbv"];
 
 // Do not swap these anchors for next/link: each changes only the query string
 // (frontend/README.md traps).
@@ -26,6 +27,8 @@ export const ResultSummary = async ({
     switch (key) {
       case "query":
         return t("catalog.filters.queryChip", { query: value });
+      case "countryCode":
+        return countryName(value, locale);
       case "minAbv":
         return t("catalog.filters.atLeast", { abv: formatAbv(value, locale) });
       case "maxAbv":

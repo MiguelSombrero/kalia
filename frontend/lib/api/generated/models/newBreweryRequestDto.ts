@@ -15,11 +15,10 @@ export interface NewBreweryRequestDto {
      */
   name: string;
   /**
-     * One of the names listed by GET /api/v1/countries
-     * @minLength 0
-     * @maxLength 100
+     * One of the ISO 3166-1 alpha-2 codes listed by GET /api/v1/countries
+     * @pattern [A-Z]{2}
      */
-  country: string;
+  countryCode: string;
   /**
      * @minLength 0
      * @maxLength 100

@@ -79,9 +79,9 @@ class BeerSearchIndexIT {
 	}
 
 	@Test
-	void countryFilterUsesTheCaseInsensitiveIndex() {
-		assertEveryStatementUses(new BeerSearchCriteria(null, null, null, "Finland", null, null),
-				"brewery_country_lower_idx");
+	void countryFilterUsesTheCountryCodeIndex() {
+		assertEveryStatementUses(new BeerSearchCriteria(null, null, null, "FI", null, null),
+				"brewery_country_code_idx");
 	}
 
 	// Every statement, because a full page makes Spring Data issue a count query

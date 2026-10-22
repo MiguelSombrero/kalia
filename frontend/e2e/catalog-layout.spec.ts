@@ -75,10 +75,10 @@ for (const viewport of VIEWPORTS) {
       }
 
       await page.getByLabel("Search", { exact: true }).fill("abt");
-      await page.getByLabel("Country").fill("Belgium");
+      await page.getByLabel("Country").selectOption({ label: "Belgium" });
       await visibleSubmitButtons(page).click();
       await expect(page).toHaveURL(/query=abt/);
-      await expect(page).toHaveURL(/country=Belgium/);
+      await expect(page).toHaveURL(/countryCode=BE/);
       await expect(page.getByRole("link", { name: "St. Bernardus Abt 12", exact: true })).toBeVisible();
     });
 

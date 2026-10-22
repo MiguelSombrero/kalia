@@ -24,7 +24,7 @@ class CatalogDtoSerializationIT {
 	void omitsNullDescriptionFromBeerDetailsJson() throws Exception {
 		BeerDetailsDto beer = new BeerDetailsDto(UUID.randomUUID(), "Test Beer", "IPA",
 				new BigDecimal("5.0"), null,
-				new BreweryDto(UUID.randomUUID(), "Test Brewery", "Finland", null));
+				new BreweryDto(UUID.randomUUID(), "Test Brewery", "FI", null));
 
 		String json = beerDetailsJson.write(beer).getJson();
 
@@ -33,7 +33,7 @@ class CatalogDtoSerializationIT {
 
 	@Test
 	void omitsNullCityFromBreweryJson() throws Exception {
-		BreweryDto brewery = new BreweryDto(UUID.randomUUID(), "Test Brewery", "Finland", null);
+		BreweryDto brewery = new BreweryDto(UUID.randomUUID(), "Test Brewery", "FI", null);
 
 		String json = breweryJson.write(brewery).getJson();
 

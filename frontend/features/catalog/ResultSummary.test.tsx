@@ -19,14 +19,14 @@ describe("ResultSummary", () => {
     const { container } = render(
       await ResultSummary({
         locale: "en",
-        params: { query: "abt", country: "Belgium", minAbv: "8", sort: "abv,desc", page: "2" },
+        params: { query: "abt", countryCode: "BE", minAbv: "8", sort: "abv,desc", page: "2" },
         totalElements: 2,
       }),
     );
 
     expect(screen.getByRole("link", { name: "Remove filter: “abt”" })).toHaveAttribute(
       "href",
-      "/en/beers?country=Belgium&minAbv=8&sort=abv%2Cdesc",
+      "/en/beers?countryCode=BE&minAbv=8&sort=abv%2Cdesc",
     );
     expect(screen.getByRole("link", { name: "Remove filter: Belgium" })).toHaveAttribute(
       "href",
@@ -53,5 +53,11 @@ describe("ResultSummary", () => {
     render(await ResultSummary({ locale: "fi", params: { query: "abt" }, totalElements: 1 }));
 
     expect(screen.getByRole("link", { name: "Poista suodatin: ”abt”" })).toBeInTheDocument();
+  });
+
+  it("names the country filter in the reader's language", async () => {
+    render(await ResultSummary({ locale: "fi", params: { countryCode: "SE" }, totalElements: 2 }));
+
+    expect(screen.getByRole("link", { name: "Poista suodatin: Ruotsi" })).toHaveAttribute("href", "/fi/beers");
   });
 });

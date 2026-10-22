@@ -4,6 +4,7 @@ import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.application.ContributionService;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.catalog.domain.Country;
 import fi.kalia.identity.IdentityApi;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,6 +19,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
@@ -53,7 +55,7 @@ class CatalogController {
 	/** ABV is a percentage; a bound above 100 is meaningless. */
 	private static final String MAX_ABV = "100";
 
-	/** Bounds search terms without truncating real input — the longest official country name runs to 56 characters. */
+	/** Bounds search terms without truncating real input. */
 	private static final int MAX_FILTER_LENGTH = 100;
 
 	/** A single page pulls at most this many rows, so no one response can return an unbounded slice of a table. */
@@ -80,8 +82,8 @@ class CatalogController {
 			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String style,
 			@Parameter(description = "Restrict to one brewery")
 			@RequestParam(required = false) UUID breweryId,
-			@Parameter(description = "Exact, case-insensitive match on the brewery's country, at most " + MAX_FILTER_LENGTH + " characters")
-			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String country,
+			@Parameter(description = "The brewery's country, one of the ISO 3166-1 alpha-2 codes listed by GET /api/v1/countries")
+			@RequestParam(required = false) @Pattern(regexp = Country.CODE_FORMAT) String countryCode,
 			@Parameter(description = "Inclusive lower ABV bound, percent (0-" + MAX_ABV + ")")
 			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal minAbv,
 			@Parameter(description = "Inclusive upper ABV bound, percent (0-" + MAX_ABV + ")")
@@ -94,7 +96,7 @@ class CatalogController {
 			@RequestParam(defaultValue = "name,asc") String sort) {
 		requireOrderedAbvRange(minAbv, maxAbv);
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, country, minAbv, maxAbv);
+		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, countryCode, minAbv, maxAbv);
 		return PageDto.from(catalog.searchBeers(searchQuery, pageable).map(BeerSummaryDto::from));
 	}
 
@@ -163,11 +165,20 @@ class CatalogController {
 		return catalog.listStyles();
 	}
 
+	@GetMapping("/breweries/countries")
+	@Operation(summary = "List the countries breweries are in", description = """
+			The ISO 3166-1 alpha-2 code of every country the catalog has a brewery in. Order is \
+			not significant: a client sorts by the name it shows.""")
+	List<String> listBreweryCountries() {
+		return catalog.listBreweryCountries();
+	}
+
 	@GetMapping("/countries")
-	@Operation(summary = "List countries",
-			description = "Every country a brewery can be in. Order is not significant: a client sorts by the name it shows.")
-	List<CountryDto> listCountries() {
-		return catalog.listCountries().stream().map(CountryDto::from).toList();
+	@Operation(summary = "List countries", description = """
+			The ISO 3166-1 alpha-2 code of every country a brewery can be in. Order is not \
+			significant: a client sorts by the name it shows.""")
+	List<String> listCountries() {
+		return catalog.listCountries();
 	}
 
 	// See backend/README.md's "Every request parameter is bounded" convention.

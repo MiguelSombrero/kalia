@@ -127,22 +127,22 @@ class ConcurrentAddBeerApiIT {
 			}
 			return entityManager.createNativeQuery("""
 					SELECT id FROM catalog.brewery
-					WHERE catalog.fold_name(name) = catalog.fold_name(:name) AND lower(country) = lower(:country)""",
+					WHERE catalog.fold_name(name) = catalog.fold_name(:name) AND country_code = :countryCode""",
 					UUID.class)
 					.setParameter("name", invocation.getArgument(0))
-					.setParameter("country", invocation.getArgument(1))
+					.setParameter("countryCode", invocation.getArgument(1))
 					.getResultStream()
 					.findFirst();
-		}).when(breweries).findIdBySameNameAndCountry(any(), any());
+		}).when(breweries).findIdBySameNameAndCountryCode(any(), any());
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		try {
 			Future<EntityExchangeResult<String>> first = pool.submit(
 					post(Map.of("name", "First", "style", "Quadrupel", "abv", 10.0,
-							"newBrewery", Map.of("name", breweryName, "country", "Finland"))));
+							"newBrewery", Map.of("name", breweryName, "countryCode", "FI"))));
 			Future<EntityExchangeResult<String>> second = pool.submit(
 					post(Map.of("name", "Second", "style", "Quadrupel", "abv", 10.0,
-							"newBrewery", Map.of("name", breweryName.toLowerCase(), "country", "Finland"))));
+							"newBrewery", Map.of("name", breweryName.toLowerCase(), "countryCode", "FI"))));
 			List<EntityExchangeResult<String>> results = List.of(first.get(10, TimeUnit.SECONDS),
 					second.get(10, TimeUnit.SECONDS));
 

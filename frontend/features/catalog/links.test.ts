@@ -3,8 +3,8 @@ import { beerHref, catalogHref, hasFilters, hasSearch } from "./links";
 
 describe("catalog links", () => {
   it("keeps every search parameter, page included, on the beer's own URL", () => {
-    expect(beerHref("en", "b1", { country: "Belgium", minAbv: "8", sort: "abv,desc", page: "1" })).toBe(
-      "/en/beers/b1?country=Belgium&minAbv=8&page=1&sort=abv%2Cdesc",
+    expect(beerHref("en", "b1", { countryCode: "BE", minAbv: "8", sort: "abv,desc", page: "1" })).toBe(
+      "/en/beers/b1?countryCode=BE&minAbv=8&page=1&sort=abv%2Cdesc",
     );
   });
 
