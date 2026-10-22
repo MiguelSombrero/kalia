@@ -81,22 +81,22 @@ onward when a page comes back empty was considered and rejected.
 
 ## Acceptance criteria
 
-- [ ] With the 21 newest lines all private and an older public line inside the
+- [x] With the 21 newest lines all private and an older public line inside the
       window, the first page contains that public line — integration test,
       confirmed to fail against today's `readRecent`
-- [ ] The scan bound holds: a long run of private lines costs a bounded number
+- [x] The scan bound holds: a long run of private lines costs a bounded number
       of rows per request — integration test
-- [ ] A lookup of more ids than `CatalogApi`'s or `ProfileApi`'s batch cap is
+- [x] A lookup of more ids than `CatalogApi`'s or `ProfileApi`'s batch cap is
       served in chunks rather than refused, so lowering either cap can no
       longer turn the feed into a 500 — unit test
-- [ ] An older page (`before`) fills the same way as the first — integration
+- [x] An older page (`before`) fills the same way as the first — integration
       test
-- [ ] A page with no lines but a `nextCursor` offers "load more" rather than
+- [x] A page with no lines but a `nextCursor` offers "load more" rather than
       the empty state — component test, confirmed to fail against today's
       `FeedList`
 - [ ] The front page shows the public line rather than the empty state, in a
       browser against the full stack — Playwright spec
-- [ ] `mvn clean verify` and `npm test` are green
+- [x] `mvn clean verify` and `npm test` are green
 
 ## Notes
 
