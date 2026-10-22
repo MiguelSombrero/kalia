@@ -45,6 +45,7 @@
       "retry": "Yritä uudelleen"
     },
     "older": {
+      "loadMore": "Lataa lisää",
       "failed": "Vanhempien tapahtumien lataus ei onnistunut.",
       "retry": "Yritä uudelleen",
       "cursorExpired": "Vanhempien tapahtumien lataus ei onnistu enää — päivitä sivu jatkaaksesi.",

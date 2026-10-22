@@ -8,6 +8,7 @@ import fi.kalia.profile.ProfileApi;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +30,10 @@ public class FeedService {
 	// (ADR-0058) — no deletion job, every query bounded instead.
 	private static final int WINDOW_DAYS = 30;
 
+	// The feed is public, so a run of private lines must cost any caller a
+	// bounded scan, not one as long as the run (ADR-0042).
+	private static final int MAX_BATCHES_PER_REQUEST = 10;
+
 	private final FeedLineRepository lines;
 
 	private final CatalogApi catalog;
@@ -48,17 +53,12 @@ public class FeedService {
 		lines.save(FeedLine.bottleAdded(eventId, userId, beerId, quantity, brewedDate, occurredAt));
 	}
 
-	// Do not call with size outside 1-99 — FeedController's Bean Validation is
-	// the only caller and the only bound: below 1, the lookahead trim indexes
-	// an empty page's getLast(); above 99, the lookahead row can push a page's
-	// distinct beer or user ids past CatalogApi/ProfileApi's own batch-id cap.
+	// Do not call with size below 1 — FeedController's Bean Validation is the
+	// only caller and the only bound: a full page of none has no last line
+	// to hand back as its cursor.
 	@Transactional(readOnly = true)
 	public FeedPage readRecent(int size) {
-		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
-		List<FeedLine> fetched = lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(cutoff,
-				PageRequest.of(0, size + 1));
-		Trimmed trimmed = trim(fetched, size);
-		return new FeedPage(resolve(trimmed.page()), trimmed.nextCursor(), false);
+		return fillOlder(null, size);
 	}
 
 	// Same bound as readRecent above; `before` is validated the same way as
@@ -67,12 +67,34 @@ public class FeedService {
 	// running out of rows within the cutoff is the ordinary way this ends.
 	@Transactional(readOnly = true)
 	public FeedPage readBefore(String cursor, int size) {
-		long sequenceNumber = cursorCodec.decode(cursor);
+		return fillOlder(cursorCodec.decode(cursor), size);
+	}
+
+	private FeedPage fillOlder(@Nullable Long before, int size) {
 		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
-		List<FeedLine> fetched = lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(
-				sequenceNumber, cutoff, PageRequest.of(0, size + 1));
-		Trimmed trimmed = trim(fetched, size);
-		return new FeedPage(resolve(trimmed.page()), trimmed.nextCursor(), false);
+		PageRequest batch = PageRequest.of(0, size + 1);
+		List<FeedLineView> page = new ArrayList<>();
+		Long resumeBefore = before;
+		for (int batchesRead = 0; batchesRead < MAX_BATCHES_PER_REQUEST; batchesRead++) {
+			List<FeedLine> fetched = resumeBefore == null
+					? lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(cutoff, batch)
+					: lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(
+							resumeBefore, cutoff, batch);
+			List<FeedLineView> visible = resolve(fetched);
+			boolean windowExhausted = fetched.size() <= size;
+			int wanted = size - page.size();
+			if (visible.size() >= wanted) {
+				page.addAll(visible.subList(0, wanted));
+				boolean hasMore = visible.size() > wanted || !windowExhausted;
+				return new FeedPage(page, hasMore ? page.getLast().cursor() : null, false);
+			}
+			page.addAll(visible);
+			if (windowExhausted) {
+				return new FeedPage(page, null, false);
+			}
+			resumeBefore = fetched.getLast().getSequenceNumber();
+		}
+		return new FeedPage(page, cursorCodec.encode(resumeBefore), false);
 	}
 
 	// Same bound as readRecent above; `since` is validated separately by
@@ -94,9 +116,8 @@ public class FeedService {
 
 	// One extra row, trimmed here: the only way to say whether there is more
 	// beyond this page without guessing from a page that happens to come back
-	// exactly `size` long. `fetched` is sorted in whichever direction the
-	// caller reads in, so `getLast()` is always the correct boundary to
-	// resume from next, forward or backward alike.
+	// exactly `size` long. fillOlder reads its batches one row long for the
+	// same reason.
 	private Trimmed trim(List<FeedLine> fetched, int size) {
 		boolean hasMore = fetched.size() > size;
 		List<FeedLine> page = hasMore ? fetched.subList(0, size) : fetched;
@@ -109,16 +130,16 @@ public class FeedService {
 	}
 
 	// A line whose beer or person no longer resolves is dropped. Shared by
-	// readRecent and readSince so the visibility filter cannot diverge
-	// between them.
+	// every read so the visibility filter cannot diverge between them.
 	private List<FeedLineView> resolve(List<FeedLine> page) {
-		Set<UUID> beerIds = page.stream().map(FeedLine::getBeerId).collect(Collectors.toSet());
 		Set<UUID> userIds = page.stream().map(FeedLine::getUserId).collect(Collectors.toSet());
-		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(beerIds);
 		Map<UUID, String> usernames = profile.publicUsernames(userIds);
+		List<FeedLine> publicLines = page.stream().filter(line -> usernames.containsKey(line.getUserId())).toList();
+		Set<UUID> beerIds = publicLines.stream().map(FeedLine::getBeerId).collect(Collectors.toSet());
+		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(beerIds);
 
-		return page.stream()
-				.filter(line -> usernames.containsKey(line.getUserId()) && beers.containsKey(line.getBeerId()))
+		return publicLines.stream()
+				.filter(line -> beers.containsKey(line.getBeerId()))
 				.map(line -> toView(line, usernames.get(line.getUserId()), beers.get(line.getBeerId())))
 				.toList();
 	}

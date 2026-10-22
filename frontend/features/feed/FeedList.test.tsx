@@ -198,6 +198,78 @@ describe("FeedList", () => {
     expect(readOlderFeedAction).toHaveBeenCalledTimes(1);
   });
 
+  it("offers to load more instead of the empty state when a page has no lines but a cursor", async () => {
+    readOlderFeedAction.mockResolvedValue({
+      content: [line("c-older", "zoe")],
+      nextCursor: undefined,
+      startOver: false,
+    });
+    renderList({ content: [], nextCursor: "c0", startOver: false }, "en", <p>Nothing here yet.</p>);
+
+    expect(screen.queryByText("Nothing here yet.")).not.toBeInTheDocument();
+    act(() => screen.getByRole("button", { name: "Load more" }).click());
+
+    await waitFor(() => expect(screen.getByRole("link", { name: "zoe" })).toBeInTheDocument());
+    expect(readOlderFeedAction).toHaveBeenCalledWith("c0");
+    expect(screen.queryByRole("button", { name: "Load more" })).not.toBeInTheDocument();
+  });
+
+  it("keeps offering to load more while each page comes back empty with a cursor", async () => {
+    readOlderFeedAction.mockResolvedValue({ content: [], nextCursor: "c1", startOver: false });
+    renderList({ content: [], nextCursor: "c0", startOver: false }, "en", <p>Nothing here yet.</p>);
+
+    act(() => screen.getByRole("button", { name: "Load more" }).click());
+
+    await waitFor(() => expect(readOlderFeedAction).toHaveBeenCalledWith("c0"));
+    await waitFor(() => expect(screen.queryByText("Loading more…")).not.toBeInTheDocument());
+    expect(screen.queryByText("Nothing here yet.")).not.toBeInTheDocument();
+    act(() => screen.getByRole("button", { name: "Load more" }).click());
+    await waitFor(() => expect(readOlderFeedAction).toHaveBeenCalledWith("c1"));
+  });
+
+  it("shows the empty state once an empty page carries no cursor", async () => {
+    readOlderFeedAction.mockResolvedValue({ content: [], nextCursor: undefined, startOver: false });
+    renderList({ content: [], nextCursor: "c0", startOver: false }, "en", <p>Nothing here yet.</p>);
+
+    act(() => screen.getByRole("button", { name: "Load more" }).click());
+
+    await waitFor(() => expect(screen.getByText("Nothing here yet.")).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: "Load more" })).not.toBeInTheDocument();
+  });
+
+  it("offers to load more once an older page comes back empty with a cursor, since the sentinel never moved", async () => {
+    readOlderFeedAction.mockResolvedValueOnce({ content: [], nextCursor: "c2", startOver: false });
+    renderList({ content: [line("c1", "alice")], nextCursor: "c1", startOver: false });
+
+    act(() => intersectionObserverInstances[0]!.trigger(true));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Load more" })).toBeInTheDocument());
+
+    readOlderFeedAction.mockResolvedValueOnce({ content: [line("c3", "bob")], nextCursor: undefined, startOver: false });
+    act(() => screen.getByRole("button", { name: "Load more" }).click());
+
+    await waitFor(() => expect(screen.getByRole("link", { name: "bob" })).toBeInTheDocument());
+    expect(readOlderFeedAction).toHaveBeenLastCalledWith("c2");
+  });
+
+  it("moves focus to the list once loading more brings lines in, since the control that had it is gone", async () => {
+    readOlderFeedAction.mockResolvedValue({ content: [line("c-older", "zoe")], nextCursor: undefined, startOver: false });
+    renderList({ content: [], nextCursor: "c0", startOver: false });
+
+    const loadMore = screen.getByRole("button", { name: "Load more" });
+    loadMore.focus();
+    act(() => loadMore.click());
+
+    await waitFor(() => expect(screen.getByRole("link", { name: "zoe" })).toBeInTheDocument());
+    expect(screen.getByRole("list")).toHaveFocus();
+  });
+
+  it("has no accessibility violations while offering to load more, in Finnish", async () => {
+    const { container } = renderList({ content: [], nextCursor: "c0", startOver: false }, "fi");
+
+    expect(screen.getByRole("button", { name: "Lataa lisää" })).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("has no accessibility violations while a sentinel is present, in English", async () => {
     const { container } = renderList({
       content: [line("c1", "alice")],

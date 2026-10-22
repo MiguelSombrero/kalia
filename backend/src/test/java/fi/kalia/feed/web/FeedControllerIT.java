@@ -21,6 +21,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,10 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 class FeedControllerIT {
 
 	private static final int MAX_SIZE = 99;
+
+	private static final int DEFAULT_SIZE = 20;
+
+	private static final int MAX_BATCHES_PER_REQUEST = 10;
 
 	@Autowired
 	private RestTestClient client;
@@ -320,6 +325,56 @@ class FeedControllerIT {
 	}
 
 	@Test
+	void aFirstPageReachesAPublicLineBehindAFullPageOfPrivateOnes() {
+		recordLine(makePublicProfile("behind-private-public-user"), catalogBeers.get(0).getId(), 1, Instant.now());
+		recordPrivateRun("behind-private-run-user", DEFAULT_SIZE + 1);
+
+		String body = readFeed(null);
+
+		assertThat((List<String>) JsonPath.read(body, "$.content[*].username")).contains("behind-private-public-user");
+	}
+
+	@Test
+	void anOlderPageReachesAPublicLineBehindAFullPageOfPrivateOnes() {
+		recordLine(makePublicProfile("before-behind-private-public-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now());
+		recordPrivateRun("before-behind-private-run-user", DEFAULT_SIZE + 1);
+		FeedLine anchor = recordLine(makePublicProfile("before-behind-private-anchor-user"),
+				catalogBeers.get(0).getId(), 1, Instant.now());
+
+		String body = readBefore(cursorCodec.encode(anchor.getSequenceNumber()), DEFAULT_SIZE);
+
+		assertThat((List<String>) JsonPath.read(body, "$.content[*].username"))
+				.contains("before-behind-private-public-user");
+	}
+
+	// The rows one request scanned are the private run between the anchor and
+	// the cursor it hands back; following that cursor must still reach the
+	// public line, so the bound costs a click, never a line.
+	@Test
+	void aLongRunOfPrivateLinesCostsABoundedScanPerRequest() {
+		int size = 1;
+		int maxRowsPerRequest = MAX_BATCHES_PER_REQUEST * (size + 1);
+		recordLine(makePublicProfile("bounded-scan-public-user"), catalogBeers.get(0).getId(), 1, Instant.now());
+		List<FeedLine> privateRun = recordPrivateRun("bounded-scan-run-user", maxRowsPerRequest + 5);
+		FeedLine anchor = recordLine(makePublicProfile("bounded-scan-anchor-user"), catalogBeers.get(0).getId(), 1,
+				Instant.now());
+
+		String body = readBefore(cursorCodec.encode(anchor.getSequenceNumber()), size);
+
+		assertThat((List<Object>) JsonPath.read(body, "$.content")).isEmpty();
+		String nextCursor = JsonPath.read(body, "$.nextCursor");
+		assertThat(nextCursor).isNotNull();
+		long resumeAt = cursorCodec.decode(nextCursor);
+		assertThat(privateRun).filteredOn(line -> line.getSequenceNumber() >= resumeAt)
+				.hasSizeLessThanOrEqualTo(maxRowsPerRequest);
+
+		String followed = readBefore(nextCursor, size);
+		assertThat((List<String>) JsonPath.read(followed, "$.content[*].username"))
+				.containsExactly("bounded-scan-public-user");
+	}
+
+	@Test
 	void aMalformedBeforeCursorAnswersProblemJson() {
 		client.get().uri("/api/v1/feed?before=not-a-valid-cursor!!")
 				.exchange()
@@ -365,6 +420,13 @@ class FeedControllerIT {
 
 	private FeedLine recordLine(UUID userId, UUID beerId, int quantity, Instant occurredAt) {
 		return lines.save(FeedLine.bottleAdded(UUID.randomUUID(), userId, beerId, quantity, null, occurredAt));
+	}
+
+	private List<FeedLine> recordPrivateRun(String username, int count) {
+		UUID userId = makePrivateProfile(username);
+		return IntStream.range(0, count)
+				.mapToObj(i -> recordLine(userId, catalogBeers.get(0).getId(), 1, Instant.now()))
+				.toList();
 	}
 
 	private String readSince(String since, int size) {

@@ -131,7 +131,43 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
   // have `canLoadMore` already `true` before it has anything on screen —
   // this effect's dependency would then see no change, and never re-run,
   // when the list later gains its first line and the sentinel actually mounts.
-  const canLoadMore = hasNextPage && lines.length > 0 && lines.length < FEED_LIST_CAP;
+  const hasRoomForMore = hasNextPage && lines.length < FEED_LIST_CAP;
+  // A button, not the sentinel, wherever nothing moved since the sentinel was
+  // last in view: an IntersectionObserver reports only changes, so a sentinel
+  // that stays in view across an empty page never fires again.
+  const lastOlderPageCameBackEmpty = data.pages.length > 1 && data.pages.at(-1)!.content.length === 0;
+  const offersLoadMore = hasRoomForMore && (lines.length === 0 || lastOlderPageCameBackEmpty);
+  const canLoadMore = hasRoomForMore && lines.length > 0 && !lastOlderPageCameBackEmpty;
+
+  // The control that loaded these entries unmounts once they arrive, which
+  // would drop focus to <body>; the list takes it instead.
+  const loadMoreWasUsed = useRef(false);
+  useEffect(() => {
+    if (!offersLoadMore && loadMoreWasUsed.current) {
+      loadMoreWasUsed.current = false;
+      listRef.current?.focus({ preventScroll: true });
+    }
+  }, [offersLoadMore]);
+
+  const loadMore = (
+    <div className="flex flex-col items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => {
+          loadMoreWasUsed.current = true;
+          if (!isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+      >
+        {t("feed.older.loadMore")}
+      </Button>
+      <div role="status" className="text-sm text-muted-foreground">
+        {isFetchingNextPage && t("feed.loadingMore")}
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -172,9 +208,13 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
       </div>
       <div className="flex flex-col gap-4">
         {lines.length === 0 ? (
-          // Never alongside the control above: "Nothing here yet" beside "1 new
-          // event" would tell the visitor two contradictory things at once.
-          pendingLines.length === 0 && emptyState
+          offersLoadMore ? (
+            loadMore
+          ) : (
+            // Never alongside the control above: "Nothing here yet" beside "1 new
+            // event" would tell the visitor two contradictory things at once.
+            pendingLines.length === 0 && emptyState
+          )
         ) : (
           <>
             <ul ref={listRef} tabIndex={-1} className="flex scroll-mt-12 flex-col">
@@ -194,6 +234,7 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
                 {isFetchingNextPage && t("feed.loadingMore")}
               </div>
             )}
+            {offersLoadMore && loadMore}
           </>
         )}
         {(isFetchNextPageError || isOlderCursorExpired) && (

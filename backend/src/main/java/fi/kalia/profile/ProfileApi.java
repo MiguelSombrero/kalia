@@ -5,18 +5,19 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Gatherers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 /** Inter-module read API for {@code profile} (ADR-0007, ADR-0049). */
 @Component
 @RequiredArgsConstructor
 public class ProfileApi {
 
-	// Matches CatalogApi's batch cap for the same reason: a caller-supplied id
-	// set must not grow an unbounded IN clause (ADR-0042).
-	private static final int MAX_BATCH_IDS = 100;
+	// Matches CatalogApi's batch cap for the same reason: one query's IN
+	// clause must not grow with a caller-supplied id set (ADR-0042).
+	static final int MAX_BATCH_IDS = 100;
 
 	private final ProfileService profile;
 
@@ -27,8 +28,11 @@ public class ProfileApi {
 
 	/** Absent for an unknown id, a missing profile row and a private cellar alike (ADR-0050). */
 	public Map<UUID, String> publicUsernames(Collection<UUID> userIds) {
-		Assert.isTrue(userIds.size() <= MAX_BATCH_IDS, "userIds must not exceed " + MAX_BATCH_IDS);
-		return profile.publicUsernames(userIds);
+		return userIds.stream()
+				.distinct()
+				.gather(Gatherers.windowFixed(MAX_BATCH_IDS))
+				.flatMap(chunk -> profile.publicUsernames(chunk).entrySet().stream())
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 }

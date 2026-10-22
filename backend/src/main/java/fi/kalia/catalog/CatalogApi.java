@@ -6,17 +6,17 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Gatherers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 @Component
 @RequiredArgsConstructor
 public class CatalogApi {
 
-	// Matches the /beers/batch HTTP cap (CatalogController): an id set this
-	// module API resolves must be bounded the same way (ADR-0042).
-	private static final int MAX_BATCH_IDS = 100;
+	// Matches the /beers/batch HTTP cap (CatalogController): one query's IN
+	// clause is bounded the same way (ADR-0042).
+	static final int MAX_BATCH_IDS = 100;
 
 	private final CatalogService catalog;
 
@@ -26,8 +26,10 @@ public class CatalogApi {
 
 	/** An id matching no beer is absent from the map, never a null value. */
 	public Map<UUID, BeerSummary> getBeerSummaries(Collection<UUID> beerIds) {
-		Assert.isTrue(beerIds.size() <= MAX_BATCH_IDS, "beerIds must not exceed " + MAX_BATCH_IDS);
-		return catalog.getBeers(beerIds).stream()
+		return beerIds.stream()
+				.distinct()
+				.gather(Gatherers.windowFixed(MAX_BATCH_IDS))
+				.flatMap(chunk -> catalog.getBeers(chunk).stream())
 				.collect(Collectors.toMap(Beer::getId,
 						beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
 								beer.getStyle(), beer.getAbv())));
