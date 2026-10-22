@@ -20,6 +20,7 @@
   `@EnableResilientMethods` that `cellar`'s `RetryConfig` already registers
   for the whole application context; `ConcurrentAddBeerApiIT` fails if the
   retry stops running.
+- **Amended:** 2026-10-22 by [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md) — `profile.profile` gained a second unique index, on `lower(username)`, and its retry now covers a violation of either
 
 ## Context
 
@@ -137,6 +138,21 @@ statement, and folding that into raw SQL would move logic out of
   `MethodRetryPredicate` inspecting the constraint name, which is more
   machinery than this single call site has earned while only one constraint
   exists on either table.
+
+> **Amended 2026-10-22.** `profile.profile` is the first table with a second
+> unique constraint: `profile_username_lower_key`
+> ([ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md)).
+> `ProfileService` deliberately keeps matching on the exception type. Before
+> inserting, `currentProfile` checks whether the username is held, and refuses
+> with `UsernameTakenException` if it is. Two accounts racing for one name
+> both pass that check, and the loser trips the new index. Its one retry
+> re-runs the check, finds the winner's row and refuses, so the retry ends in
+> the right answer rather than a misleading success. Narrowing the retry to
+> `profile_pkey` would be wrong. Two first requests from the *same* new user
+> collide on both indexes. Which one Postgres reports depends on the order it
+> checks them in, an implementation detail, so a pkey-only predicate would
+> rest on that order to keep this ordinary race from becoming a 500.
+> `ProfileServiceConcurrencyIT` covers both races.
 - **Revisit trigger:** if a second module needs the same get-or-create-retry
   shape, factor the `@Retryable` spec and the proxy-ordering reasoning above
   into a shared note (or helper, if the shape matches closely enough) instead
