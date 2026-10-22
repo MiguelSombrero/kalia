@@ -1,6 +1,6 @@
 # Task 02: Add-a-beer API
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -103,37 +103,37 @@ a beer may have.
 
 ## Acceptance criteria
 
-- [ ] An authenticated request creates a beer that then appears in search and
+- [x] An authenticated request creates a beer that then appears in search and
       at its detail endpoint — integration test against a real database
-- [ ] A created beer records its contributor and is marked user-added, and a
+- [x] A created beer records its contributor and is marked user-added, and a
       duplicate of an imported beer is caught as well as a duplicate of a
       user-added one — integration test
-- [ ] An unauthenticated request is refused, while catalog reads still answer
+- [x] An unauthenticated request is refused, while catalog reads still answer
       anonymously — one test covering both, so opening the catalog to writes
       cannot silently close it to readers
-- [ ] A duplicate beer, including one differing only in case, whitespace or
+- [x] A duplicate beer, including one differing only in case, whitespace or
       punctuation, is refused with `409` `problem+json` carrying the existing
       beer's id, and cannot produce two rows — integration test, plus a
       database constraint proving it under concurrent inserts rather than only
       in application code
-- [ ] A beer whose brewery is new creates that brewery, and a duplicate
+- [x] A beer whose brewery is new creates that brewery, and a duplicate
       brewery (same normalised name and country) is refused the same way —
       integration test
-- [ ] A style the catalog does not have, or a missing ABV, is refused —
+- [x] A style the catalog does not have, or a missing ABV, is refused —
       integration test. The create request has no description field
-- [ ] No catalog read response carries the contributor — integration test
+- [x] No catalog read response carries the contributor — integration test
       against the search and detail responses
-- [ ] Breweries can be found by name, and the catalog's styles listed, through
+- [x] Breweries can be found by name, and the catalog's styles listed, through
       the API — integration test
-- [ ] Invalid and out-of-range fields are refused with `problem+json` listing
+- [x] Invalid and out-of-range fields are refused with `problem+json` listing
       the violations — integration test
-- [ ] A beer created through the API can immediately be added to a cellar —
+- [x] A beer created through the API can immediately be added to a cellar —
       integration test spanning both modules, since this is the whole point of
       the iteration
-- [ ] The generated OpenAPI client is regenerated and committed; the
+- [x] The generated OpenAPI client is regenerated and committed; the
       `api-client-drift` CI job passes
       ([ADR-0012](../../adr/0012-orval-api-client.md))
-- [ ] `mvn clean verify` is green; `ModularityTest` and `ArchitectureTest` pass
+- [x] `mvn clean verify` is green; `ModularityTest` and `ArchitectureTest` pass
 
 ## Notes
 

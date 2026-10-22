@@ -38,15 +38,18 @@ public class Beer {
 
 	private @Nullable String description;
 
+	private @Nullable UUID contributorId;
+
 	private Instant createdAt;
 
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
-			@Nullable String description) {
+			@Nullable String description, @Nullable UUID contributorId) {
 		this.brewery = brewery;
 		this.name = name;
 		this.style = style;
 		this.abv = abv;
 		this.description = description;
+		this.contributorId = contributorId;
 		this.createdAt = Instant.now();
 	}
 
@@ -57,7 +60,17 @@ public class Beer {
 		Assert.hasText(style, "style must not be blank");
 		Assert.notNull(abv, "abv must not be null");
 		Assert.isTrue(abv.signum() >= 0, "abv must not be negative");
-		return new Beer(brewery, name, style, abv, description);
+		return new Beer(brewery, name, style, abv, description, null);
+	}
+
+	// Do not add a description parameter: a user-added beer carries facts only,
+	// as an imported one does, with no review before everyone sees it.
+	public static Beer addedBy(UUID contributorId, Brewery brewery, String name, String style,
+			BigDecimal abv) {
+		Assert.notNull(contributorId, "contributorId must not be null");
+		Beer beer = create(brewery, name.strip(), style, abv, null);
+		beer.contributorId = contributorId;
+		return beer;
 	}
 
 }

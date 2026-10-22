@@ -124,7 +124,7 @@ cross-module *reads* via the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
-| `catalog` | Beers, breweries, styles; search & filtering | — |
+| `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)* | `identity` (current user, recorded as a user-added row's contributor) |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
@@ -178,8 +178,8 @@ TypeScript vocabulary a client meets — is catalogued in
 ### Data model sketch
 
 ```
-catalog.brewery(id, name, country, city, source, wikidata_qid, created_at) — unique (fold_name(name), lower(country)), unique (wikidata_qid)
-catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, created_at) — unique (brewery_id, name), unique (wikidata_qid)
+catalog.brewery(id, name, country, city, source, wikidata_qid, contributor_id, created_at) — unique (fold_name(name), lower(country)), unique (wikidata_qid)
+catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at)
@@ -199,8 +199,22 @@ column, and a row the application inserts is marked `USER` by the column's
 default, which `V008` sets once the seed and the import have written theirs. Every
 Wikidata-sourced row can therefore be found, or removed, in one statement. A
 brewery is unique by its name, with case, whitespace and punctuation folded by
-`catalog.fold_name()`, within its country. Seeded beers and breweries keep the
-ids `V004` gave them, so cellar entries that point at them survive the import.
+`catalog.fold_name()`, within its country, and a beer by its folded name within
+its brewery. Seeded beers and breweries keep the ids `V004` gave them, so
+cellar entries that point at them survive the import.
+
+**A signed-in user can add a beer the catalog lacks**, and its brewery with it
+when that is missing too; the row is visible to everyone at once, with no
+review. It is held to the imported catalog's bar: a style the catalog already
+has, an ABV, and for a new brewery a country from a fixed list — every
+ISO 3166-1 entry, named in the English form the import uses so the country
+filter matches it. A user-added row records its contributor (the identity
+`sub`) in `contributor_id`, which no read response carries; only a `USER` row
+may have one, and it may be cleared while the row stays. Adding a beer or
+brewery that the unique indexes above already hold is refused rather than
+merged: `ContributionService` looks for the existing row first, and the index
+decides a concurrent race, which the losing request's retry turns into the
+same refusal ([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md)).
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
@@ -276,12 +290,15 @@ REST, JSON, versioned under `/api/v1`. Built:
 GET    /api/v1/beers?query=&style=&breweryId=&country=&minAbv=&maxAbv=&page=&size=&sort=
 GET    /api/v1/beers/{id}
 GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
-GET    /api/v1/breweries?page=&size=
+GET    /api/v1/breweries?query=&page=&size=          -> query: case-insensitive substring of the brewery's name
+GET    /api/v1/styles                               -> every style a catalog beer has, the vocabulary a beer is added with
+GET    /api/v1/countries                            -> every country a brewery can be in: ISO 3166-1 code and the English name stored
 GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
+POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId)
 GET    /api/v1/cellar                              -> the caller's entries, each with its bottles and a derived quantity
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle

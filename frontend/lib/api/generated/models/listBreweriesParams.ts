@@ -7,6 +7,12 @@
 
 export type ListBreweriesParams = {
 /**
+ * Case-insensitive substring match on brewery name, at most 100 characters
+ * @minLength 0
+ * @maxLength 100
+ */
+query?: string;
+/**
  * Zero-based page index, 0-10000
  * @minimum 0
  * @maximum 10000

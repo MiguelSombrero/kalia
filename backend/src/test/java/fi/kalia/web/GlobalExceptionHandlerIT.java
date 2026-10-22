@@ -98,7 +98,7 @@ class GlobalExceptionHandlerIT {
 	// reaching the Allow contract.
 	@Test
 	void unsupportedMethodKeepsSpringBootsAllowHeader() {
-		client.post().uri("/api/v1/beers")
+		client.post().uri("/api/v1/styles")
 				.header("Authorization", bearer())
 				.exchange()
 				.expectStatus().isEqualTo(HttpStatus.METHOD_NOT_ALLOWED)

@@ -14,6 +14,8 @@ CREATE FUNCTION catalog.fold_name(name text) RETURNS text
 -- source records where a row came from (ADR-0077). Its default marks V004's
 -- seed rows, which predate the column, as SEED; V008 changes it to USER, since
 -- the entities do not map the column and every row the app inserts is a user's.
+-- contributor_id is the identity sub of the user who added a USER row; it is
+-- never served by any read, and may be cleared while the row is kept.
 CREATE TABLE catalog.brewery (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name         text NOT NULL,
@@ -21,8 +23,10 @@ CREATE TABLE catalog.brewery (
     city         text,
     source       text NOT NULL DEFAULT 'SEED' CHECK (source IN ('SEED', 'WIKIDATA', 'USER')),
     wikidata_qid text UNIQUE,
+    contributor_id uuid,
     created_at   timestamptz NOT NULL DEFAULT now(),
-    CHECK ((source = 'WIKIDATA') = (wikidata_qid IS NOT NULL))
+    CHECK ((source = 'WIKIDATA') = (wikidata_qid IS NOT NULL)),
+    CHECK (contributor_id IS NULL OR source = 'USER')
 );
 
 CREATE UNIQUE INDEX brewery_folded_name_country_idx
@@ -37,10 +41,14 @@ CREATE TABLE catalog.beer (
     description  text,
     source       text NOT NULL DEFAULT 'SEED' CHECK (source IN ('SEED', 'WIKIDATA', 'USER')),
     wikidata_qid text UNIQUE,
+    contributor_id uuid,
     created_at   timestamptz NOT NULL DEFAULT now(),
     CHECK ((source = 'WIKIDATA') = (wikidata_qid IS NOT NULL)),
-    UNIQUE (brewery_id, name)
+    CHECK (contributor_id IS NULL OR source = 'USER')
 );
+
+CREATE UNIQUE INDEX beer_brewery_folded_name_idx
+    ON catalog.beer (brewery_id, catalog.fold_name(name));
 
 CREATE INDEX beer_brewery_id_idx ON catalog.beer (brewery_id);
 
