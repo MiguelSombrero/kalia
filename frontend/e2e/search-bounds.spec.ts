@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
 
-const ignoredNote = "A filter in this search wasn't valid, so it was ignored.";
+const ignoredNote = "Part of this search wasn't valid, so it was ignored.";
 
 test.describe("a hand-edited value the API would refuse", () => {
   for (const [what, search] of [

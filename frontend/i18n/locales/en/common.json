@@ -122,7 +122,7 @@
       "previous": "← Previous",
       "next": "Next →"
     },
-    "ignoredFilter": "A filter in this search wasn't valid, so it was ignored.",
+    "ignoredFilter": "Part of this search wasn't valid, so it was ignored.",
     "pastLastPage": {
       "title": "This search has no page {{page}}.",
       "hint_one": "It has only {{count}} page.",

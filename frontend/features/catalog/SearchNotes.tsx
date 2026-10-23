@@ -9,10 +9,6 @@ export const IgnoredFilterNote = async ({ locale }: { locale: Locale }) => {
   return <p className="border-l-2 border-border pl-3 text-sm text-muted-foreground">{t("catalog.ignoredFilter")}</p>;
 };
 
-export const isPastLastPage = (result: BeerPage): boolean => {
-  return result.content.length === 0 && result.totalElements > 0;
-};
-
 export const PastLastPage = async ({
   locale,
   params,

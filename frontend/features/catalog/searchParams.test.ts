@@ -49,6 +49,10 @@ describe("normalizeBeerSearchParams", () => {
     });
   });
 
+  it("writes a kept ABV the way the number input reads it back", () => {
+    expect(normalizeBeerSearchParams({ minAbv: "5.", maxAbv: ".50" }).params).toEqual({ minAbv: "0.5", maxAbv: "5" });
+  });
+
   it("keeps a query of exactly the API's maximum length", () => {
     const query = "a".repeat(100);
 

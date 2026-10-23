@@ -1,4 +1,4 @@
-import { SORT_OPTIONS, type BeerSearchParams } from "./types";
+import { SORT_OPTIONS, type BeerPage, type BeerSearchParams } from "./types";
 
 // The search API's own bounds (CatalogController); a value past one is a 400.
 export const MAX_ABV = 100;
@@ -31,7 +31,16 @@ const isSize = (value: string): boolean => {
 
 /** Whether the search API serves this zero-based page at this size. */
 export const isReachablePage = (page: number, size: number | undefined): boolean => {
-  return page * (size ?? DEFAULT_PAGE_SIZE) <= MAX_OFFSET;
+  return page <= lastReachablePage(size);
+};
+
+/** The last zero-based page the search API serves at this size. */
+export const lastReachablePage = (size: number | undefined): number => {
+  return Math.floor(MAX_OFFSET / (size ?? DEFAULT_PAGE_SIZE));
+};
+
+export const isPastLastPage = (result: BeerPage): boolean => {
+  return result.totalElements > 0 && result.page >= result.totalPages;
 };
 
 const CHECKS: Record<ParamKey, (value: string, size: number | undefined) => boolean> = {
@@ -56,7 +65,7 @@ export const normalizeBeerSearchParams = (raw: BeerSearchParams): NormalizedSear
       continue;
     }
     if (CHECKS[key](value, size)) {
-      params[key] = value;
+      params[key] = key === "minAbv" || key === "maxAbv" ? String(Number(value)) : value;
     } else {
       ignored.push(key);
     }

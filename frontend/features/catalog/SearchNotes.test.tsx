@@ -1,14 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
-import { IgnoredFilterNote, isPastLastPage, PastLastPage } from "./SearchNotes";
+import { isPastLastPage } from "./searchParams";
+import { IgnoredFilterNote, PastLastPage } from "./SearchNotes";
 import type { BeerPage } from "./types";
 
 const pastLast: BeerPage = { content: [], totalElements: 42, totalPages: 3, page: 40 };
 
 describe("IgnoredFilterNote", () => {
   it.each([
-    ["en", "A filter in this search wasn't valid, so it was ignored."],
+    ["en", "Part of this search wasn't valid, so it was ignored."],
     ["fi", "Virheellinen hakuehto jätettiin huomiotta."],
   ] as const)("says in %s that a filter was ignored", async (locale, text) => {
     const { container } = render(await IgnoredFilterNote({ locale }));

@@ -2,7 +2,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { buildBeerSearchParams } from "./links";
-import { isReachablePage } from "./searchParams";
+import { isPastLastPage, lastReachablePage } from "./searchParams";
 import type { BeerPage, BeerSearchParams } from "./types";
 
 const pageHref = (locale: Locale, params: BeerSearchParams, page: number): string => {
@@ -27,20 +27,19 @@ export const Pagination = async ({
   params: BeerSearchParams;
   result: BeerPage;
 }) => {
-  if (result.totalPages <= 1 || result.page >= result.totalPages) {
+  if (result.totalPages <= 1 || isPastLastPage(result)) {
     return null;
   }
 
   const { t } = await getTranslation(locale);
   const linkClasses = buttonVariants("outline");
-  const hasNext =
-    result.page < result.totalPages - 1 &&
-    isReachablePage(result.page + 1, params.size ? Number(params.size) : undefined);
+  const totalPages = Math.min(result.totalPages, lastReachablePage(params.size ? Number(params.size) : undefined) + 1);
+  const hasNext = result.page < totalPages - 1;
 
   return (
     <nav aria-label={t("catalog.pagination.label")} className="flex flex-wrap items-center justify-between gap-3">
       <span className="text-sm text-muted-foreground">
-        {t("catalog.pagination.summary", { page: result.page + 1, totalPages: result.totalPages })}
+        {t("catalog.pagination.summary", { page: result.page + 1, totalPages })}
       </span>
       <div className="flex gap-2">
         {result.page > 0 && (

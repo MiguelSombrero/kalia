@@ -65,6 +65,7 @@ describe("Pagination", () => {
       }),
     );
 
+    expect(screen.getByText("Page 101 of 101")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /previous/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /next/i })).not.toBeInTheDocument();
   });
