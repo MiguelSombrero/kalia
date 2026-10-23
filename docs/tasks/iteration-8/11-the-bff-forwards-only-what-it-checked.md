@@ -1,6 +1,6 @@
 # Task 11: The BFF forwards only what it has checked, and fails closed on tokens
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -83,18 +83,18 @@ a dead token.
 
 ## Acceptance criteria
 
-- [ ] A path parameter containing `/`, `..`, `?` or `#` cannot make the BFF
+- [x] A path parameter containing `/`, `..`, `?` or `#` cannot make the BFF
       call any route other than the one its function names — vitest tests on
       the central fix, confirmed to fail against today's interpolation
-- [ ] `beerReturnPath` refuses an off-site URL, a protocol-relative URL and a
+- [x] `beerReturnPath` refuses an off-site URL, a protocol-relative URL and a
       non-UUID id, and accepts a valid beer id — vitest tests against the real
       module, confirmed to fail with the guard removed
-- [ ] A stored account with no `expires_at` is renewed rather than sending its
+- [x] A stored account with no `expires_at` is renewed rather than sending its
       token unchanged, and its session ends if renewal fails — vitest tests,
       confirmed to fail against today's `hasExpired`
-- [ ] Signing in from a beer page still returns there, in a browser — the
+- [x] Signing in from a beer page still returns there, in a browser — the
       existing Playwright sign-in spec passes
-- [ ] `npm test` and `npm run test:e2e` are green
+- [x] `npm test` and `npm run test:e2e` are green
 
 ## Notes
 

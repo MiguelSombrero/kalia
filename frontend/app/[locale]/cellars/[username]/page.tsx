@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { getPublicCellar, PublicCellarView } from "@/features/cellar";
+import { getPublicCellar, PublicCellarView, type PublicCellar } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
@@ -10,10 +10,23 @@ import { Page } from "@/components/ui/page";
 
 type Props = { params: Promise<{ locale: string; username: string }> };
 
+// Do not pass the route param on as it is: Next.js hands a dynamic segment
+// over still percent-encoded, and the API client encodes it again, so a
+// username with any non-ASCII letter would reach the backend double-encoded.
+const publicCellarAt = async (encodedUsername: string): Promise<PublicCellar | null> => {
+  let username: string;
+  try {
+    username = decodeURIComponent(encodedUsername);
+  } catch {
+    return null;
+  }
+  return getPublicCellar(username);
+};
+
 export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
   const { locale: rawLocale, username } = await params;
   const locale = toLocale(rawLocale);
-  const [cellar, { t }] = await Promise.all([getPublicCellar(username), getTranslation(locale)]);
+  const [cellar, { t }] = await Promise.all([publicCellarAt(username), getTranslation(locale)]);
 
   // noindex/nofollow on every branch: "anyone with the link" is the promise
   // the visibility control makes (ADR-0050), and a not-found page has nothing
@@ -42,7 +55,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 const PublicCellarPage = async ({ params }: Props) => {
   const { locale: rawLocale, username } = await params;
   const locale = toLocale(rawLocale);
-  const [cellar, session] = await Promise.all([getPublicCellar(username), auth()]);
+  const [cellar, session] = await Promise.all([publicCellarAt(username), auth()]);
 
   if (!cellar) {
     notFound();
