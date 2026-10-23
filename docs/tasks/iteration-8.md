@@ -23,7 +23,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [05](iteration-8/05-cache-catalog-reads.md) | Cache catalog reads | dropped |
 | [18](iteration-8/18-catalog-search-served-by-an-index-at-150k.md) | Catalog search stays within budget at 150k beers | needs-refinement |
 | [06](iteration-8/06-feed-events-delivered-at-least-once.md) | Feed events are delivered at least once, as documented | refined |
-| [07](iteration-8/07-front-page-feed-reaches-public-lines.md) | The front page's feed reaches public lines past private ones | refined |
+| [07](iteration-8/07-front-page-feed-reaches-public-lines.md) | The front page's feed reaches public lines past private ones | done |
 | [08](iteration-8/08-catalog-search-bounded-end-to-end.md) | Catalog search never lands on the error page | refined |
 | [09](iteration-8/09-a-username-is-a-permanent-address.md) | A username belongs to one person, permanently | refined |
 | [10](iteration-8/10-cellar-reads-joined-in-the-backend.md) | Cellar reads arrive joined with their beers, from the backend | refined |

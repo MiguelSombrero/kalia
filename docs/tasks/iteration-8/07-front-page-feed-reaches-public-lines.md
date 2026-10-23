@@ -1,6 +1,6 @@
 # Task 07: The front page's feed reaches public lines past private ones
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -94,7 +94,7 @@ onward when a page comes back empty was considered and rejected.
 - [x] A page with no lines but a `nextCursor` offers "load more" rather than
       the empty state — component test, confirmed to fail against today's
       `FeedList`
-- [ ] The front page shows the public line rather than the empty state, in a
+- [x] The front page shows the public line rather than the empty state, in a
       browser against the full stack — Playwright spec
 - [x] `mvn clean verify` and `npm test` are green
 
