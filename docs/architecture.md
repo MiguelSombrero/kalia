@@ -101,7 +101,10 @@ Key properties:
 Base package `fi.kalia`, one Spring Modulith module per subdomain — with
 one sanctioned exception: `fi.kalia.web` holds shared, module-neutral
 exception-handling advice with no subdomain of its own
-([ADR-0014](adr/0014-shared-exception-handling.md)). Inside each
+([ADR-0014](adr/0014-shared-exception-handling.md)). The base package
+itself holds only application-wide wiring that belongs to no module: the
+entry point, its required-configuration check, and event publication
+resubmission. Inside each
 subdomain module, DDD-lite layers as direct subpackages — all
 Modulith-internal by default
 ([ADR-0007](adr/0007-backend-package-structure.md)): `domain` (rich JPA
@@ -174,6 +177,15 @@ TypeScript vocabulary a client meets — is catalogued in
   so framework infrastructure stays out of the persistence unit; its
   `event_publication` table lives in the `public` schema, created by Flyway
   from Modulith's own DDL.
+- Delivery through the registry is at-least-once
+  ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)).
+  `fi.kalia.EventPublicationResubmission` resubmits a publication whose
+  listener has not completed: at startup, then on a schedule once its latest
+  attempt is old enough. After a capped number of attempts it is logged at
+  `ERROR` and left in `event_publication`, which otherwise holds only
+  incomplete publications, since a completed one is deleted. The timings and
+  the cap are `kalia.events.resubmission.*` in `application.properties`. Every listener must therefore tolerate
+  receiving the same event twice.
 
 ### Data model sketch
 
@@ -182,7 +194,7 @@ catalog.brewery(id, name, country, city, source, wikidata_qid, contributor_id, c
 catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
-profile.profile(id, username, cellar_public, created_at, updated_at)
+profile.profile(id, username, cellar_public, created_at, updated_at) — unique (lower(username))
 feed.line(id, event_id, user_id, beer_id, quantity, brewed_date, occurred_at, sequence_number, created_at, updated_at)
 ```
 
@@ -254,8 +266,13 @@ anything needs one, rather than at sign-in (ADR-0049). `username` is copied
 from the token's `preferred_username` at that moment and never written again,
 even if a later token carries a different one; it is both the profile's
 whole public identity and the URL segment a public cellar is addressed by
-([ADR-0050](adr/0050-public-cellar-addressing.md)). `cellar_public` defaults
-to `false`, and **a missing profile row reads as private** — the rule every
+([ADR-0050](adr/0050-public-cellar-addressing.md)). **A username belongs to
+one profile ever**, compared regardless of case, and a profile row is never
+deleted, so a departed account's name stays reserved; a newcomer whose
+Keycloak username a profile already holds gets no profile, and the profile
+routes answer `409`
+([ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md)).
+`cellar_public` defaults to `false`, and **a missing profile row reads as private** — the rule every
 reader of it must apply, since lazy creation means the row may legitimately
 not exist yet. **Two first-ever reads for the same brand-new profile both
 succeed** on the same `@Retryable` shape as the cellar entry above
@@ -263,7 +280,8 @@ succeed** on the same `@Retryable` shape as the cellar entry above
 `ProfileService.currentProfile` and `changeCellarVisibility` each retry once
 on their own `profile_pkey` violation, the second annotated separately since
 its internal call to the first is a same-bean self-invocation Spring's proxy
-cannot intercept.
+cannot intercept. Two accounts racing for one username land in the same
+retry, whose own check then refuses the loser with `409`.
 
 **A `feed.line` row is a record of an act, not a view of a current holding**
 ([ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md),
@@ -271,8 +289,9 @@ cannot intercept.
 `brewed_date` are frozen from the `cellar.BottleAdded` event that created the
 row and never change again, even if the bottles they describe are later
 edited or removed. `event_id` is the idempotency key a listener checks before
-inserting, since Spring Modulith's event publication registry is
-at-least-once. Every addition is recorded whatever the owner's cellar
+inserting, since a publication not marked complete is delivered again
+([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)).
+Every addition is recorded whatever the owner's cellar
 visibility — the read, not the write, is where that rule applies
 ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)) — so the table
 retains rows for cellars that are currently private.
@@ -293,7 +312,7 @@ GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 
 GET    /api/v1/breweries?query=&page=&size=          -> query: case-insensitive substring of the brewery's name
 GET    /api/v1/styles                               -> every style a catalog beer has, the vocabulary a beer is added with
 GET    /api/v1/countries                            -> every country a brewery can be in: ISO 3166-1 code and the English name stored
-GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise
+GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise, 400 for a username over 255 characters
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
@@ -303,8 +322,8 @@ GET    /api/v1/cellar                              -> the caller's entries, each
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
-GET    /api/v1/profile                              -> the caller's own profile (username, current cellar visibility)
-PATCH  /api/v1/profile/visibility                   -> change whether the caller's cellar is public
+GET    /api/v1/profile                              -> the caller's own profile (username, current cellar visibility); 409 when another account holds the caller's username
+PATCH  /api/v1/profile/visibility                   -> change whether the caller's cellar is public; 409 as above
 ```
 
 The cellar's endpoints (iteration 5) are two-level, following the data model in
@@ -586,6 +605,10 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   user by Keycloak's `preferred_username`, the same username the profile, the
   feed and a public cellar show, never by Keycloak's first and last name
   ([ADR-0071](adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
+  A signed-in user whose username another account holds is sent from the
+  front page, the cellar and the profile to `/[locale]/username-taken`,
+  which says so and offers sign-out
+  ([ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md)).
 - **The backend is an OAuth2 resource server**
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)): it validates
   each bearer token's signature, issuer and `kalia-backend` audience, and the
@@ -937,6 +960,8 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) | A catalog that could only grow by migration is seeded once from Wikidata and owned by Kalia, taking facts only and recording each row's source | accepted | 2026-10-15 |
 | [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md) | Catalog reads that break their budget at 150k beers lack an index, not a cache, so the catalog stays uncached | accepted | 2026-10-18 |
 | [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) | A brewery's country, shown in English to every reader, becomes an ISO 3166-1 code named in the reader's language by the runtime | accepted | 2026-10-22 |
+| [ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md) | A reused username would hand old links to someone else, so a username is unique regardless of case and never reused | accepted | 2026-10-22 |
+| [ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
 
 ### Engineering process and documentation
 

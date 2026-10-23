@@ -337,6 +337,12 @@
       }
     }
   },
+  "usernameTaken": {
+    "pageTitle": "Username taken — Kalia",
+    "title": "This username is taken",
+    "message": "The username {{username}} already belongs to another Kalia account.",
+    "hint": "Sign out if you want to use Kalia with a different account."
+  },
   "signUp": {
     "pageTitle": "Create an account — Kalia",
     "title": "Create your account",

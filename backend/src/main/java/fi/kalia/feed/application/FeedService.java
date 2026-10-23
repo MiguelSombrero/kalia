@@ -44,9 +44,9 @@ public class FeedService {
 
 	public void recordBottleAdded(UUID eventId, UUID userId, UUID beerId, int quantity,
 			@Nullable LocalDate brewedDate, Instant occurredAt) {
-		// Do not remove: the event publication registry is at-least-once, so
-		// this may run twice for one BottleAdded (ADR-0058). eventId is the
-		// idempotency key.
+		// Do not remove: a publication not marked complete is resubmitted
+		// (ADR-0081), so this may run twice for one BottleAdded. eventId is
+		// the idempotency key (ADR-0058).
 		if (lines.existsByEventId(eventId)) {
 			return;
 		}

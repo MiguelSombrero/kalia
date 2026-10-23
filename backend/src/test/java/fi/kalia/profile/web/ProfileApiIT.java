@@ -8,6 +8,7 @@ import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.profile.domain.ProfileRepository;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,12 +45,20 @@ class ProfileApiIT {
 
 	private UUID userBId;
 
+	// Distinct per test: profile rows outlive each method, and a username is
+	// never given to a second account.
+	private String userAName;
+
+	private String userBName;
+
 	@BeforeEach
 	void setUp() {
 		userAId = UUID.randomUUID();
 		userBId = UUID.randomUUID();
-		given(jwtDecoder.decode("user-a-token")).willReturn(TestTokens.user(userAId.toString(), "user-a"));
-		given(jwtDecoder.decode("user-b-token")).willReturn(TestTokens.user(userBId.toString(), "user-b"));
+		userAName = "user-a-" + userAId;
+		userBName = "user-b-" + userBId;
+		given(jwtDecoder.decode("user-a-token")).willReturn(TestTokens.user(userAId.toString(), userAName));
+		given(jwtDecoder.decode("user-b-token")).willReturn(TestTokens.user(userBId.toString(), userBName));
 	}
 
 	@Test
@@ -58,7 +67,7 @@ class ProfileApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo("user-a");
+					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo(userAName);
 					assertThat((boolean) JsonPath.read(body, "$.cellarPublic")).isTrue();
 				});
 
@@ -120,7 +129,7 @@ class ProfileApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo("user-a");
+					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo(userAName);
 					assertThat((boolean) JsonPath.read(body, "$.cellarPublic")).isTrue();
 				});
 	}
@@ -145,9 +154,30 @@ class ProfileApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo("user-b");
+					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo(userBName);
 					assertThat((boolean) JsonPath.read(body, "$.cellarPublic")).isFalse();
 				});
+	}
+
+	@Test
+	void aNewcomerWhoseUsernameIsHeldByAnotherAccountIsToldItIsTaken() {
+		readProfile(USER_A).expectStatus().isOk();
+		given(jwtDecoder.decode("newcomer-token")).willReturn(TestTokens.user(UUID.randomUUID().toString(), userAName));
+
+		expectUsernameTaken(readProfile("Bearer newcomer-token"));
+		expectUsernameTaken(changeVisibility("Bearer newcomer-token", true));
+
+		assertThat(profiles.findByUsernameIgnoringCase(userAName).orElseThrow().getId()).isEqualTo(userAId);
+		assertThat(profiles.findById(userAId).orElseThrow().isCellarPublic()).isFalse();
+	}
+
+	@Test
+	void aNewcomerWhoseUsernameDiffersOnlyInCaseIsToldItIsTaken() {
+		readProfile(USER_A).expectStatus().isOk();
+		given(jwtDecoder.decode("newcomer-token"))
+				.willReturn(TestTokens.user(UUID.randomUUID().toString(), userAName.toUpperCase(Locale.ROOT)));
+
+		expectUsernameTaken(readProfile("Bearer newcomer-token"));
 	}
 
 	@Test
@@ -163,6 +193,11 @@ class ProfileApiIT {
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(Map.of("cellarPublic", cellarPublic))
 				.exchange();
+	}
+
+	private static void expectUsernameTaken(RestTestClient.ResponseSpec response) {
+		response.expectStatus().isEqualTo(409)
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
 	}
 
 	private RestTestClient.ResponseSpec readProfile(String bearer) {

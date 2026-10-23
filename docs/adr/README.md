@@ -94,12 +94,17 @@ nobody has committed to becomes a constraint anyway.
   an already-open browser by polling through a Server Action, not a stream;
   no new route-handler kind, no CSP change, no instance-affinity limitation
   to accept.
+- [ADR-0081](0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)
+  — an event publication whose listener has not completed is resubmitted at
+  startup and every minute, five attempts at most, by Kalia's own component
+  rather than Modulith's restart property. A completed publication is
+  deleted.
 
 ## Profiles and public cellars
 
 What a user is to other users, and how the one thing they can publish is
-addressed. Read as a pair: the first decides the identifier, the second
-decides the URL built on it.
+addressed. The first decides the identifier, the second the URL built on it,
+and the third keeps that identifier from ever passing to someone else.
 
 - [ADR-0049](0049-profile-module-and-public-identity.md) — a `profile` module
   holds the user-facing identity: the Keycloak username copied once and
@@ -109,6 +114,10 @@ decides the URL built on it.
   Amended by [ADR-0059](0059-feed-respects-cellar-visibility.md): "anyone with
   the link" no longer means only whoever the owner told directly, now that a
   feed hands the link to every front-page visitor.
+- [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md)
+  — a username belongs to one profile ever, compared regardless of case. A
+  departed account's name stays reserved, and a newcomer whose Keycloak
+  username is held is told the name is taken.
 
 ## Backend structure and conventions
 

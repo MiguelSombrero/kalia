@@ -46,7 +46,17 @@ vi.mock("@/features/cellar", async (importOriginal) => ({
     return <div data-testid="cellar-summary" />;
   },
 }));
-vi.mock("@/features/profile", () => ({ getProfile }));
+vi.mock("@/features/profile/api", () => ({ getProfile }));
+// Throws like the real one, so the page never renders past it.
+const { redirect } = vi.hoisted(() => ({
+  redirect: vi.fn(() => {
+    throw new Error("NEXT_REDIRECT");
+  }),
+}));
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  redirect,
+}));
 vi.mock("@/auth", () => ({ auth }));
 
 import Home, { generateMetadata } from "./page";
@@ -193,6 +203,16 @@ describe("Home, signed in", () => {
     expect(
       screen.queryByText("Your own cellar is private, so your additions won't show up here."),
     ).not.toBeInTheDocument();
+  });
+
+  // Where a new account lands after registering, so where it learns the name is taken.
+  it("sends a visitor whose username another account holds to the page that says so", async () => {
+    readFeed.mockResolvedValue(emptyFeed);
+    auth.mockResolvedValue({ user: { name: "ada" } });
+    getProfile.mockRejectedValue(apiError("http", "status 409", { status: 409 }));
+
+    await expect(Home({ params })).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/en/username-taken");
   });
 });
 
