@@ -53,7 +53,8 @@
     },
     "error": {
       "message": "Viimeaikaisen toiminnan lataus ei onnistunut.",
-      "retry": "Yritä uudelleen"
+      "retry": "Yritä uudelleen",
+      "retrying": "Yritetään uudelleen…"
     }
   },
   "home": {

@@ -53,7 +53,8 @@
     },
     "error": {
       "message": "Couldn't load recent activity.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "retrying": "Trying again…"
     }
   },
   "home": {

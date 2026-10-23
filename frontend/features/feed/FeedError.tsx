@@ -18,10 +18,10 @@ export const FeedError = () => {
         <Button
           type="button"
           variant="outline"
-          disabled={isRetrying}
+          pending={isRetrying}
           onClick={() => startRetry(() => router.refresh())}
         >
-          {t("feed.error.retry")}
+          {isRetrying ? t("feed.error.retrying") : t("feed.error.retry")}
         </Button>
       }
     >

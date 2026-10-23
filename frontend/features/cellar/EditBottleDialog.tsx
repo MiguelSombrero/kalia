@@ -174,7 +174,7 @@ export const EditBottleDialog = ({
 
           <div className="mt-2 flex justify-end gap-2">
             <DialogClose className={buttonVariants("outline")}>{t("cellar.edit.cancel")}</DialogClose>
-            <Button type="submit" variant="primary" disabled={updateBottle.isPending}>
+            <Button type="submit" variant="primary" pending={updateBottle.isPending}>
               {updateBottle.isPending ? t("cellar.edit.submitting") : t("cellar.edit.submit")}
             </Button>
           </div>

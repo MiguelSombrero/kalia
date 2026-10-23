@@ -158,7 +158,7 @@ two-layer rule they sit in is
 
 | Token | Means | Reach for it when |
 |---|---|---|
-| `--animate-feed-reveal` | Content the visitor just asked to see, highlighted once so the eye finds it. | Feed entries shown by pressing "N new". Only under `motion-safe:`, so `prefers-reduced-motion` skips it; never on content that arrived without being asked for. |
+| `--animate-feed-reveal` | Content the visitor just asked to see, highlighted once so the eye finds it. | Feed entries shown by pressing "N new", and the catalog row of a beer the visitor has just added. Only under `motion-safe:`, so `prefers-reduced-motion` skips it; never on content that arrived without being asked for. |
 
 There is no elevation token: nothing in this identity casts a shadow. A dialog
 or a toast is told from the page by its ink edge and, for a dialog, the scrim.
@@ -238,9 +238,13 @@ listed here. A new pairing gets a row in the pull request that introduces it.
 | `--color-mark-foam` | `--color-mark-tile` | non-text |
 
 What the check cannot see: a fill drawn at reduced opacity (a primary or
-destructive button's hover, the dialog scrim) is a blend of two tokens, not a
-token. Those stay close enough to their solid pairing to pass, and the
-Playwright `@axe-core/playwright` scans remain the check on the rendered page.
+destructive button's hover, the dialog scrim, a button sending its form) is a
+blend of two tokens, not a token. Those stay close enough to their solid
+pairing to pass, and the Playwright `@axe-core/playwright` scans remain the
+check on the rendered page. axe skips a disabled control, so it does not see
+a button sending its form: that strength was measured by hand against its
+label, and [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)
+records the figures.
 
 The mark is held part by part against what each part is seen on: the tile
 against the page, and the bottle's edge, the beer and the foam against the
@@ -347,6 +351,23 @@ How Kalia tells a visitor what happened. Chosen in
   ink edge, the red cell with the cross, and the message. A failure to load
   part of a page is the same box where that part would be, with a way to try
   again.
+- **A refusal because something already exists names it and links to it.**
+  The box above the button says which beer or brewery the catalog already
+  has and offers the way to it, never a generic error. Chosen in
+  [iteration 8 task 03](tasks/iteration-8/03-add-beer-ui.md)
+  ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)).
+- **A button sending its form says so, and fades only as far as its label
+  stays legible.** From the press until the request settles, its label names
+  the action in progress (*Adding…*, *Saving…*), it is disabled, it is drawn
+  faded with the progress cursor, and hover does not change it. The fade is
+  `Button`'s `pending` state, set to the faintest strength at which its label
+  still meets AA as text; reach for that state rather than a fade of a
+  button's own. A destructive button is never left waiting this way, because
+  white on its fill falls below AA at that strength: a removal closes its
+  dialog at once and reports by toast. A control disabled for any other
+  reason is not this state. Chosen in
+  [iteration 8 task 03](tasks/iteration-8/03-add-beer-ui.md)
+  ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)).
 - **The outcome of something already done is a toast, and it goes away.** A
   toast reports success in green or failure in red, the cell beside the
   message, and dismisses itself. Nothing about a save stays on the page once

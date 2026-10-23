@@ -163,6 +163,17 @@ describe("AddBottleDialog", () => {
     expect(addBottlesAction).not.toHaveBeenCalled();
   });
 
+  it("says it is adding, and shows the pending state, while the add is in flight", async () => {
+    addBottlesAction.mockReturnValue(new Promise(() => {}));
+    await openDialog();
+
+    submit();
+
+    const pending = await screen.findByRole("button", { name: "Adding…" });
+    expect(pending).toBeDisabled();
+    expect(pending).toHaveAttribute("data-pending");
+  });
+
   it("keeps the dialog open and reports a failed add", async () => {
     addBottlesAction.mockRejectedValue(new Error("boom"));
     await openDialog();
