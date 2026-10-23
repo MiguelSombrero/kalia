@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-30
+- **Amended:** 2026-10-22 by [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md) — the "collision at sign-up" trigger fired and was answered without a display name
 
 ## Context
 
@@ -117,3 +118,12 @@ written and tested — so it buys a simplification it does not actually deliver.
   handle-plus-display-name alternative, which is additive from here — a
   display-name column alongside the immutable identifier — rather than a
   migration of the URL.
+
+> **Amended 2026-10-22.** The collision half of this trigger fired: open
+> registration let a deleted account's username be registered again, and
+> the first Consequence above ("can never break") did not hold.
+> [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md)
+> answers it without reopening the handle-plus-display-name alternative. A
+> username is unique regardless of case and never reused, and a newcomer
+> whose name is held is told so. The rename half of the trigger stands as
+> written.

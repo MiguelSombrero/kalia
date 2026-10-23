@@ -35,9 +35,13 @@ public class ProfileService {
 	}
 
 	// Empty for an unknown username, a missing profile row and a private cellar
-	// alike — the caller must not be able to tell them apart (ADR-0050).
+	// alike — the caller must not be able to tell them apart (ADR-0050). Do not
+	// drop the exact-spelling filter: the public route echoes the requested
+	// spelling as the owner's username, and the frontend's owner check compares
+	// it to the stored one.
 	public Optional<UUID> publicCellarOwnerId(String username) {
-		return profiles.findFirstByUsernameOrderByCreatedAtDesc(username)
+		return profiles.findByUsernameIgnoringCase(username)
+				.filter(profile -> profile.getUsername().equals(username))
 				.filter(Profile::isCellarPublic)
 				.map(Profile::getId);
 	}
@@ -45,11 +49,14 @@ public class ProfileService {
 	// ADR-0057's shape, applied to the module it named as a likely second
 	// case: two first-ever requests for the same brand-new user both see no
 	// row and both insert; the loser trips `profile_pkey` and retries into
-	// the winner's now-committed row instead of 500ing. Each retry's own
-	// transaction is verified by ProfileServiceConcurrencyIT.
+	// the winner's now-committed row instead of 500ing. Two accounts racing for
+	// one username trip profile_username_lower_key instead, and the retry's own
+	// check refuses the loser (ADR-0080) — so do not narrow the retry to
+	// profile_pkey. Each retry's own transaction is verified by
+	// ProfileServiceConcurrencyIT.
 	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
 	public Profile currentProfile(UUID userId, String username) {
-		return profiles.findById(userId).orElseGet(() -> profiles.save(Profile.create(userId, username)));
+		return profiles.findById(userId).orElseGet(() -> create(userId, username));
 	}
 
 	// Its own retry, not just currentProfile's: a self-invocation of another
@@ -61,6 +68,13 @@ public class ProfileService {
 		Profile profile = currentProfile(userId, username);
 		profile.changeCellarVisibility(cellarPublic);
 		return profile;
+	}
+
+	private Profile create(UUID userId, String username) {
+		if (profiles.findByUsernameIgnoringCase(username).isPresent()) {
+			throw new UsernameTakenException();
+		}
+		return profiles.save(Profile.create(userId, username));
 	}
 
 }

@@ -52,7 +52,7 @@ class ProfileServiceTest {
 		UUID userId = UUID.randomUUID();
 		Profile profile = Profile.create(userId, "alice");
 		profile.changeCellarVisibility(true);
-		given(profiles.findFirstByUsernameOrderByCreatedAtDesc("alice")).willReturn(Optional.of(profile));
+		given(profiles.findByUsernameIgnoringCase("alice")).willReturn(Optional.of(profile));
 
 		assertThat(service.publicCellarOwnerId("alice")).contains(userId);
 	}
@@ -61,8 +61,8 @@ class ProfileServiceTest {
 	@Test
 	void publicCellarOwnerIdIsEmptyForAPrivateCellarOrAnUnknownUsername() {
 		Profile privateProfile = Profile.create(UUID.randomUUID(), "alice");
-		given(profiles.findFirstByUsernameOrderByCreatedAtDesc("alice")).willReturn(Optional.of(privateProfile));
-		given(profiles.findFirstByUsernameOrderByCreatedAtDesc("nobody")).willReturn(Optional.empty());
+		given(profiles.findByUsernameIgnoringCase("alice")).willReturn(Optional.of(privateProfile));
+		given(profiles.findByUsernameIgnoringCase("nobody")).willReturn(Optional.empty());
 
 		assertThat(service.publicCellarOwnerId("alice")).isEmpty();
 		assertThat(service.publicCellarOwnerId("nobody")).isEmpty();

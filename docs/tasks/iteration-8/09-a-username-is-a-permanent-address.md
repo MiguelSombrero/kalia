@@ -1,6 +1,6 @@
 # Task 09: A username belongs to one person, permanently
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -92,21 +92,21 @@ id, was considered and rejected.
 
 ## Acceptance criteria
 
-- [ ] A second profile with an existing username is refused by the database —
+- [x] A second profile with an existing username is refused by the database —
       integration test, including the concurrent case
-- [ ] A username whose account no longer exists is not assigned to a new
+- [x] A username whose account no longer exists is not assigned to a new
       account, and the new account is shown the page saying the name is taken
       — integration test, plus a component test of the page in both locales
-- [ ] A username differing from an existing one only in case is refused —
+- [x] A username differing from an existing one only in case is refused —
       integration test
-- [ ] The username lookup uses an index — integration test asserting the
+- [x] The username lookup uses an index — integration test asserting the
       query plan, or the migration's index checked by a schema test
-- [ ] A username path variable longer than the bound is refused with
+- [x] A username path variable longer than the bound is refused with
       `problem+json` on the anonymous route — integration test
-- [ ] Feed links and the public-cellar owner check cannot resolve to a
+- [x] Feed links and the public-cellar owner check cannot resolve to a
       different person than the one who earned them — covered by the tests
       above
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

@@ -336,6 +336,12 @@
       }
     }
   },
+  "usernameTaken": {
+    "pageTitle": "Käyttäjänimi varattu — Kalia",
+    "title": "Käyttäjänimi on varattu",
+    "message": "Käyttäjänimi {{username}} kuuluu jo toiselle Kalia-tilille.",
+    "hint": "Kirjaudu ulos, jos haluat käyttää Kaliaa toisella tilillä."
+  },
   "signUp": {
     "pageTitle": "Luo tili — Kalia",
     "title": "Luo tili",

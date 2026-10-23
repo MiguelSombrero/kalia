@@ -11,6 +11,7 @@ import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -88,6 +89,43 @@ class ProfileServiceConcurrencyIT {
 		}
 	}
 
+	// Both accounts pass the "is it taken?" check before either inserts, so the
+	// unique index is what refuses the loser; its retry's own check then finds
+	// the winner's row and answers 409 rather than retrying again.
+	@Test
+	void concurrentFirstReadsByTwoAccountsWithOneUsernameGiveItToExactlyOne() throws Exception {
+		String username = "contested-" + UUID.randomUUID();
+		UUID firstId = UUID.randomUUID();
+		UUID secondId = UUID.randomUUID();
+		given(jwtDecoder.decode("first-token")).willReturn(TestTokens.user(firstId.toString(), username));
+		given(jwtDecoder.decode("second-token")).willReturn(TestTokens.user(secondId.toString(), username));
+
+		CyclicBarrier bothSawTheNameFree = new CyclicBarrier(2);
+		AtomicInteger checks = new AtomicInteger();
+		doAnswer(invocation -> {
+			if (checks.getAndIncrement() < bothSawTheNameFree.getParties()) {
+				bothSawTheNameFree.await(5, TimeUnit.SECONDS);
+			}
+			return entityManager
+					.createQuery("select p from Profile p where lower(p.username) = lower(:username)", Profile.class)
+					.setParameter("username", username)
+					.getResultStream().findFirst();
+		}).when(profiles).findByUsernameIgnoringCase(eq(username));
+
+		ExecutorService pool = Executors.newFixedThreadPool(2);
+		try {
+			Future<Integer> first = pool.submit(statusOfProfileRead("Bearer first-token"));
+			Future<Integer> second = pool.submit(statusOfProfileRead("Bearer second-token"));
+
+			assertThat(List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS)))
+					.containsExactlyInAnyOrder(200, 409);
+			assertThat(checks.get()).isGreaterThan(bothSawTheNameFree.getParties());
+			assertThat(profiles.findAllById(List.of(firstId, secondId))).hasSize(1);
+		} finally {
+			pool.shutdownNow();
+		}
+	}
+
 	private Callable<String> readProfile() {
 		return () -> client.get().uri("/api/v1/profile")
 				.header("Authorization", "Bearer race-user-token")
@@ -95,6 +133,13 @@ class ProfileServiceConcurrencyIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
+	}
+
+	private Callable<Integer> statusOfProfileRead(String bearer) {
+		return () -> client.get().uri("/api/v1/profile")
+				.header("Authorization", bearer)
+				.exchange()
+				.returnResult().getStatus().value();
 	}
 
 }
