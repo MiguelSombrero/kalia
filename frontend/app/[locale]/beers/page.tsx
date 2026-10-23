@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   AddBeerEntry,
   BeerList,
   catalogColumns,
-  catalogHref,
   hasFilters,
+  IgnoredFilterNote,
+  isPastLastPage,
+  normalizeBeerSearchParams,
   JustAddedToast,
   Pagination,
   parseBeerSearchParams,
+  PastLastPage,
   type RawSearchParams,
   listBreweryCountries,
   ResultSummary,
@@ -35,7 +37,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
 
 const BeersPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
-  const beerParams = parseBeerSearchParams(await searchParams);
+  const { params: beerParams, ignored } = normalizeBeerSearchParams(parseBeerSearchParams(await searchParams));
   const session = auth();
   const [result, countryCodes, signedIn, heldBottles, { t }] = await Promise.all([
     searchBeers(beerParams),
@@ -44,9 +46,6 @@ const BeersPage = async ({ params, searchParams }: Props) => {
     session.then((current) => (current?.user ? heldBottlesByBeerOrNone() : undefined)),
     getTranslation(locale),
   ]);
-  if (result.content.length === 0 && result.totalElements > 0) {
-    redirect(catalogHref(locale, { ...beerParams, page: String(result.totalPages - 1) }));
-  }
   const isSignedIn = signedIn;
 
   return (
@@ -59,25 +58,30 @@ const BeersPage = async ({ params, searchParams }: Props) => {
           <SearchFilters locale={locale} params={beerParams} countryCodes={countryCodes} />
         </div>
         <div className="flex min-w-0 flex-col gap-4">
+          {ignored.length > 0 && <IgnoredFilterNote locale={locale} />}
           <ResultSummary locale={locale} params={beerParams} totalElements={result.totalElements} />
-          <BeerList
-            locale={locale}
-            beers={result.content}
-            search={beerParams}
-            heldBottles={heldBottles}
-            emptyAction={
-              <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="empty" />
-            }
-            renderActions={(beer) => (
-              <AddToCellarButton
-                locale={locale}
-                beerId={beer.id}
-                beerName={beer.name}
-                isSignedIn={isSignedIn}
-                compact
-              />
-            )}
-          />
+          {isPastLastPage(result) ? (
+            <PastLastPage locale={locale} params={beerParams} result={result} />
+          ) : (
+            <BeerList
+              locale={locale}
+              beers={result.content}
+              search={beerParams}
+              heldBottles={heldBottles}
+              emptyAction={
+                <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="empty" />
+              }
+              renderActions={(beer) => (
+                <AddToCellarButton
+                  locale={locale}
+                  beerId={beer.id}
+                  beerName={beer.name}
+                  isSignedIn={isSignedIn}
+                  compact
+                />
+              )}
+            />
+          )}
           {result.content.length > 0 && hasFilters(beerParams) && (
             <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="line" />
           )}

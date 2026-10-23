@@ -2,6 +2,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { buildBeerSearchParams } from "./links";
+import { isReachablePage } from "./searchParams";
 import type { BeerPage, BeerSearchParams } from "./types";
 
 const pageHref = (locale: Locale, params: BeerSearchParams, page: number): string => {
@@ -26,12 +27,15 @@ export const Pagination = async ({
   params: BeerSearchParams;
   result: BeerPage;
 }) => {
-  if (result.totalPages <= 1) {
+  if (result.totalPages <= 1 || result.page >= result.totalPages) {
     return null;
   }
 
   const { t } = await getTranslation(locale);
   const linkClasses = buttonVariants("outline");
+  const hasNext =
+    result.page < result.totalPages - 1 &&
+    isReachablePage(result.page + 1, params.size ? Number(params.size) : undefined);
 
   return (
     <nav aria-label={t("catalog.pagination.label")} className="flex flex-wrap items-center justify-between gap-3">
@@ -44,7 +48,7 @@ export const Pagination = async ({
             {t("catalog.pagination.previous")}
           </a>
         )}
-        {result.page < result.totalPages - 1 && (
+        {hasNext && (
           <a href={pageHref(locale, params, result.page + 1)} className={linkClasses}>
             {t("catalog.pagination.next")}
           </a>

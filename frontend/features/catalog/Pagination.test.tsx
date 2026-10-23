@@ -55,4 +55,27 @@ describe("Pagination", () => {
 
     expect(ui).toBeNull();
   });
+
+  it("offers no Next past the search API's 10,000-row offset bound", async () => {
+    render(
+      await Pagination({
+        locale: "en",
+        params: { size: "100" },
+        result: { content: [], totalElements: 20_000, totalPages: 200, page: 100 },
+      }),
+    );
+
+    expect(screen.getByRole("link", { name: /previous/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /next/i })).not.toBeInTheDocument();
+  });
+
+  it("renders nothing for a page past the last, which links back to page 1 instead", async () => {
+    const ui = await Pagination({
+      locale: "en",
+      params: {},
+      result: { content: [], totalElements: 42, totalPages: 3, page: 40 },
+    });
+
+    expect(ui).toBeNull();
+  });
 });

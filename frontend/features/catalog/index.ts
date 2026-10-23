@@ -6,6 +6,8 @@ export { ResultSummary } from "./ResultSummary";
 export { SearchFilters } from "./SearchFilters";
 export { BeerDetailsView } from "./BeerDetailsView";
 export { searchBeers, getBeer, listBreweryCountries } from "./api";
+export { normalizeBeerSearchParams } from "./searchParams";
+export { IgnoredFilterNote, isPastLastPage, PastLastPage } from "./SearchNotes";
 export { beerHref, catalogHref, hasFilters, hasSearch, parseBeerSearchParams, type RawSearchParams } from "./links";
 export type { BeerSearchParams } from "./types";
 export { beerRowFrame, beerRowSide, catalogColumns, detailsHead, factRow } from "./layout";

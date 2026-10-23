@@ -21,7 +21,7 @@ vi.mock("@/features/cellar/api", async (importOriginal) => ({
 }));
 
 import { auth } from "@/auth";
-import { searchBeers } from "@/features/catalog";
+import { IgnoredFilterNote, PastLastPage, searchBeers } from "@/features/catalog";
 import BeersPage, { generateMetadata } from "./page";
 
 type Element = ReactElement<Record<string, unknown> & { children?: unknown }>;
@@ -44,8 +44,8 @@ const beerList = (tree: unknown) => elements(tree).find((element) => Array.isArr
 
 // Do not render the full tree here: React suspends indefinitely on async
 // Server Components outside Next's RSC runtime, and BeersPage composes several
-// of them. This file covers BeersPage's own logic (param parsing, the
-// out-of-range redirect, what it hands its children, metadata); the children
+// of them. This file covers BeersPage's own logic (param parsing and
+// normalization, what it hands its children, metadata); the children
 // have their own tests and E2E cover.
 describe("BeersPage", () => {
   beforeEach(() => {
@@ -55,16 +55,7 @@ describe("BeersPage", () => {
   it("parses raw search params (including array values) before calling searchBeers", async () => {
     await render({ query: ["punk", "ignored"], minAbv: "5" });
 
-    expect(searchBeers).toHaveBeenCalledWith({
-      query: "punk",
-      style: undefined,
-      countryCode: undefined,
-      minAbv: "5",
-      maxAbv: undefined,
-      page: undefined,
-      size: undefined,
-      sort: undefined,
-    });
+    expect(searchBeers).toHaveBeenCalledWith({ query: "punk", minAbv: "5" });
   });
 
   it("hands the country filter the countries the catalog has breweries in", async () => {
@@ -73,12 +64,30 @@ describe("BeersPage", () => {
     expect(filters?.props.countryCodes).toEqual(["SE", "BE"]);
   });
 
-  it("redirects a page past the last one to the last page, keeping the search", async () => {
-    vi.mocked(searchBeers).mockResolvedValueOnce({ content: [], totalElements: 54, totalPages: 3, page: 999 });
+  it("answers a page past the last with its own empty state rather than the list or a redirect", async () => {
+    vi.mocked(searchBeers).mockResolvedValueOnce({ content: [], totalElements: 54, totalPages: 3, page: 40 });
 
-    await expect(render({ countryCode: "BE", page: "999" })).rejects.toMatchObject({
-      digest: expect.stringContaining("/en/beers?countryCode=BE&page=2"),
+    const tree = await render({ countryCode: "BE", page: "40" });
+
+    expect(elements(tree).find((element) => element.type === PastLastPage)?.props.params).toMatchObject({
+      countryCode: "BE",
+      page: "40",
     });
+    expect(beerList(tree)).toBeUndefined();
+  });
+
+  it("searches without a value the API would refuse, and notes that it was left out", async () => {
+    const tree = await render({ query: "punk", minAbv: "150" });
+
+    expect(searchBeers).toHaveBeenCalledWith({ query: "punk" });
+    expect(elements(tree).some((element) => element.type === IgnoredFilterNote)).toBe(true);
+  });
+
+  it("notes nothing when every value is usable", async () => {
+    const tree = await render({ query: "punk", minAbv: "12", maxAbv: "9" });
+
+    expect(searchBeers).toHaveBeenCalledWith({ query: "punk", minAbv: "9", maxAbv: "12" });
+    expect(elements(tree).some((element) => element.type === IgnoredFilterNote)).toBe(false);
   });
 
   it("hands the list its search, so each beer can link back to it, and no cellar when signed out", async () => {

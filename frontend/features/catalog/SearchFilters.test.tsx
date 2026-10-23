@@ -51,6 +51,15 @@ describe("SearchFilters", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("cannot send a text over 100 characters or an ABV over 100, which the search API refuses", async () => {
+    render(await SearchFilters({ locale: "en", params: {}, countryCodes }));
+
+    expect(screen.getByLabelText("Search")).toHaveAttribute("maxlength", "100");
+    expect(screen.getByLabelText("Style")).toHaveAttribute("maxlength", "100");
+    expect(screen.getByRole("spinbutton", { name: "Min ABV %" })).toHaveAttribute("max", "100");
+    expect(screen.getByRole("spinbutton", { name: "Max ABV %" })).toHaveAttribute("max", "100");
+  });
+
   // ADR-0069: one button, after every field, so where it sits says that it
   // sends the name and the folded filters alike.
   it("has exactly one submit button, and it comes after every field, folded ones included", async () => {

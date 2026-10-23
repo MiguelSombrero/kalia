@@ -45,7 +45,7 @@ export type BeerSearchParams = {
   sort?: string;
 };
 
-/** The `sort` values `SearchFilters` offers, and `api.ts` validates against. */
+/** The `sort` values `SearchFilters` offers, and `searchParams.ts` validates against. */
 export const SORT_OPTIONS = [
   { value: "name,asc", labelKey: "catalog.filters.sortNameAsc" },
   { value: "name,desc", labelKey: "catalog.filters.sortNameDesc" },
