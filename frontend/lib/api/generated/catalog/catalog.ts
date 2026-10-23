@@ -85,7 +85,7 @@ export const getSearchBeersUrl = (params?: SearchBeersParams,) => {
 }
 
 /**
- * Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics.
+ * Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics. A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.
  * @summary Search beers
  */
 export const searchBeers = async (params?: SearchBeersParams, options?: Parameters<typeof kaliaFetch>[1]): Promise<searchBeersResponse> => {
@@ -553,7 +553,7 @@ export const getListBreweriesUrl = (params?: ListBreweriesParams,) => {
 }
 
 /**
- * Paginate the brewery list, sorted by name.
+ * Paginate the brewery list, sorted by name. A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.
  * @summary List breweries
  */
 export const listBreweries = async (params?: ListBreweriesParams, options?: Parameters<typeof kaliaFetch>[1]): Promise<listBreweriesResponse> => {

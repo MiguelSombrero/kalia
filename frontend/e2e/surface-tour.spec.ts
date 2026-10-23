@@ -132,13 +132,16 @@ for (const viewport of VIEWPORTS) {
           await expectRendered(page, t("notFound.generic.title"));
         });
 
-        await test.step("the error page", async () => {
-          // A non-numeric page reaches the backend as NaN and is rejected, which
-          // is the only way to raise the error boundary without stopping the
-          // backend.
-          await page.goto(`/${locale}/beers?page=abc`);
-          await expectRendered(page, t("error.title"));
-          await expect(page.getByRole("button", { name: t("error.retry") })).toBeVisible();
+        await test.step("catalog list: a search value it had to ignore", async () => {
+          await page.goto(`/${locale}/beers?minAbv=150`);
+          await expectRendered(page, t("catalog.title"));
+          await expect(page.getByText(t("catalog.ignoredFilter"))).toBeVisible();
+        });
+
+        await test.step("catalog list: a page past the last", async () => {
+          await page.goto(`/${locale}/beers?query=Westvleteren&page=40`);
+          await expectRendered(page, t("catalog.title"));
+          await expect(page.getByRole("heading", { name: t("catalog.pastLastPage.title", { page: 41 }) })).toBeVisible();
         });
       });
 

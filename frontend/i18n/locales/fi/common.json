@@ -122,6 +122,13 @@
       "previous": "← Edellinen",
       "next": "Seuraava →"
     },
+    "ignoredFilter": "Virheellinen hakuehto jätettiin huomiotta.",
+    "pastLastPage": {
+      "title": "Tällä haulla ei ole sivua {{page}}.",
+      "hint_one": "Sillä on vain {{count}} sivu.",
+      "hint_other": "Sillä on vain {{count}} sivua.",
+      "firstPage": "Takaisin sivulle 1"
+    },
     "resultCount_one": "{{count}} olut",
     "resultCount_other": "{{count}} olutta",
     "inCellar": "{{count}} kellarissasi",

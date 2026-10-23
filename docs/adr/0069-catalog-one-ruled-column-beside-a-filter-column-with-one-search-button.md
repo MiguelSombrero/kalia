@@ -120,6 +120,11 @@ product owner kept marking the beers a visitor holds in scope.
   Keycloak, which is a flow, not a layout. AUD-49, AUD-51, AUD-52 and AUD-57
   are kept.
 
+  > **Amended 2026-10-23** ([iteration-8 task 08](../tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)):
+  > an out-of-range page no longer redirects. The product owner chose an
+  > empty result that names the missing page and links back to page 1, so the
+  > URL the visitor typed stays the one they see.
+
 ## Alternatives considered
 
 **A, "Shelf index".** The chosen layout as first built, with a separate name

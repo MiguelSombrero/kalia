@@ -86,13 +86,41 @@ describe("searchBeers", () => {
   it.each([
     ["abv,dsc", "an unrecognized direction"],
     ["abv,asc,extra", "more than two comma-separated parts"],
-  ])("falls back to name,asc for %s (%s) rather than reaching the backend", async (sort) => {
+  ])("leaves %s (%s) out rather than reaching the backend", async (sort) => {
     const fetchMock = vi.fn(async () => Response.json(emptyPage));
     vi.stubGlobal("fetch", fetchMock);
 
     await searchBeers({ sort });
 
-    expect(requestUrl(fetchMock).searchParams.get("sort")).toBe("name,asc");
+    expect(requestUrl(fetchMock).searchParams.has("sort")).toBe(false);
+  });
+
+  it("leaves out every value the backend would refuse, and sends the rest", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await searchBeers({
+      query: "a".repeat(101),
+      style: "IPA",
+      countryCode: "finland",
+      minAbv: "150",
+      maxAbv: "strong",
+      page: "9999",
+      size: "0",
+    });
+
+    expect([...requestUrl(fetchMock).searchParams]).toEqual([["style", "IPA"]]);
+  });
+
+  it("sends a minimum ABV above the maximum swapped", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await searchBeers({ minAbv: "12", maxAbv: "9" });
+
+    const params = requestUrl(fetchMock).searchParams;
+    expect(params.get("minAbv")).toBe("9");
+    expect(params.get("maxAbv")).toBe("12");
   });
 });
 

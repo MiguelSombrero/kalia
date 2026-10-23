@@ -8,9 +8,8 @@ import {
   listStyles as generatedListStyles,
   searchBeers as generatedSearchBeers,
 } from "@/lib/api/generated/catalog/catalog";
+import { MAX_PAGE_SIZE, normalizeBeerSearchParams } from "./searchParams";
 import {
-  DEFAULT_SORT,
-  SORT_OPTIONS,
   type AddBeerRequest,
   type AddBeerResult,
   type BeerDetails,
@@ -21,28 +20,17 @@ import {
   type FieldRefusal,
 } from "./types";
 
-const VALID_SORT_VALUES: ReadonlySet<string> = new Set(SORT_OPTIONS.map((option) => option.value));
-
-/** An out-of-set `sort` would otherwise reach the backend as a 400
- *  (`CatalogController.parseSort`). Do not default an absent `sort` too —
- *  leave it `undefined` so the backend's own default keeps applying. */
-const normalizeSort = (sort: string | undefined): string | undefined => {
-  if (!sort) {
-    return undefined;
-  }
-  return VALID_SORT_VALUES.has(sort) ? sort : DEFAULT_SORT;
-};
-
-export const searchBeers = async (params: BeerSearchParams): Promise<BeerPage> => {
+export const searchBeers = async (search: BeerSearchParams): Promise<BeerPage> => {
+  const { params } = normalizeBeerSearchParams(search);
   const response = await generatedSearchBeers({
-    query: params.query || undefined,
-    style: params.style || undefined,
-    countryCode: params.countryCode || undefined,
+    query: params.query,
+    style: params.style,
+    countryCode: params.countryCode,
     minAbv: params.minAbv ? Number(params.minAbv) : undefined,
     maxAbv: params.maxAbv ? Number(params.maxAbv) : undefined,
     page: params.page ? Number(params.page) : undefined,
     size: params.size ? Number(params.size) : undefined,
-    sort: normalizeSort(params.sort),
+    sort: params.sort,
   });
   const status = Number(response.status);
   if (status !== 200) {
@@ -130,11 +118,8 @@ export const findBreweries = async (query: string): Promise<Brewery[]> => {
   return response.data.content;
 };
 
-// The search API's own page-size cap (CatalogController.MAX_PAGE_SIZE).
-const BREWERY_BEERS = 100;
-
 export const listBreweryBeers = async (breweryId: string): Promise<BeerSummary[]> => {
-  const response = await generatedSearchBeers({ breweryId, size: BREWERY_BEERS });
+  const response = await generatedSearchBeers({ breweryId, size: MAX_PAGE_SIZE });
   const status = Number(response.status);
   if (status !== 200) {
     throw apiError("http", `Brewery beer list failed with status ${status}`, { status });

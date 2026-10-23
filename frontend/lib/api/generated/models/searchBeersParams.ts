@@ -40,7 +40,7 @@ minAbv?: number;
  */
 maxAbv?: number;
 /**
- * Zero-based page index, 0-10000
+ * Zero-based page index; page × size is at most 10000
  * @minimum 0
  * @maximum 10000
  */

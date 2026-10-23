@@ -395,7 +395,7 @@ class CatalogApiIT {
 
 	@Test
 	void breweryPageIndexPastTheEndYieldsAnEmptyPage() {
-		client.get().uri("/api/v1/breweries?page=9000&size=100")
+		client.get().uri("/api/v1/breweries?page=100&size=100")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)

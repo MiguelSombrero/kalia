@@ -61,8 +61,12 @@ class CatalogController {
 	/** A single page pulls at most this many rows, so no one response can return an unbounded slice of a table. */
 	private static final long MAX_PAGE_SIZE = 100;
 
-	/** Past this page index a request cannot land on real data at any allowed size — a larger value is malformed, not an empty page. */
-	private static final long MAX_PAGE = 10_000;
+	/** Rows a page may skip (page × size): keeps one request's cost fixed however large the catalog grows, since past it a visitor narrows the search instead. */
+	private static final long MAX_OFFSET = 10_000;
+
+	private static final String OFFSET_BOUND = "A page skipping more than " + MAX_OFFSET + " rows (page × size) is refused with 400 problem+json.";
+
+	private static final String PAGE_DESCRIPTION = "Zero-based page index; page × size is at most " + MAX_OFFSET;
 
 	/** Batch lookup id cap: keeps the repeated-parameter URL inside ordinary length limits (ADR-0042). */
 	private static final int MAX_BATCH_IDS = 100;
@@ -74,7 +78,7 @@ class CatalogController {
 	private final IdentityApi identity;
 
 	@GetMapping("/beers")
-	@Operation(summary = "Search beers", description = "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics.")
+	@Operation(summary = "Search beers", description = "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics. " + OFFSET_BOUND)
 	PageDto<BeerSummaryDto> searchBeers(
 			@Parameter(description = "Case-insensitive substring match on beer name, at most " + MAX_FILTER_LENGTH + " characters")
 			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String query,
@@ -88,13 +92,14 @@ class CatalogController {
 			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal minAbv,
 			@Parameter(description = "Inclusive upper ABV bound, percent (0-" + MAX_ABV + ")")
 			@RequestParam(required = false) @DecimalMin("0") @DecimalMax(MAX_ABV) BigDecimal maxAbv,
-			@Parameter(description = "Zero-based page index, 0-" + MAX_PAGE)
-			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_PAGE) int page,
+			@Parameter(description = PAGE_DESCRIPTION)
+			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_OFFSET) int page,
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size,
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
 			@RequestParam(defaultValue = "name,asc") String sort) {
 		requireOrderedAbvRange(minAbv, maxAbv);
+		requireBoundedOffset(page, size);
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
 		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, countryCode, minAbv, maxAbv);
 		return PageDto.from(catalog.searchBeers(searchQuery, pageable).map(BeerSummaryDto::from));
@@ -148,14 +153,15 @@ class CatalogController {
 	}
 
 	@GetMapping("/breweries")
-	@Operation(summary = "List breweries", description = "Paginate the brewery list, sorted by name.")
+	@Operation(summary = "List breweries", description = "Paginate the brewery list, sorted by name. " + OFFSET_BOUND)
 	PageDto<BreweryDto> listBreweries(
 			@Parameter(description = "Case-insensitive substring match on brewery name, at most " + MAX_FILTER_LENGTH + " characters")
 			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String query,
-			@Parameter(description = "Zero-based page index, 0-" + MAX_PAGE)
-			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_PAGE) int page,
+			@Parameter(description = PAGE_DESCRIPTION)
+			@RequestParam(defaultValue = "0") @Min(0) @Max(MAX_OFFSET) int page,
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size) {
+		requireBoundedOffset(page, size);
 		return PageDto.from(catalog.listBreweries(query, PageRequest.of(page, size)).map(BreweryDto::from));
 	}
 
@@ -186,6 +192,14 @@ class CatalogController {
 		if (minAbv != null && maxAbv != null && minAbv.compareTo(maxAbv) > 0) {
 			throw new InvalidSearchParameterException(
 					"minAbv (%s) must not be greater than maxAbv (%s)".formatted(minAbv, maxAbv));
+		}
+	}
+
+	private static void requireBoundedOffset(int page, int size) {
+		if ((long) page * size > MAX_OFFSET) {
+			throw new InvalidSearchParameterException(
+					"page (%d) × size (%d) must not skip more than %d rows; narrow the search instead"
+							.formatted(page, size, MAX_OFFSET));
 		}
 	}
 

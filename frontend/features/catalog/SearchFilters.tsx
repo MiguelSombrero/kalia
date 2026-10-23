@@ -4,6 +4,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { countriesByName } from "./country";
 import { catalogHref, hasFilters } from "./links";
+import { MAX_ABV, MAX_FILTER_LENGTH } from "./searchParams";
 import { DEFAULT_SORT, SORT_OPTIONS, type BeerSearchParams } from "./types";
 
 const labelClasses = "mb-1 block text-label font-semibold uppercase text-foreground";
@@ -41,6 +42,7 @@ export const SearchFilters = async ({
           id="query"
           name="query"
           type="search"
+          maxLength={MAX_FILTER_LENGTH}
           placeholder={t("catalog.filters.searchPlaceholder")}
           defaultValue={params.query ?? ""}
           className={inputClasses}
@@ -65,6 +67,7 @@ export const SearchFilters = async ({
               id="style"
               name="style"
               type="text"
+              maxLength={MAX_FILTER_LENGTH}
               placeholder={t("catalog.filters.stylePlaceholder")}
               defaultValue={params.style ?? ""}
               className={inputClasses}
@@ -101,6 +104,7 @@ export const SearchFilters = async ({
                   name="minAbv"
                   type="number"
                   min="0"
+                  max={MAX_ABV}
                   step="0.1"
                   defaultValue={params.minAbv ?? ""}
                   className={inputClasses}
@@ -116,6 +120,7 @@ export const SearchFilters = async ({
                   name="maxAbv"
                   type="number"
                   min="0"
+                  max={MAX_ABV}
                   step="0.1"
                   defaultValue={params.maxAbv ?? ""}
                   className={inputClasses}
