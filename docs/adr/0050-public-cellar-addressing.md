@@ -12,6 +12,9 @@
   separate public type below remains the seam at the entry and bottle level;
   a beer fact added to the shared type reaches strangers too, so an
   owner-only fact goes on the owner's entry instead
+- **Amended:** 2026-10-23 — links inside the app carry the reader's current
+  locale; only the address offered for copying is locale-less. See the
+  Decision's amendment note and the new Consequences entry
 
 ## Context
 
@@ -55,6 +58,14 @@ redirects locale-less requests by `Accept-Language`, so a recipient lands in
 their own language rather than the sharer's. The locale-prefixed pages remain
 reachable and carry `hreflang` alternates and a `rel="canonical"`, so anything
 that de-duplicates sees one page rather than two.
+
+> **Amended 2026-10-23.** This left open whether a link *inside* the app
+> should use the locale-less form too. It does not. A reader already in the
+> app has chosen a language, and the `Accept-Language` redirect would undo
+> that choice for anyone whose browser asks for the other one. So an in-app
+> link to a cellar is `/{locale}/cellars/{username}` in the current locale,
+> and the locale-less form is only what the app offers for copying. Both
+> forms are built in `frontend/lib/routes.ts`.
 
 404 is uniform and caller-independent. A private cellar, a cellar that never
 existed and a username nobody has claimed are one response, and the owner
@@ -126,6 +137,11 @@ be published to strangers by default, failing open.
 - Neutral, because the locale-prefixed URLs still exist and now need
   `hreflang` and `canonical` upkeep — one page with three addresses, of which
   one is the shareable one.
+- Neutral, because the app now builds two addresses for one public cellar:
+  the locale-prefixed one for its own links and the locale-less one for
+  copying. A new link has to pick the right one, and a link that copies the
+  copyable form sends a reader in the app to the other language without
+  failing anywhere. (Added by the 2026-10-23 amendment.)
 - Neutral, because it is a deliberate exception to
   [ADR-0011](0011-i18next-localization.md)'s locale-prefixed rule, for
   resources whose purpose is being linked to from outside the app.

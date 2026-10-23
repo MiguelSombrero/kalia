@@ -4,7 +4,8 @@ import { auth } from "@/auth";
 import { getPublicCellar, PublicCellarView } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
-import { toLocale } from "@/i18n/settings";
+import { locales, toLocale } from "@/i18n/settings";
+import { cellarHref, shareableCellarHref } from "@/lib/routes";
 import { Page } from "@/components/ui/page";
 
 type Props = { params: Promise<{ locale: string; username: string }> };
@@ -29,11 +30,10 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
     // Canonical is the locale-less share URL, the same on both locale-prefixed
     // pages, so anything that de-duplicates sees one page not two (ADR-0050).
     alternates: {
-      canonical: `/cellars/${cellar.username}`,
+      canonical: shareableCellarHref(cellar.username),
       languages: {
-        en: `/en/cellars/${cellar.username}`,
-        fi: `/fi/cellars/${cellar.username}`,
-        "x-default": `/cellars/${cellar.username}`,
+        ...Object.fromEntries(locales.map((locale) => [locale, cellarHref(locale, cellar.username)])),
+        "x-default": shareableCellarHref(cellar.username),
       },
     },
   };

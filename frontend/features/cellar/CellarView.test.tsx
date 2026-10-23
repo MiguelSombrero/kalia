@@ -15,6 +15,7 @@ vi.mock("./bottleDateRules", async (importOriginal) => ({
   todayIso: () => "2026-10-09",
 }));
 
+import type { Locale } from "@/i18n/settings";
 import { CellarView } from "./CellarView";
 import { useBottleRemovalStore } from "./store";
 import type { CellarBeer } from "./types";
@@ -32,10 +33,14 @@ const westvleteren: CellarBeer = {
   ],
 };
 
-const renderView = async (beers: CellarBeer[], visibility: { username: string; cellarPublic: boolean } | null) =>
+const renderView = async (
+  beers: CellarBeer[],
+  visibility: { username: string; cellarPublic: boolean } | null,
+  locale: Locale = "en",
+) =>
   render(
     <QueryClientProvider client={new QueryClient()}>
-      {await CellarView({ locale: "en", beers, visibility })}
+      {await CellarView({ locale, beers, visibility })}
     </QueryClientProvider>,
   );
 
@@ -62,11 +67,14 @@ describe("CellarView", () => {
     }
   });
 
-  it("says a public cellar is public and links to the share URL", async () => {
-    await renderView([westvleteren], { username: "ada", cellarPublic: true });
+  it.each([
+    { locale: "en", status: "Public", link: "View your public cellar" },
+    { locale: "fi", status: "Julkinen", link: "Näytä julkinen kellarisi" },
+  ] as const)("says a public cellar is public and links to it in $locale", async ({ locale, status, link }) => {
+    await renderView([westvleteren], { username: "ada", cellarPublic: true }, locale);
 
-    expect(screen.getByText("Public")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View your public cellar" })).toHaveAttribute("href", "/cellars/ada");
+    expect(screen.getByText(status)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: link })).toHaveAttribute("href", `/${locale}/cellars/ada`);
   });
 
   it("says a private cellar is private and links to where that is changed", async () => {

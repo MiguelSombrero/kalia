@@ -110,6 +110,19 @@ test("searches and opens a beer detail page in Finnish", async ({ page }) => {
   await expect(page.getByText("Style", { exact: true })).toBeVisible();
 });
 
+test("switching language keeps the search and its results", async ({ page }) => {
+  await page.goto("/en/beers?query=ipa");
+  const results = page.locator("main a[href^='/en/beers/']");
+  await expect(results.first()).toBeVisible();
+  const names = await results.allInnerTexts();
+
+  await page.getByRole("link", { name: "Suomi" }).click();
+
+  await expect(page).toHaveURL(/\/fi\/beers\?query=ipa$/);
+  await expect(page.getByLabel("Haku", { exact: true })).toHaveValue("ipa");
+  await expect(page.locator("main a[href^='/fi/beers/']")).toHaveText(names);
+});
+
 // Covers that paging works, not a regression guard: Playwright's Chromium
 // doesn't trigger the prefetch that caused the bug (guard is Pagination.test.tsx).
 test("pages forward and back through the catalog", async ({ page }) => {

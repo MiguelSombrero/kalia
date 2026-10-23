@@ -33,7 +33,7 @@ export const SearchFilters = async ({
   const folded = foldedFilterCount(params);
 
   return (
-    <form role="search" action={`/${locale}/beers`} method="get" className="flex flex-col gap-4">
+    <form role="search" action={catalogHref(locale)} method="get" className="flex flex-col gap-4">
       <div>
         <label htmlFor="query" className={labelClasses}>
           {t("catalog.filters.searchLabel")}

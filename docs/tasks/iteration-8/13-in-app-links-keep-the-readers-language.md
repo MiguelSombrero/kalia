@@ -1,6 +1,6 @@
 # Task 13: Links inside the app keep the reader's language
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -73,16 +73,16 @@ rewrite).
 
 ## Acceptance criteria
 
-- [ ] Each of the three cellar links and every in-app beer link points to the
+- [x] Each of the three cellar links and every in-app beer link points to the
       current locale's page — vitest component tests, confirmed to fail
       against today's links
-- [ ] The address offered for copying on the profile page is still
+- [x] The address offered for copying on the profile page is still
       locale-less — vitest test
-- [ ] Switching language on `/en/beers?query=ipa` lands on
+- [x] Switching language on `/en/beers?query=ipa` lands on
       `/fi/beers?query=ipa` with the same results — Playwright spec
-- [ ] Cellar and beer hrefs are built in one place, and no feature builds
+- [x] Cellar and beer hrefs are built in one place, and no feature builds
       them by string concatenation
-- [ ] `npm test` and `npm run test:e2e` are green, including the bilingual
+- [x] `npm test` and `npm run test:e2e` are green, including the bilingual
       keyboard flows
 
 ## Notes

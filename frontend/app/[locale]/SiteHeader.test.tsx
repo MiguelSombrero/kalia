@@ -15,7 +15,7 @@ vi.mock("@/features/navigation", async () => ({
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/en/beers" }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/en/beers", useSearchParams: () => new URLSearchParams() }));
 
 import { SiteHeader } from "./SiteHeader";
 

@@ -22,6 +22,7 @@ export const ProfileView = async ({ locale, profile, counts }: Props) => {
         <p className="col-span-2 border-t border-divider pt-3 text-foreground">{t("profile.name.note")}</p>
       </div>
       <VisibilityControl
+        locale={locale}
         username={profile.username}
         initialCellarPublic={profile.cellarPublic}
         counts={counts}

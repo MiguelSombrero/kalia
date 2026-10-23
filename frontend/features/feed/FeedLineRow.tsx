@@ -9,6 +9,7 @@ import { RelativeTime } from "@/components/ui/relative-time";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { cn } from "@/lib/cn";
+import { beerHref, cellarHref } from "@/lib/routes";
 import type { FeedLine } from "./types";
 import { vintageYear } from "./vintage";
 
@@ -29,7 +30,7 @@ export const FeedLineRow = ({ line, locale, now, isOwn = false, isFresh = false 
           <PersonSlot username={line.username} size="xs" />
           <p className="min-w-0 text-sm text-foreground">
             <Link
-              href={`/cellars/${line.username}`}
+              href={cellarHref(locale, line.username)}
               className="inline-block max-w-full py-0.5 font-semibold wrap-anywhere text-foreground hover:underline hover:underline-offset-2"
             >
               {line.username}
@@ -47,7 +48,7 @@ export const FeedLineRow = ({ line, locale, now, isOwn = false, isFresh = false 
           </p>
         </div>
         <Link
-          href={`/${locale}/beers/${line.beerId}`}
+          href={beerHref(locale, line.beerId)}
           className="self-start py-px text-lg/snug font-bold text-foreground hover:underline hover:underline-offset-2 md:text-xl/snug"
         >
           {line.beerName}

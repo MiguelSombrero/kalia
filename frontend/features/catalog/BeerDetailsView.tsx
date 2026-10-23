@@ -7,6 +7,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { beerStyleGroup } from "@/lib/beerStyle";
+import { ownCellarHref } from "@/lib/routes";
 import { countryName } from "./country";
 import { detailsHead, factRow } from "./layout";
 import { catalogHref } from "./links";
@@ -55,7 +56,7 @@ export const BeerDetailsView = async ({
             {heldBottles > 0 && (
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <Badge variant="accent">{t("beer.inYourCellar", { count: heldBottles })}</Badge>
-                <Link href={`/${locale}/cellar`} className="inline-block py-1 text-sm underline underline-offset-2">
+                <Link href={ownCellarHref(locale)} className="inline-block py-1 text-sm underline underline-offset-2">
                   {t("beer.openInCellar")}
                 </Link>
               </p>

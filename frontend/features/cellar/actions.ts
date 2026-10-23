@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { signIn } from "@/auth";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/settings";
+import { beerHref } from "@/lib/routes";
 import {
   addBottlesToCellar,
   removeCellarBottle,
@@ -45,7 +46,7 @@ const beerReturnPath = (formData?: FormData): string | undefined => {
   if (typeof locale !== "string" || !isLocale(locale)) {
     return undefined;
   }
-  return `/${locale}/beers/${beerId}`;
+  return beerHref(locale, beerId);
 };
 
 export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[]> => {
