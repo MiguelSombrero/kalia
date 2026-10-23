@@ -65,6 +65,6 @@ const renew = async (
   return outcome.accessToken;
 };
 
-/** An account with no recorded expiry is treated as usable, not as expired. */
+/** An account with no recorded expiry counts as expired (ADR-0029). */
 const hasExpired = (expiresAt: number | undefined | null): boolean =>
-  typeof expiresAt === "number" && expiresAt - EXPIRY_LEEWAY_SECONDS <= Date.now() / 1000;
+  typeof expiresAt !== "number" || expiresAt - EXPIRY_LEEWAY_SECONDS <= Date.now() / 1000;

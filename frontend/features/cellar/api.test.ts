@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { isApiError } from "@/lib/api/api-error";
 import {
   getPublicCellar,
   heldBottlesByBeer,
@@ -177,6 +178,13 @@ describe("getPublicCellar", () => {
     await expect(getPublicCellar("a".repeat(256))).resolves.toBeNull();
   });
 
+  it("returns null for a username that could not be put in a path", async () => {
+    const fetchMock = stubFetch(() => 200);
+
+    await expect(getPublicCellar("..")).resolves.toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("throws on any other failure rather than masking it as not-found", async () => {
     stubFetch(() => 500);
 
@@ -220,4 +228,36 @@ describe("removeCellarBottle", () => {
 
     await expect(removeCellarBottle("bottle-1")).rejects.toThrow("status 404");
   });
+});
+
+// The generated client builds each URL and kaliaFetch sends it, so these run
+// both for real: a crafted value either reaches its own route or is refused.
+describe.each([
+  ["getPublicCellar", "/api/v1/cellars", (value: string) => getPublicCellar(value)],
+  [
+    "updateCellarBottle",
+    "/api/v1/cellar/bottles",
+    (value: string) => updateCellarBottle(value, { containerType: "CAN" }),
+  ],
+  ["removeCellarBottle", "/api/v1/cellar/bottles", (value: string) => removeCellarBottle(value)],
+])("%s with a crafted path parameter", (_, route, call) => {
+  it.each(["../../me", "x/../../cellar", "a?b=c", "a#b", "..", ".", "%2e%2e", ""])(
+    "never calls a route other than its own for %j",
+    async (value) => {
+      const fetchMock = stubFetch(() => 404);
+
+      const outcome = await call(value).catch((error: unknown) => error);
+
+      if (fetchMock.mock.calls.length === 0) {
+        const refused = isApiError(outcome) && outcome.kind === "refused";
+        expect(refused || outcome === null).toBe(true);
+        return;
+      }
+      const sent = new URL(fetchMock.mock.calls[0][0]);
+      expect(sent.search).toBe("");
+      expect(sent.hash).toBe("");
+      expect(sent.pathname.slice(0, sent.pathname.lastIndexOf("/"))).toBe(route);
+      expect(decodeURIComponent(sent.pathname.slice(sent.pathname.lastIndexOf("/") + 1))).toBe(value);
+    },
+  );
 });

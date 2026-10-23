@@ -20,6 +20,7 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
   // Fallback is for npm run dev only; production requiring this is enforced
   // in instrumentation.ts, not here (ADR-0018).
   const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8080";
+  refuseReshapedPath(url);
   const request = await withAccessToken(options);
 
   let response: Response;
@@ -70,6 +71,20 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
     status: response.status,
     headers: response.headers,
   } as T;
+};
+
+// Orval's `urlEncodeParameters` is not enough on its own: `encodeURIComponent`
+// leaves `.` and `..` intact, and fetch's URL parser resolves them — `%2e`
+// spellings too — so `/api/v1/cellars/..` would reach `/api/v1/`.
+const refuseReshapedPath = (url: string): void => {
+  const [path] = url.split("?", 1);
+  const segments = path.split("/").slice(1);
+  const reshaped = segments.some(
+    (segment) => segment === "" || /^(\.|%2e){1,2}$/i.test(segment),
+  );
+  if (reshaped) {
+    throw apiError("refused", `Refused to call ${url}: a path segment is empty or a dot segment`);
+  }
 };
 
 /**

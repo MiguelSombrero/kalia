@@ -1,4 +1,4 @@
-import { apiError } from "@/lib/api/api-error";
+import { apiError, isApiError } from "@/lib/api/api-error";
 import { logger } from "@/lib/logger";
 import {
   addBottles as generatedAddBottles,
@@ -50,9 +50,18 @@ const toCellarBeer = (entry: EntryDto | PublicCellarEntryDto): CellarBeer => ({
 // 404 — for an unknown username, a missing profile or a cellar that is not
 // public alike — is "nothing to show here", not a transport failure (ADR-0023,
 // ADR-0050): the caller renders the ordinary not-found page for it. So is 400,
-// a username longer than any account can have.
+// a username longer than any account can have, and a username kaliaFetch
+// refuses to put in a path.
 export const getPublicCellar = async (username: string): Promise<PublicCellar | null> => {
-  const response = await generatedReadPublicCellar(username);
+  const response = await generatedReadPublicCellar(username).catch((error: unknown) => {
+    if (isApiError(error) && error.kind === "refused") {
+      return null;
+    }
+    throw error;
+  });
+  if (response === null) {
+    return null;
+  }
   // Widened via Number() so the 5xx branch below stays reachable: the
   // generated type is a 200|400|404 union and a literal check would narrow it away.
   const status = Number(response.status);

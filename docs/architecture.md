@@ -502,9 +502,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   CSP's `form-action 'self'` can stay strict
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
   server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
-  thin wrapper that owns the backend base URL and error mapping, and attaches
-  the access token belonging to the caller's own session, renewing it first if
-  it has expired ([ADR-0028](adr/0028-resource-server-and-current-user.md),
+  thin wrapper that owns the backend base URL and error mapping, refuses a
+  path whose segments a parameter could have reshaped, and attaches the
+  access token belonging to the caller's own session, renewing it first if it
+  has expired or records no expiry ([ADR-0028](adr/0028-resource-server-and-current-user.md),
   [ADR-0029](adr/0029-silent-token-refresh.md),
   [ADR-0030](adr/0030-per-session-token-storage.md)). A client component's
   read of that same authenticated data calls a Server Action instead — never
@@ -522,7 +523,8 @@ The shape of the frontend. Day-to-day rules for writing it live in
   react-hook-form + Zod.
 - **API client generated from the backend's OpenAPI spec**
   ([ADR-0012](adr/0012-orval-api-client.md)) into `lib/api/generated/`
-  (committed; CI regenerates and diffs to catch drift), wrapped by each
+  (committed; CI regenerates and diffs to catch drift), with every path
+  parameter percent-encoded by orval's `urlEncodeParameters`, wrapped by each
   feature rather than imported directly — and each feature reaches only its
   own tag of it, so data from two backend modules is joined in the backend,
   never in a feature

@@ -775,7 +775,7 @@ export const getGetBeerUrl = (id: string,) => {
 
 
 
-  return `/api/v1/beers/${id}`
+  return `/api/v1/beers/${encodeURIComponent(String(id))}`
 }
 
 /**

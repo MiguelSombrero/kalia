@@ -72,6 +72,35 @@ describe("kaliaFetch", () => {
     expect(headers.get("Authorization")).toBe("Bearer caller-supplied");
   });
 
+  it.each([
+    ["a parent segment", "/api/v1/cellars/.."],
+    ["a current segment", "/api/v1/cellars/."],
+    ["a percent-encoded parent segment", "/api/v1/cellars/%2E%2e"],
+    ["a mixed-spelling parent segment", "/api/v1/cellars/.%2e?page=1"],
+    ["an empty segment", "/api/v1/cellar/bottles/"],
+  ])("refuses a path with %s instead of letting it reshape the route", async (_, url) => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    givenSignedInWithToken("token-abc");
+
+    const error = await kaliaFetch(url, { method: "GET" }).catch((e: unknown) => e);
+
+    expect(isApiError(error) && error.kind).toBe("refused");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("sends a path whose segments only contain dots among other characters", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubEnv("BACKEND_URL", "http://backend:8080");
+
+    await kaliaFetch("/api/v1/cellars/a..b?q=..", { method: "GET" });
+
+    expect(fetchMock).toHaveBeenCalledWith("http://backend:8080/api/v1/cellars/a..b?q=..", {
+      method: "GET",
+    });
+  });
+
   it("prefixes the backend URL and parses the JSON body", async () => {
     const fetchMock = vi.fn(async () => Response.json({ hello: "world" }));
     vi.stubGlobal("fetch", fetchMock);

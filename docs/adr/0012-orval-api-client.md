@@ -18,6 +18,10 @@
   8.37.0); CLAUDE.md's "New dependencies" rule was itself amended 2026-09-11
   to record a dependency's version only in its manifest
   (`frontend/package.json` here), so this line had no business restating it
+- **Amended:** 2026-10-23 — path parameters are percent-encoded by orval
+  (`urlEncodeParameters`) and the mutator refuses a dot or empty path
+  segment, so no parameter can change which backend route a call reaches
+  (iteration 8 task 11)
 
 ## Context
 
@@ -56,7 +60,11 @@ build whenever the two disagree.**
 - **A custom fetch mutator** (`lib/api/mutator.ts`, `kaliaFetch`) is
   required, because orval's stock fetch client does not parse JSON at all.
   The mutator adds the backend base URL and parses JSON, tolerating a
-  body-less non-2xx response instead of throwing.
+  body-less non-2xx response instead of throwing. It also refuses a path
+  with a `.`, `..` or empty segment, which `urlEncodeParameters`'
+  `encodeURIComponent` leaves intact and the URL parser would resolve into a
+  different route; validating each call site's parameters instead was
+  rejected, because it protects no route written later.
 - **The existing catalog client is migrated now**, not install-only: the
   hand-written types already duplicated the backend DTOs, a real drift risk
   this task could fix directly, and migrating now proves the generated

@@ -229,10 +229,11 @@ Why the rationale lives there and not here:
   `withSignInContext`, which is what lets the issued tokens be filed under the
   session just created. Unwrapping it fails silently — sign-in still succeeds,
   and only later does the session turn out to reach no protected endpoint.
-- **`kaliaFetch` attaches the bearer token; callers never do.** An expired one
-  is renewed first, and if it cannot be, no token is sent at all rather than a
-  bad one — the backend answers 401 to a bad token even on a public route, so
-  sending one breaks anonymous catalog browsing for a signed-in user
+- **`kaliaFetch` attaches the bearer token; callers never do.** An expired one,
+  or one whose account records no expiry, is renewed first, and if it cannot
+  be, no token is sent at all rather than a bad one — the backend answers 401
+  to a bad token even on a public route, so sending one breaks anonymous
+  catalog browsing for a signed-in user
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
   [ADR-0029](../docs/adr/0029-silent-token-refresh.md)).
 - **Per-user data keys on the access token's `sub`**, which the backend reads
