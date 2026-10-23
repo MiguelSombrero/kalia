@@ -21,7 +21,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | done |
 | [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | done |
 | [05](iteration-8/05-cache-catalog-reads.md) | Cache catalog reads | dropped |
-| [18](iteration-8/18-catalog-search-served-by-an-index-at-150k.md) | Catalog search stays within budget at 150k beers | needs-refinement |
+| [18](iteration-8/18-catalog-search-served-by-an-index-at-150k.md) | Catalog search stays within budget at 150k beers | refined |
 | [06](iteration-8/06-feed-events-delivered-at-least-once.md) | Feed events are delivered at least once, as documented | done |
 | [07](iteration-8/07-front-page-feed-reaches-public-lines.md) | The front page's feed reaches public lines past private ones | done |
 | [08](iteration-8/08-catalog-search-bounded-end-to-end.md) | Catalog search never lands on the error page | refined |
@@ -33,7 +33,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md) | Every boundary guard catches what the docs say it catches | refined |
 | [15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md) | Backend services stop leaning on hidden setup | refined |
 | [16](iteration-8/16-docs-describe-what-is-built.md) | The documentation describes what is built | refined |
-| [20](iteration-8/20-keycloak-field-errors-carry-kalias-error-sign.md) | Keycloak's field errors carry Kalia's error sign | needs-refinement |
+| [20](iteration-8/20-keycloak-field-errors-carry-kalias-error-sign.md) | Keycloak's field errors carry Kalia's error sign | refined |
 
 Task 01 is a decision, not an implementation, and it comes first because its
 answer changes how much tasks 02 and 03 have to build: a catalog fed by an
