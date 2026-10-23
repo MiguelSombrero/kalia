@@ -334,7 +334,7 @@ class AddBeerApiIT {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> assertThat((List<String>) JsonPath.read(body, "$[*].beerId"))
+				.value(body -> assertThat((List<String>) JsonPath.read(body, "$[*].beer.id"))
 						.containsExactly(id.toString()));
 	}
 
