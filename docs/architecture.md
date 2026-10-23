@@ -451,9 +451,8 @@ Conventions:
   endpoints above are where this gets tested: each returns the resource whole
   — a line with its actor, an entry with its beer — rather than ids for every
   client to join ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
-- Authentication: bearer token, default deny — every route needs one except
-  the catalog reads above, the feed, `/actuator/health` and the API docs
-  ([ADR-0028](adr/0028-resource-server-and-current-user.md)). A path whose
+- Authentication: bearer token, default deny — the routes that need none
+  are listed once, in [§6](#6-authentication-and-identity). A path whose
   user is implied by the credential is top-level (`/me`, `/cellar`), never
   `/users/{id}/…`.
 - Errors: RFC 9457 `application/problem+json` via Spring's
@@ -656,12 +655,31 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   `identity` module maps the token's `sub` to the current user — the
   canonical per-user key every module uses. The BFF attaches the session's
   access token in `lib/api/mutator.ts`.
-- Catalog endpoints and the public cellar read (`GET /api/v1/cellars/*`) stay
-  public; every other cellar endpoint requires authentication. The
-  filter chain denies by default, so a new
-  endpoint is protected unless it is deliberately listed as public. ArchUnit
-  keeps that chain in place: it must exist, live in `identity`, and configure
-  `oauth2ResourceServer`, and no other module may configure web security.
+- **These routes alone answer without a token**; the filter chain denies
+  everything else by default, so a new endpoint is protected unless it is
+  deliberately added here
+  ([ADR-0028](adr/0028-resource-server-and-current-user.md)):
+  - the catalog reads — `GET /api/v1/beers`, `/api/v1/beers/{id}`,
+    `/api/v1/beers/batch`, `/api/v1/breweries`,
+    `/api/v1/breweries/countries`, `/api/v1/styles` and `/api/v1/countries`;
+  - a public cellar — `GET /api/v1/cellars/{username}`
+    ([ADR-0050](adr/0050-public-cellar-addressing.md));
+  - the feed — `GET /api/v1/feed`
+    ([ADR-0059](adr/0059-feed-respects-cellar-visibility.md));
+  - health — `GET /actuator/health` and its groups under it, which
+    docker-compose and CI gate readiness on;
+  - the API docs, where `SPRINGDOC_ENABLED` turns them on — `GET /v3/api-docs`,
+    `/v3/api-docs/swagger-config`, `/swagger-ui.html` and Swagger UI's own
+    files under `/swagger-ui/`. `/v3/api-docs.yaml` is not on the list and
+    needs a token.
+
+  `SecurityConfig` in `identity` permits them, and `PublicRoutesIT` requests
+  every mapped handler with no token and fails when the set that answers
+  differs from this list — including a matcher reaching further than meant,
+  such as `/api/v1/cellars/*` admitting a later `/api/v1/cellars/mine`.
+  ArchUnit keeps that chain in place: it must exist, live in `identity`, and
+  configure `oauth2ResourceServer`, and no other module may configure web
+  security.
 - The API is still published on `127.0.0.1:8080` only, for direct access and
   Swagger UI on the dev machine. Authentication makes that a defence in
   depth rather than the only one, but the loopback binding stays until a

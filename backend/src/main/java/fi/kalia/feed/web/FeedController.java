@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-// Public: identical for every caller, signed in or out (ADR-0028) — every
+// Public: identical for every caller, signed in or out (ADR-0059) — every
 // event's cellar is public by the time it is served, so there is nothing a
 // bearer token would change about the answer.
 @RestController
