@@ -37,7 +37,7 @@ export const BreweryField = ({
   const [query, setQuery] = useState(text);
   const [focused, setFocused] = useState(false);
   const [active, setActive] = useState(0);
-  const matches = useBreweryMatches(query, locale);
+  const matches = useBreweryMatches(picked ? "" : query, locale);
 
   useEffect(() => {
     const timer = setTimeout(() => setQuery(text), SEARCH_DELAY_MS);
@@ -45,6 +45,7 @@ export const BreweryField = ({
   }, [text]);
 
   const typed = text.trim();
+  const answered = query === text && !matches.isFetching;
   const choices: Choice[] = typed
     ? [
         ...(matches.data ?? []).map((brewery): Choice => ({ kind: "existing", brewery })),
@@ -74,7 +75,8 @@ export const BreweryField = ({
       setActive((activeIndex + step + choices.length) % choices.length);
     } else if (event.key === "Enter") {
       event.preventDefault();
-      choose(choices[activeIndex]);
+      // Until the search answers, the one option is a new brewery: a quick Enter would add a duplicate.
+      if (answered) choose(choices[activeIndex]);
     } else if (event.key === "Escape") {
       setFocused(false);
     }

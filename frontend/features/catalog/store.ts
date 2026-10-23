@@ -18,6 +18,6 @@ export const useJustAddedStore = create<JustAddedStore>((set) => ({
   toastOpen: false,
   focusPending: false,
   announce: (beer) => set({ beer, toastOpen: true, focusPending: true }),
-  dismissToast: () => set({ toastOpen: false }),
+  dismissToast: () => set({ toastOpen: false, focusPending: false }),
   focusTaken: () => set({ focusPending: false }),
 }));

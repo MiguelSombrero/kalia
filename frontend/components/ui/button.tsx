@@ -4,9 +4,9 @@ import { cn } from "@/lib/cn";
 export type ButtonVariant = "primary" | "outline" | "destructive";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "border-primary bg-primary text-primary-foreground enabled:hover:bg-primary/90",
-  outline: "border-border bg-surface text-foreground enabled:hover:bg-surface-sunken",
-  destructive: "border-destructive bg-destructive text-destructive-foreground enabled:hover:bg-destructive/90",
+  primary: "border-primary bg-primary text-primary-foreground not-disabled:hover:bg-primary/90",
+  outline: "border-border bg-surface text-foreground not-disabled:hover:bg-surface-sunken",
+  destructive: "border-destructive bg-destructive text-destructive-foreground not-disabled:hover:bg-destructive/90",
 };
 
 /** `compact` is for a control repeated on every row of a list. */

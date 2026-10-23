@@ -66,7 +66,7 @@ const BeersPage = async ({ params, searchParams }: Props) => {
             search={beerParams}
             heldBottles={heldBottles}
             emptyAction={
-              <AddBeerEntry locale={locale} query={beerParams.query} isSignedIn={isSignedIn} placement="empty" />
+              <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="empty" />
             }
             renderActions={(beer) => (
               <AddToCellarButton
@@ -79,7 +79,7 @@ const BeersPage = async ({ params, searchParams }: Props) => {
             )}
           />
           {result.content.length > 0 && hasFilters(beerParams) && (
-            <AddBeerEntry locale={locale} query={beerParams.query} isSignedIn={isSignedIn} placement="line" />
+            <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="line" />
           )}
           <Pagination locale={locale} params={beerParams} result={result} />
         </div>

@@ -316,6 +316,30 @@ describe("AddBeerDialog", () => {
     expect(await screen.findByText("Tallinn, Estonia", { selector: "p" })).toBeInTheDocument();
   });
 
+  it("chooses nothing on Enter until the brewery search has answered", async () => {
+    await openForm();
+    fireEvent.focus(brewery());
+    fireEvent.change(brewery(), { target: { value: "Põh" } });
+
+    fireEvent.keyDown(brewery(), { key: "Enter" });
+
+    expect(screen.queryByRole("group", { name: "New brewery" })).not.toBeInTheDocument();
+    fireEvent.keyDown(brewery(), { key: "Enter" });
+    await screen.findByRole("option", { name: /^Põhjala/ });
+    fireEvent.keyDown(brewery(), { key: "Enter" });
+    expect(brewery()).toHaveValue("Põhjala");
+  });
+
+  it("searches the breweries no further once one is picked", async () => {
+    await openForm();
+    await pickPohjala();
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    const searched = requests.filter((request) => request.url.pathname === "/api/v1/breweries");
+    expect(searched.map((request) => request.url.searchParams.get("query"))).toEqual(["Põh"]);
+  });
+
   it.each(["en", "fi"] as const)("has no a11y violations with every state on screen, in %s", async (locale) => {
     posted = { status: 409, body: { status: 409, existingBeerId: oo.id } };
     const { baseElement } = await openForm(locale);

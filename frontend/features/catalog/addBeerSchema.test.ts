@@ -51,6 +51,20 @@ describe("addBeerSchema", () => {
     expect(errorsOf({ ...valid, name: "x".repeat(200) })).toEqual({});
   });
 
+  it("measures a name and a city as they are sent, without surrounding spaces", () => {
+    expect(
+      errorsOf({
+        ...valid,
+        name: `${"a".repeat(200)}  `,
+        breweryMode: "new",
+        breweryId: "",
+        newBreweryName: `  ${"b".repeat(200)}`,
+        newBreweryCountry: "FI",
+        newBreweryCity: `${"c".repeat(100)} `,
+      }),
+    ).toEqual({});
+  });
+
   it("asks for a brewery when none is chosen", () => {
     expect(errorsOf({ ...valid, breweryMode: "unset", breweryId: "" })).toEqual({
       breweryId: "catalog.add.error.breweryRequired",

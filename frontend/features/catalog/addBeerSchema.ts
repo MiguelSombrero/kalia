@@ -29,7 +29,7 @@ type NameMessages = { required: string; tooLong: string };
 
 const checkName = (value: string, messages: NameMessages): string | undefined => {
   if (value.trim() === "") return messages.required;
-  if (value.length > MAX_NAME_LENGTH) return messages.tooLong;
+  if (value.trim().length > MAX_NAME_LENGTH) return messages.tooLong;
   if (!HAS_LETTER_OR_DIGIT.test(value)) return "catalog.add.error.nameNeedsLetter";
   if (!NO_CONTROL_CHARACTERS.test(value)) return "catalog.add.error.nameInvalid";
   return undefined;
@@ -71,7 +71,7 @@ export const addBeerSchema = z
         tooLong: "catalog.add.error.breweryNameTooLong",
       }));
       fail("newBreweryCountry", values.newBreweryCountry === "" ? "catalog.add.error.countryRequired" : undefined);
-      fail("newBreweryCity", values.newBreweryCity.length > MAX_CITY_LENGTH
+      fail("newBreweryCity", values.newBreweryCity.trim().length > MAX_CITY_LENGTH
         ? "catalog.add.error.cityTooLong"
         : NO_CONTROL_CHARACTERS.test(values.newBreweryCity) ? undefined : "catalog.add.error.cityInvalid");
     } else if (values.breweryMode === "unset" || values.breweryId === "") {

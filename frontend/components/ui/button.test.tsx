@@ -93,4 +93,15 @@ describe("Button", () => {
       expect(classes.filter((c) => c.startsWith("hover:"))).toEqual([]);
     },
   );
+
+  // :enabled matches only form controls, so an <a> styled as a button would lose its hover.
+  it.each(["primary", "outline", "destructive"] as const)(
+    "keeps the %s variant's hover on a link styled as a button",
+    (variant) => {
+      const classes = buttonVariants(variant).split(" ");
+
+      expect(classes.filter((c) => c.startsWith("enabled:"))).toEqual([]);
+      expect(classes.some((c) => c.startsWith("not-disabled:hover:"))).toBe(true);
+    },
+  );
 });

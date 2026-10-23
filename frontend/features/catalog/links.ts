@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/settings";
 import type { BeerSearchParams } from "./types";
 
-const PARAM_KEYS = [
+export const PARAM_KEYS = [
   "query",
   "style",
   "countryCode",

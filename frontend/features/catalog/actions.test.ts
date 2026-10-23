@@ -148,6 +148,16 @@ describe("startCatalogSignIn", () => {
     );
   });
 
+  it("returns to the whole search, not only its term", async () => {
+    await startCatalogSignIn(form({ locale: "en", query: "Porter", style: "Porter", countryCode: "FI", sort: "abv,desc" }));
+
+    expect(signIn).toHaveBeenCalledWith(
+      "keycloak",
+      { redirectTo: "/en/beers?query=Porter&style=Porter&countryCode=FI&sort=abv%2Cdesc" },
+      { ui_locales: "en" },
+    );
+  });
+
   // Built from validated parts, never taken as a path: an open redirect otherwise.
   it("never redirects anywhere but the catalog", async () => {
     await startCatalogSignIn(form({ locale: "https://evil.example", query: "x".repeat(150) }));

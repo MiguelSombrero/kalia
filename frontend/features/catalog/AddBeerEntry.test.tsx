@@ -39,7 +39,7 @@ const renderEntry = async (props: Parameters<typeof AddBeerEntry>[0]) =>
 
 describe("AddBeerEntry", () => {
   it("opens the form from a search that found nothing, the term carried in", async () => {
-    const { container } = await renderEntry({ locale: "en", query: "Öö Bourbon", isSignedIn: true, placement: "empty" });
+    const { container } = await renderEntry({ locale: "en", search: { query: "Öö Bourbon" }, isSignedIn: true, placement: "empty" });
 
     expect(screen.getByText("Not in the catalog yet? You can add it from here.")).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
@@ -48,7 +48,7 @@ describe("AddBeerEntry", () => {
   });
 
   it("opens the form from under a search whose beers were not it", async () => {
-    const { container } = await renderEntry({ locale: "en", query: "Öö", isSignedIn: true, placement: "line" });
+    const { container } = await renderEntry({ locale: "en", search: { query: "Öö" }, isSignedIn: true, placement: "line" });
 
     expect(container).toHaveTextContent("Not the beer you were looking for? Add a beer");
     fireEvent.click(screen.getByRole("button", { name: "Add a beer" }));
@@ -58,20 +58,26 @@ describe("AddBeerEntry", () => {
   it.each(["empty", "line"] as const)(
     "invites a signed-out visitor to sign in, returning to the search, instead of a form that would fail (%s)",
     async (placement) => {
-      const { container } = await renderEntry({ locale: "en", query: "Öö Bourbon", isSignedIn: false, placement });
+      const { container } = await renderEntry({
+        locale: "en",
+        search: { query: "Öö Bourbon", style: "Imperial Stout" },
+        isSignedIn: false,
+        placement,
+      });
 
       expect(screen.queryByRole("button", { name: "Add a beer" })).not.toBeInTheDocument();
       const signIn = screen.getByRole("button", { name: placement === "empty" ? "Sign in" : "Sign in to add it" });
       const form = signIn.closest("form");
       expect(form).not.toBeNull();
       expect(new FormData(form!).get("query")).toBe("Öö Bourbon");
+      expect(new FormData(form!).get("style")).toBe("Imperial Stout");
       expect(new FormData(form!).get("locale")).toBe("en");
       expect(await axe(container)).toHaveNoViolations();
     },
   );
 
   it("says so in Finnish, signed out", async () => {
-    const { container } = await renderEntry({ locale: "fi", query: "Öö", isSignedIn: false, placement: "empty" });
+    const { container } = await renderEntry({ locale: "fi", search: { query: "Öö" }, isSignedIn: false, placement: "empty" });
 
     expect(screen.getByText("Kirjaudu sisään, niin voit lisätä sen kaikkien nähtäväksi.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Kirjaudu sisään" })).toBeInTheDocument();

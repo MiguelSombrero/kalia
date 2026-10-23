@@ -5,7 +5,7 @@ import { signIn } from "@/auth";
 import { toLocale, type Locale } from "@/i18n/settings";
 import { addBeer, findBreweries, getBeer, listBreweryBeers, listCountries, listStyles } from "./api";
 import { countriesByName, countryName } from "./country";
-import { catalogHref } from "./links";
+import { catalogHref, PARAM_KEYS, parseBeerSearchParams } from "./links";
 import type { AddBeerOptions, AddBeerOutcome, AddBeerRequest, Brewery, BreweryOption } from "./types";
 
 // The catalog API's bound on a search term (CatalogController.MAX_FILTER_LENGTH):
@@ -18,13 +18,15 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 // a Server Action re-exported through a second "use server" file fails at
 // runtime with UnrecognizedActionError (frontend/README.md traps).
 export const startCatalogSignIn = async (formData?: FormData) => {
-  const rawLocale = formData?.get("locale");
-  const locale = toLocale(typeof rawLocale === "string" ? rawLocale : "");
-  const rawQuery = formData?.get("query");
-  const query = typeof rawQuery === "string" ? rawQuery.slice(0, MAX_QUERY_LENGTH) : undefined;
+  const field = (name: string) => {
+    const value = formData?.get(name);
+    return typeof value === "string" ? value.slice(0, MAX_QUERY_LENGTH) : undefined;
+  };
+  const locale = toLocale(field("locale") ?? "");
+  const search = parseBeerSearchParams(Object.fromEntries(PARAM_KEYS.map((key) => [key, field(key)])));
   // Rebuilt from validated parts, never taken as a path: handing signIn's
   // redirectTo a caller-supplied string is an open redirect.
-  await signIn("keycloak", { redirectTo: catalogHref(locale, { query }) }, { ui_locales: locale });
+  await signIn("keycloak", { redirectTo: catalogHref(locale, search) }, { ui_locales: locale });
 };
 
 const place = (brewery: Brewery, locale: Locale): string => {

@@ -4,11 +4,13 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { startCatalogSignIn } from "./actions";
 import { AddBeerDialog } from "./AddBeerDialog";
+import { PARAM_KEYS } from "./links";
+import type { BeerSearchParams } from "./types";
 
-const SignInForm = ({ locale, query, children }: { locale: Locale; query?: string; children: ReactNode }) => (
+const SignInForm = ({ locale, search, children }: { locale: Locale; search: BeerSearchParams; children: ReactNode }) => (
   <form action={startCatalogSignIn} className="contents">
     <input type="hidden" name="locale" value={locale} />
-    {query && <input type="hidden" name="query" value={query} />}
+    {PARAM_KEYS.map((key) => search[key] && <input key={key} type="hidden" name={key} value={search[key]} />)}
     {children}
   </form>
 );
@@ -20,12 +22,13 @@ const SignInForm = ({ locale, query, children }: { locale: Locale; query?: strin
  */
 export const AddBeerEntry = async ({
   locale,
-  query,
+  search,
   isSignedIn,
   placement,
 }: {
   locale: Locale;
-  query?: string;
+  /** The search the visitor is on, which signing in returns to. */
+  search: BeerSearchParams;
   isSignedIn: boolean;
   placement: "empty" | "line";
 }) => {
@@ -36,9 +39,9 @@ export const AddBeerEntry = async ({
       <div className="border-t border-divider pt-3 text-sm text-foreground">
         {t("catalog.add.notHere")}{" "}
         {isSignedIn ? (
-          <AddBeerDialog locale={locale} initialName={query} trigger="link" />
+          <AddBeerDialog locale={locale} initialName={search.query} trigger="link" />
         ) : (
-          <SignInForm locale={locale} query={query}>
+          <SignInForm locale={locale} search={search}>
             <button
               type="submit"
               className="inline-block py-1 font-semibold text-foreground underline underline-offset-2 hover:text-primary"
@@ -55,7 +58,7 @@ export const AddBeerEntry = async ({
     return (
       <div className="flex flex-col items-start gap-4">
         <p className="text-foreground">{t("catalog.add.emptyLead")}</p>
-        <AddBeerDialog locale={locale} initialName={query} trigger="button" />
+        <AddBeerDialog locale={locale} initialName={search.query} trigger="button" />
       </div>
     );
   }
@@ -66,7 +69,7 @@ export const AddBeerEntry = async ({
         <p className="font-semibold text-foreground">{t("catalog.add.signedOutLead")}</p>
         <p className="text-muted-foreground">{t("catalog.add.signedOutHint")}</p>
       </div>
-      <SignInForm locale={locale} query={query}>
+      <SignInForm locale={locale} search={search}>
         <Button type="submit" variant="primary">
           {t("catalog.add.signIn")}
         </Button>

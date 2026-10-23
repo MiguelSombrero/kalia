@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -56,10 +57,10 @@ describe("the just-added marks", () => {
       withI18n(
         <ul>
           <BeerRow beerId="new" className="row">
-            <a href="/en/beers/new">Öö Bourbon</a>
+            <Link href="/en/beers/new">Öö Bourbon</Link>
           </BeerRow>
           <BeerRow beerId="old" className="row">
-            <a href="/en/beers/old">Öö</a>
+            <Link href="/en/beers/old">Öö</Link>
           </BeerRow>
         </ul>,
       );
@@ -70,6 +71,23 @@ describe("the just-added marks", () => {
 
     unmount();
     render(linked());
+    expect(document.body).toHaveFocus();
+  });
+
+  it("drop a focus the row never took once the toast goes", () => {
+    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
+    act(() => useJustAddedStore.getState().dismissToast());
+
+    render(
+      withI18n(
+        <ul>
+          <BeerRow beerId="new" className="row">
+            <Link href="/en/beers/new">Öö Bourbon</Link>
+          </BeerRow>
+        </ul>,
+      ),
+    );
+
     expect(document.body).toHaveFocus();
   });
 
