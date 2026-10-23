@@ -3,9 +3,12 @@ package fi.kalia.feed.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
@@ -136,6 +139,61 @@ class FeedServiceTest {
 		FeedPage page = service.readRecent(1);
 
 		assertThat(page.lines()).isEmpty();
+	}
+
+	@Test
+	void aBatchWithNoVisibleLineIsFollowedByTheNextOne() {
+		FeedLine hidden = line();
+		FeedLine alsoHidden = line();
+		FeedLine shown = line();
+		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
+				.willReturn(List.of(hidden, alsoHidden));
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(anyLong(),
+				any(), any())).willReturn(List.of(shown));
+		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(hidden, alsoHidden, shown));
+		given(profile.publicUsernames(any())).willReturn(Map.of(shown.getUserId(), "shown"));
+
+		FeedPage page = service.readRecent(1);
+
+		assertThat(page.lines()).extracting(FeedLineView::username).containsExactly("shown");
+		assertThat(page.nextCursor()).isNull();
+	}
+
+	@Test
+	void aRequestStopsReadingAfterTenBatchesWithACursorToResumeFrom() {
+		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
+				.willReturn(List.of(line(), line()));
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(anyLong(),
+				any(), any())).willReturn(List.of(line(), line()));
+		given(profile.publicUsernames(any())).willReturn(Map.of());
+
+		FeedPage page = service.readRecent(1);
+
+		assertThat(page.lines()).isEmpty();
+		assertThat(page.nextCursor()).isNotNull();
+		then(lines).should(times(9))
+				.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(anyLong(), any(),
+						any());
+	}
+
+	// A poll that finds nothing visible is the ordinary case, not a page to
+	// fill: one batch, and its cursor moves the poller past it.
+	@Test
+	void sinceDoesNotReadOnPastABatchWithNoVisibleLine() {
+		FeedLine anchor = mock(FeedLine.class);
+		given(anchor.getOccurredAt()).willReturn(Instant.now());
+		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
+		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
+				any(), any())).willReturn(List.of(line(), line()));
+		given(profile.publicUsernames(any())).willReturn(Map.of());
+
+		FeedPage page = service.readSince(codec.encode(42L), 1);
+
+		assertThat(page.lines()).isEmpty();
+		assertThat(page.nextCursor()).isNotNull();
+		then(lines).should(times(1))
+				.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(anyLong(), any(),
+						any());
 	}
 
 	@Test

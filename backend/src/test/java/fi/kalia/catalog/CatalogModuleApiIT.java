@@ -1,7 +1,6 @@
 package fi.kalia.catalog;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.application.CatalogService;
@@ -66,10 +65,14 @@ class CatalogModuleApiIT {
 	}
 
 	@Test
-	void aRequestOverTheIdCapIsRejectedRatherThanExecuted() {
-		List<UUID> tooMany = Stream.generate(UUID::randomUUID).limit(101).toList();
+	void aLookupOverTheIdCapResolvesABeerBeyondTheFirstChunk() {
+		Beer known = beers.findAll(Pageable.ofSize(1)).getContent().get(0);
+		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(CatalogApi.MAX_BATCH_IDS),
+				Stream.of(known.getId())).toList();
 
-		assertThatThrownBy(() -> api.getBeerSummaries(tooMany)).isInstanceOf(IllegalArgumentException.class);
+		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(ids);
+
+		assertThat(summaries).containsOnlyKeys(known.getId());
 	}
 
 	@Test

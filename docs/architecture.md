@@ -377,10 +377,15 @@ event's own opaque cursor — rather than ids for a client to enrich, which is
 the client-agnostic-resources convention below applied rather than excepted:
 "who added what, and when" is the resource, and a feed event without its actor
 would be an incomplete one, not a smaller one. A line whose beer or person no
-longer resolves is dropped, so a page may carry fewer lines than `size`
-without that being an error. A page already showing the feed re-reads this
-same resource on an interval rather than holding a connection open — there is
-no separate streaming endpoint ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
+longer resolves is dropped too. The first page and a `before` page read on
+past every line they leave out until they hold `size` lines or reach the
+window's edge, so a run of private cellars cannot empty a page that has
+public lines behind it; the backend fills it so that every client gets this,
+rather than each client fetching onward. Because the endpoint is public, one
+request reads at most ten batches of `size` + 1 rows; at that bound it answers
+with the lines it found, possibly none, and a `nextCursor`. A page already
+showing the feed re-reads this same resource on an interval rather than
+holding a connection open — there is no separate streaming endpoint ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
 
 **`since`, given a line's own cursor, answers "everything recorded after it"
 instead of the most recent page** — the increment a page that is already open
@@ -401,12 +406,13 @@ scrolls rather than catching up on new arrivals — the standard pairing for a
 list that grows at the head (Twitter's `since_id`/`max_id`, the GraphQL Relay
 Cursor Connections spec's `after`/`before`), completed here rather than
 invented. It shares `since`'s total order, visibility filter, `size` cap and
-truncation-cursor shape exactly, but reports no `startOver`: catching up has
-an "aged past the window" case to name because a stale `since` would
+truncation-cursor shape, fills its page as the first page does where `since`
+does not — a poll that finds nothing visible is the ordinary case — and
+reports no `startOver`: catching up has an "aged past the window" case to name because a stale `since` would
 otherwise silently skip a gap, while walking toward older history simply
-returns fewer rows, and eventually none, as it nears the window's edge — the
-one answer that already tells a caller to stop asking. `since` and `before`
-are mutually exclusive on one request. A `since` or `before` that is
+returns fewer rows, and eventually none and no `nextCursor`, as it nears the
+window's edge — the one answer that already tells a caller to stop asking.
+`since` and `before` are mutually exclusive on one request. A `since` or `before` that is
 malformed, or well-formed but never issued by this server, is rejected as
 `problem+json` rather than honoured, so a client cannot come to depend on the
 cursor's shape.

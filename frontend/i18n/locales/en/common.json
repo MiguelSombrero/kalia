@@ -45,6 +45,7 @@
       "retry": "Retry"
     },
     "older": {
+      "loadMore": "Load more",
       "failed": "Couldn't load more history.",
       "retry": "Try again",
       "cursorExpired": "Couldn't load more history — refresh the page to continue.",

@@ -1,7 +1,6 @@
 package fi.kalia.profile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.profile.application.ProfileService;
@@ -60,10 +59,15 @@ class ProfileModuleApiIT {
 	}
 
 	@Test
-	void aRequestOverTheIdCapIsRejectedRatherThanExecuted() {
-		List<UUID> tooMany = Stream.generate(UUID::randomUUID).limit(101).toList();
+	void aLookupOverTheIdCapResolvesAUsernameBeyondTheFirstChunk() {
+		UUID publicUserId = UUID.randomUUID();
+		profiles.save(makePublic(Profile.create(publicUserId, "carol")));
+		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(ProfileApi.MAX_BATCH_IDS),
+				Stream.of(publicUserId)).toList();
 
-		assertThatThrownBy(() -> api.publicUsernames(tooMany)).isInstanceOf(IllegalArgumentException.class);
+		Map<UUID, String> usernames = api.publicUsernames(ids);
+
+		assertThat(usernames).containsExactly(Map.entry(publicUserId, "carol"));
 	}
 
 	private static Profile makePublic(Profile profile) {

@@ -31,10 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Feed", description = "Recent cellar activity from cellars their owners made public")
 class FeedController {
 
-	// One less than CatalogApi/ProfileApi's own batch-id cap (ADR-0042): the
-	// lookahead row FeedService fetches beyond a full page can push the
-	// number of distinct beer or user ids to size + 1, and that must never
-	// cross what those batch reads accept.
+	// FeedService reads up to ten batches of size + 1 rows to fill a page, so
+	// 99 holds one anonymous request to a thousand rows at most (ADR-0042).
 	private static final int MAX_SIZE = 99;
 
 	// A signed cursor is a base64url sequence number, a ".", and a
@@ -56,9 +54,11 @@ class FeedController {
 			line: every event recorded before it instead, still newest first and capped at size — how a page \
 			already open continues toward older history as its visitor scrolls. since and before are mutually \
 			exclusive. Identical for every caller, signed in or out: only events whose owner's cellar is \
-			currently public are served, so there is nothing left to vary by caller. A page may carry fewer \
-			lines than requested — a line whose beer or person no longer resolves is dropped rather than \
-			rendered blank.""")
+			currently public are served, so there is nothing left to vary by caller. A line whose beer or person no \
+			longer resolves is dropped rather than rendered blank. Without since, a page reads on past the lines \
+			it leaves out until it holds size lines or reaches the end of the served \
+			window, but scans a bounded number of rows per request — so it may still carry fewer lines than \
+			requested, even none, with a nextCursor to continue from.""")
 	@ApiResponse(responseCode = "400",
 			description = "size is missing, non-numeric, or outside 1-" + MAX_SIZE + """
 					; since or before is malformed or was never issued by this server; or both since and before \
