@@ -595,10 +595,17 @@ The shape of the frontend. Day-to-day rules for writing it live in
   link. Scroll padding on the document keeps a control focused by Tab out
   from under the sticky header, the feed's "N new" control and an open toast
   (2.4.11). The non-native
-  widgets — the add/edit-bottle and remove-confirmation modals, and the
-  removal-outcome and profile toasts — get their focus trap, `aria-modal` and live-region
+  widgets — the add-beer, add/edit-bottle and remove-confirmation modals, and the
+  removal-outcome, just-added and profile toasts — get their focus trap, `aria-modal` and live-region
   behaviour from Radix rather than hand-rolled ARIA
-  ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). How enforcement is
+  ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). The one exception is
+  the add-beer dialog's brewery field, an ARIA combobox (an input owning a
+  listbox through `aria-activedescendant`) written by hand in
+  `features/catalog/BreweryField.tsx`, since neither Radix primitive covers it
+  ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)).
+  Once a beer is added, the dialog's trigger is gone from where it lands, so
+  the new beer's row takes focus instead, or the page itself when the add
+  lands on the beer's own page. How enforcement is
   layered across lint, unit and E2E tests:
   [frontend/README.md](../frontend/README.md) testing conventions.
 
@@ -973,6 +980,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) | A brewery's country, shown in English to every reader, becomes an ISO 3166-1 code named in the reader's language by the runtime | accepted | 2026-10-22 |
 | [ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md) | A reused username would hand old links to someone else, so a username is unique regardless of case and never reused | accepted | 2026-10-22 |
 | [ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
+| [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md) | A beer the catalog lacks is added in a dialog over the search that missed it, and a button sending its form fades only as far as its label stays legible | accepted | 2026-10-23 |
 
 ### Engineering process and documentation
 

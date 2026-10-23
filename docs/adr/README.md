@@ -183,6 +183,9 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)
   — the profile is a name tag above two visibility choices that list what they
   show, going public asks first, saves report in a toast; one error style app-wide.
+- [ADR-0082](0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)
+  — a beer is added in a dialog over the search that missed it, landing on a
+  search that finds it; a button sending its form fades to 75 %, still AA.
 - [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md)
   — the mark is a coral-lined bottle pouring beer into foam on a deep teal
   tile, in colours of its own that nothing else in the app uses.

@@ -129,6 +129,24 @@ Engineering work:
   expected to *fail* on has to live somewhere `tsc`, Vitest and `next build`
   all ignore, and the check has to assert the failure rather than run
   `eslint` and pass on a zero exit code.
+- **A duplicate brewery is named from a search, not by its id.** The add-beer
+  form's `409` for a brewery carries only `existingBreweryId`, and the API has
+  no read of one brewery, so `addBeerAction` (`frontend/features/catalog/actions.ts`)
+  looks it up by searching the typed name, 8 results at most. A brewery whose
+  folded name matches but whose spelling differs ("Ruosniemen-Panimo" against
+  "Ruosniemen Panimo"), or a common name with more matches, falls back to the
+  visitor's own typing, so the error box and *Use it* show their spelling
+  rather than the catalog's ([ADR-0082](../adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)).
+  The fix is backend-first: a `GET /api/v1/breweries/{id}`, or the brewery's
+  name and place in the `409`'s problem body.
+- **The add-beer form's similar-beers hint reads only a brewery's first 100
+  beers.** `listBreweryBeers` (`frontend/features/catalog/api.ts`) takes one
+  page at the search API's size cap, sorted by name, and
+  `similarlyNamed` filters that client-side. A Wikidata brewery with more
+  beers than that loses the hint for every name past the hundredth, and only
+  the server's exact folded-name `409` remains. The fix needs the API to
+  answer the question itself, for example a brewery-scoped search by any of a
+  name's words.
 
 ## Mobile client
 

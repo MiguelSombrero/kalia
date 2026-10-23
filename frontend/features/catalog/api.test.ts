@@ -1,36 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildBeerSearchParams, getBeer, searchBeers } from "./api";
+import {
+  addBeer,
+  findBreweries,
+  getBeer,
+  listBreweryBeers,
+  listCountries,
+  listStyles,
+  searchBeers,
+} from "./api";
 import type { BeerDetails, BeerPage } from "./types";
-
-describe("buildBeerSearchParams", () => {
-  it("omits missing and empty values", () => {
-    const params = buildBeerSearchParams({ query: "", style: undefined });
-
-    expect(params.toString()).toBe("");
-  });
-
-  it("includes provided filters", () => {
-    const params = buildBeerSearchParams({
-      query: "westvleteren",
-      style: "Quadrupel",
-      countryCode: "BE",
-      minAbv: "9",
-      maxAbv: "12",
-      page: "1",
-      size: "10",
-      sort: "abv,desc",
-    });
-
-    expect(params.get("query")).toBe("westvleteren");
-    expect(params.get("style")).toBe("Quadrupel");
-    expect(params.get("countryCode")).toBe("BE");
-    expect(params.get("minAbv")).toBe("9");
-    expect(params.get("maxAbv")).toBe("12");
-    expect(params.get("page")).toBe("1");
-    expect(params.get("size")).toBe("10");
-    expect(params.get("sort")).toBe("abv,desc");
-  });
-});
 
 const emptyPage: BeerPage = { content: [], totalElements: 0, totalPages: 0, page: 0 };
 
@@ -163,5 +141,124 @@ describe("getBeer", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 500 })));
 
     await expect(getBeer(beerId)).rejects.toThrow("status 500");
+  });
+});
+
+const breweryId = "7f1c2a3b-0000-4000-8000-000000000001";
+const request = { name: "Öö Bourbon", style: "Imperial Stout", abv: 12.5, breweryId };
+const problem = (status: number, body: object) =>
+  new Response(JSON.stringify({ status, ...body }), {
+    status,
+    headers: { "Content-Type": "application/problem+json" },
+  });
+
+describe("addBeer", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("posts the beer and answers with the beer it created", async () => {
+    const fetchMock = vi.fn(async () => Response.json(westvleteren12, { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "added", beer: westvleteren12 });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("/api/v1/beers");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(String(init.body))).toEqual(request);
+  });
+
+  // The problem's extension members are top-level JSON (RFC 9457 §3.2), not
+  // the `properties` object the generated ProblemDetail type describes.
+  it("names the beer a duplicate duplicates", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { existingBeerId: beerId })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "duplicateBeer", existingBeerId: beerId });
+  });
+
+  it("names the brewery a duplicate brewery duplicates", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { existingBreweryId: breweryId })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "duplicateBrewery", existingBreweryId: breweryId });
+  });
+
+  it("lists every field a 400 refuses", async () => {
+    const errors = [
+      { field: "style", message: "must be one of the catalog's styles" },
+      { field: "newBrewery.countryCode", message: "must be a listed country" },
+    ];
+    vi.stubGlobal("fetch", vi.fn(async () => problem(400, { detail: "Validation failed", errors })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "refused", fields: errors });
+  });
+
+  it("reports a 400 without field detail as a refusal of no field in particular", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(400, { detail: "Malformed JSON" })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "refused", fields: [] });
+  });
+
+  it("reports a brewery that has since gone as a refusal of the brewery", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(404, { detail: "No brewery" })));
+
+    await expect(addBeer(request)).resolves.toEqual({
+      kind: "refused",
+      fields: [{ field: "breweryId", message: "No brewery" }],
+    });
+  });
+
+  it.each([401, 500])("throws a tagged http ApiError on a %i", async (status) => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status })));
+
+    await expect(addBeer(request)).rejects.toMatchObject({ name: "ApiError", kind: "http", status });
+  });
+});
+
+describe("the add-a-beer form's reads", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("finds breweries by name, a few at a time", async () => {
+    const brewery = { id: breweryId, name: "Põhjala", countryCode: "EE", city: "Tallinn" };
+    const fetchMock = vi.fn(async () =>
+      Response.json({ content: [brewery], totalElements: 1, totalPages: 1, page: 0 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(findBreweries("põh")).resolves.toEqual([brewery]);
+    const url = requestUrl(fetchMock);
+    expect(url.pathname).toBe("/api/v1/breweries");
+    expect(url.searchParams.get("query")).toBe("põh");
+    expect(url.searchParams.get("size")).toBe("8");
+  });
+
+  it("lists a brewery's beers by its id", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(listBreweryBeers(breweryId)).resolves.toEqual([]);
+    const params = requestUrl(fetchMock).searchParams;
+    expect(params.get("breweryId")).toBe(breweryId);
+    expect(params.get("size")).toBe("100");
+  });
+
+  it("lists the styles and the countries", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => Response.json(url.endsWith("/styles") ? ["IPA", "Porter"] : ["FI", "EE"])),
+    );
+
+    await expect(listStyles()).resolves.toEqual(["IPA", "Porter"]);
+    await expect(listCountries()).resolves.toEqual(["FI", "EE"]);
+  });
+
+  it("throws a tagged http ApiError when a read fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
+
+    await expect(listStyles()).rejects.toMatchObject({ kind: "http", status: 503 });
+    await expect(listCountries()).rejects.toMatchObject({ kind: "http", status: 503 });
+    await expect(findBreweries("x")).rejects.toMatchObject({ kind: "http", status: 503 });
+    await expect(listBreweryBeers(breweryId)).rejects.toMatchObject({ kind: "http", status: 503 });
   });
 });

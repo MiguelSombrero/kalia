@@ -1,6 +1,30 @@
 import type { Locale } from "@/i18n/settings";
-import { buildBeerSearchParams } from "./api";
 import type { BeerSearchParams } from "./types";
+
+export const PARAM_KEYS = [
+  "query",
+  "style",
+  "countryCode",
+  "minAbv",
+  "maxAbv",
+  "page",
+  "size",
+  "sort",
+] as const;
+
+/** Builds the URL query string for shareable/pagination links — distinct
+ *  from the typed params api.ts sends to the backend. Kept out of api.ts so a
+ *  client component can build a link without bundling the API client. */
+export const buildBeerSearchParams = (params: BeerSearchParams): URLSearchParams => {
+  const searchParams = new URLSearchParams();
+  for (const key of PARAM_KEYS) {
+    const value = params[key];
+    if (value) {
+      searchParams.set(key, value);
+    }
+  }
+  return searchParams;
+};
 
 const withQuery = (path: string, params: BeerSearchParams): string => {
   const query = buildBeerSearchParams(params).toString();

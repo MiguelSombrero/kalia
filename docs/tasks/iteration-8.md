@@ -18,7 +18,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [17](iteration-8/17-seed-the-catalog-from-wikidata.md) | Seed the catalog from Wikidata | done |
 | [02](iteration-8/02-add-beer-api.md) | Add-a-beer API | done |
 | [19](iteration-8/19-a-country-reads-in-the-readers-language.md) | A brewery's country reads in the reader's language | done |
-| [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | refined |
+| [03](iteration-8/03-add-beer-ui.md) | Adding a beer from search | done |
 | [04](iteration-8/04-catalog-caching-decision.md) | Decide whether and how the catalog is cached | done |
 | [05](iteration-8/05-cache-catalog-reads.md) | Cache catalog reads | dropped |
 | [18](iteration-8/18-catalog-search-served-by-an-index-at-150k.md) | Catalog search stays within budget at 150k beers | needs-refinement |

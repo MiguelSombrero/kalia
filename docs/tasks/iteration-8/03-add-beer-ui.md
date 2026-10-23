@@ -1,6 +1,6 @@
 # Task 03: Adding a beer from search
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 - **Kind:** design
 
@@ -102,34 +102,34 @@ leaving the form.
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum where the
+- [x] The product owner chose from built alternatives, at minimum where the
       affordance lives, whether the form is a page or a dialog, and where the
       user lands after creating the beer. An ADR records the directions and
       the choice, and the product owner signed off the built flow in the
       browser pane at both agreed widths
-- [ ] A signed-in user who searches for a beer that does not exist can reach
+- [x] A signed-in user who searches for a beer that does not exist can reach
       the form from that empty state, with the search term carried into it —
       component test, and Playwright covering the route
-- [ ] Submitting a valid beer creates it, and the user lands where the chosen
+- [x] Submitting a valid beer creates it, and the user lands where the chosen
       direction says without a full page reload — Playwright covering search →
       not found → add → the new beer, continuing into adding a bottle of it to
       the cellar
-- [ ] A beer whose brewery the catalog lacks can be added, creating the
+- [x] A beer whose brewery the catalog lacks can be added, creating the
       brewery in the same flow — Playwright
-- [ ] The brewery's similarly named beers are shown before submitting —
+- [x] The brewery's similarly named beers are shown before submitting —
       component test
-- [ ] Submitting a duplicate says the beer is already in the catalog and links
+- [x] Submitting a duplicate says the beer is already in the catalog and links
       to it, rather than showing a generic error or creating a second beer —
       component test with the API's `409` response
-- [ ] Invalid input is caught client-side, and a server-side rejection the
+- [x] Invalid input is caught client-side, and a server-side rejection the
       client did not predict is still shown to the user rather than swallowed —
       component test for the second case, confirmed to fail against a form that
       only handles its own validation
-- [ ] A signed-out visitor is invited to sign in rather than shown a form that
+- [x] A signed-out visitor is invited to sign in rather than shown a form that
       will fail — component test
-- [ ] Every rendered state passes `axe` with no violations, in both locales and
+- [x] Every rendered state passes `axe` with no violations, in both locales and
       at both agreed widths
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

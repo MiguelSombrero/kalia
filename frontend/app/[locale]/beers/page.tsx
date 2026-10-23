@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
+  AddBeerEntry,
   BeerList,
   catalogColumns,
   catalogHref,
+  hasFilters,
+  JustAddedToast,
   Pagination,
   parseBeerSearchParams,
   type RawSearchParams,
@@ -62,6 +65,9 @@ const BeersPage = async ({ params, searchParams }: Props) => {
             beers={result.content}
             search={beerParams}
             heldBottles={heldBottles}
+            emptyAction={
+              <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="empty" />
+            }
             renderActions={(beer) => (
               <AddToCellarButton
                 locale={locale}
@@ -72,9 +78,13 @@ const BeersPage = async ({ params, searchParams }: Props) => {
               />
             )}
           />
+          {result.content.length > 0 && hasFilters(beerParams) && (
+            <AddBeerEntry locale={locale} search={beerParams} isSignedIn={isSignedIn} placement="line" />
+          )}
           <Pagination locale={locale} params={beerParams} result={result} />
         </div>
       </div>
+      <JustAddedToast />
     </Page>
   );
 };

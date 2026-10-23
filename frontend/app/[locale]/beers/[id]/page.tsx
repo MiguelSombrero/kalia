@@ -8,6 +8,8 @@ import {
   catalogHref,
   getBeer,
   hasSearch,
+  JustAddedLanding,
+  JustAddedToast,
   parseBeerSearchParams,
   type RawSearchParams,
   searchBeers,
@@ -101,6 +103,8 @@ const BeerPage = async ({ params, searchParams }: Props) => {
           />
         </section>
       )}
+      <JustAddedLanding beerId={beer.id} />
+      <JustAddedToast />
     </Page>
   );
 };

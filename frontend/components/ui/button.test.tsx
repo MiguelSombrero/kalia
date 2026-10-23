@@ -59,4 +59,49 @@ describe("Button", () => {
     expect(classes).toContain("motion-safe:transition-colors");
     expect(classes.filter((c) => c.startsWith("transition"))).toEqual([]);
   });
+
+  it("is disabled and marked while pending, and enabled otherwise", async () => {
+    const { container, rerender } = render(<Button pending>Adding…</Button>);
+
+    const button = screen.getByRole("button", { name: "Adding…" });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("data-pending");
+    expect(await axe(container)).toHaveNoViolations();
+
+    rerender(<Button pending={false}>Add</Button>);
+
+    expect(screen.getByRole("button", { name: "Add" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Add" })).not.toHaveAttribute("data-pending");
+  });
+
+  it("stays disabled while pending even when its caller passes disabled={false}", () => {
+    render(
+      <Button pending disabled={false}>
+        Adding…
+      </Button>,
+    );
+
+    expect(screen.getByRole("button", { name: "Adding…" })).toBeDisabled();
+  });
+
+  it.each(["primary", "outline", "destructive"] as const)(
+    "draws the %s variant faded with the progress cursor while pending, and never changes it on hover",
+    (variant) => {
+      const classes = buttonVariants(variant).split(" ");
+
+      expect(classes).toEqual(expect.arrayContaining(["data-pending:opacity-75", "data-pending:cursor-progress"]));
+      expect(classes.filter((c) => c.startsWith("hover:"))).toEqual([]);
+    },
+  );
+
+  // :enabled matches only form controls, so an <a> styled as a button would lose its hover.
+  it.each(["primary", "outline", "destructive"] as const)(
+    "keeps the %s variant's hover on a link styled as a button",
+    (variant) => {
+      const classes = buttonVariants(variant).split(" ");
+
+      expect(classes.filter((c) => c.startsWith("enabled:"))).toEqual([]);
+      expect(classes.some((c) => c.startsWith("not-disabled:hover:"))).toBe(true);
+    },
+  );
 });

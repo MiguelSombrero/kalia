@@ -1,34 +1,25 @@
 import { apiError } from "@/lib/api/api-error";
 import {
+  addBeer as generatedAddBeer,
   getBeer as generatedGetBeer,
+  listBreweries as generatedListBreweries,
   listBreweryCountries as generatedListBreweryCountries,
+  listCountries as generatedListCountries,
+  listStyles as generatedListStyles,
   searchBeers as generatedSearchBeers,
 } from "@/lib/api/generated/catalog/catalog";
-import { DEFAULT_SORT, SORT_OPTIONS, type BeerDetails, type BeerPage, type BeerSearchParams } from "./types";
-
-const PARAM_KEYS = [
-  "query",
-  "style",
-  "countryCode",
-  "minAbv",
-  "maxAbv",
-  "page",
-  "size",
-  "sort",
-] as const;
-
-/** Builds the URL query string for shareable/pagination links — distinct
- *  from the typed params the generated client sends to the backend below. */
-export const buildBeerSearchParams = (params: BeerSearchParams): URLSearchParams => {
-  const searchParams = new URLSearchParams();
-  for (const key of PARAM_KEYS) {
-    const value = params[key];
-    if (value) {
-      searchParams.set(key, value);
-    }
-  }
-  return searchParams;
-};
+import {
+  DEFAULT_SORT,
+  SORT_OPTIONS,
+  type AddBeerRequest,
+  type AddBeerResult,
+  type BeerDetails,
+  type BeerPage,
+  type BeerSearchParams,
+  type BeerSummary,
+  type Brewery,
+  type FieldRefusal,
+} from "./types";
 
 const VALID_SORT_VALUES: ReadonlySet<string> = new Set(SORT_OPTIONS.map((option) => option.value));
 
@@ -85,6 +76,87 @@ export const getBeer = async (id: string): Promise<BeerDetails | null> => {
   }
   if (status !== 200) {
     throw apiError("http", `Beer lookup failed with status ${status}`, { status });
+  }
+  return response.data;
+};
+
+// A problem's extension members arrive top-level (RFC 9457 §3.2), not under
+// the `properties` the generated ProblemDetail type declares.
+const problemMember = (body: unknown, name: string): unknown =>
+  typeof body === "object" && body !== null ? (body as Record<string, unknown>)[name] : undefined;
+
+const fieldRefusals = (body: unknown): FieldRefusal[] => {
+  const errors = problemMember(body, "errors");
+  if (!Array.isArray(errors)) {
+    return [];
+  }
+  return errors.filter(
+    (error): error is FieldRefusal => typeof error?.field === "string" && typeof error?.message === "string",
+  );
+};
+
+/** A 401 or a 5xx is a failure to add, not an answer about the beer, and throws. */
+export const addBeer = async (request: AddBeerRequest): Promise<AddBeerResult> => {
+  const response = await generatedAddBeer(request);
+  if (response.status === 201) {
+    return { kind: "added", beer: response.data };
+  }
+  const status = Number(response.status);
+  const existingBeerId = problemMember(response.data, "existingBeerId");
+  const existingBreweryId = problemMember(response.data, "existingBreweryId");
+  if (status === 409 && typeof existingBeerId === "string") {
+    return { kind: "duplicateBeer", existingBeerId };
+  }
+  if (status === 409 && typeof existingBreweryId === "string") {
+    return { kind: "duplicateBrewery", existingBreweryId };
+  }
+  if (status === 400) {
+    return { kind: "refused", fields: fieldRefusals(response.data) };
+  }
+  if (status === 404) {
+    const detail = problemMember(response.data, "detail");
+    return { kind: "refused", fields: [{ field: "breweryId", message: typeof detail === "string" ? detail : "" }] };
+  }
+  throw apiError("http", `Adding a beer failed with status ${status}`, { status });
+};
+
+const BREWERY_MATCHES = 8;
+
+export const findBreweries = async (query: string): Promise<Brewery[]> => {
+  const response = await generatedListBreweries({ query, size: BREWERY_MATCHES });
+  if (response.status !== 200) {
+    throw apiError("http", `Brewery search failed with status ${response.status}`, { status: response.status });
+  }
+  return response.data.content;
+};
+
+// The search API's own page-size cap (CatalogController.MAX_PAGE_SIZE).
+const BREWERY_BEERS = 100;
+
+export const listBreweryBeers = async (breweryId: string): Promise<BeerSummary[]> => {
+  const response = await generatedSearchBeers({ breweryId, size: BREWERY_BEERS });
+  const status = Number(response.status);
+  if (status !== 200) {
+    throw apiError("http", `Brewery beer list failed with status ${status}`, { status });
+  }
+  return response.data.content;
+};
+
+export const listStyles = async (): Promise<string[]> => {
+  const response = await generatedListStyles();
+  const status = Number(response.status);
+  if (status !== 200) {
+    throw apiError("http", `Style list failed with status ${status}`, { status });
+  }
+  return response.data;
+};
+
+/** The ISO 3166-1 codes a new brewery may be in, in no order. */
+export const listCountries = async (): Promise<string[]> => {
+  const response = await generatedListCountries();
+  const status = Number(response.status);
+  if (status !== 200) {
+    throw apiError("http", `Country list failed with status ${status}`, { status });
   }
   return response.data;
 };
