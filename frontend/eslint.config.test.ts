@@ -44,3 +44,28 @@ describe("heading rule (ADR-0073)", () => {
     expect(messages).toEqual([expect.stringContaining("Prefer arrow functions")]);
   });
 });
+
+describe("generated client boundary (ADR-0012)", () => {
+  it("lets a feature's api.ts import its own generated tag and the shared models", async () => {
+    const own =
+      'import { listEntries } from "@/lib/api/generated/cellar/cellar";\n' +
+      'import { read } from "@/lib/api/generated/public-cellar/public-cellar";\n' +
+      'import type { EntryDto } from "@/lib/api/generated/models";\n' +
+      "export const probe = [listEntries, read] as unknown as EntryDto;\n";
+    expect(await messagesFor(own, "features/cellar/api.ts")).toEqual([]);
+
+    const catalog = 'import { getBeer } from "@/lib/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
+    expect(await messagesFor(catalog, "features/catalog/api.ts")).toEqual([]);
+  });
+
+  it("rejects a feature's api.ts importing another feature's generated tag", async () => {
+    const code = 'import { getBeer } from "@/lib/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
+
+    expect(await messagesFor(code, "features/cellar/api.ts")).toEqual([
+      expect.stringContaining("must not import @/lib/api/generated/catalog/catalog"),
+    ]);
+    expect(await messagesFor(code, "features/feed/api.ts")).toEqual([
+      expect.stringContaining("must not import @/lib/api/generated/catalog/catalog"),
+    ]);
+  });
+});

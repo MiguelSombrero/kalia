@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { CellarBeerDto } from './cellarBeerDto';
 import type { PublicCellarBottleDto } from './publicCellarBottleDto';
 
 /**
@@ -11,7 +12,7 @@ import type { PublicCellarBottleDto } from './publicCellarBottleDto';
  */
 export interface PublicCellarEntryDto {
   id: string;
-  beerId: string;
+  beer: CellarBeerDto;
   /** Derived by counting bottles, never stored */
   quantity: number;
   createdAt: string;

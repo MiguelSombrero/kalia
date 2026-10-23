@@ -7,6 +7,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verify;
 
 import fi.kalia.TestcontainersConfiguration;
+import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.domain.Beer;
@@ -21,15 +22,21 @@ import jakarta.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -38,6 +45,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
+@ExtendWith(OutputCaptureExtension.class)
 class CellarServiceIT {
 
 	// Spied so updateBottleSavesThroughTheAggregateRoot can assert the write
@@ -57,6 +65,8 @@ class CellarServiceIT {
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
 
+	private CatalogApi catalog;
+
 	private CellarService service;
 
 	private UUID beerId;
@@ -65,7 +75,8 @@ class CellarServiceIT {
 
 	@BeforeEach
 	void setUp() {
-		service = new CellarService(entries, new CatalogApi(new CatalogService(beers, breweries)));
+		catalog = new CatalogApi(new CatalogService(beers, breweries));
+		service = new CellarService(entries, catalog);
 		beerId = beers.findAll().stream().findFirst().map(Beer::getId).orElseThrow();
 	}
 
@@ -173,7 +184,7 @@ class CellarServiceIT {
 	}
 
 	@Test
-	void listEntriesReturnsOnlyTheCallersEntriesEachWithItsBottles() {
+	void listEntriesReturnsOnlyTheCallersEntriesEachWithItsBottlesAndItsBeer() {
 		UUID owner = UUID.randomUUID();
 		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		service.addBottles(owner, beerId, 1, ContainerType.CAN, null, null);
@@ -181,39 +192,79 @@ class CellarServiceIT {
 		testEntityManager.flush();
 		testEntityManager.clear();
 
-		List<Entry> cellar = service.listEntries(owner);
+		List<EntryView> cellar = service.listEntries(owner);
 
 		assertThat(cellar).hasSize(1);
-		assertThat(cellar.getFirst().getBottles()).extracting(Bottle::getContainerType)
+		assertThat(cellar.getFirst().entry().getBottles()).extracting(Bottle::getContainerType)
 				.containsExactly(ContainerType.BOTTLE, ContainerType.CAN);
-	}
-
-	// ADR-0034: an entry outlives no bottle, so one that slips through empty is
-	// a bug to hide from the owner's list, not a zero-quantity row to show.
-	@Test
-	void listEntriesLeavesOutAnEntryWithNoBottles() {
-		UUID owner = UUID.randomUUID();
-		entries.saveAndFlush(Entry.create(owner, beerId));
-
-		assertThat(service.listEntries(owner)).isEmpty();
+		assertThat(cellar.getFirst().beer()).isEqualTo(summaryOf(beerId));
 	}
 
 	@Test
-	void readPublicCellarReturnsTheOwnersEntriesEachWithItsBottles() {
+	void readPublicCellarReturnsTheOwnersEntriesEachWithItsBottlesAndItsBeer() {
 		UUID owner = UUID.randomUUID();
 		service.addBottles(owner, beerId, 2, ContainerType.BOTTLE, null, null);
 		testEntityManager.flush();
 		testEntityManager.clear();
 
-		List<Entry> cellar = service.readPublicCellar(owner);
+		List<EntryView> cellar = service.readPublicCellar(owner);
 
 		assertThat(cellar).hasSize(1);
-		assertThat(cellar.getFirst().getBottles()).hasSize(2);
+		assertThat(cellar.getFirst().entry().getBottles()).hasSize(2);
+		assertThat(cellar.getFirst().beer()).isEqualTo(summaryOf(beerId));
 	}
 
 	@Test
 	void readPublicCellarIsEmptyForAnOwnerWithNoCellar() {
 		assertThat(service.readPublicCellar(UUID.randomUUID())).isEmpty();
+	}
+
+	// ADR-0034: an entry outlives no bottle, so one that slips through empty is
+	// a bug to hide from both reads, not a zero-quantity row to show.
+	@Test
+	void neitherReadReturnsAnEntryWithNoBottles() {
+		UUID owner = UUID.randomUUID();
+		entries.saveAndFlush(Entry.create(owner, beerId));
+
+		assertThat(service.listEntries(owner)).isEmpty();
+		assertThat(service.readPublicCellar(owner)).isEmpty();
+	}
+
+	@Test
+	void bothReadsLeaveOutAndLogAnEntryWhoseBeerIsNotInTheCatalog(CapturedOutput output) {
+		UUID owner = UUID.randomUUID();
+		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
+		UUID vanishedBeerId = UUID.randomUUID();
+		Entry orphan = Entry.create(owner, vanishedBeerId);
+		orphan.addBottles(1, ContainerType.CAN, null, null);
+		UUID orphanId = entries.saveAndFlush(orphan).getId();
+		testEntityManager.clear();
+
+		assertThat(service.listEntries(owner)).extracting(view -> view.beer().id()).containsExactly(beerId);
+		assertThat(service.readPublicCellar(owner)).extracting(view -> view.beer().id()).containsExactly(beerId);
+		assertThat(output).contains("Left cellar entry " + orphanId + " out: its beer " + vanishedBeerId);
+	}
+
+	@Test
+	void bothReadsReturnEntriesInBeerNameOrder() {
+		UUID owner = UUID.randomUUID();
+		// Names starting with different ASCII letters order the same under any
+		// collation, so the expectation cannot hinge on how accents are ranked.
+		Map<Character, Beer> byInitial = beers.findAll().stream()
+				.filter(beer -> beer.getName().matches("(?i)^[a-z].*"))
+				.collect(Collectors.toMap(beer -> Character.toLowerCase(beer.getName().charAt(0)), beer -> beer,
+						(first, second) -> first, TreeMap::new));
+		Beer earlier = byInitial.values().stream().findFirst().orElseThrow();
+		Beer later = byInitial.values().stream().skip(1).findFirst().orElseThrow();
+		service.addBottles(owner, later.getId(), 1, ContainerType.BOTTLE, null, null);
+		service.addBottles(owner, earlier.getId(), 1, ContainerType.BOTTLE, null, null);
+		testEntityManager.flush();
+		testEntityManager.clear();
+
+		assertThat(service.listEntries(owner)).extracting(view -> view.beer().id())
+				.containsExactly(earlier.getId(), later.getId());
+		assertThat(service.readPublicCellar(owner)).extracting(view -> view.beer().id())
+				.containsExactly(earlier.getId(), later.getId());
 	}
 
 	@Test
@@ -303,6 +354,10 @@ class CellarServiceIT {
 		Bottle accepted = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, tomorrow, null).getFirst();
 
 		assertThat(accepted.getBrewedDate()).isEqualTo(tomorrow);
+	}
+
+	private BeerSummary summaryOf(UUID id) {
+		return catalog.getBeerSummaries(List.of(id)).get(id);
 	}
 
 }

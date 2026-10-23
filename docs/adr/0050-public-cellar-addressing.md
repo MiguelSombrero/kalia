@@ -7,6 +7,11 @@
   discoverable. The 404 rule and locale-less addressing are unchanged; what
   no longer holds as written is the Consequences entry about "anyone with the
   link" being the whole promise, corrected below
+- **Amended:** 2026-10-23 by [ADR-0083](0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)
+  — the public and owner entries now nest one shared beer-facts type. The
+  separate public type below remains the seam at the entry and bottle level;
+  a beer fact added to the shared type reaches strangers too, so an
+  owner-only fact goes on the owner's entry instead
 
 ## Context
 

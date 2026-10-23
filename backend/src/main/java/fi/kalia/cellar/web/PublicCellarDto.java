@@ -1,6 +1,6 @@
 package fi.kalia.cellar.web;
 
-import fi.kalia.cellar.domain.Entry;
+import fi.kalia.cellar.application.EntryView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -13,7 +13,7 @@ public record PublicCellarDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "One per catalog beer the owner has bottles of") List<PublicCellarEntryDto> entries) {
 
-	static PublicCellarDto of(String username, List<Entry> entries) {
+	static PublicCellarDto of(String username, List<EntryView> entries) {
 		return new PublicCellarDto(username, entries.stream().map(PublicCellarEntryDto::from).toList());
 	}
 

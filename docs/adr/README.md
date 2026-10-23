@@ -78,6 +78,10 @@ nobody has committed to becomes a constraint anyway.
   on `save`, never published from a service; it carries ids and a timestamp,
   never a mutable copy, and is named as a past participle on the thing that
   changed (`BottleAdded`).
+- [ADR-0083](0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)
+  — both cellar reads arrive with each entry joined to its beer through
+  `CatalogApi`, empty and unresolvable entries left out in one place, and a
+  feature's `api.ts` reaches only its own generated tag.
 
 ## Feed
 

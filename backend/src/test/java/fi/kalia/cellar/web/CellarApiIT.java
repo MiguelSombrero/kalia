@@ -6,8 +6,11 @@ import static org.mockito.BDDMockito.given;
 import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
+import fi.kalia.catalog.BeerSummary;
+import fi.kalia.catalog.CatalogApi;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +42,9 @@ class CellarApiIT {
 
 	@Autowired
 	private BeerRepository beerRepository;
+
+	@Autowired
+	private CatalogApi catalog;
 
 	@MockitoBean
 	private JwtDecoder jwtDecoder;
@@ -104,7 +110,7 @@ class CellarApiIT {
 				.expectBody(String.class)
 				.value(body -> {
 					assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1);
-					assertThat((String) JsonPath.read(body, "$[0].beerId")).isEqualTo(beerId.toString());
+					assertBeerFacts(body, "$[0].beer");
 					assertThat((int) JsonPath.read(body, "$[0].quantity")).isEqualTo(2);
 					assertThat((List<String>) JsonPath.read(body, "$[0].bottles[*].containerType"))
 							.containsExactly("BOTTLE", "CAN");
@@ -410,6 +416,17 @@ class CellarApiIT {
 			request.put("bestBeforeDate", bestBeforeDate);
 		}
 		return request;
+	}
+
+	private void assertBeerFacts(String body, String path) {
+		BeerSummary expected = catalog.getBeerSummaries(List.of(beerId)).get(beerId);
+		Map<String, Object> beer = JsonPath.read(body, path);
+		assertThat(beer).containsOnlyKeys("id", "name", "brewery", "style", "abv");
+		assertThat(beer).containsEntry("id", beerId.toString())
+				.containsEntry("name", expected.name())
+				.containsEntry("brewery", expected.brewery())
+				.containsEntry("style", expected.style());
+		assertThat(new BigDecimal(beer.get("abv").toString())).isEqualByComparingTo(expected.abv());
 	}
 
 }

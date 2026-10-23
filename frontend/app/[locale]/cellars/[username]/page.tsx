@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { getPublicCellar, PublicCellarView, resolvePublicCellarBeers } from "@/features/cellar";
+import { getPublicCellar, PublicCellarView } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
@@ -48,17 +48,14 @@ const PublicCellarPage = async ({ params }: Props) => {
     notFound();
   }
 
-  const [beers, viewerProfile] = await Promise.all([
-    resolvePublicCellarBeers(cellar),
-    // The banner is the one caller-dependent thing on the page (ADR-0050); the
-    // cellar itself was fetched identically for every caller above.
-    session?.user ? getProfile().catch(() => null) : Promise.resolve(null),
-  ]);
+  // The banner is the one caller-dependent thing on the page (ADR-0050); the
+  // cellar itself was fetched identically for every caller above.
+  const viewerProfile = session?.user ? await getProfile().catch(() => null) : null;
   const isOwner = viewerProfile?.username === cellar.username;
 
   return (
     <Page width="wide">
-      <PublicCellarView locale={locale} username={cellar.username} beers={beers} isOwner={isOwner} />
+      <PublicCellarView locale={locale} username={cellar.username} beers={cellar.beers} isOwner={isOwner} />
     </Page>
   );
 };

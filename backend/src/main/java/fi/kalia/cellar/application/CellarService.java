@@ -1,20 +1,28 @@
 package fi.kalia.cellar.application;
 
+import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.cellar.domain.Bottle;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
+import java.text.Collator;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,14 +32,14 @@ public class CellarService {
 
 	private final CatalogApi catalog;
 
-	public List<Entry> listEntries(UUID userId) {
-		return entries.findWithBottlesByUserId(userId).stream().filter(entry -> !entry.isEmpty()).toList();
+	public List<EntryView> listEntries(UUID userId) {
+		return joined(entries.findWithBottlesByUserId(userId));
 	}
 
 	// The caller has already been resolved to a public cellar's owner id by
 	// profile (ADR-0050); this only loads it.
-	public List<Entry> readPublicCellar(UUID ownerId) {
-		return entries.findWithBottlesByUserId(ownerId);
+	public List<EntryView> readPublicCellar(UUID ownerId) {
+		return joined(entries.findWithBottlesByUserId(ownerId));
 	}
 
 	// ADR-0057; each retry's own transaction is verified by ConcurrentAddBottleApiIT.
@@ -60,6 +68,29 @@ public class CellarService {
 		} else {
 			entries.save(entry);
 		}
+	}
+
+	private List<EntryView> joined(List<Entry> found) {
+		List<Entry> held = found.stream().filter(entry -> !entry.isEmpty()).toList();
+		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(held.stream().map(Entry::getBeerId).toList());
+		return held.stream()
+				.flatMap(entry -> {
+					BeerSummary beer = beers.get(entry.getBeerId());
+					if (beer == null) {
+						log.warn("Left cellar entry {} out: its beer {} is not in the catalog", entry.getId(),
+								entry.getBeerId());
+						return Stream.empty();
+					}
+					return Stream.of(new EntryView(entry, beer));
+				})
+				.sorted(defaultOrder())
+				.toList();
+	}
+
+	private static Comparator<EntryView> defaultOrder() {
+		Collator byName = Collator.getInstance(Locale.ROOT);
+		return Comparator.comparing((EntryView view) -> view.beer().name(), byName)
+				.thenComparing(view -> view.entry().getId());
 	}
 
 	private Entry ownerOf(UUID userId, UUID bottleId) {
