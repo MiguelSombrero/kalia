@@ -12,6 +12,7 @@ import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -287,7 +288,7 @@ class CellarApiIT {
 	// without the server trusting anything the caller claims about the date.
 	@Test
 	void addingABottleWithABrewedDateOfTomorrowIsAccepted() {
-		String tomorrow = LocalDate.now().plusDays(1).toString();
+		String tomorrow = LocalDate.now(ZoneOffset.UTC).plusDays(1).toString();
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("beerId", beerId.toString());
 		request.put("containerType", "BOTTLE");
@@ -310,7 +311,7 @@ class CellarApiIT {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("beerId", beerId.toString());
 		request.put("containerType", "BOTTLE");
-		request.put("brewedDate", LocalDate.now().plusDays(2).toString());
+		request.put("brewedDate", LocalDate.now(ZoneOffset.UTC).plusDays(2).toString());
 
 		client.post().uri("/api/v1/cellar/bottles")
 				.header("Authorization", USER_A)

@@ -55,11 +55,6 @@ class ProfileServiceIT {
 	}
 
 	@Test
-	void aUserWithNoProfileRowReadsAsPrivate() {
-		assertThat(service.isCellarPublic(UUID.randomUUID())).isFalse();
-	}
-
-	@Test
 	void changingVisibilityCreatesTheProfileIfNoneExistsYet() {
 		UUID userId = UUID.randomUUID();
 

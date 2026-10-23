@@ -3,6 +3,7 @@ package fi.kalia.cellar.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -10,20 +11,22 @@ import org.junit.jupiter.api.Test;
 
 class EntryTest {
 
+	private static final Clock CLOCK = Clock.systemUTC();
+
 	private final Entry entry = Entry.create(UUID.randomUUID(), UUID.randomUUID());
 
 	@Test
 	void quantityReflectsTheNumberOfBottles() {
-		Bottle.create(entry, ContainerType.BOTTLE, null, null);
-		Bottle.create(entry, ContainerType.CAN, null, null);
+		Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
+		Bottle.create(entry, ContainerType.CAN, null, null, CLOCK);
 
 		assertThat(entry.quantity()).isEqualTo(2);
 	}
 
 	@Test
 	void removingABottleReducesQuantityWithoutAnyStoredCounter() {
-		Bottle first = Bottle.create(entry, ContainerType.BOTTLE, null, null);
-		Bottle.create(entry, ContainerType.BOTTLE, null, null);
+		Bottle first = Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
+		Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
 
 		entry.removeBottle(first);
 
@@ -33,7 +36,7 @@ class EntryTest {
 
 	@Test
 	void isEmptyBecomesTrueWhenTheLastBottleIsRemoved() {
-		Bottle only = Bottle.create(entry, ContainerType.BOTTLE, null, null);
+		Bottle only = Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
 		assertThat(entry.isEmpty()).isFalse();
 
 		entry.removeBottle(only);
@@ -46,8 +49,8 @@ class EntryTest {
 		LocalDate brewedIn2024 = LocalDate.of(2024, 6, 1);
 		LocalDate brewedIn2026 = LocalDate.of(2026, 6, 1);
 
-		Bottle older = Bottle.create(entry, ContainerType.BOTTLE, brewedIn2024, null);
-		Bottle newer = Bottle.create(entry, ContainerType.BOTTLE, brewedIn2026, null);
+		Bottle older = Bottle.create(entry, ContainerType.BOTTLE, brewedIn2024, null, CLOCK);
+		Bottle newer = Bottle.create(entry, ContainerType.BOTTLE, brewedIn2026, null, CLOCK);
 
 		assertThat(entry.getBottles()).containsExactlyInAnyOrder(older, newer);
 		assertThat(entry.getBottles())
@@ -60,7 +63,7 @@ class EntryTest {
 
 	@Test
 	void bulkAddCreatesThatManyIndependentRows() {
-		List<Bottle> created = entry.addBottles(3, ContainerType.BOTTLE, null, null);
+		List<Bottle> created = entry.addBottles(3, ContainerType.BOTTLE, null, null, CLOCK);
 
 		assertThat(created).hasSize(3);
 		assertThat(entry.quantity()).isEqualTo(3);
@@ -69,7 +72,7 @@ class EntryTest {
 
 	@Test
 	void removingOneBottleFromABulkAddLeavesTheRestIntact() {
-		List<Bottle> created = entry.addBottles(3, ContainerType.BOTTLE, null, null);
+		List<Bottle> created = entry.addBottles(3, ContainerType.BOTTLE, null, null, CLOCK);
 
 		entry.removeBottle(created.get(0));
 
@@ -79,7 +82,7 @@ class EntryTest {
 
 	@Test
 	void bulkAddRejectsANonPositiveQuantity() {
-		assertThatThrownBy(() -> entry.addBottles(0, ContainerType.BOTTLE, null, null))
+		assertThatThrownBy(() -> entry.addBottles(0, ContainerType.BOTTLE, null, null, CLOCK))
 				.isInstanceOf(InvalidBottleException.class);
 	}
 

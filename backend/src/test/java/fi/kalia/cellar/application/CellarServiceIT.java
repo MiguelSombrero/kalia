@@ -20,6 +20,7 @@ import fi.kalia.cellar.domain.EntryRepository;
 import fi.kalia.cellar.domain.InvalidBottleException;
 import jakarta.persistence.EntityManagerFactory;
 import java.time.Instant;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -71,12 +72,14 @@ class CellarServiceIT {
 
 	private UUID beerId;
 
-	private static final LocalDate TODAY = LocalDate.now();
+	private static final Clock CLOCK = Clock.systemUTC();
+
+	private static final LocalDate TODAY = LocalDate.now(CLOCK);
 
 	@BeforeEach
 	void setUp() {
 		catalog = new CatalogApi(new CatalogService(beers, breweries));
-		service = new CellarService(entries, catalog);
+		service = new CellarService(entries, catalog, CLOCK);
 		beerId = beers.findAll().stream().findFirst().map(Beer::getId).orElseThrow();
 	}
 
@@ -236,7 +239,7 @@ class CellarServiceIT {
 		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		UUID vanishedBeerId = UUID.randomUUID();
 		Entry orphan = Entry.create(owner, vanishedBeerId);
-		orphan.addBottles(1, ContainerType.CAN, null, null);
+		orphan.addBottles(1, ContainerType.CAN, null, null, CLOCK);
 		UUID orphanId = entries.saveAndFlush(orphan).getId();
 		testEntityManager.clear();
 
