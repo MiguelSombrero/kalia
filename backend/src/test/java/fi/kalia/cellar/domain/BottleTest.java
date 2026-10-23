@@ -53,11 +53,12 @@ class BottleTest {
 
 	@Test
 	void theLastInstantBeforeMidnightUtcStillRefusesTheDayAfterTomorrow() {
-		LocalDate dayAfterTomorrow = LocalDate.parse("2026-10-25");
+		LocalDate tomorrow = LocalDate.parse("2026-10-24");
 
-		assertThat(Bottle.create(ENTRY, ContainerType.BOTTLE, LocalDate.parse("2026-10-24"), null,
-				LAST_INSTANT_OF_A_UTC_DAY).getBrewedDate()).isEqualTo(LocalDate.parse("2026-10-24"));
-		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, dayAfterTomorrow, null,
+		Bottle bottle = Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow, null, LAST_INSTANT_OF_A_UTC_DAY);
+
+		assertThat(bottle.getBrewedDate()).isEqualTo(tomorrow);
+		assertThatThrownBy(() -> Bottle.create(ENTRY, ContainerType.BOTTLE, tomorrow.plusDays(1), null,
 				LAST_INSTANT_OF_A_UTC_DAY))
 				.isInstanceOf(InvalidBottleException.class);
 	}

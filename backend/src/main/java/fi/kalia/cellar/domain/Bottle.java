@@ -79,9 +79,10 @@ public class Bottle {
 		this.bestBeforeDate = bestBeforeDate;
 	}
 
-	// No IANA timezone's calendar day ever runs more than a day ahead of UTC
-	// (max offset +14:00), so this tolerance always accepts a bottle brewed
-	// on the caller's own local today without trusting anything it claims.
+	// Do not pass a clock in any zone but UTC. No IANA timezone's calendar day
+	// ever runs more than a day ahead of UTC (max offset +14:00), so against a
+	// UTC clock this tolerance always accepts a bottle brewed on the caller's
+	// own local today without trusting anything it claims.
 	private static final int FUTURE_TOLERANCE_DAYS = 1;
 
 	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate,
