@@ -8,7 +8,9 @@
   --kalia-color-divider: #e2e0d8;
   --kalia-color-surface-sunken: #f2f1ec;
   --kalia-color-primary: #2b37c9;
+  --kalia-color-surface: #ffffff;
   --kalia-color-destructive: #c8223a;
+  --kalia-color-destructive-foreground: #ffffff;
   --kalia-color-success: #17793b;
   --kalia-color-focus-ring: #2b37c9;
   --kalia-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -142,4 +144,92 @@ body#keycloak-bg {
   display: inline-block;
   min-height: 24px;
   line-height: 24px;
+}
+
+.kalia-login .pf-v5-c-form-control:has(> [aria-invalid="true"]) {
+  --pf-v5-c-form-control--before--BorderTopWidth: var(--pf-v5-global--BorderWidth--md);
+  --pf-v5-c-form-control--before--BorderRightWidth: var(--pf-v5-global--BorderWidth--md);
+  --pf-v5-c-form-control--before--BorderLeftWidth: var(--pf-v5-global--BorderWidth--md);
+  --pf-v5-c-form-control--before--BorderTopColor: var(--kalia-color-destructive);
+  --pf-v5-c-form-control--before--BorderRightColor: var(--kalia-color-destructive);
+  --pf-v5-c-form-control--before--BorderLeftColor: var(--kalia-color-destructive);
+  --pf-v5-c-form-control--after--BorderBottomWidth: var(--pf-v5-global--BorderWidth--md);
+  --pf-v5-c-form-control--after--BorderBottomColor: var(--kalia-color-destructive);
+  --pf-v5-c-form-control--hover--after--BorderBottomColor: var(--kalia-color-destructive);
+  --pf-v5-c-form-control--focus--after--BorderBottomColor: var(--kalia-color-destructive);
+}
+
+.kalia-login .pf-v5-c-form-control:has(> [aria-invalid="true"]) .pf-v5-c-form-control__icon.pf-m-status {
+  display: none;
+}
+
+/* Do not drop the `span`: keycloak.v2 also puts this class on
+   password-validation.ftl's hint list, which would get the sign while empty. */
+span.kalia-field-error {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--kalia-color-foreground);
+}
+
+span.kalia-field-error::before {
+  content: "";
+  flex: none;
+  width: 20px;
+  height: 20px;
+  background: var(--kalia-color-destructive);
+}
+
+span.kalia-field-error::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background: var(--kalia-color-destructive-foreground);
+  mask: url("../img/error-cross-small.svg") center / contain no-repeat;
+}
+
+.kalia-alert.pf-m-danger {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  border: 1px solid var(--kalia-color-border);
+  background: var(--kalia-color-surface);
+  box-shadow: none;
+}
+
+.kalia-alert.pf-m-danger > .pf-v5-c-alert__icon {
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  margin: 0;
+  border-right: 1px solid var(--kalia-color-border);
+  background: var(--kalia-color-destructive);
+}
+
+.kalia-alert.pf-m-danger > .pf-v5-c-alert__icon > * {
+  display: none;
+}
+
+.kalia-alert.pf-m-danger > .pf-v5-c-alert__icon::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  background: var(--kalia-color-destructive-foreground);
+  mask: url("../img/error-cross.svg") center / contain no-repeat;
+}
+
+.kalia-alert.pf-m-danger > .pf-v5-c-alert__title {
+  align-self: center;
+  padding: 14px 16px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--kalia-color-foreground);
 }

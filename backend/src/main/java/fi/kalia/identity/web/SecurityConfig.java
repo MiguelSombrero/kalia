@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 // ADR-0028; guarded by ArchitectureTest.onlyIdentityConfiguresWebSecurity.
+// What is public is listed in docs/architecture.md §6 and pinned by PublicRoutesIT.
 @Configuration
 class SecurityConfig {
 
@@ -50,8 +51,7 @@ class SecurityConfig {
 						// (ADR-0050). Single star: only the username segment, never a
 						// sub-resource, and GET only — the resource is read-only.
 						.requestMatchers(HttpMethod.GET, "/api/v1/cellars/*").permitAll()
-						// The feed is identical for every caller — every event it
-						// serves is already from a publicly visible cellar.
+						// ADR-0059: every line the feed serves is from a public cellar.
 						.requestMatchers(HttpMethod.GET, "/api/v1/feed").permitAll()
 						// "/swagger-ui.html" needs its own entry — it is not under /swagger-ui/.
 						.requestMatchers("/actuator/health/**").permitAll()

@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-13
+- **Amended:** 2026-10-23 — `GET /api/v1/feed` answers without a token: the
+  read-time filter below is what makes the feed safe to serve anonymously
 
 ## Context
 

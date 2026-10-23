@@ -8,6 +8,8 @@
   — the theme also lays the page out, hides the language menu, and links home
 - **Amended:** 2026-10-11 by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)
   — Keycloak's pages are inside the app's accessibility enforcement, at WCAG 2.2 AA
+- **Amended:** 2026-10-23 by [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
+  — the theme loads one script, and errors carry Kalia's error sign
 
 ## Context
 
@@ -71,6 +73,10 @@ own and overrides none of Keycloak's.**
   > through Keycloak's own `kc-` element ids. The realm's `displayNameHtml`
   > makes the lockup a link home. Form controls keep PatternFly's behaviour and
   > focus handling; only their colours, corners and label case change.
+
+  > **Amended 2026-10-23 ([ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
+  > The theme also loads one script, which ties each field to its error line,
+  > and errors carry Kalia's error sign. Still no FreeMarker.
 - **`loginTheme`, `internationalizationEnabled`, `supportedLocales`
   (`en`, `fi`) and `defaultLocale` (`en`) are realm settings** in
   `keycloak/realm-export.json`, so they inherit
