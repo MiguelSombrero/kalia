@@ -31,7 +31,7 @@ export type AddBeerTrigger = "button" | "link";
 
 const triggerClasses: Record<AddBeerTrigger, string> = {
   button: buttonVariants("primary"),
-  link: "font-semibold text-foreground underline underline-offset-2 hover:text-primary",
+  link: "inline-block py-1 font-semibold text-foreground underline underline-offset-2 hover:text-primary",
 };
 
 const emptyValues = (name: string): AddBeerFormValues => ({

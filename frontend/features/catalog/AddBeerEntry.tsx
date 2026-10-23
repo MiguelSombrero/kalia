@@ -41,7 +41,7 @@ export const AddBeerEntry = async ({
           <SignInForm locale={locale} query={query}>
             <button
               type="submit"
-              className="font-semibold text-foreground underline underline-offset-2 hover:text-primary"
+              className="inline-block py-1 font-semibold text-foreground underline underline-offset-2 hover:text-primary"
             >
               {t("catalog.add.signInToAdd")}
             </button>
