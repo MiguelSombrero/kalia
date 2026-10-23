@@ -3,6 +3,8 @@
 - **Status:** accepted
 - **Date:** 2026-10-11
 - **Amended:** 2026-10-14 — the checker runs in CI's single static-checks job
+- **Amended:** 2026-10-23 — Keycloak's field errors and error alerts carry
+  Kalia's error sign, and a theme script ties each field to its error line
 
 ## Context
 
@@ -83,6 +85,29 @@ column", the product owner's choice from three directions built in one round.
 
   > **Amended 2026-10-14.** CI's dependency-free checkers now run as one
   > `static-checks` job calling `make check`, so this one runs there.
+- **Errors carry Kalia's error sign.** A field error and an error alert look
+  as [docs/design.md](../design.md#feedback-and-errors) draws them in the app.
+
+  > **Amended 2026-10-23.** This replaces the Neutral consequence below that
+  > kept PatternFly's shape for errors. A field with an error has a
+  > `--color-destructive` edge, set through PatternFly's form-control custom
+  > properties, and its line starts with the red square and white cross. An
+  > error alert is the ink-edged box with the red cell. PatternFly's own error
+  > icon is hidden wherever the sign is drawn. The sign hangs off Kalia classes
+  > added to keycloak.v2's `kcInputErrorMessageClass` and `kcAlertClass` keys,
+  > the same route as `kcLogin`. The cross is an SVG used as a mask, so its
+  > colour stays a `--kalia-color-*` name in `login.css`. Info, success and
+  > warning notices keep PatternFly's shape, since design.md gives them no
+  > look.
+  >
+  > keycloak.v2 never points a field at its error line, so the line was only
+  > announced as it appeared. `resources/js/field-errors.js`, loaded through
+  > `theme.properties`' `scripts` key, sets the field's `aria-describedby` to
+  > it. This is the theme's first script. The other ways to tie them were a
+  > copy of keycloak.v2's `field.ftl`, which ADR-0056 declines, and leaving
+  > the line untied, which design.md's rule for field errors forbids.
+  > `e2e/keycloak-errors.spec.ts` checks every part of this from the rendered
+  > page.
 - **The rendered pages are checked.** `e2e/keycloak-branding.spec.ts` visits
   all four pages in both locales at 375×812 and 1280×800. On each it checks
   the lockup, its link and its mark, the column's width, its centring and the
@@ -171,9 +196,14 @@ anyway. Refinement chose the checker.
   which Keycloak already infers.
 - Neutral, because the wordmark here is the system face and in the app is
   Archivo: the same lockup, not the same letters.
-- Neutral, because Keycloak's notices and errors keep PatternFly's shape, an
-  alert with an icon and a field line, recoloured in Kalia's tokens rather
-  than redrawn as Kalia's red square.
+- Neutral, because Keycloak's info, success and warning notices keep
+  PatternFly's shape, an alert with an icon, recoloured in Kalia's tokens.
+  Its errors carry Kalia's red square (amended 2026-10-23; before that,
+  errors kept PatternFly's shape too).
+- Bad, because the theme now runs a script, so a keycloak.v2 upgrade that
+  renames the `input-error-<field>` ids leaves fields untied from their
+  error lines without breaking anything visible. `e2e/keycloak-errors.spec.ts`
+  catches it through each field's accessible description.
 - Neutral, because named colours (`white`, `red`) in `login.css` escape the
   checker; only hex and colour functions are detected.
 - **Revisit trigger:** a Keycloak major upgrade that replaces keycloak.v2 or
@@ -182,6 +212,24 @@ anyway. Refinement chose the checker.
   would make AUD-42 cheap to fix.
 
 ## Evidence
+
+**Amended 2026-10-23**, measured against the compose stack (Keycloak 26.7.0):
+
+- keycloak.v2's `login.ftl` renders a wrong password as the username field's
+  error ("Invalid username or password." in `#input-error-username`), with
+  no alert on the page. An error alert (`pf-v5-c-alert pf-m-danger`) does
+  appear when signing in to a disabled account ("Account is disabled,
+  contact your administrator."). The spec checks the sign-in error as a
+  field error and the box on that page.
+- No keycloak.v2 template sets `aria-describedby`: `field.ftl` and
+  `user-profile-commons.ftl` render `aria-invalid="true"` and an
+  `aria-live="polite"` line, and the field's accessible description was
+  empty. With the script it is the message, in both locales.
+- Before the change, all eight tests in `e2e/keycloak-errors.spec.ts` failed
+  against the theme. Field edges were ink (`rgb(18, 18, 18)`) and the alert
+  had PatternFly's red top border. All pass with it, axe scans included.
+- The square on the white page and the white cross on the square are both
+  5.61:1, the `--color-destructive` pairings docs/design.md lists.
 
 The product owner compared the built pages in the browser pane with direction B's mockup at both widths on 2026-10-11 and signed them off as matching.
 
