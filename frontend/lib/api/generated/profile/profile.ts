@@ -25,6 +25,7 @@ import type {
 
 import type {
   ChangeVisibilityRequestDto,
+  ProblemDetail,
   ProfileDto
 } from '../models';
 
@@ -60,10 +61,15 @@ export type changeVisibilityResponse401 = {
   status: 401
 }
 
+export type changeVisibilityResponse409 = {
+  data: ProblemDetail
+  status: 409
+}
+
 export type changeVisibilityResponseSuccess = (changeVisibilityResponse200) & {
   headers: Headers;
 };
-export type changeVisibilityResponseError = (changeVisibilityResponse401) & {
+export type changeVisibilityResponseError = (changeVisibilityResponse401 | changeVisibilityResponse409) & {
   headers: Headers;
 };
 
@@ -78,7 +84,7 @@ export const getChangeVisibilityUrl = () => {
 }
 
 /**
- * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile.
+ * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile. A username is never given to a second account, even after the first is deleted: 409 when the token's username is already held.
  * @summary Change the caller's cellar visibility
  */
 export const changeVisibility = async (changeVisibilityRequestDto: ChangeVisibilityRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<changeVisibilityResponse> => {
@@ -112,7 +118,7 @@ return kaliaFetch<changeVisibilityResponse>(getChangeVisibilityUrl(),
 
 export const getChangeVisibilityMutationKey = () => ['changeVisibility'] as const;
 
-export const getChangeVisibilityMutationOptions = <TError = void,
+export const getChangeVisibilityMutationOptions = <TError = void | ProblemDetail,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext> => {
 
@@ -141,13 +147,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ChangeVisibilityMutationResult = NonNullable<Awaited<ReturnType<typeof changeVisibility>>>
     export type ChangeVisibilityMutationBody = ChangeVisibilityRequestDto
-    export type ChangeVisibilityMutationError = void
+    export type ChangeVisibilityMutationError = void | ProblemDetail
     export type ChangeVisibilityMutationVariables = {data: ChangeVisibilityRequestDto}
 
     /**
  * @summary Change the caller's cellar visibility
  */
-export const useChangeVisibility = <TError = void,
+export const useChangeVisibility = <TError = void | ProblemDetail,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof changeVisibility>>,
@@ -167,10 +173,15 @@ export type myProfileResponse401 = {
   status: 401
 }
 
+export type myProfileResponse409 = {
+  data: ProblemDetail
+  status: 409
+}
+
 export type myProfileResponseSuccess = (myProfileResponse200) & {
   headers: Headers;
 };
-export type myProfileResponseError = (myProfileResponse401) & {
+export type myProfileResponseError = (myProfileResponse401 | myProfileResponse409) & {
   headers: Headers;
 };
 
@@ -185,7 +196,7 @@ export const getMyProfileUrl = () => {
 }
 
 /**
- * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile.
+ * Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile. A username is never given to a second account, even after the first is deleted: 409 when the token's username is already held.
  * @summary Read the caller's own profile
  */
 export const myProfile = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<myProfileResponse> => {
@@ -210,7 +221,7 @@ export const getMyProfileQueryKey = () => {
     }
 
 
-export const getMyProfileQueryOptions = <TData = Awaited<ReturnType<typeof myProfile>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getMyProfileQueryOptions = <TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -229,10 +240,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type MyProfileQueryResult = NonNullable<Awaited<ReturnType<typeof myProfile>>>
-export type MyProfileQueryError = void
+export type MyProfileQueryError = void | ProblemDetail
 
 
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof myProfile>>,
@@ -242,7 +253,7 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof myProfile>>,
@@ -252,7 +263,7 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -260,7 +271,7 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
  * @summary Read the caller's own profile
  */
 
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

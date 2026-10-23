@@ -8,10 +8,21 @@ vi.mock("@/features/cellar/api", () => ({
 }));
 
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
-vi.mock("@/features/profile", () => ({ getProfile }));
+vi.mock("@/features/profile/api", () => ({ getProfile }));
+// Throws like the real one, so the page never renders past it.
+const { redirect } = vi.hoisted(() => ({
+  redirect: vi.fn(() => {
+    throw new Error("NEXT_REDIRECT");
+  }),
+}));
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  redirect,
+}));
 
 import type { ReactElement } from "react";
 import { listCellarEntries } from "@/features/cellar";
+import { apiError } from "@/lib/api/api-error";
 import CellarPage, { generateMetadata } from "./page";
 
 // Do not render the full tree here: React suspends indefinitely on async
@@ -52,6 +63,14 @@ describe("CellarPage", () => {
     }>;
 
     expect(page.props.children.props.visibility).toBeNull();
+  });
+
+  it("sends a caller whose username another account holds to the page that says so", async () => {
+    auth.mockResolvedValue({ user: { name: "ada" } });
+    getProfile.mockRejectedValue(apiError("http", "status 409", { status: 409 }));
+
+    await expect(CellarPage({ params: Promise.resolve({ locale: "fi" }) })).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/fi/username-taken");
   });
 
   it("does not fetch the cellar when signed out", async () => {

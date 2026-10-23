@@ -1,6 +1,7 @@
 package fi.kalia.profile.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.profile.domain.Profile;
@@ -12,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -22,9 +23,6 @@ class ProfileServiceIT {
 
 	@Autowired
 	private ProfileRepository profiles;
-
-	@Autowired
-	private TestEntityManager testEntityManager;
 
 	private ProfileService service;
 
@@ -70,26 +68,46 @@ class ProfileServiceIT {
 		assertThat(profiles.findById(userId).orElseThrow().isCellarPublic()).isTrue();
 	}
 
-	// A Keycloak sub change (ADR-0033) can leave two profile rows sharing one
-	// username; publicCellarOwnerId must resolve to the newest — the one the
-	// current token's sub points at — not throw on the pair.
 	@Test
-	void publicCellarOwnerIdResolvesToTheNewestProfileWhenAUsernameIsDuplicated() {
-		UUID staleId = UUID.randomUUID();
-		UUID currentId = UUID.randomUUID();
-		profiles.saveAndFlush(makePublic(Profile.create(staleId, "alice")));
-		backdateCreatedAt(staleId);
-		profiles.saveAndFlush(makePublic(Profile.create(currentId, "alice")));
+	void aSecondProfileWithAnExistingUsernameIsRefusedByTheDatabase() {
+		profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice"));
 
-		assertThat(service.publicCellarOwnerId("alice")).contains(currentId);
+		assertThatThrownBy(() -> profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice")))
+				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
-	private void backdateCreatedAt(UUID id) {
-		testEntityManager.getEntityManager()
-				.createNativeQuery("update profile.profile set created_at = created_at - interval '1 day' where id = :id")
-				.setParameter("id", id)
-				.executeUpdate();
-		testEntityManager.clear();
+	@Test
+	void aUsernameDifferingOnlyInCaseIsRefusedByTheDatabase() {
+		profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice"));
+
+		assertThatThrownBy(() -> profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "Alice")))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	// Kalia never learns that a Keycloak account was deleted, so "the old
+	// account is gone" and "the old account is still here" are the same row.
+	@Test
+	void aUsernameWhoseAccountNoLongerExistsIsNotGivenToANewAccount() {
+		UUID departedId = UUID.randomUUID();
+		profiles.saveAndFlush(makePublic(Profile.create(departedId, "alice")));
+		UUID newcomerId = UUID.randomUUID();
+
+		assertThatThrownBy(() -> service.currentProfile(newcomerId, "alice"))
+				.isInstanceOf(UsernameTakenException.class);
+		assertThatThrownBy(() -> service.changeCellarVisibility(newcomerId, "ALICE", true))
+				.isInstanceOf(UsernameTakenException.class);
+
+		assertThat(profiles.findById(newcomerId)).isEmpty();
+		assertThat(service.publicCellarOwnerId("alice")).contains(departedId);
+	}
+
+	// The public route echoes the requested spelling back as the owner's
+	// username, which the frontend's owner check compares to the stored one.
+	@Test
+	void publicCellarOwnerIdMatchesOnlyTheExactSpelling() {
+		profiles.saveAndFlush(makePublic(Profile.create(UUID.randomUUID(), "alice")));
+
+		assertThat(service.publicCellarOwnerId("Alice")).isEmpty();
 	}
 
 	private static Profile makePublic(Profile profile) {
