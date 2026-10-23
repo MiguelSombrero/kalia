@@ -1,6 +1,6 @@
 # Task 20: Keycloak's field errors carry Kalia's error sign
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -34,6 +34,11 @@ Kalia's red square". This task asks to close that gap.
   same markup and get the same treatment.
 - The line stays tied to its field, so assistive technology still reads it
   with the field.
+- An error about a whole action on Keycloak's pages, such as "Invalid
+  username or password." above the sign-in button, follows design.md's rule
+  for those: a box with an ink edge, the red cell with the cross, and the
+  message. Only error alerts change. Keycloak's info, success and warning
+  notices keep PatternFly's shape, since design.md gives them no look.
 - Both locales, at the two widths ADR-0074's branding spec already checks.
 
 ## Non-goals
@@ -77,21 +82,25 @@ Kalia's red square". This task asks to close that gap.
 
 ## Open questions
 
-- **Page-level alerts.** Should Keycloak's whole-action errors follow design.md
-  too? An example is "Invalid username or password." above the sign-in
-  button, which design.md draws as a box with an ink edge and the red cell.
-  Or does this task stay with field errors, the case that was reported?
-- **Built alternatives or a direct fix.** design.md already fixes the look,
-  so this is written as an ordinary task. Should it instead be a `Kind:
-  design` task, with the product owner choosing between built treatments?
-  One reason it might be: PatternFly's alert and helper-text markup may not
-  take the sign exactly as Kalia's own components draw it.
-- **The PatternFly icon.** Keycloak's field line may carry PatternFly's own
-  error icon. Is that icon replaced by the red square, or hidden next to it?
-  Two error signs on one line would contradict design.md's "one sign".
-- **How ADR-0074 records the change.** It needs either an amendment to its
-  Neutral consequence, or a new ADR that supersedes that one point. Which
-  does the product owner prefer?
+**None.**
+
+**Decided at refinement, 2026-10-23** (product owner):
+
+- **Whole-action error alerts are in scope**, beside field errors, as Scope
+  above says. Keeping them in PatternFly's shape would leave the same gap on
+  the sign-in page. Info, success and warning notices are not in scope.
+- **An ordinary task, not a `Kind: design` one.** design.md already fixes
+  the look, and the product owner checks it in the browser pane. If
+  PatternFly's markup cannot take the sign as design.md draws it, the work
+  stops and this task is re-refined, rather than improvising a different
+  look.
+- **One sign per error.** Where PatternFly draws its own error icon on a
+  field line or an alert, the red square replaces it. It is never shown next
+  to it (design.md, "one sign").
+- **ADR-0074 is amended**, not superseded by a new ADR
+  ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)). It gets an
+  `Amended:` line, and its Neutral consequence about errors keeping
+  PatternFly's shape is updated.
 
 ## Acceptance criteria
 
@@ -102,16 +111,21 @@ Kalia's red square". This task asks to close that gap.
       rendered colours, confirmed to fail against today's theme
 - [ ] Another field error, passwords that do not match, renders the same way
       — Playwright
+- [ ] Signing in with a wrong password shows the error as design.md's box,
+      with an ink edge and the red cell with the cross, and with no
+      PatternFly error icon beside it — Playwright, confirmed to fail against
+      today's theme
 - [ ] The error line is still announced with its field: the field's
       accessible description contains the message — Playwright
 - [ ] The rendered error state passes the axe scan with no violations, in
       both locales and at both widths — Playwright
 - [ ] `scripts/check-keycloak-theme.mjs` passes, and `login.css` uses no
       colour other than the `--kalia-color-*` declarations — `make check`
-- [ ] ADR-0074 records that Keycloak's field errors carry Kalia's error sign,
-      and `node scripts/check-adrs.mjs` passes
-- [ ] The product owner has seen the registration page's error state in the
-      browser pane at both widths
+- [ ] ADR-0074 carries an `Amended:` line recording that Keycloak's field
+      errors and error alerts carry Kalia's error sign, and
+      `node scripts/check-adrs.mjs` passes
+- [ ] The product owner has seen the registration page's error state and the
+      sign-in page's error alert in the browser pane at both widths
 - [ ] `make verify` is green
 
 ## Notes

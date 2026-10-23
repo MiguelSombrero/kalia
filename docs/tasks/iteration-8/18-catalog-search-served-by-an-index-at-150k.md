@@ -1,6 +1,6 @@
 # Task 18: Catalog search stays within budget at 150k beers
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -67,32 +67,51 @@ Each fix is a plan that `BeerSearchIndexIT` can pin.
   [architecture.md §7](../../architecture.md#catalog-read-latency), so the
   before and after figures compare.
 
+**Decided at refinement, 2026-10-23** (product owner):
+
+- **Short queries get custom plans, scoped to the search.** The search's
+  read-only transaction runs `SET LOCAL plan_cache_mode = force_custom_plan`,
+  so Postgres plans each short pattern by its value rather than with the
+  generic plan that reads every trigram entry. No other statement is
+  affected, which rules out a connection-wide `prepareThreshold` or
+  `plan_cache_mode`. Three alternatives were rejected:
+  - a minimum query length of 3, because it changes ADR-0044's contract;
+  - an approximate count, because the result summary and the past-last-page
+    redirect in `app/[locale]/beers/page.tsx` read `totalElements` as exact;
+  - accepting the shape without trying the fix first.
+- **If the repeated measurement still puts short queries over budget**, the
+  exception is recorded in ADR-0078's Evidence with the figures. The
+  contract does not change to meet the budget.
+- **One sort index, on `(lower(name), id)`.** The style and country filters
+  measured within budget under the default sort without a composite index.
+  `sort=abv,desc` is a non-goal above. Its write cost on the add-a-beer path
+  is one more B-tree insert per beer, which is named in the migration's PR.
+- **The decision is recorded by amending existing ADRs**, not by new ones
+  ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
+  [ADR-0044](../../adr/0044-catalog-search-indexes.md) is amended where its
+  Bad consequence says a short term falls back to a sequential scan.
+  [ADR-0078](../../adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)'s
+  Evidence gains the repeated figures.
+
 ## Open questions
 
-1. **How are short queries brought under budget?** The candidates:
-   - a minimum query length of 3, which changes the contract;
-   - forcing custom plans for the search, via pgjdbc's `prepareThreshold`
-     or `plan_cache_mode`, which affects every statement unless it is
-     scoped;
-   - making the `COUNT` cheaper or approximate for broad matches, which
-     changes `totalElements`;
-   - accepting the shape as over budget and recording it.
-2. **Is the sort index one index or several?** One on `(lower(name), id)`
-   serves the default sort. Filtered searches under the same sort may want
-   composite indexes, but measured within budget without them.
-3. **What does `BeerSearchIndexIT` pin?** That an unfiltered page uses the
-   sort index is the obvious assertion. Whether a short query's plan can be
-   pinned depends on question 1.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `BeerSearchIndexIT` asserts that an unfiltered page under the default
       sort uses an index matching that sort — integration test, confirmed to
       fail without the migration
+- [ ] A 1–2-character name query's count, run the way the search runs it,
+      does not use `beer_name_trgm_idx` — integration test, confirmed to fail
+      without the scoped `force_custom_plan`
 - [ ] The architecture.md §7 method, repeated at 150k beers, shows the
       unfiltered page and 1–2-character name queries under 300 ms p95 server
-      time. If question 1 is settled by recording an exception instead, the
-      exception is in ADR-0078's Evidence. The numbers are in the PR
+      time. If short queries are still over budget, the exception and its
+      figures are in ADR-0078's Evidence instead. The numbers are in the PR
+- [ ] ADR-0044 carries an `Amended:` line for the short-query fix, ADR-0078's
+      Evidence carries the repeated figures, and
+      `node scripts/check-adrs.mjs` passes
 - [ ] `mvn clean verify` is green
 
 ## Notes
