@@ -94,6 +94,11 @@ nobody has committed to becomes a constraint anyway.
   an already-open browser by polling through a Server Action, not a stream;
   no new route-handler kind, no CSP change, no instance-affinity limitation
   to accept.
+- [ADR-0081](0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)
+  — an event publication whose listener has not completed is resubmitted at
+  startup and every minute, five attempts at most, by Kalia's own component
+  rather than Modulith's restart property. A completed publication is
+  deleted.
 
 ## Profiles and public cellars
 

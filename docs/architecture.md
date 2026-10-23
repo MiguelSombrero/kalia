@@ -101,7 +101,10 @@ Key properties:
 Base package `fi.kalia`, one Spring Modulith module per subdomain — with
 one sanctioned exception: `fi.kalia.web` holds shared, module-neutral
 exception-handling advice with no subdomain of its own
-([ADR-0014](adr/0014-shared-exception-handling.md)). Inside each
+([ADR-0014](adr/0014-shared-exception-handling.md)). The base package
+itself holds only application-wide wiring that belongs to no module: the
+entry point, its required-configuration check, and event publication
+resubmission. Inside each
 subdomain module, DDD-lite layers as direct subpackages — all
 Modulith-internal by default
 ([ADR-0007](adr/0007-backend-package-structure.md)): `domain` (rich JPA
@@ -174,6 +177,15 @@ TypeScript vocabulary a client meets — is catalogued in
   so framework infrastructure stays out of the persistence unit; its
   `event_publication` table lives in the `public` schema, created by Flyway
   from Modulith's own DDL.
+- Delivery through the registry is at-least-once
+  ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)).
+  `fi.kalia.EventPublicationResubmission` resubmits a publication whose
+  listener has not completed: at startup, then on a schedule once its latest
+  attempt is old enough. After a capped number of attempts it is logged at
+  `ERROR` and left in `event_publication`, which otherwise holds only
+  incomplete publications, since a completed one is deleted. The timings and
+  the cap are `kalia.events.resubmission.*` in `application.properties`. Every listener must therefore tolerate
+  receiving the same event twice.
 
 ### Data model sketch
 
@@ -277,8 +289,9 @@ retry, whose own check then refuses the loser with `409`.
 `brewed_date` are frozen from the `cellar.BottleAdded` event that created the
 row and never change again, even if the bottles they describe are later
 edited or removed. `event_id` is the idempotency key a listener checks before
-inserting, since Spring Modulith's event publication registry is
-at-least-once. Every addition is recorded whatever the owner's cellar
+inserting, since a publication not marked complete is delivered again
+([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)).
+Every addition is recorded whatever the owner's cellar
 visibility — the read, not the write, is where that rule applies
 ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)) — so the table
 retains rows for cellars that are currently private.
@@ -942,6 +955,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md) | Catalog reads that break their budget at 150k beers lack an index, not a cache, so the catalog stays uncached | accepted | 2026-10-18 |
 | [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) | A brewery's country, shown in English to every reader, becomes an ISO 3166-1 code named in the reader's language by the runtime | accepted | 2026-10-22 |
 | [ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md) | A reused username would hand old links to someone else, so a username is unique regardless of case and never reused | accepted | 2026-10-22 |
+| [ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
 
 ### Engineering process and documentation
 

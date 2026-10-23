@@ -1,6 +1,6 @@
 # Task 06: Feed events are delivered at least once, as documented
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -81,22 +81,22 @@ the documentation to at-most-once was considered and rejected.
 
 ## Acceptance criteria
 
-- [ ] A `BottleAdded` whose feed listener fails once is recorded as a feed
+- [x] A `BottleAdded` whose feed listener fails once is recorded as a feed
       line after resubmission, with no restart — integration test, confirmed
       to fail against today's configuration
-- [ ] A publication left incomplete when the application stopped is delivered
+- [x] A publication left incomplete when the application stopped is delivered
       after the next start — integration test
-- [ ] Redelivering an already-recorded event does not create a second feed
+- [x] Redelivering an already-recorded event does not create a second feed
       line — integration test
-- [ ] Completed publications are removed rather than accumulating in
+- [x] Completed publications are removed rather than accumulating in
       `event_publication` — integration test
-- [ ] An event whose listener fails every time stops being resubmitted after
+- [x] An event whose listener fails every time stops being resubmitted after
       5 attempts and is logged at `ERROR` with its event id — integration test
-- [ ] A new ADR records the delivery mechanism. ADR-0058 is amended to point
+- [x] A new ADR records the delivery mechanism. ADR-0058 is amended to point
       to it, and `docs/architecture.md` and the `FeedService` comment describe
       the configured mechanism. None still describes redelivery that does not
       exist, and `node scripts/check-adrs.mjs` passes
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-12
+- **Amended:** 2026-10-22 by [ADR-0081](0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)
+  — the redelivery this ADR relies on was never configured. That ADR
+  configures it, which makes duplicate delivery routine.
 
 ## Context
 
