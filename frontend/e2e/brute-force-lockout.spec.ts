@@ -55,7 +55,7 @@ const submitBrowserSignIn = async (
     return { redirected: true };
   }
   const body = await response.text();
-  const feedbackMatch = body.match(/kc-feedback-text">\s*([^<]+)/);
+  const feedbackMatch = body.match(/class="[^"]*\bkc-feedback-text\b[^"]*">\s*([^<]+)/);
   return { redirected: false, feedback: feedbackMatch?.[1]?.trim() };
 };
 
