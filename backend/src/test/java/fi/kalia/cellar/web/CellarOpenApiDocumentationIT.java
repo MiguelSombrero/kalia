@@ -65,11 +65,25 @@ class CellarOpenApiDocumentationIT {
 
 		List<String> entryRequired = JsonPath.read(body, "$.components.schemas.PublicCellarEntryDto.required");
 		assertThat(entryRequired)
-				.containsExactlyInAnyOrder("id", "beerId", "quantity", "createdAt", "updatedAt", "bottles");
+				.containsExactlyInAnyOrder("id", "beer", "quantity", "createdAt", "updatedAt", "bottles");
 		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.PublicCellarBottleDto.required");
 		assertThat(bottleRequired).containsExactlyInAnyOrder("id", "entryId", "containerType", "createdAt", "updatedAt");
 		Map<String, Object> rootProperties = JsonPath.read(body, "$.components.schemas.PublicCellarDto.properties");
 		assertThat(rootProperties).containsOnlyKeys("username", "entries");
+	}
+
+	// ADR-0083: exactly the beer facts the cellar pages show, nothing more.
+	@Test
+	void bothEntrySchemasNestTheSameBeerFactsSchema() {
+		String body = apiDocs();
+
+		String ownerRef = JsonPath.read(body, "$.components.schemas.EntryDto.properties.beer.$ref");
+		String publicRef = JsonPath.read(body, "$.components.schemas.PublicCellarEntryDto.properties.beer.$ref");
+		assertThat(ownerRef).isEqualTo(publicRef).isEqualTo("#/components/schemas/CellarBeerDto");
+		Map<String, Object> beerProperties = JsonPath.read(body, "$.components.schemas.CellarBeerDto.properties");
+		assertThat(beerProperties).containsOnlyKeys("id", "name", "brewery", "style", "abv");
+		List<String> beerRequired = JsonPath.read(body, "$.components.schemas.CellarBeerDto.required");
+		assertThat(beerRequired).containsExactlyInAnyOrder("id", "name", "brewery", "style", "abv");
 	}
 
 	@Test
@@ -78,7 +92,7 @@ class CellarOpenApiDocumentationIT {
 
 		List<String> entryRequired = JsonPath.read(body, "$.components.schemas.EntryDto.required");
 		assertThat(entryRequired)
-				.containsExactlyInAnyOrder("id", "beerId", "quantity", "createdAt", "updatedAt", "bottles");
+				.containsExactlyInAnyOrder("id", "beer", "quantity", "createdAt", "updatedAt", "bottles");
 
 		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.BottleDto.required");
 		// springdoc does not infer "required" from Java non-nullability alone —

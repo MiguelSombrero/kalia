@@ -199,8 +199,10 @@ Why the rationale lives there and not here:
   GET form; submitting mutates or validates → this stack
   ([ADR-0010](../docs/adr/0010-react-hook-form-zod.md)).
 - **The generated API client** (`lib/api/generated/`) is reachable only from a
-  feature's own `api.ts` and `types.ts`, which wrap it — enforced by ESLint
-  ([ADR-0012](../docs/adr/0012-orval-api-client.md)). It is also never edited
+  feature's own `api.ts` and `types.ts`, which wrap it, and from those only
+  its shared `models/` and the tag named after the feature — enforced by
+  ESLint ([ADR-0012](../docs/adr/0012-orval-api-client.md),
+  [ADR-0083](../docs/adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). It is also never edited
   by hand — regenerate it with `npm run generate:api`. `.claude/settings.json`
   denies agents `Edit` there, since a regeneration discards a hand-edit without
   a word.

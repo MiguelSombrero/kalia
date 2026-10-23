@@ -129,7 +129,7 @@ cross-module *reads* via the root-package API.
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)* | `identity` (current user, recorded as a user-added row's contributor) |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
-| `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence), `identity` (current user), `profile` (read: public-cellar visibility) |
+| `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
 | `feed` | A record of things that happened — currently, a bottle added to a cellar, read over HTTP and rendered live on the front page *(iteration 7)* | `cellar` (event: bottle added), `catalog` (read: beer name, brewery, style and strength), `profile` (read: username and current cellar visibility) |
 
@@ -329,7 +329,7 @@ GET    /api/v1/feed?size=&since=&before=            -> the most recent events, o
 # authenticated
 GET    /api/v1/me                                  -> the caller behind the bearer token
 POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId)
-GET    /api/v1/cellar                              -> the caller's entries, each with its bottles and a derived quantity
+GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
@@ -351,6 +351,15 @@ doesn't match the bottle's real entry" case
 ([task 02](tasks/iteration-5/02-cellar-rest-api.md)). The list is not
 paginated — a cellar is realistically far smaller than the catalog — and an
 entry or bottle belonging to another user answers 404, uniformly, never 403.
+
+**Both cellar reads arrive joined with their beers.** Each entry nests the
+beer it is of, as `catalog` describes it now, read through `CatalogApi` in
+batches as the feed's beers are; the owner's and the public entry are separate
+types sharing that one beer shape, which holds only what the cellar pages
+show. An entry with no bottles is never returned, an entry whose beer no
+longer resolves is left out and logged, and the entries come in a stable
+default order — beer name, then entry id — that a client re-sorts as its user
+chooses ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
 
 `GET /api/v1/cellars/{username}` is the one cellar route a signed-out caller
 may reach: the whole of a cellar its owner has marked public, its bottles
@@ -434,8 +443,10 @@ Conventions:
   resources into one view is the client's job. Today the frontend is the only
   caller and does exactly that, so this holds by circumstance — it is written
   down because the cellar, profile and feed endpoints are each an opportunity
-  to shape a response around one Next.js page instead. The feed endpoint above
-  is where this gets tested: it returns the resource whole rather than ids.
+  to shape a response around one Next.js page instead. The feed and cellar
+  endpoints above are where this gets tested: each returns the resource whole
+  — a line with its actor, an entry with its beer — rather than ids for every
+  client to join ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
 - Authentication: bearer token, default deny — every route needs one except
   the catalog reads above, the feed, `/actuator/health` and the API docs
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)). A path whose
@@ -505,7 +516,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
 - **API client generated from the backend's OpenAPI spec**
   ([ADR-0012](adr/0012-orval-api-client.md)) into `lib/api/generated/`
   (committed; CI regenerates and diffs to catch drift), wrapped by each
-  feature rather than imported directly. Runtime failures surface as a tagged
+  feature rather than imported directly — and each feature reaches only its
+  own tag of it, so data from two backend modules is joined in the backend,
+  never in a feature
+  ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). Runtime failures surface as a tagged
   `ApiError` ([ADR-0023](adr/0023-typed-api-failures.md)).
 - **Localization** ([ADR-0011](adr/0011-i18next-localization.md)):
   English + Finnish via i18next, locale-prefixed URLs
@@ -765,7 +779,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend unit | JUnit 5 | Domain logic without a Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
-| Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
+| Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly") |
@@ -981,6 +995,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md) | A reused username would hand old links to someone else, so a username is unique regardless of case and never reused | accepted | 2026-10-22 |
 | [ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
 | [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md) | A beer the catalog lacks is added in a dialog over the search that missed it, and a button sending its form fades only as far as its label stays legible | accepted | 2026-10-23 |
+| [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) | A cellar read arrives joined with its beers from the backend, so no client rebuilds it and no feature reads another's generated client | accepted | 2026-10-23 |
 
 ### Engineering process and documentation
 

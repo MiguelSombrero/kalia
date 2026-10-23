@@ -5,13 +5,14 @@
  * OpenAPI spec version: v0
  */
 import type { BottleDto } from './bottleDto';
+import type { CellarBeerDto } from './cellarBeerDto';
 
 /**
  * A cellar entry: one catalog beer the caller owns bottles of
  */
 export interface EntryDto {
   id: string;
-  beerId: string;
+  beer: CellarBeerDto;
   /** Derived by counting bottles, never stored */
   quantity: number;
   createdAt: string;

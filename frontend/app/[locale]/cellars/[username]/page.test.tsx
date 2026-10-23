@@ -3,19 +3,15 @@ import type { PublicCellar } from "@/features/cellar";
 
 const publicCellar: PublicCellar = {
   username: "testuser",
-  entries: [],
+  beers: [],
 };
 
-const { getPublicCellar, resolvePublicCellarBeers } = vi.hoisted(() => ({
-  getPublicCellar: vi.fn(),
-  resolvePublicCellarBeers: vi.fn(),
-}));
+const { getPublicCellar } = vi.hoisted(() => ({ getPublicCellar: vi.fn() }));
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
 
 vi.mock("@/features/cellar", () => ({
   getPublicCellar,
-  resolvePublicCellarBeers,
   PublicCellarView: () => null,
 }));
 vi.mock("@/features/profile", () => ({ getProfile }));
@@ -29,7 +25,6 @@ const params = (overrides: Partial<{ locale: string; username: string }> = {}) =
 beforeEach(() => {
   vi.clearAllMocks();
   getPublicCellar.mockResolvedValue(publicCellar);
-  resolvePublicCellarBeers.mockResolvedValue([]);
   getProfile.mockResolvedValue({ username: "someone-else", cellarPublic: true });
   auth.mockResolvedValue(null);
 });
@@ -71,10 +66,9 @@ describe("PublicCellarPage", () => {
     await expect(PublicCellarPage({ params: params() })).resolves.toBeDefined();
   });
 
-  it("triggers not-found when the cellar is not public, before any beer reaches the page", async () => {
+  it("triggers not-found when the cellar is not public", async () => {
     getPublicCellar.mockResolvedValue(null);
 
     await expect(PublicCellarPage({ params: params() })).rejects.toThrow();
-    expect(resolvePublicCellarBeers).not.toHaveBeenCalled();
   });
 });

@@ -16,7 +16,12 @@ const feature = { element: { type: "feature" } };
 const featureIndex = { element: { type: "feature" }, file: { categories: "feature-index" } };
 const componentsUi = { element: { type: "components-ui" } };
 const lib = [{ element: { type: "lib" } }, { file: { categories: "lib-root" } }];
-const generatedApi = { element: { type: "generated-api" } };
+const generatedModels = { element: { type: "generated-models" } };
+// A feature's api.ts reaches only its own tag's generated operations, so a
+// join across modules has to happen in the backend (ADR-0083).
+const ownGeneratedTag = {
+  element: { type: "generated-tag", captured: { tagName: "{{ from.element.captured.featureName }}" } },
+};
 
 // Prefer arrow functions over function declarations/expressions — see
 // frontend/README.md. A const because a later config object that sets
@@ -109,8 +114,10 @@ const eslintConfig = defineConfig([
     settings: {
       "boundaries/elements": [
         // Order matters: the generated client lives inside lib/, so its own
-        // descriptor has to come first to win the single match.
-        { type: "generated-api", pattern: "lib/api/generated", partialMatch: false },
+        // descriptors have to come first to win the single match, and the
+        // shared models folder before the per-tag folders it sits among.
+        { type: "generated-models", pattern: "lib/api/generated/models", partialMatch: false },
+        { type: "generated-tag", pattern: "lib/api/generated/*", partialMatch: false, capture: ["tagName"] },
         // i18n/ is shared infrastructure like lib/, not a feature — features/i18n/
         // is the feature package, i18n/ is the library it builds on.
         { type: "lib", pattern: ["lib", "i18n"], partialMatch: false },
@@ -149,7 +156,12 @@ const eslintConfig = defineConfig([
             { from: feature, allow: { to: [componentsUi, ...lib] } },
             {
               from: { element: { type: "feature" }, file: { categories: "feature-api" } },
-              allow: { to: generatedApi },
+              allow: { to: [generatedModels, ownGeneratedTag] },
+            },
+            // The backend serves a public cellar under a tag of its own.
+            {
+              from: { element: { type: "feature", captured: { featureName: "cellar" } }, file: { categories: "feature-api" } },
+              allow: { to: { element: { type: "generated-tag", captured: { tagName: "public-cellar" } } } },
             },
             { from: componentsUi, allow: { to: lib } },
             { from: lib, allow: { to: lib } },

@@ -5,8 +5,6 @@ export type {
   AddBottleRequestDto as AddBottlesRequest,
   BottleDto as Bottle,
   BottleDtoContainerType as ContainerType,
-  PublicCellarDto as PublicCellar,
-  PublicCellarBottleDto as PublicBottle,
   UpdateBottleRequestDto as UpdateBottleRequest,
 } from "@/lib/api/generated/models";
 
@@ -16,8 +14,8 @@ export type {
 export { BottleDtoContainerType as containerTypeValues } from "@/lib/api/generated/models";
 
 /**
- * One cellar entry merged with the catalog beer it points at, with its
- * bottles in vintage order. The owner's cellar and a public cellar share it.
+ * One cellar entry with the beer the backend joined to it, its bottles in
+ * vintage order. The owner's cellar and a public cellar share it.
  */
 export type CellarBeer = {
   entryId: string;
@@ -28,4 +26,9 @@ export type CellarBeer = {
   abv: number;
   /** A public cellar's bottles are its own DTO, field-for-field alike (ADR-0050). */
   bottles: BottleDto[];
+};
+
+export type PublicCellar = {
+  username: string;
+  beers: CellarBeer[];
 };
