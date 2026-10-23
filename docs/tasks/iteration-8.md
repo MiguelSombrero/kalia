@@ -33,6 +33,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md) | Every boundary guard catches what the docs say it catches | refined |
 | [15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md) | Backend services stop leaning on hidden setup | refined |
 | [16](iteration-8/16-docs-describe-what-is-built.md) | The documentation describes what is built | refined |
+| [20](iteration-8/20-keycloak-field-errors-carry-kalias-error-sign.md) | Keycloak's field errors carry Kalia's error sign | needs-refinement |
 
 Task 01 is a decision, not an implementation, and it comes first because its
 answer changes how much tasks 02 and 03 have to build: a catalog fed by an
@@ -85,3 +86,10 @@ decided six of them on 2026-10-14, before the tasks were written, and each
 decision is recorded once, in the Constraints of the task that owns it. The
 seventh, SHOULD-15, needs no separate answer: task 10's decision removes the
 import that it is about.
+
+Task 20 was added on 2026-10-23, from a product owner report: a taken
+username on Keycloak's registration page reads as plain text, without the
+error sign Kalia's own pages use. Like 06–16, it neither advances nor blocks
+the "Done when" above. It is listed last because it reopens one consequence
+of [ADR-0074](../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
+and has to be refined first.
