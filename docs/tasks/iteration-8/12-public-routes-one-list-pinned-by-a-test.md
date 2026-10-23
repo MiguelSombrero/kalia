@@ -1,6 +1,6 @@
 # Task 12: Which routes are public is one list, pinned by a test
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -74,16 +74,16 @@ anonymous set differs from that list.
 
 ## Acceptance criteria
 
-- [ ] Adding an anonymous-reachable handler that is not on the allow-list
+- [x] Adding an anonymous-reachable handler that is not on the allow-list
       fails a test — integration test, confirmed by adding a throwaway
       `GET /api/v1/cellars/mine` and watching it fail
-- [ ] Every route on the allow-list answers without a token, and every other
+- [x] Every route on the allow-list answers without a token, and every other
       mapped route answers 401 without one — the same test
-- [ ] The anonymous route list appears in `docs/architecture.md` §6, and the
+- [x] The anonymous route list appears in `docs/architecture.md` §6, and the
       other two places point to it
-- [ ] ADR-0059 is amended to say the feed is anonymous, `FeedController` cites
+- [x] ADR-0059 is amended to say the feed is anonymous, `FeedController` cites
       it, and `node scripts/check-adrs.mjs` passes
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

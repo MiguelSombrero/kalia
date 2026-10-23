@@ -68,14 +68,6 @@ class IdentityApiIT {
 				.expectStatus().isUnauthorized();
 	}
 
-	@Test
-	void leavesTheCatalogPublic() {
-		// Browsing needs no account (docs/architecture.md §6). Guards against a
-		// future filter-chain edit locking the catalog behind authentication.
-		client.get().uri("/api/v1/beers?size=1").exchange().expectStatus().isOk();
-		client.get().uri("/api/v1/breweries").exchange().expectStatus().isOk();
-	}
-
 	// Guards the CSRF-disable premise (SecurityConfig): if a change here starts
 	// setting a cookie, this fails, and csrf(...) needs reconsidering first.
 	@Test
