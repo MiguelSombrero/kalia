@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Public cellar", description = "A cellar its owner has made public, addressed by username")
 class PublicCellarController {
 
+	/** Keycloak's default user profile caps a username at 255 characters, and profile copies it verbatim. */
+	static final int MAX_USERNAME_LENGTH = 255;
+
 	private final CellarService cellar;
 
 	private final ProfileApi profile;
@@ -43,10 +47,14 @@ class PublicCellarController {
 					the owner included — when the username is unknown or the cellar is not public, so neither \
 					can be told from the other.\
 					""")
+	@ApiResponse(responseCode = "400", description = "The username is longer than any username can be",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(implementation = ProblemDetail.class)))
 	@ApiResponse(responseCode = "404", description = "No public cellar for this username",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = ProblemDetail.class)))
-	PublicCellarDto read(@Parameter(description = "The owner's username") @PathVariable String username) {
+	PublicCellarDto read(
+			@Parameter(description = "The owner's username") @PathVariable @Size(max = MAX_USERNAME_LENGTH) String username) {
 		UUID ownerId = profile.publicCellarOwnerId(username)
 				.orElseThrow(PublicCellarNotFoundException::new);
 		return PublicCellarDto.of(username, cellar.readPublicCellar(ownerId));

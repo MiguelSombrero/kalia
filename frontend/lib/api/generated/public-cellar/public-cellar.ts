@@ -51,6 +51,11 @@ export type readResponse200 = {
   status: 200
 }
 
+export type readResponse400 = {
+  data: ProblemDetail
+  status: 400
+}
+
 export type readResponse404 = {
   data: ProblemDetail
   status: 404
@@ -59,7 +64,7 @@ export type readResponse404 = {
 export type readResponseSuccess = (readResponse200) & {
   headers: Headers;
 };
-export type readResponseError = (readResponse404) & {
+export type readResponseError = (readResponse400 | readResponse404) & {
   headers: Headers;
 };
 

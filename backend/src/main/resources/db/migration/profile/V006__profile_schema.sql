@@ -12,3 +12,7 @@ CREATE TABLE profile.profile (
     created_at    timestamptz NOT NULL DEFAULT now(),
     updated_at    timestamptz NOT NULL DEFAULT now()
 );
+
+-- Do not delete profile rows: a row is the permanent reservation of its
+-- username, and deleting one frees the name for someone else (ADR-0080).
+CREATE UNIQUE INDEX profile_username_lower_key ON profile.profile (lower(username));

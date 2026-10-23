@@ -4,8 +4,9 @@ import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
-import { federatedSignOut, startSignIn } from "./actions";
+import { startSignIn } from "./actions";
 import { AuthSubmitButton } from "./AuthSubmitButton";
+import { SignOutButton } from "./SignOutButton";
 
 export type AuthPlacement = "bar" | "phone" | "menu";
 
@@ -48,13 +49,7 @@ export const AuthStatus = async ({ locale, name, placement }: Props) => {
       {placement === "bar" && <span className="text-sm">{name}</span>}
     </Link>
   );
-  const signOut = (
-    <form action={federatedSignOut} className={block}>
-      <AuthSubmitButton className={cn(buttonVariants("outline"), block)}>
-        {t("auth.signOut")}
-      </AuthSubmitButton>
-    </form>
-  );
+  const signOut = <SignOutButton className={block}>{t("auth.signOut")}</SignOutButton>;
 
   if (placement === "phone") return profileLink;
   if (placement === "menu") return signOut;

@@ -267,6 +267,12 @@ describe("getPublicCellar", () => {
     await expect(getPublicCellar("nobody")).resolves.toBeNull();
   });
 
+  it("returns null for a 400 — a username longer than any account can have", async () => {
+    stubFetch(() => 400);
+
+    await expect(getPublicCellar("a".repeat(256))).resolves.toBeNull();
+  });
+
   it("throws on any other failure rather than masking it as not-found", async () => {
     stubFetch(() => 500);
 

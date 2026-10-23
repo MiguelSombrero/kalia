@@ -166,6 +166,20 @@ class PublicCellarApiIT {
 				.value(body -> assertThat((int) JsonPath.read(body, "$.length()")).isEqualTo(1));
 	}
 
+	@Test
+	void aUsernameLongerThanAnyUsernameCanBeIsRefusedBeforeItReachesTheDatabase() {
+		client.get().uri("/api/v1/cellars/{username}", "a".repeat(PublicCellarController.MAX_USERNAME_LENGTH + 1))
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("username"));
+
+		expectNotFound(client.get()
+				.uri("/api/v1/cellars/{username}", "a".repeat(PublicCellarController.MAX_USERNAME_LENGTH))
+				.exchange());
+	}
+
 	private void addBottle(String bearer, String containerType) {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("beerId", beerId.toString());

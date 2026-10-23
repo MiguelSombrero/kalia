@@ -7,7 +7,7 @@ import { PageTitle } from "@/components/ui/page-title";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { CellarSummary, cellarCounts, listCellarEntries } from "@/features/cellar";
 import { FeedError, FeedList, readFeed } from "@/features/feed";
-import { getProfile } from "@/features/profile";
+import { getOwnProfileOrNull } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { logger } from "@/lib/logger";
@@ -40,7 +40,7 @@ const Home = async ({ params }: Props) => {
   const locale = toLocale((await params).locale);
   const [page, session, { t }] = await Promise.all([readFeedOrNull(), auth(), getTranslation(locale)]);
   const [viewerProfile, cellarRows] = session?.user
-    ? await Promise.all([getProfile().catch(() => null), listCellarEntries().catch(() => null)])
+    ? await Promise.all([getOwnProfileOrNull(locale), listCellarEntries().catch(() => null)])
     : [null, null];
   const now = new Date();
 

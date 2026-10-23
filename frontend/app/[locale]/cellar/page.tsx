@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { CellarView, cellarHead, listCellarEntries, SignInPrompt } from "@/features/cellar";
-import { getProfile } from "@/features/profile";
+import { getOwnProfileOrNull } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { Page } from "@/components/ui/page";
@@ -31,7 +31,7 @@ const CellarPage = async ({ params }: Props) => {
     );
   }
 
-  const [beers, profile] = await Promise.all([listCellarEntries(), getProfile().catch(() => null)]);
+  const [beers, profile] = await Promise.all([listCellarEntries(), getOwnProfileOrNull(locale)]);
 
   return (
     <Page width="wide">
