@@ -1,7 +1,7 @@
 import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { buildBeerSearchParams } from "./api";
+import { buildBeerSearchParams } from "./links";
 import type { BeerPage, BeerSearchParams } from "./types";
 
 const pageHref = (locale: Locale, params: BeerSearchParams, page: number): string => {

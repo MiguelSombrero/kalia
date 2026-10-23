@@ -7,6 +7,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { cn } from "@/lib/cn";
+import { BeerRow, JustAddedBadge } from "./JustAdded";
 import { beerRowFrame, beerRowSide } from "./layout";
 import { beerHref, catalogHref } from "./links";
 import type { BeerSearchParams, BeerSummary } from "./types";
@@ -18,6 +19,7 @@ export const BeerList = async ({
   heldBottles,
   headingLevel = 2,
   renderActions,
+  emptyAction,
 }: {
   locale: Locale;
   beers: BeerSummary[];
@@ -28,6 +30,8 @@ export const BeerList = async ({
   /** 3 when the list sits under a section heading of its own. */
   headingLevel?: 2 | 3;
   renderActions?: (beer: BeerSummary) => ReactNode;
+  /** Under the empty state: what the visitor can do about a search that found nothing. */
+  emptyAction?: ReactNode;
 }) => {
   const { t } = await getTranslation(locale);
   const Heading = headingLevel === 3 ? "h3" : "h2";
@@ -47,6 +51,7 @@ export const BeerList = async ({
             .
           </>
         }
+        action={emptyAction}
       />
     );
   }
@@ -56,8 +61,9 @@ export const BeerList = async ({
       {beers.map((beer) => {
         const held = heldBottles?.get(beer.id) ?? 0;
         return (
-          <li
+          <BeerRow
             key={beer.id}
+            beerId={beer.id}
             className={cn(
               "group focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus-ring",
               beerRowFrame,
@@ -79,6 +85,7 @@ export const BeerList = async ({
               <span>{beer.brewery.name}</span>
               <span aria-hidden="true">·</span>
               <span>{beer.style}</span>
+              <JustAddedBadge beerId={beer.id} />
               {held > 0 && <Badge variant="accent">{t("catalog.inCellar", { count: held })}</Badge>}
             </p>
             <div className={beerRowSide}>
@@ -89,7 +96,7 @@ export const BeerList = async ({
                   anything interactive under it is unclickable without its own layer. */}
               {renderActions && <div className="relative z-10">{renderActions(beer)}</div>}
             </div>
-          </li>
+          </BeerRow>
         );
       })}
     </ul>

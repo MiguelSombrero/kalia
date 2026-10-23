@@ -79,6 +79,19 @@ describe("BeerList", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("puts what can be done about an empty search under the empty state, and nowhere else", async () => {
+    const emptyAction = <button type="button">Add a beer</button>;
+    render(await BeerList({ locale: "en", beers: [], emptyAction }));
+
+    expect(screen.getByRole("button", { name: "Add a beer" })).toBeInTheDocument();
+  });
+
+  it("leaves the empty state's action out when there are beers to show", async () => {
+    render(await BeerList({ locale: "en", beers: [westvleteren12], emptyAction: <button type="button">Add a beer</button> }));
+
+    expect(screen.queryByRole("button", { name: "Add a beer" })).not.toBeInTheDocument();
+  });
+
   it("heads the empty state at the level its rows would take", async () => {
     render(await BeerList({ locale: "en", beers: [], headingLevel: 3 }));
 

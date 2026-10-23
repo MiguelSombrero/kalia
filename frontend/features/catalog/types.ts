@@ -1,3 +1,5 @@
+import type { BeerDetailsDto } from "@/lib/api/generated/models";
+
 // Re-exports of orval-generated types (ADR-0012) under this feature's names.
 export type {
   BreweryRefDto as BreweryRef,
@@ -5,7 +7,31 @@ export type {
   BreweryDto as Brewery,
   BeerDetailsDto as BeerDetails,
   PageDtoBeerSummaryDto as BeerPage,
+  AddBeerRequestDto as AddBeerRequest,
 } from "@/lib/api/generated/models";
+
+/** A field the server refused, named by its path in the request (`newBrewery.countryCode`). */
+export type FieldRefusal = { field: string; message: string };
+
+/** What `POST /api/v1/beers` answered, short of a failure to answer at all. */
+export type AddBeerResult =
+  | { kind: "added"; beer: BeerDetailsDto }
+  | { kind: "duplicateBeer"; existingBeerId: string }
+  | { kind: "duplicateBrewery"; existingBreweryId: string }
+  | { kind: "refused"; fields: FieldRefusal[] };
+
+/** A brewery as the add-a-beer form offers it, its place already named in the reader's language. */
+export type BreweryOption = { id: string; name: string; place: string };
+
+/** What the add-a-beer form needs before it can be filled in. */
+export type AddBeerOptions = { styles: string[]; countries: { code: string; name: string }[] };
+
+/** `AddBeerResult` as the form shows it: a duplicate carries what it duplicates. */
+export type AddBeerOutcome =
+  | { kind: "added"; beer: { id: string; name: string } }
+  | { kind: "duplicateBeer"; existing: { id: string; name: string; breweryName: string } }
+  | { kind: "duplicateBrewery"; existing: BreweryOption }
+  | { kind: "refused"; fields: FieldRefusal[] };
 
 /** URL search param values as they arrive from the page — all optional strings. */
 export type BeerSearchParams = {
