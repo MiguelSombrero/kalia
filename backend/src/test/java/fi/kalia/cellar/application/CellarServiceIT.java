@@ -21,9 +21,11 @@ import fi.kalia.cellar.domain.InvalidBottleException;
 import jakarta.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
@@ -246,10 +248,14 @@ class CellarServiceIT {
 	@Test
 	void bothReadsReturnEntriesInBeerNameOrder() {
 		UUID owner = UUID.randomUUID();
-		List<Beer> twoBeers = beers.findAll().stream().limit(2).toList();
-		Beer later = twoBeers.stream().max(Comparator.comparing(Beer::getName, String.CASE_INSENSITIVE_ORDER))
-				.orElseThrow();
-		Beer earlier = twoBeers.stream().filter(beer -> beer != later).findFirst().orElseThrow();
+		// Names starting with different ASCII letters order the same under any
+		// collation, so the expectation cannot hinge on how accents are ranked.
+		Map<Character, Beer> byInitial = beers.findAll().stream()
+				.filter(beer -> beer.getName().matches("(?i)^[a-z].*"))
+				.collect(Collectors.toMap(beer -> Character.toLowerCase(beer.getName().charAt(0)), beer -> beer,
+						(first, second) -> first, TreeMap::new));
+		Beer earlier = byInitial.values().stream().findFirst().orElseThrow();
+		Beer later = byInitial.values().stream().skip(1).findFirst().orElseThrow();
 		service.addBottles(owner, later.getId(), 1, ContainerType.BOTTLE, null, null);
 		service.addBottles(owner, earlier.getId(), 1, ContainerType.BOTTLE, null, null);
 		testEntityManager.flush();
