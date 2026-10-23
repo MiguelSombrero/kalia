@@ -45,21 +45,21 @@ const renderLine = (
 };
 
 describe("FeedLineRow", () => {
-  it("links the username to the public cellar", () => {
-    renderLine(line);
+  it.each(["en", "fi"] as const)("links the username to the public cellar in %s", (locale) => {
+    renderLine(line, locale);
 
     expect(screen.getByRole("link", { name: "MiguelSombrero" })).toHaveAttribute(
       "href",
-      "/cellars/MiguelSombrero",
+      `/${locale}/cellars/MiguelSombrero`,
     );
   });
 
-  it("links the beer's name to the beer's own page", () => {
-    renderLine(line);
+  it.each(["en", "fi"] as const)("links the beer's name to the beer's own page in %s", (locale) => {
+    renderLine(line, locale);
 
     expect(screen.getByRole("link", { name: "AleSmith IPA" })).toHaveAttribute(
       "href",
-      "/en/beers/0b7c5c8e-3f2a-4d7e-9a51-6c2e8f4b1d90",
+      `/${locale}/beers/0b7c5c8e-3f2a-4d7e-9a51-6c2e8f4b1d90`,
     );
   });
 

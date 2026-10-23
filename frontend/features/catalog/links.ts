@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/settings";
+import * as routes from "@/lib/routes";
 import type { BeerSearchParams } from "./types";
 
 export const PARAM_KEYS = [
@@ -26,19 +27,14 @@ export const buildBeerSearchParams = (params: BeerSearchParams): URLSearchParams
   return searchParams;
 };
 
-const withQuery = (path: string, params: BeerSearchParams): string => {
-  const query = buildBeerSearchParams(params).toString();
-  return query ? `${path}?${query}` : path;
-};
-
 export const catalogHref = (locale: Locale, params: BeerSearchParams = {}): string => {
-  return withQuery(`/${locale}/beers`, params);
+  return routes.catalogHref(locale, buildBeerSearchParams(params));
 };
 
 /** A beer's page, carrying the search that led to it so the page can link
  *  back to that same search (ADR-0069). */
 export const beerHref = (locale: Locale, beerId: string, search: BeerSearchParams = {}): string => {
-  return withQuery(`/${locale}/beers/${beerId}`, search);
+  return routes.beerHref(locale, beerId, buildBeerSearchParams(search));
 };
 
 export const hasSearch = (params: BeerSearchParams): boolean => {

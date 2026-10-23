@@ -5,6 +5,7 @@ import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { catalogHref } from "@/lib/routes";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
 import { cellarHead } from "./layout";
@@ -54,7 +55,7 @@ export const PublicCellarView = async ({
         <section className="flex flex-col gap-3 border-t border-border pt-5">
           <p className="font-semibold text-foreground">{t("cellar.public.about")}</p>
           <div className="flex flex-wrap gap-2">
-            <Link href={`/${locale}/beers`} className={buttonVariants("outline")}>
+            <Link href={catalogHref(locale)} className={buttonVariants("outline")}>
               {t("cellar.public.browse")}
             </Link>
             <Link href={`/${locale}/sign-up`} className={buttonVariants("outline")}>

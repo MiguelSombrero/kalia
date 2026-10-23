@@ -9,6 +9,7 @@ import { BeerSlot } from "@/components/ui/beer-slot";
 import { Icon } from "@/components/ui/icon";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
+import { beerHref, catalogHref } from "@/lib/routes";
 import { AddBottleDialog } from "./AddBottleDialog";
 import { BottleTile } from "./BottleTile";
 import { cellarSorts, type CellarSort, sortCellar, toCellarSort } from "./cellarOrder";
@@ -64,7 +65,7 @@ export const CellarBeerList = ({
           </select>
         </div>
         {owner && (
-          <Link href={`/${locale}/beers`} className={buttonVariants("outline")}>
+          <Link href={catalogHref(locale)} className={buttonVariants("outline")}>
             <Icon name="plus" className="size-4" />
             {t("cellar.findBeers")}
           </Link>
@@ -106,7 +107,7 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
           {/* eslint-disable-next-line no-restricted-syntax -- a beer's name heads its own row: neither a page title nor a section heading */}
           <h2 id={headingId} className="text-xl/snug font-bold text-foreground">
             <Link
-              href={`/${locale}/beers/${beer.beerId}`}
+              href={beerHref(locale, beer.beerId)}
               className="inline-block py-0.5 hover:text-primary hover:underline hover:underline-offset-2"
             >
               {beer.beerName}

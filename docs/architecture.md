@@ -531,8 +531,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   (`app/[locale]/...`, e.g. `/en/beers`, `/fi/beers/{id}`). `proxy.ts`
   (Next 16's renamed `middleware.ts`) redirects locale-less requests based on
   `Accept-Language`. The one page addressed locale-less is the public cellar
-  (`/cellars/{username}`), the app's only externally-shared URL: it carries
-  `hreflang`/`canonical` alternates and is served `noindex, nofollow`
+  (`/cellars/{username}`), the app's only externally-shared URL. It carries
+  `hreflang`/`canonical` alternates and is served `noindex, nofollow`. Links
+  inside the app use the locale-prefixed form, and every in-app catalog, beer
+  and cellar address is built in `lib/routes.ts`
   ([ADR-0050](adr/0050-public-cellar-addressing.md)). The root layout sets
   `metadataBase` from `AUTH_URL` so those alternates resolve to absolute URLs.
   A cellar that is not public renders `app/[locale]/not-found.tsx`, the

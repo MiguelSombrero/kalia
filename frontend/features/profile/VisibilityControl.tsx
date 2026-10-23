@@ -7,7 +7,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Toast, ToastDescription, ToastProvider, ToastViewport, type ToastVariant } from "@/components/ui/toast";
+import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+import { cellarHref, shareableCellarHref } from "@/lib/routes";
 import { useChangeVisibility } from "./hooks/useProfile";
 import { visibilityTiles } from "./layout";
 
@@ -17,9 +19,9 @@ const subscribeToNothing = () => () => {};
 
 type Outcome = { variant: ToastVariant; message: string; id: number };
 
-type Props = { username: string; initialCellarPublic: boolean; counts: CellarTotals | null };
+type Props = { locale: Locale; username: string; initialCellarPublic: boolean; counts: CellarTotals | null };
 
-export const VisibilityControl = ({ username, initialCellarPublic, counts }: Props) => {
+export const VisibilityControl = ({ locale, username, initialCellarPublic, counts }: Props) => {
   const { t } = useTranslation();
   const ids = useId();
   const [cellarPublic, setCellarPublic] = useState(initialCellarPublic);
@@ -28,7 +30,7 @@ export const VisibilityControl = ({ username, initialCellarPublic, counts }: Pro
   const changeVisibility = useChangeVisibility();
   const question = useRef<HTMLParagraphElement>(null);
   const outcomes = useRef(0);
-  const publicPath = `/cellars/${username}`;
+  const publicPath = shareableCellarHref(username);
   const saving = changeVisibility.isPending;
   // The Clipboard API exists only in a secure context; elsewhere Copy link could only fail.
   const canCopy = useSyncExternalStore(
@@ -216,7 +218,7 @@ export const VisibilityControl = ({ username, initialCellarPublic, counts }: Pro
               </Button>
             )}
             <Link
-              href={publicPath}
+              href={cellarHref(locale, username)}
               aria-label={t("profile.visibility.address.openLabel")}
               className={buttonVariants("outline")}
             >

@@ -1,11 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }));
-vi.mock("next/navigation", () => ({ usePathname }));
+const { usePathname, search } = vi.hoisted(() => ({ usePathname: vi.fn(), search: { current: "" } }));
+vi.mock("next/navigation", () => ({ usePathname, useSearchParams: () => new URLSearchParams(search.current) }));
 
 import { LocaleSwitcher } from "./LocaleSwitcher";
+
+beforeEach(() => {
+  search.current = "";
+});
 
 describe("LocaleSwitcher", () => {
   it("links to the same page in the other locale, preserving the path", async () => {
@@ -46,5 +50,16 @@ describe("LocaleSwitcher", () => {
 
     expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en/beers");
     expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute("href", "/fi/beers");
+  });
+
+  it("keeps every query parameter", () => {
+    usePathname.mockReturnValue("/en/beers");
+    search.current = "query=ipa&countryCode=BE&page=2&utm=x";
+    render(<LocaleSwitcher locale="en" />);
+
+    expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute(
+      "href",
+      "/fi/beers?query=ipa&countryCode=BE&page=2&utm=x",
+    );
   });
 });

@@ -31,7 +31,7 @@ const renderControl = (
   return render(
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <VisibilityControl username="ada" counts={counts} {...props} />
+        <VisibilityControl locale={locale} username="ada" counts={counts} {...props} />
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -61,8 +61,15 @@ describe("VisibilityControl", () => {
 
     expect(screen.getByRole("radio", { name: "Anyone with the link" })).toBeChecked();
     expect(screen.getByText("/cellars/ada")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open your public cellar" })).toHaveAttribute("href", "/cellars/ada");
+    expect(screen.getByRole("link", { name: "Open your public cellar" })).toHaveAttribute("href", "/en/cellars/ada");
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("opens the public cellar in the reader's language while still showing the locale-less address", () => {
+    renderControl({ initialCellarPublic: true }, "fi");
+
+    expect(screen.getByText("/cellars/ada")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Avaa julkinen kellarisi" })).toHaveAttribute("href", "/fi/cellars/ada");
   });
 
   it("describes the public choice without numbers when the cellar could not be counted", async () => {
@@ -151,15 +158,15 @@ describe("VisibilityControl", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("copies the public address and says so in a toast", async () => {
+  it("copies the locale-less public address and says so in a toast", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-    const { container } = renderControl({ initialCellarPublic: true });
+    const { container } = renderControl({ initialCellarPublic: true }, "fi");
 
-    fireEvent.click(screen.getByRole("button", { name: "Copy link" }));
+    fireEvent.click(screen.getByRole("button", { name: "Kopioi linkki" }));
 
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/cellars/ada`));
-    expect(await screen.findByText("Link copied.")).toBeInTheDocument();
+    expect(await screen.findByText("Linkki kopioitu.")).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 

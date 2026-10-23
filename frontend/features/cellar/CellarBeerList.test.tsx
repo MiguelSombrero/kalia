@@ -19,6 +19,7 @@ vi.mock("./bottleDateRules", async (importOriginal) => ({
   todayIso: () => "2026-10-09",
 }));
 
+import type { Locale } from "@/i18n/settings";
 import { CellarBeerList } from "./CellarBeerList";
 import type { Bottle, CellarBeer } from "./types";
 
@@ -55,10 +56,10 @@ const orval: CellarBeer = {
   bottles: [bottle("o1", "e2", { brewedDate: "2026-03-12" })],
 };
 
-const renderList = (owner: boolean, beers = [westvleteren, orval]) =>
+const renderList = (owner: boolean, beers = [westvleteren, orval], locale: Locale = "en") =>
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <CellarBeerList locale="en" beers={beers} owner={owner} />
+      <CellarBeerList locale={locale} beers={beers} owner={owner} />
     </QueryClientProvider>,
   );
 
@@ -75,6 +76,12 @@ afterEach(() => {
 });
 
 describe("CellarBeerList", () => {
+  it("links each beer to its page in the reader's language", () => {
+    renderList(false, [westvleteren], "fi");
+
+    expect(screen.getByRole("link", { name: "Westvleteren 12" })).toHaveAttribute("href", "/fi/beers/b1");
+  });
+
   it("shows every beer with every bottle, nothing folded away, and no a11y violations", async () => {
     const { container } = renderList(true);
 

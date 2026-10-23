@@ -1,13 +1,12 @@
 import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { buildBeerSearchParams } from "./links";
+import { catalogHref } from "./links";
 import { isPastLastPage, lastReachablePage } from "./searchParams";
 import type { BeerPage, BeerSearchParams } from "./types";
 
 const pageHref = (locale: Locale, params: BeerSearchParams, page: number): string => {
-  const searchParams = buildBeerSearchParams({ ...params, page: String(page) });
-  return `/${locale}/beers?${searchParams.toString()}`;
+  return catalogHref(locale, { ...params, page: String(page) });
 };
 
 /**

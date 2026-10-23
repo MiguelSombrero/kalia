@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { isLocale, locales, type Locale } from "@/i18n/settings";
 
-const localeHref = (locale: Locale, pathname: string): string => {
+const localeHref = (locale: Locale, pathname: string, query: string): string => {
   const segments = pathname.split("/");
   if (isLocale(segments[1] ?? "")) {
     segments[1] = locale;
   } else {
     segments.splice(1, 0, locale);
   }
-  return segments.join("/");
+  const path = segments.join("/");
+  return query ? `${path}?${query}` : path;
 };
 
 const localeNames: Record<Locale, string> = { en: "English", fi: "Suomi" };
@@ -19,7 +21,7 @@ const localeNames: Record<Locale, string> = { en: "English", fi: "Suomi" };
 type Props = { locale: Locale };
 
 /** Locale codes (EN/FI) are intentionally not translated. */
-export const LocaleSwitcher = ({ locale: currentLocale }: Props) => {
+const LocaleLinks = ({ currentLocale, query }: { currentLocale: Locale; query: string }) => {
   const pathname = usePathname();
 
   return (
@@ -27,7 +29,7 @@ export const LocaleSwitcher = ({ locale: currentLocale }: Props) => {
       {locales.map((locale) => (
         <Link
           key={locale}
-          href={localeHref(locale, pathname)}
+          href={localeHref(locale, pathname, query)}
           aria-current={locale === currentLocale ? "page" : undefined}
           aria-label={localeNames[locale]}
           className={
@@ -42,3 +44,16 @@ export const LocaleSwitcher = ({ locale: currentLocale }: Props) => {
     </nav>
   );
 };
+
+const LocaleLinksKeepingQuery = ({ currentLocale }: { currentLocale: Locale }) => {
+  const query = useSearchParams().toString();
+  return <LocaleLinks currentLocale={currentLocale} query={query} />;
+};
+
+// Do not drop the Suspense: useSearchParams() opts everything up to the nearest
+// boundary out of prerendering, silently, and a static build fails without one.
+export const LocaleSwitcher = ({ locale }: Props) => (
+  <Suspense fallback={<LocaleLinks currentLocale={locale} query="" />}>
+    <LocaleLinksKeepingQuery currentLocale={locale} />
+  </Suspense>
+);

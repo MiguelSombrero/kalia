@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+import { catalogHref } from "@/lib/routes";
 
 type Props = { locale: Locale; variant?: "bar" | "menu" };
 
@@ -15,7 +16,7 @@ const hrefFor = (locale: Locale, item: (typeof navItems)[number]): string => {
     case "home":
       return `/${locale}`;
     case "catalog":
-      return `/${locale}/beers`;
+      return catalogHref(locale);
     case "cellar":
       return `/${locale}/cellar`;
   }
