@@ -14,6 +14,7 @@ export default defineConfig({
       target: "./lib/api/generated",
       schemas: "./lib/api/generated/models",
       clean: true,
+      urlEncodeParameters: true,
       override: {
         mutator: {
           path: "./lib/api/mutator.ts",

@@ -66,10 +66,38 @@ describe("currentAccessToken", () => {
     await expect(currentAccessToken()).resolves.toBeUndefined();
   });
 
-  it("sends a token whose account records no expiry at all", async () => {
-    signedInWith({ access_token: "token-abc" });
+  describe.each([
+    ["missing", undefined],
+    ["null", null],
+  ])("when the stored account's expiry is %s", (_, expiresAt) => {
+    const unknownExpiryAccount = { ...expiredAccount, expires_at: expiresAt };
 
-    await expect(currentAccessToken()).resolves.toBe("token-abc");
+    it("renews the token rather than sending it unchanged", async () => {
+      signedInWith(unknownExpiryAccount);
+      const renewedExpiry = inSeconds(300);
+      vi.mocked(refreshAccessToken).mockResolvedValue({
+        status: "renewed",
+        accessToken: "fresh-access",
+        refreshToken: undefined,
+        idToken: undefined,
+        expiresAt: renewedExpiry,
+      });
+
+      await expect(currentAccessToken()).resolves.toBe("fresh-access");
+      expect(refreshAccessToken).toHaveBeenCalledWith("the-refresh");
+      expect(updateSessionAccount).toHaveBeenCalledWith(
+        SESSION_TOKEN,
+        expect.objectContaining({ access_token: "fresh-access", expires_at: renewedExpiry }),
+      );
+    });
+
+    it("ends the local session when the renewal is rejected", async () => {
+      signedInWith(unknownExpiryAccount);
+      vi.mocked(refreshAccessToken).mockResolvedValue({ status: "rejected" });
+
+      await expect(currentAccessToken()).resolves.toBeUndefined();
+      expect(endLocalSession).toHaveBeenCalledWith(SESSION_TOKEN);
+    });
   });
 
   describe("when the stored token has expired", () => {

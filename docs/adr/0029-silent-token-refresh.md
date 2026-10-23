@@ -5,6 +5,8 @@
 - **Amended:** 2026-08-07 by [ADR-0030](0030-per-session-token-storage.md) —
   renewal reads and writes the token set of the caller's session rather than
   the user's, and Back-Channel Logout moved to iteration 4 task 10
+- **Amended:** 2026-10-23 — a stored account with no recorded expiry is
+  renewed rather than trusted (iteration 8 task 11)
 
 ## Context
 
@@ -35,9 +37,11 @@ maximum.
 
 - Renewal happens in `frontend/lib/api/accessToken.ts`, the single point every
   backend call already passes through, rather than in a session callback or a
-  background job. A token is renewed when it has expired or is within the
-  in-flight leeway; an unexpired one is returned untouched, so the common path
-  costs nothing. This replaces the withholding stopgap, which is removed.
+  background job. A token is renewed when it has expired, is within the
+  in-flight leeway, or its account records no expiry at all; an unexpired one
+  is returned untouched, so the common path costs nothing. Treating a missing
+  expiry as fresh was the rejected alternative: it failed open, sending a
+  dead token indefinitely and leaving renewal unreachable for that session. This replaces the withholding stopgap, which is removed.
 - The token-endpoint exchange is the one hand-written OAuth request in the
   codebase. ADR-0025 confines the rest of the protocol to Auth.js and that
   still holds; a refresh grant is a single form POST with no

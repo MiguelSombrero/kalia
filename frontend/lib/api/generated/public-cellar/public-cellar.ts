@@ -75,7 +75,7 @@ export const getReadUrl = (username: string,) => {
 
 
 
-  return `/api/v1/cellars/${username}`
+  return `/api/v1/cellars/${encodeURIComponent(String(username))}`
 }
 
 /**

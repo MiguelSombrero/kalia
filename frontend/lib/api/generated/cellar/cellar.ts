@@ -199,7 +199,7 @@ export const getRemoveBottleUrl = (id: string,) => {
 
 
 
-  return `/api/v1/cellar/bottles/${id}`
+  return `/api/v1/cellar/bottles/${encodeURIComponent(String(id))}`
 }
 
 /**
@@ -302,7 +302,7 @@ export const getUpdateBottleUrl = (id: string,) => {
 
 
 
-  return `/api/v1/cellar/bottles/${id}`
+  return `/api/v1/cellar/bottles/${encodeURIComponent(String(id))}`
 }
 
 /**

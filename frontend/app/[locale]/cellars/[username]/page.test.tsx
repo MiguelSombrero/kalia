@@ -66,6 +66,17 @@ describe("PublicCellarPage", () => {
     await expect(PublicCellarPage({ params: params() })).resolves.toBeDefined();
   });
 
+  it("looks the cellar up by the decoded username, not the URL's encoding of it", async () => {
+    await PublicCellarPage({ params: params({ username: "%C3%A4ij%C3%A4" }) });
+
+    expect(getPublicCellar).toHaveBeenCalledWith("äijä");
+  });
+
+  it("triggers not-found for a username that is not valid percent-encoding", async () => {
+    await expect(PublicCellarPage({ params: params({ username: "%E0%A4%A" }) })).rejects.toThrow();
+    expect(getPublicCellar).not.toHaveBeenCalled();
+  });
+
   it("triggers not-found when the cellar is not public", async () => {
     getPublicCellar.mockResolvedValue(null);
 

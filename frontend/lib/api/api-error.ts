@@ -1,10 +1,10 @@
 /** Tagged so callers can react without string-matching a message. */
-export type ApiErrorKind = "network" | "timeout" | "http" | "parse";
+export type ApiErrorKind = "network" | "timeout" | "http" | "parse" | "refused";
 
 export type ApiError = Error & {
   name: "ApiError";
   kind: ApiErrorKind;
-  /** Set for `http` and `parse`; absent for `network` and `timeout`. */
+  /** Set for `http` and `parse`; absent for the rest. */
   status?: number;
 };
 

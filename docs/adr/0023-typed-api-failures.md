@@ -4,6 +4,9 @@
 - **Date:** 2026-07-27
 - **Amended:** 2026-08-11 by [ADR-0037](0037-functional-modules.md) — corrected
   the "Alternatives considered" reasoning against subclassing `Error`
+- **Amended:** 2026-10-23 — a fifth kind, `refused`, for a request
+  `kaliaFetch` declines to send because a path parameter could have reshaped
+  its route ([ADR-0012](0012-orval-api-client.md); iteration 8 task 11)
 
 ## Context
 
@@ -33,10 +36,10 @@ reasoning previously lived only in a ten-line `frontend/README.md` bullet.
 **Every failure inside `kaliaFetch` is raised as an `ApiError` carrying a
 `kind` tag, and an HTTP error status is deliberately not one of them.**
 
-- **Four kinds**, defined with the constructor and guard in
-  `lib/api/api-error.ts`: `network`, `timeout`, `http`, `parse`. Callers branch on
-  `isApiError(e) && e.kind === …` rather than reading a message. `status` is
-  present for `http` and `parse`, absent for `network` and `timeout`.
+- **Five kinds**, defined with the constructor and guard in
+  `lib/api/api-error.ts`: `network`, `timeout`, `http`, `parse`, `refused`.
+  Callers branch on `isApiError(e) && e.kind === …` rather than reading a
+  message. `status` is present for `http` and `parse`, absent for the rest.
 - **Built by decoration, not subclassing.** `apiError()` returns
   `Object.assign(new Error(message, { cause }), { name: "ApiError", kind,
   status })`. This satisfies both constraints at once: no class constructor,
