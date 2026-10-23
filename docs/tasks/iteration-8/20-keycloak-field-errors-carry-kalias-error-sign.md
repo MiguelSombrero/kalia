@@ -1,6 +1,6 @@
 # Task 20: Keycloak's field errors carry Kalia's error sign
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -110,32 +110,32 @@ Kalia's red square". This task asks to close that gap.
 
 ## Acceptance criteria
 
-- [ ] Registering with a taken username shows the username field with a
+- [x] Registering with a taken username shows the username field with a
       `--color-destructive` edge, and a line under it that starts with the
       red square and white cross, with its words in the foreground colour.
       Checked in both locales at 375×812 and 1280×800 — Playwright, from the
       rendered colours, confirmed to fail against today's theme
-- [ ] Another field error, passwords that do not match, renders the same way
+- [x] Another field error, passwords that do not match, renders the same way
       — Playwright
-- [ ] Signing in with a wrong password marks the username field the same
+- [x] Signing in with a wrong password marks the username field the same
       way, since Keycloak renders "Invalid username or password." as that
       field's error — Playwright
-- [ ] An error alert, such as signing in to a disabled account, shows as
+- [x] An error alert, such as signing in to a disabled account, shows as
       design.md's box, with an ink edge and the red cell with the cross, and
       with no PatternFly error icon beside it — Playwright, confirmed to fail
       against today's theme
-- [ ] The error line is still announced with its field: the field's
+- [x] The error line is still announced with its field: the field's
       accessible description contains the message — Playwright
-- [ ] The rendered error state passes the axe scan with no violations, in
+- [x] The rendered error state passes the axe scan with no violations, in
       both locales and at both widths — Playwright
-- [ ] `scripts/check-keycloak-theme.mjs` passes, and `login.css` uses no
+- [x] `scripts/check-keycloak-theme.mjs` passes, and `login.css` uses no
       colour other than the `--kalia-color-*` declarations — `make check`
-- [ ] ADR-0074 carries an `Amended:` line recording that Keycloak's field
+- [x] ADR-0074 carries an `Amended:` line recording that Keycloak's field
       errors and error alerts carry Kalia's error sign, and
       `node scripts/check-adrs.mjs` passes
-- [ ] The product owner has seen the registration page's error state and the
+- [x] The product owner has seen the registration page's error state and the
       sign-in page's error alert in the browser pane at both widths
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 
