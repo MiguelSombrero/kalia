@@ -10,7 +10,7 @@ describe("UsernameTaken", () => {
     );
 
     expect(screen.getByRole("heading", { level: 1, name: "This username is taken" })).toBeInTheDocument();
-    expect(screen.getByText(/The username ada already belongs to another Kalia account\./)).toBeInTheDocument();
+    expect(screen.getByText("The username ada already belongs to another Kalia account.")).toBeInTheDocument();
     expect(screen.getByText("Sign out if you want to use Kalia with a different account.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
@@ -22,7 +22,7 @@ describe("UsernameTaken", () => {
     );
 
     expect(screen.getByRole("heading", { level: 1, name: "Käyttäjänimi on varattu" })).toBeInTheDocument();
-    expect(screen.getByText(/Käyttäjänimi ada kuuluu jo toiselle Kalia-tilille\./)).toBeInTheDocument();
+    expect(screen.getByText("Käyttäjänimi ada kuuluu jo toiselle Kalia-tilille.")).toBeInTheDocument();
     expect(screen.getByText("Kirjaudu ulos, jos haluat käyttää Kaliaa toisella tilillä.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Kirjaudu ulos" })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();

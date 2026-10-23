@@ -339,7 +339,7 @@
   "usernameTaken": {
     "pageTitle": "Käyttäjänimi varattu — Kalia",
     "title": "Käyttäjänimi on varattu",
-    "message": "Käyttäjänimi {{username}} kuuluu jo toiselle Kalia-tilille. Kaliassa nimi pysyy ensimmäisellä käyttäjällään senkin jälkeen, kun hänen tilinsä on suljettu, jotta linkki hänen kellariinsa ei koskaan johda toiselle.",
+    "message": "Käyttäjänimi {{username}} kuuluu jo toiselle Kalia-tilille.",
     "hint": "Kirjaudu ulos, jos haluat käyttää Kaliaa toisella tilillä."
   },
   "signUp": {
