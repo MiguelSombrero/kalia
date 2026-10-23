@@ -82,7 +82,11 @@ B, the product owner's choice from three built directions in one round.
   badge are this browser's memory of the add, not part of the address, so a
   reload or a shared link shows the search plainly. Keyboard focus moves to
   the new beer's row, since the control that opened the dialog is gone from
-  the search it lands on.
+  the search it lands on. **The one exception:** when the first page of that
+  search would not show the new beer, because a common name such as "IPA"
+  sorts it further down, the user lands on the beer's own page instead, with
+  the same toast and focus on the page. The server checks that first page
+  before answering, so the client never lands where the beer cannot be seen.
 - **A button sending its form** ([docs/design.md](../design.md#feedback-and-errors)
   holds the rule). Its label names the action in progress (*Adding…*), it is
   disabled, drawn at 75 % opacity with the progress cursor, and it does not
@@ -136,7 +140,9 @@ moment it was written.
   new brewery scrolls on a phone.
 - Bad, because the landing searches for the beer's name, not the search the
   user typed. A user who searched "oo bourbon" and named the beer
-  "Öö Bourbon" lands on a search for "Öö Bourbon".
+  "Öö Bourbon" lands on a search for "Öö Bourbon". A beer with a common name
+  lands on its own page instead, so there are two landings, and adding one
+  costs a second catalog read.
 - Neutral, because the similarity rule is the client's own and is not task
   02's duplicate rule. It can list a beer that is not a duplicate and miss one
   that is spelled differently, which is why it is a hint and the server's
@@ -175,4 +181,9 @@ axe at 375×812 and 1280×800 in both locales. The suite's catalog target-size
 check found the line under a searched result list at 20px tall on a phone;
 it was raised to the 24×24 floor before sign-off. The product owner signed
 the built flow off against B in the browser pane at both widths on
-2026-10-23, with no departures from the mockup.
+2026-10-23, with no departures from the mockup. Code review then found that
+a beer named "IPA" landed on a search whose first page did not show it; the
+product owner chose the fallback to the beer's own page over narrowing the
+search by style and country, which a common name can still overflow, or
+leaving it. The e2e suite adds an "IPA" from a new brewery and lands on its
+page.

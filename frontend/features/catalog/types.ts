@@ -28,7 +28,7 @@ export type AddBeerOptions = { styles: string[]; countries: { code: string; name
 
 /** `AddBeerResult` as the form shows it: a duplicate carries what it duplicates. */
 export type AddBeerOutcome =
-  | { kind: "added"; beer: { id: string; name: string } }
+  | { kind: "added"; beer: { id: string; name: string }; landsOnSearch: boolean }
   | { kind: "duplicateBeer"; existing: { id: string; name: string; breweryName: string } }
   | { kind: "duplicateBrewery"; existing: BreweryOption }
   | { kind: "refused"; fields: FieldRefusal[] };

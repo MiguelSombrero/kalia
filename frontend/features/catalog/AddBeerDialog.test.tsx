@@ -26,6 +26,7 @@ const page = <T,>(content: T[]) => ({ content, totalElements: content.length, to
 
 type Posted = { status: number; body: unknown };
 let posted: Posted;
+let landing: unknown[];
 const requests: { method: string; url: URL; body?: unknown }[] = [];
 
 const backend = async (input: string, init: RequestInit = {}) => {
@@ -39,6 +40,7 @@ const backend = async (input: string, init: RequestInit = {}) => {
   if (url.pathname === "/api/v1/countries") return json(["SE", "FI", "EE"]);
   if (url.pathname === "/api/v1/breweries") return json(page(url.searchParams.get("query")?.startsWith("Põh") ? [pohjala] : []));
   if (url.pathname === "/api/v1/beers" && url.searchParams.has("breweryId")) return json(page([oo, virmalised]));
+  if (url.pathname === "/api/v1/beers" && url.searchParams.has("query")) return json(page(landing));
   if (url.pathname === `/api/v1/beers/${oo.id}`) return json(oo);
   return new Response(null, { status: 404 });
 };
@@ -87,6 +89,7 @@ const submit = () => fireEvent.click(screen.getByRole("button", { name: "Add bee
 beforeEach(() => {
   requests.length = 0;
   posted = { status: 201, body: created };
+  landing = [created];
   push.mockReset();
   useJustAddedStore.setState({ beer: null, toastOpen: false, focusPending: false });
   vi.stubGlobal("fetch", vi.fn(backend));
@@ -139,6 +142,17 @@ describe("AddBeerDialog", () => {
     });
     expect(useJustAddedStore.getState()).toMatchObject({ beer: { id: created.id, name: "Öö Bourbon" }, toastOpen: true });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("lands on the new beer's own page when a search for its name would not show it", async () => {
+    landing = [oo, virmalised];
+    await openForm();
+    await fillValidBeer();
+
+    submit();
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith(`/en/beers/${created.id}`));
+    expect(useJustAddedStore.getState()).toMatchObject({ beer: { id: created.id }, toastOpen: true });
   });
 
   it("adds a brewery the catalog lacks in the same form", async () => {

@@ -112,6 +112,29 @@ test("a beer whose brewery the catalog lacks creates the brewery in the same dia
   await expect(page.getByText("Pori, Finland").first()).toBeVisible();
 });
 
+test("a beer whose name the search would bury past its first page lands on its own page", async ({ page, account }) => {
+  const brewery = uniqueName("Zzz e2e brewery");
+  await searchSignedIn(page, account, `${brewery} IPA`);
+
+  await page.getByRole("main").getByRole("button", { name: "Add a beer" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("textbox", { name: "Name" }).fill("IPA");
+  await pickBrewery(page, brewery, /as a new brewery$/);
+  await dialog.getByRole("group", { name: "New brewery" }).getByRole("combobox", { name: "Country" }).selectOption("FI");
+  await dialog.getByRole("combobox", { name: "Style" }).selectOption("IPA");
+  await dialog.getByRole("textbox", { name: "Strength (ABV %)" }).fill("6");
+  const stillSameDocument = await markDocument(page);
+  await dialog.getByRole("button", { name: "Add beer" }).click();
+
+  await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("heading", { level: 1, name: "IPA", exact: true })).toBeVisible();
+  await expect(page.getByText(brewery).first()).toBeVisible();
+  await expect(page.getByText("IPA is in the catalog.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("main")).toBeFocused();
+  expect(await stillSameDocument(), "adding the beer reloaded the page").toBe(true);
+  await expectNoA11yViolations(page);
+});
+
 test("a duplicate says the beer is already in the catalog and links to it", async ({ page, account }) => {
   await searchSignedIn(page, account, "öö");
 

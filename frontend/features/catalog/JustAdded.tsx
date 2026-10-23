@@ -34,6 +34,22 @@ export const JustAddedBadge = ({ beerId }: { beerId: string }) => {
   return isNew ? <Badge variant="accent">{t("catalog.add.justAdded")}</Badge> : null;
 };
 
+/** On a beer's own page: where an add lands when the search for its name would not show it (ADR-0082). */
+export const JustAddedLanding = ({ beerId }: { beerId: string }) => {
+  const isNew = useJustAddedStore((state) => state.beer?.id === beerId);
+  const focusPending = useJustAddedStore((state) => state.focusPending);
+  const focusTaken = useJustAddedStore((state) => state.focusTaken);
+
+  useEffect(() => {
+    if (!isNew || !focusPending) return;
+    // Page's skip-link target (components/ui/page.tsx), already focusable.
+    document.getElementById("main-content")?.focus();
+    focusTaken();
+  }, [isNew, focusPending, focusTaken]);
+
+  return null;
+};
+
 /** Mounted once per catalog page, outside the list the dialog that added the beer lived in. */
 export const JustAddedToast = () => {
   const { t } = useTranslation();

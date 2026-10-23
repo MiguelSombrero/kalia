@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { signIn } from "@/auth";
 import { toLocale, type Locale } from "@/i18n/settings";
-import { addBeer, findBreweries, getBeer, listBreweryBeers, listCountries, listStyles } from "./api";
+import { addBeer, findBreweries, getBeer, listBreweryBeers, listCountries, listStyles, searchBeers } from "./api";
 import { countriesByName, countryName } from "./country";
 import { catalogHref, PARAM_KEYS, parseBeerSearchParams } from "./links";
 import type { AddBeerOptions, AddBeerOutcome, AddBeerRequest, Brewery, BreweryOption } from "./types";
@@ -64,12 +64,24 @@ export const listBreweryBeersAction = async (
   return beers.map(({ id, name, style, abv }) => ({ id, name, style, abv }));
 };
 
+// ADR-0082: a common name ("IPA") can sort the new beer off the first page of its own search.
+const firstPageOfItsNameShows = async (beer: { id: string; name: string }): Promise<boolean> => {
+  try {
+    const firstPage = await searchBeers({ query: beer.name });
+    return firstPage.content.some((found) => found.id === beer.id);
+  } catch {
+    return false;
+  }
+};
+
 export const addBeerAction = async (request: AddBeerRequest, locale: string = "en"): Promise<AddBeerOutcome> => {
   const result = await addBeer(request);
   switch (result.kind) {
-    case "added":
+    case "added": {
       revalidatePath("/[locale]/beers", "page");
-      return { kind: "added", beer: { id: result.beer.id, name: result.beer.name } };
+      const beer = { id: result.beer.id, name: result.beer.name };
+      return { kind: "added", beer, landsOnSearch: await firstPageOfItsNameShows(beer) };
+    }
     case "duplicateBeer": {
       const existing = await getBeer(result.existingBeerId);
       return {

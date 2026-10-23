@@ -603,8 +603,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   listbox through `aria-activedescendant`) written by hand in
   `features/catalog/BreweryField.tsx`, since neither Radix primitive covers it
   ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)).
-  Once a beer is added, the dialog's trigger is gone from the search it lands
-  on, so the new beer's row takes focus instead. How enforcement is
+  Once a beer is added, the dialog's trigger is gone from where it lands, so
+  the new beer's row takes focus instead, or the page itself when the add
+  lands on the beer's own page. How enforcement is
   layered across lint, unit and E2E tests:
   [frontend/README.md](../frontend/README.md) testing conventions.
 

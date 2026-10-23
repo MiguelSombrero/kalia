@@ -7,7 +7,7 @@ import { I18nextProvider, initReactI18next } from "react-i18next";
 import { beforeEach, describe, expect, it } from "vitest";
 import enCommon from "@/i18n/locales/en/common.json";
 import { getOptions } from "@/i18n/settings";
-import { BeerRow, JustAddedBadge, JustAddedToast } from "./JustAdded";
+import { BeerRow, JustAddedBadge, JustAddedLanding, JustAddedToast } from "./JustAdded";
 import { useJustAddedStore } from "./store";
 
 const withI18n = (children: ReactNode) => {
@@ -86,6 +86,31 @@ describe("the just-added marks", () => {
           </BeerRow>
         </ul>,
       ),
+    );
+
+    expect(document.body).toHaveFocus();
+  });
+
+  it("move focus to the page itself when the add lands on the beer's own page", () => {
+    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
+
+    render(
+      <main id="main-content" tabIndex={-1}>
+        <JustAddedLanding beerId="new" />
+      </main>,
+    );
+
+    expect(screen.getByRole("main")).toHaveFocus();
+    expect(useJustAddedStore.getState().focusPending).toBe(false);
+  });
+
+  it("leave focus alone on another beer's page", () => {
+    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
+
+    render(
+      <main id="main-content" tabIndex={-1}>
+        <JustAddedLanding beerId="old" />
+      </main>,
     );
 
     expect(document.body).toHaveFocus();

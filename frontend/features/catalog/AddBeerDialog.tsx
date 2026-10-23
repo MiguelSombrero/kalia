@@ -124,7 +124,9 @@ export const AddBeerDialog = ({
     if (outcome.kind === "added") {
       announce(outcome.beer);
       onOpenChange(false);
-      router.push(catalogHref(locale, { query: outcome.beer.name }));
+      router.push(
+        outcome.landsOnSearch ? catalogHref(locale, { query: outcome.beer.name }) : beerHref(locale, outcome.beer.id),
+      );
     } else if (outcome.kind === "refused") {
       for (const refusal of outcome.fields) {
         const field = REFUSABLE[refusal.field];

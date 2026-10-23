@@ -7,6 +7,7 @@ const api = vi.hoisted(() => ({
   listBreweryBeers: vi.fn(),
   listCountries: vi.fn(),
   listStyles: vi.fn(),
+  searchBeers: vi.fn(),
 }));
 vi.mock("./api", () => api);
 const { revalidatePath, signIn } = vi.hoisted(() => ({ revalidatePath: vi.fn(), signIn: vi.fn() }));
@@ -31,17 +32,37 @@ beforeEach(() => {
 });
 
 describe("addBeerAction", () => {
+  const added = {
+    kind: "added",
+    beer: { id: beerId, name: "Öö Bourbon", style: "Imperial Stout", abv: 12.5, brewery: pohjala },
+  };
+  const firstPage = (...ids: string[]) => ({ content: ids.map((id) => ({ id })), totalElements: ids.length });
+
   it("answers with the new beer and refreshes the catalog's searches", async () => {
-    api.addBeer.mockResolvedValue({
-      kind: "added",
-      beer: { id: beerId, name: "Öö Bourbon", style: "Imperial Stout", abv: 12.5, brewery: pohjala },
-    });
+    api.addBeer.mockResolvedValue(added);
+    api.searchBeers.mockResolvedValue(firstPage(beerId));
 
     await expect(addBeerAction(request)).resolves.toEqual({
       kind: "added",
       beer: { id: beerId, name: "Öö Bourbon" },
+      landsOnSearch: true,
     });
     expect(revalidatePath).toHaveBeenCalledWith("/[locale]/beers", "page");
+    expect(api.searchBeers).toHaveBeenCalledWith({ query: "Öö Bourbon" });
+  });
+
+  it("lands on the beer's own page when a search for its name would not show it first", async () => {
+    api.addBeer.mockResolvedValue(added);
+    api.searchBeers.mockResolvedValue(firstPage("5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e99"));
+
+    await expect(addBeerAction(request)).resolves.toMatchObject({ kind: "added", landsOnSearch: false });
+  });
+
+  it("lands on the beer's own page when that search fails, since the beer exists either way", async () => {
+    api.addBeer.mockResolvedValue(added);
+    api.searchBeers.mockRejectedValue(new Error("search down"));
+
+    await expect(addBeerAction(request)).resolves.toMatchObject({ kind: "added", landsOnSearch: false });
   });
 
   it("names the beer a duplicate duplicates, and its brewery", async () => {

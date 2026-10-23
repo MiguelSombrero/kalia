@@ -1,6 +1,6 @@
 export { AddBeerEntry } from "./AddBeerEntry";
 export { BeerList } from "./BeerList";
-export { JustAddedToast } from "./JustAdded";
+export { JustAddedLanding, JustAddedToast } from "./JustAdded";
 export { Pagination } from "./Pagination";
 export { ResultSummary } from "./ResultSummary";
 export { SearchFilters } from "./SearchFilters";
