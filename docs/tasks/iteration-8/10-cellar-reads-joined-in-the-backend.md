@@ -1,6 +1,6 @@
 # Task 10: Cellar reads arrive joined with their beers, from the backend
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -97,24 +97,24 @@ considered and rejected, because every iteration-9+ client would inherit it.
 
 ## Acceptance criteria
 
-- [ ] The owner's cellar and a public cellar each return entries carrying
+- [x] The owner's cellar and a public cellar each return entries carrying
       their beer's facts in one response — integration tests, against a real
       database
-- [ ] A public cellar page view makes one backend call regardless of how many
+- [x] A public cellar page view makes one backend call regardless of how many
       beers it holds — test in the frontend suite, confirmed to fail against
       today's per-entry `getBeer`
-- [ ] Neither cellar response ever contains an entry with no bottles —
+- [x] Neither cellar response ever contains an entry with no bottles —
       integration test covering both the owner and the public read
-- [ ] An entry whose beer no longer resolves is left out and logged —
+- [x] An entry whose beer no longer resolves is left out and logged —
       integration test
-- [ ] `features/cellar` no longer imports the catalog's generated client, and
+- [x] `features/cellar` no longer imports the catalog's generated client, and
       the lint rule restricting each feature's `api.ts` to its own generated
       tag would reject that import — lint fixture or ESLint test
-- [ ] The own and public cellar pages render as before at both agreed widths,
+- [x] The own and public cellar pages render as before at both agreed widths,
       in a browser — the existing Playwright specs pass
-- [ ] An ADR records where the join lives and why; `docs/architecture.md`
+- [x] An ADR records where the join lives and why; `docs/architecture.md`
       describes the new shape
-- [ ] `mvn clean verify`, `npm test` and `npm run test:e2e` are green; the
+- [x] `mvn clean verify`, `npm test` and `npm run test:e2e` are green; the
       `api-client-drift` job passes
 
 ## Notes
