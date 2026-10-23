@@ -1,6 +1,6 @@
 # Task 08: Catalog search never lands on the error page
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -79,21 +79,24 @@ considered and rejected.
 
 ## Acceptance criteria
 
-- [ ] An ABV over 100, an over-long query, and a hand-edited non-numeric ABV,
+- [x] An ABV over 100, an over-long query, and a hand-edited non-numeric ABV,
       `page` or `size` each render the search page with that value dropped and
       the note that it was ignored, never `error.tsx`. Min ABV greater than max
       is swapped — Playwright spec covering each, confirmed to fail against
       today's build
-- [ ] A page past the last one shows an empty result with a link to page 1 —
+- [x] A page past the last one shows an empty result with a link to page 1 —
       Playwright spec
-- [ ] `features/catalog/api.ts` normalizes every search parameter it forwards,
+- [x] `features/catalog/api.ts` normalizes every search parameter it forwards,
       not only `sort` — vitest unit tests
-- [ ] A beer or brewery request whose offset exceeds 10,000 rows is refused
+- [x] A beer or brewery request whose offset exceeds 10,000 rows is refused
       with `problem+json`, and the bound is documented on both handlers —
       integration test
-- [ ] The search API's existing contract for valid parameters is unchanged —
-      the existing `CatalogApiIT` suite passes unmodified
-- [ ] `mvn clean verify`, `npm test` and `npm run test:e2e` are green
+- [x] The search API's existing contract for valid parameters is unchanged —
+      the existing `CatalogApiIT` suite passes unmodified, except
+      `breweryPageIndexPastTheEndYieldsAnEmptyPage`, whose `page=9000&size=100`
+      the bound now refuses; it asks `page=100&size=100` instead, approved by
+      the product owner on 2026-10-23
+- [x] `mvn clean verify`, `npm test` and `npm run test:e2e` are green
 
 ## Notes
 
