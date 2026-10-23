@@ -7,6 +7,7 @@ import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
 import java.text.Collator;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -32,12 +33,16 @@ public class CellarService {
 
 	private final CatalogApi catalog;
 
+	private final Clock clock;
+
+	@Transactional(readOnly = true)
 	public List<EntryView> listEntries(UUID userId) {
 		return joined(entries.findWithBottlesByUserId(userId));
 	}
 
 	// The caller has already been resolved to a public cellar's owner id by
 	// profile (ADR-0050); this only loads it.
+	@Transactional(readOnly = true)
 	public List<EntryView> readPublicCellar(UUID ownerId) {
 		return joined(entries.findWithBottlesByUserId(ownerId));
 	}
@@ -48,14 +53,14 @@ public class CellarService {
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = entryFor(userId, beerId);
-		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate);
+		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate, clock);
 		return entries.save(entry).lastBottles(quantity);
 	}
 
 	public Bottle updateBottle(UUID userId, UUID bottleId, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = ownerOf(userId, bottleId);
-		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate);
+		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate, clock);
 		entries.save(entry);
 		return updated;
 	}

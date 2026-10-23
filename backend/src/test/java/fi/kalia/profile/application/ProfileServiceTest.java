@@ -26,27 +26,6 @@ class ProfileServiceTest {
 		service = new ProfileService(profiles);
 	}
 
-	// A missing row must read as private rather than throwing or defaulting
-	// open (ADR-0049) — the case an implementation that assumes the row
-	// exists fails.
-	@Test
-	void aUserWithNoProfileRowReadsAsPrivate() {
-		UUID userId = UUID.randomUUID();
-		given(profiles.findById(userId)).willReturn(Optional.empty());
-
-		assertThat(service.isCellarPublic(userId)).isFalse();
-	}
-
-	@Test
-	void aPublicCellarReadsAsPublic() {
-		UUID userId = UUID.randomUUID();
-		Profile profile = Profile.create(userId, "alice");
-		profile.changeCellarVisibility(true);
-		given(profiles.findById(userId)).willReturn(Optional.of(profile));
-
-		assertThat(service.isCellarPublic(userId)).isTrue();
-	}
-
 	@Test
 	void publicCellarOwnerIdResolvesTheOwnerOfAPublicCellar() {
 		UUID userId = UUID.randomUUID();

@@ -20,14 +20,10 @@ public class ProfileService {
 
 	private final ProfileRepository profiles;
 
-	// A missing row reads as private (ADR-0049).
-	public boolean isCellarPublic(UUID userId) {
-		return profiles.findById(userId).map(Profile::isCellarPublic).orElse(false);
-	}
-
 	// Do not add a per-entry visibility flag: an id with no profile row and one
 	// whose cellar is private must stay indistinguishable, so both are simply
 	// absent from the map rather than present with cellarPublic=false (ADR-0050).
+	@Transactional(readOnly = true)
 	public Map<UUID, String> publicUsernames(Collection<UUID> userIds) {
 		return profiles.findAllById(userIds).stream()
 				.filter(Profile::isCellarPublic)
@@ -39,6 +35,7 @@ public class ProfileService {
 	// drop the exact-spelling filter: the public route echoes the requested
 	// spelling as the owner's username, and the frontend's owner check compares
 	// it to the stored one.
+	@Transactional(readOnly = true)
 	public Optional<UUID> publicCellarOwnerId(String username) {
 		return profiles.findByUsernameIgnoringCase(username)
 				.filter(profile -> profile.getUsername().equals(username))

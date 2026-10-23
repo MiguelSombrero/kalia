@@ -103,8 +103,10 @@ one sanctioned exception: `fi.kalia.web` holds shared, module-neutral
 exception-handling advice with no subdomain of its own
 ([ADR-0014](adr/0014-shared-exception-handling.md)). The base package
 itself holds only application-wide wiring that belongs to no module: the
-entry point, its required-configuration check, and event publication
-resubmission. Inside each
+entry point, its required-configuration check, event publication
+resubmission, and `ApplicationConfig` — method-level resilience
+(`@EnableResilientMethods`, which every module's `@Retryable` relies on) and
+the application's one `Clock`, in UTC. Inside each
 subdomain module, DDD-lite layers as direct subpackages — all
 Modulith-internal by default
 ([ADR-0007](adr/0007-backend-package-structure.md)): `domain` (rich JPA

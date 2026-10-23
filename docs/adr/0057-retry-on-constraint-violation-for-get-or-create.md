@@ -21,6 +21,7 @@
   for the whole application context; `ConcurrentAddBeerApiIT` fails if the
   retry stops running.
 - **Amended:** 2026-10-22 by [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md) — `profile.profile` gained a second unique index, on `lower(username)`, and its retry now covers a violation of either
+- **Amended:** 2026-10-23 — `@EnableResilientMethods` moved from `cellar`'s `RetryConfig` to the root package's `fi.kalia.ApplicationConfig`, since `catalog` and `profile` rely on it too; `ProfileServiceModuleIT` boots `profile` alone and fails if its retry stops running
 
 ## Context
 

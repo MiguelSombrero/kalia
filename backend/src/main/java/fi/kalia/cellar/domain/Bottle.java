@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -60,19 +61,19 @@ public class Bottle {
 	}
 
 	static Bottle create(Entry entry, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, Clock clock) {
 		Assert.notNull(entry, "entry must not be null");
 		Assert.notNull(containerType, "containerType must not be null");
-		requireValidDates(brewedDate, bestBeforeDate);
+		requireValidDates(brewedDate, bestBeforeDate, clock);
 		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate);
 		entry.registerBottle(bottle);
 		return bottle;
 	}
 
 	void update(ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, Clock clock) {
 		Assert.notNull(containerType, "containerType must not be null");
-		requireValidDates(brewedDate, bestBeforeDate);
+		requireValidDates(brewedDate, bestBeforeDate, clock);
 		this.containerType = containerType;
 		this.brewedDate = brewedDate;
 		this.bestBeforeDate = bestBeforeDate;
@@ -83,8 +84,9 @@ public class Bottle {
 	// on the caller's own local today without trusting anything it claims.
 	private static final int FUTURE_TOLERANCE_DAYS = 1;
 
-	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
-		if (brewedDate != null && brewedDate.isAfter(LocalDate.now().plusDays(FUTURE_TOLERANCE_DAYS))) {
+	private static void requireValidDates(@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate,
+			Clock clock) {
+		if (brewedDate != null && brewedDate.isAfter(LocalDate.now(clock).plusDays(FUTURE_TOLERANCE_DAYS))) {
 			throw new InvalidBottleException("brewedDate must not be in the future");
 		}
 		if (brewedDate != null && bestBeforeDate != null && !bestBeforeDate.isAfter(brewedDate)) {

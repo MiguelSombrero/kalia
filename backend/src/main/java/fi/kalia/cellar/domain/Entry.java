@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -75,12 +76,12 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 	}
 
 	public List<Bottle> addBottles(int quantity, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, Clock clock) {
 		if (quantity <= 0) {
 			throw new InvalidBottleException("quantity must be positive");
 		}
 		List<Bottle> added = IntStream.range(0, quantity)
-				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate))
+				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate, clock))
 				.toList();
 		touch();
 		// entryId is deliberately not on this event: for a first-use entry
@@ -96,9 +97,9 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 	}
 
 	public Bottle updateBottle(UUID bottleId, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, Clock clock) {
 		Bottle bottle = bottleWithId(bottleId);
-		bottle.update(containerType, brewedDate, bestBeforeDate);
+		bottle.update(containerType, brewedDate, bestBeforeDate, clock);
 		touch();
 		return bottle;
 	}
