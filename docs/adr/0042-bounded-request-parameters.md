@@ -75,3 +75,12 @@ constraint pair, at the cost of an extra annotation class and its own test.
   paging bounds interacting with a filter) — worth checking then whether one
   handler-level pattern still reads clearly across two call sites or earns a
   small shared helper.
+
+  > **Amended 2026-10-23** ([iteration-8 task 08](../tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)):
+  > the trigger fired. A page may skip at most `CatalogController.MAX_OFFSET`
+  > rows, which spans `page` and `size`, on beer search and the brewery list
+  > alike. It follows the same pattern as the ABV range, a handler-level check
+  > reported through `detail` (`requireBoundedOffset`), and needed no shared
+  > helper: both checks sit in one controller, and a third pair is what would
+  > make one worth writing. `page` keeps an `@Max` of its own as the
+  > single-field end of its range.

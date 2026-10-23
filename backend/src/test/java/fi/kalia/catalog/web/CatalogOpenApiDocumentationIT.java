@@ -39,6 +39,18 @@ class CatalogOpenApiDocumentationIT {
 	}
 
 	@Test
+	void bothPagedHandlersDocumentTheOffsetBound() {
+		String body = apiDocs();
+
+		for (String path : List.of("/api/v1/beers", "/api/v1/breweries")) {
+			assertThat((String) JsonPath.read(body, "$.paths['" + path + "'].get.description"))
+					.as(path).contains("A page skipping more than 10000 rows (page × size) is refused");
+			List<String> page = JsonPath.read(body, "$.paths['" + path + "'].get.parameters[?(@.name == 'page')].description");
+			assertThat(page).as(path).containsExactly("Zero-based page index; page × size is at most 10000");
+		}
+	}
+
+	@Test
 	void beerSummarySchemaMarksNonNullableFieldsRequired() {
 		String body = apiDocs();
 

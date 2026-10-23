@@ -43,7 +43,7 @@ account linking revisited, and the rest of that iteration's tasks.
 |---|---|
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
-| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers. It does not yet hold at 150k beers. Unfiltered pages and 1–2-character queries break it there, and they are [task 18](tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)'s. Deep pages are [task 08](tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)'s. The brewery list's sort in Java is quality backlog SHOULD-61. The question reopens past 150k beers, or when a read no index can serve goes over budget ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), [§7](#catalog-read-latency)) |
+| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers. It does not yet hold at 150k beers. Unfiltered pages and 1–2-character queries break it there, and they are [task 18](tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)'s. Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The brewery list's sort in Java is quality backlog SHOULD-61. The question reopens past 150k beers, or when a read no index can serve goes over budget ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), [§7](#catalog-read-latency)) |
 | Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
 | Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
@@ -420,7 +420,9 @@ cursor's shape.
 Conventions:
 
 - Pagination: `page`/`size` params, response envelope with `content`,
-  `totalElements`, `totalPages`, `page`. `/breweries` carries the contract but
+  `totalElements`, `totalPages`, `page`. A page skips a bounded number of
+  rows (`page × size`), so one request costs the same however large the
+  table grows ([ADR-0042](adr/0042-bounded-request-parameters.md)). `/breweries` carries the contract but
   still sorts and slices the full table in-application, to keep its name order
   locale-independent ([ADR-0045](adr/0045-brewery-list-paginates-in-application.md)).
   The feed is the deliberate exception: a list that grows at the head reads
@@ -464,7 +466,10 @@ The shape of the frontend. Day-to-day rules for writing it live in
   Search is the case worth naming, because it looks like an exception and
   isn't: the catalog's filters are a native GET form, so `SearchFilters`
   stays a server component ([ADR-0010](adr/0010-react-hook-form-zod.md)).
-  A form that only navigates does not need the client.
+  A form that only navigates does not need the client. Its values are checked
+  in the BFF instead: the catalog drops any search value the API would refuse
+  before forwarding the search (`features/catalog/searchParams.ts`), and the
+  page notes that a filter was ignored, so no search URL reaches the error page.
 - **Feature-based package structure**: `features/<feature>/` (catalog,
   cellar, …) owns that feature's components, hooks and API access; `app/`
   route files stay thin and delegate. Mirrors the backend's
