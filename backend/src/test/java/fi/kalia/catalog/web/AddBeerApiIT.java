@@ -105,7 +105,7 @@ class AddBeerApiIT {
 		UUID anyBeer = jdbc.queryForObject("SELECT id FROM catalog.beer LIMIT 1", UUID.class);
 		for (String uri : List.of("/api/v1/beers?size=1", "/api/v1/beers/" + anyBeer,
 				"/api/v1/beers/batch?ids=" + anyBeer, "/api/v1/breweries?query=vleteren", "/api/v1/styles",
-				"/api/v1/countries")) {
+				"/api/v1/countries", "/api/v1/breweries/countries")) {
 			client.get().uri(uri).exchange().expectStatus().isOk();
 		}
 	}
@@ -150,20 +150,20 @@ class AddBeerApiIT {
 	void aBeerWithANewBreweryCreatesTheBreweryAndADuplicateBreweryIsRefused() {
 		String breweryName = uniqueName("Panimo");
 		String body = addBeer(beer(uniqueName("Sahti"), STYLE, 8.0)
-				.withNewBrewery(breweryName, "finland", "  Lahti ")).expectStatus().isCreated()
+				.withNewBrewery(breweryName, "FI", "  Lahti ")).expectStatus().isCreated()
 				.expectBody(String.class).returnResult().getResponseBody();
 		UUID breweryId = UUID.fromString(JsonPath.read(body, "$.brewery.id"));
 
 		assertThat(jdbc.queryForMap(
-				"SELECT name, country, city, source, contributor_id FROM catalog.brewery WHERE id = ?", breweryId))
+				"SELECT name, country_code, city, source, contributor_id FROM catalog.brewery WHERE id = ?", breweryId))
 				.containsEntry("name", breweryName)
-				.containsEntry("country", "Finland")
+				.containsEntry("country_code", "FI")
 				.containsEntry("city", "Lahti")
 				.containsEntry("source", "USER")
 				.containsEntry("contributor_id", contributorId);
 
 		addBeer(beer(uniqueName("Sahti"), STYLE, 8.0)
-				.withNewBrewery(breweryName.toUpperCase(Locale.ROOT) + ".", "Finland", null))
+				.withNewBrewery(breweryName.toUpperCase(Locale.ROOT) + ".", "FI", null))
 				.expectStatus().isEqualTo(409)
 				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
 				.expectBody(String.class)
@@ -171,7 +171,7 @@ class AddBeerApiIT {
 						.isEqualTo(breweryId.toString()));
 
 		// The same name in another country is another brewery.
-		addBeer(beer(uniqueName("Sahti"), STYLE, 8.0).withNewBrewery(breweryName, "Estonia", null))
+		addBeer(beer(uniqueName("Sahti"), STYLE, 8.0).withNewBrewery(breweryName, "EE", null))
 				.expectStatus().isCreated();
 	}
 
@@ -216,7 +216,7 @@ class AddBeerApiIT {
 	@Test
 	void noCatalogReadResponseCarriesTheContributor() {
 		String breweryName = uniqueName("Leak Check");
-		String created = addBeer(beer(uniqueName("Abt"), STYLE, 10.5).withNewBrewery(breweryName, "Finland", null))
+		String created = addBeer(beer(uniqueName("Abt"), STYLE, 10.5).withNewBrewery(breweryName, "FI", null))
 				.expectStatus().isCreated().expectBody(String.class).returnResult().getResponseBody();
 		UUID id = idOf(created);
 
@@ -258,16 +258,13 @@ class AddBeerApiIT {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> {
-					assertThat((List<String>) JsonPath.read(body, "$[*].name")).contains("Finland", "United States");
-					assertThat((List<String>) JsonPath.read(body, "$[?(@.name == 'Finland')].code"))
-							.containsExactly("FI");
-				});
+				.value(body -> assertThat((List<String>) JsonPath.read(body, "$"))
+						.hasSize(249).contains("FI", "US"));
 	}
 
 	@Test
 	void invalidAndOutOfRangeFieldsAreRefusedListingEachViolation() {
-		Request invalid = beer("!!!", "x".repeat(101), 100.1).withNewBrewery("", "Finland", "c".repeat(101));
+		Request invalid = beer("!!!", "x".repeat(101), 100.1).withNewBrewery("", "FI", "c".repeat(101));
 
 		addBeer(invalid)
 				.expectStatus().isBadRequest()
@@ -292,7 +289,7 @@ class AddBeerApiIT {
 						.containsExactly("must not contain control characters"));
 
 		addBeer(beer(uniqueName("Abt"), STYLE, 6.0).withBrewery(westvleteren)
-				.withNewBrewery(uniqueName("Both"), "Finland", null))
+				.withNewBrewery(uniqueName("Both"), "FI", null))
 				.expectStatus().isBadRequest()
 				.expectBody(String.class)
 				.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
@@ -304,11 +301,13 @@ class AddBeerApiIT {
 				.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
 						.containsExactly("breweryId"));
 
-		addBeer(beer(uniqueName("Abt"), STYLE, 6.0).withNewBrewery(uniqueName("Panimo"), "Atlantis", null))
-				.expectStatus().isBadRequest()
-				.expectBody(String.class)
-				.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
-						.containsExactly("newBrewery.country"));
+		for (String unlisted : List.of("Finland", "fi", "XX")) {
+			addBeer(beer(uniqueName("Abt"), STYLE, 6.0).withNewBrewery(uniqueName("Panimo"), unlisted, null))
+					.expectStatus().isBadRequest()
+					.expectBody(String.class)
+					.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
+							.as(unlisted).containsExactly("newBrewery.countryCode"));
+		}
 	}
 
 	@Test
@@ -379,10 +378,10 @@ class AddBeerApiIT {
 			return this;
 		}
 
-		Request withNewBrewery(String name, String country, String city) {
+		Request withNewBrewery(String name, String countryCode, String city) {
 			Map<String, Object> brewery = new LinkedHashMap<>();
 			brewery.put("name", name);
-			brewery.put("country", country);
+			brewery.put("countryCode", countryCode);
 			brewery.put("city", city);
 			body.put("newBrewery", brewery);
 			return this;

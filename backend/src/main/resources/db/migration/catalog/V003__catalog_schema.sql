@@ -16,10 +16,14 @@ CREATE FUNCTION catalog.fold_name(name text) RETURNS text
 -- the entities do not map the column and every row the app inserts is a user's.
 -- contributor_id is the identity sub of the user who added a USER row; it is
 -- never served by any read, and may be cleared while the row is kept.
+-- country_code is the ISO 3166-1 alpha-2 code (ADR-0079). country exists only
+-- for V004's rows, which name their country in English: V008 codes them, sets
+-- country_code NOT NULL and drops country.
 CREATE TABLE catalog.brewery (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name         text NOT NULL,
-    country      text NOT NULL,
+    country      text,
+    country_code text CHECK (country_code ~ '^[A-Z]{2}$'),
     city         text,
     source       text NOT NULL DEFAULT 'SEED' CHECK (source IN ('SEED', 'WIKIDATA', 'USER')),
     wikidata_qid text UNIQUE,
@@ -30,7 +34,7 @@ CREATE TABLE catalog.brewery (
 );
 
 CREATE UNIQUE INDEX brewery_folded_name_country_idx
-    ON catalog.brewery (catalog.fold_name(name), lower(country));
+    ON catalog.brewery (catalog.fold_name(name), country_code);
 
 CREATE TABLE catalog.beer (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -54,10 +58,10 @@ CREATE INDEX beer_brewery_id_idx ON catalog.beer (brewery_id);
 
 -- The search filters BeerSpecifications builds, indexed to match their shape
 -- (ADR-0044); BeerSearchIndexIT asserts the planner picks each one.
--- lower(style) and lower(country) are function calls, which a plain index on
--- the raw column cannot serve.
+-- lower(style) is a function call, which a plain index on the raw column
+-- cannot serve; a country code is compared as it is stored.
 CREATE INDEX beer_style_lower_idx ON catalog.beer (lower(style));
-CREATE INDEX brewery_country_lower_idx ON catalog.brewery (lower(country));
+CREATE INDEX brewery_country_code_idx ON catalog.brewery (country_code);
 -- No B-tree can serve the name filter's leading-wildcard LIKE; a trigram GIN
 -- index can. fastupdate is off because until autovacuum flushes GIN's pending
 -- list the planner costs this index above the full scan it exists to replace.

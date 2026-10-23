@@ -7,18 +7,17 @@ import org.junit.jupiter.api.Test;
 class CountryTest {
 
 	@Test
-	void listsEveryIso3166EntryOnceByCodeAndByName() {
-		assertThat(Country.ALL).hasSize(249);
-		assertThat(Country.ALL).extracting(Country::code).doesNotHaveDuplicates()
-				.allSatisfy(code -> assertThat(code).matches("[A-Z]{2}"));
-		assertThat(Country.ALL).extracting(Country::name).doesNotHaveDuplicates();
+	void listsEveryIso3166EntryOnceByItsCode() {
+		assertThat(Country.CODES).hasSize(249).doesNotHaveDuplicates()
+				.allSatisfy(code -> assertThat(code).matches(Country.CODE_FORMAT));
 	}
 
 	@Test
-	void findsACountryByItsNameIgnoringCaseAndSurroundingWhitespace() {
-		assertThat(Country.named("  united states ")).contains(new Country("US", "United States"));
-		assertThat(Country.named("Atlantis")).isEmpty();
-		assertThat(Country.named("US")).isEmpty();
+	void aCodeIsListedOnlyAsItIsWritten() {
+		assertThat(Country.isListed("FI")).isTrue();
+		assertThat(Country.isListed("fi")).isFalse();
+		assertThat(Country.isListed("Finland")).isFalse();
+		assertThat(Country.isListed("XX")).isFalse();
 	}
 
 }

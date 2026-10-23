@@ -12,6 +12,7 @@ const westvleteren12 = {
 vi.mock("@/features/catalog/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/catalog/api")>()),
   searchBeers: vi.fn(async () => ({ content: [], totalElements: 0, totalPages: 0, page: 0 })),
+  listBreweryCountries: vi.fn(async () => ["SE", "BE"]),
 }));
 
 vi.mock("@/features/cellar/api", async (importOriginal) => ({
@@ -57,7 +58,7 @@ describe("BeersPage", () => {
     expect(searchBeers).toHaveBeenCalledWith({
       query: "punk",
       style: undefined,
-      country: undefined,
+      countryCode: undefined,
       minAbv: "5",
       maxAbv: undefined,
       page: undefined,
@@ -66,11 +67,17 @@ describe("BeersPage", () => {
     });
   });
 
+  it("hands the country filter the countries the catalog has breweries in", async () => {
+    const filters = elements(await render({})).find((element) => element.props.countryCodes !== undefined);
+
+    expect(filters?.props.countryCodes).toEqual(["SE", "BE"]);
+  });
+
   it("redirects a page past the last one to the last page, keeping the search", async () => {
     vi.mocked(searchBeers).mockResolvedValueOnce({ content: [], totalElements: 54, totalPages: 3, page: 999 });
 
-    await expect(render({ country: "Belgium", page: "999" })).rejects.toMatchObject({
-      digest: expect.stringContaining("/en/beers?country=Belgium&page=2"),
+    await expect(render({ countryCode: "BE", page: "999" })).rejects.toMatchObject({
+      digest: expect.stringContaining("/en/beers?countryCode=BE&page=2"),
     });
   });
 

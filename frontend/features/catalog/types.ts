@@ -11,7 +11,7 @@ export type {
 export type BeerSearchParams = {
   query?: string;
   style?: string;
-  country?: string;
+  countryCode?: string;
   minAbv?: string;
   maxAbv?: string;
   page?: string;

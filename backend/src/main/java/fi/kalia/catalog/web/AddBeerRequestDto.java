@@ -57,7 +57,7 @@ public record AddBeerRequestDto(
 			return new BreweryChoice.Existing(breweryId);
 		}
 		if (breweryId == null && newBrewery != null) {
-			return new BreweryChoice.New(newBrewery.name(), newBrewery.country(), newBrewery.city());
+			return new BreweryChoice.New(newBrewery.name(), newBrewery.countryCode(), newBrewery.city());
 		}
 		throw new BreweryChoiceException();
 	}

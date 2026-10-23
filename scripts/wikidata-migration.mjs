@@ -11,7 +11,10 @@
 // wikidata/styles.json, the hand-reviewed seed matches in
 // wikidata/seed-matches.json, dropping what conflicts rather than guessing
 // unless wikidata/brewery-countries.json settles it by hand, and reducing what
-// the unique indexes would refuse to one row.
+// the unique indexes would refuse to one row. A brewery's country is stored as
+// its ISO code (ADR-0079): wikidata/country-codes.json codes each Wikidata
+// country label, and wikidata/present-day-countries.json codes, brewery by
+// brewery, those whose label names a state with no code.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -34,7 +37,7 @@ const ROWS_PER_INSERT = 1000;
  */
 export const foldName = (name) => name.normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]/gu, "");
 
-const breweryKey = (name, country) => `${foldName(name)}\u0000${country.toLowerCase()}`;
+const breweryKey = (name, countryCode) => `${foldName(name)}\u0000${countryCode}`;
 
 /** The value catalog.beer's numeric(4, 1) stores: one decimal, half away from zero, done on the digits to avoid binary rounding. */
 export function storedAbv(abv) {
@@ -72,10 +75,10 @@ export function parseSeed(sql) {
  * @param {{breweries: object[], beers: object[], styles: object[]}} snapshot
  * @param {{qid: string, style: string|null}[]} styleMap
  * @param {{breweries: {name: string, country: string, qid: string|null}[], beers: {brewery: string, name: string, qid: string|null}[]}} seed
- * @param {{qid: string, country: string}[]} countryOverrides
- * @returns {{breweries: object[], beers: object[], dropped: Record<string, number>}}
+ * @param {{codes: Record<string, string>, overrides?: {qid: string, country: string}[], presentDay?: {qid: string, country: string, countryCode: string}[]}} countries
+ * @returns {{breweries: object[], beers: object[], seedCountries: {country: string, countryCode: string}[], dropped: Record<string, number>}}
  */
-export function convert(snapshot, styleMap, seed, countryOverrides = []) {
+export function convert(snapshot, styleMap, seed, { codes, overrides: countryOverrides = [], presentDay = [] }) {
   const styleOf = new Map(styleMap.map((entry) => [entry.qid, entry.style]));
   const unmapped = snapshot.styles.filter((s) => !styleOf.has(s.qid)).map((s) => `${s.qid} ${s.label}`);
   if (unmapped.length > 0) throw new Error(`Style classes missing from styles.json: ${unmapped.join(", ")}`);
@@ -91,8 +94,32 @@ export function convert(snapshot, styleMap, seed, countryOverrides = []) {
     }
     snapshotBreweries.set(qid, { ...brewery, countries: [country] });
   }
+  const codeOf = new Map(Object.entries(codes));
+  const presentDayOf = new Map();
+  for (const { qid, country, countryCode } of presentDay) {
+    const brewery = snapshotBreweries.get(qid);
+    if (brewery?.countries.length !== 1 || brewery.countries[0] !== country || codeOf.has(country)) {
+      throw new Error(`present-day-countries.json: ${qid} is not a brewery whose one country is ${country}, a country with no code`);
+    }
+    presentDayOf.set(qid, countryCode);
+  }
+  const countryCodeOf = (brewery) => {
+    const code = codeOf.get(brewery.countries[0]) ?? presentDayOf.get(brewery.qid);
+    if (!code) {
+      throw new Error(
+        `${brewery.qid} "${brewery.name}" is in ${brewery.countries[0]}, which has no code in country-codes.json or present-day-countries.json`,
+      );
+    }
+    return code;
+  };
+  const seedCountries = [...new Set(seed.breweries.map((b) => b.country))].sort().map((country) => {
+    if (!codeOf.has(country)) throw new Error(`Seeded country ${country} has no code in country-codes.json`);
+    return { country, countryCode: codeOf.get(country) };
+  });
+  const seedCodeOf = new Map(seedCountries.map((c) => [c.country, c.countryCode]));
+  const seedKey = (b) => breweryKey(b.name, seedCodeOf.get(b.country));
   const seedByName = new Map(seed.breweries.map((b) => [b.name, b]));
-  const seedByKey = new Map(seed.breweries.map((b) => [breweryKey(b.name, b.country), b]));
+  const seedByKey = new Map(seed.breweries.map((b) => [seedKey(b), b]));
   const seedByQid = new Map(seed.breweries.filter((b) => b.qid).map((b) => [b.qid, b]));
 
   const groupOf = new Map();
@@ -101,7 +128,7 @@ export function convert(snapshot, styleMap, seed, countryOverrides = []) {
       drop(brewery.countries.length === 0 ? "brewery without a country" : "brewery with conflicting countries");
       continue;
     }
-    groupOf.set(brewery.qid, breweryKey(brewery.name, brewery.countries[0]));
+    groupOf.set(brewery.qid, breweryKey(brewery.name, countryCodeOf(brewery)));
   }
   const seedOfGroup = new Map();
   for (const [qid, seeded] of seedByQid) {
@@ -178,12 +205,12 @@ export function convert(snapshot, styleMap, seed, countryOverrides = []) {
   const taken = new Map();
   for (const seeded of seed.beers) {
     const brewery = seedByName.get(seeded.brewery);
-    taken.set(`${breweryKey(brewery.name, brewery.country)}\u0000${foldName(seeded.name)}`, `seeded "${seeded.name}"`);
+    taken.set(`${seedKey(brewery)}\u0000${foldName(seeded.name)}`, `seeded "${seeded.name}"`);
   }
   const beers = [];
   for (const beer of candidates.sort(byQid)) {
     const seeded = seedOfGroup.get(beer.group);
-    const key = `${seeded ? breweryKey(seeded.name, seeded.country) : beer.group}\u0000${foldName(beer.name)}`;
+    const key = `${seeded ? seedKey(seeded) : beer.group}\u0000${foldName(beer.name)}`;
     const holder = taken.get(key);
     if (holder?.startsWith("seeded")) {
       throw new Error(`${beer.qid} "${beer.name}" has the same name as ${holder} but seed-matches.json does not map them`);
@@ -204,10 +231,10 @@ export function convert(snapshot, styleMap, seed, countryOverrides = []) {
 
   const breweries = [...survivorOf.values()]
     .map((qid) => snapshotBreweries.get(qid))
-    .map((b) => ({ qid: b.qid, name: b.name, country: b.countries[0], city: b.cities.length === 1 ? b.cities[0] : null }))
+    .map((b) => ({ qid: b.qid, name: b.name, countryCode: countryCodeOf(b), city: b.cities.length === 1 ? b.cities[0] : null }))
     .sort(byQid);
 
-  return { breweries, beers, dropped };
+  return { breweries, beers, seedCountries, dropped };
 }
 
 const sqlString = (value) => {
@@ -223,7 +250,7 @@ const chunks = (items) => {
 };
 
 /** @param {ReturnType<typeof convert>} converted */
-export function toSql({ breweries, beers }) {
+export function toSql({ breweries, beers, seedCountries }) {
   const lines = [
     "-- Generated by scripts/wikidata-migration.mjs from scripts/wikidata/snapshot.json.",
     "-- Do not edit: regenerate it as backend/README.md describes.",
@@ -232,13 +259,22 @@ export function toSql({ breweries, beers }) {
     "-- only rows inserted without a source are the ones the app writes: a user's.",
     "ALTER TABLE catalog.brewery ALTER COLUMN source SET DEFAULT 'USER';",
     "ALTER TABLE catalog.beer ALTER COLUMN source SET DEFAULT 'USER';",
+    "",
+    "-- V004's rows name their country in English, in the column V003 keeps for them",
+    "-- alone. They get its code here, and the column goes (ADR-0079).",
+    "UPDATE catalog.brewery b SET country_code = v.country_code",
+    "FROM (VALUES",
+    seedCountries.map((c) => `    (${sqlString(c.country)}, ${sqlString(c.countryCode)})`).join(",\n"),
+    ") AS v(country, country_code)",
+    "WHERE b.source = 'SEED' AND b.country = v.country;",
+    "ALTER TABLE catalog.brewery ALTER COLUMN country_code SET NOT NULL, DROP COLUMN country;",
   ];
 
   for (const chunk of chunks(breweries)) {
-    lines.push("", "INSERT INTO catalog.brewery (name, country, city, source, wikidata_qid) VALUES");
+    lines.push("", "INSERT INTO catalog.brewery (name, country_code, city, source, wikidata_qid) VALUES");
     lines.push(
       chunk
-        .map((b) => `    (${sqlString(b.name)}, ${sqlString(b.country)}, ${sqlString(b.city)}, 'WIKIDATA', ${sqlString(b.qid)})`)
+        .map((b) => `    (${sqlString(b.name)}, ${sqlString(b.countryCode)}, ${sqlString(b.city)}, 'WIKIDATA', ${sqlString(b.qid)})`)
         .join(",\n") + ";",
     );
   }
@@ -288,12 +324,11 @@ export function generate() {
     breweries: matches.breweries.map((b) => ({ ...b, country: countryOf.get(b.name) })),
     beers: matches.beers,
   };
-  const converted = convert(
-    readJson(resolve(DATA, "snapshot.json")),
-    readJson(resolve(DATA, "styles.json")),
-    seed,
-    readJson(resolve(DATA, "brewery-countries.json")),
-  );
+  const converted = convert(readJson(resolve(DATA, "snapshot.json")), readJson(resolve(DATA, "styles.json")), seed, {
+    codes: readJson(resolve(DATA, "country-codes.json")),
+    overrides: readJson(resolve(DATA, "brewery-countries.json")),
+    presentDay: readJson(resolve(DATA, "present-day-countries.json")),
+  });
   return { sql: toSql(converted), converted, seedRows, matches };
 }
 

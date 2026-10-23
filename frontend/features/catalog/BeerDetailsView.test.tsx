@@ -10,7 +10,7 @@ const westvleteren12: BeerDetails = {
   style: "Quadrupel",
   abv: 10.2,
   description: "Dark strong Trappist ale with notes of dried fruit.",
-  brewery: { id: "br1", name: "Brouwerij Westvleteren", country: "Belgium", city: "Vleteren" },
+  brewery: { id: "br1", name: "Brouwerij Westvleteren", countryCode: "BE", city: "Vleteren" },
 };
 
 const view = (overrides: Partial<Parameters<typeof BeerDetailsView>[0]> = {}) =>
@@ -47,7 +47,29 @@ describe("BeerDetailsView", () => {
     );
     expect(screen.getByRole("link", { name: "Everything from Belgium (15)" })).toHaveAttribute(
       "href",
-      "/en/beers?country=Belgium",
+      "/en/beers?countryCode=BE",
+    );
+  });
+
+  it("names a Swedish brewery's country in the reader's language, in its location and its link", async () => {
+    const omnipollo: BeerDetails = {
+      ...westvleteren12,
+      brewery: { id: "br2", name: "Omnipollo", countryCode: "SE", city: "Stockholm" },
+    };
+
+    const { unmount } = render(await view({ beer: omnipollo, countryCount: 40 }));
+    expect(screen.getAllByText(/Stockholm, Sweden$/)).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Everything from Sweden (40)" })).toHaveAttribute(
+      "href",
+      "/en/beers?countryCode=SE",
+    );
+    unmount();
+
+    render(await view({ locale: "fi", beer: omnipollo, countryCount: 40 }));
+    expect(screen.getAllByText(/Stockholm, Ruotsi$/)).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Kaikki maasta Ruotsi (40)" })).toHaveAttribute(
+      "href",
+      "/fi/beers?countryCode=SE",
     );
   });
 

@@ -1,6 +1,6 @@
 # Task 19: A brewery's country reads in the reader's language
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -100,35 +100,35 @@ country stops being a rare oversight and becomes what most beer pages show.
 
 ## Acceptance criteria
 
-- [ ] Every brewery row, whether seeded, imported or added through the API,
+- [x] Every brewery row, whether seeded, imported or added through the API,
       carries an ISO 3166-1 code from Kalia's country list, and no column
       holds an English country name — integration test against the migrated
       database
-- [ ] The 44 breweries that were codeless carry the countries ADR-0079 lists,
+- [x] The 44 breweries that were codeless carry the countries ADR-0079 lists,
       and the generator stops on a codeless country its mapping lacks —
       `node --test scripts/*.test.mjs`, with `make check` confirming the
       committed `V008` matches the generator
-- [ ] A brewery in any response carries `countryCode` and no `country`;
+- [x] A brewery in any response carries `countryCode` and no `country`;
       `GET /beers?countryCode=SE` returns exactly the beers of Swedish
       breweries; an unlisted code is refused with `400` `problem+json` —
       integration test
-- [ ] The countries-with-breweries read returns exactly the codes the catalog's
+- [x] The countries-with-breweries read returns exactly the codes the catalog's
       breweries hold — integration test
-- [ ] Adding a beer with a new brewery takes `newBrewery.countryCode`, and a
+- [x] Adding a beer with a new brewery takes `newBrewery.countryCode`, and a
       brewery with the same folded name and code is refused as a duplicate —
       integration test
-- [ ] The country filter is still served by an index —
+- [x] The country filter is still served by an index —
       `BeerSearchIndexIT`
-- [ ] A Swedish brewery's beer page reads "Ruotsi" in Finnish and "Sweden" in
+- [x] A Swedish brewery's beer page reads "Ruotsi" in Finnish and "Sweden" in
       English, in both the location and the "all from" link — component test,
       and seen in a browser in both locales
-- [ ] The country filter is a select of the catalog's countries, named and
+- [x] The country filter is a select of the catalog's countries, named and
       sorted in the reader's language, and choosing one narrows the results
       — component test, and Playwright covering a search filtered by country
-- [ ] The generated OpenAPI client is regenerated and committed; the
+- [x] The generated OpenAPI client is regenerated and committed; the
       `api-client-drift` CI job passes
       ([ADR-0012](../../adr/0012-orval-api-client.md))
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { countriesByName } from "./country";
 import { catalogHref, hasFilters } from "./links";
 import { DEFAULT_SORT, SORT_OPTIONS, type BeerSearchParams } from "./types";
 
@@ -10,7 +11,7 @@ const inputClasses =
   "min-h-10 w-full rounded-control border border-border bg-surface px-3 py-2 text-sm text-foreground";
 
 const foldedFilterCount = (params: BeerSearchParams): number => {
-  const set = [params.style, params.country, params.minAbv, params.maxAbv].filter(Boolean).length;
+  const set = [params.style, params.countryCode, params.minAbv, params.maxAbv].filter(Boolean).length;
   const sorted = params.sort && params.sort !== DEFAULT_SORT ? 1 : 0;
   return set + sorted;
 };
@@ -20,9 +21,12 @@ const foldedFilterCount = (params: BeerSearchParams): number => {
 export const SearchFilters = async ({
   locale,
   params,
+  countryCodes,
 }: {
   locale: Locale;
   params: BeerSearchParams;
+  /** The countries the catalog has breweries in, which the country filter offers. */
+  countryCodes: readonly string[];
 }) => {
   const { t } = await getTranslation(locale);
   const folded = foldedFilterCount(params);
@@ -67,17 +71,22 @@ export const SearchFilters = async ({
             />
           </div>
           <div>
-            <label htmlFor="country" className={labelClasses}>
+            <label htmlFor="countryCode" className={labelClasses}>
               {t("catalog.filters.countryLabel")}
             </label>
-            <input
-              id="country"
-              name="country"
-              type="text"
-              placeholder={t("catalog.filters.countryPlaceholder")}
-              defaultValue={params.country ?? ""}
+            <select
+              id="countryCode"
+              name="countryCode"
+              defaultValue={params.countryCode ?? ""}
               className={inputClasses}
-            />
+            >
+              <option value="">{t("catalog.filters.countryAll")}</option>
+              {countriesByName(countryCodes, locale).map(({ code, name }) => (
+                <option key={code} value={code}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </div>
           <fieldset>
             <legend className={labelClasses}>{t("catalog.filters.strengthLabel")}</legend>

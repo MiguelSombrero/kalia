@@ -89,7 +89,7 @@
       "styleLabel": "Style",
       "stylePlaceholder": "e.g. IPA",
       "countryLabel": "Country",
-      "countryPlaceholder": "e.g. Belgium",
+      "countryAll": "All countries",
       "minAbvLabel": "Min ABV %",
       "maxAbvLabel": "Max ABV %",
       "sortLabel": "Sort by",

@@ -26,7 +26,8 @@ const seed = {
   breweries: [{ name: "Seed Brouwerij", country: "Belgium", qid: "Q101" }],
   beers: [{ brewery: "Seed Brouwerij", name: "Seeded Beer", qid: "Q11" }],
 };
-const converted = convert(snapshot, styles, seed);
+const countries = { codes: { Belgium: "BE", France: "FR", Netherlands: "NL" } };
+const converted = convert(snapshot, styles, seed, countries);
 const imported = new Map(converted.beers.map((b) => [b.qid, b]));
 
 test("strict rows: a beer with a specific style, one in-range ABV and one brewery is imported", () => {
@@ -59,7 +60,7 @@ test("a beer whose manufacturer is not a brewery is dropped", () => {
 test("ABVs are judged as the column stores them: one decimal, half away from zero", () => {
   assert.deepEqual([5.25, 5.3, 4.15, 4.149, 0, 12, -0.04].map(storedAbv), [5.3, 5.3, 4.2, 4.1, 0, 12, -0]);
   const sameOnceStored = { ...snapshot, beers: snapshot.beers.map((b) => (b.qid === "Q8" ? { ...b, abvs: [5.25, 5.3] } : b)) };
-  assert.equal(new Map(convert(sameOnceStored, styles, seed).beers.map((b) => [b.qid, b])).get("Q8").abv, 5.3);
+  assert.equal(new Map(convert(sameOnceStored, styles, seed, countries).beers.map((b) => [b.qid, b])).get("Q8").abv, 5.3);
 });
 
 test("two imported beers of a seeded brewery with the same folded name are reduced to one", () => {
@@ -67,14 +68,14 @@ test("two imported beers of a seeded brewery with the same folded name are reduc
     ...snapshot,
     beers: [...snapshot.beers, { qid: "Q23", name: "SEED'S other beer", abvs: [5], styles: ["Q1543214"], manufacturers: ["Q101"] }],
   };
-  const result = convert(twins, styles, seed).beers.map((b) => b.qid);
+  const result = convert(twins, styles, seed, countries).beers.map((b) => b.qid);
   assert.ok(result.includes("Q22"));
   assert.equal(result.includes("Q23"), false);
 });
 
 test("a seed match naming a QID the snapshot lacks stops the conversion", () => {
-  assert.throws(() => convert(snapshot, styles, { ...seed, breweries: [{ ...seed.breweries[0], qid: "Q999" }] }), /Q999/);
-  assert.throws(() => convert(snapshot, styles, { ...seed, beers: [{ ...seed.beers[0], qid: "Q998" }] }), /Q998/);
+  assert.throws(() => convert(snapshot, styles, { ...seed, breweries: [{ ...seed.breweries[0], qid: "Q999" }] }, countries), /Q999/);
+  assert.throws(() => convert(snapshot, styles, { ...seed, beers: [{ ...seed.beers[0], qid: "Q998" }] }, countries), /Q998/);
 });
 
 test("a beer matching a seeded row is skipped, and the seeded brewery's other beers attach to its row", () => {
@@ -108,9 +109,38 @@ test("a brewery with no country or conflicting countries is dropped, and with it
 });
 
 test("a hand-reviewed country settles a brewery's conflicting countries", () => {
-  const settled = convert(snapshot, styles, seed, [{ qid: "Q104", country: "Netherlands" }]);
-  assert.equal(settled.breweries.find((b) => b.qid === "Q104").country, "Netherlands");
-  assert.throws(() => convert(snapshot, styles, seed, [{ qid: "Q104", country: "France" }]), /brewery-countries/);
+  const settled = convert(snapshot, styles, seed, { ...countries, overrides: [{ qid: "Q104", country: "Netherlands" }] });
+  assert.equal(settled.breweries.find((b) => b.qid === "Q104").countryCode, "NL");
+  assert.throws(
+    () => convert(snapshot, styles, seed, { ...countries, overrides: [{ qid: "Q104", country: "France" }] }),
+    /brewery-countries/,
+  );
+});
+
+test("a brewery is stored under its country's code, and a seeded one is given its code by its country", () => {
+  assert.equal(converted.breweries.find((b) => b.qid === "Q100").countryCode, "NL");
+  assert.deepEqual(converted.seedCountries, [{ country: "Belgium", countryCode: "BE" }]);
+  assert.throws(() => convert(snapshot, styles, seed, { codes: { Netherlands: "NL" } }), /Seeded country Belgium/);
+});
+
+const formerState = {
+  ...snapshot,
+  breweries: [...snapshot.breweries, { qid: "Q106", name: "Old State Brewery", countries: ["Kingdom of Bohemia"], cities: [] }],
+};
+
+test("a brewery in a state with no code takes the present-day country its hand-reviewed entry gives", () => {
+  const presentDay = [{ qid: "Q106", country: "Kingdom of Bohemia", countryCode: "CZ" }];
+  const result = convert(formerState, styles, seed, { ...countries, presentDay });
+  assert.equal(result.breweries.find((b) => b.qid === "Q106").countryCode, "CZ");
+});
+
+test("a brewery in a state with no code and no hand-reviewed entry stops the conversion, naming the state", () => {
+  assert.throws(() => convert(formerState, styles, seed, countries), /Q106 "Old State Brewery" is in Kingdom of Bohemia/);
+});
+
+test("a present-day entry for a brewery whose country already has a code stops the conversion", () => {
+  const stale = [{ qid: "Q100", country: "Netherlands", countryCode: "BE" }];
+  assert.throws(() => convert(snapshot, styles, seed, { ...countries, presentDay: stale }), /present-day-countries/);
 });
 
 test("two beers of one brewery with the same folded name are reduced to the earliest", () => {
@@ -126,20 +156,21 @@ test("a beer needs exactly one style once classes that are not styles are set as
 });
 
 test("a style class missing from the mapping stops the conversion", () => {
-  assert.throws(() => convert(snapshot, styles.slice(1), seed), /missing from styles\.json: Q1543214/);
+  assert.throws(() => convert(snapshot, styles.slice(1), seed, countries), /missing from styles\.json: Q1543214/);
 });
 
 test("a brewery or beer that collides with an unmapped seeded row stops the conversion", () => {
   const unmappedBrewery = { ...seed, breweries: [{ name: "Fixture Brewery", country: "Netherlands", qid: null }] };
-  assert.throws(() => convert(snapshot, styles, { ...unmappedBrewery, beers: [] }), /Fixture Brewery/);
+  assert.throws(() => convert(snapshot, styles, { ...unmappedBrewery, beers: [] }, countries), /Fixture Brewery/);
   const unmappedBeer = { ...seed, beers: [{ brewery: "Seed Brouwerij", name: "Seed's other BEER", qid: null }] };
-  assert.throws(() => convert(snapshot, styles, unmappedBeer), /Q22/);
+  assert.throws(() => convert(snapshot, styles, unmappedBeer, countries), /Q22/);
 });
 
 test("the SQL escapes quotes and carries provenance on every imported row", () => {
   const sql = toSql(converted);
   assert.match(sql, /'Greater Twin''s Other Beer'/);
-  assert.match(sql, /\('Fixture Brewery', 'Netherlands', 'Alkmaar', 'WIKIDATA', 'Q100'\)/);
+  assert.match(sql, /\('Fixture Brewery', 'NL', 'Alkmaar', 'WIKIDATA', 'Q100'\)/);
+  assert.match(sql, /\('Belgium', 'BE'\)\n\) AS v\(country, country_code\)/);
   assert.match(sql, new RegExp(`source = 'WIKIDATA'\\) <> ${converted.breweries.length}\n`));
   assert.match(sql, new RegExp(`source = 'WIKIDATA'\\) <> ${converted.beers.length} THEN`));
 });
@@ -175,4 +206,34 @@ test("styles.json maps exactly the style classes the snapshot uses, onto a vocab
     const folded = [...vocabulary].filter((v) => v.toLowerCase() === style.toLowerCase() && v !== style);
     assert.deepEqual(folded, [], `"${style}" is spelled differently in styles.json`);
   }
+});
+
+test("country-codes.json codes each country of the snapshot it can, with a distinct ISO 3166-1 code", () => {
+  const codes = readJson("wikidata/country-codes.json");
+  const labels = new Set(readJson("wikidata/snapshot.json").breweries.flatMap((b) => b.countries));
+  const names = new Intl.DisplayNames(["en"], { type: "region", fallback: "none" });
+  for (const [label, code] of Object.entries(codes)) {
+    assert.ok(labels.has(label), `${label} is in no snapshot brewery's countries`);
+    assert.match(code, /^[A-Z]{2}$/);
+    assert.ok(names.of(code), `${code} (${label}) is not a region the runtime names`);
+  }
+  assert.equal(new Set(Object.values(codes)).size, Object.keys(codes).length);
+});
+
+test("present-day-countries.json gives the 44 codeless breweries the countries ADR-0079 lists", () => {
+  const tally = {};
+  for (const { country, countryCode } of readJson("wikidata/present-day-countries.json")) {
+    tally[`${country} > ${countryCode}`] = (tally[`${country} > ${countryCode}`] ?? 0) + 1;
+  }
+  assert.deepEqual(tally, {
+    "East Germany > DE": 15,
+    "Russian Empire > FI": 12,
+    "German Reich > DE": 5,
+    "German Reich > PL": 4,
+    "German Reich > RU": 3,
+    "Austria–Hungary > CZ": 1,
+    "Czechoslovakia > CZ": 1,
+    "Dutch East Indies > ID": 1,
+    "Wales > GB": 2,
+  });
 });

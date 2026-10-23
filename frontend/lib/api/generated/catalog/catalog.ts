@@ -27,7 +27,6 @@ import type {
   AddBeerRequestDto,
   BeerDetailsDto,
   BeerSummaryDto,
-  CountryDto,
   GetBeersByIdsParams,
   ListBreweriesParams,
   PageDtoBeerSummaryDto,
@@ -414,7 +413,7 @@ export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TE
 
 
 export type listCountriesResponse200 = {
-  data: CountryDto[]
+  data: string[]
   status: 200
 }
 
@@ -434,7 +433,7 @@ export const getListCountriesUrl = () => {
 }
 
 /**
- * Every country a brewery can be in. Order is not significant: a client sorts by the name it shows.
+ * The ISO 3166-1 alpha-2 code of every country a brewery can be in. Order is not significant: a client sorts by the name it shows.
  * @summary List countries
  */
 export const listCountries = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<listCountriesResponse> => {
@@ -635,6 +634,119 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListBreweriesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type listBreweryCountriesResponse200 = {
+  data: string[]
+  status: 200
+}
+
+export type listBreweryCountriesResponseSuccess = (listBreweryCountriesResponse200) & {
+  headers: Headers;
+};
+;
+
+export type listBreweryCountriesResponse = (listBreweryCountriesResponseSuccess)
+
+export const getListBreweryCountriesUrl = () => {
+
+
+
+
+  return `/api/v1/breweries/countries`
+}
+
+/**
+ * The ISO 3166-1 alpha-2 code of every country the catalog has a brewery in. Order is not significant: a client sorts by the name it shows.
+ * @summary List the countries breweries are in
+ */
+export const listBreweryCountries = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<listBreweryCountriesResponse> => {
+
+  return kaliaFetch<listBreweryCountriesResponse>(getListBreweryCountriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBreweryCountriesQueryKey = () => {
+    return [
+    `/api/v1/breweries/countries`
+    ] as const;
+    }
+
+
+export const getListBreweryCountriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBreweryCountriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBreweryCountries>>> = ({ signal }) => listBreweryCountries({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListBreweryCountriesQueryResult = NonNullable<Awaited<ReturnType<typeof listBreweryCountries>>>
+export type ListBreweryCountriesQueryError = unknown
+
+
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBreweryCountries>>,
+          TError,
+          Awaited<ReturnType<typeof listBreweryCountries>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listBreweryCountries>>,
+          TError,
+          Awaited<ReturnType<typeof listBreweryCountries>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List the countries breweries are in
+ */
+
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListBreweryCountriesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-28
+- **Amended:** 2026-10-22 by [ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)
+  — the country filter compares the stored `brewery.country_code`, so its index
+  is the plain B-tree `brewery_country_code_idx`, not one on `lower(country)`
 
 ## Context
 

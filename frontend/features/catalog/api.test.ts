@@ -13,7 +13,7 @@ describe("buildBeerSearchParams", () => {
     const params = buildBeerSearchParams({
       query: "westvleteren",
       style: "Quadrupel",
-      country: "Belgium",
+      countryCode: "BE",
       minAbv: "9",
       maxAbv: "12",
       page: "1",
@@ -23,7 +23,7 @@ describe("buildBeerSearchParams", () => {
 
     expect(params.get("query")).toBe("westvleteren");
     expect(params.get("style")).toBe("Quadrupel");
-    expect(params.get("country")).toBe("Belgium");
+    expect(params.get("countryCode")).toBe("BE");
     expect(params.get("minAbv")).toBe("9");
     expect(params.get("maxAbv")).toBe("12");
     expect(params.get("page")).toBe("1");
@@ -126,7 +126,7 @@ const westvleteren12: BeerDetails = {
   style: "Quadrupel",
   abv: 10.2,
   description: "Dark strong Trappist ale.",
-  brewery: { id: "br1", name: "Brouwerij Westvleteren", country: "Belgium", city: "Vleteren" },
+  brewery: { id: "br1", name: "Brouwerij Westvleteren", countryCode: "BE", city: "Vleteren" },
 };
 
 describe("getBeer", () => {

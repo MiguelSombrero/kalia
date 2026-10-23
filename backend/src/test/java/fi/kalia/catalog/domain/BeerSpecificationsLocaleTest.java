@@ -98,14 +98,4 @@ class BeerSpecificationsLocaleTest {
 		assertThat(literal.getValue()).isEqualTo("ipa");
 	}
 
-	@Test
-	void countryFilterIsLowercasedTheSameUnderATurkishDefaultLocale() {
-		ArgumentCaptor<Object> literal = ArgumentCaptor.forClass(Object.class);
-
-		search(new BeerSearchCriteria(null, null, null, "ISTANBUL", null, null));
-
-		verify(cb).equal(eq(lowered), literal.capture());
-		assertThat(literal.getValue()).isEqualTo("istanbul");
-	}
-
 }

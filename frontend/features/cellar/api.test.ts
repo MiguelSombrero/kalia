@@ -34,7 +34,7 @@ const secondBeerSummary = {
 // The public cellar read still enriches per entry via getBeer (BeerDetailsDto).
 const beerDetails = {
   ...beerSummary,
-  brewery: { ...beerSummary.brewery, country: "Belgium", city: "Vleteren" },
+  brewery: { ...beerSummary.brewery, countryCode: "BE", city: "Vleteren" },
 };
 
 const isEntriesUrl = (url: string) => url.includes("/api/v1/cellar");

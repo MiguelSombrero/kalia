@@ -1,6 +1,7 @@
 import { apiError } from "@/lib/api/api-error";
 import {
   getBeer as generatedGetBeer,
+  listBreweryCountries as generatedListBreweryCountries,
   searchBeers as generatedSearchBeers,
 } from "@/lib/api/generated/catalog/catalog";
 import { DEFAULT_SORT, SORT_OPTIONS, type BeerDetails, type BeerPage, type BeerSearchParams } from "./types";
@@ -8,7 +9,7 @@ import { DEFAULT_SORT, SORT_OPTIONS, type BeerDetails, type BeerPage, type BeerS
 const PARAM_KEYS = [
   "query",
   "style",
-  "country",
+  "countryCode",
   "minAbv",
   "maxAbv",
   "page",
@@ -45,7 +46,7 @@ export const searchBeers = async (params: BeerSearchParams): Promise<BeerPage> =
   const response = await generatedSearchBeers({
     query: params.query || undefined,
     style: params.style || undefined,
-    country: params.country || undefined,
+    countryCode: params.countryCode || undefined,
     minAbv: params.minAbv ? Number(params.minAbv) : undefined,
     maxAbv: params.maxAbv ? Number(params.maxAbv) : undefined,
     page: params.page ? Number(params.page) : undefined,
@@ -55,6 +56,16 @@ export const searchBeers = async (params: BeerSearchParams): Promise<BeerPage> =
   const status = Number(response.status);
   if (status !== 200) {
     throw apiError("http", `Beer search failed with status ${status}`, { status });
+  }
+  return response.data;
+};
+
+/** The ISO 3166-1 codes of the countries the catalog has breweries in, in no order. */
+export const listBreweryCountries = async (): Promise<string[]> => {
+  const response = await generatedListBreweryCountries();
+  const status = Number(response.status);
+  if (status !== 200) {
+    throw apiError("http", `Brewery country list failed with status ${status}`, { status });
   }
   return response.data;
 };

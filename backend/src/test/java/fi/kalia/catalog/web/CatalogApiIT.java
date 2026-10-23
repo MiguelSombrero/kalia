@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import fi.kalia.TestcontainersConfiguration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,19 +82,41 @@ class CatalogApiIT {
 	}
 
 	@Test
-	void filtersByBreweryCountry() {
-		client.get().uri("/api/v1/beers?country=Estonia&size=100")
+	void filtersByBreweryCountryCode() {
+		client.get().uri("/api/v1/beers?countryCode=SE&size=100")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
 					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo((int) count("""
 							SELECT count(*) FROM catalog.beer b JOIN catalog.brewery br ON br.id = b.brewery_id
-							WHERE lower(br.country) = 'estonia'"""));
+							WHERE br.country_code = 'SE'"""));
 					assertThat((List<String>) JsonPath.read(body, "$.content[*].brewery.id")).isNotEmpty()
 							.isSubsetOf(jdbc.queryForList(
-									"SELECT id::text FROM catalog.brewery WHERE country = 'Estonia'", String.class));
+									"SELECT id::text FROM catalog.brewery WHERE country_code = 'SE'", String.class));
 				});
+	}
+
+	@Test
+	void aCountryCodeThatIsNotListedYieldsProblemJson400() {
+		for (String unlisted : List.of("XX", "se", "Sweden")) {
+			client.get().uri("/api/v1/beers?countryCode={code}", unlisted)
+					.exchange()
+					.expectStatus().isBadRequest()
+					.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+		}
+	}
+
+	@Test
+	void listsExactlyTheCountriesTheCatalogHasBreweriesIn() {
+		client.get().uri("/api/v1/breweries/countries")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((List<String>) JsonPath.read(body, "$"))
+						.containsExactlyInAnyOrderElementsOf(jdbc.queryForList(
+								"SELECT DISTINCT country_code FROM catalog.brewery", String.class))
+						.contains("SE", "FI"));
 	}
 
 	@Test
@@ -141,6 +164,8 @@ class CatalogApiIT {
 					assertThat((String) JsonPath.read(body, "$.name")).isEqualTo("Pliny the Elder");
 					assertThat((String) JsonPath.read(body, "$.style")).isEqualTo("Double IPA");
 					assertThat((String) JsonPath.read(body, "$.brewery.name")).isEqualTo("Russian River Brewing Company");
+					assertThat((String) JsonPath.read(body, "$.brewery.countryCode")).isEqualTo("US");
+					assertThat((Map<String, Object>) JsonPath.read(body, "$.brewery")).doesNotContainKey("country");
 					assertThat((String) JsonPath.read(body, "$.description")).isNotBlank();
 					assertThat(body).doesNotContain("\"price\"");
 				});
@@ -340,6 +365,8 @@ class CatalogApiIT {
 					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(0);
 					assertThat((List<String>) JsonPath.read(body, "$.content[*].name")).hasSize(100)
 							.isSortedAccordingTo(String.CASE_INSENSITIVE_ORDER);
+					assertThat((List<String>) JsonPath.read(body, "$.content[*].countryCode")).hasSize(100);
+					assertThat((List<Object>) JsonPath.read(body, "$.content[*].country")).isEmpty();
 				});
 	}
 

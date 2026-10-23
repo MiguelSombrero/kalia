@@ -37,9 +37,8 @@ public final class BeerSpecifications {
 			if (criteria.breweryId() != null) {
 				predicates.add(cb.equal(root.get("brewery").get("id"), criteria.breweryId()));
 			}
-			if (criteria.country() != null && !criteria.country().isBlank()) {
-				predicates.add(cb.equal(cb.lower(root.get("brewery").get("country")),
-						criteria.country().toLowerCase(Locale.ROOT)));
+			if (criteria.countryCode() != null && !criteria.countryCode().isBlank()) {
+				predicates.add(cb.equal(root.get("brewery").get("countryCode"), criteria.countryCode()));
 			}
 			if (criteria.minAbv() != null) {
 				predicates.add(cb.greaterThanOrEqualTo(root.get("abv"), criteria.minAbv()));

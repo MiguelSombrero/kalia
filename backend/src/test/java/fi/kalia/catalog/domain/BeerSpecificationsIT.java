@@ -37,9 +37,9 @@ class BeerSpecificationsIT {
 	}
 
 	private List<Beer> search(@Nullable String query, @Nullable String style, @Nullable UUID breweryId,
-			@Nullable String country, @Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
+			@Nullable String countryCode, @Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
 		return beers.findAll(BeerSpecifications.matching(
-				new BeerSearchCriteria(query, style, breweryId, country, minAbv, maxAbv)));
+				new BeerSearchCriteria(query, style, breweryId, countryCode, minAbv, maxAbv)));
 	}
 
 	@Test
@@ -67,14 +67,14 @@ class BeerSpecificationsIT {
 	}
 
 	@Test
-	void countryFilterMatchesBreweryCountryCaseInsensitively() {
-		List<Beer> finnish = search(null, null, null, "finland", null, null);
+	void countryFilterMatchesTheBreweryCountryCode() {
+		List<Beer> finnish = search(null, null, null, "FI", null, null);
 
 		assertThat(finnish).hasSize((int) count("""
 				SELECT count(*) FROM catalog.beer b JOIN catalog.brewery br ON br.id = b.brewery_id
-				WHERE br.country = 'Finland'"""));
+				WHERE br.country_code = 'FI'"""));
 		assertThat(finnish).isNotEmpty().allSatisfy(
-				beer -> assertThat(beer.getBrewery().getCountry()).isEqualTo("Finland"));
+				beer -> assertThat(beer.getBrewery().getCountryCode()).isEqualTo("FI"));
 	}
 
 	@Test
@@ -103,15 +103,15 @@ class BeerSpecificationsIT {
 
 	@Test
 	void combinedCriteriaUseAndSemantics() {
-		List<Beer> strongBelgianQuads = search(null, "Quadrupel", null, "Belgium",
+		List<Beer> strongBelgianQuads = search(null, "Quadrupel", null, "BE",
 				new BigDecimal("10"), null);
 
 		assertThat(strongBelgianQuads).hasSize((int) count("""
 				SELECT count(*) FROM catalog.beer b JOIN catalog.brewery br ON br.id = b.brewery_id
-				WHERE b.style = 'Quadrupel' AND br.country = 'Belgium' AND b.abv >= 10"""));
+				WHERE b.style = 'Quadrupel' AND br.country_code = 'BE' AND b.abv >= 10"""));
 		assertThat(strongBelgianQuads).allSatisfy(beer -> {
 			assertThat(beer.getStyle()).isEqualTo("Quadrupel");
-			assertThat(beer.getBrewery().getCountry()).isEqualTo("Belgium");
+			assertThat(beer.getBrewery().getCountryCode()).isEqualTo("BE");
 			assertThat(beer.getAbv()).isGreaterThanOrEqualTo(new BigDecimal("10"));
 		});
 		assertThat(strongBelgianQuads).extracting(Beer::getName)

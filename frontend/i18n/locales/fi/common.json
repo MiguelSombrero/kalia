@@ -89,7 +89,7 @@
       "styleLabel": "Tyyli",
       "stylePlaceholder": "esim. IPA",
       "countryLabel": "Maa",
-      "countryPlaceholder": "esim. Belgia",
+      "countryAll": "Kaikki maat",
       "minAbvLabel": "Alkoholi väh. %",
       "maxAbvLabel": "Alkoholi enint. %",
       "sortLabel": "Järjestä",

@@ -7,7 +7,7 @@ const westvleteren12 = {
   name: "Westvleteren 12",
   style: "Quadrupel",
   abv: 10.2,
-  brewery: { id: "br1", name: "Brouwerij Westvleteren", country: "Belgium", city: "Vleteren" },
+  brewery: { id: "br1", name: "Brouwerij Westvleteren", countryCode: "BE", city: "Vleteren" },
 };
 
 const rochefort10 = { ...westvleteren12, id: "r10", name: "Rochefort 10", abv: 11.3 };
@@ -60,10 +60,10 @@ describe("BeerPage", () => {
   });
 
   it("links back to the exact search that led here, filters, sort and page included", async () => {
-    const tree = await render({ country: "Belgium", minAbv: "8", sort: "abv,desc", page: "1" });
+    const tree = await render({ countryCode: "BE", minAbv: "8", sort: "abv,desc", page: "1" });
 
     const link = backLink(tree);
-    expect(link?.props.href).toBe("/en/beers?country=Belgium&minAbv=8&page=1&sort=abv%2Cdesc");
+    expect(link?.props.href).toBe("/en/beers?countryCode=BE&minAbv=8&page=1&sort=abv%2Cdesc");
     expect(link?.props.children).toBe("← Back to results");
   });
 
@@ -78,7 +78,7 @@ describe("BeerPage", () => {
     const tree = await render();
 
     expect(searchBeers).toHaveBeenCalledWith({ style: "Quadrupel", sort: "abv,desc", size: "6" });
-    expect(searchBeers).toHaveBeenCalledWith({ country: "Belgium", size: "1" });
+    expect(searchBeers).toHaveBeenCalledWith({ countryCode: "BE", size: "1" });
     const view = elements(tree).find((element) => element.props.styleCount !== undefined);
     expect(view?.props).toMatchObject({ styleCount: 3, countryCount: 3, heldBottles: undefined });
     const sameStyle = elements(tree).find((element) => Array.isArray(element.props.beers));

@@ -23,11 +23,10 @@ style?: string;
  */
 breweryId?: string;
 /**
- * Exact, case-insensitive match on the brewery's country, at most 100 characters
- * @minLength 0
- * @maxLength 100
+ * The brewery's country, one of the ISO 3166-1 alpha-2 codes listed by GET /api/v1/countries
+ * @pattern [A-Z]{2}
  */
-country?: string;
+countryCode?: string;
 /**
  * Inclusive lower ABV bound, percent (0-100)
  * @minimum 0
