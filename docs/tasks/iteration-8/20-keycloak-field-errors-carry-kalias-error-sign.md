@@ -97,6 +97,12 @@ Kalia's red square". This task asks to close that gap.
 - **One sign per error.** Where PatternFly draws its own error icon on a
   field line or an alert, the red square replaces it. It is never shown next
   to it (design.md, "one sign").
+- **Criteria reworded during implementation, 2026-10-23** (product owner).
+  Keycloak 26.7.0's keycloak.v2 renders a wrong password as a field error
+  under the username field, not as an alert, so the sign-in error is checked
+  as a field error and the alert on a page that shows one. Its templates
+  never point a field at its error line, so a theme script loaded through
+  `theme.properties` adds the `aria-describedby`; no template is copied.
 - **ADR-0074 is amended**, not superseded by a new ADR
   ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)). It gets an
   `Amended:` line, and its Neutral consequence about errors keeping
@@ -111,10 +117,13 @@ Kalia's red square". This task asks to close that gap.
       rendered colours, confirmed to fail against today's theme
 - [ ] Another field error, passwords that do not match, renders the same way
       — Playwright
-- [ ] Signing in with a wrong password shows the error as design.md's box,
-      with an ink edge and the red cell with the cross, and with no
-      PatternFly error icon beside it — Playwright, confirmed to fail against
-      today's theme
+- [ ] Signing in with a wrong password marks the username field the same
+      way, since Keycloak renders "Invalid username or password." as that
+      field's error — Playwright
+- [ ] An error alert, such as signing in to a disabled account, shows as
+      design.md's box, with an ink edge and the red cell with the cross, and
+      with no PatternFly error icon beside it — Playwright, confirmed to fail
+      against today's theme
 - [ ] The error line is still announced with its field: the field's
       accessible description contains the message — Playwright
 - [ ] The rendered error state passes the axe scan with no violations, in

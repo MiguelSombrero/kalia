@@ -16,8 +16,8 @@ file is applied and kept from drifting:
 
 ## The `kalia` login theme
 
-`parent=keycloak.v2`, that theme's own `styles.css` kept on the list, and one
-`login.css` layered after it ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md),
+`parent=keycloak.v2`, that theme's own `styles.css` kept on the list, one
+`login.css` layered after it, and one script ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md),
 laid out by [ADR-0074](../docs/adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
 No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
 `messages/` overrides one key ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
@@ -27,6 +27,8 @@ No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
 | Palette, type, corners, edges, alerts | `login.css` `:root`: PatternFly's and keycloak.v2's documented custom properties |
 | The open column and its top alignment | `login.css` `.kalia-login` / `.kalia-container`, classes added through `theme.properties`' `kcLogin` / `kcLoginContainer` keys |
 | The lockup, title, link heights, button labels, hidden language menu | `login.css`, through Keycloak's `kc-` element ids |
+| The error sign on field errors and error alerts | `login.css` `.kalia-field-error` / `.kalia-alert`, classes added through `theme.properties`' `kcInputErrorMessageClass` / `kcAlertClass` keys; the cross is `resources/img/error-cross*.svg`, used as a mask |
+| Each field's `aria-describedby` to its error line | `resources/js/field-errors.js`, loaded through `theme.properties`' `scripts` key |
 | The mark | `resources/img/kalia-mark.svg`, a copy of `frontend/app/icon.svg` |
 | The wordmark and the link home | the realm's `displayNameHtml` in `realm-export.json` |
 
@@ -39,8 +41,9 @@ and on a mark that differs from the app's. A new colour gets a
 `--kalia-color-*` name that the app's `@theme` block also has.
 
 **On a Keycloak image bump** (`Dockerfile` `FROM` and `keycloak-config-cli` in
-`docker-compose.yml`), run `frontend/e2e/keycloak-branding.spec.ts` and look at
-the four pages at 375 and 1280 in both locales. The spec checks each page's
+`docker-compose.yml`), run `frontend/e2e/keycloak-branding.spec.ts` and
+`frontend/e2e/keycloak-errors.spec.ts`, and look at
+the four pages at 375 and 1280 in both locales. The branding spec checks each page's
 language, the lockup and its mark, the column's width and position, the hidden
 language menu, sideways scroll, the axe scan and computed contrast. What it
 cannot judge is whether the page still looks like Kalia: a keycloak.v2 markup
