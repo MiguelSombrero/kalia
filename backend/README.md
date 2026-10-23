@@ -252,8 +252,10 @@ lives there rather than in this file.
   the handler and reported through `detail`
   ([ADR-0042](../docs/adr/0042-bounded-request-parameters.md)).
 - **Endpoints are protected unless listed as public.** `SecurityConfig`
-  (`fi.kalia.identity.web`) permits the catalog reads, `/actuator/health` and
-  the API docs; everything else needs a bearer token. A controller resolves
+  (`fi.kalia.identity.web`) permits the routes
+  [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity)
+  lists, and `PublicRoutesIT` fails when the two differ; everything else
+  needs a bearer token. A controller resolves
   the caller's id at the web edge — via `IdentityApi.requireCurrentUserId()`
   outside `identity`, or `CurrentUserService` directly inside it — and passes
   that id into the application service; a public or anonymous read takes a
