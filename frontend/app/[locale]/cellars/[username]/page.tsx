@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { getPublicCellar, PublicCellarView } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
-import { toLocale } from "@/i18n/settings";
+import { locales, toLocale } from "@/i18n/settings";
 import { cellarHref, shareableCellarHref } from "@/lib/routes";
 import { Page } from "@/components/ui/page";
 
@@ -32,8 +32,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
     alternates: {
       canonical: shareableCellarHref(cellar.username),
       languages: {
-        en: cellarHref("en", cellar.username),
-        fi: cellarHref("fi", cellar.username),
+        ...Object.fromEntries(locales.map((locale) => [locale, cellarHref(locale, cellar.username)])),
         "x-default": shareableCellarHref(cellar.username),
       },
     },

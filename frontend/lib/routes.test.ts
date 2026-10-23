@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { beerHref, catalogHref, cellarHref, shareableCellarHref } from "./routes";
+import { beerHref, catalogHref, cellarHref, ownCellarHref, shareableCellarHref } from "./routes";
 
 describe("routes", () => {
   it("puts the locale first on every in-app address", () => {
     expect(catalogHref("fi")).toBe("/fi/beers");
     expect(beerHref("fi", "b1")).toBe("/fi/beers/b1");
     expect(cellarHref("fi", "ada")).toBe("/fi/cellars/ada");
+    expect(ownCellarHref("fi")).toBe("/fi/cellar");
   });
 
   it("appends a query only when it has something in it", () => {

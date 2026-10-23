@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { catalogHref } from "@/lib/routes";
+import { catalogHref, ownCellarHref } from "@/lib/routes";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
 import { cellarHead } from "./layout";
@@ -34,7 +34,7 @@ export const PublicCellarView = async ({
       {isOwner && (
         <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-surface border border-border px-4 py-3 text-foreground">
           <span>{t("cellar.public.ownerBanner")}</span>
-          <Link href={`/${locale}/cellar`} className="inline-block py-0.5 font-medium underline underline-offset-2">
+          <Link href={ownCellarHref(locale)} className="inline-block py-0.5 font-medium underline underline-offset-2">
             {t("cellar.public.ownerBannerLink")}
           </Link>
         </p>

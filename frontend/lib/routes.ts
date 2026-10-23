@@ -13,6 +13,10 @@ export const beerHref = (locale: Locale, beerId: string, query?: URLSearchParams
   return withQuery(`/${locale}/beers/${encodeURIComponent(beerId)}`, query);
 };
 
+export const ownCellarHref = (locale: Locale): string => {
+  return `/${locale}/cellar`;
+};
+
 /** For links inside the app; a copied address is `shareableCellarHref` (ADR-0050). */
 export const cellarHref = (locale: Locale, username: string): string => {
   return `/${locale}/cellars/${encodeURIComponent(username)}`;

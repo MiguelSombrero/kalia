@@ -6,6 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+import { ownCellarHref } from "@/lib/routes";
 
 type Props = {
   locale: Locale;
@@ -50,7 +51,7 @@ export const CellarSummary = ({ locale, counts, cellarPublic }: Props) => {
               </>
             )}
           </p>
-          <Link href={`/${locale}/cellar`} className={cn(buttonVariants("primary"), "self-start")}>
+          <Link href={ownCellarHref(locale)} className={cn(buttonVariants("primary"), "self-start")}>
             {t("home.cellar.open")}
           </Link>
         </div>
