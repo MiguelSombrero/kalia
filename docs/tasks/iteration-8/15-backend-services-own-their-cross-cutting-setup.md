@@ -1,6 +1,6 @@
 # Task 15: Backend services stop leaning on hidden setup
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -72,15 +72,15 @@ method is gone.
 
 ## Acceptance criteria
 
-- [ ] An `@ApplicationModuleTest` of `profile` alone shows the concurrent
+- [x] An `@ApplicationModuleTest` of `profile` alone shows the concurrent
       first-sign-in retry still happening — integration test, confirmed to
       fail while the only enabling config sits in `cellar`
-- [ ] The public-cellar read and the other read methods of `CellarService`
+- [x] The public-cellar read and the other read methods of `CellarService`
       and `ProfileService` run in read-only transactions — integration test
-- [ ] The future-date rule is tested at a fixed instant either side of
+- [x] The future-date rule is tested at a fixed instant either side of
       midnight UTC, with the clock injected — unit test
-- [ ] `isCellarPublic` and its test-only callers are removed
-- [ ] `mvn clean verify` is green; `ModularityTest` and `ArchitectureTest`
+- [x] `isCellarPublic` and its test-only callers are removed
+- [x] `mvn clean verify` is green; `ModularityTest` and `ArchitectureTest`
       pass
 
 ## Notes
