@@ -80,7 +80,9 @@ B, the product owner's choice from three built directions in one round.
   badge, and a toast confirms. The row's *Add* opens the existing add-to-cellar
   dialog, so the beer and the bottle stay two acts. The highlight and the
   badge are this browser's memory of the add, not part of the address, so a
-  reload or a shared link shows the search plainly.
+  reload or a shared link shows the search plainly. Keyboard focus moves to
+  the new beer's row, since the control that opened the dialog is gone from
+  the search it lands on.
 - **A button sending its form** ([docs/design.md](../design.md#feedback-and-errors)
   holds the rule). Its label names the action in progress (*Adding…*), it is
   disabled, drawn at 75 % opacity with the progress cursor, and it does not
@@ -163,3 +165,14 @@ an enabled one, in B's dialog footer. Contrast of white text on the cobalt
 fill composited over white, by WCAG 2.2's relative-luminance formula: 60 %,
 3.26:1; 75 %, 4.67:1; full, 8.42:1. On the destructive fill at 75 %, 3.82:1.
 Ink on white at 75 %, the outline button, 8.42:1.
+
+The built flow, run in Chromium against the compose stack on 2026-10-23:
+`e2e/add-beer.spec.ts` goes from a search that found nothing through the
+dialog to the search finding the new beer, and on to a bottle of it in the
+cellar, without a document reload. It also adds a beer whose brewery is new,
+follows a duplicate's link to the existing beer, and scans every state with
+axe at 375×812 and 1280×800 in both locales. The suite's catalog target-size
+check found the line under a searched result list at 20px tall on a phone;
+it was raised to the 24×24 floor before sign-off. The product owner signed
+the built flow off against B in the browser pane at both widths on
+2026-10-23, with no departures from the mockup.

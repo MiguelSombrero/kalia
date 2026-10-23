@@ -6,7 +6,7 @@
 import { expectNoA11yViolations } from "./support/a11y";
 import { copyFor, LOCALES } from "./support/copy";
 import { expectFocusNotObscured, tabTo } from "./support/keyboard";
-import { createFreshAccount, expect, signIn, test } from "./support/keycloakAccount";
+import { createFreshAccount, expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
 import { KEYCLOAK_ORIGIN } from "./support/origins";
 import { escapeRegExp } from "./support/text";
 import { setCellarVisibility } from "./support/visibility";
@@ -235,3 +235,48 @@ test("tabbing back up a long list keeps each focused control out from under the 
   });
   await tabTo(page, beers.first().getByRole("link").first(), { backwards: true, limit: 120 });
 });
+
+for (const locale of LOCALES) {
+  const t = copyFor(locale);
+
+  test(`keyboard alone, ${locale}, flow 4: a search that found nothing adds the beer`, async ({ page, account }) => {
+    const name = `Öö ${uniqueUsername("Zzz e2e keys").replace(/-/g, " ")}`;
+    await page.goto("/en/beers");
+    await signIn(page, account);
+    await page.goto(`/${locale}/beers?query=${encodeURIComponent(name)}`);
+
+    await test.step("open the dialog from the empty search", async () => {
+      await tabTo(page, page.getByRole("main").getByRole("button", { name: t("catalog.add.action") }));
+      await page.keyboard.press("Enter");
+      await expect(page.getByRole("dialog").getByRole("textbox", { name: t("catalog.add.name") })).toHaveValue(name);
+    });
+
+    const dialog = page.getByRole("dialog");
+    await test.step("pick the brewery from its list", async () => {
+      await tabTo(page, dialog.getByRole("combobox", { name: t("catalog.add.brewery") }));
+      await page.keyboard.type("Põhjala");
+      // Until the search answers, the one option is adding the typed name as a new brewery.
+      await expect(dialog.getByRole("option").first()).toHaveAccessibleName(/^Põhjala/);
+      await page.keyboard.press("Enter");
+      await expect(
+        dialog.getByRole("region", { name: t("catalog.add.similarHeading", { brewery: "Põhjala" }) }).getByRole("link").first(),
+      ).toBeVisible();
+    });
+
+    await test.step("fill the rest and send it", async () => {
+      await tabTo(page, dialog.getByRole("combobox", { name: t("catalog.add.style") }));
+      await page.keyboard.type("Imperial S");
+      await tabTo(page, dialog.getByRole("textbox", { name: t("catalog.add.abv") }));
+      await page.keyboard.type(locale === "fi" ? "11,5" : "11.5");
+      await tabTo(page, dialog.getByRole("button", { name: t("catalog.add.submit"), exact: true }));
+      await page.keyboard.press("Enter");
+      await expect(dialog).toBeHidden();
+    });
+
+    await test.step("land on the search finding it, focus still on the page", async () => {
+      await expect(page.getByRole("main").getByRole("heading", { name, exact: true })).toBeVisible();
+      await expectFocusNotObscured(page);
+      await expectNoA11yViolations(page);
+    });
+  });
+}

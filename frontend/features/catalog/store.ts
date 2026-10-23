@@ -6,13 +6,18 @@ type JustAddedStore = {
   /** The beer this browser added most recently; gone on a reload (ADR-0082). */
   beer: AddedBeer | null;
   toastOpen: boolean;
+  /** Whether the added beer's row should take focus when it appears. */
+  focusPending: boolean;
   announce: (beer: AddedBeer) => void;
   dismissToast: () => void;
+  focusTaken: () => void;
 };
 
 export const useJustAddedStore = create<JustAddedStore>((set) => ({
   beer: null,
   toastOpen: false,
-  announce: (beer) => set({ beer, toastOpen: true }),
+  focusPending: false,
+  announce: (beer) => set({ beer, toastOpen: true, focusPending: true }),
   dismissToast: () => set({ toastOpen: false }),
+  focusTaken: () => set({ focusPending: false }),
 }));

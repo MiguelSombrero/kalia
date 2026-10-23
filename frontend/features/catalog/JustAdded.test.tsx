@@ -28,7 +28,7 @@ const rows = () =>
   );
 
 beforeEach(() => {
-  useJustAddedStore.setState({ beer: null, toastOpen: false });
+  useJustAddedStore.setState({ beer: null, toastOpen: false, focusPending: false });
 });
 
 describe("the just-added marks", () => {
@@ -49,6 +49,28 @@ describe("the just-added marks", () => {
     expect(other).not.toHaveClass("motion-safe:animate-feed-reveal");
     expect(other).not.toHaveTextContent("Just added");
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("move focus to the added beer's link when its row appears, and only that once", () => {
+    const linked = () =>
+      withI18n(
+        <ul>
+          <BeerRow beerId="new" className="row">
+            <a href="/en/beers/new">Öö Bourbon</a>
+          </BeerRow>
+          <BeerRow beerId="old" className="row">
+            <a href="/en/beers/old">Öö</a>
+          </BeerRow>
+        </ul>,
+      );
+    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
+
+    const { unmount } = render(linked());
+    expect(screen.getByRole("link", { name: "Öö Bourbon" })).toHaveFocus();
+
+    unmount();
+    render(linked());
+    expect(document.body).toHaveFocus();
   });
 
   it("announce the added beer in a toast, which keeps the badge when dismissed", async () => {

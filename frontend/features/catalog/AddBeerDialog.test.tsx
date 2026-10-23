@@ -88,7 +88,7 @@ beforeEach(() => {
   requests.length = 0;
   posted = { status: 201, body: created };
   push.mockReset();
-  useJustAddedStore.setState({ beer: null, toastOpen: false });
+  useJustAddedStore.setState({ beer: null, toastOpen: false, focusPending: false });
   vi.stubGlobal("fetch", vi.fn(backend));
 });
 

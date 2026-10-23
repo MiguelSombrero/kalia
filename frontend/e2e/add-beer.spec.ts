@@ -149,7 +149,8 @@ for (const viewport of VIEWPORTS) {
       await signIn(page, account);
       for (const locale of ["en", "fi"] as const) {
         const en = locale === "en";
-        await page.goto(`/${locale}/beers?query=${encodeURIComponent("Öö " + uniqueName("Zzz e2e"))}`);
+        const name = `Öö ${uniqueName("Zzz e2e")}`;
+        await page.goto(`/${locale}/beers?query=${encodeURIComponent(name)}`);
         await expectNoA11yViolations(page);
 
         await page.getByRole("main").getByRole("button", { name: en ? "Add a beer" : "Lisää olut" }).click();
@@ -178,8 +179,11 @@ for (const viewport of VIEWPORTS) {
         await expect(dialog.getByRole("alert")).toBeVisible();
         await expectNoA11yViolations(page);
 
-        await page.keyboard.press("Escape");
+        await dialog.getByRole("textbox", { name: en ? "Name" : "Nimi" }).fill(name);
+        await dialog.getByRole("button", { name: en ? "Add beer" : "Lisää olut" }).click();
         await expect(dialog).toBeHidden();
+        await expect(page.getByRole("main").getByRole("heading", { name, exact: true })).toBeVisible();
+        await expectNoA11yViolations(page);
       }
     });
   });

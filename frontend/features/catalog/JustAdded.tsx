@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Toast, ToastDescription, ToastProvider, ToastViewport } from "@/components/ui/toast";
@@ -10,7 +10,22 @@ import { useJustAddedStore } from "./store";
 /** A row of `BeerList`, highlighted once when it is the beer this browser just added. */
 export const BeerRow = ({ beerId, className, children }: { beerId: string; className: string; children: ReactNode }) => {
   const isNew = useJustAddedStore((state) => state.beer?.id === beerId);
-  return <li className={cn(className, isNew && "motion-safe:animate-feed-reveal")}>{children}</li>;
+  const focusPending = useJustAddedStore((state) => state.focusPending);
+  const focusTaken = useJustAddedStore((state) => state.focusTaken);
+  const row = useRef<HTMLLIElement>(null);
+
+  // The dialog's trigger is gone once the search finds the beer, so Radix's focus restore lands on <body>.
+  useEffect(() => {
+    if (!isNew || !focusPending) return;
+    row.current?.querySelector("a")?.focus();
+    focusTaken();
+  }, [isNew, focusPending, focusTaken]);
+
+  return (
+    <li ref={row} className={cn(className, isNew && "motion-safe:animate-feed-reveal")}>
+      {children}
+    </li>
+  );
 };
 
 export const JustAddedBadge = ({ beerId }: { beerId: string }) => {

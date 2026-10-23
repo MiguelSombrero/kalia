@@ -147,7 +147,6 @@ export const AddBeerDialog = ({
       <DialogContent
         aria-describedby={`${ids}-description`}
         onEscapeKeyDown={(event) => {
-          // Escape closes the brewery list first, and only then the dialog.
           if (breweryListOpen.current) event.preventDefault();
         }}
       >

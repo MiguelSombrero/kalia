@@ -595,10 +595,16 @@ The shape of the frontend. Day-to-day rules for writing it live in
   link. Scroll padding on the document keeps a control focused by Tab out
   from under the sticky header, the feed's "N new" control and an open toast
   (2.4.11). The non-native
-  widgets — the add/edit-bottle and remove-confirmation modals, and the
-  removal-outcome and profile toasts — get their focus trap, `aria-modal` and live-region
+  widgets — the add-beer, add/edit-bottle and remove-confirmation modals, and the
+  removal-outcome, just-added and profile toasts — get their focus trap, `aria-modal` and live-region
   behaviour from Radix rather than hand-rolled ARIA
-  ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). How enforcement is
+  ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). The one exception is
+  the add-beer dialog's brewery field, an ARIA combobox (an input owning a
+  listbox through `aria-activedescendant`) written by hand in
+  `features/catalog/BreweryField.tsx`, since neither Radix primitive covers it
+  ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)).
+  Once a beer is added, the dialog's trigger is gone from the search it lands
+  on, so the new beer's row takes focus instead. How enforcement is
   layered across lint, unit and E2E tests:
   [frontend/README.md](../frontend/README.md) testing conventions.
 
