@@ -154,7 +154,9 @@ The gates themselves:
   `docs/architecture.md`, the iteration index and any ADRs the change touches,
   and update them in the same PR — or state in the description that they were
   checked and remain accurate. The task file is the exception: it records what
-  was *asked for*, so it is frozen at completion apart from its status.
+  was *asked for*, so it is frozen at completion apart from its status and a
+  dead link, which is repointed or unlinked
+  ([ADR-0026](docs/adr/0026-task-file-format.md)).
 - **Code-review gate:** run `/code-review` on the diff — local, in-session, no
   separate service — and mark each finding worth acting on **fix now** or
   **new task**.

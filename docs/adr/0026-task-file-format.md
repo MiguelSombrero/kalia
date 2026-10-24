@@ -12,6 +12,7 @@
 - **Amended:** 2026-09-29 — a task file may carry an optional
   `- **Kind:** design` metadata line, checked by `scripts/check-tasks.mjs`
   ([ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md))
+- **Amended:** 2026-10-24 — a finished task file's dead link may be repointed or unlinked; its words stay frozen
 
 ## Context
 
@@ -118,6 +119,17 @@ is the normative skeleton.
 > line means an ordinary task. Why, and what a design task is run by, is
 > [ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md); the rule that
 > every task carries an automated test stands unchanged.
+
+> **Amended 2026-10-24.** A finished task file's links are kept working. The
+> link check `scripts/check-links.mjs` covers every tracked Markdown file, and
+> a file a finished task links to can later be renamed or deleted. Whoever does
+> that repoints the link, or turns it into a code span when the file is gone.
+> The task's wording does not change, so the request stays as it was asked.
+> The product owner chose this over exempting `docs/tasks/iteration-*/` from
+> the check ([iteration 8 task 16](../tasks/iteration-8/16-docs-describe-what-is-built.md)'s
+> review): an exemption would also stop the check on tasks still in progress,
+> and a dead link in a finished task is the link an agent follows when it
+> reads history.
 
 ## Alternatives considered
 
