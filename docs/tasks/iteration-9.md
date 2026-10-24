@@ -64,10 +64,9 @@ below them inherits their answers.
   supported version and a maintenance flag, checked by the app on launch and
   on resume. Has to exist before any build that could become v1.0
   ([backlog](backlog.md#must-exist-in-the-apps-first-release-or-never)).
-- **Mobile-readiness fixes from the backlogs** — 401 answered as
+- **Mobile-readiness fix from the backlog** — 401 answered as
   `problem+json` without losing `WWW-Authenticate`
-  ([backlog](backlog.md)), and `/breweries` paginated
-  ([quality backlog](quality-backlog.md) COULD-4).
+  ([backlog](backlog.md)).
 - **The `kalia-mobile` Keycloak client** in `keycloak/realm-export.json`, under
   [ADR-0054](../adr/0054-keycloak-config-cli-realm-management.md)'s drift
   check, with a test that a mobile-shaped token passes the backend's audience

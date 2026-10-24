@@ -1,6 +1,6 @@
 # Task 16: The documentation describes what is built
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -108,20 +108,20 @@ SHOULD-18's fails the build.
 
 ## Acceptance criteria
 
-- [ ] A relative Markdown link that resolves to no file, in any tracked
+- [x] A relative Markdown link that resolves to no file, in any tracked
       Markdown file, fails `make check` — the checker's own `.test.mjs`
       self-test, plus a clean run over today's repository
-- [ ] `backend/README.md`'s hot-reload recipe, run as written on a stopped
+- [x] `backend/README.md`'s hot-reload recipe, run as written on a stopped
       stack, starts the backend natively on `:8080` — verified by running it
-- [ ] No document lists brewery as a built filter or `/breweries` as
+- [x] No document lists brewery as a built filter or `/breweries` as
       unpaginated; `iteration-9.md` no longer schedules the pagination
-- [ ] `docs/ci-playbook.md` no longer tells anyone to record versions in the
+- [x] `docs/ci-playbook.md` no longer tells anyone to record versions in the
       README table
-- [ ] `docs/architecture.md`'s status lines name the current iteration, and
+- [x] `docs/architecture.md`'s status lines name the current iteration, and
       its "Built" list includes iterations 7 and 7.5
-- [ ] Each remaining finding above is fixed at the cited lines, or is now a
+- [x] Each remaining finding above is fixed at the cited lines, or is now a
       pointer to its one home
-- [ ] `make verify-fast` is green; `ArchitectureDocumentationTest` still
+- [x] `make verify-fast` is green; `ArchitectureDocumentationTest` still
       passes
 
 ## Notes

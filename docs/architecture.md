@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-09-05. This document describes **what is built**, plus the
+*Last updated: 2026-10-24. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -23,7 +23,8 @@ clarity, testability, and iterative delivery** over premature scale.
 
 Built:
 
-- Search/filter beers by name, brewery, country, style, ABV
+- Search beers by name, and filter them by style, the brewery's country and
+  ABV
 - Beer detail view
 - Sign-in and sign-out (Keycloak); browsing stays anonymous
 - Personal beer cellar: the signed-in user's owned bottles, each carrying its
@@ -33,9 +34,16 @@ Built:
   anyone from a link or the owner's profile *(iteration 6)*
 - Self-registration with email verification, so someone other than the author
   can create an account *(iteration 6.5)*
+- A front-page activity feed of the bottles people add to their cellars,
+  kept current by polling *(iteration 7)*
+- A designed visual identity — colour and type tokens, icons, the Kalia mark
+  and a layout for every page, the Keycloak pages included *(iteration 7.5)*
+- A catalog seeded once from Wikidata, to which a signed-in user adds a beer
+  it lacks, and its brewery *(iteration 8)*
 
-Next (iteration 6.5, in progress): Keycloak state that survives a restart,
-account linking revisited, and the rest of that iteration's tasks.
+Now (iteration 8, in progress): catalog search held within its latency budget
+at 150k beers, and the fixes lifted from the quality backlog's 2026-10-14
+sweep.
 
 ### Non-functional requirements
 
@@ -132,9 +140,9 @@ cross-module *reads* via the root-package API.
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)* | `identity` (current user, recorded as a user-added row's contributor) |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
-| `cellar` | The signed-in user's owned bottles, grouped by catalog beer *(iteration 5)*; a public cellar read for anyone *(iteration 6)* | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
-| `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public *(iteration 6)* | — |
-| `feed` | A record of things that happened — currently, a bottle added to a cellar, read over HTTP and rendered live on the front page *(iteration 7)* | `cellar` (event: bottle added), `catalog` (read: beer name, brewery, style and strength), `profile` (read: username and current cellar visibility) |
+| `cellar` | The signed-in user's owned bottles, grouped by catalog beer; a public cellar read for anyone | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
+| `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public | — |
+| `feed` | A record of things that happened — currently, a bottle added to a cellar, read over HTTP and rendered live on the front page | `cellar` (event: bottle added), `catalog` (read: beer name, brewery, style and strength), `profile` (read: username and current cellar visibility) |
 
 The term each module owns — every `domain` type's meaning inside its module,
 the words that mean two things across modules, and the published REST/JSON/
@@ -340,13 +348,13 @@ GET    /api/v1/profile                              -> the caller's own profile 
 PATCH  /api/v1/profile/visibility                   -> change whether the caller's cellar is public; 409 as above
 ```
 
-The cellar's endpoints (iteration 5) are two-level, following the data model in
+The cellar's endpoints are two-level, following the data model in
 [§3](#3-backend-modules): one entry per catalog beer under `/api/v1/cellar`, each
 carrying its bottles, so the cellar page shows every bottle from one read
 ([ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)). `POST` answers with an array because it
 creates `quantity` independently editable rows sharing one set of dates, never
 a stored count — the two-level model's whole point
-([ADR-0006](adr/0006-cellar-first.md)). A bottle is addressed by its own id
+([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)). A bottle is addressed by its own id
 everywhere else — `POST`, `PATCH`, `DELETE` — never nested under its entry: an
 `entryId` in that path could not be trusted any more than a caller-supplied
 user id, so it would buy no isolation guarantee, only a redundant "path entry
@@ -384,8 +392,9 @@ public contributes no line, named or unnamed — the read-time filter above is
 the *only* rule; recording never checks visibility, and going private later
 neither purges nor needs to purge what was already recorded
 ([ADR-0059](adr/0059-feed-respects-cellar-visibility.md)). It returns the whole
-line — username, beer name, brewery, bottle count, vintage, the instant and the
-event's own opaque cursor — rather than ids for a client to enrich, which is
+line — username; the beer's id, name, brewery, style and strength; bottle
+count, vintage, the instant and the event's own opaque cursor — rather than
+bare ids for a client to enrich, which is
 the client-agnostic-resources convention below applied rather than excepted:
 "who added what, and when" is the resource, and a feed event without its actor
 would be an incomplete one, not a smaller one. A line whose beer or person no
@@ -806,14 +815,14 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 
 | Layer | Tooling | What |
 |---|---|---|
-| Backend unit | JUnit 5 | Domain logic without a Spring context |
+| Backend unit | JUnit 6 | Domain logic without a Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Module map in these docs | `ArchitectureDocumentationTest`, against Spring Modulith's `Documenter` view | §2's diagram — its backend modules and the edges between them — and §3's table and "Depends on" column are parsed at test time; editing either without the code, or the code without them, fails the build ([backend/README.md](../backend/README.md) notable suites) |
 | Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
 | The `boundaries/dependencies` policies | Each re-run by `frontend/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `frontend/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
-| The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
+| The rules among those that no production class triggers | Re-run against `backend/src/test/java/archfixture/` (`ArchitectureRulesRejectViolationsTest`) | A rule no production class triggers passes whether or not its condition is right, so those rules — `noClasses()` rules and the `classes()` rules every production class merely satisfies — and only those are also run against a codebase that breaks them |
 | Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly") |
 | `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | Neither rule has a production violator either, so the same no-violator-passes-vacuously risk applies and both get the same fixture treatment |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available; Dependabot opens the fix PRs ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
@@ -948,9 +957,11 @@ job in [ci.yml](../.github/workflows/ci.yml) runs with every other
 dependency-free checker. Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
 ([ADR-0026](adr/0026-task-file-format.md)), `scripts/sync-indexes.mjs --check`
-fails an index cell that disagrees with its file, and `scripts/check-comments.mjs`
+fails an index cell that disagrees with its file, `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
-([ADR-0017](adr/0017-code-comment-policy.md)). All of them also run locally —
+([ADR-0017](adr/0017-code-comment-policy.md)), and `scripts/check-links.mjs`
+fails a relative link in any tracked Markdown file that resolves to no file.
+All of them also run locally —
 inside `make verify`, and at edit time via a `PostToolUse` hook that reports
 the failure back to the agent without blocking. The same hook runs ESLint on
 an edited frontend file, and syncs the index cells itself after an edit under

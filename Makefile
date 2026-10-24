@@ -43,7 +43,7 @@ frontend-e2e: ## Run frontend E2E tests (needs the stack up)
 lint: ## Lint the frontend
 	(cd frontend && npm run lint)
 
-check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/index/catalog-import checks and their self-tests
+check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/index/catalog-import/link checks and their self-tests
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
@@ -56,6 +56,7 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 	node scripts/sync-indexes.mjs --check
 	node scripts/check-no-untappd.mjs
 	node scripts/wikidata-migration.mjs --check
+	node scripts/check-links.mjs
 	node --test scripts/*.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)

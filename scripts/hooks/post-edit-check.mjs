@@ -60,6 +60,7 @@ const isFrontendSource = (p) =>
 const ROUTES = [
   { check: checker("check-adrs.mjs"), covers: (p) => p.startsWith("docs/adr/") || p === "docs/architecture.md" },
   { check: checker("check-tasks.mjs"), covers: (p) => p.startsWith("docs/tasks/") || p === "docs/roadmap.md" },
+  { check: checker("check-links.mjs"), covers: (p) => p.endsWith(".md") },
   {
     check: checker("check-glossary.mjs"),
     covers: (p) => p === "docs/glossary.md" || /^backend\/src\/main\/java\/fi\/kalia\/[^/]+\/domain\/[^/]+\.java$/.test(p),

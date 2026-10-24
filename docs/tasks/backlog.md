@@ -320,9 +320,6 @@ required.
 
 ### Worth knowing, not mobile's to fix
 
-- `/api/v1/breweries` returns the whole table unpaginated
-  ([quality backlog](quality-backlog.md) COULD-4). A phone on a slow connection
-  is where that finding stops being theoretical.
 - **Does the project's own process scale to a third codebase?** CLAUDE.md,
   [ADR-0020](../adr/0020-documentation-roles.md)'s three homes, the doc-sync
   gate, `check-tasks.mjs` and the `api-client-drift` CI job all assume two

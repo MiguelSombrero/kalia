@@ -1,9 +1,7 @@
 # Kalia backend
 
-Spring Boot 4.1 modulith (Java 25, Maven). Modules (`catalog`, `identity`, and
-`cellar` from iteration 5) arrive iteration by iteration — see
-[docs/roadmap.md](../docs/roadmap.md) and
-[docs/architecture.md](../docs/architecture.md).
+Spring Boot modulith (Java 25, Maven). Its modules, what each owns and what
+each depends on: [docs/architecture.md §3](../docs/architecture.md#3-backend-modules).
 
 ## Run locally
 
@@ -13,10 +11,14 @@ The backend is published at `localhost:8080` (loopback only — see
 server and denies by default, but the loopback binding stays until a deployment
 story exists, so treat it as defence in depth rather than surplus).
 
-For development with hot reload, run natively against the compose database:
+For development with hot reload, run natively against the compose database.
+Name the services: a bare `docker compose up -d` also starts the `backend`
+container on `127.0.0.1:8080`, the port the native run needs. Keycloak is
+only there for bearer tokens and Swagger UI's Authorize button; the backend
+starts without it.
 
 ```bash
-docker compose up -d          # from repo root
+docker compose up -d postgres keycloak keycloak-config   # from repo root
 cd backend
 POSTGRES_PASSWORD=kalia SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
 curl localhost:8080/actuator/health
@@ -128,9 +130,10 @@ Notable suites:
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) — a
   module bringing its own security configuration, or the chain going missing,
   fails the build
-- `ArchitectureRulesRejectViolationsTest` — runs four of those rules against
-  `src/test/java/archfixture/`, a tree that breaks them. **Only the rules no
-  production class ever triggers get a fixture.** `entitiesLiveInDomain` needs
+- `ArchitectureRulesRejectViolationsTest` — runs the rules above that no
+  production class ever triggers against `src/test/java/archfixture/`, a tree
+  that breaks them, and the two that require the filter chain against a
+  codebase that has none. **Only those rules get a fixture.** `entitiesLiveInDomain` needs
   none: `Beer` is an `@Entity`, so a mistake in the rule fails
   `ArchitectureTest` itself. A `noClasses()` rule — or a `classes().should()`
   rule every production class merely satisfies — is

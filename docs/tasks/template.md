@@ -18,7 +18,7 @@ same reason.
 
 ## The iteration index — `iteration-N.md`
 
-```markdown
+````markdown
 # Iteration N — Title
 
 Goal: one sentence, what a user can do afterwards that they could not before.
@@ -55,7 +55,7 @@ no `iteration-N/` directory at all is.
 |---|---|---|
 | [01](iteration-N/01-slug.md) | Short title, matching the task file's H1 | done |
 | [02](iteration-N/02-slug.md) | … | refined |
-```
+````
 
 - **`## Done when` gets its own heading** so it can no longer end up buried
   mid-list, which is what happened in `iteration-4.md`.

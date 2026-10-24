@@ -104,8 +104,8 @@ read of a cellar its owner has made public. Reads `catalog` (beer existence),
 ## feed
 
 A record of things that happened — currently, a bottle added to a cellar.
-Depends on `cellar` (the `BottleAdded` event), `catalog` (a beer's name and
-brewery, read fresh for the feed endpoint) and `profile` (a username and the
+Depends on `cellar` (the `BottleAdded` event), `catalog` (a beer's name,
+brewery, style and strength, read fresh for the feed endpoint) and `profile` (a username and the
 owner's *current* cellar visibility, same reason). **"Feed",
 "event" and "activity" already mean something else in this codebase** — a
 Spring application event, a Spring Modulith `event_publication` row — so a
@@ -162,7 +162,7 @@ and they drift from the Java names that produced them.
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`. |
-| `content`, `nextCursor` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`: opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. |
+| `content`, `nextCursor`, `startOver` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`. `nextCursor` is opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. `startOver` is `true` when a `since` cursor is older than that window ([architecture.md §4](architecture.md#4-api-design) says what a caller does then). |
 
 ### Generated TypeScript types
 

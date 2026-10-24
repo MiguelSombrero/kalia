@@ -1,6 +1,6 @@
 # Iteration 5.5 — Quality backlog
 
-Goal: close every open finding in [the quality backlog](tasks/quality-backlog.md)
+Goal: close every open finding in [the quality backlog](quality-backlog.md)
 as of its 2026-08-23 triage, so iteration 6 starts against an empty one.
 
 ## Done when
@@ -8,7 +8,7 @@ as of its 2026-08-23 triage, so iteration 6 starts against an empty one.
 Every MUST, SHOULD and COULD finding confirmed as part of this iteration's
 2026-08-23 quality-backlog triage is closed — fixed, or (for the findings
 flagged `[needs decision]`) resolved by the product owner and carried out —
-and [`docs/tasks/quality-backlog.md`](tasks/quality-backlog.md)'s MUST/SHOULD/
+and [`docs/tasks/quality-backlog.md`](quality-backlog.md)'s MUST/SHOULD/
 COULD sections are empty, with every entry moved to Retired.
 
 ## Tasks
