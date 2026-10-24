@@ -3,28 +3,38 @@ import { createSignUpRateLimiter, type RateLimitClient } from "./signUpRateLimit
 
 // A fake standing in for Valkey's INCR / EXPIRE NX, not a real client — this
 // is what makes the limiter's threshold and window logic testable without
-// Docker. `expireBefore` drops the key just ahead of that command, which is
-// how a window ending between the limiter's two calls is reproduced.
-const fakeClient = (expireBefore?: "incr" | "expire") => {
+// Docker. `dropKeyBefore` makes the key expire once, just ahead of the named
+// command, which is how a window ending between the limiter's two calls is
+// reproduced.
+const fakeClient = () => {
   const key = { count: 0, ttl: null as number | null };
-  const expireKey = () => {
+  let drop: "incr" | "expire" | null = null;
+  const dropIfDue = (command: "incr" | "expire") => {
+    if (drop !== command) return;
+    drop = null;
     key.count = 0;
     key.ttl = null;
   };
   const client: RateLimitClient = {
     incr: async () => {
-      if (expireBefore === "incr") expireKey();
+      dropIfDue("incr");
       return ++key.count;
     },
     expire: async (_key, seconds, flag) => {
-      if (expireBefore === "expire") expireKey();
+      dropIfDue("expire");
       if (key.count === 0) return 0;
       if (flag === "NX" && key.ttl !== null) return 0;
       key.ttl = seconds;
       return 1;
     },
   };
-  return { client, key };
+  return {
+    client,
+    key,
+    dropKeyBefore: (command: "incr" | "expire") => {
+      drop = command;
+    },
+  };
 };
 
 describe("createSignUpRateLimiter", () => {
@@ -55,42 +65,37 @@ describe("createSignUpRateLimiter", () => {
   });
 
   it("sets the expiry only where none exists, so a later attempt does not extend the window", async () => {
-    const calls: unknown[][] = [];
-    const { client } = fakeClient();
-    const limiter = createSignUpRateLimiter({
-      ...client,
-      expire: async (...args) => {
-        calls.push(args);
-        return client.expire(...args);
-      },
-    });
-
-    await limiter();
-    await limiter();
-
-    expect(calls).toEqual([
-      ["auth:sign-up-rate", 10 * 60, "NX"],
-      ["auth:sign-up-rate", 10 * 60, "NX"],
-    ]);
-  });
-
-  it("leaves the counter an expiry when the window ends just before the INCR", async () => {
-    const { client, key } = fakeClient("incr");
+    const { client, key } = fakeClient();
     const limiter = createSignUpRateLimiter(client);
 
     await limiter();
+    key.ttl = 120;
     await limiter();
 
-    expect(key.count).toBeGreaterThan(0);
-    expect(key.ttl).not.toBeNull();
+    expect(key).toEqual({ count: 2, ttl: 120 });
+  });
+
+  it("gives the recreated counter an expiry when the window ends just before the INCR", async () => {
+    const { client, key, dropKeyBefore } = fakeClient();
+    const limiter = createSignUpRateLimiter(client);
+    await limiter();
+
+    dropKeyBefore("incr");
+    await limiter();
+
+    expect(key).toEqual({ count: 1, ttl: 10 * 60 });
   });
 
   it("leaves no counter without an expiry when the window ends between the INCR and the EXPIRE", async () => {
-    const { client, key } = fakeClient("expire");
+    const { client, key, dropKeyBefore } = fakeClient();
     const limiter = createSignUpRateLimiter(client);
-
     await limiter();
 
-    expect(key.count === 0 || key.ttl !== null).toBe(true);
+    dropKeyBefore("expire");
+    await limiter();
+    expect(key).toEqual({ count: 0, ttl: null });
+
+    await limiter();
+    expect(key).toEqual({ count: 1, ttl: 10 * 60 });
   });
 });
