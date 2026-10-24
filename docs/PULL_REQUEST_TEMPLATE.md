@@ -62,7 +62,8 @@
   State which of docs/architecture.md, the ADRs, and the two READMEs were
   checked against this change — updated in this PR, or confirmed accurate
   as is. "Not applicable" is a valid answer (e.g. a dependency bump);
-  silence is not, since CLAUDE.md's doc-sync gate requires the check
+  silence is not, since the doc-sync gate (`implement-task` step 7)
+  requires the check
   happened, whichever way it came out.
 -->
 

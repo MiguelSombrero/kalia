@@ -1,9 +1,13 @@
 # ADR-0048: A CLAUDE.md bullet keeps the rule and sheds the reason
 
-- **Status:** accepted
+- **Status:** partially-superseded
 - **Date:** 2026-08-30
 - **Amended:** 2026-09-29 — the revisit trigger below had fired (270 lines); a
   second rationale-only pass reached 252 and stopped, recorded in Evidence
+- **Superseded-by:** [ADR-0085](0085-three-gates-live-in-the-skill-that-runs-them.md)
+  (partial) — the "rejected for now" verdict on moving whole gates into
+  `implement-task`, and the revisit trigger that named an advisory checker; the
+  200-line budget and what a bullet may keep stand
 
 ## Context
 
@@ -106,7 +110,10 @@ boundary between a fix that may be pushed unasked and one that may not.
 Rejected for now because it trades unconditional loading for a skill
 invocation, and ADR-0020's warning is precisely that a pointer here is one an
 agent never follows. Worth reopening as its own decision rather than smuggling
-it into a compaction pass.
+it into a compaction pass. *Superseded 2026-10-24 by
+[ADR-0085](0085-three-gates-live-in-the-skill-that-runs-them.md), which makes
+that decision: the gates move, and `CLAUDE.md` keeps a pointer that names what
+each requires.*
 
 **A `check-claude-md.mjs` enforcing the budget.** Rejected by the product
 owner. It is the option ADR-0039's own test points at — a decidable rule that
@@ -142,7 +149,9 @@ the revisit trigger rather than as a closed question.
 - **Revisit trigger:** if `CLAUDE.md` passes 200 lines again, the guideline has
   failed twice unguarded and `check-claude-md.mjs` is the next thing to try —
   advisory first, since the objection to it was about failing PRs rather than
-  about measuring.
+  about measuring. *Superseded 2026-10-24: the trigger fired again and
+  [ADR-0085](0085-three-gates-live-in-the-skill-that-runs-them.md) took the
+  gate-moving option instead; the checker was rejected by the product owner.*
 
 ## Evidence
 
