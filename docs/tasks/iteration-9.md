@@ -40,7 +40,11 @@ below them inherits their answers.
 - **Decision: mobile authentication** — a public `kalia-mobile` Keycloak client
   with PKCE and a `kalia://` redirect, its own `kalia-backend` audience mapper,
   `offline_access` and refresh-token lifetime, tokens in SecureStore, and the
-  app ending its own session when a refresh fails.
+  app ending its own session when a refresh fails. Also whether refresh tokens
+  rotate (`revokeRefreshToken`), for the web and mobile at once — deferred here
+  from [iteration 8.5 task 13](iteration-8.5/13-sessions-and-stack-credentials-hardened.md)
+  — and how long an access token outlives sign-out once the app calls Spring
+  directly ([quality backlog](quality-backlog.md) COULD-65).
 - **Decision: the mobile testing strategy** — unit tests (Jest + React Native
   Testing Library), a native end-to-end tool (Maestro or Detox), and what CI
   runs on Linux for Android and on macOS for iOS.
@@ -64,9 +68,8 @@ below them inherits their answers.
   supported version and a maintenance flag, checked by the app on launch and
   on resume. Has to exist before any build that could become v1.0
   ([backlog](backlog.md#must-exist-in-the-apps-first-release-or-never)).
-- **Mobile-readiness fix from the backlog** — 401 answered as
-  `problem+json` without losing `WWW-Authenticate`
-  ([backlog](backlog.md)).
+- The 401 `problem+json` fix this list carried moved to
+  [iteration 8.5 task 01](iteration-8.5/01-api-errors-complete-and-typed.md).
 - **The `kalia-mobile` Keycloak client** in `keycloak/realm-export.json`, under
   [ADR-0054](../adr/0054-keycloak-config-cli-realm-management.md)'s drift
   check, with a test that a mobile-shaped token passes the backend's audience
