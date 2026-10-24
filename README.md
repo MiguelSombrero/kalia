@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–7.5 complete — a visitor can browse and search
+> **Status:** iterations 0–8 complete — a visitor can browse and search
 > the seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), production-readiness
 > foundations (logging, exception handling, config, security headers,
@@ -20,8 +20,10 @@
 > owner picked from prototyped alternatives — "Can art, square" — with
 > token-only styling and colour contrast enforced by the build, WCAG 2.2 AA
 > checked at lint, unit and end-to-end level, and every page usable at a
-> phone and a desktop width (iteration 7.5). Next: a catalog that grows past
-> its seed data (iteration 8). Implementation proceeds one issue at a time.
+> phone and a desktop width (iteration 7.5). The catalog, seeded once from
+> Wikidata, now grows: a signed-in user who cannot find a beer adds it, and
+> can put a bottle of it in their cellar at once (iteration 8). Next: an
+> Expo mobile app (iteration 9). Implementation proceeds one issue at a time.
 > See [docs/roadmap.md](docs/roadmap.md) for what gets built and in which
 > order.
 
@@ -135,11 +137,13 @@ In roadmap order, a user can:
   cellars, updating without a reload _(iteration 7)_
 - Use all of it in Kalia's own visual identity, at a phone or a desktop
   width _(iteration 7.5)_
+- Add a beer the catalog lacks, from a search that found nothing, and put a
+  bottle of it in their cellar at once _(iteration 8)_
 
 Then:
 
-- A catalog that grows past its seed data, with users adding the beers they
-  cannot find _(iteration 8)_
+- A native mobile app, starting with an Expo app that signs in and shows real
+  data _(iteration 9)_
 
 Further out, in the [backlog](docs/tasks/backlog.md): beer ratings sourced from
 an external platform, likes and comments on feed events, and — dependent on

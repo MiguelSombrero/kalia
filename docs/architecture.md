@@ -39,11 +39,11 @@ Built:
 - A designed visual identity — colour and type tokens, icons, the Kalia mark
   and a layout for every page, the Keycloak pages included *(iteration 7.5)*
 - A catalog seeded once from Wikidata, to which a signed-in user adds a beer
-  it lacks, and its brewery *(iteration 8)*
+  it lacks, and its brewery, with catalog search held within its latency
+  budget at 150k beers *(iteration 8)*
 
-Now (iteration 8, in progress): catalog search held within its latency budget
-at 150k beers, and the fixes lifted from the quality backlog's 2026-10-14
-sweep.
+No iteration is in progress. The next is [iteration 9](tasks/iteration-9.md),
+the mobile foundations; nothing in it is built yet.
 
 ### Non-functional requirements
 
@@ -51,7 +51,7 @@ sweep.
 |---|---|
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
-| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers. It does not yet hold at 150k beers. Unfiltered pages and 1–2-character queries break it there, and they are [task 18](tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)'s. Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The brewery list's sort in Java is quality backlog SHOULD-61. The question reopens past 150k beers, or when a read no index can serve goes over budget ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), [§7](#catalog-read-latency)) |
+| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers and, apart from the brewery list, at a generated 150k: task 18's `(lower(name), id)` index and custom plans for 1–2-character name queries brought the unfiltered page to 28 ms and a 1–2-character query to 144 ms ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), Evidence). The brewery list still takes about 1.1 s at 150k, because it sorts in Java: quality backlog SHOULD-61. Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The question reopens past 150k beers, or when a read no index can serve goes over budget ([§7](#catalog-read-latency)) |
 | Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
 | Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
@@ -912,8 +912,8 @@ records the latest run.
   exchange for no tokens in the browser and no CORS surface.
 - **Migrations over an admin UI or a runtime import**: every environment holds
   the same catalog, seed and Wikidata import alike, at the cost of a catalog
-  that grows only by migration until users can add beers, which is the rest
-  of iteration 8. The import costs about 1.4 MB of generated SQL in the
+  that grew only by migration until users could add beers, which iteration 8
+  made possible. The import costs about 1.4 MB of generated SQL in the
   repository and a few seconds on every fresh database's migration.
 - **An owned catalog seeded once from Wikidata, over a live external source**
   ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)):
