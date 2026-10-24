@@ -65,6 +65,18 @@ class CatalogApiIT {
 				});
 	}
 
+	// A term this short makes the search set plan_cache_mode in its read-only
+	// transaction, which BeerSearchIndexIT only reaches inside a read-write one.
+	@Test
+	void findsBeersByATermTooShortForTrigrams() {
+		client.get().uri("/api/v1/beers?query=ip")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo((int) count(
+						"SELECT count(*) FROM catalog.beer WHERE lower(name) LIKE '%ip%'")));
+	}
+
 	@Test
 	void filtersQuadsBetweenNineAndTwelvePercent() {
 		client.get().uri("/api/v1/beers?style=Quadrupel&minAbv=9&maxAbv=12")

@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-18
+- **Amended:** 2026-10-24 by [task 18](../tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)
+  — the unfiltered page and 1–2-character name queries are within budget at
+  150k beers; the repeated figures are at the end of Evidence
 
 ## Context
 
@@ -192,3 +195,50 @@ switches to a server-prepared statement after five executions. Postgres's
 generic plan for `LIKE $1` then picks the trigram index, which has no trigrams
 to search on for a 1–2-character pattern and reads every entry. That costs
 125 ms against 44 ms for the sequential scan that the custom plan chooses.
+
+**Repeated 2026-10-24, with task 18's fix.** Same method and environment,
+measured the same day before and after the change. "Before" is `dev` at
+`0382b67`; "after" adds the `beer_lower_name_id_idx` B-tree on
+`(lower(name), id)` and `plan_cache_mode = force_custom_plan` for a search
+whose name term is 1–2 characters. Both ran against 150,000 beers and 54,054
+breweries. The machine was busier than on 2026-10-18, with a load average of
+13–15 on 10 cores from other work, so the ranges are wide. No request failed
+in either column.
+
+| Scenario | 150k before | 150k after |
+|---|---|---|
+| Unfiltered page, default name sort | **438** [340–924] | 28 [28–92] |
+| Unfiltered page, `sort=abv,desc` | 242 [206–346] | 224 [214–308] |
+| Name query, 3+ characters | 50 [45–57] | 28 [18–109] |
+| Name query, 1–2 characters | **502** [501–524] | 144 [130–296] |
+| Style filter | 60 [59–60] | 14 [12–15] |
+| Country filter | 171 [149–174] | 48 [42–68] |
+| Name + style + country | 48 [48–57] | 50 [48–122] |
+| Beer detail | 4 [4–7] | 4 [3–13] |
+| Page 500 (`OFFSET 10000`) | **735** [714–1911] | 54 [53–129] |
+| Brewery list | **2474** [907–4133] | **1112** [872–1847] |
+
+The `sort=abv,desc` "after" figure is from three runs of that scenario alone.
+In the full pass, contention took it to 452 [206–586]. Nothing on its path
+changed. The brewery list is still SHOULD-61's.
+
+Plans at 150k after the change, from `EXPLAIN (ANALYZE, BUFFERS)`:
+
+- **The unfiltered page** is an index scan on `beer_lower_name_id_idx`,
+  0.3 ms, against 104 ms for the parallel sort before.
+- **The country filter's page** walks the same index and stops at 20 rows,
+  0.1 ms, against 55 ms.
+- **The `%a%` count**, under a custom plan, is a parallel sequential scan,
+  21 ms. The generic plan still reads every `beer_name_trgm_idx` entry, 72 ms.
+
+**Why the custom plans are scoped to short terms.** Refinement worded the fix
+as the search's whole transaction running `force_custom_plan`. Measured that
+way, the short-term and unfiltered figures were the same, but
+`sort=abv,desc` failed 757–920 of its 2,000 requests in each of three runs,
+with Postgres reporting "could not resize shared memory segment … No space
+left on device". Its generic plan, which it settles on once pgjdbc
+server-prepares it, is a serial sort. Its custom plan, knowing the `LIMIT` is
+20, is a parallel hash join, and 20 concurrent ones exhaust the 64 MB
+`/dev/shm` a default Postgres container has. The product owner chose to force
+custom plans only where the generic plan is the problem, the 1–2-character
+name term, rather than raise `shm_size` in every environment.

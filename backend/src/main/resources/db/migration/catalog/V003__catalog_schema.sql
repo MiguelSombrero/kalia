@@ -67,3 +67,6 @@ CREATE INDEX brewery_country_code_idx ON catalog.brewery (country_code);
 -- list the planner costs this index above the full scan it exists to replace.
 CREATE INDEX beer_name_trgm_idx ON catalog.beer USING gin (lower(name) public.gin_trgm_ops)
     WITH (fastupdate = off);
+-- The search's default sort, lower(name) then id, so an unfiltered page reads
+-- its 20 rows off the index instead of sorting the whole table (ADR-0078).
+CREATE INDEX beer_lower_name_id_idx ON catalog.beer (lower(name), id);

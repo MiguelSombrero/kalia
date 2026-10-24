@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CatalogService {
 
+	private static final int TRIGRAM_LENGTH = 3;
+
 	private final BeerRepository beers;
 
 	private final BreweryRepository breweries;
@@ -32,6 +34,9 @@ public class CatalogService {
 		if (query.countryCode() != null && !Country.isListed(query.countryCode())) {
 			throw new InvalidSearchParameterException(
 					"countryCode '%s' is not one of the listed countries".formatted(query.countryCode()));
+		}
+		if (hasNoTrigrams(query.query())) {
+			beers.useCustomPlansForTheRestOfThisTransaction();
 		}
 		return beers.findAll(BeerSpecifications.matching(toCriteria(query)), pageable);
 	}
@@ -76,6 +81,10 @@ public class CatalogService {
 		int from = (int) Math.min(pageable.getOffset(), sorted.size());
 		int to = Math.min(from + pageable.getPageSize(), sorted.size());
 		return new PageImpl<>(sorted.subList(from, to), pageable, sorted.size());
+	}
+
+	private static boolean hasNoTrigrams(@Nullable String nameQuery) {
+		return nameQuery != null && !nameQuery.isBlank() && nameQuery.length() < TRIGRAM_LENGTH;
 	}
 
 	private static BeerSearchCriteria toCriteria(BeerSearchQuery query) {
