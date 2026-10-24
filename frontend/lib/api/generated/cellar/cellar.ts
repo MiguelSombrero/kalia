@@ -73,10 +73,15 @@ export type addBottlesResponse404 = {
   status: 404
 }
 
+export type addBottlesResponse409 = {
+  data: ProblemDetail
+  status: 409
+}
+
 export type addBottlesResponseSuccess = (addBottlesResponse201) & {
   headers: Headers;
 };
-export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404) & {
+export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409) & {
   headers: Headers;
 };
 
@@ -185,10 +190,15 @@ export type removeBottleResponse404 = {
   status: 404
 }
 
+export type removeBottleResponse409 = {
+  data: ProblemDetail
+  status: 409
+}
+
 export type removeBottleResponseSuccess = (removeBottleResponse204) & {
   headers: Headers;
 };
-export type removeBottleResponseError = (removeBottleResponse401 | removeBottleResponse404) & {
+export type removeBottleResponseError = (removeBottleResponse401 | removeBottleResponse404 | removeBottleResponse409) & {
   headers: Headers;
 };
 
@@ -288,10 +298,15 @@ export type updateBottleResponse404 = {
   status: 404
 }
 
+export type updateBottleResponse409 = {
+  data: ProblemDetail
+  status: 409
+}
+
 export type updateBottleResponseSuccess = (updateBottleResponse200) & {
   headers: Headers;
 };
-export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404) & {
+export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404 | updateBottleResponse409) & {
   headers: Headers;
 };
 

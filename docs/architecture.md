@@ -208,7 +208,7 @@ TypeScript vocabulary a client meets — is catalogued in
 ```
 catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, created_at) — unique (fold_name(name), country_code), unique (wikidata_qid)
 catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
-cellar.entry(id, user_id, beer_id, created_at, updated_at) — unique (user_id, beer_id)
+cellar.entry(id, user_id, beer_id, version, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at) — unique (lower(username))
 feed.line(id, event_id, user_id, beer_id, quantity, brewed_date, occurred_at, sequence_number, created_at, updated_at)
@@ -288,6 +288,19 @@ get-or-create trips the `unique (user_id, beer_id)` constraint above — the
 losing request's retry then finds the winner's committed entry and appends to
 it instead of inserting a second one.
 
+**Two writes to one existing entry never silently lose a bottle.** `Entry`
+carries a `@Version` (`cellar.entry.version`), so a write that commits after
+another write to the same entry fails its `UPDATE` or `DELETE` instead of
+overwriting it — most importantly removing a beer's last bottle, which deletes
+the entry and, through `ON DELETE CASCADE`, any bottle a concurrent add had
+just committed. `addBottles`, `updateBottle` and `removeBottle` each retry once
+in a fresh transaction on that failure
+([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md)),
+re-reading the entry as it now stands: an add finds the entry gone and creates
+a new one, a removal finds the added bottle beside the one it removes. A second
+loss answers `409` (`problem+json`). A pessimistic row lock was rejected: it
+serialises writes, which replayed offline writes would make common.
+
 **A profile is keyed by the Keycloak `sub` itself** — `profile.profile.id`
 carries no separate generated id — **and is created lazily**, the first time
 anything needs one, rather than at sign-in (ADR-0049). `username` is copied
@@ -348,9 +361,9 @@ GET    /api/v1/feed?size=&since=&before=            -> the most recent events, o
 GET    /api/v1/me                                  -> the caller behind the bearer token
 POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId)
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity
-POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId)
-PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle
-DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle
+POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice
+PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle; 409 as above
+DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle; 409 as above
 GET    /api/v1/profile                              -> the caller's own profile (username, current cellar visibility); 409 when another account holds the caller's username
 PATCH  /api/v1/profile/visibility                   -> change whether the caller's cellar is public; 409 as above
 ```
