@@ -113,6 +113,17 @@ class CellarOpenApiDocumentationIT {
 				.isNotNull();
 	}
 
+	@Test
+	void everyCellarWriteDocumentsTheConcurrentWriteConflict() {
+		String body = apiDocs();
+
+		for (String operation : List.of("$.paths['/api/v1/cellar/bottles'].post",
+				"$.paths['/api/v1/cellar/bottles/{id}'].patch", "$.paths['/api/v1/cellar/bottles/{id}'].delete")) {
+			assertThat((Object) JsonPath.read(body, operation + ".responses.409.content['application/problem+json']"))
+					.as(operation).isNotNull();
+		}
+	}
+
 	private String apiDocs() {
 		return client.get().uri("/v3/api-docs")
 				.exchange()

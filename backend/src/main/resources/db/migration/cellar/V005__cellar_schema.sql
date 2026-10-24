@@ -11,6 +11,7 @@ CREATE TABLE cellar.entry (
     beer_id    uuid NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
+    version    bigint NOT NULL DEFAULT 0,
     UNIQUE (user_id, beer_id)
 );
 
