@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-04
+- **Amended:** 2026-10-24 — an event also carries its act's own facts, `brewedDate` included ([ADR-0058](0058-feed-event-recording-model.md))
 
 ## Context
 
@@ -51,6 +52,17 @@ domain event.** Bounding the decision:
   one event or six are [iteration 7 task 01](../tasks/iteration-7/01-feed-module.md)'s
   (its open questions 2 and 3); this ADR fixes only that the payload is
   immutable references plus a timestamp.
+
+  > **Amended 2026-10-24.** The payload rule above did not survive iteration 7
+  > task 01. [ADR-0058](0058-feed-event-recording-model.md) settled the exact
+  > field set, and `BottleAdded` carries `quantity` and `brewedDate` as well:
+  > the facts of the act as it happened, which `feed` freezes into its line
+  > rather than reading back. `brewedDate` can be edited on the bottle
+  > afterwards, so the event and the bottle can disagree. ADR-0058 records
+  > that as a Bad consequence it accepted. What still holds is the reason the
+  > rule was written: anything a consumer must see as it is *now*, such as a
+  > cellar's visibility or a beer's name, is read back through `ProfileApi`
+  > and `CatalogApi`, never copied into the event.
 - **Naming: `BottleAdded`.** Past participle on the thing whose state changed,
   never repeating the module name — the package already carries it
   (`fi.kalia.cellar.BottleAdded`). This yields `BottleRemoved` and

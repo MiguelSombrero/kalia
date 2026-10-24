@@ -121,7 +121,7 @@ and [frontend/README.md](frontend/README.md).
 
 In roadmap order, a user can:
 
-- Browse and search craft beers by name, brewery, country, style, and alcohol content (ABV) — no account needed
+- Browse craft beers, searching by name and filtering by style, the brewery's country, and alcohol content (ABV) — no account needed
 - Use Kalia in English or Finnish (`/en`, `/fi`; auto-detected on first visit, switchable anytime)
 - View beer details (brewery, country, style, ABV, description)
 - Sign in with Keycloak
@@ -162,9 +162,9 @@ flowchart LR
     Spring -->|token validation| KC
 ```
 
-The backend is a single deployable split into Spring Modulith modules
-(`catalog`, `identity`, `cellar`, `profile` as iteration 6 adds it, and `feed`
-as iteration 7 adds it) with enforced boundaries, keeping a later extraction
+The backend is a single deployable split into Spring Modulith modules —
+listed in [docs/architecture.md §3](docs/architecture.md#3-backend-modules) —
+with enforced boundaries, keeping a later extraction
 to microservices possible without paying the distributed-systems cost now.
 
 Full design: [docs/architecture.md](docs/architecture.md) ·
@@ -187,7 +187,7 @@ manifest already says.
 
 - Java 25, Spring Boot 4 with Spring Modulith (later possibility to migrate to microservices)
 - PostgreSQL 18 (data persistence), Flyway (migrations & seed data)
-- Maven (build), JUnit 5 + Testcontainers + Spring Modulith verification tests;
+- Maven (build), JUnit 6 + Testcontainers + Spring Modulith verification tests;
   surefire/failsafe (Spring Boot-managed defaults; unit `*Test` /
   integration `*IT` split), JaCoCo (merged coverage report), ArchUnit
   (package-structure rules)

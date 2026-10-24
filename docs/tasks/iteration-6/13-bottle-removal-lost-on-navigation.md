@@ -38,8 +38,8 @@ nothing about a removal can be lost to a reload, a client navigation, or a
 closed tab, because nothing is ever left pending. This covers the removal
 flow's commit timing and its confirmation/feedback UI across
 [`store.ts`](../../../frontend/features/cellar/store.ts),
-[`BottleList.tsx`](../../../frontend/features/cellar/BottleList.tsx),
-[`UndoRemoveToast.tsx`](../../../frontend/features/cellar/UndoRemoveToast.tsx)
+`BottleList.tsx`,
+`UndoRemoveToast.tsx`
 (renamed if its undo-specific name no longer fits) and their tests, plus
 `docs/architecture.md`'s cellar/frontend sections where the undo toast is
 described.

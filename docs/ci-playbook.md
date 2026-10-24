@@ -10,10 +10,8 @@ docs for, and the recurring cost was never *understanding* these failures but
 
 **This is a document, not a backlog of scripts.** A checker per failure was
 proposed once and rejected by the product owner: a standalone script
-enforcing one dependency's version agreement "doesn't generalize — every
-other pinned version in README.md's tech-stack table relies on review
-discipline alone, and a script per dependency isn't sustainable"
-(`c408b36`). The checkers that do exist guard whole classes
+enforcing one dependency's version agreement doesn't generalize, and "a
+script per dependency isn't sustainable" (`c408b36`). The checkers that do exist guard whole classes
 ([ADR-0039](adr/0039-mechanisms-for-recurring-rule-violations.md)); a
 signature that does not fit one of those belongs here instead.
 
@@ -187,10 +185,6 @@ Since [ADR-0036](adr/0036-pre-deployment-migration-edits.md)'s 2026-08-29
 amendment this is routine rather than exceptional — any schema change may
 edit an applied migration, so wiping the volume is an ordinary step of
 pulling `dev`, not a sign something is wrong.
-
-**The README tech-stack table disagrees with `pom.xml` or `package.json`.**
-Caught in review rather than by CI, deliberately — see the rejected checker
-above. When you bump a pinned version, the table is part of the change.
 
 **A `make` target that runs `docker compose up --wait` exits `1` although
 every container is fine.** `--wait` counts a service that *exits* as a
