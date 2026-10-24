@@ -2,6 +2,12 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-15
+- **Amended:** 2026-10-24 — the subdomains named below (cart, ordering,
+  payment) and the checkout flow in the consequences belong to the store the
+  vision dropped ([ADR-0004](0004-backend-cart.md)); none was built. The
+  modules are `catalog`, `identity`, `cellar`, `profile` and `feed`
+  ([architecture.md §3](../architecture.md#3-backend-modules)). The decision
+  itself stands
 
 ## Context
 

@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { auth } from "@/auth";
-import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { CellarSummary, cellarCounts, listCellarEntries } from "@/features/cellar";
-import { FeedError, FeedList, readFeed } from "@/features/feed";
+import {
+  FeedEmptyState,
+  FeedError,
+  FeedList,
+  FrontPagePitch,
+  feedHeadingRow,
+  readFeed,
+} from "@/features/feed";
 import { getOwnProfileOrNull } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { logger } from "@/lib/logger";
-import { feedHeadingRow, mastheadGrid } from "./frontPageLayout";
 
 type Props = { params: Promise<{ locale: string }> };
-
-const HOW_STEPS = ["find", "cellar", "share"] as const;
 
 export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
   const locale = toLocale((await params).locale);
@@ -44,31 +46,6 @@ const Home = async ({ params }: Props) => {
     : [null, null];
   const now = new Date();
 
-  const emptyState = (
-    <div className="flex flex-col items-start gap-2.5 py-8">
-      <div aria-hidden="true" className="grid grid-cols-3 gap-1">
-        {Array.from({ length: 9 }).map((_, index) => (
-          <span key={index} className="size-7 border border-border" />
-        ))}
-      </div>
-      <p className="mt-2 text-2xl font-bold text-foreground">{t("feed.empty.title")}</p>
-      {viewerProfile && <p className="text-muted-foreground">{t("feed.empty.hint")}</p>}
-      {!session?.user && (
-        <Link href={`/${locale}/sign-up`} className={buttonVariants("primary")}>
-          {t("auth.signUp")}
-        </Link>
-      )}
-      {viewerProfile && !viewerProfile.cellarPublic && (
-        <p className="text-muted-foreground">
-          {t("feed.empty.privateHint")}{" "}
-          <Link href={`/${locale}/profile`} className="text-foreground underline underline-offset-2">
-            {t("feed.empty.privateLink")}
-          </Link>
-        </p>
-      )}
-    </div>
-  );
-
   return (
     <Page width="wide">
       {viewerProfile ? (
@@ -81,31 +58,7 @@ const Home = async ({ params }: Props) => {
           />
         </>
       ) : (
-        <div className="flex flex-col gap-6">
-          <div className={mastheadGrid}>
-            <PageTitle>{t("app.tagline")}</PageTitle>
-            <p className="text-muted-foreground">{t("feed.empty.hint")}</p>
-          </div>
-          <section aria-labelledby="how-heading" className="flex flex-col gap-1.5">
-            <SectionHeading level={2} look="label" id="how-heading">
-              {t("home.how.heading")}
-            </SectionHeading>
-            <ol className="border-t border-border md:grid md:grid-cols-3 md:gap-x-8 md:border-b md:border-divider">
-              {HOW_STEPS.map((step, index) => (
-                <li
-                  key={step}
-                  className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 border-b border-divider py-3 md:border-b-0"
-                >
-                  <span aria-hidden="true" className="row-span-2 font-display text-xl font-extrabold">
-                    {`0${index + 1}`}
-                  </span>
-                  <span className="font-bold text-foreground">{t(`home.how.${step}.title`)}</span>
-                  <span className="text-sm text-muted-foreground">{t(`home.how.${step}.body`)}</span>
-                </li>
-              ))}
-            </ol>
-          </section>
-        </div>
+        <FrontPagePitch locale={locale} />
       )}
 
       <section aria-labelledby="feed-heading" className="flex flex-col">
@@ -117,7 +70,9 @@ const Home = async ({ params }: Props) => {
             locale={locale}
             now={now.toISOString()}
             initialPage={page}
-            emptyState={emptyState}
+            emptyState={
+              <FeedEmptyState locale={locale} signedIn={Boolean(session?.user)} viewer={viewerProfile} />
+            }
             viewerUsername={viewerProfile?.username}
           />
         ) : (

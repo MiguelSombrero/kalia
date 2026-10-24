@@ -2,6 +2,12 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-15
+- **Amended:** 2026-10-24 — two details below are out of date. The `cartId`
+  cookie went with the cart ([ADR-0004](0004-backend-cart.md)); what the
+  server attaches is the session's Keycloak access token. And docker-compose
+  publishes the backend too, on `127.0.0.1` only, so the API is not
+  reachable beyond the developer's machine rather than unpublished. The
+  decision itself stands
 
 ## Context
 

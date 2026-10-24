@@ -84,8 +84,8 @@ reason ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
 **`Error: Timed out waiting 300000ms from config.webServer` — no test ran.**
 Not a test failure: Playwright's `webServer` starts `docker compose up --build`,
 and a cold CI runner has no BuildKit cache, so the frontend image's own
-`npm ci` alone takes 3–5 min (slow-registry days) before `next build` and five
-containers come up healthy. The 5-minute default overran on `dev` itself
+`npm ci` alone takes 3–5 min (slow-registry days) before `next build` and the
+stack's containers come up healthy. The 5-minute default overran on `dev` itself
 (runs `33842075895`, `33838096364`) and on PR #219. The wait budget lives in
 `frontend/playwright.config.ts`'s `webServer.timeout` — raised to 12 min. If it
 still overruns, the build itself is the thing to speed up (layer-cache the
@@ -104,11 +104,9 @@ network.
 
 **Several registration specs time out waiting for `#username`, each passes in
 isolation, and which ones fail moves between runs.** The shared `/sign-up`
-rate limit is spent. It is one counter for every visitor, 20 attempts per 10
-minutes, by design ([ADR-0055](adr/0055-self-registration-via-keycloak.md)),
-and a full suite run spends about five: `sign-up.spec.ts` registers twice and
-`keycloak-branding.spec.ts` three times. Nothing expired them between runs, so
-roughly three consecutive `npm run test:e2e` runs exhausted the window — and
+rate limit is spent. It is one counter for every visitor, by design
+([ADR-0055](adr/0055-self-registration-via-keycloak.md)), and a full suite run
+spends about five attempts. Nothing expired them between runs, so several consecutive `npm run test:e2e` runs exhausted the window — and
 once it is exhausted the Server Action redirects to
 `/sign-up?error=rate-limited` instead of Keycloak, so the specs never reach a
 registration form and fail on the `#username` wait with nothing in the trace
@@ -180,11 +178,9 @@ and the two READMEs.
 
 **The backend will not boot after pulling `dev`, complaining about a Flyway
 checksum.** Your local Postgres volume ran an earlier version of a migration
-that has since been edited. `docker compose down -v` and let it re-apply.
-Since [ADR-0036](adr/0036-pre-deployment-migration-edits.md)'s 2026-08-29
-amendment this is routine rather than exceptional — any schema change may
-edit an applied migration, so wiping the volume is an ordinary step of
-pulling `dev`, not a sign something is wrong.
+that has since been edited. This is routine rather than exceptional, and the
+fix is in [backend/README.md](../backend/README.md) database migrations
+([ADR-0036](adr/0036-pre-deployment-migration-edits.md)).
 
 **A `make` target that runs `docker compose up --wait` exits `1` although
 every container is fine.** `--wait` counts a service that *exits* as a
@@ -214,8 +210,8 @@ for this file's sign-up rate-limit entry above.
 Lombok meeting a JDK newer than the one the build targets. `mvn` reads
 `JAVA_HOME`, which on a Mac with several JDKs installed is whichever one is
 first on the path — not necessarily the version `java -version` reports, and
-not necessarily `pom.xml`'s release. Pin it for the command:
-`JAVA_HOME=$(/usr/libexec/java_home -v 25) make verify`. The error names
+not necessarily `pom.xml`'s release. The pin is in
+[backend/README.md](../backend/README.md). The error names
 javac's internals rather than a version mismatch, and an *incremental* build
 that recompiles nothing at all skips it entirely — so a target can pass once
 and fail the next time without the tree changing.

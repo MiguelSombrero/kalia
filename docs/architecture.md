@@ -51,7 +51,7 @@ the mobile foundations; nothing in it is built yet.
 |---|---|
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
-| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported ~13.6k beers and, apart from the brewery list, at a generated 150k: task 18's `(lower(name), id)` index and custom plans for 1–2-character name queries brought them within it ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), Evidence). The brewery list is still over budget at 150k because it sorts in Java: quality backlog SHOULD-61. Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The question reopens past 150k beers, or when a read no index can serve goes over budget ([§7](#catalog-read-latency)) |
+| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported size and, apart from the brewery list, at a generated 150k: task 18's `(lower(name), id)` index and custom plans for 1–2-character name queries brought them within it ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), Evidence). The brewery list is still over budget at 150k because it sorts in Java: quality backlog SHOULD-61. Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The question reopens past 150k beers, or when a read no index can serve goes over budget ([§7](#catalog-read-latency)) |
 | Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
 | Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
@@ -164,8 +164,9 @@ TypeScript vocabulary a client meets — is catalogued in
   for cross-module infrastructure (layout and version-numbering rules:
   [backend/README.md](../backend/README.md) database migrations). The
   catalog's data ships as versioned migrations, so every environment holds the
-  same catalog: a hand-written seed of 54 beers from 20 breweries (`V004`),
-  and about 13.5k beers and 4.9k breweries imported from Wikidata (`V008`).
+  same catalog: a hand-written seed (`V004`) and the Wikidata import (`V008`),
+  whose size [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
+  measures.
 - **The catalog's data source is Kalia itself, seeded once from Wikidata**
   ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
   `V008` is generated, never hand-edited: `scripts/wikidata-migration.mjs`
@@ -516,7 +517,8 @@ The shape of the frontend. Day-to-day rules for writing it live in
   sign-out are Server Actions rather than posts to route handlers, so the
   CSP's `form-action 'self'` can stay strict
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
-  server components calling `kaliaFetch` (`lib/api/mutator.ts`) directly, the
+  server components calling a feature's `api.ts`, which calls the generated
+  client, whose one HTTP mutator is `kaliaFetch` (`lib/api/mutator.ts`), the
   thin wrapper that owns the backend base URL and error mapping, refuses a
   path whose segments a parameter could have reshaped, and attaches the
   access token belonging to the caller's own session, renewing it first if it
@@ -590,10 +592,9 @@ The shape of the frontend. Day-to-day rules for writing it live in
   style name to a group and `globals.css` holds each group's colour.
   `scripts/check-contrast.mjs` holds every declared colour pairing and every
   style colour to WCAG 2.2 AA in the build. No third-party component library;
-  the two UI dependencies are `@radix-ui/react-dialog` and
-  `@radix-ui/react-toast`, headless primitives behind `components/ui/dialog.tsx`
-  and `components/ui/toast.tsx`, taken on for a modal's focus management and a
-  toast's live-region/timing contract rather than either's appearance.
+  the two headless Radix primitives behind `components/ui/dialog.tsx` and
+  `components/ui/toast.tsx` are the exception and why is in
+  [ADR-0021](adr/0021-design-tokens-ui-primitives.md).
   `BeerSlot`, `PersonSlot`, `Icon` and `KaliaMark` are further primitives in
   `components/ui/` ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md);
   the mark's drawing, [ADR-0072](adr/0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md)),
@@ -637,8 +638,7 @@ The shape of the frontend. Day-to-day rules for writing it live in
   (2.4.11). The non-native
   widgets — the add-beer, add/edit-bottle and remove-confirmation modals, and the
   removal-outcome, just-added and profile toasts — get their focus trap, `aria-modal` and live-region
-  behaviour from Radix rather than hand-rolled ARIA
-  ([ADR-0021](adr/0021-design-tokens-ui-primitives.md)). The one exception is
+  behaviour from Radix rather than hand-rolled ARIA. The one exception is
   the add-beer dialog's brewery field, an ARIA combobox (an input owning a
   listbox through `aria-activedescendant`) written by hand in
   `features/catalog/BreweryField.tsx`, since neither Radix primitive covers it
@@ -851,8 +851,7 @@ home decides placement, not the fixture's scope. Revisit if a second
 frontend client appears, or the repo adopts npm workspaces for another
 reason — either would justify a dedicated `e2e/` package.
 
-Definition of done for every issue: tests written, all suites green, docs
-updated if behavior or architecture changed.
+The definition of done for every issue is in [the roadmap](roadmap.md).
 
 ### Catalog read latency
 
@@ -865,8 +864,8 @@ this measurement whenever the catalog's size or its queries change shape.
 [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
 records the latest run.
 
-1. **Set up an isolated database.** Run a scratch `postgres:18.4` and a
-   backend jar against it. Leave the settings at their defaults, since the
+1. **Set up an isolated database.** Run a scratch Postgres of the version
+   `docker-compose.yml` pins, and a backend jar against it. Leave the settings at their defaults, since the
    figures depend on them:
    - HikariCP's pool of 10, which queues 20 concurrent clients;
    - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a

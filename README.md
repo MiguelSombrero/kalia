@@ -142,8 +142,13 @@ In roadmap order, a user can:
 
 Then:
 
-- A native mobile app, starting with an Expo app that signs in and shows real
-  data _(iteration 9)_
+- Use Kalia as a native mobile app, which becomes its primary UI: an Expo app
+  that signs in and shows real data _(iteration 9)_, runs on the product
+  owner's own iPhone _(iteration 10)_, has a design of its own, proven on the
+  catalog _(iteration 11)_, holds the cellar readable with no signal
+  _(iteration 12)_, brings the feed, profiles and public cellars _(iteration
+  13)_, and scans a bottle's barcode to put its beer in the cellar _(iteration
+  14)_
 
 Further out, in the [backlog](docs/tasks/backlog.md): beer ratings sourced from
 an external platform, likes and comments on feed events, and — dependent on
@@ -209,11 +214,8 @@ manifest already says.
 - Next.js 16 (App Router), React 19, TypeScript 5 (TS 7 not yet supported by
   the Next toolchain — revisit when it is)
 - Tailwind CSS 4 (styling)
-- @radix-ui/react-dialog and @radix-ui/react-toast (headless
-  primitives behind `components/ui/dialog.tsx` and `components/ui/toast.tsx` —
-  the only two UI dependencies in an otherwise hand-written primitive set,
-  taken on for focus management and `aria-live` announcement rather than
-  appearance; see ADR-0021's 2026-08-22 and 2026-08-23 amendments)
+- @radix-ui/react-dialog and @radix-ui/react-toast (headless primitives behind
+  the modal and the toast, the only two UI dependencies — why, in ADR-0021)
 - TanStack Query (client-component data layer — see ADR-0008)
 - Zustand (client UI state — see ADR-0009)
 - react-hook-form + Zod (+ @hookform/resolvers) for stateful forms and
@@ -228,9 +230,9 @@ manifest already says.
 - `package.json` `overrides` pin `postcss` and `sharp` — the one place a
   number below is load-bearing, since JSON takes no comments: next 16.3.1 (as
   published) bundled vulnerable versions of both and npm could not resolve a
-  fix inside next's own dependency range. next 16.3.3 declares fixed versions
-  of both itself, so the removal condition is now worth re-testing — drop each
-  override once `npm audit` stays clean without it (the same `js-yaml`
+  fix inside next's own dependency range. The removal condition is worth
+  re-testing on every `next` bump — drop each override once `npm audit` stays
+  clean without it (the same `js-yaml`
   override was dropped once orval bundled the fix itself)
 - eslint-plugin-jsx-a11y, jest-axe (+ @types/jest-axe), @axe-core/playwright —
   WCAG 2.2 AA enforcement at lint/unit/E2E time (ADR-0075)
@@ -240,6 +242,8 @@ manifest already says.
   client and session strategy, backed by a custom Valkey adapter — see
   ADR-0025)
 - ioredis (Valkey client used by the Auth.js adapter)
+- jose (verifies Keycloak's back-channel logout token against the realm's keys
+  and reads the session id out of the id token — ADR-0031)
 - Valkey (server-side session store, Redis-API-compatible — ADR-0025)
 
 ### Local infrastructure
@@ -254,46 +258,45 @@ manifest already says.
 - Mailpit (`axllent/mailpit`) — catches
   every email Keycloak sends in local dev and test; no auth, no real
   delivery. A deployment instead points the realm's SMTP config
-  (`docker-compose.yml`'s `KEYCLOAK_SMTP_*`) at **Gmail SMTP**
-  (`smtp.gmail.com`, an App Password): the free tier is 500 messages per
-  rolling 24 h on a personal account (2,000 on Google Workspace), chosen for
-  the higher cap and no new third-party signup — trade-offs recorded in
+  (`docker-compose.yml`'s `KEYCLOAK_SMTP_*`) at Gmail SMTP — the choice and its
+  limits are in
   [docs/tasks/iteration-6.5/04-send-email-from-kalia.md](docs/tasks/iteration-6.5/04-send-email-from-kalia.md).
-  The real credential is not created or held anywhere yet — see that task's
-  Notes
+  The real credential is not created or held anywhere yet
 - Docker Compose: full stack (PostgreSQL + backend + frontend + Keycloak +
   Valkey + Mailpit)
-- Base images: maven:3.9-eclipse-temurin-25-noble (backend build),
-  eclipse-temurin:25-jre-noble (backend runtime), node:24-alpine (frontend).
-  `-noble` (Ubuntu 24.04 LTS, supported to April 2029) over plain `-jre`
-  (Ubuntu 26.04) clears the five CVEs Canonical's Pebble init tool carried on
-  26.04 without touching the Java major — `eclipse-temurin:26-jre` also scans
-  clean but is a JDK version decision on its own merits, not a side effect of
-  a CVE deadline (iteration 5 task 08)
+- Base images: Maven and Eclipse Temurin (backend), Node on Alpine (frontend);
+  tags are in each `Dockerfile`
 
 ### CI
 
-- GitHub Actions (build + test both apps on every push). Every action is
+- GitHub Actions (`make verify`'s checks, on every push to any branch). Every action is
   SHA-pinned with its tag in a trailing comment — `.github/workflows/` is the
   list
 
-## Repository layout (planned)
+## Repository layout
 
 ```
 kalia/
 ├── backend/          # Spring Boot modulith
 │   └── src/main/java/fi/kalia/
 │       ├── catalog/  # beers, breweries, search
-│       ├── identity/ # Keycloak integration, current-user resolution
-│       ├── cellar/   # personal beer cellar (iteration 5)
-│       ├── profile/  # user profile, public cellar visibility (iteration 6)
-│       └── feed/     # front-page activity feed (iteration 7)
+│       ├── identity/ # token validation, current-user resolution
+│       ├── cellar/   # personal beer cellar
+│       ├── profile/  # user profile, public cellar visibility
+│       └── feed/     # front-page activity feed
 ├── frontend/         # Next.js app (BFF + UI)
+├── keycloak/         # realm export, login theme, image
+├── postgres/         # init scripts
+├── scripts/          # dependency-free checkers CI runs, git hooks, generators
 ├── docs/
 │   ├── architecture.md
 │   ├── roadmap.md
+│   ├── glossary.md   # the ubiquitous language
 │   ├── tasks/        # per-iteration task lists, backlog, quality backlog
 │   └── adr/          # architecture decision records
+├── .claude/          # agent skills, rules and settings
+├── .github/          # CI workflows, Dependabot
+├── Makefile          # `make help`; `make verify` is the gate
 └── docker-compose.yml
 ```
 

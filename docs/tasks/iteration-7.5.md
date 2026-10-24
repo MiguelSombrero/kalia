@@ -58,7 +58,7 @@ whitespace are not knowable in advance and are not an agent's to decide. Each
 task below therefore ends in a choice the product owner makes between
 alternatives that were built and looked at — which is why
 [task 01](iteration-7.5/01-how-a-design-task-runs.md) comes first and produces
-the mechanism the other twelve use.
+the mechanism every other task uses.
 
 Numbered 7.5 rather than 9, for the reason [iteration 5.5](iteration-5.5.md)
 and [iteration 6.5](iteration-6.5.md) were: iterations 7 and 8 are already
@@ -95,8 +95,8 @@ rather than a preference:
   because header, footer and container width are what those pages sit inside;
   laying out a page against a shell that is about to change means doing it
   twice.
-- **[12](iteration-7.5/12-do-we-need-a-design-system.md) comes last on
-  purpose.** The question is worth answering with a real component inventory
+- **[12](iteration-7.5/12-do-we-need-a-design-system.md) comes after every
+  layout task on purpose.** The question is worth answering with a real component inventory
   from the redesign in hand — which patterns actually recurred across four
   pages — rather than against the three primitives
   [ADR-0021](../adr/0021-design-tokens-ui-primitives.md) has today, which this

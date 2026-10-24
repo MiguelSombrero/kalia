@@ -10,8 +10,8 @@ export const VALKEY_URL = "redis://localhost:6379";
 const SIGN_UP_RATE_KEY = "auth:sign-up-rate";
 
 // Do not stop calling this. ADR-0055's limiter is one counter for every
-// visitor, 20 attempts per 10 minutes, and the suite spends about five per run
-// with nothing clearing them in between — a spent budget turns every
+// visitor, and the suite spends about five attempts per run with nothing
+// clearing them in between — a spent budget turns every
 // registering spec into an unexplained `#username` timeout
 // (docs/ci-playbook.md).
 export const clearSignUpRateLimit = async (valkey: Redis): Promise<void> => {

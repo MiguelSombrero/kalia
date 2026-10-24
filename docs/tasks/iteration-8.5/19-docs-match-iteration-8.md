@@ -1,6 +1,6 @@
 # Task 19: The documentation says what iteration 8 built, once
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -89,14 +89,14 @@ markup lives in its feature.
 
 ## Acceptance criteria
 
-- [ ] `ArchitectureDocumentationTest` and `node scripts/check-links.mjs` are
+- [x] `ArchitectureDocumentationTest` and `node scripts/check-links.mjs` are
       green after the edits
-- [ ] The glossary's cellar and profile rows match `EntryDto`,
+- [x] The glossary's cellar and profile rows match `EntryDto`,
       `PublicCellarEntryDto` and `ProfileRepository`, and its module rows point
       at §3
-- [ ] Each fact listed under "stated in more than one home" has exactly one
+- [x] Each fact listed under "stated in more than one home" has exactly one
       home, checked by grepping for it
-- [ ] The front page route delegates to a feature component, its vitest test
+- [x] The front page route delegates to a feature component, its vitest test
       moves with it, and `make verify-fast` is green
 
 ## Notes

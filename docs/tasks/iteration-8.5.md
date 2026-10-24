@@ -20,7 +20,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | ID | Task | Status |
 |---|---|---|
 | [09](iteration-8.5/09-sign-up-limiter-cannot-lock-forever.md) | The sign-up limiter can never lock sign-up for good | refined |
-| [19](iteration-8.5/19-docs-match-iteration-8.md) | The documentation says what iteration 8 built, once | refined |
+| [19](iteration-8.5/19-docs-match-iteration-8.md) | The documentation says what iteration 8 built, once | done |
 | [01](iteration-8.5/01-api-errors-complete-and-typed.md) | Every API error is documented and typed as it is sent | refined |
 | [02](iteration-8.5/02-api-contract-pruned-before-it-freezes.md) | The API sheds what nobody uses before mobile freezes it | refined |
 | [03](iteration-8.5/03-concurrent-bottle-writes-lose-nothing.md) | Two writes to one cellar entry never silently lose a bottle | refined |
