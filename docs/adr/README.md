@@ -306,7 +306,8 @@ to bound.
   because refinement, not implementation, is the queue that empties.
 - [ADR-0048](0048-what-survives-a-claude-md-bullet.md) — `CLAUDE.md` keeps
   rules, compliance mechanics and silent-failure warnings; rationale leaves it
-  only once an ADR holds it.
+  only once an ADR holds it; the doc-sync, code-review and iteration-DoD
+  gates are written in full in `implement-task`.
 - [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md) — the
   repository's own process is audited as a fifth `/quality-sweep` dimension on
   evidence of recurrence, never as a self-review step at the end of each task.

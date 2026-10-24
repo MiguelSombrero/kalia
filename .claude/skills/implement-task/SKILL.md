@@ -5,9 +5,12 @@ description: Numbered procedure for implementing one refined docs/tasks/iteratio
 
 # Implement a task
 
-`CLAUDE.md`'s `## Workflow` already states every gate below; nothing here
-changes one. This only orders them, and gives the code-comment pass a step of
-its own — a moment to apply
+`CLAUDE.md`'s `## Workflow` states most gates below. Three it leaves to this
+skill, which states them in full — doc-sync (step 7), code review (step 8) and
+the iteration definition of done (step 11)
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)).
+Nothing here changes a gate; this orders them, and gives the code-comment pass
+a step of its own — a moment to apply
 [ADR-0017](../../../docs/adr/0017-code-comment-policy.md)'s test to a comment
 before it is written, rather than after, in the same pass as the code.
 
@@ -46,12 +49,16 @@ their own condition from that ADR before they apply.
    this step re-checks rather than assumes it held. Name the fact each one
    carries against `.claude/rules/code-comments.md`'s test; delete or trim
    whatever can't name one.
-7. Doc-sync: re-read the touched sections of `docs/architecture.md`, the task
-   file's iteration index, and any ADRs the change touches, and update them
-   or record in the pull request that they were checked — `CLAUDE.md`
-   "Doc-sync gate".
-8. Run `/code-review` on the diff and resolve each finding as fix-now or a
-   new task — `CLAUDE.md` "Code-review gate". This runs *before* the full
+7. **Doc-sync gate.** Before opening the pull request, re-read the sections of
+   `docs/architecture.md`, the iteration index and any ADRs the change
+   touches, and update them in the same PR — or state in the description that
+   they were checked and remain accurate. The task file is the exception: it
+   records what was *asked for*, so it is frozen at completion apart from its
+   status and a dead link, which is repointed or unlinked
+   ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
+8. **Code-review gate.** Run `/code-review` on the diff — local, in-session,
+   no separate service — and mark each finding worth acting on **fix now** or
+   **new task**. This runs *before* the full
    `make verify` below, not after: `/code-review`, the comment pass and
    doc-sync can each still change the diff, and `make verify` is the slow
    gate — running it once on the finished diff beats running it, reviewing,
@@ -82,13 +89,17 @@ their own condition from that ADR before they apply.
     [ADR-0026](../../../docs/adr/0026-task-file-format.md) requires of it, and
     why at least one is an automated test. Tick a box only after seeing that
     check pass; if it fails, fix it and run it again. A criterion you cannot
-    honestly tick means the task is not done, not that the box is optimistic
-    — `CLAUDE.md`'s roadmap-task bullet. Only then set the task file's status
-    to `done` (`scripts/sync-indexes.mjs` copies it into the iteration index);
-    and if this was the iteration's
-    last task, verify its "Done when" the same way — by running each
-    criterion — before updating that iteration's `Status` in
-    `docs/roadmap.md`, per "Iteration DoD gate".
+    honestly tick means the task is not done, not that the box is optimistic.
+    Only then set the task file's status to `done`
+    (`scripts/sync-indexes.mjs` copies it into the iteration index).
+    Iterations 0–4 predate task files: tick in `docs/tasks/iteration-N.md`.
+
+    **Iteration DoD gate**, when this was the iteration's last task. Never
+    declare an iteration complete because its last task is ticked. Re-read its
+    "Done when" and verify each criterion by running it; if any is unmet, add
+    tasks to close the gap. The same coverage check applies when planning an
+    iteration ([ADR-0026](../../../docs/adr/0026-task-file-format.md)). Update
+    that iteration's `Status` in `docs/roadmap.md` once it is genuinely done.
 12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 

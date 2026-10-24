@@ -47,8 +47,8 @@ refinement.
 - task status set to `done` in the task file, and synced into its iteration
   index (`make sync-indexes`; the edit-time hook does it for an agent)
 
-**Iteration DoD gate:** see [CLAUDE.md](../CLAUDE.md)'s workflow bullet of the
-same name; `scripts/check-tasks.mjs` checks its planning-time half
+**Iteration DoD gate:** stated in full in the
+[`implement-task` skill](../.claude/skills/implement-task/SKILL.md) (step 11); `scripts/check-tasks.mjs` checks its planning-time half
 mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 
 ## Iterations
