@@ -1,6 +1,6 @@
 # Task 21: The focus check sees a focused list taller than the screen
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -62,20 +62,23 @@ Evidence, gathered on 2026-10-24 on `dev` at `86c0670`:
   no check.
 - `tabTo` calls the same check at every Tab stop in every keyboard flow, so a
   change reaches all of them, not only flow 3.
+- Product owner, 2026-10-24: "seen" means some part of the element inside the
+  viewport is painted on top. The helper grid-samples that visible part of the
+  box; it does not check the focus indicator's own edge, which would need
+  outline geometry no flow requires today.
+- Product owner, 2026-10-24: the helper's own test is a `*.spec.ts` beside
+  `e2e/support/keyboard.ts`, using `page.setContent` on a static page. It runs
+  under the existing Playwright config, which brings the stack up as for every
+  spec; it adds no config, script or CI step and does not use the stack.
 
 ## Open questions
 
-- **Is "some visible part painted on top" the reading of 2.4.11 the project
-  wants?** It is what the helper's comment already claims ("covering only
-  part of it does not" fail), applied to the part inside the viewport. The
-  stricter alternative asks that the focus indicator's own edge be visible.
-  That needs the outline geometry rather than hit-testing, and no flow today
-  needs it.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A Playwright check of the helper on a static page, with no stack,
-      covers three cases: a focused list taller than ten viewports whose top
+- [ ] A Playwright spec of the helper on a static page (`page.setContent`,
+      no use of the stack) covers three cases: a focused list taller than ten viewports whose top
       is in view passes; a control covered entirely by a fixed bar fails; a
       control entirely below the viewport fails. The first case is confirmed
       to fail against today's helper
