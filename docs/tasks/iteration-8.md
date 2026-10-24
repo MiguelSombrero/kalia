@@ -34,6 +34,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md) | Backend services stop leaning on hidden setup | done |
 | [16](iteration-8/16-docs-describe-what-is-built.md) | The documentation describes what is built | refined |
 | [20](iteration-8/20-keycloak-field-errors-carry-kalias-error-sign.md) | Keycloak's field errors carry Kalia's error sign | done |
+| [21](iteration-8/21-focus-check-sees-a-tall-focused-list.md) | The focus check sees a focused list taller than the screen | needs-refinement |
 
 Task 01 is a decision, not an implementation, and it comes first because its
 answer changes how much tasks 02 and 03 have to build: a catalog fed by an
@@ -93,3 +94,10 @@ error sign Kalia's own pages use. Like 06–16, it neither advances nor blocks
 the "Done when" above. It is listed last because it reopens one consequence
 of [ADR-0074](../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
 and has to be refined first.
+
+Task 21 was added on 2026-10-24, after `make verify` for task 16 failed
+locally on a keyboard flow that CI passes. The check behind every keyboard
+flow reports a focused list as hidden once the list is about ten screens tall,
+which happens only on a local database that has been used for a while. Like
+06–16, it neither advances nor blocks the "Done when" above. It is listed last
+because the local `make verify` stays unreliable until it lands.
