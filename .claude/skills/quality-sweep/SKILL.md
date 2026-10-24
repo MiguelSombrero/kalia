@@ -99,13 +99,20 @@ there's nothing to report if that's true.
 The only dimension that audits how this repository works on itself rather
 than what it builds. Almost all of its scope is read by no other
 dimension: `.claude/` (skills, `rules/`, `settings.json`), `scripts/` and
-`scripts/hooks/`, the `Makefile`, `CLAUDE.md`, and the merged pull
+`scripts/hooks/`, the `Makefile`, `CLAUDE.md`, the merged pull
 requests and commits since the previous sweep
-([ADR-0051](../../../docs/adr/0051-process-retrospection-belongs-to-the-sweep.md)).
-The one overlap is `docs/PULL_REQUEST_TEMPLATE.md`, which
-documentation-quality already reads for staleness — read it here only as a
-gate mechanism (what it makes happen, and whether that still holds), so
-the two dimensions do not report the same finding twice.
+([ADR-0051](../../../docs/adr/0051-process-retrospection-belongs-to-the-sweep.md)),
+and the rows of `docs/common-failures.md` dated since then
+([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
+That log is where agents record the failures the history hides. Grouping
+its rows into the same failure is this dimension's job: two rows from
+separate pull requests meet the recurrence bar below, and a fix commit or
+red CI run with no matching row is a finding against the log itself.
+The two overlaps are `docs/PULL_REQUEST_TEMPLATE.md` and that log's
+header, which documentation-quality already reads for staleness — read
+them here only as gate mechanisms (what they make happen, and whether
+that still holds), so the two dimensions do not report the same finding
+twice.
 
 Look for, in rough order of what has actually gone wrong here before:
 
