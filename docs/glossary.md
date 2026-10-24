@@ -44,15 +44,15 @@ reader is a translation-policy question belonging with
 ## catalog
 
 Beers, breweries and styles, plus search and filtering, and a signed-in user
-adding a beer the catalog lacks. Depends on `identity`, for the contributor a
-user-added row records. Its data is public by nature — a beer's attributes are
+adding a beer the catalog lacks. Its dependencies are in
+[architecture.md §3](architecture.md#3-backend-modules). Its data is public by nature — a beer's attributes are
 catalog data a signed-out visitor may read; the contributor is never served.
 
 ### Domain types (`fi.kalia.catalog.domain`)
 
 | Type | Meaning in this module | Why |
 |---|---|---|
-| `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id only. One a user adds (`addedBy`) has no description and records its **contributor**. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) |
+| `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id and reads a few of its facts through the catalog's API ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). One a user adds (`addedBy`) has no description and records its **contributor**. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) |
 | `Brewery` | The maker of beers, with a country and optional city. One a user adds records its contributor too. | [ADR-0007](adr/0007-backend-package-structure.md) |
 | `Country` | The countries a brewery can be in: `Country.CODES` lists every ISO 3166-1 alpha-2 code, the only form of a country the catalog stores. A new brewery's country is one of them. | [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
@@ -64,7 +64,8 @@ catalog data a signed-out visitor may read; the contributor is never served.
 
 The security filter chain, bearer-token validation, and resolving the current
 caller from the token's `sub`. Deliberately narrow: it is about tokens, not
-about what a user looks like to other users — that is `profile`.
+about what a user looks like to other users — that is `profile`. Its
+dependencies are in [architecture.md §3](architecture.md#3-backend-modules).
 
 ### Domain types (`fi.kalia.identity.domain`)
 
@@ -75,21 +76,21 @@ about what a user looks like to other users — that is `profile`.
 ## profile
 
 Who a user is to *other* users: a username copied once from the identity
-provider, plus whether their cellar is public. A leaf module — depends on
-nothing. Its rows are public data an anonymous request may read.
+provider, plus whether their cellar is public. A leaf module; its
+dependencies are in [architecture.md §3](architecture.md#3-backend-modules). Its rows are public data an anonymous request may read.
 
 ### Domain types (`fi.kalia.profile.domain`)
 
 | Type | Meaning in this module | Why |
 |---|---|---|
 | `Profile` | A user's public identity, keyed by the Keycloak `sub` itself (no separate generated id), created lazily the first time anything needs one. Carries `username` (copied from `preferred_username` at creation, immutable in Kalia thereafter) and `cellarPublic` (defaults `false`). | [ADR-0049](adr/0049-profile-module-and-public-identity.md) |
-| `ProfileRepository` | Persistence for `Profile`. Looks a profile up by username with `findFirst…OrderByCreatedAtDesc` because a Keycloak `sub` change can leave two rows sharing one username. | [ADR-0033](adr/0033-keycloak-account-relinking.md) |
+| `ProfileRepository` | Persistence for `Profile`. Looks a profile up by username with `findByUsernameIgnoringCase`, which matches regardless of case: a username is unique that way and never reused, so at most one row answers. | [ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md) |
 
 ## cellar
 
 The signed-in user's owned bottles, grouped by catalog beer; plus a public
-read of a cellar its owner has made public. Reads `catalog` (beer existence),
-`identity` (current user) and `profile` (public-cellar visibility).
+read of a cellar its owner has made public. Its dependencies are in
+[architecture.md §3](architecture.md#3-backend-modules).
 
 ### Domain types (`fi.kalia.cellar.domain`)
 
@@ -103,11 +104,9 @@ read of a cellar its owner has made public. Reads `catalog` (beer existence),
 
 ## feed
 
-A record of things that happened — currently, a bottle added to a cellar.
-Depends on `cellar` (the `BottleAdded` event), `catalog` (a beer's name,
-brewery, style and strength, read fresh for the feed endpoint) and `profile` (a username and the
-owner's *current* cellar visibility, same reason). **"Feed",
-"event" and "activity" already mean something else in this codebase** — a
+A record of things that happened — currently, a bottle added to a cellar. Its
+dependencies are in [architecture.md §3](architecture.md#3-backend-modules).
+**"Feed", "event" and "activity" already mean something else in this codebase** — a
 Spring application event, a Spring Modulith `event_publication` row — so a
 type here is never named with any of those three words on its own; `FeedLine`
 is deliberately explicit rather than the bare `Line` the module-scoping
@@ -126,7 +125,7 @@ convention would otherwise suggest.
 
 | Word | In one module | In another |
 |---|---|---|
-| **beer** | `catalog.Beer` — a brand/product the catalog holds. | In `cellar` there is no `Beer` type at all: an entry carries a `beerId`, a cross-module reference by id. Informally, UI copy says "beer" for the brand *and* loosely for the bottles owned of it. |
+| **beer** | `catalog.Beer` — a brand/product the catalog holds. | In `cellar` there is no `Beer` type at all: an entry's `beer` is a `CellarBeerDto`, the few catalog facts the cellar pages show, joined in by the backend ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). Informally, UI copy says "beer" for the brand *and* loosely for the bottles owned of it. |
 | **bottle** | `cellar.Bottle` — the owned physical unit, whatever its container kind. | `cellar.ContainerType.BOTTLE` — one container kind, as against `CAN` and `KEG`. Same word, one level apart, in the same module. A rename to remove the overlap was weighed and dropped (below). |
 | **username** | `profile.Profile.username` — copied once from `preferred_username`, immutable in Kalia, the user's whole public identity and the `/cellars/{username}` URL segment. | `identity.CurrentUser.username` — the live `preferred_username` claim off the current token, display-only, refreshed every request, never persisted. |
 | **id** | `profile.Profile.id` — the Keycloak `sub` itself; there is exactly one profile row per subject and no generated key. | `Beer.id`, `Brewery.id`, `Entry.id`, `Bottle.id` — generated `UUID`s with no external meaning. |
@@ -154,7 +153,8 @@ and they drift from the Java names that produced them.
 
 | Field | Meaning |
 |---|---|
-| `beerId` | A cross-module reference to `catalog.Beer` by id. Cellar responses never embed a `Beer` object. |
+| `beer` | On `EntryDto` and `PublicCellarEntryDto`: a `CellarBeerDto` — the beer's `id`, `name`, `brewery` (its name), `style` and `abv` as the catalog describes them now. Both entry shapes carry the same one, so a field added to it reaches a signed-out reader too ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). |
+| `beerId` | A cross-module reference to `catalog.Beer` by id, on a request that names a beer (`AddBottleRequestDto`) and inside the cellar domain. A cellar *response* carries `beer`, never a bare `beerId`. |
 | `quantity` | On `EntryDto` / `PublicCellarEntryDto`: the derived bottle count (`COUNT(*)`). It maps to no database column and no stored domain field — it exists only at the API boundary. On `AddBottleRequestDto`: how many identical bottles to create (1–24). On `FeedLineDto`: the count frozen on one bulk-add act at the moment it happened — never recomputed, and unrelated to what the cellar holds now. |
 | `cellarPublic` | The wire name for cellar visibility, on `ProfileDto` and `ChangeVisibilityRequestDto`. |
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |

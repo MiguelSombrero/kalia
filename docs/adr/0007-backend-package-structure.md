@@ -24,6 +24,11 @@
   keeps a Spring Data repository off an entity that a `@OneToMany` with orphan
   removal owns, so a non-root part of an aggregate has no repository of its own
   (iteration 6 task 05)
+- **Amended:** 2026-10-24 — the examples of a module whose domain earns
+  full ports/adapters ceremony (payment's `PaymentProvider`, ordering's state
+  machine) named modules of the store the vision dropped
+  ([ADR-0004](0004-backend-cart.md)); the deferral
+  stands for every module there is today, and so does the rule
 - **Amended:** 2026-10-24 — the module-root rule is now a ban: a root class
   depends on no `domain` type at all. The 2026-08-29 rule only required a
   root class touching `domain` to touch `application` too, so one injecting a

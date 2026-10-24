@@ -31,6 +31,12 @@
 - **Amended:** 2026-10-14 — `Card` is removed; its classes live on as
   `surfaceVariants` in `components/ui/surface.ts`
   ([task 18](../tasks/iteration-7.5/18-empty-states-and-sign-in-prompts-as-primitives.md))
+- **Amended:** 2026-10-24 — the toast carries three outcomes now, not one:
+  the removal outcome, the just-added line and the profile's visibility
+  change. Which components render it is in `frontend/`; the reason it is a
+  Radix primitive is unchanged. This ADR is the one home of the Radix
+  rationale, and the README, `frontend/README.md` and `docs/architecture.md`
+  point here
 
 ## Context
 

@@ -21,13 +21,15 @@ const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
 const { listCellarEntries } = vi.hoisted(() => ({ listCellarEntries: vi.fn() }));
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
-// FeedList, FeedError and CellarSummary are client components with their own
-// tests. These stand-ins record what the page handed them, which is the part
-// Home is responsible for; the FeedList one always renders `emptyState` so
-// this file can assert on what Home built for it.
-const { feedListProps, cellarSummaryProps } = vi.hoisted(() => ({
+// FeedList, FeedError, FrontPagePitch, FeedEmptyState and CellarSummary have
+// their own tests. These stand-ins record what the page handed them, which is
+// the part Home is responsible for; the FeedList one always renders
+// `emptyState` so this file can assert on what Home built for it.
+const { feedListProps, cellarSummaryProps, pitchProps, emptyStateProps } = vi.hoisted(() => ({
   feedListProps: vi.fn(),
   cellarSummaryProps: vi.fn(),
+  pitchProps: vi.fn(),
+  emptyStateProps: vi.fn(),
 }));
 
 vi.mock("@/features/feed", () => ({
@@ -37,6 +39,15 @@ vi.mock("@/features/feed", () => ({
     return <div data-testid="feed-list">{props.emptyState}</div>;
   },
   FeedError: () => <div role="alert">feed failed</div>,
+  FrontPagePitch: (props: unknown) => {
+    pitchProps(props);
+    return <div data-testid="pitch" />;
+  },
+  FeedEmptyState: (props: unknown) => {
+    emptyStateProps(props);
+    return <div data-testid="empty-state" />;
+  },
+  feedHeadingRow: "feed-heading-row",
 }));
 vi.mock("@/features/cellar", async (importOriginal) => ({
   cellarCounts: (await importOriginal<typeof import("@/features/cellar")>()).cellarCounts,
@@ -100,23 +111,13 @@ describe("generateMetadata", () => {
 });
 
 describe("Home, signed out", () => {
-  it("opens on the tagline as its heading, what the feed is, and how Kalia works", async () => {
+  it("opens on the pitch, not the visitor's cellar", async () => {
     readFeed.mockResolvedValue({ content: [line("ada", "c1")], nextCursor: undefined, startOver: false });
 
     const { container } = render(await Home({ params }));
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: "Craft beer management for enthusiasts." }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("This is where cellars people have chosen to make public show what they're adding."),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: "How Kalia works" })).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
-      "01Find a beerSearch the catalog.",
-      "02Cellar itCount every bottle and note its vintage.",
-      "03Share itMake your cellar public and your additions appear here.",
-    ]);
+    expect(screen.getByTestId("pitch")).toBeInTheDocument();
+    expect(pitchProps).toHaveBeenCalledWith({ locale: "en" });
     expect(screen.queryByTestId("cellar-summary")).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -137,16 +138,12 @@ describe("Home, signed out", () => {
     );
   });
 
-  it("builds an empty state that invites creating an account and does not repeat the pitch", async () => {
+  it("hands the feed an empty state for a visitor with no account", async () => {
     readFeed.mockResolvedValue(emptyFeed);
 
-    const { container } = render(await Home({ params }));
+    render(await Home({ params }));
 
-    const empty = screen.getByTestId("feed-list");
-    expect(empty).toHaveTextContent("Nothing here yet.");
-    expect(empty).not.toHaveTextContent("This is where cellars people have chosen");
-    expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/en/sign-up");
-    expect(await axe(container)).toHaveNoViolations();
+    expect(emptyStateProps).toHaveBeenCalledWith({ locale: "en", signedIn: false, viewer: null });
   });
 });
 
@@ -159,7 +156,7 @@ describe("Home, signed in", () => {
     render(await Home({ params }));
 
     expect(screen.getByRole("heading", { level: 1, name: "Kalia" })).toHaveClass("sr-only");
-    expect(screen.queryByRole("heading", { name: "How Kalia works" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("pitch")).not.toBeInTheDocument();
     expect(cellarSummaryProps).toHaveBeenCalledWith({
       locale: "en",
       cellarPublic: true,
@@ -178,31 +175,17 @@ describe("Home, signed in", () => {
     expect(cellarSummaryProps).toHaveBeenCalledWith(expect.objectContaining({ counts: null }));
   });
 
-  it("explains an empty feed, and why the visitor's own additions are missing when their cellar is private", async () => {
+  it("hands the feed an empty state that knows the visitor and whether their cellar is public", async () => {
     readFeed.mockResolvedValue(emptyFeed);
     signInAs("ada", false);
 
     render(await Home({ params }));
 
-    const empty = screen.getByTestId("feed-list");
-    expect(empty).toHaveTextContent("This is where cellars people have chosen to make public");
-    expect(empty).toHaveTextContent("Your own cellar is private, so your additions won't show up here.");
-    expect(screen.getByRole("link", { name: "Make your cellar public" })).toHaveAttribute(
-      "href",
-      "/en/profile",
-    );
-    expect(screen.queryByRole("link", { name: "Create an account" })).not.toBeInTheDocument();
-  });
-
-  it("does not show the private-cellar hint when the visitor's cellar is already public", async () => {
-    readFeed.mockResolvedValue(emptyFeed);
-    signInAs("ada", true);
-
-    render(await Home({ params }));
-
-    expect(
-      screen.queryByText("Your own cellar is private, so your additions won't show up here."),
-    ).not.toBeInTheDocument();
+    expect(emptyStateProps).toHaveBeenCalledWith({
+      locale: "en",
+      signedIn: true,
+      viewer: expect.objectContaining({ cellarPublic: false }),
+    });
   });
 
   // Where a new account lands after registering, so where it learns the name is taken.
@@ -222,9 +205,7 @@ describe("Home, when the feed cannot be read", () => {
 
     const { container } = render(await Home({ params }));
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: "Craft beer management for enthusiasts." }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("pitch")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Latest additions" })).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent("feed failed");
     expect(screen.queryByTestId("feed-list")).not.toBeInTheDocument();

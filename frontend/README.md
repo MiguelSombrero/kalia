@@ -27,7 +27,7 @@ root. The production image uses Next.js standalone output
 | `AUTH_KEYCLOAK_INTERNAL_ORIGIN` | — | Where this container actually reaches Keycloak; requests to `AUTH_KEYCLOAK_ISSUER` are transparently redirected here (`lib/auth/internalKeycloakFetch.ts`). Required |
 | `VALKEY_URL` | `redis://localhost:6379` | Session store for the Auth.js adapter (`lib/auth/valkeyAdapter.ts`). Required in production |
 
-The five `AUTH_KEYCLOAK_*`/`AUTH_URL`/`VALKEY_URL` values above are set by
+The six `AUTH_KEYCLOAK_*`/`AUTH_URL`/`VALKEY_URL` values above are set by
 `docker-compose.yml` for the containerized stack. Running `npm run dev`
 natively against that same dockerized Keycloak needs its own `.env.local`
 — and since a native process has no container network split, set
@@ -120,9 +120,10 @@ part of the normal test loop
 ([iteration 6.5 task 09](../docs/tasks/iteration-6.5/09-deterministic-test-accounts.md)).
 
 **The one exception, and the suite handles it itself.** `/sign-up` is rate
-limited by a single counter shared by every visitor, 20 attempts per 10
-minutes ([ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md)), and
-a full run spends about five of them — so without clearing it, three
+limited by a single counter shared by every visitor (its budget is the
+constants in `features/auth/signUpRateLimit.ts`,
+[ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md) says why), and
+a full run spends about five attempts — so without clearing it, a few
 consecutive runs exhaust the window and every registering spec starts timing
 out on Keycloak's `#username`, saying nothing about rate limiting. The
 worker-scoped `valkey` fixture and the automatic `signUpBudget` fixture in
@@ -292,15 +293,13 @@ Why the rationale lives there and not here:
   above, and one left behind after its heading goes fails as unused
   ([ADR-0073](../docs/adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)).
 - **`components/ui/` is hand-written and dependency-free, with two exceptions:
-  `dialog.tsx` wraps `@radix-ui/react-dialog`** for the focus trap,
-  focus restore, `Escape` handling and `aria-modal` inerting a modal needs,
-  **and `toast.tsx` wraps `@radix-ui/react-toast`** for the removal
-  outcome toast's `aria-live` announcement and auto-dismiss timing —
-  behaviour, not styling, and each part of it fails silently
-  ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)'s 2026-08-22,
-  2026-08-23 and 2026-09-04 amendments). Radix is headless: both primitives
-  are still styled with the semantic tokens above, and no other primitive
-  may take a UI dependency without amending that ADR again.
+  `dialog.tsx` wraps `@radix-ui/react-dialog` and `toast.tsx` wraps
+  `@radix-ui/react-toast`.** What each is for is in
+  [ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md); what an editor
+  must keep is that the behaviour they supply (focus trap and restore, `Escape`,
+  `aria-live` announcement, auto-dismiss) fails silently when hand-rolled, and
+  that no other primitive may take a UI dependency without amending that ADR
+  again.
   Icons are hand-drawn in `icon.tsx` rather than installed, because an icon is
   appearance ([ADR-0065](../docs/adr/0065-imagery-icons-and-mark-specimen.md)).
 - **Loading/error/empty states have a fixed shape**: `loading.tsx` per route

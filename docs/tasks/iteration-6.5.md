@@ -117,7 +117,7 @@ externally-checked conclusions are recorded here so they are not re-researched:
   disproportionate: strong identification yields henkilötunnus-grade identity
   for an app that sells nothing.
 
-Four of the nine tasks were not in that analysis and came out of sketching the
+Four of the iteration's first nine tasks were not in that analysis and came out of sketching the
 iteration against the code. Each is a thing that breaks or rots quietly:
 [03](iteration-6.5/03-prevent-realm-configuration-drift.md) (a persistent realm
 stops being described by its committed file, because `--import-realm` skips a

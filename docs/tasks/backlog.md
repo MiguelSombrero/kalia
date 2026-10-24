@@ -14,8 +14,8 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   charge. Entirely dependent on whether beer retailers publish usable APIs;
   distant. Kalia links out and does not sell — there is no basket, no checkout
   and no payment in this idea.
-- **Likes and comments on feed events**, once the feed
-  ([iteration 7](iteration-7.md)) exists.
+- **Likes and comments on feed events** — the feed
+  ([iteration 7](iteration-7.md)) exists, so this waits only on being wanted.
 - Recommendations ("if you liked this IPA…")
 - Following other users, so a feed can be personal rather than global
 - Admin UI + role-based access for catalog management
@@ -42,10 +42,13 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   rather than only a route into the catalog
   ([iteration 7.5 task 09](iteration-7.5/09-cellar-layout.md)).
 - **A cellar's oldest vintage and last addition on the front page.** The chosen
-  front page showed both in *My cellar*, but today they need one request per
-  beer in the cellar on every visit, so they were left out until the API can
-  answer them in one
+  front page showed both in *My cellar*, but they were left out while they
+  needed one request per beer in the cellar on every visit
   ([ADR-0068](../adr/0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)).
+  That reason is gone: the cellar read now arrives joined with its beers and
+  carries every bottle
+  ([ADR-0083](../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)),
+  so what is left is a front-page change to schedule.
 - **Finish an add begun before signing in.** A signed-out visitor who presses
   *Add* on a beer is sent through sign-in and lands back on that beer with
   nothing added, so they press it again (AUD-22 in
@@ -117,18 +120,6 @@ Engineering work:
   no headers and would silently drop it — the identical defect ADR-0014
   records for the 405 `Allow` header. Any fix needs a test pinning both the
   body and the header.
-- **The frontend's import boundaries have no violating fixture**, unlike the
-  backend's ArchUnit rules, which are re-run against
-  `backend/src/test/java/archfixture/` for exactly this reason
-  (`docs/architecture.md` §7). A green `npm run lint` proves the layer config
-  in `frontend/eslint.config.mjs` parses, not that any rule still fires: a
-  mistyped element pattern or a reordered descriptor would pass silently
-  ([ADR-0012](../adr/0012-orval-api-client.md)). Every rule was verified by
-  hand when it was written (iteration 5 task 05), which is a one-time check,
-  not a guard. **The trap when fixing it:** a fixture tree that lint is
-  expected to *fail* on has to live somewhere `tsc`, Vitest and `next build`
-  all ignore, and the check has to assert the failure rather than run
-  `eslint` and pass on a zero exit code.
 - **A duplicate brewery is named from a search, not by its id.** The add-beer
   form's `409` for a brewery carries only `existingBreweryId`, and the API has
   no read of one brewery, so `addBeerAction` (`frontend/features/catalog/actions.ts`)
@@ -150,13 +141,13 @@ Engineering work:
 
 ## Mobile client
 
-A React Native / Expo app is planned after [iteration 8](iteration-8.md),
-carrying at least the catalog, cellar, profile and feed. This section exists
-for a narrower reason: the decisions being made *now*, in iterations 5–8, are
-the API contract a second client would inherit, and a client that ships
-through an app store cannot be redeployed in lockstep with the backend.
-Choices that are reversible today stop being reversible then. Written up
-2026-08-08 from an architecture analysis the product owner asked for.
+A React Native / Expo app, scheduled below as iterations 9–14, carrying the
+catalog, cellar, profile and feed. This section is the reasoning behind that
+plan: the decisions made before it ships are the API contract a second client
+inherits, and a client that ships through an app store cannot be redeployed in
+lockstep with the backend. Choices that are reversible before then stop being
+reversible after. Written up 2026-08-08 from an architecture analysis the
+product owner asked for.
 
 **Scheduled 2026-10-04 as iterations [9](iteration-9.md)–[14](iteration-14.md)**,
 with mobile as Kalia's primary UI and the web maintained without being held at
@@ -215,8 +206,9 @@ Keycloak `sid`, so signing out on the phone leaves the laptop signed in.
 ### What does not carry over
 
 **The BFF is a rendering layer, not an API layer.** `frontend/app/api/` holds
-only Auth.js's own routes; every catalog read runs server component →
-`kaliaFetch` → Spring. There is no JSON surface for a mobile app to reuse, so
+only Auth.js's own routes and Keycloak's back-channel logout endpoint; every
+catalog read runs server component → a feature's `api.ts` → `kaliaFetch` →
+Spring. There is no JSON surface for a mobile app to reuse, so
 mobile calls Spring directly as its own OAuth client. That does not contradict
 [ADR-0003](../adr/0003-bff-pattern.md), which is about *the browser* — but two
 of its stated consequences, "no CORS surface" and "the Spring API is not

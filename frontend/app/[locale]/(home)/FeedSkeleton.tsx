@@ -1,8 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { feedRowFrame } from "@/features/feed";
+import { feedHeadingRow, feedRowFrame, mastheadGrid } from "@/features/feed";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { feedHeadingRow, mastheadGrid } from "./frontPageLayout";
 
 export const FEED_SKELETON_ROWS = 6;
 
