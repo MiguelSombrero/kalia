@@ -166,6 +166,18 @@ content arrives later. Traced 2026-10-11 on `/en/beers/<unknown id>` by
 restarting the frontend container before each run. Wait for something only the
 settled page has, such as its `<h1>`, before measuring layout.
 
+**Flow 3 in `keyboard-flows.spec.ts` fails at "tab back up to the
+new-entries control" with `the focused element is entirely hidden`, received
+`<ul> "…" at y=<a few hundred>–<several thousand>`. It fails locally only,
+and only some runs.** Nothing hides the list. Taking in new entries focuses
+the feed's `<ul>` on purpose, and its top is on screen. `expectFocusNotObscured`
+samples points at 10/50/90% of the whole box, so a list over ten viewports
+tall has every point below the fold. A long-lived local database grows the
+feed that tall, and a fresh one or CI's never does. Measured 2026-10-24 on
+`86c0670`: 3 of 10 runs failed on a reused volume and 10 of 10 passed on a
+fresh one
+([task 21](tasks/iteration-8/21-focus-check-sees-a-tall-focused-list.md)).
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by
