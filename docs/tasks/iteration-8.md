@@ -34,7 +34,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md) | Backend services stop leaning on hidden setup | done |
 | [16](iteration-8/16-docs-describe-what-is-built.md) | The documentation describes what is built | done |
 | [20](iteration-8/20-keycloak-field-errors-carry-kalias-error-sign.md) | Keycloak's field errors carry Kalia's error sign | done |
-| [21](iteration-8/21-focus-check-sees-a-tall-focused-list.md) | The focus check sees a focused list taller than the screen | refined |
+| [21](iteration-8/21-focus-check-sees-a-tall-focused-list.md) | The focus check sees a focused list taller than the screen | done |
 
 Task 01 is a decision, not an implementation, and it comes first because its
 answer changes how much tasks 02 and 03 have to build: a catalog fed by an

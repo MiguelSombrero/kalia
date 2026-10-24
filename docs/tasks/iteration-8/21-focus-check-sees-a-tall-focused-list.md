@@ -1,6 +1,6 @@
 # Task 21: The focus check sees a focused list taller than the screen
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -77,16 +77,16 @@ Evidence, gathered on 2026-10-24 on `dev` at `86c0670`:
 
 ## Acceptance criteria
 
-- [ ] A Playwright spec of the helper on a static page (`page.setContent`,
+- [x] A Playwright spec of the helper on a static page (`page.setContent`,
       no use of the stack) covers three cases: a focused list taller than ten viewports whose top
       is in view passes; a control covered entirely by a fixed bar fails; a
       control entirely below the viewport fails. The first case is confirmed
       to fail against today's helper
-- [ ] `npx playwright test e2e/keyboard-flows.spec.ts --repeat-each=10`
+- [x] `npx playwright test e2e/keyboard-flows.spec.ts --repeat-each=10`
       passes against a long-lived local stack that reproduced the flake
-- [ ] The same command passes against a fresh stack (`docker compose down -v`,
+- [x] The same command passes against a fresh stack (`docker compose down -v`,
       then up)
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 
