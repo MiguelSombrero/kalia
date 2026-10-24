@@ -119,7 +119,10 @@ left 250. The remaining 59 came from the repository tree and per-suite command
 block (each held by a README), the skills list and the screenshot rationale
 (held by the skills' own descriptions and `.claude/rules/no-screenshots.md`),
 and tightened phrasing in the dependency, vulnerability-scan, checkpoint,
-review-dialogue and quality-sweep bullets that kept every rule they stated.
+review-dialogue and quality-sweep bullets. Those trims dropped citations and
+examples, not operative rules: the ADR-0039 link on the code-comments bullet
+(ADR-0017 stays), the amendment date on the ADR-0020 citation, and "no code
+change" from the lockfile-bump exception.
 
 **Where each removed sentence went.** The gate wording is in
 `.claude/skills/implement-task/SKILL.md` steps 7, 8 and 11; the repository tree
