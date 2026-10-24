@@ -56,8 +56,7 @@ flowchart LR
         Browser
     end
     subgraph Frontend["frontend/ (Next.js, BFF)"]
-        UI[Server & client components]
-        RH[Route handlers /api/*]
+        NX[Next.js server: server components, Server Actions]
     end
     subgraph Backend["backend/ (Spring Boot modulith)"]
         API[REST API /api/v1]
@@ -67,22 +66,23 @@ flowchart LR
         PROF[profile]
         FED[feed]
     end
-    Browser --> UI
-    UI --> RH
-    RH -->|REST, JSON| API
-    API --> CAT & CEL & IDN & PROF
-    FED --> CEL
+    Browser --> NX
+    NX -->|REST, JSON| API
+    API --> CAT & CEL & IDN & PROF & FED
+    CAT --> IDN
+    CEL --> CAT & IDN & PROF
+    FED --> CEL & CAT & PROF
     CAT & CEL & PROF & FED --> PG[(PostgreSQL)]
     Browser -.->|OIDC redirect| KC[Keycloak]
-    RH -->|session read/write| VK[(Valkey)]
+    NX -->|session read/write| VK[(Valkey)]
     IDN -->|validate token, JWKS| KC
 ```
 
 Key properties:
 
 - **BFF pattern** ([ADR-0003](adr/0003-bff-pattern.md)): the browser never
-  calls Spring Boot directly. Next.js route handlers / server components proxy
-  to the backend. Tokens and session state stay server-side; CORS is a
+  calls Spring Boot directly. Server components and Server Actions, running
+  in the one Next.js server process, call the backend. Tokens and session state stay server-side; CORS is a
   non-issue.
 - **Modulith** ([ADR-0002](adr/0002-spring-modulith.md)): one deployable, one
   database, but hard module boundaries verified by Spring Modulith tests.
@@ -119,8 +119,9 @@ direction **web → application → domain** — enforced by ArchUnit
 
 The module root package is reserved for the **inter-module API** and stays
 empty until the module's first consumer arrives. It obeys the same inward
-dependency direction as `web` — it calls its module's `application` layer, not
-`domain` repositories directly, enforced by `ArchitectureTest`. Full
+dependency direction as `web` — it calls its module's `application` layer and
+never names a `domain` type, so whatever it hands another module is built in
+`application`, enforced by `ArchitectureTest`. Full
 ports/adapters ceremony is deferred to modules whose domain earns it.
 Cross-module *writes* happen via application events — registered on the
 aggregate root and drained by Spring Data on `save`, never published from a
@@ -808,7 +809,9 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend unit | JUnit 5 | Domain logic without a Spring context |
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
+| Module map in these docs | `ArchitectureDocumentationTest`, against Spring Modulith's `Documenter` view | §2's diagram — its backend modules and the edges between them — and §3's table and "Depends on" column are parsed at test time; editing either without the code, or the code without them, fails the build ([backend/README.md](../backend/README.md) notable suites) |
 | Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
+| The `boundaries/dependencies` policies | Each re-run by `frontend/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `frontend/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | The `noClasses()` rules among those | Re-run against `backend/src/test/java/archfixture/` | A rule no production class triggers passes whether or not its condition is right, so those rules — and only those — are also run against a codebase that breaks them |
 | Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly") |

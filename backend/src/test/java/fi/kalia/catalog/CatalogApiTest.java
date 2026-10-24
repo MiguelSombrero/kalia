@@ -24,7 +24,7 @@ class CatalogApiTest {
 	@Test
 	void aLookupOverTheIdCapIsServedInChunksNoneOverTheCap() {
 		List<Collection<UUID>> lookups = new ArrayList<>();
-		given(catalog.getBeers(anyCollection())).willAnswer(invocation -> {
+		given(catalog.getBeerSummaries(anyCollection())).willAnswer(invocation -> {
 			lookups.add(List.copyOf(invocation.<Collection<UUID>>getArgument(0)));
 			return List.of();
 		});

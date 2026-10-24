@@ -37,7 +37,10 @@ class ArchitectureDocumentationTest {
 	private static final Pattern SECTION_2_HEADING = Pattern.compile("^## 2\\. High-level design$");
 	private static final Pattern SECTION_3_HEADING = Pattern.compile("^## 3\\. Backend modules$");
 	private static final Pattern NEXT_HEADING = Pattern.compile("^## \\d+\\.");
-	private static final Pattern MERMAID_NODE = Pattern.compile("^\\s*[A-Za-z0-9_]+\\[([^]]+)]\\s*$");
+	private static final Pattern MERMAID_NODE = Pattern.compile("^\\s*([A-Za-z0-9_]+)\\[([^]]+)]\\s*$");
+	private static final Pattern MERMAID_ARROW = Pattern.compile("\\s*(?:-->|-\\.->|==>)(?:\\|[^|]*\\|)?\\s*");
+	private static final Pattern MERMAID_NODE_ID = Pattern.compile("^[A-Za-z0-9_]+");
+	private static final Pattern MERMAID_AND = Pattern.compile("&");
 	private static final Pattern SINGLE_WORD_LABEL = Pattern.compile("^[a-z]+$");
 	private static final Pattern TABLE_ROW = Pattern.compile("^\\|.*\\|$");
 	private static final Pattern BACKTICKED_MODULE = Pattern.compile("`([a-z]+)`");
@@ -51,7 +54,10 @@ class ArchitectureDocumentationTest {
 	void moduleSetAndDependenciesMatchArchitectureDoc(@TempDir Path outputDir) throws IOException {
 		List<String> lines = Files.readAllLines(ARCHITECTURE_DOC);
 
-		Set<String> section2Modules = parseSection2ModuleSet(lines);
+		List<String> section2Mermaid = section2Mermaid(lines);
+		Map<String, String> section2NodeIdsToModules = parseSection2Modules(section2Mermaid);
+		Set<String> section2Modules = new LinkedHashSet<>(section2NodeIdsToModules.values());
+		Map<String, Set<String>> section2Edges = parseSection2Edges(section2Mermaid, section2NodeIdsToModules);
 		Map<String, Set<String>> section3 = parseSection3DependsOn(lines);
 
 		String componentDiagram = generateComponentDiagram(outputDir);
@@ -63,6 +69,9 @@ class ArchitectureDocumentationTest {
 		assertThat(section2Modules)
 				.as("§2's mermaid module set vs Documenter's own module set")
 				.isEqualTo(codeModules);
+		assertThat(section2Edges)
+				.as("§2's mermaid inter-module edges vs Documenter's own dependency edges")
+				.isEqualTo(codeEdges);
 		assertThat(section3.keySet())
 				.as("§3's table module set vs Documenter's own module set")
 				.isEqualTo(codeModules);
@@ -116,7 +125,7 @@ class ArchitectureDocumentationTest {
 		return edges;
 	}
 
-	private static Set<String> parseSection2ModuleSet(List<String> lines) {
+	private static List<String> section2Mermaid(List<String> lines) {
 		int headingLine = indexMatching(lines, 0, SECTION_2_HEADING::matcher,
 				"§2 heading ('## 2. High-level design')");
 		int sectionEnd = indexOfNextHeading(lines, headingLine + 1);
@@ -125,20 +134,52 @@ class ArchitectureDocumentationTest {
 				"§2's ```mermaid code block");
 		int mermaidEnd = indexOfLine(lines, mermaidStart + 1, sectionEnd, "```",
 				"the closing ``` of §2's mermaid code block");
+		return lines.subList(mermaidStart + 1, mermaidEnd);
+	}
 
-		List<String> mermaid = lines.subList(mermaidStart + 1, mermaidEnd);
+	private static Map<String, String> parseSection2Modules(List<String> mermaid) {
 		int subgraphStart = indexOfLinePrefix(mermaid, 0, "subgraph Backend", "§2's Backend subgraph");
 		int subgraphEnd = indexOfLine(mermaid, subgraphStart + 1, mermaid.size(), "end",
 				"the closing 'end' of §2's Backend subgraph");
 
-		Set<String> moduleNames = new LinkedHashSet<>();
+		Map<String, String> nodeIdsToModules = new LinkedHashMap<>();
 		for (String line : mermaid.subList(subgraphStart + 1, subgraphEnd)) {
 			Matcher matcher = MERMAID_NODE.matcher(line);
-			if (matcher.matches() && SINGLE_WORD_LABEL.matcher(matcher.group(1)).matches()) {
-				moduleNames.add(matcher.group(1));
+			if (matcher.matches() && SINGLE_WORD_LABEL.matcher(matcher.group(2)).matches()) {
+				nodeIdsToModules.put(matcher.group(1), matcher.group(2));
 			}
 		}
-		return moduleNames;
+		return nodeIdsToModules;
+	}
+
+	/** Reads chains ({@code A --> B --> C}) and the {@code A & B --> C & D} shorthand; edges with a non-module end are ignored. */
+	private static Map<String, Set<String>> parseSection2Edges(List<String> mermaid,
+			Map<String, String> nodeIdsToModules) {
+		Map<String, Set<String>> edges = new LinkedHashMap<>();
+		nodeIdsToModules.values().forEach(module -> edges.put(module, new LinkedHashSet<>()));
+
+		for (String line : mermaid) {
+			String[] segments = MERMAID_ARROW.split(line.strip());
+			for (int i = 0; i + 1 < segments.length; i++) {
+				for (String source : nodeIds(segments[i])) {
+					for (String target : nodeIds(segments[i + 1])) {
+						if (nodeIdsToModules.containsKey(source) && nodeIdsToModules.containsKey(target)) {
+							edges.get(nodeIdsToModules.get(source)).add(nodeIdsToModules.get(target));
+						}
+					}
+				}
+			}
+		}
+		return edges;
+	}
+
+	private static List<String> nodeIds(String segment) {
+		return MERMAID_AND.splitAsStream(segment)
+				.map(String::strip)
+				.map(MERMAID_NODE_ID::matcher)
+				.filter(Matcher::find)
+				.map(Matcher::group)
+				.toList();
 	}
 
 	private static Map<String, Set<String>> parseSection3DependsOn(List<String> lines) {

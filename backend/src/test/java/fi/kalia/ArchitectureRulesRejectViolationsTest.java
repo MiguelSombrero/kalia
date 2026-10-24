@@ -28,9 +28,15 @@ class ArchitectureRulesRejectViolationsTest {
 	}
 
 	@Test
-	void aModuleRootReachingIntoDomainWithoutApplicationInThePath() {
-		assertRejects(ArchitectureTest.moduleRootReachesDomainThroughApplication(FIXTURE),
+	void aModuleRootReachingIntoDomain() {
+		assertRejects(ArchitectureTest.moduleRootDoesNotDependOnDomain(FIXTURE),
 				"ModuleRootReachingIntoDomain");
+	}
+
+	@Test
+	void aModuleRootInjectingADomainRepositoryBesideAnApplicationService() {
+		assertRejects(ArchitectureTest.moduleRootDoesNotDependOnDomain(FIXTURE),
+				"ModuleRootInjectingARepositoryBesideItsService");
 	}
 
 	@Test

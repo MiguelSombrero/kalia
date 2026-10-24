@@ -148,7 +148,12 @@ Why the rationale lives there and not here:
   another feature; `components/ui/` imports `lib/` only (`i18n/` and the root
   `auth.ts` count as `lib`). Enforced by ESLint (`eslint-plugin-boundaries` in
   `eslint.config.mjs`), which also rejects importing a folder no layer claims —
-  [ADR-0012](../docs/adr/0012-orval-api-client.md).
+  [ADR-0012](../docs/adr/0012-orval-api-client.md). The real tree passes every
+  policy, so each one also has a fixture in `eslint-fixtures/boundaries/` that
+  breaks it, linted by `eslint.config.test.ts` at a path inside the layer it
+  exercises; a new or rewritten policy gets one too. The fixtures sit in no
+  layer, so `npm run lint` ignores their imports, but `tsc` still checks them,
+  which keeps each one importing a file that exists.
 - **A feature never reaches into another feature — `app/` composes them.**
   When one feature's page needs another's affordance (the catalog's pages
   carry cellar's add-to-cellar button), the host component takes a slot —

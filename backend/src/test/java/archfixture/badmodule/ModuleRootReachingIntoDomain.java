@@ -2,8 +2,8 @@ package archfixture.badmodule;
 
 import archfixture.badmodule.domain.DomainType;
 
-/** Violates {@code moduleRootReachesDomainThroughApplication}: a module-root
- * class depends on a domain type with no application type in the call path. */
+/** Violates {@code moduleRootDoesNotDependOnDomain}: a module-root class depends
+ * on a domain type. */
 public class ModuleRootReachingIntoDomain {
 
 	public DomainType reachInward() {

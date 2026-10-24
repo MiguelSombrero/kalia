@@ -13,7 +13,7 @@ public class IdentityApi {
 
 	/** Fails when the request is anonymous — call it only behind a route that requires a token (ADR-0028). */
 	public UUID requireCurrentUserId() {
-		return currentUser.require().id();
+		return currentUser.requireId();
 	}
 
 }

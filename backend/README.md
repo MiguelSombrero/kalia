@@ -123,7 +123,7 @@ Notable suites:
   illegal cross-module dependencies
 - `ArchitectureTest` — the ArchUnit rules: layer placement and dependency
   direction ([ADR-0007](../docs/adr/0007-backend-package-structure.md)),
-  including the module-root API reaching `domain` only through `application`,
+  including the module-root API never naming a `domain` type,
   and the guard that keeps the one resource-server filter chain in `identity`
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) — a
   module bringing its own security configuration, or the chain going missing,
@@ -133,7 +133,7 @@ Notable suites:
   production class ever triggers get a fixture.** `entitiesLiveInDomain` needs
   none: `Beer` is an `@Entity`, so a mistake in the rule fails
   `ArchitectureTest` itself. A `noClasses()` rule — or a `classes().should()`
-  rule every production class merely satisfies, like the module-root one — is
+  rule every production class merely satisfies — is
   the opposite: passing means its condition never met a violator, so a wrong
   condition looks exactly like a satisfied one. Adding a fixture for an
   already-exercised rule tests ArchUnit, not this codebase; don't

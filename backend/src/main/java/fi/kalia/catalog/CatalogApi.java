@@ -1,10 +1,10 @@
 package fi.kalia.catalog;
 
 import fi.kalia.catalog.application.CatalogService;
-import fi.kalia.catalog.domain.Beer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Gatherers;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +29,8 @@ public class CatalogApi {
 		return beerIds.stream()
 				.distinct()
 				.gather(Gatherers.windowFixed(MAX_BATCH_IDS))
-				.flatMap(chunk -> catalog.getBeers(chunk).stream())
-				.collect(Collectors.toMap(Beer::getId,
-						beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
-								beer.getStyle(), beer.getAbv())));
+				.flatMap(chunk -> catalog.getBeerSummaries(chunk).stream())
+				.collect(Collectors.toMap(BeerSummary::id, Function.identity()));
 	}
 
 }
