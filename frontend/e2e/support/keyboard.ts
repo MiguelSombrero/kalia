@@ -3,9 +3,10 @@ import { expect, type Locator, type Page } from "@playwright/test";
 /**
  * Fails when the focused element cannot be seen at all — WCAG 2.2's 2.4.11
  * Focus Not Obscured, which no axe rule checks. The element counts as seen
- * when any of a grid of points across its box is topmost at that point, so a
- * sticky bar, a fixed toast or the edge of the viewport covering all of it
- * fails, and covering only part of it does not.
+ * when any of a grid of points across the part of its box inside the viewport
+ * is topmost at that point, so a sticky bar, a fixed toast or the edge of the
+ * viewport covering all of it fails, and covering only part of it does not —
+ * however tall the element is.
  */
 export const expectFocusNotObscured = async (page: Page): Promise<void> => {
   const obscured = await page.evaluate(() => {
@@ -13,21 +14,25 @@ export const expectFocusNotObscured = async (page: Page): Promise<void> => {
     if (!focused || focused === document.body) return "focus is on no element";
     const box = focused.getBoundingClientRect();
     const fractions = [0.1, 0.5, 0.9];
+    const left = Math.max(box.left, 0);
+    const top = Math.max(box.top, 0);
+    const right = Math.min(box.right, window.innerWidth);
+    const bottom = Math.min(box.bottom, window.innerHeight);
+    const inViewport = left < right && top < bottom;
     // Hit-testing skips pointer-events: none, which Radix puts on <body> while
     // a dialog is open; what is painted on top is the question here, not what
     // would take a click.
     const paintOnly = document.createElement("style");
     paintOnly.textContent = "* { pointer-events: auto !important; }";
     document.head.append(paintOnly);
-    let seen: boolean;
+    let seen = false;
     try {
-      seen = fractions.some((fx) =>
+      seen = inViewport && fractions.some((fx) =>
         fractions.some((fy) => {
-          const x = box.left + box.width * fx;
-          const y = box.top + box.height * fy;
-          if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) return false;
-          const top = document.elementFromPoint(x, y);
-          return top !== null && (focused === top || focused.contains(top));
+          const x = left + (right - left) * fx;
+          const y = top + (bottom - top) * fy;
+          const painted = document.elementFromPoint(x, y);
+          return painted !== null && (focused === painted || focused.contains(painted));
         }),
       );
     } finally {
