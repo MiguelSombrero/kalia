@@ -1,6 +1,6 @@
 # Task 09: The sign-up limiter can never lock sign-up for good
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -48,11 +48,11 @@ does.
 
 ## Acceptance criteria
 
-- [ ] A vitest test in which the key expires between the two calls ends with
+- [x] A vitest test in which the key expires between the two calls ends with
       a counter that has an expiry — confirmed to fail against today's code
-- [ ] The existing limiter tests pass, and the 21st attempt in a window is
+- [x] The existing limiter tests pass, and the 21st attempt in a window is
       still refused
-- [ ] ADR-0055 and the code comment describe the mechanism that ships, and
+- [x] ADR-0055 and the code comment describe the mechanism that ships, and
       `make verify-fast` is green
 
 ## Notes

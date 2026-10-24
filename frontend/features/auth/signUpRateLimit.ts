@@ -3,8 +3,8 @@ import { valkeyClient } from "@/lib/auth/valkeyClient";
 // The subset ioredis's `Redis` this needs (ADR-0037's DI convention, same
 // shape of seam as lib/auth/valkeyAdapter.ts's ValkeyClient).
 export type RateLimitClient = {
-  set: (key: string, value: string, mode: "EX", seconds: number, flag: "NX") => Promise<string | null>;
   incr: (key: string) => Promise<number>;
+  expire: (key: string, seconds: number, mode: "NX") => Promise<number>;
 };
 
 const WINDOW_SECONDS = 10 * 60;
@@ -19,15 +19,13 @@ const KEY = "auth:sign-up-rate";
 // budget; that budget is itself global (Gmail's send quota, ADR-0055), so
 // this is what the limit is actually protecting.
 //
-// SET NX EX, not a separate INCR+EXPIRE: the first attempt in a window
-// creates the counter and its expiry in one atomic command, so there is no
-// step between them where a crash or a dropped connection could leave the
-// key permanently un-expiring — which would otherwise lock every future
-// sign-up out forever, not just the current window's.
+// Do not call EXPIRE only when INCR returns 1: an INCR that finds the key
+// just expired recreates it with no expiry, and every sign-up is then refused
+// for good. NX keeps a later attempt from pushing the window's end out.
 export const createSignUpRateLimiter = (client: RateLimitClient) => {
   return async (): Promise<boolean> => {
-    const created = await client.set(KEY, "1", "EX", WINDOW_SECONDS, "NX");
-    const count = created === "OK" ? 1 : await client.incr(KEY);
+    const count = await client.incr(KEY);
+    await client.expire(KEY, WINDOW_SECONDS, "NX");
     return count <= MAX_ATTEMPTS;
   };
 };

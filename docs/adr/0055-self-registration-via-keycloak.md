@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-06
+- **Amended:** 2026-10-24 by
+  [iteration 8.5 task 09](../tasks/iteration-8.5/09-sign-up-limiter-cannot-lock-forever.md) —
+  the counter's expiry is set with `EXPIRE … NX` after every `INCR`, so a
+  window ending between the two commands cannot leave it without one
 
 ## Context
 
@@ -70,8 +74,8 @@ registration endpoint instead of its login endpoint.
 - **A basic sign-up rate limit lives on the one path Kalia controls, as one
   counter shared by every visitor, not one per caller.** `/sign-up`'s Server
   Action checks a fixed-window counter in Valkey
-  (`features/auth/signUpRateLimit.ts`, `INCR`+`EXPIRE`, 20 attempts per 10
-  minutes) before redirecting into Keycloak. It is deliberately not keyed by
+  (`features/auth/signUpRateLimit.ts`, `INCR` then `EXPIRE … NX` on every
+  attempt, 20 attempts per 10 minutes) before redirecting into Keycloak. It is deliberately not keyed by
   an IP or header: this stack has no reverse proxy in front of Next.js, so
   `x-forwarded-for` is whatever the caller sends, and a limiter keyed on it
   would hand a scripted attacker a fresh identity — and a fresh budget — on
