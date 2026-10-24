@@ -3,6 +3,8 @@ package fi.kalia.catalog.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import fi.kalia.TestcontainersConfiguration;
+import fi.kalia.catalog.application.BeerSearchQuery;
+import fi.kalia.catalog.application.CatalogService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,17 +33,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 // scan wins whatever indexes exist.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({TestcontainersConfiguration.class, BeerSearchIndexIT.SqlCaptureConfiguration.class})
+@Import({TestcontainersConfiguration.class, BeerSearchIndexIT.SqlCaptureConfiguration.class,
+		CatalogService.class})
 class BeerSearchIndexIT {
 
 	// CatalogController's defaults, so the plan is of the query the endpoint issues.
 	private static final Pageable FIRST_PAGE = PageRequest.of(0, 20,
 			Sort.by(Sort.Order.asc("name").ignoreCase(), Sort.Order.asc("id")));
 
+	private static final String SORT_INDEX = "beer_lower_name_id_idx";
+
 	private static final AtomicInteger PROBE_COUNT = new AtomicInteger();
 
 	@Autowired
 	private BeerRepository beers;
+
+	@Autowired
+	private CatalogService catalog;
 
 	@Autowired
 	private JdbcTemplate jdbc;
@@ -58,8 +66,8 @@ class BeerSearchIndexIT {
 	}
 
 	// The scale the product owner set for these plans: a catalog that shrank
-	// below it has to fail here rather than quietly weaken the three plan
-	// assertions below.
+	// below it has to fail here rather than quietly weaken the plan assertions
+	// that follow.
 	@Test
 	void catalogIsSeededToTheScaleTheIndexesAreJudgedAt() {
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog.beer", Long.class))
@@ -84,13 +92,57 @@ class BeerSearchIndexIT {
 				"brewery_country_code_idx");
 	}
 
-	// Every statement, because a full page makes Spring Data issue a count query
-	// alongside the page itself, and that one scans every match rather than 20.
+	@Test
+	void unfilteredPageUsesTheIndexOnTheDefaultSort() {
+		List<String> statements = capturedSql.of(
+				() -> beers.findAll(BeerSpecifications.matching(new BeerSearchCriteria(null, null, null, null, null, null)), FIRST_PAGE));
+		String page = statements.stream().filter(sql -> sql.contains("order by")).findFirst().orElseThrow();
+		assertThat(page).contains("order by lower(b1_0.name),b1_0.id");
+		assertThat(planFor(page)).contains(SORT_INDEX);
+	}
+
+	// The search joins this test's transaction, so whatever plan_cache_mode it sets
+	// still holds for the probe. Five executions are the custom plans Postgres
+	// tries before it may settle on the generic one.
+	@Test
+	void shortNameCountKeepsItsCustomPlanPastTheGenericPlanThreshold() {
+		List<String> statements = capturedSql.of(() -> catalog.searchBeers(
+				new BeerSearchQuery("a", null, null, null, null, null), FIRST_PAGE));
+		String count = statements.stream().filter(sql -> sql.startsWith("select count")).findFirst().orElseThrow();
+		String probe = "count_probe_" + PROBE_COUNT.incrementAndGet();
+		jdbc.execute("PREPARE " + probe + " AS " + withPostgresPlaceholders(count));
+		for (int execution = 0; execution < 5; execution++) {
+			jdbc.queryForList("EXECUTE " + probe + "('%a%')");
+		}
+		String plan = String.join("\n", jdbc.queryForList("EXPLAIN EXECUTE " + probe + "('%a%')", String.class));
+		assertThat(plan).doesNotContain("beer_name_trgm_idx");
+	}
+
+	// A custom plan can be a parallel hash join, whose shared memory a default
+	// Docker /dev/shm runs out of under concurrent searches: only a term with no
+	// trigrams is worth that.
+	@Test
+	void searchesWithTrigramsKeepThePlanCacheDefault() {
+		catalog.searchBeers(new BeerSearchQuery("ale", null, null, null, null, null), FIRST_PAGE);
+		catalog.searchBeers(new BeerSearchQuery(null, null, null, null, null, null),
+				PageRequest.of(0, 20, Sort.by(Sort.Order.desc("abv"), Sort.Order.asc("id"))));
+		assertThat(jdbc.queryForObject("SHOW plan_cache_mode", String.class)).isEqualTo("auto");
+	}
+
+	// The count as well as the page, because a full page makes Spring Data issue
+	// one, and it scans every match rather than 20. The page may instead walk the
+	// sort index and stop at 20 matches, which is no scan of the table either.
 	private void assertEveryStatementUses(BeerSearchCriteria criteria, String index) {
 		List<String> statements = capturedSql.of(
 				() -> beers.findAll(BeerSpecifications.matching(criteria), FIRST_PAGE));
 		assertThat(statements).isNotEmpty();
-		assertThat(statements).allSatisfy(sql -> assertThat(planFor(sql)).contains(index));
+		assertThat(statements).allSatisfy(sql -> {
+			if (sql.startsWith("select count")) {
+				assertThat(planFor(sql)).contains(index);
+			} else {
+				assertThat(planFor(sql)).containsAnyOf(index, SORT_INDEX);
+			}
+		});
 	}
 
 	private String planFor(String sql) {

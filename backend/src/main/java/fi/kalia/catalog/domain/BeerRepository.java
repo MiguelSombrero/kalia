@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificationExecutor<Beer> {
@@ -36,6 +37,15 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 			WHERE brewery_id = :breweryId AND catalog.fold_name(name) = catalog.fold_name(:name)""",
 			nativeQuery = true)
 	Optional<UUID> findIdByBreweryIdAndSameName(UUID breweryId, String name);
+
+	// Do not call this inside a transaction the search does not own: SET LOCAL
+	// lasts until the outermost transaction ends. Past pgjdbc's prepareThreshold
+	// Postgres may switch to a generic plan, and for LIKE $1 that picks the
+	// trigram index, which reads every entry for a 1-2-character pattern
+	// (ADR-0078 Evidence).
+	@Modifying
+	@Query(value = "SET LOCAL plan_cache_mode = force_custom_plan", nativeQuery = true)
+	void useCustomPlansForTheRestOfThisTransaction();
 
 	@Query("SELECT DISTINCT b.style FROM Beer b")
 	List<String> findDistinctStyles();

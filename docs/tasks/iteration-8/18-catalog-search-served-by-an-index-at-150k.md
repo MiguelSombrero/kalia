@@ -1,6 +1,6 @@
 # Task 18: Catalog search stays within budget at 150k beers
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -99,20 +99,20 @@ Each fix is a plan that `BeerSearchIndexIT` can pin.
 
 ## Acceptance criteria
 
-- [ ] `BeerSearchIndexIT` asserts that an unfiltered page under the default
+- [x] `BeerSearchIndexIT` asserts that an unfiltered page under the default
       sort uses an index matching that sort — integration test, confirmed to
       fail without the migration
-- [ ] A 1–2-character name query's count, run the way the search runs it,
+- [x] A 1–2-character name query's count, run the way the search runs it,
       does not use `beer_name_trgm_idx` — integration test, confirmed to fail
       without the scoped `force_custom_plan`
-- [ ] The architecture.md §7 method, repeated at 150k beers, shows the
+- [x] The architecture.md §7 method, repeated at 150k beers, shows the
       unfiltered page and 1–2-character name queries under 300 ms p95 server
       time. If short queries are still over budget, the exception and its
       figures are in ADR-0078's Evidence instead. The numbers are in the PR
-- [ ] ADR-0044 carries an `Amended:` line for the short-query fix, ADR-0078's
+- [x] ADR-0044 carries an `Amended:` line for the short-query fix, ADR-0078's
       Evidence carries the repeated figures, and
       `node scripts/check-adrs.mjs` passes
-- [ ] `mvn clean verify` is green
+- [x] `mvn clean verify` is green
 
 ## Notes
 

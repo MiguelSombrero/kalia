@@ -252,7 +252,13 @@ same refusal ([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-creat
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
 a functional B-tree index on `lower(beer.style)`, and a B-tree index on
-`brewery.country_code` ([ADR-0044](adr/0044-catalog-search-indexes.md)).
+`brewery.country_code` ([ADR-0044](adr/0044-catalog-search-indexes.md)). A
+B-tree on `(lower(beer.name), beer.id)` matches the default sort, so a page
+reads its rows in order rather than sorting every match. A search whose name
+term is 1–2 characters, too short for trigrams, plans each statement for its
+own values (`plan_cache_mode = force_custom_plan`, for that transaction only),
+so it is never served by the trigram index's generic plan
+([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)).
 
 **The cellar is two levels, not one** ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
 A catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle*
@@ -851,7 +857,9 @@ updated if behavior or architecture changed.
 ### Catalog read latency
 
 Catalog reads are measured, not benchmarked in CI. `BeerSearchIndexIT` pins
-which index each filter's plan uses, but not how long the query takes. The
+which index each filter's plan and the default sort use, and that a short name
+query's count keeps its custom plan while other searches keep the default,
+but not how long the query takes. The
 latency budget in [§1](#non-functional-requirements) is checked by repeating
 this measurement whenever the catalog's size or its queries change shape.
 [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
@@ -862,7 +870,8 @@ records the latest run.
    figures depend on them:
    - HikariCP's pool of 10, which queues 20 concurrent clients;
    - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a
-     search to its generic plan.
+     statement to its generic plan. A search with a 1–2-character name term
+     overrides this with `plan_cache_mode = force_custom_plan`.
 
    Enable Tomcat's access log, unbuffered, with pattern `%U %s %{ms}T`, so
    the last field is the server time in ms. Flyway migrates the imported

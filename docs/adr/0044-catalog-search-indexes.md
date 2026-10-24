@@ -5,6 +5,16 @@
 - **Amended:** 2026-10-22 by [ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)
   — the country filter compares the stored `brewery.country_code`, so its index
   is the plain B-tree `brewery_country_code_idx`, not one on `lower(country)`
+- **Amended:** 2026-10-24 by [task 18](../tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)
+  — the Bad consequence on short terms no longer holds as written. Once pgjdbc
+  server-prepares the search, Postgres's generic plan for `LIKE $1` picks the
+  trigram index, which reads every entry for a pattern with no trigrams. So a
+  search with a 1–2-character term sets `plan_cache_mode = force_custom_plan`
+  for its own transaction, and gets the sequential scan its own plan chooses.
+  Only that search does, not every search as refinement first worded it,
+  because custom plans for every search failed `sort=abv,desc` under load
+  ([ADR-0078](0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
+  Evidence). The substring contract is unchanged
 
 ## Context
 
