@@ -24,6 +24,12 @@
   keeps a Spring Data repository off an entity that a `@OneToMany` with orphan
   removal owns, so a non-root part of an aggregate has no repository of its own
   (iteration 6 task 05)
+- **Amended:** 2026-10-24 — the module-root rule is now a ban: a root class
+  depends on no `domain` type at all. The 2026-08-29 rule only required a
+  root class touching `domain` to touch `application` too, so one injecting a
+  service *and* a repository passed. `CatalogApi` and `IdentityApi`, which
+  mapped a `domain` type handed back through `application`, now receive the
+  type they publish from `application` instead (iteration 8 task 14)
 
 ## Context
 
@@ -51,16 +57,16 @@ with separate JPA entities) was weighed and rejected for this codebase.
   mapping runs outside the service transaction).
 - **Module root package is the inter-module API** and stays empty until the
   first real consumer (cellar) arrives — the API emerges from its consumer.
-  It follows the same inward direction as `web`: it calls `application`, not
-  `domain` repositories directly.
+  It follows the same inward direction as `web`: it calls `application` and
+  names no `domain` type.
 - **Rich JPA entities are the domain model** — a deliberate exception to
   framework-free-domain purity; separating domain classes from JPA entities
   would double every module's mapping surface for little gain at this scale.
 - **Full ports/adapters ceremony is deferred** to modules whose domain earns
   it (payment's `PaymentProvider`, ordering's state machine).
 - **ArchUnit 1.4.2 enforces the rules as tests** (`ArchitectureTest`): layer
-  dependency direction, the module root reaching `domain` only through
-  `application`, controllers/advice only in `web`, entities and repositories
+  dependency direction, the module root depending on no `domain` type,
+  controllers/advice only in `web`, entities and repositories
   only in `domain`, plus general coding rules (no field injection, no
   standard streams, no java.util.logging). Module *boundaries* remain
   verified by Spring Modulith (`ModularityTest`).

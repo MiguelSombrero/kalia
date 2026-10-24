@@ -1,5 +1,6 @@
 package fi.kalia.catalog.application;
 
+import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
 import fi.kalia.catalog.domain.BeerSearchCriteria;
@@ -46,6 +47,13 @@ public class CatalogService {
 
 	public List<Beer> getBeers(Collection<UUID> ids) {
 		return beers.findByIdIn(ids);
+	}
+
+	public List<BeerSummary> getBeerSummaries(Collection<UUID> ids) {
+		return beers.findByIdIn(ids).stream()
+				.map(beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
+						beer.getStyle(), beer.getAbv()))
+				.toList();
 	}
 
 	public Page<Brewery> listBreweries(@Nullable String nameQuery, Pageable pageable) {

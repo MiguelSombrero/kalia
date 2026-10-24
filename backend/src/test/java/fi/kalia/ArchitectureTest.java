@@ -7,7 +7,6 @@ import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_
 import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING;
 
 import com.tngtech.archunit.base.DescribedPredicate;
-import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -62,8 +61,7 @@ class ArchitectureTest {
 	static final ArchRule applicationDoesNotDependOnWeb = applicationDoesNotDependOnWeb(BASE_PACKAGE);
 
 	@ArchTest
-	static final ArchRule moduleRootReachesDomainThroughApplication =
-			moduleRootReachesDomainThroughApplication(BASE_PACKAGE);
+	static final ArchRule moduleRootDoesNotDependOnDomain = moduleRootDoesNotDependOnDomain(BASE_PACKAGE);
 
 	@ArchTest
 	static final ArchRule controllersAndAdviceLiveInWeb = classes()
@@ -196,20 +194,14 @@ class ArchitectureTest {
 
 	// The other layer rules only constrain classes inside .domain/.application/
 	// .web; a module-root class (the inter-module API) sits outside all three.
-	// A root class touching a domain type must also touch application, so a
-	// straight-to-repository dependency is what fails; a domain type handed
-	// back through an application call is fine. allowEmptyShould is true here
-	// unlike the siblings: no root class touching domain is the clean end
-	// state, and ArchitectureRulesRejectViolationsTest proves the rule bites.
-	// Parameterised for the reason {@link #domainDependsOnNoOuterLayer(String)} gives.
-	static ArchRule moduleRootReachesDomainThroughApplication(String basePackage) {
-		return classes()
-				.that(JavaClass.Predicates.resideInAPackage(basePackage + ".*")
-						.and(dependOnClassesIn(basePackage + ".*.domain..")))
-				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.application..")
-				.because("a module-root API reaches domain through application, "
-						+ "like every other class in the module: web → application → domain (ADR-0007)")
-				.allowEmptyShould(true);
+	// No production root class touches domain, so ArchitectureRulesRejectViolationsTest
+	// proves the rule bites. Parameterised for the reason {@link #domainDependsOnNoOuterLayer(String)} gives.
+	static ArchRule moduleRootDoesNotDependOnDomain(String basePackage) {
+		return noClasses()
+				.that().resideInAPackage(basePackage + ".*")
+				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.domain..")
+				.because("a module-root API reaches domain only through application, "
+						+ "like every other class in the module: web → application → domain (ADR-0007)");
 	}
 
 	// A bottle is created, changed and removed only through the entry that owns
@@ -243,17 +235,6 @@ class ArchitectureTest {
 		return parent.getAllFields().stream()
 				.filter(field -> field.isAnnotatedWith(OneToMany.class))
 				.anyMatch(field -> field.getAnnotationOfType(OneToMany.class).orphanRemoval());
-	}
-
-	private static DescribedPredicate<JavaClass> dependOnClassesIn(String packageIdentifier) {
-		return new DescribedPredicate<>("depend on classes in '" + packageIdentifier + "'") {
-			@Override
-			public boolean test(JavaClass javaClass) {
-				return javaClass.getDirectDependenciesFromSelf().stream()
-						.map(Dependency::getTargetClass)
-						.anyMatch(JavaClass.Predicates.resideInAPackage(packageIdentifier));
-			}
-		};
 	}
 
 }

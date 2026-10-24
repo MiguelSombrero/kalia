@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { readFileSync } from "node:fs";
 import { ESLint } from "eslint";
 import { describe, expect, it } from "vitest";
 
@@ -57,15 +58,35 @@ describe("generated client boundary (ADR-0012)", () => {
     const catalog = 'import { getBeer } from "@/lib/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
     expect(await messagesFor(catalog, "features/catalog/api.ts")).toEqual([]);
   });
+});
 
-  it("rejects a feature's api.ts importing another feature's generated tag", async () => {
-    const code = 'import { getBeer } from "@/lib/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
+// Each fixture is linted as if it sat at `lintAs`, since the plugin places a
+// file in a layer by its path; the fixtures themselves sit in no layer.
+describe("import boundaries reject each crossing a fixture makes (ADR-0012)", () => {
+  const crossings = [
+    { fixture: "app-imports-feature-internals", lintAs: "app/probe.ts", rejected: "app must not import @/features/catalog/BeerList" },
+    { fixture: "feature-imports-another-feature", lintAs: "features/cellar/probe.ts", rejected: "feature must not import @/features/catalog" },
+    {
+      fixture: "feature-reaches-generated-client-outside-api",
+      lintAs: "features/catalog/probe.ts",
+      rejected: "feature must not import @/lib/api/generated/catalog/catalog",
+    },
+    {
+      fixture: "feature-api-imports-another-features-tag",
+      lintAs: "features/cellar/api.ts",
+      rejected: "feature must not import @/lib/api/generated/catalog/catalog",
+    },
+    { fixture: "components-ui-imports-upward", lintAs: "components/ui/probe.ts", rejected: "components-ui must not import @/features/catalog" },
+    { fixture: "lib-imports-upward", lintAs: "lib/probe.ts", rejected: "lib must not import @/components/ui/button" },
+    { fixture: "imports-an-unclassified-local", lintAs: "lib/probe.ts", rejected: "lib must not import @/next.config" },
+  ];
 
-    expect(await messagesFor(code, "features/cellar/api.ts")).toEqual([
-      expect.stringContaining("must not import @/lib/api/generated/catalog/catalog"),
-    ]);
-    expect(await messagesFor(code, "features/feed/api.ts")).toEqual([
-      expect.stringContaining("must not import @/lib/api/generated/catalog/catalog"),
+  it.each(crossings)("$fixture", async ({ fixture, lintAs, rejected }) => {
+    const source = readFileSync(`${import.meta.dirname}/eslint-fixtures/boundaries/${fixture}.ts`, "utf8");
+    const [result] = await eslint.lintText(source, { filePath: lintAs });
+
+    expect(result.messages.map((m) => [m.ruleId, m.message])).toEqual([
+      ["boundaries/dependencies", expect.stringContaining(rejected)],
     ]);
   });
 });

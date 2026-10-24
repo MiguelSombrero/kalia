@@ -32,6 +32,10 @@ public class CurrentUserService {
 						+ "(SecurityConfig)."));
 	}
 
+	public UUID requireId() {
+		return require().id();
+	}
+
 	private static CurrentUser from(Jwt jwt) {
 		String subject = jwt.getSubject();
 		String username = jwt.getClaimAsString("preferred_username");

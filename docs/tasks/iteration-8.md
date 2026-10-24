@@ -30,7 +30,7 @@ comes from in the long run is recorded as a decision rather than left open.
 | [11](iteration-8/11-the-bff-forwards-only-what-it-checked.md) | The BFF forwards only what it has checked, and fails closed on tokens | done |
 | [12](iteration-8/12-public-routes-one-list-pinned-by-a-test.md) | Which routes are public is one list, pinned by a test | done |
 | [13](iteration-8/13-in-app-links-keep-the-readers-language.md) | Links inside the app keep the reader's language | done |
-| [14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md) | Every boundary guard catches what the docs say it catches | refined |
+| [14](iteration-8/14-boundary-guards-catch-what-the-docs-claim.md) | Every boundary guard catches what the docs say it catches | done |
 | [15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md) | Backend services stop leaning on hidden setup | done |
 | [16](iteration-8/16-docs-describe-what-is-built.md) | The documentation describes what is built | refined |
 | [20](iteration-8/20-keycloak-field-errors-carry-kalias-error-sign.md) | Keycloak's field errors carry Kalia's error sign | done |

@@ -1,6 +1,6 @@
 # Task 14: Every boundary guard catches what the docs say it catches
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8](../iteration-8.md)
 
 ## Why
@@ -85,21 +85,21 @@ that proves it fires. §7 lists the documentation test.
 
 ## Acceptance criteria
 
-- [ ] Removing or adding an inter-module edge in §2's diagram so that it
+- [x] Removing or adding an inter-module edge in §2's diagram so that it
       disagrees with Modulith fails `ArchitectureDocumentationTest` — confirmed
       by editing the diagram on a scratch branch
-- [ ] §2's diagram has no route-handler hop for backend calls, draws backend
+- [x] §2's diagram has no route-handler hop for backend calls, draws backend
       calls from one Next.js server node, and draws every inter-module edge §3
       lists, including `API --> FED`
-- [ ] A module-root class injecting both an application service and a domain
+- [x] A module-root class injecting both an application service and a domain
       repository fails `ArchitectureRulesRejectViolationsTest` — new fixture,
       confirmed to pass against today's rule and fail against the tightened
       one
-- [ ] Each frontend boundary rule in `eslint.config.mjs` has a committed
+- [x] Each frontend boundary rule in `eslint.config.mjs` has a committed
       violating fixture, linted through ESLint's Node API in a vitest test
       that expects the rule's error
-- [ ] §7's testing table lists `ArchitectureDocumentationTest`
-- [ ] `mvn clean verify` and `npm test` are green
+- [x] §7's testing table lists `ArchitectureDocumentationTest`
+- [x] `mvn clean verify` and `npm test` are green
 
 ## Notes
 
