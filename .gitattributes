@@ -1,0 +1,2 @@
+# docs/common-failures.md is append-only from parallel worktrees: keep both sides' rows (ADR-0084).
+docs/common-failures.md merge=union

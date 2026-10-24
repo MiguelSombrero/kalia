@@ -229,6 +229,10 @@ The gates themselves:
   clears the finding before pushing, reproducing CI's exact Trivy invocation
   (`frontend/README.md`, `backend/README.md`) — a bump that doesn't reach the
   flagged transitive package leaves the finding red.
+- **An unexpected failure gets one appended row in
+  [docs/common-failures.md](docs/common-failures.md)**, on the branch it
+  happened on; its header says what counts and how to write a row
+  ([ADR-0084](docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
 - **A CI check you have seen fail before is probably in
   [docs/ci-playbook.md](docs/ci-playbook.md)**; add an entry when a failure
   costs real time to *recognise*, and say which run it came from.

@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-30
+- **Amended:** 2026-10-24 by [ADR-0084](0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)
+  — the deferred per-task friction log is adopted as an append-only failure
+  log, ahead of its revisit trigger
 
 ## Context
 
