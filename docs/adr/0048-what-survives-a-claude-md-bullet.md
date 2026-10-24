@@ -1,13 +1,12 @@
 # ADR-0048: A CLAUDE.md bullet keeps the rule and sheds the reason
 
-- **Status:** partially-superseded
+- **Status:** accepted
 - **Date:** 2026-08-30
 - **Amended:** 2026-09-29 — the revisit trigger below had fired (270 lines); a
   second rationale-only pass reached 252 and stopped, recorded in Evidence
-- **Superseded-by:** [ADR-0085](0085-three-gates-live-in-the-skill-that-runs-them.md)
-  (partial) — the "rejected for now" verdict on moving whole gates into
-  `implement-task`, and the revisit trigger that named an advisory checker; the
-  200-line budget and what a bullet may keep stand
+- **Amended:** 2026-10-24 — the trigger fired again (266 lines); the product
+  owner chose moving whole gates into `implement-task` over an advisory
+  checker or a raised budget, recorded at the end of Evidence
 
 ## Context
 
@@ -110,10 +109,9 @@ boundary between a fix that may be pushed unasked and one that may not.
 Rejected for now because it trades unconditional loading for a skill
 invocation, and ADR-0020's warning is precisely that a pointer here is one an
 agent never follows. Worth reopening as its own decision rather than smuggling
-it into a compaction pass. *Superseded 2026-10-24 by
-[ADR-0085](0085-three-gates-live-in-the-skill-that-runs-them.md), which makes
-that decision: the gates move, and `CLAUDE.md` keeps a pointer that names what
-each requires.*
+it into a compaction pass. *Decided 2026-10-24: the gates move, and
+`CLAUDE.md` keeps a pointer that names what each requires; see the amendment
+at the end of Evidence.*
 
 **A `check-claude-md.mjs` enforcing the budget.** Rejected by the product
 owner. It is the option ADR-0039's own test points at — a decidable rule that
@@ -149,9 +147,9 @@ the revisit trigger rather than as a closed question.
 - **Revisit trigger:** if `CLAUDE.md` passes 200 lines again, the guideline has
   failed twice unguarded and `check-claude-md.mjs` is the next thing to try —
   advisory first, since the objection to it was about failing PRs rather than
-  about measuring. *Superseded 2026-10-24: the trigger fired again and
-  [ADR-0085](0085-three-gates-live-in-the-skill-that-runs-them.md) took the
-  gate-moving option instead; the checker was rejected by the product owner.*
+  about measuring. *Fired again 2026-10-24: the gate-moving option was
+  taken and the checker rejected by the product owner; see the amendment at the
+  end of Evidence.*
 
 ## Evidence
 
@@ -198,3 +196,32 @@ line 74. Nothing was found homeless at the end of the pass.
 bullet. `gh auth status` reports keyring authentication with no token, and
 plain `gh` works in a non-interactive shell, so both the environment variable
 and the `zsh -ic` wrapper it prescribed were stale.
+
+> **Amended 2026-10-24.** The revisit trigger fired a second time: `CLAUDE.md`
+> was 266 lines on `dev` and [iteration 9](../tasks/iteration-9.md) has two
+> more always-applicable additions to make. The product owner chose to **move
+> the doc-sync, code-review and iteration-DoD gates into `implement-task`**,
+> which already orders each of them, leaving `CLAUDE.md` a short pointer that
+> still says what each requires. The advisory `check-claude-md.mjs` was
+> rejected again — it measures the overrun without removing a line — and so was
+> raising the budget, which stays 200. Moving more gates (new dependencies, the
+> vulnerability scan) was not chosen: no one skill runs them, so a pointer to
+> a skill would be followed less often than the rule restated here.
+>
+> - Good, because `CLAUDE.md` fits its budget with nine lines of headroom, and
+>   each moved gate has one full statement in the procedure that orders it.
+> - Bad, because an agent that never invokes `implement-task` reads only the
+>   summary: the doc-sync task-file exception and the planning-time half of
+>   the DoD gate are one invocation away. `scripts/check-tasks.mjs` still
+>   checks that half mechanically.
+> - Bad, because the budget is still guarded by nothing but a line count; a
+>   third overrun reopens the checker question.
+>
+> **Measured:** 266 → 191 lines. The gate bullets were 21 lines and are now a
+> 5-line pointer, so moving gates alone would have left 250; the other 59 came
+> from prose with a verified home elsewhere (the repository tree in the root
+> `README.md`, the suite commands in the subtree READMEs, the screenshot
+> rationale in `.claude/rules/no-screenshots.md`) and from tightened phrasing.
+> The trims dropped citations and examples, not operative rules: the ADR-0039
+> link on the code-comments bullet, the amendment date on the ADR-0020
+> citation, and "no code change" from the lockfile-bump exception.

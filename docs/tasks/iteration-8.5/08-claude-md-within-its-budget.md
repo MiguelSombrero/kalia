@@ -51,7 +51,7 @@ bullets say what is true.
 **Decided at refinement, 2026-10-24** (product owner):
 
 - **The doc-sync, code-review and iteration-DoD gates move into `implement-task`**, which already orders them, leaving a one-line pointer in CLAUDE.md. An advisory checker and a raised budget were rejected; the budget stays 200.
-- **Recorded in a new ADR superseding ADR-0048's "not for now"**, with ADR-0048 marked accordingly.
+- **Recorded as an amendment to ADR-0048**, superseding its "not for now" (changed 2026-10-24 by the product owner during implementation from a new ADR: the decision is ADR-0048's own subject, so a second document would split it).
 
 ## Open questions
 
@@ -64,7 +64,7 @@ bullets say what is true.
 - [x] The doc-sync, code-review and iteration-DoD gates are stated in full in
       `implement-task`, and CLAUDE.md points at them in one line — `node
       scripts/check-links.mjs` and its test green
-- [x] The new ADR supersedes ADR-0048's "not for now", and ADR-0048 says so
+- [x] ADR-0048 is amended to record the decision and supersede its "not for now"
 - [x] The ADR bullet states every ADR-0032 test, the sweep is called
       five-dimension, and `make verify-fast` is green
 

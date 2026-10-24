@@ -1067,10 +1067,9 @@ reasons and its rate is worth watching independently
 | [ADR-0039](adr/0039-mechanisms-for-recurring-rule-violations.md) | A rule agents keep breaking earns a mechanism, not more prose | accepted | 2026-08-15 |
 | [ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md) | One verify gate, run at edit time as a report and at push time as a block | accepted | 2026-08-30 |
 | [ADR-0047](adr/0047-refinement-is-batched-per-iteration.md) | Refinement's unit is one iteration, not one task | accepted | 2026-08-30 |
-| [ADR-0048](adr/0048-what-survives-a-claude-md-bullet.md) | A CLAUDE.md bullet keeps the rule and sheds the reason | partially-superseded | 2026-08-30 |
+| [ADR-0048](adr/0048-what-survives-a-claude-md-bullet.md) | A CLAUDE.md bullet keeps the rule and sheds the reason | accepted | 2026-08-30 |
 | [ADR-0051](adr/0051-process-retrospection-belongs-to-the-sweep.md) | Process retrospection belongs to the sweep, not to every task | accepted | 2026-08-30 |
 | [ADR-0062](adr/0062-a-design-task-is-a-skill-and-a-marker.md) | A design task has no known outcome, so it runs under a skill and a template marker | accepted | 2026-09-29 |
 | [ADR-0063](adr/0063-design-intent-has-its-own-document.md) | Kalia's design intent has its own document, which holds meaning and never values | accepted | 2026-10-03 |
 | [ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md) | An index cell that mirrors a file is synced from that file, not kept in step by hand | accepted | 2026-10-14 |
 | [ADR-0084](adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
-| [ADR-0085](adr/0085-three-gates-live-in-the-skill-that-runs-them.md) | Three gates live in the skill that runs them, so CLAUDE.md can fit its budget | accepted | 2026-10-24 |

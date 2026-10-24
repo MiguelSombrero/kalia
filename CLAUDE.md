@@ -2,9 +2,9 @@
 
 Instructions for AI agents working in this repository. It is the only document
 loaded unconditionally, so every line costs context in every session: **keep it
-under 200 lines**
-([ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md), amended by
-[ADR-0085](docs/adr/0085-three-gates-live-in-the-skill-that-runs-them.md)).
+under 200 lines**, and see
+[ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md) for what a bullet
+is allowed to hold.
 
 ## Goals — read first
 
@@ -108,7 +108,7 @@ The gates themselves:
   explicit action. Follow [the template](docs/PULL_REQUEST_TEMPLATE.md).
 - **Doc-sync, code-review and iteration-DoD gates, and ticking acceptance
   criteria:** `implement-task` states them in full — invoke it for any task
-  ([ADR-0085](docs/adr/0085-three-gates-live-in-the-skill-that-runs-them.md)).
+  ([ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md)).
   In short: update the docs the change touches, run `/code-review`, verify each
   criterion by running its check, never close an iteration on its last tick.
 - **Reach for other skills only when this task needs them** — weighed against

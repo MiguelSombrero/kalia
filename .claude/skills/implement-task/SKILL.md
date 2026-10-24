@@ -8,7 +8,7 @@ description: Numbered procedure for implementing one refined docs/tasks/iteratio
 `CLAUDE.md`'s `## Workflow` states most gates below. Three it leaves to this
 skill, which states them in full — doc-sync (step 7), code review (step 8) and
 the iteration definition of done (step 11)
-([ADR-0085](../../../docs/adr/0085-three-gates-live-in-the-skill-that-runs-them.md)).
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)).
 Nothing here changes a gate; this orders them, and gives the code-comment pass
 a step of its own — a moment to apply
 [ADR-0017](../../../docs/adr/0017-code-comment-policy.md)'s test to a comment
