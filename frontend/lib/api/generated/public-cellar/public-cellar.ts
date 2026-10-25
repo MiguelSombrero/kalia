@@ -20,8 +20,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  ProblemDetail,
-  PublicCellarDto
+  Problem,
+  PublicCellarDto,
+  ValidationProblem
 } from '../models';
 
 import { kaliaFetch } from '../../mutator';
@@ -52,19 +53,24 @@ export type readResponse200 = {
 }
 
 export type readResponse400 = {
-  data: ProblemDetail
+  data: ValidationProblem
   status: 400
 }
 
 export type readResponse404 = {
-  data: ProblemDetail
+  data: Problem
   status: 404
+}
+
+export type readResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type readResponseSuccess = (readResponse200) & {
   headers: Headers;
 };
-export type readResponseError = (readResponse400 | readResponse404) & {
+export type readResponseError = (readResponse400 | readResponse404 | readResponse500) & {
   headers: Headers;
 };
 
@@ -104,7 +110,7 @@ export const getReadQueryKey = (username: string,) => {
     }
 
 
-export const getReadQueryOptions = <TData = Awaited<ReturnType<typeof read>>, TError = ProblemDetail>(username: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof read>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getReadQueryOptions = <TData = Awaited<ReturnType<typeof read>>, TError = ValidationProblem | Problem>(username: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof read>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -123,10 +129,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ReadQueryResult = NonNullable<Awaited<ReturnType<typeof read>>>
-export type ReadQueryError = ProblemDetail
+export type ReadQueryError = ValidationProblem | Problem
 
 
-export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ProblemDetail>(
+export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ValidationProblem | Problem>(
  username: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof read>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof read>>,
@@ -136,7 +142,7 @@ export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = Probl
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ProblemDetail>(
+export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ValidationProblem | Problem>(
  username: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof read>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof read>>,
@@ -146,7 +152,7 @@ export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = Probl
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ProblemDetail>(
+export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ValidationProblem | Problem>(
  username: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof read>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -154,7 +160,7 @@ export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = Probl
  * @summary Read a public cellar
  */
 
-export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ProblemDetail>(
+export function useRead<TData = Awaited<ReturnType<typeof read>>, TError = ValidationProblem | Problem>(
  username: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof read>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

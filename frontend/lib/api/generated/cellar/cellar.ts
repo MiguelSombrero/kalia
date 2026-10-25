@@ -27,8 +27,9 @@ import type {
   AddBottleRequestDto,
   BottleDto,
   EntryDto,
-  ProblemDetail,
-  UpdateBottleRequestDto
+  Problem,
+  UpdateBottleRequestDto,
+  ValidationProblem
 } from '../models';
 
 import { kaliaFetch } from '../../mutator';
@@ -59,29 +60,34 @@ export type addBottlesResponse201 = {
 }
 
 export type addBottlesResponse400 = {
-  data: ProblemDetail
+  data: ValidationProblem | Problem
   status: 400
 }
 
 export type addBottlesResponse401 = {
-  data: void
+  data: Problem
   status: 401
 }
 
 export type addBottlesResponse404 = {
-  data: ProblemDetail
+  data: Problem
   status: 404
 }
 
 export type addBottlesResponse409 = {
-  data: ProblemDetail
+  data: Problem
   status: 409
+}
+
+export type addBottlesResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type addBottlesResponseSuccess = (addBottlesResponse201) & {
   headers: Headers;
 };
-export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409) & {
+export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409 | addBottlesResponse500) & {
   headers: Headers;
 };
 
@@ -130,7 +136,7 @@ return kaliaFetch<addBottlesResponse>(getAddBottlesUrl(),
 
 export const getAddBottlesMutationKey = () => ['addBottles'] as const;
 
-export const getAddBottlesMutationOptions = <TError = ProblemDetail | void,
+export const getAddBottlesMutationOptions = <TError = ValidationProblem | Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext> => {
 
@@ -159,13 +165,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AddBottlesMutationResult = NonNullable<Awaited<ReturnType<typeof addBottles>>>
     export type AddBottlesMutationBody = AddBottleRequestDto
-    export type AddBottlesMutationError = ProblemDetail | void
+    export type AddBottlesMutationError = ValidationProblem | Problem
     export type AddBottlesMutationVariables = {data: AddBottleRequestDto}
 
     /**
  * @summary Add bottles
  */
-export const useAddBottles = <TError = ProblemDetail | void,
+export const useAddBottles = <TError = ValidationProblem | Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof addBottles>>,
@@ -180,25 +186,35 @@ export const useAddBottles = <TError = ProblemDetail | void,
   status: 204
 }
 
+export type removeBottleResponse400 = {
+  data: Problem
+  status: 400
+}
+
 export type removeBottleResponse401 = {
-  data: void
+  data: Problem
   status: 401
 }
 
 export type removeBottleResponse404 = {
-  data: ProblemDetail
+  data: Problem
   status: 404
 }
 
 export type removeBottleResponse409 = {
-  data: ProblemDetail
+  data: Problem
   status: 409
+}
+
+export type removeBottleResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type removeBottleResponseSuccess = (removeBottleResponse204) & {
   headers: Headers;
 };
-export type removeBottleResponseError = (removeBottleResponse401 | removeBottleResponse404 | removeBottleResponse409) & {
+export type removeBottleResponseError = (removeBottleResponse400 | removeBottleResponse401 | removeBottleResponse404 | removeBottleResponse409 | removeBottleResponse500) & {
   headers: Headers;
 };
 
@@ -233,7 +249,7 @@ export const removeBottle = async (id: string, options?: Parameters<typeof kalia
 
 export const getRemoveBottleMutationKey = () => ['removeBottle'] as const;
 
-export const getRemoveBottleMutationOptions = <TError = void | ProblemDetail,
+export const getRemoveBottleMutationOptions = <TError = Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext> => {
 
@@ -262,13 +278,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type RemoveBottleMutationResult = NonNullable<Awaited<ReturnType<typeof removeBottle>>>
 
-    export type RemoveBottleMutationError = void | ProblemDetail
+    export type RemoveBottleMutationError = Problem
     export type RemoveBottleMutationVariables = {id: string}
 
     /**
  * @summary Remove a bottle
  */
-export const useRemoveBottle = <TError = void | ProblemDetail,
+export const useRemoveBottle = <TError = Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof removeBottle>>,
@@ -284,29 +300,34 @@ export const useRemoveBottle = <TError = void | ProblemDetail,
 }
 
 export type updateBottleResponse400 = {
-  data: ProblemDetail
+  data: ValidationProblem | Problem
   status: 400
 }
 
 export type updateBottleResponse401 = {
-  data: void
+  data: Problem
   status: 401
 }
 
 export type updateBottleResponse404 = {
-  data: ProblemDetail
+  data: Problem
   status: 404
 }
 
 export type updateBottleResponse409 = {
-  data: ProblemDetail
+  data: Problem
   status: 409
+}
+
+export type updateBottleResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type updateBottleResponseSuccess = (updateBottleResponse200) & {
   headers: Headers;
 };
-export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404 | updateBottleResponse409) & {
+export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404 | updateBottleResponse409 | updateBottleResponse500) & {
   headers: Headers;
 };
 
@@ -356,7 +377,7 @@ return kaliaFetch<updateBottleResponse>(getUpdateBottleUrl(id),
 
 export const getUpdateBottleMutationKey = () => ['updateBottle'] as const;
 
-export const getUpdateBottleMutationOptions = <TError = ProblemDetail | void,
+export const getUpdateBottleMutationOptions = <TError = ValidationProblem | Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext> => {
 
@@ -385,13 +406,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateBottleMutationResult = NonNullable<Awaited<ReturnType<typeof updateBottle>>>
     export type UpdateBottleMutationBody = UpdateBottleRequestDto
-    export type UpdateBottleMutationError = ProblemDetail | void
+    export type UpdateBottleMutationError = ValidationProblem | Problem
     export type UpdateBottleMutationVariables = {id: string;data: UpdateBottleRequestDto}
 
     /**
  * @summary Update a bottle
  */
-export const useUpdateBottle = <TError = ProblemDetail | void,
+export const useUpdateBottle = <TError = ValidationProblem | Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateBottle>>,
@@ -407,14 +428,19 @@ export const useUpdateBottle = <TError = ProblemDetail | void,
 }
 
 export type listEntriesResponse401 = {
-  data: void
+  data: Problem
   status: 401
+}
+
+export type listEntriesResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type listEntriesResponseSuccess = (listEntriesResponse200) & {
   headers: Headers;
 };
-export type listEntriesResponseError = (listEntriesResponse401) & {
+export type listEntriesResponseError = (listEntriesResponse401 | listEntriesResponse500) & {
   headers: Headers;
 };
 
@@ -454,7 +480,7 @@ export const getListEntriesQueryKey = () => {
     }
 
 
-export const getListEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listEntries>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -473,10 +499,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListEntriesQueryResult = NonNullable<Awaited<ReturnType<typeof listEntries>>>
-export type ListEntriesQueryError = void
+export type ListEntriesQueryError = Problem
 
 
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listEntries>>,
@@ -486,7 +512,7 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listEntries>>,
@@ -496,7 +522,7 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -504,7 +530,7 @@ export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, 
  * @summary List the caller's cellar
  */
 
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = void>(
+export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

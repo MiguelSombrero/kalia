@@ -3,7 +3,9 @@
 - **Status:** accepted
 - **Date:** 2026-07-25
 - **Amended:** 2026-09-20 — each module's own advice must declare
-  `basePackages`, build-enforced; see the Amendment section
+  `basePackages`, build-enforced; 2026-10-25 — every error is a declared type
+  and the filter chain's 401 and 403 are problem+json; see the Amendment
+  sections
 
 ## Context
 
@@ -89,6 +91,44 @@ This does not close the no-overlap gap below — two correctly-scoped advices
 can still collide on a shared exception type — it only stops an advice from
 answering for controllers outside its own module.
 
+**Amended 2026-10-25 — every error the API sends is in the spec with the shape
+it has on the wire** ([iteration-8.5 task 01](../tasks/iteration-8.5/01-api-errors-complete-and-typed.md)).
+Declared `ProblemDetail` was not that: the generated type nested an error's
+extra fields under `properties`, while they arrive at the top level, so the
+frontend parsed `errors`, `existingBeerId` and `existingBreweryId` by hand and a
+second client would have had to as well.
+
+- **An error kind with fields of its own is a declared class** extending
+  `fi.kalia.web.Problem` (a `ProblemDetail` whose `properties` map the spec
+  hides): `ValidationProblem` for every `400` that names fields, whichever
+  module refused them, over one `FieldErrorDto`; `DuplicateBeerProblem` and
+  `DuplicateBreweryProblem` in `catalog.web`. The handler returns that type, so
+  the spec, the generated clients and the compiler all read the same members.
+  The duplicate brewery's problem names the brewery as the catalog spells it
+  (id, name and country code).
+- **A shared type lives in `fi.kalia.web`**, which every module may depend on:
+  Spring Modulith lets any module use another's exposed types and
+  `ArchitectureDocumentationTest` leaves `web` out of the module map, so the
+  `catalog` → `web` edge that once justified a second field-error record costs
+  nothing.
+- **The entity guard follows the declared type.** `HttpBoundaryTest` also covers
+  `@ExceptionHandler` methods on `@RestControllerAdvice` classes and follows the
+  body type into its fields, and an advice may not call
+  `ProblemDetail.setProperty` — the untyped path that no return-type rule could
+  see. Both are proven against `archfixture.httpboundary.EntityCarryingAdvice`.
+- **The 401 and 403 the filter chain sends are problem+json too.**
+  `ProblemJsonSecurityHandlers` runs Spring Security's bearer entry point and
+  access-denied handler first, which set the status and the RFC 9110
+  `WWW-Authenticate` challenge, and adds only a body; a bare `ProblemDetail`
+  would have dropped the header as it does for 405's `Allow`. The body never
+  repeats the failure's message. `ProblemJsonSecurityErrorsIT` pins body and
+  header.
+- **Every operation documents its codes.** Handlers declare their own
+  `@ApiResponse`s with these schemas; a `500` is declared once for all of them
+  (`UnexpectedFailureDocumentation`), and `ApiErrorDocumentationIT` fails when
+  an operation lists no error, an authenticated one lists no `401`, or one that
+  takes input lists no `400`.
+
 ## Alternatives considered
 
 Three placement options were weighed.
@@ -102,6 +142,12 @@ instead be widened once, precisely and disjointly.
 **No shared code, duplicating the logic in every module.** Rejected: this is
 the duplication the task exists to prevent, and it guarantees the modules
 drift apart in how they report the same class of error.
+
+**A springdoc customizer that loosens `ProblemDetail`** so the generated type
+accepts top-level members (2026-10-25, rejected by the product owner). It
+would have fixed the symptom for the frontend's hand parsing but left
+`errors`, `existingBeerId` and `existingBreweryId` untyped in every client,
+and nothing would have checked what a handler puts into them.
 
 **One shared root-level advice, widening the ArchUnit rule** — chosen. It
 matches common Spring Boot practice (one global advice for framework-level
@@ -134,6 +180,16 @@ forever-growing subclass tax and the duplication.
   `ProblemDetail` return type carries none. `GlobalExceptionHandlerIT` pins
   the 405 `Allow` header specifically so a future override cannot drop it
   unnoticed.
+
+- Bad, because `Problem` relies on Spring serializing `getProperties()` as the
+  problem's any-getter while springdoc does not know that, so the override that
+  hides it from the spec is load-bearing; `ErrorBodyShapesIT` and
+  `ApiErrorDocumentationIT` fail if either side changes.
+- Bad, because a `400` is declared as either `ValidationProblem` or `Problem`
+  (malformed JSON and a mistyped parameter have no `errors`), so a client
+  narrows on `errors` rather than reading a single shape.
+- Neutral, because a new error kind with extra fields means a new declared class
+  and a `oneOf` in the response it joins, not one `setProperty` line.
 
 ## Evidence
 

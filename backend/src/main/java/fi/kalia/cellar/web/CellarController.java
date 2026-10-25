@@ -2,6 +2,8 @@ package fi.kalia.cellar.web;
 
 import fi.kalia.cellar.application.CellarService;
 import fi.kalia.identity.IdentityApi;
+import fi.kalia.web.Problem;
+import fi.kalia.web.ValidationProblem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,11 +18,10 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +36,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Cellar", description = "The signed-in caller's own cellar")
 @SecurityRequirement(name = "oauth2")
-// Do not drop `content = @Content()`: without it, springdoc defaults this
-// 401 to the operation's own success schema instead (backend/README.md traps).
-@ApiResponse(responseCode = "401", description = "Missing or invalid bearer token", content = @Content())
+@ApiResponse(responseCode = "401", description = "Missing or invalid bearer token",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 class CellarController {
 
 	private static final String CONCURRENT_WRITE = """
@@ -70,13 +70,13 @@ class CellarController {
 	@ApiResponses({
 			@ApiResponse(responseCode = "400", description = "The bottle's dates or quantity are invalid",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
+							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
 			@ApiResponse(responseCode = "404", description = "No catalog beer with the given id",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
+							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = CONCURRENT_WRITE,
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class)))})
+							schema = @Schema(implementation = Problem.class)))})
 	List<BottleDto> addBottles(@Valid @RequestBody AddBottleRequestDto request) {
 		return cellar.addBottles(identity.requireCurrentUserId(), request.beerId(), request.quantityOrDefault(),
 				request.containerType(), request.brewedDate(), request.bestBeforeDate())
@@ -93,13 +93,13 @@ class CellarController {
 	@ApiResponses({
 			@ApiResponse(responseCode = "400", description = "The bottle's dates are invalid",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
+							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
 			@ApiResponse(responseCode = "404", description = "The bottle does not exist or belongs to someone else",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
+							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = CONCURRENT_WRITE,
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class)))})
+							schema = @Schema(implementation = Problem.class)))})
 	BottleDto updateBottle(@Parameter(description = "Bottle id") @PathVariable UUID id,
 			@Valid @RequestBody UpdateBottleRequestDto request) {
 		return BottleDto.from(cellar.updateBottle(identity.requireCurrentUserId(), id, request.containerType(),
@@ -111,12 +111,15 @@ class CellarController {
 	@Operation(summary = "Remove a bottle",
 			description = "404 when the bottle does not exist or belongs to someone else.")
 	@ApiResponses({
+			@ApiResponse(responseCode = "400", description = "The id is not a bottle id",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "404", description = "The bottle does not exist or belongs to someone else",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
+							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = CONCURRENT_WRITE,
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class)))})
+							schema = @Schema(implementation = Problem.class)))})
 	void removeBottle(@Parameter(description = "Bottle id") @PathVariable UUID id) {
 		cellar.removeBottle(identity.requireCurrentUserId(), id);
 	}

@@ -39,7 +39,7 @@ class SecurityConfig {
 	}
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http, ProblemJsonSecurityHandlers problems) throws Exception {
 		return http
 				.authorizeHttpRequests(requests -> requests
 						// Do not widen "/api/v1/beers/*" to "/**": a later sub-resource
@@ -58,7 +58,10 @@ class SecurityConfig {
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.permitAll()
 						.anyRequest().authenticated())
-				.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+				.oauth2ResourceServer(oauth2 -> oauth2
+						.jwt(Customizer.withDefaults())
+						.authenticationEntryPoint(problems.authenticationEntryPoint())
+						.accessDeniedHandler(problems.accessDenied()))
 				.sessionManagement(session -> session
 						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				// Do not enable CSRF protection here without first re-reading

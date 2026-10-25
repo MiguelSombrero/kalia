@@ -2,6 +2,8 @@ package fi.kalia.feed.web;
 
 import fi.kalia.feed.application.FeedService;
 import fi.kalia.feed.application.InvalidFeedCursorException;
+import fi.kalia.web.Problem;
+import fi.kalia.web.ValidationProblem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,7 +65,7 @@ class FeedController {
 					; since or before is malformed or was never issued by this server; or both since and before \
 					are given""",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-					schema = @Schema(implementation = ProblemDetail.class)))
+					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
 	FeedPageDto readFeed(
 			@Parameter(description = "Page size, 1-" + MAX_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_SIZE) int size,

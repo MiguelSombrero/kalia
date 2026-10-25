@@ -6,6 +6,8 @@ import fi.kalia.catalog.application.ContributionService;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
 import fi.kalia.catalog.domain.Country;
 import fi.kalia.identity.IdentityApi;
+import fi.kalia.web.Problem;
+import fi.kalia.web.ValidationProblem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,7 +34,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,6 +79,12 @@ class CatalogController {
 	private final IdentityApi identity;
 
 	@GetMapping("/beers")
+	// Do not remove: matches Spring's default, but its absence would silently
+	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponse(responseCode = "400", description = "A filter is malformed or out of range, minAbv is above maxAbv, the sort is unsupported, or the page skips more rows than allowed",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
 	@Operation(summary = "Search beers", description = "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics. " + OFFSET_BOUND)
 	PageDto<BeerSummaryDto> searchBeers(
 			@Parameter(description = "Case-insensitive substring match on beer name, at most " + MAX_FILTER_LENGTH + " characters")
@@ -106,12 +113,27 @@ class CatalogController {
 	}
 
 	@GetMapping("/beers/{id}")
+	// Do not remove: matches Spring's default, but its absence would silently
+	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponse(responseCode = "400", description = "The id is not a UUID",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(implementation = Problem.class)))
+	@ApiResponse(responseCode = "404", description = "No beer with this id",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(implementation = Problem.class)))
 	@Operation(summary = "Get beer details", description = "Full details for a single beer, including its brewery.")
 	BeerDetailsDto getBeer(@Parameter(description = "Beer id") @PathVariable UUID id) {
 		return BeerDetailsDto.from(catalog.getBeer(id));
 	}
 
 	@GetMapping("/beers/batch")
+	// Do not remove: matches Spring's default, but its absence would silently
+	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponse(responseCode = "400", description = "No id, too many ids, or an id that is not a UUID",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
 	@Operation(summary = "Get beers by id", description = """
 			Summaries for a set of beers named by repeated `ids` query parameter, for a client \
 			enriching a list it already holds (e.g. a cellar). An id matching no beer is omitted \
@@ -136,23 +158,30 @@ class CatalogController {
 					A field is missing, out of range, not one of the listed styles or countries, or \
 					both or neither of breweryId and newBrewery are given; `errors` lists each one\
 					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
-			// Do not drop `content = @Content()` (backend/README.md traps).
-			@ApiResponse(responseCode = "401", description = "Missing or invalid bearer token", content = @Content()),
+							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
+			@ApiResponse(responseCode = "401", description = "Missing or invalid bearer token",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "404", description = "No brewery with the given breweryId",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class))),
+							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = """
-					The catalog already has this beer, named by the problem's `existingBeerId`, or \
-					already has the new brewery, named by `existingBreweryId`\
+					The catalog already has this beer, named by `existingBeerId`, or already has the \
+					new brewery, named by `existingBreweryId` and spelled as the catalog spells it\
 					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = ProblemDetail.class)))})
+							schema = @Schema(oneOf = {DuplicateBeerProblem.class, DuplicateBreweryProblem.class})))})
 	BeerDetailsDto addBeer(@Valid @RequestBody AddBeerRequestDto request) {
 		return BeerDetailsDto.from(contributions.addBeer(identity.requireCurrentUserId(),
 				request.breweryChoice(), request.name(), request.style(), request.abv()));
 	}
 
 	@GetMapping("/breweries")
+	// Do not remove: matches Spring's default, but its absence would silently
+	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponse(responseCode = "400", description = "The query is too long, a page parameter is out of range, or the page skips more rows than allowed",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
 	@Operation(summary = "List breweries", description = "Paginate the brewery list, sorted by name. " + OFFSET_BOUND)
 	PageDto<BreweryDto> listBreweries(
 			@Parameter(description = "Case-insensitive substring match on brewery name, at most " + MAX_FILTER_LENGTH + " characters")
