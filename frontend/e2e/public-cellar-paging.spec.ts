@@ -54,4 +54,9 @@ test("a public cellar past one page of beers pages, and counts the whole cellar"
 
   await page.goto(`/en/cellars/${account.username}?page=2`);
   await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
+
+  // Its twenty-one additions are front-page feed lines while the cellar is public, and the
+  // front-page layout specs measure whatever lines the feed shows.
+  await page.goto("/en");
+  await setCellarVisibility(page, "Only me");
 });
