@@ -50,7 +50,9 @@ CLAUDE.md "Refine in one PR, implement in another".
    and 03 before either is refined).
 7. Branch off up-to-date `dev`, separate from any implementation branch for
    this task — `CLAUDE.md` "Refine in one PR, implement in another": this PR
-   carries only the task-file edit(s), no code.
+   carries only the task-file edit(s), no code — except an unrelated CVE fix,
+   which `CLAUDE.md` says goes in place on the open branch as its own commit,
+   never a second PR.
 8. Set `Status` to `refined` and run `node scripts/check-tasks.mjs` to
    confirm the file is structurally valid and `Open questions` reads
    `**None.**`.

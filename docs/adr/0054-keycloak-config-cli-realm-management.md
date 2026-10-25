@@ -7,6 +7,8 @@
   `--import.dry-run` mode task 03's refinement assumed keycloak-config-cli
   had; and `IMPORT_CACHE_ENABLED=false` is set so a reconcile actually
   re-applies rather than skipping on an unchanged file.
+- **Amended:** 2026-10-25 — the re-apply command is `docker compose run --rm
+  keycloak-config`, not `up -d --wait` (`--wait` on a one-shot is a race)
 
 ## Context
 
@@ -62,8 +64,15 @@ substitution entirely.**
   > is never reconciled back on any boot, which is the exact failure task 03
   > exists to close. With the cache off every run is a full diff/apply
   > (measured at well under a second on this realm), so re-running the
-  > service — `docker compose up -d --wait keycloak-config`, or any full
+  > service — `docker compose run --rm keycloak-config`, or any full
   > restart — is the recovery from drift, with no separate tool to build.
+  >
+  > **Amended 2026-10-25 (iteration 8.5 task 18).** The invocation named here
+  > was `docker compose up -d --wait keycloak-config`. `--wait` on a one-shot
+  > service races: Compose exits 0 if it observes the container before it
+  > finishes and 1 if it has already exited, and this service finishes in
+  > under a second (Compose v5.5.1, repeated runs against one stack).
+  > `run --rm` is deterministic and returns the service's own exit code.
 
 - **Drift detection** (task 03) is `scripts/check-keycloak-realm-config.mjs`:
   it resolves the committed file's `$(env:...)` placeholders and asserts

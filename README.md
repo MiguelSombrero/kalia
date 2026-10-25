@@ -111,7 +111,7 @@ local development. The realm file is applied to Keycloak by the
 startup, not baked into the Keycloak image — it fully reconciles the realm
 each run, so a change made in the admin console is overwritten on the next
 `docker compose up`. `make verify` fails if the running realm has drifted
-from the file; re-apply with `docker compose up -d --wait keycloak-config`.
+from the file; re-apply with `docker compose run --rm keycloak-config`.
 To sign in to Kalia itself (not
 the Keycloak admin console), use the seeded dev account `testuser` /
 `testuser123`, created idempotently on every startup by the `keycloak-seed`
@@ -271,7 +271,8 @@ manifest already says.
 
 - GitHub Actions (`make verify`'s checks, on every push to any branch). Every action is
   SHA-pinned with its tag in a trailing comment — `.github/workflows/` is the
-  list
+  list; `pr-body.yml` also checks that a
+  task-completing pull request fills in the template's Gates section
 
 ## Repository layout
 

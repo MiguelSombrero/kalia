@@ -85,10 +85,12 @@ their own condition from that ADR before they apply.
    stack up (`make up`), exercise the flow this task actually changed —
    signing in as the seeded dev account where the flow needs it — and report
    **what you saw**, not what you expected to see. A backend-only change is
-   exercised against the endpoint; a UI change is exercised in a browser,
-   which `docs/PULL_REQUEST_TEMPLATE.md` already requires as its own
-   test-plan line. "Nothing user-facing changed" is a verdict and a fine
-   answer; silence is not.
+   exercised against the endpoint; a UI change is exercised in a browser —
+   the desktop app's browser pane or Claude in Chrome — and recorded in the
+   pull request's Gates section as what you saw, in words. Never commit,
+   push or upload a screenshot of it (`CLAUDE.md`, `.claude/rules/no-screenshots.md`).
+   "Nothing user-facing changed" is a verdict and a fine answer; silence is
+   not.
 11. Go through the acceptance criteria one at a time and **run what each one
     says verifies it**, rather than ticking the list from memory of having
     done the work. A criterion states its own check — that is what
@@ -104,8 +106,13 @@ their own condition from that ADR before they apply.
     declare an iteration complete because its last task is ticked. Re-read its
     "Done when" and verify each criterion by running it; if any is unmet, add
     tasks to close the gap. The same coverage check applies when planning an
-    iteration ([ADR-0026](../../../docs/adr/0026-task-file-format.md)). Update
-    that iteration's `Status` in `docs/roadmap.md` once it is genuinely done.
+    iteration ([ADR-0026](../../../docs/adr/0026-task-file-format.md)). Once it
+    is genuinely done, update every document that states the iteration's
+    status, in the same pull request: its `Status` in `docs/roadmap.md`; the
+    status blockquote and the "What Kalia does" feature list in `README.md`;
+    and `docs/architecture.md` §1's "Built:" list and its "No iteration is in
+    progress. The next is …" line. Missing the last three is how the close of
+    5.5, 6 and 7 drifted.
 12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 
@@ -119,8 +126,10 @@ cleanly, which is the failure
 [ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)
 records.
 
-Then state, in the pull request or the final message, which of these ran and
-which did not, naming a reason for each one skipped (in procedure order):
+Then state, in the pull request's **Gates** section
+(`docs/PULL_REQUEST_TEMPLATE.md`; a report left in the session's final
+message is gone when the session ends), which of these ran and which did not,
+naming a reason for each one skipped (in procedure order):
 
 - doc-sync
 - `/code-review`
