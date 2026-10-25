@@ -27,12 +27,15 @@ import type {
   AddBeerRequestDto,
   BeerDetailsDto,
   BeerSummaryDto,
+  DuplicateBeerProblem,
+  DuplicateBreweryProblem,
   GetBeersByIdsParams,
   ListBreweriesParams,
   PageDtoBeerSummaryDto,
   PageDtoBreweryDto,
-  ProblemDetail,
-  SearchBeersParams
+  Problem,
+  SearchBeersParams,
+  ValidationProblem
 } from '../models';
 
 import { kaliaFetch } from '../../mutator';
@@ -62,12 +65,24 @@ export type searchBeersResponse200 = {
   status: 200
 }
 
+export type searchBeersResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type searchBeersResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type searchBeersResponseSuccess = (searchBeersResponse200) & {
   headers: Headers;
 };
-;
+export type searchBeersResponseError = (searchBeersResponse400 | searchBeersResponse500) & {
+  headers: Headers;
+};
 
-export type searchBeersResponse = (searchBeersResponseSuccess)
+export type searchBeersResponse = (searchBeersResponseSuccess | searchBeersResponseError)
 
 export const getSearchBeersUrl = (params?: SearchBeersParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -110,7 +125,7 @@ export const getSearchBeersQueryKey = (params?: SearchBeersParams,) => {
     }
 
 
-export const getSearchBeersQueryOptions = <TData = Awaited<ReturnType<typeof searchBeers>>, TError = unknown>(params?: SearchBeersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchBeers>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getSearchBeersQueryOptions = <TData = Awaited<ReturnType<typeof searchBeers>>, TError = ValidationProblem | Problem>(params?: SearchBeersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchBeers>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -129,10 +144,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type SearchBeersQueryResult = NonNullable<Awaited<ReturnType<typeof searchBeers>>>
-export type SearchBeersQueryError = unknown
+export type SearchBeersQueryError = ValidationProblem | Problem
 
 
-export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = unknown>(
+export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = ValidationProblem | Problem>(
  params: undefined |  SearchBeersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchBeers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchBeers>>,
@@ -142,7 +157,7 @@ export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = unknown>(
+export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = ValidationProblem | Problem>(
  params?: SearchBeersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchBeers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof searchBeers>>,
@@ -152,7 +167,7 @@ export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, 
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = unknown>(
+export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = ValidationProblem | Problem>(
  params?: SearchBeersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchBeers>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -160,7 +175,7 @@ export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, 
  * @summary Search beers
  */
 
-export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = unknown>(
+export function useSearchBeers<TData = Awaited<ReturnType<typeof searchBeers>>, TError = ValidationProblem | Problem>(
  params?: SearchBeersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchBeers>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -183,29 +198,34 @@ export type addBeerResponse201 = {
 }
 
 export type addBeerResponse400 = {
-  data: ProblemDetail
+  data: ValidationProblem | Problem
   status: 400
 }
 
 export type addBeerResponse401 = {
-  data: void
+  data: Problem
   status: 401
 }
 
 export type addBeerResponse404 = {
-  data: ProblemDetail
+  data: Problem
   status: 404
 }
 
 export type addBeerResponse409 = {
-  data: ProblemDetail
+  data: DuplicateBeerProblem | DuplicateBreweryProblem
   status: 409
+}
+
+export type addBeerResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type addBeerResponseSuccess = (addBeerResponse201) & {
   headers: Headers;
 };
-export type addBeerResponseError = (addBeerResponse400 | addBeerResponse401 | addBeerResponse404 | addBeerResponse409) & {
+export type addBeerResponseError = (addBeerResponse400 | addBeerResponse401 | addBeerResponse404 | addBeerResponse409 | addBeerResponse500) & {
   headers: Headers;
 };
 
@@ -254,7 +274,7 @@ return kaliaFetch<addBeerResponse>(getAddBeerUrl(),
 
 export const getAddBeerMutationKey = () => ['addBeer'] as const;
 
-export const getAddBeerMutationOptions = <TError = ProblemDetail | void,
+export const getAddBeerMutationOptions = <TError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeer>>, TError,AddBeerMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof addBeer>>, TError,AddBeerMutationVariables, TContext> => {
 
@@ -283,13 +303,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AddBeerMutationResult = NonNullable<Awaited<ReturnType<typeof addBeer>>>
     export type AddBeerMutationBody = AddBeerRequestDto
-    export type AddBeerMutationError = ProblemDetail | void
+    export type AddBeerMutationError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem
     export type AddBeerMutationVariables = {data: AddBeerRequestDto}
 
     /**
  * @summary Add a beer
  */
-export const useAddBeer = <TError = ProblemDetail | void,
+export const useAddBeer = <TError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeer>>, TError,AddBeerMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof addBeer>>,
@@ -304,12 +324,19 @@ export const useAddBeer = <TError = ProblemDetail | void,
   status: 200
 }
 
+export type listStylesResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type listStylesResponseSuccess = (listStylesResponse200) & {
   headers: Headers;
 };
-;
+export type listStylesResponseError = (listStylesResponse500) & {
+  headers: Headers;
+};
 
-export type listStylesResponse = (listStylesResponseSuccess)
+export type listStylesResponse = (listStylesResponseSuccess | listStylesResponseError)
 
 export const getListStylesUrl = () => {
 
@@ -345,7 +372,7 @@ export const getListStylesQueryKey = () => {
     }
 
 
-export const getListStylesQueryOptions = <TData = Awaited<ReturnType<typeof listStyles>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStyles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListStylesQueryOptions = <TData = Awaited<ReturnType<typeof listStyles>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStyles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -364,10 +391,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListStylesQueryResult = NonNullable<Awaited<ReturnType<typeof listStyles>>>
-export type ListStylesQueryError = unknown
+export type ListStylesQueryError = Problem
 
 
-export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = unknown>(
+export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = Problem>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStyles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listStyles>>,
@@ -377,7 +404,7 @@ export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TE
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = unknown>(
+export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStyles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listStyles>>,
@@ -387,7 +414,7 @@ export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TE
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = unknown>(
+export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStyles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -395,7 +422,7 @@ export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TE
  * @summary List styles
  */
 
-export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = unknown>(
+export function useListStyles<TData = Awaited<ReturnType<typeof listStyles>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listStyles>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -417,12 +444,19 @@ export type listCountriesResponse200 = {
   status: 200
 }
 
+export type listCountriesResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type listCountriesResponseSuccess = (listCountriesResponse200) & {
   headers: Headers;
 };
-;
+export type listCountriesResponseError = (listCountriesResponse500) & {
+  headers: Headers;
+};
 
-export type listCountriesResponse = (listCountriesResponseSuccess)
+export type listCountriesResponse = (listCountriesResponseSuccess | listCountriesResponseError)
 
 export const getListCountriesUrl = () => {
 
@@ -458,7 +492,7 @@ export const getListCountriesQueryKey = () => {
     }
 
 
-export const getListCountriesQueryOptions = <TData = Awaited<ReturnType<typeof listCountries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListCountriesQueryOptions = <TData = Awaited<ReturnType<typeof listCountries>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -477,10 +511,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListCountriesQueryResult = NonNullable<Awaited<ReturnType<typeof listCountries>>>
-export type ListCountriesQueryError = unknown
+export type ListCountriesQueryError = Problem
 
 
-export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = unknown>(
+export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = Problem>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCountries>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listCountries>>,
@@ -490,7 +524,7 @@ export function useListCountries<TData = Awaited<ReturnType<typeof listCountries
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = unknown>(
+export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCountries>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listCountries>>,
@@ -500,7 +534,7 @@ export function useListCountries<TData = Awaited<ReturnType<typeof listCountries
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = unknown>(
+export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -508,7 +542,7 @@ export function useListCountries<TData = Awaited<ReturnType<typeof listCountries
  * @summary List countries
  */
 
-export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = unknown>(
+export function useListCountries<TData = Awaited<ReturnType<typeof listCountries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -530,12 +564,24 @@ export type listBreweriesResponse200 = {
   status: 200
 }
 
+export type listBreweriesResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type listBreweriesResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type listBreweriesResponseSuccess = (listBreweriesResponse200) & {
   headers: Headers;
 };
-;
+export type listBreweriesResponseError = (listBreweriesResponse400 | listBreweriesResponse500) & {
+  headers: Headers;
+};
 
-export type listBreweriesResponse = (listBreweriesResponseSuccess)
+export type listBreweriesResponse = (listBreweriesResponseSuccess | listBreweriesResponseError)
 
 export const getListBreweriesUrl = (params?: ListBreweriesParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -578,7 +624,7 @@ export const getListBreweriesQueryKey = (params?: ListBreweriesParams,) => {
     }
 
 
-export const getListBreweriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListBreweriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweries>>, TError = ValidationProblem | Problem>(params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -597,10 +643,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListBreweriesQueryResult = NonNullable<Awaited<ReturnType<typeof listBreweries>>>
-export type ListBreweriesQueryError = unknown
+export type ListBreweriesQueryError = ValidationProblem | Problem
 
 
-export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
+export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = ValidationProblem | Problem>(
  params: undefined |  ListBreweriesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBreweries>>,
@@ -610,7 +656,7 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
+export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = ValidationProblem | Problem>(
  params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBreweries>>,
@@ -620,7 +666,7 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
+export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = ValidationProblem | Problem>(
  params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -628,7 +674,7 @@ export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries
  * @summary List breweries
  */
 
-export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = unknown>(
+export function useListBreweries<TData = Awaited<ReturnType<typeof listBreweries>>, TError = ValidationProblem | Problem>(
  params?: ListBreweriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -650,12 +696,19 @@ export type listBreweryCountriesResponse200 = {
   status: 200
 }
 
+export type listBreweryCountriesResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type listBreweryCountriesResponseSuccess = (listBreweryCountriesResponse200) & {
   headers: Headers;
 };
-;
+export type listBreweryCountriesResponseError = (listBreweryCountriesResponse500) & {
+  headers: Headers;
+};
 
-export type listBreweryCountriesResponse = (listBreweryCountriesResponseSuccess)
+export type listBreweryCountriesResponse = (listBreweryCountriesResponseSuccess | listBreweryCountriesResponseError)
 
 export const getListBreweryCountriesUrl = () => {
 
@@ -691,7 +744,7 @@ export const getListBreweryCountriesQueryKey = () => {
     }
 
 
-export const getListBreweryCountriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getListBreweryCountriesQueryOptions = <TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -710,10 +763,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ListBreweryCountriesQueryResult = NonNullable<Awaited<ReturnType<typeof listBreweryCountries>>>
-export type ListBreweryCountriesQueryError = unknown
+export type ListBreweryCountriesQueryError = Problem
 
 
-export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = Problem>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBreweryCountries>>,
@@ -723,7 +776,7 @@ export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBr
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBreweryCountries>>,
@@ -733,7 +786,7 @@ export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBr
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -741,7 +794,7 @@ export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBr
  * @summary List the countries breweries are in
  */
 
-export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = unknown>(
+export function useListBreweryCountries<TData = Awaited<ReturnType<typeof listBreweryCountries>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBreweryCountries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -763,12 +816,29 @@ export type getBeerResponse200 = {
   status: 200
 }
 
+export type getBeerResponse400 = {
+  data: Problem
+  status: 400
+}
+
+export type getBeerResponse404 = {
+  data: Problem
+  status: 404
+}
+
+export type getBeerResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type getBeerResponseSuccess = (getBeerResponse200) & {
   headers: Headers;
 };
-;
+export type getBeerResponseError = (getBeerResponse400 | getBeerResponse404 | getBeerResponse500) & {
+  headers: Headers;
+};
 
-export type getBeerResponse = (getBeerResponseSuccess)
+export type getBeerResponse = (getBeerResponseSuccess | getBeerResponseError)
 
 export const getGetBeerUrl = (id: string,) => {
 
@@ -804,7 +874,7 @@ export const getGetBeerQueryKey = (id: string,) => {
     }
 
 
-export const getGetBeerQueryOptions = <TData = Awaited<ReturnType<typeof getBeer>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeer>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getGetBeerQueryOptions = <TData = Awaited<ReturnType<typeof getBeer>>, TError = Problem>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeer>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -823,10 +893,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetBeerQueryResult = NonNullable<Awaited<ReturnType<typeof getBeer>>>
-export type GetBeerQueryError = unknown
+export type GetBeerQueryError = Problem
 
 
-export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = unknown>(
+export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = Problem>(
  id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeer>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBeer>>,
@@ -836,7 +906,7 @@ export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError =
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = unknown>(
+export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = Problem>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeer>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBeer>>,
@@ -846,7 +916,7 @@ export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError =
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = unknown>(
+export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = Problem>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeer>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -854,7 +924,7 @@ export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError =
  * @summary Get beer details
  */
 
-export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = unknown>(
+export function useGetBeer<TData = Awaited<ReturnType<typeof getBeer>>, TError = Problem>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeer>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -876,12 +946,24 @@ export type getBeersByIdsResponse200 = {
   status: 200
 }
 
+export type getBeersByIdsResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type getBeersByIdsResponse500 = {
+  data: Problem
+  status: 500
+}
+
 export type getBeersByIdsResponseSuccess = (getBeersByIdsResponse200) & {
   headers: Headers;
 };
-;
+export type getBeersByIdsResponseError = (getBeersByIdsResponse400 | getBeersByIdsResponse500) & {
+  headers: Headers;
+};
 
-export type getBeersByIdsResponse = (getBeersByIdsResponseSuccess)
+export type getBeersByIdsResponse = (getBeersByIdsResponseSuccess | getBeersByIdsResponseError)
 
 export const getGetBeersByIdsUrl = (params: GetBeersByIdsParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -930,7 +1012,7 @@ export const getGetBeersByIdsQueryKey = (params?: GetBeersByIdsParams,) => {
     }
 
 
-export const getGetBeersByIdsQueryOptions = <TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getGetBeersByIdsQueryOptions = <TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = ValidationProblem | Problem>(params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -949,10 +1031,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetBeersByIdsQueryResult = NonNullable<Awaited<ReturnType<typeof getBeersByIds>>>
-export type GetBeersByIdsQueryError = unknown
+export type GetBeersByIdsQueryError = ValidationProblem | Problem
 
 
-export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = ValidationProblem | Problem>(
  params: GetBeersByIdsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBeersByIds>>,
@@ -962,7 +1044,7 @@ export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = ValidationProblem | Problem>(
  params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBeersByIds>>,
@@ -972,7 +1054,7 @@ export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = ValidationProblem | Problem>(
  params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -980,7 +1062,7 @@ export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds
  * @summary Get beers by id
  */
 
-export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = unknown>(
+export function useGetBeersByIds<TData = Awaited<ReturnType<typeof getBeersByIds>>, TError = ValidationProblem | Problem>(
  params: GetBeersByIdsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeersByIds>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

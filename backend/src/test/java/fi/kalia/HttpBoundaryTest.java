@@ -1,6 +1,7 @@
 package fi.kalia;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -15,20 +16,24 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.persistence.Entity;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * Guards the HTTP boundary named in architecture.md §4 — "JPA entities never
  * serialize directly" — the one that hands entities outward deliberately
  * ({@link ArchitectureTest}'s layer rules) and yet must stop them at the
  * controller. Kept apart from {@link ArchitectureTest}: that class is about
- * layer direction, this one about what a handler method may put on the wire.
- * Neither rule has a production violator, so both are checked against a
- * fixture too — see {@link HttpBoundaryRulesRejectViolationsTest}.
+ * layer direction, this one about what a handler method — a controller's or an
+ * advice's — may put on the wire. No rule has a production violator, so each is
+ * checked against a fixture too — see {@link HttpBoundaryRulesRejectViolationsTest}.
  */
 @AnalyzeClasses(packages = HttpBoundaryTest.BASE_PACKAGE, importOptions = ImportOption.DoNotIncludeTests.class)
 class HttpBoundaryTest {
@@ -45,6 +50,29 @@ class HttpBoundaryTest {
 					return method.getOwner().isAnnotatedWith(RestController.class)
 							&& (method.isAnnotatedWith(RequestMapping.class)
 									|| method.isMetaAnnotatedWith(RequestMapping.class));
+				}
+			};
+
+	// The error half of the boundary: what an advice answers with is as much on
+	// the wire as a controller's return value (ADR-0014).
+	private static final DescribedPredicate<JavaMethod> AN_ADVICE_EXCEPTION_HANDLER =
+			new DescribedPredicate<>("an advice exception handler method") {
+				@Override
+				public boolean test(JavaMethod method) {
+					return method.getOwner().isAnnotatedWith(RestControllerAdvice.class)
+							&& method.isAnnotatedWith(ExceptionHandler.class);
+				}
+			};
+
+	private static final ArchCondition<JavaMethod> NOT_DECLARE_AN_ERROR_BODY_THAT_COULD_CARRY_A_JPA_ENTITY =
+			new ArchCondition<>("not declare an error body that could carry a JPA entity") {
+				@Override
+				public void check(JavaMethod method, ConditionEvents events) {
+					for (JavaClass entityType : jpaEntitiesReachableFrom(method.getReturnType())) {
+						events.add(SimpleConditionEvent.violated(method,
+								method.getFullName() + " answers with a body that can carry " + entityType.getName()
+										+ ", a JPA entity, across the HTTP boundary"));
+					}
 				}
 			};
 
@@ -95,6 +123,25 @@ class HttpBoundaryTest {
 					+ "field, including ids and ownership (architecture.md §4)")
 			.allowEmptyShould(false);
 
+	@ArchTest
+	static final ArchRule adviceHandlersDeclareNoErrorBodyThatCouldCarryAJpaEntity = methods()
+			.that(AN_ADVICE_EXCEPTION_HANDLER)
+			.should(NOT_DECLARE_AN_ERROR_BODY_THAT_COULD_CARRY_A_JPA_ENTITY)
+			.because("JPA entities never serialize directly across the HTTP boundary, an error body "
+					+ "included (architecture.md §4, ADR-0014)")
+			.allowEmptyShould(false);
+
+	// ProblemDetail.setProperty takes an Object, so a value put there is typed by
+	// nothing: the rule above cannot see it and neither can the generated client.
+	// An error's extra fields are declared members of its own type instead.
+	@ArchTest
+	static final ArchRule adviceSetsNoUntypedProblemProperty = noClasses()
+			.that().areAnnotatedWith(RestControllerAdvice.class)
+			.should().callMethod(ProblemDetail.class, "setProperty", String.class, Object.class)
+			.because("an error's extra fields are declared members of its own type, which the build "
+					+ "can check for entities and the OpenAPI spec can describe (ADR-0014)")
+			.allowEmptyShould(false);
+
 	// getAllInvolvedRawTypes() is what sees through List<Bottle>, Page<Beer>,
 	// ResponseEntity<Entry> and Optional<Profile> alike: it walks the whole
 	// generic signature, not just the raw return/parameter type.
@@ -102,6 +149,30 @@ class HttpBoundaryTest {
 		return type.getAllInvolvedRawTypes().stream()
 				.filter(candidate -> candidate.isAnnotatedWith(Entity.class))
 				.collect(Collectors.toSet());
+	}
+
+	// An error body is a declared type whose members are what reaches the wire,
+	// so unlike a controller's return value it is followed into its fields:
+	// the entity a declared error would carry is a field, not the return type.
+	// java.* is not followed: nothing there is an entity, and its fields are
+	// not Kalia's to declare.
+	private static Set<JavaClass> jpaEntitiesReachableFrom(JavaType type) {
+		Set<JavaClass> visited = new HashSet<>();
+		Set<JavaClass> entities = new HashSet<>();
+		collectEntities(type, visited, entities);
+		return entities;
+	}
+
+	private static void collectEntities(JavaType type, Set<JavaClass> visited, Set<JavaClass> entities) {
+		for (JavaClass candidate : type.getAllInvolvedRawTypes()) {
+			if (candidate.getPackageName().startsWith("java.") || !visited.add(candidate)) {
+				continue;
+			}
+			if (candidate.isAnnotatedWith(Entity.class)) {
+				entities.add(candidate);
+			}
+			candidate.getAllFields().forEach(field -> collectEntities(field.getType(), visited, entities));
+		}
 	}
 
 }

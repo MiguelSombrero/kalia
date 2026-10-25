@@ -146,14 +146,21 @@ Notable suites:
   already-exercised rule tests ArchUnit, not this codebase; don't
 - `HttpBoundaryTest` — the HTTP-boundary ArchUnit rules, kept apart from
   `ArchitectureTest` because that class is about layer direction and this one
-  about what a controller handler may put on the wire: a handler method may
+  about what a handler may put on the wire: a controller handler may
   neither return nor accept (`@RequestBody`) a JPA entity, seen through
-  `List`, `Page`, `Optional` and `ResponseEntity` wrappers alike
+  `List`, `Page`, `Optional` and `ResponseEntity` wrappers alike; an advice
+  `@ExceptionHandler` may not answer with a body type that reaches an entity
+  through its fields, and an advice may not call `ProblemDetail.setProperty`
   (architecture.md §4, §7)
 - `HttpBoundaryRulesRejectViolationsTest` — same reasoning as
   `ArchitectureRulesRejectViolationsTest` above, applied to `HttpBoundaryTest`:
-  neither of its rules has a production violator, so both are re-run against
+  none of its rules has a production violator, so each is re-run against
   `archfixture/httpboundary/`
+- `ApiErrorDocumentationIT` — reads `/v3/api-docs`: every operation lists an
+  error, an authenticated one a `401`, one taking input a `400`, each as
+  problem+json with a declared schema that nests nothing under `properties`
+  (ADR-0014); `ErrorBodyShapesIT` pins the same shapes on the wire, and
+  `ProblemJsonSecurityErrorsIT` the filter chain's `401` body and challenge
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas
@@ -243,7 +250,14 @@ lives there rather than in this file.
   a later task. Document each handler's response codes with `@ApiResponse`/
   `@ApiResponses`; a response every handler in the controller shares (e.g.
   401 on a controller where every route requires authentication) goes on the
-  class instead of repeating it per method.
+  class instead of repeating it per method. An error is documented with the
+  declared type it is sent as (`Problem`, or `ValidationProblem`,
+  `DuplicateBeerProblem` and the like), as `application/problem+json`; a `400`
+  that may be either a field refusal or a malformed request is
+  `@Schema(oneOf = {ValidationProblem.class, Problem.class})`. The `500` every
+  operation can end in is added once by `UnexpectedFailureDocumentation`, not
+  per handler. `ApiErrorDocumentationIT` fails an operation that lists no error,
+  an authenticated one with no `401`, or one taking input with no `400`.
 - **Text blocks (`"""`), not string concatenation, for a multiline string
   literal** — including annotation values (`@Operation(description = """…""")`),
   which accept a text block as a compile-time constant the same as any other
@@ -332,6 +346,15 @@ fails the build on a new advice outside `fi.kalia.web` with no `basePackages`.
 The one shared advice, `fi.kalia.web.GlobalExceptionHandler`, handles only the
 two Bean Validation exceptions where Boot omits field-level detail
 ([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
+
+An error with fields beyond RFC 9457's is a class extending `fi.kalia.web.Problem`
+with those fields as declared getters (see `ValidationProblem`), returned by its
+handler — never `ProblemDetail.setProperty`, which `HttpBoundaryTest` fails on:
+it is untyped, so neither the generated clients nor the entity guard can see
+it. A field-error item is `fi.kalia.web.FieldErrorDto`, shared by every `400`.
+The filter chain's own `401` and `403` are problem+json through
+`ProblemJsonSecurityHandlers`, which keeps Spring Security's `WWW-Authenticate`
+challenge and adds only a body.
 
 ## Logging conventions
 

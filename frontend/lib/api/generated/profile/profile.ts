@@ -25,8 +25,9 @@ import type {
 
 import type {
   ChangeVisibilityRequestDto,
-  ProblemDetail,
-  ProfileDto
+  Problem,
+  ProfileDto,
+  ValidationProblem
 } from '../models';
 
 import { kaliaFetch } from '../../mutator';
@@ -56,20 +57,30 @@ export type changeVisibilityResponse200 = {
   status: 200
 }
 
+export type changeVisibilityResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
 export type changeVisibilityResponse401 = {
-  data: void
+  data: Problem
   status: 401
 }
 
 export type changeVisibilityResponse409 = {
-  data: ProblemDetail
+  data: Problem
   status: 409
+}
+
+export type changeVisibilityResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type changeVisibilityResponseSuccess = (changeVisibilityResponse200) & {
   headers: Headers;
 };
-export type changeVisibilityResponseError = (changeVisibilityResponse401 | changeVisibilityResponse409) & {
+export type changeVisibilityResponseError = (changeVisibilityResponse400 | changeVisibilityResponse401 | changeVisibilityResponse409 | changeVisibilityResponse500) & {
   headers: Headers;
 };
 
@@ -118,7 +129,7 @@ return kaliaFetch<changeVisibilityResponse>(getChangeVisibilityUrl(),
 
 export const getChangeVisibilityMutationKey = () => ['changeVisibility'] as const;
 
-export const getChangeVisibilityMutationOptions = <TError = void | ProblemDetail,
+export const getChangeVisibilityMutationOptions = <TError = ValidationProblem | Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext> => {
 
@@ -147,13 +158,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ChangeVisibilityMutationResult = NonNullable<Awaited<ReturnType<typeof changeVisibility>>>
     export type ChangeVisibilityMutationBody = ChangeVisibilityRequestDto
-    export type ChangeVisibilityMutationError = void | ProblemDetail
+    export type ChangeVisibilityMutationError = ValidationProblem | Problem
     export type ChangeVisibilityMutationVariables = {data: ChangeVisibilityRequestDto}
 
     /**
  * @summary Change the caller's cellar visibility
  */
-export const useChangeVisibility = <TError = void | ProblemDetail,
+export const useChangeVisibility = <TError = ValidationProblem | Problem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeVisibility>>, TError,ChangeVisibilityMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof changeVisibility>>,
@@ -169,19 +180,24 @@ export const useChangeVisibility = <TError = void | ProblemDetail,
 }
 
 export type myProfileResponse401 = {
-  data: void
+  data: Problem
   status: 401
 }
 
 export type myProfileResponse409 = {
-  data: ProblemDetail
+  data: Problem
   status: 409
+}
+
+export type myProfileResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type myProfileResponseSuccess = (myProfileResponse200) & {
   headers: Headers;
 };
-export type myProfileResponseError = (myProfileResponse401 | myProfileResponse409) & {
+export type myProfileResponseError = (myProfileResponse401 | myProfileResponse409 | myProfileResponse500) & {
   headers: Headers;
 };
 
@@ -221,7 +237,7 @@ export const getMyProfileQueryKey = () => {
     }
 
 
-export const getMyProfileQueryOptions = <TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getMyProfileQueryOptions = <TData = Awaited<ReturnType<typeof myProfile>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -240,10 +256,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type MyProfileQueryResult = NonNullable<Awaited<ReturnType<typeof myProfile>>>
-export type MyProfileQueryError = void | ProblemDetail
+export type MyProfileQueryError = Problem
 
 
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = Problem>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof myProfile>>,
@@ -253,7 +269,7 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof myProfile>>,
@@ -263,7 +279,7 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -271,7 +287,7 @@ export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TErr
  * @summary Read the caller's own profile
  */
 
-export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = void | ProblemDetail>(
+export function useMyProfile<TData = Awaited<ReturnType<typeof myProfile>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof myProfile>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

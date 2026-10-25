@@ -196,8 +196,6 @@ describe("addBeer", () => {
     expect(JSON.parse(String(init.body))).toEqual(request);
   });
 
-  // The problem's extension members are top-level JSON (RFC 9457 §3.2), not
-  // the `properties` object the generated ProblemDetail type describes.
   it("names the beer a duplicate duplicates", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => problem(409, { existingBeerId: beerId })));
 
@@ -205,7 +203,12 @@ describe("addBeer", () => {
   });
 
   it("names the brewery a duplicate brewery duplicates", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { existingBreweryId: breweryId })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        problem(409, { existingBreweryId: breweryId, existingBreweryName: "Ruosniemen Panimo", existingBreweryCountryCode: "FI" }),
+      ),
+    );
 
     await expect(addBeer(request)).resolves.toEqual({ kind: "duplicateBrewery", existingBreweryId: breweryId });
   });

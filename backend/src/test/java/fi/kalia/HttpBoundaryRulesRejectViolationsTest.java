@@ -48,6 +48,37 @@ class HttpBoundaryRulesRejectViolationsTest {
 				"acceptsEntityAsRequestBody");
 	}
 
+	@Test
+	void anAdviceAnsweringWithAnErrorBodyCarryingAJpaEntityInAField() {
+		assertRejects(HttpBoundaryTest.adviceHandlersDeclareNoErrorBodyThatCouldCarryAJpaEntity,
+				"returnsAProblemCarryingAnEntity");
+	}
+
+	@Test
+	void anAdviceAnsweringWithAnErrorBodyCarryingAListOfJpaEntities() {
+		assertRejects(HttpBoundaryTest.adviceHandlersDeclareNoErrorBodyThatCouldCarryAJpaEntity,
+				"returnsAProblemCarryingAListOfEntities");
+	}
+
+	@Test
+	void anAdviceAnsweringWithAnErrorBodyNestingAJpaEntityTwoLevelsDown() {
+		assertRejects(HttpBoundaryTest.adviceHandlersDeclareNoErrorBodyThatCouldCarryAJpaEntity,
+				"returnsAProblemNestingAnEntityTwoLevelsDown");
+	}
+
+	@Test
+	void anAdviceSettingAnUntypedProblemProperty() {
+		assertRejects(HttpBoundaryTest.adviceSetsNoUntypedProblemProperty, "setsAnUntypedProperty");
+	}
+
+	@Test
+	void anAdviceAnsweringWithACleanProblemIsNotReported() {
+		assertThatThrownBy(() -> HttpBoundaryTest.adviceHandlersDeclareNoErrorBodyThatCouldCarryAJpaEntity
+				.check(FIXTURE_CLASSES))
+				.isInstanceOf(AssertionError.class)
+				.hasMessageNotContaining("returnsACleanProblem");
+	}
+
 	private static void assertRejects(ArchRule rule, String offendingMethod) {
 		assertThatThrownBy(() -> rule.check(FIXTURE_CLASSES))
 				.isInstanceOf(AssertionError.class)
