@@ -153,7 +153,7 @@ services:
   keycloak-config:
     # Applies keycloak/realm-export.json on every boot, reconciling an
     # already-populated realm rather than only creating it once (ADR-0054).
-    image: quay.io/adorsys/keycloak-config-cli:6.5.1-26
+    image: quay.io/adorsys/keycloak-config-cli:6.5.1-26.5.5
     depends_on:
       keycloak:
         condition: service_healthy
