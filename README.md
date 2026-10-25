@@ -296,7 +296,7 @@ kalia/
 │   └── adr/          # architecture decision records
 ├── .claude/          # agent skills, rules and settings
 ├── .github/          # CI workflows, Dependabot
-├── Makefile          # `make help`; `make verify` is the gate
+├── Makefile          # `make help`; `make verify-fast` is the local gate
 └── docker-compose.yml
 ```
 
@@ -310,10 +310,11 @@ kalia/
   persistence, Playwright for critical user flows.
 - **One issue at a time:** each roadmap task is a small, independently
   reviewable change with tests and updated docs.
-- **Checks run locally, not in CI first:** `make verify` runs everything CI
-  runs but the image vulnerability scans (and needs [Trivy](https://trivy.dev)
-  installed) and `make verify-fast` the ~10 s subset; `make install-hooks` puts the
-  latter behind `git push`
+- **Checks run locally, not in CI first:** `make verify-fast` is the ~10 s
+  local gate and `make install-hooks` puts it behind `git push`; the
+  Docker-backed checks are the required CI checks, which block a merge when
+  red. `make verify` runs the same list locally, minus the image vulnerability
+  scans (and needs [Trivy](https://trivy.dev) installed)
   ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
   Nothing invokes an AI agent on your behalf at push time. To hand a failure
   to one deliberately, run it yourself:
