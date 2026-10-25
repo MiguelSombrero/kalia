@@ -33,7 +33,7 @@ const SNAPSHOT_FIELDS = {
 };
 
 const MIGRATION_COLUMNS = new Set([
-  "catalog.brewery (name, country_code, city, source, wikidata_qid)",
+  "catalog.brewery (name, name_sort_key, country_code, city, source, wikidata_qid)",
   "catalog.beer (brewery_id, name, style, abv, source, wikidata_qid)",
 ]);
 

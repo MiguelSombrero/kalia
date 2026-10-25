@@ -1,7 +1,8 @@
 # ADR-0045: The brewery list paginates in the application, keeping its Java-side name sort
 
-- **Status:** accepted
+- **Status:** superseded
 - **Date:** 2026-08-29
+- **Superseded-by:** [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) — the page is cut in SQL by a stored sort key that keeps this ADR's Java order
 
 ## Context
 

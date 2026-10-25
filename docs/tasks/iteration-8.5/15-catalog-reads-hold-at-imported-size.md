@@ -1,6 +1,6 @@
 # Task 15: The catalog's lookup reads hold at the size it now is
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -73,14 +73,14 @@ has chosen. `/styles` is measured and within budget. The duplicate indexes go.
 
 ## Acceptance criteria
 
-- [ ] A brewery page and a brewery search each cut their page in SQL —
+- [x] A brewery page and a brewery search each cut their page in SQL —
       `BreweryRepository` integration tests assert the plan, as
       `BeerSearchIndexIT` does for beers
-- [ ] An integration test pins the brewery order on punctuation and accent
+- [x] An integration test pins the brewery order on punctuation and accent
       cases the decision names, including "d'Orval"
-- [ ] The brewery list, brewery search and `/styles` are measured by §7's
+- [x] The brewery list, brewery search and `/styles` are measured by §7's
       method at 150k and within budget, recorded in ADR-0078
-- [ ] The duplicate indexes are gone, and `make verify` is green
+- [x] The duplicate indexes are gone, and `make verify` is green
 
 ## Notes
 
