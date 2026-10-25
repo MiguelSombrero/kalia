@@ -84,3 +84,12 @@ constraint pair, at the cost of an extra annotation class and its own test.
   > helper: both checks sit in one controller, and a third pair is what would
   > make one worth writing. `page` keeps an `@Max` of its own as the
   > single-field end of its range.
+
+  > **Amended 2026-10-25** ([iteration-8.5 task 20](../tasks/iteration-8.5/20-small-correctness-fixes.md)):
+  > the search form's rule that a refused value never reaches the API has one
+  > exception, `countryCode`: whether a code is listed is the API's to say
+  > ([ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)),
+  > so the catalog page sends a well-formed one and, on the search's `400`,
+  > searches again without it and shows the ignored-filter note. Checking the
+  > code against `GET /countries` first was rejected: it adds a request to
+  > every search for a case only a hand-edited URL reaches.

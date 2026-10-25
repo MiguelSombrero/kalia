@@ -25,15 +25,15 @@ const capped = (lines: FeedLine[]): FeedLine[] => lines.slice(0, FEED_LIST_CAP);
 /**
  * The server-rendered first page, continued backward as the visitor scrolls
  * and forward as new events poll in. `now` is threaded in from the server
- * render rather than read afresh here — see lib/relativeInstant.ts's caller
- * contract for why a second `new Date()` would diverge from what was already
- * painted. `emptyState` is rendered here rather than by `page.tsx` choosing
+ * render rather than read afresh on first paint — see lib/relativeInstant.ts's
+ * caller contract for why a second `new Date()` would diverge from what was
+ * already painted; each poll then moves the instant the ages are read at.
+ * `emptyState` is rendered here rather than by `page.tsx` choosing
  * between this component and it: a feed that starts empty must keep polling
  * and can still go live on its own, which page.tsx alone deciding cannot do.
  */
 export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername }: Props) => {
   const { t } = useTranslation();
-  const [renderedAt] = useState(() => new Date(now));
   const { data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
     useOlderFeed(initialPage);
   // A permanently invalid cursor arrives via `data`, not `error` — actions.ts
@@ -63,6 +63,17 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
   const [freshCursors, setFreshCursors] = useState<ReadonlySet<string>>(new Set());
   const listRef = useRef<HTMLUListElement>(null);
   const poll = usePollFeed(sinceCursor);
+
+  // Ages are read at the server's `now` until the first poll settles, then at
+  // each poll's own time: one instant for every row, as relativeInstant.ts
+  // requires, refreshed by the poll rather than by a timer of its own.
+  const [ageAt, setAgeAt] = useState(() => new Date(now));
+  const mountedPolledAt = useRef(poll.polledAt);
+  useEffect(() => {
+    if (poll.polledAt !== mountedPolledAt.current) {
+      setAgeAt(new Date(poll.polledAt));
+    }
+  }, [poll.polledAt]);
 
   // ADR-0060: delivery is at-least-once, so a redelivered event must be
   // dropped rather than rendered twice. This effect must run before the one
@@ -223,7 +234,7 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
                   key={line.cursor}
                   line={line}
                   locale={locale}
-                  now={renderedAt}
+                  now={ageAt}
                   isOwn={viewerUsername !== undefined && line.username === viewerUsername}
                   isFresh={freshCursors.has(line.cursor)}
                 />

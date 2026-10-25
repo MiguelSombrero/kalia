@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 
 class BottleTest {
 
-	private static final Entry ENTRY = Entry.create(UUID.randomUUID(), UUID.randomUUID());
-
 	private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-10-23T12:00:00Z"), ZoneOffset.UTC);
+
+	private static final Entry ENTRY = Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK);
 
 	private static final LocalDate TODAY = LocalDate.now(CLOCK);
 

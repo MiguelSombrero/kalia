@@ -1,6 +1,6 @@
 # Task 20: Three small things that show the wrong thing are fixed
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -54,13 +54,13 @@ the page sits open. Every domain timestamp reads the injected `Clock`.
 
 ## Acceptance criteria
 
-- [ ] `/en/beers?countryCode=ZZ` shows the catalog with the ignored-filter note
+- [x] `/en/beers?countryCode=ZZ` shows the catalog with the ignored-filter note
       — an e2e case added to `search-bounds.spec.ts`, confirmed to fail today
-- [ ] A line polled in after load shows its own age, and an older line's age
+- [x] A line polled in after load shows its own age, and an older line's age
       advances — vitest tests with fake timers
-- [ ] A test with a fixed `Clock` gets that clock's instant on `BottleAdded`
+- [x] A test with a fixed `Clock` gets that clock's instant on `BottleAdded`
       and in the feed cutoff — unit tests
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

@@ -36,7 +36,7 @@ class CellarPersistenceIT {
 
 	@Test
 	void persistsAndReloadsAnEntryWithItsBottles() {
-		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK));
 		entry.addBottles(1, ContainerType.BOTTLE, LocalDate.now(CLOCK).minusMonths(6), null, CLOCK);
 		entry.addBottles(1, ContainerType.CAN, LocalDate.now(CLOCK).minusYears(1), LocalDate.now(CLOCK).plusMonths(6), CLOCK);
 		entries.saveAndFlush(entry);
@@ -49,7 +49,7 @@ class CellarPersistenceIT {
 
 	@Test
 	void populatesCreatedAtAndUpdatedAtOnCreate() {
-		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK));
 		entry.addBottles(1, ContainerType.KEG, null, null, CLOCK);
 		Entry saved = entries.saveAndFlush(entry);
 		Bottle bottle = saved.getBottles().getFirst();
@@ -64,9 +64,9 @@ class CellarPersistenceIT {
 	void anEntryIsUniquePerUserAndBeer() {
 		UUID userId = UUID.randomUUID();
 		UUID beerId = UUID.randomUUID();
-		entries.saveAndFlush(Entry.create(userId, beerId));
+		entries.saveAndFlush(Entry.create(userId, beerId, CLOCK));
 
-		assertThatThrownBy(() -> entries.saveAndFlush(Entry.create(userId, beerId)))
+		assertThatThrownBy(() -> entries.saveAndFlush(Entry.create(userId, beerId, CLOCK)))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
@@ -76,7 +76,7 @@ class CellarPersistenceIT {
 	@Test
 	void removingABottleDeletesItsRowRatherThanLeavingItOrphaned() {
 		UUID userId = UUID.randomUUID();
-		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID()));
+		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID(), CLOCK));
 		entry.addBottles(1, ContainerType.BOTTLE, null, null, CLOCK);
 		entries.saveAndFlush(entry);
 		testEntityManager.clear();
@@ -84,7 +84,7 @@ class CellarPersistenceIT {
 		Entry reloaded = entries.findWithBottlesByUserId(userId).getFirst();
 		Bottle persisted = reloaded.getBottles().getFirst();
 		UUID bottleId = persisted.getId();
-		reloaded.removeBottle(persisted);
+		reloaded.removeBottle(persisted, CLOCK);
 		entries.saveAndFlush(reloaded);
 
 		assertThat(reloaded.quantity()).isZero();
@@ -93,7 +93,7 @@ class CellarPersistenceIT {
 
 	@Test
 	void theDatabaseRejectsAContainerTypeOutsideTheAllowedSet() {
-		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK));
 
 		assertThatThrownBy(() -> jdbcTemplate.update(
 				"INSERT INTO cellar.bottle (entry_id, container_type) VALUES (?, ?)",
@@ -104,10 +104,10 @@ class CellarPersistenceIT {
 	@Test
 	void findWithBottlesByUserIdReturnsOnlyThatUsersEntriesWithBottlesLoaded() {
 		UUID userId = UUID.randomUUID();
-		Entry mine = entries.save(Entry.create(userId, UUID.randomUUID()));
+		Entry mine = entries.save(Entry.create(userId, UUID.randomUUID(), CLOCK));
 		mine.addBottles(2, ContainerType.BOTTLE, null, null, CLOCK);
 		entries.saveAndFlush(mine);
-		Entry theirs = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		Entry theirs = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK));
 		theirs.addBottles(1, ContainerType.CAN, null, null, CLOCK);
 		entries.saveAndFlush(theirs);
 		testEntityManager.clear();
@@ -121,12 +121,12 @@ class CellarPersistenceIT {
 	@Test
 	void anEntrysBottlesLoadOrderedByCreatedAt() {
 		UUID userId = UUID.randomUUID();
-		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID()));
+		Entry entry = entries.save(Entry.create(userId, UUID.randomUUID(), CLOCK));
 		entry.addBottles(1, ContainerType.BOTTLE, null, null, CLOCK);
 		entries.saveAndFlush(entry);
 		entry.addBottles(1, ContainerType.CAN, null, null, CLOCK);
 		entries.saveAndFlush(entry);
-		Entry other = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID()));
+		Entry other = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK));
 		other.addBottles(1, ContainerType.KEG, null, null, CLOCK);
 		entries.saveAndFlush(other);
 		testEntityManager.clear();

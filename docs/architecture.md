@@ -114,7 +114,9 @@ itself holds only application-wide wiring that belongs to no module: the
 entry point, its required-configuration check, event publication
 resubmission, and `ApplicationConfig` — method-level resilience
 (`@EnableResilientMethods`, which every module's `@Retryable` relies on) and
-the application's one `Clock`, in UTC. Inside each
+the application's one `Clock`, in UTC, which the cellar's timestamps and
+`BottleAdded`'s `occurredAt` and the feed's 30-day window read rather than the
+system time. Inside each
 subdomain module, DDD-lite layers as direct subpackages — all
 Modulith-internal by default
 ([ADR-0007](adr/0007-backend-package-structure.md)): `domain` (rich JPA

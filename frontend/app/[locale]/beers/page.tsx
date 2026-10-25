@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
+import { isApiError } from "@/lib/api/api-error";
 import {
   AddBeerEntry,
   BeerList,
@@ -12,6 +13,7 @@ import {
   Pagination,
   parseBeerSearchParams,
   PastLastPage,
+  type BeerSearchParams,
   type RawSearchParams,
   listBreweryCountries,
   ResultSummary,
@@ -35,18 +37,33 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
   return { title: t("catalog.pageTitle") };
 };
 
+// Only the country can be refused for a value the page cannot check: the other
+// bounds are checked in normalizeBeerSearchParams, the country list lives in the API.
+const searchOrDropRefusedCountry = async (params: BeerSearchParams) => {
+  try {
+    return { result: await searchBeers(params), params, refusedCountry: false };
+  } catch (error) {
+    if (!params.countryCode || !isApiError(error) || error.status !== 400) {
+      throw error;
+    }
+    const withoutCountry = { ...params, countryCode: undefined };
+    return { result: await searchBeers(withoutCountry), params: withoutCountry, refusedCountry: true };
+  }
+};
+
 const BeersPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
-  const { params: beerParams, ignored } = normalizeBeerSearchParams(parseBeerSearchParams(await searchParams));
+  const normalized = normalizeBeerSearchParams(parseBeerSearchParams(await searchParams));
   const session = auth();
-  const [result, countryCodes, signedIn, heldBottles, { t }] = await Promise.all([
-    searchBeers(beerParams),
+  const [{ result, params: beerParams, refusedCountry }, countryCodes, signedIn, heldBottles, { t }] = await Promise.all([
+    searchOrDropRefusedCountry(normalized.params),
     listBreweryCountries(),
     session.then((current) => Boolean(current?.user)),
     session.then((current) => (current?.user ? heldBottlesByBeerOrNone() : undefined)),
     getTranslation(locale),
   ]);
   const isSignedIn = signedIn;
+  const ignored = refusedCountry ? [...normalized.ignored, "countryCode"] : normalized.ignored;
 
   return (
     <Page width="wide">

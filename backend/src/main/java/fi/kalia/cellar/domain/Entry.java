@@ -20,9 +20,6 @@ import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SourceType;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.util.Assert;
@@ -49,22 +46,21 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 	@OrderBy("createdAt")
 	private final List<Bottle> bottles = new ArrayList<>();
 
-	// source = VM: see Bottle.createdAt.
-	@CreationTimestamp(source = SourceType.VM)
 	private Instant createdAt;
 
-	@UpdateTimestamp(source = SourceType.VM)
 	private Instant updatedAt;
 
-	private Entry(UUID userId, UUID beerId) {
+	private Entry(UUID userId, UUID beerId, Instant now) {
 		this.userId = userId;
 		this.beerId = beerId;
+		this.createdAt = now;
+		this.updatedAt = now;
 	}
 
-	public static Entry create(UUID userId, UUID beerId) {
+	public static Entry create(UUID userId, UUID beerId, Clock clock) {
 		Assert.notNull(userId, "userId must not be null");
 		Assert.notNull(beerId, "beerId must not be null");
-		return new Entry(userId, beerId);
+		return new Entry(userId, beerId, clock.instant());
 	}
 
 	public int quantity() {
@@ -87,11 +83,11 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 		List<Bottle> added = IntStream.range(0, quantity)
 				.mapToObj(i -> Bottle.create(this, containerType, brewedDate, bestBeforeDate, clock))
 				.toList();
-		touch();
+		touch(clock);
 		// entryId is deliberately not on this event: for a first-use entry
 		// (transient, id null) it is not assigned until entries.save(entry)
 		// persists it, which runs after this method returns (ADR-0058).
-		registerEvent(new BottleAdded(UUID.randomUUID(), userId, beerId, quantity, brewedDate, Instant.now()));
+		registerEvent(new BottleAdded(UUID.randomUUID(), userId, beerId, quantity, brewedDate, clock.instant()));
 		return added;
 	}
 
@@ -104,17 +100,17 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 			@Nullable LocalDate bestBeforeDate, Clock clock) {
 		Bottle bottle = bottleWithId(bottleId);
 		bottle.update(containerType, brewedDate, bestBeforeDate, clock);
-		touch();
+		touch(clock);
 		return bottle;
 	}
 
-	public void removeBottle(UUID bottleId) {
-		removeBottle(bottleWithId(bottleId));
+	public void removeBottle(UUID bottleId, Clock clock) {
+		removeBottle(bottleWithId(bottleId), clock);
 	}
 
-	public void removeBottle(Bottle bottle) {
+	public void removeBottle(Bottle bottle, Clock clock) {
 		bottles.remove(bottle);
-		touch();
+		touch(clock);
 	}
 
 	private Bottle bottleWithId(UUID bottleId) {
@@ -125,8 +121,8 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 						"entry %s does not contain bottle %s".formatted(id, bottleId)));
 	}
 
-	private void touch() {
-		this.updatedAt = Instant.now();
+	private void touch(Clock clock) {
+		this.updatedAt = clock.instant();
 	}
 
 	void registerBottle(Bottle bottle) {
