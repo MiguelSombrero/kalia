@@ -536,13 +536,16 @@ The shape of the frontend. Day-to-day rules for writing it live in
   client, whose one HTTP mutator is `kaliaFetch` (`lib/api/mutator.ts`), the
   thin wrapper that owns the backend base URL and error mapping, refuses a
   path whose segments a parameter could have reshaped, and attaches the
-  access token belonging to the caller's own session, renewing it first if it
-  has expired or records no expiry ([ADR-0028](adr/0028-resource-server-and-current-user.md),
+  access token belonging to the caller's own session — the only one it ever
+  sends, since a caller-set `Authorization` header is refused — renewing it
+  first if it has expired or records no expiry ([ADR-0028](adr/0028-resource-server-and-current-user.md),
   [ADR-0029](adr/0029-silent-token-refresh.md),
   [ADR-0030](adr/0030-per-session-token-storage.md)). A client component's
   read of that same authenticated data calls a Server Action instead — never
   the feature's `api.ts` directly — so the token-lookup chain stays out of
-  the browser bundle ([ADR-0040](adr/0040-client-reads-via-server-actions.md)).
+  the browser bundle, and the mutator's `server-only` import makes a client
+  component's direct import fail the build with a message naming it
+  ([ADR-0040](adr/0040-client-reads-via-server-actions.md)).
 - **State has three homes, by kind** ([ADR-0008](adr/0008-tanstack-query.md),
   [ADR-0009](adr/0009-zustand-ui-state.md),
   [ADR-0010](adr/0010-react-hook-form-zod.md)): server data in TanStack Query,
@@ -558,9 +561,11 @@ The shape of the frontend. Day-to-day rules for writing it live in
   (committed; CI regenerates and diffs to catch drift), with every path
   parameter percent-encoded by orval's `urlEncodeParameters`, wrapped by each
   feature rather than imported directly — and each feature reaches only its
-  own tag of it, so data from two backend modules is joined in the backend,
-  never in a feature
-  ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). Runtime failures surface as a tagged
+  own tag's operations, so data from two backend modules is joined in the
+  backend, never in a feature
+  ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
+  The shared `models` folder is outside that rule, since one DTO can belong to
+  several tags. Runtime failures surface as a tagged
   `ApiError` ([ADR-0023](adr/0023-typed-api-failures.md)).
 - **Localization** ([ADR-0011](adr/0011-i18next-localization.md)):
   English + Finnish via i18next, locale-prefixed URLs

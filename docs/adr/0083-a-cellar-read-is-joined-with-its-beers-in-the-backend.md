@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-23
+- **Amended:** 2026-10-25 — the per-tag boundary covers a tag's operations only, not the shared models (iteration 8.5 task 06); see Consequences
 
 ## Context
 
@@ -110,6 +111,13 @@ default "own tag only", and the one exception has to be written out as one.
 - Neutral, because the response contract changed: `beerId` moved into the
   nested `beer.id` on both entry types. The frontend is the only consumer and
   changed in the same pull request.
+- Neutral, because the boundary covers a tag's *operations* only. The shared
+  `models` folder stays reachable from every feature's `api.ts` and `types.ts`,
+  so a feature could re-export another tag's DTO and lint would pass. That is
+  accepted: orval emits one model per schema into a single folder because one
+  DTO can belong to several tags, and splitting the models per tag was
+  rejected as wrong for that reason. What the rule prevents is a feature
+  *calling* another module's endpoints, which is where a join would be built.
 - Neutral, because a feature that later needs another tag's operations needs
   either a backend join or an explicit, reviewed exception in
   `eslint.config.mjs`.

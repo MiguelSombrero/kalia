@@ -1,3 +1,4 @@
+import "server-only";
 import { currentAccessToken } from "./accessToken";
 import { apiError, isApiError } from "./api-error";
 
@@ -93,13 +94,14 @@ const refuseReshapedPath = (url: string): void => {
  * in, so an anonymous request is byte-for-byte what it was before tokens
  * existed rather than one carrying an empty Authorization header.
  *
- * A caller-supplied Authorization header wins: nothing sets one today, and
- * silently overwriting it would be the harder failure to diagnose.
+ * A caller-supplied Authorization header is refused rather than honoured or
+ * overwritten: the session's token is the only one this BFF ever sends, and a
+ * header derived from request input would otherwise be forwarded verbatim.
  */
 const withAccessToken = async (options: RequestInit): Promise<RequestInit> => {
   const headers = new Headers(options.headers);
   if (headers.has("Authorization")) {
-    return options;
+    throw apiError("refused", "Refused to send a caller-set Authorization header");
   }
   const token = await currentAccessToken();
   if (!token) {
