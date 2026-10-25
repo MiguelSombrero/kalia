@@ -35,3 +35,8 @@ vi.mock("@/lib/auth/sessionCookie", () => ({
 // The real package throws on import outside a React Server layer, which is
 // every unit test; Next.js resolves it for the build, vitest does not.
 vi.mock("server-only", () => ({}));
+
+// And `headers()`, which kaliaFetch reads the request's traceparent from.
+vi.mock("@/lib/api/requestTrace", () => ({
+  currentTraceparent: vi.fn(async () => undefined),
+}));
