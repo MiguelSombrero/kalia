@@ -1,5 +1,5 @@
 # Build stage — tests run in CI, not in the image build
-FROM maven:3.9-eclipse-temurin-25-noble AS build
+FROM maven:3.9-eclipse-temurin-26-noble AS build
 WORKDIR /app
 COPY pom.xml .
 RUN mvn -B dependency:go-offline
