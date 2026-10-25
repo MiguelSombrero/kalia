@@ -26,3 +26,4 @@ purpose, or a failure that is normal operation (`grep` finding no match).
 
 | Date | Where | Signature | Why |
 |---|---|---|---|
+| 2026-10-25 | CI E2E, Keycloak 26.7.0 → 26.8.1-1 bump (PR 401) | `sign-up.spec.ts` "registering an already-used email says so explicitly": `getByText(/already exists\|already registered/i)` not found | Keycloak 26.8 reworded its duplicate-email message to "This email is already associated with an existing account"; behaviour unchanged, the spec's regex pinned the old wording. |

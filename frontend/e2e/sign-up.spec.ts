@@ -227,7 +227,7 @@ test.describe("self-registration", () => {
     });
     await page.getByRole("button", { name: /register|sign.?up/i }).click();
 
-    await expect(page.getByText(/already exists|already registered/i)).toBeVisible();
+    await expect(page.getByText(/already exists|already registered|already associated/i)).toBeVisible();
     // Still on the registration form, not signed in — this never reaches
     // Kalia at all.
     await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
