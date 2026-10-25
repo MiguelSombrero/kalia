@@ -36,7 +36,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [14](iteration-8.5/14-cve-gate-and-updates-trustworthy.md) | The CVE gate and dependency updates do what they claim | done |
 | [21](iteration-8.5/21-node-26-replaces-node-24.md) | Node 26 replaces Node 24 everywhere it is pinned | in-progress |
 | [15](iteration-8.5/15-catalog-reads-hold-at-imported-size.md) | The catalog's lookup reads hold at the size it now is | refined |
-| [16](iteration-8.5/16-observability-baseline.md) | A failure on the server can be seen and counted | refined |
+| [16](iteration-8.5/16-observability-baseline.md) | A failure on the server can be seen and counted | done |
 | [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | refined |
 | [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | refined |
 | [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | done |

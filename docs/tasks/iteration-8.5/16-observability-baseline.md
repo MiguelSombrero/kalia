@@ -1,6 +1,6 @@
 # Task 16: A failure on the server can be seen and counted
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -56,14 +56,14 @@ logs and counts. What a developer runs locally to look at these is documented.
 
 ## Acceptance criteria
 
-- [ ] A backend request and the frontend request that caused it log the same
+- [x] A backend request and the frontend request that caused it log the same
       request id — an integration test asserts the header is propagated and
       logged
-- [ ] A refresh that fails increments a counter and logs at `WARN` — a vitest
+- [x] A refresh that fails increments a counter and logs at `WARN` — a vitest
       test, closing the backlog item
-- [ ] The chosen counters are readable from the backend's metrics endpoint
+- [x] The chosen counters are readable from the backend's metrics endpoint
       behind a token — an integration test
-- [ ] How to view logs and counters locally is in the READMEs, and `make
+- [x] How to view logs and counters locally is in the READMEs, and `make
       verify` is green
 
 ## Notes
