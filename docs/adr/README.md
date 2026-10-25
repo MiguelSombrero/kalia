@@ -269,6 +269,9 @@ in one place, read
 - [ADR-0054](0054-keycloak-config-cli-realm-management.md) — keycloak-config-cli,
   not Keycloak's own placeholders, resolves per-environment realm values and
   re-applies the committed realm file on every boot.
+- [ADR-0085](0085-runtimes-follow-long-term-support-not-the-newest-major.md) — Java and Node
+  follow their long-term-support releases; Dependabot ignores semver-major
+  bumps of those two images.
 
 ## Engineering process and documentation
 

@@ -34,7 +34,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [12](iteration-8.5/12-user-added-catalog-entries-governed.md) | Contributed catalog entries are reviewed, never deleted, and named cleanly | refined |
 | [13](iteration-8.5/13-sessions-and-stack-credentials-hardened.md) | Sessions and the stack's credentials are safe beyond one laptop | refined |
 | [14](iteration-8.5/14-cve-gate-and-updates-trustworthy.md) | The CVE gate and dependency updates do what they claim | done |
-| [21](iteration-8.5/21-node-26-replaces-node-24.md) | Node 26 replaces Node 24 everywhere it is pinned | refined |
+| [21](iteration-8.5/21-node-26-replaces-node-24.md) | Node 26 replaces Node 24 everywhere it is pinned | in-progress |
 | [15](iteration-8.5/15-catalog-reads-hold-at-imported-size.md) | The catalog's lookup reads hold at the size it now is | refined |
 | [16](iteration-8.5/16-observability-baseline.md) | A failure on the server can be seen and counted | refined |
 | [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | refined |

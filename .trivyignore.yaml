@@ -14,7 +14,7 @@
 #       expired_at: 2026-12-01
 
 # --- Frontend image: nothing to waive. Every Node-package CVE this image
-# reported came from npm's own bundled dependency tree in the node:24-alpine
+# reported came from npm's own bundled dependency tree in the Alpine node
 # base, not from package-lock.json; frontend/Dockerfile now deletes the
 # package managers from the runtime stage, which the standalone server never
 # invokes. The image scans clean with no suppressions at all — if a frontend

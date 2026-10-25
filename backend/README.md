@@ -72,7 +72,8 @@ integration test.
 Use `clean` after changing `pom.xml` or a plugin: an incremental build can
 report success against stale `target/classes` output.
 
-**Maven must run on JDK 25, not merely have it installed.** Lombok's
+**Maven must run on JDK 25, not merely have it installed.** Java stays on 25
+([ADR-0085](../docs/adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md)), and Lombok's
 annotation processor reaches into `javac` internals, so a newer JDK fails the
 `compile` goal with `Fatal error compiling:
 java.lang.ExceptionInInitializerError: com.sun.tools.javac.tree.EndPosTable`

@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -7,9 +7,9 @@ COPY . .
 RUN npm run build
 
 # Runtime stage — Next.js standalone output (see next.config.ts)
-FROM node:24-alpine
+FROM node:26-alpine
 ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000
-# node:24-alpine ships whatever Alpine packages it held when Docker Hub last
+# node:26-alpine ships whatever Alpine packages it held when Docker Hub last
 # rebuilt the tag, which lags Alpine's own security updates by days — long
 # enough for the image scan (ADR-0024) to fail on a CVE whose fixed apk is
 # already published. Upgrading here takes those fixes at build time instead of

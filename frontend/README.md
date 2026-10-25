@@ -52,6 +52,12 @@ npm run generate:api  # regenerate lib/api/generated/ from a live backend
                        # (docker compose up -d backend postgres first)
 ```
 
+Node's version is the one in `.node-version` at the repository root: CI reads
+it, and nvm, fnm and asdf pick it up locally. The Docker tags are the only
+other place it is written, so a bump edits that file, `frontend/Dockerfile` and
+`docker-compose.yml` together. Node moves between long-term-support releases,
+not to the newest major ([ADR-0085](../docs/adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md)).
+
 Before pushing, run the whole gate rather than any of these alone:
 `make verify` from the repository root, or `make verify-fast` for the subset
 that needs no Docker — it includes `npm run lint`, so a module-boundary
