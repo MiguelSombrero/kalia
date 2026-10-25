@@ -11,6 +11,8 @@
 - **Amended:** 2026-10-25 by
   [ADR-0024](0024-dependency-vulnerability-scanning.md) — `make verify` runs
   the two manifest vulnerability scans and not the image scans
+- **Amended:** 2026-10-25 by iteration 8.5 task 17 — `make verify-fast` is the
+  local gate before a pull request; the required CI checks are the Docker gate
 
 ## Context
 
@@ -95,6 +97,24 @@ What this covers, and what it does not:
   > [#371](https://github.com/MiguelSombrero/kalia/pull/371),
   > [#373](https://github.com/MiguelSombrero/kalia/pull/373) and
   > [#388](https://github.com/MiguelSombrero/kalia/pull/388).
+
+  > **Amended 2026-10-25.** `make verify` stops being what every pull request
+  > runs locally. It needs the full Docker stack on fixed host ports
+  > (`docker-compose.yml`), so with one worktree per session a second stack
+  > cannot start, and thirteen pull requests (#211, #224, #226, #245, #250,
+  > #256, #268, #295, #362, #381, #382, #384, #385) skipped or split it while
+  > the instructions said it was mandatory. The local gate before a pull
+  > request is `make verify-fast`. The Docker-backed checks are the required
+  > CI checks: the `ci-passed` job in `ci.yml`, which needs every other job
+  > and counts one the `changes` filter skipped as a pass, and the
+  > vulnerability scan. The ruleset on `dev` requires both, so a red one
+  > blocks the merge; until then it required nothing, and #371,
+  > #373, #386, #390 and #392 among others merged red. `make verify` stays,
+  > for a change whose answer is wanted before pushing. Rejected: per-worktree
+  > host ports, which make every worktree's stack addressable by a different
+  > number and every script that names a port a lookup, and a lock that
+  > serialises the one stack, which turns a wait for another session into the
+  > gate.
 - **A `PostToolUse` hook runs whichever checker covers the edited file**, and
   reports the failure into the agent's context. It never blocks. A checker
   legitimately goes red mid-task — a task file exists before its index row
@@ -203,7 +223,12 @@ drift this ADR is trying to remove.
   `verify-fast` takes about ten seconds, so which one satisfies the gate is a
   judgement an agent can get wrong in the lenient direction. `implement-task`
   requires saying which was run, which makes the choice visible rather than
-  correct.
+  correct. Since the 2026-10-25 amendment `verify-fast` is the answer, and the
+  Docker-backed failures it cannot see surface after the push, in CI.
+- Bad, because the merge block lives in a GitHub ruleset, which no file in
+  this repository records. `ci-passed` and the vulnerability scan being the
+  two required checks is a fact about settings outside the tree, and a ruleset
+  edited to drop them removes the gate with nothing failing.
 - Neutral, because nothing about what a checker checks changes. ADR-0017's
   test, ADR-0019's structure rules and ADR-0026's coverage rules are
   untouched; only their timing and their delivery are new.
