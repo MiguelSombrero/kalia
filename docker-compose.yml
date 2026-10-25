@@ -228,7 +228,7 @@ services:
     entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]
 
   valkey:
-    image: valkey/valkey:9.1.1-alpine
+    image: valkey/valkey:9.1.2-alpine
     ports:
       # Bound to localhost only, same convention as the other services.
       - "127.0.0.1:6379:6379"
