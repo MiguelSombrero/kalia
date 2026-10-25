@@ -85,11 +85,13 @@ keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from ke
 	docker compose up -d --force-recreate --no-deps --wait --wait-timeout 120 keycloak
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 
-# Flags match the manifest scan in vulnerability-scan.yml. Trivy is a local
+# Flags match the manifest scan in vulnerability-scan.yml, which scans `.`;
+# here the two lockfiles are named, because `.` would also walk node_modules
+# and target. A new manifest elsewhere needs a line below. Trivy is a local
 # prerequisite (`brew install trivy`); it does not pick the ignore file up
 # on its own, so it is named here as the workflow's `trivyignores` input does.
 trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.xml, as CI does (needs trivy)
-	@command -v trivy >/dev/null || { echo "trivy is not installed — brew install trivy (see README)"; exit 1; }
+	@command -v trivy >/dev/null || { echo "trivy is not installed — brew install trivy, or see https://trivy.dev"; exit 1; }
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml frontend/package-lock.json
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml backend/pom.xml
 
