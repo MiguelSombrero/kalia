@@ -279,7 +279,7 @@ in one place, read
   bumps of those two images.
 - [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)
   — both tiers log JSON and share a W3C trace id, and failures are counted by
-  Micrometer and `prom-client` behind a token, with no viewer added to the
+  Micrometer and `@prometheus-io/client` behind a token, with no viewer added to the
   stack.
 
 ## Engineering process and documentation

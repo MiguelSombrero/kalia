@@ -25,7 +25,7 @@ developer can see a failure locally.
 Both tiers write one JSON object per log line, the BFF forwards a W3C
 `traceparent` header so a backend log line and the frontend line for the same
 browser request carry the same trace id, and failures are counted by Micrometer
-in the backend and `prom-client` in the frontend, each readable from a
+in the backend and `@prometheus-io/client` in the frontend, each readable from a
 token-protected Prometheus-format endpoint — with nothing added to the stack to
 view any of it.
 
@@ -75,8 +75,11 @@ dashboard, and does not cover mobile crash reporting.
   Not chosen: both produce the same ids and propagate the same header, and
   nothing here depends on which. Brave was picked without a measured reason;
   swapping the bridge is a dependency change, not a redesign.
+- **`prom-client` instead of `@prometheus-io/client`.** Rejected: npm marks
+  `prom-client` deprecated ("replaced by `@prometheus-io/client`"), the same
+  repository's successor, and its API is the one used here.
 - **Hand-written counters and exposition format in the frontend instead of
-  `prom-client`.** Rejected: the text format is small, but escaping, label
+  a client library.** Rejected: the text format is small, but escaping, label
   ordering and `# TYPE` lines are exactly what a library gets right once.
 - **Tomcat's access log for the backend request line.** Rejected: it runs
   outside the observation scope, so it cannot carry the trace id.
@@ -101,9 +104,9 @@ dashboard, and does not cover mobile crash reporting.
   stock Prometheus without a Keycloak client for it; a local developer copies a
   token from Swagger UI instead. That is a deployment question this decision
   leaves open on purpose.
-- Neutral, because `prom-client`'s latest release is from June 2024; it is
-  stable and small, but a maintenance stall would make the hand-written
-  alternative above worth reconsidering.
+- Neutral, because `@prometheus-io/client` is at 0.16, so a minor release may
+  change its API; it is the Prometheus project's own successor to the
+  deprecated `prom-client`, and the use here is a registry and three counters.
 - Neutral, because every request now writes an `INFO` line, which ADR-0013 had
   withheld until a request could be reassembled; the backend's per-environment
   `LOG_LEVEL` still controls it.

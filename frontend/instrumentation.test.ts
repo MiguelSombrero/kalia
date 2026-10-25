@@ -57,7 +57,7 @@ describe("onRequestError", () => {
     expect(JSON.stringify(vi.mocked(logger.error).mock.calls)).not.toContain("westvleteren");
   });
 
-  it("does nothing in the edge runtime, where prom-client does not run", async () => {
+  it("does nothing in the edge runtime, where the metrics client does not run", async () => {
     vi.stubEnv("NEXT_RUNTIME", "edge");
 
     await onRequestError(new Error("render failed"), request, context);

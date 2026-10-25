@@ -1,4 +1,4 @@
-import { Counter, Registry } from "prom-client";
+import { Counter, Registry } from "@prometheus-io/client";
 
 type Metrics = {
   registry: Registry;

@@ -29,7 +29,7 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
   if (process.env.NEXT_RUNTIME !== "nodejs") {
     return;
   }
-  // Imported here, not at the top: prom-client does not belong in the edge
+  // Imported here, not at the top: the metrics client does not belong in the edge
   // bundle that this file is also compiled into.
   const { metrics } = await import("@/lib/metrics/metrics");
   metrics.requestErrors.inc({ route: context.routePath, route_type: context.routeType });
