@@ -49,7 +49,7 @@ class FeedServiceTest {
 
 	// A real codec, not a mock: it is what mints and rejects test cursors, so
 	// the tests exercise the same signing/opacity behavior production does.
-	private final FeedCursorCodec codec = new FeedCursorCodec();
+	private final FeedCursorCodec codec = new FeedCursorCodec("0123456789abcdef0123456789abcdef");
 
 	private FeedService service;
 

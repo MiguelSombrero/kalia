@@ -14,6 +14,7 @@ services:
       # The app's own env contract (ADR-0015), not Spring property names
       DATABASE_JDBC_URL: jdbc:postgresql://postgres:5432/kalia
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
+      FEED_CURSOR_KEY: ${FEED_CURSOR_KEY:-kalia-dev-feed-cursor-key-not-a-credential}
       # This stack is the local development environment: verbose logs
       # (ADR-0013) and Swagger UI, both off by default elsewhere
       LOG_LEVEL: DEBUG
