@@ -63,6 +63,9 @@ nobody has committed to becomes a constraint anyway.
   — a brewery's country is stored as an ISO 3166-1 code that every client
   names in its reader's language from the runtime's CLDR data. A brewery
   whose imported country has no code maps to where it stood, today.
+- [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
+  — the brewery list and search are cut in SQL by a stored, indexed name key
+  that keeps the Java sort's order in every environment.
 
 ## Cellar
 
@@ -143,7 +146,8 @@ and the third keeps that identifier from ever passing to someone else.
   country filters get indexes on `lower(...)`.
 - [ADR-0045](0045-brewery-list-paginates-in-application.md) — the brewery list
   gains a `page`/`size` contract but keeps loading and sorting the full table
-  in Java, so its name order stays locale-independent.
+  in Java, so its name order stays locale-independent. Superseded by
+  [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md).
 - [ADR-0057](0057-retry-on-constraint-violation-for-get-or-create.md) — a
   get-or-create write retries once on its own unique-constraint violation via
   Spring Framework's native `@Retryable`, each attempt its own transaction.

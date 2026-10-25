@@ -51,7 +51,7 @@ the mobile foundations; nothing in it is built yet.
 |---|---|
 | Scale | Single instance of each service is fine; design must not *prevent* horizontal scaling |
 | Availability | Best effort; no HA requirements |
-| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported size and, apart from the brewery list, at a generated 150k: task 18's `(lower(name), id)` index and custom plans for 1–2-character name queries brought them within it ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), Evidence). The brewery list is still over budget at 150k because it sorts in Java: quality backlog SHOULD-61. Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The question reopens past 150k beers, or when a read no index can serve goes over budget ([§7](#catalog-read-latency)) |
+| Latency | Catalog reads stay under 300 ms p95 server time at 20 concurrent requests on indexes alone, with no caching layer. That holds at the imported size and at a generated 150k: task 18's `(lower(name), id)` index and custom plans for 1–2-character name queries, and a stored sort key and index for the brewery list ([ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)), brought them within it ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md), Evidence). Deep pages are cut off by a bound on how many rows one page may skip ([ADR-0042](adr/0042-bounded-request-parameters.md)). The question reopens past 150k beers, or when a read no index can serve goes over budget ([§7](#catalog-read-latency)) |
 | Security | No secrets in the browser (BFF pattern); standard input validation; the backend denies by default and validates bearer tokens itself ([§6](#6-authentication-and-identity)) |
 | Compliance | GDPR and alcohol-related regulation are out of scope for now; carried in the [backlog](tasks/backlog.md) so they aren't forgotten if the project turns real |
 | Cost / team | Solo developer; minimize moving parts per iteration |
@@ -271,6 +271,13 @@ own values (`plan_cache_mode = force_custom_plan`, for that transaction only),
 so it is never served by the trigram index's generic plan
 ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)).
 
+The brewery list and its search are served the same way. `brewery.name_sort_key`
+holds each name folded to `String.CASE_INSENSITIVE_ORDER`'s order, in `C`
+collation, so a B-tree on `(name_sort_key, id)` reads a page in order whatever
+the database's locale. The `Brewery` entity and the Wikidata generator both
+write it ([ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)).
+A trigram index on `lower(brewery.name)` serves the search's substring match.
+
 **The cellar is two levels, not one** ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)).
 A catalog beer is a *brand* (AleSmith IPA); what a person owns is a *bottle*
 of it, with its own brewed and best-before dates and a container type
@@ -473,9 +480,9 @@ Conventions:
 - Pagination: `page`/`size` params, response envelope with `content`,
   `totalElements`, `totalPages`, `page`. A page skips a bounded number of
   rows (`page × size`), so one request costs the same however large the
-  table grows ([ADR-0042](adr/0042-bounded-request-parameters.md)). `/breweries` carries the contract but
-  still sorts and slices the full table in-application, to keep its name order
-  locale-independent ([ADR-0045](adr/0045-brewery-list-paginates-in-application.md)).
+  table grows ([ADR-0042](adr/0042-bounded-request-parameters.md)). `/breweries` carries it too, ordered by a stored key that keeps
+  its name order locale-independent
+  ([ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)).
   The feed is the deliberate exception: a list that grows at the head reads
   wrong under an offset, so it takes a bounded `size` and an optional `since`
   or `before` and answers with a `nextCursor` — opaque, round-tripped rather
@@ -891,8 +898,8 @@ The definition of done for every issue is in [the roadmap](roadmap.md).
 
 ### Catalog read latency
 
-Catalog reads are measured, not benchmarked in CI. `BeerSearchIndexIT` pins
-which index each filter's plan and the default sort use, and that a short name
+Catalog reads are measured, not benchmarked in CI. `BeerSearchIndexIT` and
+`BreweryReadIT` pin which index each filter's plan and the default sort use, and that a short name
 query's count keeps its custom plan while other searches keep the default,
 but not how long the query takes. The
 latency budget in [§1](#non-functional-requirements) is checked by repeating
@@ -933,7 +940,8 @@ records the latest run.
    - the style filter, the country filter, and all three combined;
    - beer detail;
    - page 500;
-   - the brewery list.
+   - the brewery list, and a brewery search of 1, 2 and 3+ characters;
+   - `GET /styles`.
 5. **Read the result.** Report p95 from the access-log lines each scenario
    produced, as the median of three runs. A shape over 300 ms is first
    checked for a missing index.
@@ -1072,7 +1080,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0042](adr/0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
 | [ADR-0043](adr/0043-createuser-race-safety.md) | `createUser` claims the email index with SET NX so a losing concurrent sign-in joins the winner | accepted | 2026-08-23 |
 | [ADR-0044](adr/0044-catalog-search-indexes.md) | Catalog name search stays substring matching, served by a pg_trgm trigram index | accepted | 2026-08-28 |
-| [ADR-0045](adr/0045-brewery-list-paginates-in-application.md) | The brewery list paginates in the application, keeping its Java-side name sort | accepted | 2026-08-29 |
+| [ADR-0045](adr/0045-brewery-list-paginates-in-application.md) | The brewery list paginates in the application, keeping its Java-side name sort | superseded | 2026-08-29 |
 | [ADR-0049](adr/0049-profile-module-and-public-identity.md) | A `profile` module owns who a user is to other users | accepted | 2026-08-30 |
 | [ADR-0050](adr/0050-public-cellar-addressing.md) | A public cellar has one locale-less URL and is indistinguishable from nothing when private | accepted | 2026-08-30 |
 | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
@@ -1131,4 +1139,5 @@ reasons and its rate is worth watching independently
 | [ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md) | An index cell that mirrors a file is synced from that file, not kept in step by hand | accepted | 2026-10-14 |
 | [ADR-0084](adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
 | [ADR-0085](adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |
+| [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
 | [ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |

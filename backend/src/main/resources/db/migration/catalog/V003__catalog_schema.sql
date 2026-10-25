@@ -19,9 +19,14 @@ CREATE FUNCTION catalog.fold_name(name text) RETURNS text
 -- country_code is the ISO 3166-1 alpha-2 code (ADR-0079). country exists only
 -- for V004's rows, which name their country in English: V008 codes them, sets
 -- country_code NOT NULL and drops country.
+-- name_sort_key is name folded to String.CASE_INSENSITIVE_ORDER's order, held in
+-- C collation so the database sorts bytes and no locale can reorder the list
+-- (ADR-0087). The application and scripts/wikidata-migration.mjs both write it;
+-- V008 fills V004's rows and sets it NOT NULL.
 CREATE TABLE catalog.brewery (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name         text NOT NULL,
+    name_sort_key text COLLATE "C",
     country      text,
     country_code text CHECK (country_code ~ '^[A-Z]{2}$'),
     city         text,
@@ -35,6 +40,9 @@ CREATE TABLE catalog.brewery (
 
 CREATE UNIQUE INDEX brewery_folded_name_country_idx
     ON catalog.brewery (catalog.fold_name(name), country_code);
+
+-- The brewery list's page and its search's page are read off this index (ADR-0087).
+CREATE INDEX brewery_name_sort_key_idx ON catalog.brewery (name_sort_key, id);
 
 CREATE TABLE catalog.beer (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,3 +78,6 @@ CREATE INDEX beer_name_trgm_idx ON catalog.beer USING gin (lower(name) public.gi
 -- The search's default sort, lower(name) then id, so an unfiltered page reads
 -- its 20 rows off the index instead of sorting the whole table (ADR-0078).
 CREATE INDEX beer_lower_name_id_idx ON catalog.beer (lower(name), id);
+-- The brewery search's substring filter, as beer_name_trgm_idx is the beer search's.
+CREATE INDEX brewery_name_trgm_idx ON catalog.brewery USING gin (lower(name) public.gin_trgm_ops)
+    WITH (fastupdate = off);

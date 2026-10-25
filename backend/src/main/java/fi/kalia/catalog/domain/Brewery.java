@@ -24,6 +24,8 @@ public class Brewery {
 
 	private String name;
 
+	private String nameSortKey;
+
 	private String countryCode;
 
 	private @Nullable String city;
@@ -34,6 +36,7 @@ public class Brewery {
 
 	private Brewery(String name, String countryCode, @Nullable String city) {
 		this.name = name;
+		this.nameSortKey = BrewerySortKey.of(name);
 		this.countryCode = countryCode;
 		this.city = city;
 		this.createdAt = Instant.now();

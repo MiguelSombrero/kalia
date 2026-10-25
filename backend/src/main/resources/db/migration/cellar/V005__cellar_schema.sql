@@ -12,10 +12,9 @@ CREATE TABLE cellar.entry (
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
     version    bigint NOT NULL DEFAULT 0,
+    -- Its index leads with user_id, so it also serves reads by user_id alone.
     UNIQUE (user_id, beer_id)
 );
-
-CREATE INDEX entry_user_id_idx ON cellar.entry (user_id);
 
 -- Quantity is derived by counting these rows, never stored
 -- (docs/architecture.md §3): no quantity column exists anywhere here.

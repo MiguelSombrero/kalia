@@ -55,10 +55,11 @@ catalog data a signed-out visitor may read; the contributor is never served.
 | `Beer` | A **brand**: a product a brewery makes (AleSmith IPA), with a name, style, ABV and description. Not a physical object and not something a user owns — the cellar references it by id and reads a few of its facts through the catalog's API ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). One a user adds (`addedBy`) has no description and records its **contributor**. | [ADR-0034](adr/0034-cellar-two-level-bottle-model.md), [ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) |
 | `Brewery` | The maker of beers, with a country and optional city. One a user adds records its contributor too. | [ADR-0007](adr/0007-backend-package-structure.md) |
 | `Country` | The countries a brewery can be in: `Country.CODES` lists every ISO 3166-1 alpha-2 code, the only form of a country the catalog stores. A new brewery's country is one of them. | [ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) |
+| `BrewerySortKey` | A brewery name folded the way `String.CASE_INSENSITIVE_ORDER` folds it, stored as `name_sort_key` so the database can order the brewery list in the Java order. | [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerSpecifications` | A factory of JPA `Specification<Beer>` predicates built from a `BeerSearchCriteria`, with `LIKE` wildcards escaped. | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`; the catalog's distinct styles; and the same-name duplicate check within a brewery. | [ADR-0007](adr/0007-backend-package-structure.md) |
-| `BreweryRepository` | Persistence for the `Brewery` entity, including the by-name lookup, the same-name-and-country duplicate check and the codes of the countries breweries are in. | [ADR-0007](adr/0007-backend-package-structure.md) |
+| `BreweryRepository` | Persistence for the `Brewery` entity, including the sort-key-ordered page of breweries and the name search over it, the same-name-and-country duplicate check and the codes of the countries breweries are in. | [ADR-0007](adr/0007-backend-package-structure.md) |
 
 ## identity
 

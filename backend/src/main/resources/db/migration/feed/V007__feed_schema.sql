@@ -15,14 +15,12 @@ CREATE TABLE feed.line (
     quantity        integer NOT NULL,
     brewed_date     date,
     occurred_at     timestamptz NOT NULL,
+    -- The feed reads newest-first and the table grows forever (ADR-0058): this
+    -- UNIQUE's index is what keeps that read from degrading as it fills.
     sequence_number bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
     created_at      timestamptz NOT NULL DEFAULT now(),
     updated_at      timestamptz NOT NULL DEFAULT now()
 );
-
--- The table is read newest-first and grows forever; an unindexed feed
--- degrades quietly as it fills rather than failing (ADR-0058).
-CREATE INDEX line_sequence_number_idx ON feed.line (sequence_number);
 
 -- Whose cellar the line came from, queryably (docs/architecture.md §3).
 CREATE INDEX line_user_id_idx ON feed.line (user_id);
