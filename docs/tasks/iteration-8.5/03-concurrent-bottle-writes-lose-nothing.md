@@ -1,6 +1,6 @@
 # Task 03: Two writes to one cellar entry never silently lose a bottle
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -45,13 +45,13 @@ not exist.
 
 ## Acceptance criteria
 
-- [ ] An integration test that races `removeBottle` of an entry's last bottle
+- [x] An integration test that races `removeBottle` of an entry's last bottle
       against `addBottles` for the same beer ends with the added bottle
       persisted (or the add refused), and was confirmed to lose the bottle
       against today's code
-- [ ] No `BottleAdded` line survives for a bottle that was not committed —
+- [x] No `BottleAdded` line survives for a bottle that was not committed —
       asserted in the same test
-- [ ] Any new response code is documented on the affected handlers and in the
+- [x] Any new response code is documented on the affected handlers and in the
       generated client, and `make verify` is green
 
 ## Notes

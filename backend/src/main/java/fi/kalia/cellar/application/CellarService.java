@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +49,8 @@ public class CellarService {
 	}
 
 	// ADR-0057; each retry's own transaction is verified by ConcurrentAddBottleApiIT.
-	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
+	@Retryable(includes = {DataIntegrityViolationException.class, ObjectOptimisticLockingFailureException.class},
+			maxRetries = 1, delay = 0)
 	// Do not add a side effect before entries.save(entry): a retry re-runs this whole method.
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
@@ -57,6 +59,7 @@ public class CellarService {
 		return entries.save(entry).lastBottles(quantity);
 	}
 
+	@Retryable(includes = ObjectOptimisticLockingFailureException.class, maxRetries = 1, delay = 0)
 	public Bottle updateBottle(UUID userId, UUID bottleId, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = ownerOf(userId, bottleId);
@@ -65,6 +68,7 @@ public class CellarService {
 		return updated;
 	}
 
+	@Retryable(includes = ObjectOptimisticLockingFailureException.class, maxRetries = 1, delay = 0)
 	public void removeBottle(UUID userId, UUID bottleId) {
 		Entry entry = ownerOf(userId, bottleId);
 		entry.removeBottle(bottleId);

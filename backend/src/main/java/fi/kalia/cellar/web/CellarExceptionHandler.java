@@ -6,6 +6,7 @@ import fi.kalia.cellar.application.PublicCellarNotFoundException;
 import fi.kalia.cellar.domain.InvalidBottleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,6 +23,11 @@ class CellarExceptionHandler {
 	@ExceptionHandler(InvalidBottleException.class)
 	ProblemDetail invalidBottle(InvalidBottleException e) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+	}
+
+	@ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+	ProblemDetail concurrentWrite() {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "The cellar entry was changed by another request; try again");
 	}
 
 }

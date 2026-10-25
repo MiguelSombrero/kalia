@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -39,6 +40,9 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 	private UUID userId;
 
 	private UUID beerId;
+
+	@Version
+	private long version;
 
 	@Getter(AccessLevel.NONE)
 	@OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
