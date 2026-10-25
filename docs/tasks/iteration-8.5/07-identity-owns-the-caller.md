@@ -1,6 +1,6 @@
 # Task 07: `identity` owns who the caller is, and services own who may read what
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -54,16 +54,16 @@ checks whether it may, so no second controller or client can skip the check.
 
 ## Acceptance criteria
 
-- [ ] A token whose `sub` is not a UUID gets the same explained 401 from
+- [x] A token whose `sub` is not a UUID gets the same explained 401 from
       `/api/v1/profile` as from the cellar — an integration test, confirmed to
       answer 500 today
-- [ ] `ProfileController` reads the caller through `IdentityApi`, the
+- [x] `ProfileController` reads the caller through `IdentityApi`, the
       token-claims logic exists only in `identity`, and ArchUnit fails `Jwt`
       use outside it — proven against an `archfixture`
-- [ ] A `CellarService` integration test shows the public read refuses a
+- [x] A `CellarService` integration test shows the public read refuses a
       private cellar with the same indistinguishable 404, whichever controller
       calls it
-- [ ] `backend/README.md` and §3 describe the result, and `make verify` is
+- [x] `backend/README.md` and §3 describe the result, and `make verify` is
       green
 
 ## Notes

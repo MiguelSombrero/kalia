@@ -27,7 +27,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [04](iteration-8.5/04-no-silent-single-instance-assumptions.md) | The backend assumes one instance only where it says so | done |
 | [05](iteration-8.5/05-brewery-questions-answered-by-the-api.md) | The API answers the add-beer form's questions itself | refined |
 | [06](iteration-8.5/06-generated-client-ready-to-share.md) | The generated client is what a shared package should hold | done |
-| [07](iteration-8.5/07-identity-owns-the-caller.md) | `identity` owns who the caller is, and services own who may read what | refined |
+| [07](iteration-8.5/07-identity-owns-the-caller.md) | `identity` owns who the caller is, and services own who may read what | done |
 | [08](iteration-8.5/08-claude-md-within-its-budget.md) | CLAUDE.md fits its budget again, and says what is true | done |
 | [10](iteration-8.5/10-unauthenticated-edges-throttled.md) | The unauthenticated edges are throttled and bounded | refined |
 | [11](iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md) | One account cannot make an anonymous read arbitrarily expensive | refined |
@@ -37,7 +37,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [21](iteration-8.5/21-node-26-replaces-node-24.md) | Node 26 replaces Node 24 everywhere it is pinned | in-progress |
 | [15](iteration-8.5/15-catalog-reads-hold-at-imported-size.md) | The catalog's lookup reads hold at the size it now is | done |
 | [16](iteration-8.5/16-observability-baseline.md) | A failure on the server can be seen and counted | refined |
-| [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | refined |
+| [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | done |
 | [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | refined |
 | [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | done |
 | [22](iteration-8.5/22-each-worktree-runs-its-own-stack.md) | Each worktree can run its own stack at the same time as another | needs-refinement |

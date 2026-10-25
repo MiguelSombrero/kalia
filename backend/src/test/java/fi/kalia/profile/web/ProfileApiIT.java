@@ -62,6 +62,23 @@ class ProfileApiIT {
 	}
 
 	@Test
+	void aTokenWhoseSubjectIsNotAUuidIsAnExplained401OnEveryProfileRoute() {
+		given(jwtDecoder.decode("odd-token")).willReturn(TestTokens.user("not-a-uuid", "odd-user"));
+
+		client.get().uri("/api/v1/profile").header("Authorization", "Bearer odd-token")
+				.exchange()
+				.expectStatus().isUnauthorized()
+				.expectHeader().value("WWW-Authenticate", header -> assertThat(header)
+						.contains("invalid_token").contains("subject"));
+		client.method(HttpMethod.PATCH).uri("/api/v1/profile/visibility")
+				.header("Authorization", "Bearer odd-token")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(Map.of("cellarPublic", true))
+				.exchange()
+				.expectStatus().isUnauthorized();
+	}
+
+	@Test
 	void changesTheCallersOwnVisibility() {
 		changeVisibility(USER_A, true)
 				.expectStatus().isOk()

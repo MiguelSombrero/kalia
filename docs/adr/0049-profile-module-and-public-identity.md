@@ -3,6 +3,7 @@
 - **Status:** accepted
 - **Date:** 2026-08-30
 - **Amended:** 2026-10-22 by [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md) — the "collision at sign-up" trigger fired and was answered without a display name
+- **Amended:** 2026-10-25 — `profile` is no longer a leaf: it reads the caller through `IdentityApi`, so the token-claims mapping exists once, in `identity`
 
 ## Context
 
@@ -127,3 +128,14 @@ written and tested — so it buys a simplification it does not actually deliver.
 > username is unique regardless of case and never reused, and a newcomer
 > whose name is held is told so. The rename half of the trigger stands as
 > written.
+
+> **Amended 2026-10-25.** "`profile` is a leaf" no longer holds. `profile`
+> depends on `identity`, as `cellar` and `catalog` do, and its controller reads
+> the caller's id and username through `IdentityApi` instead of decoding the
+> token itself. Keeping `profile` a leaf had been paid for with a second copy of
+> the token-claims logic, which had already drifted: a non-UUID `sub` was a bare
+> `IllegalArgumentException` there and an explained failure in `identity`. The
+> mapping now exists once, and ArchUnit rejects `Jwt` use outside `identity`. The
+> edge points the way the other cross-module reads do; `identity` depends on
+> nothing, so no cycle forms. The two rules above that bind readers — a missing
+> row reads as private, and the 404 shape — are unchanged.

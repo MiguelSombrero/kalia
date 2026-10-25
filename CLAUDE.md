@@ -61,11 +61,14 @@ the generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md
 
 ## Commands
 
-**`make verify` is the gate** — every check CI runs, in CI's order, except the
-two image scans, which stay CI-only; it needs Docker and `trivy`. `make
-verify-fast` is the ~10 s subset needing neither Docker, a build nor Trivy, and is
-what the `pre-push` hook from `make install-hooks` runs. One of them goes
-green before every push
+**`make verify-fast` is the local gate** — the ~10 s subset needing neither
+Docker, a build nor Trivy, and what the `pre-push` hook from `make
+install-hooks` runs; it goes green before every push. **The required CI checks
+are the Docker gate:** the `ci-passed` job and the vulnerability scan run every
+check `make verify` does plus the image scans, and a red one blocks the merge.
+`make verify` is the same list locally (Docker and `trivy`, image scans
+excepted) for when a change needs the answer before pushing — fixed host ports
+mean only one worktree can run it at a time
 ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)); `make
 next-adr` allocates the next ADR number. Run one suite from the repository root
 in a subshell — `(cd backend && mvn test)` — since a bare `cd` persists and
@@ -102,8 +105,8 @@ The gates themselves:
   off", read the gitignored `.claude/session-checkpoint.md` before
   re-exploring; it is the only thing that survives a session-limit
   interruption ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
-- Test-first: write or update tests with the code; `make verify` green before
-  a PR. Verify changes by actually running them, not just by compiling.
+- Test-first: write or update tests with the code; `make verify-fast` green
+  before a PR. Verify changes by actually running them, not just by compiling.
 - **Open the PR automatically once a task is done** — don't wait to be asked.
   "Done" means every gate here is met; merging stays the product owner's
   explicit action. Follow [the template](docs/PULL_REQUEST_TEMPLATE.md).

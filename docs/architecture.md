@@ -79,6 +79,7 @@ flowchart LR
     API --> CAT & CEL & IDN & PROF & FED
     CAT --> IDN
     CEL --> CAT & IDN & PROF
+    PROF --> IDN
     FED --> CEL & CAT & PROF
     CAT & CEL & PROF & FED --> PG[(PostgreSQL)]
     Browser -.->|OIDC redirect| KC[Keycloak]
@@ -143,8 +144,8 @@ cross-module *reads* via the root-package API.
 |---|---|---|
 | `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)* | `identity` (current user, recorded as a user-added row's contributor) |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
-| `cellar` | The signed-in user's owned bottles, grouped by catalog beer; a public cellar read for anyone | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
-| `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public | — |
+| `cellar` | The signed-in user's owned bottles, grouped by catalog beer; a public cellar read for anyone, which `CellarService` itself refuses unless the owner made it public | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
+| `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public | `identity` (current user: the caller's id and username, for the caller's own profile) |
 | `feed` | A record of things that happened — currently, a bottle added to a cellar, read over HTTP and rendered live on the front page | `cellar` (event: bottle added), `catalog` (read: beer name, brewery, style and strength), `profile` (read: username and current cellar visibility) |
 
 The term each module owns — every `domain` type's meaning inside its module,
@@ -704,8 +705,11 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)): it validates
   each bearer token's signature, issuer and `kalia-backend` audience, and the
   `identity` module maps the token's `sub` to the current user — the
-  canonical per-user key every module uses. The BFF attaches the session's
-  access token in `lib/api/mutator.ts`.
+  canonical per-user key every module uses — and is the only module that reads
+  a token's claims. A token whose `sub` is not a UUID, or that carries no
+  `preferred_username`, is answered `401` with an `invalid_token`
+  `WWW-Authenticate` challenge from every route, whichever controller reads the
+  caller. The BFF attaches the session's access token in `lib/api/mutator.ts`.
 - **These routes alone answer without a token**; the filter chain denies
   everything else by default, so a new endpoint is protected unless it is
   deliberately added here

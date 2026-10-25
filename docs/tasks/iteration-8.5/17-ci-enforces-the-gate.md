@@ -1,6 +1,6 @@
 # Task 17: CI blocks a merge that fails it, and the Docker gate runs
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -68,17 +68,17 @@ recognisable.
 
 ## Acceptance criteria
 
-- [ ] A PR with a failing required check shows "Merging is blocked" — confirmed
+- [x] A PR with a failing required check shows "Merging is blocked" — confirmed
       on a scratch PR whose test is made to fail, after the product owner's
       ruleset change
-- [ ] A PR whose changes skip a job can still merge — confirmed on a docs-only
+- [x] A PR whose changes skip a job can still merge — confirmed on a docs-only
       scratch PR
-- [ ] CLAUDE.md, `implement-task` and ADR-0046 all name `make verify-fast` as
+- [x] CLAUDE.md, `implement-task` and ADR-0046 all name `make verify-fast` as
       the local gate and the required CI checks as the Docker gate
-- [ ] The E2E and Keycloak jobs pre-pull their images with a retry, and the
+- [x] The E2E and Keycloak jobs pre-pull their images with a retry, and the
       playbook has entries for the pull failure and
       the profile-visibility flake
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

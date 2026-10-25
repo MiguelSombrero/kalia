@@ -102,6 +102,18 @@ the failed job (`gh run rerun <id> --failed`). Fix something only if the same
 artifact fails again, because then the cause is the dependency, not the
 network.
 
+**`Process from config.webServer was not able to start`, and the
+`[WebServer]` lines end in `failed to resolve source metadata for
+quay.io/keycloak/keycloak:… 503 Service Unavailable`.** quay.io was down
+while the `keycloak` image's `FROM` was resolved; one outage turned the E2E
+job red on three PRs: runs `40059787067` (#386), `40061839941` (#390) and
+`40062800899` (#392). The E2E and Keycloak realm jobs now run a
+`Pre-pull compose images` step first, retried three times like the backend
+job's, and a build whose base image is already local does not contact the
+registry. If that step itself exhausts its three attempts, the registry is
+still down: re-run the failed job once quay.io's status recovers
+(`gh run rerun <id> --failed`), and change nothing in the diff.
+
 **Several registration specs time out waiting for `#username`, each passes in
 isolation, and which ones fail moves between runs.** The shared `/sign-up`
 rate limit is spent. It is one counter for every visitor, by design
@@ -163,6 +175,19 @@ while one or two skeleton `<main>`s are still in the DOM, and the page's own
 content arrives later. Traced 2026-10-11 on `/en/beers/<unknown id>` by
 restarting the frontend container before each run. Wait for something only the
 settled page has, such as its `<h1>`, before measuring layout.
+
+**`profile-visibility.spec.ts` fails `toBeChecked()` on "Anyone with the
+link" right after `page.reload()`, and passes on a rerun.** The spec reloaded
+while the visibility save was still in flight. `VisibilityControl` updates
+optimistically, so its confirmation text is visible 11–43 ms before the
+Server Action's `POST` returns, and which request the backend served first
+decided the outcome. It flaked about one run in three, across six PRs before
+anyone diagnosed it; fixed in [PR #328](https://github.com/MiguelSombrero/kalia/pull/328)
+by saving through `setCellarVisibility` (`frontend/e2e/support/visibility.ts`),
+which waits for the `POST`. A recurrence means a spec toggled visibility and
+reloaded without that helper. Separately, axe once reported `document-title`
+on the profile page right after a save and has not been reproduced since;
+without a second occurrence there is no signature to write down.
 
 ## Vulnerability scan
 

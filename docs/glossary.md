@@ -77,7 +77,7 @@ dependencies are in [architecture.md §3](architecture.md#3-backend-modules).
 ## profile
 
 Who a user is to *other* users: a username copied once from the identity
-provider, plus whether their cellar is public. A leaf module; its
+provider, plus whether their cellar is public. Its
 dependencies are in [architecture.md §3](architecture.md#3-backend-modules). Its rows are public data an anonymous request may read.
 
 ### Domain types (`fi.kalia.profile.domain`)
