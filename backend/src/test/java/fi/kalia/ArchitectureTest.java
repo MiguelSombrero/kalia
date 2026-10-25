@@ -141,8 +141,9 @@ class ArchitectureTest {
 			.that().resideOutsideOfPackage(BASE_PACKAGE + ".identity..")
 			.should().dependOnClassesThat()
 			.belongToAnyOf(Jwt.class, JwtAuthenticationToken.class)
-			.because("what a token's claims mean is identity's alone; other modules ask "
-					+ "IdentityApi for the caller (ADR-0028, ADR-0049)")
+			.because("""
+					what a token's claims mean is identity's alone; other modules ask \
+					IdentityApi for the caller (ADR-0028, ADR-0049)""")
 			.allowEmptyShould(false);
 
 	@ArchTest
