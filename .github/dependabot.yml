@@ -28,10 +28,20 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
+    # Java and Node move to the next long-term-support release on purpose,
+    # not to whichever major is newest (ADR-0085).
+    ignore:
+      - dependency-name: "maven"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "docker"
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "docker"
     directory: "/keycloak"
     schedule:
@@ -40,3 +50,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]

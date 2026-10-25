@@ -66,11 +66,12 @@ jobs:
 
           # Files outside backend/ and frontend/ that either suite depends on.
           # docker-compose.yml builds and wires both; this workflow defines
-          # how they run; docs/architecture.md is asserted against the
+          # how they run; .node-version pins the Node every frontend job
+          # installs; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
           # keycloak/, postgres/ and the seed script with its helper feed the
           # keycloak, postgres and keycloak-seed services e2e's stack starts.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|\.node-version|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
 
           # What keycloak-realm-check below can be affected by: the services
           # it starts and the scripts it runs. Neither backend/ nor frontend/
@@ -110,7 +111,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version-file: .node-version
       - name: Run every dependency-free checker and its fixture self-test
         run: make check
 
@@ -180,7 +181,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version-file: .node-version
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
@@ -209,7 +210,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version-file: .node-version
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
@@ -234,7 +235,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version-file: .node-version
       - name: Start Keycloak and Postgres
         run: docker compose up -d --build --wait --wait-timeout 120 postgres keycloak
       - name: Seed the demo account
@@ -278,7 +279,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '24'
+          node-version-file: .node-version
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies

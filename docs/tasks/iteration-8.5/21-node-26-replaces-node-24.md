@@ -1,6 +1,6 @@
 # Task 21: Node 26 replaces Node 24 everywhere it is pinned
 
-- **Status:** refined
+- **Status:** in-progress
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -91,7 +91,7 @@ proposal returns weekly.
 
 ## Acceptance criteria
 
-- [ ] No file outside historical records names Node 24 as the current runtime
+- [x] No file outside historical records names Node 24 as the current runtime
       — verified by `git grep -n -E "node:24|node-version: '24'|Node 24"`
       returning only the dated evidence lines in ADRs and task files, and by
       `.node-version`, `frontend/Dockerfile` and `docker-compose.yml` naming

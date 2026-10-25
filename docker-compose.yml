@@ -208,9 +208,9 @@ services:
       - ./keycloak/realm-export.json:/config/kalia-realm.json:ro
 
   keycloak-seed:
-    # node:24-alpine matches frontend/Dockerfile's build stage; the script
+    # node:26-alpine matches frontend/Dockerfile's build stage; the script
     # is dependency-free, so no image build is needed for this one-shot job.
-    image: node:24-alpine
+    image: node:26-alpine
     depends_on:
       # Not just keycloak's healthcheck: the realm this seeds a user into
       # doesn't exist until keycloak-config above has created it.
