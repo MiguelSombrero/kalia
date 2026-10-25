@@ -40,13 +40,19 @@ export const AuthStatus = async ({ locale, name, placement }: Props) => {
   }
 
   const profileLink = (
+    // No aria-label: axe's label-content-name-mismatch counts the avatar's aria-hidden
+    // initials as visible text, so an aria-label would have to repeat them. Runs only at E2E.
     <Link
       href={`/${locale}/profile`}
-      aria-label={t("auth.profileLink", { name })}
       className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 text-foreground"
     >
       <PersonSlot username={name} size="sm" />
-      {placement === "bar" && <span className="text-sm">{name}</span>}
+      <span className="sr-only">{t("auth.profileLink", { name })}</span>
+      {placement === "bar" && (
+        <span aria-hidden="true" className="text-sm">
+          {name}
+        </span>
+      )}
     </Link>
   );
   const signOut = <SignOutButton className={block}>{t("auth.signOut")}</SignOutButton>;

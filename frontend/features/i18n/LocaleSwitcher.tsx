@@ -31,7 +31,7 @@ const LocaleLinks = ({ currentLocale, query }: { currentLocale: Locale; query: s
           key={locale}
           href={localeHref(locale, pathname, query)}
           aria-current={locale === currentLocale ? "page" : undefined}
-          aria-label={localeNames[locale]}
+          aria-label={`${locale.toUpperCase()} ${localeNames[locale]}`}
           className={
             locale === currentLocale
               ? "inline-flex min-h-9 min-w-9 items-center justify-center px-1.5 font-bold text-foreground underline underline-offset-4"

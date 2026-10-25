@@ -16,11 +16,11 @@ describe("LocaleSwitcher", () => {
     usePathname.mockReturnValue("/en/beers/abc-123");
     const { container } = render(<LocaleSwitcher locale="en" />);
 
-    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "EN English" })).toHaveAttribute(
       "href",
       "/en/beers/abc-123",
     );
-    expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "FI Suomi" })).toHaveAttribute(
       "href",
       "/fi/beers/abc-123",
     );
@@ -31,25 +31,25 @@ describe("LocaleSwitcher", () => {
     usePathname.mockReturnValue("/fi/beers");
     render(<LocaleSwitcher locale="en" />);
 
-    const english = screen.getByRole("link", { name: "English" });
+    const english = screen.getByRole("link", { name: "EN English" });
     expect(english).toHaveAttribute("aria-current", "page");
     expect(english).toHaveClass("font-bold");
-    expect(screen.getByRole("link", { name: "Suomi" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "FI Suomi" })).not.toHaveAttribute("aria-current");
   });
 
   it("replaces the first segment when it is a known locale", () => {
     usePathname.mockReturnValue("/fi/beers");
     render(<LocaleSwitcher locale="en" />);
 
-    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en/beers");
+    expect(screen.getByRole("link", { name: "EN English" })).toHaveAttribute("href", "/en/beers");
   });
 
   it("prepends the locale when the first segment is not a known locale", () => {
     usePathname.mockReturnValue("/beers");
     render(<LocaleSwitcher locale="en" />);
 
-    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("href", "/en/beers");
-    expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute("href", "/fi/beers");
+    expect(screen.getByRole("link", { name: "EN English" })).toHaveAttribute("href", "/en/beers");
+    expect(screen.getByRole("link", { name: "FI Suomi" })).toHaveAttribute("href", "/fi/beers");
   });
 
   it("keeps every query parameter", () => {
@@ -57,7 +57,7 @@ describe("LocaleSwitcher", () => {
     search.current = "query=ipa&countryCode=BE&page=2&utm=x";
     render(<LocaleSwitcher locale="en" />);
 
-    expect(screen.getByRole("link", { name: "Suomi" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "FI Suomi" })).toHaveAttribute(
       "href",
       "/fi/beers?query=ipa&countryCode=BE&page=2&utm=x",
     );
