@@ -1,5 +1,7 @@
 package fi.kalia;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -26,19 +28,26 @@ class EventPublicationResubmission implements SmartInitializingSingleton {
 
 	private final JdbcTemplate jdbc;
 
+	private final Counter retries;
+
+	private final Counter exhausted;
+
 	private final Duration minAge;
 
 	private final int maxAttempts;
 
 	private final Set<UUID> reportedExhausted = ConcurrentHashMap.newKeySet();
 
-	EventPublicationResubmission(IncompleteEventPublications incomplete, JdbcTemplate jdbc,
+	EventPublicationResubmission(IncompleteEventPublications incomplete, JdbcTemplate jdbc, MeterRegistry meters,
 			@Value("${kalia.events.resubmission.min-age}") Duration minAge,
 			@Value("${kalia.events.resubmission.max-attempts}") int maxAttempts) {
 		Assert.isTrue(!minAge.isNegative(), "kalia.events.resubmission.min-age must not be negative");
 		Assert.isTrue(maxAttempts >= 1, "kalia.events.resubmission.max-attempts must be at least 1");
 		this.incomplete = incomplete;
 		this.jdbc = jdbc;
+		// Prometheus omits a counter until its first increment; register both now.
+		this.retries = meters.counter("kalia.events.publication.retries");
+		this.exhausted = meters.counter("kalia.events.publication.exhausted");
 		this.minAge = minAge;
 		this.maxAttempts = maxAttempts;
 	}
@@ -61,9 +70,11 @@ class EventPublicationResubmission implements SmartInitializingSingleton {
 
 	private boolean hasAttemptsLeft(EventPublication publication) {
 		if (publication.getCompletionAttempts() < maxAttempts) {
+			retries.increment();
 			return true;
 		}
 		if (reportedExhausted.add(publication.getIdentifier())) {
+			exhausted.increment();
 			log.error("Event publication {} of {} is still incomplete after {} attempts and will not be resubmitted",
 					publication.getIdentifier(), publication.getEvent().getClass().getName(),
 					publication.getCompletionAttempts());

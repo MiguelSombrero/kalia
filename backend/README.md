@@ -47,7 +47,7 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 | `DATABASE_USERNAME` | `kalia` | |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
-| `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; a monitored deployment can widen it (e.g. `health,metrics,prometheus`). Everything but `health` also needs a token |
+| `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; compose sets `health,prometheus`. Everything but `health` also needs a bearer token |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8081/realms/kalia` | The `iss` every accepted token must carry |
 | `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Where signing keys are fetched. A *different address* from the issuer under docker-compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
 | `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud` claim; rejects tokens minted for another client of the realm |
@@ -369,6 +369,34 @@ challenge and adds only a body.
 SLF4J via Lombok's `@Slf4j`, parameterized only, level chosen by what's being
 logged rather than by the mechanism that produced it. Full convention and
 rationale: [ADR-0013](../docs/adr/0013-logging-conventions.md).
+
+## Observability
+
+Logs, counters and trace ids are built in; nothing in the stack views them
+([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+
+- **Logs** are one JSON object per line on stdout in every environment, with
+  `traceId` and `spanId` on each line written while a request is being served.
+  `RequestLogFilter` writes one `INFO` line per request (the readiness probe
+  at `DEBUG`). Read them with `docker compose logs backend --no-log-prefix |
+  jq -c '[.["@timestamp"], .log.level, .message, .traceId]'`, or follow one
+  request across both tiers with `docker compose logs --no-log-prefix | grep
+  <traceId>`.
+- **Trace id.** An incoming W3C `traceparent` header is continued; a request
+  without one starts a trace. The frontend sends one on every call
+  ([frontend/README.md](../frontend/README.md#observability)). There is no
+  exporter, so the id exists only in logs and on the wire.
+- **Counters** at `/actuator/prometheus` (compose exposes it; natively set
+  `ACTUATOR_ENDPOINTS=health,prometheus`). It needs a bearer token like every
+  actuator endpoint but `health`. For a local one, sign in at Swagger UI
+  (`/swagger-ui/index.html`), run any request there and copy the token from the
+  `curl` it shows, then
+  `curl -H "Authorization: Bearer <token>" localhost:8080/actuator/prometheus`.
+  The ones this app adds: `kalia_events_publication_retries_total` and
+  `kalia_events_publication_exhausted_total` (an event whose listener failed,
+  and one given up on after `max-attempts`). 5xx by route is
+  `http_server_requests_seconds_count{outcome="SERVER_ERROR"}`, whose `uri`
+  label is the route template.
 
 ## Testing conventions
 

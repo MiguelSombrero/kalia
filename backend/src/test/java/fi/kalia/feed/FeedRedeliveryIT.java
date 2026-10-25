@@ -16,6 +16,7 @@ import fi.kalia.catalog.domain.BeerRepository;
 import fi.kalia.cellar.BottleAdded;
 import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,9 @@ class FeedRedeliveryIT {
 	@MockitoSpyBean
 	private EventPublicationRegistry registry;
 
+	@Autowired
+	private MeterRegistry meters;
+
 	@MockitoBean
 	private JwtDecoder jwtDecoder;
 
@@ -83,6 +87,7 @@ class FeedRedeliveryIT {
 	@Test
 	void aListenerThatFailsOnceIsRecordedAfterResubmission() {
 		UUID userId = authenticate("fails-once-token", "fails-once-user");
+		double retriesBefore = count("kalia.events.publication.retries");
 		willThrow(new RuntimeException("database hiccup")).willAnswer(this::callThrough)
 				.given(feedLines).save(argThat(line -> line != null && line.getUserId().equals(userId)));
 
@@ -90,6 +95,7 @@ class FeedRedeliveryIT {
 
 		awaitUntil(() -> !linesFor(userId).isEmpty());
 		assertThat(linesFor(userId)).hasSize(1);
+		assertThat(count("kalia.events.publication.retries")).isGreaterThan(retriesBefore);
 	}
 
 	@Test
@@ -126,6 +132,7 @@ class FeedRedeliveryIT {
 	@Test
 	void anEventWhoseListenerAlwaysFailsStopsAfterFiveAttemptsAndIsLoggedAtError(CapturedOutput output) {
 		UUID userId = authenticate("poison-token", "poison-user");
+		double exhaustedBefore = count("kalia.events.publication.exhausted");
 		willThrow(new RuntimeException("poison")).given(feedLines)
 				.save(argThat(line -> line != null && line.getUserId().equals(userId)));
 
@@ -143,12 +150,17 @@ class FeedRedeliveryIT {
 		assertThat(publicationsFor(userId).getFirst()).containsEntry("completion_attempts", 5);
 		verify(feedLines, times(5)).save(argThat(line -> line != null && line.getUserId().equals(userId)));
 		assertThat(linesFor(userId)).isEmpty();
+		assertThat(count("kalia.events.publication.exhausted")).isEqualTo(exhaustedBefore + 1);
 	}
 
 	// A spied Spring Data repository is an interface proxy, so there is no
 	// real method to call: the spy's own default answer is what delegates.
 	private Object callThrough(InvocationOnMock invocation) throws Throwable {
 		return mockingDetails(feedLines).getMockCreationSettings().getDefaultAnswer().answer(invocation);
+	}
+
+	private double count(String counter) {
+		return meters.get(counter).counter().count();
 	}
 
 	private static boolean isFor(Object event, UUID userId) {
