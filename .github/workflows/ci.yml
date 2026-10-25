@@ -236,6 +236,20 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
+      # quay.io returned 503 on the keycloak pull in one outage and turned
+      # three PRs red (docs/ci-playbook.md); the backend job's loop above
+      # retries the same way, so a transient registry failure costs a wait
+      # rather than a run.
+      - name: Pre-pull compose images
+        working-directory: .
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose pull --ignore-buildable postgres keycloak-config keycloak-seed && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"; then exit 0; fi
+            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
+            sleep $((attempt * 15))
+          done
+          echo "::error::could not pull the compose images after 3 attempts"
+          exit 1
       - name: Start Keycloak and Postgres
         run: docker compose up -d --build --wait --wait-timeout 120 postgres keycloak
       - name: Seed the demo account
@@ -286,6 +300,20 @@ jobs:
         run: npm ci
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
+      # quay.io returned 503 on the keycloak pull in one outage and turned
+      # three PRs red (docs/ci-playbook.md); the backend job's loop above
+      # retries the same way, so a transient registry failure costs a wait
+      # rather than a run.
+      - name: Pre-pull compose images
+        working-directory: .
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"; then exit 0; fi
+            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
+            sleep $((attempt * 15))
+          done
+          echo "::error::could not pull the compose images after 3 attempts"
+          exit 1
       # Starts the full docker compose stack itself (playwright.config.ts);
       # GitHub Actions sets CI=true, so it always starts fresh.
       - name: Run E2E tests
@@ -310,3 +338,25 @@ jobs:
             frontend/playwright-report/
             frontend/test-results/
           retention-days: 7
+
+  ci-passed:
+    name: CI passed
+    # The check the branch ruleset requires, beside the vulnerability scan.
+    # Requiring this one instead of each job means a new job is covered by
+    # adding it to `needs`, with no ruleset change. A job the `changes`
+    # filter skipped reports "skipped", which counts as a pass here.
+    # always() so it still runs, and fails, when a needed job fails or is
+    # cancelled: without it those make this job skip, and a skipped required
+    # check lets the merge through.
+    if: always()
+    needs: [changes, static-checks, backend, frontend, api-client-drift, keycloak-realm-check, vulnerability-scan, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every job succeeded or was skipped by the changes filter
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          # `changes` must have succeeded: if it failed, every job gated on
+          # it is skipped, and "skipped" would read as a pass.
+          echo "$NEEDS" | jq -e '.changes.result == "success" and ([.[] | .result] | all(. == "success" or . == "skipped"))' > /dev/null

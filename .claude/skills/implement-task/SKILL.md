@@ -14,9 +14,9 @@ a step of its own — a moment to apply
 [ADR-0017](../../../docs/adr/0017-code-comment-policy.md)'s test to a comment
 before it is written, rather than after, in the same pass as the code.
 
-`/code-review` and `make verify` are ordered review-then-verify, so the slow
-gate runs once on a diff that review and doc-sync have both finished with,
-not once before review and again after.
+`/code-review` and the local gate are ordered review-then-verify, so the gate
+runs once on a diff that review and doc-sync have both finished with, not
+once before review and again after.
 
 The default stays [ADR-0027](../../../docs/adr/0027-process-weight.md)'s:
 implement directly and run `/code-review`. Invoking this skill is not licence
@@ -58,19 +58,25 @@ their own condition from that ADR before they apply.
    ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
 8. **Code-review gate.** Run `/code-review` on the diff — local, in-session,
    no separate service — and mark each finding worth acting on **fix now** or
-   **new task**. This runs *before* the full
-   `make verify` below, not after: `/code-review`, the comment pass and
-   doc-sync can each still change the diff, and `make verify` is the slow
-   gate — running it once on the finished diff beats running it, reviewing,
-   then running it again. Step 5's relevant suites are already green, which
+   **new task**. This runs *before* the local
+   gate below, not after: `/code-review`, the comment pass and doc-sync can
+   each still change the diff, so running the gate once on the finished diff
+   beats running it, reviewing, then running it again. Step 5's relevant
+   suites are already green, which
    is what makes the review worth doing at this point.
-9. Run `make verify` and get it green. It is the whole check list CI runs, in
-   CI's order; `make verify-fast` is the subset that needs neither Docker nor
-   a build, and is what the installed `pre-push` hook runs. Never push
-   expecting CI to be the first thing that tells you a check is red. Redirect
-   its output to a file and read that — piping a long `make`/`mvn`/`npm` run
-   to `tail` or `head` reports the *pager's* exit code, not the command's,
-   and scrolls the failing line out of view.
+9. Run `make verify-fast` and get it green. It is the local gate: the subset
+   that needs neither Docker nor a build, and what the installed `pre-push`
+   hook runs. The Docker-backed checks are the required CI checks
+   (`ci-passed` and the vulnerability scan), which block the merge when red;
+   `make verify` is the same list locally, worth running when the change
+   touches the stack, but only one worktree's stack fits on the fixed host
+   ports, so it is not required first
+   ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
+   Never push expecting CI to be the first thing that tells you a
+   `verify-fast` check is red. Redirect its output to a file and read that —
+   piping a long `make`/`mvn`/`npm` run to `tail` or `head` reports the
+   *pager's* exit code, not the command's, and scrolls the failing line out
+   of view.
 10. **Run the change against a running stack and watch it work.** `make
    verify` proves the suites pass, which is a different claim: a Server
    Action that 404s after a re-export refactor, a quantity field cleared on
@@ -118,7 +124,8 @@ which did not, naming a reason for each one skipped (in procedure order):
 
 - doc-sync
 - `/code-review`
-- `make verify` (or `make verify-fast`, said explicitly)
+- `make verify-fast` (or `make verify`, said explicitly), and the required
+  CI checks green once the pull request is open
 - the change exercised against a running stack, with what was observed
 - each acceptance criterion re-verified by running its own check, then
   ticked, and the status set to `done`
