@@ -22,7 +22,7 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
   // in instrumentation.ts, not here (ADR-0018).
   const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8080";
   refuseReshapedPath(url);
-  const request = await withAccessToken(options);
+  const request = await withAccessToken(url, options);
 
   let response: Response;
   try {
@@ -98,10 +98,10 @@ const refuseReshapedPath = (url: string): void => {
  * overwritten: the session's token is the only one this BFF ever sends, and a
  * header derived from request input would otherwise be forwarded verbatim.
  */
-const withAccessToken = async (options: RequestInit): Promise<RequestInit> => {
+const withAccessToken = async (url: string, options: RequestInit): Promise<RequestInit> => {
   const headers = new Headers(options.headers);
   if (headers.has("Authorization")) {
-    throw apiError("refused", "Refused to send a caller-set Authorization header");
+    throw apiError("refused", `Refused to call ${url}: a caller-set Authorization header`);
   }
   const token = await currentAccessToken();
   if (!token) {

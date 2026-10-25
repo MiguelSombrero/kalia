@@ -96,7 +96,8 @@ but a credible complement; see Revisit trigger.
   wrapper fails only at `npm run build`, several layers down in an unrelated
   dependency (`ioredis`'s `tls` resolution) rather than with a message
   pointing at the actual cause — easy to lose time re-diagnosing from
-  scratch.
+  scratch. (Since 2026-10-25 the mutator's `server-only` import moves that
+  failure to the import itself; see Amended.)
 - Bad, because a Server Action's thrown value crosses the client/server RPC
   boundary through React's own serialization, and Next's docs for the
   parallel case — a Server Component render error reaching `error.tsx` —
