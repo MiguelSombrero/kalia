@@ -25,14 +25,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
+import org.springframework.modulith.test.ApplicationModuleTest.BootstrapMode;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * Do not widen this to a full context: bootstrapping profile alone is what
- * proves its ADR-0057 retry does not ride on another module's configuration.
+ * Do not widen this beyond DIRECT_DEPENDENCIES (identity, which
+ * ProfileController reads the caller from): bootstrapping profile with no more
+ * than that is what proves its ADR-0057 retry does not ride on another
+ * module's configuration.
  */
-@ApplicationModuleTest
+@ApplicationModuleTest(mode = BootstrapMode.DIRECT_DEPENDENCIES)
 @Import(TestcontainersConfiguration.class)
 class ProfileServiceModuleIT {
 

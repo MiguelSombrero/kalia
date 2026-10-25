@@ -253,6 +253,17 @@ class CellarApiIT {
 	}
 
 	@Test
+	void aTokenWhoseSubjectIsNotAUuidIsTheSameExplained401AsOnTheProfileRoutes() {
+		given(jwtDecoder.decode("odd-token")).willReturn(TestTokens.user("not-a-uuid", "odd-user"));
+
+		client.get().uri("/api/v1/cellar").header("Authorization", "Bearer odd-token")
+				.exchange()
+				.expectStatus().isUnauthorized()
+				.expectHeader().value("WWW-Authenticate", header -> assertThat(header)
+						.contains("invalid_token").contains("subject"));
+	}
+
+	@Test
 	void addingABottleOfAnUnknownBeerYieldsProblemJson404() {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("beerId", UUID.randomUUID().toString());

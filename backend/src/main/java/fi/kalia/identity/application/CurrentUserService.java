@@ -1,16 +1,21 @@
 package fi.kalia.identity.application;
 
 import fi.kalia.identity.domain.CurrentUser;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 // Resolves the caller from the SecurityContext rather than a threaded
 // principal parameter (ADR-0028).
+@Slf4j
 @Service
 public class CurrentUserService {
 
@@ -36,13 +41,20 @@ public class CurrentUserService {
 		return require().id();
 	}
 
+	public String requireUsername() {
+		return require().username();
+	}
+
+	// An AuthenticationException thrown from a controller reaches the 401 entry
+	// point through ExceptionTranslationFilter. Its message is sent to the
+	// client in WWW-Authenticate: keep claim values out of it.
 	private static CurrentUser from(Jwt jwt) {
 		String subject = jwt.getSubject();
 		String username = jwt.getClaimAsString("preferred_username");
 		if (username == null) {
-			throw new IllegalStateException(
-					("Access token for subject %s carries no preferred_username claim. The realm's "
-							+ "client is missing the built-in profile scope.").formatted(subject));
+			log.warn("Access token for subject {} carries no preferred_username claim. The realm's client "
+					+ "is missing the built-in profile scope.", subject);
+			throw new InvalidBearerTokenException("The access token carries no preferred_username claim");
 		}
 		return new CurrentUser(
 				parseSubject(subject),
@@ -51,15 +63,13 @@ public class CurrentUserService {
 				jwt.getClaimAsString("name"));
 	}
 
-	private static UUID parseSubject(String subject) {
+	private static UUID parseSubject(@Nullable String subject) {
 		try {
-			return UUID.fromString(subject);
+			return UUID.fromString(Objects.requireNonNullElse(subject, ""));
 		} catch (IllegalArgumentException cause) {
-			throw new IllegalStateException(
-					("Access token subject '%s' is not a UUID. Keycloak issues UUID subjects; a "
-							+ "different identity provider would need CurrentUser.id widened to a "
-							+ "String.").formatted(subject),
-					cause);
+			log.warn("Access token subject '{}' is not a UUID. Keycloak issues UUID subjects; a different "
+					+ "identity provider would need CurrentUser.id widened to a String.", subject);
+			throw new InvalidBearerTokenException("The access token's subject is not a UUID", cause);
 		}
 	}
 

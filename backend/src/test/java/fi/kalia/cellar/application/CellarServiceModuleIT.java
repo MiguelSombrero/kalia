@@ -6,6 +6,8 @@ import static org.mockito.Mockito.doAnswer;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.cellar.domain.EntryRepository;
+import fi.kalia.profile.domain.Profile;
+import fi.kalia.profile.domain.ProfileRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,6 +30,9 @@ class CellarServiceModuleIT {
 	@MockitoSpyBean
 	private EntryRepository entries;
 
+	@Autowired
+	private ProfileRepository profiles;
+
 	private final AtomicBoolean readOnly = new AtomicBoolean();
 
 	@BeforeEach
@@ -47,7 +52,12 @@ class CellarServiceModuleIT {
 
 	@Test
 	void readPublicCellarRunsReadOnly() {
-		service.readPublicCellar(UUID.randomUUID());
+		UUID owner = UUID.randomUUID();
+		Profile profile = Profile.create(owner, "owner-" + owner);
+		profile.changeCellarVisibility(true);
+		profiles.save(profile);
+
+		service.readPublicCellar(profile.getUsername());
 
 		assertThat(readOnly).isTrue();
 	}
