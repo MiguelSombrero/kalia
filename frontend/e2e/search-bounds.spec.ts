@@ -13,7 +13,8 @@ test.describe("a hand-edited value the API would refuse", () => {
     ["a page beyond the offset bound", "page=600"],
     ["a size of zero", "size=0"],
     ["a size over the cap", "size=500"],
-    ["an unknown country code", "countryCode=belgium"],
+    ["a malformed country code", "countryCode=belgium"],
+    ["a well-formed country code that is not listed", "countryCode=ZZ"],
   ] as const) {
     test(`drops ${what} and says so`, async ({ page }) => {
       await page.goto(`/en/beers?${search}`);

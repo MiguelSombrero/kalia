@@ -71,7 +71,7 @@ public class CellarService {
 	@Retryable(includes = ObjectOptimisticLockingFailureException.class, maxRetries = 1, delay = 0)
 	public void removeBottle(UUID userId, UUID bottleId) {
 		Entry entry = ownerOf(userId, bottleId);
-		entry.removeBottle(bottleId);
+		entry.removeBottle(bottleId, clock);
 		if (entry.isEmpty()) {
 			entries.delete(entry);
 		} else {
@@ -115,7 +115,7 @@ public class CellarService {
 					if (!catalog.beerExists(beerId)) {
 						throw new BeerNotFoundException(beerId);
 					}
-					return Entry.create(userId, beerId);
+					return Entry.create(userId, beerId, clock);
 				});
 	}
 

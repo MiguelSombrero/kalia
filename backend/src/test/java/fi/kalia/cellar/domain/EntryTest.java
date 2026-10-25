@@ -3,17 +3,22 @@ package fi.kalia.cellar.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import fi.kalia.cellar.BottleAdded;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class EntryTest {
 
 	private static final Clock CLOCK = Clock.systemUTC();
 
-	private final Entry entry = Entry.create(UUID.randomUUID(), UUID.randomUUID());
+	private final Entry entry = Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK);
 
 	@Test
 	void quantityReflectsTheNumberOfBottles() {
@@ -28,7 +33,7 @@ class EntryTest {
 		Bottle first = Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
 		Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
 
-		entry.removeBottle(first);
+		entry.removeBottle(first, CLOCK);
 
 		assertThat(entry.quantity()).isEqualTo(1);
 		assertThat(entry.getBottles()).doesNotContain(first);
@@ -39,7 +44,7 @@ class EntryTest {
 		Bottle only = Bottle.create(entry, ContainerType.BOTTLE, null, null, CLOCK);
 		assertThat(entry.isEmpty()).isFalse();
 
-		entry.removeBottle(only);
+		entry.removeBottle(only, CLOCK);
 
 		assertThat(entry.isEmpty()).isTrue();
 	}
@@ -74,7 +79,7 @@ class EntryTest {
 	void removingOneBottleFromABulkAddLeavesTheRestIntact() {
 		List<Bottle> created = entry.addBottles(3, ContainerType.BOTTLE, null, null, CLOCK);
 
-		entry.removeBottle(created.get(0));
+		entry.removeBottle(created.get(0), CLOCK);
 
 		assertThat(entry.quantity()).isEqualTo(2);
 		assertThat(entry.getBottles()).containsExactlyInAnyOrder(created.get(1), created.get(2));
@@ -87,14 +92,38 @@ class EntryTest {
 	}
 
 	@Test
+	void bottleAddedCarriesTheClocksInstantAndEveryTimestampReadsTheClock() {
+		Instant added = Instant.parse("2026-10-23T12:00:00Z");
+		Instant later = Instant.parse("2026-10-24T08:30:00Z");
+		Entry fresh = Entry.create(UUID.randomUUID(), UUID.randomUUID(), Clock.fixed(added, ZoneOffset.UTC));
+
+		List<Bottle> created = fresh.addBottles(2, ContainerType.CAN, null, null, Clock.fixed(added, ZoneOffset.UTC));
+
+		assertThat(ReflectionTestUtils.<Collection<Object>>invokeMethod(fresh, "domainEvents")).singleElement().isInstanceOfSatisfying(BottleAdded.class,
+				event -> assertThat(event.occurredAt()).isEqualTo(added));
+		assertThat(fresh.getCreatedAt()).isEqualTo(added);
+		assertThat(created).allSatisfy(bottle -> assertThat(bottle.getCreatedAt()).isEqualTo(added));
+
+		UUID updatedId = UUID.randomUUID();
+		ReflectionTestUtils.setField(created.getLast(), "id", updatedId);
+		fresh.removeBottle(created.getFirst(), Clock.fixed(later, ZoneOffset.UTC));
+		fresh.updateBottle(updatedId, ContainerType.BOTTLE, null, null,
+				Clock.fixed(later, ZoneOffset.UTC));
+
+		assertThat(fresh.getUpdatedAt()).isEqualTo(later);
+		assertThat(created.getLast().getUpdatedAt()).isEqualTo(later);
+		assertThat(fresh.getCreatedAt()).isEqualTo(added);
+	}
+
+	@Test
 	void rejectsANullUserId() {
-		assertThatThrownBy(() -> Entry.create(null, UUID.randomUUID()))
+		assertThatThrownBy(() -> Entry.create(null, UUID.randomUUID(), CLOCK))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void rejectsANullBeerId() {
-		assertThatThrownBy(() -> Entry.create(UUID.randomUUID(), null))
+		assertThatThrownBy(() -> Entry.create(UUID.randomUUID(), null, CLOCK))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
 

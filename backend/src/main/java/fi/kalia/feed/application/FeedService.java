@@ -5,6 +5,7 @@ import fi.kalia.catalog.CatalogApi;
 import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.ProfileApi;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -42,6 +43,8 @@ public class FeedService {
 
 	private final FeedCursorCodec cursorCodec;
 
+	private final Clock clock;
+
 	public void recordBottleAdded(UUID eventId, UUID userId, UUID beerId, int quantity,
 			@Nullable LocalDate brewedDate, Instant occurredAt) {
 		// Do not remove: a publication not marked complete is resubmitted
@@ -71,7 +74,7 @@ public class FeedService {
 	}
 
 	private FeedPage fillOlder(@Nullable Long before, int size) {
-		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
+		Instant cutoff = clock.instant().minus(WINDOW_DAYS, ChronoUnit.DAYS);
 		PageRequest batch = PageRequest.of(0, size + 1);
 		List<FeedLineView> page = new ArrayList<>();
 		Long resumeBefore = before;
@@ -102,7 +105,7 @@ public class FeedService {
 	@Transactional(readOnly = true)
 	public FeedPage readSince(String cursor, int size) {
 		long sequenceNumber = cursorCodec.decode(cursor);
-		Instant cutoff = Instant.now().minus(WINDOW_DAYS, ChronoUnit.DAYS);
+		Instant cutoff = clock.instant().minus(WINDOW_DAYS, ChronoUnit.DAYS);
 		Optional<FeedLine> anchor = lines.findBySequenceNumber(sequenceNumber);
 		if (anchor.isEmpty() || anchor.get().getOccurredAt().isBefore(cutoff)) {
 			return new FeedPage(List.of(), null, true);

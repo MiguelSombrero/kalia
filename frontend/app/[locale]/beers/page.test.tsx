@@ -21,6 +21,7 @@ vi.mock("@/features/cellar/api", async (importOriginal) => ({
 }));
 
 import { auth } from "@/auth";
+import { apiError } from "@/lib/api/api-error";
 import { IgnoredFilterNote, PastLastPage, searchBeers } from "@/features/catalog";
 import BeersPage, { generateMetadata } from "./page";
 
@@ -81,6 +82,33 @@ describe("BeersPage", () => {
 
     expect(searchBeers).toHaveBeenCalledWith({ query: "punk" });
     expect(elements(tree).some((element) => element.type === IgnoredFilterNote)).toBe(true);
+  });
+
+  it("searches again without a country the API refuses, and notes that it was left out", async () => {
+    vi.mocked(searchBeers).mockRejectedValueOnce(apiError("http", "Beer search failed with status 400", { status: 400 }));
+
+    const tree = await render({ query: "punk", countryCode: "ZZ" });
+
+    expect(searchBeers).toHaveBeenNthCalledWith(1, { query: "punk", countryCode: "ZZ" });
+    expect(searchBeers).toHaveBeenNthCalledWith(2, { query: "punk" });
+    expect(elements(tree).some((element) => element.type === IgnoredFilterNote)).toBe(true);
+    expect(elements(tree).find((element) => element.props.countryCodes !== undefined)?.props.params).toEqual({
+      query: "punk",
+    });
+  });
+
+  it("does not hide a failure that no country caused", async () => {
+    vi.mocked(searchBeers).mockRejectedValueOnce(apiError("http", "Beer search failed with status 500", { status: 500 }));
+
+    await expect(render({ countryCode: "BE" })).rejects.toMatchObject({ status: 500 });
+    expect(searchBeers).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not retry a 400 when no country was asked for", async () => {
+    vi.mocked(searchBeers).mockRejectedValueOnce(apiError("http", "Beer search failed with status 400", { status: 400 }));
+
+    await expect(render({ query: "punk" })).rejects.toMatchObject({ status: 400 });
+    expect(searchBeers).toHaveBeenCalledTimes(1);
   });
 
   it("notes nothing when every value is usable", async () => {

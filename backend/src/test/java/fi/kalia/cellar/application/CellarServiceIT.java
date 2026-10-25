@@ -227,7 +227,7 @@ class CellarServiceIT {
 	@Test
 	void neitherReadReturnsAnEntryWithNoBottles() {
 		UUID owner = UUID.randomUUID();
-		entries.saveAndFlush(Entry.create(owner, beerId));
+		entries.saveAndFlush(Entry.create(owner, beerId, CLOCK));
 
 		assertThat(service.listEntries(owner)).isEmpty();
 		assertThat(service.readPublicCellar(owner)).isEmpty();
@@ -238,7 +238,7 @@ class CellarServiceIT {
 		UUID owner = UUID.randomUUID();
 		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		UUID vanishedBeerId = UUID.randomUUID();
-		Entry orphan = Entry.create(owner, vanishedBeerId);
+		Entry orphan = Entry.create(owner, vanishedBeerId, CLOCK);
 		orphan.addBottles(1, ContainerType.CAN, null, null, CLOCK);
 		UUID orphanId = entries.saveAndFlush(orphan).getId();
 		testEntityManager.clear();

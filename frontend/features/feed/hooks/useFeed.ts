@@ -98,5 +98,8 @@ export const usePollFeed = (since: string) => {
     }
   }, [query.dataUpdatedAt, query.errorUpdatedAt]);
 
-  return { data: query.data, refetch: query.refetch, consecutiveFailures };
+  // Latest tick that settled either way, so ages keep moving while the feed is stalled.
+  const polledAt = Math.max(query.dataUpdatedAt, query.errorUpdatedAt);
+
+  return { data: query.data, refetch: query.refetch, consecutiveFailures, polledAt };
 };

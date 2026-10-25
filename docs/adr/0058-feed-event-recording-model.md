@@ -69,8 +69,8 @@ time.**
 
 **Deduplicate on a natural key built from `(userId, beerId, occurredAt)`
 instead of a dedicated event id.** Rejected: `occurredAt` is a JVM clock
-reading (`Instant.now()`), not a guaranteed-unique value, and a natural key
-built from business fields ties correctness to data that might legitimately
+reading (the injected `Clock`'s instant), not a guaranteed-unique value, and a
+natural key built from business fields ties correctness to data that might legitimately
 repeat — the same user adding the same beer within the same clock tick is not
 impossible on a fast enough system, however unlikely.
 

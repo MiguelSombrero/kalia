@@ -16,9 +16,6 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SourceType;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
@@ -43,21 +40,18 @@ public class Bottle {
 
 	private @Nullable LocalDate bestBeforeDate;
 
-	// source = VM: generated in Java before the INSERT runs, so the value is
-	// on the object immediately after save() rather than only after a flush
-	// re-reads a database-generated default.
-	@CreationTimestamp(source = SourceType.VM)
 	private Instant createdAt;
 
-	@UpdateTimestamp(source = SourceType.VM)
 	private Instant updatedAt;
 
 	private Bottle(Entry entry, ContainerType containerType, @Nullable LocalDate brewedDate,
-			@Nullable LocalDate bestBeforeDate) {
+			@Nullable LocalDate bestBeforeDate, Instant now) {
 		this.entry = entry;
 		this.containerType = containerType;
 		this.brewedDate = brewedDate;
 		this.bestBeforeDate = bestBeforeDate;
+		this.createdAt = now;
+		this.updatedAt = now;
 	}
 
 	static Bottle create(Entry entry, ContainerType containerType, @Nullable LocalDate brewedDate,
@@ -65,7 +59,7 @@ public class Bottle {
 		Assert.notNull(entry, "entry must not be null");
 		Assert.notNull(containerType, "containerType must not be null");
 		requireValidDates(brewedDate, bestBeforeDate, clock);
-		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate);
+		Bottle bottle = new Bottle(entry, containerType, brewedDate, bestBeforeDate, clock.instant());
 		entry.registerBottle(bottle);
 		return bottle;
 	}
@@ -77,6 +71,7 @@ public class Bottle {
 		this.containerType = containerType;
 		this.brewedDate = brewedDate;
 		this.bestBeforeDate = bestBeforeDate;
+		this.updatedAt = clock.instant();
 	}
 
 	// Do not pass a clock in any zone but UTC. No IANA timezone's calendar day

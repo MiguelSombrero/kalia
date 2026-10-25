@@ -38,7 +38,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [16](iteration-8.5/16-observability-baseline.md) | A failure on the server can be seen and counted | refined |
 | [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | refined |
 | [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | refined |
-| [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | refined |
+| [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | done |
 
 Numbered 8.5 for the reason [iteration 5.5](iteration-5.5.md) and
 [iteration 7.5](iteration-7.5.md) were: iteration 9 is already drafted, and

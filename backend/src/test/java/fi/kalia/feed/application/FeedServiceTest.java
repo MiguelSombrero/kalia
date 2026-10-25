@@ -16,7 +16,9 @@ import fi.kalia.feed.domain.FeedLine;
 import fi.kalia.feed.domain.FeedLineRepository;
 import fi.kalia.profile.ProfileApi;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class FeedServiceTest {
+
+	private static final Instant NOW = Instant.parse("2026-10-23T12:00:00Z");
+
+	private static final Instant CUTOFF = NOW.minus(30, ChronoUnit.DAYS);
 
 	@Mock
 	private FeedLineRepository lines;
@@ -49,7 +55,7 @@ class FeedServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new FeedService(lines, catalog, profile, codec);
+		service = new FeedService(lines, catalog, profile, codec, Clock.fixed(NOW, ZoneOffset.UTC));
 	}
 
 	@Test
@@ -68,6 +74,41 @@ class FeedServiceTest {
 		assertThat(view.brewery()).isEqualTo("Founders Brewing Co.");
 		assertThat(view.style()).isEqualTo("Imperial Stout");
 		assertThat(view.abv()).isEqualByComparingTo("12.0");
+	}
+
+	@Test
+	void theRecentWindowStartsThirtyDaysBeforeTheClocksInstant() {
+		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any())).willReturn(List.of());
+
+		service.readRecent(20);
+
+		then(lines).should().findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(CUTOFF), any());
+	}
+
+	@Test
+	void theWindowOlderLinesAreReadFromStartsThirtyDaysBeforeTheClocksInstant() {
+		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(anyLong(), any(),
+				any())).willReturn(List.of());
+
+		service.readBefore(codec.encode(42L), 20);
+
+		then(lines).should().findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(
+				eq(42L), eq(CUTOFF), any());
+	}
+
+	@Test
+	void aCursorJustInsideTheClocksWindowIsServedAndJustOutsideAnswersStartOver() {
+		FeedLine insideAnchor = mock(FeedLine.class);
+		given(insideAnchor.getOccurredAt()).willReturn(CUTOFF);
+		FeedLine outsideAnchor = mock(FeedLine.class);
+		given(outsideAnchor.getOccurredAt()).willReturn(CUTOFF.minusSeconds(1));
+		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(insideAnchor));
+		given(lines.findBySequenceNumber(43L)).willReturn(Optional.of(outsideAnchor));
+		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
+				eq(CUTOFF), any())).willReturn(List.of());
+
+		assertThat(service.readSince(codec.encode(42L), 20).startOver()).isFalse();
+		assertThat(service.readSince(codec.encode(43L), 20).startOver()).isTrue();
 	}
 
 	@Test
@@ -181,7 +222,7 @@ class FeedServiceTest {
 	@Test
 	void sinceDoesNotReadOnPastABatchWithNoVisibleLine() {
 		FeedLine anchor = mock(FeedLine.class);
-		given(anchor.getOccurredAt()).willReturn(Instant.now());
+		given(anchor.getOccurredAt()).willReturn(NOW);
 		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
 		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
 				any(), any())).willReturn(List.of(line(), line()));
@@ -228,7 +269,7 @@ class FeedServiceTest {
 	@Test
 	void sinceACursorOlderThanTheWindowAnswersStartOver() {
 		FeedLine anchor = mock(FeedLine.class);
-		given(anchor.getOccurredAt()).willReturn(Instant.now().minus(40, ChronoUnit.DAYS));
+		given(anchor.getOccurredAt()).willReturn(NOW.minus(40, ChronoUnit.DAYS));
 		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
 
 		FeedPage page = service.readSince(codec.encode(42L), 20);
@@ -241,7 +282,7 @@ class FeedServiceTest {
 	@Test
 	void sinceAValidCursorReturnsNewerLinesNewestFirst() {
 		FeedLine anchor = mock(FeedLine.class);
-		given(anchor.getOccurredAt()).willReturn(Instant.now());
+		given(anchor.getOccurredAt()).willReturn(NOW);
 		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
 		FeedLine older = line();
 		FeedLine newer = line();
@@ -261,7 +302,7 @@ class FeedServiceTest {
 	@Test
 	void sinceATruncatedResultCarriesACursorToTheNearestNewRow() {
 		FeedLine anchor = mock(FeedLine.class);
-		given(anchor.getOccurredAt()).willReturn(Instant.now());
+		given(anchor.getOccurredAt()).willReturn(NOW);
 		given(lines.findBySequenceNumber(42L)).willReturn(Optional.of(anchor));
 		FeedLine nearest = line();
 		FeedLine furthest = line();
@@ -353,7 +394,7 @@ class FeedServiceTest {
 	}
 
 	private static FeedLine line() {
-		return FeedLine.bottleAdded(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, null, Instant.now());
+		return FeedLine.bottleAdded(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, null, NOW);
 	}
 
 }

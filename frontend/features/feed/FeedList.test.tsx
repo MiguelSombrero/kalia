@@ -687,6 +687,46 @@ describe("FeedList live polling", () => {
   });
 });
 
+describe("FeedList ages", () => {
+  const lineAt = (cursor: string, occurredAt: string) => ({ ...line(cursor, "bob"), occurredAt });
+
+  it("reads a line polled in hours after load at its own age, not as just now", async () => {
+    vi.useFakeTimers({ now: new Date("2026-09-13T12:00:00.000Z") });
+    try {
+      pollFeedAction.mockResolvedValue({
+        content: [lineAt("c2", "2026-09-13T14:50:00.000Z")],
+        nextCursor: undefined,
+        startOver: false,
+      });
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+
+      vi.setSystemTime(new Date("2026-09-13T15:00:00.000Z"));
+      await advancePoll();
+      act(() => screen.getByRole("button", { name: "1 new event" }).click());
+
+      const times = screen.getAllByRole("listitem").map((item) => item.querySelector("time")?.textContent);
+      expect(times).toEqual(["10 minutes ago", "3 hours ago"]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("advances an older line's age on each poll, with nothing new arriving", async () => {
+    vi.useFakeTimers({ now: new Date("2026-09-13T12:00:00.000Z") });
+    try {
+      renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
+      expect(screen.getByText("4 minutes ago")).toBeInTheDocument();
+
+      vi.setSystemTime(new Date("2026-09-13T12:30:00.000Z"));
+      await advancePoll();
+
+      expect(screen.getByText("34 minutes ago")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe("FeedList revealing waiting entries", () => {
   const stubMotionPreference = (reduce: boolean) =>
     vi.stubGlobal(
