@@ -6,9 +6,7 @@ import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.resource.jdbc.spi.StatementInspector;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +40,6 @@ class BeerSearchIndexIT {
 			Sort.by(Sort.Order.asc("name").ignoreCase(), Sort.Order.asc("id")));
 
 	private static final String SORT_INDEX = "beer_lower_name_id_idx";
-
-	private static final AtomicInteger PROBE_COUNT = new AtomicInteger();
 
 	@Autowired
 	private BeerRepository beers;
@@ -109,8 +105,8 @@ class BeerSearchIndexIT {
 		List<String> statements = capturedSql.of(() -> catalog.searchBeers(
 				new BeerSearchQuery("a", null, null, null, null, null), FIRST_PAGE));
 		String count = statements.stream().filter(sql -> sql.startsWith("select count")).findFirst().orElseThrow();
-		String probe = "count_probe_" + PROBE_COUNT.incrementAndGet();
-		jdbc.execute("PREPARE " + probe + " AS " + withPostgresPlaceholders(count));
+		String probe = "count_probe_" + SqlPlans.nextProbeNumber();
+		jdbc.execute("PREPARE " + probe + " AS " + SqlPlans.withPostgresPlaceholders(count));
 		for (int execution = 0; execution < 5; execution++) {
 			jdbc.queryForList("EXECUTE " + probe + "('%a%')");
 		}
@@ -146,31 +142,7 @@ class BeerSearchIndexIT {
 	}
 
 	private String planFor(String sql) {
-		int parameters = (int) sql.chars().filter(character -> character == '?').count();
-		String probe = "index_probe_" + PROBE_COUNT.incrementAndGet();
-		// PREPARE rather than EXPLAIN (GENERIC_PLAN) on the SQL directly: pgjdbc sends
-		// every statement over the extended protocol, where a free $1 is a bind
-		// parameter it has no value for. Postgres infers each parameter's type from
-		// the statement it appears in, and force_generic_plan keeps the NULLs passed
-		// for them out of the plan.
-		jdbc.execute("SET LOCAL plan_cache_mode = force_generic_plan");
-		jdbc.execute("PREPARE " + probe + " AS " + withPostgresPlaceholders(sql));
-		String arguments = String.join(", ", Collections.nCopies(parameters, "NULL"));
-		return String.join("\n",
-				jdbc.queryForList("EXPLAIN EXECUTE " + probe + "(" + arguments + ")", String.class));
-	}
-
-	private static String withPostgresPlaceholders(String sql) {
-		StringBuilder rewritten = new StringBuilder(sql.length());
-		int parameter = 0;
-		for (char character : sql.toCharArray()) {
-			if (character == '?') {
-				rewritten.append('$').append(++parameter);
-			} else {
-				rewritten.append(character);
-			}
-		}
-		return rewritten.toString();
+		return SqlPlans.planFor(jdbc, sql);
 	}
 
 	@TestConfiguration(proxyBeanMethods = false)

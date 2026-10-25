@@ -11,7 +11,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { reduce } from "./wikidata-extract.mjs";
-import { SEED_PATH, convert, foldName, parseSeed, storedAbv, toSql } from "./wikidata-migration.mjs";
+import { SEED_PATH, convert, foldName, parseSeed, sortKey, storedAbv, toSql } from "./wikidata-migration.mjs";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 const readJson = (path) => JSON.parse(readFileSync(resolve(SELF_DIR, path), "utf8"));
@@ -169,10 +169,24 @@ test("a brewery or beer that collides with an unmapped seeded row stops the conv
 test("the SQL escapes quotes and carries provenance on every imported row", () => {
   const sql = toSql(converted);
   assert.match(sql, /'Greater Twin''s Other Beer'/);
-  assert.match(sql, /\('Fixture Brewery', 'NL', 'Alkmaar', 'WIKIDATA', 'Q100'\)/);
+  assert.match(sql, /\('Fixture Brewery', 'fixture brewery', 'NL', 'Alkmaar', 'WIKIDATA', 'Q100'\)/);
   assert.match(sql, /\('Belgium', 'BE'\)\n\) AS v\(country, country_code\)/);
   assert.match(sql, new RegExp(`source = 'WIKIDATA'\\) <> ${converted.breweries.length}\n`));
   assert.match(sql, new RegExp(`source = 'WIKIDATA'\\) <> ${converted.beers.length} THEN`));
+});
+
+test("every brewery's sort key is stored, and V004's rows get theirs before the column is NOT NULL", () => {
+  const sql = toSql(converted);
+  assert.match(sql, /\('Seed Brouwerij', 'seed brouwerij'\)\n\) AS v\(name, name_sort_key\)/);
+  assert.ok(sql.indexOf("AS v(name, name_sort_key)") < sql.indexOf("ALTER COLUMN name_sort_key SET NOT NULL"));
+});
+
+test("the sort key folds case one UTF-16 unit at a time, as String.CASE_INSENSITIVE_ORDER does", () => {
+  assert.equal(sortKey("Brasserie d'Orval"), "brasserie d'orval");
+  assert.equal(sortKey("PÕHJALA Åbro"), "põhjala åbro");
+  assert.equal(sortKey("Straße"), "straße");
+  assert.equal(sortKey("İstanbul"), "istanbul");
+  assert.equal(sortKey("\u{10400}x"), "\u{10400}x");
 });
 
 test("an Untappd ID or review score in the input never reaches the migration", () => {

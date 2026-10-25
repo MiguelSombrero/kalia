@@ -5,6 +5,11 @@
 - **Amended:** 2026-10-24 by [task 18](../tasks/iteration-8/18-catalog-search-served-by-an-index-at-150k.md)
   — the unfiltered page and 1–2-character name queries are within budget at
   150k beers; the repeated figures are at the end of Evidence
+- **Amended:** 2026-10-25 by [task 15](../tasks/iteration-8.5/15-catalog-reads-hold-at-imported-size.md)
+  — the brewery list and brewery search are within budget at 150k beers once
+  [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
+  cuts their page in SQL, and `GET /styles` is measured and within budget; the
+  figures are the last table in Evidence
 
 ## Context
 
@@ -48,10 +53,11 @@ The reads over budget at 150k, and where each one goes instead of a cache:
 - **A deep page.** Its cost is the `OFFSET`, and
   [task 08](../tasks/iteration-8/08-catalog-search-bounded-end-to-end.md)
   already bounds it.
-- **The brewery list.** It loads and sorts every brewery in Java
+- **The brewery list.** It loaded and sorted every brewery in Java
   ([ADR-0045](0045-brewery-list-paginates-in-application.md)). Quality
-  backlog SHOULD-61 already records this. It is still `[needs decision]` and
-  no task owns it yet.
+  backlog SHOULD-61 recorded this, and
+  [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
+  fixed it with a stored sort key and an index.
 
 At the imported size, every read is within budget.
 
@@ -123,9 +129,9 @@ measuring, because it says nothing about growth.
 - Good, because the slow reads are fixed at their cause. A cache would have
   made them fast only on a hit, and left them unmeasured on a miss.
 - Bad, because at 150k beers the catalog's landing page and short searches
-  are over budget until task 18 lands. The brewery list stays over budget
-  until SHOULD-61 is decided. Today's 13.6k is far from that, but
-  nothing but the reopen trigger above watches the size.
+  were over budget until task 18 landed, and the brewery list until ADR-0087.
+  Today's 13.6k is far from that, but nothing but the reopen trigger above
+  watches the size.
 - Neutral, because the measurement is a recorded one-off, not a committed
   benchmark. Refinement rejected a load test as a new dependency.
   `BeerSearchIndexIT` stays the repeatable guard, and it guards plans, not
@@ -242,3 +248,37 @@ server-prepares it, is a serial sort. Its custom plan, knowing the `LIMIT` is
 `/dev/shm` a default Postgres container has. The product owner chose to force
 custom plans only where the generic plan is the problem, the 1–2-character
 name term, rather than raise `shm_size` in every environment.
+
+**Repeated 2026-10-25, with the brewery list cut in SQL.** Same method, with
+the brewery search and `GET /styles` added to the scenarios. Run against the
+branch for [task 15](../tasks/iteration-8.5/15-catalog-reads-hold-at-imported-size.md)
+on top of `dev` at `7168c66`, with `postgres:18.6` as `docker-compose.yml`
+now pins it. The generated catalog held 149,677 beers and 54,054 breweries:
+the generation step's clone gave the 13.6k imported beers ten copies, not the
+exact 150,000 of the earlier runs. The machine had a load average of 4–7 on 10
+cores from other work. No request failed.
+
+| Scenario | 150k, 2026-10-24 | 150k, after ADR-0087 |
+|---|---|---|
+| Brewery list, page 0 | **1112** [872–1847] | 21 [21–34] |
+| Brewery list, page 500 (`OFFSET 10000`) | not measured | 33 [27–34] |
+| Brewery search, 1 character | not measured | 216 [190–223] |
+| Brewery search, 2 characters | not measured | 175 [121–238] |
+| Brewery search, 3+ characters | not measured | 17 [17–23] |
+| `GET /styles` | not measured | 58 [53–58] |
+
+Each search scenario rotated through six to eight terms. Plans at 54k
+breweries, from `EXPLAIN (ANALYZE)` on the statements Hibernate issues:
+
+- **The list page and a 1–2-character search page** walk
+  `brewery_name_sort_key_idx` and stop at 20 rows, 0.04 ms. A search for a term
+  that few names hold, `brasserie`, walks it past 1,595 non-matching rows,
+  0.9 ms.
+- **The count of a 1-character search** is the dearer statement. Under the
+  generic plan pgjdbc settles on it is a bitmap scan of every
+  `brewery_name_trgm_idx` entry, 48 ms; planned for its value it is a
+  sequential scan, 19 ms. The beer search already forces the second for terms
+  with no trigrams. The brewery search does not, because it is within budget as
+  it stands; if the 1–2-character figures drift toward 300 ms, that is the
+  first thing to try.
+- **`GET /styles`** was not changed: 58 ms at 150k is within budget.

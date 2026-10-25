@@ -15,6 +15,10 @@
   because custom plans for every search failed `sort=abv,desc` under load
   ([ADR-0078](0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
   Evidence). The substring contract is unchanged
+- **Amended:** 2026-10-25 by [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
+  — the brewery search is a substring match too: `lower(brewery.name)` `LIKE`
+  is served by `brewery_name_trgm_idx`, a trigram index built as the beer
+  one is
 
 ## Context
 
