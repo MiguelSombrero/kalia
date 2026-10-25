@@ -2,10 +2,12 @@
 # verification gate agents run too. `verify` and `verify-fast` are the one
 # place the check list lives; CLAUDE.md and the skills name the target
 # rather than restating what it runs, so there is exactly one thing to keep
-# in sync with CI.
+# in sync with CI. `verify` runs every CI check but one: the two image scans in
+# vulnerability-scan.yml stay CI-only, since building both images costs
+# minutes per run (ADR-0046).
 
 .PHONY: help up down restart logs ps backend-test backend-verify frontend-test \
-        frontend-build frontend-e2e lint check api-drift keycloak-check verify \
+        frontend-build frontend-e2e lint check api-drift keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes
 
 help: ## Show this help
@@ -83,9 +85,17 @@ keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from ke
 	docker compose up -d --force-recreate --no-deps --wait --wait-timeout 120 keycloak
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 
+# Flags match the manifest scan in vulnerability-scan.yml. Trivy is a local
+# prerequisite (`brew install trivy`); it does not pick the ignore file up
+# on its own, so it is named here as the workflow's `trivyignores` input does.
+trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.xml, as CI does (needs trivy)
+	@command -v trivy >/dev/null || { echo "trivy is not installed — brew install trivy (see README)"; exit 1; }
+	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml frontend/package-lock.json
+	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml backend/pom.xml
+
 verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
-verify: verify-fast frontend-build backend-verify api-drift keycloak-check frontend-e2e ## Every check CI runs, in CI's order (needs Docker)
+verify: verify-fast frontend-build backend-verify api-drift keycloak-check trivy-scan frontend-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 
 install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-push hook
 	@dest="$$(git rev-parse --git-common-dir)/hooks/pre-push"; \

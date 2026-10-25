@@ -1,5 +1,7 @@
 # Update-PR half of ADR-0024 — the vulnerability-scan CI job is the gate;
-# this is what fixes findings before they ever reach it.
+# this is what fixes findings before they ever reach it. The Docker
+# ecosystems keep the tags the Dockerfiles and docker-compose.yml already use
+# rather than pinning digests: Trivy scans the built images.
 version: 2
 updates:
   - package-ecosystem: "maven"
@@ -19,6 +21,22 @@ updates:
           - "react"
           - "react-dom"
   - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/keycloak"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
       interval: "weekly"

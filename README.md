@@ -311,7 +311,8 @@ kalia/
 - **One issue at a time:** each roadmap task is a small, independently
   reviewable change with tests and updated docs.
 - **Checks run locally, not in CI first:** `make verify` runs everything CI
-  runs and `make verify-fast` the ~10 s subset; `make install-hooks` puts the
+  runs but the image vulnerability scans (and needs [Trivy](https://trivy.dev)
+  installed) and `make verify-fast` the ~10 s subset; `make install-hooks` puts the
   latter behind `git push`
   ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
   Nothing invokes an AI agent on your behalf at push time. To hand a failure

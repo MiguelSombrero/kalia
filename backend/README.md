@@ -111,13 +111,15 @@ CI also scans `pom.xml` and the built image for known CVEs and fails on a
 ([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)). A finding
 is fixed in place on whatever branch is open (CLAUDE.md), by bumping the
 flagged dependency to Trivy's named fixed version in `pom.xml` — confirm the
-fix locally before pushing with
-`trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed pom.xml`,
-matching CI's `vulnerability-scan.yml` exactly. An OS-package finding in the
+fix locally before pushing with `make trivy-scan` from the repository root,
+which runs CI's `vulnerability-scan.yml` manifest scan with its exact flags
+(Trivy is a local prerequisite, `brew install trivy`). An OS-package finding in the
 image needs no edit: the runtime stage's `apt-get upgrade` takes Ubuntu's
 fixed package at build time, so rebuild and confirm with
 `docker compose build backend` then
-`trivy image --severity HIGH,CRITICAL --ignore-unfixed <compose project>-backend`.
+`trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml <compose project>-backend`
+from the repository root. The image scans are the one CI check `make verify`
+leaves out.
 
 Notable suites:
 

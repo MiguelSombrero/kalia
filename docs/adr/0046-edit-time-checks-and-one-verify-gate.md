@@ -8,6 +8,9 @@
   [ADR-0076](0076-index-cells-are-synced-from-their-files.md) — the hook
   writes one thing: it syncs index cells after an edit under `docs/adr/` or
   `docs/tasks/`
+- **Amended:** 2026-10-25 by
+  [ADR-0024](0024-dependency-vulnerability-scanning.md) — `make verify` runs
+  the two manifest vulnerability scans and not the image scans
 
 ## Context
 
@@ -77,6 +80,21 @@ What this covers, and what it does not:
   builds the backend from clean, because CI always starts from a fresh
   checkout and an incremental local build can report success against stale
   compiled output — a gate that mirrors CI has to mirror that too.
+
+  > **Amended 2026-10-25.** "Every check CI runs" has one exclusion, now
+  > stated: the two image scans in `vulnerability-scan.yml` stay CI-only,
+  > because building both images costs minutes per run and `make verify` is
+  > already the slow gate. The two manifest scans are in it, as
+  > `make trivy-scan` between the Keycloak check and the E2E suite, and Trivy
+  > becomes a local prerequisite of `make verify`; `make verify-fast` does not
+  > need it. Until then CI was the first to report the scan red, after the
+  > push, on
+  > [#243](https://github.com/MiguelSombrero/kalia/pull/243),
+  > [#306](https://github.com/MiguelSombrero/kalia/pull/306),
+  > [#309](https://github.com/MiguelSombrero/kalia/pull/309),
+  > [#371](https://github.com/MiguelSombrero/kalia/pull/371),
+  > [#373](https://github.com/MiguelSombrero/kalia/pull/373) and
+  > [#388](https://github.com/MiguelSombrero/kalia/pull/388).
 - **A `PostToolUse` hook runs whichever checker covers the edited file**, and
   reports the failure into the agent's context. It never blocks. A checker
   legitimately goes red mid-task — a task file exists before its index row
