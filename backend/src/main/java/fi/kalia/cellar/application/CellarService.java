@@ -6,6 +6,7 @@ import fi.kalia.cellar.domain.Bottle;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
+import fi.kalia.profile.ProfileApi;
 import java.text.Collator;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -34,6 +35,8 @@ public class CellarService {
 
 	private final CatalogApi catalog;
 
+	private final ProfileApi profile;
+
 	private final Clock clock;
 
 	@Transactional(readOnly = true)
@@ -41,10 +44,10 @@ public class CellarService {
 		return joined(entries.findWithBottlesByUserId(userId));
 	}
 
-	// The caller has already been resolved to a public cellar's owner id by
-	// profile (ADR-0050); this only loads it.
+	// One exception for every refusal, so none can be told from another (ADR-0050).
 	@Transactional(readOnly = true)
-	public List<EntryView> readPublicCellar(UUID ownerId) {
+	public List<EntryView> readPublicCellar(String username) {
+		UUID ownerId = profile.publicCellarOwnerId(username).orElseThrow(PublicCellarNotFoundException::new);
 		return joined(entries.findWithBottlesByUserId(ownerId));
 	}
 

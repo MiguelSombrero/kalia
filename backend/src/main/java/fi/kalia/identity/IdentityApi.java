@@ -16,4 +16,9 @@ public class IdentityApi {
 		return currentUser.requireId();
 	}
 
+	/** The caller's {@code preferred_username}; same precondition as {@link #requireCurrentUserId()}. */
+	public String requireCurrentUsername() {
+		return currentUser.requireUsername();
+	}
+
 }

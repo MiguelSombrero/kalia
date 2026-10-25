@@ -133,7 +133,8 @@ Notable suites:
   and the guard that keeps the one resource-server filter chain in `identity`
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) — a
   module bringing its own security configuration, or the chain going missing,
-  fails the build
+  fails the build — and the one that keeps token claims there: a `Jwt`
+  used outside `identity` fails it
 - `ArchitectureRulesRejectViolationsTest` — runs the rules above that no
   production class ever triggers against `src/test/java/archfixture/`, a tree
   that breaks them, and the two that require the filter chain against a
@@ -277,13 +278,20 @@ lives there rather than in this file.
   [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity)
   lists, and `PublicRoutesIT` fails when the two differ; everything else
   needs a bearer token. A controller resolves
-  the caller's id at the web edge — via `IdentityApi.requireCurrentUserId()`
-  outside `identity`, or `CurrentUserService` directly inside it — and passes
-  that id into the application service; a public or anonymous read takes a
-  resolved owner id, or none, the same way. `profile` is the one exception,
-  decoding the token itself rather than depending on `identity`
-  ([ADR-0049](../docs/adr/0049-profile-module-and-public-identity.md))
-  ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)).
+  the caller at the web edge — via `IdentityApi.requireCurrentUserId()` and
+  `requireCurrentUsername()` outside `identity`, or `CurrentUserService`
+  directly inside it — and passes the id into the application service. No
+  other module touches a `Jwt` (`ArchitectureTest.onlyIdentityReadsTokenClaims`),
+  and a token whose claims `identity` cannot map is an
+  `InvalidBearerTokenException`, answered `401` from any route
+  ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
+  [ADR-0049](../docs/adr/0049-profile-module-and-public-identity.md)). A
+  service that returns *another* user's data decides whether it may: a public
+  read takes the owner's username and enforces visibility itself
+  (`CellarService.readPublicCellar`, `FeedService`), so no second controller or
+  client can skip the check
+  ([ADR-0050](../docs/adr/0050-public-cellar-addressing.md),
+  [ADR-0059](../docs/adr/0059-feed-respects-cellar-visibility.md)).
 - Code comments carry only what the repo cannot — full policy in
   [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), which
   loads on its own when you open a file here

@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 class CurrentUserServiceTest {
@@ -35,6 +36,20 @@ class CurrentUserServiceTest {
 		assertThat(user.username()).isEqualTo("testuser");
 		assertThat(user.email()).isEqualTo("testuser@example.com");
 		assertThat(user.name()).isEqualTo("Test User");
+	}
+
+	@Test
+	void requireUsernameReturnsThePreferredUsernameClaim() {
+		authenticateWith(jwt().build());
+
+		assertThat(service.requireUsername()).isEqualTo("testuser");
+	}
+
+	@Test
+	void requireUsernameRejectsTheSameMalformedTokensRequireDoes() {
+		authenticateWith(jwt().subject("not-a-uuid").build());
+
+		assertThatThrownBy(service::requireUsername).isInstanceOf(InvalidBearerTokenException.class);
 	}
 
 	@Test
@@ -78,8 +93,8 @@ class CurrentUserServiceTest {
 		authenticateWith(jwt().subject("not-a-uuid").build());
 
 		assertThatThrownBy(service::require)
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("not-a-uuid");
+				.isInstanceOf(InvalidBearerTokenException.class)
+				.hasMessageContaining("subject");
 	}
 
 	@Test
@@ -94,7 +109,7 @@ class CurrentUserServiceTest {
 		authenticateWith(withoutUsername);
 
 		assertThatThrownBy(service::require)
-				.isInstanceOf(IllegalStateException.class)
+				.isInstanceOf(InvalidBearerTokenException.class)
 				.hasMessageContaining("preferred_username");
 	}
 

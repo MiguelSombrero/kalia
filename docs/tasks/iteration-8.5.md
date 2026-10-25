@@ -27,7 +27,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [04](iteration-8.5/04-no-silent-single-instance-assumptions.md) | The backend assumes one instance only where it says so | done |
 | [05](iteration-8.5/05-brewery-questions-answered-by-the-api.md) | The API answers the add-beer form's questions itself | refined |
 | [06](iteration-8.5/06-generated-client-ready-to-share.md) | The generated client is what a shared package should hold | done |
-| [07](iteration-8.5/07-identity-owns-the-caller.md) | `identity` owns who the caller is, and services own who may read what | refined |
+| [07](iteration-8.5/07-identity-owns-the-caller.md) | `identity` owns who the caller is, and services own who may read what | done |
 | [08](iteration-8.5/08-claude-md-within-its-budget.md) | CLAUDE.md fits its budget again, and says what is true | done |
 | [10](iteration-8.5/10-unauthenticated-edges-throttled.md) | The unauthenticated edges are throttled and bounded | refined |
 | [11](iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md) | One account cannot make an anonymous read arbitrarily expensive | refined |

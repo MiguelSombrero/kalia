@@ -56,6 +56,11 @@ class ArchitectureRulesRejectViolationsTest {
 	}
 
 	@Test
+	void aModuleOtherThanIdentityReadingTokenClaims() {
+		assertRejects(ArchitectureTest.onlyIdentityReadsTokenClaims, "StrayJwtReader");
+	}
+
+	@Test
 	void aRepositoryForAnEntityOwnedViaManyToOne() {
 		assertRejects(ArchitectureTest.ownedEntitiesHaveNoRepositoryOfTheirOwn(FIXTURE),
 				"OwnedChildEntityRepository");

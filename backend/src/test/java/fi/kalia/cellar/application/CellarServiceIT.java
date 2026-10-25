@@ -18,11 +18,16 @@ import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
 import fi.kalia.cellar.domain.InvalidBottleException;
+import fi.kalia.profile.ProfileApi;
+import fi.kalia.profile.application.ProfileService;
+import fi.kalia.profile.domain.Profile;
+import fi.kalia.profile.domain.ProfileRepository;
 import jakarta.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -61,6 +66,9 @@ class CellarServiceIT {
 	private BreweryRepository breweries;
 
 	@Autowired
+	private ProfileRepository profiles;
+
+	@Autowired
 	private TestEntityManager testEntityManager;
 
 	@Autowired
@@ -79,7 +87,7 @@ class CellarServiceIT {
 	@BeforeEach
 	void setUp() {
 		catalog = new CatalogApi(new CatalogService(beers, breweries));
-		service = new CellarService(entries, catalog, CLOCK);
+		service = new CellarService(entries, catalog, new ProfileApi(new ProfileService(profiles)), CLOCK);
 		beerId = beers.findAll().stream().findFirst().map(Beer::getId).orElseThrow();
 	}
 
@@ -210,7 +218,7 @@ class CellarServiceIT {
 		testEntityManager.flush();
 		testEntityManager.clear();
 
-		List<EntryView> cellar = service.readPublicCellar(owner);
+		List<EntryView> cellar = service.readPublicCellar(publicUsernameOf(owner));
 
 		assertThat(cellar).hasSize(1);
 		assertThat(cellar.getFirst().entry().getBottles()).hasSize(2);
@@ -219,7 +227,28 @@ class CellarServiceIT {
 
 	@Test
 	void readPublicCellarIsEmptyForAnOwnerWithNoCellar() {
-		assertThat(service.readPublicCellar(UUID.randomUUID())).isEmpty();
+		assertThat(service.readPublicCellar(publicUsernameOf(UUID.randomUUID()))).isEmpty();
+	}
+
+	// ADR-0050: the three causes must be one exception with one message, so
+	// no controller, present or future, can tell them apart on the wire.
+	@Test
+	void readPublicCellarRefusesAPrivateCellarAnUnknownUsernameAndAWrongSpellingIdentically() {
+		UUID owner = UUID.randomUUID();
+		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
+		String privateName = "private-" + owner;
+		profiles.saveAndFlush(Profile.create(owner, privateName));
+		String publicName = publicUsernameOf(UUID.randomUUID());
+
+		assertThatThrownBy(() -> service.readPublicCellar(privateName))
+				.isInstanceOf(PublicCellarNotFoundException.class)
+				.hasMessage("No public cellar found");
+		assertThatThrownBy(() -> service.readPublicCellar("nobody-" + owner))
+				.isInstanceOf(PublicCellarNotFoundException.class)
+				.hasMessage("No public cellar found");
+		assertThatThrownBy(() -> service.readPublicCellar(publicName.toUpperCase(Locale.ROOT)))
+				.isInstanceOf(PublicCellarNotFoundException.class)
+				.hasMessage("No public cellar found");
 	}
 
 	// ADR-0034: an entry outlives no bottle, so one that slips through empty is
@@ -230,7 +259,7 @@ class CellarServiceIT {
 		entries.saveAndFlush(Entry.create(owner, beerId, CLOCK));
 
 		assertThat(service.listEntries(owner)).isEmpty();
-		assertThat(service.readPublicCellar(owner)).isEmpty();
+		assertThat(service.readPublicCellar(publicUsernameOf(owner))).isEmpty();
 	}
 
 	@Test
@@ -244,7 +273,7 @@ class CellarServiceIT {
 		testEntityManager.clear();
 
 		assertThat(service.listEntries(owner)).extracting(view -> view.beer().id()).containsExactly(beerId);
-		assertThat(service.readPublicCellar(owner)).extracting(view -> view.beer().id()).containsExactly(beerId);
+		assertThat(service.readPublicCellar(publicUsernameOf(owner))).extracting(view -> view.beer().id()).containsExactly(beerId);
 		assertThat(output).contains("Left cellar entry " + orphanId + " out: its beer " + vanishedBeerId);
 	}
 
@@ -266,7 +295,7 @@ class CellarServiceIT {
 
 		assertThat(service.listEntries(owner)).extracting(view -> view.beer().id())
 				.containsExactly(earlier.getId(), later.getId());
-		assertThat(service.readPublicCellar(owner)).extracting(view -> view.beer().id())
+		assertThat(service.readPublicCellar(publicUsernameOf(owner))).extracting(view -> view.beer().id())
 				.containsExactly(earlier.getId(), later.getId());
 	}
 
@@ -357,6 +386,12 @@ class CellarServiceIT {
 		Bottle accepted = service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, tomorrow, null).getFirst();
 
 		assertThat(accepted.getBrewedDate()).isEqualTo(tomorrow);
+	}
+
+	private String publicUsernameOf(UUID owner) {
+		Profile profile = Profile.create(owner, "public-" + owner);
+		profile.changeCellarVisibility(true);
+		return profiles.saveAndFlush(profile).getUsername();
 	}
 
 	private BeerSummary summaryOf(UUID id) {

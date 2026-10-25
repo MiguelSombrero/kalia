@@ -1,5 +1,6 @@
 package fi.kalia.profile.web;
 
+import fi.kalia.identity.IdentityApi;
 import fi.kalia.profile.application.ProfileService;
 import fi.kalia.web.Problem;
 import fi.kalia.web.ValidationProblem;
@@ -10,12 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +35,8 @@ class ProfileController {
 
 	private final ProfileService profile;
 
+	private final IdentityApi identity;
+
 	@GetMapping
 	// Do not remove: matches Spring's default, but its absence would silently
 	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
@@ -48,8 +48,8 @@ class ProfileController {
 					username is never given to a second account, even after the first is deleted: 409 \
 					when the token's username is already held.\
 					""")
-	ProfileDto myProfile(@AuthenticationPrincipal Jwt jwt) {
-		return ProfileDto.from(profile.currentProfile(currentUserId(jwt), currentUsername(jwt)));
+	ProfileDto myProfile() {
+		return ProfileDto.from(profile.currentProfile(identity.requireCurrentUserId(), identity.requireCurrentUsername()));
 	}
 
 	@PatchMapping("/visibility")
@@ -66,24 +66,9 @@ class ProfileController {
 					username is never given to a second account, even after the first is deleted: 409 \
 					when the token's username is already held.\
 					""")
-	ProfileDto changeVisibility(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ChangeVisibilityRequestDto request) {
-		return ProfileDto.from(profile.changeCellarVisibility(currentUserId(jwt), currentUsername(jwt), request.cellarPublic()));
-	}
-
-	// profile depends on no other module (ADR-0049), so it resolves the
-	// caller's id from the token itself rather than through IdentityApi.
-	private static UUID currentUserId(Jwt jwt) {
-		return UUID.fromString(jwt.getSubject());
-	}
-
-	private static String currentUsername(Jwt jwt) {
-		String username = jwt.getClaimAsString("preferred_username");
-		if (username == null) {
-			throw new IllegalStateException(
-					("Access token for subject %s carries no preferred_username claim. The realm's "
-							+ "client is missing the built-in profile scope.").formatted(jwt.getSubject()));
-		}
-		return username;
+	ProfileDto changeVisibility(@Valid @RequestBody ChangeVisibilityRequestDto request) {
+		return ProfileDto.from(profile.changeCellarVisibility(identity.requireCurrentUserId(), identity.requireCurrentUsername(),
+				request.cellarPublic()));
 	}
 
 }

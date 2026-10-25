@@ -26,6 +26,8 @@ import org.springframework.data.repository.Repository;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -132,6 +134,16 @@ class ArchitectureTest {
 			.belongToAnyOf(CurrentUserService.class)
 			.because("CurrentUserService is identity-module-private; other modules resolve "
 					+ "the caller's id through IdentityApi (ADR-0028)")
+			.allowEmptyShould(false);
+
+	@ArchTest
+	static final ArchRule onlyIdentityReadsTokenClaims = noClasses()
+			.that().resideOutsideOfPackage(BASE_PACKAGE + ".identity..")
+			.should().dependOnClassesThat()
+			.belongToAnyOf(Jwt.class, JwtAuthenticationToken.class)
+			.because("""
+					what a token's claims mean is identity's alone; other modules ask \
+					IdentityApi for the caller (ADR-0028, ADR-0049)""")
 			.allowEmptyShould(false);
 
 	@ArchTest
