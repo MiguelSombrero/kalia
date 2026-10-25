@@ -948,6 +948,21 @@ records the latest run.
   - **Scope:** this covers the backend's own reads. The Valkey in this stack
     is the frontend's session store ([§6](#6-authentication-and-identity)),
     not a cache the backend consults.
+- **Single instance, accepted where it is written down.** Nothing is deployed,
+  and the backend assumes one instance in exactly one place:
+  - **Event resubmission** ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)):
+    each start marks every `RESUBMITTED` publication `FAILED`, so a second
+    instance starting would reset the first one's in-flight deliveries and run
+    them concurrently. `feed.line`'s unique `event_id` absorbs the duplicate;
+    nothing else guards it. The exhausted-publication `ERROR` line is also
+    deduplicated per process, so it repeats once per instance.
+  - **Revisit trigger:** the first deployment with more than one backend
+    instance.
+  - **Not an assumption:** the feed cursor's signing key is a configured,
+    shared secret (`FEED_CURSOR_KEY`), so a cursor verifies on any instance
+    and after a restart ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
+    Event publications are rows in PostgreSQL, and the frontend's sessions
+    live in Valkey, not in a process.
 
 ## 9. Architecture decision records
 

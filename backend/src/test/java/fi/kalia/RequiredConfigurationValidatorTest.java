@@ -16,6 +16,15 @@ class RequiredConfigurationValidatorTest {
 	}
 
 	@Test
+	void namesTheFeedCursorKeyWhenItIsTheOnlyOneMissing() {
+		Map<String, String> environment = Map.of("POSTGRES_PASSWORD", "secret");
+
+		assertThatThrownBy(() -> RequiredConfigurationValidator.verify(environment::get))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("FEED_CURSOR_KEY");
+	}
+
+	@Test
 	void rejectsABlankValueRatherThanAcceptingItAsConfigured() {
 		Map<String, String> environment = Map.of("POSTGRES_PASSWORD", "   ");
 
@@ -26,7 +35,7 @@ class RequiredConfigurationValidatorTest {
 
 	@Test
 	void passesWhenEveryRequiredVariableIsSet() {
-		Map<String, String> environment = Map.of("POSTGRES_PASSWORD", "secret");
+		Map<String, String> environment = Map.of("POSTGRES_PASSWORD", "secret", "FEED_CURSOR_KEY", "0123456789abcdef0123456789abcdef");
 
 		assertThatCode(() -> RequiredConfigurationValidator.verify(environment::get))
 				.doesNotThrowAnyException();

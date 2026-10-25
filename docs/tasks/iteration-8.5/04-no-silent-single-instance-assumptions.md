@@ -1,6 +1,6 @@
 # Task 04: The backend assumes one instance only where it says so
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -55,14 +55,14 @@ that remains, with its revisit trigger.
 
 ## Acceptance criteria
 
-- [ ] A cursor issued before a backend restart is accepted after it — an
+- [x] A cursor issued before a backend restart is accepted after it — an
       integration test restarts the context, or builds two codecs from the same
       configuration, and confirms today's code rejects it
-- [ ] A tampered cursor is still rejected with the same 400 — the existing
+- [x] A tampered cursor is still rejected with the same 400 — the existing
       test still passes
-- [ ] ADR-0060 no longer claims a second instance needs nothing extra unless
+- [x] ADR-0060 no longer claims a second instance needs nothing extra unless
       it is true, and §8 lists every remaining single-instance assumption
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

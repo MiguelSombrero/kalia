@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-09-13
+- **Amended:** 2026-10-25 — a second backend instance does not "need nothing
+  extra": the feed cursor's signing key is now configured and shared, and
+  what polling does not remove is recorded in
+  [architecture.md §8](../architecture.md#8-trade-offs-made-explicit)
 
 ## Context
 
@@ -75,8 +79,16 @@ no CSP change.
   [Architecture.md §5](../architecture.md#5-frontend-design)'s route-handler
   inventory therefore still lists exactly two.
 - **The single-instance limitation disappears rather than being accepted.**
-  No instance holds subscriber state under polling, so a second backend
-  instance needs nothing extra the day one exists.
+  No instance holds subscriber state under polling.
+  > **Amended 2026-10-25.** "…so a second backend instance needs nothing
+  > extra the day one exists" was wrong. The cursor a poll round-trips is
+  > signed with a key, and the key was generated per process, so a `since`
+  > poll landing on another instance, or after a restart, was rejected with a
+  > 400 and the page reloaded. The key is now `FEED_CURSOR_KEY`: required, no
+  > default outside the compose dev stack, and identical on every instance
+  > ([backend/README.md](../../backend/README.md#configuration)). What a
+  > second instance would still need beyond this lives in §8's
+  > single-instance entry, not here.
   [Architecture.md §8](../architecture.md#8-trade-offs-made-explicit)'s
   statement that this stack's Valkey is the frontend's session store, not
   backend infrastructure, stands unchanged — nothing here reaches for
@@ -161,7 +173,14 @@ the backlog rather than folded into this decision.
   "since" contract is the same one the first page's pagination already needs.
 - Good, because the single-instance limitation the Context describes as a
   real risk under a stream never has to be accepted or solved: polling holds
-  no subscriber state anywhere.
+  no subscriber state anywhere. (The cursor's signing key was state of a
+  different kind; see the amendment under Decision.)
+- Bad, because every instance and every restart must be given the same
+  `FEED_CURSOR_KEY`, and rotating it invalidates the cursors clients hold.
+  Accepted: a rotated key costs one feed reload per open page, and storing the
+  key in the database or dropping the signature was rejected at refinement —
+  the first puts a secret beside the data it protects, the second reopens the
+  guessable-sequence-number problem the signature closes.
 - Bad, because latency is bounded by the poll interval, not by how fast an
   event can be pushed — a visitor can wait up to the target 60 seconds to see
   something that already happened. Acceptable only because

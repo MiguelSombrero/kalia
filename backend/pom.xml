@@ -228,6 +228,7 @@
 					     Testcontainers' @ServiceConnection replaces it wholesale. -->
 					<systemPropertyVariables>
 						<logging.level.fi.kalia>WARN</logging.level.fi.kalia>
+						<kalia.feed.cursor-key>integration-test-cursor-key-not-a-credential</kalia.feed.cursor-key>
 						<springdoc.api-docs.enabled>true</springdoc.api-docs.enabled>
 						<springdoc.swagger-ui.enabled>true</springdoc.swagger-ui.enabled>
 					</systemPropertyVariables>

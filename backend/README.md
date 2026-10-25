@@ -20,7 +20,7 @@ starts without it.
 ```bash
 docker compose up -d postgres keycloak keycloak-config   # from repo root
 cd backend
-POSTGRES_PASSWORD=kalia SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
+POSTGRES_PASSWORD=kalia FEED_CURSOR_KEY=any-local-key-of-at-least-32-bytes SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
 curl localhost:8080/actuator/health
 curl localhost:8080/api/v1/beers?query=westvleteren
 ```
@@ -42,6 +42,7 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 | Variable | Default | Notes |
 |---|---|---|
 | `POSTGRES_PASSWORD` | **none — required** | Startup aborts with the variable named if unset |
+| `FEED_CURSOR_KEY` | **none — required** | HMAC key signing feed cursors, at least 32 bytes (`openssl rand -base64 32`). Every instance must hold the same value and it must survive restarts, or a cursor issued before is rejected with a 400 ([ADR-0060](../docs/adr/0060-feed-delivery-is-polling.md)). Rotating it invalidates cursors in flight, which the client recovers from by reloading the feed. Compose supplies a dev-only value |
 | `DATABASE_JDBC_URL` | `jdbc:postgresql://localhost:5432/kalia` | localhost, so a misconfigured deploy fails loudly rather than reaching a real database |
 | `DATABASE_USERNAME` | `kalia` | |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
