@@ -1,6 +1,6 @@
 # Task 21: Node 26 replaces Node 24 everywhere it is pinned
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -31,10 +31,11 @@ proposal returns weekly.
 ## Scope
 
 Node 26 is the one Node version the frontend image, the compose helper image,
-CI and the documentation name. The frontend builds, passes its tests and runs
-its end-to-end suite on it, and both images still scan clean. The decision to
-stay on Java 25, and why, is recorded where the next reader of a Dependabot
-proposal will find it.
+CI, a contributor's machine and the documentation name. The frontend builds,
+passes its tests and runs its end-to-end suite on it, and both images still
+scan clean. The decision to stay on Java 25, and why, is an ADR, and Dependabot
+stops proposing a new major of the Node and Java base images, so neither
+proposal returns weekly.
 
 ## Non-goals
 
@@ -62,44 +63,50 @@ proposal will find it.
 - `package-lock.json` changes only where the Node move requires it; a local npm
   that differs from the one that produced the lockfile adds normalization
   noise (`frontend/README.md`).
+- **The move lands now, on `node:26-alpine`.** The tag exists, Next.js
+  requires only Node 20.9 or newer, and waiting for the 2026-10-28 LTS date
+  would change only a label while CI and the images disagreed.
+- **A `.node-version` file at the repository root holds the Node major, and the
+  five `setup-node` steps read it with `node-version-file`.** CI's pins become
+  one, and nvm, fnm and asdf pick it up locally. There is no `engines` field.
+  The two Docker tags stay where Dependabot edits them; nothing checks the
+  three against each other, so the acceptance grep is the only guard.
+- **The mobile toolchain's Node range is not a gate.** It is a Non-goal chosen
+  in [iteration 9](../iteration-9.md); if it needs another Node, that
+  iteration raises its own task.
+- **Staying on Java 25 is a new ADR** ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md):
+  Java 26 was credibly proposed and rejected, it binds work now, and
+  Dependabot keeps raising it). The Lombok note in `backend/README.md` stays
+  the how.
+- **Dependabot ignores `version-update:semver-major` for the `node` and
+  `maven` images only** — not the other Docker or compose images, whose majors
+  are wanted. Whether it parses `3.9-eclipse-temurin-25-noble` as a major is
+  confirmed against the next Dependabot run, not assumed; the rule and its
+  reason are commented in `.github/dependabot.yml`. A wanted Node or Java major
+  is then a manual change, which the ADR says.
 
 ## Open questions
 
-- **When?** Now, on the `node:26-alpine` tag that already exists, or after the
-  2026-10-28 LTS date? The work is identical; only the label differs.
-- **What does the mobile toolchain need?** If it is React Native or Expo, its
-  supported Node range should be checked against 26 before this lands, because
-  it may pick the version for us.
-- **Should local Node be pinned?** The repository has no `engines` field,
-  `.nvmrc` or `.node-version`, so a contributor's Node drifts from CI's
-  silently. Adding one is a small addition here; leaving it is the status quo.
-- **Should a check keep the pins in step?** Node is named in about nine
-  places and Dependabot edits two. A checker in `make check` that fails when
-  they disagree would turn this task's manual grep into a mechanism
-  ([ADR-0039](../../adr/0039-mechanisms-for-recurring-rule-violations.md)), at
-  the cost of one more script to maintain.
-- **Does staying on Java 25 get an ADR?** A decision earns one when a credible
-  alternative was rejected, it binds work now, and a later task will need the
-  reasoning ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)); it
-  fits all three, since Dependabot keeps proposing the alternative. The
-  alternative home is this task's Notes.
-- **Should Dependabot stop proposing the other versions?** An `ignore` rule for
-  semver-major on the Docker entries keeps it from proposing Java 26 or 27
-  and, after this task, Node 27 (a non-LTS line). The cost is that a wanted
-  major then needs a manual change.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] No file outside historical records names Node 24 as the current runtime
       — verified by `git grep -n -E "node:24|node-version: '24'|Node 24"`
-      returning only the dated evidence lines in ADRs and task files
+      returning only the dated evidence lines in ADRs and task files, and by
+      `.node-version`, `frontend/Dockerfile` and `docker-compose.yml` naming
+      the same major
 - [ ] The frontend's unit, build and e2e tests pass on Node 26: `make verify`
-      is green and the CI jobs print `v26` for `node --version` — verified
-      from the pull request's CI log
+      is green and the CI jobs, which read `.node-version`, print `v26` for
+      `node --version` — verified from the pull request's CI log
 - [ ] Both images build on Node 26 and the CI vulnerability scan passes with no
       waiver added to `.trivyignore.yaml`
-- [ ] The Java 25 decision is recorded where the open questions settle, and
-      Dependabot's Java 26 proposal (#402) is closed with a pointer to it
+- [ ] An ADR records why Java stays on 25, linked from `backend/README.md`'s
+      JDK note, and Dependabot's Java 26 proposal (#402) is closed with a
+      pointer to it
+- [ ] `.github/dependabot.yml` ignores semver-major for the `node` and `maven`
+      images with the reason commented, and the next Dependabot run proposes
+      neither Node 27 nor Java 26 — verified from that run
 
 ## Notes
 
