@@ -21,7 +21,7 @@ lifted is fixed, or its decision is recorded where its task says.
 |---|---|---|
 | [09](iteration-8.5/09-sign-up-limiter-cannot-lock-forever.md) | The sign-up limiter can never lock sign-up for good | done |
 | [19](iteration-8.5/19-docs-match-iteration-8.md) | The documentation says what iteration 8 built, once | done |
-| [01](iteration-8.5/01-api-errors-complete-and-typed.md) | Every API error is documented and typed as it is sent | refined |
+| [01](iteration-8.5/01-api-errors-complete-and-typed.md) | Every API error is documented and typed as it is sent | done |
 | [02](iteration-8.5/02-api-contract-pruned-before-it-freezes.md) | The API sheds what nobody uses before mobile freezes it | refined |
 | [03](iteration-8.5/03-concurrent-bottle-writes-lose-nothing.md) | Two writes to one cellar entry never silently lose a bottle | done |
 | [04](iteration-8.5/04-no-silent-single-instance-assumptions.md) | The backend assumes one instance only where it says so | done |
@@ -40,6 +40,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | refined |
 | [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | refined |
 | [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | done |
+| [22](iteration-8.5/22-each-worktree-runs-its-own-stack.md) | Each worktree can run its own stack at the same time as another | needs-refinement |
 
 Numbered 8.5 for the reason [iteration 5.5](iteration-5.5.md) and
 [iteration 7.5](iteration-7.5.md) were: iteration 9 is already drafted, and

@@ -1,6 +1,6 @@
 # Task 01: Every API error is documented and typed as it is sent
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -82,23 +82,23 @@ could reach the wire through it.
 
 ## Acceptance criteria
 
-- [ ] An unauthenticated request to a protected route answers 401 with a
+- [x] An unauthenticated request to a protected route answers 401 with a
       `problem+json` body and keeps its `WWW-Authenticate` header — pinned by
       an integration test asserting both
-- [ ] The generated client types `errors`, `existingBeerId` and
+- [x] The generated client types `errors`, `existingBeerId` and
       `existingBreweryId` where they arrive, and `features/catalog/api.ts` reads
       them without hand-parsing — `npm test` covers the duplicate-beer and
       validation paths
-- [ ] A catalog refusal and a Bean Validation failure produce the same
+- [x] A catalog refusal and a Bean Validation failure produce the same
       field-error shape — one integration test asserts both against one type
-- [ ] Every handler in every controller documents its response codes, and a
+- [x] Every handler in every controller documents its response codes, and a
       test over `/v3/api-docs` fails when an operation lists no error response
-- [ ] `HttpBoundaryTest` covers advice `@ExceptionHandler` methods, and fails
+- [x] `HttpBoundaryTest` covers advice `@ExceptionHandler` methods, and fails
       against a committed `archfixture` whose declared error type carries an
       entity — `HttpBoundaryRulesRejectViolationsTest`
-- [ ] The duplicate-brewery `409` carries the brewery's id, name and country
+- [x] The duplicate-brewery `409` carries the brewery's id, name and country
       in its declared schema — an integration test
-- [ ] `make verify` is green, including `api-client-drift`
+- [x] `make verify` is green, including `api-client-drift`
 
 ## Notes
 

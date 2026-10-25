@@ -47,7 +47,8 @@ public class ContributionService {
 			throw new UnknownCountryException();
 		}
 		breweries.findIdBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existingId -> {
-			throw new DuplicateBreweryException(existingId);
+			Brewery existing = breweries.findById(existingId).orElseThrow();
+			throw new DuplicateBreweryException(existingId, existing.getName(), existing.getCountryCode());
 		});
 		return breweries.saveAndFlush(Brewery.addedBy(contributorId, added.name(), added.countryCode(), added.city()));
 	}

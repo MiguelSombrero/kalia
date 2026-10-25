@@ -109,17 +109,6 @@ Engineering work:
   `frontend/lib/logger.ts` call at this one site, with no metrics or tracing
   to count or alert on it, would still leave a Keycloak outage effectively
   invisible. Belongs with the structured-logs/metrics/tracing item above.
-- **401 responses carry no body**, unlike every other error in the API, which
-  is RFC 9457 problem+json (`docs/architecture.md` §4,
-  [ADR-0014](../adr/0014-shared-exception-handling.md)). Spring Security's
-  `BearerTokenAuthenticationEntryPoint` answers with headers only — found
-  while verifying [ADR-0028](../adr/0028-resource-server-and-current-user.md).
-  Not urgent: the frontend already handles a bodyless error response. **The
-  trap when fixing it:** that entry point sets the `WWW-Authenticate` header
-  RFC 9110 requires on a 401, and a naive `ProblemDetail` replacement carries
-  no headers and would silently drop it — the identical defect ADR-0014
-  records for the 405 `Allow` header. Any fix needs a test pinning both the
-  body and the header.
 - **A duplicate brewery is named from a search, not by its id.** The add-beer
   form's `409` for a brewery carries only `existingBreweryId`, and the API has
   no read of one brewery, so `addBeerAction` (`frontend/features/catalog/actions.ts`)

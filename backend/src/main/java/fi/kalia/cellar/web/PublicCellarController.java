@@ -1,6 +1,8 @@
 package fi.kalia.cellar.web;
 
 import fi.kalia.cellar.application.CellarService;
+import fi.kalia.web.Problem;
+import fi.kalia.web.ValidationProblem;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,7 +13,6 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,10 +45,10 @@ class PublicCellarController {
 					""")
 	@ApiResponse(responseCode = "400", description = "The username is longer than any username can be",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-					schema = @Schema(implementation = ProblemDetail.class)))
+					schema = @Schema(implementation = ValidationProblem.class)))
 	@ApiResponse(responseCode = "404", description = "No public cellar for this username",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-					schema = @Schema(implementation = ProblemDetail.class)))
+					schema = @Schema(implementation = Problem.class)))
 	PublicCellarDto read(
 			@Parameter(description = "The owner's username") @PathVariable @Size(max = MAX_USERNAME_LENGTH) String username) {
 		return PublicCellarDto.of(username, cellar.readPublicCellar(username));

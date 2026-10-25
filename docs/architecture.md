@@ -109,7 +109,8 @@ Key properties:
 
 Base package `fi.kalia`, one Spring Modulith module per subdomain — with
 one sanctioned exception: `fi.kalia.web` holds shared, module-neutral
-exception-handling advice with no subdomain of its own
+exception-handling advice and the error types it answers with, with no
+subdomain of its own, which every module may depend on
 ([ADR-0014](adr/0014-shared-exception-handling.md)). The base package
 itself holds only application-wide wiring that belongs to no module: the
 entry point, its required-configuration check, event publication
@@ -488,11 +489,16 @@ Conventions:
   are listed once, in [§6](#6-authentication-and-identity). A path whose
   user is implied by the credential is top-level (`/me`, `/cellar`), never
   `/users/{id}/…`.
-- Errors: RFC 9457 `application/problem+json` via Spring's
-  `ProblemDetail`; validation errors list field violations. `detail` only
-  ever carries messages from exception types designed as API responses;
-  unexpected exceptions return message-less problems and are logged
-  (see backend/README.md error-handling convention).
+- Errors: RFC 9457 `application/problem+json`, every one of them — a `401` or
+  `403` from the filter chain included, which keeps its `WWW-Authenticate`
+  challenge. An error with fields of its own (a validation `400`'s `errors`, a
+  duplicate's existing ids) is a declared type whose members sit at the top
+  level of the body and in the OpenAPI spec, so a generated client types them;
+  every operation documents its error codes. `detail` only ever carries
+  messages from exception types designed as API responses; unexpected
+  exceptions return message-less problems and are logged
+  ([ADR-0014](adr/0014-shared-exception-handling.md); see backend/README.md
+  error-handling convention).
 - DTOs at the API boundary — JPA entities never serialize directly.
 - OpenAPI spec generated with springdoc (`/v3/api-docs`, Swagger UI at
   `/swagger-ui/index.html`, reachable at `localhost:8080` on the dev
@@ -853,8 +859,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | The `boundaries/dependencies` policies | Each re-run by `frontend/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `frontend/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | The rules among those that no production class triggers | Re-run against `backend/src/test/java/archfixture/` (`ArchitectureRulesRejectViolationsTest`) | A rule no production class triggers passes whether or not its condition is right, so those rules — `noClasses()` rules and the `classes()` rules every production class merely satisfies — and only those are also run against a codebase that breaks them |
-| Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly") |
-| `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | Neither rule has a production violator either, so the same no-violator-passes-vacuously risk applies and both get the same fixture treatment |
+| Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly"). An advice `@ExceptionHandler` may not answer with a body type that reaches a JPA entity through its fields, and an advice may not call `ProblemDetail.setProperty` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
+| `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | No rule has a production violator either, so the same no-violator-passes-vacuously risk applies and each gets the same fixture treatment |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images; `make verify` runs the two manifest scans, the image scans are CI-only | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available, waivers expire in `.trivyignore.yaml`; Dependabot opens the fix PRs, Docker images included ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`frontend/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`frontend/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |

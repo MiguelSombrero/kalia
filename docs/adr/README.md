@@ -130,7 +130,8 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0013](0013-logging-conventions.md) — SLF4J via `@Slf4j`, parameterized
   calls, and what each level means.
 - [ADR-0014](0014-shared-exception-handling.md) — one shared advice handling
-  only the two cases Spring Boot reports without field-level detail.
+  only the two cases Spring Boot reports without field-level detail, and every
+  error the API sends is a declared type.
 - [ADR-0036](0036-pre-deployment-migration-edits.md) — before Kalia is
   deployed anywhere, an applied Flyway migration may be edited directly
   rather than reversed forward.

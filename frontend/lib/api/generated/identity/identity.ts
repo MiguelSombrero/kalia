@@ -20,7 +20,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  CurrentUserDto
+  CurrentUserDto,
+  Problem
 } from '../models';
 
 import { kaliaFetch } from '../../mutator';
@@ -51,14 +52,19 @@ export type meResponse200 = {
 }
 
 export type meResponse401 = {
-  data: void
+  data: Problem
   status: 401
+}
+
+export type meResponse500 = {
+  data: Problem
+  status: 500
 }
 
 export type meResponseSuccess = (meResponse200) & {
   headers: Headers;
 };
-export type meResponseError = (meResponse401) & {
+export type meResponseError = (meResponse401 | meResponse500) & {
   headers: Headers;
 };
 
@@ -98,7 +104,7 @@ export const getMeQueryKey = () => {
     }
 
 
-export const getMeQueryOptions = <TData = Awaited<ReturnType<typeof me>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof me>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+export const getMeQueryOptions = <TData = Awaited<ReturnType<typeof me>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof me>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -117,10 +123,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type MeQueryResult = NonNullable<Awaited<ReturnType<typeof me>>>
-export type MeQueryError = void
+export type MeQueryError = Problem
 
 
-export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
+export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = Problem>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof me>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof me>>,
@@ -130,7 +136,7 @@ export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
+export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof me>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof me>>,
@@ -140,7 +146,7 @@ export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
       >, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
+export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof me>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -148,7 +154,7 @@ export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
  * @summary Get the current user
  */
 
-export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = void>(
+export function useMe<TData = Awaited<ReturnType<typeof me>>, TError = Problem>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof me>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

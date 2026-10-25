@@ -7,6 +7,8 @@ import fi.kalia.catalog.application.DuplicateBreweryException;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
 import fi.kalia.catalog.application.UnknownCountryException;
 import fi.kalia.catalog.application.UnknownStyleException;
+import fi.kalia.web.FieldErrorDto;
+import fi.kalia.web.ValidationProblem;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -28,40 +30,33 @@ class CatalogExceptionHandler {
 	}
 
 	@ExceptionHandler(DuplicateBeerException.class)
-	ProblemDetail duplicateBeer(DuplicateBeerException e) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
-		problem.setProperty("existingBeerId", e.getExistingBeerId());
-		return problem;
+	DuplicateBeerProblem duplicateBeer(DuplicateBeerException e) {
+		return new DuplicateBeerProblem(e.getMessage(), e.getExistingBeerId());
 	}
 
 	@ExceptionHandler(DuplicateBreweryException.class)
-	ProblemDetail duplicateBrewery(DuplicateBreweryException e) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
-		problem.setProperty("existingBreweryId", e.getExistingBreweryId());
-		return problem;
+	DuplicateBreweryProblem duplicateBrewery(DuplicateBreweryException e) {
+		return new DuplicateBreweryProblem(e.getMessage(), e.getExistingBreweryId(), e.getExistingBreweryName(),
+				e.getExistingBreweryCountryCode());
 	}
 
 	@ExceptionHandler(UnknownStyleException.class)
-	ProblemDetail unknownStyle(UnknownStyleException e) {
+	ValidationProblem unknownStyle(UnknownStyleException e) {
 		return validationFailed("style", e.getMessage());
 	}
 
 	@ExceptionHandler(UnknownCountryException.class)
-	ProblemDetail unknownCountry(UnknownCountryException e) {
+	ValidationProblem unknownCountry(UnknownCountryException e) {
 		return validationFailed("newBrewery.countryCode", e.getMessage());
 	}
 
 	@ExceptionHandler(BreweryChoiceException.class)
-	ProblemDetail breweryChoice(BreweryChoiceException e) {
+	ValidationProblem breweryChoice(BreweryChoiceException e) {
 		return validationFailed("breweryId", e.getMessage());
 	}
 
-	// The shape GlobalExceptionHandler gives a Bean Validation failure, so a
-	// client reads a field the catalog refuses the same way as a malformed one.
-	private static ProblemDetail validationFailed(String field, String message) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
-		problem.setProperty("errors", List.of(new FieldViolationDto(field, message)));
-		return problem;
+	private static ValidationProblem validationFailed(String field, String message) {
+		return new ValidationProblem(List.of(new FieldErrorDto(field, message)));
 	}
 
 }
