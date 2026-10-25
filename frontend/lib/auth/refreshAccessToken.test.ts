@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { logger } from "@/lib/logger";
+import { metrics } from "@/lib/metrics/metrics";
 import { refreshAccessToken } from "./refreshAccessToken";
+
+vi.mock("@/lib/logger", () => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+/** The failure counter's samples, as `{labels, value}` pairs. */
+const failureCounts = async () =>
+  (await metrics.tokenRefreshFailures.get()).values.map(({ labels, value }) => ({ labels, value }));
 
 const tokenResponse = (body: Record<string, unknown>, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -26,6 +36,8 @@ describe("refreshAccessToken", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+    vi.clearAllMocks();
+    metrics.tokenRefreshFailures.reset();
   });
 
   it("exchanges the refresh token for a fresh set", async () => {
@@ -116,5 +128,85 @@ describe("refreshAccessToken", () => {
 
     await expect(refreshAccessToken("old-refresh")).resolves.toEqual({ status: "unavailable" });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+  describe("when the refresh does not yield a token", () => {
+    it("logs a rejected grant at WARN and counts it", async () => {
+      stubFetch(tokenResponse({ error: "invalid_grant" }, 400));
+
+      await refreshAccessToken("dead-refresh");
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith("Token refresh failed", {
+        outcome: "rejected",
+        reason: "invalid_grant",
+        status: 400,
+      });
+      expect(await failureCounts()).toEqual([
+        { labels: { outcome: "rejected", reason: "invalid_grant" }, value: 1 },
+      ]);
+    });
+
+    it("logs an unreachable Keycloak at WARN and counts it", async () => {
+      const unreachable = new TypeError("fetch failed");
+      stubFetch(unreachable);
+
+      await refreshAccessToken("old-refresh");
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith("Token refresh failed", {
+        outcome: "unavailable",
+        reason: "network",
+        error: unreachable,
+      });
+      expect(await failureCounts()).toEqual([
+        { labels: { outcome: "unavailable", reason: "network" }, value: 1 },
+      ]);
+    });
+
+    it.each([
+      ["a server error", () => new Response("upstream exploded", { status: 502 }), "http_error"],
+      ["a client-configuration error", () => tokenResponse({ error: "invalid_client" }, 401), "http_error"],
+      ["a 200 that is not a token response", () => tokenResponse({ access_token: "x" }), "malformed_response"],
+      ["a 200 that is not JSON", () => new Response("<html>", { status: 200 }), "unreadable_response"],
+    ])("logs %s at WARN and counts it as unavailable", async (_, response, reason) => {
+      stubFetch(response());
+
+      await refreshAccessToken("old-refresh");
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
+        "Token refresh failed",
+        expect.objectContaining({ outcome: "unavailable", reason }),
+      );
+      expect(await failureCounts()).toEqual([
+        { labels: { outcome: "unavailable", reason }, value: 1 },
+      ]);
+    });
+
+    it("logs a missing Keycloak client configuration, which would otherwise look like anonymous browsing", async () => {
+      vi.stubEnv("AUTH_KEYCLOAK_SECRET", "");
+      stubFetch(tokenResponse({}));
+
+      await refreshAccessToken("old-refresh");
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith("Token refresh failed", {
+        outcome: "unavailable",
+        reason: "not_configured",
+      });
+    });
+
+    it("never puts a token in the log line", async () => {
+      stubFetch(tokenResponse({ error: "invalid_grant" }, 400));
+
+      await refreshAccessToken("secret-refresh-token");
+
+      expect(JSON.stringify(vi.mocked(logger.warn).mock.calls)).not.toContain("secret-refresh-token");
+    });
+  });
+
+  it("neither logs nor counts a successful refresh", async () => {
+    stubFetch(tokenResponse({ access_token: "new-access", expires_in: 300 }));
+
+    await refreshAccessToken("old-refresh");
+
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(await failureCounts()).toEqual([]);
   });
 });
