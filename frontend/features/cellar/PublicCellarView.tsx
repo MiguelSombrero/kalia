@@ -8,26 +8,25 @@ import type { Locale } from "@/i18n/settings";
 import { catalogHref, ownCellarHref } from "@/lib/routes";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
+import { CellarPagination } from "./CellarPagination";
 import { cellarHead } from "./layout";
-import type { CellarBeer } from "./types";
+import type { PublicCellar } from "./types";
 
 /** A public cellar: the owner's page without its controls (ADR-0070). */
 export const PublicCellarView = async ({
   locale,
-  username,
-  beers,
+  cellar,
   isOwner,
 }: {
   locale: Locale;
-  username: string;
-  beers: CellarBeer[];
+  cellar: PublicCellar;
   isOwner: boolean;
 }) => {
   const { t } = await getTranslation(locale);
-  const lastAdded = beers
-    .flatMap((beer) => beer.bottles.map((bottle) => bottle.createdAt))
-    .sort()
-    .at(-1);
+  const { username, beers } = cellar;
+  // Paged, or a beer cut to its oldest bottles: what the page lists is not the cellar's totals.
+  const partial = cellar.totalPages > 1 || beers.some((beer) => beer.unlistedBottles !== undefined);
+  const pagination = await CellarPagination({ locale, username, page: cellar.page, totalPages: cellar.totalPages });
 
   return (
     <>
@@ -43,14 +42,22 @@ export const PublicCellarView = async ({
         <PersonSlot username={username} size="md" />
         <div className={cellarHead}>
           <PageTitle>{t("cellar.public.heading", { username })}</PageTitle>
-          {beers.length > 0 && <CellarCounts beers={beers} lastAdded={lastAdded} locale={locale} />}
+          {beers.length > 0 && (
+            <CellarCounts
+              beers={beers}
+              lastAdded={cellar.lastBottleAddedAt}
+              wholeCellar={partial ? { beers: cellar.totalBeers, bottles: cellar.totalBottles } : undefined}
+              locale={locale}
+            />
+          )}
         </div>
       </div>
       {beers.length > 0 ? (
-        <CellarBeerList locale={locale} beers={beers} owner={false} />
+        <CellarBeerList locale={locale} beers={beers} owner={false} sortable={cellar.totalPages <= 1} />
       ) : (
         <EmptyState title={t("cellar.public.empty.title")} headingLevel={2} hint={t("cellar.public.empty.hint")} />
       )}
+      {pagination}
       {!isOwner && (
         <section className="flex flex-col gap-3 border-t border-border pt-5">
           <p className="font-semibold text-foreground">{t("cellar.public.about")}</p>

@@ -45,6 +45,7 @@ const toCellarBeer = (entry: EntryDto | PublicCellarEntryDto): CellarBeer => ({
   style: entry.beer.style,
   abv: entry.beer.abv,
   bottles: inVintageOrder(entry.bottles),
+  ...(entry.quantity > entry.bottles.length && { unlistedBottles: entry.quantity - entry.bottles.length }),
 });
 
 // 404 — for an unknown username, a missing profile or a cellar that is not
@@ -52,8 +53,8 @@ const toCellarBeer = (entry: EntryDto | PublicCellarEntryDto): CellarBeer => ({
 // ADR-0050): the caller renders the ordinary not-found page for it. So is 400,
 // a username longer than any account can have, and a username kaliaFetch
 // refuses to put in a path.
-export const getPublicCellar = async (username: string): Promise<PublicCellar | null> => {
-  const response = await generatedReadPublicCellar(username).catch((error: unknown) => {
+export const getPublicCellar = async (username: string, page = 0): Promise<PublicCellar | null> => {
+  const response = await generatedReadPublicCellar(username, page > 0 ? { page } : undefined).catch((error: unknown) => {
     if (isApiError(error) && error.kind === "refused") {
       return null;
     }
@@ -66,7 +67,8 @@ export const getPublicCellar = async (username: string): Promise<PublicCellar | 
   // generated type is a 200|400|404 union and a literal check would narrow it away.
   const status = Number(response.status);
   if (response.status === 200) {
-    return { username: response.data.username, beers: response.data.entries.map(toCellarBeer) };
+    const { entries, ...rest } = response.data;
+    return { ...rest, beers: entries.map(toCellarBeer) };
   }
   if (status === 404 || status === 400) {
     return null;

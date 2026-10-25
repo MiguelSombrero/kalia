@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams()
 vi.mock("./actions", () => ({}));
 
 import { PublicCellarView } from "./PublicCellarView";
-import type { CellarBeer } from "./types";
+import type { CellarBeer, PublicCellar } from "./types";
 
 const westvleteren: CellarBeer = {
   entryId: "e1",
@@ -38,17 +38,31 @@ const withQueryClient = (node: ReactNode) => (
   <QueryClientProvider client={new QueryClient()}>{node}</QueryClientProvider>
 );
 
-const renderView = async (props: { locale?: "en" | "fi"; beers?: CellarBeer[]; isOwner?: boolean }) =>
-  render(
+const renderView = async (props: {
+  locale?: "en" | "fi";
+  beers?: CellarBeer[];
+  isOwner?: boolean;
+  cellar?: Partial<PublicCellar>;
+}) => {
+  const beers = props.beers ?? [westvleteren];
+  return render(
     withQueryClient(
       await PublicCellarView({
         locale: props.locale ?? "en",
-        username: "olutharrastaja_88",
-        beers: props.beers ?? [westvleteren],
+        cellar: {
+          username: "olutharrastaja_88",
+          beers,
+          page: 0,
+          totalPages: 1,
+          totalBeers: beers.length,
+          totalBottles: beers.flatMap((beer) => beer.bottles).length,
+          ...props.cellar,
+        },
         isOwner: props.isOwner ?? false,
       }),
     ),
   );
+};
 
 describe("PublicCellarView", () => {
   it("shows a stranger whose cellar it is, its beers, and what Kalia is, with no a11y violations", async () => {
@@ -97,5 +111,70 @@ describe("PublicCellarView", () => {
     await renderView({});
 
     expect(screen.queryByText(/€|EUR|1250/)).not.toBeInTheDocument();
+  });
+
+  describe("a cellar of more than one page", () => {
+    const paged = { page: 1, totalPages: 3, totalBeers: 55, totalBottles: 130 };
+
+    it("counts the whole cellar, not the page, and leaves out the past-best-before count", async () => {
+      await renderView({ cellar: paged });
+
+      expect(screen.getByText(/cellar.count.beers {"count":55} · cellar.entry.bottleCount {"count":130}/)).toBeInTheDocument();
+      expect(screen.queryByText(/cellar.pastBestBefore/)).not.toBeInTheDocument();
+    });
+
+    it("links to the neighbouring pages with plain anchors", async () => {
+      await renderView({ cellar: paged });
+
+      expect(screen.getByRole("navigation", { name: "Pages of this cellar" })).toBeInTheDocument();
+      expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "← Previous" })).toHaveAttribute("href", "/en/cellars/olutharrastaja_88");
+      expect(screen.getByRole("link", { name: "Next →" })).toHaveAttribute(
+        "href",
+        "/en/cellars/olutharrastaja_88?page=2",
+      );
+    });
+
+    it("offers no Sort by, which would order only this page", async () => {
+      await renderView({ cellar: paged });
+
+      expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    });
+
+    it("offers no Next on the last page and no Previous on the first", async () => {
+      const last = await renderView({ cellar: { ...paged, page: 2 } });
+      expect(screen.queryByRole("link", { name: "Next →" })).not.toBeInTheDocument();
+      last.unmount();
+
+      await renderView({ cellar: { ...paged, page: 0 } });
+      expect(screen.queryByRole("link", { name: "← Previous" })).not.toBeInTheDocument();
+    });
+
+    it("never links past the last page the backend serves", async () => {
+      await renderView({ cellar: { page: 199, totalPages: 300, totalBeers: 6000, totalBottles: 6000 } });
+
+      expect(screen.getByText("Page 200 of 200")).toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: "Next →" })).not.toBeInTheDocument();
+    });
+  });
+
+  it("counts a cellar that fits one page from what it lists", async () => {
+    await renderView({ cellar: { totalBeers: 9, totalBottles: 9 } });
+
+    expect(screen.getByText(/cellar.count.beers {"count":1} · cellar.entry.bottleCount {"count":1}/)).toBeInTheDocument();
+  });
+
+  it("keeps Sort by and shows no pagination for a cellar that fits one page", async () => {
+    await renderView({});
+
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Pages of this cellar" })).not.toBeInTheDocument();
+  });
+
+  it("says when a beer lists fewer bottles than the cellar holds, and counts the held ones", async () => {
+    await renderView({ beers: [{ ...westvleteren, unlistedBottles: 23 }] });
+
+    expect(screen.getByText('cellar.entry.listed {"count":1}')).toBeInTheDocument();
+    expect(screen.getByText('cellar.entry.bottleCount {"count":24}')).toBeInTheDocument();
   });
 });

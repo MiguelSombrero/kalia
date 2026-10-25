@@ -7,11 +7,21 @@
 import type { PublicCellarEntryDto } from './publicCellarEntryDto';
 
 /**
- * A cellar its owner has made public, with its beers and their bottles
+ * One page of a cellar its owner has made public, with its beers and their bottles
  */
 export interface PublicCellarDto {
   /** The owner's username, as copied from the identity provider */
   username: string;
-  /** One per catalog beer the owner has bottles of */
+  /** This page's beers, in the order they were added to the cellar */
   entries: PublicCellarEntryDto[];
+  /** Zero-based index of this page */
+  page: number;
+  /** Pages the cellar spans at this page size */
+  totalPages: number;
+  /** Beers in the whole cellar */
+  totalBeers: number;
+  /** Bottles in the whole cellar */
+  totalBottles: number;
+  /** When the newest bottle was added; absent for a cellar with none */
+  lastBottleAddedAt?: string;
 }

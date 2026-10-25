@@ -26,9 +26,17 @@ export type CellarBeer = {
   abv: number;
   /** A public cellar's bottles are its own DTO, field-for-field alike (ADR-0050). */
   bottles: BottleDto[];
+  /** Bottles held beyond those listed, set only when a public read capped the list. */
+  unlistedBottles?: number;
 };
 
+/** One page of a public cellar, with what the whole cellar holds. */
 export type PublicCellar = {
   username: string;
   beers: CellarBeer[];
+  page: number;
+  totalPages: number;
+  totalBeers: number;
+  totalBottles: number;
+  lastBottleAddedAt?: string;
 };

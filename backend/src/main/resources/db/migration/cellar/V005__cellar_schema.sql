@@ -12,9 +12,12 @@ CREATE TABLE cellar.entry (
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
     version    bigint NOT NULL DEFAULT 0,
-    -- Its index leads with user_id, so it also serves reads by user_id alone.
     UNIQUE (user_id, beer_id)
 );
+
+-- A public cellar is read one page of entries at a time, oldest first, so the
+-- page is an index range scan however many entries the owner has.
+CREATE INDEX entry_user_id_created_at_idx ON cellar.entry (user_id, created_at, id);
 
 -- Quantity is derived by counting these rows, never stored
 -- (docs/architecture.md §3): no quantity column exists anywhere here.
@@ -28,4 +31,6 @@ CREATE TABLE cellar.bottle (
     updated_at       timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX bottle_entry_id_idx ON cellar.bottle (entry_id);
+-- Serves the per-entry bottle cap of a public cellar read as an index range scan,
+-- and any lookup by entry_id alone through its leading column.
+CREATE INDEX bottle_entry_id_created_at_idx ON cellar.bottle (entry_id, created_at, id);

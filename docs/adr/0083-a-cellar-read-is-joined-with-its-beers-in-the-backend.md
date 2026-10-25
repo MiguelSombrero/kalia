@@ -3,6 +3,7 @@
 - **Status:** accepted
 - **Date:** 2026-10-23
 - **Amended:** 2026-10-25 — the per-tag boundary covers a tag's operations only, not the shared models (iteration 8.5 task 06); see Consequences
+- **Amended:** 2026-10-25 — the public read is paginated and its entries come in the order they were added (iteration 8.5 task 11); see the note after Decision
 
 ## Context
 
@@ -61,6 +62,15 @@ feature's `api.ts` may import only its own tag of the generated client.
   generated tag named after the feature, plus the cellar's own `public-cellar`
   tag. A join across modules therefore has to be built in the backend, behind
   a module's public API, and cannot reappear in a feature.
+
+> **Amended 2026-10-25** ([iteration-8.5 task 11](../tasks/iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md)):
+> `GET /api/v1/cellars/{username}` answers one page, not "every entry". The
+> stable default order of beer name, then entry id, is the owner's read's
+> alone. A page of the public read is cut in SQL, where the beers' names are
+> not, so it holds the entries in the order they were added, and lists at most
+> 25 bottles of each. The rules above, the join and the beer shape are
+> unchanged. Joining after paging also means a page may hold fewer entries than
+> its size, when an entry's beer no longer resolves.
 
 This narrows the client-agnostic-resources convention rather than reversing
 it. A cellar entry without the beer it is of is an incomplete resource, as a

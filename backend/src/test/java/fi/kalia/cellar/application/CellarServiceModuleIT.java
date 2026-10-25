@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.modulith.test.ApplicationModuleTest.BootstrapMode;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -57,7 +58,7 @@ class CellarServiceModuleIT {
 		profile.changeCellarVisibility(true);
 		profiles.save(profile);
 
-		service.readPublicCellar(profile.getUsername());
+		service.readPublicCellar(profile.getUsername(), PageRequest.of(0, 20));
 
 		assertThat(readOnly).isTrue();
 	}

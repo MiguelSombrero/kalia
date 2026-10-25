@@ -53,6 +53,24 @@ class CellarOpenApiDocumentationIT {
 				.isNotNull();
 	}
 
+	@Test
+	void thePublicCellarsPagingParametersAreDocumentedWithTheirBoundsAndDefaults() {
+		String body = apiDocs();
+
+		assertThat(pagingBound(body, "page", "default")).isZero();
+		assertThat(pagingBound(body, "page", "minimum")).isZero();
+		assertThat(pagingBound(body, "page", "maximum")).isEqualTo(PublicCellarController.MAX_PAGE);
+		assertThat(pagingBound(body, "size", "default")).isEqualTo(PublicCellarController.DEFAULT_PAGE_SIZE);
+		assertThat(pagingBound(body, "size", "minimum")).isEqualTo(1);
+		assertThat(pagingBound(body, "size", "maximum")).isEqualTo(PublicCellarController.MAX_PAGE_SIZE);
+	}
+
+	private static int pagingBound(String body, String parameter, String keyword) {
+		List<Integer> found = JsonPath.read(body,
+				"$.paths['/api/v1/cellars/{username}'].get.parameters[?(@.name=='" + parameter + "')].schema." + keyword);
+		return found.getFirst();
+	}
+
 	// The public response is its own type, not EntryDto/BottleDto (ADR-0050),
 	// so a field added to the owner's shape cannot reach strangers by default.
 	@Test
@@ -69,7 +87,11 @@ class CellarOpenApiDocumentationIT {
 		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.PublicCellarBottleDto.required");
 		assertThat(bottleRequired).containsExactlyInAnyOrder("id", "entryId", "containerType", "createdAt", "updatedAt");
 		Map<String, Object> rootProperties = JsonPath.read(body, "$.components.schemas.PublicCellarDto.properties");
-		assertThat(rootProperties).containsOnlyKeys("username", "entries");
+		assertThat(rootProperties).containsOnlyKeys("username", "entries", "page", "totalPages", "totalBeers",
+				"totalBottles", "lastBottleAddedAt");
+		List<String> rootRequired = JsonPath.read(body, "$.components.schemas.PublicCellarDto.required");
+		assertThat(rootRequired).containsExactlyInAnyOrder("username", "entries", "page", "totalPages", "totalBeers",
+				"totalBottles");
 	}
 
 	// ADR-0083: exactly the beer facts the cellar pages show, nothing more.

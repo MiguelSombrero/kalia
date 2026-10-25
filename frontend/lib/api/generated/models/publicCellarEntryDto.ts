@@ -13,9 +13,10 @@ import type { PublicCellarBottleDto } from './publicCellarBottleDto';
 export interface PublicCellarEntryDto {
   id: string;
   beer: CellarBeerDto;
-  /** Derived by counting bottles, never stored */
+  /** Derived by counting bottles, never stored; may exceed the bottles listed */
   quantity: number;
   createdAt: string;
   updatedAt: string;
+  /** The oldest bottles of the beer, at most 25 */
   bottles: PublicCellarBottleDto[];
 }

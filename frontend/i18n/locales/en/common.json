@@ -258,12 +258,20 @@
         "hint": "There are no beers in this cellar yet."
       },
       "lastAdded": "Last added {{date}}",
+      "pagination": {
+        "label": "Pages of this cellar",
+        "summary": "Page {{page}} of {{totalPages}}",
+        "previous": "← Previous",
+        "next": "Next →"
+      },
       "about": "Kalia keeps track of the beers people own and how old each bottle is.",
       "browse": "Browse the catalog"
     },
     "entry": {
       "bottleCount_one": "{{count}} bottle",
-      "bottleCount_other": "{{count}} bottles"
+      "bottleCount_other": "{{count}} bottles",
+      "listed_one": "Showing its oldest bottle",
+      "listed_other": "Showing its {{count}} oldest bottles"
     },
     "bottle": {
       "list": "Bottles of {{beer}}",

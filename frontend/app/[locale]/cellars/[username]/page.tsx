@@ -1,32 +1,38 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { getPublicCellar, PublicCellarView, type PublicCellar } from "@/features/cellar";
+import { getPublicCellar, PublicCellarView, toPublicCellarPage, type PublicCellar } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
 import { cellarHref, shareableCellarHref } from "@/lib/routes";
 import { Page } from "@/components/ui/page";
 
-type Props = { params: Promise<{ locale: string; username: string }> };
+type Props = {
+  params: Promise<{ locale: string; username: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
+};
 
 // Do not pass the route param on as it is: Next.js hands a dynamic segment
 // over still percent-encoded, and the API client encodes it again, so a
 // username with any non-ASCII letter would reach the backend double-encoded.
-const publicCellarAt = async (encodedUsername: string): Promise<PublicCellar | null> => {
+const publicCellarAt = async (encodedUsername: string, page: number): Promise<PublicCellar | null> => {
   let username: string;
   try {
     username = decodeURIComponent(encodedUsername);
   } catch {
     return null;
   }
-  return getPublicCellar(username);
+  return getPublicCellar(username, page);
 };
 
-export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
+// generateMetadata and the page read the same page, so the two requests are one
+// fetch (frontend/README.md).
+export const generateMetadata = async ({ params, searchParams }: Props): Promise<Metadata> => {
   const { locale: rawLocale, username } = await params;
+  const page = toPublicCellarPage((await searchParams).page);
   const locale = toLocale(rawLocale);
-  const [cellar, { t }] = await Promise.all([publicCellarAt(username), getTranslation(locale)]);
+  const [cellar, { t }] = await Promise.all([publicCellarAt(username, page), getTranslation(locale)]);
 
   // noindex/nofollow on every branch: "anyone with the link" is the promise
   // the visibility control makes (ADR-0050), and a not-found page has nothing
@@ -52,12 +58,14 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
   };
 };
 
-const PublicCellarPage = async ({ params }: Props) => {
+const PublicCellarPage = async ({ params, searchParams }: Props) => {
   const { locale: rawLocale, username } = await params;
+  const page = toPublicCellarPage((await searchParams).page);
   const locale = toLocale(rawLocale);
-  const [cellar, session] = await Promise.all([publicCellarAt(username), auth()]);
+  const [cellar, session] = await Promise.all([publicCellarAt(username, page), auth()]);
 
-  if (!cellar) {
+  // A page past the last one is as absent as a cellar that is not there.
+  if (!cellar || (page > 0 && page >= cellar.totalPages)) {
     notFound();
   }
 
@@ -68,7 +76,7 @@ const PublicCellarPage = async ({ params }: Props) => {
 
   return (
     <Page width="wide">
-      <PublicCellarView locale={locale} username={cellar.username} beers={cellar.beers} isOwner={isOwner} />
+      <PublicCellarView locale={locale} cellar={cellar} isOwner={isOwner} />
     </Page>
   );
 };

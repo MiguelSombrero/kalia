@@ -79,3 +79,12 @@ describe("inVintageOrder", () => {
     expect(sorted.map((b) => b.id)).toEqual(["2021", "2025", "none"]);
   });
 });
+
+describe("sortCellar by bottle count", () => {
+  it("counts the bottles a capped beer holds beyond those it lists", () => {
+    const capped = beer("Capped", { bottles: [bottle("c1")], unlistedBottles: 30 });
+    const plain = beer("Plain", { bottles: [bottle("p1"), bottle("p2"), bottle("p3")] });
+
+    expect(sortCellar([plain, capped], "bottles", "en").map((b) => b.beerName)).toEqual(["Capped", "Plain"]);
+  });
+});
