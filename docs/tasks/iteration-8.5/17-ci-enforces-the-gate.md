@@ -1,6 +1,6 @@
 # Task 17: CI blocks a merge that fails it, and the Docker gate runs
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -68,10 +68,10 @@ recognisable.
 
 ## Acceptance criteria
 
-- [ ] A PR with a failing required check shows "Merging is blocked" — confirmed
+- [x] A PR with a failing required check shows "Merging is blocked" — confirmed
       on a scratch PR whose test is made to fail, after the product owner's
       ruleset change
-- [ ] A PR whose changes skip a job can still merge — confirmed on a docs-only
+- [x] A PR whose changes skip a job can still merge — confirmed on a docs-only
       scratch PR
 - [x] CLAUDE.md, `implement-task` and ADR-0046 all name `make verify-fast` as
       the local gate and the required CI checks as the Docker gate
