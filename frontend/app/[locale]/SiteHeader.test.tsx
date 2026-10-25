@@ -34,7 +34,7 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "brand" })).toBeInTheDocument();
     expect(screen.getAllByRole("navigation", { name: "nav.label" })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: "English" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "EN English" }).length).toBeGreaterThan(0);
   });
 
   it("hands the same signed-in name to the bar, the phone bar and the menu", async () => {
