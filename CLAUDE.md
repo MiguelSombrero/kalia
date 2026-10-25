@@ -61,8 +61,9 @@ the generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md
 
 ## Commands
 
-**`make verify` is the gate** — every check CI runs, in CI's order. `make
-verify-fast` is the ~10 s subset needing neither Docker nor a build, and is
+**`make verify` is the gate** — every check CI runs, in CI's order, except the
+two image scans, which stay CI-only; it needs Docker and `trivy`. `make
+verify-fast` is the ~10 s subset needing neither Docker, a build nor Trivy, and is
 what the `pre-push` hook from `make install-hooks` runs. One of them goes
 green before every push
 ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)); `make
@@ -158,8 +159,8 @@ The gates themselves:
   No asking first *only* while the fix stays inside the vulnerable package's
   declared semver range (a lockfile-only bump); crossing it, or bumping a
   *direct* dependency past its pin, is a version choice under "new
-  dependencies". Confirm the finding clears by reproducing CI's exact Trivy
-  invocation (`frontend/README.md`, `backend/README.md`) before pushing.
+  dependencies". Confirm the finding clears with `make trivy-scan` (CI's flags,
+  manifests only; an image finding is `backend/README.md`) before pushing.
 - **An unexpected failure gets one appended row in
   [docs/common-failures.md](docs/common-failures.md)**, on the branch it
   happened on ([ADR-0084](docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).

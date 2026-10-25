@@ -74,9 +74,9 @@ flags) alongside the real fix, and `npm install <package>@<version>` instead
 of `npm update` will silently promote a transitive dependency to a direct one
 in `package.json`. If the diff isn't narrowly the flagged package's `version`/
 `resolved`/`integrity` fields, hand-edit those three fields instead of trusting
-the tool's output. Confirm the fix locally before pushing:
-`trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed package-lock.json`
-from `frontend/`, matching CI's `vulnerability-scan.yml` exactly.
+the tool's output. Confirm the fix locally before pushing with `make trivy-scan`
+from the repository root, which runs CI's `vulnerability-scan.yml` manifest
+scan with its exact flags.
 
 Playwright reuses an already-running stack when found, otherwise it starts
 one and does not reliably stop it afterwards — run `docker compose down`

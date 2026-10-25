@@ -1,0 +1,24 @@
+# Suppressions for ADR-0024's vulnerability scan, read by the CI scan through
+# its `trivyignores` input and by `make trivy-scan` through `--ignorefile`:
+# Trivy does not pick this file up on its own. Every entry carries a
+# `statement` giving the reason and an `expired_at` no more than 30 days out
+# (the waiver policy, see ADR-0024). Trivy stops suppressing a finding the day
+# its `expired_at` passes, so the gate goes red again until someone confirms
+# the finding is still unfixed and bumps the date, or deletes the entry once
+# the fix has landed. A permanent ignore is how a real finding quietly stops
+# being checked.
+#
+#   vulnerabilities:
+#     - id: CVE-0000-00000
+#       statement: why this does not apply, and what would end the waiver
+#       expired_at: 2026-12-01
+
+# --- Frontend image: nothing to waive. Every Node-package CVE this image
+# reported came from npm's own bundled dependency tree in the node:24-alpine
+# base, not from package-lock.json; frontend/Dockerfile now deletes the
+# package managers from the runtime stage, which the standalone server never
+# invokes. The image scans clean with no suppressions at all — if a frontend
+# entry is ever needed here again, check the reported PkgPath first, because
+# a path under /usr/local/lib/node_modules means the removal regressed
+# rather than that a new waiver is warranted.
+vulnerabilities: []
