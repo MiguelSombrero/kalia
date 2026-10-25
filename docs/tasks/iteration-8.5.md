@@ -26,7 +26,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [03](iteration-8.5/03-concurrent-bottle-writes-lose-nothing.md) | Two writes to one cellar entry never silently lose a bottle | done |
 | [04](iteration-8.5/04-no-silent-single-instance-assumptions.md) | The backend assumes one instance only where it says so | done |
 | [05](iteration-8.5/05-brewery-questions-answered-by-the-api.md) | The API answers the add-beer form's questions itself | refined |
-| [06](iteration-8.5/06-generated-client-ready-to-share.md) | The generated client is what a shared package should hold | refined |
+| [06](iteration-8.5/06-generated-client-ready-to-share.md) | The generated client is what a shared package should hold | done |
 | [07](iteration-8.5/07-identity-owns-the-caller.md) | `identity` owns who the caller is, and services own who may read what | refined |
 | [08](iteration-8.5/08-claude-md-within-its-budget.md) | CLAUDE.md fits its budget again, and says what is true | done |
 | [10](iteration-8.5/10-unauthenticated-edges-throttled.md) | The unauthenticated edges are throttled and bounded | refined |

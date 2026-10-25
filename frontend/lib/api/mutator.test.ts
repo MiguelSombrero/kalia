@@ -58,18 +58,22 @@ describe("kaliaFetch", () => {
     expect(initOf(fetchMock)).not.toHaveProperty("headers");
   });
 
-  it("leaves a caller-supplied Authorization header alone", async () => {
+  it.each([
+    ["a plain object", { Authorization: "Bearer caller-supplied" }],
+    ["a lower-cased name", { authorization: "Bearer caller-supplied" }],
+    ["a Headers instance", new Headers({ Authorization: "Bearer caller-supplied" })],
+    ["a tuple list", [["Authorization", "Bearer caller-supplied"]] as [string, string][]],
+  ])("refuses a caller-set Authorization header given as %s, sending nothing", async (_, headers) => {
     const fetchMock = vi.fn(async () => Response.json({}));
     vi.stubGlobal("fetch", fetchMock);
     givenSignedInWithToken("token-abc");
 
-    await kaliaFetch("/api/v1/me", {
-      method: "GET",
-      headers: { Authorization: "Bearer caller-supplied" },
-    });
+    const refusal = await kaliaFetch("/api/v1/me", { method: "GET", headers }).catch(
+      (e: unknown) => e,
+    );
 
-    const headers = new Headers(initOf(fetchMock).headers);
-    expect(headers.get("Authorization")).toBe("Bearer caller-supplied");
+    expect(isApiError(refusal) && refusal.kind).toBe("refused");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it.each([

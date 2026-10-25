@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-08-16
+- **Amended:** 2026-10-25 — `lib/api/mutator.ts` now imports `server-only` (iteration 8.5 task 06), so the revisit trigger below has been acted on: a client-bundled import fails the build naming `server-only`
 - **Amended:** 2026-10-10 by [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) — the per-entry bottle read this was written around is gone; the rule stands for the next client read
 
 ## Context
@@ -95,7 +96,8 @@ but a credible complement; see Revisit trigger.
   wrapper fails only at `npm run build`, several layers down in an unrelated
   dependency (`ioredis`'s `tls` resolution) rather than with a message
   pointing at the actual cause — easy to lose time re-diagnosing from
-  scratch.
+  scratch. (Since 2026-10-25 the mutator's `server-only` import moves that
+  failure to the import itself; see Amended.)
 - Bad, because a Server Action's thrown value crosses the client/server RPC
   boundary through React's own serialization, and Next's docs for the
   parallel case — a Server Component render error reaching `error.tsx` —
@@ -109,7 +111,8 @@ but a credible complement; see Revisit trigger.
   convention survives this specific path unchanged.
 - **Revisit trigger:** the next time this failure mode recurs, add
   `server-only` to `lib/api/mutator.ts` so the mistake fails at compile time
-  with an actionable message instead of the opaque `ioredis` trace. Separately,
+  with an actionable message instead of the opaque `ioredis` trace (done on
+  2026-10-25, see Amended). Separately,
   the first client-side consumer that needs `ApiError.kind`-based branching
   through a Server Action should confirm whether it survives serialization
   before relying on it.

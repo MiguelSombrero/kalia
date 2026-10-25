@@ -1,6 +1,6 @@
 # Task 06: The generated client is what a shared package should hold
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -64,13 +64,13 @@ operations only. What orval generates is unchanged.
 
 ## Acceptance criteria
 
-- [ ] Importing the mutator from a client component fails `npm run build`
+- [x] Importing the mutator from a client component fails `npm run build`
       with an error naming `server-only` — confirmed on a scratch component
-- [ ] A request built with a caller-set `Authorization` header throws, and
+- [x] A request built with a caller-set `Authorization` header throws, and
       sends nothing — `npm test` covers it in `mutator.test.ts`
-- [ ] ADR-0083 and §5 state that the models boundary covers operations only,
+- [x] ADR-0083 and §5 state that the models boundary covers operations only,
       and why
-- [ ] `make verify` is green, including `api-client-drift`
+- [x] `make verify` is green, including `api-client-drift`
 
 ## Notes
 

@@ -31,3 +31,7 @@ vi.mock("@/auth", () => ({
 vi.mock("@/lib/auth/sessionCookie", () => ({
   currentSessionToken: vi.fn(async () => undefined),
 }));
+
+// The real package throws on import outside a React Server layer, which is
+// every unit test; Next.js resolves it for the build, vitest does not.
+vi.mock("server-only", () => ({}));

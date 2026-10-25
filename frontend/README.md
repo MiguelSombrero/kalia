@@ -212,7 +212,8 @@ Why the rationale lives there and not here:
   ([ADR-0010](../docs/adr/0010-react-hook-form-zod.md)).
 - **The generated API client** (`lib/api/generated/`) is reachable only from a
   feature's own `api.ts` and `types.ts`, which wrap it, and from those only
-  its shared `models/` and the tag named after the feature — enforced by
+  its shared `models/` and the tag named after the feature (the models boundary
+  covers operations only; one DTO can belong to several tags) — enforced by
   ESLint ([ADR-0012](../docs/adr/0012-orval-api-client.md),
   [ADR-0083](../docs/adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). It is also never edited
   by hand — regenerate it with `npm run generate:api`. `.claude/settings.json`
@@ -245,7 +246,8 @@ Why the rationale lives there and not here:
   or one whose account records no expiry, is renewed first, and if it cannot
   be, no token is sent at all rather than a bad one — the backend answers 401
   to a bad token even on a public route, so sending one breaks anonymous
-  catalog browsing for a signed-in user
+  catalog browsing for a signed-in user. A caller-set `Authorization` header
+  makes `kaliaFetch` throw an `ApiError` of kind `refused` and send nothing
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
   [ADR-0029](../docs/adr/0029-silent-token-refresh.md)).
 - **Per-user data keys on the access token's `sub`**, which the backend reads
@@ -395,8 +397,9 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   drags `lib/auth/valkeyAdapter.ts` and `ioredis` into the client bundle,
   which fails `npm run build` several layers down with `Module not found:
   Can't resolve 'tls'` — a message that names `ioredis`, not the client
-  component that actually caused it. Route the call through a `"use server"`
-  action in the feature's `actions.ts` instead
+  component that actually caused it. `lib/api/mutator.ts` imports
+  `server-only`, so a direct import now fails at that line instead. Route the
+  call through a `"use server"` action in the feature's `actions.ts` instead
   ([ADR-0040](../docs/adr/0040-client-reads-via-server-actions.md)).
 - **A Server Action must be defined in the `"use server"` file that exports
   it, never re-exported from a different `"use server"` file.** Sharing one
