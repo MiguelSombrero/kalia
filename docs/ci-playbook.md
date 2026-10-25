@@ -240,3 +240,4 @@ not necessarily `pom.xml`'s release. The pin is in
 javac's internals rather than a version mismatch, and an *incremental* build
 that recompiles nothing at all skips it entirely — so a target can pass once
 and fail the next time without the tree changing.
+
