@@ -378,7 +378,7 @@ Logs, counters and trace ids are built in; nothing in the stack views them
 - **Logs** are one JSON object per line on stdout in every environment, with
   `traceId` and `spanId` on each line written while a request is being served.
   `RequestLogFilter` writes one `INFO` line per request (the readiness probe
-  at `DEBUG`). Read them with `docker compose logs backend --no-log-prefix |
+  at `TRACE`, which compose's healthcheck would otherwise repeat every 5 s). Read them with `docker compose logs backend --no-log-prefix |
   jq -c '[.["@timestamp"], .log.level, .message, .traceId]'`, or follow one
   request across both tiers with `docker compose logs --no-log-prefix | grep
   <traceId>`.

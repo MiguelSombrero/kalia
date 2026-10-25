@@ -38,7 +38,7 @@ class RequestLogFilter extends OncePerRequestFilter {
 			String path = request.getRequestURI();
 			long millis = Duration.ofNanos(System.nanoTime() - started).toMillis();
 			if (path.startsWith("/actuator/health")) {
-				log.debug("{} {} -> {} in {} ms", request.getMethod(), path, status, millis);
+				log.trace("{} {} -> {} in {} ms", request.getMethod(), path, status, millis);
 			} else {
 				log.info("{} {} -> {} in {} ms", request.getMethod(), path, status, millis);
 			}

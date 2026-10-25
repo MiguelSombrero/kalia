@@ -52,7 +52,7 @@ class KaliaApplicationIT {
 	void unexposedActuatorEndpointsAreNotReachable() {
 		given(jwtDecoder.decode(anyString())).willReturn(TestTokens.testUser());
 
-		for (String endpoint : List.of("env", "beans", "configprops", "loggers", "mappings")) {
+		for (String endpoint : List.of("env", "beans", "configprops", "loggers", "mappings", "metrics", "prometheus")) {
 			restTestClient.get().uri("/actuator/" + endpoint)
 					.header("Authorization", "Bearer test-token")
 					.exchange()
