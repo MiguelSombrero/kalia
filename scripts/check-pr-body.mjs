@@ -31,7 +31,19 @@ export const GATE_LABELS = [
   "Iteration Done when",
 ];
 
-const COMMENT = /<!--[\s\S]*?-->/g;
+// Repeated until stable: removing one comment can join the text around it
+// into another ("<!<!-- x -->--" leaves "<!--"), which a single pass keeps.
+function stripComments(text) {
+  let previous;
+  do {
+    previous = text;
+    const open = text.indexOf("<!--");
+    if (open === -1) break;
+    const close = text.indexOf("-->", open + 4);
+    text = text.slice(0, open) + (close === -1 ? "" : text.slice(close + 3));
+  } while (text !== previous);
+  return text;
+}
 
 // A task file that went to `done` in this diff: an added Status line in a
 // docs/tasks/iteration-N/ file. Moving a task's status elsewhere (to
@@ -52,7 +64,7 @@ export function completesTask(diff) {
 // Gate labels whose line is missing, or present with nothing after the label
 // once the template's own HTML-comment guidance is stripped.
 export function missingVerdicts(body) {
-  const lines = body.replace(COMMENT, "").split("\n");
+  const lines = stripComments(body).split("\n");
   return GATE_LABELS.filter((label) => {
     const prefix = `- **${label}:**`;
     const line = lines.find((l) => l.trimStart().startsWith(prefix));

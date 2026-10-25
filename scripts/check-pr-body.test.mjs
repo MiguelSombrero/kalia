@@ -57,3 +57,13 @@ test("a Status: done outside a task file does not count", () => {
   const diff = DONE_DIFF.replaceAll("docs/tasks/iteration-8.5/18-x.md", "docs/other.md");
   assert.equal(completesTask(diff), false);
 });
+
+test("a comment that only forms once an inner one is removed does not hide a line", () => {
+  const body = filled.replace("- **Range:** ran, green", "- **Range:** <!<!-- x -->-- hidden --> ");
+  assert.deepEqual(missingVerdicts(body), ["Range"]);
+});
+
+test("an unterminated comment fails closed: the rest of the body counts as comment", () => {
+  const body = filled.replace("- **Range:** ran, green", "- **Range:** <!-- never closed");
+  assert.deepEqual(missingVerdicts(body), GATE_LABELS.slice(1));
+});
