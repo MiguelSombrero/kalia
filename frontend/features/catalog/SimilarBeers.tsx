@@ -23,7 +23,7 @@ export const SimilarBeers = ({
 }) => {
   const { t } = useTranslation();
   const beers = useSimilarBeers(breweryId, useDebouncedValue(beerName));
-  const similar = beers.data ?? [];
+  const similar = beerName.trim() === "" ? [] : (beers.data ?? []);
 
   return (
     <section aria-live="polite" aria-label={t("catalog.add.similarHeading", { brewery: breweryName })}>

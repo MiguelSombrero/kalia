@@ -30,7 +30,9 @@ export const useSimilarBeers = (breweryId: string, beerName: string) =>
     queryKey: [...catalogKey, "similarBeers", breweryId, beerName],
     queryFn: () => findSimilarBeersAction(breweryId, beerName),
     enabled: breweryId !== "" && beerName.trim() !== "",
-    placeholderData: keepPreviousData,
+    // Across keystrokes only: another brewery's beers must never stand in under this one's heading.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === breweryId ? previous : undefined,
   });
 
 export const useAddBeer = () =>
