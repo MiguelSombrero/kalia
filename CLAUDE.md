@@ -67,8 +67,7 @@ install-hooks` runs; it goes green before every push. **The required CI checks
 are the Docker gate:** the `ci-passed` job and the vulnerability scan run every
 check `make verify` does plus the image scans, and a red one blocks the merge.
 `make verify` is the same list locally (Docker and `trivy`, image scans
-excepted) for when a change needs the answer before pushing — fixed host ports
-mean only one worktree can run it at a time
+excepted) for when a change needs the answer before pushing
 ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)); `make
 next-adr` allocates the next ADR number. Run one suite from the repository root
 in a subshell — `(cd backend && mvn test)` — since a bare `cd` persists and
@@ -189,7 +188,8 @@ retrospection, the sweep's `process-quality` dimension
 
 ## Environment notes
 
-- Each worktree's `docker compose` project is isolated, but the host ports are
-  fixed — two worktrees collide if both bring up the full stack, so run it in
-  one at a time.
+- Each worktree runs its own `docker compose` project on its own host ports:
+  `make stack-env` writes them into the worktree's root `.env` (the `worktree`
+  skill runs it), and the main checkout keeps the defaults. Never hard-code a
+  port — read it from the environment ([README](README.md#run-locally)).
 - Docker Desktop may need starting: `open -a Docker`, then wait for `docker info`.

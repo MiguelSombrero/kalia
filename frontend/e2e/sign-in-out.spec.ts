@@ -12,6 +12,8 @@ import {
   signIn,
   test,
 } from "./support/keycloakAccount";
+import { BACKEND_ORIGIN, FRONTEND_ORIGIN } from "./support/origins";
+import { VALKEY_URL } from "./support/valkey";
 
 // Do not parallelize: measured 1-2 of 6 specs failing when run concurrently,
 // always cycling sign-in/sign-out, since all specs on one worker share one
@@ -38,7 +40,7 @@ const storedAccount = async (page: Page) => {
   const sessionToken = cookies.find((cookie) => cookie.name === "authjs.session-token")?.value;
   expect(sessionToken, "the page carries no Auth.js session cookie").toBeTruthy();
 
-  const valkey = new Redis("redis://localhost:6379");
+  const valkey = new Redis(VALKEY_URL);
   const key = `auth:session-account:${sessionToken}`;
   const read = async () => JSON.parse((await valkey.get(key))!) as Record<string, unknown>;
   return {
@@ -65,7 +67,7 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
 
   await signIn(page, account);
 
-  await expect(page).toHaveURL(/localhost:3000/);
+  await expect(page).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}`));
   // ADR-0071: the username the profile, feed and public cellar use, not Keycloak's "Test User".
   await expect(page.getByRole("link", { name: `Profile: ${account.username}` })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
@@ -108,7 +110,7 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
       page.getByText("Do you want to log out?"),
       `cycle ${cycle}: Keycloak asked to confirm the logout`,
     ).toHaveCount(0);
-    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(/localhost:3000/);
+    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}`));
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
     // The Keycloak SSO session must be gone too, or this skips the prompt.
@@ -142,7 +144,7 @@ test("renews an expired access token instead of dropping it", async ({ page, req
   expect(after.expires_at as number).toBeGreaterThan(Math.floor(Date.now() / 1000));
 
   // Must pass the backend's signature/issuer/audience checks (ADR-0028).
-  const me = await request.get("http://localhost:8080/api/v1/me", {
+  const me = await request.get(`${BACKEND_ORIGIN}/api/v1/me`, {
     headers: { Authorization: `Bearer ${after.access_token as string}` },
   });
   expect(me.status(), "the backend rejected the renewed token").toBe(200);
@@ -184,7 +186,7 @@ test("signing out on one device leaves the other's session intact", async ({
   const session = await storedAccount(phone);
   const stillValid = await session.read();
   await session.close();
-  const me = await request.get("http://localhost:8080/api/v1/me", {
+  const me = await request.get(`${BACKEND_ORIGIN}/api/v1/me`, {
     headers: { Authorization: `Bearer ${stillValid.access_token as string}` },
   });
   expect(me.status(), "the phone's access token died with the laptop's sign-out").toBe(200);

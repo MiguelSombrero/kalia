@@ -13,6 +13,9 @@
   the two manifest vulnerability scans and not the image scans
 - **Amended:** 2026-10-25 by iteration 8.5 task 17 — `make verify-fast` is the
   local gate before a pull request; the required CI checks are the Docker gate
+- **Amended:** 2026-10-26 by iteration 8.5 task 22 — per-worktree host ports,
+  rejected in the 2026-10-25 note below, are adopted: `make stack-env` gives
+  each worktree its own, so two worktrees can run `make verify` at once
 
 ## Context
 
@@ -114,7 +117,9 @@ What this covers, and what it does not:
   > host ports, which make every worktree's stack addressable by a different
   > number and every script that names a port a lookup, and a lock that
   > serialises the one stack, which turns a wait for another session into the
-  > gate.
+  > gate. (Reversed 2026-10-26: that wait became a regular cost of parallel
+  > sessions, so iteration 8.5 task 22 took the per-worktree ports after all;
+  > the lock stays rejected.)
 - **A `PostToolUse` hook runs whichever checker covers the edited file**, and
   reports the failure into the agent's context. It never blocks. A checker
   legitimately goes red mid-task — a task file exists before its index row

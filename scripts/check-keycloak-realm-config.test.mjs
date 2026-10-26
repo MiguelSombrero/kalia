@@ -34,6 +34,11 @@ const committedFixture = () => ({
         { name: "kalia-backend-audience", config: { "included.client.audience": "kalia-backend" } },
       ],
     },
+    {
+      clientId: "kalia-swagger",
+      redirectUris: ["$(env:BACKEND_PUBLIC_URL)/swagger-ui/oauth2-redirect.html"],
+      webOrigins: ["$(env:BACKEND_PUBLIC_URL)"],
+    },
   ],
 });
 
@@ -64,12 +69,18 @@ const liveFixture = () => ({
         },
       ],
     },
+    "kalia-swagger": {
+      clientId: "kalia-swagger",
+      redirectUris: ["http://localhost:8080/swagger-ui/oauth2-redirect.html"],
+      webOrigins: ["http://localhost:8080"],
+    },
   },
 });
 
 const env = {
   KEYCLOAK_SSL_REQUIRED: "none",
   FRONTEND_URL: "http://localhost:3000",
+  BACKEND_PUBLIC_URL: "http://localhost:8080",
   KALIA_FRONTEND_CLIENT_SECRET: "s3cr3t",
   KEYCLOAK_SMTP_HOST: "mailpit",
   KEYCLOAK_SMTP_AUTH: "false",
@@ -175,4 +186,24 @@ test("diffRealm catches a client that was deleted from the realm", () => {
 test("diffRealm reports zero comparisons for a spec that pins nothing", () => {
   const { compared } = diffRealm({ realm: "kalia" }, liveFixture());
   assert.equal(compared, 0);
+});
+
+test("resolvePlaceholders builds the public addresses from the stack's host ports when they are not set", () => {
+  const resolved = resolvePlaceholders(committedFixture(), { ...env, FRONTEND_URL: undefined, BACKEND_PUBLIC_URL: undefined, FRONTEND_PORT: "3100", BACKEND_PORT: "8180" });
+  assert.equal(resolved.clients[0].redirectUris[0], "http://localhost:3100/*");
+  assert.deepEqual(resolved.clients[1].redirectUris, ["http://localhost:8180/swagger-ui/oauth2-redirect.html"]);
+  assert.deepEqual(resolved.clients[1].webOrigins, ["http://localhost:8180"]);
+});
+
+test("resolvePlaceholders keeps today's addresses when no port is set", () => {
+  const resolved = resolvePlaceholders(committedFixture(), { ...env, FRONTEND_URL: undefined, BACKEND_PUBLIC_URL: undefined });
+  assert.equal(resolved.clients[0].redirectUris[0], "http://localhost:3000/*");
+  assert.deepEqual(resolved.clients[1].webOrigins, ["http://localhost:8080"]);
+});
+
+test("diffRealm fails when the swagger redirect URI does not follow the backend port", () => {
+  const committed = resolvePlaceholders(committedFixture(), { ...env, BACKEND_PUBLIC_URL: "http://localhost:8180" });
+  const { mismatches } = diffRealm(committed, liveFixture());
+  assert.ok(mismatches.some((m) => /kalia-swagger.*redirectUris.*oauth2-redirect/s.test(m)), mismatches.join("\n"));
+  assert.ok(mismatches.some((m) => /kalia-swagger.*webOrigins/s.test(m)));
 });

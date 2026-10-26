@@ -98,9 +98,29 @@ docker compose up --build   # frontend at http://localhost:3000
 The frontend is published at `:3000`; the backend is also published, at
 `:8080` (localhost only) for direct API access and Swagger UI — see
 [backend/README.md](backend/README.md). Keycloak's admin console is at
-`:8081` (admin/admin, dev-only credentials), Valkey at `:6379`, and Mailpit's
-inbox UI — where every email Keycloak sends locally lands — at `:8025`. All
-bindings are localhost-only, never reachable beyond the dev machine.
+`:8081` (admin/admin, dev-only credentials), Valkey at `:6379`, Postgres at
+`:5432`, and Mailpit's inbox UI — where every email Keycloak sends locally
+lands — at `:8025`. All bindings are localhost-only, never reachable beyond
+the dev machine.
+
+Those are the defaults, and the main checkout keeps them. Each of the six is
+a variable in the root `.env` (`FRONTEND_PORT`, `BACKEND_PORT`,
+`KEYCLOAK_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`, `MAILPIT_PORT`), and every
+address built from one — Keycloak's public address and the issuer the
+frontend and backend validate, the frontend's own URL, the Swagger redirect
+URI in the realm — follows it, so changing a port is a one-line edit. A
+git worktree is given its own set by `make
+stack-env`, which appends them to that worktree's `.env`: slot *n* adds 100×*n*
+to each default (slot 1 is frontend `:3100`, backend `:8180`, Keycloak `:8181`,
+Postgres `:5532`, Valkey `:6479`, Mailpit `:8125`), taking the lowest slot no
+other worktree's `.env` holds and whose ports are free, and re-running it
+keeps what it wrote. Two worktrees can then run the stack, `make verify` and
+the e2e suite at once. Cookies are scoped to a host and not a port, so two
+stacks on `localhost` share their session cookies in one browser; to check
+two by hand, give each worktree its own browser profile. The e2e suite is
+unaffected, as Playwright's browser contexts are isolated. Running the apps
+natively (`npm run dev`, `mvn spring-boot:run`) keeps the defaults and stays
+one at a time.
 [keycloak/realm-export.json](keycloak/realm-export.json) carries no
 credential — the `kalia-frontend` client secret above and the Postgres
 password in [docker-compose.yml](docker-compose.yml) (`POSTGRES_PASSWORD`,

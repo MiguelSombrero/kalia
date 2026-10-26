@@ -1,5 +1,6 @@
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+import { STACK } from "./stackOrigins";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -8,7 +9,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: STACK.frontend,
     trace: "on-first-retry",
   },
   // Chromium only: no cross-browser requirement yet (docs/architecture.md).
@@ -20,7 +21,7 @@ export default defineConfig({
     // on CI's ephemeral runner, but run `docker compose down` locally.
     command: "docker compose up --build",
     cwd: path.resolve(__dirname, ".."),
-    url: "http://localhost:3000",
+    url: STACK.frontend,
     reuseExistingServer: !process.env.CI,
     // A cold `docker compose up --build` on a CI runner has no BuildKit cache:
     // the frontend image's own `npm ci` alone runs 3–5 min on a slow-registry

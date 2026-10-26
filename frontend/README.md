@@ -118,8 +118,10 @@ It is gitignored, so it does not travel with a `git worktree add`, and
 without it `docker compose` fails on an interpolation error naming
 `KALIA_FRONTEND_CLIENT_SECRET` rather than anything about tests — which
 reads like a broken E2E suite. Create it as the root
-[README](../README.md) describes. Host ports are fixed, so only one
-worktree can hold the stack up at a time (repository CLAUDE.md).
+[README](../README.md) describes, and `make stack-env` to give the worktree
+its own host ports. The suite reads them from that `.env`
+(`stackOrigins.ts`) and falls back to the defaults, so two worktrees can run
+it at once.
 
 A spec that signs in gets its Keycloak account from the worker-scoped
 `account` fixture (`e2e/support/keycloakAccount.ts`), never a hardcoded

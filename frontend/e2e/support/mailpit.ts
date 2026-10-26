@@ -1,8 +1,9 @@
 // Reads messages back out of the mailpit container (docker-compose.yml) over
-// its HTTP API on :8025 — its SMTP port is in-network only.
+// its HTTP API — its SMTP port is in-network only.
 import { expect, type APIRequestContext } from "@playwright/test";
+import { STACK } from "../../stackOrigins";
 
-const MAILPIT_URL = "http://localhost:8025";
+const MAILPIT_URL = STACK.mailpit;
 
 type MailpitMessage = { ID: string; From: { Address: string; Name: string }; Subject: string };
 type MailpitMessageDetail = { ID: string; Text: string; HTML: string; From: { Address: string; Name: string } };

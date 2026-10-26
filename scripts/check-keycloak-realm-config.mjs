@@ -20,11 +20,11 @@
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 
-import { fetchToken, withRetry } from "./keycloak-admin.mjs";
+import { KEYCLOAK_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
+import { ROOT, originOf, readEnvFile } from "./stack-ports.mjs";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
 
 // Mirrors docker-compose.yml's keycloak-config service: every value it gives
@@ -36,7 +36,6 @@ const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
 // reach a real sender.
 const ENV_DEFAULTS = {
   KEYCLOAK_SSL_REQUIRED: "none",
-  FRONTEND_URL: "http://localhost:3000",
   KEYCLOAK_SMTP_HOST: "mailpit",
   KEYCLOAK_SMTP_PORT: "1025",
   KEYCLOAK_SMTP_FROM: "no-reply@kalia.test",
@@ -47,21 +46,20 @@ const ENV_DEFAULTS = {
   KEYCLOAK_SMTP_PASSWORD: "",
 };
 
+// The two public addresses are built from the stack's host ports, exactly as
+// compose builds them, so a worktree's own ports (`make stack-env`) change the
+// expected redirect URIs with no other edit.
+const derivedDefaults = (env) => ({
+  FRONTEND_URL: originOf(env, "FRONTEND_PORT"),
+  BACKEND_PUBLIC_URL: originOf(env, "BACKEND_PORT"),
+});
+
 // Loads the root .env the same way `docker compose` does, so running this
 // script directly against a persistent stack needs no extra `export`. Values
 // already in the environment win, as they do for compose.
 const loadDotEnv = () => {
-  let text;
-  try {
-    text = readFileSync(resolve(ROOT, ".env"), "utf8");
-  } catch {
-    return;
-  }
-  for (const line of text.split("\n")) {
-    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
-    if (match && process.env[match[1]] === undefined) {
-      process.env[match[1]] = match[2];
-    }
+  for (const [name, value] of Object.entries(readEnvFile(resolve(ROOT, ".env")))) {
+    if (process.env[name] === undefined) process.env[name] = value;
   }
 };
 
@@ -74,7 +72,7 @@ export const resolvePlaceholders = (value, env) => {
   if (typeof value === "string") {
     return value.replace(/\$\(env:([A-Za-z_][A-Za-z0-9_]*)(?::-([^)]*))?\)/g, (_, name, fallback) => {
       const fromEnv = env[name] === "" ? undefined : env[name];
-      const resolved = fromEnv ?? ENV_DEFAULTS[name] ?? fallback;
+      const resolved = fromEnv ?? derivedDefaults(env)[name] ?? ENV_DEFAULTS[name] ?? fallback;
       if (resolved === undefined) {
         throw new Error(
           `keycloak/realm-export.json references $(env:${name}), which is unset and has no default — ` +
@@ -192,7 +190,6 @@ export const diffRealm = (spec, live) => {
   return { mismatches, compared };
 };
 
-const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8081";
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
 const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";

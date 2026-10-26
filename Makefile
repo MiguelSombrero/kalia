@@ -8,10 +8,13 @@
 
 .PHONY: help up down restart logs ps backend-test backend-verify frontend-test \
         frontend-build frontend-e2e lint check api-drift keycloak-check trivy-scan verify \
-        verify-fast install-hooks next-adr sync-indexes
+        verify-fast install-hooks next-adr sync-indexes stack-env
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+
+stack-env: ## Give this worktree its own host ports for the stack, so it can run beside another's (writes the root .env)
+	node scripts/stack-env.mjs
 
 up: ## Build and start the full stack in the background
 	docker compose up --build -d
@@ -62,12 +65,7 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 	node --test scripts/*.test.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
-	docker compose up -d --build backend postgres
-	@i=0; until curl -sf http://localhost:8080/actuator/health >/dev/null; do \
-	    i=$$((i + 1)); \
-	    [ $$i -lt 60 ] || { echo "backend never became healthy"; exit 1; }; \
-	    sleep 2; \
-	done
+	docker compose up -d --build --wait --wait-timeout 120 backend postgres
 	(cd frontend && npm run generate:api)
 	git diff --exit-code -- frontend/lib/api/generated
 

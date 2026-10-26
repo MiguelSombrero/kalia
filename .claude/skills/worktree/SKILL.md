@@ -37,8 +37,10 @@ removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.
 4. Install the frontend's dependencies: `(cd frontend && npm ci)`. A new
    worktree has no `frontend/node_modules`, so `make verify-fast` fails
    without it and the edit hook skips ESLint silently
-   (`scripts/hooks/post-edit-check.mjs`). Add a root `.env` for the stack if
-   you will bring it up (`README.md`).
+   (`scripts/hooks/post-edit-check.mjs`). To bring the stack up, add a root
+   `.env` with the client secret (`README.md`), then run `make stack-env`: it
+   appends this worktree's own host ports to that file, so the stack can run
+   beside another worktree's. Re-running it keeps what it wrote.
 5. Work from that directory for everything that follows, and never `cd` to
    the main checkout — `CLAUDE.md`'s environment note on two sessions racing
    on one `HEAD` is about exactly this.
