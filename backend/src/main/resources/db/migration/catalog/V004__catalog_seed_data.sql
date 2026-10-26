@@ -23,176 +23,176 @@ INSERT INTO catalog.brewery (name, country, city) VALUES
     ('Ayinger Privatbrauerei', 'Germany', 'Aying'),
     ('Schneider Weisse', 'Germany', 'Kelheim');
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Westvleteren 12', 'Quadrupel', 10.2, 'Legendary Trappist quadrupel, dark fruit and caramel.'),
-    ('Westvleteren 8', 'Dubbel', 8.0, 'Trappist dubbel with plum and chocolate notes.'),
-    ('Westvleteren Blond', 'Belgian Blonde', 5.8, 'The monks'' everyday blond, grassy hops and grain.')
-) AS v(name, style, abv, description)
+    ('Westvleteren 12', 'Quadrupel', 10.2),
+    ('Westvleteren 8', 'Dubbel', 8.0),
+    ('Westvleteren Blond', 'Belgian Blonde', 5.8)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Brouwerij Westvleteren';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Rochefort 10', 'Quadrupel', 11.3, 'Intense Trappist quad, fig, leather and port.'),
-    ('Rochefort 8', 'Belgian Strong Dark Ale', 9.2, 'Deep brown Trappist ale, dried fruit and spice.'),
-    ('Rochefort 6', 'Belgian Strong Dark Ale', 7.5, 'The softest Rochefort, caramel and herbal tones.')
-) AS v(name, style, abv, description)
+    ('Rochefort 10', 'Quadrupel', 11.3),
+    ('Rochefort 8', 'Belgian Strong Dark Ale', 9.2),
+    ('Rochefort 6', 'Belgian Strong Dark Ale', 7.5)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Brasserie de Rochefort';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('St. Bernardus Abt 12', 'Quadrupel', 10.0, 'Abbey-style quad, raisin, banana bread and yeast.'),
-    ('St. Bernardus Prior 8', 'Dubbel', 8.0, 'Rich dubbel with dark fruit and soft carbonation.'),
-    ('St. Bernardus Tripel', 'Tripel', 8.0, 'Classic tripel, spicy and dry with citrus.')
-) AS v(name, style, abv, description)
+    ('St. Bernardus Abt 12', 'Quadrupel', 10.0),
+    ('St. Bernardus Prior 8', 'Dubbel', 8.0),
+    ('St. Bernardus Tripel', 'Tripel', 8.0)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Brouwerij St. Bernardus';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Orval', 'Belgian Pale Ale', 6.2, 'Brettanomyces-conditioned Trappist pale, dry-hopped.')
-) AS v(name, style, abv, description)
+    ('Orval', 'Belgian Pale Ale', 6.2)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Brasserie d''Orval';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Duvel', 'Belgian Strong Golden Ale', 8.5, 'The definitive strong golden, pear and pepper, bone dry.'),
-    ('Duvel Tripel Hop Citra', 'Belgian IPA', 9.5, 'Duvel re-hopped with Citra, grapefruit over yeast spice.')
-) AS v(name, style, abv, description)
+    ('Duvel', 'Belgian Strong Golden Ale', 8.5),
+    ('Duvel Tripel Hop Citra', 'Belgian IPA', 9.5)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Duvel Moortgat';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Gueuze 100% Lambic Bio', 'Gueuze', 5.5, 'Blended lambic, sharp, funky and bone dry.'),
-    ('Kriek 100% Lambic Bio', 'Kriek', 5.5, 'Whole sour cherries macerated in young lambic.'),
-    ('Rosé de Gambrinus', 'Fruit Lambic', 5.0, 'Raspberry lambic, tart and floral.')
-) AS v(name, style, abv, description)
+    ('Gueuze 100% Lambic Bio', 'Gueuze', 5.5),
+    ('Kriek 100% Lambic Bio', 'Kriek', 5.5),
+    ('Rosé de Gambrinus', 'Fruit Lambic', 5.0)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Brasserie Cantillon';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Bigfoot', 'Barleywine', 9.6, 'Resinous American barleywine, ages beautifully.'),
-    ('Pale Ale', 'Pale Ale', 5.6, 'The 1980 original that defined American pale ale.'),
-    ('Torpedo Extra IPA', 'IPA', 7.2, 'Whole-cone dry-hopped, pine and citrus.')
-) AS v(name, style, abv, description)
+    ('Bigfoot', 'Barleywine', 9.6),
+    ('Pale Ale', 'Pale Ale', 5.6),
+    ('Torpedo Extra IPA', 'IPA', 7.2)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Sierra Nevada Brewing Co.';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Pliny the Elder', 'Double IPA', 8.0, 'The benchmark West Coast double IPA.'),
-    ('Blind Pig IPA', 'IPA', 6.3, 'Sharp, dry West Coast IPA with grapefruit pith.'),
-    ('Supplication', 'American Wild Ale', 7.8, 'Sour brown aged in pinot barrels with cherries.')
-) AS v(name, style, abv, description)
+    ('Pliny the Elder', 'Double IPA', 8.0),
+    ('Blind Pig IPA', 'IPA', 6.3),
+    ('Supplication', 'American Wild Ale', 7.8)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Russian River Brewing Company';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('KBS', 'Imperial Stout', 12.0, 'Bourbon-barrel imperial stout, coffee and chocolate.'),
-    ('Breakfast Stout', 'Oatmeal Stout', 8.3, 'Double chocolate coffee oatmeal stout.'),
-    ('All Day IPA', 'Session IPA', 4.7, 'Full-flavored session IPA, made for long days.')
-) AS v(name, style, abv, description)
+    ('KBS', 'Imperial Stout', 12.0),
+    ('Breakfast Stout', 'Oatmeal Stout', 8.3),
+    ('All Day IPA', 'Session IPA', 4.7)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Founders Brewing Co.';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Two Hearted Ale', 'IPA', 7.0, 'All-Centennial IPA, pine needles and orange.'),
-    ('Hopslam', 'Double IPA', 10.0, 'Honey-kissed double IPA, dangerously smooth.'),
-    ('Expedition Stout', 'Imperial Stout', 10.5, 'Massive Russian imperial stout built for the cellar.')
-) AS v(name, style, abv, description)
+    ('Two Hearted Ale', 'IPA', 7.0),
+    ('Hopslam', 'Double IPA', 10.0),
+    ('Expedition Stout', 'Imperial Stout', 10.5)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Bell''s Brewery';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Punk IPA', 'IPA', 5.4, 'The post-modern classic that launched a thousand IPAs.'),
-    ('Elvis Juice', 'IPA', 6.5, 'Grapefruit-infused IPA, bitter and juicy.'),
-    ('Jack Hammer', 'IPA', 7.2, 'Ruthless West Coast bitterness, pith and pine.')
-) AS v(name, style, abv, description)
+    ('Punk IPA', 'IPA', 5.4),
+    ('Elvis Juice', 'IPA', 6.5),
+    ('Jack Hammer', 'IPA', 7.2)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'BrewDog';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Export India Porter', 'Porter', 6.0, 'Historic London porter recipe, roast and hop bite.'),
-    ('India Pale Ale Citra', 'IPA', 6.7, 'Single-hop Citra IPA, fresh from Bermondsey.'),
-    ('Table Beer', 'Session Ale', 3.0, 'Tiny but characterful, hoppy table beer.')
-) AS v(name, style, abv, description)
+    ('Export India Porter', 'Porter', 6.0),
+    ('India Pale Ale Citra', 'IPA', 6.7),
+    ('Table Beer', 'Session Ale', 3.0)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'The Kernel Brewery';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Beer Geek Breakfast', 'Oatmeal Stout', 7.5, 'Gourmet coffee oatmeal stout that started it all.'),
-    ('1000 IBU', 'Double IPA', 9.6, 'Theoretical bitterness taken to the limit.'),
-    ('Spontanale', 'Wild Ale', 5.5, 'Spontaneously fermented ale, cellar funk and lemon.')
-) AS v(name, style, abv, description)
+    ('Beer Geek Breakfast', 'Oatmeal Stout', 7.5),
+    ('1000 IBU', 'Double IPA', 9.6),
+    ('Spontanale', 'Wild Ale', 5.5)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Mikkeller';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Fatamorgana', 'Double IPA', 8.0, 'Oat-heavy hazy double IPA, mango and pine.'),
-    ('Zodiak', 'IPA', 6.2, 'Bright everyday IPA, tropical and soft.')
-) AS v(name, style, abv, description)
+    ('Fatamorgana', 'Double IPA', 8.0),
+    ('Zodiak', 'IPA', 6.2)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Omnipollo';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Konrad''s Stout', 'Imperial Stout', 10.4, 'Thick Norwegian imperial stout, licorice and espresso.'),
-    ('Lucky Jack', 'Pale Ale', 4.7, 'Citrusy everyday pale ale from Stavanger.')
-) AS v(name, style, abv, description)
+    ('Konrad''s Stout', 'Imperial Stout', 10.4),
+    ('Lucky Jack', 'Pale Ale', 4.7)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Lervig';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Öö', 'Imperial Stout', 10.5, '"Night" in Estonian — pitch-black imperial Baltic porter.'),
-    ('Virmalised', 'IPA', 6.5, '"Northern lights" IPA, piney and bright.'),
-    ('Kosmos', 'IPA', 5.5, 'Flagship Estonian IPA, balanced and aromatic.')
-) AS v(name, style, abv, description)
+    ('Öö', 'Imperial Stout', 10.5),
+    ('Virmalised', 'IPA', 6.5),
+    ('Kosmos', 'IPA', 5.5)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Põhjala';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Amarillo IPA', 'IPA', 6.2, 'Finnish single-hop Amarillo IPA, orange marmalade.'),
-    ('Savu Gose', 'Gose', 4.2, 'Lightly smoked salty-sour gose from Tuusula.'),
-    ('Pimeä Imperial Stout', 'Imperial Stout', 9.0, 'Finnish winter warmer, roasted malt and dark syrup.')
-) AS v(name, style, abv, description)
+    ('Amarillo IPA', 'IPA', 6.2),
+    ('Savu Gose', 'Gose', 4.2),
+    ('Pimeä Imperial Stout', 'Imperial Stout', 9.0)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Maku Brewing';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Hefeweissbier', 'Hefeweizen', 5.4, 'The world''s oldest brewery''s banana-clove classic.'),
-    ('Vitus', 'Weizenbock', 7.7, 'Pale weizenbock, warming banana and vanilla.'),
-    ('Korbinian', 'Doppelbock', 7.4, 'Dark doppelbock, bread crust and dried plum.')
-) AS v(name, style, abv, description)
+    ('Hefeweissbier', 'Hefeweizen', 5.4),
+    ('Vitus', 'Weizenbock', 7.7),
+    ('Korbinian', 'Doppelbock', 7.4)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Weihenstephan';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Celebrator', 'Doppelbock', 6.7, 'Benchmark doppelbock with the goat on the label.'),
-    ('Bräuweisse', 'Hefeweizen', 5.1, 'Bright Bavarian wheat, lively carbonation.'),
-    ('Altbairisch Dunkel', 'Dunkel', 5.0, 'Old-Bavarian dark lager, toasted bread and cocoa.')
-) AS v(name, style, abv, description)
+    ('Celebrator', 'Doppelbock', 6.7),
+    ('Bräuweisse', 'Hefeweizen', 5.1),
+    ('Altbairisch Dunkel', 'Dunkel', 5.0)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Ayinger Privatbrauerei';
 
-INSERT INTO catalog.beer (brewery_id, name, style, abv, description)
-SELECT b.id, v.name, v.style, v.abv, v.description
+INSERT INTO catalog.beer (brewery_id, name, style, abv)
+SELECT b.id, v.name, v.style, v.abv
 FROM (VALUES
-    ('Aventinus', 'Weizenbock', 8.2, 'Wheat doppelbock since 1907, banana, clove and sherry.'),
-    ('Original', 'Hefeweizen', 5.4, 'Amber Bavarian wheat brewed to the 1872 recipe.')
-) AS v(name, style, abv, description)
+    ('Aventinus', 'Weizenbock', 8.2),
+    ('Original', 'Hefeweizen', 5.4)
+) AS v(name, style, abv)
 JOIN catalog.brewery b ON b.name = 'Schneider Weisse';

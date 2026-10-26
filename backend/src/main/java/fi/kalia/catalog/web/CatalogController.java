@@ -69,9 +69,6 @@ class CatalogController {
 
 	private static final String PAGE_DESCRIPTION = "Zero-based page index; page × size is at most " + MAX_OFFSET;
 
-	/** Batch lookup id cap: keeps the repeated-parameter URL inside ordinary length limits (ADR-0042). */
-	private static final int MAX_BATCH_IDS = 100;
-
 	private final CatalogService catalog;
 
 	private final ContributionService contributions;
@@ -125,23 +122,6 @@ class CatalogController {
 	@Operation(summary = "Get beer details", description = "Full details for a single beer, including its brewery.")
 	BeerDetailsDto getBeer(@Parameter(description = "Beer id") @PathVariable UUID id) {
 		return BeerDetailsDto.from(catalog.getBeer(id));
-	}
-
-	@GetMapping("/beers/batch")
-	// Do not remove: matches Spring's default, but its absence would silently
-	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
-	@ResponseStatus(HttpStatus.OK)
-	@ApiResponse(responseCode = "400", description = "No id, too many ids, or an id that is not a UUID",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
-	@Operation(summary = "Get beers by id", description = """
-			Summaries for a set of beers named by repeated `ids` query parameter, for a client \
-			enriching a list it already holds (e.g. a cellar). An id matching no beer is omitted \
-			from the response rather than returned as null; order is not significant.""")
-	List<BeerSummaryDto> getBeersByIds(
-			@Parameter(description = "Beer ids, repeated; 1-" + MAX_BATCH_IDS)
-			@RequestParam @Size(min = 1, max = MAX_BATCH_IDS) List<UUID> ids) {
-		return catalog.getBeers(ids).stream().map(BeerSummaryDto::from).toList();
 	}
 
 	@PostMapping("/beers")

@@ -52,7 +52,7 @@ class CatalogPersistenceIT {
 	void persistsAndReloadsABeer() {
 		Brewery brewery = breweries.save(Brewery.create("Test Brewery", "FI", "Helsinki"));
 		Beer saved = beers.save(Beer.create(
-				brewery, "Test IPA", "IPA", new BigDecimal("6.5"), "A test beer"));
+				brewery, "Test IPA", "IPA", new BigDecimal("6.5")));
 
 		Beer reloaded = beers.findById(saved.getId()).orElseThrow();
 
@@ -65,7 +65,7 @@ class CatalogPersistenceIT {
 	@Test
 	void aRowTheAppInsertsIsMarkedUserAddedWithNoQid() {
 		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null));
-		Beer beer = beers.saveAndFlush(Beer.create(brewery, "Test IPA", "IPA", new BigDecimal("6.5"), null));
+		Beer beer = beers.saveAndFlush(Beer.create(brewery, "Test IPA", "IPA", new BigDecimal("6.5")));
 
 		assertThat(provenance("catalog.brewery", brewery.getId()))
 				.containsEntry("source", "USER").containsEntry("wikidata_qid", null);
@@ -78,10 +78,10 @@ class CatalogPersistenceIT {
 	@Test
 	void theDatabaseRefusesASecondBeerOfTheSameFoldedNameAtOneBrewery() {
 		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null));
-		beers.saveAndFlush(Beer.create(brewery, "Test I.P.A.", "IPA", new BigDecimal("6.5"), null));
+		beers.saveAndFlush(Beer.create(brewery, "Test I.P.A.", "IPA", new BigDecimal("6.5")));
 
 		assertThatThrownBy(() -> beers.saveAndFlush(
-				Beer.create(brewery, " test ipa", "IPA", new BigDecimal("6.5"), null)))
+				Beer.create(brewery, " test ipa", "IPA", new BigDecimal("6.5"))))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 

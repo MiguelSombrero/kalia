@@ -84,7 +84,7 @@ export function parseSeed(sql) {
   const beers = [];
   for (const block of sql.split("INSERT INTO catalog.beer").slice(1)) {
     const brewery = unquote(block.match(new RegExp(`b\\.name = ${literal}`))[1]);
-    for (const m of block.matchAll(new RegExp(`^\\s+\\(${literal}, ${literal}, [\\d.]+, `, "gm"))) {
+    for (const m of block.matchAll(new RegExp(`^\\s+\\(${literal}, ${literal}, [\\d.]+\\)`, "gm"))) {
       beers.push({ brewery, name: unquote(m[1]), style: unquote(m[2]) });
     }
   }

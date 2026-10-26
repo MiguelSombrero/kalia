@@ -42,7 +42,7 @@ describe("kaliaFetch", () => {
     vi.stubGlobal("fetch", fetchMock);
     givenSignedInWithToken("token-abc");
 
-    await kaliaFetch("/api/v1/me", { method: "GET" });
+    await kaliaFetch("/api/v1/cellar", { method: "GET" });
 
     const headers = new Headers(initOf(fetchMock).headers);
     expect(headers.get("Authorization")).toBe("Bearer token-abc");
@@ -78,7 +78,7 @@ describe("kaliaFetch", () => {
     vi.stubGlobal("fetch", fetchMock);
     givenSignedInWithToken("token-abc");
 
-    const refusal = await kaliaFetch("/api/v1/me", { method: "GET", headers }).catch(
+    const refusal = await kaliaFetch("/api/v1/cellar", { method: "GET", headers }).catch(
       (e: unknown) => e,
     );
 

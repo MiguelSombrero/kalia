@@ -217,7 +217,7 @@ TypeScript vocabulary a client meets — is catalogued in
 
 ```
 catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, created_at) — unique (fold_name(name), country_code), unique (wikidata_qid)
-catalog.beer(id, brewery_id, name, style, abv, description, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
+catalog.beer(id, brewery_id, name, style, abv, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, version, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at) — unique (lower(username))
@@ -366,7 +366,6 @@ REST, JSON, versioned under `/api/v1`. Built:
 ```
 GET    /api/v1/beers?query=&style=&breweryId=&countryCode=&minAbv=&maxAbv=&page=&size=&sort=  -> countryCode: one of /countries' codes, 400 otherwise
 GET    /api/v1/beers/{id}
-GET    /api/v1/beers/batch?ids=&ids=                 -> summaries for up to 100 beers by id, for a client enriching a list it holds; unknown ids omitted, 400 over the cap
 GET    /api/v1/breweries?query=&page=&size=          -> query: case-insensitive substring of the brewery's name
 GET    /api/v1/breweries/countries                  -> the ISO 3166-1 code of every country the catalog has a brewery in, which the catalog's country filter offers
 GET    /api/v1/styles                               -> every style a catalog beer has, the vocabulary a beer is added with
@@ -375,7 +374,6 @@ GET    /api/v1/cellars/{username}?page=&size=       -> one page of a cellar its 
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
-GET    /api/v1/me                                  -> the caller behind the bearer token
 POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId)
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice
@@ -515,7 +513,7 @@ Conventions:
   client to join ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
 - Authentication: bearer token, default deny — the routes that need none
   are listed once, in [§6](#6-authentication-and-identity). A path whose
-  user is implied by the credential is top-level (`/me`, `/cellar`), never
+  user is implied by the credential is top-level (`/cellar`), never
   `/users/{id}/…`.
 - Errors: RFC 9457 `application/problem+json`, every one of them — a `401` or
   `403` from the filter chain included, which keeps its `WWW-Authenticate`
@@ -736,8 +734,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   deliberately added here
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)):
   - the catalog reads — `GET /api/v1/beers`, `/api/v1/beers/{id}`,
-    `/api/v1/beers/batch`, `/api/v1/breweries`,
-    `/api/v1/breweries/countries`, `/api/v1/styles` and `/api/v1/countries`;
+    `/api/v1/breweries`, `/api/v1/breweries/countries`, `/api/v1/styles` and
+    `/api/v1/countries`;
   - a public cellar — `GET /api/v1/cellars/{username}`
     ([ADR-0050](adr/0050-public-cellar-addressing.md));
   - the feed — `GET /api/v1/feed`
@@ -937,7 +935,7 @@ records the latest run.
    catalog in SQL:
    - each brewery gets ten copies in its own country;
    - each generated beer copies a real beer's name with a numeric suffix,
-     plus its style, ABV and description, onto a copy of that beer's
+     plus its style and ABV, onto a copy of that beer's
      brewery;
 
    This keeps the style, country and name-trigram distributions the import

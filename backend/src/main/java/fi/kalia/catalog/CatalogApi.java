@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CatalogApi {
 
-	// Matches the /beers/batch HTTP cap (CatalogController): one query's IN
-	// clause is bounded the same way (ADR-0042).
+	// Bounds one query's IN clause (ADR-0042).
 	static final int MAX_BATCH_IDS = 100;
 
 	private final CatalogService catalog;

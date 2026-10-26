@@ -104,7 +104,7 @@ class AddBeerApiIT {
 
 		UUID anyBeer = jdbc.queryForObject("SELECT id FROM catalog.beer LIMIT 1", UUID.class);
 		for (String uri : List.of("/api/v1/beers?size=1", "/api/v1/beers/" + anyBeer,
-				"/api/v1/beers/batch?ids=" + anyBeer, "/api/v1/breweries?query=vleteren", "/api/v1/styles",
+				"/api/v1/breweries?query=vleteren", "/api/v1/styles",
 				"/api/v1/countries", "/api/v1/breweries/countries")) {
 			client.get().uri(uri).exchange().expectStatus().isOk();
 		}
@@ -194,18 +194,6 @@ class AddBeerApiIT {
 	}
 
 	@Test
-	void aDescriptionInTheRequestIsNotStored() {
-		Request withDescription = beer(uniqueName("Abt"), STYLE, 10.5).withBrewery(westvleteren);
-		withDescription.body.put("description", "Anything anyone types, shown to everyone");
-
-		String body = addBeer(withDescription).expectStatus().isCreated()
-				.expectBody(String.class).returnResult().getResponseBody();
-
-		assertThat(jdbc.queryForObject("SELECT description FROM catalog.beer WHERE id = ?", String.class,
-				idOf(body))).isNull();
-	}
-
-	@Test
 	void styleMatchingIgnoresCaseAndStoresTheCatalogsSpelling() {
 		String body = addBeer(beer(uniqueName("Abt"), "  quadrupel ", 10.5).withBrewery(westvleteren))
 				.expectStatus().isCreated().expectBody(String.class).returnResult().getResponseBody();
@@ -224,7 +212,6 @@ class AddBeerApiIT {
 				created,
 				read("/api/v1/beers?query=" + JsonPath.read(created, "$.name")),
 				read("/api/v1/beers/" + id),
-				read("/api/v1/beers/batch?ids=" + id),
 				read("/api/v1/breweries?query=" + breweryName));
 
 		assertThat(reads).allSatisfy(body -> assertThat(body)

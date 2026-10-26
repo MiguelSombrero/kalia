@@ -30,7 +30,6 @@ class PublicRoutesIT {
 	// The documented home of this list is docs/architecture.md §6; change both together.
 	private static final Set<String> PUBLIC_ROUTES = Set.of(
 			"GET /api/v1/beers",
-			"GET /api/v1/beers/batch",
 			"GET /api/v1/beers/{id}",
 			"GET /api/v1/breweries",
 			"GET /api/v1/breweries/countries",

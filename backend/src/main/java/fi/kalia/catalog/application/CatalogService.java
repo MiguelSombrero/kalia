@@ -48,10 +48,6 @@ public class CatalogService {
 		return beers.findById(id).orElseThrow(() -> new BeerNotFoundException(id));
 	}
 
-	public List<Beer> getBeers(Collection<UUID> ids) {
-		return beers.findByIdIn(ids);
-	}
-
 	public List<BeerSummary> getBeerSummaries(Collection<UUID> ids) {
 		return beers.findByIdIn(ids).stream()
 				.map(beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),

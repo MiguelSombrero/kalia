@@ -32,8 +32,6 @@ class CatalogOpenApiDocumentationIT {
 				.isEqualTo("Search beers");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/beers/{id}'].get.summary"))
 				.isEqualTo("Get beer details");
-		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/beers/batch'].get.summary"))
-				.isEqualTo("Get beers by id");
 		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/breweries'].get.summary"))
 				.isEqualTo("List breweries");
 	}
@@ -57,19 +55,15 @@ class CatalogOpenApiDocumentationIT {
 		List<String> required = JsonPath.read(body, "$.components.schemas.BeerSummaryDto.required");
 		// springdoc does not infer "required" from Java non-nullability alone:
 		// every field defaulted to optional until requiredMode was set
-		// explicitly. description is @Nullable and must stay out of this list.
+		// explicitly.
 		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "brewery");
-
-		List<String> detailsRequired =
-				JsonPath.read(body, "$.components.schemas.BeerDetailsDto.required");
-		assertThat(detailsRequired).doesNotContain("description");
 
 		Map<String, Object> summaryProperties =
 				JsonPath.read(body, "$.components.schemas.BeerSummaryDto.properties");
 		Map<String, Object> detailsProperties =
 				JsonPath.read(body, "$.components.schemas.BeerDetailsDto.properties");
 		assertThat(summaryProperties).doesNotContainKey("price");
-		assertThat(detailsProperties).doesNotContainKey("price");
+		assertThat(detailsProperties).doesNotContainKey("price").doesNotContainKey("description");
 		assertThat(body).doesNotContain("MoneyDto");
 	}
 

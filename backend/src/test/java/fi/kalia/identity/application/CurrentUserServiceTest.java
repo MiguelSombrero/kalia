@@ -34,8 +34,6 @@ class CurrentUserServiceTest {
 
 		assertThat(user.id()).isEqualTo(UUID.fromString(SUBJECT));
 		assertThat(user.username()).isEqualTo("testuser");
-		assertThat(user.email()).isEqualTo("testuser@example.com");
-		assertThat(user.name()).isEqualTo("Test User");
 	}
 
 	@Test
@@ -50,22 +48,6 @@ class CurrentUserServiceTest {
 		authenticateWith(jwt().subject("not-a-uuid").build());
 
 		assertThatThrownBy(service::requireUsername).isInstanceOf(InvalidBearerTokenException.class);
-	}
-
-	@Test
-	void leavesOptionalClaimsNullWhenTheTokenOmitsThem() {
-		authenticateWith(Jwt.withTokenValue("token")
-				.header("alg", "RS256")
-				.subject(SUBJECT)
-				.claim("preferred_username", "testuser")
-				.issuedAt(Instant.now())
-				.expiresAt(Instant.now().plusSeconds(300))
-				.build());
-
-		CurrentUser user = service.require();
-
-		assertThat(user.email()).isNull();
-		assertThat(user.name()).isNull();
 	}
 
 	@Test
@@ -102,7 +84,6 @@ class CurrentUserServiceTest {
 		Jwt withoutUsername = Jwt.withTokenValue("token")
 				.header("alg", "RS256")
 				.subject(SUBJECT)
-				.claim("email", "testuser@example.com")
 				.issuedAt(Instant.now())
 				.expiresAt(Instant.now().plusSeconds(300))
 				.build();
@@ -122,8 +103,6 @@ class CurrentUserServiceTest {
 				.header("alg", "RS256")
 				.subject(SUBJECT)
 				.claim("preferred_username", "testuser")
-				.claim("email", "testuser@example.com")
-				.claim("name", "Test User")
 				.issuedAt(Instant.now())
 				.expiresAt(Instant.now().plusSeconds(300));
 	}

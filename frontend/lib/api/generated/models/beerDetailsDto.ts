@@ -15,6 +15,5 @@ export interface BeerDetailsDto {
   style: string;
   /** Alcohol by volume, percent */
   abv: number;
-  description?: string;
   brewery: BreweryDto;
 }

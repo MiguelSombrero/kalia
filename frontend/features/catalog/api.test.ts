@@ -131,7 +131,6 @@ const westvleteren12: BeerDetails = {
   name: "Westvleteren 12",
   style: "Quadrupel",
   abv: 10.2,
-  description: "Dark strong Trappist ale.",
   brewery: { id: "br1", name: "Brouwerij Westvleteren", countryCode: "BE", city: "Vleteren" },
 };
 
