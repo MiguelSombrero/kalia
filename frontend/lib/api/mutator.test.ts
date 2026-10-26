@@ -5,10 +5,12 @@ import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
 import { isApiError } from "./api-error";
 import { kaliaFetch } from "./mutator";
+import { currentClientAddress } from "./requestClient";
 import { currentTraceparent } from "./requestTrace";
 
 vi.mock("@/lib/auth/valkeyAdapter", () => ({ getSessionAccount: vi.fn() }));
 vi.mock("@/lib/auth/sessionCookie", () => ({ currentSessionToken: vi.fn() }));
+vi.mock("./requestClient", () => ({ currentClientAddress: vi.fn(async () => undefined) }));
 vi.mock("./requestTrace", () => ({ currentTraceparent: vi.fn(async () => undefined) }));
 vi.mock("@/lib/logger", () => ({
   logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -33,6 +35,7 @@ describe("kaliaFetch", () => {
     vi.useRealTimers();
     vi.mocked(currentSessionToken).mockResolvedValue(undefined);
     vi.mocked(currentTraceparent).mockResolvedValue(undefined);
+    vi.mocked(currentClientAddress).mockResolvedValue(undefined);
     vi.clearAllMocks();
     metrics.backendCallFailures.reset();
   });
@@ -242,6 +245,33 @@ describe("kaliaFetch", () => {
       kind: "network",
     });
   });
+  describe("client address", () => {
+    it("forwards the address the edge proxy named, replacing a caller-set one", async () => {
+      const fetchMock = vi.fn(async () => Response.json({}));
+      vi.stubGlobal("fetch", fetchMock);
+      vi.mocked(currentClientAddress).mockResolvedValue("203.0.113.5");
+
+      await kaliaFetch("/api/v1/beers", {
+        method: "GET",
+        headers: { "X-Forwarded-For": "198.51.100.1" },
+      });
+
+      expect(new Headers(initOf(fetchMock).headers).get("X-Forwarded-For")).toBe("203.0.113.5");
+    });
+
+    it("sends none outside a request, and drops a caller-set one", async () => {
+      const fetchMock = vi.fn(async () => Response.json({}));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await kaliaFetch("/api/v1/beers", {
+        method: "GET",
+        headers: { "X-Forwarded-For": "198.51.100.1" },
+      });
+
+      expect(new Headers(initOf(fetchMock).headers).has("X-Forwarded-For")).toBe(false);
+    });
+  });
+
   describe("tracing and logging", () => {
     const incoming = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 

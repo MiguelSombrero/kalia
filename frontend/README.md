@@ -124,6 +124,16 @@ its own host ports. The suite reads them from that `.env`
 it at once. The Valkey password comes the same way, from `VALKEY_PASSWORD` or
 `docker-compose.dev.env`.
 
+Every request in the suite passes through the `edge` proxy, from one address,
+under the limits in
+[ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md).
+`e2e/edge-limits.spec.ts` deliberately exhausts some of them, so it is its own
+Playwright project that waits for every other spec: `--project=edge-limits`
+therefore runs the whole suite first, and `--no-deps` skips that when the
+stack is already warm. If a spec you add makes many requests in a burst, the
+symptom of hitting a limit is a `429` page from nginx, not an application
+error.
+
 A spec that signs in gets its Keycloak account from the worker-scoped
 `account` fixture (`e2e/support/keycloakAccount.ts`), never a hardcoded
 username: the account is derived from the Playwright worker index and

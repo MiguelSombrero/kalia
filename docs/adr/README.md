@@ -285,6 +285,10 @@ in one place, read
   — `docker-compose.base.yml` is the deployable definition and requires every
   secret; the local stack adds the dev values, the seed service and the Swagger
   client around it.
+- [ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)
+  — an nginx edge proxy is the only published service: it limits requests and
+  bodies per client address in front of the frontend, backend and Keycloak, and
+  names the client address they trust.
 
 ## Engineering process and documentation
 

@@ -68,7 +68,7 @@ compose-check: ## Fail if the deployable compose file renders without a secret, 
 	node scripts/check-compose.mjs
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
-	docker compose up -d --build --wait --wait-timeout 120 backend postgres
+	docker compose up -d --build --wait --wait-timeout 120 backend postgres edge
 	(cd frontend && npm run generate:api)
 	git diff --exit-code -- frontend/lib/api/generated
 
@@ -78,8 +78,9 @@ api-drift: ## Fail if the committed API client has drifted from the live spec (n
 # (ADR-0054). With nothing running, a fresh realm is imported first so the
 # check has something to compare against.
 keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from keycloak/realm-export.json, or loses an account to a fresh container (needs Docker)
+	@docker compose up -d --build --wait --wait-timeout 120 edge
 	@docker compose ps --status running --quiet keycloak | grep -q . \
-	    || { docker compose up -d --build --wait --wait-timeout 120 postgres keycloak \
+	    || { docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge \
 	         && docker compose run --rm keycloak-config; }
 	node scripts/check-keycloak-realm-config.mjs
 	docker compose up -d --build keycloak-seed

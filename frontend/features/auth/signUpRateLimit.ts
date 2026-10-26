@@ -11,13 +11,10 @@ const WINDOW_SECONDS = 10 * 60;
 const MAX_ATTEMPTS = 20;
 const KEY = "auth:sign-up-rate";
 
-// One shared counter, not per-visitor: this stack has no reverse proxy in
-// front of Next.js, so there is no header a caller can't forge to claim a
-// fresh identity (x-forwarded-for included) — a per-identity limiter here
-// would be a bypassable limiter, not a basic one. A global counter can't be
-// evaded that way, at the cost of one abusive run using up everyone's
-// budget; that budget is itself global (Gmail's send quota, ADR-0055), so
-// this is what the limit is actually protecting.
+// One shared counter, not per-visitor, because the budget it protects is
+// itself global (Gmail's send quota, ADR-0055): one abusive run using it up is
+// the outcome to prevent, not a side effect. The per-address bound on
+// registration is the edge proxy's (ADR-0090).
 //
 // Do not call EXPIRE only when INCR returns 1: an INCR that finds the key
 // just expired recreates it with no expiry, and every sign-up is then refused

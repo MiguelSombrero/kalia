@@ -6,6 +6,11 @@
   [iteration 8.5 task 09](../tasks/iteration-8.5/09-sign-up-limiter-cannot-lock-forever.md) —
   the counter's expiry is set with `EXPIRE … NX` after every `INCR`, so a
   window ending between the two commands cannot leave it without one
+- **Amended:** 2026-10-26 by [ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) — the stack now has
+  a reverse proxy, so "no reverse proxy in front of Next.js" and the
+  unthrottled `/registrations` bypass below no longer hold: registration
+  submissions are limited per client address at the proxy. The counter stays
+  global, protecting the shared mail budget
 
 ## Context
 

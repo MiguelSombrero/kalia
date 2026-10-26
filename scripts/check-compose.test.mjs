@@ -6,7 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { consistencyProblems, requiredVariables, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { consistencyProblems, edgeProblems, requiredVariables, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -36,4 +36,31 @@ test("consistencyProblems rejects a dev value the base never uses", () => {
   const problems = consistencyProblems({ baseText: "X: ${A:?set A}", devEnvText: "A=1\nSTALE=2\n" });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /STALE/);
+});
+
+const behindEdge = {
+  edge: { ports: [{ published: "3000" }] },
+  frontend: {},
+  backend: {},
+  keycloak: { environment: { KC_PROXY_HEADERS: "xforwarded", KC_PROXY_TRUSTED_ADDRESSES: "10.0.0.0/8" } },
+};
+
+test("edgeProblems accepts services reachable only through the edge", () => {
+  assert.deepEqual(edgeProblems(behindEdge), []);
+});
+
+test("edgeProblems names a service behind the edge that publishes a port", () => {
+  const problems = edgeProblems({ ...behindEdge, backend: { ports: [{ published: "8080" }] } });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /backend publishes a port/);
+});
+
+test("edgeProblems rejects a stack with no edge", () => {
+  const { edge: _edge, ...without } = behindEdge;
+  assert.match(edgeProblems(without)[0], /no edge service/);
+});
+
+test("edgeProblems rejects Keycloak trusting forwarded headers from anywhere", () => {
+  const keycloak = { environment: { KC_PROXY_HEADERS: "xforwarded" } };
+  assert.match(edgeProblems({ ...behindEdge, keycloak })[0], /only from trusted addresses/);
 });
