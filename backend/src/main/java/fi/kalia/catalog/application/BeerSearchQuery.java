@@ -6,5 +6,13 @@ import org.jspecify.annotations.Nullable;
 
 public record BeerSearchQuery(@Nullable String query, @Nullable String style,
 		@Nullable UUID breweryId, @Nullable String countryCode,
-		@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
+		@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv,
+		@Nullable String similarTo) {
+
+	public BeerSearchQuery(@Nullable String query, @Nullable String style,
+			@Nullable UUID breweryId, @Nullable String countryCode,
+			@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
+		this(query, style, breweryId, countryCode, minAbv, maxAbv, null);
+	}
+
 }

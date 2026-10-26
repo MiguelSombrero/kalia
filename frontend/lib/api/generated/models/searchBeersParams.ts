@@ -55,4 +55,10 @@ size?: number;
  * "<property>,<asc|desc>"; property is one of name, style, abv
  */
 sort?: string;
+/**
+ * Restrict to beers whose name contains any word of this text, case-insensitively: the words are its runs of letters and digits at least 2 long, the first 8 counted. Requires breweryId. At most 100 characters
+ * @minLength 0
+ * @maxLength 100
+ */
+similarTo?: string;
 };

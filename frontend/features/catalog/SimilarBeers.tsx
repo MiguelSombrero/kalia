@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { BeerSlot } from "@/components/ui/beer-slot";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
-import { useBreweryBeers } from "./hooks/useAddBeer";
+import { useSimilarBeers } from "./hooks/useAddBeer";
+import { useDebouncedValue } from "./hooks/useDebouncedValue";
 import { beerHref } from "./links";
-import { similarlyNamed } from "./similarNames";
 
-/** The picked brewery's beers named like the one being added (ADR-0082). */
+/** The picked brewery's beers named like the one being added (ADR-0082), as the API finds them. */
 export const SimilarBeers = ({
   locale,
   breweryId,
@@ -22,8 +22,8 @@ export const SimilarBeers = ({
   beerName: string;
 }) => {
   const { t } = useTranslation();
-  const beers = useBreweryBeers(breweryId);
-  const similar = similarlyNamed(beerName, beers.data ?? []);
+  const beers = useSimilarBeers(breweryId, useDebouncedValue(beerName));
+  const similar = beers.data ?? [];
 
   return (
     <section aria-live="polite" aria-label={t("catalog.add.similarHeading", { brewery: breweryName })}>

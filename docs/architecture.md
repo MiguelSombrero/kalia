@@ -364,7 +364,7 @@ reordering on its own.
 REST, JSON, versioned under `/api/v1`. Built:
 
 ```
-GET    /api/v1/beers?query=&style=&breweryId=&countryCode=&minAbv=&maxAbv=&page=&size=&sort=  -> countryCode: one of /countries' codes, 400 otherwise
+GET    /api/v1/beers?query=&style=&breweryId=&countryCode=&minAbv=&maxAbv=&similarTo=&page=&size=&sort=  -> countryCode: one of /countries' codes, 400 otherwise; similarTo: beers whose name contains any word of it, 400 without breweryId
 GET    /api/v1/beers/{id}
 GET    /api/v1/breweries?query=&page=&size=          -> query: case-insensitive substring of the brewery's name
 GET    /api/v1/breweries/countries                  -> the ISO 3166-1 code of every country the catalog has a brewery in, which the catalog's country filter offers
@@ -374,7 +374,7 @@ GET    /api/v1/cellars/{username}?page=&size=       -> one page of a cellar its 
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
-POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId)
+POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them)
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle; 409 as above

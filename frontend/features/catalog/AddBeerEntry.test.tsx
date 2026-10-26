@@ -14,7 +14,7 @@ vi.mock("./actions", () => ({
   startCatalogSignIn,
   loadAddBeerOptionsAction: vi.fn(async () => ({ styles: ["IPA"], countries: [{ code: "FI", name: "Finland" }] })),
   findBreweriesAction: vi.fn(async () => []),
-  listBreweryBeersAction: vi.fn(async () => []),
+  findSimilarBeersAction: vi.fn(async () => []),
   addBeerAction: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));

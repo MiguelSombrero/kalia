@@ -162,7 +162,8 @@ and they drift from the Java names that produced them.
 | `quantity` | On `EntryDto` / `PublicCellarEntryDto`: the derived bottle count (`COUNT(*)`). It maps to no database column and no stored domain field — it exists only at the API boundary. On `AddBottleRequestDto`: how many identical bottles to create (1–24). On `FeedLineDto`: the count frozen on one bulk-add act at the moment it happened — never recomputed, and unrelated to what the cellar holds now. |
 | `cellarPublic` | The wire name for cellar visibility, on `ProfileDto` and `ChangeVisibilityRequestDto`. |
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |
-| `existingBeerId`, `existingBreweryId` | On a `409` from `POST /beers`: the row the catalog already holds, which the refused beer or brewery duplicates. |
+| `existingBeerId`, `existingBreweryId` | On a `409` from `POST /beers`: the row the catalog already holds, which the refused beer or brewery duplicates. A duplicate brewery's `409` also carries `existingBreweryName` and `existingBreweryCountryCode`, spelled as the catalog holds them. |
+| `similarTo` | On `GET /beers`, with `breweryId`: the beers of that brewery whose name contains any word of this text — the add-beer form's similar-beers hint ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)). |
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`. |

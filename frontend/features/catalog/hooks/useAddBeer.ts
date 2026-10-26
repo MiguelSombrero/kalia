@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
   addBeerAction,
   findBreweriesAction,
-  listBreweryBeersAction,
+  findSimilarBeersAction,
   loadAddBeerOptionsAction,
 } from "../actions";
 import type { AddBeerRequest } from "../types";
@@ -25,11 +25,12 @@ export const useBreweryMatches = (query: string, locale: string) =>
     placeholderData: keepPreviousData,
   });
 
-export const useBreweryBeers = (breweryId: string) =>
+export const useSimilarBeers = (breweryId: string, beerName: string) =>
   useQuery({
-    queryKey: [...catalogKey, "breweryBeers", breweryId],
-    queryFn: () => listBreweryBeersAction(breweryId),
-    enabled: breweryId !== "",
+    queryKey: [...catalogKey, "similarBeers", breweryId, beerName],
+    queryFn: () => findSimilarBeersAction(breweryId, beerName),
+    enabled: breweryId !== "" && beerName.trim() !== "",
+    placeholderData: keepPreviousData,
   });
 
 export const useAddBeer = () =>
