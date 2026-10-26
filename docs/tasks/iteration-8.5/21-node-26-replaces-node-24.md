@@ -1,6 +1,6 @@
 # Task 21: Node 26 replaces Node 24 everywhere it is pinned
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -96,15 +96,15 @@ proposal returns weekly.
       returning only the dated evidence lines in ADRs and task files, and by
       `.node-version`, `frontend/Dockerfile` and `docker-compose.yml` naming
       the same major
-- [ ] The frontend's unit, build and e2e tests pass on Node 26: `make verify`
+- [x] The frontend's unit, build and e2e tests pass on Node 26: `make verify`
       is green and the CI jobs, which read `.node-version`, print `v26` for
       `node --version` — verified from the pull request's CI log
-- [ ] Both images build on Node 26 and the CI vulnerability scan passes with no
+- [x] Both images build on Node 26 and the CI vulnerability scan passes with no
       waiver added to `.trivyignore.yaml`
-- [ ] An ADR records why Java stays on 25, linked from `backend/README.md`'s
+- [x] An ADR records why Java stays on 25, linked from `backend/README.md`'s
       JDK note, and Dependabot's Java 26 proposal (#402) is closed with a
       pointer to it
-- [ ] `.github/dependabot.yml` ignores semver-major for the `node` and `maven`
+- [x] `.github/dependabot.yml` ignores semver-major for the `node` and `maven`
       images with the reason commented, and the next Dependabot run proposes
       neither Node 27 nor Java 26 — verified from that run
 
