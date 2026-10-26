@@ -1,11 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
+import { logger } from "@/lib/logger";
+import { metrics } from "@/lib/metrics/metrics";
 import { isApiError } from "./api-error";
 import { kaliaFetch } from "./mutator";
+import { currentTraceparent } from "./requestTrace";
 
 vi.mock("@/lib/auth/valkeyAdapter", () => ({ getSessionAccount: vi.fn() }));
 vi.mock("@/lib/auth/sessionCookie", () => ({ currentSessionToken: vi.fn() }));
+vi.mock("./requestTrace", () => ({ currentTraceparent: vi.fn(async () => undefined) }));
+vi.mock("@/lib/logger", () => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 /** The RequestInit kaliaFetch handed to fetch on its first call. */
 const initOf = (fetchMock: { mock: { calls: unknown[] } }): RequestInit =>
@@ -25,6 +32,9 @@ describe("kaliaFetch", () => {
     vi.unstubAllEnvs();
     vi.useRealTimers();
     vi.mocked(currentSessionToken).mockResolvedValue(undefined);
+    vi.mocked(currentTraceparent).mockResolvedValue(undefined);
+    vi.clearAllMocks();
+    metrics.backendCallFailures.reset();
   });
 
   it("attaches the signed-in caller's access token as a bearer header", async () => {
@@ -45,7 +55,7 @@ describe("kaliaFetch", () => {
     await kaliaFetch("/api/v1/beers", { method: "GET" });
 
     // An empty Authorization header would make the backend reject this.
-    expect(initOf(fetchMock)).not.toHaveProperty("headers");
+    expect(new Headers(initOf(fetchMock).headers).has("Authorization")).toBe(false);
   });
 
   it("sends no Authorization header when the session has no stored token", async () => {
@@ -55,7 +65,7 @@ describe("kaliaFetch", () => {
 
     await kaliaFetch("/api/v1/beers", { method: "GET" });
 
-    expect(initOf(fetchMock)).not.toHaveProperty("headers");
+    expect(new Headers(initOf(fetchMock).headers).has("Authorization")).toBe(false);
   });
 
   it.each([
@@ -102,6 +112,7 @@ describe("kaliaFetch", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("http://backend:8080/api/v1/cellars/a..b?q=..", {
       method: "GET",
+      headers: expect.any(Headers),
     });
   });
 
@@ -114,7 +125,10 @@ describe("kaliaFetch", () => {
       method: "GET",
     });
 
-    expect(fetchMock).toHaveBeenCalledWith("http://backend:8080/api/v1/beers", { method: "GET" });
+    expect(fetchMock).toHaveBeenCalledWith("http://backend:8080/api/v1/beers", {
+      method: "GET",
+      headers: expect.any(Headers),
+    });
     expect(result).toEqual({
       data: { hello: "world" },
       status: 200,
@@ -206,6 +220,7 @@ describe("kaliaFetch", () => {
     // present, so the mutator must never add one of its own.
     expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
       method: "GET",
+      headers: expect.any(Headers),
       signal: controller.signal,
     });
   });
@@ -225,6 +240,101 @@ describe("kaliaFetch", () => {
     await expect(kaliaFetch("/api/v1/beers", { method: "GET" })).rejects.toMatchObject({
       name: "ApiError",
       kind: "network",
+    });
+  });
+  describe("tracing and logging", () => {
+    const incoming = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+
+    it("forwards the traceparent of the request being served, unchanged", async () => {
+      const fetchMock = vi.fn(async () => Response.json({}));
+      vi.stubGlobal("fetch", fetchMock);
+      vi.mocked(currentTraceparent).mockResolvedValue(incoming);
+
+      await kaliaFetch("/api/v1/beers", { method: "GET" });
+
+      expect(new Headers(initOf(fetchMock).headers).get("traceparent")).toBe(incoming);
+    });
+
+    it("starts a trace of its own outside any request", async () => {
+      const fetchMock = vi.fn(async () => Response.json({}));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await kaliaFetch("/api/v1/beers", { method: "GET" });
+
+      expect(new Headers(initOf(fetchMock).headers).get("traceparent")).toMatch(
+        /^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/,
+      );
+    });
+
+    it("replaces a caller-set traceparent rather than forwarding it", async () => {
+      const fetchMock = vi.fn(async () => Response.json({}));
+      vi.stubGlobal("fetch", fetchMock);
+      vi.mocked(currentTraceparent).mockResolvedValue(incoming);
+
+      await kaliaFetch("/api/v1/beers", {
+        method: "GET",
+        headers: { traceparent: "00-11111111111111111111111111111111-2222222222222222-01" },
+      });
+
+      expect(new Headers(initOf(fetchMock).headers).get("traceparent")).toBe(incoming);
+    });
+
+    it("logs the call under the same trace id it sent, without the query string", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
+      vi.mocked(currentTraceparent).mockResolvedValue(incoming);
+
+      await kaliaFetch("/api/v1/beers?query=westvleteren", { method: "GET" });
+
+      expect(logger.info).toHaveBeenCalledExactlyOnceWith(
+        "Backend call completed",
+        expect.objectContaining({
+          traceId: "4bf92f3577b34da6a3ce929d0e0e4736",
+          method: "GET",
+          path: "/api/v1/beers",
+          status: 200,
+        }),
+      );
+      expect(JSON.stringify(vi.mocked(logger.info).mock.calls)).not.toContain("westvleteren");
+    });
+
+    it("counts and warns about a server error the backend answered", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
+
+      await kaliaFetch("/api/v1/beers", { method: "GET" });
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
+        "Backend answered with a server error",
+        expect.objectContaining({ status: 503 }),
+      );
+      expect((await metrics.backendCallFailures.get()).values).toEqual([
+        expect.objectContaining({ labels: { kind: "http_5xx" }, value: 1 }),
+      ]);
+    });
+
+    it("counts and warns about a backend that cannot be reached", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("fetch failed"))));
+
+      await kaliaFetch("/api/v1/beers", { method: "GET" }).catch(() => undefined);
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
+        "Backend call failed",
+        expect.objectContaining({ kind: "network", path: "/api/v1/beers" }),
+      );
+      expect((await metrics.backendCallFailures.get()).values).toEqual([
+        expect.objectContaining({ labels: { kind: "network" }, value: 1 }),
+      ]);
+    });
+
+    it("neither logs nor counts a caller's own abort", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => Promise.reject(new DOMException("aborted", "AbortError"))),
+      );
+
+      await kaliaFetch("/api/v1/beers", { method: "GET" }).catch(() => undefined);
+
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect((await metrics.backendCallFailures.get()).values).toEqual([]);
     });
   });
 });

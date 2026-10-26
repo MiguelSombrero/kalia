@@ -82,7 +82,6 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
 
 Engineering work:
 
-- Observability: structured logs, metrics, tracing
 - Deployment target + IaC. **A prerequisite for the mobile client reaching
   anyone but its developer**, not merely adjacent to it: both the Spring API
   and Keycloak become internet-facing, since a phone runs the OIDC flow against
@@ -101,14 +100,6 @@ Engineering work:
   despite its index ([ADR-0044](../adr/0044-catalog-search-indexes.md)).
   Imposing one is an API-contract change, so it is a decision to make rather
   than a fix to apply
-- **A failing token refresh is silent.** `frontend/lib/auth/refreshAccessToken.ts`
-  returns `unavailable` and the caller sends no token, so a Keycloak outage
-  looks exactly like ordinary anonymous browsing — nothing logs, nothing
-  counts it ([ADR-0029](../adr/0029-silent-token-refresh.md)). Found while
-  building refresh; deliberately not fixed there, because a single
-  `frontend/lib/logger.ts` call at this one site, with no metrics or tracing
-  to count or alert on it, would still leave a Keycloak outage effectively
-  invisible. Belongs with the structured-logs/metrics/tracing item above.
 - **A duplicate brewery is named from a search, not by its id.** The add-beer
   form's `409` for a brewery carries only `existingBreweryId`, and the API has
   no read of one brewery, so `addBeerAction` (`frontend/features/catalog/actions.ts`)
@@ -295,7 +286,7 @@ required.
   leaves the feature permanently half-covered. Task 01 chose Wikidata, which
   has almost no barcodes, knowingly; [iteration 14](iteration-14.md) records
   the route by which scanning fills the gap.
-- **Crash reporting**, which the observability item above does not cover — that
+- **Crash reporting**, which the [observability baseline](iteration-8.5/16-observability-baseline.md) does not cover — that
   one is server-shaped. Device identifiers and push tokens are personal data,
   so this lands on the GDPR item too.
 

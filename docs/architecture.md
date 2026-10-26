@@ -104,6 +104,12 @@ Key properties:
   through a Server Action rather than holding a stream open; there is no
   server-sent-events or WebSocket endpoint, and no connection registry
   ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
+- **One trace id per browser request, JSON logs and counters, no viewer**
+  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)):
+  `proxy.ts` starts a W3C `traceparent`, the BFF forwards it on every backend
+  call, and both tiers log it in JSON lines. Counters are served by the
+  backend at `/actuator/prometheus` and the frontend at `/api/metrics`, each
+  behind a token. How to read them is in the two READMEs.
 
 ## 3. Backend modules
 
@@ -971,6 +977,12 @@ records the latest run.
   - **Scope:** this covers the backend's own reads. The Valkey in this stack
     is the frontend's session store ([§6](#6-authentication-and-identity)),
     not a cache the backend consults.
+- **Built-in observability and no viewer**
+  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)):
+  a failure can be seen and counted locally with `jq` and `curl`, and no
+  container or cost is added. The cost is that counters are per process and
+  reset on restart, and a stock Prometheus cannot scrape the backend's
+  token-protected endpoint, which waits on a deployment story.
 - **Single instance, accepted where it is written down.** Nothing is deployed,
   and the backend assumes one instance in exactly one place:
   - **Event resubmission** ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)):
@@ -1128,3 +1140,4 @@ reasons and its rate is worth watching independently
 | [ADR-0084](adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
 | [ADR-0085](adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |
 | [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
+| [ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |

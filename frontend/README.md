@@ -26,6 +26,8 @@ root. The production image uses Next.js standalone output
 | `AUTH_KEYCLOAK_ISSUER` | — | Keycloak's **public**, browser-facing realm URL — must match Keycloak's own `KC_HOSTNAME`. Required — see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) for why this can't be the internal Docker Compose address |
 | `AUTH_KEYCLOAK_INTERNAL_ORIGIN` | — | Where this container actually reaches Keycloak; requests to `AUTH_KEYCLOAK_ISSUER` are transparently redirected here (`lib/auth/internalKeycloakFetch.ts`). Required |
 | `VALKEY_URL` | `redis://localhost:6379` | Session store for the Auth.js adapter (`lib/auth/valkeyAdapter.ts`). Required in production |
+| `LOG_LEVEL` | `info` | Lowest level `lib/logger.ts` writes on the server: `debug`, `info`, `warn` or `error` |
+| `METRICS_TOKEN` | — | Bearer token for `/api/metrics`. Unset, that route answers 404. Optional: it is deliberately not in `REQUIRED_IN_PRODUCTION`. Compose supplies a dev-only value |
 
 The six `AUTH_KEYCLOAK_*`/`AUTH_URL`/`VALKEY_URL` values above are set by
 `docker-compose.yml` for the containerized stack. Running `npm run dev`
@@ -38,6 +40,28 @@ internal Docker Compose address.
 Adding a variable that must be set in production means adding it to
 `verifyRequiredConfiguration`'s `REQUIRED_IN_PRODUCTION`
 (`lib/config/requiredConfiguration.ts`).
+
+## Observability
+
+Logs, counters and trace ids are built in; nothing in the stack views them
+([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+
+- **Logs**: `docker compose logs frontend --no-log-prefix | jq -c .`. Each
+  backend call is one line carrying `traceId`; grep that id in `docker compose
+  logs --no-log-prefix` to see the backend's lines for the same browser
+  request.
+- **Trace id.** `proxy.ts` gives every page request a W3C `traceparent` (a
+  valid one the caller sent is kept) and `kaliaFetch` forwards it unchanged to
+  the backend, whose Micrometer Tracing puts it in its logs. A call made
+  outside a request starts a trace of its own.
+- **Counters** at `/api/metrics`, for the bearer token in `METRICS_TOKEN`:
+  `curl -H "Authorization: Bearer $METRICS_TOKEN" localhost:3000/api/metrics`
+  (compose's value is `kalia-dev-metrics-token`). They are
+  `kalia_token_refresh_failures_total{outcome,reason}` (a refresh that logs at
+  `WARN` as it counts), `kalia_backend_call_failures_total{kind}` and
+  `kalia_request_errors_total{route,route_type}` (a request Next.js failed,
+  by route template). Add one in `lib/metrics/metrics.ts`; a label's values
+  must be a closed set, never an id or a URL.
 
 ## Test and checks
 
@@ -188,9 +212,10 @@ Why the rationale lives there and not here:
   [ADR-0037](../docs/adr/0037-functional-modules.md).
 - **Logging goes through `lib/logger.ts`, never `console.*` directly** —
   enforced by ESLint's `no-console` rule, which exempts only `lib/logger.ts`
-  itself. A thin pass-through today (`logger.error(...)` →
-  `console.error(...)`); the seam for routing to a real monitoring tool later
-  without touching call sites.
+  itself. On the server it writes one JSON object per line, with the call's
+  `fields` merged in; in the browser it passes through to the console. Never
+  put a token, a password, a request body or a query string in a field
+  ([ADR-0013](../docs/adr/0013-logging-conventions.md)).
 - **No `dangerouslySetInnerHTML`** — enforced by ESLint's `react/no-danger`
   rule, closing one of the vectors the CSP's `'unsafe-inline'` trade-off
   ([ADR-0016](../docs/adr/0016-security-response-headers.md)) depends on

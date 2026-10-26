@@ -1,6 +1,10 @@
 import "server-only";
+import { logger } from "@/lib/logger";
+import { metrics } from "@/lib/metrics/metrics";
 import { currentAccessToken } from "./accessToken";
 import { apiError, isApiError } from "./api-error";
+import { currentTraceparent } from "./requestTrace";
+import { traceparentFor } from "./traceparent";
 
 /**
  * Generous against the <300 ms catalog search target
@@ -18,11 +22,61 @@ const REQUEST_TIMEOUT_MS = 10_000;
  * such beer", not a failure. Only losing the request or the body raises.
  */
 export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise<T> => {
+  // One trace id per browser request, so every backend call a render makes
+  // shares it (proxy.ts starts it); a call outside any request starts its own.
+  const { header, traceId } = traceparentFor(await currentTraceparent());
+  const call = { traceId, method: options.method ?? "GET", path: url.split("?", 1)[0] };
+  const started = performance.now();
+  try {
+    const result = await callBackend(url, options, header);
+    recordCall(call, result.status, started);
+    return result as T;
+  } catch (cause) {
+    // A caller-initiated abort is cancellation, not failure.
+    if (!(cause instanceof DOMException && cause.name === "AbortError")) {
+      recordFailure(call, cause, started);
+    }
+    throw cause;
+  }
+};
+
+type BackendResult = { data: unknown; status: number; headers: Headers };
+
+type Call = { traceId: string; method: string; path: string };
+
+// Only the path is logged: the query string carries what the user searched
+// for, which is not ours to put in a log (ADR-0013).
+const recordCall = (call: Call, status: number, started: number): void => {
+  const fields = { ...call, status, durationMs: Math.round(performance.now() - started) };
+  if (status >= 500) {
+    metrics.backendCallFailures.inc({ kind: "http_5xx" });
+    logger.warn("Backend answered with a server error", fields);
+  } else {
+    logger.info("Backend call completed", fields);
+  }
+};
+
+const recordFailure = (call: Call, cause: unknown, started: number): void => {
+  const kind = isApiError(cause) ? cause.kind : "unexpected";
+  metrics.backendCallFailures.inc({ kind });
+  logger.warn("Backend call failed", {
+    ...call,
+    kind,
+    durationMs: Math.round(performance.now() - started),
+    error: cause,
+  });
+};
+
+const callBackend = async (
+  url: string,
+  options: RequestInit,
+  traceparent: string,
+): Promise<BackendResult> => {
   // Fallback is for npm run dev only; production requiring this is enforced
   // in instrumentation.ts, not here (ADR-0018).
   const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8080";
   refuseReshapedPath(url);
-  const request = await withAccessToken(url, options);
+  const request = await withAccessToken(url, options, traceparent);
 
   let response: Response;
   try {
@@ -71,7 +125,7 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
     data: body,
     status: response.status,
     headers: response.headers,
-  } as T;
+  };
 };
 
 // Orval's `urlEncodeParameters` is not enough on its own: `encodeURIComponent`
@@ -89,25 +143,30 @@ const refuseReshapedPath = (url: string): void => {
 };
 
 /**
- * Adds the caller's bearer token, which the backend needs on everything but
- * the catalog (ADR-0028). Returns `options` untouched when nobody is signed
- * in, so an anonymous request is byte-for-byte what it was before tokens
- * existed rather than one carrying an empty Authorization header.
+ * Adds the trace header and the caller's bearer token, which the backend
+ * needs on everything but the catalog (ADR-0028). Nobody signed in means no
+ * Authorization header at all rather than an empty one.
  *
  * A caller-supplied Authorization header is refused rather than honoured or
  * overwritten: the session's token is the only one this BFF ever sends, and a
  * header derived from request input would otherwise be forwarded verbatim.
  */
-const withAccessToken = async (url: string, options: RequestInit): Promise<RequestInit> => {
+const withAccessToken = async (
+  url: string,
+  options: RequestInit,
+  traceparent: string,
+): Promise<RequestInit> => {
   const headers = new Headers(options.headers);
   if (headers.has("Authorization")) {
     throw apiError("refused", `Refused to call ${url}: a caller-set Authorization header`);
   }
+  // Always set, overwriting any caller value: the trace is this BFF's to
+  // start or continue, not something a caller of kaliaFetch chooses.
+  headers.set("traceparent", traceparent);
   const token = await currentAccessToken();
-  if (!token) {
-    return options;
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
-  headers.set("Authorization", `Bearer ${token}`);
   return { ...options, headers };
 };
 

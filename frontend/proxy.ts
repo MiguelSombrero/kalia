@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { locales } from "@/i18n/settings";
 import { resolveLocaleFromAcceptLanguage } from "@/i18n/resolveLocale";
+import { newTraceparent, traceIdOf } from "@/lib/api/traceparent";
 
 // Do not rename to middleware.ts: Next.js 16 renamed this file convention to
 // `proxy` and the old name is deprecated (frontend/AGENTS.md).
@@ -15,6 +16,11 @@ export const proxy = (request: NextRequest) => {
     // recover the locale (see resolveLocaleFromHeaders).
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-pathname", pathname);
+    // The one trace id the backend calls made while serving this request will
+    // carry (ADR-0088); a valid one from the caller is kept.
+    if (!traceIdOf(request.headers.get("traceparent"))) {
+      requestHeaders.set("traceparent", newTraceparent().header);
+    }
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

@@ -9,6 +9,9 @@
   ADR is now the only full statement of the convention; `backend/README.md`
   keeps a summary and a link, not the restatement the Consequences below
   originally described
+- **Amended:** 2026-10-25 by [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) —
+  "structured" now also means JSON on stdout, and the one centralised request
+  log this ADR deferred exists, at `INFO`, because requests now carry a trace id
 
 ## Context
 
@@ -44,9 +47,11 @@ defers full metrics/tracing).
   - `WARN` — an anticipated-but-noteworthy problem the app already
     recovered from.
   - `INFO` — significant application lifecycle events (startup, module
-    wiring), not routine per-request logging — Kalia has no
-    correlation-ID/request-tracing infra yet, so per-request `INFO`
-    logging would be noise nobody can stitch back into one request.
+    wiring), and the one request line a single filter writes per request
+    ([ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+    This ADR first withheld per-request `INFO` because Kalia had no
+    correlation id to stitch lines back into one request; the trace id now
+    carried through both tiers is that id.
   - `DEBUG` — diagnostic detail, off by default.
 - **Log level follows what the exception represents, not whether it was
   caught.** An exception type designed as an API response (per the
@@ -66,7 +71,7 @@ defers full metrics/tracing).
   behavior as deliberate, not an accident of defaults, so it isn't "fixed"
   later by leaking exception detail back into responses.
 - **No secrets/PII in log lines** — never log full request/response
-  bodies, auth tokens, or passwords; log an identifier (e.g. a beer's
+  bodies, query strings, auth tokens, or passwords; log an identifier (e.g. a beer's
   `id`) rather than a full domain object. Mostly forward-looking today (no
   auth/PII yet), heading off the Auth iteration from casually violating
   it.
@@ -74,10 +79,12 @@ defers full metrics/tracing).
   "entering/exiting method" pairs are noisy, go stale as methods change,
   and apply inconsistently across controllers. If request-level
   visibility is ever wanted, it belongs in a single centralized mechanism
-  (a filter/interceptor), not scattered per-method statements — and
-  that's deferred alongside the rest of real observability infra
-  (`docs/architecture.md` §9), since without correlation IDs even a
-  centralized version can't stitch lines back into one request.
+  (a filter/interceptor), not scattered per-method statements. That was
+  deferred because without correlation IDs even a centralized version
+  couldn't stitch lines back into one request;
+  [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)
+  added the id and the one filter, and the ban on scattered per-method
+  logging stands.
 - **Per-environment level policy**: `dev` — `fi.kalia` at `DEBUG`; `test` —
   `fi.kalia` at `WARN`, keeping test output quiet; `prod` — `fi.kalia` at
   `INFO`. This ADR originally expected task 3 to deliver that by splitting

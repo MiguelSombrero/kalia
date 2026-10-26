@@ -277,6 +277,10 @@ in one place, read
 - [ADR-0085](0085-runtimes-follow-long-term-support-not-the-newest-major.md) — Java and Node
   follow their long-term-support releases; Dependabot ignores semver-major
   bumps of those two images.
+- [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)
+  — both tiers log JSON and share a W3C trace id, and failures are counted by
+  Micrometer and `@prometheus-io/client` behind a token, with no viewer added to the
+  stack.
 
 ## Engineering process and documentation
 
