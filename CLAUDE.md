@@ -149,7 +149,7 @@ The gates themselves:
   (library, starter, plugin, Docker image, GitHub Action), list them and ask
   which versions to use — one batched question per task. Exceptions: versions
   already pinned in a manifest (`backend/pom.xml`, `frontend/package.json`,
-  `docker-compose.yml`, a `Dockerfile`, a workflow) or here, and versions
+  `docker-compose*.yml`, a `Dockerfile`, a workflow) or here, and versions
   confirmed from authoritative output (build errors, repository metadata,
   generator output); propose those for confirmation. **The version is recorded
   in that manifest and nowhere else** — the README tech stack inventory names
@@ -192,4 +192,8 @@ retrospection, the sweep's `process-quality` dimension
   `make stack-env` writes them into the worktree's root `.env` (the `worktree`
   skill runs it), and the main checkout keeps the defaults. Never hard-code a
   port — read it from the environment ([README](README.md#run-locally)).
+- A bare `docker compose` is the local stack; the deployable definition is
+  `-f docker-compose.base.yml`, which requires every secret. A dev default
+  goes in `docker-compose.dev.env`, never as `:-` in the base
+  ([ADR-0089](docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
 - Docker Desktop may need starting: `open -a Docker`, then wait for `docker info`.

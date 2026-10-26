@@ -5,6 +5,7 @@ import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
 import Redis from "ioredis";
 import { expectNoA11yViolations } from "./support/a11y";
 import {
+  createFreshAccount,
   endKeycloakSessionForUser,
   expect,
   findKeycloakUser,
@@ -238,4 +239,45 @@ test("Keycloak ending the SSO session ends the matching Kalia session", async ({
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   }).toPass({ timeout: 15_000 });
   await expect(page.getByRole("link", { name: /^Profile: / })).toHaveCount(0);
+});
+
+// The tab that starts the second sign-in was loaded while signed out, so it
+// still offers "Sign in" after the first tab has signed in as someone else.
+// Keycloak's own cookies are cleared so it asks for credentials, as it would
+// had the first person left the browser; Kalia's session cookie stays.
+test("signing in as someone else while signed in starts a session of their own", async ({
+  browser,
+  request,
+  valkey,
+  account,
+}) => {
+  const second = await createFreshAccount(request, "e2e-second");
+  const context = await browser.newContext();
+  try {
+    const stale = await context.newPage();
+    await stale.goto("/en");
+    const first = await context.newPage();
+    await first.goto("/en");
+    await signIn(first, account);
+    const firstToken = (await context.cookies()).find((cookie) => cookie.name === "authjs.session-token")?.value;
+    expect(firstToken, "the first sign-in left no Auth.js session cookie").toBeTruthy();
+
+    await context.clearCookies({ path: /^\/realms\// });
+    await signIn(stale, second);
+
+    expect(
+      await valkey.exists(`auth:session:${firstToken}`, `auth:session-account:${firstToken}`),
+      "the first person's session survived the second sign-in",
+    ).toBe(0);
+    const session = await storedAccount(stale);
+    const secondTokens = await session.read();
+    await session.close();
+    const me = await request.get(`${BACKEND_ORIGIN}/api/v1/me`, {
+      headers: { Authorization: `Bearer ${secondTokens.access_token as string}` },
+    });
+    expect(me.status()).toBe(200);
+    expect(((await me.json()) as { username: string }).username).toBe(second.username);
+  } finally {
+    await context.close();
+  }
 });

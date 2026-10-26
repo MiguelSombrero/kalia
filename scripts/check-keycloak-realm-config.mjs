@@ -13,6 +13,9 @@
 //     — a broken $(env:...) substitution or an unresolved variable shows up as
 //     a mismatch against the file's intent.
 //
+// With no argument it checks both realm files the local stack imports; name
+// keycloak/realm-export.json alone to check a deployable-only stack.
+//
 // It never reads keycloak/realm-export.json back as the state of the running
 // realm — that would miss both the substitution bugs and the console edits it
 // exists to catch. The file is the expectation; Keycloak's API is the
@@ -25,10 +28,14 @@ import { resolve } from "node:path";
 import { KEYCLOAK_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
 import { ROOT, originOf, readEnvFile } from "./stack-ports.mjs";
 
-const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
+export const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
+// The dev stack's second file (docker-compose.override.yml, ADR-0089): the
+// clients the deployable realm must not carry. Checked on top of REALM_FILE,
+// as the keycloak-config service imports both.
+export const DEV_REALM_FILE = resolve(ROOT, "keycloak/realm-swagger.json");
 
-// Mirrors docker-compose.yml's keycloak-config service: every value it gives
-// a `:-` default, this gives the same default, so the check runs without
+// Mirrors docker-compose.dev.env and the keycloak-config service: every value
+// either gives a default, this gives the same, so the check runs without
 // compose. KALIA_FRONTEND_CLIENT_SECRET has no default there — an unset one
 // is an error, not a skipped field. The SMTP block is different: its `:-`
 // defaults point at the mailpit container and an empty user/password is the
@@ -88,6 +95,13 @@ export const resolvePlaceholders = (value, env) => {
   }
   return value;
 };
+
+// One spec from several files, the way keycloak-config imports them: the
+// first file's realm settings, every file's clients.
+export const mergeRealmFiles = (specs) => ({
+  ...specs[0],
+  clients: specs.flatMap((spec) => spec.clients ?? []),
+});
 
 // Compares the committed realm (a partial spec) against observed live state.
 // The file is treated as a set of assertions: every scalar it pins must equal
@@ -229,7 +243,11 @@ const fetchLiveRealm = async (clientIds) => {
 const run = async () => {
   loadDotEnv();
 
-  const committed = resolvePlaceholders(JSON.parse(readFileSync(REALM_FILE, "utf8")), process.env);
+  const files = process.argv.length > 2 ? process.argv.slice(2).map((file) => resolve(file)) : [REALM_FILE, DEV_REALM_FILE];
+  const committed = resolvePlaceholders(
+    mergeRealmFiles(files.map((file) => JSON.parse(readFileSync(file, "utf8")))),
+    process.env,
+  );
   const clientIds = (committed.clients ?? []).map((client) => client.clientId);
 
   // The fetch is retried for the transient 503 in the window right after
@@ -251,13 +269,13 @@ const run = async () => {
 
   if (compared === 0) {
     console.error(
-      "compared nothing: keycloak/realm-export.json pins no realm setting or client field this check understands",
+      "compared nothing: the committed realm files pin no realm setting or client field this check understands",
     );
     process.exit(1);
   }
   if (mismatches.length > 0) {
     console.error(
-      `realm ${REALM} has drifted from keycloak/realm-export.json (${mismatches.length} of ${compared} checks failed):`,
+      `realm ${REALM} has drifted from the committed realm files (${mismatches.length} of ${compared} checks failed):`,
     );
     for (const mismatch of mismatches) console.error(`  ${mismatch}`);
     console.error(
@@ -268,7 +286,7 @@ const run = async () => {
   }
 
   console.log(
-    `realm ${REALM} matches keycloak/realm-export.json (${compared} values checked across ${clientIds.length} client(s))`,
+    `realm ${REALM} matches the committed realm files (${compared} values checked across ${clientIds.length} client(s))`,
   );
 };
 

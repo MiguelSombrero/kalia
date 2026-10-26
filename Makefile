@@ -7,7 +7,7 @@
 # minutes per run (ADR-0046).
 
 .PHONY: help up down restart logs ps backend-test backend-verify frontend-test \
-        frontend-build frontend-e2e lint check api-drift keycloak-check trivy-scan verify \
+        frontend-build frontend-e2e lint check compose-check api-drift keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env
 
 help: ## Show this help
@@ -64,6 +64,9 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 	node scripts/check-links.mjs
 	node --test scripts/*.test.mjs
 
+compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only (needs the docker CLI, no daemon)
+	node scripts/check-compose.mjs
+
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build --wait --wait-timeout 120 backend postgres
 	(cd frontend && npm run generate:api)
@@ -96,7 +99,7 @@ trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.x
 
 verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
-verify: verify-fast frontend-build backend-verify api-drift keycloak-check trivy-scan frontend-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
+verify: verify-fast compose-check frontend-build backend-verify api-drift keycloak-check trivy-scan frontend-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 
 install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-push hook
 	@dest="$$(git rev-parse --git-common-dir)/hooks/pre-push"; \
