@@ -78,7 +78,8 @@ api-drift: ## Fail if the committed API client has drifted from the live spec (n
 # check has something to compare against.
 keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from keycloak/realm-export.json, or loses an account to a fresh container (needs Docker)
 	@docker compose ps --status running --quiet keycloak | grep -q . \
-	    || docker compose up -d --build --wait --wait-timeout 120 postgres keycloak keycloak-config
+	    || { docker compose up -d --build --wait --wait-timeout 120 postgres keycloak \
+	         && docker compose run --rm keycloak-config; }
 	node scripts/check-keycloak-realm-config.mjs
 	docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123

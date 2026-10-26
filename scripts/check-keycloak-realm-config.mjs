@@ -264,7 +264,7 @@ const run = async () => {
     );
     for (const mismatch of mismatches) console.error(`  ${mismatch}`);
     console.error(
-      "\nre-apply the committed file over the realm with `docker compose up -d --wait keycloak-config` " +
+      "\nre-apply the committed file over the realm with `docker compose run --rm keycloak-config` " +
         "(it reconciles on every run — ADR-0054), then re-check after a moment for Keycloak's realm cache to settle",
     );
     process.exit(1);

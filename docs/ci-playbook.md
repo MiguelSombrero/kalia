@@ -208,14 +208,18 @@ fix is in [backend/README.md](../backend/README.md) database migrations
 ([ADR-0036](adr/0036-pre-deployment-migration-edits.md)).
 
 **A `make` target that runs `docker compose up --wait` exits `1` although
-every container is fine.** `--wait` counts a service that *exits* as a
-failure — including a one-shot that ran to `exit 0` (`keycloak-config`,
-`keycloak-seed`). Name only long-running services in a `--wait` invocation;
-let a one-shot be waited on by the script that consumes it (each
-`scripts/check-keycloak-*.mjs` has its own retry loop) or bring it up with a
-plain `up -d`. Cost ~10 min to spot on the branch for iteration 6.5 task 03,
-because the failing line had been piped to `tail` — which also hid it (see
-`implement-task` step 9: read `make` output from a file, not a pager).
+every container is fine.** `--wait` on a one-shot (`keycloak-config`,
+`keycloak-seed`) races: Compose exits `0` if it sees the container before it
+finishes and `1` ("exited (0)") if it has already gone, and `keycloak-config`
+finishes in under a second. Measured on Compose v5.5.1, 2026-10-25, by
+repeating `up -d --wait keycloak-config` against one stack. Name only
+long-running services in a `--wait` invocation; run a one-shot with
+`docker compose run --rm <service>`, which waits for it and returns its own
+exit code, or let the script that consumes it retry (each
+`scripts/check-keycloak-*.mjs` has its own retry loop). Cost ~10 min to spot
+on the branch for iteration 6.5 task 03, because the failing line had been
+piped to `tail` — which also hid it (see `implement-task` step 9: read `make`
+output from a file, not a pager).
 
 **`make verify` fails at `frontend-build` with a TypeScript error in a file
 your diff never touched.** In a newly created worktree, `frontend/node_modules`

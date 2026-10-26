@@ -38,7 +38,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [15](iteration-8.5/15-catalog-reads-hold-at-imported-size.md) | The catalog's lookup reads hold at the size it now is | done |
 | [16](iteration-8.5/16-observability-baseline.md) | A failure on the server can be seen and counted | done |
 | [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | done |
-| [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | refined |
+| [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | done |
 | [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | done |
 | [22](iteration-8.5/22-each-worktree-runs-its-own-stack.md) | Each worktree can run its own stack at the same time as another | needs-refinement |
 
