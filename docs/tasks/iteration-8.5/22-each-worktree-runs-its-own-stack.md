@@ -1,6 +1,6 @@
 # Task 22: Each worktree can run its own stack at the same time as another
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -122,27 +122,27 @@ Decided in refinement, 2026-10-26:
 
 ## Acceptance criteria
 
-- [ ] With no port settings in `.env`, the stack comes up on today's addresses
+- [x] With no port settings in `.env`, the stack comes up on today's addresses
       and the e2e suite passes — verified by running it
-- [ ] Two worktrees with their allocated settings run `make verify` at the same
+- [x] Two worktrees with their allocated settings run `make verify` at the same
       time, and both are green — verified by running it in both
-- [ ] Changing a worktree's Keycloak address changes the issuer every consumer
+- [x] Changing a worktree's Keycloak address changes the issuer every consumer
       validates against, without editing any other file — verified by a sign-in
       on a non-default address in the e2e suite
-- [ ] The e2e suite, `playwright.config.ts`, `Makefile`'s health wait and the
+- [x] The e2e suite, `playwright.config.ts`, `Makefile`'s health wait and the
       `scripts/` that dial the stack read their addresses from the
       environment, falling back to today's defaults — verified by a search that
       finds no remaining hard-coded `localhost:<port>` outside tests of those
       defaults and the compose fallbacks
-- [ ] `make stack-env` has a script test (`node --test`) covering: the main
+- [x] `make stack-env` has a script test (`node --test`) covering: the main
       checkout gets no ports, a second worktree gets the lowest slot no other
       worktree's `.env` holds, a slot whose port is bound is skipped, and a
       re-run keeps the ports already written — confirmed to fail without the
       script's slot check
-- [ ] The realm's `kalia-swagger` redirect URI follows the backend port, and
+- [x] The realm's `kalia-swagger` redirect URI follows the backend port, and
       `scripts/check-keycloak-realm-config.mjs` fails when it does not — covered
       by its existing script test
-- [ ] CLAUDE.md's environment note, the root README (including the
+- [x] CLAUDE.md's environment note, the root README (including the
       profile-per-worktree caveat) and the `worktree` skill say how a worktree
       gets its addresses, not that they are fixed
 
