@@ -1,6 +1,6 @@
 # Task 02: The API sheds what nobody uses before mobile freezes it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -68,13 +68,13 @@ takes effect.
 
 ## Acceptance criteria
 
-- [ ] Each removed endpoint answers 404 and is gone from `/v3/api-docs` and
+- [x] Each removed endpoint answers 404 and is gone from `/v3/api-docs` and
       the generated client — pinned by an integration test, and `PublicRoutesIT`
       matches §6
-- [ ] A removed `description` is absent from the schema, the DTO and the spec,
+- [x] A removed `description` is absent from the schema, the DTO and the spec,
       and the catalog `*DtoSerializationIT` still passes
-- [ ] e2e no longer depends on a removed endpoint — `npm run test:e2e` green
-- [ ] `docs/architecture.md`, the glossary and the backlog describe what
+- [x] e2e no longer depends on a removed endpoint — `npm run test:e2e` green
+- [x] `docs/architecture.md`, the glossary and the backlog describe what
       remains, and `make verify` is green
 
 ## Notes
