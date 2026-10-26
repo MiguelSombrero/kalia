@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-26
+- **Amended:** 2026-10-26 by [ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
+  — the check also rejects the committed dev `AUTH_SECRET` outside the dev stack
 
 ## Context
 

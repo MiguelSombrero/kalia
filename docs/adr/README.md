@@ -281,6 +281,10 @@ in one place, read
   — both tiers log JSON and share a W3C trace id, and failures are counted by
   Micrometer and `@prometheus-io/client` behind a token, with no viewer added to the
   stack.
+- [ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
+  — `docker-compose.base.yml` is the deployable definition and requires every
+  secret; the local stack adds the dev values, the seed service and the Swagger
+  client around it.
 
 ## Engineering process and documentation
 

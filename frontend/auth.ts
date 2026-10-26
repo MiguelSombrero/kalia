@@ -1,11 +1,12 @@
 import NextAuth from "next-auth";
+import { endingLocalSession } from "@/lib/auth/endingLocalSession";
 import { buildKeycloakProvider } from "@/lib/auth/keycloakOptions";
 import { sidFromIdToken } from "@/lib/auth/sessionId";
 import { createdSession } from "@/lib/auth/signInContext";
 import { putSessionAccount, putSessionSid, valkeyAdapter } from "@/lib/auth/valkeyAdapter";
 import { logger } from "@/lib/logger";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const nextAuth = NextAuth({
   adapter: valkeyAdapter,
   // Mirrors the realm's ssoSessionMaxLifespan. Do not raise maxAge above
   // updateAge expecting a sliding session: Auth.js only re-dates once
@@ -75,3 +76,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export const { handlers, auth, signOut } = nextAuth;
+export const signIn = endingLocalSession(nextAuth.signIn);

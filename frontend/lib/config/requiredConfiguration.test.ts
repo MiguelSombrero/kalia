@@ -32,6 +32,28 @@ describe("verifyRequiredConfiguration", () => {
     expect(() => verifyRequiredConfiguration(ALL_REQUIRED)).not.toThrow();
   });
 
+  it("rejects the dev AUTH_SECRET committed to the repository, naming it", () => {
+    expect(() =>
+      verifyRequiredConfiguration({ ...ALL_REQUIRED, AUTH_SECRET: "kalia-dev-auth-secret" }),
+    ).toThrow("AUTH_SECRET");
+  });
+
+  it("accepts the dev AUTH_SECRET on the dev stack, which marks itself", () => {
+    expect(() =>
+      verifyRequiredConfiguration({
+        ...ALL_REQUIRED,
+        AUTH_SECRET: "kalia-dev-auth-secret",
+        KALIA_DEV_STACK: "true",
+      }),
+    ).not.toThrow();
+  });
+
+  it("does not let the dev stack marker excuse a missing variable", () => {
+    expect(() =>
+      verifyRequiredConfiguration({ ...ALL_REQUIRED, KALIA_DEV_STACK: "true", AUTH_SECRET: "" }),
+    ).toThrow("AUTH_SECRET");
+  });
+
   it("does not enforce the requirement outside production", () => {
     expect(() => verifyRequiredConfiguration({ NODE_ENV: "development" })).not.toThrow();
     expect(() => verifyRequiredConfiguration({})).not.toThrow();

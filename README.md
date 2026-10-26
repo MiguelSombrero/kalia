@@ -87,7 +87,7 @@ code and merges pull requests. Does not write code.
 ## Run locally
 
 Create a `.env` file at the repository root first — Docker Compose loads it
-automatically, and `docker-compose.yml` has no default for this one value on
+automatically, and the compose files have no default for this one value on
 purpose, since it is a credential:
 
 ```bash
@@ -98,7 +98,8 @@ docker compose up --build   # frontend at http://localhost:3000
 The frontend is published at `:3000`; the backend is also published, at
 `:8080` (localhost only) for direct API access and Swagger UI — see
 [backend/README.md](backend/README.md). Keycloak's admin console is at
-`:8081` (admin/admin, dev-only credentials), Valkey at `:6379`, Postgres at
+`:8081` (admin/admin, dev-only credentials), Valkey at `:6379` (password
+`kalia-dev-valkey-password`), Postgres at
 `:5432`, and Mailpit's inbox UI — where every email Keycloak sends locally
 lands — at `:8025`. All bindings are localhost-only, never reachable beyond
 the dev machine.
@@ -122,10 +123,11 @@ unaffected, as Playwright's browser contexts are isolated. Running the apps
 natively (`npm run dev`, `mvn spring-boot:run`) keeps the defaults and stays
 one at a time.
 [keycloak/realm-export.json](keycloak/realm-export.json) carries no
-credential — the `kalia-frontend` client secret above and the Postgres
-password in [docker-compose.yml](docker-compose.yml) (`POSTGRES_PASSWORD`,
-falling back to `kalia`) are fixed dev-only values — never reuse them outside
-local development. The realm file is applied to Keycloak by the
+credential — the `kalia-frontend` client secret above and the other dev values
+in [docker-compose.dev.env](docker-compose.dev.env) (`POSTGRES_PASSWORD`,
+`AUTH_SECRET`, `VALKEY_PASSWORD`, the Keycloak admin login and the rest) are
+fixed dev-only values — never reuse them outside local development. The realm
+file is applied to Keycloak by the
 `keycloak-config` service (`keycloak-config-cli`,
 [ADR-0054](docs/adr/0054-keycloak-config-cli-realm-management.md)) on every
 startup, not baked into the Keycloak image — it fully reconciles the realm
@@ -135,7 +137,9 @@ from the file; re-apply with `docker compose run --rm keycloak-config`.
 To sign in to Kalia itself (not
 the Keycloak admin console), use the seeded dev account `testuser` /
 `testuser123`, created idempotently on every startup by the `keycloak-seed`
-service rather than baked into the realm export. For development with hot
+service rather than baked into the realm export. The `kalia-swagger` client Swagger UI
+signs in with is a second realm file, [keycloak/realm-swagger.json](keycloak/realm-swagger.json),
+that only the local stack imports. For development with hot
 reload, run the apps natively — see [backend/README.md](backend/README.md)
 and [frontend/README.md](frontend/README.md).
 
@@ -203,7 +207,7 @@ Decision records: [docs/adr/](docs/adr/)
 
 What this project is built with, and why — an inventory, not a version list.
 **The version of a thing lives in the file that installs it** and nowhere
-else: `backend/pom.xml`, `frontend/package.json`, `docker-compose.yml`, the
+else: `backend/pom.xml`, `frontend/package.json`, the `docker-compose*.yml` files, the
 `Dockerfile`s and `.github/workflows/`
 ([ADR-0020](docs/adr/0020-documentation-roles.md)'s one-home rule, amended
 2026-09-11). A number appears below only where the number is the point of the
@@ -278,7 +282,7 @@ manifest already says.
 - Mailpit (`axllent/mailpit`) — catches
   every email Keycloak sends in local dev and test; no auth, no real
   delivery. A deployment instead points the realm's SMTP config
-  (`docker-compose.yml`'s `KEYCLOAK_SMTP_*`) at Gmail SMTP — the choice and its
+  (`docker-compose.base.yml`'s `KEYCLOAK_SMTP_*`) at Gmail SMTP — the choice and its
   limits are in
   [docs/tasks/iteration-6.5/04-send-email-from-kalia.md](docs/tasks/iteration-6.5/04-send-email-from-kalia.md).
   The real credential is not created or held anywhere yet
@@ -318,8 +322,34 @@ kalia/
 ├── .claude/          # agent skills, rules and settings
 ├── .github/          # CI workflows, Dependabot
 ├── Makefile          # `make help`; `make verify-fast` is the local gate
-└── docker-compose.yml
+├── docker-compose.yml           # the local stack: includes the base with the dev values
+├── docker-compose.override.yml  # what only development has: seed account, Swagger client
+├── docker-compose.dev.env       # a dev value for every secret the base requires
+└── docker-compose.base.yml      # the deployable definition: requires every secret
 ```
+
+## The deployable definition
+
+`docker-compose.base.yml` is the definition a deployment runs, and it differs
+from the local stack in one way that matters: it has no default for any
+secret. Name it alone, and Compose refuses to start with the variable that is
+missing:
+
+```bash
+docker compose -f docker-compose.base.yml up
+# required variable POSTGRES_PASSWORD is missing a value: set POSTGRES_PASSWORD, see README.md
+```
+
+It needs `POSTGRES_PASSWORD`, `FEED_CURSOR_KEY`, `AUTH_SECRET`,
+`KALIA_FRONTEND_CLIENT_SECRET`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`,
+`KEYCLOAK_SSL_REQUIRED` (`none`, `external` or `all`) and `VALKEY_PASSWORD`
+(letters, digits and `. _ ~ -` only: it is carried in the session store's address), from the
+environment or a `.env`. `METRICS_TOKEN` is optional. It has no seeded account
+and no Swagger client, and the frontend refuses to start on the dev
+`AUTH_SECRET`. A bare `docker compose` is the local stack, so name the file;
+[ADR-0089](docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
+says why it is split this way. `make compose-check` proves the refusal for
+each variable.
 
 ## Development approach
 

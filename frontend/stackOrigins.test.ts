@@ -30,6 +30,12 @@ describe("stackOrigins", () => {
     });
   });
 
+  it("carries the Valkey password in the address, encoded", () => {
+    expect(stackOrigins({ VALKEY_PASSWORD: "p@ss/word", VALKEY_PORT: "6479" }).valkey).toBe(
+      "redis://:p%40ss%2Fword@localhost:6479",
+    );
+  });
+
   it("treats an empty value as unset", () => {
     expect(stackOrigins({ KEYCLOAK_PORT: "" }).keycloak).toBe("http://localhost:8081");
   });

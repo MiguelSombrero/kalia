@@ -1,4 +1,4 @@
-// Reads messages back out of the mailpit container (docker-compose.yml) over
+// Reads messages back out of the mailpit container (docker-compose.base.yml) over
 // its HTTP API — its SMTP port is in-network only.
 import { expect, type APIRequestContext } from "@playwright/test";
 import { STACK } from "../../stackOrigins";

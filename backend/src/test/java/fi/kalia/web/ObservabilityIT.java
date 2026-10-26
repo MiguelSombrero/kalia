@@ -1,11 +1,14 @@
 package fi.kalia.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
+import java.time.Duration;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +50,7 @@ class ObservabilityIT {
 				.exchange()
 				.expectStatus().isOk();
 
-		assertThat(output.getOut().lines()
-				.filter(line -> line.contains("GET /api/v1/styles -> 200"))
-				.toList())
+		assertThat(requestLog(output, "GET /api/v1/styles -> 200"))
 				.singleElement()
 				.satisfies(line -> assertThat(line).contains("\"traceId\":\"" + TRACE_ID + "\""));
 	}
@@ -61,16 +62,14 @@ class ObservabilityIT {
 				.exchange()
 				.expectStatus().isUnauthorized();
 
-		assertThat(output.getOut()).contains("GET /api/v1/cellar/bottles -> 401");
+		assertThat(requestLog(output, "GET /api/v1/cellar/bottles -> 401")).isNotEmpty();
 	}
 
 	@Test
 	void theRequestLogIsOneJsonObjectPerLine(CapturedOutput output) {
 		client.get().uri("/api/v1/styles").exchange().expectStatus().isOk();
 
-		assertThat(output.getOut().lines()
-				.filter(line -> line.contains("GET /api/v1/styles -> 200")))
-				.isNotEmpty()
+		assertThat(requestLog(output, "GET /api/v1/styles -> 200"))
 				.allSatisfy(line -> assertThat(line).startsWith("{\"@timestamp\"").endsWith("}"));
 	}
 
@@ -89,7 +88,7 @@ class ObservabilityIT {
 				.exchange()
 				.expectStatus().is5xxServerError();
 
-		assertThat(output.getOut()).contains("GET /test/observability-probe/fail -> 500");
+		assertThat(requestLog(output, "GET /test/observability-probe/fail -> 500")).isNotEmpty();
 
 		client.get().uri("/actuator/prometheus")
 				.header("Authorization", "Bearer test-token")
@@ -103,6 +102,15 @@ class ObservabilityIT {
 								.contains("uri=\"/test/observability-probe/fail\""))
 						.anySatisfy(line -> assertThat(line).startsWith("kalia_events_publication_retries_total"))
 						.anySatisfy(line -> assertThat(line).startsWith("kalia_events_publication_exhausted_total")));
+	}
+
+	// The filter logs after the chain returns, and a response the chain has
+	// already closed (the 401 body writer closes its stream) reaches the client
+	// first. Never assert on the log straight after the response.
+	private static List<String> requestLog(CapturedOutput output, String needle) {
+		return await().atMost(Duration.ofSeconds(5))
+				.until(() -> output.getOut().lines().filter(line -> line.contains(needle)).toList(),
+						lines -> !lines.isEmpty());
 	}
 
 }
