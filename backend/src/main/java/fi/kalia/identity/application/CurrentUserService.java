@@ -57,11 +57,7 @@ public class CurrentUserService {
 					is missing the built-in profile scope.""", subject);
 			throw new InvalidBearerTokenException("The access token carries no preferred_username claim");
 		}
-		return new CurrentUser(
-				parseSubject(subject),
-				username,
-				jwt.getClaimAsString("email"),
-				jwt.getClaimAsString("name"));
+		return new CurrentUser(parseSubject(subject), username);
 	}
 
 	private static UUID parseSubject(@Nullable String subject) {

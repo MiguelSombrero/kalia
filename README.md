@@ -145,7 +145,7 @@ In roadmap order, a user can:
 
 - Browse craft beers, searching by name and filtering by style, the brewery's country, and alcohol content (ABV) — no account needed
 - Use Kalia in English or Finnish (`/en`, `/fi`; auto-detected on first visit, switchable anytime)
-- View beer details (brewery, country, style, ABV, description)
+- View beer details (brewery, country, style, ABV)
 - Sign in with Keycloak
 - Maintain a personal beer cellar: the bottles they own, each with its brewed
   and best-before dates, grouped by beer _(iteration 5)_

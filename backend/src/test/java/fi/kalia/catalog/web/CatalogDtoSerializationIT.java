@@ -21,9 +21,9 @@ class CatalogDtoSerializationIT {
 	private JacksonTester<BreweryDto> breweryJson;
 
 	@Test
-	void omitsNullDescriptionFromBeerDetailsJson() throws Exception {
+	void carriesNoDescriptionInBeerDetailsJson() throws Exception {
 		BeerDetailsDto beer = new BeerDetailsDto(UUID.randomUUID(), "Test Beer", "IPA",
-				new BigDecimal("5.0"), null,
+				new BigDecimal("5.0"),
 				new BreweryDto(UUID.randomUUID(), "Test Brewery", "FI", null));
 
 		String json = beerDetailsJson.write(beer).getJson();

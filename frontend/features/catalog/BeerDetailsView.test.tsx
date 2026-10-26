@@ -9,7 +9,6 @@ const westvleteren12: BeerDetails = {
   name: "Westvleteren 12",
   style: "Quadrupel",
   abv: 10.2,
-  description: "Dark strong Trappist ale with notes of dried fruit.",
   brewery: { id: "br1", name: "Brouwerij Westvleteren", countryCode: "BE", city: "Vleteren" },
 };
 
@@ -30,12 +29,6 @@ describe("BeerDetailsView", () => {
     expect(screen.getByText("10.2 %")).toBeInTheDocument();
     expect(screen.queryByText(/€/)).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
-  });
-
-  it("does not show the description", async () => {
-    render(await view());
-
-    expect(screen.queryByText(/dried fruit/)).not.toBeInTheDocument();
   });
 
   it("leads from its style and its country back into the catalog, with how many there are", async () => {

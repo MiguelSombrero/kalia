@@ -50,7 +50,6 @@ CREATE TABLE catalog.beer (
     name         text NOT NULL,
     style        text NOT NULL,
     abv          numeric(4, 1) NOT NULL CHECK (abv >= 0),
-    description  text,
     source       text NOT NULL DEFAULT 'SEED' CHECK (source IN ('SEED', 'WIKIDATA', 'USER')),
     wikidata_qid text UNIQUE,
     contributor_id uuid,

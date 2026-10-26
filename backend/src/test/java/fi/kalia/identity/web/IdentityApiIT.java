@@ -1,10 +1,8 @@
 package fi.kalia.identity.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
-import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestcontainersConfiguration;
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +24,8 @@ class IdentityApiIT {
 
 	private static final String SUBJECT = "8f14e45f-ceea-467a-9a3c-1b2d4f6a8c90";
 
+	private static final String AUTHENTICATED_ROUTE = "/api/v1/cellar";
+
 	@Autowired
 	private RestTestClient client;
 
@@ -35,25 +35,18 @@ class IdentityApiIT {
 	private JwtDecoder jwtDecoder;
 
 	@Test
-	void returnsTheCallerBehindTheBearerToken() {
+	void acceptsAValidBearerToken() {
 		givenTokenFor(SUBJECT);
 
-		client.get().uri("/api/v1/me")
+		client.get().uri(AUTHENTICATED_ROUTE)
 				.header("Authorization", "Bearer any-value-the-decoder-is-mocked")
 				.exchange()
-				.expectStatus().isOk()
-				.expectBody(String.class)
-				.value(body -> {
-					assertThat((String) JsonPath.read(body, "$.id")).isEqualTo(SUBJECT);
-					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo("testuser");
-					assertThat((String) JsonPath.read(body, "$.email"))
-							.isEqualTo("testuser@example.com");
-				});
+				.expectStatus().isOk();
 	}
 
 	@Test
-	void rejectsAnUnauthenticatedRequestForTheCurrentUser() {
-		client.get().uri("/api/v1/me")
+	void rejectsAnUnauthenticatedRequestForAProtectedRoute() {
+		client.get().uri(AUTHENTICATED_ROUTE)
 				.exchange()
 				.expectStatus().isUnauthorized();
 	}
@@ -62,7 +55,7 @@ class IdentityApiIT {
 	void rejectsAGarbageBearerToken() {
 		given(jwtDecoder.decode(anyString())).willThrow(new BadJwtException("bad"));
 
-		client.get().uri("/api/v1/me")
+		client.get().uri(AUTHENTICATED_ROUTE)
 				.header("Authorization", "Bearer not-a-real-token")
 				.exchange()
 				.expectStatus().isUnauthorized();
@@ -74,7 +67,7 @@ class IdentityApiIT {
 	void issuesNoCookieSoCsrfCannotApply() {
 		givenTokenFor(SUBJECT);
 
-		client.get().uri("/api/v1/me")
+		client.get().uri(AUTHENTICATED_ROUTE)
 				.header("Authorization", "Bearer any-value-the-decoder-is-mocked")
 				.exchange()
 				.expectStatus().isOk()
@@ -107,8 +100,6 @@ class IdentityApiIT {
 				.subject(subject)
 				.claim("aud", List.of("kalia-backend"))
 				.claim("preferred_username", "testuser")
-				.claim("email", "testuser@example.com")
-				.claim("name", "Test User")
 				.issuedAt(Instant.now())
 				.expiresAt(Instant.now().plusSeconds(300))
 				.build();

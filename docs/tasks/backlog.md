@@ -57,13 +57,6 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   that [iteration 7.5 task 08](iteration-7.5/08-catalog-layout.md) left out of
   a layout task
   ([ADR-0069](../adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
-- **A beer's description is stored but unused.** `catalog.beer.description`
-  and the optional `description` on `BeerDetailsDto` still exist, but no page
-  shows them since [iteration 7.5 task 08](iteration-7.5/08-catalog-layout.md):
-  the seed's descriptions were written for the demo, and the real catalog
-  source [iteration 8](iteration-8.md) brings in is not expected to carry one.
-  Remove the column, the DTO field and the seed values together, once
-  iteration 8 has settled what a beer's data source provides.
 - **Registration asks for a first and last name Kalia never shows.**
   Keycloak's registration form requires both, while every Kalia surface names
   a person by username ([ADR-0071](../adr/0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
@@ -95,11 +88,6 @@ Engineering work:
   [iteration 8 task 02](iteration-8/02-add-beer-api.md)
 - Search engine — PostgreSQL full-text is fine at this size; OpenSearch only if
   faceted search outgrows it
-- Minimum length for the catalog search term. Shorter than three characters
-  yields no complete trigram, so the name filter falls back to a full scan
-  despite its index ([ADR-0044](../adr/0044-catalog-search-indexes.md)).
-  Imposing one is an API-contract change, so it is a decision to make rather
-  than a fix to apply
 - **A duplicate brewery is named from a search, not by its id.** The add-beer
   form's `409` for a brewery carries only `existingBreweryId`, and the API has
   no read of one brewery, so `addBeerAction` (`frontend/features/catalog/actions.ts`)

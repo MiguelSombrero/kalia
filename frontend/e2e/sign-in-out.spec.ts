@@ -144,10 +144,10 @@ test("renews an expired access token instead of dropping it", async ({ page, req
   expect(after.expires_at as number).toBeGreaterThan(Math.floor(Date.now() / 1000));
 
   // Must pass the backend's signature/issuer/audience checks (ADR-0028).
-  const me = await request.get(`${BACKEND_ORIGIN}/api/v1/me`, {
+  const cellar = await request.get(`${BACKEND_ORIGIN}/api/v1/cellar`, {
     headers: { Authorization: `Bearer ${after.access_token as string}` },
   });
-  expect(me.status(), "the backend rejected the renewed token").toBe(200);
+  expect(cellar.status(), "the backend rejected the renewed token").toBe(200);
 });
 
 // Two browser contexts: one page can't detect tokens shared between
@@ -186,10 +186,10 @@ test("signing out on one device leaves the other's session intact", async ({
   const session = await storedAccount(phone);
   const stillValid = await session.read();
   await session.close();
-  const me = await request.get(`${BACKEND_ORIGIN}/api/v1/me`, {
+  const cellar = await request.get(`${BACKEND_ORIGIN}/api/v1/cellar`, {
     headers: { Authorization: `Bearer ${stillValid.access_token as string}` },
   });
-  expect(me.status(), "the phone's access token died with the laptop's sign-out").toBe(200);
+  expect(cellar.status(), "the phone's access token died with the laptop's sign-out").toBe(200);
 
   // The phone signs out cleanly too — Keycloak still recognises its id_token_hint.
   await phone.getByRole("button", { name: "Sign out" }).click();

@@ -43,7 +43,6 @@ class OpenApiSecuritySchemeIT {
 				.contains("oauth2");
 		assertThat(securitySchemeNames(body, "$.paths['/api/v1/cellar/bottles/{id}'].delete.security"))
 				.contains("oauth2");
-		assertThat(securitySchemeNames(body, "$.paths['/api/v1/me'].get.security")).contains("oauth2");
 	}
 
 	@Test

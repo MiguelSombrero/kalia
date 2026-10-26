@@ -8,6 +8,9 @@
 - **Amended:** 2026-10-22 by [ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)
   — a brewery's country is imported as an ISO 3166-1 code, and a brewery
   whose country has no code maps to where it stood, today
+- **Amended:** 2026-10-26 — `V004` lost its `description` column and values
+  ([iteration 8.5 task 02](../tasks/iteration-8.5/02-api-contract-pruned-before-it-freezes.md));
+  its breweries, beers and ids are as before
 
 ## Context
 
