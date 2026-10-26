@@ -1,6 +1,6 @@
 # Task 18: The PR record and the skills match how work is actually done
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -74,17 +74,17 @@ CVE exception, and `--wait` is used one way everywhere, the one that works.
 
 ## Acceptance criteria
 
-- [ ] The PR template has a gates section, and `scripts/check-tasks.mjs` or a
+- [x] The PR template has a gates section, and `scripts/check-tasks.mjs` or a
       new checker with a `node --test` test fails a task-completing PR body
       missing it — or, if refinement rejects a checker, the template alone
       carries it
-- [ ] The iteration-close checklist names the README status and feature list
+- [x] The iteration-close checklist names the README status and feature list
       and `docs/architecture.md`'s "Next" line
-- [ ] Following the `worktree` skill on a fresh worktree gives a green `make
+- [x] Following the `worktree` skill on a fresh worktree gives a green `make
       verify-fast` with no extra step
-- [ ] `docker compose up --wait` with `keycloak-config` was run on the current
+- [x] `docker compose up --wait` with `keycloak-config` was run on the current
       Compose, and every file uses the form that works
-- [ ] No process citation points at nothing — `node scripts/check-links.mjs`
+- [x] No process citation points at nothing — `node scripts/check-links.mjs`
       green, and `make verify-fast` is green
 
 ## Notes

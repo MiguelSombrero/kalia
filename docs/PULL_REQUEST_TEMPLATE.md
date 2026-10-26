@@ -5,9 +5,9 @@
   because docs/PULL_REQUEST_TEMPLATE.md is one of its three recognized
   template locations — fill in each section below, delete one that has
   nothing to say (Worth a reviewer's attention is often empty), but keep
-  the heading order. Test plan and Doc-sync restate gates that are already
-  mandatory per CLAUDE.md's workflow section; this file exists so the
-  restating happens the same way every time, not to define the gates.
+  the heading order. Test plan and Gates restate gates that `implement-task`
+  and CLAUDE.md's workflow section already make mandatory; this file exists so
+  the restating happens the same way every time, not to define the gates.
 -->
 
 ## Summary
@@ -45,27 +45,37 @@
 ## Test plan
 
 <!--
-  One line per check: the actual command run (`mvn clean verify`, `npm
-  test`, `node scripts/check-tasks.mjs`, ...) and what it showed — not
-  just "green," since a suite that never exercised the change proves
-  nothing. Say when something was reproduced against the exact invocation
-  CI itself uses, not an approximation of it. A manual check against a
-  running stack or in a browser is its own line, distinct from an
-  automated suite — required for UI changes per CLAUDE.md.
+  One line per check: the actual command run (`make verify-fast`, `make
+  verify`, `(cd backend && mvn test)`, `node scripts/check-tasks.mjs`, ...)
+  and what it showed — not just "green," since a suite that never exercised
+  the change proves nothing. Say when something was reproduced against the
+  exact invocation CI itself uses, not an approximation of it. A manual check
+  against a running stack or in a browser is its own line, distinct from an
+  automated suite (`implement-task` step 10), described in words — never with
+  a screenshot.
 -->
 
 - [ ]
 
-## Doc-sync
+## Gates
 
 <!--
-  State which of docs/architecture.md, the ADRs, and the two READMEs were
-  checked against this change — updated in this PR, or confirmed accurate
-  as is. "Not applicable" is a valid answer (e.g. a dependency bump);
-  silence is not, since the doc-sync gate (`implement-task` step 7)
-  requires the check
-  happened, whichever way it came out.
+  The verdict on each gate `implement-task` orders, so the record outlives the
+  session that produced it. A gate with no verdict counts as skipped: write
+  "skipped — <reason>" rather than leaving a line empty. A task-completing PR
+  (one that sets a task file's status to `done`) fails
+  `scripts/check-pr-body.mjs` until every line below has a value. Keep the
+  labels as written — the checker reads them.
 -->
+
+- **pwd:** <!-- output of `pwd`, run before opening the PR -->
+- **Range:** <!-- output of `git log --oneline origin/dev..HEAD` -->
+- **Doc-sync:** <!-- which of docs/architecture.md, the iteration index and the ADRs were checked against this change: updated here, or confirmed accurate. "Not applicable" is valid (a dependency bump); silence is not -->
+- **Code review:** <!-- `/code-review` verdict, each finding marked fix now or new task -->
+- **Local gate:** <!-- `make verify-fast` (or `make verify`, said explicitly), and the required CI checks once they have run -->
+- **Running stack:** <!-- what you saw exercising the changed flow, or "nothing user-facing changed" -->
+- **Acceptance criteria:** <!-- each criterion's own check re-run, then ticked, status set to `done` -->
+- **Iteration Done when:** <!-- re-verified, if this was the iteration's last task; otherwise "not the last task" -->
 
 <!-- Every PR in this repository is agent-authored (CLAUDE.md's Roles
      section: the product owner does not code), so this line stays as-is. -->
