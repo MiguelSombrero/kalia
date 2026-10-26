@@ -245,7 +245,7 @@ services:
     # defaults to this container (keycloak-config's KEYCLOAK_SMTP_* above),
     # and the e2e spec reads caught messages back over the HTTP API on 8025.
     # Chosen over MailHog, which is effectively unmaintained upstream.
-    image: axllent/mailpit:v1.31.6
+    image: axllent/mailpit:v1.32.0
     ports:
       # Bound to localhost only, same convention as the other services. 8025
       # is the web UI and HTTP API; SMTP (1025) is reached only in-network as
