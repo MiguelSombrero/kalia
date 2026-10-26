@@ -1,6 +1,6 @@
 # Task 05: The API answers the add-beer form's questions itself
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -57,12 +57,12 @@ API, so the web client's workarounds go.
 
 ## Acceptance criteria
 
-- [ ] A duplicate brewery whose spelling differs from the typed one is named
+- [x] A duplicate brewery whose spelling differs from the typed one is named
       with the catalog's spelling — `npm test` covers the "Ruosniemen-Panimo"
       case, and an integration test covers the backend answer
-- [ ] The similar-beers hint finds a match past a brewery's hundredth beer —
+- [x] The similar-beers hint finds a match past a brewery's hundredth beer —
       covered by a test against a fixture brewery with more than 100 beers
-- [ ] The web client no longer searches by the typed name to name a
+- [x] The web client no longer searches by the typed name to name a
       duplicate, and `make verify` is green
 
 ## Notes
