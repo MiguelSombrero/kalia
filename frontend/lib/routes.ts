@@ -18,8 +18,9 @@ export const ownCellarHref = (locale: Locale): string => {
 };
 
 /** For links inside the app; a copied address is `shareableCellarHref` (ADR-0050). */
-export const cellarHref = (locale: Locale, username: string): string => {
-  return `/${locale}/cellars/${encodeURIComponent(username)}`;
+export const cellarHref = (locale: Locale, username: string, page = 0): string => {
+  const path = `/${locale}/cellars/${encodeURIComponent(username)}`;
+  return page > 0 ? `${path}?page=${page}` : path;
 };
 
 /** The address offered for copying (ADR-0050). */

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import type { Locale } from "@/i18n/settings";
 import { isPastBestBefore } from "./bottleTime";
+import type { CellarTotals } from "./cellarTotals";
 import { useLocalToday } from "./hooks/useLocalToday";
 import { isBottleHidden, useBottleRemovalStore } from "./store";
 import type { CellarBeer } from "./types";
@@ -15,11 +16,14 @@ import type { CellarBeer } from "./types";
 export const CellarCounts = ({
   beers,
   lastAdded,
+  wholeCellar,
   locale,
 }: {
   beers: CellarBeer[];
   /** The newest bottle's `createdAt`, shown on a public cellar. */
   lastAdded?: string;
+  /** What the whole cellar holds, when `beers` is only one page of it: the past-best-before count is then left out. */
+  wholeCellar?: CellarTotals;
   locale: Locale;
 }) => {
   const { t } = useTranslation();
@@ -29,12 +33,13 @@ export const CellarCounts = ({
     .map((beer) => beer.bottles.filter((bottle) => !isBottleHidden(removing, bottle.id)))
     .filter((bottles) => bottles.length > 0);
   const bottles = shown.flat();
-  const past = today === null ? 0 : bottles.filter((bottle) => isPastBestBefore(bottle, today)).length;
+  const totals = wholeCellar ?? { beers: shown.length, bottles: bottles.length };
+  const past = wholeCellar || today === null ? 0 : bottles.filter((bottle) => isPastBestBefore(bottle, today)).length;
 
   return (
     <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-foreground">
       <span>
-        {t("cellar.count.beers", { count: shown.length })} · {t("cellar.entry.bottleCount", { count: bottles.length })}
+        {t("cellar.count.beers", { count: totals.beers })} · {t("cellar.entry.bottleCount", { count: totals.bottles })}
       </span>
       {past > 0 && <Badge variant="ink">{t("cellar.pastBestBefore", { count: past })}</Badge>}
       {lastAdded && today && (

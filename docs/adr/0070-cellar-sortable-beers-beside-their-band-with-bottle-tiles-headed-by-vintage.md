@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-10
+- **Amended:** 2026-10-25 — the public cellar is read a page at a time (iteration 8.5 task 11); see the note after Consequences
 
 ## Context
 
@@ -195,6 +196,17 @@ the list was never paginated.
 - **Revisit trigger:** a cellar large enough that its page is hard to move
   around, at which point folding or paging comes back as a decision. Uploads
   (backlog), at which point the band holds the beer's photograph.
+
+> **Amended 2026-10-25** ([iteration-8.5 task 11](../tasks/iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md)):
+> the revisit trigger fired for the public cellar, which a visitor reads
+> without signing in and whose size nothing capped. It is read 20 beers at a
+> time, in the order they were added, with plain Previous and Next links. A
+> beer lists its 25 oldest bottles and says so when it holds more. Sort by
+> shows only when the cellar fits one page, since a sort of one page of a
+> longer cellar would read as a sort of the cellar. The counts line carries the
+> whole cellar's totals, and its past-best-before tag is left out of a public
+> cellar that shows only part of what it holds, because the server cannot judge
+> a bottle against the visitor's day. The owner's cellar is unchanged: whole, sortable, with the tag.
 
 ## Evidence
 

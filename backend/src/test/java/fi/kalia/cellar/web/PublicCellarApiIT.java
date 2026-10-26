@@ -10,6 +10,7 @@ import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
+import fi.kalia.cellar.application.CellarService;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -85,6 +87,78 @@ class PublicCellarApiIT {
 					List<String> containerTypes = JsonPath.read(body, "$.entries[0].bottles[*].containerType");
 					assertThat(containerTypes).containsExactlyInAnyOrder("BOTTLE", "CAN");
 				});
+	}
+
+	// An unpaged request is the first page; the whole cellar's totals ride along.
+	@Test
+	void anUnpagedRequestGetsTheFirstPageOfBeersAndWhatTheWholeCellarHolds() {
+		List<Beer> beers = beerRepository.findAll(PageRequest.of(0, 25)).getContent();
+		beers.forEach(beer -> addBottles(USER_A, beer.getId(), 1));
+		setVisibility(USER_A, true);
+
+		client.get().uri("/api/v1/cellars/{username}", ownerName)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(20);
+					assertThat((int) JsonPath.read(body, "$.page")).isZero();
+					assertThat((int) JsonPath.read(body, "$.totalPages")).isEqualTo(2);
+					assertThat((int) JsonPath.read(body, "$.totalBeers")).isEqualTo(25);
+					assertThat((int) JsonPath.read(body, "$.totalBottles")).isEqualTo(25);
+					assertThat((String) JsonPath.read(body, "$.lastBottleAddedAt")).isNotBlank();
+				});
+		client.get().uri("/api/v1/cellars/{username}?page=1", ownerName)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(5);
+					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(1);
+				});
+	}
+
+	// However much one account stores, one anonymous response is at most a page of beers, each with
+	// at most the bottle cap.
+	@Test
+	void aCellarPastTheBoundIsAnsweredWithAtMostOnePageOfCappedEntries() {
+		List<Beer> beers = beerRepository.findAll(PageRequest.of(0, 60)).getContent();
+		beers.forEach(beer -> addBottles(USER_A, beer.getId(), 24));
+		addBottles(USER_A, beers.getFirst().getId(), 24);
+		setVisibility(USER_A, true);
+
+		client.get().uri("/api/v1/cellars/{username}?size=" + PublicCellarController.MAX_PAGE_SIZE, ownerName)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(PublicCellarController.MAX_PAGE_SIZE);
+					assertThat((int) JsonPath.read(body, "$.totalBeers")).isEqualTo(60);
+					assertThat((int) JsonPath.read(body, "$.totalBottles")).isEqualTo(61 * 24);
+					assertThat((int) JsonPath.read(body, "$.entries[0].quantity")).isEqualTo(48);
+					List<Integer> shown = JsonPath.read(body, "$.entries[*].bottles.length()");
+					assertThat(shown.getFirst()).isEqualTo(CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY);
+					assertThat(shown).allMatch(count -> count <= CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY);
+					assertThat(body.length()).as("the response is bounded by the page, not by the 1,464 bottles stored")
+							.isLessThan(PublicCellarController.MAX_PAGE_SIZE * CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY * 600);
+				});
+	}
+
+	@Test
+	void pagingParametersAreBoundedAtBothEnds() {
+		setVisibility(USER_A, true);
+
+		for (String refused : List.of("size=0", "size=" + (PublicCellarController.MAX_PAGE_SIZE + 1), "page=-1",
+				"page=" + (PublicCellarController.MAX_PAGE + 1), "size=many")) {
+			client.get().uri("/api/v1/cellars/{username}?" + refused, ownerName)
+					.exchange()
+					.expectStatus().isBadRequest()
+					.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON);
+		}
+		client.get().uri("/api/v1/cellars/{username}?page={page}&size={size}", ownerName,
+				PublicCellarController.MAX_PAGE, PublicCellarController.MAX_PAGE_SIZE)
+				.exchange()
+				.expectStatus().isOk();
 	}
 
 	@Test
@@ -194,6 +268,15 @@ class PublicCellarApiIT {
 				.header("Authorization", bearer)
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(request)
+				.exchange()
+				.expectStatus().isCreated();
+	}
+
+	private void addBottles(String bearer, UUID beer, int quantity) {
+		client.post().uri("/api/v1/cellar/bottles")
+				.header("Authorization", bearer)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(Map.of("beerId", beer.toString(), "containerType", "BOTTLE", "quantity", quantity))
 				.exchange()
 				.expectStatus().isCreated();
 	}

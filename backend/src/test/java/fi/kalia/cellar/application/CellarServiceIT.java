@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -77,6 +78,8 @@ class CellarServiceIT {
 	private CatalogApi catalog;
 
 	private CellarService service;
+
+	private static final PageRequest FIRST_PAGE = PageRequest.of(0, 20);
 
 	private UUID beerId;
 
@@ -218,16 +221,23 @@ class CellarServiceIT {
 		testEntityManager.flush();
 		testEntityManager.clear();
 
-		List<EntryView> cellar = service.readPublicCellar(publicUsernameOf(owner));
+		PublicCellarPage cellar = service.readPublicCellar(publicUsernameOf(owner), FIRST_PAGE);
 
-		assertThat(cellar).hasSize(1);
-		assertThat(cellar.getFirst().entry().getBottles()).hasSize(2);
-		assertThat(cellar.getFirst().beer()).isEqualTo(summaryOf(beerId));
+		assertThat(cellar.entries()).hasSize(1);
+		assertThat(cellar.entries().getFirst().bottles()).hasSize(2);
+		assertThat(cellar.entries().getFirst().bottleCount()).isEqualTo(2);
+		assertThat(cellar.entries().getFirst().beer()).isEqualTo(summaryOf(beerId));
+		assertThat(cellar.totalBottles()).isEqualTo(2);
+		assertThat(cellar.lastBottleAddedAt()).isNotNull();
 	}
 
 	@Test
 	void readPublicCellarIsEmptyForAnOwnerWithNoCellar() {
-		assertThat(service.readPublicCellar(publicUsernameOf(UUID.randomUUID()))).isEmpty();
+		PublicCellarPage cellar = service.readPublicCellar(publicUsernameOf(UUID.randomUUID()), FIRST_PAGE);
+
+		assertThat(cellar.entries()).isEmpty();
+		assertThat(cellar.totalBottles()).isZero();
+		assertThat(cellar.lastBottleAddedAt()).isNull();
 	}
 
 	// ADR-0050: the three causes must be one exception with one message, so
@@ -240,13 +250,13 @@ class CellarServiceIT {
 		profiles.saveAndFlush(Profile.create(owner, privateName));
 		String publicName = publicUsernameOf(UUID.randomUUID());
 
-		assertThatThrownBy(() -> service.readPublicCellar(privateName))
+		assertThatThrownBy(() -> service.readPublicCellar(privateName, FIRST_PAGE))
 				.isInstanceOf(PublicCellarNotFoundException.class)
 				.hasMessage("No public cellar found");
-		assertThatThrownBy(() -> service.readPublicCellar("nobody-" + owner))
+		assertThatThrownBy(() -> service.readPublicCellar("nobody-" + owner, FIRST_PAGE))
 				.isInstanceOf(PublicCellarNotFoundException.class)
 				.hasMessage("No public cellar found");
-		assertThatThrownBy(() -> service.readPublicCellar(publicName.toUpperCase(Locale.ROOT)))
+		assertThatThrownBy(() -> service.readPublicCellar(publicName.toUpperCase(Locale.ROOT), FIRST_PAGE))
 				.isInstanceOf(PublicCellarNotFoundException.class)
 				.hasMessage("No public cellar found");
 	}
@@ -259,7 +269,7 @@ class CellarServiceIT {
 		entries.saveAndFlush(Entry.create(owner, beerId, CLOCK));
 
 		assertThat(service.listEntries(owner)).isEmpty();
-		assertThat(service.readPublicCellar(publicUsernameOf(owner))).isEmpty();
+		assertThat(service.readPublicCellar(publicUsernameOf(owner), FIRST_PAGE).entries()).isEmpty();
 	}
 
 	@Test
@@ -273,12 +283,13 @@ class CellarServiceIT {
 		testEntityManager.clear();
 
 		assertThat(service.listEntries(owner)).extracting(view -> view.beer().id()).containsExactly(beerId);
-		assertThat(service.readPublicCellar(publicUsernameOf(owner))).extracting(view -> view.beer().id()).containsExactly(beerId);
+		assertThat(service.readPublicCellar(publicUsernameOf(owner), FIRST_PAGE).entries()).extracting(view -> view.beer().id())
+				.containsExactly(beerId);
 		assertThat(output).contains("Left cellar entry " + orphanId + " out: its beer " + vanishedBeerId);
 	}
 
 	@Test
-	void bothReadsReturnEntriesInBeerNameOrder() {
+	void theOwnersReadIsInBeerNameOrderAndAPublicPageInTheOrderBeersWereAdded() {
 		UUID owner = UUID.randomUUID();
 		// Names starting with different ASCII letters order the same under any
 		// collation, so the expectation cannot hinge on how accents are ranked.
@@ -295,8 +306,67 @@ class CellarServiceIT {
 
 		assertThat(service.listEntries(owner)).extracting(view -> view.beer().id())
 				.containsExactly(earlier.getId(), later.getId());
-		assertThat(service.readPublicCellar(publicUsernameOf(owner))).extracting(view -> view.beer().id())
-				.containsExactly(earlier.getId(), later.getId());
+		assertThat(service.readPublicCellar(publicUsernameOf(owner), FIRST_PAGE).entries())
+				.extracting(view -> view.beer().id())
+				.containsExactly(later.getId(), earlier.getId());
+	}
+
+	@Test
+	void aPublicPageHoldsAtMostOnePageOfEntriesAndAtMostTheBottleCapOfEachAndSaysWhatTheCellarHolds() {
+		UUID owner = UUID.randomUUID();
+		List<Beer> held = beers.findAll(PageRequest.of(0, 45)).getContent();
+		held.forEach(beer -> service.addBottles(owner, beer.getId(), 1, ContainerType.BOTTLE, null, null));
+		int overTheCap = CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY + 10;
+		service.addBottles(owner, held.getFirst().getId(), overTheCap, ContainerType.CAN, null, null);
+		testEntityManager.flush();
+		testEntityManager.clear();
+		String username = publicUsernameOf(owner);
+
+		PublicCellarPage first = service.readPublicCellar(username, PageRequest.of(0, 20));
+		PublicCellarPage last = service.readPublicCellar(username, PageRequest.of(2, 20));
+
+		assertThat(first.entries()).hasSize(20);
+		assertThat(first.totalEntries()).isEqualTo(45);
+		assertThat(first.totalPages()).isEqualTo(3);
+		assertThat(first.totalBottles()).isEqualTo(45 + overTheCap);
+		PublicCellarEntry crowded = first.entries().getFirst();
+		assertThat(crowded.beer().id()).isEqualTo(held.getFirst().getId());
+		assertThat(crowded.bottleCount()).isEqualTo(1 + overTheCap);
+		assertThat(crowded.bottles()).hasSize(CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY);
+		assertThat(first.entries().subList(1, 20)).allSatisfy(entry -> assertThat(entry.bottles()).hasSize(1));
+		assertThat(last.entries()).hasSize(5);
+		assertThat(last.page()).isEqualTo(2);
+		assertThat(last.entries()).extracting(entry -> entry.beer().id())
+				.doesNotContainAnyElementsOf(first.entries().stream().map(entry -> entry.beer().id()).toList());
+	}
+
+	// The work of a public read is set by the page, not by what the owner stored.
+	@Test
+	void aPublicReadsQueryCountDoesNotGrowWithTheCellar() {
+		UUID small = UUID.randomUUID();
+		UUID large = UUID.randomUUID();
+		List<Beer> held = beers.findAll(PageRequest.of(0, 60)).getContent();
+		service.addBottles(small, held.getFirst().getId(), 1, ContainerType.BOTTLE, null, null);
+		held.forEach(beer -> service.addBottles(large, beer.getId(), 24, ContainerType.BOTTLE, null, null));
+		testEntityManager.flush();
+		testEntityManager.clear();
+		String smallName = publicUsernameOf(small);
+		String largeName = publicUsernameOf(large);
+		testEntityManager.clear();
+		Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+
+		statistics.clear();
+		service.readPublicCellar(smallName, FIRST_PAGE);
+		long queriesForSmall = statistics.getPrepareStatementCount();
+		testEntityManager.clear();
+		statistics.clear();
+		PublicCellarPage page = service.readPublicCellar(largeName, FIRST_PAGE);
+		long queriesForLarge = statistics.getPrepareStatementCount();
+
+		assertThat(page.entries()).hasSize(20);
+		// The profile lookup, the page and its count, the bottle counts, the capped bottle ids and their rows,
+		// the totals and the beers: a cellar that fits one page skips the count, and nothing else differs.
+		assertThat(queriesForLarge).isLessThanOrEqualTo(queriesForSmall + 1).isEqualTo(8);
 	}
 
 	@Test

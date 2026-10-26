@@ -258,12 +258,20 @@
         "hint": "Tässä kellarissa ei ole vielä oluita."
       },
       "lastAdded": "Viimeksi lisätty {{date}}",
+      "pagination": {
+        "label": "Kellarin sivut",
+        "summary": "Sivu {{page}} / {{totalPages}}",
+        "previous": "← Edellinen",
+        "next": "Seuraava →"
+      },
       "about": "Kaliassa pidetään kirjaa omistetuista oluista ja siitä, kuinka vanha kukin pullo on.",
       "browse": "Selaa oluita"
     },
     "entry": {
       "bottleCount_one": "{{count}} pullo",
-      "bottleCount_other": "{{count}} pulloa"
+      "bottleCount_other": "{{count}} pulloa",
+      "listed_one": "Näytetään sen vanhin pullo",
+      "listed_other": "Näytetään sen {{count}} vanhinta pulloa"
     },
     "bottle": {
       "list": "Oluen {{beer}} pullot",

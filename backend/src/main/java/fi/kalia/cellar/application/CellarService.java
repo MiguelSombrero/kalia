@@ -3,6 +3,9 @@ package fi.kalia.cellar.application;
 import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.cellar.domain.Bottle;
+import fi.kalia.cellar.domain.BottleCount;
+import fi.kalia.cellar.domain.BottleListing;
+import fi.kalia.cellar.domain.BottleTotals;
 import fi.kalia.cellar.domain.ContainerType;
 import fi.kalia.cellar.domain.Entry;
 import fi.kalia.cellar.domain.EntryRepository;
@@ -15,11 +18,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -39,6 +45,9 @@ public class CellarService {
 
 	private final Clock clock;
 
+	/** A public read shows at most this many bottles of one beer; the entry still reports how many are held. */
+	public static final int MAX_PUBLIC_BOTTLES_PER_ENTRY = 25;
+
 	@Transactional(readOnly = true)
 	public List<EntryView> listEntries(UUID userId) {
 		return joined(entries.findWithBottlesByUserId(userId));
@@ -46,9 +55,32 @@ public class CellarService {
 
 	// One exception for every refusal, so none can be told from another (ADR-0050).
 	@Transactional(readOnly = true)
-	public List<EntryView> readPublicCellar(String username) {
+	public PublicCellarPage readPublicCellar(String username, Pageable pageable) {
 		UUID ownerId = profile.publicCellarOwnerId(username).orElseThrow(PublicCellarNotFoundException::new);
-		return joined(entries.findWithBottlesByUserId(ownerId));
+		Page<Entry> page = entries.findPageByUserId(ownerId, pageable);
+		List<UUID> entryIds = page.getContent().stream().map(Entry::getId).toList();
+		Map<UUID, Long> held = entries.countBottlesByEntryId(entryIds).stream()
+				.collect(Collectors.toMap(BottleCount::entryId, BottleCount::count));
+		Map<UUID, List<BottleListing>> shown = entries
+				.listBottles(entries.findIdsOfOldestBottlesOfEntries(entryIds, MAX_PUBLIC_BOTTLES_PER_ENTRY))
+				.stream()
+				.collect(Collectors.groupingBy(BottleListing::entryId));
+		List<Entry> notEmpty = page.getContent().stream().filter(entry -> held.getOrDefault(entry.getId(), 0L) > 0).toList();
+		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(notEmpty.stream().map(Entry::getBeerId).toList());
+		List<PublicCellarEntry> cellar = notEmpty.stream()
+				.flatMap(entry -> {
+					BeerSummary beer = beers.get(entry.getBeerId());
+					if (beer == null) {
+						log.warn("Left cellar entry {} out: its beer {} is not in the catalog", entry.getId(),
+								entry.getBeerId());
+						return Stream.empty();
+					}
+					return Stream.of(new PublicCellarEntry(entry, beer, held.get(entry.getId()), shown.get(entry.getId())));
+				})
+				.toList();
+		BottleTotals totals = entries.totalBottlesOf(ownerId);
+		return new PublicCellarPage(cellar, page.getTotalElements(), page.getTotalPages(), page.getNumber(),
+				totals.count(), totals.lastAddedAt());
 	}
 
 	// ADR-0057; each retry's own transaction is verified by ConcurrentAddBottleApiIT.

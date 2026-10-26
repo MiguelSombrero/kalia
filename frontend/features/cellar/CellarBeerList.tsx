@@ -28,10 +28,13 @@ export const CellarBeerList = ({
   locale,
   beers,
   owner,
+  sortable = true,
 }: {
   locale: Locale;
   beers: CellarBeer[];
   owner: boolean;
+  /** False when `beers` is one page of a longer list: a sort of one page would pass for a sort of the cellar. */
+  sortable?: boolean;
 }) => {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
@@ -46,33 +49,37 @@ export const CellarBeerList = ({
 
   return (
     <>
-      <div className={cellarTools}>
-        <div className="flex min-w-48 flex-col gap-1">
-          <label htmlFor={sortId} className="text-label font-semibold uppercase text-foreground">
-            {t("cellar.sort.label")}
-          </label>
-          <select
-            id={sortId}
-            value={sort}
-            onChange={(event) => changeSort(toCellarSort(event.target.value))}
-            className={fieldClasses}
-          >
-            {cellarSorts.map((option) => (
-              <option key={option} value={option}>
-                {t(`cellar.sort.${option}`)}
-              </option>
-            ))}
-          </select>
+      {(sortable || owner) && (
+        <div className={cellarTools}>
+          {sortable && (
+            <div className="flex min-w-48 flex-col gap-1">
+              <label htmlFor={sortId} className="text-label font-semibold uppercase text-foreground">
+                {t("cellar.sort.label")}
+              </label>
+              <select
+                id={sortId}
+                value={sort}
+                onChange={(event) => changeSort(toCellarSort(event.target.value))}
+                className={fieldClasses}
+              >
+                {cellarSorts.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`cellar.sort.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {owner && (
+            <Link href={catalogHref(locale)} className={buttonVariants("outline")}>
+              <Icon name="plus" className="size-4" />
+              {t("cellar.findBeers")}
+            </Link>
+          )}
         </div>
-        {owner && (
-          <Link href={catalogHref(locale)} className={buttonVariants("outline")}>
-            <Icon name="plus" className="size-4" />
-            {t("cellar.findBeers")}
-          </Link>
-        )}
-      </div>
+      )}
       <div className="border-t border-border">
-        {sortCellar(beers, sort, locale).map((beer) => (
+        {(sortable ? sortCellar(beers, sort, locale) : beers).map((beer) => (
           <CellarBeerBlock key={beer.entryId} locale={locale} beer={beer} owner={owner} />
         ))}
       </div>
@@ -114,12 +121,17 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
             </Link>
           </h2>
           <span className="text-sm font-semibold tabular-nums text-foreground">
-            {t("cellar.entry.bottleCount", { count: bottles.length })}
+            {t("cellar.entry.bottleCount", { count: bottles.length + (beer.unlistedBottles ?? 0) })}
           </span>
           <p className="order-last basis-full text-sm text-muted-foreground">
             {beer.breweryName} · {beer.style} · <span className="tabular-nums">{formatAbv(beer.abv, locale)}</span>
           </p>
         </div>
+        {beer.unlistedBottles !== undefined && (
+          <p className="text-sm text-muted-foreground">
+            {t("cellar.entry.listed", { count: bottles.length })}
+          </p>
+        )}
         <ul aria-label={t("cellar.bottle.list", { beer: beer.beerName })} className={bottleTiles}>
           {bottles.map((bottle, index) => (
             <BottleTile

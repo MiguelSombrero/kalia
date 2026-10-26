@@ -371,7 +371,7 @@ GET    /api/v1/breweries?query=&page=&size=          -> query: case-insensitive 
 GET    /api/v1/breweries/countries                  -> the ISO 3166-1 code of every country the catalog has a brewery in, which the catalog's country filter offers
 GET    /api/v1/styles                               -> every style a catalog beer has, the vocabulary a beer is added with
 GET    /api/v1/countries                            -> every country a brewery can be in, as its ISO 3166-1 code
-GET    /api/v1/cellars/{username}                   -> a cellar its owner has made public, with its beers and bottles; 404 otherwise, 400 for a username over 255 characters
+GET    /api/v1/cellars/{username}?page=&size=       -> one page of a cellar its owner has made public, with its beers and bottles; 404 otherwise, 400 for a username over 255 characters or a page parameter out of range
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
@@ -396,21 +396,23 @@ everywhere else — `POST`, `PATCH`, `DELETE` — never nested under its entry: 
 `entryId` in that path could not be trusted any more than a caller-supplied
 user id, so it would buy no isolation guarantee, only a redundant "path entry
 doesn't match the bottle's real entry" case
-([task 02](tasks/iteration-5/02-cellar-rest-api.md)). The list is not
-paginated — a cellar is realistically far smaller than the catalog — and an
-entry or bottle belonging to another user answers 404, uniformly, never 403.
+([task 02](tasks/iteration-5/02-cellar-rest-api.md)). The owner's list is not
+paginated — it is the owner's own data, read whole for the offline cache the
+mobile app will keep — but the public read is, because nothing caps what one
+account stores. An entry or bottle belonging to another user answers 404,
+uniformly, never 403.
 
 **Both cellar reads arrive joined with their beers.** Each entry nests the
 beer it is of, as `catalog` describes it now, read through `CatalogApi` in
 batches as the feed's beers are; the owner's and the public entry are separate
 types sharing that one beer shape, which holds only what the cellar pages
 show. An entry with no bottles is never returned, an entry whose beer no
-longer resolves is left out and logged, and the entries come in a stable
-default order — beer name, then entry id — that a client re-sorts as its user
-chooses ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
+longer resolves is left out and logged, and the owner's entries come in a
+stable default order — beer name, then entry id — that a client re-sorts as its
+user chooses ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
 
 `GET /api/v1/cellars/{username}` is the one cellar route a signed-out caller
-may reach: the whole of a cellar its owner has marked public, its bottles
+may reach: one page of a cellar its owner has marked public, its bottles
 nested under their beers, in a response type of its own rather than the
 owner's `EntryDto`/`BottleDto`. `cellar` owns it and reads `profile` for the
 owner id and the visibility answer; the owner id is resolved before the cellar
@@ -418,6 +420,19 @@ is loaded, so a non-public cellar is never read. An unknown username, a
 missing profile and a private cellar are one 404 — identical for every caller,
 the owner included — so usernames cannot be walked for cellars
 ([ADR-0050](adr/0050-public-cellar-addressing.md)).
+
+**The public read costs the same however much its owner stored.** A request
+without paging parameters is the first page of 20 beers; `size` is at most 50
+and `page` at most 199 ([ADR-0042](adr/0042-bounded-request-parameters.md)). A
+page is cut in SQL in the order the beers were added — the catalog's names are
+not in `cellar`'s tables, so the page cannot be cut by name — and each beer lists
+at most its 25 oldest bottles, its `quantity` still the number held. The
+response carries the whole cellar's beer and bottle totals and when the newest
+bottle was added, since a client holding one page cannot count them. One read
+is eight queries however large the cellar, and `entry_user_id_created_at_idx`
+and `bottle_entry_id_created_at_idx` make each an index range scan
+([ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
+records what this changed on the page).
 
 `GET /api/v1/feed` answers the same for every caller, signed in or out: only
 events whose owner's cellar is *currently* public are served, resolved at read

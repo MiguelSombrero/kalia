@@ -33,12 +33,22 @@ describe("a public cellar page view", () => {
   it("makes one backend call however many beers the cellar holds", async () => {
     const fetchMock = vi.fn(async (url: string) =>
       url.includes("/api/v1/cellars/")
-        ? Response.json({ username: "testuser", entries: Array.from({ length: 150 }, (_, i) => entry(i)) })
+        ? Response.json({
+            username: "testuser",
+            entries: Array.from({ length: 150 }, (_, i) => entry(i)),
+            page: 0,
+            totalPages: 1,
+            totalBeers: 150,
+            totalBottles: 150,
+          })
         : Response.json({ id: "beer", name: "Beer", brewery: { name: "Brewery" }, style: "Lager", abv: 5 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    await PublicCellarPage({ params: Promise.resolve({ locale: "en", username: "testuser" }) });
+    await PublicCellarPage({
+      params: Promise.resolve({ locale: "en", username: "testuser" }),
+      searchParams: Promise.resolve({}),
+    });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

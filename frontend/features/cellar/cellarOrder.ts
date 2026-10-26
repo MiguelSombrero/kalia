@@ -26,13 +26,15 @@ const earliestBestBefore = (beer: CellarBeer): string | undefined =>
     .filter((date): date is string => Boolean(date))
     .sort()[0];
 
+const heldBottles = (beer: CellarBeer): number => beer.bottles.length + (beer.unlistedBottles ?? 0);
+
 export const sortCellar = (beers: CellarBeer[], sort: CellarSort, locale: Locale): CellarBeer[] => {
   const byName = (a: CellarBeer, b: CellarBeer) => a.beerName.localeCompare(b.beerName, locale);
   const compare: Record<CellarSort, (a: CellarBeer, b: CellarBeer) => number> = {
     name: byName,
     style: (a, b) => a.style.localeCompare(b.style, locale) || byName(a, b),
     abv: (a, b) => b.abv - a.abv || byName(a, b),
-    bottles: (a, b) => b.bottles.length - a.bottles.length || byName(a, b),
+    bottles: (a, b) => heldBottles(b) - heldBottles(a) || byName(a, b),
     bestBefore: (a, b) => compareDates(earliestBestBefore(a), earliestBestBefore(b)) || byName(a, b),
   };
   return [...beers].sort(compare[sort]);

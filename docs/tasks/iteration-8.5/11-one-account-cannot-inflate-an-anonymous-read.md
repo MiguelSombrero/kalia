@@ -1,6 +1,6 @@
 # Task 11: One account cannot make an anonymous read arbitrarily expensive
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -57,12 +57,12 @@ through a large cellar.
 
 ## Acceptance criteria
 
-- [ ] An integration test seeding a cellar past the bound shows the anonymous
+- [x] An integration test seeding a cellar past the bound shows the anonymous
       read's response size and query count stay within it
-- [ ] The public read's paging parameters are bounded per ADR-0042, an
+- [x] The public read's paging parameters are bounded per ADR-0042, an
       unpaged request gets the default first page, and both are documented in
       the spec — integration tests
-- [ ] The cellar page still works across the bound — e2e green — and `make
+- [x] The cellar page still works across the bound — e2e green — and `make
       verify` is green
 
 ## Notes

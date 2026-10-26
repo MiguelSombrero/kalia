@@ -3,6 +3,7 @@ export { cellarCounts, type CellarTotals } from "./cellarTotals";
 export { CellarSummary } from "./CellarSummary";
 export { CellarView } from "./CellarView";
 export { beerBlock, bottleTiles, cellarHead, cellarTools } from "./layout";
+export { toPublicCellarPage } from "./publicCellarPages";
 export { PublicCellarView } from "./PublicCellarView";
 export { SignInPrompt } from "./SignInPrompt";
 export { getPublicCellar, heldBottlesByBeerOrNone, listCellarEntries } from "./api";

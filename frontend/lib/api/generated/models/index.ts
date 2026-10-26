@@ -35,6 +35,7 @@ export * from './publicCellarBottleDtoContainerType';
 export * from './publicCellarDto';
 export * from './publicCellarEntryDto';
 export * from './readFeedParams';
+export * from './readParams';
 export * from './searchBeersParams';
 export * from './updateBottleRequestDto';
 export * from './updateBottleRequestDtoContainerType';

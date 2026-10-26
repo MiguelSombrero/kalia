@@ -139,6 +139,11 @@ describe("getPublicCellar", () => {
   it("maps a public cellar's joined beers onto rows, its bottles oldest brewed first", async () => {
     const fetchMock = stubFetch(() => ({
       username: "testuser",
+      page: 0,
+      totalPages: 1,
+      totalBeers: 1,
+      totalBottles: 2,
+      lastBottleAddedAt: "2026-01-02T10:00:00Z",
       entries: [
         entry({
           quantity: 2,
@@ -153,8 +158,16 @@ describe("getPublicCellar", () => {
     const cellar = await getPublicCellar("testuser");
 
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/api/v1/cellars/testuser"), expect.anything());
-    expect(cellar?.username).toBe("testuser");
+    expect(cellar).toMatchObject({
+      username: "testuser",
+      page: 0,
+      totalPages: 1,
+      totalBeers: 1,
+      totalBottles: 2,
+      lastBottleAddedAt: "2026-01-02T10:00:00Z",
+    });
     expect(cellar?.beers).toHaveLength(1);
+    expect(cellar?.beers[0]).not.toHaveProperty("unlistedBottles");
     expect(cellar?.beers[0]).toMatchObject({
       entryId,
       beerId,
@@ -164,6 +177,38 @@ describe("getPublicCellar", () => {
       abv: 10.2,
     });
     expect(cellar?.beers[0].bottles.map((b) => b.id)).toEqual(["bottle-oldest", "bottle-recent"]);
+  });
+
+  it("asks for the page it is given, and for none at all on the first", async () => {
+    const fetchMock = stubFetch(() => ({
+      username: "testuser",
+      entries: [],
+      page: 2,
+      totalPages: 3,
+      totalBeers: 45,
+      totalBottles: 45,
+    }));
+
+    await getPublicCellar("testuser");
+    await getPublicCellar("testuser", 2);
+
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/api\/v1\/cellars\/testuser$/);
+    expect(fetchMock.mock.calls[1][0]).toMatch(/\/api\/v1\/cellars\/testuser\?page=2$/);
+  });
+
+  it("records the bottles a capped entry holds beyond those it lists", async () => {
+    stubFetch(() => ({
+      username: "testuser",
+      entries: [entry({ quantity: 48, bottles: [bottle("b1"), bottle("b2")] })],
+      page: 0,
+      totalPages: 1,
+      totalBeers: 1,
+      totalBottles: 48,
+    }));
+
+    const cellar = await getPublicCellar("testuser");
+
+    expect(cellar?.beers[0].unlistedBottles).toBe(46);
   });
 
   it("returns null for a 404 — unknown, private and profileless are one answer", async () => {
