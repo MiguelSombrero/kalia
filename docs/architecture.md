@@ -765,7 +765,17 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   client — public, no secret, distinct from `kalia-frontend`'s confidential
   one so no secret is ever browser-visible in the docs UI. Required on every
   endpoint that needs a bearer token, so the Authorize button covers all of
-  them, not `cellar` alone.
+  them, not `cellar` alone. The client exists on the dev stack only: the
+  deployable realm file pins no public client
+  ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
+- **The deployable stack requires its secrets and the session store a
+  password** ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
+  `docker-compose.base.yml` has no default for any of them and the dev stack
+  supplies its own; Valkey rejects an unauthenticated client, since a session's
+  key is its cookie value; and the frontend refuses to start in production on
+  the committed dev `AUTH_SECRET`. Every sign-in first ends any local session,
+  so signing in as a second person on a browser files a session and token set
+  of their own instead of linking the account to the first person's.
 - **Access tokens are renewed silently**
   ([ADR-0029](adr/0029-silent-token-refresh.md)): the BFF trades the stored
   refresh token for a fresh set when a request needs one and the held token
@@ -1156,3 +1166,4 @@ reasons and its rate is worth watching independently
 | [ADR-0085](adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |
 | [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
 | [ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |
+| [ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |

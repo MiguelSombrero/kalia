@@ -1,0 +1,122 @@
+#!/usr/bin/env node
+// Asserts the split ADR-0089 makes between the deployable compose definition
+// (docker-compose.base.yml) and the local stack (docker-compose.yml, its dev
+// env file and docker-compose.override.yml). Needs the `docker compose` CLI
+// but no daemon: it only renders configuration. Run by `make compose-check`
+// (`make verify`, CI's static-checks job).
+//
+// It proves that the base file refuses to render without any one of its
+// required secrets, naming that variable; that it defaults none the dev env
+// file supplies and has no seed service or Swagger client; and that the local
+// stack renders from the root .env's one secret alone.
+
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
+
+/** Variables a compose file refuses to render without: `${NAME:?message}`. */
+export const requiredVariables = (composeText) => [
+  ...new Set([...composeText.matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*):\?/g)].map((match) => match[1])),
+];
+
+/** The names a dev env file gives a value, in order. */
+export const variablesSupplied = (envText) =>
+  [...envText.matchAll(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=/gm)].map((match) => match[1]);
+
+/** Variables given a non-empty `:-` default somewhere in a compose file. */
+export const variablesWithDefault = (composeText) => [
+  ...new Set([...composeText.matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*):-(?!\})/g)].map((match) => match[1])),
+];
+
+/** Problems with how the dev env file and the base file line up. */
+export const consistencyProblems = ({ baseText, devEnvText }) => {
+  const required = new Set(requiredVariables(baseText));
+  const defaulted = new Set(variablesWithDefault(baseText));
+  const problems = [];
+  for (const name of variablesSupplied(devEnvText)) {
+    if (defaulted.has(name)) {
+      problems.push(`docker-compose.base.yml gives ${name} a \`:-\` default, which docker-compose.dev.env already supplies`);
+    }
+    if (!baseText.includes("${" + name)) {
+      problems.push(`docker-compose.dev.env supplies ${name}, which docker-compose.base.yml does not use`);
+    }
+  }
+  return problems;
+};
+
+// A clean environment: nothing from the caller's shell or root .env may fill
+// in a variable the check means to leave unset.
+const compose = (args, extraEnv) =>
+  execFileSync("docker", ["compose", ...args], {
+    cwd: ROOT,
+    env: { PATH: process.env.PATH, HOME: process.env.HOME, ...extraEnv },
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+const renderFails = (args, env) => {
+  try {
+    compose(args, env);
+    return undefined;
+  } catch (error) {
+    return String(error.stderr ?? error.message);
+  }
+};
+
+const run = () => {
+  const baseText = readFileSync(join(ROOT, "docker-compose.base.yml"), "utf8");
+  const devEnvText = readFileSync(join(ROOT, "docker-compose.dev.env"), "utf8");
+  const problems = consistencyProblems({ baseText, devEnvText });
+  const baseArgs = ["--env-file", "/dev/null", "-f", "docker-compose.base.yml", "config", "--format", "json"];
+
+  const required = requiredVariables(baseText);
+  const everySecret = Object.fromEntries(required.map((name) => [name, "check-compose-value"]));
+
+  for (const name of required) {
+    const { [name]: _left, ...others } = everySecret;
+    const stderr = renderFails(baseArgs, others);
+    if (stderr === undefined) problems.push(`the base file renders without ${name}`);
+    else if (!new RegExp(`\\b${name}\\b`).test(stderr)) problems.push(`the base file refuses without ${name} but does not name it: ${stderr.trim()}`);
+  }
+
+  const base = JSON.parse(compose(baseArgs, everySecret));
+  if ("keycloak-seed" in base.services) problems.push("the base file defines keycloak-seed, a dev-only service");
+  if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
+
+  const dir = mkdtempSync(join(tmpdir(), "check-compose-"));
+  try {
+    // What a developer's root .env holds: the one value with no dev default.
+    const rootEnv = join(dir, ".env");
+    writeFileSync(rootEnv, "KALIA_FRONTEND_CLIENT_SECRET=check-compose-value\n");
+    const local = JSON.parse(compose(["--env-file", rootEnv, "config", "--format", "json"], {}));
+    const seed = local.services["keycloak-seed"];
+    const keycloak = local.services.keycloak.environment;
+    if (!seed) problems.push("the local stack has no keycloak-seed service");
+    else {
+      if (seed.environment.KEYCLOAK_ADMIN !== keycloak.KC_BOOTSTRAP_ADMIN_USERNAME) {
+        problems.push("keycloak-seed's KEYCLOAK_ADMIN differs from the admin Keycloak starts with");
+      }
+      if (seed.environment.KEYCLOAK_ADMIN_PASSWORD !== keycloak.KC_BOOTSTRAP_ADMIN_PASSWORD) {
+        problems.push("keycloak-seed's KEYCLOAK_ADMIN_PASSWORD differs from the admin password Keycloak starts with");
+      }
+    }
+    if (local.services.frontend.environment.KALIA_DEV_STACK !== "true") {
+      problems.push("the local stack does not mark the frontend as the dev stack");
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+
+  if (problems.length > 0) {
+    console.error(`compose definition checks failed (${problems.length}):`);
+    for (const problem of problems) console.error(`  ${problem}`);
+    process.exit(1);
+  }
+  console.log(`docker-compose.base.yml refuses without each of its ${required.length} required variables and carries nothing dev-only`);
+};
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) run();

@@ -19,18 +19,18 @@ root. The production image uses Next.js standalone output
 
 | Variable | Default | Notes |
 |---|---|---|
-| `BACKEND_URL` | `http://localhost:8080` | Required in production — enforced at server startup (`instrumentation.ts`), see [ADR-0018](../docs/adr/0018-frontend-env-var-validation.md). The default is for `npm run dev`; `docker-compose.yml` always sets it explicitly |
+| `BACKEND_URL` | `http://localhost:8080` | Required in production — enforced at server startup (`instrumentation.ts`), see [ADR-0018](../docs/adr/0018-frontend-env-var-validation.md). The default is for `npm run dev`; the compose files always set it explicitly |
 | `AUTH_URL` | — | The app's own browser-facing URL. Required — without it, Auth.js infers it from the container's `0.0.0.0` bind address instead of the real one (see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)) |
-| `AUTH_SECRET` | — | Auth.js session-signing secret. Required |
+| `AUTH_SECRET` | — | Auth.js session-signing secret. Required, and in production the dev secret committed in `docker-compose.dev.env` is refused unless `KALIA_DEV_STACK=true`, which only `docker-compose.override.yml` sets ([ADR-0089](../docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)) |
 | `AUTH_KEYCLOAK_ID` / `AUTH_KEYCLOAK_SECRET` | — | Keycloak client credentials. Required |
 | `AUTH_KEYCLOAK_ISSUER` | — | Keycloak's **public**, browser-facing realm URL — must match Keycloak's own `KC_HOSTNAME`. Required — see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) for why this can't be the internal Docker Compose address |
 | `AUTH_KEYCLOAK_INTERNAL_ORIGIN` | — | Where this container actually reaches Keycloak; requests to `AUTH_KEYCLOAK_ISSUER` are transparently redirected here (`lib/auth/internalKeycloakFetch.ts`). Required |
-| `VALKEY_URL` | `redis://localhost:6379` | Session store for the Auth.js adapter (`lib/auth/valkeyAdapter.ts`). Required in production |
+| `VALKEY_URL` | `redis://localhost:6379` | Session store for the Auth.js adapter (`lib/auth/valkeyAdapter.ts`). Required in production, and it carries the password the store requires: `redis://:<password>@host:6379`. Native `npm run dev` against the compose stack's Valkey sets `redis://:kalia-dev-valkey-password@localhost:6379` in `.env.local` |
 | `LOG_LEVEL` | `info` | Lowest level `lib/logger.ts` writes on the server: `debug`, `info`, `warn` or `error` |
 | `METRICS_TOKEN` | — | Bearer token for `/api/metrics`. Unset, that route answers 404. Optional: it is deliberately not in `REQUIRED_IN_PRODUCTION`. Compose supplies a dev-only value |
 
 The six `AUTH_KEYCLOAK_*`/`AUTH_URL`/`VALKEY_URL` values above are set by
-`docker-compose.yml` for the containerized stack. Running `npm run dev`
+the compose files for the containerized stack. Running `npm run dev`
 natively against that same dockerized Keycloak needs its own `.env.local`
 — and since a native process has no container network split, set
 `AUTH_KEYCLOAK_INTERNAL_ORIGIN` to the **same** value as
@@ -79,7 +79,7 @@ npm run generate:api  # regenerate lib/api/generated/ from a live backend
 Node's version is the one in `.node-version` at the repository root: CI reads
 it, and nvm, fnm and asdf pick it up locally. The Docker tags are the only
 other place it is written, so a bump edits that file, `frontend/Dockerfile` and
-`docker-compose.yml` together. Node moves between long-term-support releases,
+the compose files together. Node moves between long-term-support releases,
 not to the newest major ([ADR-0085](../docs/adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md)).
 
 Before pushing, run the whole gate rather than any of these alone:
@@ -121,7 +121,8 @@ reads like a broken E2E suite. Create it as the root
 [README](../README.md) describes, and `make stack-env` to give the worktree
 its own host ports. The suite reads them from that `.env`
 (`stackOrigins.ts`) and falls back to the defaults, so two worktrees can run
-it at once.
+it at once. The Valkey password comes the same way, from `VALKEY_PASSWORD` or
+`docker-compose.dev.env`.
 
 A spec that signs in gets its Keycloak account from the worker-scoped
 `account` fixture (`e2e/support/keycloakAccount.ts`), never a hardcoded
@@ -256,6 +257,13 @@ Why the rationale lives there and not here:
   Valkey adapter** (`lib/auth/valkeyAdapter.ts`) — never add a second
   session mechanism or switch to the `"jwt"` strategy without reading
   [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) first.
+- **`signIn` from `auth.ts` ends any local session before it starts**
+  (`lib/auth/endingLocalSession.ts`), and every sign-in action calls that one.
+  Do not export Auth.js's own `signIn` instead: with a live session Auth.js links
+  the account Keycloak returns to the signed-in user, so a second person
+  signing in on the browser would be filed under the first one's identity and
+  carry their tokens. Nothing fails
+  ([ADR-0089](../docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
 - **Sign-out goes through the `federatedSignOut` Server Action
   (`features/auth/actions.ts`), never Auth.js's own `signOut()` directly** —
   it also ends Keycloak's SSO session, which `signOut()` alone does not do.

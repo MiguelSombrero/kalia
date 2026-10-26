@@ -1,0 +1,59 @@
+# What only development has, merged over docker-compose.yml by a bare
+# `docker compose` (ADR-0089). It is not part of the deployable definition,
+# docker-compose.base.yml: nothing here may be needed to run that one.
+
+services:
+  backend:
+    environment:
+      # This stack is the local development environment: verbose logs
+      # (ADR-0013) and Swagger UI, both off by default elsewhere
+      LOG_LEVEL: DEBUG
+      SPRINGDOC_ENABLED: "true"
+
+  frontend:
+    environment:
+      # Lets the dev AUTH_SECRET from docker-compose.dev.env through
+      # verifyRequiredConfiguration, which refuses it everywhere else.
+      KALIA_DEV_STACK: "true"
+
+  keycloak-config:
+    environment:
+      # The kalia-swagger client is a second file, not part of the deployable
+      # realm. keycloak-config-cli imports files one after another and each
+      # import deletes the clients its file does not list, so the dev file
+      # only survives with deletion off. The deployable stack keeps the
+      # default and so removes this client if a dev realm ever reached it.
+      IMPORT_FILES_LOCATIONS: /config/kalia-realm.json,/config/kalia-realm-swagger.json
+      IMPORT_MANAGED_CLIENT: no-delete
+      # The backend's public address, for the kalia-swagger client's redirect
+      # URI and web origin: Swagger UI is served from the host port. No
+      # trailing slash, as for FRONTEND_URL in the base.
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:${BACKEND_PORT:-8080}}
+    volumes:
+      - ./keycloak/realm-swagger.json:/config/kalia-realm-swagger.json:ro
+
+  keycloak-seed:
+    # node:26-alpine matches frontend/Dockerfile's build stage; the script
+    # is dependency-free, so no image build is needed for this one-shot job.
+    image: node:26-alpine
+    depends_on:
+      # Not just keycloak's healthcheck: the realm this seeds a user into
+      # doesn't exist until keycloak-config has created it.
+      keycloak-config:
+        condition: service_completed_successfully
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      # The same values as docker-compose.dev.env, spelled out because this
+      # file is interpolated without it; scripts/check-compose.mjs fails if
+      # they ever differ.
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./scripts/seed-keycloak-account.mjs:/seed-keycloak-account.mjs:ro
+      # seed-keycloak-account.mjs imports its token-fetch/retry helper from
+      # this file by relative path, so it needs mounting alongside it.
+      - ./scripts/keycloak-admin.mjs:/keycloak-admin.mjs:ro
+      # keycloak-admin.mjs imports its host-side address defaults from this
+      # file; KEYCLOAK_URL is set here, so they go unused in the container.
+      - ./scripts/stack-ports.mjs:/stack-ports.mjs:ro
+    entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]

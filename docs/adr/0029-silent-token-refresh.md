@@ -7,6 +7,8 @@
   the user's, and Back-Channel Logout moved to iteration 4 task 10
 - **Amended:** 2026-10-23 — a stored account with no recorded expiry is
   renewed rather than trusted (iteration 8 task 11)
+- **Amended:** 2026-10-26 — records why the web keeps refresh-token reuse
+  until iteration 9 decides rotation (iteration 8.5 task 13)
 
 ## Context
 
@@ -113,6 +115,17 @@ as complexity bought against a setting we control and have pinned.
   the current render; the user sees the change on their next navigation.
 - Neutral, because renewal is unlocked and therefore depends on
   `revokeRefreshToken: false` staying false.
+- Neutral, because reuse is a decision deferred, not a finding that it is
+  safe. `revokeRefreshToken: false` means a refresh token read out of Valkey
+  replays alongside its holder for the whole SSO session, undetected.
+  [ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
+  closes the way to read one (the session store now needs a password) and
+  leaves rotation to [iteration 9](../tasks/iteration-9.md)'s
+  mobile-authentication decision, which chooses it for the web and the mobile
+  client together. Rotating for the web alone would need the renewal lock
+  rejected above, then be unpicked or redone when the mobile client's refresh
+  design lands; the web's exposure until then is the one this ADR already
+  accepted.
 - **Revisit trigger:** enabling refresh token rotation in the realm, or
   adopting Back-Channel Logout — the first makes the lock necessary, the
   second makes `invalid_grant` the rare path rather than the common one.

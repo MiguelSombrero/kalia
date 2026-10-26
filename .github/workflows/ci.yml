@@ -16,11 +16,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # docker-compose.yml has no default for this one, on purpose (ADR-0054):
+  # docker-compose.base.yml has no default for this one, on purpose (ADR-0054):
   # the whole file is interpolated regardless of which services a job
-  # targets, so every job that touches docker-compose.yml needs it — a
+  # targets, so every job that touches the compose files needs it — a
   # value that stays inside one ephemeral runner and is never asserted
   # against, unlike scripts/check-keycloak-signin.mjs's testuser/testuser123.
+  # Every other secret comes from docker-compose.dev.env (ADR-0089).
   KALIA_FRONTEND_CLIENT_SECRET: ci-run-not-a-credential
 
 jobs:
@@ -65,18 +66,18 @@ jobs:
           echo "$changed" | sed 's/^/  /'
 
           # Files outside backend/ and frontend/ that either suite depends on.
-          # docker-compose.yml builds and wires both; this workflow defines
+          # the docker-compose.* files build and wire both; this workflow defines
           # how they run; .node-version pins the Node every frontend job
           # installs; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
           # keycloak/, postgres/ and the seed script with its helper feed the
           # keycloak, postgres and keycloak-seed services e2e's stack starts.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|docs/architecture\.md|\.node-version|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
 
           # What keycloak-realm-check below can be affected by: the services
           # it starts and the scripts it runs. Neither backend/ nor frontend/
           # is among them.
-          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.yml|\.github/workflows/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
+          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing
@@ -114,6 +115,10 @@ jobs:
           node-version-file: .node-version
       - name: Run every dependency-free checker and its fixture self-test
         run: make check
+      # Renders the compose files, which needs the docker CLI but no daemon.
+      # Here rather than in `make check` so that stays Docker-free.
+      - name: Check the deployable compose file refuses without a secret
+        run: make compose-check
 
   backend:
     name: Backend (Maven)

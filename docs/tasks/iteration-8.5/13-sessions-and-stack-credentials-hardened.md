@@ -1,6 +1,6 @@
 # Task 13: Sessions and the stack's credentials are safe beyond one laptop
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -81,19 +81,19 @@ first person's tokens. Whether refresh tokens rotate is handed to iteration
 
 ## Acceptance criteria
 
-- [ ] Starting the deployable definition without a secret it needs fails with
+- [x] Starting the deployable definition without a secret it needs fails with
       the variable named — a test of `verifyRequiredConfiguration` rejecting
       the known dev `AUTH_SECRET`, and the compose check run in CI
-- [ ] An unauthenticated client cannot read `auth:session:*` from Valkey — an
+- [x] An unauthenticated client cannot read `auth:session:*` from Valkey — an
       integration or e2e test against the stack
-- [ ] Starting a sign-in while signed in ends the local session first, and
+- [x] Starting a sign-in while signed in ends the local session first, and
       signing in as B after A leaves no request carrying A's token — a vitest
       test, and an e2e flow if reachable there
-- [ ] Local `docker compose up` with the dev overlay still brings up a
+- [x] Local `docker compose up` with the dev overlay still brings up a
       working stack with the seeded account — e2e green
-- [ ] ADR-0029 records why the web keeps refresh-token reuse until iteration 9
+- [x] ADR-0029 records why the web keeps refresh-token reuse until iteration 9
       decides rotation
-- [ ] `keycloak-check` and `make verify` are green
+- [x] `keycloak-check` and `make verify` are green
 
 ## Notes
 

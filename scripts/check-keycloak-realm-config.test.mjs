@@ -5,10 +5,11 @@
 // checker that had stopped detecting drift would stay green until someone
 // hit real drift in the admin console. Runs in `make check`, hence CI.
 
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { resolvePlaceholders, diffRealm } from "./check-keycloak-realm-config.mjs";
+import { DEV_REALM_FILE, REALM_FILE, diffRealm, mergeRealmFiles, resolvePlaceholders } from "./check-keycloak-realm-config.mjs";
 
 const committedFixture = () => ({
   realm: "kalia",
@@ -206,4 +207,32 @@ test("diffRealm fails when the swagger redirect URI does not follow the backend 
   const { mismatches } = diffRealm(committed, liveFixture());
   assert.ok(mismatches.some((m) => /kalia-swagger.*redirectUris.*oauth2-redirect/s.test(m)), mismatches.join("\n"));
   assert.ok(mismatches.some((m) => /kalia-swagger.*webOrigins/s.test(m)));
+});
+
+// ADR-0089: the deployable realm is keycloak-config's default file alone, and
+// a public client in it would mint kalia-backend tokens outside the BFF's
+// session lifecycle. The dev stack's file is where such a client lives.
+const readRealmFile = (path) => JSON.parse(readFileSync(path, "utf8"));
+
+test("the deployable realm file pins no public client and no kalia-swagger", () => {
+  const { clients } = readRealmFile(REALM_FILE);
+  assert.deepEqual(
+    clients.filter((client) => client.publicClient || client.clientId === "kalia-swagger").map((client) => client.clientId),
+    [],
+  );
+});
+
+test("the dev realm file carries kalia-swagger and nothing else", () => {
+  const { realm, clients } = readRealmFile(DEV_REALM_FILE);
+  assert.equal(realm, "kalia");
+  assert.deepEqual(clients.map((client) => client.clientId), ["kalia-swagger"]);
+});
+
+test("mergeRealmFiles keeps the first file's realm settings and every file's clients", () => {
+  const merged = mergeRealmFiles([
+    { realm: "kalia", accessTokenLifespan: 300, clients: [{ clientId: "a" }] },
+    { realm: "kalia", clients: [{ clientId: "b" }] },
+  ]);
+  assert.equal(merged.accessTokenLifespan, 300);
+  assert.deepEqual(merged.clients.map((client) => client.clientId), ["a", "b"]);
 });

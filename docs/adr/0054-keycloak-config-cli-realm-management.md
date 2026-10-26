@@ -9,6 +9,10 @@
   re-applies rather than skipping on an unchanged file.
 - **Amended:** 2026-10-25 — the re-apply command is `docker compose run --rm
   keycloak-config`, not `up -d --wait` (`--wait` on a one-shot is a race)
+- **Amended:** 2026-10-26 by [ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
+  — the `kalia-swagger` client moved to a second realm file that only the dev
+  stack imports, with client deletion off there; the service itself now lives
+  in `docker-compose.base.yml`
 
 ## Context
 
