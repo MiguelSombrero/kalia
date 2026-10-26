@@ -11,7 +11,7 @@ import {
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-import { FRONTEND_ORIGIN } from "./support/origins";
+import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 test("Keycloak sends a readable verification email whose link lands back on the frontend", async ({
   page,
@@ -32,7 +32,7 @@ test("Keycloak sends a readable verification email whose link lands back on the 
 
   const link = linkFromMessage(message);
   // ADR-0025: the link must be Keycloak's public address, not the compose network name.
-  expect(link).toContain("localhost:8081");
+  expect(link).toContain(new URL(KEYCLOAK_ORIGIN).host);
   expect(link).not.toContain("keycloak:8080");
 
   await page.goto(link);

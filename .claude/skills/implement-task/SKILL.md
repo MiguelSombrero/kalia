@@ -69,8 +69,8 @@ their own condition from that ADR before they apply.
    hook runs. The Docker-backed checks are the required CI checks
    (`ci-passed` and the vulnerability scan), which block the merge when red;
    `make verify` is the same list locally, worth running when the change
-   touches the stack, but only one worktree's stack fits on the fixed host
-   ports, so it is not required first
+   touches the stack (each worktree has its own host ports, so it can run
+   beside another's), but it is not required first
    ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
    Never push expecting CI to be the first thing that tells you a
    `verify-fast` check is red. Redirect its output to a file and read that —

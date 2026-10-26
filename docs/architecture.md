@@ -756,7 +756,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   ArchUnit keeps that chain in place: it must exist, live in `identity`, and
   configure `oauth2ResourceServer`, and no other module may configure web
   security.
-- The API is still published on `127.0.0.1:8080` only, for direct access and
+- The API is still published on `127.0.0.1` only (`BACKEND_PORT`, default 8080), for direct access and
   Swagger UI on the dev machine. Authentication makes that a defence in
   depth rather than the only one, but the loopback binding stays until a
   deployment story exists.

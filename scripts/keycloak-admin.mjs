@@ -7,7 +7,9 @@
 
 import { fileURLToPath } from "node:url";
 
-const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8081";
+import { originOf, stackEnv } from "./stack-ports.mjs";
+
+export const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? originOf(stackEnv(), "KEYCLOAK_PORT");
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
 const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";

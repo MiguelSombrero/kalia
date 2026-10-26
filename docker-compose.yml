@@ -6,6 +6,15 @@
 # colliding on one shared "kalia" project (a `COMPOSE_PROJECT_NAME` in each
 # worktree's own `.env` would work too, but only if every worktree remembers
 # to set it). Do not reintroduce a fixed `name:`.
+#
+# The host ports are variables too, so worktrees can run a stack each at the
+# same time: `make stack-env` writes FRONTEND_PORT, BACKEND_PORT,
+# KEYCLOAK_PORT, POSTGRES_PORT, VALKEY_PORT and MAILPIT_PORT into a
+# worktree's own root .env, and unset they are the values below. Every
+# address that names one of them is built from it here, so the issuer Keycloak
+# stamps and the issuer its consumers validate cannot disagree. Container-side
+# ports (keycloak:8080, backend:8080, postgres:5432) never change: each
+# stack has its own network.
 
 services:
   backend:
@@ -29,7 +38,7 @@ services:
       # host. No depends_on for keycloak: the key set is fetched on the
       # first bearer token, not at startup, so the backend stays healthy
       # while Keycloak is still booting.
-      KEYCLOAK_ISSUER_URI: http://localhost:8081/realms/kalia
+      KEYCLOAK_ISSUER_URI: http://localhost:${KEYCLOAK_PORT:-8081}/realms/kalia
       KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/kalia/protocol/openid-connect/certs
     depends_on:
       postgres:
@@ -40,7 +49,7 @@ services:
       # depth rather than the only protection, but the loopback binding
       # stays until a deployment story exists. Other services reach it as
       # http://backend:8080 regardless.
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     healthcheck:
       # Asks the app whether it is ready, not merely whether the port is open:
       # -f fails the check on the 503 that /actuator/health returns when a
@@ -63,7 +72,7 @@ services:
       # silently blocks the mismatched-origin submission. Same value as
       # keycloak-config's FRONTEND_URL below (ADR-0054): they name the same
       # origin to two different consumers of it.
-      AUTH_URL: ${FRONTEND_URL:-http://localhost:3000}
+      AUTH_URL: ${FRONTEND_URL:-http://localhost:${FRONTEND_PORT:-3000}}
       AUTH_SECRET: ${AUTH_SECRET:-kalia-dev-auth-secret}
       AUTH_KEYCLOAK_ID: kalia-frontend
       # No default: this is the same secret keycloak-config-cli writes into
@@ -75,14 +84,14 @@ services:
       # names this, so it's what Auth.js must validate against, even
       # though the frontend container can't actually dial it directly
       # (see AUTH_KEYCLOAK_INTERNAL_ORIGIN and auth.ts's customFetch).
-      AUTH_KEYCLOAK_ISSUER: http://localhost:8081/realms/kalia
+      AUTH_KEYCLOAK_ISSUER: http://localhost:${KEYCLOAK_PORT:-8081}/realms/kalia
       # Where the frontend container actually reaches Keycloak — its
       # published port is loopback-only on the host, unreachable from
       # inside another container.
       AUTH_KEYCLOAK_INTERNAL_ORIGIN: http://keycloak:8080
       VALKEY_URL: redis://valkey:6379
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:
       backend:
         condition: service_healthy
@@ -102,7 +111,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kalia}
     ports:
       # Bound to localhost only: the database is never exposed beyond the dev machine.
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql
       # Runs once, only against an empty data directory: creates the second
@@ -138,7 +147,7 @@ services:
       # parameter value". Must match AUTH_KEYCLOAK_ISSUER above. Also
       # satisfies production mode's requirement for either --hostname or
       # --hostname-strict false.
-      KC_HOSTNAME: http://localhost:8081
+      KC_HOSTNAME: http://localhost:${KEYCLOAK_PORT:-8081}
     depends_on:
       postgres:
         condition: service_healthy
@@ -149,7 +158,7 @@ services:
     ports:
       # Bound to localhost only, same convention as the other services.
       # 8081, not 8080: the backend already publishes 8080 on the host.
-      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"
     healthcheck:
       # The Keycloak image ships no curl/wget; /dev/tcp is bash's own probe.
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
@@ -191,7 +200,11 @@ services:
       # below and in scripts/check-keycloak-realm-config.mjs — a trailing
       # slash silently produces a double slash that both sides still agree
       # on, so nothing catches it.
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:${FRONTEND_PORT:-3000}}
+      # The backend's public address, for the kalia-swagger client's redirect
+      # URI and web origin: Swagger UI is served from the host port. Also no
+      # trailing slash.
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:${BACKEND_PORT:-8080}}
       KEYCLOAK_SSL_REQUIRED: ${KEYCLOAK_SSL_REQUIRED:-none}
       KALIA_FRONTEND_CLIENT_SECRET: ${KALIA_FRONTEND_CLIENT_SECRET:?set KALIA_FRONTEND_CLIENT_SECRET in a root .env file, see README.md}
       # SMTP for the realm's mail (email verification, password reset). These
@@ -232,13 +245,16 @@ services:
       # seed-keycloak-account.mjs imports its token-fetch/retry helper from
       # this file by relative path, so it needs mounting alongside it.
       - ./scripts/keycloak-admin.mjs:/keycloak-admin.mjs:ro
+      # keycloak-admin.mjs imports its host-side address defaults from this
+      # file; KEYCLOAK_URL is set here, so they go unused in the container.
+      - ./scripts/stack-ports.mjs:/stack-ports.mjs:ro
     entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]
 
   valkey:
     image: valkey/valkey:9.1.2-alpine
     ports:
       # Bound to localhost only, same convention as the other services.
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:${VALKEY_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
@@ -249,14 +265,15 @@ services:
     # The local mail catcher for everything Keycloak sends. Nothing in this
     # stack ever talks to a real SMTP provider — the realm's SMTP config
     # defaults to this container (keycloak-config's KEYCLOAK_SMTP_* above),
-    # and the e2e spec reads caught messages back over the HTTP API on 8025.
+    # and the e2e spec reads caught messages back over the HTTP API.
     # Chosen over MailHog, which is effectively unmaintained upstream.
     image: axllent/mailpit:v1.32.0
     ports:
       # Bound to localhost only, same convention as the other services. 8025
-      # is the web UI and HTTP API; SMTP (1025) is reached only in-network as
+      # is the web UI and HTTP API (container side; the host port is
+      # MAILPIT_PORT); SMTP (1025) is reached only in-network as
       # mailpit:1025 and is not published.
-      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
     healthcheck:
       test: ["CMD", "/mailpit", "readyz"]
       interval: 5s

@@ -1,8 +1,8 @@
 import type Redis from "ioredis";
 
-// The published host port, like origins.ts's two origins: the suite runs on
-// the host, not inside the compose network.
-export const VALKEY_URL = "redis://localhost:6379";
+import { STACK } from "../../stackOrigins";
+
+export const VALKEY_URL = STACK.valkey;
 
 // features/auth/signUpRateLimit.ts's key, spelled out rather than imported —
 // e2e/ sits outside every layer eslint.config.mjs knows (ADR-0012), the same

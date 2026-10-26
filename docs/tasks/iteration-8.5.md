@@ -40,7 +40,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [17](iteration-8.5/17-ci-enforces-the-gate.md) | CI blocks a merge that fails it, and the Docker gate runs | done |
 | [18](iteration-8.5/18-process-records-and-skills-match-practice.md) | The PR record and the skills match how work is actually done | done |
 | [20](iteration-8.5/20-small-correctness-fixes.md) | Three small things that show the wrong thing are fixed | done |
-| [22](iteration-8.5/22-each-worktree-runs-its-own-stack.md) | Each worktree can run its own stack at the same time as another | refined |
+| [22](iteration-8.5/22-each-worktree-runs-its-own-stack.md) | Each worktree can run its own stack at the same time as another | done |
 
 Numbered 8.5 for the reason [iteration 5.5](iteration-5.5.md) and
 [iteration 7.5](iteration-7.5.md) were: iteration 9 is already drafted, and

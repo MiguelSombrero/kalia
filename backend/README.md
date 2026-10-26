@@ -15,7 +15,9 @@ For development with hot reload, run natively against the compose database.
 Name the services: a bare `docker compose up -d` also starts the `backend`
 container on `127.0.0.1:8080`, the port the native run needs. Keycloak is
 only there for bearer tokens and Swagger UI's Authorize button; the backend
-starts without it.
+starts without it. The native run assumes the default ports: in a worktree
+with its own (`make stack-env`), set `DATABASE_JDBC_URL` and
+`KEYCLOAK_ISSUER_URI` to its `POSTGRES_PORT` and `KEYCLOAK_PORT`.
 
 ```bash
 docker compose up -d postgres keycloak keycloak-config   # from repo root

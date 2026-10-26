@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import { fetchToken, withRetry } from "./keycloak-admin.mjs";
+import { KEYCLOAK_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
 
-const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? "http://localhost:8081";
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
 const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
