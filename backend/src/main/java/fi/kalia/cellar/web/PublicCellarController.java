@@ -51,12 +51,16 @@ class PublicCellarController {
 	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "Read a public cellar",
-			description = "One page of the beers in the cellar, in the order they were added, and the bottles owned of "
-					+ "each. A request without paging parameters gets the first page of " + DEFAULT_PAGE_SIZE
-					+ " beers. A beer lists at most " + CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY
-					+ " bottles, its oldest; its quantity says how many are held. 404 — identical for every "
-					+ "caller, the owner included — when the username is unknown or the cellar is not public, "
-					+ "so neither can be told from the other.")
+			description = """
+					One page of the beers in the cellar, in the order they were added, and the bottles owned of \
+					each. A request without paging parameters gets the first page of \
+					""" + DEFAULT_PAGE_SIZE + """
+					\sbeers. A beer lists at most \
+					""" + CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY + """
+					\sbottles, its oldest; its quantity says how many are held. 404 — identical for every \
+					caller, the owner included — when the username is unknown or the cellar is not public, \
+					so neither can be told from the other.\
+					""")
 	@ApiResponse(responseCode = "400", description = "The username is longer than any username can be, or a page parameter is out of range",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = ValidationProblem.class)))
