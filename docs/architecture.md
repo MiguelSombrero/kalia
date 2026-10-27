@@ -41,6 +41,11 @@ Built:
 - A catalog seeded once from Wikidata, to which a signed-in user adds a beer
   it lacks, and its brewery, with catalog search held within its latency
   budget at 150k beers *(iteration 8)*
+- An API a second client can inherit: every error documented and typed, what
+  nobody used removed, contributed catalog entries visible to others only once
+  an operator approves them and never hard-deleted, the unauthenticated edges
+  throttled by an nginx proxy, and a stack that refuses to start as a
+  deployment without its secrets *(iteration 8.5)*
 
 No iteration is in progress. The next is [iteration 9](tasks/iteration-9.md),
 the mobile foundations; nothing in it is built yet.

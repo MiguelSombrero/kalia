@@ -66,3 +66,15 @@ for and the password-reset autocomplete (backlog, COULD-26), which remain
 backlog work; splitting `AddBeerDialog` (COULD-61); and COULD-65, the access
 token outliving sign-out, which belongs to [iteration 9](iteration-9.md)'s
 mobile-authentication decision rather than to a task of its own.
+
+## Closed 2026-10-27
+
+All 22 tasks are done and every criterion in "Done when" was re-checked, apart
+from one that the product owner closed the iteration over rather than meet:
+`CLAUDE.md` has room for iteration 9's two additions. [Task
+08](iteration-8.5/08-claude-md-within-its-budget.md) left it at 191 lines;
+tasks 13, 14, 17 and 22 each added rules, and it stands at 199 of the 200-line
+budget ([ADR-0048](../adr/0048-what-survives-a-claude-md-bullet.md)), one line
+short of holding the Expo warning and the no-new-costs constraint. The gap is
+carried into [iteration 9](iteration-9.md)'s first task, which restores the
+headroom before it adds either.
