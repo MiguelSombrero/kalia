@@ -30,6 +30,12 @@ public final class BeerSpecifications {
 						"%" + escapeLikeWildcards(criteria.query().toLowerCase(Locale.ROOT)) + "%",
 						LIKE_ESCAPE_CHAR));
 			}
+			if (criteria.nameWords() != null) {
+				predicates.add(cb.or(criteria.nameWords().stream()
+						.map(word -> cb.like(cb.lower(root.get("name")),
+								"%" + escapeLikeWildcards(word.toLowerCase(Locale.ROOT)) + "%", LIKE_ESCAPE_CHAR))
+						.toArray(Predicate[]::new)));
+			}
 			if (criteria.style() != null && !criteria.style().isBlank()) {
 				predicates.add(cb.equal(cb.lower(root.get("style")),
 						criteria.style().toLowerCase(Locale.ROOT)));

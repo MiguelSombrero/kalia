@@ -4,7 +4,7 @@ const api = vi.hoisted(() => ({
   addBeer: vi.fn(),
   findBreweries: vi.fn(),
   getBeer: vi.fn(),
-  listBreweryBeers: vi.fn(),
+  findSimilarBeers: vi.fn(),
   listCountries: vi.fn(),
   listStyles: vi.fn(),
   searchBeers: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock("@/auth", () => ({ signIn }));
 import {
   addBeerAction,
   findBreweriesAction,
-  listBreweryBeersAction,
+  findSimilarBeersAction,
   loadAddBeerOptionsAction,
   startCatalogSignIn,
 } from "./actions";
@@ -86,17 +86,18 @@ describe("addBeerAction", () => {
     });
   });
 
-  it("names a duplicate brewery with its place, in the reader's language", async () => {
-    const ruosniemi = { id: breweryId, name: "Ruosniemen Panimo", countryCode: "FI", city: "Pori" };
-    api.addBeer.mockResolvedValue({ kind: "duplicateBrewery", existingBreweryId: breweryId });
-    api.findBreweries.mockResolvedValue([{ ...pohjala, id: "other" }, ruosniemi]);
-    const newBrewery = { name: "ruosniemen panimo", countryCode: "FI" };
+  it("names a duplicate brewery as the catalog spells it, not as it was typed, in the reader's language", async () => {
+    api.addBeer.mockResolvedValue({
+      kind: "duplicateBrewery",
+      existing: { id: breweryId, name: "Ruosniemen Panimo", countryCode: "FI" },
+    });
+    const newBrewery = { name: "Ruosniemen-Panimo", countryCode: "FI" };
 
     await expect(addBeerAction({ ...request, breweryId: undefined, newBrewery }, "fi")).resolves.toEqual({
       kind: "duplicateBrewery",
-      existing: { id: breweryId, name: "Ruosniemen Panimo", place: "Pori, Suomi" },
+      existing: { id: breweryId, name: "Ruosniemen Panimo", place: "Suomi" },
     });
-    expect(api.findBreweries).toHaveBeenCalledWith("ruosniemen panimo");
+    expect(api.findBreweries).not.toHaveBeenCalled();
   });
 
   it("passes a refusal through for the form to mark", async () => {
@@ -139,16 +140,18 @@ describe("the form's reads", () => {
     expect(api.findBreweries).toHaveBeenCalledWith("x".repeat(100));
   });
 
-  it("lists a brewery's beers, and nothing for an id that is not one", async () => {
-    api.listBreweryBeers.mockResolvedValue([
+  it("finds a brewery's similarly named beers, and nothing for an id that is not one or a blank name", async () => {
+    api.findSimilarBeers.mockResolvedValue([
       { id: beerId, name: "Öö", style: "Imperial Stout", abv: 10.5, brewery: pohjala },
     ]);
 
-    await expect(listBreweryBeersAction(breweryId)).resolves.toEqual([
+    await expect(findSimilarBeersAction(breweryId, "Öö Bourbon")).resolves.toEqual([
       { id: beerId, name: "Öö", style: "Imperial Stout", abv: 10.5 },
     ]);
-    await expect(listBreweryBeersAction("../etc")).resolves.toEqual([]);
-    expect(api.listBreweryBeers).toHaveBeenCalledOnce();
+    expect(api.findSimilarBeers).toHaveBeenCalledWith(breweryId, "Öö Bourbon");
+    await expect(findSimilarBeersAction("../etc", "Öö")).resolves.toEqual([]);
+    await expect(findSimilarBeersAction(breweryId, "  ")).resolves.toEqual([]);
+    expect(api.findSimilarBeers).toHaveBeenCalledOnce();
   });
 });
 

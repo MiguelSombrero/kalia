@@ -2,6 +2,16 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-23
+- **Amended:** 2026-10-26 ([iteration 8.5 task 05](../tasks/iteration-8.5/05-brewery-questions-answered-by-the-api.md)) —
+  the similarity rule is the API's now, not the client's. The hint is a
+  brewery-scoped `GET /api/v1/beers?breweryId=&similarTo=` returning the
+  brewery's beers whose name contains any word of the typed one (a word is a
+  run of letters and digits at least two long; case ignored), so a brewery
+  with more than a page of beers keeps the hint, and the form no longer
+  filters a first page itself. It is looser than "contain one another or
+  share a word" in one way: a word matches inside another word. A duplicate
+  brewery's `409` names the brewery as the catalog spells it (id, name,
+  country), so the form no longer searches for it. The decision itself stands
 
 ## Context
 

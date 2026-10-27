@@ -272,7 +272,7 @@ test("signing in as someone else while signed in starts a session of their own",
     const session = await storedAccount(stale);
     const secondTokens = await session.read();
     await session.close();
-    const me = await request.get(`${BACKEND_ORIGIN}/api/v1/me`, {
+    const me = await request.get(`${BACKEND_ORIGIN}/api/v1/profile`, {
       headers: { Authorization: `Bearer ${secondTokens.access_token as string}` },
     });
     expect(me.status()).toBe(200);
