@@ -16,7 +16,7 @@ class AddBeerRequestDtoTest {
 
 	// Zero-width space and joiner, a right-to-left override, an isolate, a byte order mark, a soft hyphen.
 	static Stream<String> invisibleCharacters() {
-		return Stream.of("​", "‍", "‮", "⁦", "⁩", "﻿", "­");
+		return Stream.of("\u200B", "\u200D", "\u202E", "\u2066", "\u2069", "\uFEFF", "\u00AD");
 	}
 
 	@ParameterizedTest
