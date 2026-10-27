@@ -16,6 +16,10 @@
 - **Amended:** 2026-09-05 — `upgrade-insecure-requests` is dropped from the
   CSP until a real HTTPS deployment exists; unlike HSTS it is not inert over
   HTTP, see below
+- **Amended:** 2026-10-26 by [ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) — the set gains
+  `X-Content-Type-Options: nosniff`, which the original survey did not list
+  or reject, and `poweredByHeader` is turned off; without `nosniff` the
+  accepted `'unsafe-inline'` would not stop a response sniffed into HTML
 
 ## Context
 

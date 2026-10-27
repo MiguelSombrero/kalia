@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
 import { currentAccessToken } from "./accessToken";
 import { apiError, isApiError } from "./api-error";
+import { currentClientAddress } from "./requestClient";
 import { currentTraceparent } from "./requestTrace";
 import { traceparentFor } from "./traceparent";
 
@@ -143,7 +144,7 @@ const refuseReshapedPath = (url: string): void => {
 };
 
 /**
- * Adds the trace header and the caller's bearer token, which the backend
+ * Adds the trace header, the client address and the caller's bearer token, which the backend
  * needs on everything but the catalog (ADR-0028). Nobody signed in means no
  * Authorization header at all rather than an empty one.
  *
@@ -163,6 +164,14 @@ const withAccessToken = async (
   // Always set, overwriting any caller value: the trace is this BFF's to
   // start or continue, not something a caller of kaliaFetch chooses.
   headers.set("traceparent", traceparent);
+  // The backend sees this BFF as the peer; the person behind it is the
+  // address the edge proxy forwarded (ADR-0090). Overwritten for the same
+  // reason as traceparent.
+  headers.delete("X-Forwarded-For");
+  const clientAddress = await currentClientAddress();
+  if (clientAddress) {
+    headers.set("X-Forwarded-For", clientAddress);
+  }
   const token = await currentAccessToken();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);

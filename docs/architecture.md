@@ -74,7 +74,9 @@ flowchart LR
         PROF[profile]
         FED[feed]
     end
-    Browser --> NX
+    Browser -->|every request| EDGE[edge: nginx, limits per client address]
+    EDGE --> NX
+    EDGE -.->|API, Swagger UI| API
     NX -->|REST, JSON| API
     API --> CAT & CEL & IDN & PROF & FED
     CAT --> IDN
@@ -82,7 +84,7 @@ flowchart LR
     PROF --> IDN
     FED --> CEL & CAT & PROF
     CAT & CEL & PROF & FED --> PG[(PostgreSQL)]
-    Browser -.->|OIDC redirect| KC[Keycloak]
+    Browser -.->|OIDC redirect, via edge| KC[Keycloak]
     NX -->|session read/write| VK[(Valkey)]
     IDN -->|validate token, JWKS| KC
 ```
@@ -90,7 +92,8 @@ flowchart LR
 Key properties:
 
 - **BFF pattern** ([ADR-0003](adr/0003-bff-pattern.md)): the browser never
-  calls Spring Boot directly. Server components and Server Actions, running
+  calls Spring Boot directly (the dashed edge to the API is Swagger UI and
+  other API clients, not the browser app). Server components and Server Actions, running
   in the one Next.js server process, call the backend. Tokens and session state stay server-side; CORS is a
   non-issue.
 - **Modulith** ([ADR-0002](adr/0002-spring-modulith.md)): one deployable, one
@@ -778,10 +781,16 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   ArchUnit keeps that chain in place: it must exist, live in `identity`, and
   configure `oauth2ResourceServer`, and no other module may configure web
   security.
-- The API is still published on `127.0.0.1` only (`BACKEND_PORT`, default 8080), for direct access and
-  Swagger UI on the dev machine. Authentication makes that a defence in
-  depth rather than the only one, but the loopback binding stays until a
-  deployment story exists.
+- **Only the `edge` proxy is published**, on `127.0.0.1`: the API at
+  `BACKEND_PORT` (default 8080, for direct access and Swagger UI on the dev
+  machine), the frontend and Keycloak each at their own port, every request
+  through per-address request and body limits
+  ([ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)).
+  The proxy overwrites `X-Forwarded-For` with the address it saw; Keycloak and
+  Spring honour that header only from the stack's private ranges, and both log
+  the address they resolved. Authentication stays the protection of the API;
+  the limits bound how fast an anonymous caller can ask. The loopback binding
+  stays until a deployment story exists.
 - **Swagger UI drives its own Authorization Code + PKCE flow**, springdoc's
   `@SecurityScheme`/`@SecurityRequirement` against Keycloak's `kalia-swagger`
   client — public, no secret, distinct from `kalia-frontend`'s confidential
@@ -1198,3 +1207,4 @@ reasons and its rate is worth watching independently
 | [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
 | [ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |
 | [ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |
+| [ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) | An nginx edge proxy bounds the anonymous edges and names the client address the services trust | accepted | 2026-10-26 |

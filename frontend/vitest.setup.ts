@@ -40,3 +40,8 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/api/requestTrace", () => ({
   currentTraceparent: vi.fn(async () => undefined),
 }));
+
+// And `headers()` again, for the client address kaliaFetch forwards.
+vi.mock("@/lib/api/requestClient", () => ({
+  currentClientAddress: vi.fn(async () => undefined),
+}));

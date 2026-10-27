@@ -46,6 +46,10 @@ updates:
     directory: "/keycloak"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/edge"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:

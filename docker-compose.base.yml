@@ -22,6 +22,10 @@
 # stamps and the issuer its consumers validate cannot disagree. Container-side
 # ports (keycloak:8080, backend:8080, postgres:5432) never change: each
 # stack has its own network.
+#
+# The frontend, backend and Keycloak publish no port of their own: the `edge`
+# proxy publishes FRONTEND_PORT, BACKEND_PORT and KEYCLOAK_PORT and forwards
+# each to its service (ADR-0090). Anything on the host reaches them through it.
 
 services:
   backend:
@@ -46,13 +50,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      # Bound to localhost only, for local API access and Swagger UI
-      # (docs/architecture.md §6). Authentication makes this a defence in
-      # depth rather than the only protection, but the loopback binding
-      # stays until a deployment story exists. Other services reach it as
-      # http://backend:8080 regardless.
-      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+    # Published by `edge` as BACKEND_PORT; the frontend reaches it directly as
+    # http://backend:8080.
     healthcheck:
       # Asks the app whether it is ready, not merely whether the port is open:
       # -f fails the check on the 503 that /actuator/health returns when a
@@ -96,8 +95,6 @@ services:
       # name is a session cookie value (ADR-0089). Valkey's own startup
       # rejects a password that is not URL-safe, being carried here unencoded.
       VALKEY_URL: redis://:${VALKEY_PASSWORD:?set VALKEY_PASSWORD, see README.md}@valkey:6379
-    ports:
-      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:
       backend:
         condition: service_healthy
@@ -154,6 +151,14 @@ services:
       # satisfies production mode's requirement for either --hostname or
       # --hostname-strict false.
       KC_HOSTNAME: http://localhost:${KEYCLOAK_PORT:-8081}
+      # Believe X-Forwarded-For only when it comes from the stack's private
+      # network, where the only thing facing outwards is `edge`, which
+      # overwrites it (ADR-0090). From anywhere else it is ignored.
+      KC_PROXY_HEADERS: xforwarded
+      KC_PROXY_TRUSTED_ADDRESSES: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+      # One line per request, naming the client address the proxy forwarded
+      # (%h); how scripts/check-edge.mjs and the edge e2e spec see it.
+      KC_HTTP_ACCESS_LOG_ENABLED: "true"
     depends_on:
       postgres:
         condition: service_healthy
@@ -161,10 +166,8 @@ services:
       # after startup — service_started is enough to order them.
       mailpit:
         condition: service_started
-    ports:
-      # Bound to localhost only, same convention as the other services.
-      # 8081, not 8080: the backend already publishes 8080 on the host.
-      - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"
+    # Published by `edge` as KEYCLOAK_PORT (8081 by default, not 8080: the
+    # backend takes that one).
     healthcheck:
       # The Keycloak image ships no curl/wget; /dev/tcp is bash's own probe.
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
@@ -272,6 +275,27 @@ services:
       - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
     healthcheck:
       test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  edge:
+    # The one thing the host can reach (ADR-0090): request and body-size limits
+    # per client address in front of the frontend, backend and Keycloak, and
+    # the client address those three trust. No depends_on: the upstreams are
+    # resolved on each request, so it is up before they are and survives one
+    # being recreated.
+    build: ./edge
+    ports:
+      # Bound to localhost only, same convention as the other services.
+      # Container-side 3000, 8080 and 8081 are edge/nginx.conf's server blocks.
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+      - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8081"
+    healthcheck:
+      # 8099 answers only this; the three published ports proxy upstreams that
+      # may not be up yet.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8099/"]
       interval: 5s
       timeout: 3s
       retries: 10

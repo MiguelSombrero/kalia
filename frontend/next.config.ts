@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   // Self-contained server bundle for the Docker runtime image
   output: "standalone",
 
+  poweredByHeader: false,
+
   headers: async () => {
     return [
       {
@@ -14,6 +16,7 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "Content-Security-Policy", value: cspHeader },
           { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // Do not add `preload`: a one-way commitment to browser vendors,
           // and this project has no production domain yet (ADR-0016).

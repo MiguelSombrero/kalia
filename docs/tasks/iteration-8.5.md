@@ -29,7 +29,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [06](iteration-8.5/06-generated-client-ready-to-share.md) | The generated client is what a shared package should hold | done |
 | [07](iteration-8.5/07-identity-owns-the-caller.md) | `identity` owns who the caller is, and services own who may read what | done |
 | [08](iteration-8.5/08-claude-md-within-its-budget.md) | CLAUDE.md fits its budget again, and says what is true | done |
-| [10](iteration-8.5/10-unauthenticated-edges-throttled.md) | The unauthenticated edges are throttled and bounded | refined |
+| [10](iteration-8.5/10-unauthenticated-edges-throttled.md) | The unauthenticated edges are throttled and bounded | done |
 | [11](iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md) | One account cannot make an anonymous read arbitrarily expensive | done |
 | [12](iteration-8.5/12-user-added-catalog-entries-governed.md) | Contributed catalog entries are reviewed, never deleted, and named cleanly | done |
 | [13](iteration-8.5/13-sessions-and-stack-credentials-hardened.md) | Sessions and the stack's credentials are safe beyond one laptop | done |

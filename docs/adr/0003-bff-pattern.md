@@ -8,6 +8,10 @@
   publishes the backend too, on `127.0.0.1` only, so the API is not
   reachable beyond the developer's machine rather than unpublished. The
   decision itself stands
+- **Amended:** 2026-10-26 by [ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) — the backend,
+  Keycloak and the frontend are published only through an nginx edge proxy,
+  still on `127.0.0.1`; the Spring API is reached through its limits, not
+  directly
 
 ## Context
 

@@ -6,21 +6,26 @@ each depends on: [docs/architecture.md §3](../docs/architecture.md#3-backend-mo
 ## Run locally
 
 Full stack in containers: `docker compose up --build` from the repo root.
-The backend is published at `localhost:8080` (loopback only — see
-[docs/architecture.md](../docs/architecture.md) §6. It is an OAuth2 resource
-server and denies by default, but the loopback binding stays until a deployment
-story exists, so treat it as defence in depth rather than surplus).
+The backend is reached at `localhost:8080` through the `edge` proxy (loopback
+only — see [docs/architecture.md](../docs/architecture.md) §6), which limits
+requests per client address to 10 a second. It is an OAuth2 resource server and
+denies by default, but the loopback binding stays until a deployment story
+exists, so treat it as defence in depth rather than surplus. Behind the proxy
+the request log names the client address Spring resolved from
+`X-Forwarded-For` (`from <address>`), trusted only from the stack's private
+ranges.
 
 For development with hot reload, run natively against the compose database.
 Name the services: a bare `docker compose up -d` also starts the `backend`
-container on `127.0.0.1:8080`, the port the native run needs. Keycloak is
-only there for bearer tokens and Swagger UI's Authorize button; the backend
-starts without it. The native run assumes the default ports: in a worktree
+container, behind the `edge` proxy's `127.0.0.1:8080`, the port the native run
+needs. Keycloak is published only by `edge`, so it is started with it, on a
+different backend port so the two do not meet; it is there for bearer tokens
+and Swagger UI's Authorize button, and the backend starts without it. The native run assumes the default ports: in a worktree
 with its own (`make stack-env`), set `DATABASE_JDBC_URL` and
 `KEYCLOAK_ISSUER_URI` to its `POSTGRES_PORT` and `KEYCLOAK_PORT`.
 
 ```bash
-docker compose up -d postgres keycloak keycloak-config   # from repo root
+BACKEND_PORT=8090 docker compose up -d postgres keycloak keycloak-config edge   # from repo root
 cd backend
 POSTGRES_PASSWORD=kalia FEED_CURSOR_KEY=any-local-key-of-at-least-32-bytes SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
 curl localhost:8080/actuator/health

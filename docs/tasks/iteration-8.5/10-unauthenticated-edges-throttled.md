@@ -1,6 +1,6 @@
 # Task 10: The unauthenticated edges are throttled and bounded
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -67,22 +67,22 @@ proxy every request passes through. Responses carry `nosniff` and no `X-Powered-
 
 ## Acceptance criteria
 
-- [ ] Registering past the chosen limit is refused whether through Kalia's
+- [x] Registering past the chosen limit is refused whether through Kalia's
       button or Keycloak's endpoint directly — an e2e or integration test
-- [ ] A back-channel logout POST over the size cap is refused before any token
+- [x] A back-channel logout POST over the size cap is refused before any token
       verification — a vitest test confirms `validateLogoutToken` is never
       called
-- [ ] A burst past the proxy's limit on the backend's anonymous routes is
+- [x] A burst past the proxy's limit on the backend's anonymous routes is
       refused with 429 before it reaches Spring — a check against the running
       stack, run in CI
-- [ ] Keycloak, Spring and the frontend see the client address the proxy
+- [x] Keycloak, Spring and the frontend see the client address the proxy
       forwards, and trust it only from the proxy — an integration or e2e test
-- [ ] A full `npm run test:e2e` run passes through the proxy under the limits
+- [x] A full `npm run test:e2e` run passes through the proxy under the limits
       the ADR sets
-- [ ] Responses carry `X-Content-Type-Options: nosniff` and no `X-Powered-By`
+- [x] Responses carry `X-Content-Type-Options: nosniff` and no `X-Powered-By`
       — asserted by the existing security-headers test; ADR-0016 lists the
       header
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

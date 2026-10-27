@@ -71,13 +71,14 @@ jobs:
           # installs; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
           # keycloak/, postgres/ and the seed script with its helper feed the
-          # keycloak, postgres and keycloak-seed services e2e's stack starts.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
+          # keycloak, postgres and keycloak-seed services e2e's stack starts;
+          # edge/ is the proxy every request to that stack passes through.
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
 
           # What keycloak-realm-check below can be affected by: the services
           # it starts and the scripts it runs. Neither backend/ nor frontend/
           # is among them.
-          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
+          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing
@@ -222,7 +223,7 @@ jobs:
         run: npm ci
       - name: Start backend
         working-directory: .
-        run: docker compose up -d --build backend postgres
+        run: docker compose up -d --build backend postgres edge
       - name: Wait for backend health
         working-directory: .
         run: timeout 120 sh -c 'until curl -sf http://localhost:8080/actuator/health; do sleep 2; done'
@@ -249,14 +250,14 @@ jobs:
         working-directory: .
         run: |
           for attempt in 1 2 3; do
-            if docker compose pull --ignore-buildable postgres keycloak-config keycloak-seed && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"; then exit 0; fi
+            if docker compose pull --ignore-buildable postgres keycloak-config keycloak-seed && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"; then exit 0; fi
             echo "::warning::docker pull failed (attempt $attempt/3), retrying"
             sleep $((attempt * 15))
           done
           echo "::error::could not pull the compose images after 3 attempts"
           exit 1
       - name: Start Keycloak and Postgres
-        run: docker compose up -d --build --wait --wait-timeout 120 postgres keycloak
+        run: docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge
       - name: Seed the demo account
         run: docker compose up -d --build keycloak-seed
       - name: Verify the realm accepts sign-in, not just a healthy container
@@ -313,14 +314,16 @@ jobs:
         working-directory: .
         run: |
           for attempt in 1 2 3; do
-            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"; then exit 0; fi
+            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"; then exit 0; fi
             echo "::warning::docker pull failed (attempt $attempt/3), retrying"
             sleep $((attempt * 15))
           done
           echo "::error::could not pull the compose images after 3 attempts"
           exit 1
       # Starts the full docker compose stack itself (playwright.config.ts);
-      # GitHub Actions sets CI=true, so it always starts fresh.
+      # GitHub Actions sets CI=true, so it always starts fresh. The last spec
+      # to run, e2e/edge-limits.spec.ts, is the burst check against the edge
+      # proxy's limits (ADR-0090).
       - name: Run E2E tests
         run: npm run test:e2e
       # Playwright's own error-context.md is an ARIA-snapshot of the page at

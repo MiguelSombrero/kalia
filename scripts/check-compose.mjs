@@ -48,6 +48,25 @@ export const consistencyProblems = ({ baseText, devEnvText }) => {
   return problems;
 };
 
+/** The services behind the edge proxy (ADR-0090): none of them may publish a port. */
+export const BEHIND_EDGE = ["frontend", "backend", "keycloak"];
+
+/** Problems with who faces the host in a rendered configuration's `services`. */
+export const edgeProblems = (services) => {
+  const problems = [];
+  if (!services.edge) problems.push("there is no edge service to publish the frontend, backend and Keycloak");
+  for (const name of BEHIND_EDGE) {
+    if ((services[name]?.ports ?? []).length > 0) {
+      problems.push(`${name} publishes a port, so it can be reached without passing the edge proxy`);
+    }
+  }
+  const keycloak = services.keycloak?.environment ?? {};
+  if (keycloak.KC_PROXY_HEADERS !== "xforwarded" || !keycloak.KC_PROXY_TRUSTED_ADDRESSES) {
+    problems.push("keycloak does not take the client address from X-Forwarded-For only from trusted addresses");
+  }
+  return problems;
+};
+
 // A clean environment: nothing from the caller's shell or root .env may fill
 // in a variable the check means to leave unset.
 const compose = (args, extraEnv) =>
@@ -86,6 +105,8 @@ const run = () => {
   const base = JSON.parse(compose(baseArgs, everySecret));
   if ("keycloak-seed" in base.services) problems.push("the base file defines keycloak-seed, a dev-only service");
   if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
+
+  problems.push(...edgeProblems(base.services));
 
   const dir = mkdtempSync(join(tmpdir(), "check-compose-"));
   try {
