@@ -31,7 +31,7 @@ lifted is fixed, or its decision is recorded where its task says.
 | [08](iteration-8.5/08-claude-md-within-its-budget.md) | CLAUDE.md fits its budget again, and says what is true | done |
 | [10](iteration-8.5/10-unauthenticated-edges-throttled.md) | The unauthenticated edges are throttled and bounded | refined |
 | [11](iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md) | One account cannot make an anonymous read arbitrarily expensive | done |
-| [12](iteration-8.5/12-user-added-catalog-entries-governed.md) | Contributed catalog entries are reviewed, never deleted, and named cleanly | refined |
+| [12](iteration-8.5/12-user-added-catalog-entries-governed.md) | Contributed catalog entries are reviewed, never deleted, and named cleanly | done |
 | [13](iteration-8.5/13-sessions-and-stack-credentials-hardened.md) | Sessions and the stack's credentials are safe beyond one laptop | done |
 | [14](iteration-8.5/14-cve-gate-and-updates-trustworthy.md) | The CVE gate and dependency updates do what they claim | done |
 | [21](iteration-8.5/21-node-26-replaces-node-24.md) | Node 26 replaces Node 24 everywhere it is pinned | done |

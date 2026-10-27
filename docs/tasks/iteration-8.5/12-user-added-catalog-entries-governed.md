@@ -1,6 +1,6 @@
 # Task 12: Contributed catalog entries are reviewed, never deleted, and named cleanly
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [8.5](../iteration-8.5.md)
 
 ## Why
@@ -71,22 +71,22 @@ duplicate, and invisible or bidi control characters are refused.
 
 ## Acceptance criteria
 
-- [ ] A pending contribution is found and cellared by its contributor, and is
+- [x] A pending contribution is found and cellared by its contributor, and is
       absent from everyone else's search, lists and the anonymous feed, and
       from the contributor's public cellar until approved — integration tests
       across `catalog`, `cellar` and `feed`
-- [ ] A contributor at the pending cap is refused with a documented 429
+- [x] A contributor at the pending cap is refused with a documented 429
       `problem+json` — an integration test
-- [ ] The operator command approves, rejects, and removes everything one
+- [x] The operator command approves, rejects, and removes everything one
       contributor added — covered by a test, and documented in
       `backend/README.md`
-- [ ] A rejected or removed beer is hidden but its row stays, and a cellar
+- [x] A rejected or removed beer is hidden but its row stays, and a cellar
       entry and feed line pointing at it still render — an integration test
       pins the never-hard-deleted invariant
-- [ ] A name containing a `Cf` character is refused, and a fullwidth or
+- [x] A name containing a `Cf` character is refused, and a fullwidth or
       zero-width twin of an existing name answers the duplicate 409 — unit and
       integration tests
-- [ ] §8 states the orphan policy, and `make verify` is green
+- [x] §8 states the orphan policy, and `make verify` is green
 
 ## Notes
 
