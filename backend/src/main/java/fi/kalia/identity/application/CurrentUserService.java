@@ -27,6 +27,10 @@ public class CurrentUserService {
 		return Optional.of(from(token.getToken()));
 	}
 
+	public Optional<UUID> findId() {
+		return find().map(CurrentUser::id);
+	}
+
 	// For code reachable only behind an authenticated route: an empty context
 	// here is a routing mistake, not a client error — the filter chain
 	// already rejected anonymous callers with 401.

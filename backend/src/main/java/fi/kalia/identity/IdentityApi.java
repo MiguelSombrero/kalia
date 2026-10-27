@@ -1,7 +1,6 @@
 package fi.kalia.identity;
 
 import fi.kalia.identity.application.CurrentUserService;
-import fi.kalia.identity.domain.CurrentUser;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,7 @@ public class IdentityApi {
 
 	/** The caller's id, or empty on a public route reached without a token. */
 	public Optional<UUID> findCurrentUserId() {
-		return currentUser.find().map(CurrentUser::id);
+		return currentUser.findId();
 	}
 
 	/** The caller's {@code preferred_username}; same precondition as {@link #requireCurrentUserId()}. */
