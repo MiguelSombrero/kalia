@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–8 complete — a visitor can browse and search
+> **Status:** iterations 0–8.5 complete — a visitor can browse and search
 > the seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), production-readiness
 > foundations (logging, exception handling, config, security headers,
@@ -22,8 +22,12 @@
 > checked at lint, unit and end-to-end level, and every page usable at a
 > phone and a desktop width (iteration 7.5). The catalog, seeded once from
 > Wikidata, now grows: a signed-in user who cannot find a beer adds it, and
-> can put a bottle of it in their cellar at once (iteration 8). Next: an
-> Expo mobile app (iteration 9). Implementation proceeds one issue at a time.
+> can put a bottle of it in their cellar at once (iteration 8). A quality
+> sprint then readied the API for a second client: every error documented
+> and typed, what nobody used removed, a beer someone adds seen by others
+> only once an operator approves it, and the unauthenticated edges throttled
+> (iteration 8.5). Next: an Expo mobile app (iteration 9). Implementation
+> proceeds one issue at a time.
 > See [docs/roadmap.md](docs/roadmap.md) for what gets built and in which
 > order.
 
@@ -166,6 +170,9 @@ In roadmap order, a user can:
   width _(iteration 7.5)_
 - Add a beer the catalog lacks, from a search that found nothing, and put a
   bottle of it in their cellar at once _(iteration 8)_
+- Have the beers and breweries they add reviewed by an operator before anyone
+  else sees them, while keeping them in their own cellar from the start
+  _(iteration 8.5)_
 
 Then:
 

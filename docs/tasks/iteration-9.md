@@ -23,9 +23,15 @@ the backend and the process reshaped to carry a third codebase.
 
 Task files are written at refinement
 ([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)); until then
-each is one line here. The five decisions come first, because every build task
-below them inherits their answers.
+each is one line here. `CLAUDE.md` comes first, because it is full; the five
+decisions follow, because every build task below them inherits their answers.
 
+- **`CLAUDE.md` regains its headroom** — carried over from
+  [iteration 8.5](iteration-8.5.md), which closed with the file at 199 of its
+  200 lines ([ADR-0048](../adr/0048-what-survives-a-claude-md-bullet.md)). It
+  must again hold the Expo "check the docs, not memory" warning and the
+  no-new-costs constraint below, so it moves rules whole into the skills or
+  rules that already enforce them rather than trimming prose.
 - **Decision: the mobile stack** — Expo with a development build rather than
   Expo Go, Expo Router, TypeScript strict, local builds with no dependency on
   EAS's paid cloud; why not Flutter or two native apps.
