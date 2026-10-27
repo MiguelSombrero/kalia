@@ -57,12 +57,13 @@ class AddBeerApiIT {
 	}
 
 	@Test
-	void anAddedBeerAppearsInSearchAndAtItsDetailEndpoint() {
+	void anAddedBeerAppearsInItsContributorsSearchAndDetail() {
 		String name = uniqueName("Abt");
 		UUID id = idOf(addBeer(beer(name, STYLE, 10.5).withBrewery(westvleteren)).expectStatus().isCreated()
 				.expectBody(String.class).returnResult().getResponseBody());
 
 		client.get().uri("/api/v1/beers?query={name}", name)
+				.header("Authorization", BEARER)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
@@ -70,6 +71,7 @@ class AddBeerApiIT {
 						.containsExactly(id.toString()));
 
 		client.get().uri("/api/v1/beers/{id}", id)
+				.header("Authorization", BEARER)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
@@ -144,6 +146,50 @@ class AddBeerApiIT {
 		assertThat(jdbc.queryForObject(
 				"SELECT count(*) FROM catalog.beer WHERE brewery_id = ? AND catalog.fold_name(name) = catalog.fold_name(?)",
 				Long.class, westvleteren, name)).isEqualTo(1);
+	}
+
+	@Test
+	void aFullwidthTwinOfAnExistingNameIsADuplicate() {
+		String name = uniqueName("Abt Twelve");
+		UUID id = idOf(addBeer(beer(name, STYLE, 10.5).withBrewery(westvleteren)).expectStatus().isCreated()
+				.expectBody(String.class).returnResult().getResponseBody());
+
+		addBeer(beer(fullwidth(name), STYLE, 10.5).withBrewery(westvleteren))
+				.expectStatus().isEqualTo(409)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.existingBeerId")).isEqualTo(id.toString()));
+
+		String breweryName = uniqueName("Panimo");
+		UUID breweryId = UUID.fromString(JsonPath.read(addBeer(beer(uniqueName("Sahti"), STYLE, 8.0)
+				.withNewBrewery(breweryName, "FI", null)).expectStatus().isCreated()
+				.expectBody(String.class).returnResult().getResponseBody(), "$.brewery.id"));
+		addBeer(beer(uniqueName("Sahti"), STYLE, 8.0).withNewBrewery(fullwidth(breweryName), "FI", null))
+				.expectStatus().isEqualTo(409)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.existingBreweryId"))
+						.isEqualTo(breweryId.toString()));
+	}
+
+	// A zero-width twin is refused before the duplicate check can see it: the 400 is the defence.
+	@Test
+	void aNameWithAnInvisibleOrBidiFormattingCharacterIsRefusedWhereverItAppears() {
+		for (String invisible : List.of("\u200B", "\u200D", "\u202E", "\u2066", "\u2069", "\uFEFF", "\u00AD")) {
+			addBeer(beer("Abt" + invisible + " Twelve", STYLE, 10.0).withBrewery(westvleteren))
+					.expectStatus().isBadRequest()
+					.expectBody(String.class)
+					.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
+							.as("beer name with U+%04X", (int) invisible.charAt(0)).containsExactly("name"));
+			addBeer(beer(uniqueName("Abt"), STYLE, 10.0).withNewBrewery("Pani" + invisible + "mo", "FI", null))
+					.expectStatus().isBadRequest()
+					.expectBody(String.class)
+					.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
+							.containsExactly("newBrewery.name"));
+			addBeer(beer(uniqueName("Abt"), STYLE, 10.0).withNewBrewery(uniqueName("Panimo"), "FI", "Lah" + invisible + "ti"))
+					.expectStatus().isBadRequest()
+					.expectBody(String.class)
+					.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].field"))
+							.containsExactly("newBrewery.city"));
+		}
 	}
 
 	@Test
@@ -273,7 +319,7 @@ class AddBeerApiIT {
 				.expectStatus().isBadRequest()
 				.expectBody(String.class)
 				.value(body -> assertThat((List<String>) JsonPath.read(body, "$.errors[*].message"))
-						.containsExactly("must not contain control characters"));
+						.containsExactly("must not contain control or invisible formatting characters"));
 
 		addBeer(beer(uniqueName("Abt"), STYLE, 6.0).withBrewery(westvleteren)
 				.withNewBrewery(uniqueName("Both"), "FI", null))
@@ -335,10 +381,17 @@ class AddBeerApiIT {
 
 	private String read(String uri) {
 		return client.get().uri(uri)
+				.header("Authorization", BEARER)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
+	}
+
+	private static String fullwidth(String text) {
+		StringBuilder twin = new StringBuilder();
+		text.chars().forEach(c -> twin.appendCodePoint(c == ' ' ? 0x3000 : c >= '!' && c <= '~' ? c + 0xFEE0 : c));
+		return twin.toString();
 	}
 
 	private static UUID idOf(String body) {

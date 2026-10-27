@@ -2,12 +2,14 @@ package fi.kalia.catalog;
 
 import fi.kalia.catalog.application.CatalogService;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Gatherers;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,17 +21,28 @@ public class CatalogApi {
 
 	private final CatalogService catalog;
 
-	public boolean beerExists(UUID beerId) {
-		return catalog.beerExists(beerId);
+	/** Whether the viewer may cellar this beer: one they can see in search (ADR-0091). */
+	public boolean beerExists(UUID beerId, UUID viewerId) {
+		return catalog.beerVisibleTo(beerId, viewerId);
 	}
 
-	/** An id matching no beer is absent from the map, never a null value. */
-	public Map<UUID, BeerSummary> getBeerSummaries(Collection<UUID> beerIds) {
-		return beerIds.stream()
+	/**
+	 * Every beer that exists, hidden ones too, except another contributor's still-pending one, which
+	 * is {@link BeerSummaries#withheld}. An id matching no beer is in neither, and no value is null.
+	 * {@code viewerId} is null for a public read (ADR-0091).
+	 */
+	public BeerSummaries getBeerSummaries(Collection<UUID> beerIds, @Nullable UUID viewerId) {
+		Map<UUID, BeerSummary> found = new HashMap<>();
+		Set<UUID> withheld = new HashSet<>();
+		beerIds.stream()
 				.distinct()
 				.gather(Gatherers.windowFixed(MAX_BATCH_IDS))
-				.flatMap(chunk -> catalog.getBeerSummaries(chunk).stream())
-				.collect(Collectors.toMap(BeerSummary::id, Function.identity()));
+				.map(chunk -> catalog.getBeerSummaries(chunk, viewerId))
+				.forEach(chunkResult -> {
+					found.putAll(chunkResult.found());
+					withheld.addAll(chunkResult.withheld());
+				});
+		return new BeerSummaries(found, withheld);
 	}
 
 }

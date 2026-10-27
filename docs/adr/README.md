@@ -66,6 +66,10 @@ nobody has committed to becomes a constraint anyway.
 - [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
   — the brewery list and search are cut in SQL by a stored, indexed name key
   that keeps the Java sort's order in every environment.
+- [ADR-0091](0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)
+  — a contributed beer or brewery is seen by its contributor alone until an
+  operator approves it, at most 20 may wait per contributor, and no catalog row
+  is ever deleted, so cellar entries and feed lines keep what they point at.
 
 ## Cellar
 

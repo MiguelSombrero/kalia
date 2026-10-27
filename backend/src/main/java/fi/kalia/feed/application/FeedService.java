@@ -132,14 +132,14 @@ public class FeedService {
 
 	}
 
-	// A line whose beer or person no longer resolves is dropped. Shared by
+	// A line whose beer is awaiting approval, or whose person is not public, is dropped. Shared by
 	// every read so the visibility filter cannot diverge between them.
 	private List<FeedLineView> resolve(List<FeedLine> page) {
 		Set<UUID> userIds = page.stream().map(FeedLine::getUserId).collect(Collectors.toSet());
 		Map<UUID, String> usernames = profile.publicUsernames(userIds);
 		List<FeedLine> publicLines = page.stream().filter(line -> usernames.containsKey(line.getUserId())).toList();
 		Set<UUID> beerIds = publicLines.stream().map(FeedLine::getBeerId).collect(Collectors.toSet());
-		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(beerIds);
+		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(beerIds, null).found();
 
 		return publicLines.stream()
 				.filter(line -> beers.containsKey(line.getBeerId()))

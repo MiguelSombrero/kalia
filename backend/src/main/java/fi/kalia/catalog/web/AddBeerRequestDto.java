@@ -37,9 +37,9 @@ public record AddBeerRequestDto(
 
 	static final String HAS_LETTER_OR_DIGIT_MESSAGE = "must contain a letter or a digit";
 
-	static final String NO_CONTROL_CHARACTERS = "\\P{Cc}*";
+	static final String NO_CONTROL_CHARACTERS = "[^\\p{Cc}\\p{Cf}]*";
 
-	static final String NO_CONTROL_CHARACTERS_MESSAGE = "must not contain control characters";
+	static final String NO_CONTROL_CHARACTERS_MESSAGE = "must not contain control or invisible formatting characters";
 
 	private static final int MAX_STYLE_LENGTH = 100;
 

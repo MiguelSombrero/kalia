@@ -1,6 +1,8 @@
 package fi.kalia.catalog.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -32,6 +34,9 @@ public class Brewery {
 
 	private @Nullable UUID contributorId;
 
+	@Enumerated(EnumType.STRING)
+	private ModerationStatus moderationStatus;
+
 	private Instant createdAt;
 
 	private Brewery(String name, String countryCode, @Nullable String city) {
@@ -39,6 +44,7 @@ public class Brewery {
 		this.nameSortKey = BrewerySortKey.of(name);
 		this.countryCode = countryCode;
 		this.city = city;
+		this.moderationStatus = ModerationStatus.APPROVED;
 		this.createdAt = Instant.now();
 	}
 
@@ -52,6 +58,7 @@ public class Brewery {
 		Assert.notNull(contributorId, "contributorId must not be null");
 		Brewery brewery = create(name.strip(), countryCode, city == null || city.isBlank() ? null : city.strip());
 		brewery.contributorId = contributorId;
+		brewery.moderationStatus = ModerationStatus.PENDING;
 		return brewery;
 	}
 

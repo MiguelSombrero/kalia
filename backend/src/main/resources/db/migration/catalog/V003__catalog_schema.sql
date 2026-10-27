@@ -4,12 +4,13 @@
 -- catalog: an extension is database-wide, not one module's.
 CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
 
--- Two spellings of one name are one name once case, whitespace and
--- punctuation are folded. scripts/wikidata-migration.mjs folds at least as
--- much before the import; do not make this fold more than it does.
+-- Two spellings of one name are one name once compatibility forms (fullwidth
+-- letters, ligatures), case, whitespace and punctuation are folded.
+-- scripts/wikidata-migration.mjs folds at least as much before the import; do
+-- not make this fold more than it does.
 CREATE FUNCTION catalog.fold_name(name text) RETURNS text
     LANGUAGE sql IMMUTABLE PARALLEL SAFE
-    RETURN regexp_replace(lower(name), '[[:space:][:punct:]]', '', 'g');
+    RETURN regexp_replace(lower(normalize(name, NFKC)), '[[:space:][:punct:]]', '', 'g');
 
 -- source records where a row came from (ADR-0077). Its default marks V004's
 -- seed rows, which predate the column, as SEED; V008 changes it to USER, since
@@ -23,6 +24,10 @@ CREATE FUNCTION catalog.fold_name(name text) RETURNS text
 -- C collation so the database sorts bytes and no locale can reorder the list
 -- (ADR-0087). The application and scripts/wikidata-migration.mjs both write it;
 -- V008 fills V004's rows and sets it NOT NULL.
+-- moderation_status is who may see the row (ADR-0091). Its default is what the seed
+-- and the import insert; the entities write PENDING for a user's row. A
+-- REJECTED or REMOVED row is hidden, never deleted, and drops out of the
+-- unique index below so its name can be proposed again.
 CREATE TABLE catalog.brewery (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name         text NOT NULL,
@@ -33,13 +38,21 @@ CREATE TABLE catalog.brewery (
     source       text NOT NULL DEFAULT 'SEED' CHECK (source IN ('SEED', 'WIKIDATA', 'USER')),
     wikidata_qid text UNIQUE,
     contributor_id uuid,
+    moderation_status text NOT NULL DEFAULT 'APPROVED'
+        CHECK (moderation_status IN ('PENDING', 'APPROVED', 'REJECTED', 'REMOVED')),
     created_at   timestamptz NOT NULL DEFAULT now(),
     CHECK ((source = 'WIKIDATA') = (wikidata_qid IS NOT NULL)),
-    CHECK (contributor_id IS NULL OR source = 'USER')
+    CHECK (contributor_id IS NULL OR source = 'USER'),
+    CHECK (moderation_status = 'APPROVED' OR source = 'USER')
 );
 
 CREATE UNIQUE INDEX brewery_folded_name_country_idx
-    ON catalog.brewery (catalog.fold_name(name), country_code);
+    ON catalog.brewery (catalog.fold_name(name), country_code)
+    WHERE moderation_status IN ('PENDING', 'APPROVED');
+
+-- The cap on one contributor's waiting entries counts these (ADR-0091).
+CREATE INDEX brewery_pending_contributor_idx ON catalog.brewery (contributor_id)
+    WHERE moderation_status = 'PENDING';
 
 -- The brewery list's page and its search's page are read off this index (ADR-0087).
 CREATE INDEX brewery_name_sort_key_idx ON catalog.brewery (name_sort_key, id);
@@ -53,13 +66,20 @@ CREATE TABLE catalog.beer (
     source       text NOT NULL DEFAULT 'SEED' CHECK (source IN ('SEED', 'WIKIDATA', 'USER')),
     wikidata_qid text UNIQUE,
     contributor_id uuid,
+    moderation_status text NOT NULL DEFAULT 'APPROVED'
+        CHECK (moderation_status IN ('PENDING', 'APPROVED', 'REJECTED', 'REMOVED')),
     created_at   timestamptz NOT NULL DEFAULT now(),
     CHECK ((source = 'WIKIDATA') = (wikidata_qid IS NOT NULL)),
-    CHECK (contributor_id IS NULL OR source = 'USER')
+    CHECK (contributor_id IS NULL OR source = 'USER'),
+    CHECK (moderation_status = 'APPROVED' OR source = 'USER')
 );
 
 CREATE UNIQUE INDEX beer_brewery_folded_name_idx
-    ON catalog.beer (brewery_id, catalog.fold_name(name));
+    ON catalog.beer (brewery_id, catalog.fold_name(name))
+    WHERE moderation_status IN ('PENDING', 'APPROVED');
+
+CREATE INDEX beer_pending_contributor_idx ON catalog.beer (contributor_id)
+    WHERE moderation_status = 'PENDING';
 
 CREATE INDEX beer_brewery_id_idx ON catalog.beer (brewery_id);
 

@@ -4,9 +4,14 @@
 import type { Page } from "@playwright/test";
 import { expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
 import { expectNoA11yViolations } from "./support/a11y";
+import { approveContributionsOf } from "./support/moderation";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });
+
+test.beforeAll(({ account }) => {
+  approveContributionsOf(account.username);
+});
 
 // Every name starts past "Z" or with "Öö", so an added beer never lands among
 // the first page's rows that CATALOG_CARD (./support/catalog.ts) indexes.

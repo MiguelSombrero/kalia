@@ -215,6 +215,11 @@ export type addBeerResponse409 = {
   status: 409
 }
 
+export type addBeerResponse429 = {
+  data: Problem
+  status: 429
+}
+
 export type addBeerResponse500 = {
   data: Problem
   status: 500
@@ -223,7 +228,7 @@ export type addBeerResponse500 = {
 export type addBeerResponseSuccess = (addBeerResponse201) & {
   headers: Headers;
 };
-export type addBeerResponseError = (addBeerResponse400 | addBeerResponse401 | addBeerResponse404 | addBeerResponse409 | addBeerResponse500) & {
+export type addBeerResponseError = (addBeerResponse400 | addBeerResponse401 | addBeerResponse404 | addBeerResponse409 | addBeerResponse429 | addBeerResponse500) & {
   headers: Headers;
 };
 
@@ -238,7 +243,7 @@ export const getAddBeerUrl = () => {
 }
 
 /**
- * Adds a beer the catalog lacks, visible to everyone at once. Its brewery is either one the catalog has (breweryId) or one added with it (newBrewery). Two beers are the same when they share a brewery and a name with case, whitespace and punctuation ignored; two breweries when they share such a name and a country.
+ * Adds a beer the catalog lacks. Its contributor can find and cellar it at once; everyone else sees it once an operator has approved it. Its brewery is either one the catalog has (breweryId) or one added with it (newBrewery), which waits for approval too. Two beers are the same when they share a brewery and a name with case, whitespace, punctuation and compatibility forms such as fullwidth letters ignored; two breweries when they share such a name and a country. A name may not contain control or invisible formatting characters. At most 20 entries may wait for approval per contributor.
  * @summary Add a beer
  */
 export const addBeer = async (addBeerRequestDto: AddBeerRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<addBeerResponse> => {

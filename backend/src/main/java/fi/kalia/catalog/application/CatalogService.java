@@ -1,5 +1,6 @@
 package fi.kalia.catalog.application;
 
+import fi.kalia.catalog.BeerSummaries;
 import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
@@ -8,13 +9,20 @@ import fi.kalia.catalog.domain.BeerSpecifications;
 import fi.kalia.catalog.domain.Brewery;
 import fi.kalia.catalog.domain.BreweryRepository;
 import fi.kalia.catalog.domain.Country;
+import fi.kalia.catalog.domain.ModerationStatus;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +37,7 @@ public class CatalogService {
 
 	private final BreweryRepository breweries;
 
-	public Page<Beer> searchBeers(BeerSearchQuery query, Pageable pageable) {
+	public Page<Beer> searchBeers(BeerSearchQuery query, @Nullable UUID viewerId, Pageable pageable) {
 		if (query.countryCode() != null && !Country.isListed(query.countryCode())) {
 			throw new InvalidSearchParameterException(
 					"countryCode '%s' is not one of the listed countries".formatted(query.countryCode()));
@@ -42,29 +50,41 @@ public class CatalogService {
 		if (hasNoTrigrams(query.query()) || hasNoTrigrams(nameWords)) {
 			beers.useCustomPlansForTheRestOfThisTransaction();
 		}
-		return beers.findAll(BeerSpecifications.matching(toCriteria(query, nameWords)), pageable);
+		return beers.findAll(BeerSpecifications.visibleTo(viewerId)
+				.and(BeerSpecifications.matching(toCriteria(query, nameWords))), pageable);
 	}
 
-	public boolean beerExists(UUID beerId) {
-		return beers.existsById(beerId);
+	public boolean beerVisibleTo(UUID beerId, @Nullable UUID viewerId) {
+		return beers.exists(visibleTo(beerId, viewerId));
 	}
 
-	public Beer getBeer(UUID id) {
-		return beers.findById(id).orElseThrow(() -> new BeerNotFoundException(id));
+	public Beer getBeer(UUID id, @Nullable UUID viewerId) {
+		return beers.findOne(visibleTo(id, viewerId)).orElseThrow(() -> new BeerNotFoundException(id));
 	}
 
-	public List<BeerSummary> getBeerSummaries(Collection<UUID> ids) {
-		return beers.findByIdIn(ids).stream()
-				.map(beer -> new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
-						beer.getStyle(), beer.getAbv()))
-				.toList();
-	}
-
-	public Page<Brewery> listBreweries(@Nullable String nameQuery, Pageable pageable) {
-		if (nameQuery == null || nameQuery.isBlank()) {
-			return breweries.findPage(pageable);
+	// A rejected or removed beer is still summarised: cellar entries and feed lines
+	// keep showing what they point at (ADR-0091). Only a pending beer is withheld.
+	public BeerSummaries getBeerSummaries(Collection<UUID> ids, @Nullable UUID viewerId) {
+		Map<UUID, BeerSummary> found = new HashMap<>();
+		Set<UUID> withheld = new HashSet<>();
+		for (Beer beer : beers.findByIdIn(ids)) {
+			boolean pendingForSomeoneElse = beer.getModerationStatus() == ModerationStatus.PENDING
+					&& !Objects.equals(beer.getContributorId(), viewerId);
+			if (pendingForSomeoneElse) {
+				withheld.add(beer.getId());
+			} else {
+				found.put(beer.getId(), new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
+						beer.getStyle(), beer.getAbv()));
+			}
 		}
-		return breweries.findPageByNameContaining(nameQuery.strip(), pageable);
+		return new BeerSummaries(found, withheld);
+	}
+
+	public Page<Brewery> listBreweries(@Nullable String nameQuery, @Nullable UUID viewerId, Pageable pageable) {
+		if (nameQuery == null || nameQuery.isBlank()) {
+			return breweries.findPage(viewerId, pageable);
+		}
+		return breweries.findPageByNameContaining(nameQuery.strip(), viewerId, pageable);
 	}
 
 	public List<String> listStyles() {
@@ -77,6 +97,11 @@ public class CatalogService {
 
 	public List<String> listBreweryCountries() {
 		return breweries.findDistinctCountryCodes();
+	}
+
+	private static Specification<Beer> visibleTo(UUID beerId, @Nullable UUID viewerId) {
+		return BeerSpecifications.visibleTo(viewerId)
+				.and((root, query, cb) -> cb.equal(root.get("id"), beerId));
 	}
 
 	private static boolean hasNoTrigrams(@Nullable String nameQuery) {

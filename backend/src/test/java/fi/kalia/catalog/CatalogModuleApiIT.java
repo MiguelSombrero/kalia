@@ -43,7 +43,7 @@ class CatalogModuleApiIT {
 		Beer first = seeded.get(0);
 		Beer second = seeded.get(1);
 
-		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(List.of(first.getId(), second.getId()));
+		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(List.of(first.getId(), second.getId()), null).found();
 
 		assertThat(summaries).hasSize(2);
 		assertThat(summaries.get(first.getId()))
@@ -59,7 +59,7 @@ class CatalogModuleApiIT {
 		Beer known = beers.findAll(Pageable.ofSize(1)).getContent().get(0);
 		UUID unknown = UUID.randomUUID();
 
-		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(List.of(known.getId(), unknown));
+		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(List.of(known.getId(), unknown), null).found();
 
 		assertThat(summaries).containsOnlyKeys(known.getId());
 	}
@@ -70,14 +70,14 @@ class CatalogModuleApiIT {
 		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(CatalogApi.MAX_BATCH_IDS),
 				Stream.of(known.getId())).toList();
 
-		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(ids);
+		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(ids, null).found();
 
 		assertThat(summaries).containsOnlyKeys(known.getId());
 	}
 
 	@Test
 	void emptyIdCollectionResolvesToAnEmptyMapWithoutError() {
-		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(List.of());
+		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(List.of(), null).found();
 
 		assertThat(summaries).isEmpty();
 	}
