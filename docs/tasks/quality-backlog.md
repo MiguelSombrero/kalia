@@ -43,12 +43,219 @@ they're already cross-referenced from merged PRs and
 
 ## MUST
 
-*None open — every MUST from the 2026-10-24 sweep was lifted into
-[iteration 8.5](iteration-8.5.md).*
+- **MUST-19** *(confirmed 2026-10-27)* — `docs/architecture.md:589-596`
+  says the frontend has two route handlers and "this stays the full list",
+  and `docs/tasks/backlog.md:157-158` repeats it, but iteration 8.5 task 16
+  added a third, token-gated one: `frontend/app/api/metrics/route.ts`
+  (ADR-0088). The edge passes it through under its generic `location /`.
+- **MUST-20** *(confirmed 2026-10-27)* — `frontend/README.md:75-76` says to
+  run `docker compose up -d backend postgres` before `npm run generate:api`,
+  but `orval.config.ts:9` reads the spec from `BACKEND_PORT`, which only
+  `edge` publishes (`docker-compose.base.yml:26-29`); following the README
+  gives connection refused. `Makefile:75` (`api-drift`) already starts `edge`.
+- **MUST-21** *(confirmed 2026-10-27)* — query strings reach logs against
+  ADR-0013:73-75 in three places: the edge's `log_format` logs `$request`
+  (`edge/nginx.conf:22`) and Keycloak's access log the request line
+  (`docker-compose.base.yml:161`), so every sign-out's
+  `logout?id_token_hint=<JWT>` (`features/auth/endSessionUrl.ts:19-22`) writes
+  a signed ID token carrying email and username to two stdout logs, along
+  with search terms and callback `code`/`state`; and `lib/api/mutator.ts:95`,
+  `:105`, `:117`, `:142`, `:162`, `:202` put the full `url` into error
+  messages that `recordFailure` and `onRequestError` log. The success path is
+  stripped and tested (`mutator.test.ts:312-327`); the failure path is not.
+- **MUST-22** *(confirmed 2026-10-27)* **[needs decision]** — the
+  text-blocks-not-concatenation rule (`backend/README.md:300`) has no
+  checker, and merged code keeps breaking it after the product owner raised
+  it on PR #427 and again on #435: #450 added a concatenation at
+  `catalog/web/CatalogController.java:108-111` and #452 another at `:73-74`;
+  ten `+ "` continuation lines remain in `backend/src/main/java`, including
+  `CurrentUserService.java:40-41`, which #427 fixed. Decidable from its text,
+  so ADR-0039's case. A checker in `make check` with a retrofit, the same
+  checker on added lines only, or a Checkstyle rule.
+- **MUST-23** *(confirmed 2026-10-27)* — concurrent first reads of a new
+  user's profile still race against the username reservation (d02f48a):
+  `ProfileServiceConcurrencyIT.concurrentFirstReadsForANewUserBothSucceedAgainstOneSharedProfile`
+  failed with 409 on dev CI run 40168778643 (merge of #421) and on runs
+  39943933397, 39895492902 and 39894762607, and the e2e sent a real
+  sign-in to `/fi/username-taken` (`docs/common-failures.md` row 2026-10-26,
+  PR 450, "no fix home yet"). No fix, task or `docs/ci-playbook.md` entry
+  exists.
 
 ## SHOULD
 
-*None open — every SHOULD was lifted into [iteration 8.5](iteration-8.5.md).*
+- **SHOULD-68** *(confirmed 2026-10-27)* **[needs decision]** — any
+  self-registered user can read `/actuator/prometheus` on the deployable
+  stack: `docker-compose.base.yml:40` enables it outside the dev overlay
+  (ADR-0088:51-55 says "local development only"), `SecurityConfig.java:60`
+  requires only `authenticated()`, and the edge forwards every backend path.
+  The frontend guards its own counters with `METRICS_TOKEN`. Move it to the
+  dev overlay, require a role or scope, or put actuator on a management port
+  the edge does not route.
+- **SHOULD-69** *(confirmed 2026-10-27)* **[needs decision]** — the Keycloak
+  master realm's admin console and token endpoint are served on the public
+  edge (`edge/nginx.conf:128-131` forwards everything on 8081), no
+  `KC_HOSTNAME_ADMIN` is set, and brute-force detection is configured only
+  for the `kalia` realm (`keycloak/realm-export.json:21-28`), so the admin
+  password is bounded only by the edge's per-address rate. Deny `/admin` and
+  `/realms/master` at the edge (the host scripts then need an internal
+  route), set `KC_HOSTNAME_ADMIN` to an unpublished address, or at least
+  enable brute-force protection for master.
+- **SHOULD-70** *(confirmed 2026-10-27)* — the deployable base still carries
+  dev conveniences ADR-0089 meant to exclude: `KEYCLOAK_SMTP_HOST` defaults
+  to `mailpit` with auth and TLS off (`docker-compose.base.yml:224-231`) and
+  the base runs Mailpit with an unauthenticated API (`:263-280`), so a
+  deployment that forgets SMTP starts cleanly and parks every reset link
+  where loopback can read it; Postgres (`:115-117`) and Valkey (`:252-254`)
+  are also published on host loopback. Move them to the dev overlay and make
+  the SMTP values `:?`-required.
+- **SHOULD-71** *(confirmed 2026-10-27)* — the Keycloak image is never
+  scanned: `.github/workflows/vulnerability-scan.yml:41-69` builds and scans
+  `backend`, `frontend` and `edge` only, though `keycloak/Dockerfile:1` is a
+  custom build; the pulled `valkey`, `postgres`, `keycloak-config-cli` and
+  `mailpit` images are not scanned either, so a HIGH/CRITICAL CVE in the
+  most exposed component never fails the ADR-0024 gate.
+- **SHOULD-72** *(confirmed 2026-10-27)* **[needs decision]** — a pending
+  contribution blocks everyone else's identical one: duplicate lookups
+  include other contributors' `PENDING` rows
+  (`BreweryRepository.java:46-51`, `BeerRepository.java:38-44`), the 409
+  offers that row (`ContributionService.java:52-56`, `:64-67`;
+  `AddBeerDialog.tsx:344-365`), and choosing it 404s because
+  `findVisibleById` hides it from anyone but its contributor. One account can
+  hold 20 such names until an operator acts. ADR-0091 accepts the disclosure,
+  not the dead end. Scope duplicates to approved plus own pending rows, give
+  "pending elsewhere" its own anonymous 409, or record it as a trade-off.
+- **SHOULD-73** *(confirmed 2026-10-27)* — the pending-cap 429 shows as
+  "Could not add the beer. Please try again.": `features/catalog/api.ts:68-91`
+  handles 201/400/404/409 and throws a generic error otherwise, so a
+  contributor with 20 entries waiting retries forever. No frontend code or
+  test mentions the cap. Recorded as "new task" in PR #452 and lost (see
+  SHOULD-90).
+- **SHOULD-74** *(confirmed 2026-10-27)* — a concurrent remove or update of
+  one bottle can answer 500: `CellarService.ownerOf` (`:147-150`) loads the
+  entry with bottles lazy, the bottles load in a second SELECT, and if
+  another request deleted the bottle in between, `Entry.bottleWithId`
+  (`Entry.java:116-122`) throws an `IllegalStateException` that is neither
+  retried nor mapped. A double-clicked delete, or iteration 12's replayed
+  offline write, triggers it. Fetch the bottles in the same query, or map
+  the missing bottle to `BottleNotFoundException`.
+- **SHOULD-75** *(confirmed 2026-10-27)* **[needs decision]** — someone who
+  already holds a beer that became `REJECTED` or `REMOVED` can keep adding
+  bottles to it: `CellarService.entryFor` (`:154-162`) checks
+  `catalog.beerExists` only when no entry exists, against ADR-0091:34-36's
+  "adding to a cellar" visibility rule, and each add writes a public feed
+  line. `ContributionModerationIT:200` tests only a user with no entry.
+  Refuse the add for holders too, or amend ADR-0091 to allow it.
+- **SHOULD-76** *(confirmed 2026-10-27)* **[needs decision]** — rejecting a
+  pending beer publishes what review withheld: while `PENDING`, the
+  contributor's feed lines and public-cellar entry for it are hidden, but
+  `CatalogService.getBeerSummaries` (`:67-81`) withholds only `PENDING`, so
+  after `make moderate ACTION=reject` they appear — pinned by
+  `ContributionModerationIT:165-178`, `:256-265`. Keep `REJECTED` withheld
+  from public reads, or accept it in ADR-0091.
+- **SHOULD-77** *(confirmed 2026-10-27)* **[needs decision]** — the backend
+  and Keycloak both connect to Postgres as the bootstrap superuser `kalia`
+  in the deployable definition (`docker-compose.base.yml:35-36`, `:112-114`,
+  `:139-141`), so compromising either service, or any future injection,
+  owns both databases. No ADR records it. Separate owner, DML-only and
+  Keycloak roles, or accept it as a §8 trade-off.
+- **SHOULD-78** *(confirmed 2026-10-27)* **[needs decision]** — the owner's
+  whole-cellar read (`GET /cellar`, documented "Not paginated",
+  `CellarController.java:51-56`) was kept whole for iteration 12's offline
+  cache (8.5 task 11), but the web loads it on every signed-in catalog
+  search, beer detail, front and profile page
+  (`features/cellar/api.ts:28-37`; `app/[locale]/beers/page.tsx:62`,
+  `beers/[id]/page.tsx:46`, `(home)/page.tsx:45`, `profile/page.tsx:32`) to
+  mark ~20 beers or show two counts, and nothing caps entries per account.
+  §8 does not list it. Cap the cellar, add a bounded held-counts/totals read,
+  or paginate the owner read and give sync its own endpoint.
+- **SHOULD-79** *(confirmed 2026-10-27)* **[needs decision]** — the public
+  cellar is paged and totalled in SQL (`EntryRepository.java:34-36`,
+  `:60-62`) and only then drops entries of `PENDING` beers
+  (`CellarService.java:56-84`), so a page can come back short and
+  `totalElements`, the bottle total and `lastAddedAt` count withheld beers.
+  Structural: under the no-cross-schema rule any catalog state that hides a
+  beer can only be filtered after paging. Drop totals from the public
+  response, keep a cellar-side visible-beer projection fed by catalog
+  events, or over-fetch as the feed does.
+- **SHOULD-80** *(confirmed 2026-10-27)* **[needs decision]** — moderation is
+  `scripts/moderate-contributor.sql`, run through `docker compose exec`
+  (`Makefile:19-21`): it acts on all of a contributor's rows at once
+  (removing one bad beer also removes their approved ones), writes `catalog`
+  tables around the domain, reads `profile.profile` cross-schema, and has no
+  deployment story; rejected rows leave the pending count
+  (`ContributionService.java:72-75`), so a rejected contributor can resubmit
+  20 more at once, indefinitely. Iteration 9+ mobile with open registration
+  grows the queue before ADR-0091's trigger fires. Per-row actions with
+  rejections counted toward a cooldown, or an operator-role backend endpoint.
+- **SHOULD-81** *(confirmed 2026-10-27)* — `docs/architecture.md:1212-1215`
+  files ADR-0087, ADR-0088, ADR-0089 and ADR-0090 under "Engineering process
+  and documentation", while `docs/adr/README.md:66-68`, `:284-295` puts them
+  under Catalog and "Configuration, security and operations"; §9's own rule
+  (`:1074`) places each in the table it belongs to.
+- **SHOULD-82** *(confirmed 2026-10-27)* — `docs/architecture.md:971-972` and
+  `keycloak/README.md:43-44` say `docker-compose.yml` pins the Postgres and
+  `keycloak-config-cli` images; it is now only an `include`
+  (`docker-compose.yml:17-19`) and the images are in
+  `docker-compose.base.yml:110`, `:181`.
+- **SHOULD-83** *(confirmed 2026-10-27)* — the root README never caught up
+  with iteration 8.5's new pieces: the tech stack omits the nginx edge,
+  `@prometheus-io/client` and Micrometer Prometheus/Tracing, the compose
+  stack line (`README.md:299-302`) and repository layout (`:313-339`) omit
+  `edge/`, and the pom-overrides note (`:242-245`) names Tomcat and the
+  PostgreSQL driver but not the two Jackson BOM overrides
+  (`backend/pom.xml:37-47`). The failure ADR-0020's 2026-09-11 amendment
+  recorded.
+- **SHOULD-84** *(confirmed 2026-10-27)* **[needs decision]** — the root
+  README's architecture diagram (`README.md:198-206`) draws `Browser --> Next`
+  directly while `docs/architecture.md:82-92` routes every request through
+  `edge`; it restates a shape §2 owns. Replace it with a pointer to §2, or
+  add the edge and keep both in step by hand.
+- **SHOULD-85** *(confirmed 2026-10-27)* **[needs decision]** — the public
+  cellar's response (`cellar/web/PublicCellarDto.java:12-27`: `entries`,
+  `page`, `totalPages`, `totalBeers`, …) breaks the one pagination envelope
+  `docs/architecture.md:525-536` states, which names only the feed as an
+  exception, and `docs/glossary.md` lists only `PageDto` and `FeedPageDto`.
+  Matters now: iteration 9 freezes `/api/v1` additive-only. Document it as a
+  second exception, or align the DTO before the freeze.
+- **SHOULD-86** *(confirmed 2026-10-27)* — ADR-0028 still states
+  `GET /api/v1/me` as a current decision (`docs/adr/0028-resource-server-and-current-user.md:55-60`,
+  `:143-147`) with no amendment line, though 8.5 task 02 removed the
+  endpoint.
+- **SHOULD-87** *(confirmed 2026-10-27)* **[needs decision]** — the
+  iteration-by-iteration feature list is kept four times: `README.md:5-30`,
+  `README.md:153-185`, `docs/architecture.md:24-51` and
+  `docs/roadmap.md:54-74`; every iteration close edits all four. Shrink the
+  README status blurb to a pointer, or accept the four-place edit.
+- **SHOULD-88** *(confirmed 2026-10-27)* **[needs decision]** — red CI runs
+  on `dev` after a merge are never logged in `docs/common-failures.md`:
+  runs 40077060971 (merge of #393), 40166251873 (#417) and 40168778643 (#421)
+  have no row, because the header says to log "on the branch you are working
+  on" and a post-merge run has no session. The log ADR-0084 relies on misses
+  the failures that hit everyone. Have the `worktree` skill's start step check
+  `dev`'s recent runs, state in the header that the sweep reconstructs them,
+  or open an issue from a scheduled workflow.
+- **SHOULD-89** *(confirmed 2026-10-27)* **[needs decision]** — PRs merge
+  without CI against the current `dev` (ruleset
+  `strict_required_status_checks_policy: false`): #447 removed `/api/v1/me`,
+  #448 added a spec calling it, both were green alone, `dev` went red (run
+  40359579236), and two sessions wrote the same fix (c559c86 in #450, 71ed660
+  in #451; both 2026-10-26 rows). Require branches up to date, use a merge
+  queue, or add a playbook entry for "red on fresh `dev`, green on its PR".
+- **SHOULD-90** *(confirmed 2026-10-27)* — a `/code-review` finding marked
+  "new task" has no home: `.claude/skills/implement-task/SKILL.md:59-61` and
+  the PR template ask for the verdict but name no place to record it, so
+  follow-ups from #398, #400, #425 and six from #452 exist only in PR bodies,
+  and iteration 8.5 closed (#459) without them. Require a
+  `docs/tasks/backlog.md` entry in the same PR, optionally checked by
+  `check-pr-body.mjs`.
+- **SHOULD-91** *(confirmed 2026-10-27)* **[needs decision]** — the
+  `worktree` skill's steps 2 and 3 do not run: eight worktrees with merged or
+  detached work remain (`git worktree list`), and Gates `pwd` lines show
+  sessions reusing old worktrees (#434/#445, #447/#450, #448/#451,
+  #435/#452). The fix for COULD-56 (PR #434) did not take, because the
+  desktop app creates a worktree per session. A `make prune-worktrees` called
+  from `stack-env` or the pre-push hook, a SessionStart hook, or rewriting the
+  steps around the app's lifecycle.
 
 ## COULD
 
@@ -60,13 +267,13 @@ they're already cross-referenced from merged PRs and
   it is stock `keycloak.v2` markup the theme does not touch
   ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
 
-- **COULD-61** *(confirmed 2026-10-24)* — `frontend/features/catalog/AddBeerDialog.tsx`
+- **COULD-61** *(confirmed 2026-10-27)* — `frontend/features/catalog/AddBeerDialog.tsx`
   (383 lines) holds the form state, the brewery-choice state machine
   (`:106-121`, `:204-215`), the mapping of server refusals onto fields
   (`:48-57`, `:130-135`), three outcome alerts (`:322-370`) and navigation
   (`:123-129`) in one component; the alerts and the brewery mode could be
   extracted and tested on their own.
-- **COULD-65** *(confirmed 2026-10-24)* **[needs decision]** — an access token
+- **COULD-65** *(confirmed 2026-10-27)* **[needs decision]** — an access token
   outlives sign-out by up to its 5-minute lifespan
   (`keycloak/realm-export.json:11`): the backend checks signature, `exp`,
   `iss` and `aud` only (`SecurityConfig.java:84-99`). Harmless for the web,
@@ -75,6 +282,120 @@ they're already cross-referenced from merged PRs and
   after sign-out or an admin disable. Accept it as an §8 trade-off, shorten
   the mobile client's lifespan, or introspect on sensitive writes — an
   iteration-9 mobile-auth question.
+- **COULD-73** *(confirmed 2026-10-27)* — any cross-site link to
+  `/api/auth/callback/keycloak` signs the visitor out:
+  `app/api/auth/[...nextauth]/route.ts:6`, `:15-21` ends the session on any
+  matching GET before Auth.js validates state or PKCE, and the `SameSite=Lax`
+  cookie rides a top-level navigation. End the session only when this
+  browser's sign-in state cookie is present, or after validation.
+- **COULD-74** *(confirmed 2026-10-27)* — the back-channel logout endpoint is
+  published on the edge (`edge/nginx.conf:77-81`) although its only caller,
+  Keycloak, posts to `frontend:3000` over the compose network
+  (`keycloak/realm-export.json:58`); return 404 for it at the edge.
+- **COULD-75** *(confirmed 2026-10-27)* **[needs decision]** — the backend's
+  10 r/s per-address zone does not bound anonymous backend load: the BFF
+  calls `backend:8080` directly, so SSR pages and public Server Actions under
+  the 150 r/s frontend zone (`edge/nginx.conf:40-44`, `:89-92`) drive about
+  15 times that, against ADR-0090:106-108's "a bound a script cannot step
+  around". Tighten the frontend zone for actions, limit in the backend by
+  forwarded address, or correct the ADR.
+- **COULD-76** *(confirmed 2026-10-27)* — `CellarService.readPublicCellar`
+  (`:61-79`) reads counts and shown bottles in separate statements, and
+  `:78`'s `shown.get(entry.getId())` is null if the owner deleted the
+  entry's last bottle in between, so `PublicCellarEntryDto.from` throws a 500.
+- **COULD-77** *(confirmed 2026-10-27)* **[needs decision]** — after an empty
+  first feed page, `FeedList.tsx:60` polls with `since=""`, the backend treats
+  it as no cursor and returns a backward `nextCursor`
+  (`FeedController.java:83-94`, `FeedService.java:92`, `:100`), and
+  `FeedList.tsx:107-108` adopts it as the forward one, walking deep history
+  and delaying new public lines past ADR-0060's 60 s. Ignore the cursor on a
+  cursor-less poll, or return a forward cursor for a since-less read.
+- **COULD-78** *(confirmed 2026-10-27)* — `frontend/features/feed/actions.ts:21-24`
+  and `:41-47` still say the cursor key is "minted fresh by a backend
+  restart"; since 8.5 task 04 it is configured (`FEED_CURSOR_KEY`).
+- **COULD-79** *(confirmed 2026-10-27)* — domain timestamps still bypass the
+  injected `Clock` after 8.5 task 20 (which took COULD-60): `Instant.now()`
+  in `catalog/domain/Beer.java:56`, `Brewery.java:48` and
+  `EventPublicationResubmission.java:66`, and Hibernate VM timestamps in
+  `Profile.java:35-39` and `FeedLine.java:57-61`.
+- **COULD-80** *(confirmed 2026-10-27)* — `features/catalog/addBeerSchema.ts:11`
+  refuses `\p{Cc}` but the server refuses `\p{Cc}\p{Cf}`
+  (`AddBeerRequestDto.java:40`), so a zero-width space passes the client and
+  comes back as the generic `refusedField` instead of `nameInvalid`.
+- **COULD-81** *(confirmed 2026-10-27)* **[needs decision]** — `ProfileApi`
+  publishes usernames only through cellar visibility
+  (`ProfileApi.java:25-37`, `ProfileService.java:25-44`), which the feed
+  uses as its only actor lookup (`FeedService.java:139-151`); any future
+  event not about a cellar cannot name a private-cellar user without
+  reshaping the API. Record it as a constraint on new event types, or split
+  a username lookup from a visibility predicate first.
+- **COULD-82** *(confirmed 2026-10-27)* — sign-in is implemented four times
+  (`features/auth/actions.ts:26`, `catalog/actions.ts:29`,
+  `profile/actions.ts:21`, `cellar/actions.ts:20-28`), each parsing the
+  locale and building the post-sign-in redirect its own way; a plain helper
+  in `lib/auth/` built on `lib/routes.ts` fits frontend/README's own
+  "second user moves it to `lib/`" rule.
+- **COULD-83** *(confirmed 2026-10-27)* **[needs decision]** — never-delete
+  decisions are stacking up ahead of account deletion: usernames (ADR-0080),
+  `contributor_id` (ADR-0091) and `feed.line.user_id` (ADR-0058) are kept
+  forever by design, while `docs/tasks/backlog.md` lists GDPR account
+  deletion as needed before store release. Record a tombstone or
+  pseudonymisation strategy now, or accept the rework when deletion lands.
+- **COULD-84** *(confirmed 2026-10-27)* **[needs decision]** —
+  `docs/architecture.md:125-127` says `fi.kalia.web` holds only exception
+  advice and error types, but it now also holds `RequestLogFilter` and
+  `UnexpectedFailureDocumentation`; `ArchitectureDocumentationTest.java:87`
+  calls it a module "with no dependency edges" though most modules depend on
+  it. Widen §3 and ADR-0014 to "module-neutral web infrastructure", or move
+  the filter to the base package.
+- **COULD-85** *(confirmed 2026-10-27)* — `docs/architecture.md:628-631` says
+  each feature reaches only its own tag's generated operations, but
+  `eslint.config.mjs` lets `features/cellar/api.ts:10` import the
+  `public-cellar` tag; name the exception in §5 and frontend/README.
+- **COULD-86** *(confirmed 2026-10-27)* — `features/cellar/actions.ts:26`
+  builds `` `/${locale}/cellar` `` by hand though `ownCellarHref` exists at
+  `lib/routes.ts:16`, against `docs/architecture.md:642-644`.
+- **COULD-87** *(confirmed 2026-10-27)* **[needs decision]** — ADR-0007's
+  Decision body (`:71`) still cites "payment's `PaymentProvider`, ordering's
+  state machine", which its own 2026-10-24 amendment (`:27-31`) says named
+  dropped store modules. Drop the examples, or mark the amendment as
+  superseding that clause.
+- **COULD-88** *(confirmed 2026-10-27)* — smaller doc staleness:
+  `docs/architecture.md:3` "Last updated: 2026-10-24"; `docs/tasks/iteration-8.5.md:49-52`
+  groups tasks 01–20 and omits 21–22; `docs/tasks/iteration-9.md:77-78` keeps
+  a "planned task" that only says it moved to 8.5; `docs/tasks/backlog.md:89`
+  calls catalog search "full-text" (it is `pg_trgm` substring, ADR-0044),
+  `:105-107` says the API binds `127.0.0.1:8080`, and decision 9 lists rate
+  limiting as open despite ADR-0090; `README.md:264-270` ties the npm
+  overrides to `next` 16.3.1 (now 16.4.3, re-test due);
+  `README.md:337` says `docker-compose.dev.env` holds every secret, but
+  `KALIA_FRONTEND_CLIENT_SECRET` still comes from `.env`.
+- **COULD-89** *(confirmed 2026-10-27)* — limits restated outside their
+  homes: the edge's 10 r/s in `backend/README.md:9-11` (ADR-0090 and
+  `edge/nginx.conf:44` own it), and the 20-pending cap in
+  `docs/architecture.md:282-283`, `:409` and `docs/adr/README.md:71`
+  (ADR-0091 and `ContributionService.MAX_PENDING_ENTRIES` own it).
+- **COULD-90** *(confirmed 2026-10-27)* — the "required CI checks" clause of
+  the PR template's Local gate line cannot hold a verdict when the body is
+  written: 8 of 9 task PRs record it pending (#433, #434, #445, #447, #448,
+  #450, #451, #452), and the ruleset enforces those checks anyway. Drop it
+  from the template and implement-task's Gates list.
+- **COULD-91** *(confirmed 2026-10-27)* **[needs decision]** — three PRs in
+  iteration 8.5 existed only to tick criteria checkable after merge (#414,
+  #431, #446, for #399, #428, #417). Require criteria checkable before merge
+  at refinement, or let the next task's or the close-out PR carry such ticks.
+- **COULD-92** *(confirmed 2026-10-27)* — Trivy's Java DB mirror 404 failed
+  runs 40166251873 (`dev`) and 40166341881 (PR #421) with a clean filesystem
+  scan, and `docs/ci-playbook.md`'s vulnerability-scan section covers only
+  CVE findings; add a "re-run, change nothing" entry.
+- **COULD-93** *(confirmed 2026-10-27)* **[needs decision]** — `CLAUDE.md` is
+  at 199 of ADR-0048's 200 lines, up from 191 three days earlier (#397 →
+  #448), and ADR-0048 says a third overrun reopens the checker question.
+  Reopen it now, or wait for the overrun.
+- **COULD-94** *(confirmed 2026-10-27)* **[needs decision]** — ruleset
+  19027809 requests Copilot code review on push, but no Copilot review
+  appears on any of the 23 agent PRs in #394–#459, and no doc mentions the
+  setting. Remove the rule, or find out why it does not run.
 
 ## Retired
 
