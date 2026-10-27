@@ -51,8 +51,8 @@ puts in the base whatever is not a dev convenience).
   verified.
 - **Upstreams are resolved on each request**, through Docker's DNS, so the
   proxy needs no `depends_on` and keeps working when a service is recreated.
-- **The image is `nginxinc/nginx-unprivileged`, pinned to the current stable
-  tag, with `apk upgrade` on top**, as `frontend/Dockerfile` does for the same
+- **The image is `nginx/nginx-unprivileged`, pinned to the current stable
+  tag without the Perl module, with `apk upgrade` on top**, as `frontend/Dockerfile` does for the same
   reason ([ADR-0024](0024-dependency-vulnerability-scanning.md)). The vulnerability scan builds and scans it with
   the other two images.
 - `X-Content-Type-Options: nosniff` joins [ADR-0016](0016-security-response-headers.md)'s
@@ -163,10 +163,13 @@ The largest request the suite made, headers included, was 3.3 KB. The backend
 figure is low because the BFF reaches Spring over the compose network, not
 through the proxy.
 
-`nginxinc/nginx-unprivileged:stable-alpine` reports nginx 1.30.6 and is the
-same image as the `1.30.6-alpine` tag. Trivy found two fixable HIGH findings in
-it (`brotli-libs`, and `curl` with `libcurl`); built with `apk upgrade`, it
-found none.
+`nginx/nginx-unprivileged:1.30.6-alpine3.24` reports nginx 1.30.6 on Alpine
+3.24.3 and is the same image as `1.30-alpine3.24` and `1.30.6-alpine`; its
+`-perl` variant is 57 MB larger and adds a Perl interpreter and module this
+configuration never loads. Trivy found no fixable HIGH or CRITICAL finding in
+either. The earlier `nginxinc/nginx-unprivileged:1.30.6-alpine` carried two
+(`brotli-libs`, and `curl` with `libcurl`), which is what `apk upgrade` is
+kept for; Docker Hub now points that repository to `nginx/nginx-unprivileged`.
 
 A request carrying `X-Forwarded-For: 203.0.113.77` through the proxy was logged
 by Spring, by Keycloak and, via the frontend, by Spring again, under the
