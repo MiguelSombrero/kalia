@@ -4,6 +4,8 @@ import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class BeerSpecifications {
@@ -20,6 +22,18 @@ public final class BeerSpecifications {
 				.replace("\\", "\\\\")
 				.replace("%", "\\%")
 				.replace("_", "\\_");
+	}
+
+	/** What a viewer may see: approved rows, and their own pending ones when signed in (ADR-0091). */
+	public static Specification<Beer> visibleTo(@Nullable UUID viewerId) {
+		return (root, query, cb) -> {
+			Predicate approved = cb.equal(root.get("moderationStatus"), ModerationStatus.APPROVED);
+			if (viewerId == null) {
+				return approved;
+			}
+			return cb.or(approved, cb.and(cb.equal(root.get("moderationStatus"), ModerationStatus.PENDING),
+					cb.equal(root.get("contributorId"), viewerId)));
+		};
 	}
 
 	public static Specification<Beer> matching(BeerSearchCriteria criteria) {

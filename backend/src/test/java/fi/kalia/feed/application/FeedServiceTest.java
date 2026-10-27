@@ -5,11 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import fi.kalia.catalog.BeerSummaries;
 import fi.kalia.catalog.BeerSummary;
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.feed.domain.FeedLine;
@@ -24,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +59,7 @@ class FeedServiceTest {
 
 	@BeforeEach
 	void setUp() {
+		lenient().when(catalog.getBeerSummaries(any(), isNull())).thenReturn(new BeerSummaries(Map.of(), Set.of()));
 		service = new FeedService(lines, catalog, profile, codec, Clock.fixed(NOW, ZoneOffset.UTC));
 	}
 
@@ -63,8 +68,9 @@ class FeedServiceTest {
 		FeedLine line = line();
 		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
 				.willReturn(List.of(line));
-		given(catalog.getBeerSummaries(any())).willReturn(Map.of(line.getBeerId(), new BeerSummary(line.getBeerId(),
-				"KBS", "Founders Brewing Co.", "Imperial Stout", new BigDecimal("12.0"))));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(new BeerSummaries(Map.of(line.getBeerId(),
+				new BeerSummary(line.getBeerId(), "KBS", "Founders Brewing Co.", "Imperial Stout",
+						new BigDecimal("12.0"))), Set.of()));
 		given(profile.publicUsernames(any())).willReturn(Map.of(line.getUserId(), "alice"));
 
 		FeedLineView view = service.readRecent(20).lines().getFirst();
@@ -127,7 +133,7 @@ class FeedServiceTest {
 		FeedLine line = line();
 		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
 				.willReturn(List.of(line));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(line));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(line));
 		given(profile.publicUsernames(any())).willReturn(Map.of(line.getUserId(), "alice"));
 
 		FeedPage page = service.readRecent(1);
@@ -145,7 +151,7 @@ class FeedServiceTest {
 		FeedLine older = line();
 		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
 				.willReturn(List.of(newer, older));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(newer, older));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(newer, older));
 		given(profile.publicUsernames(any()))
 				.willReturn(Map.of(newer.getUserId(), "alice", older.getUserId(), "bob"));
 
@@ -161,7 +167,7 @@ class FeedServiceTest {
 		FeedLine line = line();
 		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
 				.willReturn(List.of(line));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(line));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(line));
 		given(profile.publicUsernames(any())).willReturn(Map.of());
 
 		FeedPage page = service.readRecent(1);
@@ -174,7 +180,7 @@ class FeedServiceTest {
 		FeedLine line = line();
 		given(lines.findByOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(any(), any()))
 				.willReturn(List.of(line));
-		given(catalog.getBeerSummaries(any())).willReturn(Map.of());
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(new BeerSummaries(Map.of(), Set.of()));
 		given(profile.publicUsernames(any())).willReturn(Map.of(line.getUserId(), "alice"));
 
 		FeedPage page = service.readRecent(1);
@@ -191,7 +197,7 @@ class FeedServiceTest {
 				.willReturn(List.of(hidden, alsoHidden));
 		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(anyLong(),
 				any(), any())).willReturn(List.of(shown));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(hidden, alsoHidden, shown));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(hidden, alsoHidden, shown));
 		given(profile.publicUsernames(any())).willReturn(Map.of(shown.getUserId(), "shown"));
 
 		FeedPage page = service.readRecent(1);
@@ -288,7 +294,7 @@ class FeedServiceTest {
 		FeedLine newer = line();
 		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
 				any(), any())).willReturn(List.of(older, newer));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(older, newer));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(older, newer));
 		given(profile.publicUsernames(any()))
 				.willReturn(Map.of(older.getUserId(), "older", newer.getUserId(), "newer"));
 
@@ -308,7 +314,7 @@ class FeedServiceTest {
 		FeedLine furthest = line();
 		given(lines.findBySequenceNumberGreaterThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberAsc(eq(42L),
 				any(), any())).willReturn(List.of(nearest, furthest));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(nearest));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(nearest));
 		given(profile.publicUsernames(any())).willReturn(Map.of(nearest.getUserId(), "nearest"));
 
 		FeedPage page = service.readSince(codec.encode(42L), 1);
@@ -329,7 +335,7 @@ class FeedServiceTest {
 		FeedLine newer = line();
 		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
 				any(), any())).willReturn(List.of(newer, older));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(newer, older));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(newer, older));
 		given(profile.publicUsernames(any()))
 				.willReturn(Map.of(newer.getUserId(), "newer", older.getUserId(), "older"));
 
@@ -362,7 +368,7 @@ class FeedServiceTest {
 		FeedLine furthest = line();
 		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
 				any(), any())).willReturn(List.of(nearest, furthest));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(nearest));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(nearest));
 		given(profile.publicUsernames(any())).willReturn(Map.of(nearest.getUserId(), "nearest"));
 
 		FeedPage page = service.readBefore(codec.encode(42L), 1);
@@ -376,7 +382,7 @@ class FeedServiceTest {
 		FeedLine line = line();
 		given(lines.findBySequenceNumberLessThanAndOccurredAtGreaterThanEqualOrderBySequenceNumberDesc(eq(42L),
 				any(), any())).willReturn(List.of(line));
-		given(catalog.getBeerSummaries(any())).willReturn(beerSummaries(line));
+		given(catalog.getBeerSummaries(any(), isNull())).willReturn(beerSummaries(line));
 		given(profile.publicUsernames(any())).willReturn(Map.of());
 
 		FeedPage page = service.readBefore(codec.encode(42L), 20);
@@ -384,13 +390,13 @@ class FeedServiceTest {
 		assertThat(page.lines()).isEmpty();
 	}
 
-	private static Map<UUID, BeerSummary> beerSummaries(FeedLine... resolvable) {
+	private static BeerSummaries beerSummaries(FeedLine... resolvable) {
 		Map<UUID, BeerSummary> beers = new HashMap<>();
 		for (FeedLine line : resolvable) {
 			beers.put(line.getBeerId(), new BeerSummary(line.getBeerId(), "Beer", "Brewery", "IPA",
 					new BigDecimal("6.5")));
 		}
-		return beers;
+		return new BeerSummaries(beers, Set.of());
 	}
 
 	private static FeedLine line() {

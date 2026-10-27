@@ -25,6 +25,10 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 	@EntityGraph(attributePaths = "brewery")
 	Optional<Beer> findById(UUID id);
 
+	@Override
+	@EntityGraph(attributePaths = "brewery")
+	Optional<Beer> findOne(Specification<Beer> spec);
+
 	// Same eager-brewery reason as findById; an id matching nothing is simply
 	// absent from the result, never a null element.
 	@EntityGraph(attributePaths = "brewery")
@@ -34,7 +38,8 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 	// (V003): it must find exactly the row that index refuses a second of.
 	@Query(value = """
 			SELECT id FROM catalog.beer
-			WHERE brewery_id = :breweryId AND catalog.fold_name(name) = catalog.fold_name(:name)""",
+			WHERE brewery_id = :breweryId AND catalog.fold_name(name) = catalog.fold_name(:name)
+			AND moderation_status IN ('PENDING', 'APPROVED')""",
 			nativeQuery = true)
 	Optional<UUID> findIdByBreweryIdAndSameName(UUID breweryId, String name);
 
@@ -46,6 +51,12 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 	@Modifying
 	@Query(value = "SET LOCAL plan_cache_mode = force_custom_plan", nativeQuery = true)
 	void useCustomPlansForTheRestOfThisTransaction();
+
+	// Held to the end of the transaction. The select wraps the call because it returns void.
+	@Query(value = "SELECT 1 FROM (SELECT pg_advisory_xact_lock(:key)) AS locked", nativeQuery = true)
+	int lockContributorAdds(long key);
+
+	long countByContributorIdAndModerationStatus(UUID contributorId, ModerationStatus moderationStatus);
 
 	@Query("SELECT DISTINCT b.style FROM Beer b")
 	List<String> findDistinctStyles();

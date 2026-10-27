@@ -219,8 +219,8 @@ TypeScript vocabulary a client meets — is catalogued in
 ### Data model sketch
 
 ```
-catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, created_at) — unique (fold_name(name), country_code), unique (wikidata_qid)
-catalog.beer(id, brewery_id, name, style, abv, source, wikidata_qid, contributor_id, created_at) — unique (brewery_id, fold_name(name)), unique (wikidata_qid)
+catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, moderation_status, created_at) — unique (fold_name(name), country_code) over pending and approved rows, unique (wikidata_qid)
+catalog.beer(id, brewery_id, name, style, abv, source, wikidata_qid, contributor_id, moderation_status, created_at) — unique (brewery_id, fold_name(name)) over pending and approved rows, unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, version, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at) — unique (lower(username))
@@ -252,8 +252,7 @@ breweries by English name into a column `V003` keeps for them alone; `V008`
 gives those rows their codes and drops it.
 
 **A signed-in user can add a beer the catalog lacks**, and its brewery with it
-when that is missing too; the row is visible to everyone at once, with no
-review. It is held to the imported catalog's bar: a style the catalog already
+when that is missing too. It is held to the imported catalog's bar: a style the catalog already
 has, an ABV, and for a new brewery a country from a fixed list — every
 ISO 3166-1 code (`Country`). A user-added row records its contributor (the identity
 `sub`) in `contributor_id`, which no read response carries; only a `USER` row
@@ -262,6 +261,31 @@ brewery that the unique indexes above already hold is refused rather than
 merged: `ContributionService` looks for the existing row first, and the index
 decides a concurrent race, which the losing request's retry turns into the
 same refusal ([ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md)).
+`catalog.fold_name()` applies NFKC before it folds case, whitespace and
+punctuation, as the Wikidata generator does, so a fullwidth twin of a name is a
+duplicate; a name holding a Unicode `Cf` character (zero-width, bidirectional
+control, soft hyphen) is refused with `400` before the check can see it.
+
+**A contributed row is reviewed before anyone but its contributor sees it**
+([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
+`moderation_status` is `PENDING` for a row a user adds and `APPROVED` for every
+seeded and imported row; an operator moves a contributor's rows to `APPROVED`,
+`REJECTED` or `REMOVED` with `make moderate`
+([backend/README.md](../backend/README.md#moderating-contributions)). A pending
+row is found, opened and cellared by its contributor alone, and is left out of
+search, the brewery list, other users' reads, every public cellar and the feed
+until approved. A contributor may have 20 entries waiting (a new brewery counts
+as one); an add past that answers `429` `problem+json`. A `REJECTED` or
+`REMOVED` row is hidden from search and lists the same way, and is dropped from
+the duplicate key so its name can be proposed again.
+
+**A catalog beer is never deleted.** Cellar entries and feed lines point at one
+by id across a module boundary with no foreign key, so a deleted beer would
+leave entries its owner can no longer see. Hiding is a state, not an absence:
+a `REJECTED` or `REMOVED` beer is still named in an owner's cellar, a public
+cellar and the feed. `CellarService` and `FeedService` therefore treat a beer
+they cannot resolve as a defect (the cellar logs it at `WARN`), except one
+still `PENDING`, which a public read withholds on purpose.
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
@@ -377,7 +401,7 @@ GET    /api/v1/cellars/{username}?page=&size=       -> one page of a cellar its 
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
-POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them)
+POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past 20 entries waiting for approval, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them)
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle; 409 as above
@@ -996,6 +1020,14 @@ records the latest run.
   a snapshot that ages, coverage skewed by who edited Wikidata, no barcodes,
   and an openly accepted provenance risk. Most imported ABVs trace back to
   Untappd.
+- **Contributions are reviewed, and a catalog row is hidden, never deleted**
+  ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)):
+  an offensive or junk entry reaches nobody but its contributor before an
+  operator looks, and no cellar entry or feed line is orphaned: a catalog
+  beer is never deleted, so what points at it keeps resolving, which the
+  no-cross-schema-foreign-key rule would otherwise leave to chance. The cost is a manual step with no interface: an
+  operator with database access runs `make moderate`, and a contributor is not
+  told the outcome.
 - **No catalog read cache, measured rather than assumed**
   ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)):
   - **What was measured:** at 150k beers, every catalog read that broke the
@@ -1144,6 +1176,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
 | [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md) | A beer the catalog lacks is added in a dialog over the search that missed it, and a button sending its form fades only as far as its label stays legible | accepted | 2026-10-23 |
 | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) | A cellar read arrives joined with its beers from the backend, so no client rebuilds it and no feature reads another's generated client | accepted | 2026-10-23 |
+| [ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md) | A contributed catalog entry waits for an operator, and no catalog row is ever deleted | accepted | 2026-10-27 |
 
 ### Engineering process and documentation
 

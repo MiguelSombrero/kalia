@@ -70,6 +70,9 @@ class CatalogController {
 
 	private static final String PAGE_DESCRIPTION = "Zero-based page index; page × size is at most " + MAX_OFFSET;
 
+	private static final String PENDING_CAP_SENTENCE = "At most " + ContributionService.MAX_PENDING_ENTRIES
+			+ " entries may wait for approval per contributor.";
+
 	private final CatalogService catalog;
 
 	private final ContributionService contributions;
@@ -111,7 +114,8 @@ class CatalogController {
 		requireBoundedOffset(page, size);
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
 		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, countryCode, minAbv, maxAbv, similarTo);
-		return PageDto.from(catalog.searchBeers(searchQuery, pageable).map(BeerSummaryDto::from));
+		return PageDto.from(catalog.searchBeers(searchQuery, identity.findCurrentUserId().orElse(null), pageable)
+				.map(BeerSummaryDto::from));
 	}
 
 	@GetMapping("/beers/{id}")
@@ -121,23 +125,25 @@ class CatalogController {
 	@ApiResponse(responseCode = "400", description = "The id is not a UUID",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = Problem.class)))
-	@ApiResponse(responseCode = "404", description = "No beer with this id",
+	@ApiResponse(responseCode = "404", description = "No beer with this id, or one still waiting for approval that is not the caller's",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 					schema = @Schema(implementation = Problem.class)))
 	@Operation(summary = "Get beer details", description = "Full details for a single beer, including its brewery.")
 	BeerDetailsDto getBeer(@Parameter(description = "Beer id") @PathVariable UUID id) {
-		return BeerDetailsDto.from(catalog.getBeer(id));
+		return BeerDetailsDto.from(catalog.getBeer(id, identity.findCurrentUserId().orElse(null)));
 	}
 
 	@PostMapping("/beers")
 	@ResponseStatus(HttpStatus.CREATED)
 	@SecurityRequirement(name = "oauth2")
 	@Operation(summary = "Add a beer", description = """
-			Adds a beer the catalog lacks, visible to everyone at once. Its brewery is either one \
-			the catalog has (breweryId) or one added with it (newBrewery). Two beers are the same \
-			when they share a brewery and a name with case, whitespace and punctuation ignored; \
-			two breweries when they share such a name and a country.\
-			""")
+			Adds a beer the catalog lacks. Its contributor can find and cellar it at once; everyone \
+			else sees it once an operator has approved it. Its brewery is either one the catalog has \
+			(breweryId) or one added with it (newBrewery), which waits for approval too. Two beers are \
+			the same when they share a brewery and a name with case, whitespace, punctuation and \
+			compatibility forms such as fullwidth letters ignored; two breweries when they share such \
+			a name and a country. A name may not contain control or invisible formatting characters. \
+			""" + PENDING_CAP_SENTENCE)
 	@ApiResponses({
 			@ApiResponse(responseCode = "400", description = """
 					A field is missing, out of range, not one of the listed styles or countries, or \
@@ -149,6 +155,11 @@ class CatalogController {
 							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "404", description = "No brewery with the given breweryId",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = Problem.class))),
+			@ApiResponse(responseCode = "429", description = """
+					The contributor already has the most entries allowed waiting for approval; adding \
+					resumes as some are approved or rejected\
+					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = """
 					The catalog already has this beer, named by `existingBeerId`, or already has the \
@@ -176,7 +187,8 @@ class CatalogController {
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size) {
 		requireBoundedOffset(page, size);
-		return PageDto.from(catalog.listBreweries(query, PageRequest.of(page, size)).map(BreweryDto::from));
+		return PageDto.from(catalog.listBreweries(query, identity.findCurrentUserId().orElse(null), PageRequest.of(page, size))
+				.map(BreweryDto::from));
 	}
 
 	@GetMapping("/styles")

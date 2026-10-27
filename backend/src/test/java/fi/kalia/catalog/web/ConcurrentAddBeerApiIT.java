@@ -59,10 +59,11 @@ class ConcurrentAddBeerApiIT {
 	@PersistenceContext
 	private EntityManager entityManager;
 
+	private final AtomicInteger tokens = new AtomicInteger();
+
 	@Test
 	void twoConcurrentAddsOfOneBeerCreateOneRowAndRefuseTheOtherWithItsId() throws Exception {
-		given(jwtDecoder.decode(anyString()))
-				.willReturn(TestTokens.user(UUID.randomUUID().toString(), "racer"));
+		racersAreDifferentContributors();
 		UUID breweryId = jdbc.queryForObject(
 				"SELECT id FROM catalog.brewery WHERE name = 'Brouwerij Westvleteren'", UUID.class);
 		String name = "Race " + UUID.randomUUID().toString().substring(0, 8);
@@ -82,7 +83,8 @@ class ConcurrentAddBeerApiIT {
 			}
 			return entityManager.createNativeQuery("""
 					SELECT id FROM catalog.beer
-					WHERE brewery_id = :breweryId AND catalog.fold_name(name) = catalog.fold_name(:name)""",
+					WHERE brewery_id = :breweryId AND catalog.fold_name(name) = catalog.fold_name(:name)
+					AND moderation_status IN ('PENDING', 'APPROVED')""",
 					UUID.class)
 					.setParameter("breweryId", invocation.getArgument(0))
 					.setParameter("name", invocation.getArgument(1))
@@ -114,8 +116,7 @@ class ConcurrentAddBeerApiIT {
 
 	@Test
 	void twoConcurrentAddsOfOneNewBreweryCreateOneRowAndRefuseTheOtherWithItsId() throws Exception {
-		given(jwtDecoder.decode(anyString()))
-				.willReturn(TestTokens.user(UUID.randomUUID().toString(), "racer"));
+		racersAreDifferentContributors();
 		String breweryName = "Race Brewery " + UUID.randomUUID().toString().substring(0, 8);
 
 		// The same barrier as the beer race above, on the brewery's own check.
@@ -127,7 +128,8 @@ class ConcurrentAddBeerApiIT {
 			}
 			return entityManager.createNativeQuery("""
 					SELECT id FROM catalog.brewery
-					WHERE catalog.fold_name(name) = catalog.fold_name(:name) AND country_code = :countryCode""",
+					WHERE catalog.fold_name(name) = catalog.fold_name(:name) AND country_code = :countryCode
+					AND moderation_status IN ('PENDING', 'APPROVED')""",
 					UUID.class)
 					.setParameter("name", invocation.getArgument(0))
 					.setParameter("countryCode", invocation.getArgument(1))
@@ -161,13 +163,20 @@ class ConcurrentAddBeerApiIT {
 		}
 	}
 
+	// One contributor's adds queue behind a lock (ADR-0091), which would keep both requests from
+	// reaching the barrier; the race under test is between two contributors.
+	private void racersAreDifferentContributors() {
+		given(jwtDecoder.decode(anyString())).willAnswer(invocation -> TestTokens.user(
+				UUID.nameUUIDFromBytes(invocation.<String>getArgument(0).getBytes()).toString(), "racer"));
+	}
+
 	private Callable<EntityExchangeResult<String>> addBeer(UUID breweryId, String name) {
 		return post(Map.of("name", name, "style", "Quadrupel", "abv", 10.0, "breweryId", breweryId.toString()));
 	}
 
 	private Callable<EntityExchangeResult<String>> post(Map<String, Object> body) {
 		return () -> client.post().uri("/api/v1/beers")
-				.header("Authorization", "Bearer racer-token")
+				.header("Authorization", "Bearer racer-token-" + tokens.incrementAndGet())
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(body)
 				.exchange()

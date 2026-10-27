@@ -1,6 +1,7 @@
 package fi.kalia.cellar.application;
 
 import fi.kalia.catalog.BeerSummary;
+import fi.kalia.catalog.BeerSummaries;
 import fi.kalia.catalog.CatalogApi;
 import fi.kalia.cellar.domain.Bottle;
 import fi.kalia.cellar.domain.BottleCount;
@@ -50,7 +51,7 @@ public class CellarService {
 
 	@Transactional(readOnly = true)
 	public List<EntryView> listEntries(UUID userId) {
-		return joined(entries.findWithBottlesByUserId(userId));
+		return joined(entries.findWithBottlesByUserId(userId), userId);
 	}
 
 	// One exception for every refusal, so none can be told from another (ADR-0050).
@@ -66,13 +67,12 @@ public class CellarService {
 				.stream()
 				.collect(Collectors.groupingBy(BottleListing::entryId));
 		List<Entry> notEmpty = page.getContent().stream().filter(entry -> held.getOrDefault(entry.getId(), 0L) > 0).toList();
-		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(notEmpty.stream().map(Entry::getBeerId).toList());
+		BeerSummaries beers = catalog.getBeerSummaries(notEmpty.stream().map(Entry::getBeerId).toList(), null);
 		List<PublicCellarEntry> cellar = notEmpty.stream()
 				.flatMap(entry -> {
-					BeerSummary beer = beers.get(entry.getBeerId());
+					BeerSummary beer = beers.found().get(entry.getBeerId());
 					if (beer == null) {
-						log.warn("Left cellar entry {} out: its beer {} is not in the catalog", entry.getId(),
-								entry.getBeerId());
+						warnUnlessWithheld(entry, beers);
 						return Stream.empty();
 					}
 					return Stream.of(new PublicCellarEntry(entry, beer, held.get(entry.getId()), shown.get(entry.getId())));
@@ -114,21 +114,28 @@ public class CellarService {
 		}
 	}
 
-	private List<EntryView> joined(List<Entry> found) {
+	private List<EntryView> joined(List<Entry> found, UUID ownerId) {
 		List<Entry> held = found.stream().filter(entry -> !entry.isEmpty()).toList();
-		Map<UUID, BeerSummary> beers = catalog.getBeerSummaries(held.stream().map(Entry::getBeerId).toList());
+		BeerSummaries beers = catalog.getBeerSummaries(held.stream().map(Entry::getBeerId).toList(), ownerId);
 		return held.stream()
 				.flatMap(entry -> {
-					BeerSummary beer = beers.get(entry.getBeerId());
+					BeerSummary beer = beers.found().get(entry.getBeerId());
 					if (beer == null) {
-						log.warn("Left cellar entry {} out: its beer {} is not in the catalog", entry.getId(),
-								entry.getBeerId());
+						warnUnlessWithheld(entry, beers);
 						return Stream.empty();
 					}
 					return Stream.of(new EntryView(entry, beer));
 				})
 				.sorted(defaultOrder())
 				.toList();
+	}
+
+	// A beer still awaiting approval is left out of a public read on purpose (ADR-0091); any
+	// other missing beer breaks the catalog's rule that its rows are never deleted.
+	private void warnUnlessWithheld(Entry entry, BeerSummaries beers) {
+		if (!beers.withheld().contains(entry.getBeerId())) {
+			log.warn("Left cellar entry {} out: its beer {} is not in the catalog", entry.getId(), entry.getBeerId());
+		}
 	}
 
 	private static Comparator<EntryView> defaultOrder() {
@@ -143,11 +150,11 @@ public class CellarService {
 	}
 
 	// Checks the existing entry before the catalog: an entry already proves
-	// the beer exists, since nothing deletes catalog beers.
+	// the beer exists, since nothing deletes catalog beers (ADR-0091).
 	private Entry entryFor(UUID userId, UUID beerId) {
 		return entries.findByUserIdAndBeerId(userId, beerId)
 				.orElseGet(() -> {
-					if (!catalog.beerExists(beerId)) {
+					if (!catalog.beerExists(beerId, userId)) {
 						throw new BeerNotFoundException(beerId);
 					}
 					return Entry.create(userId, beerId, clock);

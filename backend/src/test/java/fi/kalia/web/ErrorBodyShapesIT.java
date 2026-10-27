@@ -41,8 +41,11 @@ class ErrorBodyShapesIT {
 	@MockitoBean
 	private JwtDecoder jwtDecoder;
 
+	// One contributor throughout: a duplicate of a pending brewery is only reachable by its own contributor.
+	private final UUID contributorId = UUID.randomUUID();
+
 	private String postBeer(String json) {
-		given(jwtDecoder.decode("shapes-token")).willReturn(TestTokens.user(UUID.randomUUID().toString(), "shapes"));
+		given(jwtDecoder.decode("shapes-token")).willReturn(TestTokens.user(contributorId.toString(), "shapes"));
 		return client.post().uri("/api/v1/beers")
 				.header("Authorization", BEARER)
 				.contentType(MediaType.APPLICATION_JSON)

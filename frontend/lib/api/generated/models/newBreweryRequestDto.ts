@@ -22,7 +22,7 @@ export interface NewBreweryRequestDto {
   /**
      * @minLength 0
      * @maxLength 100
-     * @pattern \P{Cc}*
+     * @pattern [^\p{Cc}\p{Cf}]*
      */
   city?: string;
 }

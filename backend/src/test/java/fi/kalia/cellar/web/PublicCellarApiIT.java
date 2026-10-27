@@ -302,7 +302,7 @@ class PublicCellarApiIT {
 	}
 
 	private void assertBeerFacts(String body, String path) {
-		BeerSummary expected = catalog.getBeerSummaries(List.of(beerId)).get(beerId);
+		BeerSummary expected = catalog.getBeerSummaries(List.of(beerId), null).found().get(beerId);
 		Map<String, Object> beer = JsonPath.read(body, path);
 		assertThat(beer).containsOnlyKeys("id", "name", "brewery", "style", "abv");
 		assertThat(beer).containsEntry("id", beerId.toString())

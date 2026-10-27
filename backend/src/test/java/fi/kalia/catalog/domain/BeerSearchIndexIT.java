@@ -6,7 +6,9 @@ import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.resource.jdbc.spi.StatementInspector;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 // Asserts plans, not results: BeerSpecificationsIT covers what the filters
@@ -40,6 +43,9 @@ class BeerSearchIndexIT {
 			Sort.by(Sort.Order.asc("name").ignoreCase(), Sort.Order.asc("id")));
 
 	private static final String SORT_INDEX = "beer_lower_name_id_idx";
+
+	// An anonymous reader's visibility filter is a different statement from a signed-in one's.
+	private static final List<UUID> VIEWERS = Arrays.asList(null, UUID.randomUUID());
 
 	@Autowired
 	private BeerRepository beers;
@@ -90,11 +96,13 @@ class BeerSearchIndexIT {
 
 	@Test
 	void unfilteredPageUsesTheIndexOnTheDefaultSort() {
-		List<String> statements = capturedSql.of(
-				() -> beers.findAll(BeerSpecifications.matching(new BeerSearchCriteria(null, null, null, null, null, null)), FIRST_PAGE));
-		String page = statements.stream().filter(sql -> sql.contains("order by")).findFirst().orElseThrow();
-		assertThat(page).contains("order by lower(b1_0.name),b1_0.id");
-		assertThat(planFor(page)).contains(SORT_INDEX);
+		for (UUID viewer : VIEWERS) {
+			List<String> statements = capturedSql.of(() -> beers.findAll(visibleTo(viewer,
+					new BeerSearchCriteria(null, null, null, null, null, null)), FIRST_PAGE));
+			String page = statements.stream().filter(sql -> sql.contains("order by")).findFirst().orElseThrow();
+			assertThat(page).contains("order by lower(b1_0.name),b1_0.id");
+			assertThat(planFor(page)).as("viewer %s", viewer).contains(SORT_INDEX);
+		}
 	}
 
 	// The search joins this test's transaction, so whatever plan_cache_mode it sets
@@ -103,14 +111,14 @@ class BeerSearchIndexIT {
 	@Test
 	void shortNameCountKeepsItsCustomPlanPastTheGenericPlanThreshold() {
 		List<String> statements = capturedSql.of(() -> catalog.searchBeers(
-				new BeerSearchQuery("a", null, null, null, null, null), FIRST_PAGE));
+				new BeerSearchQuery("a", null, null, null, null, null), null, FIRST_PAGE));
 		String count = statements.stream().filter(sql -> sql.startsWith("select count")).findFirst().orElseThrow();
 		String probe = "count_probe_" + SqlPlans.nextProbeNumber();
 		jdbc.execute("PREPARE " + probe + " AS " + SqlPlans.withPostgresPlaceholders(count));
 		for (int execution = 0; execution < 5; execution++) {
-			jdbc.queryForList("EXECUTE " + probe + "('%a%')");
+			jdbc.queryForList("EXECUTE " + probe + "('APPROVED', '%a%')");
 		}
-		String plan = String.join("\n", jdbc.queryForList("EXPLAIN EXECUTE " + probe + "('%a%')", String.class));
+		String plan = String.join("\n", jdbc.queryForList("EXPLAIN EXECUTE " + probe + "('APPROVED', '%a%')", String.class));
 		assertThat(plan).doesNotContain("beer_name_trgm_idx");
 	}
 
@@ -119,8 +127,8 @@ class BeerSearchIndexIT {
 	// trigrams is worth that.
 	@Test
 	void searchesWithTrigramsKeepThePlanCacheDefault() {
-		catalog.searchBeers(new BeerSearchQuery("ale", null, null, null, null, null), FIRST_PAGE);
-		catalog.searchBeers(new BeerSearchQuery(null, null, null, null, null, null),
+		catalog.searchBeers(new BeerSearchQuery("ale", null, null, null, null, null), null, FIRST_PAGE);
+		catalog.searchBeers(new BeerSearchQuery(null, null, null, null, null, null), null,
 				PageRequest.of(0, 20, Sort.by(Sort.Order.desc("abv"), Sort.Order.asc("id"))));
 		assertThat(jdbc.queryForObject("SHOW plan_cache_mode", String.class)).isEqualTo("auto");
 	}
@@ -129,16 +137,21 @@ class BeerSearchIndexIT {
 	// one, and it scans every match rather than 20. The page may instead walk the
 	// sort index and stop at 20 matches, which is no scan of the table either.
 	private void assertEveryStatementUses(BeerSearchCriteria criteria, String index) {
-		List<String> statements = capturedSql.of(
-				() -> beers.findAll(BeerSpecifications.matching(criteria), FIRST_PAGE));
-		assertThat(statements).isNotEmpty();
-		assertThat(statements).allSatisfy(sql -> {
-			if (sql.startsWith("select count")) {
-				assertThat(planFor(sql)).contains(index);
-			} else {
-				assertThat(planFor(sql)).containsAnyOf(index, SORT_INDEX);
-			}
-		});
+		for (UUID viewer : VIEWERS) {
+			List<String> statements = capturedSql.of(() -> beers.findAll(visibleTo(viewer, criteria), FIRST_PAGE));
+			assertThat(statements).isNotEmpty();
+			assertThat(statements).allSatisfy(sql -> {
+				if (sql.startsWith("select count")) {
+					assertThat(planFor(sql)).as("viewer %s", viewer).contains(index);
+				} else {
+					assertThat(planFor(sql)).as("viewer %s", viewer).containsAnyOf(index, SORT_INDEX);
+				}
+			});
+		}
+	}
+
+	private static Specification<Beer> visibleTo(UUID viewer, BeerSearchCriteria criteria) {
+		return BeerSpecifications.visibleTo(viewer).and(BeerSpecifications.matching(criteria));
 	}
 
 	private String planFor(String sql) {

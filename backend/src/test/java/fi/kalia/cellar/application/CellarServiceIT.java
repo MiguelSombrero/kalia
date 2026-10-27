@@ -465,7 +465,7 @@ class CellarServiceIT {
 	}
 
 	private BeerSummary summaryOf(UUID id) {
-		return catalog.getBeerSummaries(List.of(id)).get(id);
+		return catalog.getBeerSummaries(List.of(id), null).found().get(id);
 	}
 
 }

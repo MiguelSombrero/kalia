@@ -63,7 +63,7 @@ class BreweryReadIT {
 
 	@Test
 	void theListPageIsReadOffTheSortKeyIndex() {
-		List<String> statements = capturedSql.of(() -> breweries.findPage(PageRequest.of(2, PAGE_SIZE)));
+		List<String> statements = capturedSql.of(() -> breweries.findPage(null, PageRequest.of(2, PAGE_SIZE)));
 		assertThat(statements).hasSize(2);
 		assertThat(statements.get(0)).contains("order by b1_0.name_sort_key,b1_0.id").contains("offset ? rows");
 		assertThat(planFor(statements.get(0))).contains(SORT_INDEX).doesNotContain("Sort");
@@ -73,7 +73,7 @@ class BreweryReadIT {
 	@Test
 	void aSearchPageAndItsCountAreReadThroughAnIndex() {
 		List<String> statements = capturedSql.of(
-				() -> breweries.findPageByNameContaining("brasserie", PageRequest.of(0, PAGE_SIZE)));
+				() -> breweries.findPageByNameContaining("brasserie", null, PageRequest.of(0, PAGE_SIZE)));
 		assertThat(statements).isNotEmpty();
 		assertThat(statements).allSatisfy(sql -> {
 			String plan = planFor(sql);
@@ -93,7 +93,7 @@ class BreweryReadIT {
 		Page<Brewery> page;
 		int number = 0;
 		do {
-			page = breweries.findPage(PageRequest.of(number++, 1000));
+			page = breweries.findPage(null, PageRequest.of(number++, 1000));
 			page.forEach(brewery -> paged.add(brewery.getName()));
 		} while (page.hasNext());
 		assertThat(paged).hasSameSizeAs(expected);
@@ -112,7 +112,7 @@ class BreweryReadIT {
 		added.forEach(name -> breweries.save(Brewery.create(name, "FI", null)));
 		breweries.flush();
 
-		Page<Brewery> found = catalog.listBreweries("zqx", PageRequest.of(0, 100));
+		Page<Brewery> found = catalog.listBreweries("zqx", null, PageRequest.of(0, 100));
 
 		assertThat(found.map(Brewery::getName)).containsExactly("Zqx 10 Barrels", "Zqx _under", "Zqx d'Orval",
 				"Zqx de Rochefort", "Zqx Pohjola", "Zqx Põhjala", "ZQX ZEBRA", "Zqx zebra works", "Zqx Äpple",
@@ -124,17 +124,17 @@ class BreweryReadIT {
 		breweries.saveAndFlush(Brewery.create("Zw 100% Brewing", "FI", null));
 		breweries.saveAndFlush(Brewery.create("Zw 100x Brewing", "FI", null));
 
-		assertThat(catalog.listBreweries("100%", PageRequest.of(0, 20)).map(Brewery::getName))
+		assertThat(catalog.listBreweries("100%", null, PageRequest.of(0, 20)).map(Brewery::getName))
 				.containsExactly("Zw 100% Brewing");
-		assertThat(catalog.listBreweries("zw 100_", PageRequest.of(0, 20)).getTotalElements()).isZero();
+		assertThat(catalog.listBreweries("zw 100_", null, PageRequest.of(0, 20)).getTotalElements()).isZero();
 	}
 
 	@Test
 	void aPageReportsTheTotalAndHonoursThePageNumber() {
-		Page<Brewery> second = catalog.listBreweries(null, PageRequest.of(1, 5));
+		Page<Brewery> second = catalog.listBreweries(null, null, PageRequest.of(1, 5));
 		assertThat(second.getTotalElements()).isEqualTo(breweries.count());
 		assertThat(second.getContent()).hasSize(5);
-		assertThat(catalog.listBreweries("  ", PageRequest.of(1, 5)).getContent())
+		assertThat(catalog.listBreweries("  ", null, PageRequest.of(1, 5)).getContent())
 				.isEqualTo(second.getContent());
 	}
 

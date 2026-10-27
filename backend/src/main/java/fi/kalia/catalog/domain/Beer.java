@@ -1,6 +1,8 @@
 package fi.kalia.catalog.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -38,6 +40,9 @@ public class Beer {
 
 	private @Nullable UUID contributorId;
 
+	@Enumerated(EnumType.STRING)
+	private ModerationStatus moderationStatus;
+
 	private Instant createdAt;
 
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
@@ -47,6 +52,7 @@ public class Beer {
 		this.style = style;
 		this.abv = abv;
 		this.contributorId = contributorId;
+		this.moderationStatus = ModerationStatus.APPROVED;
 		this.createdAt = Instant.now();
 	}
 
@@ -65,6 +71,7 @@ public class Beer {
 		Assert.notNull(contributorId, "contributorId must not be null");
 		Beer beer = create(brewery, name.strip(), style, abv);
 		beer.contributorId = contributorId;
+		beer.moderationStatus = ModerationStatus.PENDING;
 		return beer;
 	}
 

@@ -5,6 +5,7 @@ import fi.kalia.catalog.application.BreweryNotFoundException;
 import fi.kalia.catalog.application.DuplicateBeerException;
 import fi.kalia.catalog.application.DuplicateBreweryException;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.catalog.application.TooManyPendingEntriesException;
 import fi.kalia.catalog.application.UnknownCountryException;
 import fi.kalia.catalog.application.UnknownStyleException;
 import fi.kalia.web.FieldErrorDto;
@@ -38,6 +39,11 @@ class CatalogExceptionHandler {
 	DuplicateBreweryProblem duplicateBrewery(DuplicateBreweryException e) {
 		return new DuplicateBreweryProblem(e.getMessage(), e.getExistingBreweryId(), e.getExistingBreweryName(),
 				e.getExistingBreweryCountryCode());
+	}
+
+	@ExceptionHandler(TooManyPendingEntriesException.class)
+	ProblemDetail tooManyPending(TooManyPendingEntriesException e) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
 	}
 
 	@ExceptionHandler(UnknownStyleException.class)

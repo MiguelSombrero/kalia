@@ -231,6 +231,35 @@ snapshot (`node scripts/wikidata-extract.mjs`) queries Wikidata and is a new
 task, not a routine step: the import only ever adds rows. Like any edited migration before the first deployment, a changed
 `V008` needs `docker compose down -v` on an existing local database.
 
+## Moderating contributions
+
+A beer or brewery a user adds is `PENDING` until an operator reviews it, and
+nobody but its contributor sees it before
+([ADR-0091](../docs/adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
+From the repository root, with the stack's `postgres` up:
+
+```bash
+make moderate ACTION=approve WHO=<username or id>
+make moderate ACTION=reject  WHO=<username or id>
+make moderate ACTION=remove  WHO=<username or id>
+```
+
+`WHO` is the contributor's username (any case) or their id, the Keycloak `sub`.
+*approve* turns everything of theirs that is `PENDING` into `APPROVED`; *reject*
+turns `PENDING` into `REJECTED`; *remove* turns `PENDING` and `APPROVED` into
+`REMOVED`. It runs `scripts/moderate-contributor.sql` in one transaction and
+prints how many beers and breweries changed. An unknown action or contributor
+fails and changes nothing. A hidden row stays in the table, and the cellar
+entries and feed lines pointing at it keep rendering: never `DELETE` a catalog
+row.
+
+To see what is waiting:
+
+```bash
+docker compose exec postgres psql -U kalia -d kalia -c \
+  "SELECT contributor_id, count(*) FROM catalog.beer WHERE moderation_status = 'PENDING' GROUP BY 1"
+```
+
 ## Code conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning —
