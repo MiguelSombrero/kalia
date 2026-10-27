@@ -8,7 +8,7 @@ import {
   listStyles as generatedListStyles,
   searchBeers as generatedSearchBeers,
 } from "@/lib/api/generated/catalog/catalog";
-import { MAX_PAGE_SIZE, normalizeBeerSearchParams } from "./searchParams";
+import { normalizeBeerSearchParams } from "./searchParams";
 import {
   type AddBeerRequest,
   type AddBeerResult,
@@ -77,7 +77,14 @@ export const addBeer = async (request: AddBeerRequest): Promise<AddBeerResult> =
     case 409:
       return "existingBeerId" in response.data
         ? { kind: "duplicateBeer", existingBeerId: response.data.existingBeerId }
-        : { kind: "duplicateBrewery", existingBreweryId: response.data.existingBreweryId };
+        : {
+            kind: "duplicateBrewery",
+            existing: {
+              id: response.data.existingBreweryId,
+              name: response.data.existingBreweryName,
+              countryCode: response.data.existingBreweryCountryCode,
+            },
+          };
     default:
       throw apiError("http", `Adding a beer failed with status ${response.status}`, { status: response.status });
   }
@@ -93,10 +100,20 @@ export const findBreweries = async (query: string): Promise<Brewery[]> => {
   return response.data.content;
 };
 
-export const listBreweryBeers = async (breweryId: string): Promise<BeerSummary[]> => {
-  const response = await generatedSearchBeers({ breweryId, size: MAX_PAGE_SIZE });
+const SIMILAR_BEERS = 5;
+
+// The API's bound on a search term (CatalogController.MAX_FILTER_LENGTH).
+const MAX_NAME_LENGTH = 100;
+
+/** The brewery's beers whose name contains a word of `name` (ADR-0082), as many as the hint shows. */
+export const findSimilarBeers = async (breweryId: string, name: string): Promise<BeerSummary[]> => {
+  const response = await generatedSearchBeers({
+    breweryId,
+    similarTo: name.slice(0, MAX_NAME_LENGTH),
+    size: SIMILAR_BEERS,
+  });
   if (response.status !== 200) {
-    throw apiError("http", `Brewery beer list failed with status ${response.status}`, { status: response.status });
+    throw apiError("http", `Similar beer search failed with status ${response.status}`, { status: response.status });
   }
   return response.data.content;
 };

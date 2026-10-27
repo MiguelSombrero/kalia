@@ -39,7 +39,11 @@ const backend = async (input: string, init: RequestInit = {}) => {
   if (url.pathname === "/api/v1/styles") return json(["IPA", "Imperial Stout", "Porter"]);
   if (url.pathname === "/api/v1/countries") return json(["SE", "FI", "EE"]);
   if (url.pathname === "/api/v1/breweries") return json(page(url.searchParams.get("query")?.startsWith("Põh") ? [pohjala] : []));
-  if (url.pathname === "/api/v1/beers" && url.searchParams.has("breweryId")) return json(page([oo, virmalised]));
+  // The API's rule: a beer whose name contains any word of similarTo.
+  if (url.pathname === "/api/v1/beers" && url.searchParams.has("similarTo")) {
+    const words = url.searchParams.get("similarTo")!.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 2);
+    return json(page([oo, virmalised].filter((beer) => words.some((word) => beer.name.toLowerCase().includes(word)))));
+  }
   if (url.pathname === "/api/v1/beers" && url.searchParams.has("query")) return json(page(landing));
   if (url.pathname === `/api/v1/beers/${oo.id}`) return json(oo);
   return new Response(null, { status: 404 });
@@ -123,6 +127,9 @@ describe("AddBeerDialog", () => {
     expect(await within(similar).findByText("Öö")).toBeInTheDocument();
     expect(within(similar).queryByText("Virmalised")).not.toBeInTheDocument();
     expect(within(similar).getByRole("link", { name: "Open Öö" })).toHaveAttribute("href", `/en/beers/${oo.id}`);
+    const asked = requests.find((request) => request.url.searchParams.has("similarTo"))!.url.searchParams;
+    expect(asked.get("breweryId")).toBe(pohjala.id);
+    expect(asked.get("similarTo")).toBe("Öö Bourbon");
     expect(screen.getByText("Tallinn, Estonia", { selector: "p" })).toBeInTheDocument();
     expect(requests.some((request) => request.method === "POST")).toBe(false);
   });
@@ -196,7 +203,10 @@ describe("AddBeerDialog", () => {
   });
 
   it("offers the existing brewery when a new one duplicates it, and picks it", async () => {
-    posted = { status: 409, body: { status: 409, existingBreweryId: pohjala.id } };
+    posted = {
+      status: 409,
+      body: { status: 409, existingBreweryId: pohjala.id, existingBreweryName: "Põhjala", existingBreweryCountryCode: "EE" },
+    };
     await openForm();
     fireEvent.focus(brewery());
     fireEvent.change(brewery(), { target: { value: "Põhjala" } });
@@ -208,7 +218,7 @@ describe("AddBeerDialog", () => {
     submit();
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Põhjala (Tallinn, Estonia) is already in the catalog.");
+    expect(alert).toHaveTextContent("Põhjala (Estonia) is already in the catalog.");
     fireEvent.click(within(alert).getByRole("button", { name: "Use it" }));
     expect(screen.queryByRole("group", { name: "New brewery" })).not.toBeInTheDocument();
     expect(brewery()).toHaveValue("Põhjala");

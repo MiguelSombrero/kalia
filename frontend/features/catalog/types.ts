@@ -1,4 +1,4 @@
-import type { BeerDetailsDto } from "@/lib/api/generated/models";
+import type { BeerDetailsDto, BreweryDto as Brewery } from "@/lib/api/generated/models";
 
 // Re-exports of orval-generated types (ADR-0012) under this feature's names.
 export type {
@@ -17,7 +17,7 @@ export type FieldRefusal = { field: string; message: string };
 export type AddBeerResult =
   | { kind: "added"; beer: BeerDetailsDto }
   | { kind: "duplicateBeer"; existingBeerId: string }
-  | { kind: "duplicateBrewery"; existingBreweryId: string }
+  | { kind: "duplicateBrewery"; existing: Pick<Brewery, "id" | "name" | "countryCode"> }
   | { kind: "refused"; fields: FieldRefusal[] };
 
 /** A brewery as the add-a-beer form offers it, its place already named in the reader's language. */

@@ -3,7 +3,7 @@ import {
   addBeer,
   findBreweries,
   getBeer,
-  listBreweryBeers,
+  findSimilarBeers,
   listCountries,
   listStyles,
   searchBeers,
@@ -209,7 +209,10 @@ describe("addBeer", () => {
       ),
     );
 
-    await expect(addBeer(request)).resolves.toEqual({ kind: "duplicateBrewery", existingBreweryId: breweryId });
+    await expect(addBeer(request)).resolves.toEqual({
+      kind: "duplicateBrewery",
+      existing: { id: breweryId, name: "Ruosniemen Panimo", countryCode: "FI" },
+    });
   });
 
   it("lists every field a 400 refuses", async () => {
@@ -263,14 +266,24 @@ describe("the add-a-beer form's reads", () => {
     expect(url.searchParams.get("size")).toBe("8");
   });
 
-  it("lists a brewery's beers by its id", async () => {
+  it("asks the API for a brewery's beers named like a name, a few at most", async () => {
     const fetchMock = vi.fn(async () => Response.json(emptyPage));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(listBreweryBeers(breweryId)).resolves.toEqual([]);
+    await expect(findSimilarBeers(breweryId, "Öö Bourbon")).resolves.toEqual([]);
     const params = requestUrl(fetchMock).searchParams;
     expect(params.get("breweryId")).toBe(breweryId);
-    expect(params.get("size")).toBe("100");
+    expect(params.get("similarTo")).toBe("Öö Bourbon");
+    expect(params.get("size")).toBe("5");
+  });
+
+  it("cuts a name to the API's bound before asking", async () => {
+    const fetchMock = vi.fn(async () => Response.json(emptyPage));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await findSimilarBeers(breweryId, "x".repeat(150));
+
+    expect(requestUrl(fetchMock).searchParams.get("similarTo")).toBe("x".repeat(100));
   });
 
   it("lists the styles and the countries", async () => {
@@ -289,6 +302,6 @@ describe("the add-a-beer form's reads", () => {
     await expect(listStyles()).rejects.toMatchObject({ kind: "http", status: 503 });
     await expect(listCountries()).rejects.toMatchObject({ kind: "http", status: 503 });
     await expect(findBreweries("x")).rejects.toMatchObject({ kind: "http", status: 503 });
-    await expect(listBreweryBeers(breweryId)).rejects.toMatchObject({ kind: "http", status: 503 });
+    await expect(findSimilarBeers(breweryId, "Öö")).rejects.toMatchObject({ kind: "http", status: 503 });
   });
 });

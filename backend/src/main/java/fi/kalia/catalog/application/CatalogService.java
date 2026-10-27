@@ -34,10 +34,15 @@ public class CatalogService {
 			throw new InvalidSearchParameterException(
 					"countryCode '%s' is not one of the listed countries".formatted(query.countryCode()));
 		}
-		if (hasNoTrigrams(query.query())) {
+		if (query.similarTo() != null && query.breweryId() == null) {
+			throw new InvalidSearchParameterException(
+					"similarTo only searches within one brewery; give a breweryId as well");
+		}
+		@Nullable List<String> nameWords = nameWords(query);
+		if (hasNoTrigrams(query.query()) || hasNoTrigrams(nameWords)) {
 			beers.useCustomPlansForTheRestOfThisTransaction();
 		}
-		return beers.findAll(BeerSpecifications.matching(toCriteria(query)), pageable);
+		return beers.findAll(BeerSpecifications.matching(toCriteria(query, nameWords)), pageable);
 	}
 
 	public boolean beerExists(UUID beerId) {
@@ -78,9 +83,17 @@ public class CatalogService {
 		return nameQuery != null && !nameQuery.isBlank() && nameQuery.length() < TRIGRAM_LENGTH;
 	}
 
-	private static BeerSearchCriteria toCriteria(BeerSearchQuery query) {
+	private static boolean hasNoTrigrams(@Nullable List<String> words) {
+		return words != null && words.stream().anyMatch(word -> word.length() < TRIGRAM_LENGTH);
+	}
+
+	private static @Nullable List<String> nameWords(BeerSearchQuery query) {
+		return query.similarTo() == null ? null : SimilarNameWords.of(query.similarTo());
+	}
+
+	private static BeerSearchCriteria toCriteria(BeerSearchQuery query, @Nullable List<String> nameWords) {
 		return new BeerSearchCriteria(query.query(), query.style(), query.breweryId(),
-				query.countryCode(), query.minAbv(), query.maxAbv());
+				query.countryCode(), query.minAbv(), query.maxAbv(), nameWords);
 	}
 
 }

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { signIn } from "@/auth";
 import { toLocale, type Locale } from "@/i18n/settings";
-import { addBeer, findBreweries, getBeer, listBreweryBeers, listCountries, listStyles, searchBeers } from "./api";
+import { addBeer, findBreweries, findSimilarBeers, getBeer, listCountries, listStyles, searchBeers } from "./api";
 import { countriesByName, countryName } from "./country";
 import { catalogHref, PARAM_KEYS, parseBeerSearchParams } from "./links";
 import type { AddBeerOptions, AddBeerOutcome, AddBeerRequest, Brewery, BreweryOption } from "./types";
@@ -29,12 +29,12 @@ export const startCatalogSignIn = async (formData?: FormData) => {
   await signIn("keycloak", { redirectTo: catalogHref(locale, search) }, { ui_locales: locale });
 };
 
-const place = (brewery: Brewery, locale: Locale): string => {
+const place = (brewery: Pick<Brewery, "countryCode" | "city">, locale: Locale): string => {
   const country = countryName(brewery.countryCode, locale);
   return brewery.city ? `${brewery.city}, ${country}` : country;
 };
 
-const toOption = (brewery: Brewery, locale: Locale): BreweryOption => ({
+const toOption = (brewery: Pick<Brewery, "id" | "name" | "countryCode" | "city">, locale: Locale): BreweryOption => ({
   id: brewery.id,
   name: brewery.name,
   place: place(brewery, locale),
@@ -54,13 +54,14 @@ export const findBreweriesAction = async (query: string, locale: string): Promis
   return breweries.map((brewery) => toOption(brewery, toLocale(locale)));
 };
 
-export const listBreweryBeersAction = async (
+export const findSimilarBeersAction = async (
   breweryId: string,
+  beerName: string,
 ): Promise<{ id: string; name: string; style: string; abv: number }[]> => {
-  if (!UUID_PATTERN.test(breweryId)) {
+  if (!UUID_PATTERN.test(breweryId) || beerName.trim() === "") {
     return [];
   }
-  const beers = await listBreweryBeers(breweryId);
+  const beers = await findSimilarBeers(breweryId, beerName);
   return beers.map(({ id, name, style, abv }) => ({ id, name, style, abv }));
 };
 
@@ -93,17 +94,8 @@ export const addBeerAction = async (request: AddBeerRequest, locale: string = "e
         },
       };
     }
-    case "duplicateBrewery": {
-      const asked = request.newBrewery;
-      const matches = asked ? await findBreweries(asked.name.slice(0, MAX_QUERY_LENGTH)) : [];
-      const existing = matches.find((brewery) => brewery.id === result.existingBreweryId) ?? {
-        id: result.existingBreweryId,
-        name: asked?.name ?? "",
-        countryCode: asked?.countryCode ?? "",
-        city: asked?.city,
-      };
-      return { kind: "duplicateBrewery", existing: toOption(existing, toLocale(locale)) };
-    }
+    case "duplicateBrewery":
+      return { kind: "duplicateBrewery", existing: toOption(result.existing, toLocale(locale)) };
     case "refused":
       return result;
   }

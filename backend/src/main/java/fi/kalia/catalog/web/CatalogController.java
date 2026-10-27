@@ -4,6 +4,7 @@ import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.application.ContributionService;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.catalog.application.SimilarNameWords;
 import fi.kalia.catalog.domain.Country;
 import fi.kalia.identity.IdentityApi;
 import fi.kalia.web.Problem;
@@ -101,11 +102,15 @@ class CatalogController {
 			@Parameter(description = "Page size, 1-" + MAX_PAGE_SIZE)
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size,
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
-			@RequestParam(defaultValue = "name,asc") String sort) {
+			@RequestParam(defaultValue = "name,asc") String sort,
+			@Parameter(description = "Restrict to beers whose name contains any word of this text, case-insensitively: "
+					+ "the words are its runs of letters and digits at least 2 long, the first " + SimilarNameWords.MAX_WORDS
+					+ " counted. Requires breweryId. At most " + MAX_FILTER_LENGTH + " characters")
+			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String similarTo) {
 		requireOrderedAbvRange(minAbv, maxAbv);
 		requireBoundedOffset(page, size);
 		Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, countryCode, minAbv, maxAbv);
+		BeerSearchQuery searchQuery = new BeerSearchQuery(query, style, breweryId, countryCode, minAbv, maxAbv, similarTo);
 		return PageDto.from(catalog.searchBeers(searchQuery, pageable).map(BeerSummaryDto::from));
 	}
 
