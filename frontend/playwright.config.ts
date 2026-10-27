@@ -2,6 +2,8 @@ import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import { STACK } from "./stackOrigins";
 
+const EDGE_SPEC = /edge-limits\.spec\.ts$/;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -14,7 +16,20 @@ export default defineConfig({
   },
   // Chromium only: no cross-browser requirement yet (docs/architecture.md).
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      testIgnore: EDGE_SPEC,
+    },
+    // Exhausts the edge proxy's per-address limits, which every other spec
+    // shares, so it waits for all of them. `--project=edge-limits` therefore
+    // runs the whole suite first; add `--no-deps` to skip that.
+    {
+      name: "edge-limits",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: EDGE_SPEC,
+      dependencies: ["chromium"],
+    },
   ],
   webServer: {
     // Playwright does not reliably stop this stack after the run — harmless
