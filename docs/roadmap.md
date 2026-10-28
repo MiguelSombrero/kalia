@@ -31,9 +31,9 @@ cellar, social — before what only a phone can do. The web keeps working and is
 not held at feature parity. The plan adds no cost: the app runs on the product
 owner's own iPhone and on simulators against the local stack, and everything
 that needs paid accounts or hosting is parked in
-[the backlog](tasks/backlog.md#mobile-client) until that changes. Iterations
-9–14 list planned tasks as one line each; their task files are written at
-refinement.
+[the backlog](tasks/backlog.md#mobile-client) until that changes. Iteration 9's
+task files are seeded at `needs-refinement`; iterations 10–14 list planned
+tasks as one line each, their task files written at refinement.
 
 **Definition of done (every issue):**
 

@@ -19,71 +19,34 @@ the backend and the process reshaped to carry a third codebase.
 - **DW-5:** The mobile stack, repo layout, API compatibility policy, mobile
   authentication and mobile testing strategy are each a recorded decision.
 
-## Planned tasks
+## Tasks
 
-Task files are written at refinement
-([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)); until then
-each is one line here. `CLAUDE.md` comes first, because it is full; the five
-decisions follow, because every build task below them inherits their answers.
+| ID | Task | Status |
+|---|---|---|
+| [01](iteration-9/01-claude-md-regains-its-headroom.md) | CLAUDE.md has room for what mobile adds to it | needs-refinement |
+| [02](iteration-9/02-decision-the-mobile-stack.md) | Decide the mobile stack | needs-refinement |
+| [03](iteration-9/03-decision-repo-layout-and-code-sharing.md) | Decide the repository layout and what code is shared | needs-refinement |
+| [04](iteration-9/04-decision-api-compatibility-policy.md) | Decide the API compatibility policy | needs-refinement |
+| [05](iteration-9/05-decision-mobile-authentication.md) | Decide how the mobile app authenticates | needs-refinement |
+| [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | needs-refinement |
+| [07](iteration-9/07-process-carries-a-third-codebase.md) | The process carries a third codebase | needs-refinement |
+| [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | needs-refinement |
+| [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | needs-refinement |
+| [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | needs-refinement |
+| [11](iteration-9/11-app-skeleton.md) | The app has four tabs and the web's conventions | needs-refinement |
+| [12](iteration-9/12-app-config-endpoint.md) | The server can tell an old app to update, or that Kalia is down | needs-refinement |
+| [13](iteration-9/13-keycloak-mobile-client.md) | Keycloak has a client for the app, and the backend accepts its tokens | needs-refinement |
+| [14](iteration-9/14-sign-in-on-mobile.md) | A user signs in and out of the app | needs-refinement |
+| [15](iteration-9/15-walking-skeleton-slice.md) | The Catalog tab lists real beers from the API | needs-refinement |
 
-- **`CLAUDE.md` regains its headroom** — carried over from
-  [iteration 8.5](iteration-8.5.md), which closed with the file at 199 of its
-  200 lines ([ADR-0048](../adr/0048-what-survives-a-claude-md-bullet.md)). It
-  must again hold the Expo "check the docs, not memory" warning and the
-  no-new-costs constraint below, so it moves rules whole into the skills or
-  rules that already enforce them rather than trimming prose.
-- **Decision: the mobile stack** — Expo with a development build rather than
-  Expo Go, Expo Router, TypeScript strict, local builds with no dependency on
-  EAS's paid cloud; why not Flutter or two native apps.
-- **Decision: repo layout and code sharing** — npm workspaces, `frontend/`
-  renamed `web/` inside that same change, `mobile/`, and a `packages/`
-  directory for what is genuinely shared (API types or client, i18n strings,
-  design tokens).
-- **Decision: the API compatibility policy** — `/api/v1` changes are additive
-  only, what triggers `/api/v2`, a deprecation window; and whether
-  [ADR-0012](../adr/0012-orval-api-client.md)'s rejection of a committed
-  OpenAPI spec still holds with two generated clients.
-- **Decision: mobile authentication** — a public `kalia-mobile` Keycloak client
-  with PKCE and a `kalia://` redirect, its own `kalia-backend` audience mapper,
-  `offline_access` and refresh-token lifetime, tokens in SecureStore, and the
-  app ending its own session when a refresh fails. Also whether refresh tokens
-  rotate (`revokeRefreshToken`), for the web and mobile at once — deferred here
-  from [iteration 8.5 task 13](iteration-8.5/13-sessions-and-stack-credentials-hardened.md)
-  — and how long an access token outlives sign-out once the app calls Spring
-  directly ([quality backlog](quality-backlog.md) COULD-65).
-- **Decision: the mobile testing strategy** — unit tests (Jest + React Native
-  Testing Library), a native end-to-end tool (Maestro or Detox), and what CI
-  runs on Linux for Android and on macOS for iOS.
-- **The process carries a third codebase** — `mobile/CLAUDE.md` and
-  `mobile/README.md` ([ADR-0035](../adr/0035-agent-context-layout.md)),
-  `docs/architecture.md` §5 split into web and mobile, the check scripts and
-  CI covering mobile, and CLAUDE.md gaining the Expo "check the docs, not
-  memory" warning and the no-new-costs constraint.
-- **Workspaces refactor** — npm workspaces and the `web/` rename, with CI, the
-  Dockerfile, compose, the Makefile and the docs following; no behaviour
-  change.
-- **Shared packages** — generated API types and client from one spec with a
-  mutator per platform, and the en/fi locale strings.
-- **Developer environment** — Xcode, Android Studio, the simulators;
-  `mobile/README.md` as the onboarding guide; Make targets.
-- **App skeleton** — Expo Router with four tabs (Feed, Catalog, Cellar,
-  Profile) over placeholder screens, safe areas, and the web's conventions
-  carried over: TanStack Query behind feature hooks, Zustand, react-hook-form
-  and Zod, i18next following the device locale, import boundaries per feature.
-- **App-config endpoint** — `GET /api/v1/app-config` with the minimum
-  supported version and a maintenance flag, checked by the app on launch and
-  on resume. Has to exist before any build that could become v1.0
-  ([backlog](backlog.md#must-exist-in-the-apps-first-release-or-never)).
-- The 401 `problem+json` fix this list carried moved to
-  [iteration 8.5 task 01](iteration-8.5/01-api-errors-complete-and-typed.md).
-- **The `kalia-mobile` Keycloak client** in `keycloak/realm-export.json`, under
-  [ADR-0054](../adr/0054-keycloak-config-cli-realm-management.md)'s drift
-  check, with a test that a mobile-shaped token passes the backend's audience
-  check.
-- **Sign-in on mobile** — sign in, silent refresh, sign out and expiry, on
-  both simulators.
-- **Walking-skeleton slice** — a catalog list on screen from the real API,
-  covered by a unit test and one native end-to-end flow in CI.
+The table's order is the order of work. [01](iteration-9/01-claude-md-regains-its-headroom.md)
+comes first because `CLAUDE.md` is full and [07](iteration-9/07-process-carries-a-third-codebase.md)
+has to add to it. The five decisions, 02–06, follow, because every build task
+after them inherits their answers; each has to be accepted before the build
+tasks it binds are refined.
+
+The 401 `problem+json` fix this list once carried moved to
+[iteration 8.5 task 01](iteration-8.5/01-api-errors-complete-and-typed.md).
 
 The iOS Simulator reaches the Mac's `localhost` directly, and Keycloak's issuer
 is already pinned to `http://localhost:8081`, so nothing in this iteration needs
