@@ -62,16 +62,16 @@ the generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md
 ## Commands
 
 **`make verify-fast` is the local gate** — the ~10 s subset needing neither
-Docker, a build nor Trivy, and what the `pre-push` hook from `make
-install-hooks` runs; it goes green before every push. **The required CI checks
-are the Docker gate:** the `ci-passed` job and the vulnerability scan run every
-check `make verify` does plus the image scans, and a red one blocks the merge.
-`make verify` is the same list locally (Docker and `trivy`, image scans
-excepted) for when a change needs the answer before pushing
-([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)); `make
-next-adr` allocates the next ADR number. Run one suite from the repository root
-in a subshell — `(cd backend && mvn test)` — since a bare `cd` persists and
-breaks the next command; each README lists its suites.
+Docker, a build nor Trivy, run by the `pre-push` hook from `make
+install-hooks`; green before every push. **The required CI checks are the
+Docker gate:** `ci-passed` and the vulnerability scan run every `make verify`
+check plus the image scans; a red one blocks the merge. `make verify` is that
+list locally (Docker and `trivy`, image scans excepted), for an answer before
+pushing ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md));
+`make next-adr` allocates the next ADR number. Run one suite from the root in a
+subshell — `(cd backend && mvn test)` — as a bare `cd` persists into the next
+command; each README lists its suites. **Maven must run on JDK 25**, or Lombok
+fails with an `EndPosTable` error naming neither ([README](backend/README.md)).
 
 ## Workflow
 
