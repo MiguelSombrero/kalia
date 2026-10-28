@@ -21,7 +21,6 @@ import { resolve } from "node:path";
 
 // Labels the template's Gates section ships; renaming one there means here.
 export const GATE_LABELS = [
-  "pwd",
   "Range",
   "Doc-sync",
   "Code review",

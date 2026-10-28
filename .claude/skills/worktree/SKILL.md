@@ -47,7 +47,8 @@ removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.
 6. Confirm the binding before trusting any gate, and again at the top of any
    review: `pwd` and `git log --oneline origin/dev..HEAD` together say which
    tree you are in and which commits a review would cover. A `/code-review`
-   that reports on the wrong range is not a review.
+   that reports on the wrong range is not a review. `pwd` is for you alone:
+   it never goes in a commit or pull request (`CLAUDE.md`, host data).
 7. If the task will run long or fan out to parallel agents, write the
    checkpoint `implement-task` step 3 describes before starting.
 

@@ -3,7 +3,9 @@ name: PR body
 # Reads the pull request description, which a push-triggered run never sees,
 # so it is a workflow of its own rather than a job in ci.yml. Not part of
 # `ci-passed`: it checks the description, which is edited after the code
-# is green, and a red here must not make a code check look failed.
+# is green, and a red here must not make a code check look failed. Commit
+# messages ride along with the host-path job because they, like the
+# description, are text no tracked file holds.
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
@@ -34,3 +36,25 @@ jobs:
           printf '%s' "$PR_BODY" > "$RUNNER_TEMP/body.md"
           git diff "$BASE_SHA"...HEAD -- docs/tasks > "$RUNNER_TEMP/tasks.diff"
           node scripts/check-pr-body.mjs --body-file "$RUNNER_TEMP/body.md" --diff-file "$RUNNER_TEMP/tasks.diff"
+
+  host-paths:
+    name: No host paths in title, description or commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - name: Fail on an absolute path from the author's machine
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '%s' "$PR_TITLE" > "$RUNNER_TEMP/title.txt"
+          printf '%s' "$PR_BODY" > "$RUNNER_TEMP/body.md"
+          git log --format=%B "$BASE_SHA".."$HEAD_SHA" > "$RUNNER_TEMP/commits.txt"
+          node scripts/check-no-host-paths.mjs --file "$RUNNER_TEMP/title.txt" --file "$RUNNER_TEMP/body.md" --file "$RUNNER_TEMP/commits.txt"

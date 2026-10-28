@@ -68,7 +68,6 @@
   labels as written — the checker reads them.
 -->
 
-- **pwd:** <!-- output of `pwd`, run before opening the PR -->
 - **Range:** <!-- output of `git log --oneline origin/dev..HEAD` -->
 - **Doc-sync:** <!-- which of docs/architecture.md, the iteration index and the ADRs were checked against this change: updated here, or confirmed accurate. "Not applicable" is valid (a dependency bump); silence is not -->
 - **Code review:** <!-- `/code-review` verdict, each finding marked fix now or new task -->

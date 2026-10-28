@@ -52,7 +52,7 @@ frontend-e2e: ## Run frontend E2E tests (needs the stack up)
 lint: ## Lint the frontend
 	(cd frontend && npm run lint)
 
-check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/index/catalog-import/link checks and their self-tests
+check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/index/catalog-import/link checks and their self-tests
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
@@ -62,6 +62,7 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 	node scripts/check-contrast.mjs
 	node scripts/check-keycloak-theme.mjs
 	node scripts/check-no-raster-images.mjs
+	node scripts/check-no-host-paths.mjs
 	node scripts/sync-indexes.mjs --check
 	node scripts/check-no-untappd.mjs
 	node scripts/wikidata-migration.mjs --check

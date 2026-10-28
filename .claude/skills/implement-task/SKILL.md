@@ -118,11 +118,10 @@ their own condition from that ADR before they apply.
 
 ## Gates
 
-Before opening the pull request, print `pwd` and
-`git log --oneline origin/dev..HEAD`. Both go in the report below. They are
-what makes the review range checkable rather than assumed — a `/code-review`
-bound to a different worktree reviews a different diff and still reports
-cleanly, which is the failure
+Before opening the pull request, print `git log --oneline origin/dev..HEAD`;
+it goes in the report below. It is what makes the review range checkable
+rather than assumed — a `/code-review` bound to a different worktree reviews a
+different diff and still reports cleanly, which is the failure
 [ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)
 records.
 
