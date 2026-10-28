@@ -43,43 +43,8 @@ they're already cross-referenced from merged PRs and
 
 ## MUST
 
-- **MUST-19** *(confirmed 2026-10-27)* — `docs/architecture.md:589-596`
-  says the frontend has two route handlers and "this stays the full list",
-  and `docs/tasks/backlog.md:157-158` repeats it, but iteration 8.5 task 16
-  added a third, token-gated one: `frontend/app/api/metrics/route.ts`
-  (ADR-0088). The edge passes it through under its generic `location /`.
-- **MUST-20** *(confirmed 2026-10-27)* — `frontend/README.md:75-76` says to
-  run `docker compose up -d backend postgres` before `npm run generate:api`,
-  but `orval.config.ts:9` reads the spec from `BACKEND_PORT`, which only
-  `edge` publishes (`docker-compose.base.yml:26-29`); following the README
-  gives connection refused. `Makefile:75` (`api-drift`) already starts `edge`.
-- **MUST-21** *(confirmed 2026-10-27)* — query strings reach logs against
-  ADR-0013:73-75 in three places: the edge's `log_format` logs `$request`
-  (`edge/nginx.conf:22`) and Keycloak's access log the request line
-  (`docker-compose.base.yml:161`), so every sign-out's
-  `logout?id_token_hint=<JWT>` (`features/auth/endSessionUrl.ts:19-22`) writes
-  a signed ID token carrying email and username to two stdout logs, along
-  with search terms and callback `code`/`state`; and `lib/api/mutator.ts:95`,
-  `:105`, `:117`, `:142`, `:162`, `:202` put the full `url` into error
-  messages that `recordFailure` and `onRequestError` log. The success path is
-  stripped and tested (`mutator.test.ts:312-327`); the failure path is not.
-- **MUST-22** *(confirmed 2026-10-27)* **[needs decision]** — the
-  text-blocks-not-concatenation rule (`backend/README.md:300`) has no
-  checker, and merged code keeps breaking it after the product owner raised
-  it on PR #427 and again on #435: #450 added a concatenation at
-  `catalog/web/CatalogController.java:108-111` and #452 another at `:73-74`;
-  ten `+ "` continuation lines remain in `backend/src/main/java`, including
-  `CurrentUserService.java:40-41`, which #427 fixed. Decidable from its text,
-  so ADR-0039's case. A checker in `make check` with a retrofit, the same
-  checker on added lines only, or a Checkstyle rule.
-- **MUST-23** *(confirmed 2026-10-27)* — concurrent first reads of a new
-  user's profile still race against the username reservation (d02f48a):
-  `ProfileServiceConcurrencyIT.concurrentFirstReadsForANewUserBothSucceedAgainstOneSharedProfile`
-  failed with 409 on dev CI run 40168778643 (merge of #421) and on runs
-  39943933397, 39895492902 and 39894762607, and the e2e sent a real
-  sign-in to `/fi/username-taken` (`docs/common-failures.md` row 2026-10-26,
-  PR 450, "no fix home yet"). No fix, task or `docs/ci-playbook.md` entry
-  exists.
+*None open — every MUST from the 2026-10-27 sweep was lifted into
+[iteration 9](iteration-9.md).*
 
 ## SHOULD
 
@@ -168,15 +133,6 @@ they're already cross-referenced from merged PRs and
   mark ~20 beers or show two counts, and nothing caps entries per account.
   §8 does not list it. Cap the cellar, add a bounded held-counts/totals read,
   or paginate the owner read and give sync its own endpoint.
-- **SHOULD-79** *(confirmed 2026-10-27)* **[needs decision]** — the public
-  cellar is paged and totalled in SQL (`EntryRepository.java:34-36`,
-  `:60-62`) and only then drops entries of `PENDING` beers
-  (`CellarService.java:56-84`), so a page can come back short and
-  `totalElements`, the bottle total and `lastAddedAt` count withheld beers.
-  Structural: under the no-cross-schema rule any catalog state that hides a
-  beer can only be filtered after paging. Drop totals from the public
-  response, keep a cellar-side visible-beer projection fed by catalog
-  events, or over-fetch as the feed does.
 - **SHOULD-80** *(confirmed 2026-10-27)* **[needs decision]** — moderation is
   `scripts/moderate-contributor.sql`, run through `docker compose exec`
   (`Makefile:19-21`): it acts on all of a contributor's rows at once
@@ -187,67 +143,16 @@ they're already cross-referenced from merged PRs and
   20 more at once, indefinitely. Iteration 9+ mobile with open registration
   grows the queue before ADR-0091's trigger fires. Per-row actions with
   rejections counted toward a cooldown, or an operator-role backend endpoint.
-- **SHOULD-81** *(confirmed 2026-10-27)* — `docs/architecture.md:1212-1215`
-  files ADR-0087, ADR-0088, ADR-0089 and ADR-0090 under "Engineering process
-  and documentation", while `docs/adr/README.md:66-68`, `:284-295` puts them
-  under Catalog and "Configuration, security and operations"; §9's own rule
-  (`:1074`) places each in the table it belongs to.
-- **SHOULD-82** *(confirmed 2026-10-27)* — `docs/architecture.md:971-972` and
-  `keycloak/README.md:43-44` say `docker-compose.yml` pins the Postgres and
-  `keycloak-config-cli` images; it is now only an `include`
-  (`docker-compose.yml:17-19`) and the images are in
-  `docker-compose.base.yml:110`, `:181`.
-- **SHOULD-83** *(confirmed 2026-10-27)* — the root README never caught up
-  with iteration 8.5's new pieces: the tech stack omits the nginx edge,
-  `@prometheus-io/client` and Micrometer Prometheus/Tracing, the compose
-  stack line (`README.md:299-302`) and repository layout (`:313-339`) omit
-  `edge/`, and the pom-overrides note (`:242-245`) names Tomcat and the
-  PostgreSQL driver but not the two Jackson BOM overrides
-  (`backend/pom.xml:37-47`). The failure ADR-0020's 2026-09-11 amendment
-  recorded.
 - **SHOULD-84** *(confirmed 2026-10-27)* **[needs decision]** — the root
   README's architecture diagram (`README.md:198-206`) draws `Browser --> Next`
   directly while `docs/architecture.md:82-92` routes every request through
   `edge`; it restates a shape §2 owns. Replace it with a pointer to §2, or
   add the edge and keep both in step by hand.
-- **SHOULD-85** *(confirmed 2026-10-27)* **[needs decision]** — the public
-  cellar's response (`cellar/web/PublicCellarDto.java:12-27`: `entries`,
-  `page`, `totalPages`, `totalBeers`, …) breaks the one pagination envelope
-  `docs/architecture.md:525-536` states, which names only the feed as an
-  exception, and `docs/glossary.md` lists only `PageDto` and `FeedPageDto`.
-  Matters now: iteration 9 freezes `/api/v1` additive-only. Document it as a
-  second exception, or align the DTO before the freeze.
-- **SHOULD-86** *(confirmed 2026-10-27)* — ADR-0028 still states
-  `GET /api/v1/me` as a current decision (`docs/adr/0028-resource-server-and-current-user.md:55-60`,
-  `:143-147`) with no amendment line, though 8.5 task 02 removed the
-  endpoint.
 - **SHOULD-87** *(confirmed 2026-10-27)* **[needs decision]** — the
   iteration-by-iteration feature list is kept four times: `README.md:5-30`,
   `README.md:153-185`, `docs/architecture.md:24-51` and
   `docs/roadmap.md:54-74`; every iteration close edits all four. Shrink the
   README status blurb to a pointer, or accept the four-place edit.
-- **SHOULD-88** *(confirmed 2026-10-27)* **[needs decision]** — red CI runs
-  on `dev` after a merge are never logged in `docs/common-failures.md`:
-  runs 40077060971 (merge of #393), 40166251873 (#417) and 40168778643 (#421)
-  have no row, because the header says to log "on the branch you are working
-  on" and a post-merge run has no session. The log ADR-0084 relies on misses
-  the failures that hit everyone. Have the `worktree` skill's start step check
-  `dev`'s recent runs, state in the header that the sweep reconstructs them,
-  or open an issue from a scheduled workflow.
-- **SHOULD-89** *(confirmed 2026-10-27)* **[needs decision]** — PRs merge
-  without CI against the current `dev` (ruleset
-  `strict_required_status_checks_policy: false`): #447 removed `/api/v1/me`,
-  #448 added a spec calling it, both were green alone, `dev` went red (run
-  40359579236), and two sessions wrote the same fix (c559c86 in #450, 71ed660
-  in #451; both 2026-10-26 rows). Require branches up to date, use a merge
-  queue, or add a playbook entry for "red on fresh `dev`, green on its PR".
-- **SHOULD-90** *(confirmed 2026-10-27)* — a `/code-review` finding marked
-  "new task" has no home: `.claude/skills/implement-task/SKILL.md:59-61` and
-  the PR template ask for the verdict but name no place to record it, so
-  follow-ups from #398, #400, #425 and six from #452 exist only in PR bodies,
-  and iteration 8.5 closed (#459) without them. Require a
-  `docs/tasks/backlog.md` entry in the same PR, optionally checked by
-  `check-pr-body.mjs`.
 - **SHOULD-91** *(confirmed 2026-10-27)* **[needs decision]** — the
   `worktree` skill's steps 2 and 3 do not run: eight worktrees with merged or
   detached work remain (`git worktree list`), and Gates `pwd` lines show
@@ -571,3 +476,17 @@ live section they came from.
 - ~~COULD-70~~ (`postgres:18.4` pinned in `docs/architecture.md` prose) — lifted into [iteration-8.5 task 19](iteration-8.5/19-docs-match-iteration-8.md).
 - ~~COULD-71~~ (the catalog's size stated three times) — lifted into [iteration-8.5 task 19](iteration-8.5/19-docs-match-iteration-8.md).
 - ~~COULD-72~~ (the ADR index's ordering) — lifted into [iteration-8.5 task 19](iteration-8.5/19-docs-match-iteration-8.md).
+- ~~MUST-19~~ (frontend route-handler list omits the metrics route) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~MUST-20~~ (`frontend/README.md` generate step starts the wrong services) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~MUST-21~~ (query strings and an ID token reach the edge, Keycloak and mutator logs) — lifted into [iteration-9 task 20](iteration-9/20-no-token-or-query-string-in-a-log.md).
+- ~~MUST-22~~ (text-blocks rule has no checker and keeps being broken) — lifted into [iteration-9 task 19](iteration-9/19-review-feedback-outlives-its-pr.md). Its `[needs decision]` is the task's open question 1, settled at refinement.
+- ~~MUST-23~~ (concurrent first profile reads race the username reservation) — lifted into [iteration-9 task 16](iteration-9/16-first-profile-reads-never-race.md).
+- ~~SHOULD-79~~ (public cellar paged and totalled before withholding pending beers) — lifted into [iteration-9 task 21](iteration-9/21-public-cellar-response-settled-before-the-freeze.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-81~~ (§9 files ADR-0087–0090 under the wrong subject) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~SHOULD-82~~ (docs say `docker-compose.yml` pins images it no longer pins) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~SHOULD-83~~ (root README omits iteration 8.5's pieces) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~SHOULD-85~~ (public cellar breaks the one pagination envelope) — lifted into [iteration-9 task 21](iteration-9/21-public-cellar-response-settled-before-the-freeze.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-86~~ (ADR-0028 still states `GET /api/v1/me` as current) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~SHOULD-88~~ (red `dev` runs after a merge are never logged) — lifted into [iteration-9 task 17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-89~~ (PRs merge without CI against the current `dev`) — lifted into [iteration-9 task 17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-90~~ (a `/code-review` "new task" finding has no home) — lifted into [iteration-9 task 19](iteration-9/19-review-feedback-outlives-its-pr.md).
