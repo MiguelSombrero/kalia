@@ -16,6 +16,8 @@
 - **Amended:** 2026-10-26 by iteration 8.5 task 22 — per-worktree host ports,
   rejected in the 2026-10-25 note below, are adopted: `make stack-env` gives
   each worktree its own, so two worktrees can run `make verify` at once
+- **Amended:** 2026-10-28 — the stated range is the `git log` line alone; the
+  `pwd` line published the product owner's directory layout in every PR body
 
 ## Context
 

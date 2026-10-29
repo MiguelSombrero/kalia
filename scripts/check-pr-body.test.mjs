@@ -65,5 +65,5 @@ test("a comment that only forms once an inner one is removed does not hide a lin
 
 test("an unterminated comment fails closed: the rest of the body counts as comment", () => {
   const body = filled.replace("- **Range:** ran, green", "- **Range:** <!-- never closed");
-  assert.deepEqual(missingVerdicts(body), GATE_LABELS.slice(1));
+  assert.deepEqual(missingVerdicts(body), GATE_LABELS.slice(GATE_LABELS.indexOf("Range")));
 });

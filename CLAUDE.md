@@ -93,10 +93,10 @@ The gates themselves:
 - **Never commit directly to `dev`.** Every task gets a feature branch off
   up-to-date `dev` (naming: `iteration-N/<topic>`, `docs/<topic>`,
   `fix/<topic>`) and is merged back via pull request.
-- **Never commit, push or upload a screenshot or screen capture** — of the app,
-  the browser pane or any other screen. Keep it in the scratchpad and describe
-  what you saw in words; `make verify` fails on any tracked raster image
-  ([rule](.claude/rules/no-screenshots.md)).
+- **Nothing from the host machine leaves it** — no screen capture (keep it in
+  the scratchpad, [rule](.claude/rules/no-screenshots.md)), absolute path,
+  username, token, password or env value in a commit, PR, comment or other
+  service; paths are repo-relative. Checks catch only images and home paths.
 - **Parallel sessions: one git worktree each, never a shared checkout** — two
   sessions running `git` against one working directory race on its single
   `HEAD`/index. The `worktree` skill covers setup and teardown.
