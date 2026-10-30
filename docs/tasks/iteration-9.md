@@ -24,7 +24,7 @@ the backend and the process reshaped to carry a third codebase.
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-9/01-claude-md-regains-its-headroom.md) | CLAUDE.md has room for what mobile adds to it | refined |
-| [16](iteration-9/16-first-profile-reads-never-race.md) | Two first reads of a new user's profile never collide | refined |
+| [16](iteration-9/16-first-profile-reads-never-race.md) | Two first reads of a new user's profile never collide | done |
 | [17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md) | `dev` stays green after a merge, and a red `dev` is logged | refined |
 | [18](iteration-9/18-docs-match-iteration-8-5.md) | The documentation says what iteration 8.5 built | refined |
 | [19](iteration-9/19-review-feedback-outlives-its-pr.md) | What a review decides outlives the pull request it was made in | refined |

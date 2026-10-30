@@ -49,8 +49,9 @@ public class ProfileService {
 	// the winner's now-committed row instead of 500ing. Two accounts racing for
 	// one username trip profile_username_lower_key instead, and the retry's own
 	// check refuses the loser (ADR-0080) — so do not narrow the retry to
-	// profile_pkey. Each retry's own transaction is verified by
-	// ProfileServiceConcurrencyIT.
+	// profile_pkey. Do not drop create()'s own-id check: UsernameTakenException
+	// is not retried, so the loser of a same-user race would answer 409. Each
+	// retry's own transaction is verified by ProfileServiceConcurrencyIT.
 	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
 	public Profile currentProfile(UUID userId, String username) {
 		return profiles.findById(userId).orElseGet(() -> create(userId, username));
@@ -68,7 +69,11 @@ public class ProfileService {
 	}
 
 	private Profile create(UUID userId, String username) {
-		if (profiles.findByUsernameIgnoringCase(username).isPresent()) {
+		Optional<Profile> holder = profiles.findByUsernameIgnoringCase(username);
+		if (holder.isPresent()) {
+			if (holder.get().getId().equals(userId)) {
+				return holder.get();
+			}
 			throw new UsernameTakenException();
 		}
 		return profiles.save(Profile.create(userId, username));
