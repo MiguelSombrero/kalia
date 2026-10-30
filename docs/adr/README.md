@@ -244,7 +244,7 @@ and the third keeps that identifier from ever passing to someone else.
 
 ## Authentication and identity
 
-Eleven independent decisions, in the order they were made — later ones fix
+Twelve independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
 ([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
@@ -284,6 +284,10 @@ in one place, read
   — Keycloak's pages drop the card for one narrow column under Kalia's lockup,
   which links home; a `scripts/` check holds the theme's colours and mark to
   the app's.
+- [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
+  — the mobile app signs in through the system browser as a public PKCE
+  client, holds an offline token in secure storage and calls Spring directly
+  through the edge; amends ADR-0003 and ADR-0029.
 
 ## Configuration, security and operations
 

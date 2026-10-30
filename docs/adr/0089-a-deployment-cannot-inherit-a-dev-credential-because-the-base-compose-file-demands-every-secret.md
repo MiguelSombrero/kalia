@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-26
+- **Amended:** 2026-10-30 by [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) — "pins no public
+  client" was written for the Swagger client; the realm file the base imports
+  gains `kalia-mobile`, a public client that holds no secret and is needed
+  wherever the app runs
 
 ## Context
 

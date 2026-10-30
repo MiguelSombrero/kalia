@@ -9,6 +9,12 @@
   renewed rather than trusted (iteration 8 task 11)
 - **Amended:** 2026-10-26 — records why the web keeps refresh-token reuse
   until iteration 9 decides rotation (iteration 8.5 task 13)
+- **Amended:** 2026-10-30 by [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) — iteration 9
+  decided it: the web keeps refresh-token reuse, for the reason this ADR
+  gives, and the mobile client's refresh tokens rotate, unless Keycloak
+  can set rotation only realm-wide, in which case the choice returns to the
+  product owner. The renewal here is the web's only; the app renews and ends
+  its own session
 
 ## Context
 
