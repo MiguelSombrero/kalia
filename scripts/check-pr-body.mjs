@@ -19,8 +19,10 @@
 // on a pull_request event, so it runs from .github/workflows/pr-body.yml and
 // not from `make check`.
 //
-// usage: check-pr-body.mjs --body-file <path> --diff-file <path>
-//   body: the PR description; diff: `git diff <base>...HEAD -- docs/tasks`
+// usage: check-pr-body.mjs --body-file <path> --diff-file <path> [--author <login>]
+//   body: the PR description; diff: `git diff <base>...HEAD -- docs/tasks`;
+//   author: the PR author's login, which exempts a bot whose body quotes
+//   third-party text from the deferral rule (THIRD_PARTY_BODY_AUTHORS)
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -91,9 +93,15 @@ export function defersWithoutBacklogId(body) {
   return DEFERRAL.test(text) && !BACKLOG_ID.test(text);
 }
 
-export function checkPrBody({ body, diff }) {
+// Authors whose PR bodies are not the author's own words. A Dependabot body
+// carries the upstream release notes of the dependency it bumps ("move release
+// un-draft to a follow-up job", PR 488), which are not review findings and
+// have no backlog to be filed in. The login cannot be taken by a person.
+export const THIRD_PARTY_BODY_AUTHORS = new Set(["dependabot[bot]"]);
+
+export function checkPrBody({ body, diff, author = "" }) {
   const problems = [];
-  if (defersWithoutBacklogId(body)) {
+  if (!THIRD_PARTY_BODY_AUTHORS.has(author) && defersWithoutBacklogId(body)) {
     problems.push(
       'the body defers a finding ("new task" or "follow-up") but names no quality-backlog ID (MUST-/SHOULD-/COULD-N): ' +
         "file it in docs/tasks/quality-backlog.md in this PR and name the ID",
@@ -128,6 +136,7 @@ if (isMain) {
   const problems = checkPrBody({
     body: readFileSync(bodyFile, "utf8"),
     diff: readFileSync(diffFile, "utf8"),
+    author: arg("--author") ?? "",
   });
   if (problems.length > 0) {
     for (const problem of problems) console.error(problem);
