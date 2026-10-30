@@ -103,6 +103,18 @@ test("saying nothing was deferred is not a deferral", () => {
   assert.equal(defersWithoutBacklogId("There is no new task but a follow-up is left."), true);
 });
 
+test("a Dependabot body quoting release notes is not a deferral, a person's body with the same text is", () => {
+  const notes = "<li>[lts-active][cd] Move release un-draft to a follow-up job in bot-autonomous</li>";
+  assert.deepEqual(checkPrBody({ body: notes, diff: "", author: "dependabot[bot]" }), []);
+  assert.equal(checkPrBody({ body: notes, diff: "", author: "MiguelSombrero" }).length, 1);
+  assert.equal(checkPrBody({ body: notes, diff: "" }).length, 1);
+});
+
+test("a bot exemption covers only the deferral rule, not the gate verdicts", () => {
+  const problems = checkPrBody({ body: "", diff: DONE_DIFF, author: "dependabot[bot]" });
+  assert.equal(problems.length, GATE_LABELS.length);
+});
+
 test("an unterminated comment does not hide a deferral", () => {
   assert.equal(defersWithoutBacklogId("<!-- new task: the 429 copy"), true);
   assert.equal(defersWithoutBacklogId("<!-- guidance: new task --> fine"), false);
