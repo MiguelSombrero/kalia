@@ -1,6 +1,6 @@
 # Task 19: What a review decides outlives the pull request it was made in
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -63,16 +63,16 @@ deferred it.
 
 ## Acceptance criteria
 
-- [ ] The checker fails on a `+ "` string continuation in backend Java, with a
+- [x] The checker fails on a `+ "` string continuation in backend Java, with a
       test proving it catches one and allows a text block
-- [ ] Every existing violation the checker covers is fixed, or the scope
+- [x] Every existing violation the checker covers is fixed, or the scope
       refinement chose is stated in the check's own output
-- [ ] `implement-task` and the PR template name the home for a deferred
+- [x] `implement-task` and the PR template name the home for a deferred
       finding, and if `check-pr-body.mjs` enforces it, its test covers a body
       that defers without one
-- [ ] Each still-valid follow-up from #398, #400, #425 and #452 has a
+- [x] Each still-valid follow-up from #398, #400, #425 and #452 has a
       quality-backlog entry, and the PR names any that no longer holds
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

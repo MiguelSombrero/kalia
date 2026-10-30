@@ -70,8 +70,7 @@ class HttpBoundaryTest {
 				public void check(JavaMethod method, ConditionEvents events) {
 					for (JavaClass entityType : jpaEntitiesReachableFrom(method.getReturnType())) {
 						events.add(SimpleConditionEvent.violated(method,
-								method.getFullName() + " answers with a body that can carry " + entityType.getName()
-										+ ", a JPA entity, across the HTTP boundary"));
+								method.getFullName() + " answers with a body that can carry " + entityType.getName() + ", a JPA entity, across the HTTP boundary"));
 					}
 				}
 			};
@@ -82,8 +81,7 @@ class HttpBoundaryTest {
 				public void check(JavaMethod method, ConditionEvents events) {
 					for (JavaClass entityType : jpaEntitiesInvolvedIn(method.getReturnType())) {
 						events.add(SimpleConditionEvent.violated(method,
-								method.getFullName() + " returns " + entityType.getName()
-										+ ", a JPA entity, across the HTTP boundary"));
+								method.getFullName() + " returns " + entityType.getName() + ", a JPA entity, across the HTTP boundary"));
 					}
 				}
 			};
@@ -98,8 +96,7 @@ class HttpBoundaryTest {
 						}
 						for (JavaClass entityType : jpaEntitiesInvolvedIn(parameter.getType())) {
 							events.add(SimpleConditionEvent.violated(method,
-									method.getFullName() + " accepts " + entityType.getName()
-											+ ", a JPA entity, as a @RequestBody"));
+									method.getFullName() + " accepts " + entityType.getName() + ", a JPA entity, as a @RequestBody"));
 						}
 					}
 				}
@@ -119,16 +116,18 @@ class HttpBoundaryTest {
 	static final ArchRule controllerHandlersDoNotAcceptJpaEntitiesAsRequestBodies = methods()
 			.that(A_CONTROLLER_HANDLER_METHOD)
 			.should(NOT_ACCEPT_A_JPA_ENTITY_AS_REQUEST_BODY)
-			.because("an entity accepted as a request body is mass assignment: a caller could set any "
-					+ "field, including ids and ownership (architecture.md §4)")
+			.because("""
+					an entity accepted as a request body is mass assignment: a caller could set any \
+					field, including ids and ownership (architecture.md §4)""")
 			.allowEmptyShould(false);
 
 	@ArchTest
 	static final ArchRule adviceHandlersDeclareNoErrorBodyThatCouldCarryAJpaEntity = methods()
 			.that(AN_ADVICE_EXCEPTION_HANDLER)
 			.should(NOT_DECLARE_AN_ERROR_BODY_THAT_COULD_CARRY_A_JPA_ENTITY)
-			.because("JPA entities never serialize directly across the HTTP boundary, an error body "
-					+ "included (architecture.md §4, ADR-0014)")
+			.because("""
+					JPA entities never serialize directly across the HTTP boundary, an error body \
+					included (architecture.md §4, ADR-0014)""")
 			.allowEmptyShould(false);
 
 	// ProblemDetail.setProperty takes an Object, so a value put there is typed by
@@ -138,8 +137,9 @@ class HttpBoundaryTest {
 	static final ArchRule adviceSetsNoUntypedProblemProperty = noClasses()
 			.that().areAnnotatedWith(RestControllerAdvice.class)
 			.should().callMethod(ProblemDetail.class, "setProperty", String.class, Object.class)
-			.because("an error's extra fields are declared members of its own type, which the build "
-					+ "can check for entities and the OpenAPI spec can describe (ADR-0014)")
+			.because("""
+					an error's extra fields are declared members of its own type, which the build \
+					can check for entities and the OpenAPI spec can describe (ADR-0014)""")
 			.allowEmptyShould(false);
 
 	// getAllInvolvedRawTypes() is what sees through List<Bottle>, Page<Beer>,

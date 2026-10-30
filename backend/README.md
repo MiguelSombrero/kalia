@@ -301,7 +301,10 @@ lives there rather than in this file.
   literal** — including annotation values (`@Operation(description = """…""")`),
   which accept a text block as a compile-time constant the same as any other
   string literal. A trailing `\` at the end of a line suppresses that line's
-  newline, for a literal that should read as one continuous sentence.
+  newline, for a literal that should read as one continuous sentence. Where
+  an annotation value needs a constant, join text blocks to it
+  (`""" … """ + MAX + """ … """`). `scripts/check-text-blocks.mjs`, run by
+  `make check`, fails a literal continued with `+` across lines.
 - **Import a type rather than referencing it fully-qualified inline** —
   `List<String>`, not `java.util.List<String>` — including in test code, a
   cast, or a one-off local variable. Existing fully-qualified inline
