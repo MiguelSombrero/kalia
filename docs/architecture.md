@@ -1200,6 +1200,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |
 | [ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) | An nginx edge proxy bounds the anonymous edges and names the client address the services trust | accepted | 2026-10-26 |
 | [ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md) | A contributed catalog entry waits for an operator, and no catalog row is ever deleted | accepted | 2026-10-27 |
+| [ADR-0092](adr/0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) | The API is additive-only while an app is installed, and a committed spec fails a breaking diff | accepted | 2026-10-30 |
 
 ### Engineering process and documentation
 
