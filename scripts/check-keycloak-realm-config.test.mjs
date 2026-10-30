@@ -16,6 +16,8 @@ const committedFixture = () => ({
   enabled: true,
   sslRequired: "$(env:KEYCLOAK_SSL_REQUIRED)",
   accessTokenLifespan: 300,
+  offlineSessionIdleTimeout: 2592000,
+  offlineSessionMaxLifespanEnabled: false,
   smtpServer: {
     host: "$(env:KEYCLOAK_SMTP_HOST)",
     fromDisplayName: "Kalia",
@@ -40,6 +42,15 @@ const committedFixture = () => ({
       redirectUris: ["$(env:BACKEND_PUBLIC_URL)/swagger-ui/oauth2-redirect.html"],
       webOrigins: ["$(env:BACKEND_PUBLIC_URL)"],
     },
+    {
+      clientId: "kalia-mobile",
+      publicClient: true,
+      redirectUris: ["kalia://auth/callback"],
+      attributes: { "pkce.code.challenge.method": "S256" },
+      protocolMappers: [
+        { name: "kalia-backend-audience", config: { "included.client.audience": "kalia-backend" } },
+      ],
+    },
   ],
 });
 
@@ -49,6 +60,8 @@ const liveFixture = () => ({
     enabled: true,
     sslRequired: "none",
     accessTokenLifespan: 300,
+    offlineSessionIdleTimeout: 2592000,
+    offlineSessionMaxLifespanEnabled: false,
     // Keycloak drops the empty user, masks the password, and keeps the rest.
     smtpServer: { host: "mailpit", fromDisplayName: "Kalia", auth: "false", password: "**********" },
   },
@@ -74,6 +87,19 @@ const liveFixture = () => ({
       clientId: "kalia-swagger",
       redirectUris: ["http://localhost:8080/swagger-ui/oauth2-redirect.html"],
       webOrigins: ["http://localhost:8080"],
+    },
+    "kalia-mobile": {
+      clientId: "kalia-mobile",
+      publicClient: true,
+      redirectUris: ["kalia://auth/callback"],
+      attributes: { "pkce.code.challenge.method": "S256", realm_client: "false" },
+      protocolMappers: [
+        {
+          id: "generated-uuid",
+          name: "kalia-backend-audience",
+          config: { "included.client.audience": "kalia-backend", "access.token.claim": "true" },
+        },
+      ],
     },
   },
 });
@@ -184,6 +210,48 @@ test("diffRealm catches a client that was deleted from the realm", () => {
   assert.match(mismatches[0], /absent from the live realm/);
 });
 
+test("diffRealm catches a kalia-mobile client that was deleted from the realm", () => {
+  const live = liveFixture();
+  delete live.clients["kalia-mobile"];
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 1);
+  assert.match(mismatches[0], /client "kalia-mobile".*absent from the live realm/);
+});
+
+test("diffRealm catches a kalia:// wildcard added to the mobile client's redirect URIs", () => {
+  const live = liveFixture();
+  live.clients["kalia-mobile"].redirectUris.push("kalia://*");
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 1);
+  assert.match(mismatches[0], /kalia-mobile.*redirectUris.*"kalia:\/\/\*".*does not list/s);
+});
+
+test("diffRealm catches PKCE no longer required of the mobile client", () => {
+  const live = liveFixture();
+  delete live.clients["kalia-mobile"].attributes["pkce.code.challenge.method"];
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 1);
+  assert.match(mismatches[0], /kalia-mobile.*pkce\.code\.challenge\.method: committed "S256" != live undefined/);
+});
+
+test("diffRealm catches the mobile client losing its own audience mapper", () => {
+  const live = liveFixture();
+  live.clients["kalia-mobile"].protocolMappers = [];
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 1);
+  assert.match(mismatches[0], /client "kalia-mobile" protocolMapper "kalia-backend-audience": missing/);
+});
+
+test("diffRealm catches the offline session limits changed only in the admin console", () => {
+  const live = liveFixture();
+  live.realm.offlineSessionIdleTimeout = 1800;
+  live.realm.offlineSessionMaxLifespanEnabled = true;
+  const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
+  assert.equal(mismatches.length, 2);
+  assert.ok(mismatches.some((m) => /offlineSessionIdleTimeout: committed 2592000 != live 1800/.test(m)));
+  assert.ok(mismatches.some((m) => /offlineSessionMaxLifespanEnabled: committed false != live true/.test(m)));
+});
+
 test("diffRealm reports zero comparisons for a spec that pins nothing", () => {
   const { compared } = diffRealm({ realm: "kalia" }, liveFixture());
   assert.equal(compared, 0);
@@ -211,15 +279,41 @@ test("diffRealm fails when the swagger redirect URI does not follow the backend 
 
 // ADR-0089: the deployable realm is keycloak-config's default file alone, and
 // a public client in it would mint kalia-backend tokens outside the BFF's
-// session lifecycle. The dev stack's file is where such a client lives.
+// session lifecycle. ADR-0095 makes one exception, kalia-mobile, which holds no
+// secret; the dev stack's file is where any other such client lives.
 const readRealmFile = (path) => JSON.parse(readFileSync(path, "utf8"));
 
-test("the deployable realm file pins no public client and no kalia-swagger", () => {
+test("the deployable realm file pins no public client but kalia-mobile, and no kalia-swagger", () => {
   const { clients } = readRealmFile(REALM_FILE);
   assert.deepEqual(
     clients.filter((client) => client.publicClient || client.clientId === "kalia-swagger").map((client) => client.clientId),
-    [],
+    ["kalia-mobile"],
   );
+});
+
+test("kalia-mobile is registered the way ADR-0095 decides", () => {
+  const client = readRealmFile(REALM_FILE).clients.find(({ clientId }) => clientId === "kalia-mobile");
+  assert.equal(client.publicClient, true);
+  assert.equal(client.secret, undefined);
+  assert.equal(client.standardFlowEnabled, true);
+  assert.equal(client.directAccessGrantsEnabled, false);
+  assert.equal(client.implicitFlowEnabled, false);
+  assert.equal(client.serviceAccountsEnabled, false);
+  assert.deepEqual(client.redirectUris, ["kalia://auth/callback"]);
+  assert.equal(client.attributes["pkce.code.challenge.method"], "S256");
+  const audience = client.protocolMappers.find(({ name }) => name === "kalia-backend-audience");
+  assert.equal(audience.config["included.client.audience"], "kalia-backend");
+  assert.equal(audience.config["access.token.claim"], "true");
+});
+
+test("the realm pins a 30-day offline idle timeout and no offline maximum", () => {
+  const realm = readRealmFile(REALM_FILE);
+  assert.equal(realm.offlineSessionIdleTimeout, 30 * 24 * 60 * 60);
+  assert.equal(realm.offlineSessionMaxLifespanEnabled, false);
+});
+
+test("the realm keeps refresh-token reuse for every client (rotation is realm-wide)", () => {
+  assert.equal(readRealmFile(REALM_FILE).revokeRefreshToken, false);
 });
 
 test("the dev realm file carries kalia-swagger and nothing else", () => {

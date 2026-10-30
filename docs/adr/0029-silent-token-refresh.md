@@ -15,6 +15,10 @@
   can set rotation only realm-wide, in which case the choice returns to the
   product owner. The renewal here is the web's only; the app renews and ends
   its own session
+- **Amended:** 2026-10-30 — rotation is realm-wide at the pinned Keycloak, so
+  [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
+  keeps reuse for both clients and the renewal here stays lock-free; the
+  product owner declined rotating both behind a lock
 
 ## Context
 

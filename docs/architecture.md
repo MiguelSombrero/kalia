@@ -894,19 +894,28 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   page ([ADR-0055](adr/0055-self-registration-via-keycloak.md)), holding its
   tokens in the Keychain or Keystore, and calling the Spring API directly
   through the edge proxy with a bearer token — there is no mobile BFF.
-  - **Redirect URIs are listed exactly**, never a `kalia://` wildcard, and
+  - **The one redirect URI is `kalia://auth/callback`**, listed exactly and
+    never as a `kalia://` wildcard, with PKCE `S256` required; and
     `kalia-mobile` has its own `kalia-backend` audience mapper, because the
     backend rejects a token without the audience
-    ([ADR-0028](adr/0028-resource-server-and-current-user.md)).
+    ([ADR-0028](adr/0028-resource-server-and-current-user.md)). The client is
+    in `keycloak/realm-export.json` under the drift check, and
+    `scripts/check-keycloak-pkce-flow.mjs` signs in as the app will and fails
+    on a token without the audience or a redirect it should have refused.
   - **The session is an offline token** (`offline_access`) that lapses after 30
-    days unused and has no maximum while in use. The app renews its own access
+    days unused and has no maximum while in use; the realm pins both
+    (`offlineSessionIdleTimeout`, `offlineSessionMaxLifespanEnabled`). The app renews its own access
     token and ends its own session when Keycloak answers a refresh with
     `invalid_grant`, since nothing can reach a phone as back-channel logout
     reaches the BFF ([ADR-0031](adr/0031-backchannel-logout.md)).
-  - **Mobile refresh tokens rotate; the web's are reused**, for the two-tabs
-    reason in [ADR-0029](adr/0029-silent-token-refresh.md). Keycloak at the
-    pinned version reads rotation only from realm settings, so if it cannot be
-    set for `kalia-mobile` alone the choice returns to the product owner.
+  - **Refresh tokens are reused for both clients.** Rotation
+    (`revokeRefreshToken`) is a realm setting at the pinned Keycloak, so
+    rotating the app's tokens would rotate the web's too, and the BFF renews
+    without the lock that would need
+    ([ADR-0029](adr/0029-silent-token-refresh.md)). A refresh token taken from
+    a stolen phone replays until sign-out or the 30 idle days; revisit before
+    the app is installed beyond the product owner's own phone
+    ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
   - **Sign-out forgets the tokens on the device first, then revokes them at
     Keycloak when connected.** Offline, the device is signed out at once and
     the server-side session lapses at its 30-day idle timeout.
@@ -1026,6 +1035,12 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   deliberately refuses (`different_user_authenticated`, HTTP 400). The
   refusal is correct and is left as it is; only the escape hatch was missing.
   Pinned by `web/e2e/sign-up.spec.ts`.
+  `kalia-mobile` carries the same address, not an app link: Keycloak accepts
+  only an `http` or `https` root or base URL, so the "Back to Application"
+  link a user lands on after verifying their email from the app's sign-up opens
+  the website, not the app. Opening the app from there needs an `https`
+  address the phone hands to the app, which is
+  [iteration 10](tasks/iteration-10.md)'s.
 
 ## 7. Testing strategy
 
