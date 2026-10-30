@@ -61,22 +61,7 @@ class ProfileServiceConcurrencyIT {
 		UUID userId = UUID.randomUUID();
 		given(jwtDecoder.decode("race-user-token")).willReturn(TestTokens.user(userId.toString(), "racer"));
 
-		// Holds both requests at "no row yet" until both have read it, so both
-		// go on to insert concurrently; the retry's own re-read skips the
-		// barrier once both parties have already passed through it once, or
-		// it would wait forever for a party that never comes.
-		CyclicBarrier bothSawNoProfile = new CyclicBarrier(2);
-		AtomicInteger reads = new AtomicInteger();
-		// Mockito cannot callRealMethod() on a Spring Data repository (a JDK
-		// proxy over an interface, no concrete method to call through to);
-		// reading directly against the calling thread's own (transaction-bound)
-		// EntityManager stands in for the real call.
-		doAnswer(invocation -> {
-			if (reads.getAndIncrement() < bothSawNoProfile.getParties()) {
-				bothSawNoProfile.await(5, TimeUnit.SECONDS);
-			}
-			return Optional.ofNullable(entityManager.find(Profile.class, userId));
-		}).when(profiles).findById(eq(userId));
+		bothRequestsReadNoProfile(userId);
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		try {
@@ -102,14 +87,7 @@ class ProfileServiceConcurrencyIT {
 		String username = "committed-" + UUID.randomUUID();
 		given(jwtDecoder.decode("late-check-token")).willReturn(TestTokens.user(userId.toString(), username));
 
-		CyclicBarrier bothSawNoProfile = new CyclicBarrier(2);
-		AtomicInteger profileReads = new AtomicInteger();
-		doAnswer(invocation -> {
-			if (profileReads.getAndIncrement() < bothSawNoProfile.getParties()) {
-				bothSawNoProfile.await(5, TimeUnit.SECONDS);
-			}
-			return Optional.ofNullable(entityManager.find(Profile.class, userId));
-		}).when(profiles).findById(eq(userId));
+		bothRequestsReadNoProfile(userId);
 
 		// The first check goes straight through; the second waits until the
 		// first request's row is visible from another connection.
@@ -171,6 +149,25 @@ class ProfileServiceConcurrencyIT {
 		} finally {
 			pool.shutdownNow();
 		}
+	}
+
+	// Holds both requests at "no row yet" until both have read it, so both
+	// go on to insert concurrently; the retry's own re-read skips the
+	// barrier once both parties have already passed through it once, or
+	// it would wait forever for a party that never comes.
+	private void bothRequestsReadNoProfile(UUID userId) {
+		CyclicBarrier bothSawNoProfile = new CyclicBarrier(2);
+		AtomicInteger reads = new AtomicInteger();
+		// Mockito cannot callRealMethod() on a Spring Data repository (a JDK
+		// proxy over an interface, no concrete method to call through to);
+		// reading directly against the calling thread's own (transaction-bound)
+		// EntityManager stands in for the real call.
+		doAnswer(invocation -> {
+			if (reads.getAndIncrement() < bothSawNoProfile.getParties()) {
+				bothSawNoProfile.await(5, TimeUnit.SECONDS);
+			}
+			return Optional.ofNullable(entityManager.find(Profile.class, userId));
+		}).when(profiles).findById(eq(userId));
 	}
 
 	private Callable<String> readProfile() {
