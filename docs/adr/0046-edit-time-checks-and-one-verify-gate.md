@@ -18,6 +18,9 @@
   each worktree its own, so two worktrees can run `make verify` at once
 - **Amended:** 2026-10-28 — the stated range is the `git log` line alone; the
   `pwd` line published the product owner's directory layout in every PR body
+- **Amended:** 2026-10-30 by iteration 9 task 17 — the ruleset on `dev` also
+  requires a branch to be up to date before it merges (strict required status
+  checks)
 
 ## Context
 
@@ -122,6 +125,22 @@ What this covers, and what it does not:
   > gate. (Reversed 2026-10-26: that wait became a regular cost of parallel
   > sessions, so iteration 8.5 task 22 took the per-worktree ports after all;
   > the lock stays rejected.)
+
+  > **Amended 2026-10-30.** The two required checks ran against the pull
+  > request's own base, not against `dev` as it stood at merge. #447 removed
+  > `/api/v1/me` and #448 added a spec that calls it; each was green, and `dev`
+  > went red (run `40359579236`). The ruleset on `dev` therefore turns on
+  > **Require branches to be up to date before merging**
+  > (`strict_required_status_checks_policy: true`). A pull request that is
+  > behind `dev` cannot merge until it is updated and `ci-passed` and the
+  > vulnerability scan are green on the updated head, so of two green pull
+  > requests that conflict in behaviour, the second to merge is tested on top
+  > of the first. The cost accepted is one CI rerun per pull request that
+  > falls behind; the repository is public, so Actions minutes are free and
+  > the cost is the wait. Rejected: a merge queue, which needs an
+  > organization-owned repository (this one belongs to a personal account);
+  > and a [playbook](../ci-playbook.md) entry alone, which leaves the race
+  > open. Only the product owner changes the ruleset.
 - **A `PostToolUse` hook runs whichever checker covers the edited file**, and
   reports the failure into the agent's context. It never blocks. A checker
   legitimately goes red mid-task — a task file exists before its index row
@@ -232,6 +251,10 @@ drift this ADR is trying to remove.
   requires saying which was run, which makes the choice visible rather than
   correct. Since the 2026-10-25 amendment `verify-fast` is the answer, and the
   Docker-backed failures it cannot see surface after the push, in CI.
+- Bad, because up-to-date branches make every merge to `dev` invalidate the
+  green of each other open pull request: with three open, merging one sends
+  the other two back through CI. Parallel sessions make that frequent, and it
+  is paid in waiting, not in money.
 - Bad, because the merge block lives in a GitHub ruleset, which no file in
   this repository records. `ci-passed` and the vulnerability scan being the
   two required checks is a fact about settings outside the tree, and a ruleset
