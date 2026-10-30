@@ -79,7 +79,7 @@ build or run path.**
 
 ## Alternatives considered
 
-- **Expo Go.** Zero native toolchain: scan a code and run. Rejected because
+- **Expo Go.** Rejected because
   it does not use the app's custom scheme (it opens projects on `exp://`), so
   the `kalia://` redirect cannot land in it, and because it cannot run
   libraries with custom native code. Expo's own FAQ calls it a playground and

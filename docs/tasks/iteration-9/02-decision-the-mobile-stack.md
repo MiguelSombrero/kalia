@@ -1,6 +1,6 @@
 # Task 02: Decide the mobile stack
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -77,12 +77,12 @@ settings, and which of the web's conventions carry over as they are.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the stack, the rejected alternatives and what each would
+- [x] An ADR records the stack, the rejected alternatives and what each would
       have cost, and passes `node scripts/check-adrs.mjs`
-- [ ] The ADR states that no part of the build or run path needs a paid
+- [x] The ADR states that no part of the build or run path needs a paid
       account, and names what would break that if adopted later
-- [ ] `docs/architecture.md` §2 names the mobile client and its stack
-- [ ] The tests the decision implies — the unit-test runner and the native
+- [x] `docs/architecture.md` §2 names the mobile client and its stack
+- [x] The tests the decision implies — the unit-test runner and the native
       end-to-end tool's place in the build — are named in the acceptance
       criteria of tasks [11](11-app-skeleton.md) and
       [15](15-walking-skeleton-slice.md) before either is refined
