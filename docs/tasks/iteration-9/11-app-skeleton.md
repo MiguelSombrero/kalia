@@ -66,6 +66,19 @@ import boundaries per feature. Its lint, type check and unit tests run in
 - **Light mode and portrait only** until iteration 11 decides dark mode and
   the interaction model.
 
+**Decided in the refinement of tasks [08](08-workspaces-refactor.md) and
+[15](15-walking-skeleton-slice.md), 2026-10-30** (product owner), which bind
+this one:
+
+- **This task owns the one place the app reads the API origin from,** set per
+  run from the stack's edge port by the make targets and CI. Tasks
+  [14](14-sign-in-on-mobile.md) and [15](15-walking-skeleton-slice.md) only
+  use it.
+- **Once `mobile/` exists, the web image is checked to carry none of the
+  app's dependencies,** which is the proof of the scoped install
+  [task 08](08-workspaces-refactor.md) sets up and cannot demonstrate before a
+  second workspace exists.
+
 ## Open questions
 
 **Answered, waiting on an accepted ADR.** Every question raised for this task
