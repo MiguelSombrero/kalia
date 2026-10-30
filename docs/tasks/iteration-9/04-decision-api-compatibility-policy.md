@@ -1,6 +1,6 @@
 # Task 04: Decide the API compatibility policy
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -77,13 +77,13 @@ ADR-0012 is reaffirmed or amended against two generated clients.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the policy, the rejected alternatives and their costs,
+- [x] An ADR records the policy, the rejected alternatives and their costs,
       and passes `node scripts/check-adrs.mjs`
-- [ ] ADR-0012 is reaffirmed or amended, with the two-client reasoning
+- [x] ADR-0012 is reaffirmed or amended, with the two-client reasoning
       written down either way
-- [ ] `docs/architecture.md` §4 states the additive-only rule and the
+- [x] `docs/architecture.md` §4 states the additive-only rule and the
       deprecation mechanism
-- [ ] If the policy is enforced mechanically, the check is named as an
+- [x] If the policy is enforced mechanically, the check is named as an
       automated test in a build task's acceptance criteria — a CI job that
       fails on a removed field — before that task is refined
 
