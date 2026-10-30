@@ -143,29 +143,29 @@ owner decided.
 
 ## Acceptance criteria
 
-- [ ] `web/` holds the web app, the root `package.json` declares the
+- [x] `web/` holds the web app, the root `package.json` declares the
       workspaces, and no tracked file outside history references
       `frontend/` except where refinement allows it — checked by a `grep` in
       the PR description
-- [ ] No tracked file outside history names `kalia-frontend`,
+- [x] No tracked file outside history names `kalia-frontend`,
       `KALIA_FRONTEND`, `FRONTEND_PORT`, `FRONTEND_URL` or the `frontend`
       compose service, checked by a `grep` in the PR description, and the
       living documents' prose was re-read for "the frontend"
-- [ ] The web's Vitest and Playwright suites are green against the moved
+- [x] The web's Vitest and Playwright suites are green against the moved
       tree, including the specs for sign-in, sign-out and back-channel logout,
       and `make verify` passes
-- [ ] The web image builds from the repository root with
+- [x] The web image builds from the repository root with
       `npm ci --workspace web`, serves the same pages as before when run, and
       `docker build` sends a context limited by the root `.dockerignore`
-- [ ] The root lockfile resolves every existing dependency to its previous
+- [x] The root lockfile resolves every existing dependency to its previous
       version, compared before and after
-- [ ] On a stack created before the rename, `make up` ends with the realm
+- [x] On a stack created before the rename, `make up` ends with the realm
       drift check green and the old client gone, or the PR states the command
       that removes it; a `.env` with the old secret or port keys fails loudly
 - [ ] CI's path filters, Dependabot and the Trivy manifest scan cover the new
       paths, and Dependabot's `react` and `react-dom` grouping still applies —
       each confirmed by a run that touched `web/`
-- [ ] `node scripts/check-links.mjs` and `make verify-fast` are green
+- [x] `node scripts/check-links.mjs` and `make verify-fast` are green
 
 ## Notes
 
