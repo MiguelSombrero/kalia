@@ -132,6 +132,10 @@ author cannot reach. The checks cost one test and one CI job.
   developer only through a lint rule that flags its use, and no such rule is
   configured today. Enabling it, and any dependency that needs, is task 09's
   to ask.
+- Bad, because the additive list holds only if both clients keep their
+  promise, and nothing checks that they do. A client that parses strictly or
+  switches exhaustively on an enum breaks on a change the spec diff correctly
+  calls additive. Neither client has been audited against it yet.
 - Neutral, because `app-config` fails open when unreachable, so the minimum
   protects only an app that can reach the server: an install that was offline
   when the minimum was raised keeps its old build, and the first calls it

@@ -591,7 +591,7 @@ so `/api/v1` changes additively only
   for the whole API and never one resource, is for a breaking change that
   cannot be made as a new path.
 - A deprecated element is removed only once the minimum supported app build
-  (`GET /api/v1/app-config`, [task 12](tasks/iteration-9/12-app-config-endpoint.md))
+  (`GET /api/v1/app-config`, not yet built — [task 12](tasks/iteration-9/12-app-config-endpoint.md))
   excludes every app build that uses it: the window is measured in releases,
   not time. `app-config` is itself under this rule from its first release.
 - The spec is a committed file that both clients generate from. A backend test
