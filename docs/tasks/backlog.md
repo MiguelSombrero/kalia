@@ -257,6 +257,15 @@ required.
   leaves the feature permanently half-covered. Task 01 chose Wikidata, which
   has almost no barcodes, knowingly; [iteration 14](iteration-14.md) records
   the route by which scanning fills the gap.
+- **Keycloak's "Back to Application" link cannot open the app.** A user who
+  signs up from the app leaves for their mail, and the page the verification
+  link reaches links back to the website, because Keycloak 26.8.1 accepts only
+  an `http(s)` `baseUrl` ([task 13](iteration-9/13-keycloak-mobile-client.md)).
+  Opening the app from there takes either a web page that bounces to
+  `kalia://auth/callback`, or an `https` address the phone hands to the app.
+  Parked, and part of [iteration 10](iteration-10.md)'s distribution work, not
+  iteration 9's: iOS universal links need a paid Apple developer team, so a
+  free personal team may not support them, while Android App Links are free.
 - **Crash reporting**, which the [observability baseline](iteration-8.5/16-observability-baseline.md) does not cover — that
   one is server-shaped. Device identifiers and push tokens are personal data,
   so this lands on the GDPR item too.

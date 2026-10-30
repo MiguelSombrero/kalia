@@ -1,6 +1,6 @@
 # Task 13: Keycloak has a client for the app, and the backend accepts its tokens
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-2
 
@@ -36,6 +36,11 @@ that client passes the audience check.
   [ADR-0074](../../adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md));
   the client uses it.
 - The issuer stays `http://localhost:8081` this iteration.
+- Keycloak 26.8.1 refuses a `rootUrl` or `baseUrl` that is not `http(s)` (every
+  `kalia:` spelling tried is "not a valid URL"), so `kalia-mobile` carries
+  `WEB_URL` as `kalia-web` does and "Back to Application" opens the website,
+  not the app. Product owner's decision, 2026-10-30; a link that opens the app
+  is a [backlog](../backlog.md#mobile-client) entry.
 
 **Decided at refinement, 2026-10-30** (product owner):
 
@@ -107,10 +112,10 @@ was accepted:
       Keycloak, and the points ADR-0095's Evidence leaves unverified (custom
       scheme matching, revoking an offline token, a disabled account's
       refresh) are each checked and the result described in the PR
-- [ ] A user who registers through the client's sign-in page and follows the
+- [x] A user who registers through the client's sign-in page and follows the
       emailed verification link (Mailpit, in the local stack) reaches a page
-      whose "Back to Application" link opens the app — tried on a simulator
-      and described in the PR
+      whose "Back to Application" link opens the website, and opens the app
+      themselves to sign in — followed over HTTP and described in the PR
 - [x] An authorization-code flow with PKCE against the local Keycloak returns
       tokens to the `kalia://` redirect, and the access token's `aud`
       includes `kalia-backend` — verified by script, and described in the PR
