@@ -196,8 +196,9 @@ design: the scan is diff-agnostic, so any open PR can go red the moment a CVE
 is disclosed against something already in `dev`
 ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)). It is fixed in
 place on the branch that is open, not in a second PR. Whether it needs asking
-first, is in `CLAUDE.md`; `make trivy-scan` reproduces the manifest scan, and
-the image scan's invocation is in `backend/README.md`.
+first is in the `implement-task` skill's "A red check"; `make trivy-scan`
+reproduces the manifest scan, and the image scan's invocation is in
+`backend/README.md`.
 
 ## Not CI, but the same recognition problem
 

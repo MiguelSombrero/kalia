@@ -64,3 +64,17 @@ removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.
    work, which is every task worktree, and never touches one a session
    started in. A stale worktree costs roughly 640 MB once `npm install` has
    run in it, and eight of them once reached 2.0 GB.
+
+## A red check
+
+A check that goes red while you work in the worktree follows two rules, moved
+here whole from `CLAUDE.md`
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)):
+
+- **An unexpected failure gets one appended row in
+  [docs/common-failures.md](../../../docs/common-failures.md)**, on the branch
+  it happened on
+  ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
+- **A CI check you have seen fail before is probably in
+  [docs/ci-playbook.md](../../../docs/ci-playbook.md)**; add an entry when a
+  failure costs real time to *recognise*, naming the run.

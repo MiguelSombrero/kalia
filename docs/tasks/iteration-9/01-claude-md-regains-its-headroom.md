@@ -1,6 +1,6 @@
 # Task 01: CLAUDE.md has room for what mobile adds to it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -75,12 +75,12 @@ edit, and nothing whose violation fails silently, leaves the file.
 
 ## Acceptance criteria
 
-- [ ] `wc -l CLAUDE.md` is at most 187
-- [ ] Every moved rule is stated in full at its new home, and `CLAUDE.md`
+- [x] `wc -l CLAUDE.md` is at most 187
+- [x] Every moved rule is stated in full at its new home, and `CLAUDE.md`
       points at it in one line — `node scripts/check-links.mjs` and its test
       green
-- [ ] No rule whose violation fails silently has lost its inline warning
-- [ ] `make verify-fast` is green
+- [x] No rule whose violation fails silently has lost its inline warning
+- [x] `make verify-fast` is green
 
 ## Notes
 
