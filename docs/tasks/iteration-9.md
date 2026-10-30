@@ -36,13 +36,13 @@ the backend and the process reshaped to carry a third codebase.
 | [05](iteration-9/05-decision-mobile-authentication.md) | Decide how the mobile app authenticates | done |
 | [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | done |
 | [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | refined |
-| [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | needs-refinement |
-| [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | needs-refinement |
-| [11](iteration-9/11-app-skeleton.md) | The app has four tabs and the web's conventions | needs-refinement |
+| [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | refined |
+| [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | refined |
+| [11](iteration-9/11-app-skeleton.md) | The app has four tabs and the web's conventions | refined |
 | [07](iteration-9/07-process-carries-a-third-codebase.md) | The process carries a third codebase | refined |
-| [12](iteration-9/12-app-config-endpoint.md) | The server can tell an old app to update, or that Kalia is down | needs-refinement |
-| [13](iteration-9/13-keycloak-mobile-client.md) | Keycloak has a client for the app, and the backend accepts its tokens | needs-refinement |
-| [14](iteration-9/14-sign-in-on-mobile.md) | A user signs in and out of the app | needs-refinement |
+| [12](iteration-9/12-app-config-endpoint.md) | The server can tell an old app to update, or that Kalia is down | refined |
+| [13](iteration-9/13-keycloak-mobile-client.md) | Keycloak has a client for the app, and the backend accepts its tokens | refined |
+| [14](iteration-9/14-sign-in-on-mobile.md) | A user signs in and out of the app | refined |
 | [15](iteration-9/15-walking-skeleton-slice.md) | The Catalog tab lists real beers from the API | refined |
 
 The table's order is the order of work. [01](iteration-9/01-claude-md-regains-its-headroom.md)

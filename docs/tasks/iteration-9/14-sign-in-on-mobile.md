@@ -1,6 +1,6 @@
 # Task 14: A user signs in and out of the app
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-2
 
@@ -29,10 +29,17 @@ Simulator and the Android emulator.
 
 ## Constraints
 
-- [Task 05](05-decision-mobile-authentication.md)'s ADR and
+- [ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md),
+  [task 05](05-decision-mobile-authentication.md)'s decision, and
   [task 13](13-keycloak-mobile-client.md)'s client.
-- [Task 09](09-shared-packages.md)'s mobile mutator attaches the token.
-- [Task 06](06-decision-mobile-testing-strategy.md)'s testing strategy.
+- [Task 09](09-shared-packages.md)'s shared core calls a transport the app
+  registers; [task 11](11-app-skeleton.md) registers it, and this task adds
+  the token source to it.
+- [ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)'s
+  testing conventions.
+- An OAuth library and a secure-storage library are new dependencies, asked
+  for when this task starts, as ADR-0095 says
+  (`CLAUDE.md` "New dependencies").
 
 **Decided at refinement, 2026-10-30** (product owner):
 
@@ -53,15 +60,47 @@ Simulator and the Android emulator.
   automated end-to-end flow stays anonymous
   ([task 15](15-walking-skeleton-slice.md)).
 
+**Decided in the second pass, 2026-10-30** (product owner), after
+[ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
+was accepted:
+
+- **Refreshes are single-flight.** Calls that need a token while a refresh is
+  already running wait for it and share its result. If Keycloak rotates
+  refresh tokens for this client
+  ([task 13](13-keycloak-mobile-client.md) finds out), two refreshes at once
+  would spend the token twice and sign the user out for nothing; if it does
+  not, one refresh is still cheaper than two.
+- **Whatever refresh token a refresh returns is stored before the new access
+  token is used,** whether or not the server rotates.
+- **The sign-in page opens in the app's language,** by sending `ui_locales`,
+  as the web's sign-in actions do
+  ([ADR-0056](../../adr/0056-branded-bilingual-keycloak-pages.md)).
+- **A sign-in the user cancels returns quietly to signed-out.** One that
+  fails shows "Sign-in didn't work. Try again." and the sign-in action again.
+- **Sign-up is Keycloak's own page, reached from the sign-in page,** and
+  the realm requires email verification
+  ([task 13](13-keycloak-mobile-client.md)'s `baseUrl` gives the verified user
+  a way back). It is checked by hand on a simulator together with sign-in.
+- **The Profile tab's strings** reuse the web's `auth.signIn`, `auth.signOut`
+  and `profile.signIn.*` where they exist; the rest are new and go into the
+  shared strings package in both languages:
+
+  | Where | English | Finnish |
+  |---|---|---|
+  | Signed in | Signed in as {{username}} | Kirjautuneena käyttäjänä {{username}} |
+  | Sign-in failed | Sign-in didn't work. Try again. | Kirjautuminen ei onnistunut. Yritä uudelleen. |
+  | Profile could not load | Couldn't load your profile. | Profiilin lataus ei onnistunut. |
+
+  The profile error offers "Try again" / "Yritä uudelleen", as the web's do.
+- **The username is not cached.** With no connection and an expired access
+  token the user stays signed in and the Profile tab shows the error state;
+  an offline cellar is [iteration 12](../iteration-12.md)'s.
+- **Depends on [task 09](09-shared-packages.md),
+  [task 11](11-app-skeleton.md) and [task 13](13-keycloak-mobile-client.md).**
+
 ## Open questions
 
-**Answered, waiting on an accepted ADR.** Every question raised for this task
-was answered at refinement on 2026-10-30 (Constraints). It stays
-`needs-refinement` only because [the iteration](../iteration-9.md) has a
-decision accepted before the build tasks it binds are refined — here those of
-tasks [05](05-decision-mobile-authentication.md) and
-[06](06-decision-mobile-testing-strategy.md). A second pass moves it once they
-merge, or reopens a question an ADR contradicts.
+**None.**
 
 ## Acceptance criteria
 
@@ -75,9 +114,19 @@ merge, or reopens a question an ADR contradicts.
       clears secure storage and shows the signed-out message, while a refresh
       that fails for any other reason (no network, a 5xx) leaves the user signed
       in — covered by tests ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md))
-- [ ] A rotated refresh token is written to secure storage before the new
-      access token is used, so a request that dies after the refresh does not
-      leave the app holding a spent token — covered by a test
+- [ ] The refresh token a refresh returns is written to secure storage before
+      the new access token is used, so a request that dies after the refresh
+      does not leave the app holding a spent token — covered by a test
+- [ ] Two calls that find the access token expired at the same moment cause
+      one refresh, and both use its result — covered by a test
+- [ ] The sign-in page opens in the app's language, a cancelled sign-in
+      returns quietly to signed-out, and a failed one shows the message above
+      — the first two checked by hand, the message covered by a test
+- [ ] A new account registered from the app's sign-in page and verified from
+      the emailed link ends with the user able to sign in — checked by hand on
+      a simulator and described in the PR
+- [ ] The Profile tab's strings read as the table above in both languages,
+      and "Try again" calls the profile endpoint again — covered by a test
 - [ ] Sign-out online forgets the tokens on the device and revokes them at
       Keycloak, after which the old refresh token is refused; offline, it
       forgets them and completes without a connection — the clearing covered by
