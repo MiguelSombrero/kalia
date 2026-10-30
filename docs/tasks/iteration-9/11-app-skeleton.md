@@ -2,7 +2,7 @@
 
 - **Status:** needs-refinement
 - **Iteration:** [9](../iteration-9.md)
-- **Covers:** DW-1
+- **Covers:** DW-1, DW-4
 
 ## Why
 
@@ -20,7 +20,8 @@ An Expo Router app in `mobile/` with four tabs — Feed, Catalog, Cellar,
 Profile — over placeholder screens, safe areas handled, and the web's
 conventions in place and enforced: TanStack Query behind feature hooks,
 Zustand, react-hook-form with Zod, i18next following the device locale, and
-import boundaries per feature.
+import boundaries per feature. Its lint, type check and unit tests run in
+`make verify-fast`, `make verify` and CI.
 
 ## Non-goals
 
@@ -40,26 +41,51 @@ import boundaries per feature.
 - [ADR-0075](../../adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md) sets the
   web's accessibility bar.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **This task wires the mobile checks into the gates:** lint, type check and
+  Jest unit tests in `make verify-fast`, `make verify` and CI as a required
+  job — moved here from [task 07](07-process-carries-a-third-codebase.md),
+  because this task creates the app they check.
+- **Unit tests are Jest with React Native Testing Library through Expo's
+  preset** ([task 06](06-decision-mobile-testing-strategy.md)).
+- **This task asks the one batched dependency question** for the stack —
+  the Expo SDK, and with it React Native and React, and the libraries the
+  conventions need ([task 02](02-decision-the-mobile-stack.md)).
+- **WCAG 2.2 AA applies to the app,** stated in platform terms: every tab
+  and control has a VoiceOver and TalkBack label, and text scales with the
+  system font size. [Iteration 11](../iteration-11.md) writes the full
+  mobile accessibility conventions down.
+- **The tab labels reuse the web's navigation strings** in en and fi.
+- **The app is usable signed out;** the Profile tab then shows a sign-in
+  prompt rather than being hidden ([task 14](14-sign-in-on-mobile.md)).
+- **A placeholder screen shows its tab's heading and "Coming soon" /
+  "Tulossa pian".**
+- **A device in neither English nor Finnish falls back to the web's default
+  locale.**
+- **Light mode and portrait only** until iteration 11 decides dark mode and
+  the interaction model.
+
 ## Open questions
 
-1. **Does WCAG 2.2 AA apply to the app**, or does the app need a bar of its
-   own stated in platform terms (VoiceOver, TalkBack, Dynamic Type)?
-2. **The tab labels in en and fi**, and whether the Profile tab shows a sign-in
-   prompt when signed out or is hidden.
-3. **What does a placeholder screen say?** A user — the product owner on a
-   simulator — reads it.
-4. **The locale fallback** when the device is in neither English nor Finnish.
-5. **Light and dark mode** — follow the system now, or light only until
-   iteration 11?
-6. **Portrait only**, or every orientation from the start?
+**Answered, waiting on an accepted ADR.** Every question raised for this task
+was answered at refinement on 2026-10-30 (Constraints). It stays
+`needs-refinement` only because [the iteration](../iteration-9.md) has a
+decision accepted before the build tasks it binds are refined — here those of
+tasks [02](02-decision-the-mobile-stack.md),
+[03](03-decision-repo-layout-and-code-sharing.md) and
+[06](06-decision-mobile-testing-strategy.md). A second pass moves it once they
+merge, or reopens a question an ADR contradicts.
 
 ## Acceptance criteria
 
 - [ ] The app launches on both simulators to four tabs, each reachable and
       labelled in the device's language — verified on both, described in the
       PR
-- [ ] A unit test renders each tab's screen and finds its heading, in English
-      and in Finnish
+- [ ] A Jest unit test renders each tab's screen and finds its heading, in
+      English and in Finnish
 - [ ] A lint rule fails when one feature imports another's internals —
       confirmed by a test fixture or a deliberately broken import
-- [ ] `make verify-fast` runs and passes the mobile checks
+- [ ] `make verify-fast` runs the mobile lint, type check and unit tests, and
+      fails when a mobile unit test fails — confirmed by breaking one
+- [ ] CI runs the same checks as a required job

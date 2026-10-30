@@ -1,6 +1,6 @@
 # Task 06: Decide how the mobile app is tested
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -42,22 +42,28 @@ which platform, and what backend an end-to-end flow runs against there.
   verify gate, with `make verify-fast` needing neither Docker nor a build.
 - Test tools are new dependencies — asked, not researched.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **Jest with React Native Testing Library, through Expo's preset.** Vitest
+  is rejected because its React Native support is not first-class.
+- **Maestro for end-to-end flows.** It drives the built app from outside,
+  with nothing compiled into it, so it works with continuously generated
+  native projects as they are. Detox is rejected for the native
+  instrumentation it needs in each build.
+- **CI runs the end-to-end flow on Android only, on a Linux runner against
+  the full Docker stack, as a required check. iOS runs the same flow locally,
+  through `make verify`.** One real stack, no mock layer. The repository is
+  public, so Actions minutes — macOS ones included — are free; iOS stays out
+  of CI because macOS runners have no Docker to run the stack, not because of
+  cost. Running iOS in CI against a mocked API was rejected as a second
+  backend to keep in step.
+- **`make verify-fast` runs mobile lint, type check and unit tests;** native
+  builds and the end-to-end flow are in `make verify` only.
+- **No coverage threshold,** matching the web, which has none.
+
 ## Open questions
 
-1. **Jest with React Native Testing Library**, as planned, through Expo's
-   preset — or Vitest, which the web already uses?
-2. **Maestro or Detox** for end-to-end? The ADR records what the other would
-   have cost, including what each needs installed on a CI runner.
-3. **Which platforms does CI run end-to-end on?** Android on Linux only, iOS on
-   macOS as well, or iOS locally only — depending on what macOS minutes cost
-   for this repository.
-4. **What backend does a CI end-to-end flow talk to?** The full Docker stack
-   where the runner has Docker, a recorded or mocked API where it does not, or
-   both by platform.
-5. **What belongs in `make verify-fast`** — lint, type check and unit tests
-   presumably, with native builds and end-to-end flows in `make verify` only?
-6. **Coverage expectations** — does the mobile app carry a coverage threshold
-   the way the web does, or none until it has features?
+**None.**
 
 ## Acceptance criteria
 

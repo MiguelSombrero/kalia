@@ -1,6 +1,6 @@
 # Task 18: The documentation says what iteration 8.5 built
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -52,8 +52,8 @@ mention a pointer.
 
 ## Open questions
 
-The sweep raised none: all six findings are untagged, so each is ready as
-written. Refinement confirms that before the status moves.
+**None.** The sweep raised none, all six findings being untagged, and
+refinement on 2026-10-30 confirmed each is ready as written.
 
 ## Acceptance criteria
 

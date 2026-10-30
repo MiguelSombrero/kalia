@@ -1,6 +1,6 @@
 # Task 20: No signed token or query string reaches a log
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -34,10 +34,16 @@ on success or on failure.
 - [ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md):
   the edge's role and configuration.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **Keycloak keeps its access log, with the query string stripped from its
+  pattern.** Turning it off was rejected: server-to-server calls to
+  Keycloak, such as the BFF's token requests, never pass through the edge,
+  so the edge's log cannot stand in for it.
+
 ## Open questions
 
-1. **Keycloak's access log: strip its request line, or turn it off** and rely
-   on the edge's log, which already records each request?
+**None.**
 
 ## Acceptance criteria
 

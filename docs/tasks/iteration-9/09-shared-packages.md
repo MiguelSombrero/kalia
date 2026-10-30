@@ -21,9 +21,10 @@ set of generated types.
 
 ## Scope
 
-A shared package holds the generated API types and client, generated once from
-one spec, with a mutator per platform; another holds the en/fi strings. The web
-consumes both instead of its own copies, and the mobile app can.
+A shared package under `packages/` holds the generated API types and client,
+generated once from the committed spec, with a mutator per platform; another
+holds the en/fi strings. The web consumes both instead of its own copies, and
+the mobile app can. A breaking change to the spec fails CI.
 
 ## Non-goals
 
@@ -41,17 +42,31 @@ consumes both instead of its own copies, and the mobile app can.
 - [ADR-0011](../../adr/0011-i18next-localization.md): i18next with en and fi.
 - Depends on [task 08](08-workspaces-refactor.md).
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **One generation, from the committed spec, with a mutator per platform
+  injected over one set of types.** A generation per platform was rejected
+  as two copies of the types.
+- **This task builds [task 04](04-decision-api-compatibility-policy.md)'s
+  enforcement:** the committed spec, the backend test that fails when it
+  differs from the served one, and the CI job that diffs it against `dev`'s
+  and fails on a breaking change. `api-client-drift` becomes that backend
+  test plus a regenerate-and-diff of the package, with no Docker. The diff
+  tool's version is this task's dependency question.
+- **All of `common.json` is shared now,** moved whole. Splitting it into
+  shared and per-app namespaces was rejected for now: a web-only string in
+  the app's bundle costs nothing.
+- **The web's missing-translation check moves into the strings package.**
+
 ## Open questions
 
-1. **One generated client with an injected mutator, or one generation per
-   platform** from the same spec?
-2. **Where does the `api-client-drift` check run**, and against what, once the
-   client is in a package — the answer depends on task 04.
-3. **Which strings are shared?** All of `common.json`, or only what both apps
-   show, with each app keeping its own file for the rest? Namespacing decides
-   whether a web-only string can leak into the app's bundle.
-4. **How is a missing translation caught** in the shared package — the web's
-   existing check moved, or a new one?
+**Answered, waiting on an accepted ADR.** Every question raised for this task
+was answered at refinement on 2026-10-30 (Constraints). It stays
+`needs-refinement` only because [the iteration](../iteration-9.md) has a
+decision accepted before the build tasks it binds are refined — here those of
+tasks [03](03-decision-repo-layout-and-code-sharing.md) and
+[04](04-decision-api-compatibility-policy.md). A second pass moves it once
+they merge, or reopens a question an ADR contradicts.
 
 ## Acceptance criteria
 
@@ -63,6 +78,9 @@ consumes both instead of its own copies, and the mobile app can.
       `mobile/`, or from a platform-only module
 - [ ] `make verify-fast` is green, and the drift check fails when the spec and
       the generated client disagree — confirmed by breaking one
+- [ ] A backend test fails when the committed spec differs from the one the
+      app serves, and the CI diff job fails on a removed response field —
+      each confirmed by breaking one
 
 ## Notes
 

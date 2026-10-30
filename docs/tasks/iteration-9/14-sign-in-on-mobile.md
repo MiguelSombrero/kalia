@@ -34,20 +34,34 @@ Simulator and the Android emulator.
 - [Task 09](09-shared-packages.md)'s mobile mutator attaches the token.
 - [Task 06](06-decision-mobile-testing-strategy.md)'s testing strategy.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **The app shows the profile's username,** read from the profile endpoint
+  ([ADR-0049](../../adr/0049-profile-module-and-public-identity.md));
+  `/api/v1/me` was removed in iteration 8.5.
+- **The app is usable signed out.** Sign-in is a choice on the Profile tab,
+  not a gate on launch, as the catalog is anonymous on the web.
+- **When a failed refresh signs the user out, they read** "You were signed
+  out. Sign in again to continue." / "Sinut kirjattiin ulos. Kirjaudu
+  uudelleen jatkaaksesi."
+- **Sign-out, online or offline, is
+  [task 05](05-decision-mobile-authentication.md)'s decision:** the device
+  forgets the tokens at once, and revokes them at Keycloak when it can.
+- **Expiry is exercised with a clock the test controls,** not a realm with
+  short lifespans.
+- **Sign-in is checked by hand on both simulators;** the iteration's
+  automated end-to-end flow stays anonymous
+  ([task 15](15-walking-skeleton-slice.md)).
+
 ## Open questions
 
-1. **What does "shows the signed-in user" show?** The username from
-   `/api/v1/me`, the profile's display name
-   ([ADR-0049](../../adr/0049-profile-module-and-public-identity.md)), or both.
-2. **Is the app usable signed out?** The catalog is anonymous on the web; if
-   the app is too, sign-in is a choice on the Profile tab rather than a gate on
-   launch.
-3. **What does the user read when a refresh fails** and they are signed out
-   without asking — in en and fi?
-4. **Sign-out while offline** — forget the tokens locally and tell the user, or
-   refuse until there is a connection?
-5. **How is expiry exercised** — a realm with short lifespans for the test, or
-   a clock the test controls?
+**Answered, waiting on an accepted ADR.** Every question raised for this task
+was answered at refinement on 2026-10-30 (Constraints). It stays
+`needs-refinement` only because [the iteration](../iteration-9.md) has a
+decision accepted before the build tasks it binds are refined — here those of
+tasks [05](05-decision-mobile-authentication.md) and
+[06](06-decision-mobile-testing-strategy.md). A second pass moves it once they
+merge, or reopens a question an ADR contradicts.
 
 ## Acceptance criteria
 

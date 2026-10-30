@@ -1,6 +1,6 @@
 # Task 04: Decide the API compatibility policy
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -44,27 +44,36 @@ ADR-0012 is reaffirmed or amended against two generated clients.
 - A diffing tool for OpenAPI would be a new dependency — asked, not researched
   (`CLAUDE.md`).
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **Both clients promise to ignore unknown fields and to treat an unknown
+  enum value as a fallback.** That makes these additive: a new endpoint, a
+  new optional response field, a new optional request parameter, a new enum
+  value. **Breaking:** removing, renaming or retyping anything, making an
+  optional field required, and tightening a request's validation.
+- **A deprecated element lives until [task 12](12-app-config-endpoint.md)'s
+  minimum supported version excludes every app build that uses it** —
+  measured in releases, not time. A time floor is added once the app is
+  distributed beyond the product owner's own phone.
+- **`/api/v2`, for the whole API, only for a breaking change that cannot be
+  made as a new path beside the old one;** the normal route is the new path,
+  with the old one deprecated. Versioning per resource was rejected.
+- **A deprecation is announced by the OpenAPI `deprecated` flag only.** The
+  generated client turns it into `@deprecated`, which lint flags at every
+  use. `Deprecation` and `Sunset` headers wait for distribution beyond the
+  product owner's phone, since a release-measured window has no date to put
+  in them.
+- **The OpenAPI spec is committed, and a breaking change fails CI.** A
+  backend test fails when the committed spec differs from the one the app
+  serves; both clients generate from the committed file, so neither needs a
+  Docker stack nor a running backend; and a CI job diffs the spec against
+  `dev`'s and fails on a breaking change. ADR-0012 is amended with the
+  two-client reasoning. The diff tool is a new dependency whose version is
+  asked in [task 09](09-shared-packages.md), which builds the job.
+
 ## Open questions
 
-1. **What is additive?** New endpoints and new optional response fields
-   plainly are. A new enum value is not, for a client that switches on it
-   exhaustively; nor is tightening validation on a request field. The list has
-   to be explicit.
-2. **What does the client promise in return?** Ignoring unknown fields and
-   treating unknown enum values as a fallback is what makes "additive" safe; it
-   is a rule for both clients, not only the server.
-3. **What triggers `/api/v2`**, and is versioning per path prefix for the whole
-   API or per resource?
-4. **The deprecation window**, measured in time or in app releases — and what
-   it means while the only installed app is the product owner's own
-   ([iteration 10](../iteration-10.md)).
-5. **How is a deprecation announced on the wire?** `Deprecation` and `Sunset`
-   response headers, the OpenAPI `deprecated` flag, or both.
-6. **Is a breaking change caught mechanically?** An OpenAPI diff in CI against
-   the last released spec, which needs the spec committed or published — the
-   ADR-0012 question in its concrete form.
-7. **Does ADR-0012's "no committed spec" still hold**, given the drift check's
-   Docker cost per client?
+**None.**
 
 ## Acceptance criteria
 

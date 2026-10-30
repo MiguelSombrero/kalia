@@ -1,6 +1,6 @@
 # Task 19: What a review decides outlives the pull request it was made in
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -40,16 +40,26 @@ deferred it.
 - A Checkstyle plugin would be a new dependency, so ask rather than research
   (`CLAUDE.md`).
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **The text-block checker is a script in `make check`, over all backend
+  Java,** and the ten existing violations are fixed in this task. Checking
+  added lines only was rejected because it leaves the ten in place; a
+  Checkstyle rule because it is a new dependency for one pattern.
+- **A deferred finding becomes a [quality-backlog](../quality-backlog.md)
+  entry with its own ID, in the PR that defers it,** and
+  `check-pr-body.mjs` fails a body that defers a finding without naming
+  that ID. The sweep already triages that file; the product backlog is for
+  product work, and the iteration index would grow mid-iteration without
+  the product owner's say.
+- **The follow-ups already lost are recovered now.** This task reads the
+  bodies of #398, #400, #425 and #452 and files each finding that still
+  holds as a quality-backlog entry; one that no longer holds is named as
+  such in the PR.
+
 ## Open questions
 
-1. **Which checker for text blocks?** A script in `make check` with the ten
-   existing lines fixed, the same script on added lines only, or a Checkstyle
-   rule.
-2. **Where does a deferred review finding go?** A `docs/tasks/backlog.md`
-   entry, a quality-backlog entry, or the current iteration's index, and
-   whether `check-pr-body.mjs` enforces it.
-3. **What happens to the follow-ups already lost** from #398, #400, #425 and
-   #452: recover them into the backlog now, or leave them to the next sweep?
+**None.**
 
 ## Acceptance criteria
 
@@ -60,6 +70,8 @@ deferred it.
 - [ ] `implement-task` and the PR template name the home for a deferred
       finding, and if `check-pr-body.mjs` enforces it, its test covers a body
       that defers without one
+- [ ] Each still-valid follow-up from #398, #400, #425 and #452 has a
+      quality-backlog entry, and the PR names any that no longer holds
 - [ ] `make verify-fast` is green
 
 ## Notes
