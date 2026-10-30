@@ -66,7 +66,7 @@ test("reads tracked backend Java only", () => {
   const bad = 'class B { String s = "a"\n + "b"; }\n';
   try {
     execFileSync("git", ["init", "-q"], { cwd: root, env: cleanEnv });
-    for (const file of ["backend/src/main/B.java", "backend/src/test/T.java", "frontend/C.java", "backend/D.java.txt"]) {
+    for (const file of ["backend/src/main/B.java", "backend/src/test/T.java", "web/C.java", "backend/D.java.txt"]) {
       mkdirSync(dirname(resolve(root, file)), { recursive: true });
       writeFileSync(resolve(root, file), bad);
     }
@@ -74,7 +74,7 @@ test("reads tracked backend Java only", () => {
     writeFileSync(resolve(root, "backend/src/main/Untracked.java"), bad);
     execFileSync(
       "git",
-      ["add", "backend/src/main/B.java", "backend/src/test/T.java", "frontend/C.java", "backend/D.java.txt"],
+      ["add", "backend/src/main/B.java", "backend/src/test/T.java", "web/C.java", "backend/D.java.txt"],
       { cwd: root, env: cleanEnv },
     );
     assert.deepEqual(checkBackendJava(root), [

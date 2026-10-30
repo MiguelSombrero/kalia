@@ -71,11 +71,11 @@ test("ignores an image git does not track", () => {
 
 test("allows an image under an allowed directory and still fails one beside it", () => {
   check(
-    { tracked: ["frontend/public/brand/mark.png", "frontend/e2e/shot.png"] },
-    ["frontend/public/brand"],
+    { tracked: ["web/public/brand/mark.png", "web/e2e/shot.png"] },
+    ["web/public/brand"],
     (failures) => {
       assert.equal(failures.length, 1);
-      assert.match(failures[0], /frontend\/e2e\/shot\.png/);
+      assert.match(failures[0], /web\/e2e\/shot\.png/);
     },
   );
 });
@@ -99,7 +99,7 @@ test("reads the repository it is given even when a hook has exported GIT_DIR", (
 });
 
 test("an allowed directory does not match a directory that merely shares its prefix", () => {
-  check({ tracked: ["frontend/public/brand-old/mark.png"] }, ["frontend/public/brand"], (failures) =>
+  check({ tracked: ["web/public/brand-old/mark.png"] }, ["web/public/brand"], (failures) =>
     assert.equal(failures.length, 1),
   );
 });

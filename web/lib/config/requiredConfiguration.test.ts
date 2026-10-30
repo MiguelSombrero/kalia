@@ -6,7 +6,7 @@ const ALL_REQUIRED = {
   BACKEND_URL: "http://backend:8080",
   AUTH_URL: "http://localhost:3000",
   AUTH_SECRET: "test-secret",
-  AUTH_KEYCLOAK_ID: "kalia-frontend",
+  AUTH_KEYCLOAK_ID: "kalia-web",
   AUTH_KEYCLOAK_SECRET: "test-secret",
   AUTH_KEYCLOAK_ISSUER: "http://localhost:8081/realms/kalia",
   AUTH_KEYCLOAK_INTERNAL_ORIGIN: "http://keycloak:8080",

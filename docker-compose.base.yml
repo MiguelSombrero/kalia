@@ -15,7 +15,7 @@
 # to set it). Do not reintroduce a fixed `name:`.
 #
 # The host ports are variables too, so worktrees can run a stack each at the
-# same time: `make stack-env` writes FRONTEND_PORT, BACKEND_PORT,
+# same time: `make stack-env` writes WEB_PORT, BACKEND_PORT,
 # KEYCLOAK_PORT, POSTGRES_PORT, VALKEY_PORT and MAILPIT_PORT into a
 # worktree's own root .env, and unset they are the values below. Every
 # address that names one of them is built from it here, so the issuer Keycloak
@@ -23,8 +23,8 @@
 # ports (keycloak:8080, backend:8080, postgres:5432) never change: each
 # stack has its own network.
 #
-# The frontend, backend and Keycloak publish no port of their own: the `edge`
-# proxy publishes FRONTEND_PORT, BACKEND_PORT and KEYCLOAK_PORT and forwards
+# The web app, backend and Keycloak publish no port of their own: the `edge`
+# proxy publishes WEB_PORT, BACKEND_PORT and KEYCLOAK_PORT and forwards
 # each to its service (ADR-0090). Anything on the host reaches them through it.
 
 services:
@@ -39,7 +39,7 @@ services:
       # every actuator endpoint but health (ADR-0088, backend/README.md)
       ACTUATOR_ENDPOINTS: health,prometheus
       # Two addresses for one Keycloak, the same split ADR-0025 records for
-      # the frontend: the issuer is the identity stamped into every token
+      # the web app: the issuer is the identity stamped into every token
       # (KC_HOSTNAME below), while the JWKS fetch must dial the compose
       # network name because that public address is loopback-only on the
       # host. No depends_on for keycloak: the key set is fetched on the
@@ -50,7 +50,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    # Published by `edge` as BACKEND_PORT; the frontend reaches it directly as
+    # Published by `edge` as BACKEND_PORT; the web app reaches it directly as
     # http://backend:8080.
     healthcheck:
       # Asks the app whether it is ready, not merely whether the port is open:
@@ -61,8 +61,12 @@ services:
       timeout: 3s
       retries: 20
 
-  frontend:
-    build: ./frontend
+  web:
+    # The repository root is the context, not web/: the lockfile and the
+    # workspaces' package.json files are outside it (ADR-0092).
+    build:
+      context: .
+      dockerfile: web/Dockerfile
     environment:
       BACKEND_URL: http://backend:8080
       # Counters at /api/metrics for this bearer token; unset, the route does
@@ -72,22 +76,22 @@ services:
       # straight into redirect/form-action URLs it builds — that's not the
       # host the browser can reach, and our CSP's form-action 'self' then
       # silently blocks the mismatched-origin submission. Same value as
-      # keycloak-config's FRONTEND_URL below (ADR-0054): they name the same
+      # keycloak-config's WEB_URL below (ADR-0054): they name the same
       # origin to two different consumers of it.
-      AUTH_URL: ${FRONTEND_URL:-http://localhost:${FRONTEND_PORT:-3000}}
+      AUTH_URL: ${WEB_URL:-http://localhost:${WEB_PORT:-3000}}
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET, see README.md}
-      AUTH_KEYCLOAK_ID: kalia-frontend
+      AUTH_KEYCLOAK_ID: kalia-web
       # No default: this is the same secret keycloak-config-cli writes into
-      # the kalia-frontend client below, and a wrong-but-present value fails
+      # the kalia-web client below, and a wrong-but-present value fails
       # every sign-in far less legibly than compose refusing to start.
-      AUTH_KEYCLOAK_SECRET: ${KALIA_FRONTEND_CLIENT_SECRET:?set KALIA_FRONTEND_CLIENT_SECRET in a root .env file, see README.md}
+      AUTH_KEYCLOAK_SECRET: ${KALIA_WEB_CLIENT_SECRET:?set KALIA_WEB_CLIENT_SECRET in a root .env file (it was KALIA_FRONTEND_CLIENT_SECRET; `make stack-env` renames it), see README.md}
       # Keycloak's one public, canonical identity (matches KC_HOSTNAME
       # below) — every token/discovery-document/callback `iss` it issues
       # names this, so it's what Auth.js must validate against, even
-      # though the frontend container can't actually dial it directly
+      # though the web container can't actually dial it directly
       # (see AUTH_KEYCLOAK_INTERNAL_ORIGIN and auth.ts's customFetch).
       AUTH_KEYCLOAK_ISSUER: http://localhost:${KEYCLOAK_PORT:-8081}/realms/kalia
-      # Where the frontend container actually reaches Keycloak — its
+      # Where the web container actually reaches Keycloak — its
       # published port is loopback-only on the host, unreachable from
       # inside another container.
       AUTH_KEYCLOAK_INTERNAL_ORIGIN: http://keycloak:8080
@@ -144,7 +148,7 @@ services:
       # Fixed to the public address, not request-derived: Keycloak stamps
       # whichever hostname received a given request into the `iss` it
       # returns for that request, so without this, the browser (reaching
-      # Keycloak via 127.0.0.1:8081) and the frontend container (reaching
+      # Keycloak via 127.0.0.1:8081) and the web container (reaching
       # it as keycloak:8080) would get inconsistent self-reported
       # identities — confirmed live: "unexpected iss (issuer) response
       # parameter value". Must match AUTH_KEYCLOAK_ISSUER above. Also
@@ -212,16 +216,16 @@ services:
       # below and in scripts/check-keycloak-realm-config.mjs — a trailing
       # slash silently produces a double slash that both sides still agree
       # on, so nothing catches it.
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:${FRONTEND_PORT:-3000}}
+      WEB_URL: ${WEB_URL:-http://localhost:${WEB_PORT:-3000}}
       KEYCLOAK_SSL_REQUIRED: ${KEYCLOAK_SSL_REQUIRED:?set KEYCLOAK_SSL_REQUIRED (none, external or all), see README.md}
-      KALIA_FRONTEND_CLIENT_SECRET: ${KALIA_FRONTEND_CLIENT_SECRET:?set KALIA_FRONTEND_CLIENT_SECRET in a root .env file, see README.md}
+      KALIA_WEB_CLIENT_SECRET: ${KALIA_WEB_CLIENT_SECRET:?set KALIA_WEB_CLIENT_SECRET in a root .env file (it was KALIA_FRONTEND_CLIENT_SECRET; `make stack-env` renames it), see README.md}
       # SMTP for the realm's mail (email verification, password reset). These
       # defaults point Keycloak at the mailpit service below, which needs no
       # auth or TLS; a deployment overrides them to reach a real sender (Gmail
       # via smtp.gmail.com:587, auth on, STARTTLS on, an App Password as
       # KEYCLOAK_SMTP_PASSWORD). The realm file holds only $(env:...)
       # placeholders — no credential is committed, same rule as
-      # KALIA_FRONTEND_CLIENT_SECRET above. keycloak-config-cli resolves
+      # KALIA_WEB_CLIENT_SECRET above. keycloak-config-cli resolves
       # these; scripts/check-keycloak-realm-config.mjs mirrors the defaults so
       # it can run without compose.
       KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST:-mailpit}
@@ -242,7 +246,7 @@ services:
     # Written to a file rather than passed as `--requirepass <password>`, so
     # the password never appears in the container's process list. The
     # character check is because the same value is spliced unencoded into the
-    # frontend's VALKEY_URL and into this config line.
+    # web app's VALKEY_URL and into this config line.
     command:
       - sh
       - -c
@@ -284,7 +288,7 @@ services:
 
   edge:
     # The one thing the host can reach (ADR-0090): request and body-size limits
-    # per client address in front of the frontend, backend and Keycloak, and
+    # per client address in front of the web app, backend and Keycloak, and
     # the client address those three trust. No depends_on: the upstreams are
     # resolved on each request, so it is up before they are and survives one
     # being recreated.
@@ -292,7 +296,7 @@ services:
     ports:
       # Bound to localhost only, same convention as the other services.
       # Container-side 3000, 8080 and 8081 are edge/nginx.conf's server blocks.
-      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
       - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8081"
     healthcheck:

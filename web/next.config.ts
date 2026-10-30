@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 import { buildCspHeader } from "./lib/config/cspHeader";
 
@@ -6,6 +7,11 @@ const cspHeader = buildCspHeader(process.env.NODE_ENV);
 const nextConfig: NextConfig = {
   // Self-contained server bundle for the Docker runtime image
   output: "standalone",
+
+  // Tracing starts at the repository root, because the workspace packages
+  // under packages/ sit outside web/ and would otherwise be left out of the
+  // standalone output (ADR-0092).
+  outputFileTracingRoot: path.join(__dirname, ".."),
 
   poweredByHeader: false,
 

@@ -146,7 +146,7 @@ export const SearchFilters = async ({
         {t("catalog.filters.submit")}
       </Button>
       {hasFilters(params) && (
-        // Do not swap for next/link: query-only navigation (frontend/README.md traps).
+        // Do not swap for next/link: query-only navigation (web/README.md traps).
         <a
           href={catalogHref(locale)}
           className="hidden self-start py-1 text-sm underline underline-offset-2 md:inline-block"

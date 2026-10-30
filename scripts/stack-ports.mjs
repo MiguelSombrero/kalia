@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export const PORT_DEFAULTS = {
-  FRONTEND_PORT: 3000,
+  WEB_PORT: 3000,
   BACKEND_PORT: 8080,
   KEYCLOAK_PORT: 8081,
   POSTGRES_PORT: 5432,

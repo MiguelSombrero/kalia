@@ -42,7 +42,7 @@ export const startSignUp = async (formData: FormData) => {
 
 // Also ends the Keycloak SSO session via end_session_endpoint, this browser's
 // only (id_token_hint names this Auth.js session, ADR-0030). Do not turn this
-// into a plain form POST — frontend/README.md's "Never navigate to another
+// into a plain form POST — web/README.md's "Never navigate to another
 // origin with a real `<form>`" trap; curl won't reproduce the failure.
 export const federatedSignOut = async () => {
   const sessionToken = await currentSessionToken();

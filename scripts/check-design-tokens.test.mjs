@@ -56,9 +56,9 @@ const designMd = [
 
 function fixture({ css = globalsCss, design = designMd } = {}) {
   const root = mkdtempSync(resolve(tmpdir(), "design-token-check-"));
-  mkdirSync(resolve(root, "frontend/app"), { recursive: true });
+  mkdirSync(resolve(root, "web/app"), { recursive: true });
   mkdirSync(resolve(root, "docs"), { recursive: true });
-  if (css !== null) writeFileSync(resolve(root, "frontend/app/globals.css"), css);
+  if (css !== null) writeFileSync(resolve(root, "web/app/globals.css"), css);
   if (design !== null) writeFileSync(resolve(root, "docs/design.md"), design);
   return root;
 }

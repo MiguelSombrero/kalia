@@ -16,14 +16,14 @@ const SELF_DIR = dirname(fileURLToPath(import.meta.url));
  * @returns {string[]} one message per failure; empty means OK
  */
 export function checkDesignTokens(root) {
-  const cssPath = resolve(root, "frontend/app/globals.css");
+  const cssPath = resolve(root, "web/app/globals.css");
   const designPath = resolve(root, "docs/design.md");
 
   let css;
   try {
     css = readFileSync(cssPath, "utf8");
   } catch {
-    return [`frontend/app/globals.css not found at ${cssPath}`];
+    return [`web/app/globals.css not found at ${cssPath}`];
   }
   let design;
   try {
@@ -34,7 +34,7 @@ export function checkDesignTokens(root) {
 
   const declared = themeTokens(css);
   if (declared === null) {
-    return ["frontend/app/globals.css: no `@theme` block — nothing declares the semantic layer"];
+    return ["web/app/globals.css: no `@theme` block — nothing declares the semantic layer"];
   }
   const rows = meaningRows(design);
   if (rows === null) {

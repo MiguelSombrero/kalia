@@ -27,7 +27,7 @@ const publicCellarAt = async (encodedUsername: string, page: number): Promise<Pu
 };
 
 // generateMetadata and the page read the same page, so the two requests are one
-// fetch (frontend/README.md).
+// fetch (web/README.md).
 export const generateMetadata = async ({ params, searchParams }: Props): Promise<Metadata> => {
   const { locale: rawLocale, username } = await params;
   const page = toPublicCellarPage((await searchParams).page);

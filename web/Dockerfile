@@ -1,10 +1,15 @@
-# Build stage
+# Build stage. The context is the repository root, not web/ (ADR-0092): the
+# lockfile and the packages are outside web/. Only the manifests are copied
+# before the install, so the install layer is reused until a dependency
+# changes, and `--workspace web` leaves out the other workspaces' dependencies.
 FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+COPY web/package.json web/
+COPY --parents packages/*/package.json ./
+RUN npm ci --workspace web
 COPY . .
-RUN npm run build
+RUN npm run build --workspace web
 
 # Runtime stage — Next.js standalone output (see next.config.ts)
 FROM node:26-alpine
@@ -26,7 +31,10 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
     /opt/yarn-v* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 USER node
 WORKDIR /app
-COPY --from=build --chown=node:node /app/.next/standalone ./
-COPY --from=build --chown=node:node /app/.next/static ./.next/static
+# outputFileTracingRoot is the repository root (next.config.ts), so the
+# standalone server sits in web/ inside the output, beside the traced
+# node_modules at its root.
+COPY --from=build --chown=node:node /app/web/.next/standalone ./
+COPY --from=build --chown=node:node /app/web/.next/static ./web/.next/static
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "web/server.js"]

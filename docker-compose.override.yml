@@ -10,7 +10,7 @@ services:
       LOG_LEVEL: DEBUG
       SPRINGDOC_ENABLED: "true"
 
-  frontend:
+  web:
     environment:
       # Lets the dev AUTH_SECRET from docker-compose.dev.env through
       # verifyRequiredConfiguration, which refuses it everywhere else.
@@ -27,13 +27,13 @@ services:
       IMPORT_MANAGED_CLIENT: no-delete
       # The backend's public address, for the kalia-swagger client's redirect
       # URI and web origin: Swagger UI is served from the host port. No
-      # trailing slash, as for FRONTEND_URL in the base.
+      # trailing slash, as for WEB_URL in the base.
       BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:${BACKEND_PORT:-8080}}
     volumes:
       - ./keycloak/realm-swagger.json:/config/kalia-realm-swagger.json:ro
 
   keycloak-seed:
-    # node:26-alpine matches frontend/Dockerfile's build stage; the script
+    # node:26-alpine matches web/Dockerfile's build stage; the script
     # is dependency-free, so no image build is needed for this one-shot job.
     image: node:26-alpine
     depends_on:

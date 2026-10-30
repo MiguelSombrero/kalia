@@ -4,7 +4,7 @@ import { expect, keycloakAdminToken, test, uniqueUsername } from "./support/keyc
 import { expectNoA11yViolations } from "./support/a11y";
 import { contrast, rgbOf } from "./support/colour";
 import { expectNoSidewaysScroll } from "./support/layout";
-import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 const VIEWPORTS = [
   { width: 375, height: 812 },
@@ -130,7 +130,7 @@ const atBothWidths = async (page: Page, check: () => Promise<void>) => {
 
 const openSignIn = async (page: Page, { locale, signIn }: Locale) => {
   await page.setViewportSize(VIEWPORTS[1]);
-  await page.goto(`${FRONTEND_ORIGIN}/${locale}`);
+  await page.goto(`${WEB_ORIGIN}/${locale}`);
   await page.getByRole("button", { name: signIn, exact: true }).click();
   await page.locator("#kc-form-login").waitFor();
 };

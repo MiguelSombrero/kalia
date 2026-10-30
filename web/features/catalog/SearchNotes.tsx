@@ -25,7 +25,7 @@ export const PastLastPage = async ({
       headingLevel={2}
       hint={t("catalog.pastLastPage.hint", { count: result.totalPages })}
       action={
-        // Do not swap for next/link: query-only navigation (frontend/README.md traps).
+        // Do not swap for next/link: query-only navigation (web/README.md traps).
         <a href={catalogHref(locale, { ...params, page: undefined })} className="font-medium underline underline-offset-2">
           {t("catalog.pastLastPage.firstPage")}
         </a>

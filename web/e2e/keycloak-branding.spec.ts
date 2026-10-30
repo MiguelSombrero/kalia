@@ -8,7 +8,7 @@ import { waitForMessageTo } from "./support/mailpit";
 import { expectNoA11yViolations } from "./support/a11y";
 import { expectNoSidewaysScroll } from "./support/layout";
 import { contrast, rgbOf } from "./support/colour";
-import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 // headerTop is where every Keycloak page's lockup starts (ADR-0074: the same
 // height on every page, never centred vertically).
@@ -29,7 +29,7 @@ test.describe("Keycloak pages follow the app's language", () => {
     { locale: "fi", htmlLang: "fi", loginWord: "Käyttäjätunnus tai sähköpostiosoite", registerWord: "Rekisteröidy" },
   ]) {
     test(`signing in from /${locale} reaches a ${htmlLang} Keycloak login form`, async ({ page }) => {
-      await page.goto(`${FRONTEND_ORIGIN}/${locale}`);
+      await page.goto(`${WEB_ORIGIN}/${locale}`);
       await clickSignIn(page);
 
       await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
@@ -43,7 +43,7 @@ test.describe("Keycloak pages follow the app's language", () => {
     test(`the registration page reached from /${locale} is in ${htmlLang}`, async ({
       page,
     }) => {
-      await page.goto(`${FRONTEND_ORIGIN}/${locale}/sign-up`);
+      await page.goto(`${WEB_ORIGIN}/${locale}/sign-up`);
       await page.getByRole("checkbox").check();
       await page.getByRole("button", { name: /Continue to sign-up|Jatka rekisteröitymiseen/ }).click();
       await page.locator("#kc-register-form").waitFor();
@@ -54,7 +54,7 @@ test.describe("Keycloak pages follow the app's language", () => {
     });
 
     test(`the password-reset page reached from /${locale} is in ${htmlLang}`, async ({ page }) => {
-      await page.goto(`${FRONTEND_ORIGIN}/${locale}`);
+      await page.goto(`${WEB_ORIGIN}/${locale}`);
       await clickSignIn(page);
       await page.getByRole("link", { name: /Forgot Password\?|Unohditko salasanan\?/i }).click();
 
@@ -123,7 +123,7 @@ const expectOpenColumn = async (page: Page, viewport: (typeof VIEWPORTS)[number]
 const expectKaliaLockup = async (page: Page) => {
   const home = page.locator("#kc-header-wrapper").getByRole("link", { name: "Kalia" });
   await expect(home).toBeVisible();
-  await expect(home).toHaveAttribute("href", FRONTEND_ORIGIN);
+  await expect(home).toHaveAttribute("href", WEB_ORIGIN);
   const mark = await home.evaluate((a) => getComputedStyle(a, "::before").backgroundImage);
   const url = mark.match(/url\("?([^")]+)"?\)/)?.[1];
   expect(url, `the lockup draws no mark: ${mark}`).toMatch(/\/img\/kalia-mark\.svg$/);
@@ -169,7 +169,7 @@ test.describe("Keycloak pages carry Kalia's identity at both widths", () => {
   ]) {
     const openLogin = async (page: Page) => {
       await page.setViewportSize({ width: 1280, height: 800 });
-      await page.goto(`${FRONTEND_ORIGIN}/${locale}`);
+      await page.goto(`${WEB_ORIGIN}/${locale}`);
       await clickSignIn(page);
       await page.locator("#kc-form-login").waitFor();
       expect(await langOf(page)).toBe(locale);
@@ -218,14 +218,14 @@ test.describe("Keycloak pages carry Kalia's identity at both widths", () => {
 
 test.describe("the locale survives the round trip", () => {
   test("landing on /fi and signing in returns to /fi", async ({ page, account }) => {
-    await page.goto(`${FRONTEND_ORIGIN}/fi`);
+    await page.goto(`${WEB_ORIGIN}/fi`);
     await clickSignIn(page);
 
     await page.locator("#username").fill(account.username);
     await page.locator("#password").fill(account.password);
     await page.getByRole("button", { name: /Kirjaudu|Sign In/ }).click();
 
-    await expect(page).toHaveURL(`${FRONTEND_ORIGIN}/fi`);
+    await expect(page).toHaveURL(`${WEB_ORIGIN}/fi`);
     await expect(page.getByRole("link", { name: /^Profiili: / })).toBeVisible();
 
     // Sign back out: this spec shares the worker `account` with the other
@@ -242,7 +242,7 @@ test.describe("the verification email follows the same language", () => {
     const username = uniqueUsername("fi-signup");
     const email = `${username}@example.com`;
 
-    await page.goto(`${FRONTEND_ORIGIN}/fi/sign-up`);
+    await page.goto(`${WEB_ORIGIN}/fi/sign-up`);
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Jatka rekisteröitymiseen" }).click();
 

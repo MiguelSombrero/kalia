@@ -5,13 +5,13 @@ import nextTs from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 
-// Selectors for the frontend's import layers (ADR-0012). Two of them carry a
+// Selectors for the web app's import layers (ADR-0012). Two of them carry a
 // second, file-category arm: Next.js and Auth.js require those modules at the
 // project root, and eslint-plugin-boundaries can only make a *folder* an
 // element without its deprecated `mode` option.
 const app = [{ element: { type: "app" } }, { file: { categories: "app-root" } }];
 const feature = { element: { type: "feature" } };
-// A feature's public surface (frontend/README.md's Structure bullet) — the
+// A feature's public surface (web/README.md's Structure bullet) — the
 // only part of `feature` an outside consumer may import.
 const featureIndex = { element: { type: "feature" }, file: { categories: "feature-index" } };
 const componentsUi = { element: { type: "components-ui" } };
@@ -24,18 +24,18 @@ const ownGeneratedTag = {
 };
 
 // Prefer arrow functions over function declarations/expressions — see
-// frontend/README.md. A const because a later config object that sets
+// web/README.md. A const because a later config object that sets
 // `no-restricted-syntax` replaces these options rather than adding to them, so
 // the heading rule below has to repeat them.
 const codeStyleSyntax = [
   {
     selector: "FunctionDeclaration",
     message:
-      "Prefer arrow functions: const name = () => { … } (frontend convention).",
+      "Prefer arrow functions: const name = () => { … } (web app convention).",
   },
   {
     selector: "FunctionExpression",
-    message: "Prefer arrow functions over function expressions (frontend convention).",
+    message: "Prefer arrow functions over function expressions (web app convention).",
   },
   // Convention (ADR-0037): no classes, enforced directly rather than as
   // a side effect of the function-style rules above, which only reach
@@ -69,7 +69,7 @@ const eslintConfig = defineConfig([
     rules: {
       "no-restricted-syntax": ["error", ...codeStyleSyntax],
       // Call sites go through lib/logger.ts instead of console.* directly —
-      // see frontend/README.md.
+      // see web/README.md.
       "no-console": "error",
       // Convention (ADR-0037): type over interface.
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
@@ -106,8 +106,8 @@ const eslintConfig = defineConfig([
       "no-console": "off",
     },
   },
-  // Import boundaries between the frontend's layers — the rules
-  // frontend/README.md's Structure and Data-and-state bullets state in prose
+  // Import boundaries between the web app's layers — the rules
+  // web/README.md's Structure and Data-and-state bullets state in prose
   // (ADR-0012).
   {
     plugins: { boundaries },
@@ -142,7 +142,7 @@ const eslintConfig = defineConfig([
         {
           default: "disallow",
           message:
-            "{{#if from.element.type}}{{from.element.type}}{{else}}{{from.file.categories}}{{/if}} must not import {{dependency.source}} — frontend import boundaries, see ADR-0012.",
+            "{{#if from.element.type}}{{from.element.type}}{{else}}{{from.file.categories}}{{/if}} must not import {{dependency.source}} — web app import boundaries, see ADR-0012.",
           // Reject imports of files no descriptor above classifies, so that a
           // new top-level folder has to be placed in a layer to be usable.
           checkUnknownLocals: true,

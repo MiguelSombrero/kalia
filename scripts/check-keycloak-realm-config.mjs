@@ -36,7 +36,7 @@ export const DEV_REALM_FILE = resolve(ROOT, "keycloak/realm-swagger.json");
 
 // Mirrors docker-compose.dev.env and the keycloak-config service: every value
 // either gives a default, this gives the same, so the check runs without
-// compose. KALIA_FRONTEND_CLIENT_SECRET has no default there — an unset one
+// compose. KALIA_WEB_CLIENT_SECRET has no default there — an unset one
 // is an error, not a skipped field. The SMTP block is different: its `:-`
 // defaults point at the mailpit container and an empty user/password is the
 // no-auth local state, not a missing secret — a deployment overrides them to
@@ -57,7 +57,7 @@ const ENV_DEFAULTS = {
 // compose builds them, so a worktree's own ports (`make stack-env`) change the
 // expected redirect URIs with no other edit.
 const derivedDefaults = (env) => ({
-  FRONTEND_URL: originOf(env, "FRONTEND_PORT"),
+  WEB_URL: originOf(env, "WEB_PORT"),
   BACKEND_PUBLIC_URL: originOf(env, "BACKEND_PORT"),
 });
 

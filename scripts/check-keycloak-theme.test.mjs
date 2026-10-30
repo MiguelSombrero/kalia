@@ -40,12 +40,12 @@ function withFixture({ globals = globalsCss, login = loginCss, appMark = mark, t
   const root = mkdtempSync(resolve(tmpdir(), "keycloak-theme-check-"));
   const theme = resolve(root, "keycloak/themes/kalia/login/resources");
   try {
-    mkdirSync(resolve(root, "frontend/app"), { recursive: true });
+    mkdirSync(resolve(root, "web/app"), { recursive: true });
     mkdirSync(resolve(theme, "css"), { recursive: true });
     mkdirSync(resolve(theme, "img"), { recursive: true });
-    if (globals !== null) writeFileSync(resolve(root, "frontend/app/globals.css"), globals);
+    if (globals !== null) writeFileSync(resolve(root, "web/app/globals.css"), globals);
     if (login !== null) writeFileSync(resolve(theme, "css/login.css"), login);
-    if (appMark !== null) writeFileSync(resolve(root, "frontend/app/icon.svg"), appMark);
+    if (appMark !== null) writeFileSync(resolve(root, "web/app/icon.svg"), appMark);
     if (themeMark !== null) writeFileSync(resolve(theme, "img/kalia-mark.svg"), themeMark);
     assertions(checkKeycloakTheme(root));
   } finally {
@@ -63,7 +63,7 @@ test("passes when every shared colour and the mark match the app", () => {
 test("fails when the app's palette moves and login.css does not", () => {
   withFixture({ globals: globalsCss.replace("--cobalt-700: #2b37c9;", "--cobalt-700: #1f6feb;") }, ({ failures }) => {
     assert.deepEqual(failures, [
-      "keycloak/themes/kalia/login/resources/css/login.css: --kalia-color-primary is #2b37c9, but frontend/app/globals.css has --color-primary at #1f6feb",
+      "keycloak/themes/kalia/login/resources/css/login.css: --kalia-color-primary is #2b37c9, but web/app/globals.css has --color-primary at #1f6feb",
     ]);
   });
 });
@@ -82,7 +82,7 @@ test("compares #rgb and #rrggbb as the same colour", () => {
 test("fails when a shared colour names a token the app does not have", () => {
   withFixture({ login: loginCss.replace("  --kalia-color-primary: #2b37c9;", "  --kalia-color-primary: #2b37c9;\n  --kalia-color-mint: #2f6f5e;") }, ({ failures }) => {
     assert.deepEqual(failures, [
-      "keycloak/themes/kalia/login/resources/css/login.css: --kalia-color-mint claims --color-mint, which frontend/app/globals.css does not resolve to a #hex colour",
+      "keycloak/themes/kalia/login/resources/css/login.css: --kalia-color-mint claims --color-mint, which web/app/globals.css does not resolve to a #hex colour",
     ]);
   });
 });
@@ -134,7 +134,7 @@ test("allows color-mix of shared colours, since it holds no literal", () => {
 test("fails when login.css claims no colour at all", () => {
   withFixture({ login: "body { margin: 0; }" }, ({ failures }) => {
     assert.deepEqual(failures, [
-      "keycloak/themes/kalia/login/resources/css/login.css: declares no --kalia-color-* colour, so nothing ties it to frontend/app/globals.css",
+      "keycloak/themes/kalia/login/resources/css/login.css: declares no --kalia-color-* colour, so nothing ties it to web/app/globals.css",
     ]);
   });
 });
@@ -142,7 +142,7 @@ test("fails when login.css claims no colour at all", () => {
 test("fails when the theme's mark is not the app's", () => {
   withFixture({ themeMark: mark.replace("#005b57", "#2f6f5e") }, ({ failures }) => {
     assert.deepEqual(failures, [
-      "keycloak/themes/kalia/login/resources/img/kalia-mark.svg differs from frontend/app/icon.svg; copy the app's mark over it",
+      "keycloak/themes/kalia/login/resources/img/kalia-mark.svg differs from web/app/icon.svg; copy the app's mark over it",
     ]);
   });
 });
@@ -158,6 +158,6 @@ test("fails when either stylesheet is missing", () => {
     assert.deepEqual(failures, ["keycloak/themes/kalia/login/resources/css/login.css not found"]);
   });
   withFixture({ globals: null }, ({ failures }) => {
-    assert.deepEqual(failures, ["frontend/app/globals.css not found"]);
+    assert.deepEqual(failures, ["web/app/globals.css not found"]);
   });
 });

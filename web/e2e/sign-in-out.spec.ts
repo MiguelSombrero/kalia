@@ -13,7 +13,7 @@ import {
   signIn,
   test,
 } from "./support/keycloakAccount";
-import { BACKEND_ORIGIN, FRONTEND_ORIGIN } from "./support/origins";
+import { BACKEND_ORIGIN, WEB_ORIGIN } from "./support/origins";
 import { VALKEY_URL } from "./support/valkey";
 
 // Do not parallelize: measured 1-2 of 6 specs failing when run concurrently,
@@ -68,7 +68,7 @@ test("signs in through Keycloak, shows the user's name, and signs out", async ({
 
   await signIn(page, account);
 
-  await expect(page).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}`));
+  await expect(page).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
   // ADR-0071: the username the profile, feed and public cellar use, not Keycloak's "Test User".
   await expect(page.getByRole("link", { name: `Profile: ${account.username}` })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
@@ -111,7 +111,7 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
       page.getByText("Do you want to log out?"),
       `cycle ${cycle}: Keycloak asked to confirm the logout`,
     ).toHaveCount(0);
-    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}`));
+    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
     // The Keycloak SSO session must be gone too, or this skips the prompt.

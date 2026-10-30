@@ -8,7 +8,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { BACKEND_ORIGIN, FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { BACKEND_ORIGIN, WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 const ROOT = path.resolve(__dirname, "../..");
 const FORGED_ADDRESS = "203.0.113.77";
@@ -35,7 +35,7 @@ const addressSeenByEdge = (needle: string): string => {
 };
 
 test.describe("the client address", () => {
-  test("is the one the proxy saw, whatever the caller claims, in Spring, Keycloak and through the frontend", async ({
+  test("is the one the proxy saw, whatever the caller claims, in Spring, Keycloak and through the web app", async ({
     request,
   }) => {
     const id = randomUUID().replaceAll("-", "");
@@ -44,7 +44,7 @@ test.describe("the client address", () => {
     await request.get(`${BACKEND_ORIGIN}/api/v1/probe-${id}`, { headers: forged, failOnStatusCode: false });
     await request.get(`${KEYCLOAK_ORIGIN}/realms/kalia/probe-${id}`, { headers: forged, failOnStatusCode: false });
     const traceId = randomBytes(16).toString("hex");
-    await request.get(`${FRONTEND_ORIGIN}/en/beers`, {
+    await request.get(`${WEB_ORIGIN}/en/beers`, {
       headers: { ...forged, traceparent: `00-${traceId}-${randomBytes(8).toString("hex")}-01` },
     });
 
@@ -59,8 +59,8 @@ test.describe("the client address", () => {
     expect(keycloakLine, "Keycloak logged no request for the probe").toBeTruthy();
     expect(keycloakLine).toContain(` ${seen} - - [`);
 
-    // The frontend calls Spring itself, so the address reaches Spring only if
-    // the frontend passes on the one it was given.
+    // The web app calls Spring itself, so the address reaches Spring only if
+    // the web app passes on the one it was given.
     const bffCalls = linesMentioning(logsOf("backend"), traceId).filter((line) =>
       line.includes("GET /api/v1/beers"),
     );
@@ -69,7 +69,7 @@ test.describe("the client address", () => {
       expect(line).toContain(`from ${seen}"`);
     }
 
-    for (const service of ["backend", "keycloak", "frontend"]) {
+    for (const service of ["backend", "keycloak", "web"]) {
       expect(logsOf(service), `${service} saw the forged address`).not.toContain(FORGED_ADDRESS);
     }
   });
@@ -85,7 +85,7 @@ test.describe("the request logs", () => {
     await request.get(`${KEYCLOAK_ORIGIN}/realms/kalia/probe-${id}?id_token_hint=${secret}`, {
       failOnStatusCode: false,
     });
-    await request.get(`${FRONTEND_ORIGIN}/en/beers/probe-${id}?query=${secret}`, {
+    await request.get(`${WEB_ORIGIN}/en/beers/probe-${id}?query=${secret}`, {
       failOnStatusCode: false,
     });
 
@@ -99,7 +99,7 @@ test.describe("the request logs", () => {
 
 test.describe("the edge proxy's limits", () => {
   test("a back-channel logout body over the cap is refused at the edge", async ({ request }) => {
-    const response = await request.post(`${FRONTEND_ORIGIN}/api/auth/backchannel-logout`, {
+    const response = await request.post(`${WEB_ORIGIN}/api/auth/backchannel-logout`, {
       form: { logout_token: "x".repeat(20 * 1024) },
       failOnStatusCode: false,
     });
@@ -142,7 +142,7 @@ test.describe("the edge proxy's limits", () => {
     await page.locator("#email").fill(`${username}@example.com`);
     await fillNamesWhenAsked(page);
 
-    const submit = `${KEYCLOAK_ORIGIN}/realms/kalia/login-actions/registration?session_code=x&execution=y&client_id=kalia-frontend&tab_id=z`;
+    const submit = `${KEYCLOAK_ORIGIN}/realms/kalia/login-actions/registration?session_code=x&execution=y&client_id=kalia-web&tab_id=z`;
     const responses = await Promise.all(
       Array.from({ length: 60 }, () => request.post(submit, { failOnStatusCode: false })),
     );

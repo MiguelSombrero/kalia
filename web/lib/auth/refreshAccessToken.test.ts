@@ -29,7 +29,7 @@ describe("refreshAccessToken", () => {
   beforeEach(() => {
     vi.stubEnv("AUTH_KEYCLOAK_ISSUER", "http://localhost:8081/realms/kalia");
     vi.stubEnv("AUTH_KEYCLOAK_INTERNAL_ORIGIN", "http://keycloak:8080");
-    vi.stubEnv("AUTH_KEYCLOAK_ID", "kalia-frontend");
+    vi.stubEnv("AUTH_KEYCLOAK_ID", "kalia-web");
     vi.stubEnv("AUTH_KEYCLOAK_SECRET", "kalia-dev-secret");
   });
 
@@ -75,7 +75,7 @@ describe("refreshAccessToken", () => {
     expect(Object.fromEntries(init.body as URLSearchParams)).toEqual({
       grant_type: "refresh_token",
       refresh_token: "old-refresh",
-      client_id: "kalia-frontend",
+      client_id: "kalia-web",
       client_secret: "kalia-dev-secret",
     });
   });

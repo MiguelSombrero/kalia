@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 
-// WCAG 2.2 AA (ADR-0075) — the same bar frontend/README.md's testing
+// WCAG 2.2 AA (ADR-0075) — the same bar web/README.md's testing
 // conventions set for the jest-axe layer, applied here to real pages. One tag
 // scope for the whole suite, so a spec cannot quietly scan a narrower one than
 // its neighbours.

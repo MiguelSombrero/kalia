@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // PostToolUse hook: runs whichever check-*.mjs checker covers the file an
-// agent just edited, and ESLint on an edited frontend source file, and
+// agent just edited, and ESLint on an edited web source file, and
 // reports a failure back into the agent's context while it is still working
 // on that file. Why this exists at all, and why
 // it reports rather than blocks: ADR-0046.
@@ -21,9 +21,9 @@ import { syncIndexes } from "../sync-indexes.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-const FRONTEND = resolve(ROOT, "frontend");
-const ESLINT = resolve(FRONTEND, "node_modules/.bin/eslint");
-const VITEST = resolve(FRONTEND, "node_modules/.bin/vitest");
+const WEB = resolve(ROOT, "web");
+const ESLINT = resolve(ROOT, "node_modules/.bin/eslint");
+const VITEST = resolve(ROOT, "node_modules/.bin/vitest");
 
 const checker = (name) => ({
   label: `node scripts/${name}`,
@@ -31,27 +31,27 @@ const checker = (name) => ({
 });
 
 // Just the edited file, so the hook pays for one file's lint rather than the
-// tree's. Skipped without a `npm ci` in frontend/: nothing to run it with.
+// tree's. Skipped without an `npm ci` at the repository root: nothing to run it with.
 const eslint = (rel) => {
-  const file = rel.slice("frontend/".length);
+  const file = rel.slice("web/".length);
   return {
-    label: `eslint ${file} (in frontend/)`,
-    run: () => existsSync(ESLINT) && execFileSync(ESLINT, [file], { cwd: FRONTEND, stdio: "pipe" }),
+    label: `eslint ${file} (in web/)`,
+    run: () => existsSync(ESLINT) && execFileSync(ESLINT, [file], { cwd: WEB, stdio: "pipe" }),
   };
 };
 
 // The real tree passes eslint.config.mjs's rules, so linting it shows nothing
 // about a selector broken by the edit; its self-test does.
 const eslintRules = {
-  label: "vitest run eslint.config.test.ts (in frontend/)",
+  label: "vitest run eslint.config.test.ts (in web/)",
   run: () =>
-    existsSync(VITEST) && execFileSync(VITEST, ["run", "eslint.config.test.ts"], { cwd: FRONTEND, stdio: "pipe" }),
+    existsSync(VITEST) && execFileSync(VITEST, ["run", "eslint.config.test.ts"], { cwd: WEB, stdio: "pipe" }),
 };
 
-const isFrontendSource = (p) =>
-  p.startsWith("frontend/") &&
+const isWebSource = (p) =>
+  p.startsWith("web/") &&
   /\.(tsx?|mjs)$/.test(p) &&
-  !p.startsWith("frontend/lib/api/generated/") &&
+  !p.startsWith("web/lib/api/generated/") &&
   !p.includes("/node_modules/");
 
 // Which check owns which path. docs/architecture.md and docs/adr/ are one
@@ -67,35 +67,35 @@ const ROUTES = [
   },
   {
     check: checker("check-design-tokens.mjs"),
-    covers: (p) => p === "docs/design.md" || p === "frontend/app/globals.css",
+    covers: (p) => p === "docs/design.md" || p === "web/app/globals.css",
   },
   {
     check: checker("check-contrast.mjs"),
-    covers: (p) => p === "docs/design.md" || p === "frontend/app/globals.css",
+    covers: (p) => p === "docs/design.md" || p === "web/app/globals.css",
   },
   {
     check: checker("check-keycloak-theme.mjs"),
     covers: (p) =>
-      p === "frontend/app/globals.css" ||
-      p === "frontend/app/icon.svg" ||
+      p === "web/app/globals.css" ||
+      p === "web/app/icon.svg" ||
       p.startsWith("keycloak/themes/kalia/login/resources/"),
   },
   {
     check: checker("check-token-styling.mjs"),
     covers: (p) =>
-      p === "frontend/app/globals.css" ||
-      (p.startsWith("frontend/") &&
+      p === "web/app/globals.css" ||
+      (p.startsWith("web/") &&
         /\.(tsx?|css)$/.test(p) &&
         !/\.(test|spec)\.tsx?$/.test(p) &&
-        !p.startsWith("frontend/e2e/") &&
-        !p.startsWith("frontend/lib/api/generated/") &&
+        !p.startsWith("web/e2e/") &&
+        !p.startsWith("web/lib/api/generated/") &&
         !p.includes("/node_modules/")),
   },
   {
     check: checker("check-comments.mjs"),
     covers: (p) =>
       (p.startsWith("backend/src/") && p.endsWith(".java")) ||
-      isFrontendSource(p) ||
+      isWebSource(p) ||
       (p.startsWith("scripts/") && p.endsWith(".mjs")),
   },
 ];
@@ -132,8 +132,8 @@ if (/^docs\/(adr\/|tasks\/|architecture\.md$|roadmap\.md$)/.test(rel)) {
 }
 
 const checks = ROUTES.filter((r) => r.covers(rel)).map((r) => r.check);
-if (isFrontendSource(rel)) checks.push(eslint(rel));
-if (rel === "frontend/eslint.config.mjs") checks.push(eslintRules);
+if (isWebSource(rel)) checks.push(eslint(rel));
+if (rel === "web/eslint.config.mjs") checks.push(eslintRules);
 
 for (const { label, run } of checks) {
   try {

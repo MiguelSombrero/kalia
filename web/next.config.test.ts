@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import nextConfig from "./next.config";
 
@@ -19,5 +21,9 @@ describe("next.config", () => {
 
   it("does not advertise the framework", () => {
     expect(nextConfig.poweredByHeader).toBe(false);
+  });
+
+  it("traces the standalone output from the repository root, where the lockfile is", () => {
+    expect(existsSync(path.join(nextConfig.outputFileTracingRoot!, "package-lock.json"))).toBe(true);
   });
 });

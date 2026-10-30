@@ -9,12 +9,12 @@
 // their own gitignored .env files.
 
 import { execFileSync } from "node:child_process";
-import { appendFileSync, readFileSync } from "node:fs";
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import net from "node:net";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { PORT_DEFAULTS, readEnvFile } from "./stack-ports.mjs";
+import { PORT_DEFAULTS, parseEnvFile, readEnvFile } from "./stack-ports.mjs";
 
 const SLOT_STEP = 100;
 const MAX_SLOT = 99;
@@ -27,6 +27,39 @@ export const slotsHeldBy = (env) =>
     const offset = (Number(env[name]) - base) / SLOT_STEP;
     return env[name] && Number.isInteger(offset) && offset >= 0 ? [offset] : [];
   });
+
+// What the web app's rename (ADR-0092) took from a root .env, old key to new.
+// Left alone, FRONTEND_PORT would be ignored, so the stack came up on the
+// default port beside whatever else holds it.
+export const RENAMED_KEYS = {
+  FRONTEND_PORT: "WEB_PORT",
+  FRONTEND_URL: "WEB_URL",
+  KALIA_FRONTEND_CLIENT_SECRET: "KALIA_WEB_CLIENT_SECRET",
+};
+
+// Renames each old key to its new name in place, keeping its value. A key
+// whose new name is already set is left as it is and reported in `kept`, since
+// choosing between two values is not this script's call.
+export const migrateEnvText = (text) => {
+  const present = parseEnvFile(text);
+  const renamed = [];
+  const kept = [];
+  const migrated = text
+    .split("\n")
+    .map((line) => {
+      const match = line.match(/^(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*=.*)$/);
+      const next = match && RENAMED_KEYS[match[2]];
+      if (!next) return line;
+      if (next in present) {
+        kept.push(match[2]);
+        return line;
+      }
+      renamed.push(match[2]);
+      return `${match[1]}${next}${match[3]}`;
+    })
+    .join("\n");
+  return { text: migrated, renamed, kept };
+};
 
 export const portsForSlot = (slot) =>
   Object.fromEntries(Object.entries(PORT_DEFAULTS).map(([name, base]) => [name, base + SLOT_STEP * slot]));
@@ -69,6 +102,23 @@ export const isPortFree = async (port) => {
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
 
+const migrateEnvFile = (envFile) => {
+  let text;
+  try {
+    text = readFileSync(envFile, "utf8");
+  } catch {
+    return;
+  }
+  const { text: migrated, renamed, kept } = migrateEnvText(text);
+  if (renamed.length > 0) {
+    writeFileSync(envFile, migrated);
+    for (const old of renamed) console.log(`renamed ${old} to ${RENAMED_KEYS[old]} in ${envFile}`);
+  }
+  for (const old of kept) {
+    console.error(`${envFile} sets both ${old} and ${RENAMED_KEYS[old]}: delete ${old}, which nothing reads any more`);
+  }
+};
+
 const run = async () => {
   const top = git("rev-parse", "--show-toplevel");
   const isMainCheckout = resolve(git("rev-parse", "--absolute-git-dir")) === resolve(git("rev-parse", "--path-format=absolute", "--git-common-dir"));
@@ -79,6 +129,7 @@ const run = async () => {
     .filter((path) => resolve(path) !== resolve(top));
 
   const envFile = resolve(top, ".env");
+  migrateEnvFile(envFile);
   const { slot, write } = await planPorts({
     isMainCheckout,
     ownEnv: readEnvFile(envFile),

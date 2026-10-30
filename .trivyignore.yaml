@@ -13,11 +13,11 @@
 #       statement: why this does not apply, and what would end the waiver
 #       expired_at: 2026-12-01
 
-# --- Frontend image: nothing to waive. Every Node-package CVE this image
+# --- Web image: nothing to waive. Every Node-package CVE this image
 # reported came from npm's own bundled dependency tree in the Alpine node
-# base, not from package-lock.json; frontend/Dockerfile now deletes the
+# base, not from package-lock.json; web/Dockerfile now deletes the
 # package managers from the runtime stage, which the standalone server never
-# invokes. The image scans clean with no suppressions at all — if a frontend
+# invokes. The image scans clean with no suppressions at all — if a web
 # entry is ever needed here again, check the reported PkgPath first, because
 # a path under /usr/local/lib/node_modules means the removal regressed
 # rather than that a new waiver is warranted.

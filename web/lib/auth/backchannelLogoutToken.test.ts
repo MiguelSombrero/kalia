@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { validateLogoutToken } from "./backchannelLogoutToken";
 
 const ISSUER = "http://localhost:8081/realms/kalia";
-const AUDIENCE = "kalia-frontend";
+const AUDIENCE = "kalia-web";
 const BACKCHANNEL_LOGOUT_EVENT = "http://schemas.openid.net/event/backchannel-logout";
 const KID = "test-key";
 

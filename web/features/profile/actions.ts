@@ -12,7 +12,7 @@ import type { Profile } from "./types";
 // manifest doesn't recognize (UnrecognizedActionError), reproduced live,
 // not caught by any test, lint, or build in this repo. Mirrors
 // features/cellar's startCellarSignIn — features cannot import each other
-// (frontend/README.md's Structure bullet), so this stays a small duplicate.
+// (web/README.md's Structure bullet), so this stays a small duplicate.
 export const startProfileSignIn = async (formData?: FormData) => {
   const raw = formData?.get("locale");
   // Hidden "locale" field → signIn()'s `ui_locales` (Keycloak page language,

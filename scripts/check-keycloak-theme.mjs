@@ -13,8 +13,8 @@ const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 const THEME = "keycloak/themes/kalia/login/resources";
 const LOGIN_CSS = `${THEME}/css/login.css`;
 const THEME_MARK = `${THEME}/img/kalia-mark.svg`;
-const GLOBALS_CSS = "frontend/app/globals.css";
-const APP_MARK = "frontend/app/icon.svg";
+const GLOBALS_CSS = "web/app/globals.css";
+const APP_MARK = "web/app/icon.svg";
 
 const SHARED = /^--kalia-color-([A-Za-z0-9-]+)$/;
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;

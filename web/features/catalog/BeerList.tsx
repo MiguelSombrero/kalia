@@ -44,7 +44,7 @@ export const BeerList = async ({
         hint={
           <>
             {t("catalog.empty.hintPrefix")}{" "}
-            {/* Do not swap for next/link: query-only navigation (frontend/README.md traps). */}
+            {/* Do not swap for next/link: query-only navigation (web/README.md traps). */}
             <a href={catalogHref(locale)} className="font-medium underline underline-offset-2">
               {t("catalog.empty.clearLink")}
             </a>

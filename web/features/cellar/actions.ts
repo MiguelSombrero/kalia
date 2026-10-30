@@ -17,7 +17,7 @@ import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 // manifest doesn't recognize (UnrecognizedActionError), reproduced live,
 // not caught by any test, lint, or build in this repo. Mirrors
 // features/auth's startSignIn — features cannot import each other
-// (frontend/README.md's Structure bullet), so this stays a small duplicate.
+// (web/README.md's Structure bullet), so this stays a small duplicate.
 export const startCellarSignIn = async (formData?: FormData) => {
   const locale = localeFromForm(formData);
   // `ui_locales` picks the Keycloak page language (ADR-0056); the return

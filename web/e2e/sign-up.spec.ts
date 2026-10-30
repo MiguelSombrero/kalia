@@ -17,11 +17,11 @@ import {
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 // Unprefixed on http, `__Secure-` prefixed on https (lib/auth/sessionCookie.ts
 // carries the same list for server-side reads) — this suite always runs
-// against FRONTEND_ORIGIN's http, but checking both keeps that assumption
+// against WEB_ORIGIN's http, but checking both keeps that assumption
 // from failing silently if that ever changes.
 const SESSION_COOKIE_NAMES = ["authjs.session-token", "__Secure-authjs.session-token"];
 
@@ -74,7 +74,7 @@ const setPasswordWhenPrompted = async (page: Page, password: string) => {
 };
 
 const startSignUp = async (page: Page) => {
-  await page.goto(`${FRONTEND_ORIGIN}/en/sign-up`);
+  await page.goto(`${WEB_ORIGIN}/en/sign-up`);
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Continue to sign-up" }).click();
 };
@@ -109,7 +109,7 @@ test.describe("self-registration", () => {
     await setPasswordWhenPrompted(page, password);
     await clickThroughKeycloakAction(page);
 
-    await expect(page).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}/en`));
+    await expect(page).toHaveURL(new RegExp(`^${WEB_ORIGIN}/en`));
     await expect(page.getByRole("link", { name: /^Profile: /i })).toBeVisible();
 
     // This sign-in went through "keycloak-register" (ADR-0055); the account
@@ -142,7 +142,7 @@ test.describe("self-registration", () => {
   // with a 400 and "already authenticated as different user". Its own
   // error.ftl offers the only escape from that page — the "Back to
   // Application" link — and renders it solely when the client carries a
-  // baseUrl (`<#if client?? && client.baseUrl?has_content>`). kalia-frontend
+  // baseUrl (`<#if client?? && client.baseUrl?has_content>`). kalia-web
   // had none, so the page was a dead end reachable only from an emailed link:
   // no link, no button, the address bar the sole way out. What this asserts is
   // that escape hatch, not Keycloak's refusal, which is correct and is left
@@ -169,7 +169,7 @@ test.describe("self-registration", () => {
     const otherBrowser = await browser.newContext();
     try {
       const otherPage = await otherBrowser.newPage();
-      await otherPage.goto(`${FRONTEND_ORIGIN}/en`);
+      await otherPage.goto(`${WEB_ORIGIN}/en`);
       await signIn(otherPage, account);
 
       await otherPage.goto(link);
@@ -179,7 +179,7 @@ test.describe("self-registration", () => {
       await expect(backToApplication).toBeVisible();
       // The link has to actually leave Keycloak for Kalia, not merely exist.
       await backToApplication.click();
-      await expect(otherPage).toHaveURL(new RegExp(`^${FRONTEND_ORIGIN}`));
+      await expect(otherPage).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
     } finally {
       await otherBrowser.close();
     }
@@ -201,7 +201,7 @@ test.describe("self-registration", () => {
     });
     expect(setPassword.ok()).toBeTruthy();
 
-    await page.goto(`${FRONTEND_ORIGIN}/en`);
+    await page.goto(`${WEB_ORIGIN}/en`);
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.locator("#username").waitFor();
     await page.locator("#username").fill(username);

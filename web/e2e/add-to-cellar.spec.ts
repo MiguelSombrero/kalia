@@ -13,7 +13,7 @@ test.describe.configure({ mode: "serial" });
 // 0 when the beer is not in the cellar at all, so the spec is a delta against
 // whatever earlier runs left behind rather than an absolute count. Asserts
 // signed-in first: the cellar page renders "My cellar" and a sign-in prompt
-// alike when signed out (frontend/features/cellar/SignInPrompt.tsx), which
+// alike when signed out (web/features/cellar/SignInPrompt.tsx), which
 // would otherwise read back as an indistinguishable 0 bottles.
 const bottleCount = async (page: Page, beerName: string): Promise<number> => {
   await page.goto("/en/cellar");

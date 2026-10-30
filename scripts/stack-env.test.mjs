@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import net from "node:net";
 
-import { isPortFree, planPorts, portsForSlot, slotsHeldBy } from "./stack-env.mjs";
+import { isPortFree, migrateEnvText, planPorts, portsForSlot, slotsHeldBy } from "./stack-env.mjs";
 import { originOf, parseEnvFile } from "./stack-ports.mjs";
 
 const everythingFree = async () => true;
@@ -13,7 +13,7 @@ const slotEnv = (slot) => Object.fromEntries(Object.entries(portsForSlot(slot)).
 
 test("slot 1 is the documented offset of 100 on every default", () => {
   assert.deepEqual(portsForSlot(1), {
-    FRONTEND_PORT: 3100,
+    WEB_PORT: 3100,
     BACKEND_PORT: 8180,
     KEYCLOAK_PORT: 8181,
     POSTGRES_PORT: 5532,
@@ -60,14 +60,14 @@ test("a re-run keeps the ports already written", async () => {
 });
 
 test("a re-run fills only the ports still missing, from a slot where they are free", async () => {
-  const { FRONTEND_PORT, ...rest } = slotEnv(2);
+  const { WEB_PORT, ...rest } = slotEnv(2);
   const plan = await planPorts({ isMainCheckout: false, ownEnv: rest, otherEnvs: [slotEnv(1)], isFree: everythingFree });
-  assert.deepEqual(plan.write, { FRONTEND_PORT: 3200 });
+  assert.deepEqual(plan.write, { WEB_PORT: 3200 });
 });
 
 test("a port pinned off the slot grid holds no slot", () => {
-  assert.deepEqual(slotsHeldBy({ FRONTEND_PORT: "3050" }), []);
-  assert.deepEqual(slotsHeldBy({ FRONTEND_PORT: "3300", BACKEND_PORT: "8380" }), [3, 3]);
+  assert.deepEqual(slotsHeldBy({ WEB_PORT: "3050" }), []);
+  assert.deepEqual(slotsHeldBy({ WEB_PORT: "3300", BACKEND_PORT: "8380" }), [3, 3]);
 });
 
 test("isPortFree reports a port with a listener as taken", async () => {
@@ -87,4 +87,25 @@ test("originOf falls back to the default, treating an empty value as unset", () 
 
 test("parseEnvFile reads KEY=VALUE lines and strips matching quotes", () => {
   assert.deepEqual(parseEnvFile("# c\nA=1\n B = \"two\" \nC='x'\nnot a line\n"), { A: "1", B: "two", C: "x" });
+});
+
+test("an .env from before the rename gets its keys renamed in place, values kept", () => {
+  const old = "# mine\nKALIA_FRONTEND_CLIENT_SECRET=s3\nFRONTEND_PORT=3300\nBACKEND_PORT=8380\nFRONTEND_URL=http://localhost:3300\n";
+  const { text, renamed, kept } = migrateEnvText(old);
+  assert.equal(text, "# mine\nKALIA_WEB_CLIENT_SECRET=s3\nWEB_PORT=3300\nBACKEND_PORT=8380\nWEB_URL=http://localhost:3300\n");
+  assert.deepEqual(renamed, ["KALIA_FRONTEND_CLIENT_SECRET", "FRONTEND_PORT", "FRONTEND_URL"]);
+  assert.deepEqual(kept, []);
+});
+
+test("an .env that sets an old key and its replacement is reported, not rewritten", () => {
+  const both = "FRONTEND_PORT=3300\nWEB_PORT=3400\n";
+  const { text, renamed, kept } = migrateEnvText(both);
+  assert.equal(text, both);
+  assert.deepEqual(renamed, []);
+  assert.deepEqual(kept, ["FRONTEND_PORT"]);
+});
+
+test("an .env already on the new keys is untouched", () => {
+  const current = "WEB_PORT=3300\nKALIA_WEB_CLIENT_SECRET=s3\n";
+  assert.equal(migrateEnvText(current).text, current);
 });

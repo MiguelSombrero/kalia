@@ -1,0 +1,14 @@
+# The web image's build context (web/Dockerfile) is the repository root
+# (ADR-0092). Everything is left out except what that image builds from, so
+# the backend's build output, every node_modules and .git are never sent and
+# cannot invalidate its cache.
+*
+!package.json
+!package-lock.json
+!web
+!packages
+**/node_modules
+**/.next
+**/*.md
+web/playwright-report
+web/test-results

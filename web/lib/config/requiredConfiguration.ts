@@ -21,14 +21,14 @@ export const verifyRequiredConfiguration = (env: Record<string, string | undefin
   const missing = REQUIRED_IN_PRODUCTION.filter((name) => !env[name]?.trim());
   if (missing.length > 0) {
     throw new Error(
-      `Required configuration is missing: ${missing.join(", ")}. Set it as an environment variable - see frontend/README.md.`,
+      `Required configuration is missing: ${missing.join(", ")}. Set it as an environment variable - see web/README.md.`,
     );
   }
 
   // Only docker-compose.override.yml sets KALIA_DEV_STACK.
   if (env.AUTH_SECRET?.trim() === DEV_AUTH_SECRET && env.KALIA_DEV_STACK !== "true") {
     throw new Error(
-      "AUTH_SECRET is the development secret committed in docker-compose.dev.env, which anyone can read. Set a secret of your own - see frontend/README.md.",
+      "AUTH_SECRET is the development secret committed in docker-compose.dev.env, which anyone can read. Set a secret of your own - see web/README.md.",
     );
   }
 };

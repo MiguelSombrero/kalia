@@ -1,4 +1,4 @@
-# Kalia frontend
+# Kalia web app
 
 Next.js 16 App Router app (TypeScript, Tailwind CSS). Serves the UI and acts
 as the BFF: the browser talks only to Next.js, which calls the Spring Boot
@@ -7,13 +7,19 @@ API — see [docs/architecture.md](../docs/architecture.md).
 ## Run locally
 
 ```bash
-npm install
+npm ci             # from the repository root: one install for every workspace
+cd web
 npm run dev        # http://localhost:3000 (hot reload) — redirects to /en or /fi
 ```
 
+`web/` is one of the repository's npm workspaces: its dependencies and the
+one lockfile are at the root ([ADR-0092](../docs/adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)),
+so `node_modules/` is there too, not in `web/`. The scripts below run from
+`web/`, or from the root with `--workspace web`.
+
 Or the full stack in containers: `docker compose up --build` from the repo
-root. The production image uses Next.js standalone output
-(`next.config.ts`).
+root. The production image is built with the repository root as its context
+(`web/Dockerfile`) and uses Next.js standalone output (`next.config.ts`).
 
 ## Configuration
 
@@ -46,7 +52,7 @@ Adding a variable that must be set in production means adding it to
 Logs, counters and trace ids are built in; nothing in the stack views them
 ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
 
-- **Logs**: `docker compose logs frontend --no-log-prefix | jq -c .`. Each
+- **Logs**: `docker compose logs web --no-log-prefix | jq -c .`. Each
   backend call is one line carrying `traceId`; grep that id in `docker compose
   logs --no-log-prefix` to see the backend's lines for the same browser
   request.
@@ -80,7 +86,7 @@ npm run generate:api  # regenerate lib/api/generated/ from a live backend
 
 Node's version is the one in `.node-version` at the repository root: CI reads
 it, and nvm, fnm and asdf pick it up locally. The Docker tags are the only
-other place it is written, so a bump edits that file, `frontend/Dockerfile` and
+other place it is written, so a bump edits that file, `web/Dockerfile` and
 the compose files together. Node moves between long-term-support releases,
 not to the newest major ([ADR-0085](../docs/adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md)).
 
@@ -97,8 +103,8 @@ CI also scans `package-lock.json` and the built image for known CVEs and
 fails on a `HIGH`/`CRITICAL` finding with a fix available
 ([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)). A finding
 is fixed in place on whatever branch is open (CLAUDE.md). Most findings are a
-transitive dependency's resolved version — bump only `package-lock.json`, not
-`package.json`: `npm update <package> --package-lock-only`, then check
+transitive dependency's resolved version — bump only `package-lock.json` (at the repository root), not
+`package.json`: `npm update <package> --package-lock-only` from the root, then check
 `git diff --stat` touches only that package's entry. A local npm version
 that differs from whichever produced the lockfile can otherwise pull in
 unrelated normalization noise (dropped `libc` fields, added `dev: true`
@@ -118,7 +124,7 @@ the runner is discarded after the job.
 **A fresh worktree needs its own root `.env` before the stack will start.**
 It is gitignored, so it does not travel with a `git worktree add`, and
 without it `docker compose` fails on an interpolation error naming
-`KALIA_FRONTEND_CLIENT_SECRET` rather than anything about tests — which
+`KALIA_WEB_CLIENT_SECRET` rather than anything about tests — which
 reads like a broken E2E suite. Create it as the root
 [README](../README.md) describes, and `make stack-env` to give the worktree
 its own host ports. The suite reads them from that `.env`
@@ -466,5 +472,6 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   loads on its own when you open a file here
   ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
 - This Next.js version may differ from an agent's training data; check
-  `node_modules/next/dist/docs/` before relying on memory — see
+  `node_modules/next/dist/docs/` (at the repository root) before relying on
+  memory — see
   [AGENTS.md](AGENTS.md), which already caught `middleware.ts` → `proxy.ts`.

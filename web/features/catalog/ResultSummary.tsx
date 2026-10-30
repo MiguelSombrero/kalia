@@ -11,7 +11,7 @@ type FilterKey = "query" | "style" | "countryCode" | "minAbv" | "maxAbv";
 const FILTER_KEYS: readonly FilterKey[] = ["query", "style", "countryCode", "minAbv", "maxAbv"];
 
 // Do not swap these anchors for next/link: each changes only the query string
-// (frontend/README.md traps).
+// (web/README.md traps).
 export const ResultSummary = async ({
   locale,
   params,

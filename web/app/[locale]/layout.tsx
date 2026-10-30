@@ -25,7 +25,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
   const { t } = await getTranslation(locale);
   return {
     // Base for the relative canonical/hreflang URLs child pages declare;
-    // AUTH_URL is the app's own browser-facing origin (frontend/README.md).
+    // AUTH_URL is the app's own browser-facing origin (web/README.md).
     // The npm-run-dev fallback mirrors that variable's own default.
     metadataBase: new URL(process.env.AUTH_URL ?? "http://localhost:3000"),
     title: t("app.name"),

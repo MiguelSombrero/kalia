@@ -3,7 +3,7 @@ import path from "node:path";
 import { parseEnv } from "node:util";
 
 const PORT_DEFAULTS = {
-  FRONTEND_PORT: 3000,
+  WEB_PORT: 3000,
   BACKEND_PORT: 8080,
   KEYCLOAK_PORT: 8081,
   VALKEY_PORT: 6379,
@@ -22,7 +22,7 @@ const valkeyOrigin = (env: StackEnv) => {
 };
 
 export const stackOrigins = (env: StackEnv) => ({
-  frontend: `http://localhost:${portOf(env, "FRONTEND_PORT")}`,
+  web: `http://localhost:${portOf(env, "WEB_PORT")}`,
   backend: `http://localhost:${portOf(env, "BACKEND_PORT")}`,
   keycloak: `http://localhost:${portOf(env, "KEYCLOAK_PORT")}`,
   mailpit: `http://localhost:${portOf(env, "MAILPIT_PORT")}`,

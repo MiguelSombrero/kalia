@@ -1,7 +1,7 @@
 # The local stack, and what a bare `docker compose` runs (ADR-0089). It is the
 # deployable definition plus the dev defaults: docker-compose.base.yml demands
 # every secret, and docker-compose.dev.env supplies a dev value for each so
-# `docker compose up` needs only the root .env's KALIA_FRONTEND_CLIENT_SECRET
+# `docker compose up` needs only the root .env's KALIA_WEB_CLIENT_SECRET
 # (README.md). docker-compose.override.yml, which Compose merges over this
 # file, adds what only development has.
 #

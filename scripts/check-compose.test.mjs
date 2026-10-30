@@ -40,7 +40,7 @@ test("consistencyProblems rejects a dev value the base never uses", () => {
 
 const behindEdge = {
   edge: { ports: [{ published: "3000" }] },
-  frontend: {},
+  web: {},
   backend: {},
   keycloak: { environment: { KC_PROXY_HEADERS: "xforwarded", KC_PROXY_TRUSTED_ADDRESSES: "10.0.0.0/8" } },
 };

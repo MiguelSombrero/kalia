@@ -3,13 +3,13 @@
 // which every other spec on the same worker relies on staying signed-in-able.
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { createKeycloakUser, keycloakAdminToken, uniqueUsername } from "./support/keycloakAccount";
-import { FRONTEND_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
 
 const REALM = "kalia";
 const GOOD_PASSWORD = "brute-force-test-Pw1!";
 const BAD_PASSWORD = "wrong-password";
-const CLIENT_ID = "kalia-frontend";
-const REDIRECT_URI = `${FRONTEND_ORIGIN}/api/auth/callback/keycloak`;
+const CLIENT_ID = "kalia-web";
+const REDIRECT_URI = `${WEB_ORIGIN}/api/auth/callback/keycloak`;
 
 // realm-export.json: failureFactor 10, waitIncrementSeconds 60,
 // quickLoginCheckMilliSeconds 1000. Spacing attempts past the quick-check

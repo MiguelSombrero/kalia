@@ -16,7 +16,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 // Do not re-export this from a shared lib/ module instead of defining it here:
 // a Server Action re-exported through a second "use server" file fails at
-// runtime with UnrecognizedActionError (frontend/README.md traps).
+// runtime with UnrecognizedActionError (web/README.md traps).
 export const startCatalogSignIn = async (formData?: FormData) => {
   const field = (name: string) => {
     const value = formData?.get(name);

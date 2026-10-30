@@ -137,7 +137,7 @@ export const sendActionsEmail = async (
     `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
     {
       headers: { Authorization: `Bearer ${adminToken}` },
-      params: { client_id: "kalia-frontend", redirect_uri: redirectUri },
+      params: { client_id: "kalia-web", redirect_uri: redirectUri },
       data: actions,
     },
   );

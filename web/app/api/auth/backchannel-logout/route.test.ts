@@ -14,7 +14,7 @@ const postWithLogoutToken = (logoutToken: string | undefined) => {
   if (logoutToken !== undefined) {
     body.set("logout_token", logoutToken);
   }
-  return new NextRequest("http://frontend:3000/api/auth/backchannel-logout", {
+  return new NextRequest("http://web:3000/api/auth/backchannel-logout", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
@@ -67,7 +67,7 @@ describe("POST /api/auth/backchannel-logout", () => {
   });
 
   it("answers 400 for a request that is not form-encoded", async () => {
-    const request = new NextRequest("http://frontend:3000/api/auth/backchannel-logout", {
+    const request = new NextRequest("http://web:3000/api/auth/backchannel-logout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ logout_token: "a-valid-token" }),
@@ -81,7 +81,7 @@ describe("POST /api/auth/backchannel-logout", () => {
 
   describe("a body over the size cap", () => {
     const OVER = 16 * 1024 + 1;
-    const url = "http://frontend:3000/api/auth/backchannel-logout";
+    const url = "http://web:3000/api/auth/backchannel-logout";
     const formHeaders = { "Content-Type": "application/x-www-form-urlencoded" };
 
     it("is refused with 413 before any token is verified", async () => {

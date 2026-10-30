@@ -25,12 +25,12 @@ const committedFixture = () => ({
   },
   clients: [
     {
-      clientId: "kalia-frontend",
+      clientId: "kalia-web",
       publicClient: false,
-      secret: "$(env:KALIA_FRONTEND_CLIENT_SECRET)",
-      redirectUris: ["$(env:FRONTEND_URL)/*"],
-      webOrigins: ["$(env:FRONTEND_URL)"],
-      attributes: { "post.logout.redirect.uris": "$(env:FRONTEND_URL)/*" },
+      secret: "$(env:KALIA_WEB_CLIENT_SECRET)",
+      redirectUris: ["$(env:WEB_URL)/*"],
+      webOrigins: ["$(env:WEB_URL)"],
+      attributes: { "post.logout.redirect.uris": "$(env:WEB_URL)/*" },
       protocolMappers: [
         { name: "kalia-backend-audience", config: { "included.client.audience": "kalia-backend" } },
       ],
@@ -53,8 +53,8 @@ const liveFixture = () => ({
     smtpServer: { host: "mailpit", fromDisplayName: "Kalia", auth: "false", password: "**********" },
   },
   clients: {
-    "kalia-frontend": {
-      clientId: "kalia-frontend",
+    "kalia-web": {
+      clientId: "kalia-web",
       publicClient: false,
       secret: "s3cr3t",
       redirectUris: ["http://localhost:3000/*"],
@@ -80,9 +80,9 @@ const liveFixture = () => ({
 
 const env = {
   KEYCLOAK_SSL_REQUIRED: "none",
-  FRONTEND_URL: "http://localhost:3000",
+  WEB_URL: "http://localhost:3000",
   BACKEND_PUBLIC_URL: "http://localhost:8080",
-  KALIA_FRONTEND_CLIENT_SECRET: "s3cr3t",
+  KALIA_WEB_CLIENT_SECRET: "s3cr3t",
   KEYCLOAK_SMTP_HOST: "mailpit",
   KEYCLOAK_SMTP_AUTH: "false",
   KEYCLOAK_SMTP_USER: "",
@@ -101,7 +101,7 @@ test("resolvePlaceholders honours a $(env:VAR:-default)", () => {
 });
 
 test("resolvePlaceholders throws on an unset variable with no default", () => {
-  assert.throws(() => resolvePlaceholders("$(env:KALIA_FRONTEND_CLIENT_SECRET)", {}), /unset and has no default/);
+  assert.throws(() => resolvePlaceholders("$(env:KALIA_WEB_CLIENT_SECRET)", {}), /unset and has no default/);
 });
 
 test("diffRealm passes when the live realm matches every pinned value", () => {
@@ -144,7 +144,7 @@ test("diffRealm catches a realm setting changed only in the admin console", () =
 
 test("diffRealm catches a missing redirect URI", () => {
   const live = liveFixture();
-  live.clients["kalia-frontend"].redirectUris = ["http://localhost:3000/*", "http://localhost:3000/extra"];
+  live.clients["kalia-web"].redirectUris = ["http://localhost:3000/*", "http://localhost:3000/extra"];
   const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
   assert.equal(mismatches.length, 1);
   assert.match(mismatches[0], /redirectUris.*does not list/s);
@@ -152,7 +152,7 @@ test("diffRealm catches a missing redirect URI", () => {
 
 test("diffRealm catches a redirect URI added only in the admin console", () => {
   const live = liveFixture();
-  live.clients["kalia-frontend"].redirectUris = ["http://evil.example/*"];
+  live.clients["kalia-web"].redirectUris = ["http://evil.example/*"];
   const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
   // The pinned URI is gone (1) and an unlisted one is present (1).
   assert.equal(mismatches.length, 2);
@@ -162,7 +162,7 @@ test("diffRealm catches a redirect URI added only in the admin console", () => {
 
 test("diffRealm catches a protocol mapper added only in the admin console", () => {
   const live = liveFixture();
-  live.clients["kalia-frontend"].protocolMappers.push({ id: "x", name: "sneaky-mapper", config: {} });
+  live.clients["kalia-web"].protocolMappers.push({ id: "x", name: "sneaky-mapper", config: {} });
   const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
   assert.equal(mismatches.length, 1);
   assert.match(mismatches[0], /protocolMapper "sneaky-mapper": present live/);
@@ -170,7 +170,7 @@ test("diffRealm catches a protocol mapper added only in the admin console", () =
 
 test("diffRealm catches a protocol-mapper config change", () => {
   const live = liveFixture();
-  live.clients["kalia-frontend"].protocolMappers[0].config["included.client.audience"] = "wrong-audience";
+  live.clients["kalia-web"].protocolMappers[0].config["included.client.audience"] = "wrong-audience";
   const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
   assert.equal(mismatches.length, 1);
   assert.match(mismatches[0], /protocolMapper "kalia-backend-audience"/);
@@ -178,7 +178,7 @@ test("diffRealm catches a protocol-mapper config change", () => {
 
 test("diffRealm catches a client that was deleted from the realm", () => {
   const live = liveFixture();
-  delete live.clients["kalia-frontend"];
+  delete live.clients["kalia-web"];
   const { mismatches } = diffRealm(resolvePlaceholders(committedFixture(), env), live);
   assert.equal(mismatches.length, 1);
   assert.match(mismatches[0], /absent from the live realm/);
@@ -190,14 +190,14 @@ test("diffRealm reports zero comparisons for a spec that pins nothing", () => {
 });
 
 test("resolvePlaceholders builds the public addresses from the stack's host ports when they are not set", () => {
-  const resolved = resolvePlaceholders(committedFixture(), { ...env, FRONTEND_URL: undefined, BACKEND_PUBLIC_URL: undefined, FRONTEND_PORT: "3100", BACKEND_PORT: "8180" });
+  const resolved = resolvePlaceholders(committedFixture(), { ...env, WEB_URL: undefined, BACKEND_PUBLIC_URL: undefined, WEB_PORT: "3100", BACKEND_PORT: "8180" });
   assert.equal(resolved.clients[0].redirectUris[0], "http://localhost:3100/*");
   assert.deepEqual(resolved.clients[1].redirectUris, ["http://localhost:8180/swagger-ui/oauth2-redirect.html"]);
   assert.deepEqual(resolved.clients[1].webOrigins, ["http://localhost:8180"]);
 });
 
 test("resolvePlaceholders keeps today's addresses when no port is set", () => {
-  const resolved = resolvePlaceholders(committedFixture(), { ...env, FRONTEND_URL: undefined, BACKEND_PUBLIC_URL: undefined });
+  const resolved = resolvePlaceholders(committedFixture(), { ...env, WEB_URL: undefined, BACKEND_PUBLIC_URL: undefined });
   assert.equal(resolved.clients[0].redirectUris[0], "http://localhost:3000/*");
   assert.deepEqual(resolved.clients[1].webOrigins, ["http://localhost:8080"]);
 });

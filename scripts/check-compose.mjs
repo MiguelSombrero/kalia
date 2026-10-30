@@ -49,12 +49,12 @@ export const consistencyProblems = ({ baseText, devEnvText }) => {
 };
 
 /** The services behind the edge proxy (ADR-0090): none of them may publish a port. */
-export const BEHIND_EDGE = ["frontend", "backend", "keycloak"];
+export const BEHIND_EDGE = ["web", "backend", "keycloak"];
 
 /** Problems with who faces the host in a rendered configuration's `services`. */
 export const edgeProblems = (services) => {
   const problems = [];
-  if (!services.edge) problems.push("there is no edge service to publish the frontend, backend and Keycloak");
+  if (!services.edge) problems.push("there is no edge service to publish the web app, backend and Keycloak");
   for (const name of BEHIND_EDGE) {
     if ((services[name]?.ports ?? []).length > 0) {
       problems.push(`${name} publishes a port, so it can be reached without passing the edge proxy`);
@@ -112,7 +112,7 @@ const run = () => {
   try {
     // What a developer's root .env holds: the one value with no dev default.
     const rootEnv = join(dir, ".env");
-    writeFileSync(rootEnv, "KALIA_FRONTEND_CLIENT_SECRET=check-compose-value\n");
+    writeFileSync(rootEnv, "KALIA_WEB_CLIENT_SECRET=check-compose-value\n");
     const local = JSON.parse(compose(["--env-file", rootEnv, "config", "--format", "json"], {}));
     const seed = local.services["keycloak-seed"];
     const keycloak = local.services.keycloak.environment;
@@ -125,8 +125,8 @@ const run = () => {
         problems.push("keycloak-seed's KEYCLOAK_ADMIN_PASSWORD differs from the admin password Keycloak starts with");
       }
     }
-    if (local.services.frontend.environment.KALIA_DEV_STACK !== "true") {
-      problems.push("the local stack does not mark the frontend as the dev stack");
+    if (local.services.web.environment.KALIA_DEV_STACK !== "true") {
+      problems.push("the local stack does not mark the web app as the dev stack");
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

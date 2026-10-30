@@ -5,7 +5,7 @@ import { resolveLocaleFromAcceptLanguage } from "@/i18n/resolveLocale";
 import { newTraceparent, traceIdOf } from "@/lib/api/traceparent";
 
 // Do not rename to middleware.ts: Next.js 16 renamed this file convention to
-// `proxy` and the old name is deprecated (frontend/AGENTS.md).
+// `proxy` and the old name is deprecated (web/AGENTS.md).
 export const proxy = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
   const hasLocalePrefix = locales.some(

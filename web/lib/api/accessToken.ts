@@ -9,7 +9,7 @@ import { getSessionAccount, updateSessionAccount } from "@/lib/auth/valkeyAdapte
 const EXPIRY_LEEWAY_SECONDS = 10;
 
 // Renews the token first when expired; `undefined` when there is none
-// (ADR-0028, ADR-0029) — see frontend/README.md's "kaliaFetch attaches the
+// (ADR-0028, ADR-0029) — see web/README.md's "kaliaFetch attaches the
 // bearer token" rule for why sending an expired one is wrong.
 export const currentAccessToken = async (): Promise<string | undefined> => {
   const sessionToken = await currentSessionToken();
@@ -56,7 +56,7 @@ const renew = async (
     ...account,
     access_token: outcome.accessToken,
     // Keycloak returns a fresh id_token too; a stale one breaks sign-out's
-    // id_token_hint (guarded by frontend/e2e/sign-in-out.spec.ts).
+    // id_token_hint (guarded by web/e2e/sign-in-out.spec.ts).
     id_token: outcome.idToken ?? account.id_token,
     refresh_token: outcome.refreshToken ?? account.refresh_token,
     expires_at: outcome.expiresAt,
