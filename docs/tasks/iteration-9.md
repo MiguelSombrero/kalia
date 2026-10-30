@@ -27,7 +27,7 @@ the backend and the process reshaped to carry a third codebase.
 | [16](iteration-9/16-first-profile-reads-never-race.md) | Two first reads of a new user's profile never collide | done |
 | [17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md) | `dev` stays green after a merge, and a red `dev` is logged | done |
 | [18](iteration-9/18-docs-match-iteration-8-5.md) | The documentation says what iteration 8.5 built | done |
-| [19](iteration-9/19-review-feedback-outlives-its-pr.md) | What a review decides outlives the pull request it was made in | refined |
+| [19](iteration-9/19-review-feedback-outlives-its-pr.md) | What a review decides outlives the pull request it was made in | done |
 | [20](iteration-9/20-no-token-or-query-string-in-a-log.md) | No signed token or query string reaches a log | done |
 | [21](iteration-9/21-public-cellar-response-settled-before-the-freeze.md) | The public cellar's response is settled before `/api/v1` freezes | done |
 | [02](iteration-9/02-decision-the-mobile-stack.md) | Decide the mobile stack | refined |

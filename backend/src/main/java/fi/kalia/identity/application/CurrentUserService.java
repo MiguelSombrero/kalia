@@ -36,9 +36,10 @@ public class CurrentUserService {
 	// already rejected anonymous callers with 401.
 	public CurrentUser require() {
 		return find().orElseThrow(() -> new IllegalStateException(
-				"No authenticated user in the security context. A caller reached code that "
-						+ "requires one through a route the filter chain treats as public "
-						+ "(SecurityConfig)."));
+				"""
+						No authenticated user in the security context. A caller reached code that \
+						requires one through a route the filter chain treats as public \
+						(SecurityConfig)."""));
 	}
 
 	public UUID requireId() {
