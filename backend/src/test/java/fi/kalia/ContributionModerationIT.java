@@ -163,7 +163,10 @@ class ContributionModerationIT {
 		moderate("remove");
 
 		page = publicCellar("size=2&page=0");
-		assertThat((int) JsonPath.read(page, "$.totalElements")).as("a removed beer still renders (ADR-0091)").isEqualTo(4);
+		assertThat(contentIds(page)).as("a removed beer is left out of a public cellar").containsExactly(approved.get(0),
+				approved.get(1));
+		assertThat((int) JsonPath.read(page, "$.totalElements")).isEqualTo(2);
+		assertThat((int) JsonPath.read(page, "$.totalBottles")).isEqualTo(2);
 	}
 
 	@Test
@@ -200,7 +203,7 @@ class ContributionModerationIT {
 	}
 
 	@Test
-	void aRejectedBeerIsHiddenButItsRowStaysAndACellarEntryAndFeedLineStillRender() {
+	void aRejectedBeerIsHiddenButItsRowStaysAndItsOwnersCellarAndTheFeedStillRender() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
@@ -216,7 +219,7 @@ class ContributionModerationIT {
 	}
 
 	@Test
-	void aRemovedBeerIsHiddenButItsRowStaysAndACellarEntryAndFeedLineStillRender() {
+	void aRemovedBeerIsHiddenButItsRowStaysAndItsOwnersCellarAndTheFeedStillRender() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
@@ -297,7 +300,7 @@ class ContributionModerationIT {
 			get(viewer, "/api/v1/beers/" + beerId).expectStatus().isNotFound();
 		}
 		assertThat(cellarBeerIds(CONTRIBUTOR)).as("the owner's cellar").containsExactly(beerId);
-		assertThat(publicCellarBeerIds()).as("the public cellar").containsExactly(beerId);
+		assertThat(publicCellarBeerIds()).as("the public cellar").isEmpty();
 		assertThat(feedBeerIds()).as("the feed").contains(beerId);
 	}
 

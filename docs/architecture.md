@@ -287,10 +287,10 @@ the duplicate key so its name can be proposed again.
 **A catalog beer is never deleted.** Cellar entries and feed lines point at one
 by id across a module boundary with no foreign key, so a deleted beer would
 leave entries its owner can no longer see. Hiding is a state, not an absence:
-a `REJECTED` or `REMOVED` beer is still named in an owner's cellar, a public
-cellar and the feed. `CellarService` and `FeedService` therefore treat a beer
+a `REJECTED` or `REMOVED` beer is still named in an owner's cellar and the feed,
+but not in a public cellar. `CellarService` and `FeedService` therefore treat a beer
 they cannot resolve as a defect (the cellar logs it at `WARN`), except one
-still `PENDING`, which a public read withholds on purpose.
+that is not `APPROVED`, which a public cellar read withholds on purpose.
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
@@ -459,9 +459,9 @@ not in `cellar`'s tables, so the page cannot be cut by name — and each beer li
 at most its 25 oldest bottles, its `quantity` still the number held. The
 response carries the whole cellar's beer and bottle totals and when the newest
 bottle was added, since a client holding one page cannot count them. A beer
-still awaiting approval is left out of the pages and of every total: before the
-page is cut, `cellar` asks `catalog` which of the owner's beers a signed-out
-reader may not see ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md))
+that is not approved — awaiting approval, refused or taken down — is left out of
+the pages and of every total: before the page is cut, `cellar` asks `catalog`
+which of the owner's beers a signed-out reader may not see ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md))
 and excludes them in SQL, so a page comes back full and the totals count only
 what is shown. The exclusion is read time rather than a stored copy because
 `make moderate` changes a beer's status in SQL and publishes nothing a copy

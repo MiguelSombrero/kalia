@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-27
+- **Amended:** 2026-10-30 — a public cellar leaves out every beer that is not
+  `APPROVED`, so its pages and totals count only what the reader is shown; an
+  owner's own cellar and the feed still name a `REJECTED` or `REMOVED` beer
 
 ## Context
 
@@ -35,8 +38,8 @@ ever deleted.
   Search, a beer's details, the brewery list, adding to a cellar and adding a
   beer to an existing brewery all apply it. A `PENDING` row is also left out of
   every public read of a cellar and of the feed. A `REJECTED` or `REMOVED` row
-  is hidden from all of those, and still named wherever something points at it:
-  an owner's cellar, a public cellar, the feed.
+  is hidden from all of those and from a public cellar, and still named
+  wherever else something points at it: an owner's cellar and the feed.
 - **A contributor may have 20 entries waiting** (`PENDING` beers plus
   breweries; a beer with a new brewery is two). An add past that answers `429`
   `problem+json` until some are approved or rejected. Two adds by one
@@ -48,8 +51,8 @@ ever deleted.
   `PENDING` into `APPROVED`, *reject* turns `PENDING` into `REJECTED`, *remove*
   turns `PENDING` or `APPROVED` into `REMOVED`.
 - **No catalog row is deleted**, by the command or by anything else. Hidden is
-  a state, not an absence, and an integration test pins that a cellar entry and
-  a feed line pointing at a rejected or removed beer still render.
+  a state, not an absence, and an integration test pins that an owner's cellar entry
+  and a feed line pointing at a rejected or removed beer still render.
 - **A hidden row leaves the duplicate key.** The unique indexes on
   `(brewery, folded name)` and `(folded name, country)` cover `PENDING` and
   `APPROVED` rows only, so a name an operator refused can be proposed again.
@@ -102,7 +105,8 @@ ever deleted.
   name and country and offers a brewery the proposer cannot use.
 - Bad, because a hidden beer's details page answers `404` while a cellar entry
   and a feed line still render it, so their link to it is dead; and a public
-  cellar's totals still count the owner's pending beers, which its list omits.
+  cellar omits a rejected or removed beer that the owner's cellar and the feed
+  still show.
 - Bad, because removing a brewery hides nothing of another contributor's beers
   in it; they stay visible, under a brewery the lists no longer show.
 - Neutral, because every catalog read now filters on `moderation_status`; the

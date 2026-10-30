@@ -81,7 +81,7 @@ public class CatalogService {
 	}
 
 	public Set<UUID> withheldFromPublic(Collection<UUID> ids) {
-		return new HashSet<>(beers.findIdsByIdInAndModerationStatus(ids, ModerationStatus.PENDING));
+		return new HashSet<>(beers.findIdsByIdInAndModerationStatusNot(ids, ModerationStatus.APPROVED));
 	}
 
 	public Page<Brewery> listBreweries(@Nullable String nameQuery, @Nullable UUID viewerId, Pageable pageable) {

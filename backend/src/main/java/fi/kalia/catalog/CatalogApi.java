@@ -27,8 +27,9 @@ public class CatalogApi {
 	}
 
 	/**
-	 * The ids among {@code beerIds} that a signed-out reader may not be shown yet: those still
-	 * awaiting approval (ADR-0091). An id matching no beer is not among them.
+	 * The ids among {@code beerIds} that a signed-out reader may not be shown in a cellar: every
+	 * beer not {@code APPROVED}, whether awaiting approval, refused or taken down (ADR-0091). An
+	 * id matching no beer is not among them.
 	 */
 	public Set<UUID> withheldFromPublic(Collection<UUID> beerIds) {
 		Set<UUID> withheld = new HashSet<>();

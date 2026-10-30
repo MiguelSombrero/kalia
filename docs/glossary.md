@@ -104,7 +104,7 @@ read of a cellar its owner has made public. Its dependencies are in
 | `EntryRepository` | Persistence for the `Entry` aggregate. Every lookup is keyed on an already-resolved owner id, so another user's entry and a missing one are indistinguishable. | [ADR-0050](adr/0050-public-cellar-addressing.md) |
 | `BottleCount` | How many bottles one entry holds: the read model of a public cellar page, which lists at most a capped number of an entry's bottles and reports the rest as a count. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
 | `BottleListing` | One bottle as a public cellar page lists it: its own fields and its entry's id, read without loading the entry, since an owned entity has no repository of its own. | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
-| `BottleTotals` | Every bottle one user holds and when the newest was added: what a public cellar page reports about the whole cellar it shows (beers awaiting approval left out), since a client holding one page cannot count it. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
+| `BottleTotals` | Every bottle one user holds and when the newest was added: what a public cellar page reports about the whole cellar it shows (beers that are not approved left out), since a client holding one page cannot count it. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
 | `InvalidBottleException` | A domain exception for bottle data that cannot be accepted: a future brewed date, a best-before date not after the brewed date, a non-positive add quantity. | [ADR-0014](adr/0014-shared-exception-handling.md) |
 
 ## feed

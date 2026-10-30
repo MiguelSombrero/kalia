@@ -80,16 +80,19 @@ class CatalogModuleApiIT {
 	}
 
 	@Test
-	void onlyAPendingBeerIsWithheldFromAPublicReaderEvenBeyondTheFirstChunk() {
-		List<Beer> seeded = beers.findAll(Pageable.ofSize(2)).getContent();
-		UUID pending = seeded.get(0).getId();
-		UUID approved = seeded.get(1).getId();
-		jdbc.update("UPDATE catalog.beer SET source = 'USER', wikidata_qid = NULL, moderation_status = 'PENDING', contributor_id = ? WHERE id = ?",
-				UUID.randomUUID(), pending);
+	void everyBeerButAnApprovedOneIsWithheldFromAPublicReaderEvenBeyondTheFirstChunk() {
+		List<Beer> seeded = beers.findAll(Pageable.ofSize(4)).getContent();
+		UUID approved = seeded.get(0).getId();
+		List<UUID> notApproved = List.of(seeded.get(1).getId(), seeded.get(2).getId(), seeded.get(3).getId());
+		List<String> statuses = List.of("PENDING", "REJECTED", "REMOVED");
+		for (int i = 0; i < notApproved.size(); i++) {
+			jdbc.update("UPDATE catalog.beer SET source = 'USER', wikidata_qid = NULL, moderation_status = ?, "
+					+ "contributor_id = ? WHERE id = ?", statuses.get(i), UUID.randomUUID(), notApproved.get(i));
+		}
 		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(CatalogApi.MAX_BATCH_IDS),
-				Stream.of(approved, pending)).toList();
+				Stream.concat(Stream.of(approved), notApproved.stream())).toList();
 
-		assertThat(api.withheldFromPublic(ids)).containsExactly(pending);
+		assertThat(api.withheldFromPublic(ids)).containsExactlyInAnyOrderElementsOf(notApproved);
 		assertThat(api.withheldFromPublic(List.of())).isEmpty();
 	}
 
