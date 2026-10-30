@@ -1,6 +1,6 @@
 # Task 16: Two first reads of a new user's profile never collide
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -52,12 +52,12 @@ time.
 
 ## Acceptance criteria
 
-- [ ] The concurrency integration test passes 50 consecutive runs locally,
+- [x] The concurrency integration test passes 50 consecutive runs locally,
       and was confirmed to fail against the unfixed code at least once in as
       many
-- [ ] The cause is stated in the PR and, where it changes how get-or-create
+- [x] The cause is stated in the PR and, where it changes how get-or-create
       races are handled, in the ADR it amends
-- [ ] The `common-failures.md` row points at the fix
+- [x] The `common-failures.md` row points at the fix
 
 ## Notes
 
