@@ -55,7 +55,7 @@ class CommittedOpenApiSpecIT {
 		}
 
 		assertThat(COMMITTED).as("backend/openapi.json (run `make openapi-spec` to write it)").exists();
-		assertThat(Files.readString(COMMITTED))
+		assertThat(Files.readString(COMMITTED).replace("\r\n", "\n"))
 				.as("backend/openapi.json differs from /v3/api-docs; run `make openapi-spec` and commit the result")
 				.isEqualTo(served);
 	}
@@ -64,7 +64,8 @@ class CommittedOpenApiSpecIT {
 	private static String canonical(String json) {
 		Map<String, Object> spec = CANONICAL.readValue(json, new TypeReference<Map<String, Object>>() {});
 		spec.remove("servers");
-		return CANONICAL.writeValueAsString(spec) + "\n";
+		// Jackson indents with the platform's line separator; the file is LF.
+		return CANONICAL.writeValueAsString(spec).replace("\r\n", "\n") + "\n";
 	}
 
 	private String apiDocs() {

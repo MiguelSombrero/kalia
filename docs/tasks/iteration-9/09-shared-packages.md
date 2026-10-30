@@ -1,6 +1,6 @@
 # Task 09: The API client and the locale strings are shared packages
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-2
 
@@ -115,30 +115,30 @@ were accepted:
 
 ## Acceptance criteria
 
-- [ ] The web imports its API client and strings from the shared packages and
+- [x] The web imports its API client and strings from the shared packages and
       no longer has its own copies; its Vitest and Playwright suites are green
-- [ ] A test in `@kalia/api` proves the core attaches the token a transport
+- [x] A test in `@kalia/api` proves the core attaches the token a transport
       supplies, returns a non-2xx status rather than throwing, maps a lost
       request to the typed failure, and throws when no transport was
       registered; the web has a test that its wiring supplies the session's
       token and keeps its trace headers, metrics and logging
-- [ ] A lint rule, proven by committed violating fixtures run in a test, fails
+- [x] A lint rule, proven by committed violating fixtures run in a test, fails
       when a shared package imports from `web/` or `mobile/`, or from
       `react-dom`, `next` or `react-native`
-- [ ] `make verify-fast` is green, and the drift check — a regeneration of the
+- [x] `make verify-fast` is green, and the drift check — a regeneration of the
       package from `backend/openapi.json` and a diff, with no Docker stack —
       fails when the spec and the generated client disagree, confirmed by
       breaking one
-- [ ] A backend test fails when `backend/openapi.json` differs from the one
+- [x] A backend test fails when `backend/openapi.json` differs from the one
       the app serves, and the CI diff job fails on a removed response field —
       each confirmed by breaking one
-- [ ] The web's missing-translation check runs from `@kalia/locales` and
+- [x] The web's missing-translation check runs from `@kalia/locales` and
       fails on a key present in one language and not the other, confirmed by
       deleting one
-- [ ] The web image still builds from the repository root and serves its
+- [x] The web image still builds from the repository root and serves its
       pages with both packages in it, and `.claude/settings.json` marks the
       generated client's new path read-only
-- [ ] The build with and without the `transpilePackages` entries is compared
+- [x] The build with and without the `transpilePackages` entries is compared
       and the result stated in the PR
 
 ## Notes

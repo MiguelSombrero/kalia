@@ -59,6 +59,13 @@ const main = () => {
     process.exit(1);
   }
 
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", `${baseRef}^{commit}`], { cwd: ROOT, stdio: "ignore" });
+  } catch {
+    console.log(`  FAIL  ${baseRef} is not a ref here, so there is no spec to compare against (fetch it, or pass another base)`);
+    process.exit(1);
+  }
+
   let base;
   try {
     base = execFileSync("git", ["show", `${baseRef}:${SPEC}`], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });

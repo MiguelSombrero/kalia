@@ -342,6 +342,17 @@ they're already cross-referenced from merged PRs and
   and commits, over every row a contributor added, so a mistyped `WHO` or
   `ACTION` is only undone by a second run. A `DRY_RUN=1` that rolls back and
   prints the same counts. Related to SHOULD-80. Deferred in PR #452.
+- **COULD-100** *(confirmed 2026-10-30)* — three small gaps around the
+  committed spec. `backend/openapi.json` carries the OAuth URLs built from the
+  Keycloak issuer setting, so a developer whose environment overrides it fails
+  `CommittedOpenApiSpecIT` without a contract change: drop or normalise
+  `components.securitySchemes.oauth2.flows` in the IT's canonical form. The IT
+  reads `openapi.json` relative to the working directory, which is `backend/`
+  only under Maven: resolve it from the module root. And CI's change filter
+  does not select `api-breaking-change` when only
+  `scripts/check-api-breaking.mjs` changes, so a broken wrapper is found on the
+  next spec change: add the script to the backend filter. Deferred in the
+  iteration 9 task 09 pull request.
 
 ## Retired
 
