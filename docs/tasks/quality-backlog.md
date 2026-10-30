@@ -178,15 +178,6 @@ they're already cross-referenced from merged PRs and
   (`:48-57`, `:130-135`), three outcome alerts (`:322-370`) and navigation
   (`:123-129`) in one component; the alerts and the brewery mode could be
   extracted and tested on their own.
-- **COULD-65** *(confirmed 2026-10-27)* **[needs decision]** — an access token
-  outlives sign-out by up to its 5-minute lifespan
-  (`keycloak/realm-export.json:11`): the backend checks signature, `exp`,
-  `iss` and `aud` only (`SecurityConfig.java:84-99`). Harmless for the web,
-  whose BFF deletes its token copy on logout (`valkeyAdapter.ts:211-226`), but
-  a mobile client calling Spring directly keeps a lost device's token working
-  after sign-out or an admin disable. Accept it as an §8 trade-off, shorten
-  the mobile client's lifespan, or introspect on sensitive writes — an
-  iteration-9 mobile-auth question.
 - **COULD-73** *(confirmed 2026-10-27)* — any cross-site link to
   `/api/auth/callback/keycloak` signs the visitor out:
   `app/api/auth/[...nextauth]/route.ts:6`, `:15-21` ends the session on any
@@ -469,6 +460,7 @@ live section they came from.
 - ~~COULD-62~~ (`GET /styles` scanning every beer) — lifted into [iteration-8.5 task 15](iteration-8.5/15-catalog-reads-hold-at-imported-size.md).
 - ~~COULD-63~~ (invisible and bidi characters in names, and no NFKC in `fold_name`) — lifted into [iteration-8.5 task 12](iteration-8.5/12-user-added-catalog-entries-governed.md).
 - ~~COULD-64~~ (signing in while signed in keeping the previous user's tokens) — lifted into [iteration-8.5 task 13](iteration-8.5/13-sessions-and-stack-credentials-hardened.md).
+- ~~COULD-65~~ (an access token outliving sign-out by up to its lifespan) — accepted as an [architecture §8](../architecture.md#8-trade-offs-made-explicit) trade-off by [ADR-0095](../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md), decided in [iteration-9 task 05](iteration-9/05-decision-mobile-authentication.md).
 - ~~COULD-66~~ (Dependabot not covering Docker images) — lifted into [iteration-8.5 task 14](iteration-8.5/14-cve-gate-and-updates-trustworthy.md).
 - ~~COULD-67~~ (a quay.io pull failure turning E2E red with no retry) — lifted into [iteration-8.5 task 17](iteration-8.5/17-ci-enforces-the-gate.md).
 - ~~COULD-68~~ (CLAUDE.md calling the sweep four-dimension) — lifted into [iteration-8.5 task 08](iteration-8.5/08-claude-md-within-its-budget.md).

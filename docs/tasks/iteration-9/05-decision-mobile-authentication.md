@@ -1,6 +1,6 @@
 # Task 05: Decide how the mobile app authenticates
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -87,13 +87,13 @@ for both clients, and COULD-65's answer.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the decision, the rejected alternatives and their costs,
+- [x] An ADR records the decision, the rejected alternatives and their costs,
       and passes `node scripts/check-adrs.mjs`
-- [ ] ADR-0003 and ADR-0029 are amended where the decision changes what they
+- [x] ADR-0003 and ADR-0029 are amended where the decision changes what they
       state, and COULD-65 is retired or re-scoped in the quality backlog
-- [ ] `docs/architecture.md` §6 describes the mobile client alongside the web
+- [x] `docs/architecture.md` §6 describes the mobile client alongside the web
       one
-- [ ] Each test the decision implies — a mobile-shaped token passing the
+- [x] Each test the decision implies — a mobile-shaped token passing the
       audience check, a failed refresh ending the session — is named in the
       acceptance criteria of tasks [13](13-keycloak-mobile-client.md) and
       [14](14-sign-in-on-mobile.md) before either is refined

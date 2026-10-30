@@ -858,8 +858,34 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   one so no secret is ever browser-visible in the docs UI. Required on every
   endpoint that needs a bearer token, so the Authorize button covers all of
   them, not `cellar` alone. The client exists on the dev stack only: the
-  deployable realm file pins no public client
+  deployable realm file pins no public client for the docs, only the app's
+  below
   ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
+- **The mobile app authenticates beside the web client, not through it**
+  ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+  The web is unchanged: a confidential `kalia-frontend`, tokens in Valkey, the
+  BFF renewing them. The app is a second, public Keycloak client,
+  `kalia-mobile`, signing in with Authorization Code + PKCE in the system
+  browser (never an embedded web view), reaching sign-up from Keycloak's own
+  page ([ADR-0055](adr/0055-self-registration-via-keycloak.md)), holding its
+  tokens in the Keychain or Keystore, and calling the Spring API directly
+  through the edge proxy with a bearer token — there is no mobile BFF.
+  - **Redirect URIs are listed exactly**, never a `kalia://` wildcard, and
+    `kalia-mobile` has its own `kalia-backend` audience mapper, because the
+    backend rejects a token without the audience
+    ([ADR-0028](adr/0028-resource-server-and-current-user.md)).
+  - **The session is an offline token** (`offline_access`) that lapses after 30
+    days unused and has no maximum while in use. The app renews its own access
+    token and ends its own session when Keycloak answers a refresh with
+    `invalid_grant`, since nothing can reach a phone as back-channel logout
+    reaches the BFF ([ADR-0031](adr/0031-backchannel-logout.md)).
+  - **Mobile refresh tokens rotate; the web's are reused**, for the two-tabs
+    reason in [ADR-0029](adr/0029-silent-token-refresh.md). Keycloak at the
+    pinned version reads rotation only from realm settings, so if it cannot be
+    set for `kalia-mobile` alone the choice returns to the product owner.
+  - **Sign-out forgets the tokens on the device first, then revokes them at
+    Keycloak when connected.** Offline, the device is signed out at once and
+    the server-side session lapses at its 30-day idle timeout.
 - **The deployable stack requires its secrets and the session store a
   password** ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
   `docker-compose.base.yml` has no default for any of them and the dev stack
@@ -1071,8 +1097,20 @@ records the latest run.
 - **Modulith over microservices**: one deployable and one DB keeps ops trivial
   for a solo project; module verification preserves the option to extract
   services later. Cost: discipline required at boundaries.
-- **BFF over direct API calls**: an extra hop and a bit of proxy code, in
-  exchange for no tokens in the browser and no CORS surface.
+- **BFF over direct API calls, for the web**: an extra hop and a bit of proxy
+  code, in exchange for no tokens in the browser and no CORS surface. The
+  mobile app calls the API directly
+  ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)),
+  because a phone has secure storage a browser lacks.
+- **A token outlives sign-out by up to its lifespan** (COULD-65,
+  [ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)):
+  an access token keeps working for up to its 5-minute lifespan after sign-out
+  or an account disable, because the backend checks signature, expiry, issuer
+  and audience and asks Keycloak nothing per request. The web's BFF deletes its
+  copy at sign-out; a mobile token on a lost phone does not go away until it
+  expires. The cost is a five-minute window; shortening the lifespan narrows
+  it without closing it, and introspection would make every write depend on
+  Keycloak being up.
 - **Migrations over an admin UI or a runtime import**: every environment holds
   the same catalog, seed and Wikidata import alike, at the cost of a catalog
   that grew only by migration until users could add beers, which iteration 8
@@ -1247,6 +1285,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md) | A contributed catalog entry waits for an operator, and no catalog row is ever deleted | accepted | 2026-10-27 |
 | [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) | The repository is plain npm workspaces of `web/`, `mobile/` and two packages that ship TypeScript source | accepted | 2026-10-30 |
 | [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) | The API is additive-only while an app is installed, and a committed spec fails a breaking diff | accepted | 2026-10-30 |
+| [ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) | The mobile app signs in as a public PKCE client, holds an offline token and calls Spring directly through the edge | accepted | 2026-10-30 |
 
 ### Engineering process and documentation
 
