@@ -94,7 +94,9 @@ jobs:
           fi
           if [ -n "$keycloak_inputs" ]; then keycloak=true; fi
           if echo "$changed" | grep -q '^backend/'; then backend=true; fi
-          if echo "$changed" | grep -qE '^(web/|packages/|package(-lock)?\.json$)'; then web=true; fi
+          # backend/openapi.json is what packages/api generates from, so a change to
+          # it is a change to what the web compiles even though it sits in backend/.
+          if echo "$changed" | grep -qE '^(web/|packages/|package(-lock)?\.json$|backend/openapi\.json$)'; then web=true; fi
 
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "web=$web" >> "$GITHUB_OUTPUT"
@@ -176,13 +178,10 @@ jobs:
           EOF
 
   web:
-    name: Web (npm)
+    name: Web and packages (npm)
     needs: [changes]
     if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -191,28 +190,27 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        working-directory: .
         run: npm ci
+      # The Makefile's targets, so the list of what runs lives in one place:
+      # the web app and both shared packages are linted and tested.
       - name: Lint
-        run: npm run lint
+        run: make lint
       - name: Test
-        run: npm test
+        run: make web-test packages-test
       - name: Build
-        run: npm run build
+        run: make web-build
 
   api-client-drift:
     name: API client drift check
-    # Watches both sides deliberately: the drift this catches (ADR-0012) is
-    # generated code that no longer matches the backend's spec, which a
-    # backend-only filter would miss when the generated files themselves are
-    # edited. Not gated behind the backend job — it builds the backend image
-    # itself, so waiting only delays the answer without changing it.
+    # Regenerates the shared client from the committed spec and diffs it
+    # (ADR-0093); neither needs the backend running, so no Docker. That the
+    # committed spec matches what the application serves is the backend job's
+    # CommittedOpenApiSpecIT. Watches both sides deliberately: the generated
+    # files edited by hand, or the spec edited without regenerating, both
+    # show up here.
     needs: [changes]
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -221,18 +219,42 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        working-directory: .
         run: npm ci
-      - name: Start backend
-        working-directory: .
-        run: docker compose up -d --build backend postgres edge
-      - name: Wait for backend health
-        working-directory: .
-        run: timeout 120 sh -c 'until curl -sf http://localhost:8080/actuator/health; do sleep 2; done'
-      - name: Regenerate API client
-        run: npm run generate:api
-      - name: Fail if the committed client has drifted from the live spec
-        run: git diff --exit-code -- lib/api/generated
+      - name: Fail if the committed client differs from what the committed spec generates
+        run: make api-drift
+
+  api-breaking-change:
+    name: API breaking-change check
+    # Diffs backend/openapi.json against dev's copy and fails on a change an
+    # installed app would notice (ADR-0093). Only the spec and the files that
+    # configure the diff matter, but a push to dev or a shared file runs
+    # everything, so this follows the backend filter.
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    env:
+      # oasdiff, by release and checksum from its checksums.txt: a download
+      # that does not match fails the job rather than running.
+      OASDIFF_VERSION: 1.35.0
+      OASDIFF_SHA256: a8023002fcb2eaa7f5758148a9303cb63d33b939886df312268bc0fc7b939140
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The base spec comes from origin/dev's history, not this branch's.
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - name: Install oasdiff
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/oasdiff.tar.gz" \
+            "https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz"
+          echo "${OASDIFF_SHA256}  $RUNNER_TEMP/oasdiff.tar.gz" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/oasdiff"
+          tar -xzf "$RUNNER_TEMP/oasdiff.tar.gz" -C "$RUNNER_TEMP/oasdiff" oasdiff
+          echo "$RUNNER_TEMP/oasdiff" >> "$GITHUB_PATH"
+      - name: Fail on a breaking change against dev's spec
+        run: node scripts/check-api-breaking.mjs origin/dev
 
   keycloak-realm-check:
     name: Keycloak realm check
@@ -362,7 +384,7 @@ jobs:
     # cancelled: without it those make this job skip, and a skipped required
     # check lets the merge through.
     if: always()
-    needs: [changes, static-checks, backend, web, api-client-drift, keycloak-realm-check, vulnerability-scan, e2e]
+    needs: [changes, static-checks, backend, web, api-client-drift, api-breaking-change, keycloak-realm-check, vulnerability-scan, e2e]
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every job succeeded or was skipped by the changes filter

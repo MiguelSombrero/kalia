@@ -1,0 +1,8 @@
+# Passed to `oasdiff breaking --severity-levels` by scripts/check-api-breaking.mjs.
+# oasdiff reports the removal of an element `dev`'s spec already marks
+# `deprecated` as information. ADR-0093 lets such a removal through only when
+# the pull request names the minimum supported app build that excludes its
+# last user, so here it is an error that backend/openapi-breaking-ignore.txt
+# has to waive, one line at a time.
+api-path-removed-with-deprecation err
+api-removed-with-deprecation err
