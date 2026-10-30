@@ -27,7 +27,7 @@
   that alone publishes the backend's port); the bullet below now points at
   `frontend/README.md`, which holds the command
   (iteration 9 task 18)
-- **Amended:** 2026-10-30 by [ADR-0092](0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) — the OpenAPI spec is now
+- **Amended:** 2026-10-30 by [ADR-0093](0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) — the OpenAPI spec is now
   committed and the clients generate from the file, reversing the rejection
   of a committed spec below; built by iteration 9 task 09, so until it lands
   the live-backend flow above is what runs (iteration 9 task 04)
@@ -86,7 +86,7 @@ build whenever the two disagree.**
   `city` parameter, which the Jackson fix in Evidence made properly optional.
 
 > **Amended 2026-10-30.** The spec source and the drift job above are
-> replaced by [ADR-0092](0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) once
+> replaced by [ADR-0093](0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) once
 > [iteration 9 task 09](../tasks/iteration-9/09-shared-packages.md) builds
 > them. The spec is a committed file; every client generates from it, so none
 > needs a Docker stack or a running backend. A backend test fails when the
@@ -94,7 +94,7 @@ build whenever the two disagree.**
 > over what `api-client-drift` checked against the live backend, and the
 > package regenerates from the file and diffs the result. A CI job also diffs
 > the spec against `dev`'s and fails on a breaking change; the compatibility
-> policy those checks serve is in ADR-0092 and
+> policy those checks serve is in ADR-0093 and
 > [architecture.md §4](../architecture.md#4-api-design). The orval choice,
 > the committed generated output and the mutator stand.
 
@@ -151,7 +151,7 @@ exists to remove.
 > change can be diffed against. The staleness the rejection feared is
 > answered by a backend test that fails when the committed file and the served
 > spec differ, so the file cannot go stale silently
-> ([ADR-0092](0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+> ([ADR-0093](0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 
 ## Consequences
 

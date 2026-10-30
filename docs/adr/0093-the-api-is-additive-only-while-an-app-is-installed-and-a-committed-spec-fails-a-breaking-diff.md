@@ -1,4 +1,4 @@
-# ADR-0092: The API is additive-only while an app is installed, and a committed spec fails a breaking diff
+# ADR-0093: The API is additive-only while an app is installed, and a committed spec fails a breaking diff
 
 - **Status:** accepted
 - **Date:** 2026-10-30
