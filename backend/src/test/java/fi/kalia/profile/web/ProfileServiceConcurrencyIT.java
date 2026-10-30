@@ -116,7 +116,9 @@ class ProfileServiceConcurrencyIT {
 
 	// Both accounts pass the "is it taken?" check before either inserts, so the
 	// unique index is what refuses the loser; its retry's own check then finds
-	// the winner's row and answers 409 rather than retrying again.
+	// the winner's row and answers 409 rather than retrying again. Do not move
+	// the query below the barrier: a thread that runs it late sees the winner's
+	// committed row, is refused without a retry, and the test fails at random.
 	@Test
 	void concurrentFirstReadsByTwoAccountsWithOneUsernameGiveItToExactlyOne() throws Exception {
 		String username = "contested-" + UUID.randomUUID();
@@ -128,13 +130,15 @@ class ProfileServiceConcurrencyIT {
 		CyclicBarrier bothSawTheNameFree = new CyclicBarrier(2);
 		AtomicInteger checks = new AtomicInteger();
 		doAnswer(invocation -> {
-			if (checks.getAndIncrement() < bothSawTheNameFree.getParties()) {
-				bothSawTheNameFree.await(5, TimeUnit.SECONDS);
-			}
-			return entityManager
+			Optional<Profile> holder = entityManager
 					.createQuery("select p from Profile p where lower(p.username) = lower(:username)", Profile.class)
 					.setParameter("username", username)
 					.getResultStream().findFirst();
+			int arrival = checks.getAndIncrement();
+			if (arrival < bothSawTheNameFree.getParties()) {
+				bothSawTheNameFree.await(5, TimeUnit.SECONDS);
+			}
+			return holder;
 		}).when(profiles).findByUsernameIgnoringCase(eq(username));
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
