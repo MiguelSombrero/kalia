@@ -23,6 +23,7 @@
 - **Amended:** 2026-10-22 by [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md) — `profile.profile` gained a second unique index, on `lower(username)`, and its retry now covers a violation of either
 - **Amended:** 2026-10-23 — `@EnableResilientMethods` moved from `cellar`'s `RetryConfig` to the root package's `fi.kalia.ApplicationConfig`, since `catalog` and `profile` rely on it too; `ProfileServiceModuleIT` boots `profile` alone and fails if its retry stops running
 - **Amended:** 2026-10-24 — `cellar.entry` gained a `@Version`, and `CellarService.addBottles`, `updateBottle` and `removeBottle` also retry once on `ObjectOptimisticLockingFailureException`, the same shape for a lost write to an existing entry rather than a lost insert. A second loss answers `409` `problem+json` from `CellarExceptionHandler`. Removing a beer's last bottle deletes the entry and cascades over a bottle a concurrent add committed; `ConcurrentEntryWritesApiIT` fails if the retry or the version stops working, and also confirms a discarded attempt's `BottleAdded` never reaches the feed, the check the revisit trigger below asks for
+- **Amended:** 2026-10-30 — `ProfileService.create`'s username check recognises the caller's own row: a row under the requesting id is the profile the other request just committed, not a collision, so it is returned instead of refused. The retry's job is unchanged; this closes the one ordering it could not cover. See the note dated 2026-10-30 under Consequences
 
 ## Context
 
@@ -155,6 +156,19 @@ statement, and folding that into raw SQL would move logic out of
 > checks them in, an implementation detail, so a pkey-only predicate would
 > rest on that order to keep this ordinary race from becoming a 500.
 > `ProfileServiceConcurrencyIT` covers both races.
+>
+> **Amended 2026-10-30.** The race between two first requests from the *same*
+> new user has a third ordering the retry cannot reach. Both read no profile
+> row; one inserts and commits before the other runs `create`'s username check.
+> The check then finds a row, and before this amendment it counted any holder
+> of the name as a collision: it threw `UsernameTakenException`, which the
+> `@Retryable` does not match, so the loser answered `409` and a real sign-in
+> reached `/username-taken`. The row was the caller's own. `create` now
+> compares the holder's id with the requesting id and returns the holder when
+> they match; only another id's row refuses. Nothing waits or locks, and the
+> retry keeps covering the two orderings where both requests insert.
+> `ProfileServiceConcurrencyIT` holds the second request's check until the
+> first has committed, and fails with the `409` against the old check.
 - **Revisit trigger:** if a second module needs the same get-or-create-retry
   shape, factor the `@Retryable` spec and the proxy-ordering reasoning above
   into a shared note (or helper, if the shape matches closely enough) instead
