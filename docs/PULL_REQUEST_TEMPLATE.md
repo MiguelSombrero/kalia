@@ -36,8 +36,8 @@
   Optional. The judgment calls, deliberate scope cuts, and near-misses a
   reviewer would otherwise only find by reading the whole diff closely: a
   bug caught during self-review, a tradeoff decided one way over another,
-  something dropped as out of scope and where it went instead (a backlog
-  entry, a follow-up task). Delete this section entirely rather than
+  something dropped as out of scope and where it went instead (a
+  quality-backlog entry, by its ID). Delete this section entirely rather than
   padding it — nothing unusual to flag means no section, not a restated
   Summary bullet.
 -->
@@ -64,13 +64,14 @@
   session that produced it. A gate with no verdict counts as skipped: write
   "skipped — <reason>" rather than leaving a line empty. A task-completing PR
   (one that sets a task file's status to `done`) fails
-  `scripts/check-pr-body.mjs` until every line below has a value. Keep the
-  labels as written — the checker reads them.
+  `scripts/check-pr-body.mjs` until every line below has a value, and any PR
+  fails it that says "new task" or "follow-up" without naming a
+  quality-backlog ID. Keep the labels as written — the checker reads them.
 -->
 
 - **Range:** <!-- output of `git log --oneline origin/dev..HEAD` -->
 - **Doc-sync:** <!-- which of docs/architecture.md, the iteration index and the ADRs were checked against this change: updated here, or confirmed accurate. "Not applicable" is valid (a dependency bump); silence is not -->
-- **Code review:** <!-- `/code-review` verdict, each finding marked fix now or new task -->
+- **Code review:** <!-- `/code-review` verdict, each finding marked fix now or new task. A new task is an entry in docs/tasks/quality-backlog.md, filed in this PR; name its ID (SHOULD-N). `scripts/check-pr-body.mjs` fails a body that defers a finding without one -->
 - **Local gate:** <!-- `make verify-fast` (or `make verify`, said explicitly), and the required CI checks once they have run -->
 - **Running stack:** <!-- what you saw exercising the changed flow, or "nothing user-facing changed" -->
 - **Acceptance criteria:** <!-- each criterion's own check re-run, then ticked, status set to `done` -->
