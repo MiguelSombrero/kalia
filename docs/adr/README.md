@@ -25,12 +25,15 @@ index.
 The shape of the system, decided at the start and not revisited since.
 
 - [ADR-0001](0001-monorepo.md) — one repository holds both apps. Amended by
-  [ADR-0092](0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md): plain npm workspaces of
-  `web/`, `mobile/` and two source-shipping packages.
+  ADR-0092 below.
 - [ADR-0002](0002-spring-modulith.md) — one Spring Boot deployable of
   Modulith modules, not microservices.
 - [ADR-0003](0003-bff-pattern.md) — the browser talks only to Next.js, which
   calls the Spring API server-side.
+- [ADR-0092](0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
+  — the repository is plain npm workspaces of `web/`, `mobile/` and two
+  packages that ship TypeScript source, with one root lockfile; amends
+  ADR-0001.
 
 ## Product scope and sequencing
 

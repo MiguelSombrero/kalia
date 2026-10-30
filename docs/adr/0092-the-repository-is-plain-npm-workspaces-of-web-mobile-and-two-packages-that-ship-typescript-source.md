@@ -40,8 +40,8 @@ packages that ship TypeScript source for each app to compile.
   generated client, and the rest is each app's own. Design tokens are not
   shared; their format is [iteration 11](../tasks/iteration-11.md)'s decision.
 - **Source, not builds.** A package's `exports` point at its `.ts` files. Each
-  consumer compiles what it imports: Next.js with `transpilePackages`, Metro
-  natively. A package has no build step, no `dist/` and no second artefact to
+  consumer compiles what it imports: Next.js with `transpilePackages` (see
+  Evidence on whether the entry is required), Metro natively. A package has no build step, no `dist/` and no second artefact to
   keep in step with its source.
 - **One lockfile, at the root.** `web/` and `mobile/` have none of their own.
   Dependabot's npm entry, Trivy's manifest scan and the web's Docker build are
@@ -169,9 +169,13 @@ by building.
   directory by default, and files outside it are not included unless
   `outputFileTracingRoot` is set (`output.md`). A package under `packages/` is
   such a file, so task 08 must set it and confirm by running the image.
-- Turbopack finds its root by looking for a lockfile (`package-lock.json`
-  among them), so a lockfile at the repository root makes the root the
-  workspace root (`turbopack.md`).
+- Turbopack detects its root by looking for a lockfile (`package-lock.json`
+  among them) (`turbopack.md`). That a lockfile at the repository root
+  therefore makes the root the workspace root is this ADR's inference.
+- Dependabot and Trivy following a root lockfile over workspaces, and
+  Dependabot's grouping of `react` and `react-dom` surviving the move, are
+  assumed and not checked; task 08's criterion that a run touching `web/`
+  confirms each is what checks them.
 - Metro compiling workspace TypeScript natively is not in Next.js's
   documentation and is not verified here; it is the mobile stack's decision
   ([task 02](../tasks/iteration-9/02-decision-the-mobile-stack.md)) and
