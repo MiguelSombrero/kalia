@@ -32,7 +32,7 @@ where the cellar is not public.
 ## Constraints
 
 - Server components by default; a client component only where interaction needs
-  one ([frontend/README.md](../../../frontend/README.md) conventions).
+  one ([web/README.md](../../../web/README.md) conventions).
 - The page renders exactly what [task 02](02-public-cellar-api.md)'s public
   response carries and never reaches for the owner's own endpoints. If a field
   is withheld from the API it must not be recoverable from the page.

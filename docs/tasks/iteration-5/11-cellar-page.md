@@ -31,7 +31,7 @@ has. What a signed-out visitor sees at `/cellar`.
 ## Constraints
 
 - Server components by default; a client component only where interaction
-  needs one ([frontend/README.md](../../../frontend/README.md) conventions).
+  needs one ([web/README.md](../../../web/README.md) conventions).
 - Reads go through TanStack Query ([ADR-0008](../../adr/0008-tanstack-query.md))
   and the feature's own `api.ts` wrapper over the generated client
   ([ADR-0012](../../adr/0012-orval-api-client.md)); failures surface as a

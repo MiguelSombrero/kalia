@@ -40,7 +40,7 @@ doc set concludes the client is hand-written or that generating it is optional.
 ## Constraints
 
 - [ADR-0020](../../adr/0020-documentation-roles.md)'s one-home rule: §5 and
-  [`frontend/README.md`](../../../frontend/README.md) already own the "shape"
+  [`web/README.md`](../../../web/README.md) already own the "shape"
   and "how" of the generated client, so §4's mention becomes a one-line
   pointer, not a second description.
 - `ArchitectureDocumentationTest` parses §2 and §3 only — it will not catch a

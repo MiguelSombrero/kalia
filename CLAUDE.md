@@ -31,7 +31,7 @@ it ([README.md](README.md)).
 ## Project
 
 Kalia is a social platform for beer enthusiasts built around the beer cellar:
-Next.js frontend (BFF pattern) + Spring Boot modulith backend. The catalog
+Next.js web app (BFF pattern) + Spring Boot modulith backend. The catalog
 enables the cellar, the cellar is the product, and a profile and activity feed
 make it social. Kalia never collects beer reviews and does not sell beer. Read
 before making changes:
@@ -44,15 +44,16 @@ before making changes:
 - [docs/adr/](docs/adr/) — decisions already made, grouped by subject in
   [its README](docs/adr/README.md); don't relitigate them silently, propose a
   new ADR instead ([template](docs/adr/template.md))
-- [backend/README.md](backend/README.md), [frontend/README.md](frontend/README.md)
+- [backend/README.md](backend/README.md), [web/README.md](web/README.md)
   — run/test commands and conventions
 
-`backend/` and `frontend/` each carry a `CLAUDE.md` importing their README, which
+`backend/` and `web/` each carry a `CLAUDE.md` importing their README, which
 loads once you touch the subtree
 ([ADR-0035](docs/adr/0035-agent-context-layout.md)). A nested file is *not*
 re-injected after `/compact`, so the one rule that must never be lost is
 repeated here: **this Next.js version postdates model training — check
-`frontend/node_modules/next/dist/docs/` before relying on memory about it.**
+`node_modules/next/dist/docs/` (at the repository root, where npm hoists it)
+before relying on memory about it.**
 Guessing fails silently rather than erroring (`middleware.ts` is `proxy.ts`
 here, and the app still builds).
 
@@ -148,7 +149,7 @@ The gates themselves:
 - **New dependencies: ask, don't research.** When a task introduces one
   (library, starter, plugin, Docker image, GitHub Action), list them and ask
   which versions to use — one batched question per task. Exceptions: versions
-  already pinned in a manifest (`backend/pom.xml`, `frontend/package.json`,
+  already pinned in a manifest (`backend/pom.xml`, `web/package.json`,
   `docker-compose*.yml`, a `Dockerfile`, a workflow) or here, and versions
   confirmed from authoritative output (build errors, repository metadata,
   generator output); propose those for confirmation. **The version is recorded

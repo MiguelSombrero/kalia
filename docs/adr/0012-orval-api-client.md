@@ -61,7 +61,7 @@ build whenever the two disagree.**
   `http://localhost:8080/v3/api-docs` by default (`KALIA_OPENAPI_URL`
   overrides it); `npm run generate:api` regenerates against a running
   backend; which services to start first is in
-  [frontend/README.md](../../frontend/README.md).
+  [web/README.md](../../web/README.md).
 - **Generated output is committed** (`frontend/lib/api/generated/`) so
   `npm install && npm run build` needs no live backend. A new CI job,
   **`api-client-drift`**, starts the backend, regenerates, and runs

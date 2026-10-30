@@ -176,7 +176,7 @@ and they drift from the Java names that produced them.
 (`EntryDto` in `entryDto.ts`). It also **extracts each enum-typed field into
 its own type** — `BottleDtoContainerType`, `AddBottleRequestDtoContainerType`
 — which have no backend counterpart; they are all the `ContainerType` enum.
-`frontend/lib/api/generated` is regenerated, never hand-edited
+`web/lib/api/generated` is regenerated, never hand-edited
 ([ADR-0012](adr/0012-orval-api-client.md)).
 
 ## Term rules

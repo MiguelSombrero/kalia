@@ -5,9 +5,9 @@
 // and self-tested against fixtures because the real tree passes: a checker
 // that matched nothing would stay green.
 //
-// What is read: every .ts/.tsx/.css file under frontend/ except app/globals.css
+// What is read: every .ts/.tsx/.css file under web/ except app/globals.css
 // (where values live), tests, e2e/, the generated API client and tooling
-// directories. keycloak/themes/.../login.css is outside frontend/ and is a
+// directories. keycloak/themes/.../login.css is outside web/ and is a
 // separate origin's stylesheet that cannot import the app's tokens.
 //
 // The semantic layer is whatever globals.css declares inside an `@theme`
@@ -69,21 +69,21 @@ const COLOUR_KEYWORD = /^(?:transparent|currentcolor|inherit|initial|unset)$/i;
  * @returns {string[]} one message per failure; empty means OK
  */
 export function checkTokenStyling(root) {
-  const cssPath = resolve(root, "frontend/app/globals.css");
+  const cssPath = resolve(root, "web/app/globals.css");
   let css;
   try {
     css = readFileSync(cssPath, "utf8");
   } catch {
-    return [`frontend/app/globals.css not found at ${cssPath}`];
+    return [`web/app/globals.css not found at ${cssPath}`];
   }
   const layers = readLayers(css);
   if (layers === null) {
-    return ["frontend/app/globals.css: no `@theme` block — nothing declares the semantic layer to check against"];
+    return ["web/app/globals.css: no `@theme` block — nothing declares the semantic layer to check against"];
   }
 
-  const frontend = resolve(root, "frontend");
+  const web = resolve(root, "web");
   const failures = [];
-  for (const path of listFiles(frontend, root)) {
+  for (const path of listFiles(web, root)) {
     const rel = relative(root, path).split(sep).join("/");
     for (const { line, message } of checkFile(readFileSync(path, "utf8"), layers)) {
       failures.push(`${rel}:${line}: ${message}`);
@@ -105,9 +105,9 @@ function listFiles(dir, root) {
     const full = resolve(dir, entry.name);
     const rel = relative(root, full).split(sep).join("/");
     if (entry.isDirectory()) {
-      if (IGNORED_DIRS.has(entry.name) || rel === "frontend/lib/api/generated") continue;
+      if (IGNORED_DIRS.has(entry.name) || rel === "web/lib/api/generated") continue;
       out.push(...listFiles(full, root));
-    } else if (SCANNED.test(entry.name) && !TEST_FILE.test(entry.name) && rel !== "frontend/app/globals.css") {
+    } else if (SCANNED.test(entry.name) && !TEST_FILE.test(entry.name) && rel !== "web/app/globals.css") {
       out.push(full);
     }
   }
@@ -248,7 +248,7 @@ const invokedDirectly =
 if (invokedDirectly) {
   const root = resolve(SELF_DIR, "..");
   const failures = checkTokenStyling(root);
-  console.log("Checking frontend/ styling against the semantic token layer (ADR-0066)\n");
+  console.log("Checking web/ styling against the semantic token layer (ADR-0066)\n");
   for (const f of failures) console.log(`  FAIL  ${f}`);
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

@@ -1,0 +1,45 @@
+// Exercises the mail path end to end against the compose stack: Keycloak
+// sends over SMTP to the mailpit container (docs/architecture.md §6), and the
+// message is read back over mailpit's HTTP API — no real mailbox involved.
+import { expect, test } from "@playwright/test";
+
+import {
+  createUnverifiedKeycloakUser,
+  keycloakAdminToken,
+  sendActionsEmail,
+  uniqueUsername,
+} from "./support/keycloakAccount";
+import { clickThroughKeycloakAction } from "./support/keycloakFlow";
+import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+
+test("Keycloak sends a readable verification email whose link lands back on the web app", async ({
+  page,
+  request,
+}) => {
+  const adminToken = await keycloakAdminToken(request);
+  const username = uniqueUsername("mailtest");
+  const email = `${username}@example.com`;
+  const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
+
+  await sendActionsEmail(request, adminToken, userId, ["VERIFY_EMAIL"], `${WEB_ORIGIN}/en`);
+
+  const message = await waitForMessageTo(request, email);
+
+  // The sender identity a recipient sees (Kalia, not a bare address).
+  expect(message.From.Name).toBe("Kalia");
+  expect((message.HTML || message.Text).toLowerCase()).toContain("verify");
+
+  const link = linkFromMessage(message);
+  // ADR-0025: the link must be Keycloak's public address, not the compose network name.
+  expect(link).toContain(new URL(KEYCLOAK_ORIGIN).host);
+  expect(link).not.toContain("keycloak:8080");
+
+  await page.goto(link);
+  await clickThroughKeycloakAction(page);
+
+  // The action completes and Keycloak returns the browser to the configured
+  // web origin — not a dead end on a container-internal host.
+  await expect(page).toHaveURL(new RegExp(`^${WEB_ORIGIN}/en`));
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+});

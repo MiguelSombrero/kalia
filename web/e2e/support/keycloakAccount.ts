@@ -1,0 +1,252 @@
+import { randomUUID } from "node:crypto";
+import { expect, request, test as base, type APIRequestContext, type Page } from "@playwright/test";
+import Redis from "ioredis";
+import { KEYCLOAK_ORIGIN } from "./origins";
+import { clearSignUpRateLimit, VALKEY_URL } from "./valkey";
+
+const REALM = "kalia";
+const ACCOUNT_PASSWORD = "testuser123";
+
+export type KeycloakAccount = { username: string; password: string };
+
+// Do not go back to a bare `Date.now()` suffix: `--repeat-each` starts copies
+// of one test on parallel workers in the same millisecond, and the loser's
+// registration is refused while it goes on to read the winner's email.
+export const uniqueUsername = (prefix: string): string =>
+  `${prefix}-${Date.now()}-${randomUUID().slice(0, 8)}`;
+
+export const keycloakAdminToken = async (apiRequest: APIRequestContext): Promise<string> => {
+  const adminUsername = process.env.KEYCLOAK_ADMIN ?? "admin";
+  const adminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
+
+  const response = await apiRequest.post(
+    `${KEYCLOAK_ORIGIN}/realms/master/protocol/openid-connect/token`,
+    {
+      form: {
+        grant_type: "password",
+        client_id: "admin-cli",
+        username: adminUsername,
+        password: adminPassword,
+      },
+    },
+  );
+  expect(response.ok(), "could not obtain a Keycloak admin token").toBeTruthy();
+  const { access_token: adminToken } = (await response.json()) as { access_token: string };
+  return adminToken;
+};
+
+export const findKeycloakUser = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  username: string,
+): Promise<{ id: string } | undefined> => {
+  const response = await apiRequest.get(`${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+    params: { username, exact: "true" },
+  });
+  expect(response.ok(), `could not look up Keycloak user ${username}`).toBeTruthy();
+  const [user] = (await response.json()) as { id: string }[];
+  return user;
+};
+
+export const endKeycloakSessionForUser = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  userId: string,
+): Promise<void> => {
+  const response = await apiRequest.post(
+    `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/logout`,
+    { headers: { Authorization: `Bearer ${adminToken}` } },
+  );
+  expect(response.ok(), "the admin logout call itself failed").toBeTruthy();
+};
+
+const resetKeycloakPassword = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  userId: string,
+  password: string,
+): Promise<void> => {
+  const response = await apiRequest.put(
+    `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/reset-password`,
+    {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      data: { type: "password", value: password, temporary: false },
+    },
+  );
+  expect(response.ok(), `could not reset password for Keycloak user ${userId}`).toBeTruthy();
+};
+
+export const createKeycloakUser = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  account: KeycloakAccount,
+): Promise<boolean> => {
+  const response = await apiRequest.post(`${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+    data: {
+      username: account.username,
+      enabled: true,
+      email: `${account.username}@example.com`,
+      emailVerified: true,
+      firstName: "Test",
+      lastName: "User",
+      credentials: [{ type: "password", value: account.password, temporary: false }],
+    },
+  });
+  return response.ok();
+};
+
+// Creates an account with an unverified email (but a complete enough profile
+// that Keycloak asks for nothing else) so a spec can drive Keycloak's own
+// email actions against it, and returns its id.
+export const createUnverifiedKeycloakUser = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  username: string,
+  email: string,
+): Promise<string> => {
+  const response = await apiRequest.post(`${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+    data: {
+      username,
+      email,
+      enabled: true,
+      emailVerified: false,
+      firstName: "Mail",
+      lastName: "Test",
+    },
+  });
+  expect(response.ok(), `could not create Keycloak user ${username}`).toBeTruthy();
+  const created = await findKeycloakUser(apiRequest, adminToken, username);
+  expect(created, `Keycloak user ${username} missing right after creation`).toBeTruthy();
+  return created!.id;
+};
+
+// Asks Keycloak to email the user a link that runs `actions` (e.g.
+// ["VERIFY_EMAIL"]); client_id/redirect_uri decide where the link lands the
+// browser once the action is done.
+export const sendActionsEmail = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  userId: string,
+  actions: string[],
+  redirectUri: string,
+): Promise<void> => {
+  const response = await apiRequest.put(
+    `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
+    {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      params: { client_id: "kalia-web", redirect_uri: redirectUri },
+      data: actions,
+    },
+  );
+  expect(response.ok(), "Keycloak rejected the execute-actions-email request").toBeTruthy();
+};
+
+// Idempotent to the account's desired end state, not just its existence: a
+// worker that finds the account already there (a prior run, or another
+// worker) still resets its password, so a locally changed ACCOUNT_PASSWORD
+// can't leave a stale account permanently unsignable-into.
+const ensureKeycloakAccount = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  account: KeycloakAccount,
+): Promise<void> => {
+  const existing = await findKeycloakUser(apiRequest, adminToken, account.username);
+  if (existing) {
+    await resetKeycloakPassword(apiRequest, adminToken, existing.id, account.password);
+    return;
+  }
+
+  if (await createKeycloakUser(apiRequest, adminToken, account)) {
+    return;
+  }
+
+  // Lost a create race against another concurrent worker or Playwright
+  // process claiming the same idempotent username; the winner's account
+  // already carries the right password (ACCOUNT_PASSWORD is shared), so it's
+  // enough that it exists now.
+  const winner = await findKeycloakUser(apiRequest, adminToken, account.username);
+  expect(winner, `could not create Keycloak user ${account.username}`).toBeTruthy();
+};
+
+/**
+ * A new account of its own for a test that must start from an empty, private
+ * cellar, or that must not share the worker `account` below.
+ */
+export const createFreshAccount = async (
+  apiRequest: APIRequestContext,
+  prefix: string,
+  username: string = uniqueUsername(prefix),
+): Promise<KeycloakAccount> => {
+  const account: KeycloakAccount = { username, password: ACCOUNT_PASSWORD };
+  const created = await createKeycloakUser(apiRequest, await keycloakAdminToken(apiRequest), account);
+  expect(created, `could not create Keycloak user ${account.username}`).toBeTruthy();
+  return account;
+};
+
+export const signIn = async (page: Page, account: KeycloakAccount): Promise<void> => {
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.locator("#username").waitFor();
+  await page.locator("#username").fill(account.username);
+  await page.locator("#password").fill(account.password);
+  await page.getByRole("button", { name: "Sign In" }).click();
+  await expect(page.getByRole("link", { name: /^Profile: / })).toBeVisible();
+};
+
+// One account per worker, not per file: fullyParallel (playwright.config.ts)
+// schedules describe-serial files onto whichever worker is free, so the
+// identity has to be scoped to the worker, not the file, or two files on
+// different workers still collide on one account. parallelIndex, not
+// workerIndex: the latter is never reused for the life of the process (a
+// worker restart after a crash gets a new one), so it would grow the
+// provisioned-account pool past the worker count over a long or flaky run.
+export const test = base.extend<
+  { signUpBudget: void },
+  { account: KeycloakAccount; valkey: Redis }
+>({
+  account: [
+    async ({}, use, workerInfo) => {
+      const account: KeycloakAccount = {
+        username: `e2e-worker-${workerInfo.parallelIndex}`,
+        password: ACCOUNT_PASSWORD,
+      };
+
+      const apiRequest = await request.newContext();
+      try {
+        const adminToken = await keycloakAdminToken(apiRequest);
+        await ensureKeycloakAccount(apiRequest, adminToken, account);
+      } finally {
+        await apiRequest.dispose();
+      }
+
+      await use(account);
+    },
+    { scope: "worker" },
+  ],
+
+  valkey: [
+    async ({}, use) => {
+      const valkey = new Redis(VALKEY_URL);
+      await use(valkey);
+      await valkey.quit();
+    },
+    { scope: "worker" },
+  ],
+
+  // `auto`, so no spec has to remember: which tests reach /sign-up is not
+  // knowable from here, a spec is free to start registering later, and
+  // clearing a counter no test touched costs one DEL. Per test rather than
+  // once per run because CI retries a failing spec twice, which is exactly
+  // when the budget is tightest.
+  signUpBudget: [
+    async ({ valkey }, use) => {
+      await clearSignUpRateLimit(valkey);
+      await use();
+    },
+    { auto: true },
+  ],
+});
+
+export { expect };

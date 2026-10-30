@@ -43,9 +43,9 @@ export function checkContrast(root) {
   let css;
   let design;
   try {
-    css = readFileSync(resolve(root, "frontend/app/globals.css"), "utf8");
+    css = readFileSync(resolve(root, "web/app/globals.css"), "utf8");
   } catch {
-    return { failures: ["frontend/app/globals.css not found"], results: [] };
+    return { failures: ["web/app/globals.css not found"], results: [] };
   }
   try {
     design = readFileSync(resolve(root, "docs/design.md"), "utf8");

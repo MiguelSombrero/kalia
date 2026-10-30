@@ -76,7 +76,7 @@ rule in a document.**
   *means* stays in `docs/design.md`
   ([ADR-0063](0063-design-intent-has-its-own-document.md)). How to use
   `components/ui/` stays in the conventions in
-  [`frontend/README.md`](../../frontend/README.md). Its shape stays in
+  [`web/README.md`](../../web/README.md). Its shape stays in
   [`docs/architecture.md`](../architecture.md) §5. No component documentation
   is added, so there is nothing for `docs/design.md` to contain or be
   contained by. A primitive's props and variants are documented by its own

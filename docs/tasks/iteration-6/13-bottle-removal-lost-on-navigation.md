@@ -10,7 +10,7 @@ task 14](../iteration-5/14-edit-remove-bottle.md)) hides the bottle
 immediately but delays the real `DELETE /api/v1/cellar/bottles/{id}` until a
 ~5 second undo window elapses. That pending call lives entirely in the
 browser tab: a Zustand store plus a module-level `setTimeout` closure in
-[`frontend/features/cellar/store.ts`](../../../frontend/features/cellar/store.ts).
+[`web/features/cellar/store.ts`](../../../web/features/cellar/store.ts).
 Nothing about it survives leaving the page.
 
 So a full reload, or a client navigation to another route, within those ~5
@@ -37,7 +37,7 @@ commits the `DELETE` immediately, with no delay and no undo affordance — so
 nothing about a removal can be lost to a reload, a client navigation, or a
 closed tab, because nothing is ever left pending. This covers the removal
 flow's commit timing and its confirmation/feedback UI across
-[`store.ts`](../../../frontend/features/cellar/store.ts),
+[`store.ts`](../../../web/features/cellar/store.ts),
 `BottleList.tsx`,
 `UndoRemoveToast.tsx`
 (renamed if its undo-specific name no longer fits) and their tests, plus
@@ -213,7 +213,7 @@ decision the same way, in its own task file, with no ADR. The reasoning
 above is recorded here instead, matching that precedent.
 
 The client-only timer this task removes was visible in
-[`frontend/features/cellar/store.ts`](../../../frontend/features/cellar/store.ts):
+[`web/features/cellar/store.ts`](../../../web/features/cellar/store.ts):
 `timeoutId` and `scheduled` were module-scoped, and `dispatch` only ran from
 the `setTimeout` callback or from a second `startRemoval` finalizing the
 first — neither of which happened when the tab was torn down.

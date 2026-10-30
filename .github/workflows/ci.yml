@@ -22,7 +22,7 @@ env:
   # value that stays inside one ephemeral runner and is never asserted
   # against, unlike scripts/check-keycloak-signin.mjs's testuser/testuser123.
   # Every other secret comes from docker-compose.dev.env (ADR-0089).
-  KALIA_FRONTEND_CLIENT_SECRET: ci-run-not-a-credential
+  KALIA_WEB_CLIENT_SECRET: ci-run-not-a-credential
 
 jobs:
   changes:
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      web: ${{ steps.filter.outputs.web }}
       keycloak: ${{ steps.filter.outputs.keycloak }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,7 +47,7 @@ jobs:
           everything() {
             echo "$1: running everything"
             echo "backend=true" >> "$GITHUB_OUTPUT"
-            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "web=true" >> "$GITHUB_OUTPUT"
             echo "keycloak=true" >> "$GITHUB_OUTPUT"
             exit 0
           }
@@ -65,18 +65,18 @@ jobs:
           echo "Changed files:"
           echo "$changed" | sed 's/^/  /'
 
-          # Files outside backend/ and frontend/ that either suite depends on.
+          # Files outside backend/ and web/ that either suite depends on.
           # the docker-compose.* files build and wire both; this workflow defines
-          # how they run; .node-version pins the Node every frontend job
+          # how they run; .node-version pins the Node every web job
           # installs; docs/architecture.md is asserted against the
           # backend's actual modules by ArchitectureDocumentationTest;
           # keycloak/, postgres/ and the seed script with its helper feed the
           # keycloak, postgres and keycloak-seed services e2e's stack starts;
           # edge/ is the proxy every request to that stack passes through.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|\.dockerignore|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
 
           # What keycloak-realm-check below can be affected by: the services
-          # it starts and the scripts it runs. Neither backend/ nor frontend/
+          # it starts and the scripts it runs. Neither backend/ nor web/
           # is among them.
           keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
 
@@ -86,27 +86,27 @@ jobs:
           # subtleties of how `-e` treats `&&` lists. `if` conditions are
           # explicitly exempt.
           backend=false
-          frontend=false
+          web=false
           keycloak=false
           if [ -n "$shared" ]; then
             backend=true
-            frontend=true
+            web=true
           fi
           if [ -n "$keycloak_inputs" ]; then keycloak=true; fi
           if echo "$changed" | grep -q '^backend/'; then backend=true; fi
-          if echo "$changed" | grep -q '^frontend/'; then frontend=true; fi
+          if echo "$changed" | grep -qE '^(web/|packages/|package(-lock)?\.json$)'; then web=true; fi
 
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
-          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "web=$web" >> "$GITHUB_OUTPUT"
           echo "keycloak=$keycloak" >> "$GITHUB_OUTPUT"
-          echo "Result: backend=$backend frontend=$frontend keycloak=$keycloak"
+          echo "Result: backend=$backend web=$web keycloak=$keycloak"
 
   static-checks:
     name: Static checks
-    # Unconditional: these read docs/, scripts/, backend/src and frontend/
+    # Unconditional: these read docs/, scripts/, backend/src and web/
     # together, and the changes filter above classifies none of that as one
     # unit — a backend `domain` type can land in a push it calls
-    # frontend-only. The whole set takes about a second, so one job running
+    # web-only. The whole set takes about a second, so one job running
     # the Makefile's list keeps that list in exactly one place.
     runs-on: ubuntu-latest
     steps:
@@ -175,22 +175,23 @@ jobs:
           print(f'Instruction coverage: {pct:.1f}% ({covered}/{total}){aim}')
           EOF
 
-  frontend:
-    name: Frontend (npm)
+  web:
+    name: Web (npm)
     needs: [changes]
-    if: needs.changes.outputs.frontend == 'true'
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
+        working-directory: .
         run: npm ci
       - name: Lint
         run: npm run lint
@@ -207,19 +208,20 @@ jobs:
     # edited. Not gated behind the backend job — it builds the backend image
     # itself, so waiting only delays the answer without changing it.
     needs: [changes]
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
+        working-directory: .
         run: npm ci
       - name: Start backend
         working-directory: .
@@ -277,7 +279,7 @@ jobs:
     # Deliberately not gated behind `changes` (contrast api-client-drift and
     # e2e above): a dependency already in this branch can gain a CVE the
     # moment one is disclosed, with no code change at all, so "did this push
-    # touch backend/frontend" is the wrong question. Runs on every push
+    # touch backend/web" is the wrong question. Runs on every push
     # unconditionally; vulnerability-scan.yml also runs it on a daily
     # schedule so a quiet week without a push doesn't leave a newly
     # disclosed CVE undetected (ADR-0024).
@@ -290,19 +292,20 @@ jobs:
     # they fail, and on a public repo the redundant minutes are free — while
     # the serial wait was paid on every green run, which is most of them.
     needs: [changes]
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
+        working-directory: .
         run: npm ci
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
@@ -343,8 +346,8 @@ jobs:
         with:
           name: playwright-report
           path: |
-            frontend/playwright-report/
-            frontend/test-results/
+            web/playwright-report/
+            web/test-results/
           retention-days: 7
 
   ci-passed:
@@ -357,7 +360,7 @@ jobs:
     # cancelled: without it those make this job skip, and a skipped required
     # check lets the merge through.
     if: always()
-    needs: [changes, static-checks, backend, frontend, api-client-drift, keycloak-realm-check, vulnerability-scan, e2e]
+    needs: [changes, static-checks, backend, web, api-client-drift, keycloak-realm-check, vulnerability-scan, e2e]
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every job succeeded or was skipped by the changes filter

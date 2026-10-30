@@ -1,0 +1,283 @@
+// Exercises the whole stack against compose-run Keycloak and Valkey
+// (docs/architecture.md §6, §7); credentials are a per-worker account
+// provisioned by ./support/keycloakAccount.ts.
+import type { APIRequestContext, BrowserContext, Page } from "@playwright/test";
+import Redis from "ioredis";
+import { expectNoA11yViolations } from "./support/a11y";
+import {
+  createFreshAccount,
+  endKeycloakSessionForUser,
+  expect,
+  findKeycloakUser,
+  keycloakAdminToken,
+  signIn,
+  test,
+} from "./support/keycloakAccount";
+import { BACKEND_ORIGIN, WEB_ORIGIN } from "./support/origins";
+import { VALKEY_URL } from "./support/valkey";
+
+// Do not parallelize: measured 1-2 of 6 specs failing when run concurrently,
+// always cycling sign-in/sign-out, since all specs on one worker share one
+// account (./support/keycloakAccount.ts).
+test.describe.configure({ mode: "serial" });
+
+// Re-registered per document: a blocked navigation leaves the document in
+// place, which is the case this is guarding.
+const collectCspViolations = async (page: Page) => {
+  await page.addInitScript(() => {
+    const violations: string[] = [];
+    Object.defineProperty(window, "__cspViolations", { value: violations });
+    document.addEventListener("securitypolicyviolation", (event) => {
+      violations.push(`${event.violatedDirective} blocked ${event.blockedURI}`);
+    });
+  });
+  return () => page.evaluate(() => (window as unknown as { __cspViolations: string[] }).__cspViolations ?? []);
+};
+
+// Reads/rewrites the stored token set so refresh tests can force an expiry
+// instead of waiting out the real 5-minute lifespan (keycloak/realm-export.json).
+const storedAccount = async (page: Page) => {
+  const cookies = await page.context().cookies();
+  const sessionToken = cookies.find((cookie) => cookie.name === "authjs.session-token")?.value;
+  expect(sessionToken, "the page carries no Auth.js session cookie").toBeTruthy();
+
+  const valkey = new Redis(VALKEY_URL);
+  const key = `auth:session-account:${sessionToken}`;
+  const read = async () => JSON.parse((await valkey.get(key))!) as Record<string, unknown>;
+  return {
+    read,
+    // KEEPTTL, or the patch would strip the expiry the record should carry.
+    patch: async (fields: Record<string, unknown>) =>
+      valkey.set(key, JSON.stringify({ ...(await read()), ...fields }), "KEEPTTL"),
+    close: () => valkey.quit(),
+  };
+};
+
+// Ends the Keycloak SSO session from the IdP side, so only Back-Channel
+// Logout (ADR-0031) can end the matching Kalia session.
+const endKeycloakSessionViaAdmin = async (request: APIRequestContext, username: string) => {
+  const adminToken = await keycloakAdminToken(request);
+  const user = await findKeycloakUser(request, adminToken, username);
+  expect(user, `${username} has no Keycloak session to end`).toBeTruthy();
+  await endKeycloakSessionForUser(request, adminToken, user!.id);
+};
+
+test("signs in through Keycloak, shows the user's name, and signs out", async ({ page, account }) => {
+  await page.goto("/en");
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  await signIn(page, account);
+
+  await expect(page).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
+  // ADR-0071: the username the profile, feed and public cellar use, not Keycloak's "Test User".
+  await expect(page.getByRole("link", { name: `Profile: ${account.username}` })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Profile: / })).toHaveCount(0);
+  await expectNoA11yViolations(page);
+});
+
+// One click is the assertion: a blocked sign-out deletes the local session,
+// so a second click would look fine while Keycloak's session survives (ADR-0025).
+test("signing out takes one click and is not blocked by the CSP", async ({ page, account }) => {
+  const cspViolations = await collectCspViolations(page);
+  await page.goto("/en");
+  await signIn(page, account);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  expect(await cspViolations()).toEqual([]);
+});
+
+// Two cycles: staleness only shows on the second sign-out, when a stale
+// `id_token_hint` makes Keycloak ask to confirm the logout (ADR-0025).
+test("signs in and out twice without Keycloak asking to confirm the logout", async ({
+  page,
+  account,
+}) => {
+  await page.goto("/en");
+
+  for (const cycle of [1, 2]) {
+    await signIn(page, account);
+    await page.getByRole("button", { name: "Sign out" }).click();
+
+    // Never Keycloak's confirmation page, and never left stranded on Keycloak.
+    await expect(
+      page.getByText("Do you want to log out?"),
+      `cycle ${cycle}: Keycloak asked to confirm the logout`,
+    ).toHaveCount(0);
+    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
+    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+    // The Keycloak SSO session must be gone too, or this skips the prompt.
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(
+      page.locator("#username"),
+      `cycle ${cycle}: Keycloak did not re-prompt, so its SSO session survived`,
+    ).toBeVisible();
+    await page.goto("/en");
+  }
+});
+
+// Sent to the real backend, not compared as a string: withholding an expired
+// token also keeps browsing working, so only backend acceptance proves renewal (ADR-0029).
+test("renews an expired access token instead of dropping it", async ({ page, request, account }) => {
+  await page.goto("/en");
+  await signIn(page, account);
+
+  const session = await storedAccount(page);
+  const before = await session.read();
+  await session.patch({ expires_at: Math.floor(Date.now() / 1000) - 1 });
+
+  // Calls the backend, so the token is actually fetched.
+  await page.goto("/en/beers");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  const after = await session.read();
+  await session.close();
+
+  expect(after.access_token, "the expired token was not replaced").not.toBe(before.access_token);
+  expect(after.expires_at as number).toBeGreaterThan(Math.floor(Date.now() / 1000));
+
+  // Must pass the backend's signature/issuer/audience checks (ADR-0028).
+  const cellar = await request.get(`${BACKEND_ORIGIN}/api/v1/cellar`, {
+    headers: { Authorization: `Bearer ${after.access_token as string}` },
+  });
+  expect(cellar.status(), "the backend rejected the renewed token").toBe(200);
+});
+
+// Two browser contexts: one page can't detect tokens shared between
+// sessions, so collapsing this to one deletes the guard without failing (ADR-0030).
+test("signing out on one device leaves the other's session intact", async ({
+  browser,
+  request,
+  account,
+}) => {
+  const contexts: BrowserContext[] = [];
+  const signedInPage = async () => {
+    const context = await browser.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    await page.goto("/en");
+    await signIn(page, account);
+    return page;
+  };
+
+  const laptop = await signedInPage();
+  const phone = await signedInPage();
+
+  await laptop.getByRole("button", { name: "Sign out" }).click();
+  await expect(laptop.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  // The laptop's own Keycloak SSO session ended, so it's asked for credentials again.
+  await laptop.getByRole("button", { name: "Sign in" }).click();
+  await expect(
+    laptop.locator("#username"),
+    "the laptop stayed authenticated at Keycloak, so the wrong session was ended",
+  ).toBeVisible();
+
+  // The phone never signed out, and its tokens are still its own and usable.
+  await phone.reload();
+  await expect(phone.getByRole("link", { name: `Profile: ${account.username}` })).toBeVisible();
+  const session = await storedAccount(phone);
+  const stillValid = await session.read();
+  await session.close();
+  const cellar = await request.get(`${BACKEND_ORIGIN}/api/v1/cellar`, {
+    headers: { Authorization: `Bearer ${stillValid.access_token as string}` },
+  });
+  expect(cellar.status(), "the phone's access token died with the laptop's sign-out").toBe(200);
+
+  // The phone signs out cleanly too — Keycloak still recognises its id_token_hint.
+  await phone.getByRole("button", { name: "Sign out" }).click();
+  await expect(phone.getByText("Do you want to log out?")).toHaveCount(0);
+  await expect(phone.getByRole("button", { name: "Sign in" })).toBeVisible();
+
+  await Promise.all(contexts.map((context) => context.close()));
+});
+
+// A corrupt refresh token deterministically provokes the `invalid_grant` an
+// idle-timed-out SSO session produces, which must end the local session (ADR-0029).
+test("ends the local session when Keycloak rejects the refresh token", async ({ page, account }) => {
+  await page.goto("/en");
+  await signIn(page, account);
+
+  const session = await storedAccount(page);
+  await session.patch({
+    expires_at: Math.floor(Date.now() / 1000) - 1,
+    refresh_token: "no-longer-a-valid-grant",
+  });
+  await session.close();
+
+  // First load deletes the session record; the cookie can't clear mid-render,
+  // so the second load is the one that renders signed-out (endLocalSession.ts).
+  await page.goto("/en/beers");
+  await page.goto("/en");
+
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Profile: / })).toHaveCount(0);
+});
+
+// Regression guard for ADR-0031: verified to fail without the realm's
+// `backchannel.logout.url` wired up. Retries since backchannel timing isn't a contract.
+test("Keycloak ending the SSO session ends the matching Kalia session", async ({
+  page,
+  request,
+  account,
+}) => {
+  await page.goto("/en");
+  await signIn(page, account);
+
+  await endKeycloakSessionViaAdmin(request, account.username);
+
+  await expect(async () => {
+    await page.goto("/en");
+    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  }).toPass({ timeout: 15_000 });
+  await expect(page.getByRole("link", { name: /^Profile: / })).toHaveCount(0);
+});
+
+// The tab that starts the second sign-in was loaded while signed out, so it
+// still offers "Sign in" after the first tab has signed in as someone else.
+// Keycloak's own cookies are cleared so it asks for credentials, as it would
+// had the first person left the browser; Kalia's session cookie stays.
+test("signing in as someone else while signed in starts a session of their own", async ({
+  browser,
+  request,
+  valkey,
+  account,
+}) => {
+  const second = await createFreshAccount(request, "e2e-second");
+  const context = await browser.newContext();
+  try {
+    const stale = await context.newPage();
+    await stale.goto("/en");
+    const first = await context.newPage();
+    await first.goto("/en");
+    await signIn(first, account);
+    const firstToken = (await context.cookies()).find((cookie) => cookie.name === "authjs.session-token")?.value;
+    expect(firstToken, "the first sign-in left no Auth.js session cookie").toBeTruthy();
+
+    await context.clearCookies({ path: /^\/realms\// });
+    await signIn(stale, second);
+
+    expect(
+      await valkey.exists(`auth:session:${firstToken}`, `auth:session-account:${firstToken}`),
+      "the first person's session survived the second sign-in",
+    ).toBe(0);
+    const session = await storedAccount(stale);
+    const secondTokens = await session.read();
+    await session.close();
+    const me = await request.get(`${BACKEND_ORIGIN}/api/v1/profile`, {
+      headers: { Authorization: `Bearer ${secondTokens.access_token as string}` },
+    });
+    expect(me.status()).toBe(200);
+    expect(((await me.json()) as { username: string }).username).toBe(second.username);
+  } finally {
+    await context.close();
+  }
+});

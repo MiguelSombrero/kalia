@@ -6,8 +6,8 @@
 # vulnerability-scan.yml stay CI-only, since building both images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify frontend-test \
-        frontend-build frontend-e2e lint check compose-check api-drift keycloak-check trivy-scan verify \
+.PHONY: help up down restart logs ps backend-test backend-verify web-test \
+        web-build web-e2e lint check compose-check api-drift keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate
 
 help: ## Show this help
@@ -40,17 +40,17 @@ backend-test: ## Run backend unit tests (fast, no Docker)
 backend-verify: ## Run backend unit + integration tests from clean (needs Docker)
 	(cd backend && mvn clean verify)
 
-frontend-test: ## Run frontend unit tests
-	(cd frontend && npm test)
+web-test: ## Run the web app's unit tests
+	npm test --workspace web
 
-frontend-build: ## Production build of the frontend (includes type checking)
-	(cd frontend && npm run build)
+web-build: ## Production build of the web app (includes type checking)
+	npm run build --workspace web
 
-frontend-e2e: ## Run frontend E2E tests (needs the stack up)
-	(cd frontend && npm run test:e2e)
+web-e2e: ## Run the web app's E2E tests (needs the stack up)
+	npm run test:e2e --workspace web
 
-lint: ## Lint the frontend
-	(cd frontend && npm run lint)
+lint: ## Lint the web app
+	npm run lint --workspace web
 
 check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link checks and their self-tests
 	node scripts/check-adrs.mjs
@@ -75,8 +75,8 @@ compose-check: ## Fail if the deployable compose file renders without a secret, 
 
 api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
 	docker compose up -d --build --wait --wait-timeout 120 backend postgres edge
-	(cd frontend && npm run generate:api)
-	git diff --exit-code -- frontend/lib/api/generated
+	npm run generate:api --workspace web
+	git diff --exit-code -- web/lib/api/generated
 
 # check-keycloak-realm-config runs first and, on a stack that is already up,
 # before keycloak-config reconciles the realm below — so a setting changed in
@@ -95,18 +95,18 @@ keycloak-check: ## Fail if Keycloak's realm rejects sign-in, has drifted from ke
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 
 # Flags match the manifest scan in vulnerability-scan.yml, which scans `.`;
-# here the two lockfiles are named, because `.` would also walk node_modules
+# here the two manifests are named, because `.` would also walk node_modules
 # and target. A new manifest elsewhere needs a line below. Trivy is a local
 # prerequisite (`brew install trivy`); it does not pick the ignore file up
 # on its own, so it is named here as the workflow's `trivyignores` input does.
 trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.xml, as CI does (needs trivy)
 	@command -v trivy >/dev/null || { echo "trivy is not installed — brew install trivy, or see https://trivy.dev"; exit 1; }
-	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml frontend/package-lock.json
+	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml package-lock.json
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml backend/pom.xml
 
-verify-fast: check lint frontend-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
+verify-fast: check lint web-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
-verify: verify-fast compose-check frontend-build backend-verify api-drift keycloak-check trivy-scan frontend-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
+verify: verify-fast compose-check web-build backend-verify api-drift keycloak-check trivy-scan web-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 
 install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-push hook
 	@dest="$$(git rev-parse --git-common-dir)/hooks/pre-push"; \

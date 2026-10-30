@@ -35,7 +35,7 @@ the backend and the process reshaped to carry a third codebase.
 | [04](iteration-9/04-decision-api-compatibility-policy.md) | Decide the API compatibility policy | done |
 | [05](iteration-9/05-decision-mobile-authentication.md) | Decide how the mobile app authenticates | done |
 | [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | done |
-| [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | refined |
+| [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | done |
 | [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | refined |
 | [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | refined |
 | [11](iteration-9/11-app-skeleton.md) | The app has four tabs and the web's conventions | refined |

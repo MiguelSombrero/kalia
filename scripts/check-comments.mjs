@@ -34,11 +34,11 @@
 // over the same tree returned 0.13 and 0.18 depending on whether blank
 // lines counted as code):
 //   - Scope is every hand-written `.java` under backend/src and every
-//     `.ts`/`.tsx` under frontend/, except frontend/lib/api/generated
+//     `.ts`/`.tsx` under web/, except web/lib/api/generated
 //     (orval output, out of ADR-0017's Decision by name) and build/tooling
 //     directories (node_modules, .next, target, coverage, dist, build,
 //     playwright-report, test-results). The `.mjs` files under scripts/ and
-//     frontend/ are held to the hard tier but left out of the advisory
+//     web/ are held to the hard tier but left out of the advisory
 //     counts, since ADR-0017's 0.09 baseline was measured without them.
 //   - A line's classification comes only from how it *starts*, once
 //     trimmed: `//` or `/*` makes the whole line a comment line (a `/*...*/`
@@ -65,8 +65,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const SCAN_ROOTS = [
   { dir: resolve(ROOT, "backend/src"), extensions: [".java"], counted: true },
-  { dir: resolve(ROOT, "frontend"), extensions: [".ts", ".tsx"], counted: true },
-  { dir: resolve(ROOT, "frontend"), extensions: [".mjs"], counted: false },
+  { dir: resolve(ROOT, "web"), extensions: [".ts", ".tsx"], counted: true },
+  { dir: resolve(ROOT, "web"), extensions: [".mjs"], counted: false },
   { dir: resolve(ROOT, "scripts"), extensions: [".mjs"], counted: false },
 ];
 const ADVISORY = process.argv.includes("--advisory");
@@ -77,7 +77,7 @@ const IGNORED_DIRS = new Set([
 // Exact path, not a name match against every "generated" directory anywhere
 // — a future hand-written directory that happens to share the name must
 // still be scanned.
-const GENERATED_API_CLIENT = resolve(ROOT, "frontend/lib/api/generated");
+const GENERATED_API_CLIENT = resolve(ROOT, "web/lib/api/generated");
 
 // Each traces to an instance found in the 2026-08-15 sweep (see header).
 // Deliberately excludes `previously` and `no longer` — see header.

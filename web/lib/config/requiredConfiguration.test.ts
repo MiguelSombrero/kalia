@@ -1,0 +1,61 @@
+import { describe, expect, it } from "vitest";
+import { verifyRequiredConfiguration } from "./requiredConfiguration";
+
+const ALL_REQUIRED = {
+  NODE_ENV: "production",
+  BACKEND_URL: "http://backend:8080",
+  AUTH_URL: "http://localhost:3000",
+  AUTH_SECRET: "test-secret",
+  AUTH_KEYCLOAK_ID: "kalia-web",
+  AUTH_KEYCLOAK_SECRET: "test-secret",
+  AUTH_KEYCLOAK_ISSUER: "http://localhost:8081/realms/kalia",
+  AUTH_KEYCLOAK_INTERNAL_ORIGIN: "http://keycloak:8080",
+  VALKEY_URL: "redis://valkey:6379",
+};
+
+describe("verifyRequiredConfiguration", () => {
+  it("names every variable missing in production, not just the first", () => {
+    const verifyWithNoneSet = () => verifyRequiredConfiguration({ NODE_ENV: "production" });
+
+    for (const name of Object.keys(ALL_REQUIRED).filter((key) => key !== "NODE_ENV")) {
+      expect(verifyWithNoneSet).toThrow(name);
+    }
+  });
+
+  it("rejects a blank value rather than accepting it as configured", () => {
+    expect(() =>
+      verifyRequiredConfiguration({ ...ALL_REQUIRED, BACKEND_URL: "   " }),
+    ).toThrow("BACKEND_URL");
+  });
+
+  it("passes when every required variable is set in production", () => {
+    expect(() => verifyRequiredConfiguration(ALL_REQUIRED)).not.toThrow();
+  });
+
+  it("rejects the dev AUTH_SECRET committed to the repository, naming it", () => {
+    expect(() =>
+      verifyRequiredConfiguration({ ...ALL_REQUIRED, AUTH_SECRET: "kalia-dev-auth-secret" }),
+    ).toThrow("AUTH_SECRET");
+  });
+
+  it("accepts the dev AUTH_SECRET on the dev stack, which marks itself", () => {
+    expect(() =>
+      verifyRequiredConfiguration({
+        ...ALL_REQUIRED,
+        AUTH_SECRET: "kalia-dev-auth-secret",
+        KALIA_DEV_STACK: "true",
+      }),
+    ).not.toThrow();
+  });
+
+  it("does not let the dev stack marker excuse a missing variable", () => {
+    expect(() =>
+      verifyRequiredConfiguration({ ...ALL_REQUIRED, KALIA_DEV_STACK: "true", AUTH_SECRET: "" }),
+    ).toThrow("AUTH_SECRET");
+  });
+
+  it("does not enforce the requirement outside production", () => {
+    expect(() => verifyRequiredConfiguration({ NODE_ENV: "development" })).not.toThrow();
+    expect(() => verifyRequiredConfiguration({})).not.toThrow();
+  });
+});

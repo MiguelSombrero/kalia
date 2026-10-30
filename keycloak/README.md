@@ -29,20 +29,20 @@ No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
 | The lockup, title, link heights, button labels, hidden language menu | `login.css`, through Keycloak's `kc-` element ids |
 | The error sign on field errors and error alerts | `login.css` `.kalia-field-error` / `.kalia-alert`, classes added through `theme.properties`' `kcInputErrorMessageClass` / `kcAlertClass` keys; the cross is `resources/img/error-cross*.svg`, used as a mask |
 | Each field's `aria-describedby` to its error line | `resources/js/field-errors.js`, loaded through `theme.properties`' `scripts` key |
-| The mark | `resources/img/kalia-mark.svg`, a copy of `frontend/app/icon.svg` |
+| The mark | `resources/img/kalia-mark.svg`, a copy of `web/app/icon.svg` |
 | The wordmark and the link home | the realm's `displayNameHtml` in `realm-export.json` |
 
 **Changing a colour.** Each one is declared once at the top of `login.css` as
 `--kalia-color-<name>`, a copy of `--color-<name>` in
-`frontend/app/globals.css`; everything else refers to those. Change the app's
+`web/app/globals.css`; everything else refers to those. Change the app's
 token and the copy together. `scripts/check-keycloak-theme.mjs` fails on a
 copy that no longer matches, on a colour literal anywhere else in the file,
 and on a mark that differs from the app's. A new colour gets a
 `--kalia-color-*` name that the app's `@theme` block also has.
 
 **On a Keycloak image bump** (`Dockerfile` `FROM` and `keycloak-config-cli` in
-`docker-compose.base.yml`), run `frontend/e2e/keycloak-branding.spec.ts` and
-`frontend/e2e/keycloak-errors.spec.ts`, and look at
+`docker-compose.base.yml`), run `web/e2e/keycloak-branding.spec.ts` and
+`web/e2e/keycloak-errors.spec.ts`, and look at
 the four pages at 375 and 1280 in both locales. The branding spec checks each page's
 language, the lockup and its mark, the column's width and position, the hidden
 language menu, sideways scroll, the axe scan and computed contrast. What it
