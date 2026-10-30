@@ -1,3 +1,7 @@
+# Dependencies: one node_modules at the root, hoisted over every workspace
+# (ADR-0092), and any workspace's own when npm cannot hoist a version
+node_modules/
+
 # OS
 .DS_Store
 
@@ -64,6 +68,6 @@ screenshots/
 *.[tT][iI][fF]
 *.[tT][iI][fF][fF]
 
-# Playwright writes here when run from the repository root rather than frontend/.
+# Playwright writes here when run from the repository root rather than web/.
 /test-results/
 /playwright-report/
