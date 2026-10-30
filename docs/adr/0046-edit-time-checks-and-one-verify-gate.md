@@ -21,6 +21,8 @@
 - **Amended:** 2026-10-30 by iteration 9 task 17 — the ruleset on `dev` also
   requires a branch to be up to date before it merges (strict required status
   checks)
+- **Amended:** 2026-10-30 — that requirement is reversed: its cost in waiting
+  outweighed the race it closed
 
 ## Context
 
@@ -141,6 +143,29 @@ What this covers, and what it does not:
   > organization-owned repository (this one belongs to a personal account);
   > and a [playbook](../ci-playbook.md) entry alone, which leaves the race
   > open. Only the product owner changes the ruleset.
+
+  > **Amended 2026-10-30, reversing the amendment above.** Requiring branches to
+  > be up to date cost more than the race it closed. Every merge to `dev` sends
+  > each other open pull request back through the whole pipeline before it can
+  > merge, so ten open pull requests are ten runs of CI in series: nothing
+  > overlaps, because each one waits for the merge before it. The ruleset on
+  > `dev` therefore turns **Require branches to be up to date before merging**
+  > off (`strict_required_status_checks_policy: false`), and `ci-passed` and the
+  > vulnerability scan stay the two required checks. The race is open again: of
+  > two pull requests that are each green and conflict in behaviour, both can
+  > merge and `dev` goes red, as #447 and #448 did (run `40359579236`). That is
+  > accepted on the strength of what catches it afterwards. `dev` runs the whole
+  > of CI on every push, the `worktree` skill's start step logs a red `dev` run
+  > for the next session
+  > ([ADR-0084](0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)),
+  > and the sweep counts the rows. A red `dev` is repaired after the fact, not
+  > blocked at the merge. Rejected: keeping the requirement because the race is
+  > real, since its price is paid on every merge and the race has been seen once;
+  > and a merge queue, which still needs an organization-owned repository. The
+  > question reopens when the failure log shows the race a second time
+  > ([ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md)'s
+  > recurrence bar), with the real cost of a red `dev` in hand. Only the product
+  > owner changes the ruleset.
 - **A `PostToolUse` hook runs whichever checker covers the edited file**, and
   reports the failure into the agent's context. It never blocks. A checker
   legitimately goes red mid-task — a task file exists before its index row
@@ -254,7 +279,12 @@ drift this ADR is trying to remove.
 - Bad, because up-to-date branches make every merge to `dev` invalidate the
   green of each other open pull request: with three open, merging one sends
   the other two back through CI. Parallel sessions make that frequent, and it
-  is paid in waiting, not in money.
+  is paid in waiting, not in money. (Reversed 2026-10-30: at ten open pull
+  requests the waiting was a serial queue, and the requirement was dropped.)
+- Bad, because with the up-to-date requirement off, two green pull requests
+  that conflict in behaviour can both merge and turn `dev` red. It is found
+  by the push run on `dev` and logged by the next session, which makes it a
+  repair and not a block.
 - Bad, because the merge block lives in a GitHub ruleset, which no file in
   this repository records. `ci-passed` and the vulnerability scan being the
   two required checks is a fact about settings outside the tree, and a ruleset
