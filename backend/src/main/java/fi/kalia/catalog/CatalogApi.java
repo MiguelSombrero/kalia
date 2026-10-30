@@ -27,6 +27,20 @@ public class CatalogApi {
 	}
 
 	/**
+	 * The ids among {@code beerIds} that a signed-out reader may not be shown in a cellar: every
+	 * beer not {@code APPROVED}, whether awaiting approval, refused or taken down (ADR-0091). An
+	 * id matching no beer is not among them.
+	 */
+	public Set<UUID> withheldFromPublic(Collection<UUID> beerIds) {
+		Set<UUID> withheld = new HashSet<>();
+		beerIds.stream()
+				.distinct()
+				.gather(Gatherers.windowFixed(MAX_BATCH_IDS))
+				.forEach(chunk -> withheld.addAll(catalog.withheldFromPublic(chunk)));
+		return withheld;
+	}
+
+	/**
 	 * Every beer that exists, hidden ones too, except another contributor's still-pending one, which
 	 * is {@link BeerSummaries#withheld}. An id matching no beer is in neither, and no value is null.
 	 * {@code viewerId} is null for a public read (ADR-0091).

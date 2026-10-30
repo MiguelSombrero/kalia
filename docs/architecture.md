@@ -287,10 +287,10 @@ the duplicate key so its name can be proposed again.
 **A catalog beer is never deleted.** Cellar entries and feed lines point at one
 by id across a module boundary with no foreign key, so a deleted beer would
 leave entries its owner can no longer see. Hiding is a state, not an absence:
-a `REJECTED` or `REMOVED` beer is still named in an owner's cellar, a public
-cellar and the feed. `CellarService` and `FeedService` therefore treat a beer
+a `REJECTED` or `REMOVED` beer is still named in an owner's cellar and the feed,
+but not in a public cellar. `CellarService` and `FeedService` therefore treat a beer
 they cannot resolve as a defect (the cellar logs it at `WARN`), except one
-still `PENDING`, which a public read withholds on purpose.
+that is not `APPROVED`, which a public cellar read withholds on purpose.
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and
@@ -451,15 +451,24 @@ missing profile and a private cellar are one 404 — identical for every caller,
 the owner included — so usernames cannot be walked for cellars
 ([ADR-0050](adr/0050-public-cellar-addressing.md)).
 
-**The public read costs the same however much its owner stored.** A request
+**The public read costs the page, not the cellar, plus one catalog lookup per 100 beers held.** A request
 without paging parameters is the first page of 20 beers; `size` is at most 50
 and `page` at most 199 ([ADR-0042](adr/0042-bounded-request-parameters.md)). A
 page is cut in SQL in the order the beers were added — the catalog's names are
 not in `cellar`'s tables, so the page cannot be cut by name — and each beer lists
 at most its 25 oldest bottles, its `quantity` still the number held. The
 response carries the whole cellar's beer and bottle totals and when the newest
-bottle was added, since a client holding one page cannot count them. One read
-is eight queries however large the cellar, and `entry_user_id_created_at_idx`
+bottle was added, since a client holding one page cannot count them. A beer
+that is not approved — awaiting approval, refused or taken down — is left out of
+the pages and of every total: before the page is cut, `cellar` asks `catalog`
+which of the owner's beers a signed-out reader may not see ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md))
+and excludes them in SQL, so a page comes back full and the totals count only
+what is shown. The exclusion is read time rather than a stored copy because
+`make moderate` changes a beer's status in SQL and publishes nothing a copy
+could follow; it is revisited when moderation has an application path that can
+publish events. One read is ten queries for a cellar of up to 100 beers, one
+more for each further 100 held (the catalog's batch size,
+[ADR-0042](adr/0042-bounded-request-parameters.md)), and `entry_user_id_created_at_idx`
 and `bottle_entry_id_created_at_idx` make each an index range scan
 ([ADR-0070](adr/0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
 records what this changed on the page).
@@ -527,7 +536,9 @@ Conventions:
   rows (`page × size`), so one request costs the same however large the
   table grows ([ADR-0042](adr/0042-bounded-request-parameters.md)). `/breweries` carries it too, ordered by a stored key that keeps
   its name order locale-independent
-  ([ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)).
+  ([ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)),
+  and so does the public cellar, with its own `username`, `totalBottles` and
+  `lastBottleAddedAt` alongside.
   The feed is the deliberate exception: a list that grows at the head reads
   wrong under an offset, so it takes a bounded `size` and an optional `since`
   or `before` and answers with a `nextCursor` — opaque, round-tripped rather

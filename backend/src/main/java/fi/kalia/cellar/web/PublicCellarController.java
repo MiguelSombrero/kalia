@@ -57,7 +57,8 @@ class PublicCellarController {
 					""" + DEFAULT_PAGE_SIZE + """
 					\sbeers. A beer lists at most \
 					""" + CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY + """
-					\sbottles, its oldest; its quantity says how many are held. 404 — identical for every \
+					\sbottles, its oldest; its quantity says how many are held. A beer that is not approved (awaiting approval, \
+					refused or taken down) is left out of the pages and of every total. 404 — identical for every \
 					caller, the owner included — when the username is unknown or the cellar is not public, \
 					so neither can be told from the other.\
 					""")

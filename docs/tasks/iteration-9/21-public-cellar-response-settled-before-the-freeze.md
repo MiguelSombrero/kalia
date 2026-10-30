@@ -1,6 +1,6 @@
 # Task 21: The public cellar's response is settled before `/api/v1` freezes
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -65,14 +65,14 @@ shown, or the response no longer claims totals it cannot keep.
 
 ## Acceptance criteria
 
-- [ ] An integration test shows a public cellar holding a pending beer
+- [x] An integration test shows a public cellar holding a pending beer
       returns full pages and totals that exclude it, and that the beer
       appears, counted, once `make moderate` approves it — and disappears
       again once it removes it
-- [ ] The envelope matches §4
-- [ ] The web's public cellar page and its Playwright spec are green against
+- [x] The envelope matches §4
+- [x] The web's public cellar page and its Playwright spec are green against
       the new shape
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 

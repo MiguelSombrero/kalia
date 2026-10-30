@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,7 +59,8 @@ public class CellarService {
 	@Transactional(readOnly = true)
 	public PublicCellarPage readPublicCellar(String username, Pageable pageable) {
 		UUID ownerId = profile.publicCellarOwnerId(username).orElseThrow(PublicCellarNotFoundException::new);
-		Page<Entry> page = entries.findPageByUserId(ownerId, pageable);
+		Set<UUID> withheld = catalog.withheldFromPublic(entries.findBeerIdsByUserId(ownerId));
+		Page<Entry> page = entries.findPageByUserIdExcludingBeers(ownerId, withheld, pageable);
 		List<UUID> entryIds = page.getContent().stream().map(Entry::getId).toList();
 		Map<UUID, Long> held = entries.countBottlesByEntryId(entryIds).stream()
 				.collect(Collectors.toMap(BottleCount::entryId, BottleCount::count));
@@ -78,7 +80,7 @@ public class CellarService {
 					return Stream.of(new PublicCellarEntry(entry, beer, held.get(entry.getId()), shown.get(entry.getId())));
 				})
 				.toList();
-		BottleTotals totals = entries.totalBottlesOf(ownerId);
+		BottleTotals totals = entries.totalBottlesOfExcludingBeers(ownerId, withheld);
 		return new PublicCellarPage(cellar, page.getTotalElements(), page.getTotalPages(), page.getNumber(),
 				totals.count(), totals.lastAddedAt());
 	}

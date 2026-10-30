@@ -56,6 +56,9 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 	@Query(value = "SELECT 1 FROM (SELECT pg_advisory_xact_lock(:key)) AS locked", nativeQuery = true)
 	int lockContributorAdds(long key);
 
+	@Query("SELECT b.id FROM Beer b WHERE b.id IN :ids AND b.moderationStatus <> :status")
+	List<UUID> findIdsByIdInAndModerationStatusNot(Collection<UUID> ids, ModerationStatus status);
+
 	long countByContributorIdAndModerationStatus(UUID contributorId, ModerationStatus moderationStatus);
 
 	@Query("SELECT DISTINCT b.style FROM Beer b")

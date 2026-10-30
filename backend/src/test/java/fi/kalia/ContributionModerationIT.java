@@ -8,7 +8,9 @@ import com.jayway.jsonpath.JsonPath;
 import fi.kalia.catalog.application.ContributionService;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -130,6 +132,44 @@ class ContributionModerationIT {
 	}
 
 	@Test
+	void aPublicCellarPagesAndTotalsOnlyWhatTheReaderIsShownAndCountsABeerFromTheMomentItIsApproved() {
+		String firstPending = addedBeerId(newBreweryBeer(uniqueName("Sahti"), uniqueName("Panimo")));
+		List<String> approved = jdbc.queryForList(
+				"SELECT id::text FROM catalog.beer WHERE moderation_status = 'APPROVED' ORDER BY id LIMIT 2", String.class);
+		String lastPending = addedBeerId(existingBreweryBeer(uniqueName("Abt"), westvleteren));
+		setCellarPublic(CONTRIBUTOR);
+		for (String beerId : List.of(firstPending, approved.get(0), approved.get(1), lastPending)) {
+			addBottle(CONTRIBUTOR, beerId).expectStatus().isCreated();
+		}
+		Instant lastApprovedBottle = bottleAddedAt(approved.get(1));
+
+		String page = publicCellar("size=2&page=0");
+		assertThat(contentIds(page)).as("a full page, though the first beer added is pending").containsExactlyElementsOf(approved);
+		assertThat((int) JsonPath.read(page, "$.totalElements")).isEqualTo(2);
+		assertThat((int) JsonPath.read(page, "$.totalPages")).isEqualTo(1);
+		assertThat((int) JsonPath.read(page, "$.totalBottles")).isEqualTo(2);
+		assertThat(Instant.parse(JsonPath.read(page, "$.lastBottleAddedAt"))).isEqualTo(lastApprovedBottle);
+
+		moderate("approve");
+
+		page = publicCellar("size=2&page=0");
+		assertThat(contentIds(page)).containsExactly(firstPending, approved.get(0));
+		assertThat((int) JsonPath.read(page, "$.totalElements")).isEqualTo(4);
+		assertThat((int) JsonPath.read(page, "$.totalPages")).isEqualTo(2);
+		assertThat((int) JsonPath.read(page, "$.totalBottles")).isEqualTo(4);
+		assertThat(Instant.parse(JsonPath.read(page, "$.lastBottleAddedAt"))).isEqualTo(bottleAddedAt(lastPending));
+		assertThat(contentIds(publicCellar("size=2&page=1"))).containsExactly(approved.get(1), lastPending);
+
+		moderate("remove");
+
+		page = publicCellar("size=2&page=0");
+		assertThat(contentIds(page)).as("a removed beer is left out of a public cellar").containsExactly(approved.get(0),
+				approved.get(1));
+		assertThat((int) JsonPath.read(page, "$.totalElements")).isEqualTo(2);
+		assertThat((int) JsonPath.read(page, "$.totalBottles")).isEqualTo(2);
+	}
+
+	@Test
 	void aContributorAtThePendingCapIsRefusedWithAProblemUntilSomeAreReviewed() {
 		for (int added = 0; added < ContributionService.MAX_PENDING_ENTRIES; added++) {
 			add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
@@ -163,7 +203,7 @@ class ContributionModerationIT {
 	}
 
 	@Test
-	void aRejectedBeerIsHiddenButItsRowStaysAndACellarEntryAndFeedLineStillRender() {
+	void aRejectedBeerIsHiddenButItsRowStaysAndItsOwnersCellarAndTheFeedStillRender() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
@@ -179,7 +219,7 @@ class ContributionModerationIT {
 	}
 
 	@Test
-	void aRemovedBeerIsHiddenButItsRowStaysAndACellarEntryAndFeedLineStillRender() {
+	void aRemovedBeerIsHiddenButItsRowStaysAndItsOwnersCellarAndTheFeedStillRender() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
@@ -260,7 +300,7 @@ class ContributionModerationIT {
 			get(viewer, "/api/v1/beers/" + beerId).expectStatus().isNotFound();
 		}
 		assertThat(cellarBeerIds(CONTRIBUTOR)).as("the owner's cellar").containsExactly(beerId);
-		assertThat(publicCellarBeerIds()).as("the public cellar").containsExactly(beerId);
+		assertThat(publicCellarBeerIds()).as("the public cellar").isEmpty();
 		assertThat(feedBeerIds()).as("the feed").contains(beerId);
 	}
 
@@ -328,8 +368,28 @@ class ContributionModerationIT {
 		return ids(get(bearer, "/api/v1/cellar"), "$[*].beer.id");
 	}
 
+	private String addedBeerId(Map<String, Object> body) {
+		return JsonPath.read(add(CONTRIBUTOR, body).expectStatus().isCreated().expectBody(String.class).returnResult()
+				.getResponseBody(), "$.id");
+	}
+
+	private String publicCellar(String query) {
+		return get(ANONYMOUS, "/api/v1/cellars/" + contributorName + "?" + query).expectStatus().isOk()
+				.expectBody(String.class).returnResult().getResponseBody();
+	}
+
+	private static List<String> contentIds(String body) {
+		return JsonPath.read(body, "$.content[*].beer.id");
+	}
+
+	private Instant bottleAddedAt(String beerId) {
+		return jdbc.queryForObject("""
+				SELECT max(b.created_at) FROM cellar.bottle b JOIN cellar.entry e ON e.id = b.entry_id
+				WHERE e.user_id = ? AND e.beer_id = ?""", Timestamp.class, contributorId, UUID.fromString(beerId)).toInstant();
+	}
+
 	private List<String> publicCellarBeerIds() {
-		return ids(get(ANONYMOUS, "/api/v1/cellars/" + contributorName), "$.entries[*].beer.id");
+		return ids(get(ANONYMOUS, "/api/v1/cellars/" + contributorName), "$.content[*].beer.id");
 	}
 
 	private List<String> feedBeerIds() {

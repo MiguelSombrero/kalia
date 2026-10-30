@@ -141,10 +141,10 @@ describe("getPublicCellar", () => {
       username: "testuser",
       page: 0,
       totalPages: 1,
-      totalBeers: 1,
+      totalElements: 1,
       totalBottles: 2,
       lastBottleAddedAt: "2026-01-02T10:00:00Z",
-      entries: [
+      content: [
         entry({
           quantity: 2,
           bottles: [
@@ -182,10 +182,10 @@ describe("getPublicCellar", () => {
   it("asks for the page it is given, and for none at all on the first", async () => {
     const fetchMock = stubFetch(() => ({
       username: "testuser",
-      entries: [],
+      content: [],
       page: 2,
       totalPages: 3,
-      totalBeers: 45,
+      totalElements: 45,
       totalBottles: 45,
     }));
 
@@ -199,10 +199,10 @@ describe("getPublicCellar", () => {
   it("records the bottles a capped entry holds beyond those it lists", async () => {
     stubFetch(() => ({
       username: "testuser",
-      entries: [entry({ quantity: 48, bottles: [bottle("b1"), bottle("b2")] })],
+      content: [entry({ quantity: 48, bottles: [bottle("b1"), bottle("b2")] })],
       page: 0,
       totalPages: 1,
-      totalBeers: 1,
+      totalElements: 1,
       totalBottles: 48,
     }));
 

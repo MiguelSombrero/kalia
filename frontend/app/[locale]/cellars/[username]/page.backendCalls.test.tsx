@@ -35,10 +35,10 @@ describe("a public cellar page view", () => {
       url.includes("/api/v1/cellars/")
         ? Response.json({
             username: "testuser",
-            entries: Array.from({ length: 150 }, (_, i) => entry(i)),
+            content: Array.from({ length: 150 }, (_, i) => entry(i)),
             page: 0,
             totalPages: 1,
-            totalBeers: 150,
+            totalElements: 150,
             totalBottles: 150,
           })
         : Response.json({ id: "beer", name: "Beer", brewery: { name: "Brewery" }, style: "Lager", abv: 5 }),
