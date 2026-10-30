@@ -1,6 +1,6 @@
 # Task 08: The repository is npm workspaces, with the web app in `web/`
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-4
 
@@ -27,8 +27,12 @@ check scripts, Dependabot, Trivy's manifest scan, `.claude/settings.json`, the
 nested `CLAUDE.md` and the docs. The web's Docker build moves to the repository
 root as its context, because the lockfile and `packages/` are outside `web/`.
 CI's change filter also matches `packages/`, the root `package.json` and the
-lockfile. No behaviour changes. `mobile/` and the packages themselves arrive
-with tasks 11 and 09; this task leaves `packages/` empty or absent.
+lockfile. Every `frontend` name in configuration follows the paths, the
+Keycloak client `kalia-frontend` included, and so do the places that spell the
+compose service's name out: the realm's back-channel logout URL and the edge's
+upstream. No behaviour changes beyond those names. `mobile/` and the packages
+themselves arrive with tasks 11 and 09; this task leaves `packages/` empty or
+absent.
 
 ## Non-goals
 
@@ -38,7 +42,8 @@ with tasks 11 and 09; this task leaves `packages/` empty or absent.
 
 ## Constraints
 
-- [Task 03](03-decision-repo-layout-and-code-sharing.md)'s ADR, once accepted.
+- [ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md),
+  [task 03](03-decision-repo-layout-and-code-sharing.md)'s decision.
 - **This Next.js version postdates model training** — check
   `web/node_modules/next/dist/docs/` (after the move) before relying on memory
   about workspaces or `transpilePackages` (`CLAUDE.md`).
@@ -64,21 +69,77 @@ with tasks 11 and 09; this task leaves `packages/` empty or absent.
   suites green against the moved tree, and the Docker image built from it
   serving the same pages.
 
+**Decided in the second pass, 2026-10-30** (product owner), after
+[ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
+was accepted:
+
+- **Every `frontend` name in configuration is renamed, the Keycloak client
+  included.** The client `kalia-frontend` becomes `kalia-web`, and with it
+  `KALIA_FRONTEND_CLIENT_SECRET` becomes `KALIA_WEB_CLIENT_SECRET`,
+  `AUTH_KEYCLOAK_ID`'s value follows, `FRONTEND_PORT` and `FRONTEND_URL`
+  become `WEB_PORT` and `WEB_URL`, the Makefile's `frontend-*` targets become
+  `web-*`, CI's job and output names follow, and so do the edge's rate-limit
+  zone and the `kalia-frontend` image the vulnerability scan names. Renaming
+  only the paths, service and image was rejected because it leaves
+  `FRONTEND_*` beside a service called `web`; keeping the OAuth client was
+  rejected because "one name for one thing" was the reason for the rename. A
+  client is a registered identity, so this is a realm change, accepted
+  because the web is its only consumer and nothing is deployed. Sign-in
+  itself behaves as before.
+- **A compose service name is also a DNS name.** The realm's
+  `backchannel.logout.url` is `http://frontend:3000/...` and the edge's
+  upstream is `http://frontend:3000`, so renaming the service without them
+  stops sign-out reaching the web and the edge reaching it, without failing a
+  build.
+- **Prose follows too, in living documents.** "The frontend" in the root
+  README, `CLAUDE.md`, `docs/architecture.md`, the glossary and the READMEs
+  becomes "the web app" where it means the Next.js app, because a mobile app
+  makes "the frontend" ambiguous. Accepted ADRs, finished task files and the
+  rows of `docs/common-failures.md` and `docs/ci-playbook.md` keep the old
+  word as history. A `grep` can only check `frontend/` with its slash, so
+  prose is checked by reading.
+- **The web image installs with `npm ci --workspace web`.** Run in a scratch
+  workspace of a web app, a second app and a package, it installed the web's
+  dependencies and the package's and left the second app's out, with or
+  without that app's `package.json` in the Docker context. The Dockerfile
+  therefore copies only the root `package.json` and lockfile,
+  `web/package.json` and `packages/*/package.json` before installing. This
+  was read with the local npm, not the image's; the image build is the proof.
+- **`outputFileTracingRoot` is set to the repository root,** because Next.js
+  traces from the project directory by default and a file outside it, such as
+  a package under `packages/`, is left out of the standalone output
+  (`output` in the Next.js documentation). Where `server.js` lands in the
+  standalone output then depends on that root, so the Dockerfile's copy paths
+  and `CMD` follow whatever the build produces, and the running image serving
+  the pages is the proof.
+- **A root `.dockerignore` keeps the web image's build context to what the
+  image needs.** The context widens to the whole repository
+  ([ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)),
+  and without it the backend's build output, every `node_modules` and `.git`
+  are sent and can invalidate the image's cache.
+- **No dependency changes version.** The root lockfile resolves every
+  existing dependency to the version `frontend/package-lock.json` has,
+  compared before and after (`npm ls --all`).
+- **A stack that already exists converges.** After the rename, `make up` on a
+  stack with a Keycloak volume from before ends with the realm drift check
+  green and no `kalia-frontend` client left, or the task states the one
+  command that removes it. Whether keycloak-config-cli removes a client the
+  file no longer lists is not known and is found by running it.
+- **An old `.env` fails loudly.** A worktree's `.env` carrying
+  `KALIA_FRONTEND_CLIENT_SECRET` or `FRONTEND_PORT` must not fall back to a
+  default silently: the secret is already required with a message pointing at
+  the README, and `make stack-env` replaces the old port and URL keys.
+- **This task lands alone.** No other branch touches `frontend/` while it is
+  open, and the `git mv` commit comes first so that others rebase over a pure
+  rename.
+
 ## Open questions
 
-The layout questions were answered at refinement on 2026-10-30 (Constraints)
-and recorded in [ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md). Two points that ADR leaves
-to this task, to settle when it is refined:
-
-1. **Can the web image's `npm ci` be scoped to the web workspace** (and the
-   packages it uses), or does one root lockfile make it install every
-   workspace's dependencies, `mobile/`'s included? Verify by running it; if it
-   cannot, say what the image build costs instead.
-2. **Standalone output.** Next.js traces files from the project directory by
-   default, so `outputFileTracingRoot` has to include `packages/` and the
-   image has to be run to prove the pages still serve (Next.js docs, `output`).
-
-The task stays `needs-refinement`: only the product owner moves it on.
+**None.** The two points [ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
+left to this task, scoping the image's install and the standalone output's
+tracing root, were settled by running them and are recorded in Constraints.
+The refinement also found the names that are not paths, which the product
+owner decided.
 
 ## Acceptance criteria
 
@@ -86,12 +147,31 @@ The task stays `needs-refinement`: only the product owner moves it on.
       workspaces, and no tracked file outside history references
       `frontend/` except where refinement allows it — checked by a `grep` in
       the PR description
+- [ ] No tracked file outside history names `kalia-frontend`,
+      `KALIA_FRONTEND`, `FRONTEND_PORT`, `FRONTEND_URL` or the `frontend`
+      compose service, checked by a `grep` in the PR description, and the
+      living documents' prose was re-read for "the frontend"
 - [ ] The web's Vitest and Playwright suites are green against the moved
-      tree, and `make verify` passes
+      tree, including the specs for sign-in, sign-out and back-channel logout,
+      and `make verify` passes
+- [ ] The web image builds from the repository root with
+      `npm ci --workspace web`, serves the same pages as before when run, and
+      `docker build` sends a context limited by the root `.dockerignore`
+- [ ] The root lockfile resolves every existing dependency to its previous
+      version, compared before and after
+- [ ] On a stack created before the rename, `make up` ends with the realm
+      drift check green and the old client gone, or the PR states the command
+      that removes it; a `.env` with the old secret or port keys fails loudly
 - [ ] CI's path filters, Dependabot and the Trivy manifest scan cover the new
-      paths — each confirmed by a run that touched `web/`
+      paths, and Dependabot's `react` and `react-dom` grouping still applies —
+      each confirmed by a run that touched `web/`
 - [ ] `node scripts/check-links.mjs` and `make verify-fast` are green
 
 ## Notes
 
 Provenance: [backlog](../backlog.md#mobile-client) decision 4.
+
+The scoped install cannot be shown to leave another workspace's dependencies
+out of the image until a second workspace exists. [Task 09](09-shared-packages.md)
+adds the first package and [task 11](11-app-skeleton.md) adds `mobile/`, so the
+check that the web image carries none of the app's dependencies is task 11's.
