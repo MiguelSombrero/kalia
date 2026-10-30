@@ -68,7 +68,19 @@ that ADR merges, or reopens a question the ADR contradicts.
       `kalia-backend` audience is rejected with 401
 - [ ] A `kalia-mobile` refresh token is refused on its second use while a
       `kalia-frontend` one is not — checked against the local Keycloak and
-      described in the PR
+      described in the PR. If Keycloak can set rotation only realm-wide, the
+      task stops here and the PR says so ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md))
+- [ ] The realm pins the offline session idle timeout at 30 days with no
+      offline maximum, and a token issued with `offline_access` to
+      `kalia-mobile` carries a refresh token that outlives the SSO session's
+      30-minute idle timeout — the settings read back from the admin API and
+      the token exercised against the local Keycloak, described in the PR
+- [ ] The authorization endpoint refuses a redirect URI that is not in the
+      client's list, including one under the same `kalia://` scheme, and
+      refuses a request without PKCE `S256` — checked against the local
+      Keycloak, and the points ADR-0095's Evidence leaves unverified (custom
+      scheme matching, revoking an offline token, a disabled account's
+      refresh) are each checked and the result described in the PR
 - [ ] An authorization-code flow with PKCE against the local Keycloak returns
       tokens to the `kalia://` redirect, and the access token's `aud`
       includes `kalia-backend` — verified by script, and described in the PR

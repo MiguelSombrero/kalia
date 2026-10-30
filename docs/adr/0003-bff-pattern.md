@@ -12,6 +12,12 @@
   Keycloak and the frontend are published only through an nginx edge proxy,
   still on `127.0.0.1`; the Spring API is reached through its limits, not
   directly
+- **Amended:** 2026-10-30 by [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) — the mobile app
+  calls the Spring API directly through the edge with its own bearer token, so
+  "no CORS surface" and "the Spring API is not exposed publicly" below hold for
+  the browser only, not for the system. The decision stands for the web: the
+  browser still talks only to Next.js, and "usable by other clients later" is
+  now so
 
 ## Context
 

@@ -71,4 +71,16 @@ merge, or reopens a question an ADR contradicts.
       returning to signed-out, and sign-out clearing secure storage
 - [ ] An expired access token is refreshed before the next API call without the
       user seeing it — covered by a test
+- [ ] A refresh that Keycloak answers with `invalid_grant` ends the session,
+      clears secure storage and shows the signed-out message, while a refresh
+      that fails for any other reason (no network, a 5xx) leaves the user signed
+      in — covered by tests ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md))
+- [ ] A rotated refresh token is written to secure storage before the new
+      access token is used, so a request that dies after the refresh does not
+      leave the app holding a spent token — covered by a test
+- [ ] Sign-out online forgets the tokens on the device and revokes them at
+      Keycloak, after which the old refresh token is refused; offline, it
+      forgets them and completes without a connection — the clearing covered by
+      a test, the revocation checked against the local Keycloak and described in
+      the PR
 - [ ] `make verify-fast` is green
