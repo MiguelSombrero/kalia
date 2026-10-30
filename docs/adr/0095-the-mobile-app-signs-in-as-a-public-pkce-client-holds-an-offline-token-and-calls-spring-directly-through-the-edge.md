@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-30
+- **Amended:** 2026-10-30 — iteration 9 task 13 ran the open points against
+  Keycloak 26.8.1: refresh-token rotation is realm-wide only, so both clients
+  keep reuse, and Keycloak accepts no custom-scheme root or base URL (see
+  Decision and Evidence)
 
 ## Context
 
@@ -72,6 +76,15 @@ API directly through the edge proxy.**
   `kalia-mobile` alone, [task 13](../tasks/iteration-9/13-keycloak-mobile-client.md)
   stops and returns the choice to the product owner rather than rotating for
   the web too, which would need ADR-0029's rejected renewal lock.
+
+  > **Amended 2026-10-30 (task 13).** Rotation cannot be set for `kalia-mobile`
+  > alone, so **neither client rotates**: `revokeRefreshToken` stays `false`
+  > and a mobile refresh token, like the web's, can be used more than once. The
+  > product owner chose this over rotating both behind the renewal lock
+  > ADR-0029 rejected. A refresh token read off a stolen phone therefore
+  > replays until the user signs out or the offline session lapses after its 30
+  > idle days. **Revisit before the app is installed beyond the product owner's
+  > own phone.** The measurements are in Evidence.
 - **Sign-out forgets the tokens on the device at once, then revokes them at
   Keycloak, ending the session, when there is a connection.** Offline,
   sign-out still completes on the device and the server-side session lapses at
@@ -171,6 +184,8 @@ a rooted device, for no saving.
 - Bad, because a rotated refresh token is single-use: a refresh whose response is
   lost leaves the app holding a spent token and signs the user out. The app must
   store the new token before it uses the new access token.
+  (Amended 2026-10-30: it does not apply while neither client rotates; it
+  returns with rotation.)
 - Bad, because offline sign-out leaves a server-side session that lapses only at
   its 30-day idle timeout. The device no longer holds the token, so the exposure
   is a copy taken before sign-out.
@@ -181,8 +196,9 @@ a rooted device, for no saving.
 - Neutral, because the app no longer shares the web's absolute cap of
   `ssoSessionMaxLifespan`; the two clients now have different session lifetimes
   on purpose.
-- **Revisit trigger:** rotation turning out to be realm-wide, which returns the
-  choice to the product owner; a deployment that changes the issuer or the
+- **Revisit trigger:** the app being installed beyond the product owner's own
+  phone, which brings rotation back (it is realm-wide, so for both clients
+  and behind a renewal lock for the web); a deployment that changes the issuer or the
   redirect URIs ([iteration 10](../tasks/iteration-10.md)); or a feature where a
   five-minute window after a disable is not acceptable, which would bring
   introspection back.
@@ -236,3 +252,53 @@ that a custom-scheme redirect matches exactly as the docs state for `http`;
 that PKCE with `S256` is enforced for `kalia-mobile` rather than merely
 accepted; that a disabled account's refresh is refused; and whether the
 realm-wide Offline Session Idle can be set without touching the web.
+
+### Measured by task 13 (2026-10-30)
+
+Against the local stack, Keycloak 26.8.1, realm `kalia`, the `kalia-mobile`
+client of `keycloak/realm-export.json`. `scripts/check-keycloak-pkce-flow.mjs`
+keeps the sign-in, audience, offline and refusal results below true.
+
+- **Rotation is realm-wide.** With `revokeRefreshToken` off, a second use of
+  one refresh token succeeded for `kalia-mobile` and for `kalia-web`. A client
+  attribute (`revokeRefreshToken` and three spellings of it) changed nothing.
+  With the realm setting on, the second use failed with `invalid_grant` for
+  both. The client-policy executor `suppress-refresh-token-rotation` is the
+  one per-client lever this Keycloak has, and it does not keep reuse for the
+  web: with it applied to every client the second use still failed, because it
+  removes the new refresh token from the response and the old one is spent
+  all the same.
+- **Offline session.** The realm reads back `offlineSessionIdleTimeout`
+  2592000 and `offlineSessionMaxLifespanEnabled` false. A token issued with
+  `offline_access` has `typ` `Offline` and `refresh_expires_in` 2592000. With
+  the SSO idle timeout set to 60 seconds and 80 seconds waited, a refresh
+  token from the same client without `offline_access` was refused and the
+  offline one was accepted.
+- **Redirect URIs.** A custom scheme matches exactly as `http` does:
+  `kalia://auth/callback` is accepted and `kalia://auth/other`,
+  `kalia://evil/callback`, `kalia://` and `kalia://auth/Callback` are each
+  refused with Keycloak's 400 `Invalid parameter: redirect_uri`. With
+  `kalia://*` registered the first three were accepted, and the drift check
+  failed.
+- **PKCE is required, not merely accepted.** With
+  `pkce.code.challenge.method` `S256` a request with no `code_challenge` and
+  one with the `plain` method are each answered with an `invalid_request`
+  redirect and no code. With the attribute cleared, the first showed the
+  sign-in page.
+- **Audience.** With the client's own mapper removed the sign-in still
+  succeeded, the access token's `aud` was `account` and the backend answered
+  `401` — the failure the Decision names.
+- **Revocation.** Revoking an offline refresh token at `/revoke` answers 200,
+  the token is then refused, the user's offline session is gone from the admin
+  API, and `/userinfo` with the access token from that session answers 401.
+  Revoking ends the session.
+- **A disabled account.** A refresh for a disabled user is refused with
+  `invalid_grant`; the same token worked again once the user was enabled.
+- **Root and base URL.** Keycloak refuses to create a client whose `rootUrl`
+  or `baseUrl` is `kalia://auth`, `kalia:/auth/callback`, `kalia:auth`,
+  `kalia:///auth`, `kalia://localhost/auth/callback` or any other custom-scheme
+  value tried (`Base URL is not a valid URL`). It accepts `http` and `https`.
+  `kalia-mobile` therefore carries the web app's address, so that Keycloak's
+  "Back to Application" link leads somewhere, and that link opens the website,
+  not the app; a link that opens the app needs an `https` address the phone
+  hands to the app ([iteration 10](../tasks/iteration-10.md)).

@@ -169,6 +169,13 @@ Notable suites:
   problem+json with a declared schema that nests nothing under `properties`
   (ADR-0014); `ErrorBodyShapesIT` pins the same shapes on the wire, and
   `ProblemJsonSecurityErrorsIT` the filter chain's `401` body and challenge
+- `MobileClientTokenIT` — the one integration test that keeps the real
+  `JwtDecoder`, pointed at a JWKS served by the test and signing with a test key:
+  a token shaped like `kalia-mobile`'s is accepted with the `kalia-backend`
+  audience and answered `401` without it
+  ([ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md));
+  that the realm's mapper puts the audience in a real token is
+  `scripts/check-keycloak-pkce-flow.mjs`'s to prove
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas

@@ -78,7 +78,7 @@ jobs:
           # What keycloak-realm-check below can be affected by: the services
           # it starts and the scripts it runs. Neither backend/ nor web/
           # is among them.
-          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config)\.mjs)' || true)
+          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config|check-keycloak-pkce-flow)\.mjs)' || true)
 
           # Written as `if` blocks rather than `cmd && var=true`: steps run
           # under `bash -e`, where a grep that legitimately matches nothing
@@ -266,6 +266,8 @@ jobs:
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
+      - name: Verify the mobile client signs in with PKCE and gets the backend audience
+        run: node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
       # Recreated rather than restarted: a restart keeps the container's own
       # filesystem, so only a fresh container proves the account lives in
       # Postgres. --no-deps leaves keycloak-seed alone, so nothing re-creates

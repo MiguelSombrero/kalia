@@ -85,23 +85,23 @@ was accepted:
 
 ## Acceptance criteria
 
-- [ ] `keycloak/realm-export.json` holds the client, and the drift check is
+- [x] `keycloak/realm-export.json` holds the client, and the drift check is
       green against a freshly started realm
-- [ ] A backend test, through the real decoder, shows a token issued to
+- [x] A backend test, through the real decoder, shows a token issued to
       `kalia-mobile` is accepted, and the same token without the
       `kalia-backend` audience is rejected with 401
-- [ ] Whether rotation can be set for `kalia-mobile` alone is checked against
+- [x] Whether rotation can be set for `kalia-mobile` alone is checked against
       the local Keycloak and described in the PR. If it can, a `kalia-mobile`
       refresh token is refused on its second use while a `kalia-web` one is
       not. If it cannot, both clients still accept a second use and
       [ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
       is amended with the result and its revisit trigger
-- [ ] The realm pins the offline session idle timeout at 30 days with no
+- [x] The realm pins the offline session idle timeout at 30 days with no
       offline maximum, and a token issued with `offline_access` to
       `kalia-mobile` carries a refresh token that outlives the SSO session's
       30-minute idle timeout — the settings read back from the admin API and
       the token exercised against the local Keycloak, described in the PR
-- [ ] The authorization endpoint refuses a redirect URI that is not in the
+- [x] The authorization endpoint refuses a redirect URI that is not in the
       client's list, including one under the same `kalia://` scheme, and
       refuses a request without PKCE `S256` — checked against the local
       Keycloak, and the points ADR-0095's Evidence leaves unverified (custom
@@ -111,7 +111,7 @@ was accepted:
       emailed verification link (Mailpit, in the local stack) reaches a page
       whose "Back to Application" link opens the app — tried on a simulator
       and described in the PR
-- [ ] An authorization-code flow with PKCE against the local Keycloak returns
+- [x] An authorization-code flow with PKCE against the local Keycloak returns
       tokens to the `kalia://` redirect, and the access token's `aud`
       includes `kalia-backend` — verified by script, and described in the PR
 - [ ] `make verify` is green
