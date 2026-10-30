@@ -586,13 +586,16 @@ The shape of the frontend. Day-to-day rules for writing it live in
   agreed: `eslint.config.mjs` states the layers and the directions allowed
   between them ([ADR-0012](adr/0012-orval-api-client.md)), the frontend's
   counterpart to Spring Modulith's module verification.
-- Two route handlers: `app/api/auth/[...nextauth]`, Auth.js's own OIDC
-  endpoints, and the deliberately unauthenticated
+- Three route handlers: `app/api/auth/[...nextauth]`, Auth.js's own OIDC
+  endpoints, the deliberately unauthenticated
   `app/api/auth/backchannel-logout`, which Keycloak calls server-to-server
   ([§6](#6-authentication-and-identity),
-  [frontend/README.md](../frontend/README.md) auth conventions). This stays
-  the full list even for the front page's live-updating feed: it polls
-  through a Server Action, not a third route handler
+  [frontend/README.md](../frontend/README.md) auth conventions), and
+  `app/api/metrics`, the token-gated counters scrape, off unless
+  `METRICS_TOKEN` is set
+  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+  This stays the full list even for the front page's live-updating feed: it
+  polls through a Server Action, not a fourth route handler
   ([ADR-0060](adr/0060-feed-delivery-is-polling.md)). Sign-in and
   sign-out are Server Actions rather than posts to route handlers, so the
   CSP's `form-action 'self'` can stay strict
@@ -969,8 +972,8 @@ this measurement whenever the catalog's size or its queries change shape.
 records the latest run.
 
 1. **Set up an isolated database.** Run a scratch Postgres of the version
-   `docker-compose.yml` pins, and a backend jar against it. Leave the settings at their defaults, since the
-   figures depend on them:
+   `docker-compose.base.yml` pins, and a backend jar against it. Leave the
+   settings at their defaults, since the figures depend on them:
    - HikariCP's pool of 10, which queues 20 concurrent clients;
    - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a
      statement to its generic plan. A search with a 1–2-character name term
@@ -1181,6 +1184,10 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
 | [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md) | A beer the catalog lacks is added in a dialog over the search that missed it, and a button sending its form fades only as far as its label stays legible | accepted | 2026-10-23 |
 | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) | A cellar read arrives joined with its beers from the backend, so no client rebuilds it and no feature reads another's generated client | accepted | 2026-10-23 |
+| [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
+| [ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |
+| [ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |
+| [ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) | An nginx edge proxy bounds the anonymous edges and names the client address the services trust | accepted | 2026-10-26 |
 | [ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md) | A contributed catalog entry waits for an operator, and no catalog row is ever deleted | accepted | 2026-10-27 |
 
 ### Engineering process and documentation
@@ -1209,7 +1216,3 @@ reasons and its rate is worth watching independently
 | [ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md) | An index cell that mirrors a file is synced from that file, not kept in step by hand | accepted | 2026-10-14 |
 | [ADR-0084](adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
 | [ADR-0085](adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |
-| [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
-| [ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |
-| [ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |
-| [ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) | An nginx edge proxy bounds the anonymous edges and names the client address the services trust | accepted | 2026-10-26 |

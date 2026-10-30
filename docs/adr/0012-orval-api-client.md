@@ -22,6 +22,11 @@
   (`urlEncodeParameters`) and the mutator refuses a dot or empty path
   segment, so no parameter can change which backend route a call reaches
   (iteration 8 task 11)
+- **Amended:** 2026-10-30 — the command to start before regenerating was wrong
+  (`backend postgres` only, though the spec is read through the `edge` proxy
+  that alone publishes the backend's port); the bullet below now points at
+  `frontend/README.md`, which holds the command
+  (iteration 9 task 18)
 
 ## Context
 
@@ -51,7 +56,8 @@ build whenever the two disagree.**
   the opposite of this project's premise. `orval.config.ts` points at
   `http://localhost:8080/v3/api-docs` by default (`KALIA_OPENAPI_URL`
   overrides it); `npm run generate:api` regenerates against a running
-  backend (`docker compose up -d backend postgres`).
+  backend; which services to start first is in
+  [frontend/README.md](../../frontend/README.md).
 - **Generated output is committed** (`frontend/lib/api/generated/`) so
   `npm install && npm run build` needs no live backend. A new CI job,
   **`api-client-drift`**, starts the backend, regenerates, and runs

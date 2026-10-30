@@ -10,6 +10,11 @@
   `oauth2ResourceServer`, and forbids any other module from configuring web
   security. Deleting or shadowing the chain fails the build instead of
   quietly opening every endpoint (iteration 4 task 6)
+- **Amended:** 2026-10-26 — `GET /api/v1/me` no longer exists: it had no
+  production consumer and returned an email and full name, though Kalia names
+  people by username only. The decision below to expose it, and the
+  verification that calls it, record what was built then (iteration 8.5
+  task 02)
 
 ## Context
 
