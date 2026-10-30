@@ -21,7 +21,7 @@ vi.mock("@/features/cellar/api", async (importOriginal) => ({
 }));
 
 import { auth } from "@/auth";
-import { apiError } from "@/lib/api/api-error";
+import { apiError } from "@kalia/api";
 import { IgnoredFilterNote, PastLastPage, searchBeers } from "@/features/catalog";
 import BeersPage, { generateMetadata } from "./page";
 

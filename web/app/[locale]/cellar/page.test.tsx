@@ -22,7 +22,7 @@ vi.mock("next/navigation", async (importOriginal) => ({
 
 import type { ReactElement } from "react";
 import { listCellarEntries } from "@/features/cellar";
-import { apiError } from "@/lib/api/api-error";
+import { apiError } from "@kalia/api";
 import CellarPage, { generateMetadata } from "./page";
 
 // Do not render the full tree here: React suspends indefinitely on async

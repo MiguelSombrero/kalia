@@ -1,6 +1,6 @@
 "use server";
 
-import { isApiError } from "@/lib/api/api-error";
+import { isApiError } from "@kalia/api";
 import { FEED_PAGE_SIZE } from "./constants";
 import { readFeed } from "./api";
 import type { FeedPage } from "./types";

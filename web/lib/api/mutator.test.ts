@@ -3,7 +3,7 @@ import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
-import { isApiError } from "./api-error";
+import { isApiError } from "@kalia/api";
 import { kaliaFetch } from "./mutator";
 import { currentClientAddress } from "./requestClient";
 import { currentTraceparent } from "./requestTrace";

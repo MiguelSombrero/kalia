@@ -49,13 +49,13 @@ describe("heading rule (ADR-0073)", () => {
 describe("generated client boundary (ADR-0012)", () => {
   it("lets a feature's api.ts import its own generated tag and the shared models", async () => {
     const own =
-      'import { listEntries } from "@/lib/api/generated/cellar/cellar";\n' +
-      'import { read } from "@/lib/api/generated/public-cellar/public-cellar";\n' +
-      'import type { EntryDto } from "@/lib/api/generated/models";\n' +
+      'import { listEntries } from "@kalia/api/generated/cellar/cellar";\n' +
+      'import { read } from "@kalia/api/generated/public-cellar/public-cellar";\n' +
+      'import type { EntryDto } from "@kalia/api/generated/models";\n' +
       "export const probe = [listEntries, read] as unknown as EntryDto;\n";
     expect(await messagesFor(own, "features/cellar/api.ts")).toEqual([]);
 
-    const catalog = 'import { getBeer } from "@/lib/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
+    const catalog = 'import { getBeer } from "@kalia/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
     expect(await messagesFor(catalog, "features/catalog/api.ts")).toEqual([]);
   });
 });
@@ -69,12 +69,12 @@ describe("import boundaries reject each crossing a fixture makes (ADR-0012)", ()
     {
       fixture: "feature-reaches-generated-client-outside-api",
       lintAs: "features/catalog/probe.ts",
-      rejected: "feature must not import @/lib/api/generated/catalog/catalog",
+      rejected: "feature must not import @kalia/api/generated/catalog/catalog",
     },
     {
       fixture: "feature-api-imports-another-features-tag",
       lintAs: "features/cellar/api.ts",
-      rejected: "feature must not import @/lib/api/generated/catalog/catalog",
+      rejected: "feature must not import @kalia/api/generated/catalog/catalog",
     },
     { fixture: "components-ui-imports-upward", lintAs: "components/ui/probe.ts", rejected: "components-ui must not import @/features/catalog" },
     { fixture: "lib-imports-upward", lintAs: "lib/probe.ts", rejected: "lib must not import @/components/ui/button" },

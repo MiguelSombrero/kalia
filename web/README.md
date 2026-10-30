@@ -78,10 +78,6 @@ npm run lint       # ESLint
 npm run build      # production build (includes type checking)
 npm run test:e2e   # Playwright — starts the full docker compose stack if
                     # it isn't already running (needs Docker)
-npm run generate:api  # regenerate lib/api/generated/ from a live backend
-                       # (docker compose up -d --wait backend postgres edge
-                       # first: the spec is read through edge, which alone
-                       # publishes the backend's port)
 ```
 
 Node's version is the one in `.node-version` at the repository root: CI reads
@@ -96,8 +92,9 @@ that needs no Docker — it includes `npm run lint`, so a module-boundary
 violation in a new test file fails here rather than in CI
 ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
-Regenerated output must be committed — CI's `api-client-drift` job
-regenerates and diffs, failing the build on drift (ADR-0012).
+The API client is not here: it is the `@kalia/api` package, generated from
+`backend/openapi.json` — see [packages/README.md](../packages/README.md) for
+regenerating it and what CI checks.
 
 CI also scans `package-lock.json` and the built image for known CVEs and
 fails on a `HIGH`/`CRITICAL` finding with a fix available
@@ -256,14 +253,14 @@ Why the rationale lives there and not here:
 - **Stateful forms use react-hook-form + Zod.** Submitting navigates → native
   GET form; submitting mutates or validates → this stack
   ([ADR-0010](../docs/adr/0010-react-hook-form-zod.md)).
-- **The generated API client** (`lib/api/generated/`) is reachable only from a
+- **The generated API client** (`@kalia/api/generated/*`) is reachable only from a
   feature's own `api.ts` and `types.ts`, which wrap it, and from those only
   its shared `models/` and the tag named after the feature (the models boundary
   covers operations only; one DTO can belong to several tags) — enforced by
   ESLint ([ADR-0012](../docs/adr/0012-orval-api-client.md),
   [ADR-0083](../docs/adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). It is also never edited
-  by hand — regenerate it with `npm run generate:api`. `.claude/settings.json`
-  denies agents `Edit` there, since a regeneration discards a hand-edit without
+  by hand — regenerate it with `make api-drift` from the repository root.
+  `.claude/settings.json` denies agents `Edit` in `packages/api/src/generated/`, since a regeneration discards a hand-edit without
   a word.
 - **API failures are a tagged `ApiError`** — branch on `e.kind`, never a
   message. A non-2xx status is *not* raised: a 404 from `getBeer` means "no
@@ -295,7 +292,9 @@ Why the rationale lives there and not here:
   `withSignInContext`, which is what lets the issued tokens be filed under the
   session just created. Unwrapping it fails silently — sign-in still succeeds,
   and only later does the session turn out to reach no protected endpoint.
-- **`kaliaFetch` attaches the bearer token; callers never do.** An expired one,
+- **`kaliaFetch` attaches the bearer token; callers never do.** (`lib/api/mutator.ts`
+  is the web's transport around `@kalia/api`'s fetch core; `instrumentation.ts`
+  registers it at startup, and a generated call made before that throws.) An expired one,
   or one whose account records no expiry, is renewed first, and if it cannot
   be, no token is sent at all rather than a bad one — the backend answers 401
   to a bad token even on a public route, so sending one breaks anonymous
@@ -319,7 +318,8 @@ Why the rationale lives there and not here:
 **UI**
 
 - **Localization is i18next**, every route under `app/[locale]/…`; strings in
-  `i18n/locales/{en,fi}/common.json` ([ADR-0011](../docs/adr/0011-i18next-localization.md)).
+  `packages/locales/src/{en,fi}/common.json` (the `@kalia/locales` package;
+  i18n initialisation stays here, in `i18n/` and `app/providers.tsx`; [ADR-0011](../docs/adr/0011-i18next-localization.md)).
   The Keycloak auth pages are the exception — Keycloak translates those, not
   i18next; the sign-in actions pass `ui_locales`
   ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)).

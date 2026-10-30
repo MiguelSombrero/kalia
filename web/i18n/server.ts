@@ -1,4 +1,5 @@
 import { createInstance } from "i18next";
+import { loadResource } from "@kalia/locales";
 import resourcesToBackend from "i18next-resources-to-backend";
 import { defaultNamespace, getOptions, type Locale } from "./settings";
 
@@ -9,9 +10,7 @@ import { defaultNamespace, getOptions, type Locale } from "./settings";
  */
 export const getTranslation = async (locale: Locale, namespace: string = defaultNamespace) => {
   const instance = createInstance();
-  await instance
-    .use(resourcesToBackend((language: string, ns: string) => import(`./locales/${language}/${ns}.json`)))
-    .init(getOptions(locale, namespace));
+  await instance.use(resourcesToBackend(loadResource)).init(getOptions(locale, namespace));
   return {
     t: instance.getFixedT(locale, namespace),
     i18n: instance,

@@ -1,5 +1,5 @@
-import en from "../../i18n/locales/en/common.json";
-import fi from "../../i18n/locales/fi/common.json";
+import en from "@kalia/locales/en/common.json";
+import fi from "@kalia/locales/fi/common.json";
 
 export type Locale = "en" | "fi";
 

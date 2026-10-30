@@ -5,7 +5,7 @@ import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { describe, expect, it, vi } from "vitest";
-import enCommon from "@/i18n/locales/en/common.json";
+import enCommon from "@kalia/locales/en/common.json";
 
 vi.mock("./actions", () => ({ changeVisibilityAction: vi.fn() }));
 

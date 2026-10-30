@@ -187,12 +187,11 @@ test("a colour named in a comment is not a styling decision", () => {
   assert.deepEqual(failing("web/lib/a.ts", text), []);
 });
 
-test("tests, e2e, generated output and dependencies are not scanned", () => {
+test("tests, e2e and dependencies are not scanned", () => {
   const bad = 'export const a = "#121212";\n';
   const failures = run({
     "web/components/a.test.tsx": bad,
     "web/e2e/a.spec.ts": bad,
-    "web/lib/api/generated/a.ts": bad,
     "web/node_modules/x/a.ts": bad,
     "web/.next/a.ts": bad,
   });
