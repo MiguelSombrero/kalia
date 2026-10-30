@@ -1,6 +1,6 @@
 # Task 20: No signed token or query string reaches a log
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -47,12 +47,12 @@ on success or on failure.
 
 ## Acceptance criteria
 
-- [ ] A frontend unit test proves each failure path of the mutator logs the
+- [x] A frontend unit test proves each failure path of the mutator logs the
       path without its query string, and it failed before the fix
-- [ ] After a sign-in, a catalog search and a sign-out against the running
+- [x] After a sign-in, a catalog search and a sign-out against the running
       stack, `docker compose logs edge keycloak` contains no `id_token_hint`,
       `code=` or search term, checked by `grep` and described in the PR
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
