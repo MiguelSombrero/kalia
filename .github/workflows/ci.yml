@@ -73,7 +73,7 @@ jobs:
           # keycloak/, postgres/ and the seed script with its helper feed the
           # keycloak, postgres and keycloak-seed services e2e's stack starts;
           # edge/ is the proxy every request to that stack passes through.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
+          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|\.dockerignore|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
 
           # What keycloak-realm-check below can be affected by: the services
           # it starts and the scripts it runs. Neither backend/ nor web/
