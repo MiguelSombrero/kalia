@@ -8,6 +8,11 @@
 // the app build that excludes its last user, and a waiver may cover nothing
 // else.
 //
+// oasdiff reports the removal of an element `dev` marks deprecated as
+// information; backend/openapi-severity.txt (which oasdiff reads without
+// comments) raises it to an error, and backend/openapi-breaking-ignore.txt is
+// where a removal is waived.
+//
 // Usage: node scripts/check-api-breaking.mjs [base-ref]    (default origin/dev)
 // Needs `oasdiff` on PATH (CI installs the pinned release; brew install oasdiff).
 
