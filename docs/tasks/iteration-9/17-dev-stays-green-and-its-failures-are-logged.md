@@ -1,6 +1,6 @@
 # Task 17: `dev` stays green after a merge, and a red `dev` is logged
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -64,13 +64,13 @@ someone happening to notice it.
 
 ## Acceptance criteria
 
-- [ ] Two PRs that are each green, but conflict in behaviour, can no longer
+- [x] Two PRs that are each green, but conflict in behaviour, can no longer
       both merge without one being tested on top of the other, verified with
       a pair of test branches or by stating the ruleset change and its effect
-- [ ] A red run on `dev` reaches `docs/common-failures.md` by the route
+- [x] A red run on `dev` reaches `docs/common-failures.md` by the route
       refinement chose, and the ADR-0084 text says so
-- [ ] The three unlogged runs named above have rows
-- [ ] `make verify-fast` is green
+- [x] The three unlogged runs named above have rows
+- [x] `make verify-fast` is green
 
 ## Notes
 
