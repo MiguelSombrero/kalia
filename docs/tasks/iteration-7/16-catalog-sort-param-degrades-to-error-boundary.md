@@ -68,7 +68,7 @@ throwing.
   what a non-2xx status means; this task is exactly that decision for `sort`,
   in the same spirit as `getBeer`'s existing UUID guard — it is not a case
   for a new blanket "catch all catalog errors" mechanism.
-- Feature-boundary conventions ([frontend/README.md](../../../frontend/README.md)):
+- Feature-boundary conventions ([web/README.md](../../../web/README.md)):
   `app/` composes, a feature owns its own domain logic. `sort`'s valid set is
   defined by `features/catalog`'s own `SearchFilters`, which bears on where
   the fix belongs (see Decided below).

@@ -47,8 +47,8 @@ removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.
    worktree, does the equivalent and puts it in the same place.) Worktrees
    share one object database, so an extra one costs no extra clone — only
    isolation, and the disk the removal in step 3 reclaims.
-5. Install the frontend's dependencies: `(cd frontend && npm ci)`. A new
-   worktree has no `frontend/node_modules`, so `make verify-fast` fails
+5. Install the JavaScript dependencies: `npm ci` at the repository root, one
+   install for every workspace. A new worktree has no `node_modules`, so `make verify-fast` fails
    without it and the edit hook skips ESLint silently
    (`scripts/hooks/post-edit-check.mjs`). To bring the stack up, add a root
    `.env` with the client secret (`README.md`), then run `make stack-env`: it

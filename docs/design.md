@@ -2,8 +2,8 @@
 
 What Kalia is meant to look and feel like, and what a change to how it looks
 is judged against. The values that produce the look live in
-[`frontend/app/globals.css`](../frontend/app/globals.css), the structure that
-carries them in [architecture.md §5](architecture.md#5-frontend-design), and
+[`web/app/globals.css`](../web/app/globals.css), the structure that
+carries them in [architecture.md §5](architecture.md#5-web-app-design), and
 the reasons each was chosen in the ADRs; this file holds the part none of
 those can: the intent.
 
@@ -17,14 +17,14 @@ its boundaries with the other three homes run:
 
 It is linked rather than loaded. Read it before designing or restyling
 anything a visitor sees; the `design-task` skill and
-[architecture.md §5](architecture.md#5-frontend-design) point here.
+[architecture.md §5](architecture.md#5-web-app-design) point here.
 
 ## How this file is kept current
 
 - **Every semantic token has exactly one meaning row** under
   [Semantic tokens](#semantic-tokens) below, and every row names a token that
   exists. A semantic token is anything declared in an `@theme` block of
-  `frontend/app/globals.css`, inline or not — the layer components consume
+  `web/app/globals.css`, inline or not — the layer components consume
   through Tailwind utilities. A Tailwind sub-property such as
   `--text-label--letter-spacing` belongs to its token's row rather than
   having one of its own. `scripts/check-design-tokens.mjs` fails the build in
@@ -50,13 +50,13 @@ anything a visitor sees; the `design-task` skill and
 
 ## Not covered here
 
-- **Values** — `frontend/app/globals.css` for colour and every other token,
-  `frontend/app/[locale]/layout.tsx` for which typefaces load.
+- **Values** — `web/app/globals.css` for colour and every other token,
+  `web/app/[locale]/layout.tsx` for which typefaces load.
 - **The token system's shape** —
-  [architecture.md §5](architecture.md#5-frontend-design), decided in
+  [architecture.md §5](architecture.md#5-web-app-design), decided in
   [ADR-0021](adr/0021-design-tokens-ui-primitives.md).
 - **Rules for writing a component** —
-  [frontend/README.md](../frontend/README.md) conventions. This file says
+  [web/README.md](../web/README.md) conventions. This file says
   which token to reach for; the README says how to reach.
 - **Component documentation.** There is none, by decision: `components/ui/`
   stays the web app's own primitives rather than a design system, a look that
@@ -170,11 +170,11 @@ rather than by exact style: twelve groups, and a grey for anything that falls
 outside them. Near-identical styles share a colour on purpose; telling a
 Porter from a Baltic Porter is the name's job, not the colour's.
 
-`beerStyleGroup()` in `frontend/lib/beerStyle.ts` maps a style name to its
+`beerStyleGroup()` in `web/lib/beerStyle.ts` maps a style name to its
 group by keyword, first match wins — so a Belgian IPA is an IPA, a Berliner
 Weisse is a sour before it is a wheat beer, and a Weizenbock is a wheat beer
 before it is a bock. Each group's colour is a `[data-beer-style]` block in
-`frontend/app/globals.css`. Its test fails if a group has no block or a block
+`web/app/globals.css`. Its test fails if a group has no block or a block
 has no group, and `scripts/check-contrast.mjs` holds every block to AA.
 
 | Group | Takes | Colour |
@@ -284,8 +284,8 @@ only belongs in that page's own task and ADR, not here. Chosen from built
 alternatives in [iteration 7.5 task 06](tasks/iteration-7.5/06-page-shell.md);
 the directions that were rejected, and why, are
 [ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md). The widths
-and the breakpoint live in `frontend/components/ui/page.tsx` and
-`frontend/app/[locale]/SiteHeader.tsx`, not here.
+and the breakpoint live in `web/components/ui/page.tsx` and
+`web/app/[locale]/SiteHeader.tsx`, not here.
 
 - **A page is a `Page` and one of three widths, and never a container of its
   own.** *Text* is for reading a list or a short page, *wide* for a page whose

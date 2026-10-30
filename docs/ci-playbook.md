@@ -51,7 +51,7 @@ Run it locally before pushing either way: `make api-drift`.
 Test files are subject to the layer rules like any other file. The layers,
 the directions allowed between them, and the feature-barrel rule that makes
 `features/catalog/BeerList` illegal where `features/catalog` is fine, are in
-[frontend/README.md](../frontend/README.md)'s conventions; the choice of that
+[web/README.md](../web/README.md)'s conventions; the choice of that
 plugin and the verification of each rule is
 [ADR-0012](adr/0012-orval-api-client.md).
 
@@ -126,7 +126,7 @@ naming a rate limit. Observed locally with the counter standing at 36; a
 `docker compose exec valkey valkey-cli del auth:sign-up-rate` from the repo
 root turned the same run 38/38 green. The suite now clears the counter before
 every test that uses the shared `test` fixture — how, and what a spec has to
-do to opt in, is in [frontend/README.md](../frontend/README.md). That `del` is
+do to opt in, is in [web/README.md](../web/README.md). That `del` is
 still the one-line escape hatch if a spec ever registers outside it.
 
 **After clicking Sign out, `Sign in` never appears; the snapshot still shows
@@ -142,7 +142,7 @@ in again" (`--repeat-each=8`, `445984f`, 2026-10-04), plus one in a full
 `make verify`; forced every time by delaying `/_next/static/chunks/**/*.js`.
 The auth buttons are now disabled until hydration, so Playwright's click
 waits for them — a recurrence means a cross-origin Server Action form has a
-plain submit button again ([frontend/README.md](../frontend/README.md)'s
+plain submit button again ([web/README.md](../web/README.md)'s
 traps, [ADR-0025](adr/0025-authjs-valkey-adapter.md)'s 2026-10-04 amendment).
 Raising the expect timeout does not help: nothing is still in flight.
 

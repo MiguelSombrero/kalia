@@ -10,7 +10,7 @@ The backend's module boundaries are enforced by ArchUnit and Spring Modulith
 ([ADR-0007](../../adr/0007-backend-package-structure.md)). The frontend's
 equivalent rules exist only as prose: "the generated API client
 (`lib/api/generated/`) is never imported outside `features/<feature>/`"
-([README.md](../../../frontend/README.md), [ADR-0012](../../adr/0012-orval-api-client.md)),
+([README.md](../../../web/README.md), [ADR-0012](../../adr/0012-orval-api-client.md)),
 and "shared code moves to `components/` or `lib/` only once a second feature
 uses it." Nothing checks either. `tsconfig.json`'s `@/*` path alias resolves
 from the repo root, so `import … from "@/lib/api/generated/catalog/catalog"`

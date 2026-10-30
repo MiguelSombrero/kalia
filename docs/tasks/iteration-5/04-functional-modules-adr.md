@@ -22,7 +22,7 @@ The same review that found this also found the rule has outgrown its home.
 [ADR-0020](../../adr/0020-documentation-roles.md) states the test directly:
 "when a rule outgrows the README's one-line bar and has no ADR, that is the
 signal to write the ADR." The arrow-functions bullet
-([README.md](../../../frontend/README.md)) has since shaped ADR-0023's
+([README.md](../../../web/README.md)) has since shaped ADR-0023's
 decision — it has outgrown it.
 
 ## Scope

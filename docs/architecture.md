@@ -68,7 +68,7 @@ flowchart LR
     subgraph Client
         Browser
     end
-    subgraph Frontend["frontend/ (Next.js, BFF)"]
+    subgraph Web["web/ (Next.js, BFF)"]
         NX[Next.js server: server components, Server Actions]
     end
     subgraph Backend["backend/ (Spring Boot modulith)"]
@@ -116,23 +116,27 @@ Key properties:
   ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)):
   `proxy.ts` starts a W3C `traceparent`, the BFF forwards it on every backend
   call, and both tiers log it in JSON lines. Counters are served by the
-  backend at `/actuator/prometheus` and the frontend at `/api/metrics`, each
+  backend at `/actuator/prometheus` and the web app at `/api/metrics`, each
   behind a token. How to read them is in the two READMEs.
 
-**Repository layout.** Today the repository is `backend/`, `frontend/` and
-`docs/`, with one lockfile in `frontend/`. [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
-decides the layout iteration 9 moves it to; [task 08](tasks/iteration-9/08-workspaces-refactor.md)
-does the move, and until it merges every path in this document is still
-`frontend/`:
+**Repository layout** ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)).
+The repository is npm workspaces, with no tool on top. `mobile/` and
+`packages/` do not exist yet: [task 11](tasks/iteration-9/11-app-skeleton.md)
+adds the app and [task 09](tasks/iteration-9/09-shared-packages.md) the
+packages, and the root `package.json` already names them.
 
 ```text
-backend/    Spring Boot modulith (unchanged)
-web/        the Next.js app, today's frontend/
+backend/    Spring Boot modulith
+web/        the Next.js app
 mobile/     the Expo app
 packages/   two packages shipped as TypeScript source: the generated API
             client and the en/fi strings
 package.json, package-lock.json   npm workspaces; the only lockfile
 ```
+
+npm hoists every workspace's dependencies into one `node_modules/` at the
+root. The web's Docker image is built with the repository root as its context
+and installs only the web workspace's dependencies (`web/Dockerfile`).
 
 Neither app depends on the other. A package imports from neither, and from
 none of `react-dom`, `next` or `react-native`, which a lint rule enforces.
@@ -290,7 +294,7 @@ cellar entries that point at them survive the import.
 
 **A brewery's country is its ISO 3166-1 alpha-2 code, and nothing else**
 ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)).
-The API carries it as `countryCode`, and the frontend names it in the
+The API carries it as `countryCode`, and the web app names it in the
 reader's language with `Intl.DisplayNames`, on the server. `V004` inserts its
 breweries by English name into a column `V003` keeps for them alone; `V008`
 gives those rows their codes and drops it.
@@ -586,7 +590,7 @@ Conventions:
   than forced into one.
 - **Endpoints are client-agnostic resources.** An endpoint's shape follows the
   resource, not the screen that happens to consume it; assembling several
-  resources into one view is the client's job. Today the frontend is the only
+  resources into one view is the client's job. Today the web app is the only
   caller and does exactly that, so this holds by circumstance — it is written
   down because the cellar, profile and feed endpoints are each an opportunity
   to shape a response around one Next.js page instead. The feed and cellar
@@ -612,8 +616,8 @@ Conventions:
   `/swagger-ui/index.html`, reachable at `localhost:8080` on the dev
   machine — see [§6](#6-authentication-and-identity)).
   Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`,
-  and the frontend generates its client from it — see
-  [§5](#5-frontend-design).
+  and the web app generates its client from it — see
+  [§5](#5-web-app-design).
 
 **Compatibility.** An installed app keeps calling the API it was built against,
 so `/api/v1` changes additively only
@@ -639,10 +643,10 @@ so `/api/v1` changes additively only
   [task 09](tasks/iteration-9/09-shared-packages.md); until it merges, review
   is the only check.
 
-## 5. Frontend design
+## 5. Web app design
 
-The shape of the frontend. Day-to-day rules for writing it live in
-[frontend/README.md](../frontend/README.md) conventions.
+The shape of the web app. Day-to-day rules for writing it live in
+[web/README.md](../web/README.md) conventions.
 
 - **App Router**, server components by default; client components only where
   the browser is genuinely needed — event handlers, React state, or context.
@@ -658,13 +662,13 @@ The shape of the frontend. Day-to-day rules for writing it live in
   route files stay thin and delegate. Mirrors the backend's
   module-per-subdomain boundaries, down to being enforced rather than
   agreed: `eslint.config.mjs` states the layers and the directions allowed
-  between them ([ADR-0012](adr/0012-orval-api-client.md)), the frontend's
+  between them ([ADR-0012](adr/0012-orval-api-client.md)), the web app's
   counterpart to Spring Modulith's module verification.
 - Three route handlers: `app/api/auth/[...nextauth]`, Auth.js's own OIDC
   endpoints, the deliberately unauthenticated
   `app/api/auth/backchannel-logout`, which Keycloak calls server-to-server
   ([§6](#6-authentication-and-identity),
-  [frontend/README.md](../frontend/README.md) auth conventions), and
+  [web/README.md](../web/README.md) auth conventions), and
   `app/api/metrics`, the token-gated counters scrape, off unless
   `METRICS_TOKEN` is set
   ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
@@ -745,7 +749,7 @@ The shape of the frontend. Day-to-day rules for writing it live in
   typeface a component takes from outside the semantic layer
   ([ADR-0066](adr/0066-token-only-styling-is-a-build-check.md)), and on a page
   title or section heading written by hand rather than through `PageTitle` or
-  `SectionHeading` (an ESLint rule in `frontend/eslint.config.mjs`). The identity
+  `SectionHeading` (an ESLint rule in `web/eslint.config.mjs`). The identity
   is "Can art, square"
   ([ADR-0064](adr/0064-visual-identity-can-art-square.md)): a white page,
   hairline ink edges, one cobalt action colour, success and destructive state
@@ -809,7 +813,7 @@ The shape of the frontend. Day-to-day rules for writing it live in
   the new beer's row takes focus instead, or the page itself when the add
   lands on the beer's own page. How enforcement is
   layered across lint, unit and E2E tests:
-  [frontend/README.md](../frontend/README.md) testing conventions.
+  [web/README.md](../web/README.md) testing conventions.
 
 ## 6. Authentication and identity
 
@@ -865,7 +869,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   security.
 - **Only the `edge` proxy is published**, on `127.0.0.1`: the API at
   `BACKEND_PORT` (default 8080, for direct access and Swagger UI on the dev
-  machine), the frontend and Keycloak each at their own port, every request
+  machine), the web app and Keycloak each at their own port, every request
   through per-address request and body limits
   ([ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)).
   The proxy overwrites `X-Forwarded-For` with the address it saw; Keycloak and
@@ -875,7 +879,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   stays until a deployment story exists.
 - **Swagger UI drives its own Authorization Code + PKCE flow**, springdoc's
   `@SecurityScheme`/`@SecurityRequirement` against Keycloak's `kalia-swagger`
-  client — public, no secret, distinct from `kalia-frontend`'s confidential
+  client — public, no secret, distinct from `kalia-web`'s confidential
   one so no secret is ever browser-visible in the docs UI. Required on every
   endpoint that needs a bearer token, so the Authorize button covers all of
   them, not `cellar` alone. The client exists on the dev stack only: the
@@ -883,7 +887,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
 - **The mobile app authenticates beside the web client, not through it**
   ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
-  The web is unchanged: a confidential `kalia-frontend`, tokens in Valkey, the
+  The web is unchanged: a confidential `kalia-web`, tokens in Valkey, the
   BFF renewing them. The app is a second, public Keycloak client,
   `kalia-mobile`, signing in with Authorization Code + PKCE in the system
   browser (never an embedded web view), reaching sign-up from Keycloak's own
@@ -910,7 +914,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   password** ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
   `docker-compose.base.yml` has no default for any of them and the dev stack
   supplies its own; Valkey rejects an unauthenticated client, since a session's
-  key is its cookie value; and the frontend refuses to start in production on
+  key is its cookie value; and the web app refuses to start in production on
   the committed dev `AUTH_SECRET`. Every sign-in first ends any local session,
   so signing in as a second person on a browser files a session and token set
   of their own instead of linking the account to the first person's.
@@ -939,7 +943,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   own expiry.
 - **A stale account index re-links by email rather than locking the user
   out** ([ADR-0033](adr/0033-keycloak-account-relinking.md)): the account
-  index (`frontend/lib/auth/valkeyAdapter.ts`) is keyed by provider id and
+  index (`web/lib/auth/valkeyAdapter.ts`) is keyed by provider id and
   `sub` together, so either a changed `sub` — a Keycloak user deleted and
   recreated with the same email, an admin action this app does not control —
   or a sign-in through a *different* Auth.js provider entry for the same
@@ -956,7 +960,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   that loses the claim waits on the winner's record instead of creating an
   orphaned one of its own.
 - **Keycloak sends its own mail** — email verification and password reset,
-  never anything from Kalia's own backend or frontend. The realm's SMTP
+  never anything from Kalia's own backend or web app. The realm's SMTP
   settings are `$(env:KEYCLOAK_SMTP_*)` placeholders in
   `keycloak/realm-export.json` (so they inherit
   [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s drift check
@@ -964,9 +968,9 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   dev and test and overridable to a real sender (Gmail SMTP) for a
   deployment. The sender shows as `Kalia <address>`. The e2e suite reads a
   real message back out of Mailpit's API
-  (`frontend/e2e/keycloak-email.spec.ts`).
+  (`web/e2e/keycloak-email.spec.ts`).
 - **A visitor registers entirely inside Keycloak's own registration flow**
-  ([ADR-0055](adr/0055-self-registration-via-keycloak.md)): `frontend/app/[locale]/sign-up`
+  ([ADR-0055](adr/0055-self-registration-via-keycloak.md)): `web/app/[locale]/sign-up`
   is a small Kalia page (an acknowledgement checkbox, a basic Valkey-backed
   rate limit) that redirects into a second Auth.js provider
   (`keycloak-register`) pointed at `{issuer}/protocol/openid-connect/registrations`
@@ -985,8 +989,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   mark and wordmark, a link home, in the app's palette
   ([ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)),
   and the realm's own `en`/`fi` internationalisation for the words. The
-  theme's colours are named copies of `frontend/app/globals.css` tokens, and
-  its mark a copy of `frontend/app/icon.svg`; `scripts/check-keycloak-theme.mjs`
+  theme's colours are named copies of `web/app/globals.css` tokens, and
+  its mark a copy of `web/app/icon.svg`; `scripts/check-keycloak-theme.mjs`
   fails `make check` and CI when either drifts. The sign-in
   Server Actions pass `ui_locales` so Keycloak renders in the locale the
   visitor was reading; `loginTheme` and the i18n settings are realm
@@ -1011,7 +1015,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   `accountTemporarilyDisabledMessage` to say so instead, since the account
   name behind it is not secret here.
 - **Every Keycloak error page keeps a way back into Kalia**: the
-  `kalia-frontend` client carries `rootUrl`/`baseUrl`
+  `kalia-web` client carries `rootUrl`/`baseUrl`
   (`keycloak/realm-export.json`, under
   [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s drift check),
   because Keycloak's own `error.ftl` renders its "Back to Application" link
@@ -1021,7 +1025,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   in a browser already signed in as a *different* user, which Keycloak
   deliberately refuses (`different_user_authenticated`, HTTP 400). The
   refusal is correct and is left as it is; only the escape hatch was missing.
-  Pinned by `frontend/e2e/sign-up.spec.ts`.
+  Pinned by `web/e2e/sign-up.spec.ts`.
 
 ## 7. Testing strategy
 
@@ -1031,15 +1035,15 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Module map in these docs | `ArchitectureDocumentationTest`, against Spring Modulith's `Documenter` view | §2's diagram — its backend modules and the edges between them — and §3's table and "Depends on" column are parsed at test time; editing either without the code, or the code without them, fails the build ([backend/README.md](../backend/README.md) notable suites) |
-| Frontend import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
-| The `boundaries/dependencies` policies | Each re-run by `frontend/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `frontend/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
+| Web app import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
+| The `boundaries/dependencies` policies | Each re-run by `web/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `web/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | The rules among those that no production class triggers | Re-run against `backend/src/test/java/archfixture/` (`ArchitectureRulesRejectViolationsTest`) | A rule no production class triggers passes whether or not its condition is right, so those rules — `noClasses()` rules and the `classes()` rules every production class merely satisfies — and only those are also run against a codebase that breaks them |
 | Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly"). An advice `@ExceptionHandler` may not answer with a body type that reaches a JPA entity through its fields, and an advice may not call `ProblemDetail.setProperty` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | `HttpBoundaryTest`'s rules | Re-run against `backend/src/test/java/archfixture/httpboundary/` | No rule has a production violator either, so the same no-violator-passes-vacuously risk applies and each gets the same fixture treatment |
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images; `make verify` runs the two manifest scans, the image scans are CI-only | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available, waivers expire in `.trivyignore.yaml`; Dependabot opens the fix PRs, Docker images included ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
-| Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
-| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`frontend/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`frontend/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |
+| Web app unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [web/README.md](../web/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
+| E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`web/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`web/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`web/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`web/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`web/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |
 | Mobile unit/component | Jest + React Native Testing Library, through Expo's `jest-expo` preset ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Screens and components of `mobile/`, queried by role, accessible name or text, with the generated API client mocked and no network. Built by [iteration 9 task 11](tasks/iteration-9/11-app-skeleton.md); runs in `make verify-fast` |
 | Mobile E2E | Maestro flows in `mobile/.maestro/`, driving the built app from outside ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Against the full docker-compose stack, no mock layer. CI runs the flow on an Android emulator on a Linux runner as a required check; the iOS Simulator runs the same flow in `make verify` on a Mac; CI has no iOS job. Built by [iteration 9 task 15](tasks/iteration-9/15-walking-skeleton-slice.md) |
 
@@ -1047,19 +1051,18 @@ Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
 is measured in CI, not gated.
 
-E2E specs live under `frontend/e2e/`, not at the repo root, even though they
+E2E specs live under `web/e2e/`, not at the repo root, even though they
 exercise the whole stack (compose-run backend + Postgres are the fixture
 behind every page visited): the tooling that runs them (Node/Playwright)
-already lives in `frontend/`, and there is no root `package.json` /
-workspaces setup to host a separate `e2e/` package without duplicating
-devDependency pinning (Playwright, TypeScript, ESLint) across two lockfiles.
+already lives in `web/`, and a separate `e2e/` package would duplicate
+devDependency pinning (Playwright, TypeScript, ESLint) across two packages.
 This mirrors backend integration tests, which need a real Postgres fixture
 but live in `backend/src/test` for the same reason — the test *tooling's*
 home decides placement, not the fixture's scope. The revisit trigger — a
-second frontend client, or npm workspaces adopted for another reason — has
+second client, or npm workspaces adopted for another reason — has
 fired: [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
 makes the repository workspaces with a second client, and keeps the specs with
-the app they drive (`web/e2e/` once task 08 moves it) rather than in a
+the app they drive (`web/e2e/`) rather than in a
 dedicated `e2e/` package.
 
 Mobile is tested on the same split as the web: unit tests in `make verify-fast`,
@@ -1171,7 +1174,7 @@ records the latest run.
     [§7](#catalog-read-latency) measurement whenever the catalog's size or
     its queries change shape. Only the plans are pinned by a test.
   - **Scope:** this covers the backend's own reads. The Valkey in this stack
-    is the frontend's session store ([§6](#6-authentication-and-identity)),
+    is the web app's session store ([§6](#6-authentication-and-identity)),
     not a cache the backend consults.
 - **Built-in observability and no viewer**
   ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)):
@@ -1192,7 +1195,7 @@ records the latest run.
   - **Not an assumption:** the feed cursor's signing key is a configured,
     shared secret (`FEED_CURSOR_KEY`), so a cursor verifies on any instance
     and after a restart ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
-    Event publications are rows in PostgreSQL, and the frontend's sessions
+    Event publications are rows in PostgreSQL, and the web app's sessions
     live in Valkey, not in a process.
 
 ## 9. Architecture decision records
@@ -1233,7 +1236,7 @@ fails a relative link in any tracked Markdown file that resolves to no file.
 All of them also run locally —
 inside `make verify`, and at edit time via a `PostToolUse` hook that reports
 the failure back to the agent without blocking. The same hook runs ESLint on
-an edited frontend file, and syncs the index cells itself after an edit under
+an edited web file, and syncs the index cells itself after an edit under
 `docs/adr/` or `docs/tasks/`
 ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
 

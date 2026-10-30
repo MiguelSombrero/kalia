@@ -61,7 +61,7 @@ they're already cross-referenced from merged PRs and
   stack: `docker-compose.base.yml:40` enables it outside the dev overlay
   (ADR-0088:51-55 says "local development only"), `SecurityConfig.java:60`
   requires only `authenticated()`, and the edge forwards every backend path.
-  The frontend guards its own counters with `METRICS_TOKEN`. Move it to the
+  The web app guards its own counters with `METRICS_TOKEN`. Move it to the
   dev overlay, require a role or scope, or put actuator on a management port
   the edge does not route.
 - **SHOULD-69** *(confirmed 2026-10-27)* **[needs decision]** — the Keycloak
@@ -83,7 +83,7 @@ they're already cross-referenced from merged PRs and
   the SMTP values `:?`-required.
 - **SHOULD-71** *(confirmed 2026-10-27)* — the Keycloak image is never
   scanned: `.github/workflows/vulnerability-scan.yml:41-69` builds and scans
-  `backend`, `frontend` and `edge` only, though `keycloak/Dockerfile:1` is a
+  `backend`, `web` and `edge` only, though `keycloak/Dockerfile:1` is a
   custom build; the pulled `valkey`, `postgres`, `keycloak-config-cli` and
   `mailpit` images are not scanned either, so a HIGH/CRITICAL CVE in the
   most exposed component never fails the ADR-0024 gate.
@@ -194,7 +194,7 @@ they're already cross-referenced from merged PRs and
   it is stock `keycloak.v2` markup the theme does not touch
   ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
 
-- **COULD-61** *(confirmed 2026-10-27)* — `frontend/features/catalog/AddBeerDialog.tsx`
+- **COULD-61** *(confirmed 2026-10-27)* — `web/features/catalog/AddBeerDialog.tsx`
   (383 lines) holds the form state, the brewery-choice state machine
   (`:106-121`, `:204-215`), the mapping of server refusals onto fields
   (`:48-57`, `:130-135`), three outcome alerts (`:322-370`) and navigation
@@ -208,14 +208,14 @@ they're already cross-referenced from merged PRs and
   browser's sign-in state cookie is present, or after validation.
 - **COULD-74** *(confirmed 2026-10-27)* — the back-channel logout endpoint is
   published on the edge (`edge/nginx.conf:77-81`) although its only caller,
-  Keycloak, posts to `frontend:3000` over the compose network
+  Keycloak, posts to `web:3000` over the compose network
   (`keycloak/realm-export.json:58`); return 404 for it at the edge.
 - **COULD-75** *(confirmed 2026-10-27)* **[needs decision]** — the backend's
   10 r/s per-address zone does not bound anonymous backend load: the BFF
   calls `backend:8080` directly, so SSR pages and public Server Actions under
-  the 150 r/s frontend zone (`edge/nginx.conf:40-44`, `:89-92`) drive about
+  the 150 r/s web zone (`edge/nginx.conf:40-44`, `:89-92`) drive about
   15 times that, against ADR-0090:106-108's "a bound a script cannot step
-  around". Tighten the frontend zone for actions, limit in the backend by
+  around". Tighten the web zone for actions, limit in the backend by
   forwarded address, or correct the ADR.
 - **COULD-76** *(confirmed 2026-10-27)* — `CellarService.readPublicCellar`
   (`:61-79`) reads counts and shown bottles in separate statements, and
@@ -228,7 +228,7 @@ they're already cross-referenced from merged PRs and
   `FeedList.tsx:107-108` adopts it as the forward one, walking deep history
   and delaying new public lines past ADR-0060's 60 s. Ignore the cursor on a
   cursor-less poll, or return a forward cursor for a since-less read.
-- **COULD-78** *(confirmed 2026-10-27)* — `frontend/features/feed/actions.ts:21-24`
+- **COULD-78** *(confirmed 2026-10-27)* — `web/features/feed/actions.ts:21-24`
   and `:41-47` still say the cursor key is "minted fresh by a backend
   restart"; since 8.5 task 04 it is configured (`FEED_CURSOR_KEY`).
 - **COULD-79** *(confirmed 2026-10-27)* — domain timestamps still bypass the
@@ -251,7 +251,7 @@ they're already cross-referenced from merged PRs and
   (`features/auth/actions.ts:26`, `catalog/actions.ts:29`,
   `profile/actions.ts:21`, `cellar/actions.ts:20-28`), each parsing the
   locale and building the post-sign-in redirect its own way; a plain helper
-  in `lib/auth/` built on `lib/routes.ts` fits frontend/README's own
+  in `lib/auth/` built on `lib/routes.ts` fits web/README's own
   "second user moves it to `lib/`" rule.
 - **COULD-83** *(confirmed 2026-10-27)* **[needs decision]** — never-delete
   decisions are stacking up ahead of account deletion: usernames (ADR-0080),
@@ -269,7 +269,7 @@ they're already cross-referenced from merged PRs and
 - **COULD-85** *(confirmed 2026-10-27)* — `docs/architecture.md:628-631` says
   each feature reaches only its own tag's generated operations, but
   `eslint.config.mjs` lets `features/cellar/api.ts:10` import the
-  `public-cellar` tag; name the exception in §5 and frontend/README.
+  `public-cellar` tag; name the exception in §5 and web/README.
 - **COULD-86** *(confirmed 2026-10-27)* — `features/cellar/actions.ts:26`
   builds `` `/${locale}/cellar` `` by hand though `ownCellarHref` exists at
   `lib/routes.ts:16`, against `docs/architecture.md:642-644`.
@@ -287,7 +287,7 @@ they're already cross-referenced from merged PRs and
   limiting as open despite ADR-0090; `README.md:264-270` ties the npm
   overrides to `next` 16.3.1 (now 16.4.3, re-test due);
   `README.md:337` says `docker-compose.dev.env` holds every secret, but
-  `KALIA_FRONTEND_CLIENT_SECRET` still comes from `.env`.
+  `KALIA_WEB_CLIENT_SECRET` still comes from `.env`.
 - **COULD-89** *(confirmed 2026-10-27)* — limits restated outside their
   homes: the edge's 10 r/s in `backend/README.md:9-11` (ADR-0090 and
   `edge/nginx.conf:44` own it), and the 20-pending cap in
@@ -402,7 +402,7 @@ live section they came from.
 - ~~SHOULD-23~~ (a misspelled sort *direction* falls through to `ASC`, so `?sort=abv,dsc` returns 200 sorted the wrong way) — lifted into [iteration-7 task 14](iteration-7/14-catalog-silent-failures.md), merged as above.
 - ~~SHOULD-24~~ (the session-cookie lookup prefers the unprefixed name over `__Secure-`, the opposite of Auth.js; once TLS lands, an attacker who can write but not read cookies for the registrable domain makes every backend call carry *their* bearer token) — lifted into [iteration-7 task 15](iteration-7/15-session-cookie-prefers-secure-prefix.md). Re-confirmed 2026-09-12: `SESSION_COOKIE_NAMES` still lists the unprefixed name first.
 - ~~COULD-16~~ (the catalog module has no `*Test` files at all, so `mvn test` covers none of its three pieces of pure, framework-free logic) — lifted into [iteration-7 task 14](iteration-7/14-catalog-silent-failures.md), merged as above.
-- ~~MUST-4~~ (the root README called `@radix-ui/react-dialog` the one UI dependency while `@radix-ui/react-toast` was a second) — resolved: confirmed 2026-10-14 that `README.md:208-212` names both as "the only two UI dependencies", consistent with `docs/architecture.md` and `frontend/README.md`. The rationale duplication around them stays open as SHOULD-20.
+- ~~MUST-4~~ (the root README called `@radix-ui/react-dialog` the one UI dependency while `@radix-ui/react-toast` was a second) — resolved: confirmed 2026-10-14 that `README.md:208-212` names both as "the only two UI dependencies", consistent with `docs/architecture.md` and `web/README.md`. The rationale duplication around them stays open as SHOULD-20.
 - ~~MUST-6~~ (the ADR index labelled ADR-0045's link "ADR-0046") — resolved: confirmed 2026-10-14 that `docs/adr/README.md:114` labels it ADR-0045 and a scan of every `[ADR-NNNN]` link across the docs, `CLAUDE.md`, the READMEs and `.claude/` finds no label/target mismatch.
 - ~~SHOULD-21~~ (the root README's roadmap-order feature list skipped iteration 6.5) — resolved: confirmed 2026-10-14 that `README.md:132-133` lists iteration 6.5. The same class of gap recurs for iterations 9–14 as SHOULD-53.
 - ~~MUST-10~~ (the feed's documented at-least-once delivery was never configured, so a failed listener lost its line and `event_publication` grew forever) — lifted into [iteration-8 task 06](iteration-8/06-feed-events-delivered-at-least-once.md). `[needs decision]` resolved by the product owner on 2026-10-14: republish on restart, scheduled resubmission of stale publications, and a completion mode that prunes.
@@ -445,7 +445,7 @@ live section they came from.
 - ~~COULD-34~~ (the future-date check reading the JVM's default clock and zone) — lifted into [iteration-8 task 15](iteration-8/15-backend-services-own-their-cross-cutting-setup.md).
 - ~~COULD-37~~ (switching language dropping the current search) — lifted into [iteration-8 task 13](iteration-8/13-in-app-links-keep-the-readers-language.md).
 - ~~SHOULD-28~~ (the Trivy action's pinned SHA said to mismatch its `v0.36.0` comment) — no longer reproduces, and never did: confirmed 2026-10-24 with `git ls-remote` that `v0.36.0` is an annotated tag whose object is `a9c7b0f…` and whose commit is `ed142fd…`, the SHA the workflow pins. The inaccuracy is in ADR-0024's record, kept open as COULD-57.
-- ~~COULD-35~~ (the front and profile pages counting bottles through the catalog-joining read) — no longer reproduces: since ADR-0083 `listCellarEntries` and `heldBottlesByBeer` share one backend-joined `readEntries()` call (`frontend/features/cellar/api.ts:14-30`), so the two cost the same and cannot disagree. Confirmed 2026-10-24.
+- ~~COULD-35~~ (the front and profile pages counting bottles through the catalog-joining read) — no longer reproduces: since ADR-0083 `listCellarEntries` and `heldBottlesByBeer` share one backend-joined `readEntries()` call (`web/features/cellar/api.ts:14-30`), so the two cost the same and cannot disagree. Confirmed 2026-10-24.
 - ~~MUST-17~~ (the glossary contradicting iteration 8's cellar and profile shapes) — lifted into [iteration-8.5 task 19](iteration-8.5/19-docs-match-iteration-8.md).
 - ~~MUST-18~~ (the sign-up limiter able to create a counter with no expiry) — lifted into [iteration-8.5 task 09](iteration-8.5/09-sign-up-limiter-cannot-lock-forever.md).
 - ~~SHOULD-16~~ (no policy for a catalog beer that disappears from under cellar entries) — lifted into [iteration-8.5 task 12](iteration-8.5/12-user-added-catalog-entries-governed.md).
@@ -519,7 +519,7 @@ live section they came from.
 - ~~COULD-71~~ (the catalog's size stated three times) — lifted into [iteration-8.5 task 19](iteration-8.5/19-docs-match-iteration-8.md).
 - ~~COULD-72~~ (the ADR index's ordering) — lifted into [iteration-8.5 task 19](iteration-8.5/19-docs-match-iteration-8.md).
 - ~~MUST-19~~ (frontend route-handler list omits the metrics route) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
-- ~~MUST-20~~ (`frontend/README.md` generate step starts the wrong services) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
+- ~~MUST-20~~ (`web/README.md` generate step starts the wrong services) — lifted into [iteration-9 task 18](iteration-9/18-docs-match-iteration-8-5.md).
 - ~~MUST-21~~ (query strings and an ID token reach the edge, Keycloak and mutator logs) — lifted into [iteration-9 task 20](iteration-9/20-no-token-or-query-string-in-a-log.md).
 - ~~MUST-22~~ (text-blocks rule has no checker and keeps being broken) — lifted into [iteration-9 task 19](iteration-9/19-review-feedback-outlives-its-pr.md). Its `[needs decision]` is the task's open question 1, settled at refinement.
 - ~~MUST-23~~ (concurrent first profile reads race the username reservation) — lifted into [iteration-9 task 16](iteration-9/16-first-profile-reads-never-race.md).

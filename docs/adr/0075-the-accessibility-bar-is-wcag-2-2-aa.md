@@ -8,7 +8,7 @@
 Kalia has held itself to WCAG 2.1 AA since iteration 2, enforced at three
 layers: `eslint-plugin-jsx-a11y`, `jest-axe` in unit tests and
 `@axe-core/playwright` against real pages
-([architecture.md §5](../architecture.md#5-frontend-design)). WCAG 2.2 has
+([architecture.md §5](../architecture.md#5-web-app-design)). WCAG 2.2 has
 been the W3C recommendation since October 2023 and adds six success criteria
 at levels A and AA that 2.1 does not have.
 

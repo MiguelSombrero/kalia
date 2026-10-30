@@ -32,7 +32,7 @@ that reaches it, replacing today's "Hello, {name}" greeting.
 ## Constraints
 
 - Server components by default; a client component only where interaction needs
-  one ([frontend/README.md](../../../frontend/README.md) conventions).
+  one ([web/README.md](../../../web/README.md) conventions).
 - Mutations go through TanStack Query
   ([ADR-0008](../../adr/0008-tanstack-query.md)) and the feature's own `api.ts`
   wrapper over the generated client

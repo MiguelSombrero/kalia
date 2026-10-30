@@ -347,7 +347,7 @@ rather than behind a link.
   `@Schema(requiredMode = Schema.RequiredMode.REQUIRED)`.** springdoc infers
   `required` from nothing — not non-nullability, not primitives — so without
   it the field silently becomes optional in the generated schema, and the
-  frontend's client is wrong ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+  web app's client is wrong ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
 - **Null fields must stay omitted from JSON**
   (`spring.jackson.default-property-inclusion=non_null`), never `"field":
   null` — that is what keeps `city?: string` sound across the schema, the
@@ -424,8 +424,8 @@ Logs, counters and trace ids are built in; nothing in the stack views them
   request across both tiers with `docker compose logs --no-log-prefix | grep
   <traceId>`.
 - **Trace id.** An incoming W3C `traceparent` header is continued; a request
-  without one starts a trace. The frontend sends one on every call
-  ([frontend/README.md](../frontend/README.md#observability)). There is no
+  without one starts a trace. The web app sends one on every call
+  ([web/README.md](../web/README.md#observability)). There is no
   exporter, so the id exists only in logs and on the wire.
 - **Counters** at `/actuator/prometheus` (compose exposes it; natively set
   `ACTUATOR_ENDPOINTS=health,prometheus`). It needs a bearer token like every

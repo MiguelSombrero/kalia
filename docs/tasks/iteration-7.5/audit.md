@@ -47,7 +47,7 @@ signed out and signed in as the seeded dev account, against this worktree's
 own compose stack. Sizes were read from the rendered DOM rather than estimated.
 Nothing here is a screenshot and none was committed. The committed evidence
 that every surface exists and renders is
-[`frontend/e2e/surface-tour.spec.ts`](../../../frontend/e2e/surface-tour.spec.ts).
+[`web/e2e/surface-tour.spec.ts`](../../../web/e2e/surface-tour.spec.ts).
 
 What was **not** observed, so a reader does not assume it was:
 

@@ -14,7 +14,7 @@ today until UTC catches up.
 
 - Frontend: `todayIso()` is
   `new Date().toISOString().slice(0, 10)`
-  ([bottleDateRules.ts:3](../../../frontend/features/cellar/bottleDateRules.ts)),
+  ([bottleDateRules.ts:3](../../../web/features/cellar/bottleDateRules.ts)),
   the UTC calendar date, compared with `>` against `brewedDate`.
 - Backend mirror: `requireValidDates` uses `LocalDate.now()`
   ([Bottle.java:82](../../../backend/src/main/java/fi/kalia/cellar/domain/Bottle.java))

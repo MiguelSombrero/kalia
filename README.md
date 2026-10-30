@@ -95,11 +95,11 @@ automatically, and the compose files have no default for this one value on
 purpose, since it is a credential:
 
 ```bash
-echo "KALIA_FRONTEND_CLIENT_SECRET=kalia-dev-secret" > .env
-docker compose up --build   # frontend at http://localhost:3000
+echo "KALIA_WEB_CLIENT_SECRET=kalia-dev-secret" > .env
+docker compose up --build   # web app at http://localhost:3000
 ```
 
-The frontend is at `:3000`; the backend is also reachable, at `:8080`, for
+The web app is at `:3000`; the backend is also reachable, at `:8080`, for
 direct API access and Swagger UI — see [backend/README.md](backend/README.md).
 Keycloak's admin console is at `:8081` (admin/admin, dev-only credentials).
 Those three are not published by their own containers but by the `edge` nginx
@@ -112,14 +112,14 @@ lands — at `:8025`. All bindings are localhost-only, never reachable beyond
 the dev machine.
 
 Those are the defaults, and the main checkout keeps them. Each of the six is
-a variable in the root `.env` (`FRONTEND_PORT`, `BACKEND_PORT`,
+a variable in the root `.env` (`WEB_PORT`, `BACKEND_PORT`,
 `KEYCLOAK_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`, `MAILPIT_PORT`), and every
 address built from one — Keycloak's public address and the issuer the
-frontend and backend validate, the frontend's own URL, the Swagger redirect
+web app and backend validate, the web app's own URL, the Swagger redirect
 URI in the realm — follows it, so changing a port is a one-line edit. A
 git worktree is given its own set by `make
 stack-env`, which appends them to that worktree's `.env`: slot *n* adds 100×*n*
-to each default (slot 1 is frontend `:3100`, backend `:8180`, Keycloak `:8181`,
+to each default (slot 1 is the web app `:3100`, backend `:8180`, Keycloak `:8181`,
 Postgres `:5532`, Valkey `:6479`, Mailpit `:8125`), taking the lowest slot no
 other worktree's `.env` holds and whose ports are free, and re-running it
 keeps what it wrote. Two worktrees can then run the stack, `make verify` and
@@ -130,7 +130,7 @@ unaffected, as Playwright's browser contexts are isolated. Running the apps
 natively (`npm run dev`, `mvn spring-boot:run`) keeps the defaults and stays
 one at a time.
 [keycloak/realm-export.json](keycloak/realm-export.json) carries no
-credential — the `kalia-frontend` client secret above and the other dev values
+credential — the `kalia-web` client secret above and the other dev values
 in [docker-compose.dev.env](docker-compose.dev.env) (`POSTGRES_PASSWORD`,
 `AUTH_SECRET`, `VALKEY_PASSWORD`, the Keycloak admin login and the rest) are
 fixed dev-only values — never reuse them outside local development. The realm
@@ -148,7 +148,7 @@ service rather than baked into the realm export. The `kalia-swagger` client Swag
 signs in with is a second realm file, [keycloak/realm-swagger.json](keycloak/realm-swagger.json),
 that only the local stack imports. For development with hot
 reload, run the apps natively — see [backend/README.md](backend/README.md)
-and [frontend/README.md](frontend/README.md).
+and [web/README.md](web/README.md).
 
 ## What Kalia does
 
@@ -190,14 +190,14 @@ whether beer shops publish usable APIs — showing where a beer can be bought.
 
 ## Architecture
 
-Kalia is a **monorepo** with a Next.js frontend and a Spring Boot **modulith**
-backend. The frontend follows the **backend-for-frontend (BFF)** pattern: the
+Kalia is a **monorepo** with a Next.js web app and a Spring Boot **modulith**
+backend. The web app follows the **backend-for-frontend (BFF)** pattern: the
 browser talks only to Next.js, and the Next.js server calls the Spring Boot
 REST API. Auth tokens and sessions stay server-side.
 
 ```mermaid
 flowchart LR
-    Browser -->|HTML / fetch| Next[Next.js frontend<br/>BFF]
+    Browser -->|HTML / fetch| Next[Next.js web app<br/>BFF]
     Next -->|REST /api/v1| Spring[Spring Boot modulith]
     Spring --> PG[(PostgreSQL)]
     Next -->|sessions| Valkey[(Valkey)]
@@ -217,7 +217,7 @@ Decision records: [docs/adr/](docs/adr/)
 
 What this project is built with, and why — an inventory, not a version list.
 **The version of a thing lives in the file that installs it** and nowhere
-else: `backend/pom.xml`, `frontend/package.json`, the `docker-compose*.yml` files, the
+else: `backend/pom.xml`, `web/package.json`, the `docker-compose*.yml` files, the
 `Dockerfile`s and `.github/workflows/`
 ([ADR-0020](docs/adr/0020-documentation-roles.md)'s one-home rule, amended
 2026-09-11). A number appears below only where the number is the point of the
@@ -246,7 +246,7 @@ manifest already says.
   override carries an XML comment naming the CVE and the condition for
   dropping it again
 
-### Frontend
+### Web app
 
 - Next.js 16 (App Router), React 19, TypeScript 5 (TS 7 not yet supported by
   the Next toolchain — revisit when it is)
@@ -287,7 +287,7 @@ manifest already says.
 
 ### Local infrastructure
 
-- Keycloak 26 (identity provider — OIDC for the frontend, JWT issuer for the
+- Keycloak 26 (identity provider — OIDC for the web app, JWT issuer for the
   backend; built from `keycloak/Dockerfile`, which is also where the Kalia
   login theme is baked in — [ADR-0056](docs/adr/0056-branded-bilingual-keycloak-pages.md))
 - keycloak-config-cli (`quay.io/adorsys/keycloak-config-cli`, the
@@ -302,11 +302,11 @@ manifest already says.
   [docs/tasks/iteration-6.5/04-send-email-from-kalia.md](docs/tasks/iteration-6.5/04-send-email-from-kalia.md).
   The real credential is not created or held anywhere yet
 - nginx (`edge/`, the `edge` service) — the one published service: it
-  limits requests and body sizes per client address in front of the frontend,
+  limits requests and body sizes per client address in front of the web app,
   backend and Keycloak ([ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
-- Docker Compose: full stack (edge + PostgreSQL + backend + frontend +
+- Docker Compose: full stack (edge + PostgreSQL + backend + web app +
   Keycloak + Valkey + Mailpit)
-- Base images: Maven and Eclipse Temurin (backend), Node on Alpine (frontend);
+- Base images: Maven and Eclipse Temurin (backend), Node on Alpine (web app);
   tags are in each `Dockerfile`
 
 ### CI
@@ -327,10 +327,12 @@ kalia/
 │       ├── cellar/   # personal beer cellar
 │       ├── profile/  # user profile, public cellar visibility
 │       └── feed/     # front-page activity feed
-├── frontend/         # Next.js app (BFF + UI)
+├── web/              # Next.js app (BFF + UI), an npm workspace
 ├── keycloak/         # realm export, login theme, image
-├── edge/             # nginx proxy in front of the frontend, backend and Keycloak
+├── edge/             # nginx proxy in front of the web app, backend and Keycloak
 ├── postgres/         # init scripts
+├── package.json      # the npm workspaces (ADR-0092)
+├── package-lock.json # the one lockfile, for every workspace
 ├── scripts/          # dependency-free checkers CI runs, git hooks, generators
 ├── docs/
 │   ├── architecture.md
@@ -360,11 +362,11 @@ docker compose -f docker-compose.base.yml up
 ```
 
 It needs `POSTGRES_PASSWORD`, `FEED_CURSOR_KEY`, `AUTH_SECRET`,
-`KALIA_FRONTEND_CLIENT_SECRET`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`,
+`KALIA_WEB_CLIENT_SECRET`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`,
 `KEYCLOAK_SSL_REQUIRED` (`none`, `external` or `all`) and `VALKEY_PASSWORD`
 (letters, digits and `. _ ~ -` only: it is carried in the session store's address), from the
 environment or a `.env`. `METRICS_TOKEN` is optional. It has no seeded account
-and no Swagger client, and the frontend refuses to start on the dev
+and no Swagger client, and the web app refuses to start on the dev
 `AUTH_SECRET`. A bare `docker compose` is the local stack, so name the file;
 [ADR-0089](docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
 says why it is split this way. `make compose-check` proves the refusal for

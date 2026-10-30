@@ -42,7 +42,7 @@ untrue (Constraints).
 ## Constraints
 
 - Server components by default; a client component only where interaction needs
-  one ([frontend/README.md](../../../frontend/README.md) conventions).
+  one ([web/README.md](../../../web/README.md) conventions).
   **Corrected during refinement:** the infinite scroll decided below does need
   the client, so this task builds the server-rendered first page *and* the
   client component that pages back from it, reading through a Server Action
