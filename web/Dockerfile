@@ -1,12 +1,20 @@
-# Build stage. The context is the repository root, not web/ (ADR-0092): the
-# lockfile and the packages are outside web/. Only the manifests are copied
-# before the install, so the install layer is reused until a dependency
-# changes, and `--workspace web` leaves out the other workspaces' dependencies.
-FROM node:26-alpine AS build
-WORKDIR /app
+# Manifests stage. The workspaces' package.json files, and nothing else of
+# theirs, for the install below: a glob keeps this working while packages/ does
+# not exist yet, and deleting the rest keeps the install layer's cache from
+# depending on any source file.
+FROM node:26-alpine AS manifests
+WORKDIR /src
 COPY package.json package-lock.json ./
 COPY web/package.json web/
-COPY --parents packages/*/package.json ./
+COPY [p]ackages packages
+RUN mkdir -p packages && find packages -type f ! -name package.json -delete
+
+# Build stage. The context is the repository root, not web/ (ADR-0092): the
+# lockfile and the packages are outside web/. `--workspace web` leaves out the
+# other workspaces' dependencies.
+FROM node:26-alpine AS build
+WORKDIR /app
+COPY --from=manifests /src ./
 RUN npm ci --workspace web
 COPY . .
 RUN npm run build --workspace web
