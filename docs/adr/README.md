@@ -232,6 +232,10 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0041](0041-tanstack-query-feature-owned-hooks.md) — a component calls
   a feature-owned hook (`useAddBottle`) wrapping `useQuery`/`useMutation`,
   never those TanStack Query hooks directly.
+- [ADR-0096](0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)
+  — the mobile app's unit tests are Jest with React Native Testing Library and
+  its end-to-end flows are Maestro; CI runs the flow on Android only, against
+  the full stack, and iOS runs it locally through `make verify`.
 
 ## Authentication and identity
 

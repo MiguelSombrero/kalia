@@ -1,6 +1,6 @@
 # Task 06: Decide how the mobile app is tested
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -67,12 +67,12 @@ which platform, and what backend an end-to-end flow runs against there.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the strategy, the rejected tools and their costs, and
+- [x] An ADR records the strategy, the rejected tools and their costs, and
       passes `node scripts/check-adrs.mjs`
-- [ ] `docs/architecture.md` §7 describes mobile testing alongside the web's
-- [ ] The CI platforms chosen are stated with what they cost this repository,
+- [x] `docs/architecture.md` §7 describes mobile testing alongside the web's
+- [x] The CI platforms chosen are stated with what they cost this repository,
       checked against the no-cost constraint
-- [ ] The unit-test and end-to-end test conventions are named in the
+- [x] The unit-test and end-to-end test conventions are named in the
       acceptance criteria of tasks [11](11-app-skeleton.md) and
       [15](15-walking-skeleton-slice.md) before either is refined
 
