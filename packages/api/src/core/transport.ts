@@ -17,10 +17,14 @@ export const registerTransport = (transport: Transport): void => {
   (globalThis as Holder)[SLOT] = transport;
 };
 
-/** The mutator the generated client imports (`override.mutator` in orval.config.ts, which orval must read this file directly). */
+/**
+ * The mutator the generated client imports (`override.mutator` in
+ * orval.config.ts, which has to name this file itself: orval does not follow a
+ * re-export to the signature).
+ */
 // An explicit signature rather than `: Transport`, because orval reads the
 // options type off this function to type each operation's `request` option.
-export const kaliaFetch = <T,>(url: string, options: RequestInit): Promise<T> => {
+export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise<T> => {
   const transport = (globalThis as Holder)[SLOT];
   if (!transport) {
     throw new Error(

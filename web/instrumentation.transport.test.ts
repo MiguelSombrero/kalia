@@ -1,11 +1,11 @@
-import { listEntries } from "@kalia/api/generated/cellar/cellar";
+import { kaliaFetch } from "@kalia/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { register } from "@/instrumentation";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
+import { currentTraceparent } from "@/lib/api/requestTrace";
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
-import { currentTraceparent } from "./requestTrace";
+import { register } from "./instrumentation";
 
 vi.mock("@/lib/auth/valkeyAdapter", () => ({ getSessionAccount: vi.fn() }));
 vi.mock("@/lib/logger", () => ({
@@ -14,9 +14,10 @@ vi.mock("@/lib/logger", () => ({
 
 const incoming = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 
-// What a generated call does at startup in the running app: instrumentation.ts
-// registers the web's transport, and nothing else does. The other tests in
-// this suite register a stand-in in vitest.setup.ts, so this one clears it.
+// What a generated call does in the running app: every one goes through
+// `kaliaFetch`, and instrumentation.ts registers the web's transport for it at
+// startup, and nothing else does. The other tests register a stand-in in
+// vitest.setup.ts, so this one clears it.
 describe("the web's wiring of the shared generated client", () => {
   beforeEach(() => {
     (globalThis as Record<symbol, unknown>)[Symbol.for("@kalia/api.transport")] = undefined;
@@ -43,10 +44,10 @@ describe("the web's wiring of the shared generated client", () => {
     const fetchMock = vi.fn(async () => Response.json([]));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(listEntries()).rejects.toThrow(/No transport registered/);
+    await expect(kaliaFetch("/api/v1/cellar", { method: "GET" })).rejects.toThrow(/No transport registered/);
 
     await register();
-    const response = await listEntries();
+    const response = await kaliaFetch("/api/v1/cellar", { method: "GET" });
 
     expect(response).toMatchObject({ status: 200, data: [] });
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
@@ -60,7 +61,7 @@ describe("the web's wiring of the shared generated client", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
     await register();
 
-    await listEntries();
+    await kaliaFetch("/api/v1/cellar", { method: "GET" });
 
     expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
       "Backend answered with a server error",

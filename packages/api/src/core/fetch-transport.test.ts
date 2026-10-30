@@ -177,10 +177,10 @@ describe("kaliaFetch", () => {
     expect(result).toEqual({ status: 200 });
   });
 
-  it("throws, naming the path but not the query, when no transport was registered", () => {
+  it("rejects, naming the path but not the query, when no transport was registered", async () => {
     (globalThis as Record<symbol, unknown>)[Symbol.for("@kalia/api.transport")] = undefined;
 
-    expect(() => kaliaFetch("/api/v1/beers?query=westvleteren", {})).toThrow(
+    await expect(kaliaFetch("/api/v1/beers?query=westvleteren", {})).rejects.toThrow(
       /No transport registered.*\/api\/v1\/beers$/,
     );
   });
