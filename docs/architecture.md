@@ -858,8 +858,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   one so no secret is ever browser-visible in the docs UI. Required on every
   endpoint that needs a bearer token, so the Authorize button covers all of
   them, not `cellar` alone. The client exists on the dev stack only: the
-  deployable realm file pins no public client for the docs, only the app's
-  below
+  deployable realm file pins no public client but the app's, below
   ([ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
 - **The mobile app authenticates beside the web client, not through it**
   ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).

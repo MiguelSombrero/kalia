@@ -73,10 +73,12 @@ API directly through the edge proxy.**
   stops and returns the choice to the product owner rather than rotating for
   the web too, which would need ADR-0029's rejected renewal lock.
 - **Sign-out forgets the tokens on the device at once, then revokes them at
-  Keycloak when there is a connection.** Offline, sign-out still completes on
-  the device and the server-side session lapses at its idle timeout — for an
-  offline session that is the 30 days above, not the 30 minutes of a browser
-  session. Forgetting the tokens first is what makes the offline case safe to
+  Keycloak, ending the session, when there is a connection.** Offline,
+  sign-out still completes on the device and the server-side session lapses at
+  its idle timeout — for an offline session that is the 30 days above, not the
+  30 minutes of a browser session. Whether revoking an offline token ends its
+  session is not documented, so [task 14](../tasks/iteration-9/14-sign-in-on-mobile.md)
+  checks it (Evidence). Forgetting the tokens first is what makes the offline case safe to
   accept: the copy that could be used is gone from the device.
 - **An access token keeps working for up to its 5-minute lifespan after
   sign-out or after an account is disabled; this is accepted** as a trade-off

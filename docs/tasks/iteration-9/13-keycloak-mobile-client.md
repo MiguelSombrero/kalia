@@ -72,9 +72,9 @@ that ADR merges, or reopens a question the ADR contradicts.
       task stops here and the PR says so ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md))
 - [ ] The realm pins the offline session idle timeout at 30 days with no
       offline maximum, and a token issued with `offline_access` to
-      `kalia-mobile` is refused after that idle time — checked with a clock the
-      script controls or by reading the settings back from the admin API, and
-      described in the PR
+      `kalia-mobile` carries a refresh token that outlives the SSO session's
+      30-minute idle timeout — the settings read back from the admin API and
+      the token exercised against the local Keycloak, described in the PR
 - [ ] The authorization endpoint refuses a redirect URI that is not in the
       client's list, including one under the same `kalia://` scheme, and
       refuses a request without PKCE `S256` — checked against the local
