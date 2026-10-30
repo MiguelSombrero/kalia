@@ -80,11 +80,11 @@ class PublicCellarApiIT {
 				.expectBody(String.class)
 				.value(body -> {
 					assertThat((String) JsonPath.read(body, "$.username")).isEqualTo(ownerName);
-					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(1);
-					assertBeerFacts(body, "$.entries[0].beer");
-					assertThat((int) JsonPath.read(body, "$.entries[0].quantity")).isEqualTo(2);
-					assertThat((int) JsonPath.read(body, "$.entries[0].bottles.length()")).isEqualTo(2);
-					List<String> containerTypes = JsonPath.read(body, "$.entries[0].bottles[*].containerType");
+					assertThat((int) JsonPath.read(body, "$.content.length()")).isEqualTo(1);
+					assertBeerFacts(body, "$.content[0].beer");
+					assertThat((int) JsonPath.read(body, "$.content[0].quantity")).isEqualTo(2);
+					assertThat((int) JsonPath.read(body, "$.content[0].bottles.length()")).isEqualTo(2);
+					List<String> containerTypes = JsonPath.read(body, "$.content[0].bottles[*].containerType");
 					assertThat(containerTypes).containsExactlyInAnyOrder("BOTTLE", "CAN");
 				});
 	}
@@ -101,10 +101,10 @@ class PublicCellarApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(20);
+					assertThat((int) JsonPath.read(body, "$.content.length()")).isEqualTo(20);
 					assertThat((int) JsonPath.read(body, "$.page")).isZero();
 					assertThat((int) JsonPath.read(body, "$.totalPages")).isEqualTo(2);
-					assertThat((int) JsonPath.read(body, "$.totalBeers")).isEqualTo(25);
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(25);
 					assertThat((int) JsonPath.read(body, "$.totalBottles")).isEqualTo(25);
 					assertThat((String) JsonPath.read(body, "$.lastBottleAddedAt")).isNotBlank();
 				});
@@ -113,7 +113,7 @@ class PublicCellarApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(5);
+					assertThat((int) JsonPath.read(body, "$.content.length()")).isEqualTo(5);
 					assertThat((int) JsonPath.read(body, "$.page")).isEqualTo(1);
 				});
 	}
@@ -132,11 +132,11 @@ class PublicCellarApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> {
-					assertThat((int) JsonPath.read(body, "$.entries.length()")).isEqualTo(PublicCellarController.MAX_PAGE_SIZE);
-					assertThat((int) JsonPath.read(body, "$.totalBeers")).isEqualTo(60);
+					assertThat((int) JsonPath.read(body, "$.content.length()")).isEqualTo(PublicCellarController.MAX_PAGE_SIZE);
+					assertThat((int) JsonPath.read(body, "$.totalElements")).isEqualTo(60);
 					assertThat((int) JsonPath.read(body, "$.totalBottles")).isEqualTo(61 * 24);
-					assertThat((int) JsonPath.read(body, "$.entries[0].quantity")).isEqualTo(48);
-					List<Integer> shown = JsonPath.read(body, "$.entries[*].bottles.length()");
+					assertThat((int) JsonPath.read(body, "$.content[0].quantity")).isEqualTo(48);
+					List<Integer> shown = JsonPath.read(body, "$.content[*].bottles.length()");
 					assertThat(shown.getFirst()).isEqualTo(CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY);
 					assertThat(shown).allMatch(count -> count <= CellarService.MAX_PUBLIC_BOTTLES_PER_ENTRY);
 					assertThat(body.length()).as("the response is bounded by the page, not by the 1,464 bottles stored")
@@ -169,7 +169,7 @@ class PublicCellarApiIT {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
-				.value(body -> assertThat((int) JsonPath.read(body, "$.entries.length()")).isZero());
+				.value(body -> assertThat((int) JsonPath.read(body, "$.content.length()")).isZero());
 	}
 
 	// Confirmed to fail against an implementation that ignores the visibility

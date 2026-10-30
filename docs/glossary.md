@@ -104,7 +104,7 @@ read of a cellar its owner has made public. Its dependencies are in
 | `EntryRepository` | Persistence for the `Entry` aggregate. Every lookup is keyed on an already-resolved owner id, so another user's entry and a missing one are indistinguishable. | [ADR-0050](adr/0050-public-cellar-addressing.md) |
 | `BottleCount` | How many bottles one entry holds: the read model of a public cellar page, which lists at most a capped number of an entry's bottles and reports the rest as a count. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
 | `BottleListing` | One bottle as a public cellar page lists it: its own fields and its entry's id, read without loading the entry, since an owned entity has no repository of its own. | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
-| `BottleTotals` | Every bottle one user holds and when the newest was added: what a public cellar page reports about the whole cellar, since a client holding one page cannot count it. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
+| `BottleTotals` | Every bottle one user holds and when the newest was added: what a public cellar page reports about the whole cellar it shows (beers awaiting approval left out), since a client holding one page cannot count it. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
 | `InvalidBottleException` | A domain exception for bottle data that cannot be accepted: a future brewed date, a best-before date not after the brewed date, a non-positive add quantity. | [ADR-0014](adr/0014-shared-exception-handling.md) |
 
 ## feed
@@ -167,7 +167,7 @@ and they drift from the Java names that produced them.
 | `similarTo` | On `GET /beers`, with `breweryId`: the beers of that brewery whose name contains any word of this text — the add-beer form's similar-beers hint ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)). |
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
-| `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`. |
+| `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`; `PublicCellarDto` carries the same four, with `username`, `totalBottles` and `lastBottleAddedAt` beside them. |
 | `content`, `nextCursor`, `startOver` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`. `nextCursor` is opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. `startOver` is `true` when a `since` cursor is older than that window ([architecture.md §4](architecture.md#4-api-design) says what a caller does then). |
 
 ### Generated TypeScript types

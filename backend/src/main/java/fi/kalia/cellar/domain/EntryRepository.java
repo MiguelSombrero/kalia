@@ -29,11 +29,17 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	@Query("select b.entry from Bottle b where b.id = :bottleId and b.entry.userId = :userId")
 	Optional<Entry> findByBottleIdAndUserId(@Param("bottleId") UUID bottleId, @Param("userId") UUID userId);
 
+	@Query("select e.beerId from Entry e where e.userId = :userId")
+	List<UUID> findBeerIdsByUserId(@Param("userId") UUID userId);
+
 	// One page of a public cellar, in the order the beers were added, no bottles
-	// loaded. Keyed on an already-resolved owner id, like the read above (ADR-0050).
-	@Query(value = "select e from Entry e where e.userId = :userId order by e.createdAt, e.id",
-			countQuery = "select count(e) from Entry e where e.userId = :userId")
-	Page<Entry> findPageByUserId(@Param("userId") UUID userId, Pageable pageable);
+	// loaded, without the entries of `excludedBeerIds`. Keyed on an already-resolved
+	// owner id, like the read above (ADR-0050). An empty collection excludes nothing.
+	@Query(value = "select e from Entry e where e.userId = :userId and e.beerId not in :excludedBeerIds "
+			+ "order by e.createdAt, e.id",
+			countQuery = "select count(e) from Entry e where e.userId = :userId and e.beerId not in :excludedBeerIds")
+	Page<Entry> findPageByUserIdExcludingBeers(@Param("userId") UUID userId,
+			@Param("excludedBeerIds") Collection<UUID> excludedBeerIds, Pageable pageable);
 
 	@Query("select new fi.kalia.cellar.domain.BottleCount(b.entry.id, count(b)) from Bottle b "
 			+ "where b.entry.id in :entryIds group by b.entry.id")
@@ -58,7 +64,8 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	List<BottleListing> listBottles(@Param("ids") Collection<UUID> ids);
 
 	@Query("select new fi.kalia.cellar.domain.BottleTotals(count(b), max(b.createdAt)) from Bottle b "
-			+ "where b.entry.userId = :userId")
-	BottleTotals totalBottlesOf(@Param("userId") UUID userId);
+			+ "where b.entry.userId = :userId and b.entry.beerId not in :excludedBeerIds")
+	BottleTotals totalBottlesOfExcludingBeers(@Param("userId") UUID userId,
+			@Param("excludedBeerIds") Collection<UUID> excludedBeerIds);
 
 }

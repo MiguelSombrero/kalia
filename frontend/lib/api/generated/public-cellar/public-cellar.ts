@@ -94,7 +94,7 @@ export const getReadUrl = (username: string,
 }
 
 /**
- * One page of the beers in the cellar, in the order they were added, and the bottles owned of each. A request without paging parameters gets the first page of 20 beers. A beer lists at most 25 bottles, its oldest; its quantity says how many are held. 404 — identical for every caller, the owner included — when the username is unknown or the cellar is not public, so neither can be told from the other.
+ * One page of the beers in the cellar, in the order they were added, and the bottles owned of each. A request without paging parameters gets the first page of 20 beers. A beer lists at most 25 bottles, its oldest; its quantity says how many are held. A beer still awaiting approval is left out of the pages and of every total. 404 — identical for every caller, the owner included — when the username is unknown or the cellar is not public, so neither can be told from the other.
  * @summary Read a public cellar
  */
 export const read = async (username: string,

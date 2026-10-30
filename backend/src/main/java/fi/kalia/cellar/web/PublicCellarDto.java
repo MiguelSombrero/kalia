@@ -11,22 +11,23 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "One page of a cellar its owner has made public, with its beers and their bottles")
 public record PublicCellarDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The owner's username, as copied from the identity provider") String username,
+				description = "This page's beers, in the order they were added to the cellar") List<PublicCellarEntryDto> content,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "This page's beers, in the order they were added to the cellar") List<PublicCellarEntryDto> entries,
+				description = "Beers in the whole cellar that the reader is shown") long totalElements,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Pages those beers span at this page size") int totalPages,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Zero-based index of this page") int page,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Pages the cellar spans at this page size") int totalPages,
+				description = "The owner's username, as copied from the identity provider") String username,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Beers in the whole cellar") long totalBeers,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Bottles in the whole cellar") long totalBottles,
-		@Schema(description = "When the newest bottle was added; absent for a cellar with none") @Nullable Instant lastBottleAddedAt) {
+				description = "Bottles in the beers the reader is shown") long totalBottles,
+		@Schema(description = "When the newest of those bottles was added; absent for a cellar with none") @Nullable Instant lastBottleAddedAt) {
 
 	static PublicCellarDto of(String username, PublicCellarPage page) {
-		return new PublicCellarDto(username, page.entries().stream().map(PublicCellarEntryDto::from).toList(),
-				page.page(), page.totalPages(), page.totalEntries(), page.totalBottles(), page.lastBottleAddedAt());
+		return new PublicCellarDto(page.entries().stream().map(PublicCellarEntryDto::from).toList(),
+				page.totalEntries(), page.totalPages(), page.page(), username, page.totalBottles(),
+				page.lastBottleAddedAt());
 	}
 
 }

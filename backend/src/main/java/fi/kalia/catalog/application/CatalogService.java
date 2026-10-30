@@ -80,6 +80,10 @@ public class CatalogService {
 		return new BeerSummaries(found, withheld);
 	}
 
+	public Set<UUID> withheldFromPublic(Collection<UUID> ids) {
+		return new HashSet<>(beers.findIdsByIdInAndModerationStatus(ids, ModerationStatus.PENDING));
+	}
+
 	public Page<Brewery> listBreweries(@Nullable String nameQuery, @Nullable UUID viewerId, Pageable pageable) {
 		if (nameQuery == null || nameQuery.isBlank()) {
 			return breweries.findPage(viewerId, pageable);

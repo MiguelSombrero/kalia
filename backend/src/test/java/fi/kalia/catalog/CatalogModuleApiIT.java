@@ -18,6 +18,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -29,6 +30,9 @@ class CatalogModuleApiIT {
 
 	@Autowired
 	private BreweryRepository breweries;
+
+	@Autowired
+	private JdbcTemplate jdbc;
 
 	private CatalogApi api;
 
@@ -73,6 +77,20 @@ class CatalogModuleApiIT {
 		Map<UUID, BeerSummary> summaries = api.getBeerSummaries(ids, null).found();
 
 		assertThat(summaries).containsOnlyKeys(known.getId());
+	}
+
+	@Test
+	void onlyAPendingBeerIsWithheldFromAPublicReaderEvenBeyondTheFirstChunk() {
+		List<Beer> seeded = beers.findAll(Pageable.ofSize(2)).getContent();
+		UUID pending = seeded.get(0).getId();
+		UUID approved = seeded.get(1).getId();
+		jdbc.update("UPDATE catalog.beer SET source = 'USER', wikidata_qid = NULL, moderation_status = 'PENDING', contributor_id = ? WHERE id = ?",
+				UUID.randomUUID(), pending);
+		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(CatalogApi.MAX_BATCH_IDS),
+				Stream.of(approved, pending)).toList();
+
+		assertThat(api.withheldFromPublic(ids)).containsExactly(pending);
+		assertThat(api.withheldFromPublic(List.of())).isEmpty();
 	}
 
 	@Test

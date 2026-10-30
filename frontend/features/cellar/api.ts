@@ -67,8 +67,8 @@ export const getPublicCellar = async (username: string, page = 0): Promise<Publi
   // generated type is a 200|400|404 union and a literal check would narrow it away.
   const status = Number(response.status);
   if (response.status === 200) {
-    const { entries, ...rest } = response.data;
-    return { ...rest, beers: entries.map(toCellarBeer) };
+    const { content, totalElements, ...rest } = response.data;
+    return { ...rest, beers: content.map(toCellarBeer), totalBeers: totalElements };
   }
   if (status === 404 || status === 400) {
     return null;

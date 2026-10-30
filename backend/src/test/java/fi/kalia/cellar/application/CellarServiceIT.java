@@ -364,9 +364,10 @@ class CellarServiceIT {
 		long queriesForLarge = statistics.getPrepareStatementCount();
 
 		assertThat(page.entries()).hasSize(20);
-		// The profile lookup, the page and its count, the bottle counts, the capped bottle ids and their rows,
-		// the totals and the beers: a cellar that fits one page skips the count, and nothing else differs.
-		assertThat(queriesForLarge).isLessThanOrEqualTo(queriesForSmall + 1).isEqualTo(8);
+		// The profile lookup, the owner's beer ids and the catalog's withheld ones, the page and its count, the
+		// bottle counts, the capped bottle ids and their rows, the totals and the beers: a cellar that fits one
+		// page skips the count, and nothing else differs. Sixty beers fit one catalog batch.
+		assertThat(queriesForLarge).isLessThanOrEqualTo(queriesForSmall + 1).isEqualTo(10);
 	}
 
 	@Test

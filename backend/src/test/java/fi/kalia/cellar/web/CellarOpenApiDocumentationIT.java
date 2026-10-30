@@ -87,10 +87,10 @@ class CellarOpenApiDocumentationIT {
 		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.PublicCellarBottleDto.required");
 		assertThat(bottleRequired).containsExactlyInAnyOrder("id", "entryId", "containerType", "createdAt", "updatedAt");
 		Map<String, Object> rootProperties = JsonPath.read(body, "$.components.schemas.PublicCellarDto.properties");
-		assertThat(rootProperties).containsOnlyKeys("username", "entries", "page", "totalPages", "totalBeers",
+		assertThat(rootProperties).containsOnlyKeys("username", "content", "page", "totalPages", "totalElements",
 				"totalBottles", "lastBottleAddedAt");
 		List<String> rootRequired = JsonPath.read(body, "$.components.schemas.PublicCellarDto.required");
-		assertThat(rootRequired).containsExactlyInAnyOrder("username", "entries", "page", "totalPages", "totalBeers",
+		assertThat(rootRequired).containsExactlyInAnyOrder("username", "content", "page", "totalPages", "totalElements",
 				"totalBottles");
 	}
 
