@@ -17,6 +17,14 @@ mentioned by a given sweep simply keeps its prior confirmed date — that
 isn't staleness needing action, just "not independently re-verified this
 time."
 
+**Findings deferred from a review.** A `/code-review` finding marked *new
+task* is filed here in the pull request that defers it, as an entry with its
+own ID in the right category, and the PR description names that ID
+(`implement-task` step 8; `scripts/check-pr-body.mjs` fails a body that
+defers a finding without one). The *(confirmed &lt;date&gt;)* is then the date
+it was filed. A bare "follow-up" in a PR body is how six findings from
+#452 and the ones from #398, #400 and #425 were lost (SHOULD-90).
+
 A `**[needs decision]**` tag means the finding needs product-owner input
 before it's a well-scoped task; anything untagged is ready to implement as
 written.
@@ -161,6 +169,20 @@ they're already cross-referenced from merged PRs and
   desktop app creates a worktree per session. A `make prune-worktrees` called
   from `stack-env` or the pre-push hook, a SessionStart hook, or rewriting the
   steps around the app's lifecycle.
+- **SHOULD-92** *(confirmed 2026-10-30)* — a rejected or removed beer shows
+  in the cellar entries and feed lines that point at it
+  (`CatalogService.getBeerSummaries`, ADR-0091) but its details page 404s:
+  `CatalogService.getBeer` filters on `BeerSpecifications.visibleTo`, which
+  admits only approved rows and the viewer's own pending ones. The link on
+  such an entry is a dead end. Show a read-only details page for a beer the
+  viewer holds, or stop linking to a withheld beer. Deferred in PR #452.
+- **SHOULD-93** *(confirmed 2026-10-30)* — the add-beer flow tells the
+  contributor their pending beer is public: the dialog says "A beer you add
+  is in the catalog for everyone at once" and the success line "… is in the
+  catalog" (`catalog.add.description` and `catalog.added` in `common.json`;
+  asserted in `JustAdded.test.tsx:123`), while ADR-0091 keeps it
+  invisible to everyone else until an operator approves. Say that it waits
+  for review, in both locales. Deferred in PR #452.
 
 ## COULD
 
@@ -301,6 +323,34 @@ they're already cross-referenced from merged PRs and
   19027809 requests Copilot code review on push, but no Copilot review
   appears on any of the 23 agent PRs in #394–#459, and no doc mentions the
   setting. Remove the rule, or find out why it does not run.
+- **COULD-95** *(confirmed 2026-10-30)* — the 409 a second lost cellar write
+  answers (ADR-0057, `CellarService.addBottles`/`updateBottle`/`removeBottle`)
+  reaches the user as the generic failure: `features/cellar/api.ts` throws
+  for every status but the success one, and no cellar string or test mentions
+  a conflict. Offer "someone changed this cellar, reload and try again" once
+  iteration 12's replayed writes make it ordinary. Deferred in PR #398.
+- **COULD-96** *(confirmed 2026-10-30)* — bottles added together read back in
+  no fixed order: `Entry.bottles` is `@OrderBy("createdAt")` with no
+  tiebreaker (`Entry.java:46`) and each bulk-added bottle reads
+  `clock.instant()`, so a fixed `Clock` (every test) gives them one
+  timestamp, and a real one can tie at the column's microsecond precision.
+  Order by `createdAt, id`, as the repository queries already do. Deferred in
+  PR #400.
+- **COULD-97** *(confirmed 2026-10-30)* — a `415`/`406` is Boot's
+  `problem+json` but no operation lists it, though `ApiErrorDocumentationIT`
+  fails an operation that lists none of its others, so the generated client
+  cannot type it. List it on body-taking operations, or record why the
+  contract leaves it out. Deferred in PR #425.
+- **COULD-98** *(confirmed 2026-10-30)* — the duplicate-brewery path reads
+  the brewery twice: `ContributionService.newBrewery` finds the id with
+  `findIdBySameNameAndCountryCode`, then loads the row with `findById` for
+  the name and country the 409 carries. A projection returning those fields
+  does it in one query. Deferred in PR #425.
+- **COULD-99** *(confirmed 2026-10-30)* — `make moderate` has no way to look
+  before it acts: `scripts/moderate-contributor.sql` runs in one transaction
+  and commits, over every row a contributor added, so a mistyped `WHO` or
+  `ACTION` is only undone by a second run. A `DRY_RUN=1` that rolls back and
+  prints the same counts. Related to SHOULD-80. Deferred in PR #452.
 
 ## Retired
 

@@ -84,6 +84,11 @@ merge, or reopens a question an ADR contradicts.
       PR
 - [ ] A Jest unit test renders each tab's screen and finds its heading, in
       English and in Finnish
+- [ ] The unit tests follow [ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)'s conventions —
+      Jest and React Native Testing Library through the `jest-expo` preset,
+      each test file beside the file it tests, elements found by role,
+      accessible name or text, no network — and the project sets no coverage
+      threshold; confirmed by reading the tests and the Jest configuration
 - [ ] A lint rule fails when one feature imports another's internals —
       confirmed by a test fixture or a deliberately broken import
 - [ ] `make verify-fast` runs the mobile lint, type check and unit tests, and

@@ -67,6 +67,11 @@ once that ADR merges, or reopens a question the ADR contradicts.
       described in the PR
 - [ ] A Jest unit test renders the list from a mocked client, and its error
       and empty states
+- [ ] The unit test and the Maestro flow follow [ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)'s
+      conventions — the test as in [task 11](11-app-skeleton.md); the flow in
+      `mobile/.maestro/`, selecting by visible text or accessibility label,
+      starting from a freshly installed app and depending on no other flow;
+      confirmed by reading them
 - [ ] A Maestro flow opens the app and finds a seeded beer in the list, runs
       in CI on Android against the full stack as a required check, and was
       confirmed to fail against a build with the list broken

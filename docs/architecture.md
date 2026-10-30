@@ -1015,6 +1015,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images; `make verify` runs the two manifest scans, the image scans are CI-only | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available, waivers expire in `.trivyignore.yaml`; Dependabot opens the fix PRs, Docker images included ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Frontend unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [frontend/README.md](../frontend/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`frontend/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`frontend/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`frontend/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`frontend/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`frontend/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |
+| Mobile unit/component | Jest + React Native Testing Library, through Expo's `jest-expo` preset ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Screens and components of `mobile/`, queried by role, accessible name or text, with the generated API client mocked and no network. Built by [iteration 9 task 11](tasks/iteration-9/11-app-skeleton.md); runs in `make verify-fast` |
+| Mobile E2E | Maestro flows in `mobile/.maestro/`, driving the built app from outside ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Against the full docker-compose stack, no mock layer. CI runs the flow on an Android emulator on a Linux runner as a required check; the iOS Simulator runs the same flow in `make verify` on a Mac; CI has no iOS job. Built by [iteration 9 task 15](tasks/iteration-9/15-walking-skeleton-slice.md) |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage
@@ -1034,6 +1036,14 @@ fired: [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-
 makes the repository workspaces with a second client, and keeps the specs with
 the app they drive (`web/e2e/` once task 08 moves it) rather than in a
 dedicated `e2e/` package.
+
+Mobile is tested on the same split as the web: unit tests in `make verify-fast`,
+which needs neither Docker nor a native build ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)),
+and the native build and end-to-end flow in `make verify` only. No mobile
+coverage threshold, as the web has none. The flow is Android-only in CI because
+the macOS runners have no Docker to run the stack the flow talks to, not
+because of cost; the repository is public, so Actions minutes are free
+([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)).
 
 The definition of done for every issue is in [the roadmap](roadmap.md).
 
@@ -1269,6 +1279,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) | The repository is plain npm workspaces of `web/`, `mobile/` and two packages that ship TypeScript source | accepted | 2026-10-30 |
 | [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) | The API is additive-only while an app is installed, and a committed spec fails a breaking diff | accepted | 2026-10-30 |
 | [ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md) | The mobile app is Expo as a development build with generated native projects and no paid service | accepted | 2026-10-30 |
+| [ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md) | Mobile unit tests run on Jest and end-to-end flows on Maestro, with Android the only CI platform | accepted | 2026-10-30 |
 
 ### Engineering process and documentation
 

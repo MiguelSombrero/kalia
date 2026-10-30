@@ -27,14 +27,14 @@ the backend and the process reshaped to carry a third codebase.
 | [16](iteration-9/16-first-profile-reads-never-race.md) | Two first reads of a new user's profile never collide | done |
 | [17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md) | `dev` stays green after a merge, and a red `dev` is logged | done |
 | [18](iteration-9/18-docs-match-iteration-8-5.md) | The documentation says what iteration 8.5 built | done |
-| [19](iteration-9/19-review-feedback-outlives-its-pr.md) | What a review decides outlives the pull request it was made in | refined |
+| [19](iteration-9/19-review-feedback-outlives-its-pr.md) | What a review decides outlives the pull request it was made in | done |
 | [20](iteration-9/20-no-token-or-query-string-in-a-log.md) | No signed token or query string reaches a log | done |
 | [21](iteration-9/21-public-cellar-response-settled-before-the-freeze.md) | The public cellar's response is settled before `/api/v1` freezes | done |
 | [02](iteration-9/02-decision-the-mobile-stack.md) | Decide the mobile stack | done |
 | [03](iteration-9/03-decision-repo-layout-and-code-sharing.md) | Decide the repository layout and what code is shared | done |
 | [04](iteration-9/04-decision-api-compatibility-policy.md) | Decide the API compatibility policy | done |
 | [05](iteration-9/05-decision-mobile-authentication.md) | Decide how the mobile app authenticates | refined |
-| [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | refined |
+| [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | done |
 | [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | needs-refinement |
 | [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | needs-refinement |
 | [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | needs-refinement |
