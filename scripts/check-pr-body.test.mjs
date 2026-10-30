@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { GATE_LABELS, checkPrBody, completesTask, missingVerdicts } from "./check-pr-body.mjs";
+import { GATE_LABELS, checkPrBody, completesTask, defersWithoutBacklogId, missingVerdicts } from "./check-pr-body.mjs";
 
 const TEMPLATE = readFileSync(
   resolve(dirname(fileURLToPath(import.meta.url)), "../docs/PULL_REQUEST_TEMPLATE.md"),
@@ -66,4 +66,34 @@ test("a comment that only forms once an inner one is removed does not hide a lin
 test("an unterminated comment fails closed: the rest of the body counts as comment", () => {
   const body = filled.replace("- **Range:** ran, green", "- **Range:** <!-- never closed");
   assert.deepEqual(missingVerdicts(body), GATE_LABELS.slice(GATE_LABELS.indexOf("Range")));
+});
+
+test("a body that defers a finding without a backlog ID fails, task-completing or not", () => {
+  for (const body of [
+    "- **Code review:** 3 findings. New task: the 429 copy.",
+    "Possible follow-up (not done): 415 on body operations.",
+    "findings marked *new task* are listed here",
+  ]) {
+    assert.equal(defersWithoutBacklogId(body), true, body);
+    assert.equal(checkPrBody({ body, diff: "" }).length, 1, body);
+    assert.equal(checkPrBody({ body: `${filled}\n${body}`, diff: DONE_DIFF }).length, 1, body);
+  }
+});
+
+test("a deferral that names a quality-backlog ID passes", () => {
+  const body = "- **Code review:** 3 findings. New task: the 429 copy, filed as SHOULD-73.";
+  assert.deepEqual(checkPrBody({ body, diff: "" }), []);
+  assert.deepEqual(checkPrBody({ body: "A follow-up is COULD-95.", diff: "" }), []);
+});
+
+test("a body that defers nothing needs no ID", () => {
+  assert.deepEqual(checkPrBody({ body: "- **Code review:** 3 findings, all fixed now.", diff: "" }), []);
+});
+
+test("an ID elsewhere in the word does not count: only MUST, SHOULD or COULD with a number", () => {
+  assert.equal(defersWithoutBacklogId("new task, see ADR-0091 and ISSUE-12 and SHOULD-x"), true);
+});
+
+test("the template's own guidance about a new task is a comment and is not read", () => {
+  assert.equal(defersWithoutBacklogId(TEMPLATE), false);
 });

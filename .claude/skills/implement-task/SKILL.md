@@ -58,7 +58,12 @@ their own condition from that ADR before they apply.
    ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
 8. **Code-review gate.** Run `/code-review` on the diff — local, in-session,
    no separate service — and mark each finding worth acting on **fix now** or
-   **new task**. This runs *before* the local
+   **new task**. A **new task** is filed in this pull request as an entry in
+   `docs/tasks/quality-backlog.md` (its next free `SHOULD-N` or `COULD-N`, per
+   that file's header), and the description names the ID: a "follow-up" that
+   lives only in the description is lost when the PR merges, and
+   `scripts/check-pr-body.mjs` fails a body that defers a finding without an
+   ID. This runs *before* the local
    gate below, not after: `/code-review`, the comment pass and doc-sync can
    each still change the diff, so running the gate once on the finished diff
    beats running it, reviewing, then running it again. Step 5's relevant

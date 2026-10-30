@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Fails a task-completing PR whose body leaves a gate without a verdict.
+// Fails a task-completing PR whose body leaves a gate without a verdict, and any
+// PR whose body defers a finding without a backlog ID.
 // `implement-task` and ADR-0046 require one per gate and say a gate with no
 // verdict counts as skipped, yet about a third of code PRs carried no
 // /code-review verdict and none of the last 22 carried the pwd/range lines:
@@ -7,10 +8,16 @@
 // template's Gates section (docs/PULL_REQUEST_TEMPLATE.md) is where it lives
 // now; this reads it.
 //
-// Only a PR that sets a task file to `done` is checked: that is the PR
-// `implement-task` ends in, and the one whose gates all apply. Unlike its
-// siblings this needs a PR body, which exists only on a pull_request event,
-// so it runs from .github/workflows/pr-body.yml and not from `make check`.
+// Only a PR that sets a task file to `done` is checked for gate verdicts: that
+// is the PR `implement-task` ends in, and the one whose gates all apply.
+// Every PR is checked for a deferred finding with no home: "new task" and
+// "follow-up" in a body lived only there until SHOULD-90 found six findings
+// from #452 and the ones from #398, #400 and #425 lost, so a body that defers
+// must name the quality-backlog entry (MUST-/SHOULD-/COULD-N) it filed in the
+// same PR. That is one ID for the body, not one per finding; the reviewer
+// checks the rest. Unlike its siblings this needs a PR body, which exists only
+// on a pull_request event, so it runs from .github/workflows/pr-body.yml and
+// not from `make check`.
 //
 // usage: check-pr-body.mjs --body-file <path> --diff-file <path>
 //   body: the PR description; diff: `git diff <base>...HEAD -- docs/tasks`
@@ -71,12 +78,32 @@ export function missingVerdicts(body) {
   });
 }
 
+const DEFERRAL = /\bnew[ -]task\b|\bfollow[ -]?ups?\b/i;
+const BACKLOG_ID = /\b(?:MUST|SHOULD|COULD)-\d+\b/;
+
+// True when the body defers something (outside the template's own guidance
+// comments) and names no quality-backlog ID.
+export function defersWithoutBacklogId(body) {
+  const text = stripComments(body);
+  return DEFERRAL.test(text) && !BACKLOG_ID.test(text);
+}
+
 export function checkPrBody({ body, diff }) {
-  if (!completesTask(diff)) return [];
-  return missingVerdicts(body).map(
-    (label) =>
-      `Gates section: no verdict on a line starting "- **${label}:**" (a gate with no verdict counts as skipped)`,
-  );
+  const problems = [];
+  if (defersWithoutBacklogId(body)) {
+    problems.push(
+      'the body defers a finding ("new task" or "follow-up") but names no quality-backlog ID (MUST-/SHOULD-/COULD-N): ' +
+        "file it in docs/tasks/quality-backlog.md in this PR and name the ID",
+    );
+  }
+  if (completesTask(diff)) {
+    for (const label of missingVerdicts(body)) {
+      problems.push(
+        `Gates section: no verdict on a line starting "- **${label}:**" (a gate with no verdict counts as skipped)`,
+      );
+    }
+  }
+  return problems;
 }
 
 function arg(name) {
