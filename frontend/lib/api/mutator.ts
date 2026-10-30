@@ -26,7 +26,7 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
   // One trace id per browser request, so every backend call a render makes
   // shares it (proxy.ts starts it); a call outside any request starts its own.
   const { header, traceId } = traceparentFor(await currentTraceparent());
-  const call = { traceId, method: options.method ?? "GET", path: url.split("?", 1)[0] };
+  const call = { traceId, method: options.method ?? "GET", path: pathOf(url) };
   const started = performance.now();
   try {
     const result = await callBackend(url, options, header);
@@ -41,12 +41,13 @@ export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise
   }
 };
 
+// Every message and log field names a path, never the query string (ADR-0013).
+const pathOf = (url: string): string => url.split("?", 1)[0];
+
 type BackendResult = { data: unknown; status: number; headers: Headers };
 
 type Call = { traceId: string; method: string; path: string };
 
-// Only the path is logged: the query string carries what the user searched
-// for, which is not ours to put in a log (ADR-0013).
 const recordCall = (call: Call, status: number, started: number): void => {
   const fields = { ...call, status, durationMs: Math.round(performance.now() - started) };
   if (status >= 500) {
@@ -92,7 +93,7 @@ const callBackend = async (
     if (isApiError(cause)) {
       throw cause;
     }
-    throw apiError("network", `Could not reach the backend for ${url}`, { cause });
+    throw apiError("network", `Could not reach the backend for ${pathOf(url)}`, { cause });
   }
 
   let body: unknown = null;
@@ -102,7 +103,7 @@ const callBackend = async (
       text = await response.text();
     } catch (cause) {
       // The connection dropped part-way through the body.
-      throw apiError("network", `Response body from ${url} could not be read`, {
+      throw apiError("network", `Response body from ${pathOf(url)} could not be read`, {
         status: response.status,
         cause,
       });
@@ -114,7 +115,7 @@ const callBackend = async (
         body = JSON.parse(text);
       } catch (cause) {
         // A proxy or gateway answering with HTML rather than problem+json.
-        throw apiError("parse", `Response body from ${url} was not JSON`, {
+        throw apiError("parse", `Response body from ${pathOf(url)} was not JSON`, {
           status: response.status,
           cause,
         });
@@ -133,13 +134,13 @@ const callBackend = async (
 // leaves `.` and `..` intact, and fetch's URL parser resolves them — `%2e`
 // spellings too — so `/api/v1/cellars/..` would reach `/api/v1/`.
 const refuseReshapedPath = (url: string): void => {
-  const [path] = url.split("?", 1);
+  const path = pathOf(url);
   const segments = path.split("/").slice(1);
   const reshaped = segments.some(
     (segment) => segment === "" || /^(\.|%2e){1,2}$/i.test(segment),
   );
   if (reshaped) {
-    throw apiError("refused", `Refused to call ${url}: a path segment is empty or a dot segment`);
+    throw apiError("refused", `Refused to call ${path}: a path segment is empty or a dot segment`);
   }
 };
 
@@ -159,7 +160,7 @@ const withAccessToken = async (
 ): Promise<RequestInit> => {
   const headers = new Headers(options.headers);
   if (headers.has("Authorization")) {
-    throw apiError("refused", `Refused to call ${url}: a caller-set Authorization header`);
+    throw apiError("refused", `Refused to call ${pathOf(url)}: a caller-set Authorization header`);
   }
   // Always set, overwriting any caller value: the trace is this BFF's to
   // start or continue, not something a caller of kaliaFetch chooses.
@@ -199,7 +200,7 @@ const withTimeout = async (request: Promise<Response>, url: string): Promise<Res
     timer = setTimeout(
       () =>
         reject(
-          apiError("timeout", `Request to ${url} timed out after ${REQUEST_TIMEOUT_MS} ms`),
+          apiError("timeout", `Request to ${pathOf(url)} timed out after ${REQUEST_TIMEOUT_MS} ms`),
         ),
       REQUEST_TIMEOUT_MS,
     );

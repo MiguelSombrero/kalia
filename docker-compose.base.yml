@@ -157,8 +157,11 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_PROXY_TRUSTED_ADDRESSES: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
       # One line per request, naming the client address the proxy forwarded
-      # (%h); how scripts/check-edge.mjs and the edge e2e spec see it.
+      # (%h); how scripts/check-edge.mjs and the edge e2e spec see it. No query
+      # string (ADR-0013): `common` with %r replaced. Use %R, not %U, which
+      # in this Quarkus keeps the query string.
       KC_HTTP_ACCESS_LOG_ENABLED: "true"
+      KC_HTTP_ACCESS_LOG_PATTERN: '%h %l %u %t "%m %R %H" %s %b'
     depends_on:
       postgres:
         condition: service_healthy
