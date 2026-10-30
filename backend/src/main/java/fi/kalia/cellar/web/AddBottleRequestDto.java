@@ -19,8 +19,7 @@ public record AddBottleRequestDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull ContainerType containerType,
 		@Schema(description = "Null when not recorded") @Nullable LocalDate brewedDate,
 		@Schema(description = "Null when not recorded") @Nullable LocalDate bestBeforeDate,
-		@Schema(description = "How many identical bottles to add (1-" + MAX_QUANTITY
-				+ "); absent means one") @Nullable @Min(MIN_QUANTITY) @Max(MAX_QUANTITY) Integer quantity) {
+		@Schema(description = "How many identical bottles to add (1-" + MAX_QUANTITY + "); absent means one") @Nullable @Min(MIN_QUANTITY) @Max(MAX_QUANTITY) Integer quantity) {
 
 	private static final int MIN_QUANTITY = 1;
 
