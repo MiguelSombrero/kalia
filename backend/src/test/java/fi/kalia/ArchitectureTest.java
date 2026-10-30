@@ -70,8 +70,9 @@ class ArchitectureTest {
 			.that().areAnnotatedWith(RestController.class)
 			.or().areAnnotatedWith(RestControllerAdvice.class)
 			.should().resideInAnyPackage(BASE_PACKAGE + ".*.web..", BASE_PACKAGE + ".web..")
-			.because("HTTP is a web-layer concern (ADR-0007); module-neutral "
-					+ "advice lives in the one sanctioned fi.kalia.web location (ADR-0014)")
+			.because("""
+					HTTP is a web-layer concern (ADR-0007); module-neutral \
+					advice lives in the one sanctioned fi.kalia.web location (ADR-0014)""")
 			.allowEmptyShould(false);
 
 	@ArchTest
@@ -132,8 +133,9 @@ class ArchitectureTest {
 			.that().resideOutsideOfPackage(BASE_PACKAGE + ".identity..")
 			.should().dependOnClassesThat()
 			.belongToAnyOf(CurrentUserService.class)
-			.because("CurrentUserService is identity-module-private; other modules resolve "
-					+ "the caller's id through IdentityApi (ADR-0028)")
+			.because("""
+					CurrentUserService is identity-module-private; other modules resolve \
+					the caller's id through IdentityApi (ADR-0028)""")
 			.allowEmptyShould(false);
 
 	@ArchTest
@@ -182,8 +184,9 @@ class ArchitectureTest {
 				.that().areAnnotatedWith(RestControllerAdvice.class)
 				.and().resideOutsideOfPackage(basePackage + ".web..")
 				.should(declareBasePackages())
-				.because("basePackages is the scoping convention (ADR-0014, backend/README.md); "
-						+ "without it an advice answers for every controller in the application")
+				.because("""
+						basePackages is the scoping convention (ADR-0014, backend/README.md); \
+						without it an advice answers for every controller in the application""")
 				.allowEmptyShould(false);
 	}
 
@@ -212,8 +215,9 @@ class ArchitectureTest {
 		return noClasses()
 				.that().resideInAPackage(basePackage + ".*")
 				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.domain..")
-				.because("a module-root API reaches domain only through application, "
-						+ "like every other class in the module: web → application → domain (ADR-0007)");
+				.because("""
+						a module-root API reaches domain only through application, \
+						like every other class in the module: web → application → domain (ADR-0007)""");
 	}
 
 	// A bottle is created, changed and removed only through the entry that owns

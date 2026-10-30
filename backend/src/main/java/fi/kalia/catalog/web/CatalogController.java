@@ -70,8 +70,7 @@ class CatalogController {
 
 	private static final String PAGE_DESCRIPTION = "Zero-based page index; page × size is at most " + MAX_OFFSET;
 
-	private static final String PENDING_CAP_SENTENCE = "At most " + ContributionService.MAX_PENDING_ENTRIES
-			+ " entries may wait for approval per contributor.";
+	private static final String PENDING_CAP_SENTENCE = "At most " + ContributionService.MAX_PENDING_ENTRIES + " entries may wait for approval per contributor.";
 
 	private final CatalogService catalog;
 
@@ -106,9 +105,13 @@ class CatalogController {
 			@RequestParam(defaultValue = "20") @Min(1) @Max(MAX_PAGE_SIZE) int size,
 			@Parameter(description = "\"<property>,<asc|desc>\"; property is one of name, style, abv")
 			@RequestParam(defaultValue = "name,asc") String sort,
-			@Parameter(description = "Restrict to beers whose name contains any word of this text, case-insensitively: "
-					+ "the words are its runs of letters and digits at least 2 long, the first " + SimilarNameWords.MAX_WORDS
-					+ " counted. Requires breweryId. At most " + MAX_FILTER_LENGTH + " characters")
+			@Parameter(description = """
+					Restrict to beers whose name contains any word of this text, case-insensitively: \
+					the words are its runs of letters and digits at least 2 long, the first \
+					""" + SimilarNameWords.MAX_WORDS + """
+					 counted. Requires breweryId. At most \
+					""" + MAX_FILTER_LENGTH + """
+					\scharacters""")
 			@RequestParam(required = false) @Size(max = MAX_FILTER_LENGTH) String similarTo) {
 		requireOrderedAbvRange(minAbv, maxAbv);
 		requireBoundedOffset(page, size);

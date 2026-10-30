@@ -35,14 +35,16 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	// One page of a public cellar, in the order the beers were added, no bottles
 	// loaded, without the entries of `excludedBeerIds`. Keyed on an already-resolved
 	// owner id, like the read above (ADR-0050). An empty collection excludes nothing.
-	@Query(value = "select e from Entry e where e.userId = :userId and e.beerId not in :excludedBeerIds "
-			+ "order by e.createdAt, e.id",
+	@Query(value = """
+			select e from Entry e where e.userId = :userId and e.beerId not in :excludedBeerIds
+			order by e.createdAt, e.id""",
 			countQuery = "select count(e) from Entry e where e.userId = :userId and e.beerId not in :excludedBeerIds")
 	Page<Entry> findPageByUserIdExcludingBeers(@Param("userId") UUID userId,
 			@Param("excludedBeerIds") Collection<UUID> excludedBeerIds, Pageable pageable);
 
-	@Query("select new fi.kalia.cellar.domain.BottleCount(b.entry.id, count(b)) from Bottle b "
-			+ "where b.entry.id in :entryIds group by b.entry.id")
+	@Query("""
+			select new fi.kalia.cellar.domain.BottleCount(b.entry.id, count(b)) from Bottle b
+			where b.entry.id in :entryIds group by b.entry.id""")
 	List<BottleCount> countBottlesByEntryId(@Param("entryIds") Collection<UUID> entryIds);
 
 	// The ids of the oldest `limit` bottles of each entry, an index range scan per
@@ -58,13 +60,15 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 			order by b.created_at, b.id""", nativeQuery = true)
 	List<UUID> findIdsOfOldestBottlesOfEntries(@Param("entryIds") Collection<UUID> entryIds, @Param("limit") int limit);
 
-	@Query("select new fi.kalia.cellar.domain.BottleListing(b.id, b.entry.id, b.containerType, b.brewedDate, "
-			+ "b.bestBeforeDate, b.createdAt, b.updatedAt) from Bottle b where b.id in :ids "
-			+ "order by b.createdAt, b.id")
+	@Query("""
+			select new fi.kalia.cellar.domain.BottleListing(b.id, b.entry.id, b.containerType, b.brewedDate,
+			b.bestBeforeDate, b.createdAt, b.updatedAt) from Bottle b where b.id in :ids
+			order by b.createdAt, b.id""")
 	List<BottleListing> listBottles(@Param("ids") Collection<UUID> ids);
 
-	@Query("select new fi.kalia.cellar.domain.BottleTotals(count(b), max(b.createdAt)) from Bottle b "
-			+ "where b.entry.userId = :userId and b.entry.beerId not in :excludedBeerIds")
+	@Query("""
+			select new fi.kalia.cellar.domain.BottleTotals(count(b), max(b.createdAt)) from Bottle b
+			where b.entry.userId = :userId and b.entry.beerId not in :excludedBeerIds""")
 	BottleTotals totalBottlesOfExcludingBeers(@Param("userId") UUID userId,
 			@Param("excludedBeerIds") Collection<UUID> excludedBeerIds);
 
