@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-24
+- **Amended:** 2026-10-30 — a red run on `dev` after a merge has no branch to
+  be logged on; the session that starts work logs it, from the `worktree`
+  skill's start step
 
 ## Context
 
@@ -62,6 +65,18 @@ those rows.**
   line ([ADR-0020](0020-documentation-roles.md)). A row that names the home
   is enough. The log never becomes a second copy of a fix.
 
+> **Amended 2026-10-30.** "On the branch it happened on" has no answer for a
+> run that goes red on `dev` after a merge: no session is working on it, so
+> nobody logs it. Runs `40077060971`, `40166251873` and `40168778643` stayed
+> out of the log for that reason, and they are the failures that hit every
+> session at once. Whoever **starts work** logs it: the `worktree` skill's
+> start step already fetches `dev`, and also reads `dev`'s `CI` runs from the
+> last seven days and appends one row, on the new branch, for each red run
+> the log does not yet account for. A row for a `dev` run names its run id in
+> *Where*, which is what the next session matches against. Rejected: the
+> sweep reconstructing them from run history, which is too late, and a
+> scheduled workflow opening an issue, which is a second place to look.
+
 **Not decided here:** a hook that prompts for a row when a tool call fails.
 That would be ADR-0039's answer to a rule that keeps being skipped, and it
 waits until the rule is shown to be skipped. See the revisit trigger.
@@ -107,6 +122,9 @@ wanted has already been lost by then.
 - Neutral, because the union merge driver also accepts duplicate lines and
   makes no attempt to order rows, so two worktrees' rows can land in either
   order. The sweep reads by date, so this does not matter.
+- Neutral, because two sessions that start before either has merged can both
+  append a row for the same `dev` run. The union driver keeps both and the
+  sweep counts one failure, as it does for any duplicate.
 - **Revisit trigger:** a sweep finding failures in the history, such as a
   fix commit or a red CI run, with no matching row. That shows the rule
   being skipped and earns the hook deferred above. Separately: a log too long

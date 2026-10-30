@@ -75,6 +75,28 @@ test.describe("the client address", () => {
   });
 });
 
+test.describe("the request logs", () => {
+  test("the edge and Keycloak log a request's path and never its query string (ADR-0013)", async ({
+    request,
+  }) => {
+    const id = randomUUID().replaceAll("-", "");
+    const secret = `canary-${id}`;
+
+    await request.get(`${KEYCLOAK_ORIGIN}/realms/kalia/probe-${id}?id_token_hint=${secret}`, {
+      failOnStatusCode: false,
+    });
+    await request.get(`${FRONTEND_ORIGIN}/en/beers/probe-${id}?query=${secret}`, {
+      failOnStatusCode: false,
+    });
+
+    for (const service of ["edge", "keycloak"]) {
+      const logs = logsOf(service);
+      expect(linesMentioning(logs, `probe-${id}`), `${service} logged no request`).not.toHaveLength(0);
+      expect(logs, `${service} logged a query string`).not.toContain(secret);
+    }
+  });
+});
+
 test.describe("the edge proxy's limits", () => {
   test("a back-channel logout body over the cap is refused at the edge", async ({ request }) => {
     const response = await request.post(`${FRONTEND_ORIGIN}/api/auth/backchannel-logout`, {
@@ -88,7 +110,7 @@ test.describe("the edge proxy's limits", () => {
 
   test("a burst on the backend is refused with 429 before it reaches Spring", async ({ request }) => {
     const id = randomUUID();
-    const url = `${BACKEND_ORIGIN}/api/v1/burst-${id}`;
+    const url = `${BACKEND_ORIGIN}/api/v1/burst-${id}?query=canary-${id}`;
 
     const responses = await Promise.all(
       Array.from({ length: 120 }, () => request.get(url, { failOnStatusCode: false })),
@@ -99,6 +121,8 @@ test.describe("the edge proxy's limits", () => {
     expect(refused.length, "no request was refused").toBeGreaterThan(0);
     expect(refused[0].headers()["server"]).toBe("nginx");
     expect(answered, "the limit let the whole burst through").toBeLessThan(responses.length / 2);
+    // nginx's error log names the refused request line, so a refusal must not be logged there.
+    expect(logsOf("edge"), "a refusal logged the query string").not.toContain(`canary-${id}`);
     // A request Spring answered is a request Spring logged; the others never got there.
     await expect
       .poll(() => linesMentioning(logsOf("backend"), `burst-${id}`).length)

@@ -41,7 +41,12 @@ puts in the base whatever is not a dev convenience).
   (`server.forward-headers-strategy=native`) honour that header only from a
   peer inside the stack's private ranges; the request log of each names the
   address it resolved. The frontend passes the address it was given on to the
-  backend, because Spring sees the frontend as its peer.
+  backend, because Spring sees the frontend as its peer. Neither request log
+  carries a query string (ADR-0013): a sign-out's `id_token_hint` is a signed
+  token and a search term is the person's own, so the proxy's `log_format`
+  and Keycloak's access-log pattern both name the method, the path and the
+  protocol only, and `limit_req_log_level info` keeps a refusal out of the
+  error log, which prints the request line whole.
 - **Per-address limits, one zone per kind of request**, so a flood of page
   loads cannot spend the budget for registrations. The limits are below;
   a request over its zone's rate and burst is answered `429` by the proxy.

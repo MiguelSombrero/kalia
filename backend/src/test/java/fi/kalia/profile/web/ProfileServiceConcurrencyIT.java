@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -52,27 +53,15 @@ class ProfileServiceConcurrencyIT {
 	@PersistenceContext
 	private EntityManager entityManager;
 
+	@Autowired
+	private JdbcTemplate jdbc;
+
 	@Test
 	void concurrentFirstReadsForANewUserBothSucceedAgainstOneSharedProfile() throws Exception {
 		UUID userId = UUID.randomUUID();
 		given(jwtDecoder.decode("race-user-token")).willReturn(TestTokens.user(userId.toString(), "racer"));
 
-		// Holds both requests at "no row yet" until both have read it, so both
-		// go on to insert concurrently; the retry's own re-read skips the
-		// barrier once both parties have already passed through it once, or
-		// it would wait forever for a party that never comes.
-		CyclicBarrier bothSawNoProfile = new CyclicBarrier(2);
-		AtomicInteger reads = new AtomicInteger();
-		// Mockito cannot callRealMethod() on a Spring Data repository (a JDK
-		// proxy over an interface, no concrete method to call through to);
-		// reading directly against the calling thread's own (transaction-bound)
-		// EntityManager stands in for the real call.
-		doAnswer(invocation -> {
-			if (reads.getAndIncrement() < bothSawNoProfile.getParties()) {
-				bothSawNoProfile.await(5, TimeUnit.SECONDS);
-			}
-			return Optional.ofNullable(entityManager.find(Profile.class, userId));
-		}).when(profiles).findById(eq(userId));
+		bothRequestsReadNoProfile(userId);
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		try {
@@ -84,6 +73,42 @@ class ProfileServiceConcurrencyIT {
 
 			assertThat(firstBody).isEqualTo(secondBody);
 			assertThat(profiles.findById(userId)).isPresent();
+		} finally {
+			pool.shutdownNow();
+		}
+	}
+
+	// The ordering the barrier test above only hits by luck: both requests miss
+	// the profile row, one inserts and commits, and only then does the other run
+	// its username check, which finds the row it would have inserted itself.
+	@Test
+	void aFirstReadWhoseUsernameCheckRunsAfterTheOtherCommittedGetsTheSharedProfile() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String username = "committed-" + UUID.randomUUID();
+		given(jwtDecoder.decode("late-check-token")).willReturn(TestTokens.user(userId.toString(), username));
+
+		bothRequestsReadNoProfile(userId);
+
+		// The first check goes straight through; the second waits until the
+		// first request's row is visible from another connection.
+		AtomicInteger checks = new AtomicInteger();
+		doAnswer(invocation -> {
+			if (checks.getAndIncrement() > 0) {
+				awaitCommittedProfile(userId);
+			}
+			return entityManager
+					.createQuery("select p from Profile p where lower(p.username) = lower(:username)", Profile.class)
+					.setParameter("username", username)
+					.getResultStream().findFirst();
+		}).when(profiles).findByUsernameIgnoringCase(eq(username));
+
+		ExecutorService pool = Executors.newFixedThreadPool(2);
+		try {
+			Future<String> first = pool.submit(readProfile("Bearer late-check-token"));
+			Future<String> second = pool.submit(readProfile("Bearer late-check-token"));
+
+			assertThat(first.get(10, TimeUnit.SECONDS)).isEqualTo(second.get(10, TimeUnit.SECONDS));
+			assertThat(profiles.findAllById(List.of(userId))).hasSize(1);
 		} finally {
 			pool.shutdownNow();
 		}
@@ -126,13 +151,46 @@ class ProfileServiceConcurrencyIT {
 		}
 	}
 
+	// Holds both requests at "no row yet" until both have read it, so both
+	// go on to insert concurrently; the retry's own re-read skips the
+	// barrier once both parties have already passed through it once, or
+	// it would wait forever for a party that never comes.
+	private void bothRequestsReadNoProfile(UUID userId) {
+		CyclicBarrier bothSawNoProfile = new CyclicBarrier(2);
+		AtomicInteger reads = new AtomicInteger();
+		// Mockito cannot callRealMethod() on a Spring Data repository (a JDK
+		// proxy over an interface, no concrete method to call through to);
+		// reading directly against the calling thread's own (transaction-bound)
+		// EntityManager stands in for the real call.
+		doAnswer(invocation -> {
+			if (reads.getAndIncrement() < bothSawNoProfile.getParties()) {
+				bothSawNoProfile.await(5, TimeUnit.SECONDS);
+			}
+			return Optional.ofNullable(entityManager.find(Profile.class, userId));
+		}).when(profiles).findById(eq(userId));
+	}
+
 	private Callable<String> readProfile() {
+		return readProfile("Bearer race-user-token");
+	}
+
+	private Callable<String> readProfile(String bearer) {
 		return () -> client.get().uri("/api/v1/profile")
-				.header("Authorization", "Bearer race-user-token")
+				.header("Authorization", bearer)
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.returnResult().getResponseBody();
+	}
+
+	private void awaitCommittedProfile(UUID userId) throws InterruptedException {
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+		while (jdbc.queryForObject("select count(*) from profile.profile where id = ?", Integer.class, userId) == 0) {
+			if (System.nanoTime() > deadline) {
+				throw new IllegalStateException("the first request never committed its profile");
+			}
+			Thread.sleep(10);
+		}
 	}
 
 	private Callable<Integer> statusOfProfileRead(String bearer) {

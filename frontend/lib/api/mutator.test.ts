@@ -355,6 +355,69 @@ describe("kaliaFetch", () => {
       ]);
     });
 
+    describe("on a failure", () => {
+      const search = "/api/v1/beers?query=westvleteren";
+      const unreadableBody = () =>
+        ({
+          status: 200,
+          headers: new Headers(),
+          text: async () => {
+            throw new TypeError("terminated");
+          },
+        }) as unknown as Response;
+
+      it.each([
+        ["a backend that cannot be reached", "network", search, () => {
+          vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("fetch failed"))));
+        }],
+        ["a body that cannot be read", "network", search, () => {
+          vi.stubGlobal("fetch", vi.fn(async () => unreadableBody()));
+        }],
+        ["a body that is not JSON", "parse", search, () => {
+          vi.stubGlobal("fetch", vi.fn(async () => new Response("<html></html>", { status: 502 })));
+        }],
+        ["a backend that does not answer in time", "timeout", search, () => {
+          vi.useFakeTimers();
+          vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+        }],
+        ["a path that would reshape the route", "refused", "/api/v1/cellars/..?query=westvleteren", () => {
+          vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
+        }],
+      ])(
+        "logs and raises %s without the query string",
+        async (_, kind, url, arrange) => {
+          arrange();
+
+          const pending = kaliaFetch(url, { method: "GET" }).catch((e: unknown) => e);
+          await vi.advanceTimersByTimeAsync(10_000).catch(() => undefined);
+          const error = await pending;
+
+          expect(isApiError(error) && error.kind).toBe(kind);
+          expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
+            "Backend call failed",
+            expect.objectContaining({ kind, path: url.split("?", 1)[0] }),
+          );
+          expect(JSON.stringify(vi.mocked(logger.warn).mock.calls)).not.toContain("westvleteren");
+          expect(JSON.stringify(error, Object.getOwnPropertyNames(error))).not.toContain(
+            "westvleteren",
+          );
+        },
+      );
+
+      it("logs and raises a caller-set Authorization header's refusal without the query string", async () => {
+        vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
+
+        const error = await kaliaFetch(search, {
+          method: "GET",
+          headers: { Authorization: "Bearer caller-supplied" },
+        }).catch((e: unknown) => e);
+
+        expect(isApiError(error) && error.kind).toBe("refused");
+        expect(JSON.stringify(vi.mocked(logger.warn).mock.calls)).not.toContain("westvleteren");
+        expect((error as Error).message).not.toContain("westvleteren");
+      });
+    });
+
     it("neither logs nor counts a caller's own abort", async () => {
       vi.stubGlobal(
         "fetch",

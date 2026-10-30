@@ -1,7 +1,10 @@
 package fi.kalia.profile.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
@@ -24,6 +27,17 @@ class ProfileServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new ProfileService(profiles);
+	}
+
+	@Test
+	void currentProfileReturnsTheCallersOwnRowWhenItAppearsAfterTheLookupMissed() {
+		UUID userId = UUID.randomUUID();
+		Profile committedMeanwhile = Profile.create(userId, "alice");
+		given(profiles.findById(userId)).willReturn(Optional.empty());
+		given(profiles.findByUsernameIgnoringCase("Alice")).willReturn(Optional.of(committedMeanwhile));
+
+		assertThat(service.currentProfile(userId, "Alice")).isSameAs(committedMeanwhile);
+		verify(profiles, never()).save(any());
 	}
 
 	@Test
