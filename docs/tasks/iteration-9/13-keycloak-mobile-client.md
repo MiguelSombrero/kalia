@@ -114,7 +114,7 @@ was accepted:
 - [x] An authorization-code flow with PKCE against the local Keycloak returns
       tokens to the `kalia://` redirect, and the access token's `aud`
       includes `kalia-backend` — verified by script, and described in the PR
-- [ ] `make verify` is green
+- [x] `make verify` is green
 
 ## Notes
 
