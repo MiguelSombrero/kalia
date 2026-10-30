@@ -1,6 +1,6 @@
 # Task 18: The documentation says what iteration 8.5 built
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -57,12 +57,12 @@ refinement on 2026-10-30 confirmed each is ready as written.
 
 ## Acceptance criteria
 
-- [ ] Following `frontend/README.md`'s generate step from a stopped stack
+- [x] Following `frontend/README.md`'s generate step from a stopped stack
       produces the client without a connection error, checked by running it
-- [ ] Each of the six locations is corrected or reduced to a pointer, and
+- [x] Each of the six locations is corrected or reduced to a pointer, and
       `node scripts/check-adrs.mjs` and the links test are green
-- [ ] ADR-0028 carries an amendment line for the removed endpoint
-- [ ] `make verify-fast` is green
+- [x] ADR-0028 carries an amendment line for the removed endpoint
+- [x] `make verify-fast` is green
 
 ## Notes
 
