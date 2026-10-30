@@ -120,17 +120,17 @@ Key properties:
   behind a token. How to read them is in the two READMEs.
 
 **Repository layout** ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)).
-The repository is npm workspaces, with no tool on top. `mobile/` and
-`packages/` do not exist yet: [task 11](tasks/iteration-9/11-app-skeleton.md)
-adds the app and [task 09](tasks/iteration-9/09-shared-packages.md) the
-packages, and the root `package.json` already names them.
+The repository is npm workspaces, with no tool on top. `mobile/` does not
+exist yet: [task 11](tasks/iteration-9/11-app-skeleton.md) adds the app, and
+the root `package.json` already names it.
 
 ```text
 backend/    Spring Boot modulith
 web/        the Next.js app
 mobile/     the Expo app
-packages/   two packages shipped as TypeScript source: the generated API
-            client and the en/fi strings
+packages/   two packages shipped as TypeScript source: `@kalia/api`, the
+            generated API client and its fetch core, and `@kalia/locales`,
+            the en/fi strings
 package.json, package-lock.json   npm workspaces; the only lockfile
 ```
 
@@ -616,8 +616,8 @@ Conventions:
   `/swagger-ui/index.html`, reachable at `localhost:8080` on the dev
   machine — see [§6](#6-authentication-and-identity)).
   Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`,
-  and the web app generates its client from it — see
-  [§5](#5-web-app-design).
+  and `@kalia/api` generates its client from the committed copy,
+  `backend/openapi.json` — see [§5](#5-web-app-design).
 
 **Compatibility.** An installed app keeps calling the API it was built against,
 so `/api/v1` changes additively only
@@ -637,11 +637,13 @@ so `/api/v1` changes additively only
   (`GET /api/v1/app-config`, not yet built — [task 12](tasks/iteration-9/12-app-config-endpoint.md))
   excludes every app build that uses it: the window is measured in releases,
   not time. `app-config` is itself under this rule from its first release.
-- The spec is a committed file that both clients generate from. A backend test
-  fails when it differs from the one the application serves, and a CI job
-  diffs it against `dev`'s and fails on a breaking change. Both are built by
-  [task 09](tasks/iteration-9/09-shared-packages.md); until it merges, review
-  is the only check.
+- The spec is a committed file, `backend/openapi.json`, that both clients
+  generate from. `CommittedOpenApiSpecIT` fails when it differs from the one the
+  application serves (`make openapi-spec` rewrites it), and CI's `api-breaking-change`
+  job runs `oasdiff` against `dev`'s copy and fails on a breaking change. The
+  removal of an element `dev` already marks `deprecated` is let through only by
+  a line in `backend/openapi-breaking-ignore.txt` stating the minimum supported
+  build that excludes its last user; nothing else can be waived there.
 
 ## 5. Web app design
 
@@ -679,14 +681,19 @@ The shape of the web app. Day-to-day rules for writing it live in
   CSP's `form-action 'self'` can stay strict
   ([ADR-0025](adr/0025-authjs-valkey-adapter.md)). Catalog data flows through
   server components calling a feature's `api.ts`, which calls the generated
-  client, whose one HTTP mutator is `kaliaFetch` (`lib/api/mutator.ts`), the
-  thin wrapper that owns the backend base URL and error mapping, refuses a
-  path whose segments a parameter could have reshaped, and attaches the
-  access token belonging to the caller's own session — the only one it ever
-  sends, since a caller-set `Authorization` header is refused — renewing it
-  first if it has expired or records no expiry ([ADR-0028](adr/0028-resource-server-and-current-user.md),
+  client from `@kalia/api`. Its one HTTP mutator is `kaliaFetch`, which calls
+  the transport an app registers once at startup and throws if none was. The
+  platform-neutral half is the package's fetch core: the backend base URL and
+  error mapping, the timeout, JSON parsing, a path whose segments a parameter
+  could have reshaped refused, and the access token its app supplies attached
+  — the only one it ever sends, since a caller-set `Authorization` header is
+  refused. The web's transport (`lib/api/mutator.ts`, registered by
+  `instrumentation.ts`) wraps that core with what is the web's own: the access
+  token belonging to the caller's own session, renewed first if it has expired
+  or records no expiry ([ADR-0028](adr/0028-resource-server-and-current-user.md),
   [ADR-0029](adr/0029-silent-token-refresh.md),
-  [ADR-0030](adr/0030-per-session-token-storage.md)). A client component's
+  [ADR-0030](adr/0030-per-session-token-storage.md)), the trace header, the
+  client address, metrics and logging. A client component's
   read of that same authenticated data calls a Server Action instead — never
   the feature's `api.ts` directly — so the token-lookup chain stays out of
   the browser bundle, and the mutator's `server-only` import makes a client
@@ -702,9 +709,10 @@ The shape of the web app. Day-to-day rules for writing it live in
   [ADR-0041](adr/0041-tanstack-query-feature-owned-hooks.md)). Forms
   follow the same split — navigate → native GET form, mutate/validate →
   react-hook-form + Zod.
-- **API client generated from the backend's OpenAPI spec**
-  ([ADR-0012](adr/0012-orval-api-client.md)) into `lib/api/generated/`
-  (committed; CI regenerates and diffs to catch drift), with every path
+- **API client generated from the backend's committed OpenAPI spec**
+  ([ADR-0012](adr/0012-orval-api-client.md), [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md))
+  into `packages/api/src/generated/` (committed; `make api-drift` regenerates
+  from `backend/openapi.json`, with no backend running, and diffs), with every path
   parameter percent-encoded by orval's `urlEncodeParameters`, wrapped by each
   feature rather than imported directly — and each feature reaches only its
   own tag's operations, so data from two backend modules is joined in the
@@ -734,7 +742,7 @@ The shape of the web app. Day-to-day rules for writing it live in
   registration, verification and password-reset are Keycloak's, on its own
   origin, translated by Keycloak's own `en`/`fi` message bundles — not
   i18next, and with no Kalia-authored auth-page strings to keep in step with
-  `i18n/locales/`. The realm enables `internationalizationEnabled`; the
+  `packages/locales/`. The realm enables `internationalizationEnabled`; the
   sign-in Server Actions pass `ui_locales` (and a locale-prefixed
   `redirectTo`) so the visitor stays in the language they were reading. The
   realm's `loginTheme` is a minimal `keycloak.v2` child in
@@ -1050,8 +1058,11 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Backend integration | Spring Boot Test + Testcontainers (PostgreSQL) | REST slices, repositories, Flyway migrations, event flows (`@ApplicationModuleTest`). HTTP assertions use Spring Framework 7's `RestTestClient` (`@AutoConfigureRestTestClient`) — never the legacy `TestRestTemplate`, whose autoconfiguration Spring Boot 4 dropped |
 | Module boundaries | Spring Modulith `ApplicationModules.verify()` | CI fails on illegal cross-module dependencies |
 | Module map in these docs | `ArchitectureDocumentationTest`, against Spring Modulith's `Documenter` view | §2's diagram — its backend modules and the edges between them — and §3's table and "Depends on" column are parsed at test time; editing either without the code, or the code without them, fails the build ([backend/README.md](../backend/README.md) notable suites) |
-| Web app import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
+| Web app import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client (the `@kalia/api` package) from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
 | The `boundaries/dependencies` policies | Each re-run by `web/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `web/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
+| Shared packages stay platform-neutral | ESLint `no-restricted-imports` (`packages/eslint.config.mjs`, in each package's `npm run lint`), re-run by `packages/api/platform-neutrality.test.ts` against committed violating fixtures in `packages/eslint-fixtures/neutrality/` | CI fails on a package importing `react-dom`, `next`, `react-native` or anything of `web/` or `mobile/` ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)). The real packages pass, so each pattern is proven to fire by a fixture placed as if it sat in either package |
+| API client and spec | `CommittedOpenApiSpecIT` (backend), `make api-drift` (regenerate `@kalia/api` from `backend/openapi.json`, diff), CI's `api-breaking-change` job (`oasdiff` against `dev`'s spec) | CI fails when the committed spec differs from the served one, when the committed client differs from what the spec generates, and on a breaking change to the spec ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)); the fetch core is unit-tested in `packages/api` (token, non-2xx returned, typed failures, unregistered transport) |
+| Language bundles | Vitest in `packages/locales` | CI fails on a key present in `en` and not in `fi`, or the reverse |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | The rules among those that no production class triggers | Re-run against `backend/src/test/java/archfixture/` (`ArchitectureRulesRejectViolationsTest`) | A rule no production class triggers passes whether or not its condition is right, so those rules — `noClasses()` rules and the `classes()` rules every production class merely satisfies — and only those are also run against a codebase that breaks them |
 | Backend HTTP-boundary rule | ArchUnit (`HttpBoundaryTest`) | A controller handler method may not return, or accept as a `@RequestBody`, a JPA entity — bare or wrapped in `List`, `Page`, `Optional` or `ResponseEntity` (§4's "JPA entities never serialize directly"). An advice `@ExceptionHandler` may not answer with a body type that reaches a JPA entity through its fields, and an advice may not call `ProblemDetail.setProperty` ([ADR-0014](adr/0014-shared-exception-handling.md)) |

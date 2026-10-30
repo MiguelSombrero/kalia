@@ -260,8 +260,10 @@ manifest already says.
 - i18next + i18next-resources-to-backend (server-side localization, English +
   Finnish), react-i18next (the client-component bridge, mounted in
   `app/providers.tsx` — see ADR-0011)
-- orval (API client generated from the backend's OpenAPI spec, committed + CI
-  drift check — see ADR-0012)
+- orval (API client generated from the backend's committed OpenAPI spec into
+  `packages/api`, committed + CI drift check — see ADR-0012, ADR-0093)
+- oasdiff (CI's breaking-change diff of the committed spec against `dev`'s —
+  see ADR-0093)
 - Vitest + React Testing Library (unit/component tests), Playwright (E2E,
   chromium only, against the docker compose stack)
 - `package.json` `overrides` pin `postcss` and `sharp` — the one place a
@@ -328,6 +330,9 @@ kalia/
 │       ├── profile/  # user profile, public cellar visibility
 │       └── feed/     # front-page activity feed
 ├── web/              # Next.js app (BFF + UI), an npm workspace
+├── packages/         # shared TypeScript source, npm workspaces (ADR-0092)
+│   ├── api/          # @kalia/api: generated API client + fetch core
+│   └── locales/      # @kalia/locales: the en/fi strings
 ├── keycloak/         # realm export, login theme, image
 ├── edge/             # nginx proxy in front of the web app, backend and Keycloak
 ├── postgres/         # init scripts

@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-30
+- **Amended:** 2026-10-30 — [task 09](../tasks/iteration-9/09-shared-packages.md)
+  built both packages and found `transpilePackages` unnecessary for them: the
+  web builds identically without the entries, so `next.config.ts` has none
+  (see Evidence)
 
 ## Context
 
@@ -180,3 +184,17 @@ by building.
   documentation and is not verified here; it is the mobile stack's decision
   ([task 02](../tasks/iteration-9/02-decision-the-mobile-stack.md)) and
   [task 11](../tasks/iteration-9/11-app-skeleton.md)'s to confirm.
+
+Confirmed by building in task 09, 2026-10-30, with Next.js 16.4.3 on Turbopack
+(the default for `next build`): the web built twice from the same tree, once
+with `transpilePackages: ["@kalia/api", "@kalia/locales"]` and once without.
+Both builds passed; the standalone output (50,296 KB), the server directory
+(22,208 KB) and the file count (517) were identical, and the only differing
+bytes in the server chunks were the per-build ids of Server Actions. A
+workspace package is compiled automatically, as the documentation says, so the
+entry does nothing and is not set. `outputFileTracingRoot` at the repository
+root (task 08) is still what lets the standalone trace reach `packages/`:
+the standalone output holds no `packages/` directory, because the packages
+are bundled into the server chunks, and the image built from the repository
+root served both locales' pages with backend calls made through the shared
+client. The webpack bundler was not built.
