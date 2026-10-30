@@ -1,6 +1,6 @@
 # Task 13: Keycloak has a client for the app, and the backend accepts its tokens
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-2
 
@@ -27,7 +27,8 @@ that client passes the audience check.
 
 ## Constraints
 
-- [Task 05](05-decision-mobile-authentication.md)'s ADR.
+- [ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md),
+  [task 05](05-decision-mobile-authentication.md)'s decision.
 - Realm configuration is applied by keycloak-config-cli and checked for drift
   ([ADR-0054](../../adr/0054-keycloak-config-cli-realm-management.md)).
 - Keycloak's login pages carry Kalia's theme
@@ -50,14 +51,37 @@ that client passes the audience check.
   among the acceptance criteria. Running Keycloak in Testcontainers was rejected as
   a new dependency.
 
+**Decided in the second pass, 2026-10-30** (product owner), after
+[ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
+was accepted:
+
+- **Refresh-token rotation is verified first, and if it is realm-wide both
+  clients keep reuse.** ADR-0095 read it from the pinned Keycloak's
+  documentation and source, not from a running instance. This task checks
+  whether rotation can be set for `kalia-mobile` alone. If it can, the client
+  rotates and the web keeps reuse, as the ADR decides. If it cannot, both
+  clients keep reuse and this task amends ADR-0095 to say so, with a revisit
+  trigger: before the app is installed beyond the product owner's own phone.
+  A stolen phone's refresh token then replays until sign-out or the 30-day
+  idle lapse. Rotating both behind the renewal lock
+  [ADR-0029](../../adr/0029-silent-token-refresh.md) rejected was declined: it
+  is a change to the web's refresh, with its own risk, inside a task about a
+  Keycloak client.
+- **The client has one redirect URI, `kalia://auth/callback`.** Sign-out
+  revokes the tokens by a direct call, so no post-logout redirect URI is
+  registered.
+- **The client carries a `rootUrl` and `baseUrl`,** because Keycloak's own
+  pages show their "Back to Application" link only for a client that has one
+  ([architecture §6](../../architecture.md)), and the realm requires email
+  verification, so a user who signs up from the app leaves for their mail and
+  needs a way back. What value a custom-scheme link takes there is found by
+  trying it.
+- **This task follows [task 08](08-workspaces-refactor.md),** which renames
+  `kalia-frontend` to `kalia-web` in the same `keycloak/realm-export.json`.
+
 ## Open questions
 
-**Answered, waiting on an accepted ADR.** Every question raised for this task
-was answered at refinement on 2026-10-30 (Constraints). It stays
-`needs-refinement` only because [the iteration](../iteration-9.md) has a
-decision accepted before the build tasks it binds are refined — here
-[task 05](05-decision-mobile-authentication.md)'s. A second pass moves it once
-that ADR merges, or reopens a question the ADR contradicts.
+**None.**
 
 ## Acceptance criteria
 
@@ -66,10 +90,12 @@ that ADR merges, or reopens a question the ADR contradicts.
 - [ ] A backend test, through the real decoder, shows a token issued to
       `kalia-mobile` is accepted, and the same token without the
       `kalia-backend` audience is rejected with 401
-- [ ] A `kalia-mobile` refresh token is refused on its second use while a
-      `kalia-frontend` one is not — checked against the local Keycloak and
-      described in the PR. If Keycloak can set rotation only realm-wide, the
-      task stops here and the PR says so ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md))
+- [ ] Whether rotation can be set for `kalia-mobile` alone is checked against
+      the local Keycloak and described in the PR. If it can, a `kalia-mobile`
+      refresh token is refused on its second use while a `kalia-web` one is
+      not. If it cannot, both clients still accept a second use and
+      [ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
+      is amended with the result and its revisit trigger
 - [ ] The realm pins the offline session idle timeout at 30 days with no
       offline maximum, and a token issued with `offline_access` to
       `kalia-mobile` carries a refresh token that outlives the SSO session's
@@ -81,6 +107,10 @@ that ADR merges, or reopens a question the ADR contradicts.
       Keycloak, and the points ADR-0095's Evidence leaves unverified (custom
       scheme matching, revoking an offline token, a disabled account's
       refresh) are each checked and the result described in the PR
+- [ ] A user who registers through the client's sign-in page and follows the
+      emailed verification link (Mailpit, in the local stack) reaches a page
+      whose "Back to Application" link opens the app — tried on a simulator
+      and described in the PR
 - [ ] An authorization-code flow with PKCE against the local Keycloak returns
       tokens to the `kalia://` redirect, and the access token's `aud`
       includes `kalia-backend` — verified by script, and described in the PR

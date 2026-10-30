@@ -1,6 +1,6 @@
 # Task 10: A developer can run the app on both simulators from the README
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-1
 
@@ -34,7 +34,8 @@ stack, and `make` targets do the repeatable parts.
 
 ## Constraints
 
-- [Task 02](02-decision-the-mobile-stack.md)'s stack and minimum OS versions.
+- [ADR-0094](../../adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md),
+  [task 02](02-decision-the-mobile-stack.md)'s stack and minimum OS versions.
 - Each worktree runs its own stack on its own ports: never hard-code a port
   (`CLAUDE.md`), including in `adb reverse`.
 - Toolchain versions are new dependencies — asked, then recorded in the one
@@ -60,14 +61,33 @@ stack, and `make` targets do the repeatable parts.
 - **The reference devices are the SDK's default iPhone simulator and a
   Pixel emulator,** named in the README.
 
+**Decided in the second pass, 2026-10-30** (product owner), after
+[ADR-0094](../../adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)
+was accepted:
+
+- **Metro gets a port of its own per worktree.** Metro's default port, 8081, is
+  Keycloak's default host port, so a developer who starts Metro with its
+  defaults while the stack is up gets a clash. `make stack-env` allocates a
+  `METRO_PORT` beside the other ports, the make targets start Metro on it, and
+  nothing hard-codes it (`CLAUDE.md`).
+- **`adb reverse` forwards every port the app dials:** the edge's API port,
+  Keycloak's port and Metro's, each from the worktree's own values. The iOS
+  Simulator reaches all three at `localhost` directly. Keycloak's port matters
+  because the issuer is pinned to `http://localhost:<port>`
+  ([task 13](13-keycloak-mobile-client.md)), so the emulator must reach it at
+  that name.
+- **The toolchain versions are asked for when this task starts,** as one
+  batched question, and each is recorded in the manifest that pins it
+  (`CLAUDE.md` "New dependencies"). The README names the tools without
+  numbers.
+- **Depends on [task 11](11-app-skeleton.md) and
+  [task 07](07-process-carries-a-third-codebase.md):** there has to be an app
+  to run, and task 07 creates `mobile/README.md` and its conventions sections,
+  which this task fills with the onboarding.
+
 ## Open questions
 
-**Answered, waiting on an accepted ADR.** Every question raised for this task
-was answered at refinement on 2026-10-30 (Constraints). It stays
-`needs-refinement` only because [the iteration](../iteration-9.md) has a
-decision accepted before the build tasks it binds are refined — here
-[task 02](02-decision-the-mobile-stack.md)'s. A second pass moves it once that
-ADR merges, or reopens a question the ADR contradicts.
+**None.**
 
 ## Acceptance criteria
 
@@ -75,8 +95,13 @@ ADR merges, or reopens a question the ADR contradicts.
       on the iOS Simulator and the Android emulator against the local stack —
       read through by a reviewer, run on both by the author, and described in
       the PR
+- [ ] `make stack-env` writes a `METRO_PORT` that differs from every other
+      port it allocates, with a test beside `scripts/stack-env.test.mjs`, and
+      the make targets start Metro on it
 - [ ] The `make` targets start the app on each platform, and the Android one
-      sets `adb reverse` from the worktree's ports rather than a fixed one
+      sets `adb reverse` for the API, Keycloak and Metro ports from the
+      worktree's ports rather than fixed ones, shown by two worktrees' stacks
+      running side by side
 - [ ] A doctor script reports a missing or wrong-version tool by name, with a
       test covering at least the JDK case
 - [ ] `make verify-fast` is green
