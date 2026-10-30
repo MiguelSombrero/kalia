@@ -1,6 +1,6 @@
 # Task 08: The repository is npm workspaces, with the web app in `web/`
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-4
 
@@ -162,7 +162,7 @@ owner decided.
 - [x] On a stack created before the rename, `make up` ends with the realm
       drift check green and the old client gone, or the PR states the command
       that removes it; a `.env` with the old secret or port keys fails loudly
-- [ ] CI's path filters, Dependabot and the Trivy manifest scan cover the new
+- [x] CI's path filters, Dependabot and the Trivy manifest scan cover the new
       paths, and Dependabot's `react` and `react-dom` grouping still applies —
       each confirmed by a run that touched `web/`
 - [x] `node scripts/check-links.mjs` and `make verify-fast` are green
