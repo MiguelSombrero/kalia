@@ -576,6 +576,30 @@ Conventions:
   and the frontend generates its client from it — see
   [§5](#5-frontend-design).
 
+**Compatibility.** An installed app keeps calling the API it was built against,
+so `/api/v1` changes additively only
+([ADR-0092](adr/0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)):
+
+- Both clients ignore unknown fields and treat an unknown enum value as a
+  fallback. **Additive:** a new endpoint, a new optional response field, a new
+  optional request parameter, a new enum value. **Breaking:** removing,
+  renaming or retyping anything, making an optional field required, and
+  tightening a request's validation.
+- A breaking change is made as a new path beside the old one, which is marked
+  `deprecated` in the OpenAPI spec and nowhere else — the generated client
+  turns the flag into `@deprecated`, which lint flags at each use. `/api/v2`,
+  for the whole API and never one resource, is for a breaking change that
+  cannot be made as a new path.
+- A deprecated element is removed only once the minimum supported app build
+  (`GET /api/v1/app-config`, [task 12](tasks/iteration-9/12-app-config-endpoint.md))
+  excludes every app build that uses it: the window is measured in releases,
+  not time. `app-config` is itself under this rule from its first release.
+- The spec is a committed file that both clients generate from. A backend test
+  fails when it differs from the one the application serves, and a CI job
+  diffs it against `dev`'s and fails on a breaking change. Both are built by
+  [task 09](tasks/iteration-9/09-shared-packages.md); until it merges, review
+  is the only check.
+
 ## 5. Frontend design
 
 The shape of the frontend. Day-to-day rules for writing it live in

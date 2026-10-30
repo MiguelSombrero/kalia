@@ -27,6 +27,10 @@
   that alone publishes the backend's port); the bullet below now points at
   `frontend/README.md`, which holds the command
   (iteration 9 task 18)
+- **Amended:** 2026-10-30 by [ADR-0092](0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) — the OpenAPI spec is now
+  committed and the clients generate from the file, reversing the rejection
+  of a committed spec below; built by iteration 9 task 09, so until it lands
+  the live-backend flow above is what runs (iteration 9 task 04)
 
 ## Context
 
@@ -81,6 +85,19 @@ build whenever the two disagree.**
   pages) needed zero changes beyond one signature — `breweryLocation`'s
   `city` parameter, which the Jackson fix in Evidence made properly optional.
 
+> **Amended 2026-10-30.** The spec source and the drift job above are
+> replaced by [ADR-0092](0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) once
+> [iteration 9 task 09](../tasks/iteration-9/09-shared-packages.md) builds
+> them. The spec is a committed file; every client generates from it, so none
+> needs a Docker stack or a running backend. A backend test fails when the
+> committed file differs from the spec the application serves, which takes
+> over what `api-client-drift` checked against the live backend, and the
+> package regenerates from the file and diffs the result. A CI job also diffs
+> the spec against `dev`'s and fails on a breaking change; the compatibility
+> policy those checks serve is in ADR-0092 and
+> [architecture.md §4](../architecture.md#4-api-design). The orval choice,
+> the committed generated output and the mutator stand.
+
 > **Amended 2026-08-15.** The isolation the last bullet relies on — every
 > consumer reaching the generated client through its feature's `api.ts` and
 > `types.ts` — is now checked at lint time instead of being a rule people
@@ -125,6 +142,17 @@ exists to remove.
 > named layers — and the layer names are what the next feature package has to
 > be placed into.
 
+> **Amended 2026-10-30.** The committed static spec is now the chosen option,
+> for a reason that did not exist when it was rejected. That reasoning held
+> for one client regenerated against a running backend, where staleness was
+> the whole risk. A second client, the mobile app, makes the live spec cost a
+> Docker stack per client in CI, and a macOS runner building the iOS app may
+> not have Docker at all. A committed file is also the only thing a breaking
+> change can be diffed against. The staleness the rejection feared is
+> answered by a backend test that fails when the committed file and the served
+> spec differ, so the file cannot go stale silently
+> ([ADR-0092](0092-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+
 ## Consequences
 
 - Good, because future modules (cellar, identity) get generated clients "for
@@ -159,6 +187,16 @@ exists to remove.
 >   outside any folder (`auth.ts`, and `proxy.ts`/`instrumentation.ts`) are
 >   classified by file pattern rather than as layer folders: the plugin can
 >   only make a *folder* a layer without its deprecated `mode` option.
+
+> **Amended 2026-10-30**, for the committed spec:
+>
+> - Good, because regenerating a client needs neither a running backend nor
+>   Docker, so the "Bad" entry above no longer holds once task 09 lands: a
+>   frontend-only contributor can refresh it from a clean checkout.
+> - Bad, because the spec is a second place the contract lives, and the
+>   backend test that compares it with the served spec is what keeps it
+>   honest. A change to a controller or DTO now also changes the committed
+>   file, in the same pull request.
 
 ## Evidence
 

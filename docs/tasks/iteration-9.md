@@ -32,7 +32,7 @@ the backend and the process reshaped to carry a third codebase.
 | [21](iteration-9/21-public-cellar-response-settled-before-the-freeze.md) | The public cellar's response is settled before `/api/v1` freezes | done |
 | [02](iteration-9/02-decision-the-mobile-stack.md) | Decide the mobile stack | refined |
 | [03](iteration-9/03-decision-repo-layout-and-code-sharing.md) | Decide the repository layout and what code is shared | refined |
-| [04](iteration-9/04-decision-api-compatibility-policy.md) | Decide the API compatibility policy | refined |
+| [04](iteration-9/04-decision-api-compatibility-policy.md) | Decide the API compatibility policy | done |
 | [05](iteration-9/05-decision-mobile-authentication.md) | Decide how the mobile app authenticates | refined |
 | [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | refined |
 | [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | needs-refinement |
