@@ -97,3 +97,13 @@ test("an ID elsewhere in the word does not count: only MUST, SHOULD or COULD wit
 test("the template's own guidance about a new task is a comment and is not read", () => {
   assert.equal(defersWithoutBacklogId(TEMPLATE), false);
 });
+
+test("saying nothing was deferred is not a deferral", () => {
+  assert.equal(defersWithoutBacklogId("- **Code review:** 3 findings, all fixed now; no new task, no follow-ups."), false);
+  assert.equal(defersWithoutBacklogId("There is no new task but a follow-up is left."), true);
+});
+
+test("an unterminated comment does not hide a deferral", () => {
+  assert.equal(defersWithoutBacklogId("<!-- new task: the 429 copy"), true);
+  assert.equal(defersWithoutBacklogId("<!-- guidance: new task --> fine"), false);
+});

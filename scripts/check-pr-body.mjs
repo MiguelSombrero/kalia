@@ -39,13 +39,14 @@ export const GATE_LABELS = [
 
 // Repeated until stable: removing one comment can join the text around it
 // into another ("<!<!-- x -->--" leaves "<!--"), which a single pass keeps.
-function stripComments(text) {
+function stripComments(text, { keepUnterminated = false } = {}) {
   let previous;
   do {
     previous = text;
     const open = text.indexOf("<!--");
     if (open === -1) break;
     const close = text.indexOf("-->", open + 4);
+    if (close === -1 && keepUnterminated) break;
     text = text.slice(0, open) + (close === -1 ? "" : text.slice(close + 3));
   } while (text !== previous);
   return text;
@@ -78,13 +79,15 @@ export function missingVerdicts(body) {
   });
 }
 
-const DEFERRAL = /\bnew[ -]task\b|\bfollow[ -]?ups?\b/i;
+const DEFERRAL = /\bnew[ -]tasks?\b|\bfollow[ -]?ups?\b/i;
+const NOTHING_DEFERRED = /\b(?:no|zero|without)\s+(?:new[ -]tasks?|follow[ -]?ups?)\b/gi;
 const BACKLOG_ID = /\b(?:MUST|SHOULD|COULD)-\d+\b/;
 
 // True when the body defers something (outside the template's own guidance
-// comments) and names no quality-backlog ID.
+// comments; an unterminated one hides nothing here) and names no
+// quality-backlog ID. "No new task" says nothing was deferred.
 export function defersWithoutBacklogId(body) {
-  const text = stripComments(body);
+  const text = stripComments(body, { keepUnterminated: true }).replace(NOTHING_DEFERRED, "");
   return DEFERRAL.test(text) && !BACKLOG_ID.test(text);
 }
 
@@ -128,7 +131,7 @@ if (isMain) {
   });
   if (problems.length > 0) {
     for (const problem of problems) console.error(problem);
-    console.error("fill the Gates section of the PR description (docs/PULL_REQUEST_TEMPLATE.md)");
+    console.error("see docs/PULL_REQUEST_TEMPLATE.md (the Gates section; a deferred finding needs a quality-backlog ID)");
     process.exit(1);
   }
   console.log("PR body: ok");
