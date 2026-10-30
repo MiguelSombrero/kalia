@@ -239,9 +239,12 @@ manifest already says.
 - springdoc-openapi (OpenAPI spec + Swagger UI)
 - spring-boot-starter-security-oauth2-resource-server (JWT validation against
   Keycloak, version managed by Spring Boot's dependency BOM — see ADR-0028)
-- `pom.xml` overrides Tomcat and the PostgreSQL driver past the versions the
-  Spring Boot BOM ships, each to clear a CVE. The override carries an XML
-  comment naming the CVE and the condition for dropping it again
+- Micrometer (Prometheus registry and tracing bridge — failure counters and a
+  W3C trace id in the logs, no exporter and no viewer; see ADR-0088)
+- `pom.xml` overrides Tomcat and the two Jackson BOMs (the 2.x and 3.x lines)
+  past the versions the Spring Boot BOM ships, each to clear a CVE. Each
+  override carries an XML comment naming the CVE and the condition for
+  dropping it again
 
 ### Frontend
 
@@ -279,6 +282,8 @@ manifest already says.
 - jose (verifies Keycloak's back-channel logout token against the realm's keys
   and reads the session id out of the id token — ADR-0031)
 - Valkey (server-side session store, Redis-API-compatible — ADR-0025)
+- @prometheus-io/client (the failure counters behind the token-gated
+  `/api/metrics` — ADR-0088)
 
 ### Local infrastructure
 
@@ -296,8 +301,11 @@ manifest already says.
   limits are in
   [docs/tasks/iteration-6.5/04-send-email-from-kalia.md](docs/tasks/iteration-6.5/04-send-email-from-kalia.md).
   The real credential is not created or held anywhere yet
-- Docker Compose: full stack (PostgreSQL + backend + frontend + Keycloak +
-  Valkey + Mailpit)
+- nginx (`edge/`, the `edge` service) — the one published service: it
+  limits requests and body sizes per client address in front of the frontend,
+  backend and Keycloak ([ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
+- Docker Compose: full stack (edge + PostgreSQL + backend + frontend +
+  Keycloak + Valkey + Mailpit)
 - Base images: Maven and Eclipse Temurin (backend), Node on Alpine (frontend);
   tags are in each `Dockerfile`
 
@@ -321,6 +329,7 @@ kalia/
 │       └── feed/     # front-page activity feed
 ├── frontend/         # Next.js app (BFF + UI)
 ├── keycloak/         # realm export, login theme, image
+├── edge/             # nginx proxy in front of the frontend, backend and Keycloak
 ├── postgres/         # init scripts
 ├── scripts/          # dependency-free checkers CI runs, git hooks, generators
 ├── docs/

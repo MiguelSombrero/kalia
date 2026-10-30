@@ -73,7 +73,9 @@ npm run build      # production build (includes type checking)
 npm run test:e2e   # Playwright — starts the full docker compose stack if
                     # it isn't already running (needs Docker)
 npm run generate:api  # regenerate lib/api/generated/ from a live backend
-                       # (docker compose up -d backend postgres first)
+                       # (docker compose up -d --wait backend postgres edge
+                       # first: the spec is read through edge, which alone
+                       # publishes the backend's port)
 ```
 
 Node's version is the one in `.node-version` at the repository root: CI reads

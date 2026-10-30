@@ -41,7 +41,7 @@ and on a mark that differs from the app's. A new colour gets a
 `--kalia-color-*` name that the app's `@theme` block also has.
 
 **On a Keycloak image bump** (`Dockerfile` `FROM` and `keycloak-config-cli` in
-`docker-compose.yml`), run `frontend/e2e/keycloak-branding.spec.ts` and
+`docker-compose.base.yml`), run `frontend/e2e/keycloak-branding.spec.ts` and
 `frontend/e2e/keycloak-errors.spec.ts`, and look at
 the four pages at 375 and 1280 in both locales. The branding spec checks each page's
 language, the lockup and its mark, the column's width and position, the hidden

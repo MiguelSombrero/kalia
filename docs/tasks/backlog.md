@@ -156,7 +156,8 @@ Keycloak `sid`, so signing out on the phone leaves the laptop signed in.
 ### What does not carry over
 
 **The BFF is a rendering layer, not an API layer.** `frontend/app/api/` holds
-only Auth.js's own routes and Keycloak's back-channel logout endpoint; every
+only the auth endpoints and the metrics scrape
+([architecture §5](../architecture.md#5-frontend-design)); every
 catalog read runs server component → a feature's `api.ts` → `kaliaFetch` →
 Spring. There is no JSON surface for a mobile app to reuse, so
 mobile calls Spring directly as its own OAuth client. That does not contradict
