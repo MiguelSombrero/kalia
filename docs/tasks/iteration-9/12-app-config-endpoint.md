@@ -40,23 +40,37 @@ screen when the server says so.
 - The endpoint's errors are typed and documented like every other's
   ([ADR-0023](../../adr/0023-typed-api-failures.md)).
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **A new functional module owns it** — no existing module's
+  responsibility is "what the server tells a client about itself"
+  ([ADR-0037](../../adr/0037-functional-modules.md)).
+- **The values live in a database table,** changed by an operator with SQL
+  the way `make moderate` changes a beer's status, so maintenance can be
+  raised mid-incident without a redeploy. Application configuration was
+  rejected because raising maintenance would need a restart.
+- **One minimum per platform,** iOS and Android. It has to exist in the
+  first release: an installed app cannot learn a field added later.
+- **The minimum is a build number** — a per-platform integer that only
+  increases, assigned by [iteration 10](../iteration-10.md)'s build-variant
+  rules. A semantic version was rejected as needing parsing in both tiers
+  for a comparison an integer makes unambiguous.
+- **An unreachable endpoint fails open:** the app keeps working, so an
+  offline user keeps their cellar ([iteration 12](../iteration-12.md)). An
+  "update required" the app has already been told is remembered and keeps
+  blocking while offline.
+- **The app owns both screens' wording, in en and fi;** the server sends no
+  message text.
+- **The web does not read the endpoint** in this iteration.
+
 ## Open questions
 
-1. **Which backend module owns it** — a new one, or an existing module whose
-   responsibility it fits ([ADR-0037](../../adr/0037-functional-modules.md))?
-2. **Where do the values live?** Configuration that needs a redeploy to change,
-   or the database so an operator can change them live — the maintenance flag
-   is only useful if it can be raised during an incident.
-3. **One minimum version, or one per platform?** iOS and Android builds may not
-   ship together.
-4. **What is compared** — a semantic version, or a build number?
-5. **What does the app do when the endpoint cannot be reached?** Failing open
-   keeps an offline user in their cellar ([iteration 12](../iteration-12.md));
-   failing closed makes the kill switch reliable.
-6. **The wording of both screens, in en and fi**, and whether the maintenance
-   message comes from the server.
-7. **Does the web read it too?** The web deploys with the backend and never
-   needs the version check, but could show maintenance.
+**Answered, waiting on an accepted ADR.** Every question raised for this task
+was answered at refinement on 2026-10-30 (Constraints). It stays
+`needs-refinement` only because [the iteration](../iteration-9.md) has a
+decision accepted before the build tasks it binds are refined — here
+[task 04](04-decision-api-compatibility-policy.md)'s. A second pass moves it
+once that ADR merges, or reopens a question the ADR contradicts.
 
 ## Acceptance criteria
 
@@ -66,8 +80,8 @@ screen when the server says so.
       server's minimum exceeds the app's version, and not otherwise
 - [ ] On a simulator, raising the minimum version blocks the app on the next
       foregrounding, and lowering it releases it — described in the PR
-- [ ] The unreachable-endpoint behaviour agreed at refinement is covered by a
-      test
+- [ ] A unit test shows an unreachable endpoint lets the app open, and a
+      remembered "update required" still blocks it offline
 
 ## Notes
 

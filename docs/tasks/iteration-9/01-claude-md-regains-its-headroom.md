@@ -1,6 +1,6 @@
 # Task 01: CLAUDE.md has room for what mobile adds to it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -50,28 +50,32 @@ edit, and nothing whose violation fails silently, leaves the file.
 - An accepted ADR is amended, not rewritten
   ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **Two rules move: the CVE-scan bullet into `implement-task`, and the
+  failure-log pair (`docs/common-failures.md`, `docs/ci-playbook.md`) into
+  `implement-task` and the `worktree` skill,** where a red check is met.
+  The new-dependencies bullet and the ADR-earning test stay: a session
+  applies each while advising or deciding, before it has reached any skill.
+  The parallel-worktree bullet stays because a shared checkout fails
+  silently.
+- **The target is at most 187 lines** — what those two moves free at 199
+  lines (14 lines out, a one-line pointer each back in), and room for task
+  07's two rules with a margin. 185 was proposed first; reaching it would
+  have meant moving a third rule, which nothing here needs.
+- **ADR-0048 is not amended again.** Its 2026-10-24 amendment, moving a
+  whole gate into the skill that runs it, is already the general rule this
+  applies.
+- **The budget gets no mechanical check.** It stays a review matter, as
+  8.5 task 08 left it.
+
 ## Open questions
 
-1. **Which rules move, and where to?** Candidates that already have a home
-   which enforces them: the parallel-worktree bullet (the `worktree` skill),
-   the CVE-scan bullet (`implement-task` or a rule file), the new-dependencies
-   bullet, the two failure-log bullets (`common-failures.md`,
-   `ci-playbook.md`). Each has to be judged against "does a session need this
-   before it reaches the skill?".
-2. **How much headroom is enough?** Task 07's two additions, plus whatever
-   `mobile/CLAUDE.md` cannot carry because nested files are not re-injected
-   after `/compact`. A target line count, rather than "under 200", keeps this
-   from needing a third pass in iteration 10.
-3. **Does the move need ADR-0048 amended again**, or is its 2026-10-24
-   amendment ("whole gates move into the skill that runs them") already the
-   general rule this applies?
-4. **Should the budget be checked mechanically?** Today nothing fails when
-   the file passes 200; 8.5 task 08 rejected an advisory checker, and the
-   question is whether a hard one is different.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `wc -l CLAUDE.md` is at or under the target agreed at refinement
+- [ ] `wc -l CLAUDE.md` is at most 187
 - [ ] Every moved rule is stated in full at its new home, and `CLAUDE.md`
       points at it in one line — `node scripts/check-links.mjs` and its test
       green

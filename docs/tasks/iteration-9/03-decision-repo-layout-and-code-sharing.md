@@ -1,6 +1,6 @@
 # Task 03: Decide the repository layout and what code is shared
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -42,24 +42,28 @@ consumer — Next.js, Metro, the web's Docker build — reads a shared package.
 - Any build tool beyond npm itself is a new dependency, asked about, not
   researched (`CLAUDE.md`).
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **Plain npm workspaces, with no tool on top.** The ADR records why pnpm,
+  Yarn, Turborepo and Nx were not chosen.
+- **`frontend/` becomes `web/`, and the compose service and image become
+  `web` with it** — one name for one thing, while
+  [task 08](08-workspaces-refactor.md) is touching every path anyway.
+- **The top level is `web/`, `mobile/` and `packages/`.**
+- **Two packages: the generated API client and the en/fi strings.** No
+  package of feature `types.ts` files: the API's types come with the
+  generated client. Design tokens stay out (Non-goals).
+- **Packages ship TypeScript source,** compiled by each consumer —
+  `transpilePackages` in Next.js, Metro natively. A build step per package
+  was rejected as a second artefact to keep in step.
+- **One lockfile, at the root,** as npm workspaces give it; Dependabot,
+  Trivy's manifest scan and the web's Docker build are pointed at it.
+- **An ESLint rule fails a package that imports from an app, or from
+  `react-dom`, `next` or `react-native`.**
+
 ## Open questions
 
-1. **npm workspaces, as planned**, or a tool on top of them? The ADR records
-   why pnpm, Yarn and Turborepo or Nx were not chosen.
-2. **`frontend/` becomes `web/`, confirmed?** It touches every path in CI,
-   compose, the Makefile, `.claude/settings.json` and the docs, and accepted
-   ADRs that name the old path.
-3. **Which packages, and what are they called?** The planned line names API
-   types or client, i18n strings and design tokens; tokens are out (above).
-   Whether feature `types.ts` files belong in a package too.
-4. **Source or built?** Do shared packages ship TypeScript that each app
-   compiles (`transpilePackages` in Next.js, Metro natively), or a build step
-   of their own?
-5. **One lockfile at the root?** It changes how Dependabot, Trivy's manifest
-   scan and the web's Docker build find their dependencies.
-6. **What may a package import?** Import boundaries for the web are ESLint's
-   job today; a package that imports from an app, or from React DOM, has to
-   fail a check rather than a review.
+**None.**
 
 ## Acceptance criteria
 

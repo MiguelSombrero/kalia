@@ -1,6 +1,6 @@
 # Task 17: `dev` stays green after a merge, and a red `dev` is logged
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -39,16 +39,28 @@ someone happening to notice it.
 - Changing the repository's branch ruleset is a settings change only the
   product owner makes.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **Branches must be up to date before merging.** The ruleset turns on
+  strict required status checks, so a PR behind `dev` is updated and goes
+  green again before it can merge. The product owner makes the ruleset
+  change; this task states the exact setting and its effect for them to
+  apply. A merge queue is not available: it needs an organization-owned
+  repository, and this one is a personal account's. A playbook entry alone
+  was rejected because it leaves the race open.
+- **The `worktree` skill's start step logs a red `dev`.** Every session
+  already starts there and fetches `dev`; the step also reads `dev`'s recent
+  CI runs and appends a `docs/common-failures.md` row for any red run not
+  yet logged, on the new branch. ADR-0084 is amended to say who logs a
+  post-merge failure. The sweep reconstructing them was rejected as too
+  late, and a scheduled workflow opening an issue as a second place to look.
+- **The extra CI time is accepted.** The repository is public, so Actions
+  minutes are free; the cost is waiting for one rerun per PR that falls
+  behind.
+
 ## Open questions
 
-1. **Which guard for merges?** Require branches to be up to date (every
-   merge after another needs a rebase and a fresh CI run), a merge queue, or
-   only a playbook entry for "red on fresh `dev`, green on its PR".
-2. **Who logs a red `dev`?** The `worktree` skill's start step checking
-   `dev`'s recent runs, the sweep reconstructing them from history, or a
-   scheduled workflow opening an issue.
-3. **Is extra CI time acceptable?** Up-to-date branches cost one rerun per
-   queued PR. The mobile end-to-end job makes each run longer.
+**None.**
 
 ## Acceptance criteria
 

@@ -36,25 +36,42 @@ that client passes the audience check.
   the client uses it.
 - The issuer stays `http://localhost:8081` this iteration.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **The client's shape is [task 05](05-decision-mobile-authentication.md)'s
+  decision:** exact redirect URIs, `offline_access` with a 30-day idle
+  timeout, and refresh-token rotation for this client while the web keeps
+  reuse. If Keycloak can set rotation only realm-wide, this task stops and
+  returns to the product owner.
+- **The backend test signs its token with a test key and runs it through
+  the real JWT decoder,** not the mocked one the existing security tests
+  stub, so the audience check itself is exercised. That the realm's mapper
+  puts `kalia-backend` in a real token is proven by the scripted PKCE flow
+  among the acceptance criteria. Running Keycloak in Testcontainers was rejected as
+  a new dependency.
+
 ## Open questions
 
-1. **Exact redirect URIs**, or a wildcard under `kalia://`? Wildcards are the
-   usual open-redirect foothold.
-2. **Is refresh-token rotation a realm setting or per client** — and so does
-   this task change the web's behaviour too? Derived from task 05's answer.
-3. **How is the backend test's token produced** — from a real Keycloak in
-   Testcontainers, or signed by a test key the way the existing security tests
-   do it?
+**Answered, waiting on an accepted ADR.** Every question raised for this task
+was answered at refinement on 2026-10-30 (Constraints). It stays
+`needs-refinement` only because [the iteration](../iteration-9.md) has a
+decision accepted before the build tasks it binds are refined — here
+[task 05](05-decision-mobile-authentication.md)'s. A second pass moves it once
+that ADR merges, or reopens a question the ADR contradicts.
 
 ## Acceptance criteria
 
 - [ ] `keycloak/realm-export.json` holds the client, and the drift check is
       green against a freshly started realm
-- [ ] A backend test shows a token issued to `kalia-mobile` is accepted, and
-      the same token without the `kalia-backend` audience is rejected with 401
-- [ ] An authorization-code flow with PKCE against the local Keycloak returns
-      tokens to the `kalia://` redirect — verified by script or by hand, and
+- [ ] A backend test, through the real decoder, shows a token issued to
+      `kalia-mobile` is accepted, and the same token without the
+      `kalia-backend` audience is rejected with 401
+- [ ] A `kalia-mobile` refresh token is refused on its second use while a
+      `kalia-frontend` one is not — checked against the local Keycloak and
       described in the PR
+- [ ] An authorization-code flow with PKCE against the local Keycloak returns
+      tokens to the `kalia://` redirect, and the access token's `aud`
+      includes `kalia-backend` — verified by script, and described in the PR
 - [ ] `make verify` is green
 
 ## Notes

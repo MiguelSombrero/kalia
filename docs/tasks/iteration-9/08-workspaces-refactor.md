@@ -40,20 +40,31 @@ the docs — follows. No behaviour changes.
 - [ADR-0089](../../adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md):
   the base compose file still demands every secret.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **The compose service and image are renamed `web` too,** per
+  [task 03](03-decision-repo-layout-and-code-sharing.md), so the edge
+  proxy's upstream and every `docker compose` command in the READMEs follow.
+- **Every link to a `frontend/` path is rewritten, including in accepted
+  ADRs and finished task files** — a mechanical path fix, not an amendment.
+  The word `frontend/` may stay only as history: in the prose of accepted
+  ADRs, finished task files, and rows of `docs/common-failures.md` and
+  `docs/ci-playbook.md`. Those are the exceptions the `grep` in the first
+  criterion allows.
+- **The `git mv` is its own commit,** before any edit, so `git log --follow`
+  and review both see a pure rename.
+- **"No behaviour change" is proven** by the web's Vitest and Playwright
+  suites green against the moved tree, and the Docker image built from it
+  serving the same pages.
+
 ## Open questions
 
-1. **What happens to accepted ADRs and finished task files that name
-   `frontend/`?** Their links break `check-links`, but an accepted ADR is
-   amended, not rewritten — so either the old paths are rewritten as a
-   mechanical exception, or links are rewritten and prose left as history.
-2. **Does the compose service and image name change too** (`frontend` →
-   `web`)? It changes the edge proxy's upstream and every `docker compose`
-   command in the READMEs.
-3. **One commit for the `git mv`**, separate from the edits, so `git log
-   --follow` and review both see a pure rename?
-4. **How is "no behaviour change" proven?** The web's unit and Playwright
-   suites green against the moved tree, and the Docker image built from it
-   serving the same pages.
+**Answered, waiting on an accepted ADR.** Every question raised for this task
+was answered at refinement on 2026-10-30 (Constraints). It stays
+`needs-refinement` only because [the iteration](../iteration-9.md) has a
+decision accepted before the build tasks it binds are refined — here
+[task 03](03-decision-repo-layout-and-code-sharing.md)'s. A second pass moves
+it once that ADR merges, or reopens a question the ADR contradicts.
 
 ## Acceptance criteria
 

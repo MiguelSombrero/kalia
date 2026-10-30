@@ -1,6 +1,6 @@
 # Task 05: Decide how the mobile app authenticates
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -51,29 +51,39 @@ for both clients, and COULD-65's answer.
   refresh-token reuse until this decision.
 - An OAuth library for the app is a new dependency — asked, not researched.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **The app calls Spring directly, through the edge proxy** — the one public
+  entry, bounding the app's anonymous calls the way it bounds the web's
+  ([ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)).
+  The ADR records why a mobile BFF was rejected.
+- **A public `kalia-mobile` client with PKCE and no secret,** with exactly
+  listed redirect URIs — never a `kalia://` wildcard, the usual
+  open-redirect foothold — and its own `kalia-backend` audience mapper.
+- **The session is an offline token (`offline_access`) that lapses after 30
+  days unused, with no maximum while in use.** A longer regular session was
+  rejected because it would lengthen the web's too.
+- **Mobile refresh tokens rotate; the web keeps reuse,** for the
+  two-tabs-refresh-at-once reason [ADR-0029](../../adr/0029-silent-token-refresh.md)
+  records. If Keycloak can set rotation only realm-wide, the task building
+  the client stops and returns to the product owner rather than choosing.
+- **COULD-65 is accepted as an [§8](../../architecture.md) trade-off and
+  retired:** an access token keeps working for up to its 5-minute lifespan
+  after sign-out or an account disable.
+- **Sign-out forgets the tokens on the device at once, and revokes them at
+  Keycloak, ending the session, when there is a connection.** Offline,
+  sign-out still completes on the device and the server session lapses at
+  its idle timeout.
+- **Sign-in happens in the system browser,** as the OAuth guidance for
+  native apps expects; an embedded web view is rejected. Sign-up is
+  reachable from Keycloak's own sign-in page, exactly as on the web
+  ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)).
+- **Tokens are kept in the platform's secure storage** — Keychain on iOS,
+  Keystore on Android.
+
 ## Open questions
 
-1. **Direct to Spring, or through a mobile BFF?** Direct is the expected
-   answer ([backlog](../backlog.md#mobile-client) decision 1); the ADR records
-   why a BFF was rejected.
-2. **Through the edge proxy, or past it?** The anonymous edges are bounded by
-   nginx ([ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
-   and the app is a new caller of them.
-3. **How long does a mobile session last?** `offline_access` with an offline
-   token, or a longer regular session; and the refresh token's lifetime and
-   idle timeout.
-4. **Do refresh tokens rotate**, for the web and mobile both — and if so, what
-   the web's BFF does when two tabs refresh at once.
-5. **COULD-65: accept, shorten, or check?** Accept the access-token lifespan as
-   an [§8](../../architecture.md) trade-off, shorten it, or have the backend
-   check revocation.
-6. **Sign-out on the device:** revoke the refresh token at Keycloak and end the
-   SSO session, or only forget the tokens locally — and what happens when
-   sign-out happens offline.
-7. **The system browser for sign-in**, as the OAuth for native apps guidance
-   expects, rather than an embedded web view — and whether sign-up
-   ([ADR-0055](../../adr/0055-self-registration-via-keycloak.md)) is reachable
-   from the app's sign-in page.
+**None.**
 
 ## Acceptance criteria
 

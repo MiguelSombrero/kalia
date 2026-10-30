@@ -1,6 +1,6 @@
 # Task 16: Two first reads of a new user's profile never collide
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -34,11 +34,21 @@ time.
 - [ADR-0080](../../adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md):
   a username is unique regardless of case and never reused.
 
+**Decided at refinement, 2026-10-30** (product owner):
+
+- **The username check recognises the caller's own row; nothing retries or
+  waits.** Read at refinement, the likely cause is narrower than the
+  question assumed: `ProfileService.create()` looks the username up, finds
+  the row the *same* subject's other request has just committed, and throws
+  `UsernameTakenException` — which the `@Retryable` does not match, so the
+  loser answers 409 instead of reading the shared profile. A username row
+  owned by the requesting id is that user's profile, not a collision. No
+  locking is added. Confirm the cause against the failing test before
+  fixing; if it turns out to be something else, stop and re-refine.
+
 ## Open questions
 
-1. **Does a reservation collision between two reads by the same subject
-   retry, or does the second read wait for the first?** Both meet the
-   ADRs above; they differ in what the losing request costs.
+**None.**
 
 ## Acceptance criteria
 
