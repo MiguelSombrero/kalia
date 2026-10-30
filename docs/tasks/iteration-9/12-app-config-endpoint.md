@@ -1,6 +1,6 @@
 # Task 12: The server can tell an old app to update, or that Kalia is down
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-3
 
@@ -30,8 +30,11 @@ screen when the server says so.
 
 ## Constraints
 
-- [Task 04](04-decision-api-compatibility-policy.md)'s policy says how the
-  minimum version and a deprecation window work together.
+- [ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)
+  says how the minimum build and a deprecation window work together: raising
+  the minimum past the last build that uses a deprecated element is the only
+  thing that permits removing it, and this endpoint is itself bound by the
+  policy, which is why its two signals exist in the first release.
 - Anonymous endpoints are bounded at the edge
   ([ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
   and request parameters are bounded
@@ -63,25 +66,76 @@ screen when the server says so.
   message text.
 - **The web does not read the endpoint** in this iteration.
 
+**Decided in the second pass, 2026-10-30** (product owner), after
+[ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)
+was accepted:
+
+- **The module is `appconfig`,** matching the endpoint. Its response is
+  `{ "minimumBuild": { "ios": n, "android": n }, "maintenance": bool }`, read
+  from a one-row table that starts at 0, 0 and false, so no build is blocked
+  until an operator says so. The endpoint takes no parameters.
+- **An operator changes the row with a `make` target in the style of
+  `make moderate`,** and the backend README says how, so raising maintenance
+  mid-incident is one command and not a hand-written statement.
+- **The response is `Cache-Control: no-store`.** A raised minimum or a
+  maintenance flag has to be seen at the next check, the backend sets no cache
+  headers anywhere today, and the load is one small read per launch or
+  foregrounding, bounded at the edge
+  ([ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)).
+- **The app checks on launch and on returning to the foreground,** at most
+  once every 30 seconds, through a feature hook
+  ([ADR-0041](../../adr/0041-tanstack-query-feature-owned-hooks.md)).
+- **The app compares its own build number with the minimum for its platform.**
+  The build number is the iOS build number and the Android version code in
+  `app.json`, both 1 in this iteration; [iteration 10](../iteration-10.md)
+  sets the rules for raising them. The library that reads it, and the one
+  that keeps the remembered minimum across launches, are new dependencies this
+  task asks for when it starts (`CLAUDE.md`).
+- **The app remembers the minimum the server named, not a verdict.** Installing
+  a newer build therefore clears a remembered "update required" by itself,
+  because the build number now meets the remembered minimum.
+- **Maintenance wins while it is on:** updating the app does not help when
+  the server is down. Otherwise "update required" shows.
+- **Both screens offer "check again"** and cover the whole app, tabs included.
+  The update screen has no store link, because there is no store yet.
+- **The wording** is below. The strings go into the shared strings package in
+  both languages ([task 09](09-shared-packages.md)).
+
+  | Where | English | Finnish |
+  |---|---|---|
+  | Update required, title | Update required | Päivitys vaaditaan |
+  | Update required, body | This version of Kalia is out of date. Update the app to continue. | Tämä Kalian versio on vanhentunut. Päivitä sovellus jatkaaksesi. |
+  | Maintenance, title | Down for maintenance | Huoltotauko |
+  | Maintenance, body | Kalia is being maintained and will be back soon. Try again in a moment. | Kalia on huollettavana ja palaa pian käyttöön. Yritä hetken kuluttua uudelleen. |
+  | Action on both | Check again | Tarkista uudelleen |
+
+- **Depends on [task 09](09-shared-packages.md) and
+  [task 11](11-app-skeleton.md)** for the app half. The backend half needs
+  neither, but the task is one pull request.
+
 ## Open questions
 
-**Answered, waiting on an accepted ADR.** Every question raised for this task
-was answered at refinement on 2026-10-30 (Constraints). It stays
-`needs-refinement` only because [the iteration](../iteration-9.md) has a
-decision accepted before the build tasks it binds are refined — here
-[task 04](04-decision-api-compatibility-policy.md)'s. A second pass moves it
-once that ADR merges, or reopens a question the ADR contradicts.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A backend integration test covers the endpoint's response, its
-      anonymous access and its cache headers, and it is in the OpenAPI spec
+- [ ] A backend integration test covers the endpoint's response shape, its
+      anonymous access and `Cache-Control: no-store`, and the endpoint is in
+      `backend/openapi.json`
+- [ ] The `make` target changes the row, and a test shows the endpoint
+      answering with the new values
 - [ ] A unit test in the app shows the update-required screen when the
-      server's minimum exceeds the app's version, and not otherwise
+      server's minimum for the app's platform exceeds its build number, and
+      not when it equals it or is below it
+- [ ] A unit test shows maintenance winning when both signals are on, and
+      "check again" calling the endpoint again
 - [ ] On a simulator, raising the minimum version blocks the app on the next
       foregrounding, and lowering it releases it — described in the PR
 - [ ] A unit test shows an unreachable endpoint lets the app open, and a
-      remembered "update required" still blocks it offline
+      remembered "update required" still blocks it offline, and stops
+      blocking when the app's build number meets the remembered minimum
+- [ ] Both screens read as the table above in both languages, with a
+      VoiceOver and TalkBack label on the action
 
 ## Notes
 
