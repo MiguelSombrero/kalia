@@ -240,7 +240,7 @@ services:
       - ./keycloak/realm-export.json:/config/kalia-realm.json:ro
 
   valkey:
-    image: valkey/valkey:9.1.2-alpine
+    image: valkey/valkey:9.1.3-alpine
     environment:
       VALKEY_PASSWORD: ${VALKEY_PASSWORD:?set VALKEY_PASSWORD, see README.md}
     # Written to a file rather than passed as `--requirepass <password>`, so
