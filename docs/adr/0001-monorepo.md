@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-15
+- **Amended:** 2026-10-30 by [ADR-0092](0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) — the repository gains a
+  third codebase, `mobile/`, and becomes npm workspaces with shared packages;
+  `frontend/` is renamed `web/`. The decision below is the original.
 
 ## Context
 
