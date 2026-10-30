@@ -141,3 +141,26 @@ naming a reason for each one skipped (in procedure order):
 
 A gate with no verdict counts as skipped. "All gates passed" without the two
 printed lines above is an assertion, not a report.
+
+## A red check
+
+Three rules for a check that goes red, moved here whole from `CLAUDE.md`,
+which now points at this section
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)):
+
+- **A CI vulnerability-scan failure unrelated to your diff is still your
+  problem** — fix it in place as its own commit on the open branch, never a
+  second PR ([ADR-0024](../../../docs/adr/0024-dependency-vulnerability-scanning.md)).
+  No asking first *only* while the fix stays inside the vulnerable package's
+  declared semver range (a lockfile-only bump); crossing it, or bumping a
+  *direct* dependency past its pin, is a version choice under `CLAUDE.md`'s
+  "New dependencies". Confirm the finding clears with `make trivy-scan` (CI's
+  flags, manifests only; an image finding is
+  [`backend/README.md`](../../../backend/README.md)) before pushing.
+- **An unexpected failure gets one appended row in
+  [docs/common-failures.md](../../../docs/common-failures.md)**, on the branch
+  it happened on
+  ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
+- **A CI check you have seen fail before is probably in
+  [docs/ci-playbook.md](../../../docs/ci-playbook.md)**; add an entry when a
+  failure costs real time to *recognise*, naming the run.
