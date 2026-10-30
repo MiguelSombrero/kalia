@@ -119,6 +119,24 @@ Key properties:
   backend at `/actuator/prometheus` and the frontend at `/api/metrics`, each
   behind a token. How to read them is in the two READMEs.
 
+**Repository layout.** Today the repository is `backend/`, `frontend/` and
+`docs/`, with one lockfile in `frontend/`. [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
+decides the layout iteration 9 moves it to; [task 08](tasks/iteration-9/08-workspaces-refactor.md)
+does the move, and until it merges every path in this document is still
+`frontend/`:
+
+```text
+backend/    Spring Boot modulith (unchanged)
+web/        the Next.js app, today's frontend/
+mobile/     the Expo app
+packages/   two packages shipped as TypeScript source: the generated API
+            client and the en/fi strings
+package.json, package-lock.json   npm workspaces; the only lockfile
+```
+
+Neither app depends on the other. A package imports from neither, and from
+none of `react-dom`, `next` or `react-native`, which a lint rule enforces.
+
 ## 3. Backend modules
 
 Base package `fi.kalia`, one Spring Modulith module per subdomain — with
@@ -989,9 +1007,12 @@ workspaces setup to host a separate `e2e/` package without duplicating
 devDependency pinning (Playwright, TypeScript, ESLint) across two lockfiles.
 This mirrors backend integration tests, which need a real Postgres fixture
 but live in `backend/src/test` for the same reason — the test *tooling's*
-home decides placement, not the fixture's scope. Revisit if a second
-frontend client appears, or the repo adopts npm workspaces for another
-reason — either would justify a dedicated `e2e/` package.
+home decides placement, not the fixture's scope. The revisit trigger — a
+second frontend client, or npm workspaces adopted for another reason — has
+fired: [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)
+makes the repository workspaces with a second client, and keeps the specs with
+the app they drive (`web/e2e/` once task 08 moves it) rather than in a
+dedicated `e2e/` package.
 
 The definition of done for every issue is in [the roadmap](roadmap.md).
 
@@ -1224,6 +1245,7 @@ an edited frontend file, and syncs the index cells itself after an edit under
 | [ADR-0089](adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |
 | [ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) | An nginx edge proxy bounds the anonymous edges and names the client address the services trust | accepted | 2026-10-26 |
 | [ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md) | A contributed catalog entry waits for an operator, and no catalog row is ever deleted | accepted | 2026-10-27 |
+| [ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) | The repository is plain npm workspaces of `web/`, `mobile/` and two packages that ship TypeScript source | accepted | 2026-10-30 |
 | [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) | The API is additive-only while an app is installed, and a committed spec fails a breaking diff | accepted | 2026-10-30 |
 
 ### Engineering process and documentation

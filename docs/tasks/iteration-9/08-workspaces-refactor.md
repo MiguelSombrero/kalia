@@ -18,10 +18,17 @@ workflow filter, a Dependabot directory or a Trivy manifest list does not fail
 
 ## Scope
 
-The repository is an npm workspace with the web app in `web/`, and every
-consumer of the old path — CI, the Dockerfile and compose, the Makefile, the
-check scripts, Dependabot, `.claude/settings.json`, the nested `CLAUDE.md` and
-the docs — follows. No behaviour changes.
+The repository is the layout [ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) decides: plain npm
+workspaces over `web/`, `mobile/` and `packages/`, with the web app moved from
+`frontend/` to `web/`, the one lockfile at the root and a root `package.json`
+declaring the workspaces. Every consumer of the old path follows — CI, the
+Dockerfile and compose (service and image renamed `web`), the Makefile, the
+check scripts, Dependabot, Trivy's manifest scan, `.claude/settings.json`, the
+nested `CLAUDE.md` and the docs. The web's Docker build moves to the repository
+root as its context, because the lockfile and `packages/` are outside `web/`.
+CI's change filter also matches `packages/`, the root `package.json` and the
+lockfile. No behaviour changes. `mobile/` and the packages themselves arrive
+with tasks 11 and 09; this task leaves `packages/` empty or absent.
 
 ## Non-goals
 
@@ -59,12 +66,19 @@ the docs — follows. No behaviour changes.
 
 ## Open questions
 
-**Answered, waiting on an accepted ADR.** Every question raised for this task
-was answered at refinement on 2026-10-30 (Constraints). It stays
-`needs-refinement` only because [the iteration](../iteration-9.md) has a
-decision accepted before the build tasks it binds are refined — here
-[task 03](03-decision-repo-layout-and-code-sharing.md)'s. A second pass moves
-it once that ADR merges, or reopens a question the ADR contradicts.
+The layout questions were answered at refinement on 2026-10-30 (Constraints)
+and recorded in [ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md). Two points that ADR leaves
+to this task, to settle when it is refined:
+
+1. **Can the web image's `npm ci` be scoped to the web workspace** (and the
+   packages it uses), or does one root lockfile make it install every
+   workspace's dependencies, `mobile/`'s included? Verify by running it; if it
+   cannot, say what the image build costs instead.
+2. **Standalone output.** Next.js traces files from the project directory by
+   default, so `outputFileTracingRoot` has to include `packages/` and the
+   image has to be run to prove the pages still serve (Next.js docs, `output`).
+
+The task stays `needs-refinement`: only the product owner moves it on.
 
 ## Acceptance criteria
 

@@ -21,10 +21,14 @@ set of generated types.
 
 ## Scope
 
-A shared package under `packages/` holds the generated API types and client,
-generated once from the committed spec, with a mutator per platform; another
-holds the en/fi strings. The web consumes both instead of its own copies, and
-the mobile app can. A breaking change to the spec fails CI.
+Two packages under `packages/`, as [ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) decides: one holds the generated API
+types and client, generated once from the committed spec with a mutator per
+platform; the other holds the en/fi strings. Each ships TypeScript source —
+`exports` point at `.ts`, with no build step or `dist/` — and the web compiles
+them, listing them in `transpilePackages` unless the build shows it need not.
+The web consumes both instead of its own copies, and the mobile app can. An
+ESLint rule fails a package that imports from `web/` or `mobile/`, or from
+`react-dom`, `next` or `react-native`. A breaking change to the spec fails CI.
 
 ## Non-goals
 
@@ -60,13 +64,19 @@ the mobile app can. A breaking change to the spec fails CI.
 
 ## Open questions
 
-**Answered, waiting on an accepted ADR.** Every question raised for this task
-was answered at refinement on 2026-10-30 (Constraints). It stays
-`needs-refinement` only because [the iteration](../iteration-9.md) has a
-decision accepted before the build tasks it binds are refined — here those of
-tasks [03](03-decision-repo-layout-and-code-sharing.md) and
-[04](04-decision-api-compatibility-policy.md). A second pass moves it once
-they merge, or reopens a question an ADR contradicts.
+Answered at refinement on 2026-10-30 (Constraints), apart from what
+[ADR-0092](../../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) leaves to this task:
+
+1. **The packages' names and scope** (the ADR fixes only what each holds).
+2. **How the platform-neutrality rule is written,** and where it lives: the
+   web already tests its `boundaries/dependencies` policies against committed
+   violating fixtures (`architecture.md` §7); the package rule should be proven
+   the same way.
+3. **Whether the `transpilePackages` entries are needed** for workspace
+   packages; Next.js's documentation says they are transpiled automatically,
+   so confirm by building with and without.
+
+It stays `needs-refinement` until task 04's ADR merges as well.
 
 ## Acceptance criteria
 
@@ -74,8 +84,9 @@ they merge, or reopens a question an ADR contradicts.
       no longer has its own copies; its Vitest and Playwright suites are green
 - [ ] A test in the API package proves each mutator attaches the token from
       its platform's source and maps an error to the typed failure
-- [ ] A lint rule or test fails when a shared package imports from `web/` or
-      `mobile/`, or from a platform-only module
+- [ ] A lint rule, proven by committed violating fixtures run in a test, fails
+      when a shared package imports from `web/` or `mobile/`, or from
+      `react-dom`, `next` or `react-native`
 - [ ] `make verify-fast` is green, and the drift check fails when the spec and
       the generated client disagree — confirmed by breaking one
 - [ ] A backend test fails when the committed spec differs from the one the

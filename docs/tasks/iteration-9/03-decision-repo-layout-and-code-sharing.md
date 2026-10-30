@@ -1,6 +1,6 @@
 # Task 03: Decide the repository layout and what code is shared
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-5
 
@@ -67,14 +67,14 @@ consumer — Next.js, Metro, the web's Docker build — reads a shared package.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the layout, the package list, the rejected tools and
+- [x] An ADR records the layout, the package list, the rejected tools and
       what each would have cost, and passes `node scripts/check-adrs.mjs`
-- [ ] `docs/architecture.md` §2 shows the new layout, and §7's revisit trigger
+- [x] `docs/architecture.md` §2 shows the new layout, and §7's revisit trigger
       is marked as fired
-- [ ] The checks that keep a package platform-neutral are named in the
+- [x] The checks that keep a package platform-neutral are named in the
       acceptance criteria of [task 09](09-shared-packages.md) — a lint rule or
       test that fails when a package imports an app's code
-- [ ] Tasks [08](08-workspaces-refactor.md) and [09](09-shared-packages.md)
+- [x] Tasks [08](08-workspaces-refactor.md) and [09](09-shared-packages.md)
       have their Scope and Open questions rewritten against the decision
       before either is refined
 
