@@ -1,6 +1,6 @@
 # Task 12: The server can tell an old app to update, or that Kalia is down
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-3
 
@@ -119,22 +119,22 @@ was accepted:
 
 ## Acceptance criteria
 
-- [ ] A backend integration test covers the endpoint's response shape, its
+- [x] A backend integration test covers the endpoint's response shape, its
       anonymous access and `Cache-Control: no-store`, and the endpoint is in
       `backend/openapi.json`
-- [ ] The `make` target changes the row, and a test shows the endpoint
+- [x] The `make` target changes the row, and a test shows the endpoint
       answering with the new values
-- [ ] A unit test in the app shows the update-required screen when the
+- [x] A unit test in the app shows the update-required screen when the
       server's minimum for the app's platform exceeds its build number, and
       not when it equals it or is below it
-- [ ] A unit test shows maintenance winning when both signals are on, and
+- [x] A unit test shows maintenance winning when both signals are on, and
       "check again" calling the endpoint again
-- [ ] On a simulator, raising the minimum version blocks the app on the next
+- [x] On a simulator, raising the minimum version blocks the app on the next
       foregrounding, and lowering it releases it — described in the PR
-- [ ] A unit test shows an unreachable endpoint lets the app open, and a
+- [x] A unit test shows an unreachable endpoint lets the app open, and a
       remembered "update required" still blocks it offline, and stops
       blocking when the app's build number meets the remembered minimum
-- [ ] Both screens read as the table above in both languages, with a
+- [x] Both screens read as the table above in both languages, with a
       VoiceOver and TalkBack label on the action
 
 ## Notes

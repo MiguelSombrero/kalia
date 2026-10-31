@@ -42,7 +42,7 @@ export const useAppGate = (): { gate: Gate | "loading"; checkAgain: () => void; 
   const gate = decideGate({
     build: ownBuildNumber(),
     minimum: named ?? remembered.data ?? 0,
-    maintenance: config.data?.maintenance ?? false,
+    maintenance: !config.isError && (config.data?.maintenance ?? false),
   });
   return { gate, checkAgain, isChecking: config.isFetching };
 };

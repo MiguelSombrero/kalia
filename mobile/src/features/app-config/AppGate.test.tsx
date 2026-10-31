@@ -216,6 +216,16 @@ describe("AppGate", () => {
     expect(await opened()).toBeOnTheScreen();
   });
 
+  it("lets the app open when 'check again' cannot reach the server after it announced maintenance", async () => {
+    answer(maintenance());
+    await renderGate();
+    unreachable();
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Check again" }));
+
+    expect(await opened()).toBeOnTheScreen();
+  });
+
   it("does not remember maintenance, which is the server's state and not the app's", async () => {
     answer(maintenance());
     const first = await renderGate();

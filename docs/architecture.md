@@ -835,7 +835,7 @@ conventions README for the day-to-day rules of writing it
 `mobile/` is an Expo Router app, a development build rather than Expo Go
 ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
 with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens and
-no data call yet. It follows [the web app's](#the-web-app) conventions where
+one data call, the launch check below. It follows [the web app's](#the-web-app) conventions where
 they are not about the browser, and each is enforced rather than agreed; the
 rules for writing it are in [mobile/README.md](../mobile/README.md):
 
@@ -858,6 +858,19 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
 - **Strings.** Every string comes from `@kalia/locales`; i18next takes the
   device's first language that has a bundle, and falls back to the default
   locale the package exports.
+- **Launch check.** `features/app-config` reads `GET /api/v1/app-config` on
+  launch and on returning to the foreground, at most once every 30 seconds,
+  and covers the whole app, tabs included, with an update-required or a
+  maintenance screen (maintenance first, since updating does not help when the
+  server is down). The app compares its own build number — the iOS build
+  number or Android version code in `app.json`, read with `expo-application` —
+  with its platform's minimum, and remembers that minimum, not a verdict, in
+  `@react-native-async-storage/async-storage`, so an update demanded once keeps
+  blocking offline and clears itself when the installed build meets it. An
+  endpoint that cannot be reached fails open. The screens' wording is the app's
+  own, in `@kalia/locales`; the server sends none
+  ([task 12](tasks/iteration-9/12-app-config-endpoint.md),
+  [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **Accessibility.** WCAG 2.2 AA
   ([ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)) in platform
   terms: each tab has an accessibility label, headings carry the heading role,
