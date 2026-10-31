@@ -99,6 +99,10 @@
     "title": "Beer catalog",
     "pageTitle": "Beer catalog — Kalia",
     "loading": "Loading beers…",
+    "list": {
+      "error": "Couldn't load beers.",
+      "empty": "No beers have been added yet."
+    },
     "filters": {
       "searchLabel": "Search",
       "searchPlaceholder": "Beer name…",

@@ -99,6 +99,10 @@
     "title": "Oluet",
     "pageTitle": "Oluet - Kalia",
     "loading": "Ladataan oluita…",
+    "list": {
+      "error": "Oluiden lataus ei onnistunut.",
+      "empty": "Oluita ei ole vielä lisätty."
+    },
     "filters": {
       "searchLabel": "Haku",
       "searchPlaceholder": "Oluen nimi…",
