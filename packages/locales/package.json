@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
+    "./load": "./src/load.ts",
     "./en/common.json": "./src/en/common.json",
     "./fi/common.json": "./src/fi/common.json"
   },

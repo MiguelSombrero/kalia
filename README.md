@@ -330,6 +330,7 @@ kalia/
 │       ├── profile/  # user profile, public cellar visibility
 │       └── feed/     # front-page activity feed
 ├── web/              # Next.js app (BFF + UI), an npm workspace
+├── mobile/           # Expo app (development build), an npm workspace (ADR-0094)
 ├── packages/         # shared TypeScript source, npm workspaces (ADR-0092)
 │   ├── api/          # @kalia/api: generated API client + fetch core
 │   └── locales/      # @kalia/locales: the en/fi strings

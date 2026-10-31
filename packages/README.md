@@ -40,7 +40,10 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
 ## `@kalia/locales`
 
 `src/index.ts` exports `resources` (every language, for i18next's `resources`
-option) and `loadResource` (one language on demand, for a backend). Each app
+option), `locales` and `defaultLocale`. `@kalia/locales/load` exports
+`loadResource` (one language on demand, for a backend) and is a file of its own
+because Metro refuses its dynamic `import()`, so the app must not reach it
+through the index. Each app
 initialises i18next itself. `src/keys.test.ts` fails on a key present in one
 language and not the other.
 

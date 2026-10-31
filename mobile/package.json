@@ -1,0 +1,50 @@
+{
+  "name": "mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "lint": "eslint && tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^6.0.0",
+    "@kalia/api": "*",
+    "@kalia/locales": "*",
+    "@tanstack/react-query": "^5.105.0",
+    "expo": "~58.0.21",
+    "expo-constants": "~58.0.14",
+    "expo-dev-client": "~58.0.17",
+    "expo-linking": "~58.0.15",
+    "expo-localization": "~58.0.5",
+    "expo-router": "~58.0.28",
+    "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.7",
+    "i18next": "^26.5.6",
+    "react": "19.3.1",
+    "react-hook-form": "^7.91.0",
+    "react-i18next": "^17.1.5",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "zod": "^4.6.7",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "^0.88.1",
+    "@tanstack/eslint-plugin-query": "^5.104.1",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26",
+    "@types/react": "^19",
+    "eslint": "^9",
+    "eslint-config-expo": "~58.0.4",
+    "eslint-plugin-boundaries": "7.3.0",
+    "jest": "^30.5.2",
+    "jest-expo": "~58.0.13",
+    "typescript": "^5.9.3"
+  }
+}

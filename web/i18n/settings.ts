@@ -1,6 +1,6 @@
-export const locales = ["en", "fi"] as const;
-export type Locale = (typeof locales)[number];
-export const defaultLocale: Locale = "en";
+import { defaultLocale, locales, type Locale } from "@kalia/locales";
+
+export { defaultLocale, locales, type Locale };
 export const defaultNamespace = "common";
 
 export const isLocale = (value: string): value is Locale =>

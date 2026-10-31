@@ -6,7 +6,7 @@
 # vulnerability-scan.yml stay CI-only, since building both images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test \
+.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start \
         web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate
@@ -46,6 +46,15 @@ web-test: ## Run the web app's unit tests
 
 packages-test: ## Run the shared packages' unit tests (the client's fetch core, the strings, the platform-neutrality rule)
 	npm test --workspace @kalia/api --workspace @kalia/locales
+
+mobile-lint: ## Lint and type-check the mobile app (strict TypeScript; no Docker, no native build)
+	npm run lint --workspace mobile
+
+mobile-test: ## Run the mobile app's Jest unit tests (no network, no simulator)
+	npm test --workspace mobile
+
+mobile-start: ## Start Metro for the development build, with this checkout's stack as the origins (extra flags: ARGS="--port N")
+	env $$(node scripts/mobile-env.mjs) npm start --workspace mobile -- $(ARGS)
 
 web-build: ## Production build of the web app (includes type checking)
 	npm run build --workspace web
@@ -122,7 +131,7 @@ trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.x
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml package-lock.json
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml backend/pom.xml
 
-verify-fast: check lint web-test packages-test api-drift ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
+verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
 verify: verify-fast compose-check web-build backend-verify api-breaking keycloak-check trivy-scan web-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 

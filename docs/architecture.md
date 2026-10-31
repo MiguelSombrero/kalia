@@ -823,6 +823,38 @@ The shape of the web app. Day-to-day rules for writing it live in
   layered across lint, unit and E2E tests:
   [web/README.md](../web/README.md) testing conventions.
 
+### The mobile app
+
+`mobile/` is an Expo Router app, a development build rather than Expo Go
+([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
+with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens and
+no data call yet. It follows the web's conventions where they are not about the
+browser, and each is enforced rather than agreed:
+
+- **Layers.** `src/app/` holds route files that only re-export a screen;
+  `src/features/<feature>/` owns its screens, hooks and `api.ts`;
+  `src/components/` and `src/lib/` are shared. `mobile/eslint.config.js` states
+  the directions allowed between them and the generated-client rule of the
+  web's, and `mobile/eslint.config.test.ts` proves each fires against a
+  committed fixture ([ADR-0012](adr/0012-orval-api-client.md)). A route file
+  never holds a test: Expo Router would treat it as a route.
+- **Origins.** One module, `src/lib/config/origins.ts`, reads the API's and
+  Keycloak's origins from `EXPO_PUBLIC_API_ORIGIN` and
+  `EXPO_PUBLIC_KEYCLOAK_ORIGIN`, which `make mobile-start` sets from the
+  stack's ports through `scripts/mobile-env.mjs`; no port is written in the
+  app, and the module throws at start-up when either is missing.
+- **Transport.** The root layout registers the shared fetch core from
+  `@kalia/api` with the API origin as its base URL
+  (`src/lib/api/registerTransport.ts`), as the web registers its own. It sends
+  no token yet.
+- **Strings.** Every string comes from `@kalia/locales`; i18next takes the
+  device's first language that has a bundle, and falls back to the default
+  locale the package exports.
+- **Accessibility.** WCAG 2.2 AA
+  ([ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)) in platform
+  terms: each tab has an accessibility label, headings carry the heading role,
+  and no text opts out of scaling with the system font size (a lint rule).
+
 ## 6. Authentication and identity
 
 Built in its own iteration ahead of the cellar, because the cellar is per-user
@@ -1060,6 +1092,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Module map in these docs | `ArchitectureDocumentationTest`, against Spring Modulith's `Documenter` view | §2's diagram — its backend modules and the edges between them — and §3's table and "Depends on" column are parsed at test time; editing either without the code, or the code without them, fails the build ([backend/README.md](../backend/README.md) notable suites) |
 | Web app import boundaries | `eslint-plugin-boundaries` (`npm run lint`) | CI fails on an import crossing a layer the wrong way — feature to feature, the generated API client (the `@kalia/api` package) from outside a feature's `api.ts`/`types.ts`, another feature's generated tag from inside them, `components/ui/` reaching upward ([ADR-0012](adr/0012-orval-api-client.md)) |
 | The `boundaries/dependencies` policies | Each re-run by `web/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `web/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
+| Mobile import boundaries and font scaling | `eslint-plugin-boundaries` and `no-restricted-syntax` in `mobile/eslint.config.js` (`make mobile-lint`), re-run by `mobile/eslint.config.test.ts` (Jest, ESLint's Node API) against committed fixtures in `mobile/eslint-fixtures/boundaries/` | The same layers as the web's, for `mobile/src`: feature to feature, `app` into a feature's internals, the generated client outside a feature's `api.ts` or another feature's tag, `lib` reaching upward, and `allowFontScaling={false}`. The real tree passes, so each is proven to fire by a fixture linted as if it sat in its layer |
 | Shared packages stay platform-neutral | ESLint `no-restricted-imports` (`packages/eslint.config.mjs`, in each package's `npm run lint`), re-run by `packages/api/platform-neutrality.test.ts` against committed violating fixtures in `packages/eslint-fixtures/neutrality/` | CI fails on a package importing `react-dom`, `next`, `react-native` or anything of `web/` or `mobile/` ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)). The real packages pass, so each pattern is proven to fire by a fixture placed as if it sat in either package |
 | API client and spec | `CommittedOpenApiSpecIT` (backend), `make api-drift` (regenerate `@kalia/api` from `backend/openapi.json`, diff), CI's `api-breaking-change` job (`oasdiff` against `dev`'s spec) | CI fails when the committed spec differs from the served one, when the committed client differs from what the spec generates, and on a breaking change to the spec ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)); the fetch core is unit-tested in `packages/api` (token, non-2xx returned, typed failures, unregistered transport) |
 | Language bundles | Vitest in `packages/locales` | CI fails on a key present in `en` and not in `fi`, or the reverse |
@@ -1070,7 +1103,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Dependency & image security | Trivy, scanning `pom.xml`/`package-lock.json` and both built images; `make verify` runs the two manifest scans, the image scans are CI-only | CI fails on a `HIGH`/`CRITICAL` CVE with a fix available, waivers expire in `.trivyignore.yaml`; Dependabot opens the fix PRs, Docker images included ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 | Web app unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [web/README.md](../web/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`web/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`web/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`web/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`web/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`web/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |
-| Mobile unit/component | Jest + React Native Testing Library, through Expo's `jest-expo` preset ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Screens and components of `mobile/`, queried by role, accessible name or text, with the generated API client mocked and no network. Built by [iteration 9 task 11](tasks/iteration-9/11-app-skeleton.md); runs in `make verify-fast` |
+| Mobile unit/component | Jest + React Native Testing Library, through Expo's `jest-expo` preset ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Screens and components of `mobile/`, queried by role, accessible name or text, with the generated API client mocked and no network. Built by [iteration 9 task 11](tasks/iteration-9/11-app-skeleton.md); runs in `make verify-fast` and as the `mobile` CI job, which `ci-passed` requires |
 | Mobile E2E | Maestro flows in `mobile/.maestro/`, driving the built app from outside ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Against the full docker-compose stack, no mock layer. CI runs the flow on an Android emulator on a Linux runner as a required check; the iOS Simulator runs the same flow in `make verify` on a Mac; CI has no iOS job. Built by [iteration 9 task 15](tasks/iteration-9/15-walking-skeleton-slice.md) |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
