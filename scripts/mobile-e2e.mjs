@@ -49,15 +49,14 @@ export const parseArgs = (argv) => {
   return { command, platform, abi: value("--abi") };
 };
 
-// A platform that was asked for by name and could not run is a failure; one
-// that "all" found unavailable is a skip. Nothing running at all is a failure
-// either way, so a host without a simulator or an emulator cannot pass.
+// A skipped platform is reported with its reason, but nothing running at all
+// is a failure, so a host without a simulator or an emulator cannot pass.
 export const verdict = (results) => {
   const lines = results.map(({ platform, status, reason }) =>
     status === "passed" ? `  ${platform}: flow ran and passed` : `  ${platform}: ${status}${reason ? ` — ${reason}` : ""}`,
   );
   const failed = results.some((result) => result.status === "failed");
-  const passed = results.some((result) => result.status === "passed");
+  const passed = results.some((result) => ["passed", "built"].includes(result.status));
   if (!passed && !failed) lines.push("No platform ran the flow: start a simulator or an emulator, or install what is named above.");
   return { ok: passed && !failed, lines };
 };
@@ -220,6 +219,7 @@ const runIos = (command) => {
   try {
     const udid = ios.boot(found);
     if (command !== "test") ios.build(udid);
+    if (command === "build") return { platform: "ios", status: "built" };
     runMaestro("ios", udid);
     return { platform: "ios", status: "passed" };
   } catch (error) {
@@ -232,7 +232,7 @@ const runAndroid = async (command, abi) => {
   try {
     if (command === "build") {
       buildAndroid(abi);
-      return { platform: "android", status: "passed" };
+      return { platform: "android", status: "built" };
     }
     const adb = sdkTool("platform-tools", "adb");
     if (!adb) return { platform: "android", status: "skipped", reason: "adb not found (install the Android SDK, or set ANDROID_HOME)" };
