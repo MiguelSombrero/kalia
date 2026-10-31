@@ -42,8 +42,8 @@ the backend and the process reshaped to carry a third codebase.
 | [07](iteration-9/07-process-carries-a-third-codebase.md) | The process carries a third codebase | done |
 | [12](iteration-9/12-app-config-endpoint.md) | The server can tell an old app to update, or that Kalia is down | done |
 | [13](iteration-9/13-keycloak-mobile-client.md) | Keycloak has a client for the app, and the backend accepts its tokens | done |
-| [14](iteration-9/14-sign-in-on-mobile.md) | A user signs in and out of the app | refined |
-| [15](iteration-9/15-walking-skeleton-slice.md) | The Catalog tab lists real beers from the API | refined |
+| [14](iteration-9/14-sign-in-on-mobile.md) | A user signs in and out of the app | done |
+| [15](iteration-9/15-walking-skeleton-slice.md) | The Catalog tab lists real beers from the API | done |
 
 The table's order is the order of work. [01](iteration-9/01-claude-md-regains-its-headroom.md)
 comes first because `CLAUDE.md` is full and [07](iteration-9/07-process-carries-a-third-codebase.md)

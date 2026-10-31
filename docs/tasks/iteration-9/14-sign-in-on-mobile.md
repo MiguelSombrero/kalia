@@ -1,6 +1,6 @@
 # Task 14: A user signs in and out of the app
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-2
 
@@ -104,32 +104,35 @@ was accepted:
 
 ## Acceptance criteria
 
-- [ ] On both simulators, a user signs in, sees who they are, and signs out —
-      described in the PR
-- [ ] Unit tests cover the token store: a successful refresh, a failed refresh
+- [x] On both simulators, a user signs in, sees who they are, and signs out —
+      described in the PR. *Done on the iOS Simulator; the Android emulator
+      could not be used (its package service failed every install), and the
+      product owner accepted closing the task without it, untested on Android,
+      on 2026-10-31.*
+- [x] Unit tests cover the token store: a successful refresh, a failed refresh
       returning to signed-out, and sign-out clearing secure storage
-- [ ] An expired access token is refreshed before the next API call without the
+- [x] An expired access token is refreshed before the next API call without the
       user seeing it — covered by a test
-- [ ] A refresh that Keycloak answers with `invalid_grant` ends the session,
+- [x] A refresh that Keycloak answers with `invalid_grant` ends the session,
       clears secure storage and shows the signed-out message, while a refresh
       that fails for any other reason (no network, a 5xx) leaves the user signed
       in — covered by tests ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md))
-- [ ] The refresh token a refresh returns is written to secure storage before
+- [x] The refresh token a refresh returns is written to secure storage before
       the new access token is used, so a request that dies after the refresh
       does not leave the app holding a spent token — covered by a test
-- [ ] Two calls that find the access token expired at the same moment cause
+- [x] Two calls that find the access token expired at the same moment cause
       one refresh, and both use its result — covered by a test
-- [ ] The sign-in page opens in the app's language, a cancelled sign-in
+- [x] The sign-in page opens in the app's language, a cancelled sign-in
       returns quietly to signed-out, and a failed one shows the message above
       — the first two checked by hand, the message covered by a test
-- [ ] A new account registered from the app's sign-in page and verified from
+- [x] A new account registered from the app's sign-in page and verified from
       the emailed link ends with the user able to sign in — checked by hand on
       a simulator and described in the PR
-- [ ] The Profile tab's strings read as the table above in both languages,
+- [x] The Profile tab's strings read as the table above in both languages,
       and "Try again" calls the profile endpoint again — covered by a test
-- [ ] Sign-out online forgets the tokens on the device and revokes them at
+- [x] Sign-out online forgets the tokens on the device and revokes them at
       Keycloak, after which the old refresh token is refused; offline, it
       forgets them and completes without a connection — the clearing covered by
       a test, the revocation checked against the local Keycloak and described in
       the PR
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
