@@ -191,6 +191,13 @@ they're already cross-referenced from merged PRs and
   reads on opening a file. Add `mobile/src` to both and fix what the
   check then finds. Not done in iteration 9 task 07, whose decided scope named
   only the links and raster-image checks.
+- **SHOULD-95** *(confirmed 2026-10-31)* — the app's transport asks the token
+  store for a token on every API call, anonymous ones included, so while a
+  signed-in user's refresh fails for a transient reason (Keycloak down or slow,
+  the backend up) the catalog and the launch check fail with it, though neither
+  needs a token. Let the token source degrade to no token for a call that an
+  anonymous caller may make, or have the shared transport retry such a call
+  without one. Deferred in the iteration 9 task 14 pull request.
 
 ## COULD
 
@@ -372,13 +379,21 @@ they're already cross-referenced from merged PRs and
   `npx expo install --check` also reports `react` and `typescript` off the
   SDK's own versions, both deliberately the web's.
 
-- **COULD-102** *(confirmed 2026-10-31)* — `ci.yml`'s `mobile-e2e` job downloads
+- **COULD-102** *(confirmed 2026-10-31)* — the app trusts its own clock for an
+  access token's expiry and never reacts to a `401` from the API: a token the
+  server stopped accepting inside its five minutes (a disabled account, a
+  revoked session, a skewed device clock) leaves the Profile tab on "Couldn't
+  load your profile." until the local expiry passes. Force a refresh on a
+  `401` and retry the call once. Deferred in the iteration 9 task 14 pull
+  request.
+
+- **COULD-104** *(confirmed 2026-10-31)* — `ci.yml`'s `mobile-e2e` job downloads
   Maestro's 350 MB zip and compiles the whole Android app cold on every run,
   with no cache for either. Cache the Maestro directory and Gradle's home once
   the job's run time is a measured cost; a cache key built from the lockfile
   keeps a stale build out.
 
-- **COULD-103** *(confirmed 2026-10-31)* — `mobile/.maestro/catalog-lists-beers.yaml`
+- **COULD-105** *(confirmed 2026-10-31)* — `mobile/.maestro/catalog-lists-beers.yaml`
   asserts a Wikidata-import beer that happens to sort into the first screen,
   so a catalog change that adds an earlier name fails the required check with
   no change to the app. Give the flow a beer of its own the first page always

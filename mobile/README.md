@@ -84,6 +84,12 @@ browser, so a rule stated there and not below still binds.
   reads both from `EXPO_PUBLIC_*` variables that `make mobile-start` sets from
   the worktree's ports, and throws at start-up when one is missing.
 
+- **Tokens live only in `expo-secure-store`**, never in AsyncStorage, a query
+  cache or a log, and an API call gets its token only from the token store in
+  `src/lib/auth/`. The username is read from the profile endpoint on each
+  visit and not stored
+  ([ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+
 **UI**
 
 - **Every string comes from `@kalia/locales`**, never a literal in a component
