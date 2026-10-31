@@ -141,9 +141,9 @@ verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift
 # (ADR-0096). It starts the stack itself, as web-e2e does, and fails when no
 # platform ran. Maestro is a one-off download: node scripts/mobile-e2e.mjs install-maestro
 .PHONY: mobile-e2e
-mobile-e2e: ## Run the mobile end-to-end flow on the iOS Simulator and Android emulator this host has; fails if neither ran (needs Docker and Maestro)
+mobile-e2e: ## Run the mobile end-to-end flow on the iOS Simulator and Android emulator this host has; fails if neither ran (needs Docker and Maestro; one platform: ARGS="--platform ios")
 	docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
-	node scripts/mobile-e2e.mjs
+	node scripts/mobile-e2e.mjs $(ARGS)
 
 verify: verify-fast compose-check web-build backend-verify api-breaking keycloak-check trivy-scan web-e2e mobile-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 
