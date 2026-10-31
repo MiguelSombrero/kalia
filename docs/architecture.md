@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-10-24. This document describes **what is built**, plus the
+*Last updated: 2026-10-31. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -652,8 +652,6 @@ conventions README for the day-to-day rules of writing it
 ([web/README.md](../web/README.md), [mobile/README.md](../mobile/README.md)).
 
 ### The web app
-
-The shape of the web app.
 
 - **App Router**, server components by default; client components only where
   the browser is genuinely needed — event handlers, React state, or context.
