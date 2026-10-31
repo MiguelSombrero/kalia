@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import net from "node:net";
 
 import { isPortFree, migrateEnvText, planPorts, portsForSlot, slotsHeldBy } from "./stack-env.mjs";
-import { originOf, parseEnvFile } from "./stack-ports.mjs";
+import { PORT_DEFAULTS, originOf, parseEnvFile } from "./stack-ports.mjs";
 
 const everythingFree = async () => true;
 const slotEnv = (slot) => Object.fromEntries(Object.entries(portsForSlot(slot)).map(([k, v]) => [k, String(v)]));
@@ -19,7 +19,15 @@ test("slot 1 is the documented offset of 100 on every default", () => {
     POSTGRES_PORT: 5532,
     VALKEY_PORT: 6479,
     MAILPIT_PORT: 8125,
+    METRO_PORT: 8182,
   });
+});
+
+test("Metro's port differs from every other port, in every slot and whichever slots are mixed", () => {
+  const all = [];
+  for (let slot = 0; slot <= 99; slot++) all.push(...Object.values(portsForSlot(slot)));
+  assert.equal(new Set(all).size, all.length);
+  assert.notEqual(PORT_DEFAULTS.METRO_PORT, 8081, "8081 is Keycloak's default port and Metro's own default");
 });
 
 test("the main checkout gets no ports", async () => {
@@ -63,6 +71,12 @@ test("a re-run fills only the ports still missing, from a slot where they are fr
   const { WEB_PORT, ...rest } = slotEnv(2);
   const plan = await planPorts({ isMainCheckout: false, ownEnv: rest, otherEnvs: [slotEnv(1)], isFree: everythingFree });
   assert.deepEqual(plan.write, { WEB_PORT: 3200 });
+});
+
+test("a worktree whose .env predates METRO_PORT gets Metro's port in the slot it already holds", async () => {
+  const { METRO_PORT, ...rest } = slotEnv(3);
+  const plan = await planPorts({ isMainCheckout: false, ownEnv: rest, otherEnvs: [], isFree: everythingFree });
+  assert.deepEqual(plan.write, { METRO_PORT: 8382 });
 });
 
 test("a port pinned off the slot grid holds no slot", () => {

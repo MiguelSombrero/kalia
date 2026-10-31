@@ -6,7 +6,7 @@
 # vulnerability-scan.yml stay CI-only, since building both images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start \
+.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-android mobile-doctor \
         web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate app-config
@@ -57,8 +57,17 @@ mobile-lint: ## Lint and type-check the mobile app (strict TypeScript; no Docker
 mobile-test: ## Run the mobile app's Jest unit tests (no network, no simulator)
 	npm test --workspace mobile
 
-mobile-start: ## Start Metro for the development build, with this checkout's stack as the origins (extra flags: ARGS="--port N")
+mobile-start: ## Start Metro for the development build, on this worktree's METRO_PORT and with its stack as the origins (extra flags: ARGS="...")
 	env $$(node scripts/mobile-env.mjs) npm start --workspace mobile -- $(ARGS)
+
+mobile-ios: ## Build the development build and run it on the iOS Simulator against this stack (extra flags: ARGS="--device 'iPhone 17e'")
+	node scripts/mobile-native.mjs ios $(ARGS)
+
+mobile-android: ## Build and run it on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs (extra flags: ARGS="...")
+	node scripts/mobile-native.mjs android $(ARGS)
+
+mobile-doctor: ## Check the Mac's native toolchain for the app, naming each missing or wrong-version tool (ARGS="ios" or "android" for one platform)
+	node scripts/mobile-doctor.mjs $(ARGS)
 
 web-build: ## Production build of the web app (includes type checking)
 	npm run build --workspace web

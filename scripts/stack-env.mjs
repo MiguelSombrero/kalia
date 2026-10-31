@@ -65,14 +65,16 @@ export const portsForSlot = (slot) =>
   Object.fromEntries(Object.entries(PORT_DEFAULTS).map(([name, base]) => [name, base + SLOT_STEP * slot]));
 
 // Returns the port variables to write into this worktree's .env — none for the
-// main checkout, none when all six are already set.
+// main checkout, none when every port is already set.
 export const planPorts = async ({ isMainCheckout, ownEnv, otherEnvs, isFree }) => {
   if (isMainCheckout) return { slot: 0, write: {} };
   const missing = Object.keys(PORT_DEFAULTS).filter((name) => !ownEnv[name]);
   if (missing.length === 0) return { slot: undefined, write: {} };
 
   const taken = new Set([0, ...otherEnvs.flatMap(slotsHeldBy)]);
-  for (let slot = 1; slot <= MAX_SLOT; slot++) {
+  const own = slotsHeldBy(ownEnv).filter((slot) => !taken.has(slot));
+  const candidates = [...new Set([...own, ...Array.from({ length: MAX_SLOT }, (_, i) => i + 1)])];
+  for (const slot of candidates) {
     if (taken.has(slot)) continue;
     const ports = portsForSlot(slot);
     const free = await Promise.all(missing.map((name) => isFree(ports[name])));

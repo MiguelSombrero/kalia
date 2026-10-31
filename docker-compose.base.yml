@@ -16,7 +16,8 @@
 #
 # The host ports are variables too, so worktrees can run a stack each at the
 # same time: `make stack-env` writes WEB_PORT, BACKEND_PORT,
-# KEYCLOAK_PORT, POSTGRES_PORT, VALKEY_PORT and MAILPIT_PORT into a
+# KEYCLOAK_PORT, POSTGRES_PORT, VALKEY_PORT and MAILPIT_PORT (and
+# METRO_PORT, which only the mobile app's make targets read) into a
 # worktree's own root .env, and unset they are the values below. Every
 # address that names one of them is built from it here, so the issuer Keycloak
 # stamps and the issuer its consumers validate cannot disagree. Container-side
