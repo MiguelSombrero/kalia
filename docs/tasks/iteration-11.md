@@ -24,6 +24,16 @@ Task files are written at refinement
 tasks run under the `design-task` skill
 ([ADR-0062](../adr/0062-a-design-task-is-a-skill-and-a-marker.md)).
 
+- **Decision: how a mobile direction is prototyped and signed off** — framed
+  Artifacts, throwaway native builds on the simulator or a phone, or both. It
+  comes first because the `design-task` skill and ADR-0062 are written for the
+  web throughout: mockups at phone and desktop widths, the chosen direction
+  confirmed in the browser pane, `@axe-core/playwright` scans and
+  keyboard-only tests as what a design task ships with. This decision amends
+  both for the app — devices and Dynamic Type sizes in place of widths, the
+  simulator or a phone in place of the browser pane, VoiceOver, TalkBack and
+  the largest text size in place of the scans — before the first design task
+  runs under them.
 - **Design: interaction model and navigation** — the tab structure, whether a
   central add/scan action exists, sheets versus pushed screens, gestures.
 - **Design: Kalia's identity on a phone** — "Can art, square"
@@ -43,12 +53,13 @@ tasks run under the `design-task` skill
 - **Mobile UI primitives** — buttons, rows, sheets, empty/loading/error
   states, and the beer and person slots
   ([ADR-0065](../adr/0065-imagery-icons-and-mark-specimen.md)) in native form.
+  It also restyles every screen [iteration 9](iteration-9.md) left plain on
+  purpose: the four tabs' shell, the Profile tab's sign-in states, the
+  catalog's loading, error and empty states, and the "update required" and
+  "maintenance" screens. Those last two matter most: an installed build keeps
+  the screens it shipped with, so how they look in the first release is how
+  they look on that build for as long as it is installed.
 - **Catalog search and list** — infinite scroll, search as you type, filters
   in a sheet.
 - **Beer details.**
 - **Mobile accessibility conventions** — written down and checked in tests.
-
-The `design-task` skill's prototypes are web Artifacts today. A mobile
-direction has to be judged at phone size and ideally in the hand, so the first
-design task here also settles how a mobile direction is prototyped — framed
-Artifacts, builds on the device, or both.
