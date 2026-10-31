@@ -198,17 +198,6 @@ they're already cross-referenced from merged PRs and
   needs a token. Let the token source degrade to no token for a call that an
   anonymous caller may make, or have the shared transport retry such a call
   without one. Deferred in the iteration 9 task 14 pull request.
-- **SHOULD-96** *(confirmed 2026-10-31)* — sign-in, refresh and sign-out have
-  never been run on the Android emulator, and `mobile/src/app/+native-intent.ts`
-  (which sends the `kalia://auth/callback` return to the Profile tab) has been
-  seen on no device: the shared emulator's package service failed every
-  install during iteration 9 task 14, and the product owner accepted closing
-  the task with the iOS Simulator check alone. On a healthy Android emulator,
-  sign in, relaunch, sign out and cancel from the Profile tab, check that the
-  return from the browser lands on Profile rather than an unmatched route,
-  and check whether Keycloak asks for credentials again after sign-out (Chrome
-  Custom Tabs share the browser's cookies; iOS's session did not). Deferred in
-  the iteration 9 task 14 pull request.
 
 ## COULD
 

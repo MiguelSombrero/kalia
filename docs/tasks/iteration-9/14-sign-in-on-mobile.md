@@ -107,8 +107,8 @@ was accepted:
 - [x] On both simulators, a user signs in, sees who they are, and signs out —
       described in the PR. *Done on the iOS Simulator; the Android emulator
       could not be used (its package service failed every install), and the
-      product owner accepted closing the task without it on 2026-10-31. The
-      Android check is [quality backlog](../quality-backlog.md) SHOULD-96.*
+      product owner accepted closing the task without it, untested on Android,
+      on 2026-10-31.*
 - [x] Unit tests cover the token store: a successful refresh, a failed refresh
       returning to signed-out, and sign-out clearing secure storage
 - [x] An expired access token is refreshed before the next API call without the

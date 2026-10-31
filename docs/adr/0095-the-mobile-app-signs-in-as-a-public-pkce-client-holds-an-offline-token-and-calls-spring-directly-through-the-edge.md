@@ -321,7 +321,6 @@ built from `mobile/src/lib/auth/`.
 - **The browser's sign-in does not survive sign-out on iOS.** After signing out,
   the app's next sign-in showed Keycloak's credential form again rather than
   signing the previous user straight back in. Whether Android's Custom Tabs,
-  which share the browser's cookies, behave the same was not measured
-  (quality backlog SHOULD-96).
+  which share the browser's cookies, behave the same was not measured.
 - **A refresh failure that is not `invalid_grant` leaves the session alone**
   is covered by tests with a controlled clock, not measured against a realm.
