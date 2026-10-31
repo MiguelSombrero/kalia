@@ -3,6 +3,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
+import path from "node:path";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 
 // Selectors for the web app's import layers (ADR-0012). Two of them carry a
@@ -16,6 +17,9 @@ const feature = { element: { type: "feature" } };
 const featureIndex = { element: { type: "feature" }, file: { categories: "feature-index" } };
 const componentsUi = { element: { type: "components-ui" } };
 const lib = [{ element: { type: "lib" } }, { file: { categories: "lib-root" } }];
+// Every layer may use the shared packages' root exports; their generated
+// client is the one part with rules of its own, below.
+const sharedPackage = { element: { type: "shared-package" } };
 const generatedModels = { element: { type: "generated-models" } };
 // A feature's api.ts reaches only its own tag's generated operations, so a
 // join across modules has to happen in the backend (ADR-0083).
@@ -112,28 +116,36 @@ const eslintConfig = defineConfig([
   {
     plugins: { boundaries },
     settings: {
+      // The repository root, not web/: the shared packages the web imports
+      // sit outside web/ (ADR-0092), and a pattern can only name a file
+      // relative to this root.
+      "boundaries/root-path": path.resolve(import.meta.dirname, ".."),
       "boundaries/elements": [
-        // Order matters: the generated client lives inside lib/, so its own
-        // descriptors have to come first to win the single match, and the
-        // shared models folder before the per-tag folders it sits among.
-        { type: "generated-models", pattern: "lib/api/generated/models", partialMatch: false },
-        { type: "generated-tag", pattern: "lib/api/generated/*", partialMatch: false, capture: ["tagName"] },
+        // Order matters: the generated client's descriptors come first to win
+        // the single match, and the shared models folder before the per-tag
+        // folders it sits among. The client is the @kalia/api workspace
+        // package.
+        { type: "generated-models", pattern: "packages/api/src/generated/models", partialMatch: false },
+        { type: "generated-tag", pattern: "packages/api/src/generated/*", partialMatch: false, capture: ["tagName"] },
+        // The rest of the shared packages: the fetch core's typed failure and
+        // the strings, which any layer may use.
+        { type: "shared-package", pattern: "packages/*", partialMatch: true },
         // i18n/ is shared infrastructure like lib/, not a feature — features/i18n/
         // is the feature package, i18n/ is the library it builds on.
-        { type: "lib", pattern: ["lib", "i18n"], partialMatch: false },
-        { type: "feature", pattern: "features/*", partialMatch: false, capture: ["featureName"] },
-        { type: "components-ui", pattern: "components/ui", partialMatch: false },
-        { type: "app", pattern: "app", partialMatch: false },
+        { type: "lib", pattern: ["web/lib", "web/i18n"], partialMatch: false },
+        { type: "feature", pattern: "web/features/*", partialMatch: false, capture: ["featureName"] },
+        { type: "components-ui", pattern: "web/components/ui", partialMatch: false },
+        { type: "app", pattern: "web/app", partialMatch: false },
       ],
       "boundaries/files": [
         // The trimmed public surface a feature exposes to outside consumers.
-        { category: "feature-index", pattern: "features/*/index.ts" },
+        { category: "feature-index", pattern: "web/features/*/index.ts" },
         // The only two files a feature may reach the generated client from.
-        { category: "feature-api", pattern: "features/*/{api,types}.ts" },
+        { category: "feature-api", pattern: "web/features/*/{api,types}.ts" },
         // Root-level modules the frameworks place outside any layer folder:
         // the Auth.js config, and Next.js's proxy and instrumentation hooks.
-        { category: "lib-root", pattern: "auth.ts" },
-        { category: "app-root", pattern: "{proxy,instrumentation}.ts" },
+        { category: "lib-root", pattern: "web/auth.ts" },
+        { category: "app-root", pattern: "web/{proxy,instrumentation}.ts" },
       ],
     },
     rules: {
@@ -150,10 +162,10 @@ const eslintConfig = defineConfig([
             // `feature` (whole folder) deliberately left out here: only its
             // `index.ts` barrel is reachable from outside — a deep import
             // into a feature's internals is what this rule forbids.
-            { from: app, allow: { to: [featureIndex, componentsUi, ...lib] } },
+            { from: app, allow: { to: [featureIndex, componentsUi, sharedPackage, ...lib] } },
             // Imports within one feature are internal and never evaluated, so
             // leaving `feature` out here is what bans feature-to-feature.
-            { from: feature, allow: { to: [componentsUi, ...lib] } },
+            { from: feature, allow: { to: [componentsUi, sharedPackage, ...lib] } },
             {
               from: { element: { type: "feature" }, file: { categories: "feature-api" } },
               allow: { to: [generatedModels, ownGeneratedTag] },
@@ -163,8 +175,8 @@ const eslintConfig = defineConfig([
               from: { element: { type: "feature", captured: { featureName: "cellar" } }, file: { categories: "feature-api" } },
               allow: { to: { element: { type: "generated-tag", captured: { tagName: "public-cellar" } } } },
             },
-            { from: componentsUi, allow: { to: lib } },
-            { from: lib, allow: { to: lib } },
+            { from: componentsUi, allow: { to: [sharedPackage, ...lib] } },
+            { from: lib, allow: { to: [sharedPackage, ...lib] } },
           ],
         },
       ],
@@ -177,9 +189,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // orval-generated API client (ADR-0012) - "Do not edit manually", and
-    // its TanStack Query hook style doesn't match our conventions.
-    "lib/api/generated/**",
   ]),
 ]);
 

@@ -1,4 +1,4 @@
-import type { BeerDetailsDto, BreweryDto as Brewery } from "@/lib/api/generated/models";
+import type { BeerDetailsDto, BreweryDto as Brewery } from "@kalia/api/generated/models";
 
 // Re-exports of orval-generated types (ADR-0012) under this feature's names.
 export type {
@@ -8,7 +8,7 @@ export type {
   BeerDetailsDto as BeerDetails,
   PageDtoBeerSummaryDto as BeerPage,
   AddBeerRequestDto as AddBeerRequest,
-} from "@/lib/api/generated/models";
+} from "@kalia/api/generated/models";
 
 /** A field the server refused, named by its path in the request (`newBrewery.countryCode`). */
 export type FieldRefusal = { field: string; message: string };

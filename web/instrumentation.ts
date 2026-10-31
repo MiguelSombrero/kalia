@@ -3,7 +3,7 @@ import { verifyRequiredConfiguration } from "@/lib/config/requiredConfiguration"
 import { traceIdOf } from "@/lib/api/traceparent";
 import { logger } from "@/lib/logger";
 
-export const register = () => {
+export const register = async () => {
   // Next.js also invokes register() for the edge runtime (proxy.ts), where
   // process.exit doesn't exist — stay Node-only, per
   // node_modules/next/dist/docs/01-app/02-guides/instrumentation.md.
@@ -21,6 +21,11 @@ export const register = () => {
     logger.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
+
+  // Imported here for the same reason as onRequestError's metrics below: the
+  // transport reaches the session store and the metrics client.
+  const { registerWebTransport } = await import("@/lib/api/registerTransport");
+  registerWebTransport();
 };
 
 // ADR-0088. Next.js calls this for every error it caught serving a request;

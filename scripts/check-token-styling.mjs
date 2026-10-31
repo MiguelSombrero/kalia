@@ -6,7 +6,7 @@
 // that matched nothing would stay green.
 //
 // What is read: every .ts/.tsx/.css file under web/ except app/globals.css
-// (where values live), tests, e2e/, the generated API client and tooling
+// (where values live), tests, e2e/ and tooling
 // directories. keycloak/themes/.../login.css is outside web/ and is a
 // separate origin's stylesheet that cannot import the app's tokens.
 //
@@ -105,7 +105,7 @@ function listFiles(dir, root) {
     const full = resolve(dir, entry.name);
     const rel = relative(root, full).split(sep).join("/");
     if (entry.isDirectory()) {
-      if (IGNORED_DIRS.has(entry.name) || rel === "web/lib/api/generated") continue;
+      if (IGNORED_DIRS.has(entry.name)) continue;
       out.push(...listFiles(full, root));
     } else if (SCANNED.test(entry.name) && !TEST_FILE.test(entry.name) && rel !== "web/app/globals.css") {
       out.push(full);

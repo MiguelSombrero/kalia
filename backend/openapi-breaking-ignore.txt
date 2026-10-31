@@ -1,0 +1,15 @@
+# The removals of deprecated elements that `make api-breaking` and CI's API
+# breaking-change job let through (ADR-0093). Empty is the normal state.
+#
+# Each entry is one line copied from oasdiff's output for that finding,
+#   <METHOD> <path> <message> [<check id>]
+# and the line above it is a comment saying which minimum supported app build
+# excludes every app that still calls the element:
+#
+#   # minimum supported build 14 excludes the last app that calls it
+#   GET /api/v1/styles api path removed with deprecation [api-path-removed-with-deprecation]
+#
+# Only a *-removed-with-deprecation finding may be listed. Removing anything
+# `dev`'s spec has not marked deprecated is a breaking change a waiver does
+# not cover: add it beside the old element, deprecate the old one, and remove
+# it in a later change.

@@ -4,6 +4,10 @@
 - **Date:** 2026-07-27
 - **Amended:** 2026-08-11 by [ADR-0037](0037-functional-modules.md) — corrected
   the "Alternatives considered" reasoning against subclassing `Error`
+- **Amended:** 2026-10-30 — `ApiError` and the failures of the fetch core live
+  in the shared `@kalia/api` package (`packages/api/src/core/`), so a mobile
+  transport raises the same typed failures; the web keeps its own around it
+  ([ADR-0092](0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md))
 - **Amended:** 2026-10-23 — a fifth kind, `refused`, for a request
   `kaliaFetch` declines to send because a path parameter could have reshaped
   its route ([ADR-0012](0012-orval-api-client.md); iteration 8 task 11)
@@ -37,7 +41,7 @@ reasoning previously lived only in a ten-line `frontend/README.md` bullet.
 `kind` tag, and an HTTP error status is deliberately not one of them.**
 
 - **Five kinds**, defined with the constructor and guard in
-  `lib/api/api-error.ts`: `network`, `timeout`, `http`, `parse`, `refused`.
+  `packages/api/src/core/api-error.ts`: `network`, `timeout`, `http`, `parse`, `refused`.
   Callers branch on `isApiError(e) && e.kind === …` rather than reading a
   message. `status` is present for `http` and `parse`, absent for the rest.
 - **Built by decoration, not subclassing.** `apiError()` returns

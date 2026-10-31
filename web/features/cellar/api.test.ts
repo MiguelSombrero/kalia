@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isApiError } from "@/lib/api/api-error";
+import { isApiError } from "@kalia/api";
 import {
   getPublicCellar,
   heldBottlesByBeer,

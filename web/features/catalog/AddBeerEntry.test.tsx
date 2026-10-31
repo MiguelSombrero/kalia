@@ -5,8 +5,8 @@ import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { describe, expect, it, vi } from "vitest";
-import enCommon from "@/i18n/locales/en/common.json";
-import fiCommon from "@/i18n/locales/fi/common.json";
+import enCommon from "@kalia/locales/en/common.json";
+import fiCommon from "@kalia/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
 
 const { startCatalogSignIn } = vi.hoisted(() => ({ startCatalogSignIn: vi.fn() }));

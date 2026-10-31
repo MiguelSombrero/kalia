@@ -86,14 +86,19 @@ build whenever the two disagree.**
   `city` parameter, which the Jackson fix in Evidence made properly optional.
 
 > **Amended 2026-10-30.** The spec source and the drift job above are
-> replaced by [ADR-0093](0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) once
-> [iteration 9 task 09](../tasks/iteration-9/09-shared-packages.md) builds
-> them. The spec is a committed file; every client generates from it, so none
+> replaced by [ADR-0093](0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md),
+> which [iteration 9 task 09](../tasks/iteration-9/09-shared-packages.md)
+> built. The generated client now lives in the `@kalia/api` package,
+> `packages/api/src/generated/`, with the mutator split into a fetch core in
+> that package and a transport each app registers; the isolation rule in the
+> 2026-08-15 note below holds, on that path. The spec is the committed file
+> `backend/openapi.json`; every client generates from it, so none
 > needs a Docker stack or a running backend. A backend test fails when the
 > committed file differs from the spec the application serves, which takes
 > over what `api-client-drift` checked against the live backend, and the
-> package regenerates from the file and diffs the result. A CI job also diffs
-> the spec against `dev`'s and fails on a breaking change; the compatibility
+> package regenerates from the file and diffs the result (`make api-drift`,
+> with no Docker). A CI job also diffs
+> the spec against `dev`'s with `oasdiff` and fails on a breaking change; the compatibility
 > policy those checks serve is in ADR-0093 and
 > [architecture.md §4](../architecture.md#4-api-design). The orval choice,
 > the committed generated output and the mutator stand.

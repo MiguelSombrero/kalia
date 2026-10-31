@@ -1,0 +1,19 @@
+{
+  "name": "@kalia/locales",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./en/common.json": "./src/en/common.json",
+    "./fi/common.json": "./src/fi/common.json"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "vitest": "^5.0.5"
+  }
+}

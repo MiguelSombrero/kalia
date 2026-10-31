@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-21
+- **Amended:** 2026-10-30 — the resources moved out of the web into the
+  `@kalia/locales` package, `packages/locales/src/{en,fi}/common.json`, so the
+  mobile app reads the same strings ([ADR-0092](0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md));
+  i18n initialisation stays in each app
 - **Amended:** 2026-07-24 — the client bridge this ADR deferred was built the
   same iteration, once the shared error boundary
   ([ADR-0022](0022-loading-error-empty-states.md)) became the first client
@@ -41,7 +45,8 @@ grammar and number formatting, not only string translation.**
   components (`i18n/server.ts`), with a fresh `createInstance()` per call
   rather than shared module-level state, so it is safe under concurrent
   requests. Every current UI string is migrated; the translation resources
-  live at `i18n/locales/{en,fi}/common.json`, one `common` namespace for now.
+  live at `packages/locales/src/{en,fi}/common.json` (`@kalia/locales`), one
+  `common` namespace for now.
 - **`react-i18next` 17.0.10 is installed but not yet wired** — no client
   component holds translated text today (the switcher only needs locale
   codes "EN"/"FI", which aren't translated). Follows the install-now,

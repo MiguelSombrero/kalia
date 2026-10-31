@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { beforeEach, describe, expect, it } from "vitest";
-import enCommon from "@/i18n/locales/en/common.json";
+import enCommon from "@kalia/locales/en/common.json";
 import { getOptions } from "@/i18n/settings";
 import { BeerRow, JustAddedBadge, JustAddedLanding, JustAddedToast } from "./JustAdded";
 import { useJustAddedStore } from "./store";

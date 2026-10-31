@@ -34,7 +34,7 @@
 // over the same tree returned 0.13 and 0.18 depending on whether blank
 // lines counted as code):
 //   - Scope is every hand-written `.java` under backend/src and every
-//     `.ts`/`.tsx` under web/, except web/lib/api/generated
+//     `.ts`/`.tsx` under web/ and packages/, except packages/api/src/generated
 //     (orval output, out of ADR-0017's Decision by name) and build/tooling
 //     directories (node_modules, .next, target, coverage, dist, build,
 //     playwright-report, test-results). The `.mjs` files under scripts/ and
@@ -66,7 +66,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SCAN_ROOTS = [
   { dir: resolve(ROOT, "backend/src"), extensions: [".java"], counted: true },
   { dir: resolve(ROOT, "web"), extensions: [".ts", ".tsx"], counted: true },
+  { dir: resolve(ROOT, "packages"), extensions: [".ts", ".tsx"], counted: true },
   { dir: resolve(ROOT, "web"), extensions: [".mjs"], counted: false },
+  { dir: resolve(ROOT, "packages"), extensions: [".mjs"], counted: false },
   { dir: resolve(ROOT, "scripts"), extensions: [".mjs"], counted: false },
 ];
 const ADVISORY = process.argv.includes("--advisory");
@@ -77,7 +79,7 @@ const IGNORED_DIRS = new Set([
 // Exact path, not a name match against every "generated" directory anywhere
 // — a future hand-written directory that happens to share the name must
 // still be scanned.
-const GENERATED_API_CLIENT = resolve(ROOT, "web/lib/api/generated");
+const GENERATED_API_CLIENT = resolve(ROOT, "packages/api/src/generated");
 
 // Each traces to an instance found in the 2026-08-15 sweep (see header).
 // Deliberately excludes `previously` and `no longer` — see header.

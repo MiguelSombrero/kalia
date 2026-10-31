@@ -1,13 +1,13 @@
-import { apiError, isApiError } from "@/lib/api/api-error";
+import { apiError, isApiError } from "@kalia/api";
 import { logger } from "@/lib/logger";
 import {
   addBottles as generatedAddBottles,
   listEntries as generatedListEntries,
   removeBottle as generatedRemoveBottle,
   updateBottle as generatedUpdateBottle,
-} from "@/lib/api/generated/cellar/cellar";
-import type { EntryDto, PublicCellarEntryDto } from "@/lib/api/generated/models";
-import { read as generatedReadPublicCellar } from "@/lib/api/generated/public-cellar/public-cellar";
+} from "@kalia/api/generated/cellar/cellar";
+import type { EntryDto, PublicCellarEntryDto } from "@kalia/api/generated/models";
+import { read as generatedReadPublicCellar } from "@kalia/api/generated/public-cellar/public-cellar";
 import { inVintageOrder } from "./cellarOrder";
 import type { AddBottlesRequest, Bottle, CellarBeer, PublicCellar, UpdateBottleRequest } from "./types";
 

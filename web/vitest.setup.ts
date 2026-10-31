@@ -1,3 +1,4 @@
+import { registerTransport } from "@kalia/api";
 import "@testing-library/jest-dom/vitest";
 import { toHaveNoViolations } from "jest-axe";
 import { expect, vi } from "vitest";
@@ -45,3 +46,8 @@ vi.mock("@/lib/api/requestTrace", () => ({
 vi.mock("@/lib/api/requestClient", () => ({
   currentClientAddress: vi.fn(async () => undefined),
 }));
+
+// A unit test that reaches the generated client goes through the web's own
+// transport, as instrumentation.ts registers it at startup. Imported at call
+// time, so a test's mocks of what it reads (the session, fetch) are in place.
+registerTransport((url, options) => import("@/lib/api/mutator").then(({ kaliaFetch }) => kaliaFetch(url, options)));

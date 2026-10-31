@@ -3,6 +3,7 @@ paths:
   - "backend/src/**/*.java"
   - "web/{app,components,features,lib,i18n,e2e}/**/*.{ts,tsx}"
   - "web/*.ts"
+  - "packages/*/src/**/*.ts"
 ---
 
 # Code comments carry only what the repo cannot
@@ -62,5 +63,5 @@ concrete to run against instead of relying on memory of what got written.
 - **Comments explaining why a test asserts something apparently pointless
   stay.** They are what stops a cleanup pass deleting a guard.
 - **`package-info.java` keeps one sentence** naming the layer and its ADR.
-- **Generated code is out of scope** — `web/lib/api/generated` is orval
+- **Generated code is out of scope** — `packages/api/src/generated` is orval
   output, regenerated and never hand-edited.

@@ -48,10 +48,14 @@ const eslintRules = {
     existsSync(VITEST) && execFileSync(VITEST, ["run", "eslint.config.test.ts"], { cwd: WEB, stdio: "pipe" }),
 };
 
-const isWebSource = (p) =>
-  p.startsWith("web/") &&
+const isWebSource = (p) => p.startsWith("web/") && /\.(tsx?|mjs)$/.test(p) && !p.includes("/node_modules/");
+
+// Linted by its own package's `lint` script, not edit by edit; the comment
+// check still reads it.
+const isPackageSource = (p) =>
+  p.startsWith("packages/") &&
   /\.(tsx?|mjs)$/.test(p) &&
-  !p.startsWith("web/lib/api/generated/") &&
+  !p.startsWith("packages/api/src/generated/") &&
   !p.includes("/node_modules/");
 
 // Which check owns which path. docs/architecture.md and docs/adr/ are one
@@ -88,7 +92,6 @@ const ROUTES = [
         /\.(tsx?|css)$/.test(p) &&
         !/\.(test|spec)\.tsx?$/.test(p) &&
         !p.startsWith("web/e2e/") &&
-        !p.startsWith("web/lib/api/generated/") &&
         !p.includes("/node_modules/")),
   },
   {
@@ -96,6 +99,7 @@ const ROUTES = [
     covers: (p) =>
       (p.startsWith("backend/src/") && p.endsWith(".java")) ||
       isWebSource(p) ||
+      isPackageSource(p) ||
       (p.startsWith("scripts/") && p.endsWith(".mjs")),
   },
 ];

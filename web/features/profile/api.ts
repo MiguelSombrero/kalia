@@ -1,8 +1,8 @@
-import { apiError } from "@/lib/api/api-error";
+import { apiError } from "@kalia/api";
 import {
   changeVisibility as generatedChangeVisibility,
   myProfile as generatedMyProfile,
-} from "@/lib/api/generated/profile/profile";
+} from "@kalia/api/generated/profile/profile";
 import type { Profile } from "./types";
 
 export const getProfile = async (): Promise<Profile> => {

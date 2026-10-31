@@ -4,8 +4,8 @@ import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import enCommon from "@/i18n/locales/en/common.json";
-import fiCommon from "@/i18n/locales/fi/common.json";
+import enCommon from "@kalia/locales/en/common.json";
+import fiCommon from "@kalia/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
 
 const { addBottlesAction } = vi.hoisted(() => ({ addBottlesAction: vi.fn() }));

@@ -6,8 +6,9 @@
 # vulnerability-scan.yml stay CI-only, since building both images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify web-test \
-        web-build web-e2e lint check compose-check api-drift keycloak-check trivy-scan verify \
+.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test \
+        web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
+        keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate
 
 help: ## Show this help
@@ -43,14 +44,17 @@ backend-verify: ## Run backend unit + integration tests from clean (needs Docker
 web-test: ## Run the web app's unit tests
 	npm test --workspace web
 
+packages-test: ## Run the shared packages' unit tests (the client's fetch core, the strings, the platform-neutrality rule)
+	npm test --workspace @kalia/api --workspace @kalia/locales
+
 web-build: ## Production build of the web app (includes type checking)
 	npm run build --workspace web
 
 web-e2e: ## Run the web app's E2E tests (needs the stack up)
 	npm run test:e2e --workspace web
 
-lint: ## Lint the web app
-	npm run lint --workspace web
+lint: ## Lint the web app and the shared packages
+	npm run lint --workspace web --workspace @kalia/api --workspace @kalia/locales
 
 check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link checks and their self-tests
 	node scripts/check-adrs.mjs
@@ -73,10 +77,23 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only (needs the docker CLI, no daemon)
 	node scripts/check-compose.mjs
 
-api-drift: ## Fail if the committed API client has drifted from the live spec (needs Docker)
-	docker compose up -d --build --wait --wait-timeout 120 backend postgres edge
-	npm run generate:api --workspace web
-	git diff --exit-code -- web/lib/api/generated
+# Two halves, neither needing a running backend (ADR-0093): the backend's own
+# CommittedOpenApiSpecIT holds backend/openapi.json equal to what the
+# application serves (it runs with `make backend-verify`), and this
+# regenerates the client from that file and fails if the committed one differs
+# (--intent-to-add, so a generated file nobody committed counts as a difference).
+api-drift: ## Fail if the committed API client differs from what backend/openapi.json generates (no Docker, no backend)
+	npm run generate --workspace @kalia/api
+	git add --intent-to-add --all -- packages/api/src/generated
+	git diff --exit-code -- packages/api/src/generated
+
+openapi-spec: ## Rewrite backend/openapi.json from what the application serves, then regenerate the client (needs Docker)
+	(cd backend && mvn -q -B -Dopenapi.write=true -Dit.test=CommittedOpenApiSpecIT -Dtest=NoSuch -Dsurefire.failIfNoSpecifiedTests=false verify)
+	npm run generate --workspace @kalia/api
+
+api-breaking: ## Fail if backend/openapi.json breaks an installed app against origin/dev's copy (needs oasdiff, ADR-0093)
+	@git fetch --quiet origin dev 2>/dev/null || echo "warning: fetch failed — origin/dev may be stale" >&2
+	node scripts/check-api-breaking.mjs origin/dev
 
 # check-keycloak-realm-config runs first and, on a stack that is already up,
 # before keycloak-config reconciles the realm below — so a setting changed in
@@ -105,9 +122,9 @@ trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.x
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml package-lock.json
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml backend/pom.xml
 
-verify-fast: check lint web-test ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
+verify-fast: check lint web-test packages-test api-drift ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
 
-verify: verify-fast compose-check web-build backend-verify api-drift keycloak-check trivy-scan web-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
+verify: verify-fast compose-check web-build backend-verify api-breaking keycloak-check trivy-scan web-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 
 install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-push hook
 	@dest="$$(git rev-parse --git-common-dir)/hooks/pre-push"; \

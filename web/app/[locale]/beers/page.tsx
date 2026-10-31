@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { isApiError } from "@/lib/api/api-error";
+import { isApiError } from "@kalia/api";
 import {
   AddBeerEntry,
   BeerList,

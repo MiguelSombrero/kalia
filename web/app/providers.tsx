@@ -5,8 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createInstance } from "i18next";
 import { useState, type ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import enCommon from "@/i18n/locales/en/common.json";
-import fiCommon from "@/i18n/locales/fi/common.json";
+import { resources } from "@kalia/locales";
 import { getOptions, type Locale } from "@/i18n/settings";
 
 // Mounted once in the root layout (ADR-0008). Resources are imported
@@ -29,7 +28,7 @@ export const Providers = ({ children, locale }: { children: ReactNode; locale: L
     const instance = createInstance();
     instance.use(initReactI18next).init({
       ...getOptions(locale),
-      resources: { en: { common: enCommon }, fi: { common: fiCommon } },
+      resources,
     });
     return instance;
   });

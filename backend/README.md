@@ -164,6 +164,12 @@ Notable suites:
   `ArchitectureRulesRejectViolationsTest` above, applied to `HttpBoundaryTest`:
   none of its rules has a production violator, so each is re-run against
   `archfixture/httpboundary/`
+- `CommittedOpenApiSpecIT` — fails when `backend/openapi.json`, which the web
+  and the mobile app generate their client from, differs from what
+  `/v3/api-docs` serves (ADR-0093). After an API change, `make openapi-spec`
+  rewrites the file and regenerates the client; commit both. The test serves
+  the spec without the `src/test` probe controllers, and without `servers`,
+  whose port changes per run
 - `ApiErrorDocumentationIT` — reads `/v3/api-docs`: every operation lists an
   error, an authenticated one a `401`, one taking input a `400`, each as
   problem+json with a declared schema that nests nothing under `properties`

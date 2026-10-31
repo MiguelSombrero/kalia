@@ -1,0 +1,1806 @@
+{
+  "components" : {
+    "schemas" : {
+      "AddBeerRequestDto" : {
+        "description" : "A beer to add to the catalog. Give exactly one of breweryId and newBrewery.",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent (0-100), at most one decimal",
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "number"
+          },
+          "breweryId" : {
+            "description" : "A brewery the catalog already has",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "newBrewery" : {
+            "$ref" : "#/components/schemas/NewBreweryRequestDto",
+            "description" : "A brewery the catalog lacks, added together with the beer"
+          },
+          "style" : {
+            "description" : "One of the catalog's styles, as listed by GET /api/v1/styles",
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "name", "style" ],
+        "type" : "object"
+      },
+      "AddBottleRequestDto" : {
+        "description" : "One or more identical bottles to add to the caller's cellar",
+        "properties" : {
+          "beerId" : {
+            "description" : "The catalog beer this bottle is of",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "bestBeforeDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "brewedDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "containerType" : {
+            "enum" : [ "BOTTLE", "CAN", "KEG" ],
+            "type" : "string"
+          },
+          "quantity" : {
+            "description" : "How many identical bottles to add (1-24); absent means one",
+            "format" : "int32",
+            "maximum" : 24,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        },
+        "required" : [ "beerId", "containerType" ],
+        "type" : "object"
+      },
+      "BeerDetailsDto" : {
+        "description" : "Full details for a single beer",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent",
+            "type" : "number"
+          },
+          "brewery" : {
+            "$ref" : "#/components/schemas/BreweryDto"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "style" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "brewery", "id", "name", "style" ],
+        "type" : "object"
+      },
+      "BeerSummaryDto" : {
+        "description" : "A beer as it appears in search results",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent",
+            "type" : "number"
+          },
+          "brewery" : {
+            "$ref" : "#/components/schemas/BreweryRefDto"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "style" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "brewery", "id", "name", "style" ],
+        "type" : "object"
+      },
+      "BottleDto" : {
+        "description" : "A single bottle owned by the caller",
+        "properties" : {
+          "bestBeforeDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "brewedDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "containerType" : {
+            "enum" : [ "BOTTLE", "CAN", "KEG" ],
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "entryId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "required" : [ "containerType", "createdAt", "entryId", "id", "updatedAt" ],
+        "type" : "object"
+      },
+      "BreweryDto" : {
+        "description" : "A brewery",
+        "properties" : {
+          "city" : {
+            "type" : "string"
+          },
+          "countryCode" : {
+            "description" : "ISO 3166-1 alpha-2 code; a client names the country in its reader's language",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "countryCode", "id", "name" ],
+        "type" : "object"
+      },
+      "BreweryRefDto" : {
+        "description" : "Brief reference to a brewery, as embedded in a beer summary",
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "name" ],
+        "type" : "object"
+      },
+      "CellarBeerDto" : {
+        "description" : "The catalog beer a cellar entry is of, as the catalog describes it now",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent",
+            "type" : "number"
+          },
+          "brewery" : {
+            "description" : "The brewery's name",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "style" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "brewery", "id", "name", "style" ],
+        "type" : "object"
+      },
+      "ChangeVisibilityRequestDto" : {
+        "description" : "The caller's desired cellar visibility",
+        "properties" : {
+          "cellarPublic" : {
+            "description" : "Whether the caller's cellar should be readable by anyone with the link",
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "cellarPublic" ],
+        "type" : "object"
+      },
+      "DuplicateBeerProblem" : {
+        "description" : "A 409: the catalog already has this beer",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "existingBeerId" : {
+            "description" : "The beer the request duplicates",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "instance" : {
+            "format" : "uri",
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "format" : "uri",
+            "type" : "string"
+          }
+        },
+        "required" : [ "existingBeerId", "status", "title" ],
+        "type" : "object"
+      },
+      "DuplicateBreweryProblem" : {
+        "description" : "A 409: the catalog already has this brewery, named as the catalog spells it",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "existingBreweryCountryCode" : {
+            "description" : "That brewery's country, an ISO 3166-1 alpha-2 code",
+            "type" : "string"
+          },
+          "existingBreweryId" : {
+            "description" : "The brewery the request duplicates",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "existingBreweryName" : {
+            "description" : "That brewery's name, spelled as the catalog holds it",
+            "type" : "string"
+          },
+          "instance" : {
+            "format" : "uri",
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "format" : "uri",
+            "type" : "string"
+          }
+        },
+        "required" : [ "existingBreweryCountryCode", "existingBreweryId", "existingBreweryName", "status", "title" ],
+        "type" : "object"
+      },
+      "EntryDto" : {
+        "description" : "A cellar entry: one catalog beer the caller owns bottles of",
+        "properties" : {
+          "beer" : {
+            "$ref" : "#/components/schemas/CellarBeerDto"
+          },
+          "bottles" : {
+            "items" : {
+              "$ref" : "#/components/schemas/BottleDto"
+            },
+            "type" : "array"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantity" : {
+            "description" : "Derived by counting bottles, never stored",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "required" : [ "beer", "bottles", "createdAt", "id", "quantity", "updatedAt" ],
+        "type" : "object"
+      },
+      "FeedLineDto" : {
+        "description" : "One event in the feed: a person adding bottles to their cellar",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent, as the catalog records it now",
+            "type" : "number"
+          },
+          "beerId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "beerName" : {
+            "type" : "string"
+          },
+          "brewedDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "brewery" : {
+            "type" : "string"
+          },
+          "cursor" : {
+            "description" : "Opaque; pass as this event's own position to the since parameter to read everything recorded after it",
+            "type" : "string"
+          },
+          "occurredAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "quantity" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "style" : {
+            "description" : "The beer's style as the catalog records it now",
+            "type" : "string"
+          },
+          "username" : {
+            "description" : "The owner's username, as copied from the identity provider",
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "beerId", "beerName", "brewery", "cursor", "occurredAt", "quantity", "style", "username" ],
+        "type" : "object"
+      },
+      "FeedPageDto" : {
+        "description" : "A page of the feed, newest first",
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FeedLineDto"
+            },
+            "type" : "array"
+          },
+          "nextCursor" : {
+            "description" : "Opaque; non-null when there is more beyond this page. For a since read, pass it back as since to fetch the rest of a truncated batch. For a plain read it marks that older history exists beyond what is served here.",
+            "type" : "string"
+          },
+          "startOver" : {
+            "description" : "True only for a since cursor older than the served window: content is empty and the caller has a hole it must not mistake for a partial result — discard what it holds and request a fresh first page instead",
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "content", "startOver" ],
+        "type" : "object"
+      },
+      "FieldErrorDto" : {
+        "description" : "A request field the API refused, and why",
+        "properties" : {
+          "field" : {
+            "description" : "The refused field's name, as the request spells it",
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "field", "message" ],
+        "type" : "object"
+      },
+      "NewBreweryRequestDto" : {
+        "description" : "A brewery to add to the catalog together with a beer",
+        "properties" : {
+          "city" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "pattern" : "[^\\p{Cc}\\p{Cf}]*",
+            "type" : "string"
+          },
+          "countryCode" : {
+            "description" : "One of the ISO 3166-1 alpha-2 codes listed by GET /api/v1/countries",
+            "pattern" : "[A-Z]{2}",
+            "type" : "string"
+          },
+          "name" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "countryCode", "name" ],
+        "type" : "object"
+      },
+      "PageDtoBeerSummaryDto" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/BeerSummaryDto"
+            },
+            "type" : "array"
+          },
+          "page" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "content", "page", "totalElements", "totalPages" ],
+        "type" : "object"
+      },
+      "PageDtoBreweryDto" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/BreweryDto"
+            },
+            "type" : "array"
+          },
+          "page" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "content", "page", "totalElements", "totalPages" ],
+        "type" : "object"
+      },
+      "Problem" : {
+        "description" : "An RFC 9457 problem: the body of every error response",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "format" : "uri",
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "format" : "uri",
+            "type" : "string"
+          }
+        },
+        "required" : [ "status", "title" ],
+        "type" : "object"
+      },
+      "ProfileDto" : {
+        "description" : "The caller's own profile",
+        "properties" : {
+          "cellarPublic" : {
+            "description" : "Whether the caller's cellar is readable by anyone with the link",
+            "type" : "boolean"
+          },
+          "username" : {
+            "description" : "Copied from the identity provider at profile creation; never updated afterward",
+            "type" : "string"
+          }
+        },
+        "required" : [ "cellarPublic", "username" ],
+        "type" : "object"
+      },
+      "PublicCellarBottleDto" : {
+        "description" : "A single bottle in a public cellar",
+        "properties" : {
+          "bestBeforeDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "brewedDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "containerType" : {
+            "enum" : [ "BOTTLE", "CAN", "KEG" ],
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "entryId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "required" : [ "containerType", "createdAt", "entryId", "id", "updatedAt" ],
+        "type" : "object"
+      },
+      "PublicCellarDto" : {
+        "description" : "One page of a cellar its owner has made public, with its beers and their bottles",
+        "properties" : {
+          "content" : {
+            "description" : "This page's beers, in the order they were added to the cellar",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicCellarEntryDto"
+            },
+            "type" : "array"
+          },
+          "lastBottleAddedAt" : {
+            "description" : "When the newest of those bottles was added; absent for a cellar with none",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "page" : {
+            "description" : "Zero-based index of this page",
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalBottles" : {
+            "description" : "Bottles in the beers the reader is shown",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalElements" : {
+            "description" : "Beers in the whole cellar that the reader is shown",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "description" : "Pages those beers span at this page size",
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "username" : {
+            "description" : "The owner's username, as copied from the identity provider",
+            "type" : "string"
+          }
+        },
+        "required" : [ "content", "page", "totalBottles", "totalElements", "totalPages", "username" ],
+        "type" : "object"
+      },
+      "PublicCellarEntryDto" : {
+        "description" : "One catalog beer in a public cellar, with the bottles owned of it",
+        "properties" : {
+          "beer" : {
+            "$ref" : "#/components/schemas/CellarBeerDto"
+          },
+          "bottles" : {
+            "description" : "The oldest bottles of the beer, at most 25",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicCellarBottleDto"
+            },
+            "type" : "array"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantity" : {
+            "description" : "Derived by counting bottles, never stored; may exceed the bottles listed",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "required" : [ "beer", "bottles", "createdAt", "id", "quantity", "updatedAt" ],
+        "type" : "object"
+      },
+      "UpdateBottleRequestDto" : {
+        "description" : "A bottle's new details, replacing all of them",
+        "properties" : {
+          "bestBeforeDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "brewedDate" : {
+            "description" : "Null when not recorded",
+            "format" : "date",
+            "type" : "string"
+          },
+          "containerType" : {
+            "enum" : [ "BOTTLE", "CAN", "KEG" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "containerType" ],
+        "type" : "object"
+      },
+      "ValidationProblem" : {
+        "description" : "A 400 naming each field the request got wrong",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FieldErrorDto"
+            },
+            "type" : "array"
+          },
+          "instance" : {
+            "format" : "uri",
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "format" : "uri",
+            "type" : "string"
+          }
+        },
+        "required" : [ "errors", "status", "title" ],
+        "type" : "object"
+      }
+    },
+    "securitySchemes" : {
+      "oauth2" : {
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "http://localhost:8081/realms/kalia/protocol/openid-connect/auth",
+            "scopes" : {
+              "openid" : "OpenID Connect sign-in"
+            },
+            "tokenUrl" : "http://localhost:8081/realms/kalia/protocol/openid-connect/token"
+          }
+        },
+        "type" : "oauth2"
+      }
+    }
+  },
+  "info" : {
+    "title" : "OpenAPI definition",
+    "version" : "v0"
+  },
+  "openapi" : "3.1.0",
+  "paths" : {
+    "/api/v1/beers" : {
+      "get" : {
+        "description" : "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics. A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.",
+        "operationId" : "searchBeers",
+        "parameters" : [ {
+          "description" : "Case-insensitive substring match on beer name, at most 100 characters",
+          "in" : "query",
+          "name" : "query",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "description" : "Exact, case-insensitive style match (e.g. \"IPA\"), at most 100 characters",
+          "in" : "query",
+          "name" : "style",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "description" : "Restrict to one brewery",
+          "in" : "query",
+          "name" : "breweryId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "description" : "The brewery's country, one of the ISO 3166-1 alpha-2 codes listed by GET /api/v1/countries",
+          "in" : "query",
+          "name" : "countryCode",
+          "required" : false,
+          "schema" : {
+            "pattern" : "[A-Z]{2}",
+            "type" : "string"
+          }
+        }, {
+          "description" : "Inclusive lower ABV bound, percent (0-100)",
+          "in" : "query",
+          "name" : "minAbv",
+          "required" : false,
+          "schema" : {
+            "maximum" : 100.0,
+            "minimum" : 0.0,
+            "type" : "number"
+          }
+        }, {
+          "description" : "Inclusive upper ABV bound, percent (0-100)",
+          "in" : "query",
+          "name" : "maxAbv",
+          "required" : false,
+          "schema" : {
+            "maximum" : 100.0,
+            "minimum" : 0.0,
+            "type" : "number"
+          }
+        }, {
+          "description" : "Zero-based page index; page × size is at most 10000",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "format" : "int32",
+            "maximum" : 10000,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Page size, 1-100",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "\"<property>,<asc|desc>\"; property is one of name, style, abv",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "default" : "name,asc",
+            "type" : "string"
+          }
+        }, {
+          "description" : "Restrict to beers whose name contains any word of this text, case-insensitively: the words are its runs of letters and digits at least 2 long, the first 8 counted. Requires breweryId. At most 100 characters",
+          "in" : "query",
+          "name" : "similarTo",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageDtoBeerSummaryDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "A filter is malformed or out of range, minAbv is above maxAbv, the sort is unsupported, or the page skips more rows than allowed"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "Search beers",
+        "tags" : [ "Catalog" ]
+      },
+      "post" : {
+        "description" : "Adds a beer the catalog lacks. Its contributor can find and cellar it at once; everyone else sees it once an operator has approved it. Its brewery is either one the catalog has (breweryId) or one added with it (newBrewery), which waits for approval too. Two beers are the same when they share a brewery and a name with case, whitespace, punctuation and compatibility forms such as fullwidth letters ignored; two breweries when they share such a name and a country. A name may not contain control or invisible formatting characters. At most 20 entries may wait for approval per contributor.",
+        "operationId" : "addBeer",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddBeerRequestDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeerDetailsDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "A field is missing, out of range, not one of the listed styles or countries, or both or neither of breweryId and newBrewery are given; `errors` lists each one"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No brewery with the given breweryId"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/DuplicateBeerProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/DuplicateBreweryProblem"
+                  } ]
+                }
+              }
+            },
+            "description" : "The catalog already has this beer, named by `existingBeerId`, or already has the new brewery, named by `existingBreweryId` and spelled as the catalog spells it"
+          },
+          "429" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The contributor already has the most entries allowed waiting for approval; adding resumes as some are approved or rejected"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Add a beer",
+        "tags" : [ "Catalog" ]
+      }
+    },
+    "/api/v1/beers/{id}" : {
+      "get" : {
+        "description" : "Full details for a single beer, including its brewery.",
+        "operationId" : "getBeer",
+        "parameters" : [ {
+          "description" : "Beer id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeerDetailsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The id is not a UUID"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No beer with this id, or one still waiting for approval that is not the caller's"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "Get beer details",
+        "tags" : [ "Catalog" ]
+      }
+    },
+    "/api/v1/breweries" : {
+      "get" : {
+        "description" : "Paginate the brewery list, sorted by name. A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.",
+        "operationId" : "listBreweries",
+        "parameters" : [ {
+          "description" : "Case-insensitive substring match on brewery name, at most 100 characters",
+          "in" : "query",
+          "name" : "query",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index; page × size is at most 10000",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "format" : "int32",
+            "maximum" : 10000,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Page size, 1-100",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageDtoBreweryDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "The query is too long, a page parameter is out of range, or the page skips more rows than allowed"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "List breweries",
+        "tags" : [ "Catalog" ]
+      }
+    },
+    "/api/v1/breweries/countries" : {
+      "get" : {
+        "description" : "The ISO 3166-1 alpha-2 code of every country the catalog has a brewery in. Order is not significant: a client sorts by the name it shows.",
+        "operationId" : "listBreweryCountries",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "type" : "string"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "List the countries breweries are in",
+        "tags" : [ "Catalog" ]
+      }
+    },
+    "/api/v1/cellar" : {
+      "get" : {
+        "description" : "Every entry the caller owns, each with its bottles and derived quantity. Not paginated.",
+        "operationId" : "listEntries",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/EntryDto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "List the caller's cellar",
+        "tags" : [ "Cellar" ]
+      }
+    },
+    "/api/v1/cellar/bottles" : {
+      "post" : {
+        "description" : "Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned.",
+        "operationId" : "addBottles",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddBottleRequestDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/BottleDto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "The bottle's dates or quantity are invalid"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No catalog beer with the given id"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Another request changed the same cellar entry at the same time and the retry lost again. Nothing was changed; repeat the request."
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Add bottles",
+        "tags" : [ "Cellar" ]
+      }
+    },
+    "/api/v1/cellar/bottles/{id}" : {
+      "delete" : {
+        "description" : "404 when the bottle does not exist or belongs to someone else.",
+        "operationId" : "removeBottle",
+        "parameters" : [ {
+          "description" : "Bottle id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The id is not a bottle id"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The bottle does not exist or belongs to someone else"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Another request changed the same cellar entry at the same time and the retry lost again. Nothing was changed; repeat the request."
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Remove a bottle",
+        "tags" : [ "Cellar" ]
+      },
+      "patch" : {
+        "description" : "Replaces the bottle's container type and both dates. 404 when the bottle does not exist or belongs to someone else.",
+        "operationId" : "updateBottle",
+        "parameters" : [ {
+          "description" : "Bottle id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateBottleRequestDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BottleDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "The bottle's dates are invalid"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The bottle does not exist or belongs to someone else"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Another request changed the same cellar entry at the same time and the retry lost again. Nothing was changed; repeat the request."
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Update a bottle",
+        "tags" : [ "Cellar" ]
+      }
+    },
+    "/api/v1/cellars/{username}" : {
+      "get" : {
+        "description" : "One page of the beers in the cellar, in the order they were added, and the bottles owned of each. A request without paging parameters gets the first page of 20 beers. A beer lists at most 25 bottles, its oldest; its quantity says how many are held. A beer that is not approved (awaiting approval, refused or taken down) is left out of the pages and of every total. 404 — identical for every caller, the owner included — when the username is unknown or the cellar is not public, so neither can be told from the other.",
+        "operationId" : "read",
+        "parameters" : [ {
+          "description" : "The owner's username",
+          "in" : "path",
+          "name" : "username",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index, at most 199",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "format" : "int32",
+            "maximum" : 199,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Beers per page, 1-50",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "format" : "int32",
+            "maximum" : 50,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicCellarDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description" : "The username is longer than any username can be, or a page parameter is out of range"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No public cellar for this username"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "Read a public cellar",
+        "tags" : [ "Public cellar" ]
+      }
+    },
+    "/api/v1/countries" : {
+      "get" : {
+        "description" : "The ISO 3166-1 alpha-2 code of every country a brewery can be in. Order is not significant: a client sorts by the name it shows.",
+        "operationId" : "listCountries",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "type" : "string"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "List countries",
+        "tags" : [ "Catalog" ]
+      }
+    },
+    "/api/v1/feed" : {
+      "get" : {
+        "description" : "Without since or before: the most recent events, newest first, each naming the person and the beer. With since, an opaque cursor from a previous line: every event recorded after it instead, still newest first, capped at size and marked startOver if the cursor has aged past the served window — the increment a page that is already open polls for. With before, an opaque cursor from a previous line: every event recorded before it instead, still newest first and capped at size — how a page already open continues toward older history as its visitor scrolls. since and before are mutually exclusive. Identical for every caller, signed in or out: only events whose owner's cellar is currently public are served, so there is nothing left to vary by caller. A line whose beer or person no longer resolves is dropped rather than rendered blank. Without since, a page reads on past the lines it leaves out until it holds size lines or reaches the end of the served window, but scans a bounded number of rows per request — so it may still carry fewer lines than requested, even none, with a nextCursor to continue from.",
+        "operationId" : "readFeed",
+        "parameters" : [ {
+          "description" : "Page size, 1-99",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "format" : "int32",
+            "maximum" : 99,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Opaque cursor from a previous line's own cursor; when given, reads events recorded after it instead of the most recent page. Mutually exclusive with before.",
+          "in" : "query",
+          "name" : "since",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 96,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          }
+        }, {
+          "description" : "Opaque cursor from a previous line's own cursor; when given, reads events recorded before it instead of the most recent page, for continuing toward older history. Mutually exclusive with since.",
+          "in" : "query",
+          "name" : "before",
+          "required" : false,
+          "schema" : {
+            "maxLength" : 96,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FeedPageDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "size is missing, non-numeric, or outside 1-99; since or before is malformed or was never issued by this server; or both since and before are given"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "Read the feed",
+        "tags" : [ "Feed" ]
+      }
+    },
+    "/api/v1/profile" : {
+      "get" : {
+        "description" : "Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile. A username is never given to a second account, even after the first is deleted: 409 when the token's username is already held.",
+        "operationId" : "myProfile",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProfileDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The caller has no profile yet, and its username belongs to another account"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Read the caller's own profile",
+        "tags" : [ "Profile" ]
+      }
+    },
+    "/api/v1/profile/visibility" : {
+      "patch" : {
+        "description" : "Creates the caller's profile the first time it is needed. The caller is always resolved from the bearer token, so this can never affect anyone else's profile. A username is never given to a second account, even after the first is deleted: 409 when the token's username is already held.",
+        "operationId" : "changeVisibility",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChangeVisibilityRequestDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProfileDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "The request body is not a valid visibility change"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The caller has no profile yet, and its username belongs to another account"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Change the caller's cellar visibility",
+        "tags" : [ "Profile" ]
+      }
+    },
+    "/api/v1/styles" : {
+      "get" : {
+        "description" : "Every style a beer in the catalog has, sorted by name.",
+        "operationId" : "listStyles",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "type" : "string"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "List styles",
+        "tags" : [ "Catalog" ]
+      }
+    }
+  },
+  "tags" : [ {
+    "description" : "The signed-in caller's own cellar",
+    "name" : "Cellar"
+  }, {
+    "description" : "A cellar its owner has made public, addressed by username",
+    "name" : "Public cellar"
+  }, {
+    "description" : "Recent cellar activity from cellars their owners made public",
+    "name" : "Feed"
+  }, {
+    "description" : "The signed-in caller's own profile",
+    "name" : "Profile"
+  }, {
+    "description" : "Search, browse and add to the beer catalog",
+    "name" : "Catalog"
+  } ]
+}

@@ -5,10 +5,10 @@ import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import enCommon from "@/i18n/locales/en/common.json";
-import fiCommon from "@/i18n/locales/fi/common.json";
+import enCommon from "@kalia/locales/en/common.json";
+import fiCommon from "@kalia/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
-import { apiError } from "@/lib/api/api-error";
+import { apiError } from "@kalia/api";
 import { FEED_LIST_CAP, LIVE_POLL_INTERVAL_MS, STALLED_AFTER_FAILURES } from "./constants";
 import type { FeedPage } from "./types";
 

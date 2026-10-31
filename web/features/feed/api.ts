@@ -1,6 +1,6 @@
-import { apiError } from "@/lib/api/api-error";
-import { readFeed as generatedReadFeed } from "@/lib/api/generated/feed/feed";
-import type { ReadFeedParams } from "@/lib/api/generated/models";
+import { apiError } from "@kalia/api";
+import { readFeed as generatedReadFeed } from "@kalia/api/generated/feed/feed";
+import type { ReadFeedParams } from "@kalia/api/generated/models";
 import type { FeedPage } from "./types";
 
 export const readFeed = async (params?: ReadFeedParams): Promise<FeedPage> => {

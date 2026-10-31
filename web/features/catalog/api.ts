@@ -1,4 +1,4 @@
-import { apiError } from "@/lib/api/api-error";
+import { apiError } from "@kalia/api";
 import {
   addBeer as generatedAddBeer,
   getBeer as generatedGetBeer,
@@ -7,7 +7,7 @@ import {
   listCountries as generatedListCountries,
   listStyles as generatedListStyles,
   searchBeers as generatedSearchBeers,
-} from "@/lib/api/generated/catalog/catalog";
+} from "@kalia/api/generated/catalog/catalog";
 import { normalizeBeerSearchParams } from "./searchParams";
 import {
   type AddBeerRequest,
