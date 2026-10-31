@@ -99,7 +99,7 @@ const commonFindings = ({ pins, node, stack }) => [
   node.split(".")[0] === pins.node ? ok("Node", node) : fail("Node", `found ${node}, .node-version pins ${pins.node}`),
   stack.isWorktree && !stack.metroPort
     ? fail("METRO_PORT", "this worktree's .env has none; run `make stack-env`")
-    : ok("METRO_PORT", stack.metroPort || "default"),
+    : ok("METRO_PORT", stack.metroPort ? "set in .env" : "default"),
 ];
 
 export const diagnose = (facts, platform) => [
