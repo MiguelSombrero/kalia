@@ -67,6 +67,7 @@ the mobile foundations; nothing in it is built yet.
 flowchart LR
     subgraph Client
         Browser
+        App[Mobile app: mobile/, Expo]
     end
     subgraph Web["web/ (Next.js, BFF)"]
         NX[Next.js server: server components, Server Actions]
@@ -81,8 +82,9 @@ flowchart LR
         CFG[appconfig]
     end
     Browser -->|every request| EDGE[edge: nginx, limits per client address]
+    App -->|REST, JSON, direct| EDGE
     EDGE --> NX
-    EDGE -.->|API, Swagger UI| API
+    EDGE -.->|API, Swagger UI, mobile app| API
     NX -->|REST, JSON| API
     API --> CAT & CEL & IDN & PROF & FED & CFG
     CAT --> IDN
@@ -157,9 +159,11 @@ redirect scheme. Its stack:
   over-the-air updates, and the app is run on the iOS Simulator and the Android
   Emulator.
 
-The diagram above shows the web path only. How the app reaches the API and
-authenticates is [task 05](tasks/iteration-9/05-decision-mobile-authentication.md)'s
-decision.
+The app calls the Spring API directly through the edge, with no BFF of its own,
+and signs in as a public Keycloak client
+([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+The diagram draws the call it makes today; the sign-in path joins it with
+[task 14](tasks/iteration-9/14-sign-in-on-mobile.md).
 
 ## 3. Backend modules
 
