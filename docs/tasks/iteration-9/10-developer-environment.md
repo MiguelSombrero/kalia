@@ -95,16 +95,16 @@ was accepted:
       on the iOS Simulator and the Android emulator against the local stack —
       read through by a reviewer, run on both by the author, and described in
       the PR
-- [ ] `make stack-env` writes a `METRO_PORT` that differs from every other
+- [x] `make stack-env` writes a `METRO_PORT` that differs from every other
       port it allocates, with a test beside `scripts/stack-env.test.mjs`, and
       the make targets start Metro on it
 - [ ] The `make` targets start the app on each platform, and the Android one
       sets `adb reverse` for the API, Keycloak and Metro ports from the
       worktree's ports rather than fixed ones, shown by two worktrees' stacks
       running side by side
-- [ ] A doctor script reports a missing or wrong-version tool by name, with a
+- [x] A doctor script reports a missing or wrong-version tool by name, with a
       test covering at least the JDK case
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
