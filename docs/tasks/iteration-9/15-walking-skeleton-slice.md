@@ -1,6 +1,6 @@
 # Task 15: The Catalog tab lists real beers from the API
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-2, DW-4
 
@@ -118,32 +118,32 @@ was accepted:
 
 ## Acceptance criteria
 
-- [ ] On both simulators, the Catalog tab lists beers from the local stack —
+- [x] On both simulators, the Catalog tab lists beers from the local stack —
       described in the PR
-- [ ] A Jest unit test renders the list from a mocked client, and its error
+- [x] A Jest unit test renders the list from a mocked client, and its error
       and empty states
-- [ ] The unit test and the Maestro flow follow [ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)'s
+- [x] The unit test and the Maestro flow follow [ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)'s
       conventions — the test as in [task 11](11-app-skeleton.md); the flow in
       `mobile/.maestro/`, selecting by visible text or accessibility label,
       starting from a freshly installed app and depending on no other flow;
       confirmed by reading them
-- [ ] A Maestro flow opens the app and finds a seeded beer in the list, runs
+- [x] A Maestro flow opens the app and finds a seeded beer in the list, runs
       in CI on Android against the full stack as a required check, and was
       confirmed to fail against a build with the list broken
-- [ ] The same flow passes on the iOS Simulator through `make verify` —
+- [x] The same flow passes on the iOS Simulator through `make verify` —
       described in the PR
-- [ ] The flow runs against a build of the project `expo prebuild` generates,
+- [x] The flow runs against a build of the project `expo prebuild` generates,
       carrying its own JavaScript so no Metro server runs, not Expo Go, and
       building it needs no Expo account or paid service — confirmed by
       building it in a shell logged out of `eas`
       ([ADR-0094](../../adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md))
-- [ ] The error and empty states read as the table above in both languages,
+- [x] The error and empty states read as the table above in both languages,
       the strings are in the shared strings package, and the unit test shows
       the retry action calling the client again
-- [ ] `make verify` prints which platform's flow ran and which it skipped and
+- [x] `make verify` prints which platform's flow ran and which it skipped and
       why, and fails when none ran — confirmed by running it with the
       simulator and the emulator absent
-- [ ] The Android job runs on the triggers above, is part of `ci-passed`,
+- [x] The Android job runs on the triggers above, is part of `ci-passed`,
       does not retry a failed flow, and uploads Maestro's output on failure —
       confirmed by reading the workflow and by a deliberately failing run
-- [ ] `make verify` is green
+- [x] `make verify` is green

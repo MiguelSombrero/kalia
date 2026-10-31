@@ -838,9 +838,9 @@ conventions README for the day-to-day rules of writing it
 
 `mobile/` is an Expo Router app, a development build rather than Expo Go
 ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
-with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens, a
-Profile tab that signs in and out, and two data calls: the launch check and the
-profile, below. It follows [the web app's](#the-web-app) conventions where
+with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens
+except the Catalog's, a Profile tab that signs in and out, and three data
+calls: the catalog list, the launch check and the profile, below. It follows [the web app's](#the-web-app) conventions where
 they are not about the browser, and each is enforced rather than agreed; the
 rules for writing it are in [mobile/README.md](../mobile/README.md):
 
@@ -892,6 +892,14 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   own, in `@kalia/locales`; the server sends none
   ([task 12](tasks/iteration-9/12-app-config-endpoint.md),
   [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+- **Catalog list.** `features/catalog` is the first screen to read the API
+  through a feature hook: `useBeers` reads page 0 of `GET /api/v1/beers` at an
+  explicit size (every catalog read is bounded,
+  [ADR-0042](adr/0042-bounded-request-parameters.md)) and the screen shows a
+  loading, an error (with a retry action) and an empty state, then each beer's
+  name, brewery, style and strength. The first page only; paging, search and
+  the catalog's design are [iteration 11](tasks/iteration-11.md)
+  ([task 15](tasks/iteration-9/15-walking-skeleton-slice.md)).
 - **Accessibility.** WCAG 2.2 AA
   ([ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)) in platform
   terms: each tab has an accessibility label, headings carry the heading role,
@@ -1149,7 +1157,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | Web app unit/component | Vitest + React Testing Library + `jest-axe` | Components, BFF route handlers (mock backend). WCAG 2.2 AA enforcement across this and the layers below: [web/README.md](../web/README.md) testing conventions, which also covers the trap in testing async Server Components — RTL cannot render them |
 | E2E | Playwright (chromium) against docker-compose stack; `webServer` in `playwright.config.ts` starts the stack itself if it isn't already running | Critical journeys: search → detail; sign in/out; cellar add → edit → remove; the mail path (Keycloak → Mailpit, read back over Mailpit's API); register → verify → sign in/out/in (`web/e2e/sign-up.spec.ts`); the language of the Keycloak pages reached from each locale, and their identity, WCAG 2.2 AA scan and computed contrast on all four pages at 375×812 and 1280×800 (`web/e2e/keycloak-branding.spec.ts`, [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0074](adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)); every surface a visitor can reach, in both locales, rendered at 375×812 and at 1280×800 with its heading outline checked, taking no screenshot (`web/e2e/surface-tour.spec.ts`); three flows by keyboard alone with focus never hidden at any Tab stop (`web/e2e/keyboard-flows.spec.ts`); nothing animating under reduced motion (`web/e2e/reduced-motion.spec.ts`); plus the WCAG 2.2 AA scans covered above |
 | Mobile unit/component | Jest + React Native Testing Library, through Expo's `jest-expo` preset ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Screens and components of `mobile/`, queried by role, accessible name or text, with the generated API client mocked and no network. Built by [iteration 9 task 11](tasks/iteration-9/11-app-skeleton.md); runs in `make verify-fast` and as the `mobile` CI job, which `ci-passed` requires |
-| Mobile E2E | Maestro flows in `mobile/.maestro/`, driving the built app from outside ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Against the full docker-compose stack, no mock layer. CI runs the flow on an Android emulator on a Linux runner as a required check; the iOS Simulator runs the same flow in `make verify` on a Mac; CI has no iOS job. Built by [iteration 9 task 15](tasks/iteration-9/15-walking-skeleton-slice.md) |
+| Mobile E2E | Maestro flows in `mobile/.maestro/`, driving the built app from outside ([ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)) | Against the full docker-compose stack, no mock layer. The flow runs a release build of the project `expo prebuild` generates, with its JavaScript inside, so no Metro server runs; the Catalog tab listing a beer from the stack is the one flow so far, anonymous. CI runs it on an Android emulator on a Linux runner as a required check (`mobile-e2e` in `ci.yml`, no retry, Maestro's output uploaded on failure); `make mobile-e2e`, part of `make verify`, runs it on the iOS Simulator and the Android emulator the host has, says which it skipped and why, and fails when none ran. Both are `scripts/mobile-e2e.mjs`, which also pins and installs Maestro; CI has no iOS job. Built by [iteration 9 task 15](tasks/iteration-9/15-walking-skeleton-slice.md) |
 
 Backend test naming (`*Test` vs `*IT`), the commands that run each, and what
 is worth testing at all: [backend/README.md](../backend/README.md). Coverage

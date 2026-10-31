@@ -387,6 +387,18 @@ they're already cross-referenced from merged PRs and
   `401` and retry the call once. Deferred in the iteration 9 task 14 pull
   request.
 
+- **COULD-104** *(confirmed 2026-10-31)* — `ci.yml`'s `mobile-e2e` job downloads
+  Maestro's 350 MB zip and compiles the whole Android app cold on every run,
+  with no cache for either. Cache the Maestro directory and Gradle's home once
+  the job's run time is a measured cost; a cache key built from the lockfile
+  keeps a stale build out.
+
+- **COULD-105** *(confirmed 2026-10-31)* — `mobile/.maestro/catalog-lists-beers.yaml`
+  asserts a Wikidata-import beer that happens to sort into the first screen,
+  so a catalog change that adds an earlier name fails the required check with
+  no change to the app. Give the flow a beer of its own the first page always
+  holds, or read the first row's name instead of naming one.
+
 ## Retired
 
 Permanent, append-only record of resolved or lifted findings — kept so IDs
