@@ -32,6 +32,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
       mobile: ${{ steps.filter.outputs.mobile }}
+      mobile-e2e: ${{ steps.filter.outputs.mobile-e2e }}
       keycloak: ${{ steps.filter.outputs.keycloak }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -50,6 +51,7 @@ jobs:
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "web=true" >> "$GITHUB_OUTPUT"
             echo "mobile=true" >> "$GITHUB_OUTPUT"
+            echo "mobile-e2e=true" >> "$GITHUB_OUTPUT"
             echo "keycloak=true" >> "$GITHUB_OUTPUT"
             exit 0
           }
@@ -90,11 +92,13 @@ jobs:
           backend=false
           web=false
           mobile=false
+          mobile_e2e=false
           keycloak=false
           if [ -n "$shared" ]; then
             backend=true
             web=true
             mobile=true
+            mobile_e2e=true
           fi
           if [ -n "$keycloak_inputs" ]; then keycloak=true; fi
           if echo "$changed" | grep -q '^backend/'; then backend=true; fi
@@ -105,11 +109,16 @@ jobs:
           # the same generated client, so it follows them.
           if echo "$changed" | grep -qE '^(mobile/|packages/|package(-lock)?\.json$|backend/openapi\.json$|Makefile$|scripts/mobile-env)'; then mobile=true; fi
 
+          # The flow drives the built app against the whole stack, so it also
+          # follows the backend, which no other mobile job does.
+          if echo "$changed" | grep -qE '^(mobile/|packages/|backend/|package(-lock)?\.json$|Makefile$|scripts/(mobile-e2e|mobile-env|stack-ports))'; then mobile_e2e=true; fi
+
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "web=$web" >> "$GITHUB_OUTPUT"
           echo "mobile=$mobile" >> "$GITHUB_OUTPUT"
+          echo "mobile-e2e=$mobile_e2e" >> "$GITHUB_OUTPUT"
           echo "keycloak=$keycloak" >> "$GITHUB_OUTPUT"
-          echo "Result: backend=$backend web=$web mobile=$mobile keycloak=$keycloak"
+          echo "Result: backend=$backend web=$web mobile=$mobile mobile-e2e=$mobile_e2e keycloak=$keycloak"
 
   static-checks:
     name: Static checks
@@ -404,6 +413,73 @@ jobs:
             web/test-results/
           retention-days: 7
 
+  mobile-e2e:
+    name: Mobile E2E (Maestro, Android)
+    # The flow in mobile/.maestro/ against the whole stack on an Android
+    # emulator (ADR-0096). A failed flow is not retried: a retry would hide a
+    # flaky required check, so a red run is read and logged instead
+    # (docs/common-failures.md).
+    needs: [changes]
+    if: needs.changes.outputs.mobile-e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+      # Expo's setup names JDK 17 for a local Android build.
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        run: npm ci
+      # Same retry as the e2e job's pull: a registry outage is a wait, not a run.
+      - name: Pre-pull compose images
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"; then exit 0; fi
+            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
+            sleep $((attempt * 15))
+          done
+          echo "::error::could not pull the compose images after 3 attempts"
+          exit 1
+      - name: Start the full stack
+        run: docker compose up -d --build --wait --wait-timeout 300
+      - name: Install Maestro
+        run: node scripts/mobile-e2e.mjs install-maestro
+      # x86_64 only: the emulator below is x86_64, and the other ABIs would
+      # multiply the native compile for nothing.
+      - name: Build the Android app with its JavaScript inside
+        run: node scripts/mobile-e2e.mjs build --platform android --abi x86_64
+      # The udev rule GitHub's changelog and the emulator action's README give
+      # for hardware acceleration on the Linux runners.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run the Maestro flow on an emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 37.0
+          target: google_apis
+          arch: x86_64
+          script: node scripts/mobile-e2e.mjs test --platform android
+      - name: Print the stack's logs
+        if: failure()
+        run: docker compose logs --no-color --tail 200 backend edge
+      - name: Upload Maestro output
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: maestro-output
+          path: mobile/maestro-output/
+          retention-days: 7
+
   ci-passed:
     name: CI passed
     # The check the branch ruleset requires, beside the vulnerability scan.
@@ -414,7 +490,7 @@ jobs:
     # cancelled: without it those make this job skip, and a skipped required
     # check lets the merge through.
     if: always()
-    needs: [changes, static-checks, backend, web, mobile, api-client-drift, api-breaking-change, keycloak-realm-check, vulnerability-scan, e2e]
+    needs: [changes, static-checks, backend, web, mobile, mobile-e2e, api-client-drift, api-breaking-change, keycloak-realm-check, vulnerability-scan, e2e]
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every job succeeded or was skipped by the changes filter

@@ -21,6 +21,38 @@ them and the `mobile` CI job runs them on a change under `mobile/` or
 `packages/`. Run the whole gate rather than these alone
 ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
+## End-to-end flow
+
+```bash
+node scripts/mobile-e2e.mjs install-maestro   # once: the pinned Maestro, checksum-verified, cached under ~/.cache/kalia
+make mobile-e2e                               # starts the stack, then runs the flow on every platform this host has
+```
+
+`make mobile-e2e`, which `make verify` includes, builds a **release** app — the
+project `expo prebuild` generates, with its JavaScript inside, so no Metro
+server runs — installs it on the iOS Simulator and on the Android emulator
+when each is there, and runs the flows in `.maestro/` against the stack. It
+prints which platform ran and which it skipped and why, and fails when none
+ran ([ADR-0096](../docs/adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)).
+One platform: `node scripts/mobile-e2e.mjs --platform ios|android`. The iOS
+device is `iPhone 17` unless `KALIA_E2E_IOS_DEVICE` names another (or a UDID);
+the Android one is a running emulator, else the first virtual device, or
+`KALIA_E2E_AVD`. Maestro's reports and screenshots land in
+`maestro-output/`, which is gitignored.
+
+- **A flow** selects by visible text or accessibility label, starts with
+  `launchApp: clearState: true` and depends on no other flow. The Catalog
+  flow looks for a beer from the Wikidata import that sorts into the first
+  rows; a flow that names data is fixed against the running stack.
+- **Cleartext HTTP is allowed in the Android end-to-end build only.** The app
+  dials `http://localhost` (the emulator reaches the stack through `adb
+  reverse`), which a release build refuses, so `scripts/mobile-e2e.mjs` runs
+  the prebuild with `KALIA_E2E=1`, which `plugins/withE2eCleartext.js` turns
+  into the manifest flag; a prebuild without it takes the flag out again. iOS
+  allows `localhost` by default.
+- **A new flow is confirmed to fail** against a build with the thing it checks
+  broken, so a pass means something.
+
 ## Conventions
 
 Rules for writing code here; each links the ADR holding the reasoning. The app

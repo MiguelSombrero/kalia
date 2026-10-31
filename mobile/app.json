@@ -25,7 +25,8 @@
             "android": ["en", "fi"]
           }
         }
-      ]
+      ],
+      "./plugins/withE2eCleartext"
     ]
   }
 }
