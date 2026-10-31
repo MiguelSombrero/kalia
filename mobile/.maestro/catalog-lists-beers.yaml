@@ -3,7 +3,7 @@ name: The Catalog tab lists beers from the stack
 ---
 - launchApp:
     clearState: true
-- tapOn: "Catalog"
+- tapOn: "Catalog|Oluet"
 - extendedWaitUntil:
     visible: "0.3 Hakuna Batata"
     timeout: 60000
