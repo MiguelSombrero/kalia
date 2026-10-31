@@ -37,6 +37,7 @@ class PublicRoutesIT {
 			"GET /api/v1/countries",
 			"GET /api/v1/cellars/{username}",
 			"GET /api/v1/feed",
+			"GET /api/v1/app-config",
 			"GET /actuator/health",
 			"GET /actuator/health/**",
 			"GET /v3/api-docs",

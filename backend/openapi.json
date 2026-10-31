@@ -67,6 +67,20 @@
         "required" : [ "beerId", "containerType" ],
         "type" : "object"
       },
+      "AppConfigDto" : {
+        "description" : "What the server tells an installed app about itself",
+        "properties" : {
+          "maintenance" : {
+            "description" : "True while Kalia is down for maintenance",
+            "type" : "boolean"
+          },
+          "minimumBuild" : {
+            "$ref" : "#/components/schemas/MinimumBuildDto"
+          }
+        },
+        "required" : [ "maintenance", "minimumBuild" ],
+        "type" : "object"
+      },
       "BeerDetailsDto" : {
         "description" : "Full details for a single beer",
         "properties" : {
@@ -405,6 +419,23 @@
         "required" : [ "field", "message" ],
         "type" : "object"
       },
+      "MinimumBuildDto" : {
+        "description" : "The lowest build number of the app that may run, for each platform",
+        "properties" : {
+          "android" : {
+            "description" : "The Android version code",
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "ios" : {
+            "description" : "The iOS build number",
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "android", "ios" ],
+        "type" : "object"
+      },
       "NewBreweryRequestDto" : {
         "description" : "A brewery to add to the catalog together with a beer",
         "properties" : {
@@ -704,6 +735,36 @@
   },
   "openapi" : "3.1.0",
   "paths" : {
+    "/api/v1/app-config" : {
+      "get" : {
+        "description" : "An app below the minimum build for its platform must stop and ask to be updated, and one that reads maintenance true must stop and say Kalia is down. The same for every caller, signed in or out, and never cached: a change has to be seen at the next check.",
+        "operationId" : "readAppConfig",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AppConfigDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "summary" : "Read the app's minimum supported build and the maintenance flag",
+        "tags" : [ "App config" ]
+      }
+    },
     "/api/v1/beers" : {
       "get" : {
         "description" : "Filter, sort and paginate the beer catalog. All filters are optional and combine with AND semantics. A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.",
@@ -1796,6 +1857,9 @@
   }, {
     "description" : "Recent cellar activity from cellars their owners made public",
     "name" : "Feed"
+  }, {
+    "description" : "What the server tells an installed app about itself",
+    "name" : "App config"
   }, {
     "description" : "The signed-in caller's own profile",
     "name" : "Profile"

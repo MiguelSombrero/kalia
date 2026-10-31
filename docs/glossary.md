@@ -126,6 +126,21 @@ convention would otherwise suggest.
 
 ---
 
+## appconfig
+
+What the server tells an installed app about itself. Its dependencies are in
+[architecture.md §3](architecture.md#3-backend-modules). Its data is public by
+nature and the same for every caller.
+
+### Domain types (`fi.kalia.appconfig.domain`)
+
+| Type | Meaning in this module | Why |
+|---|---|---|
+| `AppConfig` | The one row of what an operator has told the server to say: the lowest **build number** of each platform that may run, and whether Kalia is down for **maintenance**. Read-only to the application; an operator changes it with `make app-config`. | [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) |
+| `AppConfigRepository` | Persistence for `AppConfig`. | [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) |
+
+---
+
 ## Words that mean two things across modules
 
 | Word | In one module | In another |
@@ -152,6 +167,7 @@ and they drift from the Java names that produced them.
 | `/profile/visibility` | Change whether the caller's cellar is public. |
 | `/styles`, `/countries` | The vocabularies a beer is added with: every style a catalog beer has, and every country a brewery can be in. Public reads. |
 | `/breweries/countries` | The countries the catalog has breweries in, which the catalog's country filter offers. A public read. |
+| `/app-config` | What the server tells the mobile app: the minimum build of each platform that may run and the maintenance flag. Public, parameterless and never cached. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
 
 ### JSON field names
@@ -161,6 +177,7 @@ and they drift from the Java names that produced them.
 | `beer` | On `EntryDto` and `PublicCellarEntryDto`: a `CellarBeerDto` — the beer's `id`, `name`, `brewery` (its name), `style` and `abv` as the catalog describes them now. Both entry shapes carry the same one, so a field added to it reaches a signed-out reader too ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)). |
 | `beerId` | A cross-module reference to `catalog.Beer` by id, on a request that names a beer (`AddBottleRequestDto`) and inside the cellar domain. A cellar *response* carries `beer`, never a bare `beerId`. |
 | `quantity` | On `EntryDto` / `PublicCellarEntryDto`: the derived bottle count (`COUNT(*)`). It maps to no database column and no stored domain field — it exists only at the API boundary. On `AddBottleRequestDto`: how many identical bottles to create (1–24). On `FeedLineDto`: the count frozen on one bulk-add act at the moment it happened — never recomputed, and unrelated to what the cellar holds now. |
+| `minimumBuild`, `maintenance` | On `AppConfigDto`: `minimumBuild.ios` and `minimumBuild.android` are the lowest build number (the iOS build number, the Android version code) that may run; an app whose own build number is lower must ask to be updated. `maintenance` is `true` while Kalia is down, which wins over an update. |
 | `cellarPublic` | The wire name for cellar visibility, on `ProfileDto` and `ChangeVisibilityRequestDto`. |
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |
 | `existingBeerId`, `existingBreweryId` | On a `409` from `POST /beers`: the row the catalog already holds, which the refused beer or brewery duplicates. A duplicate brewery's `409` also carries `existingBreweryName` and `existingBreweryCountryCode`, spelled as the catalog holds them. |

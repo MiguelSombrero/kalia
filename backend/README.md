@@ -273,6 +273,28 @@ docker compose exec postgres psql -U kalia -d kalia -c \
   "SELECT contributor_id, count(*) FROM catalog.beer WHERE moderation_status = 'PENDING' GROUP BY 1"
 ```
 
+## Telling the app to update or that Kalia is down
+
+`GET /api/v1/app-config` answers the mobile app with the lowest build number of
+each platform that may run and a maintenance flag, from a one-row table
+(`appconfig.app_config`) that starts at 0, 0 and off, so no build is blocked
+until an operator says so ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+From the repository root, with the stack's `postgres` up:
+
+```bash
+make app-config MAINTENANCE=on               # raise maintenance, mid-incident
+make app-config MAINTENANCE=off
+make app-config IOS=5 ANDROID=5              # builds below 5 must update
+```
+
+Any of `IOS`, `ANDROID` and `MAINTENANCE` may be given, and one left out keeps
+its current value. It runs `scripts/set-app-config.sql` in one transaction and
+prints the row as it now stands; a value that is not a non-negative build
+number, or not `on`/`off`, fails and changes nothing. The app sees the change
+at its next check, because the response is `Cache-Control: no-store`. Raising a
+minimum is what permits removing a deprecated element of the API, never before
+the last build that uses it is below the new minimum.
+
 ## Code conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning —
