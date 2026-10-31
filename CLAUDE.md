@@ -106,7 +106,10 @@ The gates themselves:
   service; paths are repo-relative. Checks catch only images and home paths.
 - **Parallel sessions: one git worktree each, never a shared checkout** — two
   sessions running `git` against one working directory race on its single
-  `HEAD`/index. The `worktree` skill covers setup and teardown.
+  `HEAD`/index. The `worktree` skill covers setup and teardown. **At most two
+  sessions run heavy work at once** — bringing up the Docker stack, `make
+  verify`, a native build, a simulator or an emulator; one drives an Android
+  emulator at a time. Start the next when one ends.
 - **Checkpoint before long or fanned-out work.** On "resume where you left
   off", read the gitignored `.claude/session-checkpoint.md` before
   re-exploring; it is the only thing that survives a session-limit
