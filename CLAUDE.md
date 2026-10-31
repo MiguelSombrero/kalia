@@ -31,10 +31,14 @@ it ([README.md](README.md)).
 ## Project
 
 Kalia is a social platform for beer enthusiasts built around the beer cellar:
-Next.js web app (BFF pattern) + Spring Boot modulith backend. The catalog
-enables the cellar, the cellar is the product, and a profile and activity feed
-make it social. Kalia never collects beer reviews and does not sell beer. Read
-before making changes:
+a Spring Boot modulith backend with two clients — an Expo mobile app, the
+primary UI, and a Next.js web app (BFF pattern). The catalog enables the
+cellar, the cellar is the product, and a profile and activity feed make it
+social. Kalia never collects beer reviews and does not sell beer. **Kalia adds
+no cost and puts no payment card on file anywhere: no paid account, cloud
+build, hosting or billed CI minute. Anything that needs one is parked in the
+backlog until the product owner decides to spend.** Read before making
+changes:
 
 - [docs/architecture.md](docs/architecture.md) — module boundaries, API
   conventions, persistence rules, testing strategy
@@ -44,18 +48,20 @@ before making changes:
 - [docs/adr/](docs/adr/) — decisions already made, grouped by subject in
   [its README](docs/adr/README.md); don't relitigate them silently, propose a
   new ADR instead ([template](docs/adr/template.md))
-- [backend/README.md](backend/README.md), [web/README.md](web/README.md)
-  — run/test commands and conventions
+- [backend/README.md](backend/README.md), [web/README.md](web/README.md),
+  [mobile/README.md](mobile/README.md) — run/test commands and conventions
 
-`backend/` and `web/` each carry a `CLAUDE.md` importing their README, which
-loads once you touch the subtree
+`backend/`, `web/` and `mobile/` each carry a `CLAUDE.md` importing their
+README, which loads once you touch the subtree
 ([ADR-0035](docs/adr/0035-agent-context-layout.md)). A nested file is *not*
-re-injected after `/compact`, so the one rule that must never be lost is
+re-injected after `/compact`, so the two rules that must never be lost are
 repeated here: **this Next.js version postdates model training — check
 `node_modules/next/dist/docs/` (at the repository root, where npm hoists it)
 before relying on memory about it.**
 Guessing fails silently rather than erroring (`middleware.ts` is `proxy.ts`
-here, and the app still builds).
+here, and the app still builds). **Expo and React Native postdate it too —
+check docs.expo.dev at the SDK version in `mobile/package.json`, never
+memory.** Guessing fails silently there too.
 
 The repository tree is in [README.md](README.md); `.claude/settings.json` marks
 the generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md)).

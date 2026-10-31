@@ -3,7 +3,7 @@
 What Kalia is meant to look and feel like, and what a change to how it looks
 is judged against. The values that produce the look live in
 [`web/app/globals.css`](../web/app/globals.css), the structure that
-carries them in [architecture.md §5](architecture.md#5-web-app-design), and
+carries them in [architecture.md §5](architecture.md#5-client-design), and
 the reasons each was chosen in the ADRs; this file holds the part none of
 those can: the intent.
 
@@ -17,7 +17,7 @@ its boundaries with the other three homes run:
 
 It is linked rather than loaded. Read it before designing or restyling
 anything a visitor sees; the `design-task` skill and
-[architecture.md §5](architecture.md#5-web-app-design) point here.
+[architecture.md §5](architecture.md#5-client-design) point here.
 
 ## How this file is kept current
 
@@ -53,7 +53,7 @@ anything a visitor sees; the `design-task` skill and
 - **Values** — `web/app/globals.css` for colour and every other token,
   `web/app/[locale]/layout.tsx` for which typefaces load.
 - **The token system's shape** —
-  [architecture.md §5](architecture.md#5-web-app-design), decided in
+  [architecture.md §5](architecture.md#5-client-design), decided in
   [ADR-0021](adr/0021-design-tokens-ui-primitives.md).
 - **Rules for writing a component** —
   [web/README.md](../web/README.md) conventions. This file says

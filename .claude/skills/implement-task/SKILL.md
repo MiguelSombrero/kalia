@@ -50,8 +50,9 @@ their own condition from that ADR before they apply.
    carries against `.claude/rules/code-comments.md`'s test; delete or trim
    whatever can't name one.
 7. **Doc-sync gate.** Before opening the pull request, re-read the sections of
-   `docs/architecture.md`, the iteration index and any ADRs the change
-   touches, and update them in the same PR — or state in the description that
+   `docs/architecture.md`, the iteration index, any ADRs and the README of each
+   subtree the change touches (`backend/README.md`, `web/README.md`,
+   `mobile/README.md`), and update them in the same PR — or state in the description that
    they were checked and remain accurate. The task file is the exception: it
    records what was *asked for*, so it is frozen at completion apart from its
    status and a dead link, which is repointed or unlinked

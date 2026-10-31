@@ -5,8 +5,12 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, resolve } from "node:path";
 
-import { checkLinks, resolveTarget } from "./check-links.mjs";
+import { checkLinks, checkRepositoryLinks, resolveTarget } from "./check-links.mjs";
 
 const tree = new Set(["README.md", "docs", "docs/architecture.md", "docs/adr/0001-x.md", "docs/My File.md"]);
 const exists = (p) => tree.has(p);
@@ -70,4 +74,55 @@ test("keeps a fence open across a line that opens a nested fence with an info st
 
 test("checks links again after a fenced code block closes", () => {
   assert.equal(checkLinks({ "README.md": "```\ncode\n```\n[after](missing.md)" }, exists).length, 1);
+});
+
+// A hook exports GIT_DIR and friends; a fixture git call that inherits them
+// acts on the real repository instead of the temp one.
+const { GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, ...cleanEnv } = process.env;
+
+const repository = (files, assertions) => {
+  const root = mkdtempSync(resolve(tmpdir(), "links-check-"));
+  try {
+    execFileSync("git", ["init", "-q"], { cwd: root, env: cleanEnv });
+    for (const [rel, text] of Object.entries(files)) {
+      mkdirSync(resolve(root, dirname(rel)), { recursive: true });
+      writeFileSync(resolve(root, rel), text);
+    }
+    execFileSync("git", ["add", "."], { cwd: root, env: cleanEnv });
+    assertions(checkRepositoryLinks(root));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+};
+
+test("scans the Markdown under mobile/ and passes its links that resolve", () => {
+  repository(
+    {
+      "docs/architecture.md": "# Architecture",
+      "mobile/README.md": "[shape](../docs/architecture.md#the-mobile-app) [rules](CLAUDE.md)",
+      "mobile/CLAUDE.md": "@README.md",
+    },
+    ({ scanned, failures }) => {
+      assert.ok(scanned.includes("mobile/README.md") && scanned.includes("mobile/CLAUDE.md"), scanned.join());
+      assert.deepEqual(failures, []);
+    },
+  );
+});
+
+test("fails a broken link in a Markdown file under mobile/, naming the file and line", () => {
+  repository(
+    { "docs/architecture.md": "# Architecture", "mobile/README.md": "Intro\n\n[gone](../docs/gone.md)" },
+    ({ failures }) => {
+      assert.equal(failures.length, 1);
+      assert.match(failures[0], /^mobile\/README\.md:3 /);
+      assert.match(failures[0], /docs\/gone\.md/);
+    },
+  );
+});
+
+test("fails a link to a mobile/ file that does not exist", () => {
+  repository({ "README.md": "[the app's rules](mobile/CONVENTIONS.md)" }, ({ failures }) => {
+    assert.equal(failures.length, 1);
+    assert.match(failures[0], /mobile\/CONVENTIONS\.md/);
+  });
 });

@@ -39,7 +39,7 @@ the backend and the process reshaped to carry a third codebase.
 | [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | done |
 | [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | refined |
 | [11](iteration-9/11-app-skeleton.md) | The app has four tabs and the web's conventions | done |
-| [07](iteration-9/07-process-carries-a-third-codebase.md) | The process carries a third codebase | refined |
+| [07](iteration-9/07-process-carries-a-third-codebase.md) | The process carries a third codebase | done |
 | [12](iteration-9/12-app-config-endpoint.md) | The server can tell an old app to update, or that Kalia is down | refined |
 | [13](iteration-9/13-keycloak-mobile-client.md) | Keycloak has a client for the app, and the backend accepts its tokens | done |
 | [14](iteration-9/14-sign-in-on-mobile.md) | A user signs in and out of the app | refined |
