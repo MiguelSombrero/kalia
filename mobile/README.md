@@ -3,17 +3,142 @@
 The Expo app, a development build rather than Expo Go
 ([ADR-0094](../docs/adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)).
 Its shape — layers, origins, transport, strings — is
-[architecture.md §5](../docs/architecture.md#the-mobile-app). Setting up the
-toolchain and running it on the simulators is
-[task 10](../docs/tasks/iteration-9/10-developer-environment.md)'s, and lands
-in this file above the sections below.
+[architecture.md §5](../docs/architecture.md#the-mobile-app). This file takes a
+Mac with none of the native toolchain to the app running on the iOS Simulator
+and the Android emulator against the local stack, then lists the checks and
+conventions.
+
+## Set up a Mac
+
+Each tool is named here and its version lives in the one file that pins it, so
+this section never goes stale; `make mobile-doctor` reads those files and
+tells you, by name, what is missing or the wrong version. Run it after each
+step, and before asking why a build failed.
+
+1. **Homebrew, Node and Docker.** Node is the version in
+   [`.node-version`](../.node-version), and Docker Desktop runs the stack; both
+   are needed for the web app already.
+2. **Xcode,** the version in [`.xcode-version`](../.xcode-version) or a later
+   minor of it, from the App Store. Open it once to accept the licence, then
+   point the command-line tools at it and install an iOS Simulator runtime
+   (Xcode > Settings > Components):
+
+   ```bash
+   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+   ```
+
+3. **CocoaPods.**
+
+   ```bash
+   brew install cocoapods
+   ```
+
+4. **A JDK for the Android build,** the major version in
+   [`mobile/.java-version`](.java-version) — the one React Native's Gradle
+   build needs, which is not the backend's.
+
+   ```bash
+   brew install --cask zulu@$(cat mobile/.java-version)
+   ```
+
+   Do not put it in `JAVA_HOME` in your shell profile: the backend builds on
+   its own JDK ([backend/README.md](../backend/README.md)). The `make`
+   targets below set `JAVA_HOME` for the Android build only.
+5. **Android Studio,** then open it once and take the standard installation,
+   which downloads the SDK.
+
+   ```bash
+   brew install --cask android-studio
+   ```
+
+   In Settings > Android SDK install the SDK Platform, Build-Tools,
+   Platform-Tools and Emulator the doctor names. In Device Manager create a
+   **Pixel** with a Google APIs arm64 system image of the API level the doctor
+   names — the reference Android device. Add the SDK to your shell profile:
+
+   ```bash
+   export ANDROID_HOME=$HOME/Library/Android/sdk
+   export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator
+   ```
+
+6. **Dependencies,** once per checkout (a git worktree needs its own):
+
+   ```bash
+   npm ci
+   ```
+
+The reference devices are the iPhone simulator Xcode creates by default and the
+Pixel above. `ios/` and `android/` are generated from `app.json` by the build
+targets and ignored by git; never edit them, delete them to start clean.
+
+## Run the app
+
+The app needs the stack, whose API and Keycloak it dials:
+
+```bash
+make stack-env   # in a git worktree only: its own ports, Metro's included
+make up
+make mobile-doctor
+```
+
+Then, for the platform you want (or both, side by side):
+
+```bash
+make mobile-ios       # build the development build, run it on the iOS Simulator
+make mobile-android   # the same on the Android emulator
+```
+
+Each target starts Metro on this worktree's `METRO_PORT` with the stack's
+origins in the environment, builds the native project, installs the app and
+opens it. The first build takes several minutes; later ones reuse the generated
+project. Extra `expo run` flags go in `ARGS`, for example to pick a simulator:
+`make mobile-ios ARGS="--device 'iPhone 17e'"`.
+
+- **iOS** reaches the Mac's `localhost` directly, so nothing is forwarded.
+- **Android** has a network of its own. `make mobile-android` starts the
+  emulator if none is running, then runs `adb reverse` for the API's, Keycloak's
+  and Metro's ports — the three the app dials — each from this worktree's
+  `.env`, so two worktrees' stacks can run on one emulator. Keycloak's must be
+  reachable as `localhost:<port>`, because the issuer is pinned to that name
+  ([task 13](../docs/tasks/iteration-9/13-keycloak-mobile-client.md)).
+
+After the first build, `make mobile-start` alone starts Metro for a build that
+is already installed: open the app on the simulator and it connects.
+
+Metro has a port of its own because its default, 8081, is Keycloak's default
+host port. `make stack-env` allocates it beside the stack's ports; never type
+one.
+
+### When it does not work
+
+- **A build fails with a message that names no version:** run `make
+  mobile-doctor` first. A Gradle or CocoaPods failure on the wrong toolchain
+  rarely says which tool was wrong.
+- **`pod install` fails** with an encoding error: the target sets a UTF-8
+  locale for it, but running `pod install` by hand needs
+  `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
+- **The app opens to a red "could not connect to Metro" screen on Android,**
+  usually after launching it from the emulator's home screen rather than
+  through `make mobile-android`: the dev build forgot Metro's address. Reopen
+  it with the deep link, using this worktree's `METRO_PORT`:
+
+  ```bash
+  adb shell am start -a android.intent.action.VIEW -d "exp+kalia://expo-development-client/?url=http%3A%2F%2Flocalhost%3A<METRO_PORT>"
+  ```
+
+- **The emulator's ports clash with another worktree's:** `adb reverse --list`
+  shows every forward on the emulator. Two worktrees never share a port, so a
+  duplicate means one of them pinned a port by hand.
+- **Disk:** `ios/`, `android/`, Gradle's cache and the emulator image are large;
+  `docker compose down` (no `-v`) in a worktree you are done with frees the
+  stack's share.
 
 ## Test and checks
 
 ```bash
 make mobile-lint   # ESLint (module boundaries included) and strict tsc
 make mobile-test   # Jest + React Native Testing Library, no simulator
-make mobile-start  # Metro, with this checkout's stack as the origins
+make mobile-start  # Metro on METRO_PORT, with this checkout's stack as the origins
 ```
 
 Both checks need neither Docker nor a native build, so `make verify-fast` runs

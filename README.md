@@ -113,14 +113,16 @@ the dev machine.
 
 Those are the defaults, and the main checkout keeps them. Each of the six is
 a variable in the root `.env` (`WEB_PORT`, `BACKEND_PORT`,
-`KEYCLOAK_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`, `MAILPIT_PORT`), and every
+`KEYCLOAK_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`, `MAILPIT_PORT`; a seventh,
+`METRO_PORT`, is the mobile app's Metro server, default `:8082` because Metro's
+own `:8081` is Keycloak's — [mobile/README.md](mobile/README.md)), and every
 address built from one — Keycloak's public address and the issuer the
 web app and backend validate, the web app's own URL, the Swagger redirect
 URI in the realm — follows it, so changing a port is a one-line edit. A
 git worktree is given its own set by `make
 stack-env`, which appends them to that worktree's `.env`: slot *n* adds 100×*n*
 to each default (slot 1 is the web app `:3100`, backend `:8180`, Keycloak `:8181`,
-Postgres `:5532`, Valkey `:6479`, Mailpit `:8125`), taking the lowest slot no
+Postgres `:5532`, Valkey `:6479`, Mailpit `:8125`, Metro `:8182`), taking the lowest slot no
 other worktree's `.env` holds and whose ports are free, and re-running it
 keeps what it wrote. Two worktrees can then run the stack, `make verify` and
 the e2e suite at once. Cookies are scoped to a host and not a port, so two

@@ -6,10 +6,12 @@ import assert from "node:assert/strict";
 
 import { mobileEnv } from "./mobile-env.mjs";
 
-test("the origins follow the ports the stack's .env gives", () => {
-  assert.deepEqual(mobileEnv({ BACKEND_PORT: "8580", KEYCLOAK_PORT: "8581" }), {
+test("the origins and Metro's port follow the ports the stack's .env gives", () => {
+  assert.deepEqual(mobileEnv({ BACKEND_PORT: "8580", KEYCLOAK_PORT: "8581", METRO_PORT: "8582" }), {
     EXPO_PUBLIC_API_ORIGIN: "http://localhost:8580",
     EXPO_PUBLIC_KEYCLOAK_ORIGIN: "http://localhost:8581",
+    RCT_METRO_PORT: "8582",
+    REACT_NATIVE_PACKAGER_HOSTNAME: "localhost",
   });
 });
 
@@ -17,5 +19,7 @@ test("an unset port is the stack's default", () => {
   assert.deepEqual(mobileEnv({}), {
     EXPO_PUBLIC_API_ORIGIN: "http://localhost:8080",
     EXPO_PUBLIC_KEYCLOAK_ORIGIN: "http://localhost:8081",
+    RCT_METRO_PORT: "8082",
+    REACT_NATIVE_PACKAGER_HOSTNAME: "localhost",
   });
 });

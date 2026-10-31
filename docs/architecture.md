@@ -154,7 +154,9 @@ redirect scheme. Its stack:
   behind feature hooks, Zustand, react-hook-form with Zod, i18next); the
   browser-only parts of them do not.
 - The SDK version lives in `mobile/package.json` alone, and minimum OS versions
-  are the SDK's own.
+  are the SDK's own. The native toolchain is pinned beside it —
+  `.xcode-version`, `mobile/.java-version` for the Android build's JDK — and
+  `make mobile-doctor` names whatever on a Mac does not match.
 - No paid service is on the build or run path: no EAS builds or updates, so no
   over-the-air updates, and the app is run on the iOS Simulator and the Android
   Emulator.
@@ -852,8 +854,9 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   never holds a test: Expo Router would treat it as a route.
 - **Origins.** One module, `src/lib/config/origins.ts`, reads the API's and
   Keycloak's origins from `EXPO_PUBLIC_API_ORIGIN` and
-  `EXPO_PUBLIC_KEYCLOAK_ORIGIN`, which `make mobile-start` sets from the
-  stack's ports through `scripts/mobile-env.mjs`; no port is written in the
+  `EXPO_PUBLIC_KEYCLOAK_ORIGIN`, which the mobile `make` targets set from the
+  stack's ports through `scripts/mobile-env.mjs`, along with Metro's own
+  `METRO_PORT`; no port is written in the
   app, and the module throws at start-up when either is missing.
 - **Transport.** The root layout registers the shared fetch core from
   `@kalia/api` with the API origin as its base URL
