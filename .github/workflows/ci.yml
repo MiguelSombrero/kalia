@@ -447,8 +447,10 @@ jobs:
           done
           echo "::error::could not pull the compose images after 3 attempts"
           exit 1
-      - name: Start the full stack
-        run: docker compose up -d --build --wait --wait-timeout 300
+      # `edge` and what it waits for: the web app is not part of the flow, and
+      # a one-shot service that exits makes `--wait` fail on the runner's Compose.
+      - name: Start the stack the app talks to
+        run: docker compose up -d --build --wait --wait-timeout 300 edge
       - name: Install Maestro
         run: node scripts/mobile-e2e.mjs install-maestro
       # x86_64 only: the emulator below is x86_64, and the other ABIs would
