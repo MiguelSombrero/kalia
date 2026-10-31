@@ -1,6 +1,6 @@
 # Task 11: The app has four tabs and the web's conventions
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-1, DW-4
 
@@ -104,7 +104,7 @@ decisions of tasks 02, 03 and 06 were accepted:
 
 ## Acceptance criteria
 
-- [ ] The app launches on both simulators to four tabs, each reachable and
+- [x] The app launches on both simulators to four tabs, each reachable and
       labelled in the device's language — verified on both, described in the
       PR
 - [x] A Jest unit test renders each tab's screen and finds its heading, in
@@ -118,7 +118,7 @@ decisions of tasks 02, 03 and 06 were accepted:
       confirmed by a test fixture or a deliberately broken import
 - [x] `make verify-fast` runs the mobile lint, type check and unit tests, and
       fails when a mobile unit test fails — confirmed by breaking one
-- [ ] CI runs the same checks as a required job
+- [x] CI runs the same checks as a required job
 - [x] The app is a development build (it depends on Expo's development client
       and the PR's simulator run used `expo run:ios` and `expo run:android`,
       not Expo Go), and `mobile/` has a `strict` TypeScript configuration; `ios/` and `android/` are gitignored
