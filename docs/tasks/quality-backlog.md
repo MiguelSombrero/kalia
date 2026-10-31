@@ -198,6 +198,18 @@ they're already cross-referenced from merged PRs and
   needs a token. Let the token source degrade to no token for a call that an
   anonymous caller may make, or have the shared transport retry such a call
   without one. Deferred in the iteration 9 task 14 pull request.
+- **SHOULD-96** *(confirmed 2026-10-31)* — `Mobile E2E (Maestro, Android)`, the
+  app's native end-to-end check
+  ([ADR-0096](../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)),
+  fails on the runner's emulator for reasons unrelated to the change: `dev`'s
+  run after PR 500 went red with `device offline` at the flow's `launchApp`
+  while the same code had passed on the pull request, and an earlier API 37
+  boot timeout is the same family
+  ([common-failures](../common-failures.md)). A required check that fails one
+  run in a few teaches people to re-run rather than read. Find out whether the
+  emulator image, its cores or the adb start-up is at fault and make the boot
+  wait for a healthy device (or retry the boot, never the flow). Found closing
+  iteration 9.
 
 ## COULD
 

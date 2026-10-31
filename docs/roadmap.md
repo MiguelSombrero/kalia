@@ -68,7 +68,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [7.5 — Design sprint](tasks/iteration-7.5.md) | Kalia looks designed rather than defaulted | ✅ Done |
 | [8 — Catalog beyond seed data](tasks/iteration-8.md) | Users add the beers they cannot find | ✅ Done |
 | [8.5 — Quality sprint before mobile](tasks/iteration-8.5.md) | The API mobile inherits is complete and pruned, and no known MUST or unbounded cost remains | ✅ Done |
-| [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ⬜ Todo |
+| [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ✅ Done |
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ⬜ Todo |
 | [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ⬜ Todo |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
