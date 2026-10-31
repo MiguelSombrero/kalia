@@ -245,6 +245,12 @@
     "signOut": "Kirjaudu ulos",
     "profileLink": "Profiili: {{name}}"
   },
+  "session": {
+    "signedIn": "Kirjautuneena käyttäjänä {{username}}",
+    "signInFailed": "Kirjautuminen ei onnistunut. Yritä uudelleen.",
+    "expired": "Sinut kirjattiin ulos. Kirjaudu uudelleen jatkaaksesi.",
+    "profileFailed": "Profiilin lataus ei onnistunut."
+  },
   "cellar": {
     "title": "Kellari",
     "pageTitle": "Kellari — Kalia",

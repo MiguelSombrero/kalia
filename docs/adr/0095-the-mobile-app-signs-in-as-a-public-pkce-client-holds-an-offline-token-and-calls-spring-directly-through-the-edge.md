@@ -6,6 +6,9 @@
   Keycloak 26.8.1: refresh-token rotation is realm-wide only, so both clients
   keep reuse, and Keycloak accepts no custom-scheme root or base URL (see
   Decision and Evidence)
+- **Amended:** 2026-10-31 — iteration 9 task 14 signed in, refreshed and signed
+  out from the app against the local Keycloak, and measured what sign-out does
+  there (see Evidence)
 
 ## Context
 
@@ -302,3 +305,21 @@ keeps the sign-in, audience, offline and refusal results below true.
   "Back to Application" link leads somewhere, and that link opens the website,
   not the app; a link that opens the app needs an `https` address the phone
   hands to the app ([iteration 10](../tasks/iteration-10.md)).
+
+### Measured by task 14 (2026-10-31)
+
+On the iOS Simulator against the local stack, Keycloak 26.8.1, with the app
+built from `mobile/src/lib/auth/`.
+
+- **Sign-out ends the offline session.** Signed in as `testuser`, the admin
+  API listed one offline session of `kalia-mobile` for the user; after the
+  app's sign-out it listed none. The app sends the revocation as a form POST of
+  `client_id`, `token` and `token_type_hint=refresh_token` to `/revoke`, and
+  Keycloak answers 200. The same request made by a script after a code-flow
+  sign-in answered 200, and a refresh with that token before it succeeded and
+  after it answered `invalid_grant`.
+- **The browser's sign-in does not survive sign-out on iOS.** After signing out,
+  the app's next sign-in showed Keycloak's credential form again rather than
+  signing the previous user straight back in.
+- **A refresh failure that is not `invalid_grant` leaves the session alone**
+  is covered by tests with a controlled clock, not measured against a realm.

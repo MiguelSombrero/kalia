@@ -245,6 +245,12 @@
     "signOut": "Sign out",
     "profileLink": "Profile: {{name}}"
   },
+  "session": {
+    "signedIn": "Signed in as {{username}}",
+    "signInFailed": "Sign-in didn't work. Try again.",
+    "expired": "You were signed out. Sign in again to continue.",
+    "profileFailed": "Couldn't load your profile."
+  },
   "cellar": {
     "title": "My cellar",
     "pageTitle": "My cellar — Kalia",
