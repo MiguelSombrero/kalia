@@ -1,3 +1,4 @@
+import { AppGate } from "@/features/app-config";
 import { resolveLocale } from "@/lib/i18n/resolveLocale";
 import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { AppProviders } from "@/lib/providers/AppProviders";
@@ -13,7 +14,9 @@ const RootLayout = () => {
   return (
     <AppProviders locale={resolveLocale(locales.map((locale) => locale.languageCode))}>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <AppGate>
+        <Stack screenOptions={{ headerShown: false }} />
+      </AppGate>
     </AppProviders>
   );
 };

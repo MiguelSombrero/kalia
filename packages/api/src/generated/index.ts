@@ -1,3 +1,4 @@
+export * from './app-config/app-config';
 export * from './catalog/catalog';
 export * from './cellar/cellar';
 export * from './feed/feed';

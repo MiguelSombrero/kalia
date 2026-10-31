@@ -53,6 +53,8 @@ class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/v1/cellars/*").permitAll()
 						// ADR-0059: every line the feed serves is from a public cellar.
 						.requestMatchers(HttpMethod.GET, "/api/v1/feed").permitAll()
+						// An installed app asks before it has a token worth sending (ADR-0093).
+						.requestMatchers(HttpMethod.GET, "/api/v1/app-config").permitAll()
 						// "/swagger-ui.html" needs its own entry — it is not under /swagger-ui/.
 						.requestMatchers("/actuator/health/**").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")

@@ -8,6 +8,7 @@
 export * from './addBeerRequestDto';
 export * from './addBottleRequestDto';
 export * from './addBottleRequestDtoContainerType';
+export * from './appConfigDto';
 export * from './beerDetailsDto';
 export * from './beerSummaryDto';
 export * from './bottleDto';
@@ -23,6 +24,7 @@ export * from './feedLineDto';
 export * from './feedPageDto';
 export * from './fieldErrorDto';
 export * from './listBreweriesParams';
+export * from './minimumBuildDto';
 export * from './newBreweryRequestDto';
 export * from './pageDtoBeerSummaryDto';
 export * from './pageDtoBreweryDto';

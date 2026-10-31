@@ -9,7 +9,7 @@
 .PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start \
         web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
-        verify-fast install-hooks next-adr sync-indexes stack-env moderate
+        verify-fast install-hooks next-adr sync-indexes stack-env moderate app-config
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -20,6 +20,10 @@ stack-env: ## Give this worktree its own host ports for the stack, so it can run
 moderate: ## Approve, reject or remove everything one contributor added to the catalog: make moderate ACTION=approve|reject|remove WHO=<username or id> (needs the stack's postgres up)
 	@test -n "$$ACTION" -a -n "$$WHO" || { echo "usage: make moderate ACTION=approve|reject|remove WHO=<username or id>"; exit 1; }
 	docker compose exec -T postgres psql -U kalia -d kalia -v action="$$ACTION" -v who="$$WHO" < scripts/moderate-contributor.sql
+
+app-config: ## Set what the server tells the app: make app-config [IOS=<build>] [ANDROID=<build>] [MAINTENANCE=on|off] (needs the stack's postgres up; omitted settings stay as they are)
+	@test -n "$$IOS$$ANDROID$$MAINTENANCE" || { echo "usage: make app-config [IOS=<build>] [ANDROID=<build>] [MAINTENANCE=on|off]"; exit 1; }
+	docker compose exec -T postgres psql -U kalia -d kalia -v ios="$$IOS" -v android="$$ANDROID" -v maintenance="$$MAINTENANCE" < scripts/set-app-config.sql
 
 up: ## Build and start the full stack in the background
 	docker compose up --build -d

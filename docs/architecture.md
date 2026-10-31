@@ -67,6 +67,7 @@ the mobile foundations; nothing in it is built yet.
 flowchart LR
     subgraph Client
         Browser
+        App[Mobile app: mobile/, Expo]
     end
     subgraph Web["web/ (Next.js, BFF)"]
         NX[Next.js server: server components, Server Actions]
@@ -78,17 +79,19 @@ flowchart LR
         IDN[identity]
         PROF[profile]
         FED[feed]
+        CFG[appconfig]
     end
     Browser -->|every request| EDGE[edge: nginx, limits per client address]
+    App -->|REST, JSON, direct| EDGE
     EDGE --> NX
-    EDGE -.->|API, Swagger UI| API
+    EDGE -.->|API, Swagger UI, mobile app| API
     NX -->|REST, JSON| API
-    API --> CAT & CEL & IDN & PROF & FED
+    API --> CAT & CEL & IDN & PROF & FED & CFG
     CAT --> IDN
     CEL --> CAT & IDN & PROF
     PROF --> IDN
     FED --> CEL & CAT & PROF
-    CAT & CEL & PROF & FED --> PG[(PostgreSQL)]
+    CAT & CEL & PROF & FED & CFG --> PG[(PostgreSQL)]
     Browser -.->|OIDC redirect, via edge| KC[Keycloak]
     NX -->|session read/write| VK[(Valkey)]
     IDN -->|validate token, JWKS| KC
@@ -156,9 +159,11 @@ redirect scheme. Its stack:
   over-the-air updates, and the app is run on the iOS Simulator and the Android
   Emulator.
 
-The diagram above shows the web path only. How the app reaches the API and
-authenticates is [task 05](tasks/iteration-9/05-decision-mobile-authentication.md)'s
-decision.
+The app calls the Spring API directly through the edge, with no BFF of its own,
+and signs in as a public Keycloak client
+([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+The diagram draws the call it makes today; the sign-in path joins it with
+[task 14](tasks/iteration-9/14-sign-in-on-mobile.md).
 
 ## 3. Backend modules
 
@@ -201,6 +206,7 @@ cross-module *reads* via the root-package API.
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer; a public cellar read for anyone, which `CellarService` itself refuses unless the owner made it public | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public | `identity` (current user: the caller's id and username, for the caller's own profile) |
+| `appconfig` | What the server tells an installed app about itself: the lowest build number of each platform that may run, and whether Kalia is down for maintenance. One database row an operator changes with `make app-config` ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)) | — |
 | `feed` | A record of things that happened — currently, a bottle added to a cellar, read over HTTP and rendered live on the front page | `cellar` (event: bottle added), `catalog` (read: beer name, brewery, style and strength), `profile` (read: username and current cellar visibility) |
 
 The term each module owns — every `domain` type's meaning inside its module,
@@ -270,6 +276,7 @@ catalog.beer(id, brewery_id, name, style, abv, source, wikidata_qid, contributor
 cellar.entry(id, user_id, beer_id, version, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at) — unique (lower(username))
+appconfig.app_config(id, minimum_build_ios, minimum_build_android, maintenance) — exactly one row, id 1
 feed.line(id, event_id, user_id, beer_id, quantity, brewed_date, occurred_at, sequence_number, created_at, updated_at)
 ```
 
@@ -444,6 +451,7 @@ GET    /api/v1/breweries/countries                  -> the ISO 3166-1 code of ev
 GET    /api/v1/styles                               -> every style a catalog beer has, the vocabulary a beer is added with
 GET    /api/v1/countries                            -> every country a brewery can be in, as its ISO 3166-1 code
 GET    /api/v1/cellars/{username}?page=&size=       -> one page of a cellar its owner has made public, with its beers and bottles; 404 otherwise, 400 for a username over 255 characters or a page parameter out of range
+GET    /api/v1/app-config                           -> {minimumBuild: {ios, android}, maintenance}: the lowest build of the mobile app that may run and whether Kalia is down for maintenance; takes no parameters, identical for every caller, `Cache-Control: no-store`
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
@@ -831,7 +839,7 @@ conventions README for the day-to-day rules of writing it
 `mobile/` is an Expo Router app, a development build rather than Expo Go
 ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
 with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens and
-no data call yet. It follows [the web app's](#the-web-app) conventions where
+one data call, the launch check below. It follows [the web app's](#the-web-app) conventions where
 they are not about the browser, and each is enforced rather than agreed; the
 rules for writing it are in [mobile/README.md](../mobile/README.md):
 
@@ -854,6 +862,19 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
 - **Strings.** Every string comes from `@kalia/locales`; i18next takes the
   device's first language that has a bundle, and falls back to the default
   locale the package exports.
+- **Launch check.** `features/app-config` reads `GET /api/v1/app-config` on
+  launch and on returning to the foreground, at most once every 30 seconds,
+  and covers the whole app, tabs included, with an update-required or a
+  maintenance screen (maintenance first, since updating does not help when the
+  server is down). The app compares its own build number — the iOS build
+  number or Android version code in `app.json`, read with `expo-application` —
+  with its platform's minimum, and remembers that minimum, not a verdict, in
+  `@react-native-async-storage/async-storage`, so an update demanded once keeps
+  blocking offline and clears itself when the installed build meets it. An
+  endpoint that cannot be reached fails open. The screens' wording is the app's
+  own, in `@kalia/locales`; the server sends none
+  ([task 12](tasks/iteration-9/12-app-config-endpoint.md),
+  [ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **Accessibility.** WCAG 2.2 AA
   ([ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)) in platform
   terms: each tab has an accessibility label, headings carry the heading role,
@@ -897,6 +918,9 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
     ([ADR-0050](adr/0050-public-cellar-addressing.md));
   - the feed — `GET /api/v1/feed`
     ([ADR-0059](adr/0059-feed-respects-cellar-visibility.md));
+  - what the server tells the mobile app — `GET /api/v1/app-config`, which an
+    app asks before it has a token worth sending
+    ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md));
   - health — `GET /actuator/health` and its groups under it, which
     docker-compose and CI gate readiness on;
   - the API docs, where `SPRINGDOC_ENABLED` turns them on — `GET /v3/api-docs`,
