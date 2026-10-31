@@ -12,6 +12,26 @@ the recurring failures were never in the work — they were a branch cut from
 a stale `dev`, a review scoped to the wrong tree, and worktrees nobody
 removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
+## How many at once
+
+`CLAUDE.md` caps heavy sessions at two. A session is **heavy** while it runs
+the Docker stack, `make verify`, a native build, a simulator or an emulator;
+one that only reads, edits docs, reviews or waits on CI is light, and the cap
+does not count it.
+
+- **The session that starts others counts first** — `list_sessions` with
+  `linked: true` — and starts a task only while fewer than two are heavy.
+  Order the work so that tasks needing the emulator or a long `make verify`
+  do not overlap; start the next when a session ends.
+- **A session that will wait long** (on CI, on review, on the product owner)
+  stops its stack first with `docker compose down`, without `-v`, so the wait
+  costs nothing. `make stack-env` brings it back.
+- **One session at a time drives the Android emulator.** The next waits for
+  the holder to say it is done and leaves the emulator as it found it.
+- **Check free disk before creating a worktree** (`df -h .`): a worktree with
+  its dependencies installed is several GB, and a full disk fails builds with
+  errors that do not name it.
+
 ## Start
 
 1. Fetch first: `git fetch origin --prune`. A worktree branched off a local
