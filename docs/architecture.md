@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-10-24. This document describes **what is built**, plus the
+*Last updated: 2026-10-31. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -121,9 +121,7 @@ Key properties:
   behind a token. How to read them is in the two READMEs.
 
 **Repository layout** ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)).
-The repository is npm workspaces, with no tool on top. `mobile/` does not
-exist yet: [task 11](tasks/iteration-9/11-app-skeleton.md) adds the app, and
-the root `package.json` already names it.
+The repository is npm workspaces, with no tool on top.
 
 ```text
 backend/    Spring Boot modulith
@@ -621,7 +619,7 @@ Conventions:
   machine — see [§6](#6-authentication-and-identity)).
   Controllers carry `@Tag`/`@Operation`/`@Parameter`; DTOs carry `@Schema`,
   and `@kalia/api` generates its client from the committed copy,
-  `backend/openapi.json` — see [§5](#5-web-app-design).
+  `backend/openapi.json` — see [§5](#5-client-design).
 
 **Compatibility.** An installed app keeps calling the API it was built against,
 so `/api/v1` changes additively only
@@ -649,10 +647,15 @@ so `/api/v1` changes additively only
   a line in `backend/openapi-breaking-ignore.txt` stating the minimum supported
   build that excludes its last user; nothing else can be waived there.
 
-## 5. Web app design
+## 5. Client design
 
-The shape of the web app. Day-to-day rules for writing it live in
-[web/README.md](../web/README.md) conventions.
+The shape of the two clients — the [web app](#the-web-app) and the
+[mobile app](#the-mobile-app), the primary UI from iteration 9 on. Both call
+the same Spring API and share the packages under `packages/`; each has its own
+conventions README for the day-to-day rules of writing it
+([web/README.md](../web/README.md), [mobile/README.md](../mobile/README.md)).
+
+### The web app
 
 - **App Router**, server components by default; client components only where
   the browser is genuinely needed — event handlers, React state, or context.
@@ -832,8 +835,9 @@ The shape of the web app. Day-to-day rules for writing it live in
 `mobile/` is an Expo Router app, a development build rather than Expo Go
 ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
 with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens and
-no data call yet. It follows the web's conventions where they are not about the
-browser, and each is enforced rather than agreed:
+no data call yet. It follows [the web app's](#the-web-app) conventions where
+they are not about the browser, and each is enforced rather than agreed; the
+rules for writing it are in [mobile/README.md](../mobile/README.md):
 
 - **Layers.** `src/app/` holds route files that only re-export a screen;
   `src/features/<feature>/` owns its screens, hooks and `api.ts`;

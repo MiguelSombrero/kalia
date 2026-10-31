@@ -28,10 +28,10 @@ From iteration 9 on, **mobile is Kalia's primary UI**: an Expo app with a
 design of its own rather than the web's, built on the foundations iteration 9
 lays and then feature by feature in the same dependency order — catalog,
 cellar, social — before what only a phone can do. The web keeps working and is
-not held at feature parity. The plan adds no cost: the app runs on the product
-owner's own iPhone and on simulators against the local stack, and everything
-that needs paid accounts or hosting is parked in
-[the backlog](tasks/backlog.md#mobile-client) until that changes. Iteration 9's
+not held at feature parity. The plan adds no cost (the rule is in
+[`CLAUDE.md`](../CLAUDE.md)): the app runs on the product owner's own iPhone
+and on simulators against the local stack, and what a cost blocks is parked in
+[the backlog](tasks/backlog.md#mobile-client). Iteration 9's
 task files are seeded at `needs-refinement`; iterations 10–14 list planned
 tasks as one line each, their task files written at refinement.
 

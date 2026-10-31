@@ -183,6 +183,14 @@ they're already cross-referenced from merged PRs and
   asserted in `JustAdded.test.tsx:123`), while ADR-0091 keeps it
   invisible to everyone else until an operator approves. Say that it waits
   for review, in both locales. Deferred in PR #452.
+- **SHOULD-94** *(confirmed 2026-10-31)* — the code-comment policy
+  ([ADR-0017](../adr/0017-code-comment-policy.md)) does not reach `mobile/`:
+  `scripts/check-comments.mjs` scans `backend/src`, `web/` and `packages/`, and
+  the `paths` of `.claude/rules/code-comments.md` name the same, so a comment
+  written in the app is held to neither the hard tier nor the rule the agent
+  reads on opening a file. Add `mobile/src` to both and fix what the
+  check then finds. Not done in iteration 9 task 07, whose decided scope named
+  only the links and raster-image checks.
 
 ## COULD
 

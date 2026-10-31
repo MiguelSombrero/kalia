@@ -1,6 +1,6 @@
 # Task 07: The process carries a third codebase
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** none
 
@@ -84,14 +84,14 @@ the two new rules.
 
 ## Acceptance criteria
 
-- [ ] `mobile/CLAUDE.md` imports `mobile/README.md`, and the root `CLAUDE.md`
+- [x] `mobile/CLAUDE.md` imports `mobile/README.md`, and the root `CLAUDE.md`
       carries the Expo warning and the no-cost rule within its budget —
       `wc -l CLAUDE.md` at most 200
-- [ ] `docs/architecture.md` §5 covers mobile, and the doc-sync gate in
+- [x] `docs/architecture.md` §5 covers mobile, and the doc-sync gate in
       `implement-task` names `mobile/README.md`
-- [ ] The links and raster-image checks scan `mobile/`, each with a test
+- [x] The links and raster-image checks scan `mobile/`, each with a test
       proving it catches a violation there
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
