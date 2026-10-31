@@ -50,7 +50,7 @@ assumed: `node_modules/next/dist/docs/01-app/02-guides/streaming.md`
 `route.ts` returning a raw `ReadableStream` — genuinely a third kind of route
 handler, not a variation on the two `app/api/` handlers that exist today
 (Auth.js's own OIDC routes, and the deliberately unauthenticated
-backchannel-logout callback — [architecture.md §5](../architecture.md#5-web-app-design)).
+backchannel-logout callback — [architecture.md §5](../architecture.md#5-client-design)).
 `node_modules/next/dist/docs/01-app/02-guides/single-page-applications.md`
 independently names "a library such as SWR or TanStack Query" as the
 documented tool once a Client Component needs "focus revalidation, polling,
@@ -76,7 +76,7 @@ no CSP change.
   same-origin POST Next.js already generates the wire format for — not a new
   `app/api/` route. `frontend/lib/config/cspHeader.ts`'s `connect-src 'self'`
   already covers it; nothing in `next.config.ts` changes.
-  [Architecture.md §5](../architecture.md#5-web-app-design)'s route-handler
+  [Architecture.md §5](../architecture.md#5-client-design)'s route-handler
   inventory therefore still lists exactly two.
 - **The single-instance limitation disappears rather than being accepted.**
   No instance holds subscriber state under polling.

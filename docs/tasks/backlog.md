@@ -115,8 +115,8 @@ draw on; what each takes from it:
 | Crash reporting | [Iteration 10](iteration-10.md), within the no-cost constraint |
 | Process scaling to a third codebase; ADR-0012 revisited | [Iteration 9](iteration-9.md) |
 
-**The plan adds no cost and puts no payment card on file anywhere**, at the
-product owner's direction. Iteration 10 therefore installs the app on the
+**The plan adds no cost** — the project-wide rule in
+[`CLAUDE.md`](../../CLAUDE.md). Iteration 10 therefore installs the app on the
 product owner's own iPhone with a free Apple ID through Xcode — own device
 only, and an install that expires after seven days — and reaches the backend
 on the developer's Mac rather than a hosted one. Each item in this list is
@@ -157,7 +157,7 @@ Keycloak `sid`, so signing out on the phone leaves the laptop signed in.
 
 **The BFF is a rendering layer, not an API layer.** `frontend/app/api/` holds
 only the auth endpoints and the metrics scrape
-([architecture §5](../architecture.md#5-web-app-design)); every
+([architecture §5](../architecture.md#5-client-design)); every
 catalog read runs server component → a feature's `api.ts` → `kaliaFetch` →
 Spring. There is no JSON surface for a mobile app to reuse, so
 mobile calls Spring directly as its own OAuth client. That does not contradict

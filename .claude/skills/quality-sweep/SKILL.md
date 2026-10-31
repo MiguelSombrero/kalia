@@ -72,7 +72,7 @@ duplication (the same fact stated in two places that could drift apart).
 A fresh, independent pass — assume nothing already checked is correct.
 
 **code-quality**
-Audit the whole codebase (`backend/src`, `web/`) for: security smells
+Audit the whole codebase (`backend/src`, `web/`, `mobile/`, `packages/`) for: security smells
 (injection, XSS, hardcoded secrets, insecure defaults, auth flaws),
 performance issues (N+1 queries, unbounded loops, algorithmic complexity,
 resource leaks), correctness risks (unhandled edge cases, error handling

@@ -90,17 +90,25 @@ export function checkLinks(files, exists) {
   return failures;
 }
 
+/**
+ * @param {string} root repository root; every Markdown file git tracks under it is read
+ * @returns {{scanned: string[], failures: string[]}}
+ */
+export function checkRepositoryLinks(root) {
+  const scanned = execFileSync("git", ["ls-files", "-z", "--", "*.md"], { cwd: root, env: ENV_WITHOUT_REPO, encoding: "utf8" })
+    .split("\0")
+    .filter(Boolean);
+  const files = Object.fromEntries(scanned.map((p) => [p, readFileSync(resolve(root, p), "utf8")]));
+  return { scanned, failures: checkLinks(files, (p) => existsSync(resolve(root, p))) };
+}
+
 const invokedDirectly =
   import.meta.main ??
   (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]));
 
 if (invokedDirectly) {
-  const tracked = execFileSync("git", ["ls-files", "-z", "--", "*.md"], { cwd: ROOT, env: ENV_WITHOUT_REPO, encoding: "utf8" })
-    .split("\0")
-    .filter(Boolean);
-  const files = Object.fromEntries(tracked.map((p) => [p, readFileSync(resolve(ROOT, p), "utf8")]));
-  const failures = checkLinks(files, (p) => existsSync(resolve(ROOT, p)));
-  console.log(`Checking relative links in ${tracked.length} tracked Markdown files\n`);
+  const { scanned, failures } = checkRepositoryLinks(ROOT);
+  console.log(`Checking relative links in ${scanned.length} tracked Markdown files\n`);
   for (const f of failures) console.log(`  FAIL  ${f}`);
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

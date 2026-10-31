@@ -103,3 +103,22 @@ test("an allowed directory does not match a directory that merely shares its pre
     assert.equal(failures.length, 1),
   );
 });
+
+test("fails a raster image tracked under mobile/, such as an emulator capture", () => {
+  check({ tracked: ["mobile/README.md", "mobile/e2e/home.png", "mobile/assets/icon.png"] }, [], (failures) => {
+    assert.equal(failures.length, 2);
+    assert.match(failures[0], /mobile\/assets\/icon\.png/);
+    assert.match(failures[1], /mobile\/e2e\/home\.png/);
+  });
+});
+
+test("allowing one mobile/ directory leaves the rest of mobile/ checked", () => {
+  check(
+    { tracked: ["mobile/assets/images/icon.png", "mobile/src/app/shot.png"] },
+    ["mobile/assets/images"],
+    (failures) => {
+      assert.equal(failures.length, 1);
+      assert.match(failures[0], /mobile\/src\/app\/shot\.png/);
+    },
+  );
+});
