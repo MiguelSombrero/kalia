@@ -37,7 +37,7 @@ the backend and the process reshaped to carry a third codebase.
 | [06](iteration-9/06-decision-mobile-testing-strategy.md) | Decide how the mobile app is tested | done |
 | [08](iteration-9/08-workspaces-refactor.md) | The repository is npm workspaces, with the web app in `web/` | done |
 | [09](iteration-9/09-shared-packages.md) | The API client and the locale strings are shared packages | done |
-| [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | refined |
+| [10](iteration-9/10-developer-environment.md) | A developer can run the app on both simulators from the README | done |
 | [11](iteration-9/11-app-skeleton.md) | The app has four tabs and the web's conventions | done |
 | [07](iteration-9/07-process-carries-a-third-codebase.md) | The process carries a third codebase | done |
 | [12](iteration-9/12-app-config-endpoint.md) | The server can tell an old app to update, or that Kalia is down | done |
@@ -77,3 +77,18 @@ The iOS Simulator reaches the Mac's `localhost` directly, and Keycloak's issuer
 is already pinned to `http://localhost:8081`, so nothing in this iteration needs
 the stack reachable from another device; the Android emulator gets the same
 with `adb reverse`. A real phone is [iteration 10](iteration-10.md).
+
+## Closing note
+
+Closed 2026-10-31 after re-checking each "Done when" item by running it, not
+from the task ticks. DW-1 and DW-2 on the Android emulator were run last, on
+this worktree's own stack beside the main checkout's: `make mobile-android`
+built and launched the app, the Catalog tab listed real beers, `testuser`
+signed in through Keycloak at the worktree's own port and signed out again.
+DW-3: raising Android's minimum build with `make app-config ANDROID=999`
+brought up the "Update required" screen, and lowering it and pressing "Check
+again" released the app. DW-4's Maestro flow in CI is flaky on the Android
+emulator: the latest `dev` run went red when the emulator went offline, with
+the same code green on its pull request, and the failure is logged in
+[common-failures](../common-failures.md). It is not a regression, and filing
+it as [SHOULD-96](quality-backlog.md) is how it stays visible.
