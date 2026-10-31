@@ -46,9 +46,13 @@ Built:
   an operator approves them and never hard-deleted, the unauthenticated edges
   throttled by an nginx proxy, and a stack that refuses to start as a
   deployment without its secrets *(iteration 8.5)*
+- An Expo mobile app that runs on the iOS Simulator and the Android emulator
+  against the local stack, signs in through Keycloak and out again, lists the
+  catalog from `/api/v1`, and blocks itself behind an "update required" screen
+  when the server's minimum build exceeds its own *(iteration 9)*
 
-No iteration is in progress. The next is [iteration 9](tasks/iteration-9.md),
-the mobile foundations; nothing in it is built yet.
+No iteration is in progress. The next is [iteration 10](tasks/iteration-10.md),
+which puts the app on the product owner's own iPhone.
 
 ### Non-functional requirements
 
@@ -93,6 +97,7 @@ flowchart LR
     FED --> CEL & CAT & PROF
     CAT & CEL & PROF & FED & CFG --> PG[(PostgreSQL)]
     Browser -.->|OIDC redirect, via edge| KC[Keycloak]
+    App -.->|OIDC PKCE in the system browser, via edge| KC
     NX -->|session read/write| VK[(Valkey)]
     IDN -->|validate token, JWKS| KC
 ```
@@ -164,8 +169,9 @@ redirect scheme. Its stack:
 The app calls the Spring API directly through the edge, with no BFF of its own,
 and signs in as a public Keycloak client
 ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
-The diagram draws the call it makes today; the sign-in path joins it with
-[task 14](tasks/iteration-9/14-sign-in-on-mobile.md).
+The diagram draws both: the API calls through the edge and the sign-in, which
+goes through the system browser to Keycloak
+([task 14](tasks/iteration-9/14-sign-in-on-mobile.md)).
 
 ## 3. Backend modules
 
@@ -642,7 +648,7 @@ so `/api/v1` changes additively only
   for the whole API and never one resource, is for a breaking change that
   cannot be made as a new path.
 - A deprecated element is removed only once the minimum supported app build
-  (`GET /api/v1/app-config`, not yet built — [task 12](tasks/iteration-9/12-app-config-endpoint.md))
+  (`GET /api/v1/app-config`, [task 12](tasks/iteration-9/12-app-config-endpoint.md))
   excludes every app build that uses it: the window is measured in releases,
   not time. `app-config` is itself under this rule from its first release.
 - The spec is a committed file, `backend/openapi.json`, that both clients

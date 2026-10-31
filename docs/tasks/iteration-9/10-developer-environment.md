@@ -1,6 +1,6 @@
 # Task 10: A developer can run the app on both simulators from the README
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [9](../iteration-9.md)
 - **Covers:** DW-1
 
@@ -91,14 +91,14 @@ was accepted:
 
 ## Acceptance criteria
 
-- [ ] `mobile/README.md` takes a Mac without the toolchain to the app running
+- [x] `mobile/README.md` takes a Mac without the toolchain to the app running
       on the iOS Simulator and the Android emulator against the local stack —
       read through by a reviewer, run on both by the author, and described in
       the PR
 - [x] `make stack-env` writes a `METRO_PORT` that differs from every other
       port it allocates, with a test beside `scripts/stack-env.test.mjs`, and
       the make targets start Metro on it
-- [ ] The `make` targets start the app on each platform, and the Android one
+- [x] The `make` targets start the app on each platform, and the Android one
       sets `adb reverse` for the API, Keycloak and Metro ports from the
       worktree's ports rather than fixed ones, shown by two worktrees' stacks
       running side by side

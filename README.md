@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–8.5 complete — a visitor can browse and search
+> **Status:** iterations 0–9 complete — a visitor can browse and search
 > the seeded beer catalog end to end (verified: find "Westvleteren" by name,
 > filter Belgian quads 9–12 % ABV, open beer details), production-readiness
 > foundations (logging, exception handling, config, security headers,
@@ -26,8 +26,11 @@
 > sprint then readied the API for a second client: every error documented
 > and typed, what nobody used removed, a beer someone adds seen by others
 > only once an operator approves it, and the unauthenticated edges throttled
-> (iteration 8.5). Next: an Expo mobile app (iteration 9). Implementation
-> proceeds one issue at a time.
+> (iteration 8.5). An Expo mobile app, the product's primary UI from here on,
+> then ran on both the iOS Simulator and the Android emulator: it signs in
+> through Keycloak, lists the catalog from the API and tells an out-of-date
+> build to update (iteration 9). Next: the app on the product owner's own
+> iPhone (iteration 10). Implementation proceeds one issue at a time.
 > See [docs/roadmap.md](docs/roadmap.md) for what gets built and in which
 > order.
 
@@ -175,16 +178,15 @@ In roadmap order, a user can:
 - Have the beers and breweries they add reviewed by an operator before anyone
   else sees them, while keeping them in their own cellar from the start
   _(iteration 8.5)_
+- Sign in and out of a native Expo app on the iOS Simulator or the Android
+  emulator and see the catalog in it, which is the start of the mobile app
+  becoming Kalia's primary UI _(iteration 9)_
 
-Then:
-
-- Use Kalia as a native mobile app, which becomes its primary UI: an Expo app
-  that signs in and shows real data _(iteration 9)_, runs on the product
-  owner's own iPhone _(iteration 10)_, has a design of its own, proven on the
-  catalog _(iteration 11)_, holds the cellar readable with no signal
-  _(iteration 12)_, brings the feed, profiles and public cellars _(iteration
-  13)_, and scans a bottle's barcode to put its beer in the cellar _(iteration
-  14)_
+Then, in the mobile app: it runs on the product owner's own iPhone
+_(iteration 10)_, has a design of its own, proven on the catalog _(iteration
+11)_, holds the cellar readable with no signal _(iteration 12)_, brings the
+feed, profiles and public cellars _(iteration 13)_, and scans a bottle's
+barcode to put its beer in the cellar _(iteration 14)_
 
 Further out, in the [backlog](docs/tasks/backlog.md): beer ratings sourced from
 an external platform, likes and comments on feed events, and — dependent on
