@@ -838,8 +838,9 @@ conventions README for the day-to-day rules of writing it
 
 `mobile/` is an Expo Router app, a development build rather than Expo Go
 ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
-with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens and
-one data call, the launch check below. It follows [the web app's](#the-web-app) conventions where
+with four tabs — Home, Catalog, Cellar, Profile — over placeholder screens, a
+Profile tab that signs in and out, and two data calls: the launch check and the
+profile, below. It follows [the web app's](#the-web-app) conventions where
 they are not about the browser, and each is enforced rather than agreed; the
 rules for writing it are in [mobile/README.md](../mobile/README.md):
 
@@ -857,8 +858,24 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   app, and the module throws at start-up when either is missing.
 - **Transport.** The root layout registers the shared fetch core from
   `@kalia/api` with the API origin as its base URL
-  (`src/lib/api/registerTransport.ts`), as the web registers its own. It sends
-  no token yet.
+  (`src/lib/api/registerTransport.ts`), as the web registers its own, with the
+  token store's `getAccessToken` as its token source; a signed-out app sends no
+  `Authorization` header at all.
+- **Sign-in.** `src/lib/auth/` holds the session
+  ([task 14](tasks/iteration-9/14-sign-in-on-mobile.md),
+  [ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)):
+  `tokenStore.ts` is the state machine, with its secure storage
+  (`secureTokens.ts`, `expo-secure-store`: Keychain on iOS, Keystore on
+  Android), its OAuth client (`keycloakClient.ts`, `expo-auth-session`) and its
+  clock injected, so a test drives expiry without a realm. A refresh is
+  single-flight: calls that find the access token expired together wait for one
+  refresh and share its result, and the refresh token it returns is stored
+  before the access token is handed out. `invalid_grant` ends the session and
+  raises a notice on the Profile tab; any other failure (no connection, a 5xx)
+  leaves the user signed in and fails only that call. Signing out forgets the
+  tokens on the device, then revokes the refresh token at Keycloak when it can.
+  The app is usable signed out: sign-in is a choice on the Profile tab, which
+  reads the username from `GET /api/v1/profile` and never caches it.
 - **Strings.** Every string comes from `@kalia/locales`; i18next takes the
   device's first language that has a bundle, and falls back to the default
   locale the package exports.

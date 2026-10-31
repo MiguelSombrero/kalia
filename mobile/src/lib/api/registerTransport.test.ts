@@ -1,4 +1,5 @@
 import { kaliaFetch } from "@kalia/api";
+import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { registerMobileTransport } from "./registerTransport";
 
 const SLOT = Symbol.for("@kalia/api.transport");
@@ -8,7 +9,7 @@ describe("registerMobileTransport", () => {
 
   beforeEach(() => {
     Reflect.deleteProperty(globalThis, SLOT);
-    fetchMock.mockReset().mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
+    fetchMock.mockReset().mockImplementation(async () => new Response('{"ok":true}', { status: 200 }));
     jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
   });
 
@@ -24,12 +25,34 @@ describe("registerMobileTransport", () => {
     expect(result).toMatchObject({ status: 200, data: { ok: true } });
   });
 
-  it("sends no Authorization header until a token source is registered", async () => {
-    registerMobileTransport();
+  it("sends no Authorization header while nobody is signed in", async () => {
+    registerMobileTransport(fakeTokenStore({ status: "signedOut", expired: false }));
 
     await kaliaFetch("/api/v1/beers", { method: "GET" });
 
     expect(new Headers(fetchMock.mock.calls[0][1].headers).has("Authorization")).toBe(false);
+  });
+
+  it("sends the signed-in user's access token as a bearer token", async () => {
+    registerMobileTransport(fakeTokenStore({ status: "signedIn" }));
+
+    await kaliaFetch("/api/v1/profile", { method: "GET" });
+
+    expect(new Headers(fetchMock.mock.calls[0][1].headers).get("Authorization")).toBe("Bearer access-token");
+  });
+
+  it("asks the token store for the token on every call, so a refresh is picked up", async () => {
+    const store = fakeTokenStore({ status: "signedIn" });
+    store.getAccessToken.mockResolvedValueOnce("first").mockResolvedValueOnce("second");
+    registerMobileTransport(store);
+
+    await kaliaFetch("/api/v1/profile", { method: "GET" });
+    await kaliaFetch("/api/v1/profile", { method: "GET" });
+
+    expect(fetchMock.mock.calls.map(([, init]) => new Headers(init.headers).get("Authorization"))).toEqual([
+      "Bearer first",
+      "Bearer second",
+    ]);
   });
 
   it("throws when no transport was registered", async () => {
