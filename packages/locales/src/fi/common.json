@@ -20,6 +20,9 @@
     "closeMenu": "Sulje valikko",
     "language": "Kieli"
   },
+  "placeholder": {
+    "comingSoon": "Tulossa pian"
+  },
   "feed": {
     "loading": "Ladataan viimeaikaista toimintaa…",
     "loadingMore": "Ladataan lisää…",

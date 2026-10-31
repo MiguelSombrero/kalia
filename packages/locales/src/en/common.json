@@ -20,6 +20,9 @@
     "closeMenu": "Close menu",
     "language": "Language"
   },
+  "placeholder": {
+    "comingSoon": "Coming soon"
+  },
   "feed": {
     "loading": "Loading recent activity…",
     "loadingMore": "Loading more…",

@@ -354,6 +354,16 @@ they're already cross-referenced from merged PRs and
   next spec change: add the script to the backend filter. Deferred in the
   iteration 9 task 09 pull request.
 
+- **COULD-101** *(confirmed 2026-10-31)* — Dependabot's one npm entry bumps
+  `mobile/`'s Expo-managed packages (`react-native`, `expo-router`, the `expo-*`
+  set) one at a time, while an SDK's packages only work as the set
+  `npx expo install --check` names; a lone bump passes lint and Jest and
+  breaks the native build, which no required check builds. Group or ignore
+  them in `.github/dependabot.yml` once the Android job of iteration 9 task 15
+  exists to catch it.
+  `npx expo install --check` also reports `react` and `typescript` off the
+  SDK's own versions, both deliberately the web's.
+
 ## Retired
 
 Permanent, append-only record of resolved or lifted findings — kept so IDs

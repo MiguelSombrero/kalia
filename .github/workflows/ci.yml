@@ -31,6 +31,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
       keycloak: ${{ steps.filter.outputs.keycloak }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,6 +49,7 @@ jobs:
             echo "$1: running everything"
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "web=true" >> "$GITHUB_OUTPUT"
+            echo "mobile=true" >> "$GITHUB_OUTPUT"
             echo "keycloak=true" >> "$GITHUB_OUTPUT"
             exit 0
           }
@@ -87,21 +89,27 @@ jobs:
           # explicitly exempt.
           backend=false
           web=false
+          mobile=false
           keycloak=false
           if [ -n "$shared" ]; then
             backend=true
             web=true
+            mobile=true
           fi
           if [ -n "$keycloak_inputs" ]; then keycloak=true; fi
           if echo "$changed" | grep -q '^backend/'; then backend=true; fi
           # backend/openapi.json is what packages/api generates from, so a change to
           # it is a change to what the web compiles even though it sits in backend/.
           if echo "$changed" | grep -qE '^(web/|packages/|package(-lock)?\.json$|backend/openapi\.json$)'; then web=true; fi
+          # The mobile app compiles the same packages, and type-checks against
+          # the same generated client, so it follows them.
+          if echo "$changed" | grep -qE '^(mobile/|packages/|package(-lock)?\.json$|backend/openapi\.json$|Makefile$|scripts/mobile-env)'; then mobile=true; fi
 
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "web=$web" >> "$GITHUB_OUTPUT"
+          echo "mobile=$mobile" >> "$GITHUB_OUTPUT"
           echo "keycloak=$keycloak" >> "$GITHUB_OUTPUT"
-          echo "Result: backend=$backend web=$web keycloak=$keycloak"
+          echo "Result: backend=$backend web=$web mobile=$mobile keycloak=$keycloak"
 
   static-checks:
     name: Static checks
@@ -199,6 +207,28 @@ jobs:
         run: make web-test packages-test
       - name: Build
         run: make web-build
+
+  mobile:
+    name: Mobile app (npm)
+    # Lint, strict type check and Jest unit tests: the same targets as
+    # `make verify-fast`, and nothing that needs a simulator or a native
+    # build (ADR-0096).
+    needs: [changes]
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint and type-check
+        run: make mobile-lint
+      - name: Test
+        run: make mobile-test
 
   api-client-drift:
     name: API client drift check
@@ -384,7 +414,7 @@ jobs:
     # cancelled: without it those make this job skip, and a skipped required
     # check lets the merge through.
     if: always()
-    needs: [changes, static-checks, backend, web, api-client-drift, api-breaking-change, keycloak-realm-check, vulnerability-scan, e2e]
+    needs: [changes, static-checks, backend, web, mobile, api-client-drift, api-breaking-change, keycloak-realm-check, vulnerability-scan, e2e]
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every job succeeded or was skipped by the changes filter
