@@ -1,7 +1,22 @@
 import type { Locale } from "@kalia/locales";
+import type { QueryClient } from "@tanstack/react-query";
 import { render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
 import { AppProviders } from "@/lib/providers/AppProviders";
+import { createQueryClient } from "@/lib/query/createQueryClient";
 
-export const renderWithLocale = (ui: ReactElement, locale: Locale = "en") =>
-  render(<AppProviders locale={locale}>{ui}</AppProviders>);
+const clients: QueryClient[] = [];
+
+afterEach(() => {
+  clients.splice(0).forEach((client) => client.clear());
+});
+
+export const renderWithLocale = (ui: ReactElement, locale: Locale = "en") => {
+  const queryClient = createQueryClient();
+  clients.push(queryClient);
+  return render(
+    <AppProviders locale={locale} queryClient={queryClient}>
+      {ui}
+    </AppProviders>,
+  );
+};

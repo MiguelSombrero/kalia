@@ -23,6 +23,17 @@
   "placeholder": {
     "comingSoon": "Tulossa pian"
   },
+  "appConfig": {
+    "updateRequired": {
+      "title": "Päivitys vaaditaan",
+      "body": "Tämä Kalian versio on vanhentunut. Päivitä sovellus jatkaaksesi."
+    },
+    "maintenance": {
+      "title": "Huoltotauko",
+      "body": "Kalia on huollettavana ja palaa pian käyttöön. Yritä hetken kuluttua uudelleen."
+    },
+    "checkAgain": "Tarkista uudelleen"
+  },
   "feed": {
     "loading": "Ladataan viimeaikaista toimintaa…",
     "loadingMore": "Ladataan lisää…",

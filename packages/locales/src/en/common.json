@@ -23,6 +23,17 @@
   "placeholder": {
     "comingSoon": "Coming soon"
   },
+  "appConfig": {
+    "updateRequired": {
+      "title": "Update required",
+      "body": "This version of Kalia is out of date. Update the app to continue."
+    },
+    "maintenance": {
+      "title": "Down for maintenance",
+      "body": "Kalia is being maintained and will be back soon. Try again in a moment."
+    },
+    "checkAgain": "Check again"
+  },
   "feed": {
     "loading": "Loading recent activity…",
     "loadingMore": "Loading more…",
