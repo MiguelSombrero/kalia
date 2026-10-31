@@ -70,5 +70,5 @@ test("the simulators of a name come booted ones first, and unavailable ones not 
 });
 
 test("Maestro is cached per version under the home directory", () => {
-  assert.equal(maestroBinary("/home/ci"), `/home/ci/.cache/kalia/maestro/${MAESTRO_VERSION}/maestro/bin/maestro`);
+  assert.equal(maestroBinary("ci-home"), `ci-home/.cache/kalia/maestro/${MAESTRO_VERSION}/maestro/bin/maestro`);
 });
