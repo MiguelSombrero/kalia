@@ -87,6 +87,12 @@ test("a missing Android SDK is reported once, not once per component", () => {
   assert.deepEqual(failureNames(facts), ["Android SDK"]);
 });
 
+test("no message repeats the SDK location, which comes from the environment", () => {
+  const found = diagnose(healthy());
+  const missing = diagnose({ ...healthy(), android: { ...healthy().android, hasSdk: false } });
+  for (const finding of [...found, ...missing]) assert.ok(!finding.message.includes("/sdk"), finding.message);
+});
+
 test("each missing Android component is named", () => {
   const facts = healthy();
   facts.android = { ...facts.android, adb: false, emulator: false, platforms: [], buildTools: [] };

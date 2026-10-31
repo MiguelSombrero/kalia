@@ -72,12 +72,12 @@ const androidFindings = ({ pins, jdks, android }) => {
         ),
   ];
   if (!android.hasSdk) {
-    return [...findings, fail("Android SDK", `not found at ${android.sdk}; install Android Studio, open it once, or set ANDROID_HOME`)];
+    return [...findings, fail("Android SDK", "not found; install Android Studio, open it once, or set ANDROID_HOME")];
   }
   const platform = android.platforms.some((name) => apiMatches(name, ANDROID_API));
   return [
     ...findings,
-    ok("Android SDK", android.sdk),
+    ok("Android SDK", "found"),
     android.adb ? ok("adb", "installed") : fail("adb", "missing; install Android SDK Platform-Tools in Android Studio"),
     android.emulator ? ok("Android emulator", "installed") : fail("Android emulator", "missing; install the Android Emulator in Android Studio's SDK Tools"),
     platform
