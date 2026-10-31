@@ -464,10 +464,12 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # API 36, Expo SDK 58's target. The API 37 image stayed `offline` in adb
+      # for the whole 600 s boot timeout on this runner.
       - name: Run the Maestro flow on an emulator
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
-          api-level: '37.0'
+          api-level: 36
           target: google_apis
           arch: x86_64
           script: node scripts/mobile-e2e.mjs test --platform android
