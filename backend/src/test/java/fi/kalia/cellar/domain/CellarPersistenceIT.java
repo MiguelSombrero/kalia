@@ -5,9 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -135,6 +139,23 @@ class CellarPersistenceIT {
 
 		assertThat(bottles).extracting(Bottle::getContainerType)
 				.containsExactly(ContainerType.BOTTLE, ContainerType.CAN);
+	}
+
+	@RepeatedTest(5)
+	void bottlesAddedTogetherUnderOneInstantLoadInTheSameOrderEveryTime() {
+		Clock fixed = Clock.fixed(Instant.parse("2026-11-01T10:00:00Z"), ZoneOffset.UTC);
+		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID(), fixed));
+		entry.addBottles(8, ContainerType.BOTTLE, null, null, fixed);
+		entries.saveAndFlush(entry);
+
+		// PostgreSQL orders a uuid by its unsigned bytes, which the hex string preserves; UUID.compareTo is signed.
+		List<UUID> expected = entry.getBottles().stream().map(Bottle::getId)
+				.sorted(Comparator.comparing(UUID::toString)).toList();
+		for (int read = 0; read < 3; read++) {
+			testEntityManager.clear();
+			Entry reloaded = entries.findWithBottlesByUserId(entry.getUserId()).getFirst();
+			assertThat(reloaded.getBottles()).extracting(Bottle::getId).containsExactlyElementsOf(expected);
+		}
 	}
 
 }
