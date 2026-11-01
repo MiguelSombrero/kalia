@@ -75,18 +75,18 @@ talks to, and a docs-only or web-only change leaves both skipped with
 
 ## Acceptance criteria
 
-- [ ] A test of the filter shows a docs-only change, a web-only change, and a
+- [x] A test of the filter shows a docs-only change, a web-only change, and a
       change to `web/` plus `docs/architecture.md` each leaving the Android
       end-to-end job and the other mobile job skipped, and the same cases fail
       against the previous filter
-- [ ] A test shows a change under each of `mobile/`, `packages/`, `backend/`,
+- [x] A test shows a change under each of `mobile/`, `packages/`, `backend/`,
       `edge/`, `keycloak/`, a compose file and the workflow running the
       Android end-to-end job
-- [ ] A test shows a push to `dev` whose diff is docs-only skipping it, and an
+- [x] A test shows a push to `dev` whose diff is docs-only skipping it, and an
       unreachable previous commit running everything
 - [ ] A throwaway docs-only commit pushed from the PR's own branch shows the
       Android job skipped and `CI passed` green, with the run linked in the PR
-- [ ] The place the filter's policy is documented states the new rule, and
+- [x] The place the filter's policy is documented states the new rule, and
       `make verify-fast` is green
 
 ## Notes
