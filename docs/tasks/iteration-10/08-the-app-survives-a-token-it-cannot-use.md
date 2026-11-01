@@ -1,6 +1,6 @@
 # Task 08: The app survives a token it cannot refresh or the server refuses
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -45,17 +45,25 @@ call before it shows an error or signs the user out.
 - One refresh at a time: two calls getting `401` together must not start two
   refreshes of one offline token.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **A transient token failure degrades the call to anonymous.** When the token
+  store's refresh fails transiently, the transport sends the call without a
+  token: an anonymous operation (the catalog, the launch check) succeeds, and
+  one that needs a user gets its `401` and is handled below. No list of
+  anonymous operations is kept in the client.
+- **Transient means a network error, a timeout, a 5xx or a 429** from
+  Keycloak. Keycloak refusing the refresh (a 4xx such as `invalid_grant`)
+  ends the session, as ADR-0095 already states.
+- **A `401` forces one refresh, shared by every call waiting on it, and one
+  retry.** A second `401` shows the error and keeps the user signed in —
+  signing out would not repair a configuration or clock fault.
+- **The user sees nothing new** while a refresh fails transiently; offline
+  states are [iteration 12](../iteration-12.md)'s.
+
 ## Open questions
 
-1. **Where anonymity is decided:** the token source degrading to "no token"
-   for operations the spec marks as anonymous, or the shared transport
-   retrying such a call without a token after a token failure.
-2. **What counts as transient:** a timeout and a 5xx from Keycloak keep the
-   user signed in; an `invalid_grant` signs them out. Anything else?
-3. **The second `401`:** after the forced refresh and retry also get `401`,
-   does the app sign the user out, or show the error and stay signed in?
-4. **What the user sees** while a refresh is failing transiently: nothing
-   different, or a quiet notice in both locales.
+**None.**
 
 ## Acceptance criteria
 

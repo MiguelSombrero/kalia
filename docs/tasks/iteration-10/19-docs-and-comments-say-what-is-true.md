@@ -1,6 +1,6 @@
 # Task 19: The documentation and comments say what is true now
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -54,25 +54,28 @@ Each statement above says what is true, in the one place
 - Closed iterations' task files are frozen requests; only their index prose
   is corrected.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **`fi.kalia.web` is described as module-neutral web infrastructure** in §3,
+  ADR-0014 (amended) and `ArchitectureDocumentationTest`; nothing moves.
+- **ADR-0007's outdated clause is marked as superseded** by its own 2026-10-24
+  amendment, not deleted ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
+- **The npm overrides are re-tested** against today's `next` in this task: an
+  override no longer needed is removed, and the README names what holds.
+- The untagged items were confirmed still true at refinement on 2026-11-01.
+
 ## Open questions
 
-1. **`fi.kalia.web` (COULD-84):** widen §3 and
-   [ADR-0014](../../adr/0014-shared-exception-handling.md) to "module-neutral web
-   infrastructure", or move `RequestLogFilter` to the base package.
-2. **ADR-0007 (COULD-87):** drop the examples from the Decision, or mark the
-   amendment as superseding that clause.
-3. **The npm overrides:** re-test them against today's `next` in this task, or
-   only correct the version the README names.
-
-The rest are untagged and ready as written; refinement confirms each still
-holds — iteration 9 may have fixed some in passing.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] Each statement listed is corrected or confirmed already fixed, and the
       PR lists which
-- [ ] `ArchitectureDocumentationTest` describes `fi.kalia.web` as refinement
-      decides, and that test still passes
+- [ ] `ArchitectureDocumentationTest` describes `fi.kalia.web` as
+      module-neutral web infrastructure, and that test still passes
+- [ ] Each npm override is re-tested against today's `next`, and the PR says
+      which were kept and why
 - [ ] `node scripts/check-links.mjs` and `node scripts/check-adrs.mjs` pass
 - [ ] `make verify-fast` is green
 

@@ -1,6 +1,6 @@
 # Task 10: The edge serves only what a client needs
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -50,27 +50,40 @@ while the host scripts and Keycloak itself keep the routes they need.
 - Realm configuration is keycloak-config-cli's under a drift check
   ([ADR-0054](../../adr/0054-keycloak-config-cli-realm-management.md)).
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The edge's public ports answer `404`** for `/actuator/*` except
+  `/actuator/health`, for `/admin` and `/realms/master`, and for
+  `/api/auth/backchannel-logout` — in every stack, so the local and the
+  deployable stacks cannot differ on it.
+- **Metrics stay inside the compose network:** nothing outside it reads them,
+  as ADR-0088's "counted without a viewer" already intends.
+- **The admin console and the host scripts move to a separate admin port,**
+  published on `127.0.0.1` by the dev overlay only, with `KC_HOSTNAME_ADMIN`
+  naming it. Phone mode never forwards it
+  ([task 01](01-decision-how-a-phone-reaches-the-mac.md)), and the deployable
+  stack publishes no admin port at all.
+- **Order with task 01:** not a prerequisite of phone mode, whose tailnet holds
+  only the owner's devices; it runs first in the iteration's order anyway.
+
 ## Open questions
 
-1. **Metrics (SHOULD-68):** move `prometheus` to the dev overlay, require a
-   role or scope for it, or serve actuator on a management port the edge does
-   not route.
-2. **The master realm (SHOULD-69):** deny `/admin` and `/realms/master` at the
-   edge and give the host scripts an internal route, set `KC_HOSTNAME_ADMIN`
-   to an unpublished address, or at least enable brute-force protection for
-   master — or more than one of those.
-3. **Order with task 01:** must this land before the stack is reachable from
-   the phone, or is a tailnet with one member an acceptable interim?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] Through the edge, `/actuator/prometheus`, `/admin`, `/realms/master` and
-      `/api/auth/backchannel-logout` answer as refinement decides (404 or 403),
-      checked by an automated test of the edge configuration
+- [ ] Through the edge's public ports, `/actuator/prometheus`, `/admin`,
+      `/realms/master` and `/api/auth/backchannel-logout` answer `404` while
+      `/actuator/health` still answers, checked by an automated test of the
+      edge configuration
+- [ ] The admin console opens on the loopback admin port of the local stack,
+      and the deployable definition publishes no such port
 - [ ] Sign-out on the web still ends the session through the back-channel,
       and the Playwright sign-out test still passes
 - [ ] `make app-config`, `make moderate` and the Keycloak seed scripts still
-      work against the running stack — verified by running each
+      work against the running stack — verified by running each — and any that
+      reached the admin API through the public Keycloak port now use the admin
+      port
 - [ ] `make verify-fast` is green
 
 ## Notes

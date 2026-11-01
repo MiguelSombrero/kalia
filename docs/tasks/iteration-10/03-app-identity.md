@@ -1,6 +1,6 @@
 # Task 03: Kalia has its own name, icon and splash screen on a phone
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-1
 
@@ -51,30 +51,43 @@ the shipped image assets pass the raster-image check.
 - A splash or icon plugin not already in `mobile/package.json` is a new
   dependency — asked, not researched.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The identifier stays `fi.kalia.app`,** for both the iOS bundle and the
+  Android package. If [task 04](04-free-apple-id-signing.md)'s first install
+  finds it claimed by another team, that task stops and the choice returns to
+  the product owner before anything else is installed on the phone.
+- **The display name is "Kalia"** in both locales.
+- **The icon is the existing mark,** adapted for the iOS home-screen grid
+  (full bleed, no transparency) and for Android's adaptive mask (the mark in
+  front of its teal). No monochrome Android icon until
+  [iteration 11](../iteration-11.md).
+- **The splash screen is the mark on its teal,** light only; dark mode is
+  iteration 11's decision.
+- **The source is SVG, rendered at build time.** The mark stays an SVG under
+  version control, and a script renders the PNGs Expo needs before prebuild
+  with `sharp` (already pinned in the root `package.json`'s `overrides`; its
+  version proposed for confirmation). No PNG is committed, so
+  `check-no-raster-images`'s allowlist does not change — the same reasoning
+  ADR-0094 gives for generating `ios/` and `android/`. The mark's geometry has
+  one home shared with the web's `kalia-mark`, or the PR says why not.
+- **This task is seen on the simulators;** the first look on the iPhone is
+  task 04's install, because this task's pull request merges before it
+  ([after-merge rule](../iteration-10.md#refinement)).
+
 ## Open questions
 
-1. **The identifier.** Keep `fi.kalia.app` if a Personal Team can register it,
-   or choose one now that a later paid account will also keep — and whether
-   iOS and Android use the same one.
-2. **The display name** under the icon: "Kalia" in both locales, or localised.
-3. **The icon:** the web's mark as it stands, or a variant drawn for the
-   home-screen grid and Android's adaptive mask — and whether a monochrome
-   Android icon is wanted now.
-4. **The splash screen:** the mark on its teal, the plain teal, or the app's
-   background colour; and whether it follows dark mode before
-   [iteration 11](../iteration-11.md) decides dark mode at all.
-5. **Where the source lives:** the icon as SVG under version control and
-   rendered to the PNGs Expo needs by a script, or the PNGs committed and
-   allowlisted as they are.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] The app installs on the iPhone and the Android emulator showing Kalia's
-      icon, name and splash screen — seen by hand and described in the PR
-- [ ] The identifier is confirmed registrable by a free Personal Team in the
-      task 04 install, before any other build is installed on the phone
-- [ ] `check-no-raster-images` passes with the shipped assets allowlisted, and
-      its test covers an allowlisted mobile asset
+- [ ] The app installs on the iOS Simulator and the Android emulator showing
+      Kalia's icon, name and splash screen in both locales — seen by hand and
+      described in the PR
+- [ ] A test of the render script shows it produces every image `app.json`
+      names, from the SVG source
+- [ ] No PNG is committed, and `check-no-raster-images` passes with its
+      allowlist unchanged
 - [ ] `make verify-fast` is green
 
 ## Notes

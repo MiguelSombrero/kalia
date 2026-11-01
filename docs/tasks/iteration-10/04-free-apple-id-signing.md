@@ -52,36 +52,46 @@ it.
 - Expo and Xcode signing postdate model training — check docs.expo.dev at the
   SDK version in `mobile/package.json`, and Apple's own pages, never memory.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The team is supplied from the root `.env`:** the Apple Team ID, never
+  committed, reaches prebuild through the Expo config so it survives
+  `expo prebuild`; `make mobile-doctor` names it when it is missing; a new
+  `make mobile-ios-device` builds and installs on the phone.
+- **The free account's limits have one home, the
+  [backlog](../backlog.md#mobile-client)'s cost list:** the seven-day expiry,
+  three apps per device, no push, no universal links and no TestFlight.
+  ADR-0094's amendment and `mobile/README.md`'s re-signing routine point to it.
+- **Re-signing is a rebuild and reinstall from source.** A reminder is the
+  product owner's own calendar entry, never a repository file.
+- **Whether the cellar survives a re-sign:** the README states what the DW-3
+  run observed, and promises nothing more.
+- **The product owner's own iPhone is the only device** DW-1 and DW-3 are
+  verified on.
+- The first install fixes [task 03](03-app-identity.md)'s identifier; if a
+  free Personal Team cannot register it, this task stops and returns to the
+  product owner.
+
 ## Open questions
 
-1. **How the team is supplied.** An `.env` value read by a config plugin or
-   by `make mobile-ios-device`, an Xcode step done by hand after each
-   prebuild, or `expo run:ios --device` alone — and how the doctor reports a
-   missing one.
-2. **Where the limits are recorded.** An amendment to ADR-0094, a new section
-   of `mobile/README.md`, the [backlog](../backlog.md#mobile-client)'s cost
-   list, or more than one of those with one home and pointers
-   ([ADR-0020](../../adr/0020-documentation-roles.md)) — and which limits
-   matter: seven-day expiry, the three-app limit, no push, no associated
-   domains, no TestFlight.
-3. **The re-signing routine:** reinstall from a fresh build each time, or
-   re-sign the existing one; and whether a reminder is wanted (a calendar
-   entry is the product owner's own, never a repository file).
-4. **Is a cellar kept across a re-sign?** Reinstalling over an expired app
-   keeps its data only if the identifier and team are unchanged; whether the
-   README promises that, once seen.
-5. **A spare iPhone or a second Apple ID** is not assumed: is "the product
-   owner's own iPhone" the only device DW-1 is verified on?
+1. **Task 01's ADR accepted?** The development build this task installs first
+   loads its JavaScript from Metro over [task 01](01-decision-how-a-phone-reaches-the-mac.md)'s
+   route. Every answer is recorded above; the task moves to `refined` in a
+   short second pass once that ADR is accepted.
 
 ## Acceptance criteria
 
 - [ ] Following `mobile/README.md` from an iPhone that has never run Kalia,
       the app is installed and launches — carried out by the product owner and
       described in the PR without any device or account identifier
+- [ ] That first install registers `fi.kalia.app` under the Personal Team
+      before any other build is installed on the phone, and shows task 03's
+      icon, name and splash screen
 - [ ] The re-signing routine is carried out once after an expiry, or by
       revoking the install to simulate one, and the PR says which
 - [ ] ADR-0094 is amended to allow a free Personal Team on the developer's
-      own device, and the limits are recorded where open question 2 decides
+      own device, and the limits are recorded in the backlog's cost list with
+      pointers from ADR-0094 and `mobile/README.md`
 - [ ] Any script or `make` target the routine adds has a test covering its
       missing-team-identifier case
 - [ ] `make verify-fast` is green

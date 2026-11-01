@@ -1,6 +1,6 @@
 # Task 18: The architecture diagram, feature list and limits are each kept once
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -38,20 +38,22 @@ or the product owner accepts a copy, and the reason is recorded.
   ([iteration 5.5 task 10](../iteration-5.5/10-detect-module-diagram-drift.md));
   the README's diagram is a different, hand-drawn one.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The README's diagram becomes a pointer** to `docs/architecture.md` §2.
+- **The roadmap is the one home** for what each iteration built. The README
+  keeps one paragraph saying what Kalia is, and a pointer; the other copies
+  become pointers or go.
+
 ## Open questions
 
-1. **The README's diagram (SHOULD-84):** replace it with a pointer to §2, or
-   add the edge and the app and keep both in step by hand.
-2. **The feature list (SHOULD-87):** shrink the README's status blurb to a
-   pointer at the roadmap, or accept the four-place edit — and which of the
-   four is the home.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] The README's diagram is a pointer to §2, or matches it including the
-      edge and the mobile app
-- [ ] The feature list has one home, or the accepted copies are named in the
-      PR with the reason
+- [ ] The README's diagram is replaced by a pointer to §2
+- [ ] What each iteration built is listed only in `docs/roadmap.md`, and every
+      other mention is a pointer to it
 - [ ] The edge rate and the pending cap appear only in their homes, with
       pointers elsewhere
 - [ ] `node scripts/check-links.mjs` passes, and its test still covers a

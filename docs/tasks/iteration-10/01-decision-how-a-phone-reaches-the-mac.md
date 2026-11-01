@@ -1,6 +1,6 @@
 # Task 01: Decide how a real phone reaches the stack on the Mac
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-5
 
@@ -57,29 +57,51 @@ keeps serving the browser and both simulators on `localhost`.
   why `plugins/withE2eCleartext.js` exists.
 - A new tool or service is a new dependency — asked, not researched.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The route is Tailscale.** The Mac and the phone join the product owner's
+  own tailnet on Tailscale's free personal plan, which asks for no card, and
+  `tailscale serve` forwards the tailnet to the edge, which stays bound to
+  loopback. Only the owner's own devices reach the stack, on home Wi-Fi or on
+  mobile data. The ADR records the two rejected routes and their costs: the
+  Mac's LAN address (one network only, an address that moves, and the edge
+  bound beyond loopback for everyone on that Wi-Fi) and a public tunnel (the
+  stack on the internet, and a free URL that changes the issuer every run).
+- **Plain HTTP for now, HTTPS on a recorded trigger.** WireGuard already
+  encrypts tailnet traffic, and with no certificate requested nothing is
+  published: a tailnet certificate would put the machine's name and the
+  tailnet's name into the public Certificate Transparency logs. The ADR names
+  the trigger for HTTPS — the first rehearsal of a real deployment, or the
+  first feature that needs it — and the switch as a configuration change, a
+  rebuild of the app and a fresh sign-in, after renaming the machine to a
+  neutral name.
+- **Phone mode is opt-in.** The default stack is unchanged and loopback-only on
+  `localhost`; CI and the worktrees never need Tailscale.
+- **One issuer per mode, built from one value.** In phone mode one origin in
+  the root `.env` — the tailnet name — becomes the issuer Keycloak stamps, the
+  issuer the backend and the web validate, the web's public URL and the app's
+  origins. No request-derived hostname and no second accepted issuer. The ADR
+  states which clients work in each mode, the Android emulator included.
+- **Exposure:** in phone mode the tailnet's members reach the edge's three
+  published ports, and nothing listens beyond loopback.
+  [Task 10](10-the-edge-serves-only-what-a-client-needs.md) closes the admin,
+  metrics and back-channel routes whatever the mode; with a tailnet of the
+  owner's devices only it is not a prerequisite of phone mode, but it runs
+  first in the iteration's order.
+- **Worktrees:** phone mode forwards the stack's own ports, so whichever one
+  worktree is in phone mode serves the phone, and nothing assumes the default
+  ports.
+- **A release build in phone mode needs a cleartext exception scoped to the
+  tailnet host,** and no other build may carry one —
+  [task 05](05-build-variants.md) owns the check.
+- **The tailnet's name and the machine's name are host details:** the root
+  `.env` only, never a commit, PR or comment.
+- Tailscale's version is proposed at implementation and confirmed in the PR
+  ([iteration index](../iteration-10.md#refinement)).
+
 ## Open questions
 
-1. **Which route?** Tailscale (a stable `*.ts.net` name with a free
-   certificate), the Mac's LAN address or mDNS name on the same Wi-Fi, or a
-   tunnel. Which networks must it work on — home Wi-Fi only, or also mobile
-   data away from home?
-2. **HTTPS or a cleartext exception?** HTTPS keeps release builds free of an
-   ATS exception and matches what a deployment will look like; cleartext is
-   simpler but needs a per-build exception that must never ship.
-3. **What does the issuer become?** One public name for every client — the
-   browser and simulators included — or a second hostname for the phone
-   (Keycloak can serve a different frontend URL per request only in limited
-   ways), and what that does to the web BFF's token checks.
-4. **What becomes reachable, and by whom?** Binding the edge beyond loopback
-   puts Keycloak's admin console, the actuator and the back-channel logout
-   endpoint in front of everyone on that network — see
-   [task 10](10-the-edge-serves-only-what-a-client-needs.md). Is that
-   acceptable on a tailnet only the product owner is on, and not on shared
-   Wi-Fi?
-5. **Is it opt-in?** A `make` target or `.env` switch that turns phone access
-   on, leaving the default stack loopback-only, or always on.
-6. **Worktrees:** does each worktree's stack get its own phone-reachable name
-   or port, or does only the main checkout serve the phone?
+**None.**
 
 ## Acceptance criteria
 

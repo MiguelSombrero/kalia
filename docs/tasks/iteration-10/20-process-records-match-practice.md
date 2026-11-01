@@ -1,6 +1,6 @@
 # Task 20: The process's own rules and records match how work is done
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -51,33 +51,42 @@ is answered, and the Copilot rule is either working or gone.
   worded, so it is settled at this iteration's refinement even though the
   task runs later.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **SHOULD-91: a script removes worktrees whose branch is merged and whose
+  tree is clean,** run by a `SessionStart` hook so it runs however the session
+  was created. It never removes a worktree with uncommitted changes or one
+  another session is using, and the `worktree` skill points at it.
+- **COULD-91: every acceptance criterion must be checkable before merge.**
+  Refinement rewords one that is not; the rule goes into the task template
+  and the `refine-task` and `refine-iteration` skills. This iteration's own
+  criteria were worded to it at refinement
+  ([iteration index](../iteration-10.md#refinement)).
+- **COULD-93: wait for the overrun.** `CLAUDE.md` is at 197 of 200 lines; the
+  checker question reopens on ADR-0048's third overrun, and the quality
+  backlog records the finding as closed on that reason.
+- **COULD-94: the Copilot rule is removed** from ruleset 19027809 by the
+  product owner; `/code-review` remains the review gate.
+- **COULD-90:** the required-checks clause leaves the PR template and
+  `implement-task`'s Gates list.
+
 ## Open questions
 
-1. **Worktrees (SHOULD-91):** a `make prune-worktrees` called from `make
-   stack-env` or the pre-push hook, a SessionStart hook, or rewriting the
-   skill's steps around the desktop app's lifecycle.
-2. **After-merge criteria (COULD-91):** require at refinement that every
-   criterion is checkable before merge, or let the next task's PR or the
-   iteration's close-out PR carry such ticks.
-3. **`CLAUDE.md` (COULD-93):** reopen ADR-0048's checker question now, or wait
-   for the overrun.
-4. **Copilot (COULD-94):** remove the ruleset rule, or find out why it does
-   not run — the latter only if it needs no paid plan.
-
-COULD-90 is untagged: drop the clause from the template and `implement-task`'s
-Gates list.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `git worktree list` after a merged task's session shows its worktree
-      gone, by the route refinement chose, and any script it adds has a test
+- [ ] A session started after a task's PR merged removes that task's clean
+      worktree, shown by `git worktree list`, and a test of the script covers
+      a dirty worktree and an unmerged branch being kept
 - [ ] The PR template and `implement-task` no longer ask for the required
       checks' verdict, and `scripts/check-pr-body.mjs`'s tests pass against
       the new template
-- [ ] The after-merge-criteria rule is written into the template or skill
-      refinement chooses
-- [ ] The `CLAUDE.md` and Copilot decisions are recorded where ADR-0048 and
-      the product owner's ruleset change say
+- [ ] The before-merge rule for criteria is in `docs/tasks/template.md` and
+      the `refine-task` and `refine-iteration` skills
+- [ ] The quality backlog closes COULD-93 as waiting for ADR-0048's third
+      overrun, and the PR records the product owner's removal of the Copilot
+      rule
 - [ ] `make verify-fast` is green
 
 ## Notes
