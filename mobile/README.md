@@ -219,7 +219,11 @@ the Android one is a running emulator, else the first virtual device, or
   healthy before the flow: adb lists it attached, `sys.boot_completed` is set
   and the package manager answers, several times in a row, and the guest's
   one-minute load average is below half its four cores (waited on for at most three minutes,
-  then logged and used), again after the app is installed. An emulator that never gets there is stopped and booted once
+  then logged and used), again after the app is installed. Then Maestro
+  launches Settings once, from `e2e-preflight/`, because the first command it
+  sends a freshly booted emulator has failed with `device offline` while every
+  check above passed; if that fails, the emulator counts as unhealthy. An
+  emulator that never gets there is stopped and booted once
   more; after the second attempt the job fails with `Infrastructure failure,
   not the app` at the top of the log. The flow is never retried. The emulator's
   own log is `maestro-output/emulator-<attempt>.log`, which the job uploads on

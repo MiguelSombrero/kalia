@@ -33,6 +33,7 @@ const MAESTRO_URL = `https://github.com/mobile-dev-inc/Maestro/releases/download
 
 const MOBILE = resolve(ROOT, "mobile");
 const FLOWS = resolve(MOBILE, ".maestro");
+const PREFLIGHT = resolve(MOBILE, "e2e-preflight", "launch-settings.yaml");
 const OUTPUT = resolve(MOBILE, "maestro-output");
 const APK = resolve(MOBILE, "android/app/build/outputs/apk/release/app-release.apk");
 const PLATFORMS = ["ios", "android"];
@@ -130,13 +131,13 @@ const stackReachable = async (apiOrigin) => {
 
 const appEnv = () => ({ ...process.env, ...mobileEnv(stackEnv()) });
 
-const runMaestro = (platform, deviceId) => {
-  const dir = join(OUTPUT, platform);
+const runMaestro = (platform, deviceId, flows = FLOWS, name = platform) => {
+  const dir = join(OUTPUT, name);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   run(
     maestroBinary(),
-    ["--platform", platform, "--device", deviceId, "test", "--format", "junit", "--output", join(dir, "report.xml"), "--test-output-dir", dir, FLOWS],
+    ["--platform", platform, "--device", deviceId, "test", "--format", "junit", "--output", join(dir, "report.xml"), "--test-output-dir", dir, flows],
     { cwd: MOBILE, env: { ...process.env, ...maestroEnv } },
   );
 };
@@ -246,6 +247,21 @@ export const waitQuiet = async (read, { limit, timeoutMs, intervalMs, sleeper = 
   return { quiet: false, load };
 };
 
+// The first command Maestro sends a freshly booted emulator has failed with
+// `device offline` on about one run in ten while every health check passed, and
+// the second command has not (0 of 19 after a throwaway launch, 1 of 20
+// without). A throwaway launch of a system app absorbs that, as a failure the
+// boot attempts handle and name, instead of it landing on the flow's own first
+// command.
+export const preflight = async ({ launch, settle }) => {
+  try {
+    launch();
+  } catch (error) {
+    throw new Error(`Maestro's first command on the device failed before the flow ran (${error.message})`);
+  }
+  await settle();
+};
+
 export class InfrastructureError extends Error {}
 
 // The emulator and the SDK around it are the runner's, not the app's: a step
@@ -268,6 +284,7 @@ export const retryInfrastructure = async ({ what, attempts = 2, run: attempt, cl
 
 const BOOT_WAIT = { timeoutMs: 300_000, settle: 5, intervalMs: 5000 };
 const INSTALL_WAIT = { timeoutMs: 120_000, settle: 3, intervalMs: 5000 };
+const AFTER_PREFLIGHT_WAIT = { timeoutMs: 60_000, settle: 2, intervalMs: 5000 };
 const QUIET_AFTER_BOOT = { limit: CI_CORES / 2, timeoutMs: 180_000, intervalMs: 5000 };
 const QUIET_AFTER_INSTALL = { limit: CI_CORES / 2, timeoutMs: 90_000, intervalMs: 5000 };
 
@@ -432,6 +449,10 @@ const runAndroid = async (command, abi, headless) => {
       run(adb, ["-s", serial, "install", "-r", APK]);
       await waitHealthy(deviceProbe(adb, serial), INSTALL_WAIT);
       await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_INSTALL);
+      await preflight({
+        launch: () => runMaestro("android", serial, PREFLIGHT, "preflight"),
+        settle: () => waitHealthy(deviceProbe(adb, serial), AFTER_PREFLIGHT_WAIT),
+      });
     };
     let serial = emulatorSerials(adb)[0];
     if (serial) {

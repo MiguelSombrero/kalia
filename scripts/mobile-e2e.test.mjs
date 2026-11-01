@@ -10,6 +10,7 @@ import {
   maestroBinary,
   parseArgs,
   pickSimulators,
+  preflight,
   probeEmulator,
   retryInfrastructure,
   verdict,
@@ -219,4 +220,51 @@ test("an emulator that stays busy is logged and used, not failed, once the wait 
 test("a load that cannot be read counts as busy", async () => {
   const result = await waitQuiet(() => Number.NaN, { limit: 1, timeoutMs: 10_000, intervalMs: 5000, log: () => {}, ...clock() });
   assert.equal(result.quiet, false);
+});
+
+test("a pre-flight launch that works is followed by the settle wait", async () => {
+  const order = [];
+  await preflight({ launch: () => order.push("launch"), settle: async () => void order.push("settle") });
+  assert.deepEqual(order, ["launch", "settle"]);
+});
+
+test("a pre-flight launch that fails is named, and the settle wait is skipped", async () => {
+  let settled = false;
+  await assert.rejects(
+    preflight({
+      launch: () => {
+        throw new Error("Command failed (host:transport:emulator-5554): device offline");
+      },
+      settle: async () => void (settled = true),
+    }),
+    /first command on the device failed before the flow ran \(Command failed .*device offline\)/,
+  );
+  assert.equal(settled, false);
+});
+
+test("a device that drops on the pre-flight is booted again, and two drops end as an infrastructure failure", async () => {
+  const boots = [];
+  const bootThenPreflight = (outcomes) =>
+    retryInfrastructure({
+      what: "booting the emulator",
+      run: async (attempt) => {
+        boots.push(attempt);
+        await preflight({
+          launch: () => {
+            if (outcomes[attempt - 1] === "drop") throw new Error("device offline");
+          },
+          settle: async () => {},
+        });
+      },
+      cleanup: async () => {},
+      log: () => {},
+    });
+  await bootThenPreflight(["drop", "ok"]);
+  assert.deepEqual(boots, [1, 2]);
+  await assert.rejects(bootThenPreflight(["drop", "drop"]), (error) => {
+    assert.ok(error instanceof InfrastructureError);
+    assert.match(error.message, /Infrastructure failure, not the app/);
+    assert.match(error.message, /first command on the device failed before the flow ran/);
+    return true;
+  });
 });
