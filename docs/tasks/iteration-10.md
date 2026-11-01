@@ -22,6 +22,8 @@ a documented routine rather than a surprise.
 
 | ID | Task | Status |
 |---|---|---|
+| [22](iteration-10/22-mobile-ci-runs-only-when-the-app-can-change.md) | The Android end-to-end job runs only when the app or its stack can change | refined |
+| [23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md) | The Android build reuses the native code it already compiled | refined |
 | [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md) | The mobile end-to-end check fails only when the app does | refined |
 | [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | done |
 | [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | done |
@@ -56,6 +58,17 @@ The quality tasks advance no `Done when` criterion and say so with
 
 The table's order is the order of work:
 
+- **The mobile gate first, ahead of everything below.** Tasks 22 and 23 were
+  lifted from the [quality backlog](quality-backlog.md) (SHOULD-98 and
+  COULD-106) on 2026-11-01 at the product owner's request, because the
+  required Android end-to-end job was slowing and reddening changes that
+  cannot affect the app:
+  [22](iteration-10/22-mobile-ci-runs-only-when-the-app-can-change.md)
+  stops it running for a change that cannot affect it, and
+  [23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md)
+  shortens the run when it does. Both were refined in the same conversation
+  they were lifted in, so they are `refined` here and the
+  [refinement](#refinement) below does not cover them.
 - **The gates first.** [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md)
   makes the required Android end-to-end check fail only when the app does,
   before this iteration's build work leans on it hardest;
