@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -56,7 +57,7 @@ public class CellarService {
 	}
 
 	// One exception for every refusal, so none can be told from another (ADR-0050).
-	@Transactional(readOnly = true)
+	@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
 	public PublicCellarPage readPublicCellar(String username, Pageable pageable) {
 		UUID ownerId = profile.publicCellarOwnerId(username).orElseThrow(PublicCellarNotFoundException::new);
 		Set<UUID> withheld = catalog.withheldFromPublic(entries.findBeerIdsByUserId(ownerId));
@@ -100,7 +101,7 @@ public class CellarService {
 	public Bottle updateBottle(UUID userId, UUID bottleId, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = ownerOf(userId, bottleId);
-		Bottle updated = entry.updateBottle(bottleId, containerType, brewedDate, bestBeforeDate, clock);
+		Bottle updated = entry.updateBottle(bottleIn(entry, bottleId), containerType, brewedDate, bestBeforeDate, clock);
 		entries.save(entry);
 		return updated;
 	}
@@ -108,7 +109,7 @@ public class CellarService {
 	@Retryable(includes = ObjectOptimisticLockingFailureException.class, maxRetries = 1, delay = 0)
 	public void removeBottle(UUID userId, UUID bottleId) {
 		Entry entry = ownerOf(userId, bottleId);
-		entry.removeBottle(bottleId, clock);
+		entry.removeBottle(bottleIn(entry, bottleId), clock);
 		if (entry.isEmpty()) {
 			entries.delete(entry);
 		} else {
@@ -149,6 +150,10 @@ public class CellarService {
 	private Entry ownerOf(UUID userId, UUID bottleId) {
 		return entries.findByBottleIdAndUserId(bottleId, userId)
 				.orElseThrow(() -> new BottleNotFoundException(bottleId));
+	}
+
+	private static Bottle bottleIn(Entry entry, UUID bottleId) {
+		return entry.findBottle(bottleId).orElseThrow(() -> new BottleNotFoundException(bottleId));
 	}
 
 	// Checks the existing entry before the catalog: an entry already proves
