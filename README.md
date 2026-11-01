@@ -321,7 +321,8 @@ manifest already says.
 
 ### CI
 
-- GitHub Actions (`make verify`'s checks, on every push to any branch). Every action is
+- GitHub Actions (`make verify`'s checks, on every push to any branch, each
+  suite only when the push can affect it: `scripts/ci-changes.mjs`). Every action is
   SHA-pinned with its tag in a trailing comment — `.github/workflows/` is the
   list; `pr-body.yml` also checks that a
   task-completing pull request fills in the template's Gates section
