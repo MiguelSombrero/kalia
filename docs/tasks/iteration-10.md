@@ -22,32 +22,35 @@ a documented routine rather than a surprise.
 
 | ID | Task | Status |
 |---|---|---|
-| [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md) | The mobile end-to-end check fails only when the app does | needs-refinement |
-| [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | needs-refinement |
-| [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | needs-refinement |
-| [01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md) | Decide how a real phone reaches the stack on the Mac | needs-refinement |
-| [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | needs-refinement |
-| [10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md) | The edge serves only what a client needs | needs-refinement |
-| [11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md) | The deployable stack carries no dev convenience and no shared superuser | needs-refinement |
-| [12](iteration-10/12-every-image-the-stack-runs-is-scanned.md) | Every image the stack runs is scanned, and a mirror outage is not a finding | needs-refinement |
-| [03](iteration-10/03-app-identity.md) | Kalia has its own name, icon and splash screen on a phone | needs-refinement |
+| [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md) | The mobile end-to-end check fails only when the app does | refined |
+| [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | refined |
+| [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | refined |
+| [01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md) | Decide how a real phone reaches the stack on the Mac | refined |
+| [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | refined |
+| [10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md) | The edge serves only what a client needs | refined |
+| [11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md) | The deployable stack carries no dev convenience and no shared superuser | refined |
+| [12](iteration-10/12-every-image-the-stack-runs-is-scanned.md) | Every image the stack runs is scanned, and a mirror outage is not a finding | refined |
+| [03](iteration-10/03-app-identity.md) | Kalia has its own name, icon and splash screen on a phone | refined |
 | [04](iteration-10/04-free-apple-id-signing.md) | Kalia installs on the product owner's iPhone with a free Apple ID | needs-refinement |
 | [02](iteration-10/02-the-phone-reaches-the-stack.md) | The phone signs in and browses against the stack on the Mac | needs-refinement |
 | [05](iteration-10/05-build-variants.md) | A development build and a release build run on both platforms | needs-refinement |
-| [08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md) | The app survives a token it cannot refresh or the server refuses | needs-refinement |
-| [13](iteration-10/13-cellar-survives-a-concurrent-change.md) | A cellar read or write never answers 500 under a concurrent change | needs-refinement |
-| [14](iteration-10/14-the-owner-cellar-read-is-bounded.md) | The owner's cellar read has a bound before the app caches it | needs-refinement |
-| [15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md) | A rejected or removed beer is treated the same way everywhere | needs-refinement |
-| [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) | Adding a beer says what happens to it, and never dead-ends | needs-refinement |
-| [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | needs-refinement |
-| [18](iteration-10/18-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | needs-refinement |
-| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | needs-refinement |
+| [21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md) | An error on a phone leaves something to read | refined |
+| [08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md) | The app survives a token it cannot refresh or the server refuses | refined |
+| [13](iteration-10/13-cellar-survives-a-concurrent-change.md) | A cellar read or write never answers 500 under a concurrent change | refined |
+| [14](iteration-10/14-the-owner-cellar-read-is-bounded.md) | The owner's cellar read has a bound before the app caches it | refined |
+| [15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md) | A rejected or removed beer is treated the same way everywhere | refined |
+| [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) | Adding a beer says what happens to it, and never dead-ends | refined |
+| [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | refined |
+| [18](iteration-10/18-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | refined |
+| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | refined |
 
-Tasks 01–06 are the ones this iteration was planned with; 07–20 were lifted
+Tasks 01–06 are the ones this iteration was planned with, and 21 was filed
+at refinement to implement 06's decision; 07–20 were lifted
 from the [quality backlog](quality-backlog.md) at the product owner's request
 to fill the iteration, with related findings merged into one task each. All
-twenty are seeded at `needs-refinement`, to be refined together in one
-conversation ([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)).
+twenty were seeded at `needs-refinement` and refined together in one
+conversation ([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)),
+below.
 The quality tasks advance no `Done when` criterion and say so with
 `Covers: none`.
 
@@ -77,7 +80,8 @@ The table's order is the order of work:
   [04](iteration-10/04-free-apple-id-signing.md) installs under it,
   [02](iteration-10/02-the-phone-reaches-the-stack.md) connects the installed
   app to the Mac, [05](iteration-10/05-build-variants.md) lets it run without
-  Metro, and [08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md)
+  Metro, [21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md)
+  leaves a release build's errors something to read, and [08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md)
   keeps it working when Keycloak is slow on a real network.
 - **Then the API mobile is about to inherit,** while it can still change:
   [13](iteration-10/13-cellar-survives-a-concurrent-change.md),
@@ -104,3 +108,36 @@ purpose. Signing and device networking are where a first mobile project loses
 days, which is cheaper to find out with almost nothing built; and a design
 judged by hand needs a real phone — the simulator has no haptics and no
 camera, and no thumb.
+
+## Refinement
+
+The iteration was refined in one conversation on 2026-11-01. Each answer is
+recorded in the task file it binds; three bind more than one task and live
+here:
+
+- **Every acceptance criterion is checkable before its pull request merges**
+  ([task 20](iteration-10/20-process-records-match-practice.md)'s answer to
+  COULD-91). This iteration's criteria were worded to it: the seven-day
+  re-sign can be simulated by revoking the install, the ten end-to-end runs
+  happen on the PR's own branch, and the first look at the icon on the iPhone
+  is [task 04](iteration-10/04-free-apple-id-signing.md)'s, not
+  [task 03](iteration-10/03-app-identity.md)'s.
+- **New dependencies' versions are proposed at implementation** — Tailscale
+  ([01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md),
+  [02](iteration-10/02-the-phone-reaches-the-stack.md)) and the cache Actions
+  ([07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md)) —
+  confirmed from registry or marketplace output, pinned as the manifests
+  already pin theirs, and agreed by the product owner in that task's PR before
+  it merges.
+- **Phone mode** ([task 01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md)):
+  an opt-in mode in which the stack is reached over the product owner's
+  tailnet under one origin. The tasks after 01 use the term.
+
+[Task 02](iteration-10/02-the-phone-reaches-the-stack.md),
+[04](iteration-10/04-free-apple-id-signing.md) and
+[05](iteration-10/05-build-variants.md) carry their answers already but stay
+`needs-refinement` until [task 01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md)'s
+ADR is accepted, as iteration 9's build tasks waited for theirs; a short
+second pass then moves them. [Task 21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md)
+follows [06](iteration-10/06-decision-error-visibility.md)'s ADR but needs
+nothing from it that refinement did not already settle.

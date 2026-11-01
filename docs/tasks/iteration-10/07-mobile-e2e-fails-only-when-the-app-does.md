@@ -1,6 +1,6 @@
 # Task 07: The mobile end-to-end check fails only when the app does
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -52,18 +52,28 @@ where that pays.
 - A new Action or a new version of one is a new dependency — asked, not
   researched.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **Healthy means all three:** the device is attached (`adb wait-for-device`),
+  `sys.boot_completed` is set, and the package manager answers — checked
+  before `launchApp`. Up to two boot attempts; after that the job fails as an
+  infrastructure failure, named as such in its log. The flow itself is never
+  retried.
+- **The emulator stays API 36 and its current image** unless the
+  investigation points elsewhere; a change is named in the PR with the
+  evidence.
+- **The flow asserts that catalog rows exist,** found by a test id rather than
+  by a beer's name, so no test-only seed row is needed.
+- **Maestro and Gradle are cached now,** keyed on the lockfile, and the run
+  time is measured before and after.
+- The ten consecutive runs happen on the PR's own branch before merge
+  ([after-merge rule](../iteration-10.md#refinement)).
+- The cache Actions' versions are proposed at implementation and confirmed in
+  the PR ([iteration index](../iteration-10.md#refinement)).
+
 ## Open questions
 
-1. **What "healthy" means before the flow runs:** `adb wait-for-device`, the
-   boot-completed property, the package manager answering, or all three — and
-   how many boot attempts before the job fails as an infrastructure failure.
-2. **The emulator itself:** keep API 36 and the current image, or change
-   image, cores or memory if the investigation points there.
-3. **The flow's beer:** a seeded beer of the test's own that always sorts
-   first, or reading the first row's name rather than naming one — and whether
-   a test-only seed row is acceptable in the stack the flow runs against.
-4. **Caching:** cache Maestro and Gradle's home now, or measure first and
-   cache only past an agreed run time.
+**None.**
 
 ## Acceptance criteria
 
@@ -71,8 +81,9 @@ where that pays.
       the start-up script covers the unhealthy-device path
 - [ ] The Catalog flow passes against a catalog with an extra beer that sorts
       before today's first one, shown by a run on a branch that adds one
-- [ ] Ten consecutive runs of the job on an unchanged branch are green, or
-      each red one is explained in `docs/ci-playbook.md` with its cause
+- [ ] Ten consecutive runs of the job on the PR's branch, unchanged between
+      them, are green, or each red one is explained in `docs/ci-playbook.md`
+      with its cause
 - [ ] The job's run time before and after is recorded in the PR, and any cache
       is keyed on the lockfile
 - [ ] `make verify-fast` is green

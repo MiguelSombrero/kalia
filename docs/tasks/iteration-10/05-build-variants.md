@@ -53,19 +53,31 @@ version and the build number change are written down and applied.
 - Expo postdates model training — check docs.expo.dev at the SDK version in
   `mobile/package.json`, never memory.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The version is semantic and raised by hand** in `app.json`. **The build
+  number is derived at build time** from when the build is made — one number
+  for both platforms, within Android's `versionCode` range — so `app.json`
+  carries no build number and cannot drift from what is installed. The app
+  shows its build number, on the Profile tab, so the product owner can read it
+  before setting the server's minimum with `make app-config`.
+- **The existing `make` targets gain a release variant;** the phone's target is
+  [task 04](04-free-apple-id-signing.md)'s.
+- **The end-to-end build becomes the release variant with `KALIA_E2E=1`,** and
+  DW-4's Android run is that build on `localhost`.
+- **The iPhone's release build uses phone mode's origins** with a cleartext
+  exception scoped to the tailnet host ([task 01](01-decision-how-a-phone-reaches-the-mac.md)).
+  A release build may carry a cleartext exception only for `KALIA_E2E=1`'s
+  `localhost` or phone mode's tailnet host.
+- **"Runs" means it launches, signs in and lists the catalog** on each, as the
+  first criterion says.
+
 ## Open questions
 
-1. **Version rules.** Semantic version by hand, or tied to iterations; the
-   build number raised by hand per install, derived from the commit count, or
-   from a timestamp — and whether the two platforms share one number.
-2. **Where the number is raised:** in `app.json` by a commit, or injected at
-   build time so that `app.json` never drifts from what was installed.
-3. **Make targets:** one target per platform and variant, or one target with
-   arguments, and what the doctor checks for a release build.
-4. **The end-to-end build:** does it become an instance of the new release
-   variant with `KALIA_E2E=1`, or stay a separate path?
-5. **What "runs" means for DW-4:** launch, sign in and list the catalog on
-   each, or launch alone.
+1. **Task 01's ADR accepted?** The phone-mode origins and the cleartext
+   exception this task builds come from it. Every answer is recorded above;
+   the task moves to `refined` in a short second pass once that ADR is
+   accepted.
 
 ## Acceptance criteria
 
@@ -74,9 +86,10 @@ version and the build number change are written down and applied.
       verified by hand and described in the PR
 - [ ] A development build still runs on both simulators through the existing
       `make` targets
-- [ ] A test fails a release build configured with the cleartext exception
-      outside `KALIA_E2E=1`, and a test covers how the build number is
-      derived or checked
+- [ ] A test fails a release build carrying a cleartext exception outside
+      `KALIA_E2E=1` or phone mode, or for a host other than that mode's, and a
+      test covers how the build number is derived
+- [ ] The installed app shows its build number on the Profile tab
 - [ ] The version and build-number rules are written down in
       `mobile/README.md`
 - [ ] `make verify-fast` is green

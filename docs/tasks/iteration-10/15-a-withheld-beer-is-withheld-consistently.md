@@ -1,6 +1,6 @@
 # Task 15: A rejected or removed beer is treated the same way everywhere
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -45,26 +45,32 @@ reads, and what its details link leads to.
   a new status or field on a response is additive; a new refusal on an
   existing operation is a contract change to document.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **`REJECTED` and `REMOVED` follow one rule: withheld everywhere.**
+- **A holder keeps the bottles they have** — no row is deleted — **but cannot
+  add another.** The add is refused with the error it already documents for a
+  beer that does not exist, so no new status reaches the contract.
+- **Public reads withhold it,** as they withhold `PENDING`: no feed line and no
+  public-cellar entry, before or after a rejection. Rejecting no longer
+  publishes what review held back, and `ContributionModerationIT`'s pinned
+  assertion changes with it.
+- **In the owner's own cellar it shows unlinked, with a note** that it was
+  withdrawn from the catalog, in both locales — the wording drafted in the PR
+  for review. The cellar read carries what the client needs to tell, as an
+  additive field ([ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+
 ## Open questions
 
-1. **Adding to a withheld beer (SHOULD-75):** refuse the add for holders too,
-   or amend ADR-0091 to allow a holder to keep adding.
-2. **Public reads after a rejection (SHOULD-76):** keep `REJECTED` withheld
-   from feed and public cellar like `PENDING`, or accept that rejection
-   publishes and say so in ADR-0091.
-3. **The details link (SHOULD-92):** a read-only details page for a beer the
-   viewer holds, or no link to a withheld beer at all — and what the page or
-   the entry says about it, in both locales.
-4. **`REMOVED` versus `REJECTED`:** the same answer for both, or does removal
-   (an approved beer taken down) differ from rejection?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `ContributionModerationIT` covers a holder adding to, and reading the
       public views of, a rejected and a removed beer, and asserts the rule
       refinement chose; the changed assertions failed before the fix
-- [ ] A test of the web's cellar or feed shows a withheld beer's link as
-      refinement decides
+- [ ] A test of the web's cellar shows a withheld beer unlinked, with the
+      withdrawn note in both locales
 - [ ] ADR-0091 states the rule for both statuses
 - [ ] `make verify-fast` is green
 

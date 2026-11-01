@@ -1,6 +1,6 @@
 # Task 09: The repository's own checks reach `mobile/` as they reach `web/`
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -41,21 +41,28 @@ own.
   ([ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)),
   which is what would catch a broken grouped bump.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **Dependabot ignores the Expo-managed packages.** They move only with a
+  deliberate SDK upgrade done by `npx expo install --fix`, because a grouped
+  bump still may not match the SDK's set. A CVE in one still fails the
+  vulnerability gate ([ADR-0024](../../adr/0024-dependency-vulnerability-scanning.md)),
+  which is what forces a fix between upgrades. `mobile/README.md` says how an
+  SDK upgrade is done.
+- **Every comment the widened check flags is fixed in this task;** one that is
+  not a one-line fix is filed in the quality backlog and named in the PR.
+
 ## Open questions
 
-1. **Group or ignore?** Group every Expo-managed package into one Dependabot
-   PR, which still may not match the SDK's set, or ignore them and move them
-   only with an SDK upgrade done by `npx expo install --fix`.
-2. **What the check finds:** fix every comment the widened check flags in this
-   task, or file what is not a one-line fix.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `scripts/check-comments.mjs` scans `mobile/src`, and its test covers a
       mobile file
 - [ ] `.claude/rules/code-comments.md`'s `paths` include `mobile/src`
-- [ ] `.github/dependabot.yml` groups or ignores the Expo-managed packages as
-      refinement decides, with `react` and `typescript` left out of it
+- [ ] `.github/dependabot.yml` ignores the Expo-managed packages, and
+      `react` and `typescript` are not among those ignored
 - [ ] `make verify-fast` is green
 
 ## Notes

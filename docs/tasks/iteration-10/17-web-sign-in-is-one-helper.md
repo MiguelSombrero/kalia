@@ -1,6 +1,6 @@
 # Task 17: Web sign-in is one helper, and a cross-site link cannot sign anyone out
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -42,10 +42,16 @@ a session only for a sign-in this browser started.
   in must still drop the previous user's tokens (COULD-64).
 - Routes come from `lib/routes.ts` (`docs/architecture.md` §5).
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The callback ends a previous session only after Auth.js has validated the
+  callback** — state and PKCE — never on the request alone. If the installed
+  Auth.js offers no point after validation to do it from, the task stops and
+  returns to the product owner rather than falling back to the state cookie.
+
 ## Open questions
 
-1. **When the callback may end a session:** only when this browser's sign-in
-   state cookie is present, or only after Auth.js has validated the callback.
+**None.**
 
 ## Acceptance criteria
 

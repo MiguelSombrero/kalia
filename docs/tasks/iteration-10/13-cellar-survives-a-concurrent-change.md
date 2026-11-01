@@ -1,6 +1,6 @@
 # Task 13: A cellar read or write never answers 500 under a concurrent change
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -29,8 +29,8 @@ interleavings into ordinary ones:
 
 Removing or updating a bottle that another request has just removed answers
 the documented `404`, the public cellar never answers 500 for an entry whose
-last bottle has just gone, and an entry's bottles always read back in the same
-order.
+last bottle has just gone and always reads its counts and bottles from one
+snapshot, and an entry's bottles always read back in the same order.
 
 ## Constraints
 
@@ -44,19 +44,27 @@ order.
   ([ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - Order by `createdAt, id`, as the repository queries already do (COULD-96).
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **SHOULD-74: both.** An entry's bottles are fetched in the same query as the
+  entry, and a bottle that has vanished anyway maps to
+  `BottleNotFoundException`, the documented `404`.
+- **COULD-76: one consistent snapshot.** The public cellar is read in one
+  read-only transaction at repeatable read, so its counts and its bottles
+  always agree; whether a just-deleted entry shows depends only on which side
+  of the delete the snapshot fell.
+
 ## Open questions
 
-1. **SHOULD-74's fix:** fetch the bottles in the same query as the entry, or
-   map the missing bottle to `BottleNotFoundException` — or both.
-2. **COULD-76's fix:** one statement for counts and bottles, a repeatable-read
-   transaction, or skipping an entry whose shown bottles have vanished.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] An integration test removes one bottle from two concurrent requests and
       gets one `204` and one `404`, and it failed before the fix
-- [ ] An integration test deletes an entry's last bottle between the public
-      cellar's two reads and gets a `200` without that entry
+- [ ] An integration test deletes an entry's last bottle while the public
+      cellar is being read and gets a `200` whose counts and bottles agree,
+      and it failed before the fix
 - [ ] A unit test adds three bottles under a fixed `Clock` and reads them back
       in insertion order, repeatedly
 - [ ] `make verify-fast` is green

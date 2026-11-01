@@ -1,6 +1,6 @@
 # Task 12: Every image the stack runs is scanned, and a mirror outage is not a finding
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -35,20 +35,27 @@ database is unreachable.
 - The image list is `docker-compose.base.yml`'s; a list kept by hand in the
   workflow drifts the day an image is added.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **The image list is derived** from `docker compose -f
+  docker-compose.base.yml config --images`, so an image added to the base file
+  is scanned without a second list to edit.
+- **Only the deployable definition's images are scanned.** Images only the dev
+  overlay runs — Mailpit once [task 11](11-the-deployable-stack-carries-no-dev-convenience.md)
+  moves it there, and the seed job's `node` — are never deployed.
+- **A pulled image follows the rules a built one does:** unfixed CVEs ignored
+  as ADR-0024 already does for every scan, and a waiver needs an expiry.
+
 ## Open questions
 
-1. **Pulled images:** scan each pulled image at the tag the base file pins, and
-   what happens when an upstream image carries a CVE with no fixed version —
-   a waiver with an expiry, as for the backend, or a looser rule for images
-   Kalia does not build.
-2. **The list:** derive the images from `docker compose config --images`, or
-   name them in the workflow with a check that the two agree.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The vulnerability-scan workflow scans the Keycloak build and every
-      pulled image the base file runs, and a test or check fails when an image
-      is added to the base file but not scanned
+      pulled image the base file runs, taking the list from `docker compose
+      config --images`, and a test shows an image added to the base file is
+      scanned
 - [ ] A run of the workflow on the PR shows every image scanned
 - [ ] `docs/ci-playbook.md` has a "re-run, change nothing" entry for the Java
       DB mirror failure, with the two run ids

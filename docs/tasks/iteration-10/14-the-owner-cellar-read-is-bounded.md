@@ -1,6 +1,6 @@
 # Task 14: The owner's cellar read has a bound before the app caches it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -40,24 +40,28 @@ unboundedness is a recorded trade-off.
 - A new endpoint is a new operation in the committed spec and is documented
   with its errors (`ApiErrorDocumentationIT`).
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **A bounded read for the web.** A new operation answers "which of these beers
+  do I hold, and my totals" for a capped number of beer ids — a page's worth —
+  and the web's catalog search, beer detail, front and profile pages call it
+  instead of `GET /cellar`. Only the cellar page itself keeps the whole read.
+- **`GET /cellar` stays whole** for [iteration 12](../iteration-12.md)'s sync,
+  and its unboundedness is listed in [architecture §8](../../architecture.md#8-trade-offs-made-explicit)
+  for iteration 12 to revisit with its cache. No cap on entries per account.
+
 ## Open questions
 
-1. **Which bound?** Cap entries per account; add a bounded "held beers /
-   totals" read for the web's marks and counts; or paginate the owner read and
-   give the app's sync its own endpoint — or a combination.
-2. **If capped:** at what number, what the user sees on reaching it, in both
-   locales.
-3. **If the web stops calling `GET /cellar` on those pages:** which pages keep
-   the whole read, if any.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] The decision is recorded: a cap, a new read or a paginated one is
-      implemented, or the trade-off is listed in architecture §8
-- [ ] If the web's pages change what they call, a Playwright test of a catalog
-      search page shows the held marks from the new read
-- [ ] Any new endpoint has an integration test of its bound and is in the
-      committed spec
+- [ ] The new read has an integration test of its cap on beer ids and its
+      documented errors, and is in the committed spec
+- [ ] A Playwright test of a catalog search page shows the held marks from the
+      new read, and no page but the cellar page calls `GET /cellar`
+- [ ] Architecture §8 lists `GET /cellar`'s unboundedness, with iteration 12
+      as the point it is revisited
 - [ ] `make verify-fast` is green
 
 ## Notes

@@ -1,6 +1,6 @@
 # Task 06: Decide where the app's errors are visible without a paid service
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-5
 
@@ -45,20 +45,28 @@ fits, the ADR records the decision as deferred and what would reopen it.
   that sends data off the device also needs the product owner's view on
   privacy before a store release (the backlog's privacy labels).
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **Errors are read from the device's own logs, and a crash service is
+  deferred.** A developer reads an installed build's errors in Console.app or
+  Xcode for the iPhone and `adb logcat` for Android. The ADR records the
+  deferral's trigger — someone other than the product owner installing Kalia,
+  which needs the paid distribution the [backlog](../backlog.md#mobile-client)
+  parks — and the rejected alternatives: a free crash service (a third-party
+  SDK and account sending stack traces off the device, for an audience of one)
+  and a backend endpoint for client errors (a new anonymous edge, permanent
+  under ADR-0093's additive-only rule).
+- **What the app logs follows ADR-0013 and ADR-0088:** no token, no query
+  string and no user identity. A failed request's error names its trace id, so
+  the backend's line for it can be found.
+- **The backend learns nothing new** about client errors.
+- **An uncaught error shows a restart screen** — built by
+  [task 21](21-an-error-on-a-phone-leaves-something-to-read.md), filed at this
+  refinement, which also carries the trace id; this task stays a decision.
+
 ## Open questions
 
-1. **Local only, or a service?** The device's system log (Console.app, `adb
-   logcat`) read when needed; an in-app error log a developer build can show;
-   a crash service whose free tier needs no card; or deferred.
-2. **What an uncaught error shows the user** in a release build: a restart
-   screen in both locales, or the platform's own crash.
-3. **What a report may hold:** the stack trace, the screen, the app's build
-   number, the trace id — and never a token or the user's identity?
-4. **Does the backend learn about client errors?** A `POST` of client errors
-   would be a new API endpoint under
-   [ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)'s
-   additive-only rule, and a new anonymous edge under
-   [ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md).
+**None.**
 
 ## Acceptance criteria
 
@@ -67,9 +75,10 @@ fits, the ADR records the decision as deferred and what would reopen it.
       `node scripts/check-adrs.mjs`
 - [ ] `mobile/README.md` says where a developer reads an installed build's
       errors on each platform
-- [ ] Each test the decision implies — at least that an error report never
-      contains a token — is named in the acceptance criteria of the task that
-      implements it, filed in this iteration or the backlog
+- [ ] Each test the decision implies — at least that what the app logs or
+      shows for an error never contains a token — is named in
+      [task 21](21-an-error-on-a-phone-leaves-something-to-read.md)'s
+      acceptance criteria, and the ADR links that task
 
 ## Notes
 

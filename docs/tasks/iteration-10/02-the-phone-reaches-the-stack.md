@@ -45,27 +45,36 @@ variant rather than edited by hand.
   ([ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md))
   must stay green on `localhost`.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- The route, the issuer and phone mode are [task 01](01-decision-how-a-phone-reaches-the-mac.md)'s
+  decisions; this task builds them.
+- **Checks beside the manual run:** `scripts/check-compose.mjs` fails a
+  phone-mode configuration whose issuer Keycloak stamps differs from the one
+  the backend or the web validates, and a unit test covers how
+  `scripts/mobile-env.mjs` chooses the app's origins in each mode.
+- **Switching:** a `make` target or `.env` switch, as task 01's ADR shapes it;
+  `make mobile-doctor` reports Tailscale not running, phone mode off, and a
+  phone-mode origin that does not answer.
+- **When the origin is unreachable** the app keeps today's generic error, and a
+  development build also logs the origin it tried.
+
 ## Open questions
 
-1. **What the phone is checked with.** A manual run on the iPhone described in
-   the PR is the only way to see DW-2; which automated checks stand beside it
-   (an issuer-consistency check in `scripts/check-compose.mjs`, a unit test of
-   the origin selection) is settled once task 01's answer is known.
-2. **How the developer switches the stack into phone mode,** if task 01 makes
-   it opt-in, and what `make mobile-doctor` reports when the phone cannot
-   reach it.
-3. **Failure messages:** what the app shows when the origin it was built with
-   is unreachable — today's generic error, or one that names the cause for a
-   developer build only.
+1. **Task 01's ADR accepted?** Every answer this task needs is recorded above;
+   it moves to `refined` in a short second pass once that ADR is accepted, as
+   iteration 9's build tasks did.
 
 ## Acceptance criteria
 
 - [ ] On the iPhone, a user signs in through the Mac's Keycloak, sees the
       Catalog tab list real beers, and signs out — verified by hand and
       described in the PR, with no host address or name in the description
-- [ ] After the change, the web app signs in on `localhost` and the iOS
-      Simulator and Android emulator flows still pass, the Android one through
-      `make mobile-e2e`
+- [ ] After the change, with phone mode off, the web app signs in on
+      `localhost` and the iOS Simulator and Android emulator flows still pass,
+      the Android one through `make mobile-e2e`
+- [ ] With phone mode on, the web app signs in from the Mac's browser on the
+      tailnet origin
 - [ ] Each automated test task 01's ADR names — at least the issuer Keycloak
       stamps matching the one the backend and web validate — exists and was
       seen to fail against a mismatched configuration

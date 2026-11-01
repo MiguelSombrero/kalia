@@ -1,6 +1,6 @@
 # Task 16: Adding a beer says what happens to it, and never dead-ends
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -58,16 +58,22 @@ same message.
 - The cap's number lives in `ContributionService.MAX_PENDING_ENTRIES` and
   ADR-0091 only; the UI must not restate it as a literal.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **SHOULD-72: "pending elsewhere" is its own anonymous `409`.** It names no
+  contributor and offers no entry to choose; the dialog says the beer has
+  already been suggested and waits for review. Duplicate lookups keep seeing
+  other contributors' pending rows, so two copies of one name are never
+  submitted. ADR-0091 records the outcome.
+- **Wording** for the description, the success line, the cap and the
+  pending-elsewhere message is drafted in the PR, in both locales, for the
+  product owner's review.
+- **COULD-61: the outcome alerts are extracted** into one separately tested
+  component; the brewery-choice mode stays in the dialog.
+
 ## Open questions
 
-1. **Someone else's pending beer (SHOULD-72):** scope duplicate lookups to
-   approved rows plus the caller's own pending ones (two contributors may then
-   both submit one name), give "pending elsewhere" its own anonymous 409, or
-   record the dead end as a trade-off in ADR-0091.
-2. **Wording:** the description, the success line and the cap message, in
-   both locales — drafted at refinement or in the PR for review.
-3. **The split (COULD-61):** extract the outcome alerts and the brewery mode
-   now, or only the alert the cap needs.
+**None.**
 
 ## Acceptance criteria
 
@@ -76,7 +82,10 @@ same message.
 - [ ] `JustAdded.test.tsx` and the dialog's tests assert the review-waiting
       wording in both locales
 - [ ] An integration test covers a second contributor adding a name another
-      contributor holds as pending, with the outcome refinement chose
+      contributor holds as pending, and gets the documented pending-elsewhere
+      `409` naming no contributor and no entry
+- [ ] A unit test shows the dialog's pending-elsewhere message, with no entry
+      offered to choose
 - [ ] A unit test shows a zero-width space refused client-side with
       `nameInvalid`
 - [ ] `make verify-fast` is green

@@ -1,6 +1,6 @@
 # Task 11: The deployable stack carries no dev convenience and no shared superuser
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -44,16 +44,28 @@ recorded as a trade-off.
 - `make verify` and the CI Docker gate start the deployable definition with a
   test environment; whatever moves must keep them green.
 
+**Decided at refinement, 2026-11-01** (product owner):
+
+- **Three database roles.** A schema-owner role used only by Flyway, through
+  Spring's separate Flyway credentials; a runtime role for the backend that
+  reads and writes rows but cannot `DROP` or `ALTER`; and a Keycloak role that
+  owns only the `keycloak` database. The superuser `kalia` is left to Postgres's
+  own bootstrap. Each role's password is a secret the base file requires, with
+  a dev value in `docker-compose.dev.env`
+  ([ADR-0089](../../adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
+- **The roles are created by the Postgres init script,** which runs only on an
+  empty volume. An existing volume is recreated once (`docker compose down
+  -v`) — `README.md` says so; no migration of existing volumes is built.
+- **No host script needs Postgres or Valkey on host loopback:** `make moderate`
+  and `make app-config` use `docker compose exec`. The dev overlay keeps
+  publishing them on loopback, with Mailpit, whose API the e2e suite reads.
+- Whether the role split earns an ADR is weighed at implementation
+  ([ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)); the rejected
+  alternatives were one role per service and accepting the shared superuser.
+
 ## Open questions
 
-1. **Database roles (SHOULD-77):** separate owner, DML-only and Keycloak
-   roles; separate roles per service only; or accept the shared superuser as
-   an [architecture §8](../../architecture.md#8-trade-offs-made-explicit)
-   trade-off.
-2. **If roles are separated:** created by an init script, by Flyway, or by a
-   one-off `make` target — and how existing developer volumes are migrated.
-3. **Loopback ports:** do any host scripts need Postgres or Valkey on host
-   loopback, so that the dev overlay must keep publishing them?
+**None.**
 
 ## Acceptance criteria
 
@@ -61,8 +73,11 @@ recorded as a trade-off.
       fails, and `scripts/check-compose.mjs`'s test covers it
 - [ ] The base file runs no Mailpit and publishes no Postgres or Valkey port;
       the local stack still does, through the dev overlay
-- [ ] The database-role decision is implemented with an integration test
-      showing the backend cannot `DROP` a table, or recorded in §8
+- [ ] An integration test shows the backend's runtime role cannot `DROP` a
+      table, and Flyway's migrations still run at start-up as the owner role
+- [ ] Keycloak connects as its own role and cannot reach the `kalia` database
+- [ ] `docker compose -f docker-compose.base.yml config` without a role's
+      password fails, and `README.md` says to recreate an existing volume
 - [ ] `make verify` is green
 - [ ] `make verify-fast` is green
 
