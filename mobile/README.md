@@ -217,8 +217,9 @@ the Android one is a running emulator, else the first virtual device, or
   prepare-emulator` installs the system image and creates the virtual device,
   then `test --platform android --headless` boots it and waits for it to be
   healthy before the flow: adb lists it attached, `sys.boot_completed` is set
-  and the package manager answers, several times in a row, again after the app
-  is installed. An emulator that never gets there is stopped and booted once
+  and the package manager answers, several times in a row, and the guest's
+  one-minute load average is below one (waited on for at most three minutes,
+  then logged and used), again after the app is installed. An emulator that never gets there is stopped and booted once
   more; after the second attempt the job fails with `Infrastructure failure,
   not the app` at the top of the log. The flow is never retried. The emulator's
   own log is `maestro-output/emulator-<attempt>.log`, which the job uploads on

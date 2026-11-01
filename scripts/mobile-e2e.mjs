@@ -223,6 +223,25 @@ export const waitHealthy = async (probe, { timeoutMs, settle, intervalMs, sleepe
   throw new Error(`the emulator was not healthy within ${timeoutMs / 1000} s: ${problem}`);
 };
 
+// Alive is not quiet: a runner's emulator has dropped its adb connection a
+// second into the flow while Play services and Settings were still indexing,
+// with a one-minute load average well above one on its two cores. Waiting is
+// bounded, and a device that stays busy is logged and used rather than failed.
+export const waitQuiet = async (read, { limit, timeoutMs, intervalMs, sleeper = sleep, now = Date.now, log = console.log }) => {
+  const started = now();
+  let load = Number.NaN;
+  while (now() - started < timeoutMs) {
+    load = read();
+    if (load < limit) {
+      log(`The emulator is quiet: load average ${load} after ${Math.round((now() - started) / 1000)} s`);
+      return { quiet: true, load };
+    }
+    await sleeper(intervalMs);
+  }
+  log(`::warning::the emulator is still busy (load average ${load}) after ${timeoutMs / 1000} s; going on`);
+  return { quiet: false, load };
+};
+
 export class InfrastructureError extends Error {}
 
 // The emulator and the SDK around it are the runner's, not the app's: a step
@@ -245,9 +264,19 @@ export const retryInfrastructure = async ({ what, attempts = 2, run: attempt, cl
 
 const BOOT_WAIT = { timeoutMs: 300_000, settle: 5, intervalMs: 5000 };
 const INSTALL_WAIT = { timeoutMs: 120_000, settle: 3, intervalMs: 5000 };
+const QUIET_AFTER_BOOT = { limit: 1, timeoutMs: 180_000, intervalMs: 5000 };
+const QUIET_AFTER_INSTALL = { limit: 1, timeoutMs: 90_000, intervalMs: 5000 };
 
 const deviceProbe = (adb, serial) => () =>
   probeEmulator((args) => capture(adb, ["-s", serial, ...args], { timeout: 15_000, stdio: ["ignore", "pipe", "ignore"] }));
+
+const deviceLoad = (adb, serial) => () => {
+  try {
+    return Number.parseFloat(capture(adb, ["-s", serial, "shell", "cat", "/proc/loadavg"], { timeout: 15_000, stdio: ["ignore", "pipe", "ignore"] }));
+  } catch {
+    return Number.NaN;
+  }
+};
 
 let launched;
 
@@ -398,10 +427,12 @@ const runAndroid = async (command, abi, headless) => {
       release = reverseStackPorts(adb, serial);
       run(adb, ["-s", serial, "install", "-r", APK]);
       await waitHealthy(deviceProbe(adb, serial), INSTALL_WAIT);
+      await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_INSTALL);
     };
     let serial = emulatorSerials(adb)[0];
     if (serial) {
       await waitHealthy(deviceProbe(adb, serial), BOOT_WAIT);
+      await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_BOOT);
       await settleWithApp(serial);
     } else {
       const emulator = sdkTool("emulator", "emulator");
@@ -414,6 +445,7 @@ const runAndroid = async (command, abi, headless) => {
           serial = undefined;
           serial = await launchEmulator(adb, emulator, avd, headless, attempt);
           await waitHealthy(deviceProbe(adb, serial), BOOT_WAIT);
+          await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_BOOT);
           if (headless) disableAnimations(adb, serial);
           await settleWithApp(serial);
         },

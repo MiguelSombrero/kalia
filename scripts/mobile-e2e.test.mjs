@@ -14,6 +14,7 @@ import {
   retryInfrastructure,
   verdict,
   waitHealthy,
+  waitQuiet,
 } from "./mobile-e2e.mjs";
 
 test("no arguments run every platform", () => {
@@ -196,4 +197,26 @@ test("an emulator that is unhealthy twice fails the run as infrastructure, after
   });
   assert.equal(boots, 2);
   assert.equal(stops, 2);
+});
+
+test("a busy emulator is waited on until its load average falls below the limit", async () => {
+  const loads = [4.2, 2.8, 1.4, 0.7];
+  let reads = 0;
+  const log = [];
+  const result = await waitQuiet(() => loads[reads++], { limit: 1, timeoutMs: 60_000, intervalMs: 5000, log: (line) => log.push(line), ...clock() });
+  assert.deepEqual(result, { quiet: true, load: 0.7 });
+  assert.equal(reads, 4);
+  assert.match(log[0], /quiet: load average 0\.7 after 15 s/);
+});
+
+test("an emulator that stays busy is logged and used, not failed, once the wait is over", async () => {
+  const log = [];
+  const result = await waitQuiet(() => 3.1, { limit: 1, timeoutMs: 20_000, intervalMs: 5000, log: (line) => log.push(line), ...clock() });
+  assert.deepEqual(result, { quiet: false, load: 3.1 });
+  assert.match(log[0], /::warning::the emulator is still busy \(load average 3\.1\) after 20 s/);
+});
+
+test("a load that cannot be read counts as busy", async () => {
+  const result = await waitQuiet(() => Number.NaN, { limit: 1, timeoutMs: 10_000, intervalMs: 5000, log: () => {}, ...clock() });
+  assert.equal(result.quiet, false);
 });
