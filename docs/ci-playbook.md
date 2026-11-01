@@ -191,6 +191,43 @@ reloaded without that helper. Separately, axe once reported `document-title`
 on the profile page right after a save and has not been reproduced since;
 without a second occurrence there is no signature to write down.
 
+## Mobile E2E (Maestro, Android)
+
+The job boots its own emulator through `scripts/mobile-e2e.mjs`; its design is
+in [mobile/README.md](../mobile/README.md#end-to-end-flow) and the rows that led
+to it are in [common-failures.md](common-failures.md). Read the first red line,
+then match it:
+
+**`Infrastructure failure, not the app: … failed 2 times, so the flow did not
+run.`** The emulator, or the SDK around it, never became healthy in two
+attempts, and each attempt is listed under the line with what adb or Android
+said. Nothing in the diff is implicated. Re-run the job (`gh run rerun <id>
+--failed`) and leave the branch alone; the emulator's own output is in the
+`maestro-output` artifact as `emulator-1.log` and `emulator-2.log`. Add a row to
+[common-failures.md](common-failures.md) when the attempts name something new,
+and if the same cause repeats across runs, it is the image or the runner that
+moved, not a blip.
+
+**`[Failed] The Catalog tab lists beers from the stack`, with `Assertion is
+false: id: beer-row is visible` or a `Timeout`.** A real failure: the app
+started, the device was healthy, and the catalog screen rendered no row. Read
+the stack's logs the job prints, then `maestro-output/android/`.
+
+**`Command failed (host:transport:emulator-5554): device offline` at
+`launchApp`.** The signature this job used to fail on once in seven runs. The
+job now waits for a device that stays healthy through the app's install, so
+seeing it again means the device dropped in the seconds between that wait and
+Maestro's first command. Log it with the run id; the flow is not retried.
+
+**`Cannot invoke "java.util.Map.values()" because "hwMap" is null` from
+`avdmanager create avd`.** The prepare step catches it, prints which SDK
+packages are installed and whether `emulator/lib/hardware-properties.ini`
+exists, reinstalls the emulator package and tries once more.
+
+**`Non-resolvable parent POM for fi.kalia:backend` in `Start the stack the app
+talks to`.** Maven Central was unreachable from inside the image build. The step
+retries three times; a build that still fails is a real one.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by

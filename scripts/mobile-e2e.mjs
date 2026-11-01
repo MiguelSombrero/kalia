@@ -19,7 +19,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { appendFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, openSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
@@ -291,34 +291,51 @@ const disableAnimations = (adb, serial) =>
 
 const sdkRoot = () => [process.env.ANDROID_HOME, process.env.ANDROID_SDK_ROOT].find(Boolean);
 
-// A virtual device for a host that has none. sdkmanager's output stays
+// sdkmanager redraws a progress bar on every percent, which buries the lines
+// that matter in a CI log.
+const quiet = (text) =>
+  text
+    .split(/[\r\n]+/)
+    .filter((line) => line.trim() && !/^\[[= ]*\]/.test(line) && !line.startsWith("Warning: This version only understands"))
+    .join("\n");
+
+const sdk = (tool, args, input) => {
+  const result = spawnSync(tool, args, { input, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const shown = quiet(`${result.stdout ?? ""}\n${result.stderr ?? ""}`);
+  if (shown) console.log(shown);
+  if (result.status !== 0) throw new Error(`${basename(tool)} ${args.join(" ")} exited with ${result.status ?? result.signal}`);
+  return result.stdout ?? "";
+};
+
+// avdmanager says where it put a device; it does not always put it under
+// ~/.android/avd.
+export const avdPath = (listing, name) => {
+  const block = listing.split(/-{5,}/).find((each) => new RegExp(`^\\s*Name: ${name}\\s*$`, "m").test(each));
+  return block?.match(/^\s*Path: (.+)$/m)?.[1].trim();
+};
+
+// A virtual device for a host that has none. Each tool's output stays
 // visible: avdmanager has crashed on a runner with `"hwMap" is null`, and what
 // was installed is the only clue to why.
 const prepareEmulator = async () => {
   const sdkmanager = sdkTool("cmdline-tools/latest/bin", "sdkmanager");
   const avdmanager = sdkTool("cmdline-tools/latest/bin", "avdmanager");
   if (!sdkmanager || !avdmanager) throw new Error("sdkmanager and avdmanager are not installed (set ANDROID_HOME to an SDK with cmdline-tools)");
-  const avdHome = join(homedir(), ".android", "avd");
-  const failIfBad = (result, what) => {
-    if (result.status !== 0) throw new Error(`${what} exited with ${result.status ?? result.signal}`);
-  };
   await retryInfrastructure({
     what: "preparing the virtual device",
     run: (attempt) => {
-      failIfBad(spawnSync(sdkmanager, ["--licenses"], { input: "y\n".repeat(50), stdio: ["pipe", "ignore", "inherit"] }), "sdkmanager --licenses");
-      if (attempt > 1) failIfBad(spawnSync(sdkmanager, ["--uninstall", "emulator"], { stdio: "inherit" }), "sdkmanager --uninstall emulator");
-      failIfBad(spawnSync(sdkmanager, ["--install", "emulator", "platform-tools", SYSTEM_IMAGE], { stdio: "inherit" }), "sdkmanager --install");
-      failIfBad(
-        spawnSync(avdmanager, ["create", "avd", "--force", "-n", CI_AVD, "--package", SYSTEM_IMAGE], { input: "no\n", stdio: ["pipe", "inherit", "inherit"] }),
-        "avdmanager create avd",
-      );
-      if (!existsSync(join(avdHome, `${CI_AVD}.ini`))) throw new Error(`avdmanager exited 0 but created no ${CI_AVD}`);
-      appendFileSync(join(avdHome, `${CI_AVD}.avd`, "config.ini"), "hw.cpu.ncore=2\n");
+      sdk(sdkmanager, ["--licenses"], "y\n".repeat(50));
+      if (attempt > 1) sdk(sdkmanager, ["--uninstall", "emulator"]);
+      sdk(sdkmanager, ["--install", "emulator", "platform-tools", SYSTEM_IMAGE]);
+      sdk(avdmanager, ["create", "avd", "--force", "-n", CI_AVD, "--package", SYSTEM_IMAGE], "no\n");
+      const path = avdPath(sdk(avdmanager, ["list", "avd"]), CI_AVD);
+      if (!path) throw new Error(`avdmanager exited 0 but lists no virtual device named ${CI_AVD}`);
+      appendFileSync(join(path, "config.ini"), "hw.cpu.ncore=2\n");
     },
     cleanup: () => {
       const root = sdkRoot();
       console.log(`emulator/lib/hardware-properties.ini present: ${root ? existsSync(join(root, "emulator", "lib", "hardware-properties.ini")) : "unknown, no ANDROID_HOME"}`);
-      spawnSync(sdkmanager, ["--list_installed"], { stdio: "inherit" });
+      console.log(["ANDROID_AVD_HOME", "ANDROID_USER_HOME", "ANDROID_SDK_HOME", "HOME"].map((name) => `${name}=${process.env[name] ?? "(unset)"}`).join(" "));
     },
   });
 };

@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 
 import {
   InfrastructureError,
+  avdPath,
   MAESTRO_VERSION,
   maestroBinary,
   parseArgs,
@@ -196,4 +197,19 @@ test("an emulator that is unhealthy twice fails the run as infrastructure, after
   });
   assert.equal(boots, 2);
   assert.equal(stops, 2);
+});
+
+test("the path of a virtual device is read from avdmanager's own listing, whichever directory it chose", () => {
+  const listing = `Available Android Virtual Devices:
+    Name: kalia-e2e-old
+    Path: /somewhere/kalia-e2e-old.avd
+  Target: Google APIs
+---------
+    Name: kalia-e2e
+    Path: /home/runner/.config/.android/avd/kalia-e2e.avd
+  Target: Google APIs
+`;
+  assert.equal(avdPath(listing, "kalia-e2e"), "/home/runner/.config/.android/avd/kalia-e2e.avd");
+  assert.equal(avdPath(listing, "absent"), undefined);
+  assert.equal(avdPath("Available Android Virtual Devices:\n", "kalia-e2e"), undefined);
 });
