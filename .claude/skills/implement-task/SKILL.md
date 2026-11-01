@@ -138,8 +138,7 @@ naming a reason for each one skipped (in procedure order):
 
 - doc-sync
 - `/code-review`
-- `make verify-fast` (or `make verify`, said explicitly), and the required
-  CI checks green once the pull request is open
+- `make verify-fast` (or `make verify`, said explicitly)
 - the change exercised against a running stack, with what was observed
 - each acceptance criterion re-verified by running its own check, then
   ticked, and the status set to `done`
