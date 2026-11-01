@@ -416,7 +416,7 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'mobile/app.json', 'mobile/plugins/**') }}
       # x86_64 only: the emulator below is x86_64, and the other ABIs would
-      # multiply the native compile for nothing.
+      # multiply the native compile for nothing. No native-output cache: ADR-0099.
       - name: Build the Android app with its JavaScript inside
         run: node scripts/mobile-e2e.mjs build --platform android --abi x86_64
       # The udev rule GitHub's changelog and the emulator action's README give

@@ -23,7 +23,7 @@ a documented routine rather than a surprise.
 | ID | Task | Status |
 |---|---|---|
 | [22](iteration-10/22-mobile-ci-runs-only-when-the-app-can-change.md) | The Android end-to-end job runs only when the app or its stack can change | done |
-| [23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md) | The Android build reuses the native code it already compiled | refined |
+| [23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md) | The Android build reuses the native code it already compiled | done |
 | [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md) | The mobile end-to-end check fails only when the app does | refined |
 | [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | done |
 | [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | done |
