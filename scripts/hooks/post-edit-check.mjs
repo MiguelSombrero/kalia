@@ -100,6 +100,7 @@ const ROUTES = [
       (p.startsWith("backend/src/") && p.endsWith(".java")) ||
       isWebSource(p) ||
       isPackageSource(p) ||
+      (p.startsWith("mobile/src/") && /\.tsx?$/.test(p)) ||
       (p.startsWith("scripts/") && p.endsWith(".mjs")),
   },
 ];

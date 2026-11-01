@@ -62,7 +62,7 @@ plugin and the verification of each rule is
 ## Static checks — `check-comments.mjs`
 
 **A comment names a task, an iteration, a PR, or how the code used to be.**
-Those patterns hard-fail, in `scripts/*.mjs` too; the ratio and ADR-block
+Those patterns hard-fail, in `mobile/src` and `scripts/*.mjs` too; the ratio and ADR-block
 findings are advisory, never fail, and print only with `--advisory`. Delete the narration — the policy and its test are
 `.claude/rules/code-comments.md` and
 [ADR-0017](adr/0017-code-comment-policy.md).
