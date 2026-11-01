@@ -1,6 +1,6 @@
 # Task 04: Kalia installs on the product owner's iPhone with a free Apple ID
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-1, DW-3
 
@@ -46,9 +46,13 @@ it.
   survive `expo prebuild`.
 - **Nothing from the host machine leaves it** (`CLAUDE.md`): the Apple ID, the
   team identifier, the device's name and its UDID stay out of every commit,
-  PR and comment.
+  PR and comment. ADR-0097 puts the tailnet host name in the same place, the
+  root `.env`.
 - Follows [task 03](03-app-identity.md), whose identifier the first install
-  fixes.
+  fixes, and [task 01](01-decision-how-a-phone-reaches-the-mac.md)'s
+  [ADR-0097](../../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md),
+  whose phone mode [task 02](02-the-phone-reaches-the-stack.md) builds after
+  this task, not before it.
 - Expo and Xcode signing postdate model training — check docs.expo.dev at the
   SDK version in `mobile/package.json`, and Apple's own pages, never memory.
 
@@ -72,28 +76,55 @@ it.
   free Personal Team cannot register it, this task stops and returns to the
   product owner.
 
+**Decided at the second refinement pass, 2026-11-01** (product owner, after
+ADR-0097 was accepted):
+
+- **This install is made before phone mode exists,** because task 02 follows
+  this task in the iteration's order. It is a development build in the default
+  mode, whose origins are `localhost` and whose Metro host is `localhost`
+  (`scripts/mobile-env.mjs`); on a phone both name the phone itself. So it is
+  expected to **install and open, to the app or to the development launcher or
+  its "could not connect to Metro" screen, and not to sign in or list beers:**
+  that is DW-2 and task 02's, as is Metro's route to the phone in phone mode,
+  which ADR-0097 does not name among the three ports it forwards. This task's
+  evidence needs the splash screen, the home-screen icon and the name, none of
+  which needs a stack or Metro.
+- **Task 02's build installs over this one.** The identifier and the Personal
+  Team are the same, so the phone treats it as an update that keeps the app's
+  data, not a second app. ADR-0097 makes an installed app built for one mode,
+  so the re-signing routine rebuilds in whichever mode the root `.env` is in
+  and the README says to check it first.
+- **No tailnet is needed to install.** The install runs over the cable or the
+  local network Xcode pairs with, and Tailscale is task 02's dependency, not
+  this one's.
+
 ## Open questions
 
-1. **Task 01's ADR accepted?** The development build this task installs first
-   loads its JavaScript from Metro over [task 01](01-decision-how-a-phone-reaches-the-mac.md)'s
-   route. Every answer is recorded above; the task moves to `refined` in a
-   short second pass once that ADR is accepted.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] Following `mobile/README.md` from an iPhone that has never run Kalia,
-      the app is installed and launches — carried out by the product owner and
-      described in the PR without any device or account identifier
+      the app is installed and opens, to the app or to the development
+      launcher, without a stack or a tailnet — carried out by the product
+      owner and described in the PR without any device or account identifier
 - [ ] That first install registers `fi.kalia.app` under the Personal Team
-      before any other build is installed on the phone, and shows task 03's
-      icon, name and splash screen
-- [ ] The re-signing routine is carried out once after an expiry, or by
-      revoking the install to simulate one, and the PR says which
+      before any other Kalia build is installed on the phone, and shows task
+      03's icon, name and splash screen — the PR says so, from the product
+      owner's run
+- [ ] The re-signing routine is carried out once by revoking the install to
+      simulate the seven-day expiry, which cannot arrive before the PR merges;
+      the PR says what was revoked, what the app did afterwards, whether the
+      cellar survived (DW-3), and `mobile/README.md` states only that
 - [ ] ADR-0094 is amended to allow a free Personal Team on the developer's
       own device, and the limits are recorded in the backlog's cost list with
       pointers from ADR-0094 and `mobile/README.md`
-- [ ] Any script or `make` target the routine adds has a test covering its
-      missing-team-identifier case
+- [ ] The Apple Team ID is read from the root `.env`, reaches prebuild through
+      the Expo config, and appears in the PR diff only as the variable's name
+      with no value
+- [ ] A test covers the missing-team-identifier case of every script or `make`
+      target the routine adds, including `make mobile-doctor` naming it and
+      `make mobile-ios-device` refusing to build without it
 - [ ] `make verify-fast` is green
 
 ## Notes
