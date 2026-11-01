@@ -75,9 +75,38 @@ variant rather than edited by hand.
       the Android one through `make mobile-e2e`
 - [ ] With phone mode on, the web app signs in from the Mac's browser on the
       tailnet origin
-- [ ] Each automated test task 01's ADR names — at least the issuer Keycloak
-      stamps matching the one the backend and web validate — exists and was
-      seen to fail against a mismatched configuration
+- [ ] The issuer Keycloak stamps matches the one the backend and the web
+      validate, in phone mode and with it off: `scripts/check-compose.mjs`
+      fails a rendered configuration in which they differ, and was seen to
+      fail against a mismatched one
+      ([ADR-0097](../../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md))
+- [ ] With phone mode off, the rendered default stack is unchanged: every
+      address that names the stack is `localhost` with the stack's own port,
+      and the edge's three ports are published on `127.0.0.1` only — checked by
+      the same script, which also fails a phone-mode configuration that
+      publishes a port beyond loopback
+- [ ] The realm follows the one origin: the drift check
+      (`scripts/check-keycloak-realm-config.mjs`) fails a phone-mode realm
+      whose `kalia-web` redirect URIs or web origins, or either client's root
+      or base URL, do not name that origin, and one in which `kalia-mobile`'s
+      redirect URIs are anything but the single exact
+      `kalia://auth/callback`
+- [ ] A unit test of `scripts/mobile-env.mjs` shows the app's API and Keycloak
+      origins built from the one value and the stack's own ports in phone
+      mode, `localhost` with them in the default, and the one value coming from
+      the root `.env` and no committed file
+- [ ] The backend refuses a token stamped with the other mode's issuer — an
+      existing resource-server test, or a new one beside it, with the backend
+      configured for one issuer only (ADR-0028)
+- [ ] With phone mode on, Keycloak's discovery document fetched on the tailnet
+      origin names, as its issuer, the value the backend and the web validate —
+      run by hand with the stack in phone mode and described in the PR, with no
+      host name in the description
+- [ ] The ADR's unverified points are each shown true on the running stack or
+      the ADR is amended: `tailscale serve` forwarding plain HTTP for the three
+      ports to the edge on `127.0.0.1`; the Mac reaching its own tailnet name,
+      from its browser and from the iOS Simulator in phone mode; the
+      development build reaching the tailnet host over HTTP
 - [ ] `mobile/README.md` says how to point the app at the Mac from a phone
 - [ ] `make verify-fast` is green
 

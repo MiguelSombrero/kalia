@@ -317,6 +317,10 @@ in one place, read
   — an nginx edge proxy is the only published service: it limits requests and
   bodies per client address in front of the frontend, backend and Keycloak, and
   names the client address they trust.
+- [ADR-0097](0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)
+  — a physical phone reaches the stack over the owner's tailnet in an opt-in
+  phone mode, where one origin is the issuer Keycloak stamps and every consumer
+  validates; plain HTTP until a recorded trigger; amends ADR-0095.
 
 ## Engineering process and documentation
 

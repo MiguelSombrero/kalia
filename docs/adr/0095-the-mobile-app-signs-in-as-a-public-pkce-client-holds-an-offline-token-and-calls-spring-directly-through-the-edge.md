@@ -56,8 +56,10 @@ API directly through the edge proxy.**
   callback, and none is a wildcard over the app's URL scheme — a pattern such as
   `kalia://*` is the usual open-redirect foothold, because any other app that
   registers the scheme could receive the code. The strings themselves are
-  [task 13](../tasks/iteration-9/13-keycloak-mobile-client.md)'s to write and
-  [iteration 10](../tasks/iteration-10.md)'s to extend for a real phone.
+  [task 13](../tasks/iteration-9/13-keycloak-mobile-client.md)'s to write.
+  A real phone adds none: the callback names a scheme and no host, so the list
+  stays the one exact entry whatever origin the stack is reached under
+  ([ADR-0097](0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
   `kalia-mobile` carries **its own `kalia-backend` audience mapper**: the mapper
   on `kalia-frontend` does not apply to it, and a token without the audience
   fails ADR-0028's check on every call, which presents as a sign-in that works
@@ -201,8 +203,10 @@ a rooted device, for no saving.
   on purpose.
 - **Revisit trigger:** the app being installed beyond the product owner's own
   phone, which brings rotation back (it is realm-wide, so for both clients
-  and behind a renewal lock for the web); a deployment that changes the issuer or the
-  redirect URIs ([iteration 10](../tasks/iteration-10.md)); or a feature where a
+  and behind a renewal lock for the web); a hosted deployment that changes the issuer
+  or the redirect URIs (the tailnet origin of a physical phone is
+  [ADR-0097](0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)'s: the issuer is one origin per mode, never
+  two accepted at once); or a feature where a
   five-minute window after a disable is not acceptable, which would bring
   introspection back.
 
