@@ -38,6 +38,10 @@ const APK = resolve(MOBILE, "android/app/build/outputs/apk/release/app-release.a
 const PLATFORMS = ["ios", "android"];
 const SYSTEM_IMAGE = "system-images;android-36;google_apis;x86_64";
 const CI_AVD = "kalia-e2e";
+// The runner has four vCPUs. In a probe of cold boots followed by a Maestro
+// launchApp, two emulator cores failed once in 12 at a load average of 19 and
+// four cores in none of 12, with flows that ran a third faster.
+const CI_CORES = 4;
 
 export const parseArgs = (argv) => {
   const commands = ["run", "build", "test", "install-maestro", "prepare-emulator"];
@@ -225,7 +229,7 @@ export const waitHealthy = async (probe, { timeoutMs, settle, intervalMs, sleepe
 
 // Alive is not quiet: a runner's emulator has dropped its adb connection a
 // second into the flow while Play services and Settings were still indexing,
-// with a one-minute load average well above one on its two cores. Waiting is
+// with a one-minute load average of several times its core count. Waiting is
 // bounded, and a device that stays busy is logged and used rather than failed.
 export const waitQuiet = async (read, { limit, timeoutMs, intervalMs, sleeper = sleep, now = Date.now, log = console.log }) => {
   const started = now();
@@ -264,8 +268,8 @@ export const retryInfrastructure = async ({ what, attempts = 2, run: attempt, cl
 
 const BOOT_WAIT = { timeoutMs: 300_000, settle: 5, intervalMs: 5000 };
 const INSTALL_WAIT = { timeoutMs: 120_000, settle: 3, intervalMs: 5000 };
-const QUIET_AFTER_BOOT = { limit: 1, timeoutMs: 180_000, intervalMs: 5000 };
-const QUIET_AFTER_INSTALL = { limit: 1, timeoutMs: 90_000, intervalMs: 5000 };
+const QUIET_AFTER_BOOT = { limit: CI_CORES / 2, timeoutMs: 180_000, intervalMs: 5000 };
+const QUIET_AFTER_INSTALL = { limit: CI_CORES / 2, timeoutMs: 90_000, intervalMs: 5000 };
 
 const deviceProbe = (adb, serial) => () =>
   probeEmulator((args) => capture(adb, ["-s", serial, ...args], { timeout: 15_000, stdio: ["ignore", "pipe", "ignore"] }));
@@ -359,7 +363,7 @@ const prepareEmulator = async () => {
       sdk(sdkmanager, ["--install", "emulator", "platform-tools", SYSTEM_IMAGE]);
       sdk(avdmanager, ["create", "avd", "--force", "-n", CI_AVD, "--package", SYSTEM_IMAGE], "no\n");
       if (!existsSync(join(avdHome(), `${CI_AVD}.ini`))) throw new Error(`avdmanager exited 0 but created no ${CI_AVD} in ${avdHome()}`);
-      appendFileSync(join(avdHome(), `${CI_AVD}.avd`, "config.ini"), "hw.cpu.ncore=2\n");
+      appendFileSync(join(avdHome(), `${CI_AVD}.avd`, "config.ini"), `hw.cpu.ncore=${CI_CORES}\n`);
     },
     cleanup: () => {
       const root = sdkRoot();
