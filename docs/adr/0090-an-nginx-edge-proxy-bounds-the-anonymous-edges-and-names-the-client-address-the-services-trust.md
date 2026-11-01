@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-26
+- **Amended:** 2026-11-01 — the edge serves only what a client needs: no
+  actuator beyond `health`, no master realm, no back-channel logout route, and
+  Keycloak's admin console on a loopback admin port of the dev overlay; see
+  the amendment under Decision
 
 ## Context
 
@@ -63,12 +67,33 @@ puts in the base whatever is not a dev convenience).
 - `X-Content-Type-Options: nosniff` joins [ADR-0016](0016-security-response-headers.md)'s
   headers, and `poweredByHeader` is off.
 
+> **Amended 2026-11-01** ([iteration 10 task 10](../tasks/iteration-10/10-the-edge-serves-only-what-a-client-needs.md)).
+> **On its public ports the edge answers `404` for `/actuator/*` except
+> `/actuator/health`, for `/admin` and `/realms/master`, and for
+> `/api/auth/backchannel-logout`, and publishes Keycloak's admin console only
+> on a fourth, loopback-only port of the dev overlay.** Counters stay inside the
+> compose network ([ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)),
+> and Keycloak posts its Logout Token to `web:3000` over that network, so the
+> logout zone and its 16 KiB cap below are gone from the proxy; the route still
+> enforces the cap itself. The admin console, the admin REST API and the master
+> realm's token endpoint are served on container port 8083 (zone `admin`, 20
+> per second, burst 60, 1 MiB), which `docker-compose.override.yml` publishes
+> on `127.0.0.1:${KEYCLOAK_ADMIN_PORT}` and `docker-compose.base.yml` does not
+> publish at all; phone mode never forwards it. `KC_HOSTNAME_ADMIN` names that
+> port. The console signs in against the master realm's own frontend URL, which
+> is the public port unless the realm says otherwise, so `keycloak-seed` also
+> sets the master realm's `frontendUrl` to the admin address. keycloak-config-cli
+> cannot: changing a realm's frontend URL changes the issuer of the token it is
+> holding, and its import fails with a 401 on a fresh stack's first boot.
+> `scripts/check-compose.mjs` checks the publication, and the edge e2e spec
+> the `404`s and the console's addresses.
+
 | Zone | Applies to | Rate | Burst | Largest body |
 |---|---|---|---|---|
 | registration | `POST` to Keycloak's `login-actions/registration` and `protocol/openid-connect/registrations` | 6 per minute | 20 | 256 KiB |
-| logout | the frontend's `/api/auth/backchannel-logout` | 30 per minute | 10 | 16 KiB |
 | backend | everything on the backend's port | 10 per second | 30 | 64 KiB |
 | keycloak | everything else on Keycloak's port | 20 per second | 60 | 256 KiB |
+| admin | everything on the admin port (dev overlay only) | 20 per second | 60 | 1 MiB |
 | frontend | every page and action | 150 per second | 300 | 1 MiB |
 | static | `/_next/static/` and Keycloak's `/resources/` | 150 per second | 400 | — |
 
@@ -139,6 +164,13 @@ them.
 - Bad, because a deployment that puts another load balancer in front of `edge`
   would see that balancer's address everywhere until the proxy is taught to
   read it.
+- Bad, because the admin server block is in the proxy's one configuration
+  file whether or not a stack publishes it, so a container on the compose
+  network can reach `edge:8083`; it could reach `keycloak:8080` the same way.
+- Bad, because the master realm's frontend URL is set by the dev seed outside
+  the realm files [ADR-0054](0054-keycloak-config-cli-realm-management.md)
+  reconciles and its drift check reads, and nothing but the e2e spec notices if
+  it goes.
 - Neutral, because [ADR-0003](0003-bff-pattern.md)'s "the Spring API is not
   exposed publicly" was already out of date (the backend was published on the
   loopback); it is now reached through the proxy, still on the loopback.

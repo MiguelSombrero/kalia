@@ -25,7 +25,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
-import { KEYCLOAK_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
+import { KEYCLOAK_ADMIN_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
 import { ROOT, originOf, readEnvFile } from "./stack-ports.mjs";
 
 export const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
@@ -217,7 +217,7 @@ const adminToken = () =>
   });
 
 const fetchJson = async (token, path) => {
-  const response = await fetch(`${KEYCLOAK_URL}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  const response = await fetch(`${KEYCLOAK_ADMIN_URL}${path}`, { headers: { Authorization: `Bearer ${token}` } });
   if (!response.ok) {
     throw new Error(`GET ${path} failed: ${response.status} ${await response.text()}`);
   }

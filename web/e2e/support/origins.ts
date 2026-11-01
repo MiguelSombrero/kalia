@@ -5,4 +5,5 @@ import { STACK } from "../../stackOrigins";
 
 export const WEB_ORIGIN = STACK.web;
 export const KEYCLOAK_ORIGIN = STACK.keycloak;
+export const KEYCLOAK_ADMIN_ORIGIN = STACK.keycloakAdmin;
 export const BACKEND_ORIGIN = STACK.backend;
