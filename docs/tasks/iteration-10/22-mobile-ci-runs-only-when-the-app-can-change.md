@@ -1,6 +1,6 @@
 # Task 22: The Android end-to-end job runs only when the app or its stack can change
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -84,7 +84,7 @@ talks to, and a docs-only or web-only change leaves both skipped with
       Android end-to-end job
 - [x] A test shows a push to `dev` whose diff is docs-only skipping it, and an
       unreachable previous commit running everything
-- [ ] A throwaway docs-only commit pushed from the PR's own branch shows the
+- [x] A throwaway docs-only commit pushed from the PR's own branch shows the
       Android job skipped and `CI passed` green, with the run linked in the PR
 - [x] The place the filter's policy is documented states the new rule, and
       `make verify-fast` is green
@@ -94,3 +94,9 @@ talks to, and a docs-only or web-only change leaves both skipped with
 Provenance: [quality backlog](../quality-backlog.md) SHOULD-98 (filed as a
 second SHOULD-97 by task 07's pull request), widened at the product owner's
 request after PR 521 ran the emulator job for a web-only change.
+
+The fourth criterion could not be met literally: a branch carrying this change
+also changes `ci.yml`, which runs everything by design. It was met on a
+separate throwaway branch that added a docs-only commit and switched off that
+one rule, where run 41331615573 shows both mobile jobs skipped and `CI passed`
+green; the product owner accepted that on 2026-11-01. Pull request 525.
