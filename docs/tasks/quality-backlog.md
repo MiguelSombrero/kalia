@@ -80,18 +80,6 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   late (found reviewing iteration 10 task 8). Remember the failure for a short
   window so calls inside it skip the attempt.
 
-- **SHOULD-97** *(confirmed 2026-11-01)* — the change filter in `ci.yml`
-  runs every job on a push to `dev` or `main` ("fails open on purpose"), so a
-  docs-only merge pays for the whole suite: the Android end-to-end job alone
-  is 13–19 minutes (median 17 over 19 green runs), and docs-only merges to
-  `dev` have run it and gone red on an emulator fault with no code involved.
-  Pull-request pushes are already filtered. Diff a push to `dev` against
-  `github.event.before` instead and keep "everything" for the cases the filter
-  cannot classify (a shared root file, a first push, a forced push where
-  `before` is unreachable). The job's `ci-passed` gate already counts a skipped
-  job as a pass. Found in iteration 10 task 07, which left it alone because it
-  changes the safety policy of every job, not only that one.
-
 ## COULD
 
 - **COULD-26** *(confirmed 2026-10-11)* — Keycloak's password-reset page
@@ -169,17 +157,6 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   `scripts/check-api-breaking.mjs` changes, so a broken wrapper is found on the
   next spec change: add the script to the backend filter. Deferred in the
   iteration 9 task 09 pull request.
-- **COULD-106** *(confirmed 2026-11-01)* — the Android end-to-end job's build
-  step is 8–12 minutes whatever Gradle's cache holds. Its dependency
-  resolution and daemon start are about two of them and the Gradle cache
-  restores in 14 s without moving the total beyond the run-to-run spread (7:51
-  and 12:27 cold, 9:17 and 9:43 with the cache). About six minutes are CMake
-  configuring and compiling React Native's native libraries once per module
-  (screens, worklets, reanimated, gesture-handler, expo-modules-core, then the
-  app), and Gradle's build cache does not cover those tasks. Candidates: ccache
-  keyed on the native sources, or caching the `.cxx` directories with Gradle's
-  task history. Either is new tooling with a stale-build risk, so it needs an
-  ADR-sized look before a task. Found in iteration 10 task 07.
 - **COULD-107** *(confirmed 2026-11-01)* — bottles added together still read
   back in a different order than they were answered in. `Entry.bottles` orders
   by `created_at, id`, but a bulk add stamps every bottle with one instant and
@@ -397,6 +374,7 @@ live section they came from.
 - ~~SHOULD-94~~ (the code-comment policy not reaching `mobile/`) — lifted into [iteration-10 task 09](iteration-10/09-the-checks-reach-mobile.md).
 - ~~SHOULD-95~~ (anonymous app calls failing with a failed refresh) — lifted into [iteration-10 task 08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md).
 - ~~SHOULD-96~~ (the Android end-to-end check failing on a sick emulator) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
+- ~~SHOULD-98~~ (the change filter running every job on a push to `dev`; filed as a second `SHOULD-97` by iteration 10 task 07's pull request, renumbered here because `SHOULD-97` already names the slow-Keycloak finding) — lifted into [iteration-10 task 22](iteration-10/22-mobile-ci-runs-only-when-the-app-can-change.md).
 - ~~COULD-61~~ (`AddBeerDialog` holding five concerns) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
 - ~~COULD-73~~ (a cross-site callback link signing the visitor out) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
 - ~~COULD-74~~ (the back-channel logout endpoint published on the edge) — lifted into [iteration-10 task 10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md).
@@ -420,3 +398,4 @@ live section they came from.
 - ~~COULD-102~~ (the app never reacting to a `401`) — lifted into [iteration-10 task 08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md).
 - ~~COULD-104~~ (no cache for Maestro or Gradle in the Android job) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
 - ~~COULD-105~~ (the Catalog flow naming a beer that happens to sort first) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
+- ~~COULD-106~~ (the Android end-to-end build recompiling React Native's native libraries on every run) — lifted into [iteration-10 task 23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md).
