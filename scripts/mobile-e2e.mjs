@@ -5,18 +5,21 @@
 //
 //   node scripts/mobile-e2e.mjs [run] [--platform ios|android|all]
 //   node scripts/mobile-e2e.mjs build --platform android [--abi x86_64]
-//   node scripts/mobile-e2e.mjs test --platform android
+//   node scripts/mobile-e2e.mjs test --platform android [--headless]
 //   node scripts/mobile-e2e.mjs install-maestro
+//   node scripts/mobile-e2e.mjs prepare-emulator
 //
 // With no platform it runs every one the host can and says which it skipped
 // and why; it fails when none ran. `build` and `test` are the two halves of
 // `run`, which CI runs apart so the emulator boots after the build.
+// `prepare-emulator` installs the SDK pieces and creates the virtual device on
+// a host that has none (CI); `--headless` boots it without a window.
 
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { createReadStream, createWriteStream, existsSync, mkdirSync, rmSync } from "node:fs";
+import { appendFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, openSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
@@ -30,12 +33,19 @@ const MAESTRO_URL = `https://github.com/mobile-dev-inc/Maestro/releases/download
 
 const MOBILE = resolve(ROOT, "mobile");
 const FLOWS = resolve(MOBILE, ".maestro");
+const PREFLIGHT = resolve(MOBILE, "e2e-preflight", "launch-settings.yaml");
 const OUTPUT = resolve(MOBILE, "maestro-output");
 const APK = resolve(MOBILE, "android/app/build/outputs/apk/release/app-release.apk");
 const PLATFORMS = ["ios", "android"];
+const SYSTEM_IMAGE = "system-images;android-36;google_apis;x86_64";
+const CI_AVD = "kalia-e2e";
+// The runner has four vCPUs. In a probe of cold boots followed by a Maestro
+// launchApp, two emulator cores failed once in 12 at a load average of 19 and
+// four cores in none of 12, with flows that ran a third faster.
+const CI_CORES = 4;
 
 export const parseArgs = (argv) => {
-  const commands = ["run", "build", "test", "install-maestro"];
+  const commands = ["run", "build", "test", "install-maestro", "prepare-emulator"];
   const command = commands.includes(argv[0]) ? argv[0] : "run";
   const rest = commands.includes(argv[0]) ? argv.slice(1) : argv;
   const value = (flag) => {
@@ -46,7 +56,7 @@ export const parseArgs = (argv) => {
   if (platform !== "all" && !PLATFORMS.includes(platform)) {
     throw new Error(`--platform must be ios, android or all, not ${platform}`);
   }
-  return { command, platform, abi: value("--abi") };
+  return { command, platform, abi: value("--abi"), headless: rest.includes("--headless") };
 };
 
 // A skipped platform is reported with its reason, but nothing running at all
@@ -121,13 +131,13 @@ const stackReachable = async (apiOrigin) => {
 
 const appEnv = () => ({ ...process.env, ...mobileEnv(stackEnv()) });
 
-const runMaestro = (platform, deviceId) => {
-  const dir = join(OUTPUT, platform);
+const runMaestro = (platform, deviceId, flows = FLOWS, name = platform) => {
+  const dir = join(OUTPUT, name);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   run(
     maestroBinary(),
-    ["--platform", platform, "--device", deviceId, "test", "--format", "junit", "--output", join(dir, "report.xml"), "--test-output-dir", dir, FLOWS],
+    ["--platform", platform, "--device", deviceId, "test", "--format", "junit", "--output", join(dir, "report.xml"), "--test-output-dir", dir, flows],
     { cwd: MOBILE, env: { ...process.env, ...maestroEnv } },
   );
 };
@@ -169,25 +179,215 @@ const sdkTool = (relative, name) => {
   return spawnSync(name, ["--version"], { stdio: "ignore" }).error ? undefined : name;
 };
 
-const runningEmulator = (adb) =>
+const emulatorSerials = (adb) =>
   capture(adb, ["devices"])
     .split("\n")
-    .slice(1)
-    .map((line) => line.split("\t"))
-    .find(([serial, state]) => serial.startsWith("emulator-") && state === "device")?.[0];
+    .map((line) => line.split("\t")[0])
+    .filter((serial) => serial.startsWith("emulator-"));
 
-const bootEmulator = async (adb, emulator) => {
-  const avd = process.env.KALIA_E2E_AVD ?? capture(emulator, ["-list-avds"]).split("\n")[0];
-  if (!avd) return undefined;
-  console.log(`Starting the emulator ${avd}`);
-  spawn(emulator, ["-avd", avd, "-no-snapshot-save", "-no-boot-anim", "-no-audio"], { detached: true, stdio: "ignore" }).unref();
-  const deadline = Date.now() + 240_000;
-  while (Date.now() < deadline) {
-    await new Promise((done) => setTimeout(done, 3000));
-    const serial = runningEmulator(adb);
-    if (serial && capture(adb, ["-s", serial, "shell", "getprop", "sys.boot_completed"]) === "1") return serial;
+const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+
+// What `launchApp` needs of a device, and what a runner's emulator has been
+// seen to lack: adb lists it attached, Android says the boot finished, and the
+// package manager answers. `ask` runs adb against the one device and throws
+// when adb or the device does not answer.
+export const probeEmulator = (ask) => {
+  const answer = (args) => {
+    try {
+      return ask(args);
+    } catch {
+      return undefined;
+    }
+  };
+  answer(["wait-for-device"]);
+  const state = answer(["get-state"]);
+  if (state !== "device") return { healthy: false, problem: `adb lists the device as ${state ?? "unreachable"}, not attached` };
+  if (answer(["shell", "getprop", "sys.boot_completed"]) !== "1") return { healthy: false, problem: "sys.boot_completed is not set" };
+  if (!answer(["shell", "pm", "path", "android"])?.startsWith("package:")) return { healthy: false, problem: "the package manager does not answer" };
+  return { healthy: true };
+};
+
+// Healthy once is not enough: a runner's emulator has gone offline seconds
+// after it first looked healthy, so it has to stay healthy for `settle`
+// probes in a row.
+export const waitHealthy = async (probe, { timeoutMs, settle, intervalMs, sleeper = sleep, now = Date.now }) => {
+  const deadline = now() + timeoutMs;
+  let streak = 0;
+  let problem = "it was never probed";
+  while (now() < deadline) {
+    const result = probe();
+    if (result.healthy) {
+      streak += 1;
+      if (streak >= settle) return;
+    } else {
+      streak = 0;
+      problem = result.problem;
+    }
+    await sleeper(intervalMs);
   }
-  throw new Error(`The emulator ${avd} did not finish booting in four minutes`);
+  throw new Error(`the emulator was not healthy within ${timeoutMs / 1000} s: ${problem}`);
+};
+
+// Alive is not quiet: a runner's emulator has dropped its adb connection a
+// second into the flow while Play services and Settings were still indexing,
+// with a one-minute load average of several times its core count. Waiting is
+// bounded, and a device that stays busy is logged and used rather than failed.
+export const waitQuiet = async (read, { limit, timeoutMs, intervalMs, sleeper = sleep, now = Date.now, log = console.log }) => {
+  const started = now();
+  let load = Number.NaN;
+  while (now() - started < timeoutMs) {
+    load = read();
+    if (load < limit) {
+      log(`The emulator is quiet: load average ${load} after ${Math.round((now() - started) / 1000)} s`);
+      return { quiet: true, load };
+    }
+    await sleeper(intervalMs);
+  }
+  log(`::warning::the emulator is still busy (load average ${load}) after ${timeoutMs / 1000} s; going on`);
+  return { quiet: false, load };
+};
+
+// The first command Maestro sends a freshly booted emulator has failed with
+// `device offline` on about one run in ten while every health check passed, and
+// the second command has not (0 of 19 after a throwaway launch, 1 of 20
+// without). A throwaway launch of a system app absorbs that, as a failure the
+// boot attempts handle and name, instead of it landing on the flow's own first
+// command.
+export const preflight = async ({ launch, settle }) => {
+  try {
+    launch();
+  } catch (error) {
+    throw new Error(`Maestro's first command on the device failed before the flow ran (${error.message})`);
+  }
+  await settle();
+};
+
+export class InfrastructureError extends Error {}
+
+// The emulator and the SDK around it are the runner's, not the app's: a step
+// that fails on them is tried again from a clean state, and when every attempt
+// has failed the run says so, rather than looking like a failed flow. The flow
+// itself is never retried.
+export const retryInfrastructure = async ({ what, attempts = 2, run: attempt, cleanup, log = console.log }) => {
+  const failures = [];
+  for (let number = 1; number <= attempts; number += 1) {
+    try {
+      return await attempt(number);
+    } catch (error) {
+      failures.push(`attempt ${number}: ${error.message}`);
+      log(`::warning::${what} failed (attempt ${number}/${attempts}): ${error.message}`);
+      await cleanup(number);
+    }
+  }
+  throw new InfrastructureError(`Infrastructure failure, not the app: ${what} failed ${attempts} times, so the flow did not run.\n  ${failures.join("\n  ")}`);
+};
+
+const BOOT_WAIT = { timeoutMs: 300_000, settle: 5, intervalMs: 5000 };
+const INSTALL_WAIT = { timeoutMs: 120_000, settle: 3, intervalMs: 5000 };
+const AFTER_PREFLIGHT_WAIT = { timeoutMs: 60_000, settle: 2, intervalMs: 5000 };
+const QUIET_AFTER_BOOT = { limit: CI_CORES / 2, timeoutMs: 180_000, intervalMs: 5000 };
+const QUIET_AFTER_INSTALL = { limit: CI_CORES / 2, timeoutMs: 90_000, intervalMs: 5000 };
+
+const deviceProbe = (adb, serial) => () =>
+  probeEmulator((args) => capture(adb, ["-s", serial, ...args], { timeout: 15_000, stdio: ["ignore", "pipe", "ignore"] }));
+
+const deviceLoad = (adb, serial) => () => {
+  try {
+    return Number.parseFloat(capture(adb, ["-s", serial, "shell", "cat", "/proc/loadavg"], { timeout: 15_000, stdio: ["ignore", "pipe", "ignore"] }));
+  } catch {
+    return Number.NaN;
+  }
+};
+
+let launched;
+
+const launchEmulator = async (adb, emulator, avd, headless, attempt) => {
+  run(adb, ["start-server"]);
+  const before = emulatorSerials(adb);
+  const options = headless
+    ? ["-no-window", "-gpu", "swiftshader_indirect", "-no-snapshot", "-noaudio", "-no-boot-anim"]
+    : ["-no-snapshot-save", "-no-boot-anim", "-no-audio"];
+  mkdirSync(OUTPUT, { recursive: true });
+  const log = openSync(join(OUTPUT, `emulator-${attempt}.log`), "w");
+  console.log(`Starting the emulator ${avd} (attempt ${attempt})`);
+  launched = spawn(emulator, ["-avd", avd, ...options], { detached: true, stdio: ["ignore", log, log], env: avdEnv() });
+  launched.unref();
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    await sleep(2000);
+    const serial = emulatorSerials(adb).find((each) => !before.includes(each));
+    if (serial) return serial;
+  }
+  throw new Error(`the emulator ${avd} never appeared in adb`);
+};
+
+const stopEmulator = async (adb, serial) => {
+  if (serial) spawnSync(adb, ["-s", serial, "emu", "kill"], { stdio: "ignore" });
+  if (launched?.pid) {
+    try {
+      process.kill(-launched.pid, "SIGKILL");
+    } catch {
+      // already gone
+    }
+  }
+  const deadline = Date.now() + 30_000;
+  while (serial && Date.now() < deadline && emulatorSerials(adb).includes(serial)) await sleep(1000);
+};
+
+const disableAnimations = (adb, serial) =>
+  ["window_animation_scale", "transition_animation_scale", "animator_duration_scale"].forEach((key) =>
+    run(adb, ["-s", serial, "shell", "settings", "put", "global", key, "0"]),
+  );
+
+const sdkRoot = () => [process.env.ANDROID_HOME, process.env.ANDROID_SDK_ROOT].find(Boolean);
+
+// sdkmanager redraws a progress bar on every percent, which buries the lines
+// that matter in a CI log.
+const quiet = (text) =>
+  text
+    .split(/[\r\n]+/)
+    .filter((line) => line.trim() && !/^\[[= ]*\]/.test(line) && !line.startsWith("Warning: This version only understands"))
+    .join("\n");
+
+const sdk = (tool, args, input) => {
+  const result = spawnSync(tool, args, { input, encoding: "utf8", env: avdEnv(), maxBuffer: 64 * 1024 * 1024 });
+  const shown = quiet(`${result.stdout ?? ""}\n${result.stderr ?? ""}`);
+  if (shown) console.log(shown);
+  if (result.status !== 0) throw new Error(`${basename(tool)} ${args.join(" ")} exited with ${result.status ?? result.signal}`);
+  return result.stdout ?? "";
+};
+
+// avdmanager honours ANDROID_USER_HOME and ignores ANDROID_AVD_HOME, falling
+// back to $XDG_CONFIG_HOME/.android when that is set, as it is on a runner; the
+// emulator reads ANDROID_AVD_HOME and never looks under XDG. Left alone they
+// disagree about where a virtual device is, so both are told.
+const androidHome = () => process.env.ANDROID_USER_HOME ?? join(homedir(), ".android");
+const avdHome = () => process.env.ANDROID_AVD_HOME ?? join(androidHome(), "avd");
+const avdEnv = () => ({ ...process.env, ANDROID_USER_HOME: androidHome(), ANDROID_AVD_HOME: avdHome() });
+
+// A virtual device for a host that has none. Each tool's output stays
+// visible: avdmanager has crashed on a runner with `"hwMap" is null`, and its
+// own output is the only clue to why.
+const prepareEmulator = async () => {
+  const sdkmanager = sdkTool("cmdline-tools/latest/bin", "sdkmanager");
+  const avdmanager = sdkTool("cmdline-tools/latest/bin", "avdmanager");
+  if (!sdkmanager || !avdmanager) throw new Error("sdkmanager and avdmanager are not installed (set ANDROID_HOME to an SDK with cmdline-tools)");
+  await retryInfrastructure({
+    what: "preparing the virtual device",
+    run: (attempt) => {
+      sdk(sdkmanager, ["--licenses"], "y\n".repeat(50));
+      if (attempt > 1) sdk(sdkmanager, ["--uninstall", "emulator"]);
+      sdk(sdkmanager, ["--install", "emulator", "platform-tools", SYSTEM_IMAGE]);
+      sdk(avdmanager, ["create", "avd", "--force", "-n", CI_AVD, "--package", SYSTEM_IMAGE], "no\n");
+      if (!existsSync(join(avdHome(), `${CI_AVD}.ini`))) throw new Error(`avdmanager exited 0 but created no ${CI_AVD} in ${avdHome()}`);
+      appendFileSync(join(avdHome(), `${CI_AVD}.avd`, "config.ini"), `hw.cpu.ncore=${CI_CORES}\n`);
+    },
+    cleanup: () => {
+      const root = sdkRoot();
+      console.log(`emulator/lib/hardware-properties.ini present: ${root ? existsSync(join(root, "emulator", "lib", "hardware-properties.ini")) : "unknown, no ANDROID_HOME"}`);
+      console.log(["ANDROID_AVD_HOME", "ANDROID_USER_HOME", "ANDROID_SDK_HOME", "HOME"].map((name) => `${name}=${process.env[name] ?? "(unset)"}`).join(" "));
+    },
+  });
 };
 
 const jdk17 = () => {
@@ -227,28 +427,60 @@ const runIos = (command) => {
   }
 };
 
-const runAndroid = async (command, abi) => {
+const runAndroid = async (command, abi, headless) => {
   let release = () => {};
+  let adb;
   try {
     if (command === "build") {
       buildAndroid(abi);
       return { platform: "android", status: "built" };
     }
-    const adb = sdkTool("platform-tools", "adb");
+    adb = sdkTool("platform-tools", "adb");
     if (!adb) return { platform: "android", status: "skipped", reason: "adb not found (install the Android SDK, or set ANDROID_HOME)" };
-    let serial = runningEmulator(adb);
-    if (!serial) {
+    // The install is the heaviest thing the device does before the flow, so
+    // it is inside the attempt: a device that drops after it is booted again.
+    let built = false;
+    const settleWithApp = async (serial) => {
+      if (command === "run" && !built) {
+        built = true;
+        buildAndroid(abi ?? capture(adb, ["-s", serial, "shell", "getprop", "ro.product.cpu.abi"]));
+      }
+      release = reverseStackPorts(adb, serial);
+      run(adb, ["-s", serial, "install", "-r", APK]);
+      await waitHealthy(deviceProbe(adb, serial), INSTALL_WAIT);
+      await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_INSTALL);
+      await preflight({
+        launch: () => runMaestro("android", serial, PREFLIGHT, "preflight"),
+        settle: () => waitHealthy(deviceProbe(adb, serial), AFTER_PREFLIGHT_WAIT),
+      });
+    };
+    let serial = emulatorSerials(adb)[0];
+    if (serial) {
+      await waitHealthy(deviceProbe(adb, serial), BOOT_WAIT);
+      await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_BOOT);
+      await settleWithApp(serial);
+    } else {
       const emulator = sdkTool("emulator", "emulator");
       if (!emulator) return { platform: "android", status: "skipped", reason: "no emulator running and the SDK has no emulator" };
-      serial = await bootEmulator(adb, emulator);
-      if (!serial) return { platform: "android", status: "skipped", reason: "no emulator running and no Android virtual device exists" };
+      const avd = process.env.KALIA_E2E_AVD ?? (headless ? CI_AVD : capture(emulator, ["-list-avds"]).split("\n")[0]);
+      if (!avd) return { platform: "android", status: "skipped", reason: "no emulator running and no Android virtual device exists" };
+      await retryInfrastructure({
+        what: `booting the emulator ${avd} to a healthy state with the app installed`,
+        run: async (attempt) => {
+          serial = undefined;
+          serial = await launchEmulator(adb, emulator, avd, headless, attempt);
+          await waitHealthy(deviceProbe(adb, serial), BOOT_WAIT);
+          await waitQuiet(deviceLoad(adb, serial), QUIET_AFTER_BOOT);
+          if (headless) disableAnimations(adb, serial);
+          await settleWithApp(serial);
+        },
+        cleanup: () => stopEmulator(adb, serial),
+      });
     }
-    if (command === "run") buildAndroid(abi ?? capture(adb, ["-s", serial, "shell", "getprop", "ro.product.cpu.abi"]));
-    release = reverseStackPorts(adb, serial);
-    run(adb, ["-s", serial, "install", "-r", APK]);
     runMaestro("android", serial);
     return { platform: "android", status: "passed" };
   } catch (error) {
+    if (adb) spawnSync(adb, ["devices", "-l"], { stdio: "inherit" });
     return { platform: "android", status: "failed", reason: error.message };
   } finally {
     release();
@@ -256,9 +488,13 @@ const runAndroid = async (command, abi) => {
 };
 
 const main = async () => {
-  const { command, platform, abi } = parseArgs(process.argv.slice(2));
+  const { command, platform, abi, headless } = parseArgs(process.argv.slice(2));
   if (command === "install-maestro") {
     console.log(await installMaestro());
+    return;
+  }
+  if (command === "prepare-emulator") {
+    await prepareEmulator();
     return;
   }
   if (command !== "build") {
@@ -270,7 +506,7 @@ const main = async () => {
   }
   const results = [];
   for (const each of platform === "all" ? PLATFORMS : [platform]) {
-    results.push(each === "ios" ? runIos(command) : await runAndroid(command, abi));
+    results.push(each === "ios" ? runIos(command) : await runAndroid(command, abi, headless));
   }
   const { ok, lines } = verdict(results);
   console.log(`Mobile end-to-end flow (${command}):\n${lines.join("\n")}`);

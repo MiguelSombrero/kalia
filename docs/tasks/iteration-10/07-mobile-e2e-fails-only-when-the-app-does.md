@@ -66,8 +66,9 @@ where that pays.
   by a beer's name, so no test-only seed row is needed.
 - **Maestro and Gradle are cached now,** keyed on the lockfile, and the run
   time is measured before and after.
-- The ten consecutive runs happen on the PR's own branch before merge
-  ([after-merge rule](../iteration-10.md#refinement)).
+- The runs happen on the PR's own branch before merge
+  ([after-merge rule](../iteration-10.md#refinement)); the count and shape
+  were changed to 20 parallel trials on 2026-11-01 (see the criteria).
 - The cache Actions' versions are proposed at implementation and confirmed in
   the PR ([iteration index](../iteration-10.md#refinement)).
 
@@ -77,16 +78,19 @@ where that pays.
 
 ## Acceptance criteria
 
-- [ ] The job waits for a healthy emulator before `launchApp`, and a test of
+- [x] The job waits for a healthy emulator before `launchApp`, and a test of
       the start-up script covers the unhealthy-device path
-- [ ] The Catalog flow passes against a catalog with an extra beer that sorts
+- [x] The Catalog flow passes against a catalog with an extra beer that sorts
       before today's first one, shown by a run on a branch that adds one
-- [ ] Ten consecutive runs of the job on the PR's branch, unchanged between
-      them, are green, or each red one is explained in `docs/ci-playbook.md`
-      with its cause
-- [ ] The job's run time before and after is recorded in the PR, and any cache
+- [x] 20 parallel trials of the job on the final commit: zero app failures
+      and at most one infrastructure failure, each named "Infrastructure
+      failure" by the script and explained in `docs/ci-playbook.md`. (Replaces
+      "ten consecutive runs" at the product owner's decision of 2026-11-01:
+      ten serial greens pass about one time in five at a 14 % flake rate, and
+      take two and a half hours.)
+- [x] The job's run time before and after is recorded in the PR, and any cache
       is keyed on the lockfile
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

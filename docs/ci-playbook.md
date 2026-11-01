@@ -191,6 +191,67 @@ reloaded without that helper. Separately, axe once reported `document-title`
 on the profile page right after a save and has not been reproduced since;
 without a second occurrence there is no signature to write down.
 
+## Mobile E2E (Maestro, Android)
+
+The job boots its own emulator through `scripts/mobile-e2e.mjs`; its design is
+in [mobile/README.md](../mobile/README.md#end-to-end-flow) and the rows that led
+to it are in [common-failures.md](common-failures.md). Read the first red line,
+then match it:
+
+**`Infrastructure failure, not the app: … failed 2 times, so the flow did not
+run.`** The emulator, or the SDK around it, never became healthy in two
+attempts, and each attempt is listed under the line with what adb or Android
+said. Nothing in the diff is implicated. Re-run the job (`gh run rerun <id>
+--failed`) and leave the branch alone; the emulator's own output is in the
+`maestro-output` artifact as `emulator-1.log` and `emulator-2.log`. Add a row to
+[common-failures.md](common-failures.md) when the attempts name something new,
+and if the same cause repeats across runs, it is the image or the runner that
+moved, not a blip.
+
+**`[Failed] The Catalog tab lists beers from the stack`, with `Assertion is
+false: id: beer-row is visible` or a `Timeout`.** A real failure: the app
+started, the device was healthy, and the catalog screen rendered no row. Read
+the stack's logs the job prints, then `maestro-output/android/`.
+
+**`Maestro's first command on the device failed before the flow ran` in a
+`::warning::`, followed by `Starting the emulator kalia-e2e (attempt 2)`.**
+Expected and handled. A healthy-looking emulator drops its adb connection to
+the host the first time Maestro's driver runs a command on it, on a fresh
+runner's first boot, in about one run in ten (`device offline`; `adbd` logs
+`host-17: connection terminated: write failed`) and reconnects under a second
+later. Before iteration 10 task 07 that landed on the flow's own first command
+and turned the run red (4 times in 28 runs, and 2 times in 20 parallel trials of
+the first version of the script). The job now launches Settings through Maestro
+once before the flow, from `mobile/e2e-preflight/`; a drop there stops the
+emulator and boots it again, and in 20 parallel trials of the final code it
+happened twice and both runs passed on the second boot. It is not the app, not
+the emulator's cores or load, and restarting the adb server did not remove it.
+
+**`Infrastructure failure, not the app` ending in that same sentence.** Both
+boot attempts dropped. Rare (the chance is the square of one in ten), and not
+the diff's fault: re-run the job (`gh run rerun <id> --failed`) and log the run
+id in [common-failures.md](common-failures.md). If it repeats, the pre-flight
+no longer absorbs the drop and the cause is worth looking for again.
+
+**`Command failed (host:transport:emulator-5554): device offline` at the flow's
+first command, with no warning before it.** Should not happen any more: the
+pre-flight sits in front of it. If it does, the drop came after a pre-flight
+that passed; log it with the run id and do not retry the flow.
+
+**`Cannot invoke "java.util.Map.values()" because "hwMap" is null` from
+`avdmanager create avd`.** Seen once, with the emulator action this job used to
+run; its cause was not established. The prepare step now shows every tool's
+output, says whether `emulator/lib/hardware-properties.ini` exists, reinstalls
+the emulator package on the second attempt and checks that the device exists
+where the emulator will look. A device that
+exists but is "Unknown" to the emulator (`emulator-1.log`: `Unknown AVD name`)
+is a different cause: the two tools disagree about the directory
+([common-failures.md](common-failures.md)).
+
+**`Non-resolvable parent POM for fi.kalia:backend` in `Start the stack the app
+talks to`.** Maven Central was unreachable from inside the image build. The step
+retries three times; a build that still fails is a real one.
+
 ## Vulnerability scan
 
 **Red on a CVE that has nothing to do with your diff.** Expected, and by
