@@ -241,6 +241,10 @@ and the third keeps that identifier from ever passing to someone else.
   — the mobile app's unit tests are Jest with React Native Testing Library and
   its end-to-end flows are Maestro; CI runs the flow on Android only, against
   the full stack, and iOS runs it locally through `make verify`.
+- [ADR-0099](0099-the-android-end-to-end-build-caches-no-native-output-because-neither-ccache-nor-cmakes-output-saves-three-minutes.md)
+  — the Android end-to-end job caches no native build output: ccache saved
+  1:45 of the build step, short of the three-minute bar, and a cached CMake
+  output made it slower.
 
 ## Authentication and identity
 
