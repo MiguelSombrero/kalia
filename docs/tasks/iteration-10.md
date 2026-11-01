@@ -32,7 +32,7 @@ a documented routine rather than a surprise.
 | [12](iteration-10/12-every-image-the-stack-runs-is-scanned.md) | Every image the stack runs is scanned, and a mirror outage is not a finding | done |
 | [03](iteration-10/03-app-identity.md) | Kalia has its own name, icon and splash screen on a phone | refined |
 | [04](iteration-10/04-free-apple-id-signing.md) | Kalia installs on the product owner's iPhone with a free Apple ID | needs-refinement |
-| [02](iteration-10/02-the-phone-reaches-the-stack.md) | The phone signs in and browses against the stack on the Mac | needs-refinement |
+| [02](iteration-10/02-the-phone-reaches-the-stack.md) | The phone signs in and browses against the stack on the Mac | refined |
 | [05](iteration-10/05-build-variants.md) | A development build and a release build run on both platforms | needs-refinement |
 | [21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md) | An error on a phone leaves something to read | refined |
 | [08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md) | The app survives a token it cannot refresh or the server refuses | refined |
