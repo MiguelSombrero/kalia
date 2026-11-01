@@ -260,7 +260,7 @@ const launchEmulator = async (adb, emulator, avd, headless, attempt) => {
   mkdirSync(OUTPUT, { recursive: true });
   const log = openSync(join(OUTPUT, `emulator-${attempt}.log`), "w");
   console.log(`Starting the emulator ${avd} (attempt ${attempt})`);
-  launched = spawn(emulator, ["-avd", avd, ...options], { detached: true, stdio: ["ignore", log, log] });
+  launched = spawn(emulator, ["-avd", avd, ...options], { detached: true, stdio: ["ignore", log, log], env: avdEnv() });
   launched.unref();
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
@@ -300,19 +300,18 @@ const quiet = (text) =>
     .join("\n");
 
 const sdk = (tool, args, input) => {
-  const result = spawnSync(tool, args, { input, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync(tool, args, { input, encoding: "utf8", env: avdEnv(), maxBuffer: 64 * 1024 * 1024 });
   const shown = quiet(`${result.stdout ?? ""}\n${result.stderr ?? ""}`);
   if (shown) console.log(shown);
   if (result.status !== 0) throw new Error(`${basename(tool)} ${args.join(" ")} exited with ${result.status ?? result.signal}`);
   return result.stdout ?? "";
 };
 
-// avdmanager says where it put a device; it does not always put it under
-// ~/.android/avd.
-export const avdPath = (listing, name) => {
-  const block = listing.split(/-{5,}/).find((each) => new RegExp(`^\\s*Name: ${name}\\s*$`, "m").test(each));
-  return block?.match(/^\s*Path: (.+)$/m)?.[1].trim();
-};
+// avdmanager and the emulator each pick a default directory for virtual
+// devices, and on a runner they picked different ones: the device existed and
+// the emulator reported it unknown. Both are told the same one.
+const avdHome = () => process.env.ANDROID_AVD_HOME ?? join(homedir(), ".android", "avd");
+const avdEnv = () => ({ ...process.env, ANDROID_AVD_HOME: avdHome() });
 
 // A virtual device for a host that has none. Each tool's output stays
 // visible: avdmanager has crashed on a runner with `"hwMap" is null`, and what
@@ -328,9 +327,8 @@ const prepareEmulator = async () => {
       if (attempt > 1) sdk(sdkmanager, ["--uninstall", "emulator"]);
       sdk(sdkmanager, ["--install", "emulator", "platform-tools", SYSTEM_IMAGE]);
       sdk(avdmanager, ["create", "avd", "--force", "-n", CI_AVD, "--package", SYSTEM_IMAGE], "no\n");
-      const path = avdPath(sdk(avdmanager, ["list", "avd"]), CI_AVD);
-      if (!path) throw new Error(`avdmanager exited 0 but lists no virtual device named ${CI_AVD}`);
-      appendFileSync(join(path, "config.ini"), "hw.cpu.ncore=2\n");
+      if (!existsSync(join(avdHome(), `${CI_AVD}.ini`))) throw new Error(`avdmanager exited 0 but created no ${CI_AVD} in ${avdHome()}`);
+      appendFileSync(join(avdHome(), `${CI_AVD}.avd`, "config.ini"), "hw.cpu.ncore=2\n");
     },
     cleanup: () => {
       const root = sdkRoot();
@@ -389,8 +387,12 @@ const runAndroid = async (command, abi, headless) => {
     if (!adb) return { platform: "android", status: "skipped", reason: "adb not found (install the Android SDK, or set ANDROID_HOME)" };
     // The install is the heaviest thing the device does before the flow, so
     // it is inside the attempt: a device that drops after it is booted again.
+    let built = false;
     const settleWithApp = async (serial) => {
-      if (command === "run") buildAndroid(abi ?? capture(adb, ["-s", serial, "shell", "getprop", "ro.product.cpu.abi"]));
+      if (command === "run" && !built) {
+        built = true;
+        buildAndroid(abi ?? capture(adb, ["-s", serial, "shell", "getprop", "ro.product.cpu.abi"]));
+      }
       release = reverseStackPorts(adb, serial);
       run(adb, ["-s", serial, "install", "-r", APK]);
       await waitHealthy(deviceProbe(adb, serial), INSTALL_WAIT);
