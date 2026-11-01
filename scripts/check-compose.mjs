@@ -8,13 +8,16 @@
 // It proves that the base file refuses to render without any one of its
 // required secrets, naming that variable; that it defaults none the dev env
 // file supplies and has no seed service or Swagger client; and that the local
-// stack renders from the root .env's one secret alone.
+// stack renders from the root .env's one secret alone. It also proves that an
+// image added to the base file reaches the vulnerability scan's matrix.
 
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { renderMatrix } from "./scan-images.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
@@ -108,8 +111,23 @@ const run = () => {
 
   problems.push(...edgeProblems(base.services));
 
+  const scanEnv = { PATH: process.env.PATH, HOME: process.env.HOME, ...everySecret };
+  const scanArgs = ["--env-file", "/dev/null", "-f", "docker-compose.base.yml"];
+  const matrix = renderMatrix(scanArgs, scanEnv);
+  for (const [name, definition] of Object.entries(base.services)) {
+    const entry = matrix.find((candidate) => (definition.image ? candidate.image === definition.image : candidate.service === name));
+    if (!entry) problems.push(`the vulnerability scan's matrix omits ${name}, which the base file runs`);
+  }
+
   const dir = mkdtempSync(join(tmpdir(), "check-compose-"));
   try {
+    const canary = "example.invalid/scan-canary:1.0";
+    const added = join(dir, "added.yml");
+    writeFileSync(added, `services:\n  scan-canary:\n    image: ${canary}\n`);
+    if (!renderMatrix([...scanArgs, "-f", added], scanEnv).some((entry) => entry.image === canary)) {
+      problems.push("an image added to the base file is not in the vulnerability scan's matrix");
+    }
+
     // What a developer's root .env holds: the one value with no dev default.
     const rootEnv = join(dir, ".env");
     writeFileSync(rootEnv, "KALIA_WEB_CLIENT_SECRET=check-compose-value\n");

@@ -207,6 +207,14 @@ CSP that was actually blocking it in a browser.
 it. Tests belong to the task that creates the behaviour; a separate "write the
 tests" task is what let iteration 4's sign-in flow ship untested.
 
+**Every criterion must be checkable before its pull request merges.** A
+criterion that can only be seen afterwards — a signature that lapses after
+seven days, ten consecutive green runs on `dev` — leaves a pull request whose
+only job is to tick a box once the merge has happened (#414, #431 and #446 were
+three of them). Refinement rewords such a criterion to what can be run on the
+branch: simulate the lapse, run the ten on the PR's own branch. A criterion
+that cannot be reworded is a different task, not a criterion of this one.
+
 Prefer a criterion that would fail today. "Refactor is clean" cannot fail;
 "`npm test` covers the contradictory-range case" can.
 

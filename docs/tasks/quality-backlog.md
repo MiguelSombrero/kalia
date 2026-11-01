@@ -375,7 +375,7 @@ live section they came from.
 - ~~COULD-90~~ (the PR template's unfillable required-checks clause) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md).
 - ~~COULD-91~~ (PRs that only tick after-merge criteria) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~COULD-92~~ (no playbook entry for Trivy's Java DB mirror 404) — lifted into [iteration-10 task 12](iteration-10/12-every-image-the-stack-runs-is-scanned.md).
-- ~~COULD-93~~ (`CLAUDE.md` at 199 of 200 lines) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-93~~ (`CLAUDE.md` at 199 of 200 lines) — closed by [iteration-10 task 20](iteration-10/20-process-records-match-practice.md): waiting. `CLAUDE.md` is at 197 of 200 lines, and [ADR-0048](../adr/0048-what-survives-a-claude-md-bullet.md) reopens the checker question on its third overrun, which has not happened.
 - ~~COULD-94~~ (the Copilot review rule that never runs) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~COULD-96~~ (bottles added together reading back in no fixed order) — lifted into [iteration-10 task 13](iteration-10/13-cellar-survives-a-concurrent-change.md).
 - ~~COULD-101~~ (Dependabot bumping Expo-managed packages one at a time) — lifted into [iteration-10 task 09](iteration-10/09-the-checks-reach-mobile.md).

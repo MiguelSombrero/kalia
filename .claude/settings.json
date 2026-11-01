@@ -5,6 +5,18 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null) && node \"$root/scripts/prune-worktrees.mjs\" || true",
+            "timeout": 60,
+            "statusMessage": "Removing worktrees whose pull request merged"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
