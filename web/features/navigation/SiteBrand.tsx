@@ -2,13 +2,14 @@ import Link from "next/link";
 import { KaliaMark } from "@/components/ui/kalia-mark";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { homeHref } from "@/lib/routes";
 
 export const SiteBrand = async ({ locale }: { locale: Locale }) => {
   const { t } = await getTranslation(locale);
 
   return (
     <Link
-      href={`/${locale}`}
+      href={homeHref(locale)}
       aria-label={`${t("app.name")}, ${t("nav.home")}`}
       className="inline-flex min-h-11 items-center gap-2.5 text-foreground"
     >

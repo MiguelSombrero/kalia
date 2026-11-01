@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { signIn } from "@/auth";
-import { defaultLocale, isLocale, type Locale } from "@/i18n/settings";
-import { beerHref } from "@/lib/routes";
+import { signInReturningTo } from "@/lib/auth/signInReturningTo";
+import { beerHref, ownCellarHref } from "@/lib/routes";
 import {
   addBottlesToCellar,
   removeCellarBottle,
@@ -15,38 +14,21 @@ import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 // here: a Server Action re-exported through a second "use server" file
 // breaks Next's action-ID resolution — the client sends an ID the server's
 // manifest doesn't recognize (UnrecognizedActionError), reproduced live,
-// not caught by any test, lint, or build in this repo. Mirrors
-// features/auth's startSignIn — features cannot import each other
-// (web/README.md's Structure bullet), so this stays a small duplicate.
+// not caught by any test, lint, or build in this repo.
 export const startCellarSignIn = async (formData?: FormData) => {
-  const locale = localeFromForm(formData);
-  // `ui_locales` picks the Keycloak page language (ADR-0056); the return
-  // path keeps the visitor on the beer they clicked, else on their cellar —
-  // the page the bare prompt is inviting them to.
-  const redirectTo = beerReturnPath(formData) ?? `/${locale}/cellar`;
-  await signIn("keycloak", { redirectTo }, { ui_locales: locale });
-};
-
-const localeFromForm = (formData?: FormData): Locale => {
-  const locale = formData?.get("locale");
-  return typeof locale === "string" && isLocale(locale) ? locale : defaultLocale;
+  // The visitor returns to the beer they clicked, else to their cellar — the
+  // page the bare prompt is inviting them to.
+  await signInReturningTo(formData, (locale) => {
+    const beerId = beerIdFrom(formData);
+    return beerId ? beerHref(locale, beerId) : ownCellarHref(locale);
+  });
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Rebuilt from validated parts, never taken as a path: these fields reach the
-// server from a client-rendered form, and handing signIn's redirectTo a
-// caller-supplied string is an open redirect.
-const beerReturnPath = (formData?: FormData): string | undefined => {
+const beerIdFrom = (formData?: FormData): string | undefined => {
   const beerId = formData?.get("beerId");
-  const locale = formData?.get("locale");
-  if (typeof beerId !== "string" || !UUID_PATTERN.test(beerId)) {
-    return undefined;
-  }
-  if (typeof locale !== "string" || !isLocale(locale)) {
-    return undefined;
-  }
-  return beerHref(locale, beerId);
+  return typeof beerId === "string" && UUID_PATTERN.test(beerId) ? beerId : undefined;
 };
 
 export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[]> => {

@@ -1,6 +1,6 @@
 # Task 17: Web sign-in is one helper, and a cross-site link cannot sign anyone out
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -55,15 +55,15 @@ a session only for a sign-in this browser started.
 
 ## Acceptance criteria
 
-- [ ] A test shows a callback `GET` without this browser's sign-in state
+- [x] A test shows a callback `GET` without this browser's sign-in state
       leaving the session intact, and it failed before the fix
-- [ ] The Playwright test of signing in while signed in as another user still
+- [x] The Playwright test of signing in while signed in as another user still
       passes
-- [ ] The four actions call one helper in `lib/auth/`, which has unit tests
+- [x] The four actions call one helper in `lib/auth/`, which has unit tests
       for the locale and the return path
-- [ ] No feature builds a locale-prefixed route by hand, checked by the
+- [x] No feature builds a locale-prefixed route by hand, checked by the
       existing lint or a test
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

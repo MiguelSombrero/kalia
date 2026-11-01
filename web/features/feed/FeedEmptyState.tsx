@@ -2,6 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { profileHref, signUpHref } from "@/lib/routes";
 
 type Props = {
   locale: Locale;
@@ -22,14 +23,14 @@ export const FeedEmptyState = async ({ locale, signedIn, viewer }: Props) => {
       <p className="mt-2 text-2xl font-bold text-foreground">{t("feed.empty.title")}</p>
       {viewer && <p className="text-muted-foreground">{t("feed.empty.hint")}</p>}
       {!signedIn && (
-        <Link href={`/${locale}/sign-up`} className={buttonVariants("primary")}>
+        <Link href={signUpHref(locale)} className={buttonVariants("primary")}>
           {t("auth.signUp")}
         </Link>
       )}
       {viewer && !viewer.cellarPublic && (
         <p className="text-muted-foreground">
           {t("feed.empty.privateHint")}{" "}
-          <Link href={`/${locale}/profile`} className="text-foreground underline underline-offset-2">
+          <Link href={profileHref(locale)} className="text-foreground underline underline-offset-2">
             {t("feed.empty.privateLink")}
           </Link>
         </p>

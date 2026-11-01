@@ -2,6 +2,7 @@ import Link from "next/link";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { getTranslation } from "@/i18n/server";
 import { cn } from "@/lib/cn";
+import { homeHref } from "@/lib/routes";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
@@ -18,7 +19,7 @@ const LocaleNotFound = async () => {
       <PageTitle>{t("notFound.generic.title")}</PageTitle>
       <p className="text-muted-foreground">{t("notFound.generic.message")}</p>
       <Link
-        href={`/${locale}`}
+        href={homeHref(locale)}
         className={cn(buttonVariants("outline"), "self-start")}
       >
         {t("notFound.generic.backLink")}

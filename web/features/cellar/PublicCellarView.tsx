@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { catalogHref, ownCellarHref } from "@/lib/routes";
+import { catalogHref, ownCellarHref, signUpHref } from "@/lib/routes";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
 import { CellarPagination } from "./CellarPagination";
@@ -65,7 +65,7 @@ export const PublicCellarView = async ({
             <Link href={catalogHref(locale)} className={buttonVariants("outline")}>
               {t("cellar.public.browse")}
             </Link>
-            <Link href={`/${locale}/sign-up`} className={buttonVariants("outline")}>
+            <Link href={signUpHref(locale)} className={buttonVariants("outline")}>
               {t("auth.signUp")}
             </Link>
           </div>

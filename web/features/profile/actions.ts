@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { signIn } from "@/auth";
-import { defaultLocale, isLocale, type Locale } from "@/i18n/settings";
+import { signInReturningTo } from "@/lib/auth/signInReturningTo";
+import { profileHref } from "@/lib/routes";
 import { changeCellarVisibility } from "./api";
 import type { Profile } from "./types";
 
@@ -10,15 +10,9 @@ import type { Profile } from "./types";
 // here: a Server Action re-exported through a second "use server" file
 // breaks Next's action-ID resolution — the client sends an ID the server's
 // manifest doesn't recognize (UnrecognizedActionError), reproduced live,
-// not caught by any test, lint, or build in this repo. Mirrors
-// features/cellar's startCellarSignIn — features cannot import each other
-// (web/README.md's Structure bullet), so this stays a small duplicate.
+// not caught by any test, lint, or build in this repo.
 export const startProfileSignIn = async (formData?: FormData) => {
-  const raw = formData?.get("locale");
-  // Hidden "locale" field → signIn()'s `ui_locales` (Keycloak page language,
-  // ADR-0056) and the return path.
-  const locale: Locale = typeof raw === "string" && isLocale(raw) ? raw : defaultLocale;
-  await signIn("keycloak", { redirectTo: `/${locale}/profile` }, { ui_locales: locale });
+  await signInReturningTo(formData, profileHref);
 };
 
 // ADR-0040: must stay a Server Action, or the client build fails.

@@ -4,6 +4,7 @@ import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+import { profileHref, signUpHref } from "@/lib/routes";
 import { startSignIn } from "./actions";
 import { AuthSubmitButton } from "./AuthSubmitButton";
 import { SignOutButton } from "./SignOutButton";
@@ -31,7 +32,7 @@ export const AuthStatus = async ({ locale, name, placement }: Props) => {
           </AuthSubmitButton>
         </form>
         {placement !== "phone" && (
-          <Link href={`/${locale}/sign-up`} className={cn(buttonVariants("outline"), block)}>
+          <Link href={signUpHref(locale)} className={cn(buttonVariants("outline"), block)}>
             {t("auth.signUp")}
           </Link>
         )}
@@ -43,7 +44,7 @@ export const AuthStatus = async ({ locale, name, placement }: Props) => {
     // No aria-label: axe's label-content-name-mismatch counts the avatar's aria-hidden
     // initials as visible text, so an aria-label would have to repeat them. Runs only at E2E.
     <Link
-      href={`/${locale}/profile`}
+      href={profileHref(locale)}
       className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 text-foreground"
     >
       <PersonSlot username={name} size="sm" />

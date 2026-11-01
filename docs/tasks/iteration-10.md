@@ -40,7 +40,7 @@ a documented routine rather than a surprise.
 | [14](iteration-10/14-the-owner-cellar-read-is-bounded.md) | The owner's cellar read has a bound before the app caches it | refined |
 | [15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md) | A rejected or removed beer is treated the same way everywhere | refined |
 | [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) | Adding a beer says what happens to it, and never dead-ends | refined |
-| [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | refined |
+| [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | done |
 | [18](iteration-10/18-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | refined |
 | [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | refined |
 

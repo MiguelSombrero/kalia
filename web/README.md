@@ -273,11 +273,13 @@ Why the rationale lives there and not here:
   session mechanism or switch to the `"jwt"` strategy without reading
   [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md) first.
 - **`signIn` from `auth.ts` ends any local session before it starts**
-  (`lib/auth/endingLocalSession.ts`), and every sign-in action calls that one.
-  Do not export Auth.js's own `signIn` instead: with a live session Auth.js links
-  the account Keycloak returns to the signed-in user, so a second person
-  signing in on the browser would be filed under the first one's identity and
-  carry their tokens. Nothing fails
+  (`lib/auth/endingLocalSession.ts`), and every sign-in action reaches it
+  through `signInReturningTo` (`lib/auth/signInReturningTo.ts`), which parses
+  the form's locale and sends the viewer back to a path built from
+  `lib/routes.ts`. Do not export Auth.js's own `signIn` instead: with a live
+  session Auth.js links the account Keycloak returns to the signed-in user, so
+  a second person signing in on the browser would be filed under the first
+  one's identity and carry their tokens. Nothing fails
   ([ADR-0089](../docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).
 - **Sign-out goes through the `federatedSignOut` Server Action
   (`features/auth/actions.ts`), never Auth.js's own `signOut()` directly** —
@@ -292,6 +294,13 @@ Why the rationale lives there and not here:
   `withSignInContext`, which is what lets the issued tokens be filed under the
   session just created. Unwrapping it fails silently — sign-in still succeeds,
   and only later does the session turn out to reach no protected endpoint.
+- **The callback ends the previous session in Auth.js's `callbacks.signIn`
+  (`endPreviousSession`), never in the route handler.** That callback runs only
+  after Auth.js has checked the callback's state, PKCE and nonce, so a bare
+  cross-site link to `/api/auth/callback/keycloak` signs nobody out. Ending the
+  session on the request instead is the same bug with the same silence: the
+  visitor is just signed out. `lib/auth/signInCallback.test.ts` runs the real
+  `@auth/core` callback to pin the order.
 - **`kaliaFetch` attaches the bearer token; callers never do.** (`lib/api/mutator.ts`
   is the web's transport around `@kalia/api`'s fetch core; `instrumentation.ts`
   registers it at startup, and a generated call made before that throws.) An expired one,
@@ -463,8 +472,9 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   the server's manifest doesn't recognize, and the form submission fails at
   runtime with `UnrecognizedActionError` — a real `POST` to the current
   page, 404. No test, lint, or build catches this; only clicking the button
-  in a browser does. Duplicate the small action per feature instead
-  (matches the feature-isolation rule above, so it costs nothing extra).
+  in a browser does. Each feature keeps its own small action and shares only
+  the plain helper it calls (`signInReturningTo`), which is not a
+  `"use server"` module.
 
 **Other**
 

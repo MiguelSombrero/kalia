@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { SignUpForm } from "@/features/auth";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
+import { profileHref } from "@/lib/routes";
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
 
@@ -24,7 +25,7 @@ const SignUpPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
   const session = await auth();
   if (session?.user) {
-    redirect(`/${locale}/profile`);
+    redirect(profileHref(locale));
   }
 
   const { t } = await getTranslation(locale);

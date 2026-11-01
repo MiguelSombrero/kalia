@@ -25,3 +25,18 @@ export const endingLocalSession =
     await endCurrentSession();
     return signIn(...args);
   };
+
+/**
+ * Auth.js's `callbacks.signIn`, which @auth/core runs once the callback has
+ * passed its state, PKCE and nonce checks and before it reads the session
+ * cookie to decide whom to link the account to
+ * (lib/actions/callback/index.js). A failure to end the session denies the
+ * sign-in rather than linking the account to the previous user.
+ *
+ * Do not end the session in the route handler instead: it would sign out
+ * anyone who follows a bare link to the callback URL.
+ */
+export const endPreviousSession = async (): Promise<true> => {
+  await endCurrentSession();
+  return true;
+};

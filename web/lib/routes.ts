@@ -5,6 +5,24 @@ const withQuery = (path: string, query?: URLSearchParams): string => {
   return search ? `${path}?${search}` : path;
 };
 
+export const homeHref = (locale: Locale): string => {
+  return `/${locale}`;
+};
+
+export const profileHref = (locale: Locale): string => {
+  return `/${locale}/profile`;
+};
+
+export type SignUpError = "agree-required" | "rate-limited";
+
+export const signUpHref = (locale: Locale, error?: SignUpError): string => {
+  return withQuery(`/${locale}/sign-up`, error ? new URLSearchParams({ error }) : undefined);
+};
+
+export const usernameTakenHref = (locale: Locale): string => {
+  return `/${locale}/username-taken`;
+};
+
 export const catalogHref = (locale: Locale, query?: URLSearchParams): string => {
   return withQuery(`/${locale}/beers`, query);
 };

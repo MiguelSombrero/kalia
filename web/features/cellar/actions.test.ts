@@ -45,12 +45,16 @@ describe("startCellarSignIn", () => {
     expect(redirectTo()).toBe("/en/cellar");
   });
 
-  it("ignores a valid beer id when the locale is not one the app serves", async () => {
+  it("returns the visitor to the beer in the default locale when the form's locale is not one the app serves", async () => {
     const { startCellarSignIn } = await import("./actions");
 
     await startCellarSignIn(formData({ beerId, locale: "//evil.example" }));
 
-    expect(redirectTo()).toBe("/en/cellar");
+    expect(signIn).toHaveBeenCalledWith(
+      "keycloak",
+      { redirectTo: `/en/beers/${beerId}` },
+      { ui_locales: "en" },
+    );
   });
 
   it("sends the visitor to their cellar when the form carries no beer", async () => {
