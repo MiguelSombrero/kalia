@@ -12,6 +12,13 @@ import { join } from "node:path";
 
 import { prune } from "./prune-worktrees.mjs";
 
+// A git hook (the pre-push gate runs `make check`) exports GIT_DIR and friends,
+// which would point every command below, and the script's own, at the real
+// repository instead of the fixture.
+for (const name of Object.keys(process.env)) {
+  if (name.startsWith("GIT_")) delete process.env[name];
+}
+
 const GIT_ENV = {
   ...process.env,
   GIT_CONFIG_GLOBAL: "/dev/null",
@@ -37,6 +44,7 @@ function commit(cwd, file, message) {
 // way GitHub does (a merge commit on dev's first-parent chain).
 function fixture() {
   const base = realpathSync(mkdtempSync(join(tmpdir(), "prune-worktrees-")));
+  assert.ok(base.startsWith(realpathSync(tmpdir())), "fixtures live in the temp directory only");
   const origin = join(base, "origin.git");
   const main = join(base, "main");
   git(base, "init", "-q", "--bare", "-b", "dev", origin);
