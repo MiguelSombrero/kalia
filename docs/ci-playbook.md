@@ -220,9 +220,14 @@ seeing it again means the device dropped in the seconds between that wait and
 Maestro's first command. Log it with the run id; the flow is not retried.
 
 **`Cannot invoke "java.util.Map.values()" because "hwMap" is null` from
-`avdmanager create avd`.** The prepare step catches it, prints which SDK
-packages are installed and whether `emulator/lib/hardware-properties.ini`
-exists, reinstalls the emulator package and tries once more.
+`avdmanager create avd`.** Seen once, with the emulator action this job used to
+run; its cause was not established. The prepare step now shows every tool's
+output, says whether `emulator/lib/hardware-properties.ini` exists, reinstalls
+the emulator package on the second attempt and checks that the device exists
+where the emulator will look. A device that
+exists but is "Unknown" to the emulator (`emulator-1.log`: `Unknown AVD name`)
+is a different cause: the two tools disagree about the directory
+([common-failures.md](common-failures.md)).
 
 **`Non-resolvable parent POM for fi.kalia:backend` in `Start the stack the app
 talks to`.** Maven Central was unreachable from inside the image build. The step

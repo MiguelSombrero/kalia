@@ -316,8 +316,8 @@ const avdHome = () => process.env.ANDROID_AVD_HOME ?? join(androidHome(), "avd")
 const avdEnv = () => ({ ...process.env, ANDROID_USER_HOME: androidHome(), ANDROID_AVD_HOME: avdHome() });
 
 // A virtual device for a host that has none. Each tool's output stays
-// visible: avdmanager has crashed on a runner with `"hwMap" is null`, and what
-// was installed is the only clue to why.
+// visible: avdmanager has crashed on a runner with `"hwMap" is null`, and its
+// own output is the only clue to why.
 const prepareEmulator = async () => {
   const sdkmanager = sdkTool("cmdline-tools/latest/bin", "sdkmanager");
   const avdmanager = sdkTool("cmdline-tools/latest/bin", "avdmanager");
