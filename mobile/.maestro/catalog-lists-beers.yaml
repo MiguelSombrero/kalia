@@ -5,6 +5,6 @@ name: The Catalog tab lists beers from the stack
     clearState: true
 - tapOn: "Catalog|Oluet"
 - extendedWaitUntil:
-    visible: "0.3 Hakuna Batata"
+    visible:
+      id: "beer-row"
     timeout: 60000
-- assertVisible: "Dutch Bargain · Low-Alcohol Beer"

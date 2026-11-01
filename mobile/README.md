@@ -208,10 +208,21 @@ the Android one is a running emulator, else the first virtual device, or
 `KALIA_E2E_AVD`. Maestro's reports and screenshots land in
 `maestro-output/`, which is gitignored.
 
-- **A flow** selects by visible text or accessibility label, starts with
-  `launchApp: clearState: true` and depends on no other flow. The Catalog
-  flow looks for a beer from the Wikidata import that sorts into the first
-  rows; a flow that names data is fixed against the running stack.
+- **A flow** selects by visible text, accessibility label or test id, starts
+  with `launchApp: clearState: true` and depends on no other flow. The Catalog
+  flow looks for `beer-row`, the test id of a catalog row, so it holds for any
+  catalog the seed allows; a flow that names data is fixed against the running
+  stack, so prefer a test id.
+- **CI boots the emulator itself.** `node scripts/mobile-e2e.mjs
+  prepare-emulator` installs the system image and creates the virtual device,
+  then `test --platform android --headless` boots it and waits for it to be
+  healthy before the flow: adb lists it attached, `sys.boot_completed` is set
+  and the package manager answers, several times in a row, again after the app
+  is installed. An emulator that never gets there is stopped and booted once
+  more; after the second attempt the job fails with `Infrastructure failure,
+  not the app` at the top of the log. The flow is never retried. The emulator's
+  own log is `maestro-output/emulator-<attempt>.log`, which the job uploads on
+  failure.
 - **Cleartext HTTP is allowed in the Android end-to-end build only.** The app
   dials `http://localhost` (the emulator reaches the stack through `adb
   reverse`), which a release build refuses, so `scripts/mobile-e2e.mjs` runs

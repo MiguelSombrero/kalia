@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import type { BeerSummary } from "./api";
@@ -46,11 +46,11 @@ export const CatalogScreen = () => {
 };
 
 const BeerRow = ({ beer, language }: { beer: BeerSummary; language: string }) => (
-  <>
+  <View testID="beer-row">
     <Text style={styles.name}>{beer.name}</Text>
     <Text style={styles.details}>{`${beer.brewery.name} · ${beer.style}`}</Text>
     <Text style={styles.abv}>{formatAbv(beer.abv, language)}</Text>
-  </>
+  </View>
 );
 
 const styles = StyleSheet.create({
