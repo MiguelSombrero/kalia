@@ -26,14 +26,14 @@ a documented routine rather than a surprise.
 | [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | done |
 | [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | done |
 | [01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md) | Decide how a real phone reaches the stack on the Mac | done |
-| [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | refined |
+| [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | done |
 | [10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md) | The edge serves only what a client needs | refined |
 | [11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md) | The deployable stack carries no dev convenience and no shared superuser | refined |
 | [12](iteration-10/12-every-image-the-stack-runs-is-scanned.md) | Every image the stack runs is scanned, and a mirror outage is not a finding | done |
 | [03](iteration-10/03-app-identity.md) | Kalia has its own name, icon and splash screen on a phone | refined |
 | [04](iteration-10/04-free-apple-id-signing.md) | Kalia installs on the product owner's iPhone with a free Apple ID | refined |
 | [02](iteration-10/02-the-phone-reaches-the-stack.md) | The phone signs in and browses against the stack on the Mac | refined |
-| [05](iteration-10/05-build-variants.md) | A development build and a release build run on both platforms | needs-refinement |
+| [05](iteration-10/05-build-variants.md) | A development build and a release build run on both platforms | refined |
 | [21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md) | An error on a phone leaves something to read | refined |
 | [08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md) | The app survives a token it cannot refresh or the server refuses | refined |
 | [13](iteration-10/13-cellar-survives-a-concurrent-change.md) | A cellar read or write never answers 500 under a concurrent change | refined |
