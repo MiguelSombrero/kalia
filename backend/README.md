@@ -464,10 +464,13 @@ Logs, counters and trace ids are built in; nothing in the stack views them
   exporter, so the id exists only in logs and on the wire.
 - **Counters** at `/actuator/prometheus` (compose exposes it; natively set
   `ACTUATOR_ENDPOINTS=health,prometheus`). It needs a bearer token like every
-  actuator endpoint but `health`. For a local one, sign in at Swagger UI
-  (`/swagger-ui/index.html`), run any request there and copy the token from the
-  `curl` it shows, then
-  `curl -H "Authorization: Bearer <token>" localhost:8080/actuator/prometheus`.
+  actuator endpoint but `health`, and the edge answers `404` for it
+  ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
+  so under compose it is read from inside the network. For a token, sign in at
+  Swagger UI (`/swagger-ui/index.html`), run any request there and copy the
+  token from the `curl` it shows, then
+  `docker compose exec backend curl -H "Authorization: Bearer <token>" localhost:8080/actuator/prometheus`
+  (natively, `curl` it at `localhost:8080` directly).
   The ones this app adds: `kalia_events_publication_retries_total` and
   `kalia_events_publication_exhausted_total` (an event whose listener failed,
   and one given up on after `max-attempts`). 5xx by route is

@@ -9,7 +9,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { fetchToken, withRetry } from "./keycloak-admin.mjs";
+import { KEYCLOAK_ADMIN_URL, KEYCLOAK_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
 
 test("withRetry returns the first successful result without retrying", async () => {
   let calls = 0;
@@ -73,6 +73,26 @@ test("fetchToken throws the caller's own describeError message on a rejected gra
       }),
       /^Error: rejected: 401 invalid_grant$/,
     );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("fetchToken asks the admin origin for the master realm and the public one for any other", async () => {
+  const originalFetch = globalThis.fetch;
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(url);
+    return { ok: true, json: async () => ({ access_token: "a-token" }) };
+  };
+  try {
+    const grant = { username: "someone", password: "secret", describeError: () => "unreachable" };
+    await fetchToken({ realm: "master", ...grant });
+    await fetchToken({ realm: "kalia", ...grant });
+    assert.deepEqual(urls, [
+      `${KEYCLOAK_ADMIN_URL}/realms/master/protocol/openid-connect/token`,
+      `${KEYCLOAK_URL}/realms/kalia/protocol/openid-connect/token`,
+    ]);
   } finally {
     globalThis.fetch = originalFetch;
   }

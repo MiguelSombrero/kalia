@@ -306,7 +306,8 @@ Why the rationale lives there and not here:
   itself ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) —
   never on an Auth.js user or session id, which are this app's own.
 - **`POST /api/auth/backchannel-logout` is intentionally unauthenticated** —
-  Keycloak calls it server-to-server with no session cookie, and the Logout
+  Keycloak calls it server-to-server with no session cookie, as `web:3000` over
+  the compose network (the edge answers `404` for it), and the Logout
   Token's own signature (verified against Keycloak's JWKS,
   `lib/auth/backchannelLogoutToken.ts`) is what stands in for one. It ends
   the session matching the token's `sid` only, never falling back to `sub`:

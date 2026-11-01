@@ -1,6 +1,6 @@
 # Task 10: The edge serves only what a client needs
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -72,19 +72,19 @@ while the host scripts and Keycloak itself keep the routes they need.
 
 ## Acceptance criteria
 
-- [ ] Through the edge's public ports, `/actuator/prometheus`, `/admin`,
+- [x] Through the edge's public ports, `/actuator/prometheus`, `/admin`,
       `/realms/master` and `/api/auth/backchannel-logout` answer `404` while
       `/actuator/health` still answers, checked by an automated test of the
       edge configuration
-- [ ] The admin console opens on the loopback admin port of the local stack,
+- [x] The admin console opens on the loopback admin port of the local stack,
       and the deployable definition publishes no such port
-- [ ] Sign-out on the web still ends the session through the back-channel,
+- [x] Sign-out on the web still ends the session through the back-channel,
       and the Playwright sign-out test still passes
-- [ ] `make app-config`, `make moderate` and the Keycloak seed scripts still
+- [x] `make app-config`, `make moderate` and the Keycloak seed scripts still
       work against the running stack — verified by running each — and any that
       reached the admin API through the public Keycloak port now use the admin
       port
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

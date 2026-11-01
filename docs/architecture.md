@@ -982,7 +982,13 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   Spring honour that header only from the stack's private ranges, and both log
   the address they resolved. Authentication stays the protection of the API;
   the limits bound how fast an anonymous caller can ask. The loopback binding
-  stays until a deployment story exists.
+  stays until a deployment story exists. What the edge serves is only what a
+  client needs: it answers `404` for `/actuator/*` but `health`, for `/admin`
+  and `/realms/master`, and for `/api/auth/backchannel-logout`, which Keycloak
+  reaches as `web:3000` over the compose network. Keycloak's admin console and
+  the host scripts' admin calls use a separate port, `KEYCLOAK_ADMIN_PORT`
+  (default 8083), which the local stack alone publishes, on `127.0.0.1`; the
+  deployable definition publishes none.
 - **Swagger UI drives its own Authorization Code + PKCE flow**, springdoc's
   `@SecurityScheme`/`@SecurityRequirement` against Keycloak's `kalia-swagger`
   client — public, no secret, distinct from `kalia-web`'s confidential

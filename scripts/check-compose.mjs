@@ -70,6 +70,31 @@ export const edgeProblems = (services) => {
   return problems;
 };
 
+/** The edge's container-side port for Keycloak's admin console (edge/nginx.conf). */
+export const ADMIN_TARGET = 8083;
+
+const publishesAdmin = (services) => (services.edge?.ports ?? []).filter((port) => Number(port.target) === ADMIN_TARGET);
+
+/** Problems with the deployable definition: it publishes no admin port. */
+export const deployableAdminProblems = (services) =>
+  publishesAdmin(services).length > 0
+    ? [`the edge publishes Keycloak's admin port ${ADMIN_TARGET}, which only the dev overlay may`]
+    : [];
+
+/** Problems with the local stack's admin port: published, on the loopback interface only, and named by Keycloak. */
+export const localAdminProblems = (services) => {
+  const published = publishesAdmin(services);
+  const problems = [];
+  if (published.length === 0) problems.push("the local stack's edge does not publish Keycloak's admin port");
+  for (const port of published) {
+    if (port.host_ip !== "127.0.0.1") problems.push(`the admin port is published on ${port.host_ip ?? "every interface"}, not 127.0.0.1`);
+    if (services.keycloak?.environment?.KC_HOSTNAME_ADMIN !== `http://localhost:${port.published}`) {
+      problems.push("KC_HOSTNAME_ADMIN does not name the published admin port");
+    }
+  }
+  return problems;
+};
+
 // A clean environment: nothing from the caller's shell or root .env may fill
 // in a variable the check means to leave unset.
 const compose = (args, extraEnv) =>
@@ -109,7 +134,7 @@ const run = () => {
   if ("keycloak-seed" in base.services) problems.push("the base file defines keycloak-seed, a dev-only service");
   if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
 
-  problems.push(...edgeProblems(base.services));
+  problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services));
 
   const scanEnv = { PATH: process.env.PATH, HOME: process.env.HOME, ...everySecret };
   const scanArgs = ["--env-file", "/dev/null", "-f", "docker-compose.base.yml"];
@@ -142,6 +167,10 @@ const run = () => {
       if (seed.environment.KEYCLOAK_ADMIN_PASSWORD !== keycloak.KC_BOOTSTRAP_ADMIN_PASSWORD) {
         problems.push("keycloak-seed's KEYCLOAK_ADMIN_PASSWORD differs from the admin password Keycloak starts with");
       }
+    }
+    problems.push(...localAdminProblems(local.services));
+    if (seed && seed.environment.KEYCLOAK_ADMIN_PUBLIC_URL !== keycloak.KC_HOSTNAME_ADMIN) {
+      problems.push("keycloak-seed's KEYCLOAK_ADMIN_PUBLIC_URL differs from the KC_HOSTNAME_ADMIN Keycloak starts with");
     }
     if (local.services.web.environment.KALIA_DEV_STACK !== "true") {
       problems.push("the local stack does not mark the web app as the dev stack");

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { KEYCLOAK_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
+import { KEYCLOAK_ADMIN_PUBLIC_URL, KEYCLOAK_ADMIN_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
 
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
@@ -21,7 +21,7 @@ const adminToken = () =>
   });
 
 const findUser = async (token) => {
-  const url = new URL(`${KEYCLOAK_URL}/admin/realms/${REALM}/users`);
+  const url = new URL(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users`);
   url.searchParams.set("username", username);
   url.searchParams.set("exact", "true");
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -33,7 +33,7 @@ const findUser = async (token) => {
 };
 
 const resetPassword = async (token, userId) => {
-  const response = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM}/users/${userId}/reset-password`, {
+  const response = await fetch(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}/reset-password`, {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ type: "password", value: password, temporary: false }),
@@ -44,7 +44,7 @@ const resetPassword = async (token, userId) => {
 };
 
 const createUser = async (token) => {
-  const response = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM}/users`, {
+  const response = await fetch(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -66,8 +66,32 @@ const createUser = async (token) => {
   throw new Error(`could not create Keycloak user ${username}: ${response.status} ${await response.text()}`);
 };
 
-const ensureAccount = async () => {
-  const token = await adminToken();
+// The admin console signs in against the master realm's frontend URL, which
+// is the public edge's address unless the realm says otherwise, and the public
+// edge does not serve the master realm (ADR-0090). Not keycloak-config-cli's:
+// changing a realm's frontend URL changes the issuer of the token that tool
+// holds, and its import then fails with a 401 on the first boot. Last, for
+// the same reason: the token this script holds is stale once it changes.
+const ensureAdminConsoleOrigin = async (token) => {
+  const url = `${KEYCLOAK_ADMIN_URL}/admin/realms/master`;
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const read = await fetch(url, { headers });
+  if (!read.ok) {
+    throw new Error(`could not read the master realm: ${read.status} ${await read.text()}`);
+  }
+  const realm = await read.json();
+  if (realm.attributes?.frontendUrl === KEYCLOAK_ADMIN_PUBLIC_URL) return;
+  const write = await fetch(url, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ attributes: { ...realm.attributes, frontendUrl: KEYCLOAK_ADMIN_PUBLIC_URL } }),
+  });
+  if (!write.ok) {
+    throw new Error(`could not set the master realm's frontend URL: ${write.status} ${await write.text()}`);
+  }
+};
+
+const ensureUser = async (token) => {
   const existing = await findUser(token);
   if (existing) {
     await resetPassword(token, existing.id);
@@ -83,6 +107,12 @@ const ensureAccount = async () => {
   if (!winner) {
     throw new Error(`could not create Keycloak user ${username}`);
   }
+};
+
+const ensureAccount = async () => {
+  const token = await adminToken();
+  await ensureUser(token);
+  await ensureAdminConsoleOrigin(token);
 };
 
 // Keycloak's healthcheck can report ready a moment before master-realm
