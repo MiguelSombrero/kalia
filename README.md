@@ -104,8 +104,11 @@ docker compose up --build   # web app at http://localhost:3000
 
 The web app is at `:3000`; the backend is also reachable, at `:8080`, for
 direct API access and Swagger UI — see [backend/README.md](backend/README.md).
-Keycloak's admin console is at `:8081` (admin/admin, dev-only credentials).
-Those three are not published by their own containers but by the `edge` nginx
+Keycloak's admin console is at `:8083` (admin/admin, dev-only credentials),
+a port of its own: `:8081` serves the `kalia` realm's user-facing endpoints
+and answers `404` for `/admin` and `/realms/master`, as `:8080` does for
+`/actuator/*` but `health` and `:3000` for `/api/auth/backchannel-logout`.
+Those four are not published by their own containers but by the `edge` nginx
 proxy in front of them, which limits requests and body sizes per client
 address ([ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
 so a script that floods one gets `429`. Valkey is at `:6379` (password
@@ -114,9 +117,9 @@ so a script that floods one gets `429`. Valkey is at `:6379` (password
 lands — at `:8025`. All bindings are localhost-only, never reachable beyond
 the dev machine.
 
-Those are the defaults, and the main checkout keeps them. Each of the six is
+Those are the defaults, and the main checkout keeps them. Each of the seven is
 a variable in the root `.env` (`WEB_PORT`, `BACKEND_PORT`,
-`KEYCLOAK_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`, `MAILPIT_PORT`; a seventh,
+`KEYCLOAK_PORT`, `KEYCLOAK_ADMIN_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`, `MAILPIT_PORT`; an eighth,
 `METRO_PORT`, is the mobile app's Metro server, default `:8082` because Metro's
 own `:8081` is Keycloak's — [mobile/README.md](mobile/README.md)), and every
 address built from one — Keycloak's public address and the issuer the

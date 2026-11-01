@@ -49,6 +49,81 @@ describe("createFetchTransport", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  describe("with a way to renew a rejected token", () => {
+    const answers = (...statuses: number[]) => {
+      const fetchMock = vi.fn();
+      for (const status of statuses) {
+        fetchMock.mockImplementationOnce(async () => Response.json({ status }, { status }));
+      }
+      vi.stubGlobal("fetch", fetchMock);
+      return fetchMock;
+    };
+    const bearerOf = (fetchMock: ReturnType<typeof vi.fn>, call: number) =>
+      new Headers((fetchMock.mock.calls[call] as [string, RequestInit])[1].headers).get("Authorization");
+
+    it("retries a 401 once with the renewed token, naming the token it sent", async () => {
+      const fetchMock = answers(401, 200);
+      const refreshAccessToken = vi.fn(async () => "token-2");
+      const transport = createFetchTransport({ baseUrl, accessToken: async () => "token-1", refreshAccessToken });
+
+      const result = await transport<{ status: number }>("/api/v1/cellar", { method: "GET" });
+
+      expect(result.status).toBe(200);
+      expect(refreshAccessToken).toHaveBeenCalledExactlyOnceWith("token-1");
+      expect([bearerOf(fetchMock, 0), bearerOf(fetchMock, 1)]).toEqual(["Bearer token-1", "Bearer token-2"]);
+    });
+
+    it("returns a second 401 as it is, without a further refresh or retry", async () => {
+      const fetchMock = answers(401, 401);
+      const refreshAccessToken = vi.fn(async () => "token-2");
+      const transport = createFetchTransport({ baseUrl, accessToken: async () => "token-1", refreshAccessToken });
+
+      const result = await transport<{ status: number }>("/api/v1/cellar", { method: "GET" });
+
+      expect(result.status).toBe(401);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ["no token", undefined],
+      ["the token it already sent", "token-1"],
+    ])("returns the 401 without a retry when the renewal gives %s", async (_, renewed) => {
+      const fetchMock = answers(401);
+      const transport = createFetchTransport({
+        baseUrl,
+        accessToken: async () => "token-1",
+        refreshAccessToken: async () => renewed,
+      });
+
+      const result = await transport<{ status: number }>("/api/v1/cellar", { method: "GET" });
+
+      expect(result.status).toBe(401);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not ask for a renewal on any other status", async () => {
+      answers(403, 500);
+      const refreshAccessToken = vi.fn(async () => "token-2");
+      const transport = createFetchTransport({ baseUrl, accessToken: async () => "token-1", refreshAccessToken });
+
+      await transport("/api/v1/cellar", {});
+      await transport("/api/v1/cellar", {});
+
+      expect(refreshAccessToken).not.toHaveBeenCalled();
+    });
+
+    it("leaves a 401 alone when no way to renew was given", async () => {
+      const fetchMock = answers(401);
+      const transport = createFetchTransport({ baseUrl, accessToken: async () => "token-1" });
+
+      const result = await transport<{ status: number }>("/api/v1/cellar", {});
+
+      expect(result.status).toBe(401);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it.each([
     ["a parent segment", "/api/v1/cellars/.."],
     ["a percent-encoded parent segment", "/api/v1/cellars/%2E%2e"],

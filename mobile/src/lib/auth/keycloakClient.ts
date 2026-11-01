@@ -16,8 +16,19 @@ export const discoveryFor = (keycloakOrigin: string) => {
   };
 };
 
-const isInvalidGrant = (cause: unknown): boolean =>
-  typeof cause === "object" && cause !== null && "code" in cause && cause.code === "invalid_grant";
+// RFC 6749 §5.2: the token endpoint's refusals, all answered 4xx. expo-auth-session
+// drops the HTTP status, so a 5xx or 429 is told apart by lacking one of these codes.
+const REFUSALS = new Set([
+  "invalid_request",
+  "invalid_client",
+  "invalid_grant",
+  "unauthorized_client",
+  "unsupported_grant_type",
+  "invalid_scope",
+]);
+
+const isRefusal = (cause: unknown): boolean =>
+  typeof cause === "object" && cause !== null && "code" in cause && typeof cause.code === "string" && REFUSALS.has(cause.code);
 
 // expo-auth-session's fetch has no timeout, and a hung refresh would hang every API call behind it.
 const within = async <T>(work: Promise<T>, timeoutMs: number, what: string): Promise<T> => {
@@ -86,6 +97,11 @@ export const createKeycloakClient = ({
           timeoutMs,
           "The refresh",
         );
+        // A proxy answering for a stopped Keycloak can return JSON without an
+        // `error`, which expo-auth-session reports as a token with no fields.
+        if (!token.accessToken) {
+          throw new Error("Keycloak answered the refresh without an access token");
+        }
         return {
           kind: "granted",
           grant: {
@@ -95,7 +111,7 @@ export const createKeycloakClient = ({
           },
         };
       } catch (cause) {
-        if (isInvalidGrant(cause)) {
+        if (isRefusal(cause)) {
           return { kind: "rejected" };
         }
         throw cause;

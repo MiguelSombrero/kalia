@@ -1,6 +1,6 @@
 # Task 08: The app survives a token it cannot refresh or the server refuses
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -67,16 +67,16 @@ call before it shows an error or signs the user out.
 
 ## Acceptance criteria
 
-- [ ] A Jest test shows the catalog list and the launch check succeeding while
+- [x] A Jest test shows the catalog list and the launch check succeeding while
       the token store's refresh rejects with a network error, and it failed
       before the fix
-- [ ] A Jest test shows a `401` triggering exactly one refresh and one retry,
+- [x] A Jest test shows a `401` triggering exactly one refresh and one retry,
       including for two concurrent calls
-- [ ] The web's unit tests of the shared transport still pass unchanged, or
+- [x] The web's unit tests of the shared transport still pass unchanged, or
       their change is explained in the PR
-- [ ] On the iPhone or a simulator, stopping Keycloak while signed in leaves
+- [x] On the iPhone or a simulator, stopping Keycloak while signed in leaves
       the Catalog tab working — verified by hand and described in the PR
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

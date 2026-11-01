@@ -6,6 +6,7 @@ const PORT_DEFAULTS = {
   WEB_PORT: 3000,
   BACKEND_PORT: 8080,
   KEYCLOAK_PORT: 8081,
+  KEYCLOAK_ADMIN_PORT: 8083,
   VALKEY_PORT: 6379,
   MAILPIT_PORT: 8025,
 } as const;
@@ -25,6 +26,7 @@ export const stackOrigins = (env: StackEnv) => ({
   web: `http://localhost:${portOf(env, "WEB_PORT")}`,
   backend: `http://localhost:${portOf(env, "BACKEND_PORT")}`,
   keycloak: `http://localhost:${portOf(env, "KEYCLOAK_PORT")}`,
+  keycloakAdmin: `http://localhost:${portOf(env, "KEYCLOAK_ADMIN_PORT")}`,
   mailpit: `http://localhost:${portOf(env, "MAILPIT_PORT")}`,
   valkey: valkeyOrigin(env),
 });

@@ -6,7 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { consistencyProblems, edgeProblems, requiredVariables, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { consistencyProblems, deployableAdminProblems, edgeProblems, localAdminProblems, requiredVariables, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -63,4 +63,33 @@ test("edgeProblems rejects a stack with no edge", () => {
 test("edgeProblems rejects Keycloak trusting forwarded headers from anywhere", () => {
   const keycloak = { environment: { KC_PROXY_HEADERS: "xforwarded" } };
   assert.match(edgeProblems({ ...behindEdge, keycloak })[0], /only from trusted addresses/);
+});
+
+const adminPort = { host_ip: "127.0.0.1", target: 8083, published: "8183" };
+const keycloakNamingAdmin = { environment: { KC_HOSTNAME_ADMIN: "http://localhost:8183" } };
+
+test("deployableAdminProblems accepts an edge that publishes only the client ports", () => {
+  assert.deepEqual(deployableAdminProblems({ edge: { ports: [{ target: 3000 }, { target: 8081 }] } }), []);
+});
+
+test("deployableAdminProblems names an edge that publishes the admin port", () => {
+  const problems = deployableAdminProblems({ edge: { ports: [{ target: 3000 }, adminPort] } });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /only the dev overlay/);
+});
+
+test("localAdminProblems accepts the admin port on the loopback interface, named by Keycloak", () => {
+  assert.deepEqual(localAdminProblems({ edge: { ports: [adminPort] }, keycloak: keycloakNamingAdmin }), []);
+});
+
+test("localAdminProblems rejects an admin port on every interface", () => {
+  const exposed = { ...adminPort, host_ip: undefined };
+  const problems = localAdminProblems({ edge: { ports: [exposed] }, keycloak: keycloakNamingAdmin });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /not 127\.0\.0\.1/);
+});
+
+test("localAdminProblems rejects a missing admin port and a KC_HOSTNAME_ADMIN that names another", () => {
+  assert.match(localAdminProblems({ edge: { ports: [] }, keycloak: keycloakNamingAdmin })[0], /does not publish/);
+  assert.match(localAdminProblems({ edge: { ports: [adminPort] }, keycloak: { environment: {} } })[0], /KC_HOSTNAME_ADMIN/);
 });

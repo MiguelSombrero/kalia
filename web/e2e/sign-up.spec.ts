@@ -17,7 +17,7 @@ import {
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN, KEYCLOAK_ADMIN_ORIGIN } from "./support/origins";
 
 // Unprefixed on http, `__Secure-` prefixed on https (lib/auth/sessionCookie.ts
 // carries the same list for server-side reads) — this suite always runs
@@ -195,7 +195,7 @@ test.describe("self-registration", () => {
     const password = "correct-horse-battery";
     const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
 
-    const setPassword = await request.put(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users/${userId}/reset-password`, {
+    const setPassword = await request.put(`${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/kalia/users/${userId}/reset-password`, {
       headers: { Authorization: `Bearer ${adminToken}` },
       data: { type: "password", value: password, temporary: false },
     });
@@ -247,7 +247,7 @@ test.describe("self-registration", () => {
     // two live Keycloak users sharing an email to merge in the first place,
     // so it can recover one person's own account but never hand two
     // different people's cellars to each other.
-    const response = await request.post(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users`, {
+    const response = await request.post(`${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/kalia/users`, {
       headers: { Authorization: `Bearer ${adminToken}` },
       data: {
         username: uniqueUsername("admin-duplicate"),

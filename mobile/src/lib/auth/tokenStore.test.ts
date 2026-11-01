@@ -170,6 +170,76 @@ describe("getAccessToken", () => {
   });
 });
 
+describe("refreshAccessToken", () => {
+  it("refreshes a token the server rejected although its local expiry has not passed", async () => {
+    const { store, oauth, persisted } = setup();
+    oauth.refresh.mockResolvedValue(grant(2));
+
+    await expect(store.refreshAccessToken("access-1")).resolves.toBe("access-2");
+
+    expect(oauth.refresh).toHaveBeenCalledWith("refresh-1");
+    expect(persisted()?.accessToken).toBe("access-2");
+  });
+
+  it("makes one refresh for calls rejected together, sharing it with getAccessToken", async () => {
+    const { store, oauth } = setup();
+    const answer = deferred<ReturnType<typeof grant>>();
+    oauth.refresh.mockReturnValue(answer.promise);
+
+    const calls = [store.refreshAccessToken("access-1"), store.refreshAccessToken("access-1")];
+    answer.resolve(grant(2));
+
+    await expect(Promise.all(calls)).resolves.toEqual(["access-2", "access-2"]);
+    expect(oauth.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("hands out the current token, without a refresh, when the rejected one has already been replaced", async () => {
+    const { store, oauth } = setup();
+    oauth.refresh.mockResolvedValue(grant(2));
+    await store.refreshAccessToken("access-1");
+
+    await expect(store.refreshAccessToken("access-1")).resolves.toBe("access-2");
+
+    expect(oauth.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("treats a call sent without a token as getAccessToken, which tries the refresh again", async () => {
+    const { store, oauth, advance } = setup();
+    oauth.refresh.mockRejectedValueOnce(new TypeError("Network request failed")).mockResolvedValueOnce(grant(2));
+    advance(FIVE_MINUTES + 1);
+    await store.getAccessToken().catch(() => undefined);
+
+    await expect(store.refreshAccessToken(undefined)).resolves.toBe("access-2");
+  });
+
+  it("has nothing to refresh when nobody is signed in", async () => {
+    const { store, oauth } = setup(null);
+
+    await expect(store.refreshAccessToken(undefined)).resolves.toBeUndefined();
+
+    expect(oauth.refresh).not.toHaveBeenCalled();
+  });
+
+  it("ends the session when Keycloak refuses the refresh", async () => {
+    const { store, oauth } = setup();
+    oauth.refresh.mockResolvedValue({ kind: "rejected" });
+
+    await expect(store.refreshAccessToken("access-1")).resolves.toBeUndefined();
+
+    expect(store.getState()).toEqual({ status: "signedOut", expired: true });
+  });
+
+  it("fails the call, leaving the user signed in, when the refresh fails transiently", async () => {
+    const { store, oauth } = setup();
+    oauth.refresh.mockRejectedValue(new TypeError("Network request failed"));
+
+    const outcome = await store.refreshAccessToken("access-1").catch((error: unknown) => error);
+
+    expect(isApiError(outcome) && outcome.kind).toBe("network");
+    expect(store.getState()).toEqual({ status: "signedIn" });
+  });
+});
+
 describe("a refresh that fails", () => {
   it("with invalid_grant ends the session: storage is cleared and the expiry notice is raised", async () => {
     const { store, oauth, advance, persisted, storage } = setup();

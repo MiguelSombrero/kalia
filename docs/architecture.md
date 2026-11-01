@@ -873,7 +873,11 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   `@kalia/api` with the API origin as its base URL
   (`src/lib/api/registerTransport.ts`), as the web registers its own, with the
   token store's `getAccessToken` as its token source; a signed-out app sends no
-  `Authorization` header at all.
+  `Authorization` header at all, and nor does a signed-in one while its refresh
+  fails transiently, so the catalog and the launch check still answer. A `401`
+  makes the transport ask the store for one `refreshAccessToken`, shared by
+  every call rejected with that token, and retry once; a second `401` is
+  returned as it is and the user stays signed in.
 - **Sign-in.** `src/lib/auth/` holds the session
   ([task 14](tasks/iteration-9/14-sign-in-on-mobile.md),
   [ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)):
@@ -883,9 +887,11 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   clock injected, so a test drives expiry without a realm. A refresh is
   single-flight: calls that find the access token expired together wait for one
   refresh and share its result, and the refresh token it returns is stored
-  before the access token is handed out. `invalid_grant` ends the session and
-  raises a notice on the Profile tab; any other failure (no connection, a 5xx)
-  leaves the user signed in and fails only that call. Signing out forgets the
+  before the access token is handed out. A refusal Keycloak answers 4xx
+  (`invalid_grant` and the other RFC 6749 §5.2 codes) ends the session and
+  raises a notice on the Profile tab; any other failure (no connection, a
+  timeout, a 5xx, a 429) leaves the user signed in and sends the call without
+  a token. Signing out forgets the
   tokens on the device, then revokes the refresh token at Keycloak when it can.
   The app is usable signed out: sign-in is a choice on the Profile tab, which
   reads the username from `GET /api/v1/profile` and never caches it.
@@ -982,7 +988,13 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   Spring honour that header only from the stack's private ranges, and both log
   the address they resolved. Authentication stays the protection of the API;
   the limits bound how fast an anonymous caller can ask. The loopback binding
-  stays until a deployment story exists.
+  stays until a deployment story exists. What the edge serves is only what a
+  client needs: it answers `404` for `/actuator/*` but `health`, for `/admin`
+  and `/realms/master`, and for `/api/auth/backchannel-logout`, which Keycloak
+  reaches as `web:3000` over the compose network. Keycloak's admin console and
+  the host scripts' admin calls use a separate port, `KEYCLOAK_ADMIN_PORT`
+  (default 8083), which the local stack alone publishes, on `127.0.0.1`; the
+  deployable definition publishes none.
 - **Swagger UI drives its own Authorization Code + PKCE flow**, springdoc's
   `@SecurityScheme`/`@SecurityRequirement` against Keycloak's `kalia-swagger`
   client — public, no secret, distinct from `kalia-web`'s confidential
@@ -1011,8 +1023,8 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   - **The session is an offline token** (`offline_access`) that lapses after 30
     days unused and has no maximum while in use; the realm pins both
     (`offlineSessionIdleTimeout`, `offlineSessionMaxLifespanEnabled`). The app renews its own access
-    token and ends its own session when Keycloak answers a refresh with
-    `invalid_grant`, since nothing can reach a phone as back-channel logout
+    token and ends its own session when Keycloak refuses a refresh
+    with a 4xx such as `invalid_grant`, since nothing can reach a phone as back-channel logout
     reaches the BFF ([ADR-0031](adr/0031-backchannel-logout.md)).
   - **Refresh tokens are reused for both clients.** Rotation
     (`revokeRefreshToken`) is a realm setting at the pinned Keycloak, so

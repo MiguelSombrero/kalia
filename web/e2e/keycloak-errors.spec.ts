@@ -4,7 +4,7 @@ import { expect, keycloakAdminToken, test, uniqueUsername } from "./support/keyc
 import { expectNoA11yViolations } from "./support/a11y";
 import { contrast, rgbOf } from "./support/colour";
 import { expectNoSidewaysScroll } from "./support/layout";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { WEB_ORIGIN, KEYCLOAK_ORIGIN, KEYCLOAK_ADMIN_ORIGIN } from "./support/origins";
 
 const VIEWPORTS = [
   { width: 375, height: 812 },
@@ -151,7 +151,7 @@ const createUser = async (
 ) => {
   const username = uniqueUsername(prefix);
   const password = "correct-horse-battery";
-  const response = await request.post(`${KEYCLOAK_ORIGIN}/admin/realms/kalia/users`, {
+  const response = await request.post(`${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/kalia/users`, {
     headers: { Authorization: `Bearer ${await keycloakAdminToken(request)}` },
     data: {
       username,

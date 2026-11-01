@@ -10,6 +10,17 @@ services:
       LOG_LEVEL: DEBUG
       SPRINGDOC_ENABLED: "true"
 
+  keycloak:
+    environment:
+      # The admin console's own address, served by the edge's admin port below.
+      # Dev only: the deployable stack publishes no admin port (ADR-0090).
+      KC_HOSTNAME_ADMIN: http://localhost:${KEYCLOAK_ADMIN_PORT:-8083}
+
+  edge:
+    ports:
+      # Loopback only, and only here: phone mode never forwards it.
+      - "127.0.0.1:${KEYCLOAK_ADMIN_PORT:-8083}:8083"
+
   web:
     environment:
       # Lets the dev AUTH_SECRET from docker-compose.dev.env through
@@ -43,6 +54,9 @@ services:
         condition: service_completed_successfully
     environment:
       KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN_URL: http://keycloak:8080
+      # What KC_HOSTNAME_ADMIN names; scripts/check-compose.mjs fails if not.
+      KEYCLOAK_ADMIN_PUBLIC_URL: http://localhost:${KEYCLOAK_ADMIN_PORT:-8083}
       # The same values as docker-compose.dev.env, spelled out because this
       # file is interpolated without it; scripts/check-compose.mjs fails if
       # they ever differ.
@@ -54,6 +68,7 @@ services:
       # this file by relative path, so it needs mounting alongside it.
       - ./scripts/keycloak-admin.mjs:/keycloak-admin.mjs:ro
       # keycloak-admin.mjs imports its host-side address defaults from this
-      # file; KEYCLOAK_URL is set here, so they go unused in the container.
+      # file; KEYCLOAK_URL and KEYCLOAK_ADMIN_URL are set here, so they go
+      # unused in the container.
       - ./scripts/stack-ports.mjs:/stack-ports.mjs:ro
     entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]

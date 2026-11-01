@@ -1,6 +1,6 @@
-// What the edge proxy does for the three things behind it (ADR-0090): refuses a
-// burst past a limit before it reaches the service, refuses an oversized body,
-// and tells the services which client address to believe. It runs last, after
+// What the edge proxy does for the three things behind it (ADR-0090): serves
+// only what a client needs, refuses a burst past a limit before it reaches the
+// service, and tells the services which client address to believe. It runs last, after
 // the rest of the suite (playwright.config.ts), because it deliberately
 // exhausts a per-address budget that every other spec shares.
 import { execFileSync } from "node:child_process";
@@ -8,7 +8,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import path from "node:path";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { BACKEND_ORIGIN, WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { BACKEND_ORIGIN, WEB_ORIGIN, KEYCLOAK_ORIGIN, KEYCLOAK_ADMIN_ORIGIN } from "./support/origins";
 
 const ROOT = path.resolve(__dirname, "../..");
 const FORGED_ADDRESS = "203.0.113.77";
@@ -75,6 +75,55 @@ test.describe("the client address", () => {
   });
 });
 
+test.describe("what the edge serves", () => {
+  const notServed = [
+    ["metrics", BACKEND_ORIGIN, "/actuator/prometheus"],
+    ["the actuator index", BACKEND_ORIGIN, "/actuator"],
+    ["a health sub-path", BACKEND_ORIGIN, "/actuator/health/readiness"],
+    ["metrics, percent-encoded", BACKEND_ORIGIN, "/%61ctuator/prometheus"],
+    ["the admin console", KEYCLOAK_ORIGIN, "/admin/master/console/"],
+    ["the admin API", KEYCLOAK_ORIGIN, "/admin/realms/kalia/users"],
+    ["the master realm", KEYCLOAK_ORIGIN, "/realms/master/protocol/openid-connect/token"],
+    ["the master realm, in another case", KEYCLOAK_ORIGIN, "/realms/Master/.well-known/openid-configuration"],
+    ["the back-channel logout", WEB_ORIGIN, "/api/auth/backchannel-logout"],
+    ["the back-channel logout, with a trailing slash", WEB_ORIGIN, "/api/auth/backchannel-logout/"],
+  ] as const;
+
+  for (const [what, origin, route] of notServed) {
+    test(`${what} (${route}) answers 404 through the public port, by the edge`, async ({ request }) => {
+      for (const method of ["get", "post"] as const) {
+        const response = await request[method](`${origin}${route}`, { failOnStatusCode: false, maxRedirects: 0 });
+        expect(response.status(), `${method.toUpperCase()} ${route}`).toBe(404);
+        expect(response.headers()["server"]).toBe("nginx");
+      }
+    });
+  }
+
+  test("the health probe, the realm's own endpoints and the web app are still served", async ({ request }) => {
+    const health = await request.get(`${BACKEND_ORIGIN}/actuator/health`);
+    expect(health.ok()).toBe(true);
+    const realm = await request.get(`${KEYCLOAK_ORIGIN}/realms/kalia/.well-known/openid-configuration`);
+    expect(realm.ok()).toBe(true);
+    const page = await request.get(`${WEB_ORIGIN}/en/beers`);
+    expect(page.ok()).toBe(true);
+  });
+
+  test("the master realm and the admin API are served on the admin port", async ({ request }) => {
+    const master = await request.get(`${KEYCLOAK_ADMIN_ORIGIN}/realms/master/.well-known/openid-configuration`);
+    expect(master.ok()).toBe(true);
+    const admin = await request.get(`${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/kalia/users`, { failOnStatusCode: false });
+    expect(admin.status()).toBe(401);
+  });
+
+  test("the admin console on the admin port signs in against the admin port, not the public one", async ({
+    request,
+  }) => {
+    const console = await (await request.get(`${KEYCLOAK_ADMIN_ORIGIN}/admin/master/console/`)).text();
+    expect(console).toContain(`"authServerUrl": "${KEYCLOAK_ADMIN_ORIGIN}"`);
+    expect(console).toContain(`"adminBaseUrl": "${KEYCLOAK_ADMIN_ORIGIN}"`);
+  });
+});
+
 test.describe("the request logs", () => {
   test("the edge and Keycloak log a request's path and never its query string (ADR-0013)", async ({
     request,
@@ -98,16 +147,6 @@ test.describe("the request logs", () => {
 });
 
 test.describe("the edge proxy's limits", () => {
-  test("a back-channel logout body over the cap is refused at the edge", async ({ request }) => {
-    const response = await request.post(`${WEB_ORIGIN}/api/auth/backchannel-logout`, {
-      form: { logout_token: "x".repeat(20 * 1024) },
-      failOnStatusCode: false,
-    });
-
-    expect(response.status()).toBe(413);
-    expect(response.headers()["server"]).toBe("nginx");
-  });
-
   test("a burst on the backend is refused with 429 before it reaches Spring", async ({ request }) => {
     const id = randomUUID();
     const url = `${BACKEND_ORIGIN}/api/v1/burst-${id}?query=canary-${id}`;
