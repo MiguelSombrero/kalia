@@ -1,6 +1,6 @@
 # Task 05: A development build and a release build run on both platforms
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-4
 
@@ -27,8 +27,10 @@ check cannot tell them apart.
 A developer can build either a development build (dev menu, Metro) or a
 release build (bundled JavaScript, no dev menu) for the iPhone, the iOS
 Simulator and the Android emulator, with the origins
-[task 02](02-the-phone-reaches-the-stack.md) gives each. The rules for when the
-version and the build number change are written down and applied.
+[task 02](02-the-phone-reaches-the-stack.md) gives each, and a release build
+carries a cleartext exception for exactly the one host it dials over plain HTTP
+and for no other. The rules for when the version and the build number change are
+written down and applied.
 
 ## Non-goals
 
@@ -72,26 +74,90 @@ version and the build number change are written down and applied.
 - **"Runs" means it launches, signs in and lists the catalog** on each, as the
   first criterion says.
 
+**Fixed by [ADR-0097](../../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)**
+(accepted 2026-11-01) and applied here:
+
+- **Which build dials which origin.** With phone mode off, every target dials
+  `localhost` with the stack's own ports: the iOS Simulator directly, the
+  Android emulator through `adb reverse`. With it on, the iPhone and a
+  phone-mode iOS Simulator build dial the tailnet origin the ADR defines, built
+  from the one root-`.env` value and the stack's own ports. **The Android
+  emulator is not supported in phone mode** (`adb reverse` forwards `localhost`
+  only, and the issuer is no longer that name), so an Android build in phone
+  mode stops before building and says so, rather than shipping an app that
+  dials a name nothing there can reach. The Android release build is therefore
+  always the `KALIA_E2E=1` one on `localhost`.
+- **The exception follows the host, not the build type, and is written per
+  platform.** Android's is `localhost` only, under `KALIA_E2E=1`, declared in a
+  network security configuration for that host with plain HTTP refused
+  elsewhere; it replaces `withE2eCleartext.js`'s app-wide
+  `usesCleartextTraffic`, which permits every host. iOS's is the tailnet host
+  only, in phone mode, declared as an App Transport Security exception for that
+  host; iOS needs none for `localhost`, and never `NSAllowsArbitraryLoads`.
+  Nothing else carries an exception, and the Android emulator never carries
+  the tailnet one. The platform mechanics are checked against docs.expo.dev and
+  Apple's and Android's own pages at implementation.
+- **The tailnet exception is written by a config plugin from the root `.env`'s
+  one value at prebuild,** as the end-to-end one is, and a prebuild with phone
+  mode off removes it. One prebuild feeds both a development and a release
+  build, so the exception is present in phone mode in either; the rule above
+  limits it to phone mode, not to release.
+- **Every build target prebuilds for its own variant, every time it runs.**
+  `expo run:*` reuses an existing `ios/` or `android/`, and a reused project
+  would keep the last build's cleartext exception, origins and build number: a
+  development build made after an end-to-end one would still carry the
+  localhost exception, and a default-mode build made after a phone-mode one the
+  tailnet exception, with nothing failing.
+- **The host name is a host detail** (the ADR's last point): tests and fixtures
+  use an invented host, never the real one, and no committed file names it.
+- **The build number is derived when the project is prebuilt,** one value
+  written to both platforms' columns. It must rise with the time of the build,
+  so a later build always compares higher, and stay within Android's
+  `versionCode` range; the unit is the implementation's to choose within those
+  two properties. The app reads it from the installed build
+  (`expo-application`'s `nativeBuildVersion`, already a dependency and already
+  what the app-config check compares). `app.json` becomes dynamic config so
+  nothing is hand-edited.
+- **The Profile tab shows the version and the build number,** worded in both
+  locales through the shared locale package; an unknown build number is left
+  out rather than shown as a placeholder.
+
 ## Open questions
 
-1. **Task 01's ADR accepted?** The phone-mode origins and the cleartext
-   exception this task builds come from it. Every answer is recorded above;
-   the task moves to `refined` in a short second pass once that ADR is
-   accepted.
+**None.** Swept against the fixed taxonomy on 2026-11-01, after
+[ADR-0097](../../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)
+was accepted: the origins and the cleartext scoping come from the ADR and the
+decisions above, and the rest of the taxonomy surfaced nothing a decision above
+does not answer.
 
 ## Acceptance criteria
 
-- [ ] A release build launches on the iPhone and on the Android emulator with
-      no Metro running and no dev menu, signs in and lists the catalog —
-      verified by hand and described in the PR
-- [ ] A development build still runs on both simulators through the existing
-      `make` targets
-- [ ] A test fails a release build carrying a cleartext exception outside
-      `KALIA_E2E=1` or phone mode, or for a host other than that mode's, and a
-      test covers how the build number is derived
-- [ ] The installed app shows its build number on the Profile tab
+- [ ] A release build launches on the iPhone, in phone mode, with no Metro
+      running and no dev menu, signs in and lists the catalog — verified by
+      hand and described in the PR, with no host address or name in the
+      description
+- [ ] A release build launches on the Android emulator with no Metro running
+      and no dev menu, signs in and lists the catalog, as `make mobile-e2e`'s
+      Android leg does against `localhost`
+- [ ] A development build still runs on the iOS Simulator and the Android
+      emulator through the existing `make` targets, and `make mobile-e2e`
+      passes on both, the iOS Simulator one as a release build
+- [ ] A check over a generated native project fails one that carries a
+      cleartext exception outside `KALIA_E2E=1`'s `localhost` (Android) or
+      phone mode's tailnet host (iOS), including an app-wide one, and is
+      unit-tested with fixture projects for each allowed and each forbidden
+      case, using an invented host; every build target runs it after prebuild
+- [ ] A test shows a build target prebuilds on every run, so an end-to-end or
+      phone-mode project is not reused by the next build, and that an Android
+      build in phone mode stops with a message saying why
+- [ ] A test shows the build number rises with the time of the build, is the
+      same value for both platforms and stays within Android's `versionCode`
+      range, and `app.json` carries neither column
+- [ ] The Profile tab shows the version and the build number, covered by a
+      screen test, and omits the build number when it is unknown
 - [ ] The version and build-number rules are written down in
-      `mobile/README.md`
+      `mobile/README.md`, which also states the cleartext rule that replaces
+      its "Android end-to-end build only" bullet
 - [ ] `make verify-fast` is green
 
 ## Notes
