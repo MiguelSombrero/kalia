@@ -3,6 +3,9 @@ const { defineConfig, globalIgnores } = require("eslint/config");
 const expoConfig = require("eslint-config-expo/flat");
 const boundaries = require("eslint-plugin-boundaries");
 const path = require("node:path");
+const { dependencies } = require("./package.json");
+
+const reactVersion = dependencies.react;
 
 // The web's import layers (ADR-0012), for mobile/src.
 const app = { element: { type: "app" } };
@@ -30,6 +33,8 @@ const codeStyleSyntax = [
 const eslintConfig = defineConfig([
   { linterOptions: { reportUnusedDisableDirectives: "error" } },
   expoConfig,
+  // eslint-config-expo sets version "detect", which calls context.getFilename(), removed in ESLint 10.
+  { settings: { react: { version: reactVersion } } },
   ...pluginQuery.configs["flat/recommended"],
   {
     rules: {
