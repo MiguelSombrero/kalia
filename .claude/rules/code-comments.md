@@ -4,6 +4,7 @@ paths:
   - "web/{app,components,features,lib,i18n,e2e}/**/*.{ts,tsx}"
   - "web/*.ts"
   - "packages/*/src/**/*.ts"
+  - "mobile/src/**/*.{ts,tsx}"
 ---
 
 # Code comments carry only what the repo cannot

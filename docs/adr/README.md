@@ -317,6 +317,10 @@ in one place, read
   — an nginx edge proxy is the only published service: it limits requests and
   bodies per client address in front of the frontend, backend and Keycloak, and
   names the client address they trust.
+- [ADR-0097](0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)
+  — a physical phone reaches the stack over the owner's tailnet in an opt-in
+  phone mode, where one origin is the issuer Keycloak stamps and every consumer
+  validates; plain HTTP until a recorded trigger; amends ADR-0095.
 - [ADR-0098](0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)
   — an installed build's errors are read from the device's own logs
   (Console.app or Xcode, `adb logcat`) and a crash service is deferred until

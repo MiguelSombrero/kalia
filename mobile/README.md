@@ -167,6 +167,28 @@ them and the `mobile` CI job runs them on a change under `mobile/` or
 `packages/`. Run the whole gate rather than these alone
 ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
+## Upgrade the Expo SDK
+
+Dependabot ignores the packages the SDK pins (`expo`, `expo-*`, `jest-expo`,
+`eslint-config-expo`, `react-native`, `react-native-screens`,
+`react-native-safe-area-context` and
+`@react-native-async-storage/async-storage`), because they work only as the
+SDK's set. They move with a deliberate upgrade, one SDK at a time, following
+[Expo's walkthrough](https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/):
+
+```bash
+(cd mobile && npm install expo@^NN.0.0)   # NN: the next SDK
+(cd mobile && npx expo install --fix)     # every package onto that SDK's versions
+(cd mobile && npx expo-doctor)
+```
+
+`--fix` also moves `react` and `typescript` to the SDK's versions; both follow
+the web instead ([ADR-0092](../docs/adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)),
+so put them back before committing. The required Android end-to-end job builds
+the result. A CVE in an ignored package still fails the vulnerability scan
+([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)), which is
+what forces a fix between upgrades.
+
 ## End-to-end flow
 
 ```bash

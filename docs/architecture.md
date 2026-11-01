@@ -165,6 +165,10 @@ redirect scheme. Its stack:
 - No paid service is on the build or run path: no EAS builds or updates, so no
   over-the-air updates, and the app is run on the iOS Simulator and the Android
   Emulator.
+- A physical phone reaches the stack over the owner's tailnet in an opt-in
+  phone mode, with one origin as the issuer
+  ([ADR-0097](adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md));
+  decided in iteration 10, built by its [task 02](tasks/iteration-10/02-the-phone-reaches-the-stack.md).
 
 The app calls the Spring API directly through the edge, with no BFF of its own,
 and signs in as a public Keycloak client
@@ -1442,6 +1446,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md) | The mobile app is Expo as a development build with generated native projects and no paid service | accepted | 2026-10-30 |
 | [ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) | The mobile app signs in as a public PKCE client, holds an offline token and calls Spring directly through the edge | accepted | 2026-10-30 |
 | [ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md) | Mobile unit tests run on Jest and end-to-end flows on Maestro, with Android the only CI platform | accepted | 2026-10-30 |
+| [ADR-0097](adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md) | A phone reaches the stack over the owner's tailnet in an opt-in phone mode, where one origin is the issuer | accepted | 2026-11-01 |
 | [ADR-0098](adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) | An installed build's errors are read from the device's own logs, and a crash service waits for a second user | accepted | 2026-11-01 |
 
 ### Engineering process and documentation
