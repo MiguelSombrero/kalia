@@ -26,7 +26,7 @@ a documented routine rather than a surprise.
 | [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | refined |
 | [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | refined |
 | [01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md) | Decide how a real phone reaches the stack on the Mac | refined |
-| [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | refined |
+| [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | done |
 | [10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md) | The edge serves only what a client needs | refined |
 | [11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md) | The deployable stack carries no dev convenience and no shared superuser | refined |
 | [12](iteration-10/12-every-image-the-stack-runs-is-scanned.md) | Every image the stack runs is scanned, and a mirror outage is not a finding | refined |

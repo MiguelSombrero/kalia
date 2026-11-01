@@ -133,6 +133,27 @@ one.
   `docker compose down` (no `-v`) in a worktree you are done with frees the
   stack's share.
 
+### Reading an installed build's errors
+
+A release build has no Metro terminal and no red screen, and Kalia runs no crash
+service: the device's own log is where a developer reads an error
+([ADR-0098](../docs/adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)).
+The app writes no token, query string or user identity there, and a failed
+request's error names its trace id: search the backend's JSON log for that id
+to find its line ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+
+- **iPhone:** connect it to the Mac and trust the Mac, then open Console.app and
+  pick the phone in the sidebar, or open Xcode's Window → Devices and
+  Simulators, select the phone and choose Open Console. Filter on the process
+  name, `Kalia`. The iOS Simulator logs to the Mac's own log, in the same
+  Console.app.
+- **Android:** `adb logcat` reads the device or emulator, with USB debugging on
+  for a phone. `adb logcat '*:S' ReactNativeJS:V` keeps the JavaScript's lines
+  only; a native crash is in the unfiltered output.
+
+A native crash leaves only what the operating system itself logs: the app
+closes, and no screen of Kalia's says so.
+
 ## Test and checks
 
 ```bash

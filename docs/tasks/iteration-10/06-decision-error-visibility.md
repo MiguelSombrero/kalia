@@ -1,6 +1,6 @@
 # Task 06: Decide where the app's errors are visible without a paid service
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-5
 
@@ -70,12 +70,12 @@ fits, the ADR records the decision as deferred and what would reopen it.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the decision — or the deferral and its trigger — with the
+- [x] An ADR records the decision — or the deferral and its trigger — with the
       rejected alternatives and their costs, and passes
       `node scripts/check-adrs.mjs`
-- [ ] `mobile/README.md` says where a developer reads an installed build's
+- [x] `mobile/README.md` says where a developer reads an installed build's
       errors on each platform
-- [ ] Each test the decision implies — at least that what the app logs or
+- [x] Each test the decision implies — at least that what the app logs or
       shows for an error never contains a token — is named in
       [task 21](21-an-error-on-a-phone-leaves-something-to-read.md)'s
       acceptance criteria, and the ADR links that task

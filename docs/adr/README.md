@@ -317,6 +317,11 @@ in one place, read
   — an nginx edge proxy is the only published service: it limits requests and
   bodies per client address in front of the frontend, backend and Keycloak, and
   names the client address they trust.
+- [ADR-0098](0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)
+  — an installed build's errors are read from the device's own logs
+  (Console.app or Xcode, `adb logcat`) and a crash service is deferred until
+  someone other than the product owner installs Kalia; no endpoint receives
+  client errors.
 
 ## Engineering process and documentation
 
