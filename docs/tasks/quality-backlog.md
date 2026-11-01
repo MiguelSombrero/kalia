@@ -56,91 +56,9 @@ they're already cross-referenced from merged PRs and
 
 ## SHOULD
 
-- **SHOULD-68** *(confirmed 2026-10-27)* **[needs decision]** — any
-  self-registered user can read `/actuator/prometheus` on the deployable
-  stack: `docker-compose.base.yml:40` enables it outside the dev overlay
-  (ADR-0088:51-55 says "local development only"), `SecurityConfig.java:60`
-  requires only `authenticated()`, and the edge forwards every backend path.
-  The web app guards its own counters with `METRICS_TOKEN`. Move it to the
-  dev overlay, require a role or scope, or put actuator on a management port
-  the edge does not route.
-- **SHOULD-69** *(confirmed 2026-10-27)* **[needs decision]** — the Keycloak
-  master realm's admin console and token endpoint are served on the public
-  edge (`edge/nginx.conf:128-131` forwards everything on 8081), no
-  `KC_HOSTNAME_ADMIN` is set, and brute-force detection is configured only
-  for the `kalia` realm (`keycloak/realm-export.json:21-28`), so the admin
-  password is bounded only by the edge's per-address rate. Deny `/admin` and
-  `/realms/master` at the edge (the host scripts then need an internal
-  route), set `KC_HOSTNAME_ADMIN` to an unpublished address, or at least
-  enable brute-force protection for master.
-- **SHOULD-70** *(confirmed 2026-10-27)* — the deployable base still carries
-  dev conveniences ADR-0089 meant to exclude: `KEYCLOAK_SMTP_HOST` defaults
-  to `mailpit` with auth and TLS off (`docker-compose.base.yml:224-231`) and
-  the base runs Mailpit with an unauthenticated API (`:263-280`), so a
-  deployment that forgets SMTP starts cleanly and parks every reset link
-  where loopback can read it; Postgres (`:115-117`) and Valkey (`:252-254`)
-  are also published on host loopback. Move them to the dev overlay and make
-  the SMTP values `:?`-required.
-- **SHOULD-71** *(confirmed 2026-10-27)* — the Keycloak image is never
-  scanned: `.github/workflows/vulnerability-scan.yml:41-69` builds and scans
-  `backend`, `web` and `edge` only, though `keycloak/Dockerfile:1` is a
-  custom build; the pulled `valkey`, `postgres`, `keycloak-config-cli` and
-  `mailpit` images are not scanned either, so a HIGH/CRITICAL CVE in the
-  most exposed component never fails the ADR-0024 gate.
-- **SHOULD-72** *(confirmed 2026-10-27)* **[needs decision]** — a pending
-  contribution blocks everyone else's identical one: duplicate lookups
-  include other contributors' `PENDING` rows
-  (`BreweryRepository.java:46-51`, `BeerRepository.java:38-44`), the 409
-  offers that row (`ContributionService.java:52-56`, `:64-67`;
-  `AddBeerDialog.tsx:344-365`), and choosing it 404s because
-  `findVisibleById` hides it from anyone but its contributor. One account can
-  hold 20 such names until an operator acts. ADR-0091 accepts the disclosure,
-  not the dead end. Scope duplicates to approved plus own pending rows, give
-  "pending elsewhere" its own anonymous 409, or record it as a trade-off.
-- **SHOULD-73** *(confirmed 2026-10-27)* — the pending-cap 429 shows as
-  "Could not add the beer. Please try again.": `features/catalog/api.ts:68-91`
-  handles 201/400/404/409 and throws a generic error otherwise, so a
-  contributor with 20 entries waiting retries forever. No frontend code or
-  test mentions the cap. Recorded as "new task" in PR #452 and lost (see
-  SHOULD-90).
-- **SHOULD-74** *(confirmed 2026-10-27)* — a concurrent remove or update of
-  one bottle can answer 500: `CellarService.ownerOf` (`:147-150`) loads the
-  entry with bottles lazy, the bottles load in a second SELECT, and if
-  another request deleted the bottle in between, `Entry.bottleWithId`
-  (`Entry.java:116-122`) throws an `IllegalStateException` that is neither
-  retried nor mapped. A double-clicked delete, or iteration 12's replayed
-  offline write, triggers it. Fetch the bottles in the same query, or map
-  the missing bottle to `BottleNotFoundException`.
-- **SHOULD-75** *(confirmed 2026-10-27)* **[needs decision]** — someone who
-  already holds a beer that became `REJECTED` or `REMOVED` can keep adding
-  bottles to it: `CellarService.entryFor` (`:154-162`) checks
-  `catalog.beerExists` only when no entry exists, against ADR-0091:34-36's
-  "adding to a cellar" visibility rule, and each add writes a public feed
-  line. `ContributionModerationIT:200` tests only a user with no entry.
-  Refuse the add for holders too, or amend ADR-0091 to allow it.
-- **SHOULD-76** *(confirmed 2026-10-27)* **[needs decision]** — rejecting a
-  pending beer publishes what review withheld: while `PENDING`, the
-  contributor's feed lines and public-cellar entry for it are hidden, but
-  `CatalogService.getBeerSummaries` (`:67-81`) withholds only `PENDING`, so
-  after `make moderate ACTION=reject` they appear — pinned by
-  `ContributionModerationIT:165-178`, `:256-265`. Keep `REJECTED` withheld
-  from public reads, or accept it in ADR-0091.
-- **SHOULD-77** *(confirmed 2026-10-27)* **[needs decision]** — the backend
-  and Keycloak both connect to Postgres as the bootstrap superuser `kalia`
-  in the deployable definition (`docker-compose.base.yml:35-36`, `:112-114`,
-  `:139-141`), so compromising either service, or any future injection,
-  owns both databases. No ADR records it. Separate owner, DML-only and
-  Keycloak roles, or accept it as a §8 trade-off.
-- **SHOULD-78** *(confirmed 2026-10-27)* **[needs decision]** — the owner's
-  whole-cellar read (`GET /cellar`, documented "Not paginated",
-  `CellarController.java:51-56`) was kept whole for iteration 12's offline
-  cache (8.5 task 11), but the web loads it on every signed-in catalog
-  search, beer detail, front and profile page
-  (`features/cellar/api.ts:28-37`; `app/[locale]/beers/page.tsx:62`,
-  `beers/[id]/page.tsx:46`, `(home)/page.tsx:45`, `profile/page.tsx:32`) to
-  mark ~20 beers or show two counts, and nothing caps entries per account.
-  §8 does not list it. Cap the cellar, add a bounded held-counts/totals read,
-  or paginate the owner read and give sync its own endpoint.
+Every other SHOULD filed up to 2026-10-31 was lifted into
+[iteration 10](iteration-10.md).
+
 - **SHOULD-80** *(confirmed 2026-10-27)* **[needs decision]** — moderation is
   `scripts/moderate-contributor.sql`, run through `docker compose exec`
   (`Makefile:19-21`): it acts on all of a contributor's rows at once
@@ -151,65 +69,9 @@ they're already cross-referenced from merged PRs and
   20 more at once, indefinitely. Iteration 9+ mobile with open registration
   grows the queue before ADR-0091's trigger fires. Per-row actions with
   rejections counted toward a cooldown, or an operator-role backend endpoint.
-- **SHOULD-84** *(confirmed 2026-10-27)* **[needs decision]** — the root
-  README's architecture diagram (`README.md:198-206`) draws `Browser --> Next`
-  directly while `docs/architecture.md:82-92` routes every request through
-  `edge`; it restates a shape §2 owns. Replace it with a pointer to §2, or
-  add the edge and keep both in step by hand.
-- **SHOULD-87** *(confirmed 2026-10-27)* **[needs decision]** — the
-  iteration-by-iteration feature list is kept four times: `README.md:5-30`,
-  `README.md:153-185`, `docs/architecture.md:24-51` and
-  `docs/roadmap.md:54-74`; every iteration close edits all four. Shrink the
-  README status blurb to a pointer, or accept the four-place edit.
-- **SHOULD-91** *(confirmed 2026-10-27)* **[needs decision]** — the
-  `worktree` skill's steps 2 and 3 do not run: eight worktrees with merged or
-  detached work remain (`git worktree list`), and Gates `pwd` lines show
-  sessions reusing old worktrees (#434/#445, #447/#450, #448/#451,
-  #435/#452). The fix for COULD-56 (PR #434) did not take, because the
-  desktop app creates a worktree per session. A `make prune-worktrees` called
-  from `stack-env` or the pre-push hook, a SessionStart hook, or rewriting the
-  steps around the app's lifecycle.
-- **SHOULD-92** *(confirmed 2026-10-30)* — a rejected or removed beer shows
-  in the cellar entries and feed lines that point at it
-  (`CatalogService.getBeerSummaries`, ADR-0091) but its details page 404s:
-  `CatalogService.getBeer` filters on `BeerSpecifications.visibleTo`, which
-  admits only approved rows and the viewer's own pending ones. The link on
-  such an entry is a dead end. Show a read-only details page for a beer the
-  viewer holds, or stop linking to a withheld beer. Deferred in PR #452.
-- **SHOULD-93** *(confirmed 2026-10-30)* — the add-beer flow tells the
-  contributor their pending beer is public: the dialog says "A beer you add
-  is in the catalog for everyone at once" and the success line "… is in the
-  catalog" (`catalog.add.description` and `catalog.added` in `common.json`;
-  asserted in `JustAdded.test.tsx:123`), while ADR-0091 keeps it
-  invisible to everyone else until an operator approves. Say that it waits
-  for review, in both locales. Deferred in PR #452.
-- **SHOULD-94** *(confirmed 2026-10-31)* — the code-comment policy
-  ([ADR-0017](../adr/0017-code-comment-policy.md)) does not reach `mobile/`:
-  `scripts/check-comments.mjs` scans `backend/src`, `web/` and `packages/`, and
-  the `paths` of `.claude/rules/code-comments.md` name the same, so a comment
-  written in the app is held to neither the hard tier nor the rule the agent
-  reads on opening a file. Add `mobile/src` to both and fix what the
-  check then finds. Not done in iteration 9 task 07, whose decided scope named
-  only the links and raster-image checks.
-- **SHOULD-95** *(confirmed 2026-10-31)* — the app's transport asks the token
-  store for a token on every API call, anonymous ones included, so while a
-  signed-in user's refresh fails for a transient reason (Keycloak down or slow,
-  the backend up) the catalog and the launch check fail with it, though neither
-  needs a token. Let the token source degrade to no token for a call that an
-  anonymous caller may make, or have the shared transport retry such a call
-  without one. Deferred in the iteration 9 task 14 pull request.
-- **SHOULD-96** *(confirmed 2026-10-31)* — `Mobile E2E (Maestro, Android)`, the
-  app's native end-to-end check
-  ([ADR-0096](../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)),
-  fails on the runner's emulator for reasons unrelated to the change: `dev`'s
-  run after PR 500 went red with `device offline` at the flow's `launchApp`
-  while the same code had passed on the pull request, and an earlier API 37
-  boot timeout is the same family
-  ([common-failures](../common-failures.md)). A required check that fails one
-  run in a few teaches people to re-run rather than read. Find out whether the
-  emulator image, its cores or the adb start-up is at fault and make the boot
-  wait for a healthy device (or retry the boot, never the flow). Found closing
-  iteration 9.
+  *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
+  planned for a later iteration replaces the SQL script, and this is fixed
+  there.*
 
 ## COULD
 
@@ -221,22 +83,6 @@ they're already cross-referenced from merged PRs and
   it is stock `keycloak.v2` markup the theme does not touch
   ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
 
-- **COULD-61** *(confirmed 2026-10-27)* — `web/features/catalog/AddBeerDialog.tsx`
-  (383 lines) holds the form state, the brewery-choice state machine
-  (`:106-121`, `:204-215`), the mapping of server refusals onto fields
-  (`:48-57`, `:130-135`), three outcome alerts (`:322-370`) and navigation
-  (`:123-129`) in one component; the alerts and the brewery mode could be
-  extracted and tested on their own.
-- **COULD-73** *(confirmed 2026-10-27)* — any cross-site link to
-  `/api/auth/callback/keycloak` signs the visitor out:
-  `app/api/auth/[...nextauth]/route.ts:6`, `:15-21` ends the session on any
-  matching GET before Auth.js validates state or PKCE, and the `SameSite=Lax`
-  cookie rides a top-level navigation. End the session only when this
-  browser's sign-in state cookie is present, or after validation.
-- **COULD-74** *(confirmed 2026-10-27)* — the back-channel logout endpoint is
-  published on the edge (`edge/nginx.conf:77-81`) although its only caller,
-  Keycloak, posts to `web:3000` over the compose network
-  (`keycloak/realm-export.json:58`); return 404 for it at the edge.
 - **COULD-75** *(confirmed 2026-10-27)* **[needs decision]** — the backend's
   10 r/s per-address zone does not bound anonymous backend load: the BFF
   calls `backend:8080` directly, so SSR pages and public Server Actions under
@@ -244,10 +90,6 @@ they're already cross-referenced from merged PRs and
   15 times that, against ADR-0090:106-108's "a bound a script cannot step
   around". Tighten the web zone for actions, limit in the backend by
   forwarded address, or correct the ADR.
-- **COULD-76** *(confirmed 2026-10-27)* — `CellarService.readPublicCellar`
-  (`:61-79`) reads counts and shown bottles in separate statements, and
-  `:78`'s `shown.get(entry.getId())` is null if the owner deleted the
-  entry's last bottle in between, so `PublicCellarEntryDto.from` throws a 500.
 - **COULD-77** *(confirmed 2026-10-27)* **[needs decision]** — after an empty
   first feed page, `FeedList.tsx:60` polls with `since=""`, the backend treats
   it as no cursor and returns a backward `nextCursor`
@@ -255,18 +97,11 @@ they're already cross-referenced from merged PRs and
   `FeedList.tsx:107-108` adopts it as the forward one, walking deep history
   and delaying new public lines past ADR-0060's 60 s. Ignore the cursor on a
   cursor-less poll, or return a forward cursor for a since-less read.
-- **COULD-78** *(confirmed 2026-10-27)* — `web/features/feed/actions.ts:21-24`
-  and `:41-47` still say the cursor key is "minted fresh by a backend
-  restart"; since 8.5 task 04 it is configured (`FEED_CURSOR_KEY`).
 - **COULD-79** *(confirmed 2026-10-27)* — domain timestamps still bypass the
   injected `Clock` after 8.5 task 20 (which took COULD-60): `Instant.now()`
   in `catalog/domain/Beer.java:56`, `Brewery.java:48` and
   `EventPublicationResubmission.java:66`, and Hibernate VM timestamps in
   `Profile.java:35-39` and `FeedLine.java:57-61`.
-- **COULD-80** *(confirmed 2026-10-27)* — `features/catalog/addBeerSchema.ts:11`
-  refuses `\p{Cc}` but the server refuses `\p{Cc}\p{Cf}`
-  (`AddBeerRequestDto.java:40`), so a zero-width space passes the client and
-  comes back as the generic `refusedField` instead of `nameInvalid`.
 - **COULD-81** *(confirmed 2026-10-27)* **[needs decision]** — `ProfileApi`
   publishes usernames only through cellar visibility
   (`ProfileApi.java:25-37`, `ProfileService.java:25-44`), which the feed
@@ -274,86 +109,18 @@ they're already cross-referenced from merged PRs and
   event not about a cellar cannot name a private-cellar user without
   reshaping the API. Record it as a constraint on new event types, or split
   a username lookup from a visibility predicate first.
-- **COULD-82** *(confirmed 2026-10-27)* — sign-in is implemented four times
-  (`features/auth/actions.ts:26`, `catalog/actions.ts:29`,
-  `profile/actions.ts:21`, `cellar/actions.ts:20-28`), each parsing the
-  locale and building the post-sign-in redirect its own way; a plain helper
-  in `lib/auth/` built on `lib/routes.ts` fits web/README's own
-  "second user moves it to `lib/`" rule.
 - **COULD-83** *(confirmed 2026-10-27)* **[needs decision]** — never-delete
   decisions are stacking up ahead of account deletion: usernames (ADR-0080),
   `contributor_id` (ADR-0091) and `feed.line.user_id` (ADR-0058) are kept
   forever by design, while `docs/tasks/backlog.md` lists GDPR account
   deletion as needed before store release. Record a tombstone or
   pseudonymisation strategy now, or accept the rework when deletion lands.
-- **COULD-84** *(confirmed 2026-10-27)* **[needs decision]** —
-  `docs/architecture.md:125-127` says `fi.kalia.web` holds only exception
-  advice and error types, but it now also holds `RequestLogFilter` and
-  `UnexpectedFailureDocumentation`; `ArchitectureDocumentationTest.java:87`
-  calls it a module "with no dependency edges" though most modules depend on
-  it. Widen §3 and ADR-0014 to "module-neutral web infrastructure", or move
-  the filter to the base package.
-- **COULD-85** *(confirmed 2026-10-27)* — `docs/architecture.md:628-631` says
-  each feature reaches only its own tag's generated operations, but
-  `eslint.config.mjs` lets `features/cellar/api.ts:10` import the
-  `public-cellar` tag; name the exception in §5 and web/README.
-- **COULD-86** *(confirmed 2026-10-27)* — `features/cellar/actions.ts:26`
-  builds `` `/${locale}/cellar` `` by hand though `ownCellarHref` exists at
-  `lib/routes.ts:16`, against `docs/architecture.md:642-644`.
-- **COULD-87** *(confirmed 2026-10-27)* **[needs decision]** — ADR-0007's
-  Decision body (`:71`) still cites "payment's `PaymentProvider`, ordering's
-  state machine", which its own 2026-10-24 amendment (`:27-31`) says named
-  dropped store modules. Drop the examples, or mark the amendment as
-  superseding that clause.
-- **COULD-88** *(confirmed 2026-10-27)* — smaller doc staleness:
-  `docs/architecture.md:3` "Last updated: 2026-10-24"; `docs/tasks/iteration-8.5.md:49-52`
-  groups tasks 01–20 and omits 21–22; `docs/tasks/iteration-9.md:77-78` keeps
-  a "planned task" that only says it moved to 8.5; `docs/tasks/backlog.md:89`
-  calls catalog search "full-text" (it is `pg_trgm` substring, ADR-0044),
-  `:105-107` says the API binds `127.0.0.1:8080`, and decision 9 lists rate
-  limiting as open despite ADR-0090; `README.md:264-270` ties the npm
-  overrides to `next` 16.3.1 (now 16.4.3, re-test due);
-  `README.md:337` says `docker-compose.dev.env` holds every secret, but
-  `KALIA_WEB_CLIENT_SECRET` still comes from `.env`.
-- **COULD-89** *(confirmed 2026-10-27)* — limits restated outside their
-  homes: the edge's 10 r/s in `backend/README.md:9-11` (ADR-0090 and
-  `edge/nginx.conf:44` own it), and the 20-pending cap in
-  `docs/architecture.md:282-283`, `:409` and `docs/adr/README.md:71`
-  (ADR-0091 and `ContributionService.MAX_PENDING_ENTRIES` own it).
-- **COULD-90** *(confirmed 2026-10-27)* — the "required CI checks" clause of
-  the PR template's Local gate line cannot hold a verdict when the body is
-  written: 8 of 9 task PRs record it pending (#433, #434, #445, #447, #448,
-  #450, #451, #452), and the ruleset enforces those checks anyway. Drop it
-  from the template and implement-task's Gates list.
-- **COULD-91** *(confirmed 2026-10-27)* **[needs decision]** — three PRs in
-  iteration 8.5 existed only to tick criteria checkable after merge (#414,
-  #431, #446, for #399, #428, #417). Require criteria checkable before merge
-  at refinement, or let the next task's or the close-out PR carry such ticks.
-- **COULD-92** *(confirmed 2026-10-27)* — Trivy's Java DB mirror 404 failed
-  runs 40166251873 (`dev`) and 40166341881 (PR #421) with a clean filesystem
-  scan, and `docs/ci-playbook.md`'s vulnerability-scan section covers only
-  CVE findings; add a "re-run, change nothing" entry.
-- **COULD-93** *(confirmed 2026-10-27)* **[needs decision]** — `CLAUDE.md` is
-  at 199 of ADR-0048's 200 lines, up from 191 three days earlier (#397 →
-  #448), and ADR-0048 says a third overrun reopens the checker question.
-  Reopen it now, or wait for the overrun.
-- **COULD-94** *(confirmed 2026-10-27)* **[needs decision]** — ruleset
-  19027809 requests Copilot code review on push, but no Copilot review
-  appears on any of the 23 agent PRs in #394–#459, and no doc mentions the
-  setting. Remove the rule, or find out why it does not run.
 - **COULD-95** *(confirmed 2026-10-30)* — the 409 a second lost cellar write
   answers (ADR-0057, `CellarService.addBottles`/`updateBottle`/`removeBottle`)
   reaches the user as the generic failure: `features/cellar/api.ts` throws
   for every status but the success one, and no cellar string or test mentions
   a conflict. Offer "someone changed this cellar, reload and try again" once
   iteration 12's replayed writes make it ordinary. Deferred in PR #398.
-- **COULD-96** *(confirmed 2026-10-30)* — bottles added together read back in
-  no fixed order: `Entry.bottles` is `@OrderBy("createdAt")` with no
-  tiebreaker (`Entry.java:46`) and each bulk-added bottle reads
-  `clock.instant()`, so a fixed `Clock` (every test) gives them one
-  timestamp, and a real one can tie at the column's microsecond precision.
-  Order by `createdAt, id`, as the repository queries already do. Deferred in
-  PR #400.
 - **COULD-97** *(confirmed 2026-10-30)* — a `415`/`406` is Boot's
   `problem+json` but no operation lists it, though `ApiErrorDocumentationIT`
   fails an operation that lists none of its others, so the generated client
@@ -369,6 +136,9 @@ they're already cross-referenced from merged PRs and
   and commits, over every row a contributor added, so a mistyped `WHO` or
   `ACTION` is only undone by a second run. A `DRY_RUN=1` that rolls back and
   prints the same counts. Related to SHOULD-80. Deferred in PR #452.
+  *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
+  planned for a later iteration replaces the SQL script, and this is fixed
+  there.*
 - **COULD-100** *(confirmed 2026-10-30)* — three small gaps around the
   committed spec. `backend/openapi.json` carries the OAuth URLs built from the
   Keycloak issuer setting, so a developer whose environment overrides it fails
@@ -380,36 +150,6 @@ they're already cross-referenced from merged PRs and
   `scripts/check-api-breaking.mjs` changes, so a broken wrapper is found on the
   next spec change: add the script to the backend filter. Deferred in the
   iteration 9 task 09 pull request.
-
-- **COULD-101** *(confirmed 2026-10-31)* — Dependabot's one npm entry bumps
-  `mobile/`'s Expo-managed packages (`react-native`, `expo-router`, the `expo-*`
-  set) one at a time, while an SDK's packages only work as the set
-  `npx expo install --check` names; a lone bump passes lint and Jest and
-  breaks the native build, which no required check builds. Group or ignore
-  them in `.github/dependabot.yml` once the Android job of iteration 9 task 15
-  exists to catch it.
-  `npx expo install --check` also reports `react` and `typescript` off the
-  SDK's own versions, both deliberately the web's.
-
-- **COULD-102** *(confirmed 2026-10-31)* — the app trusts its own clock for an
-  access token's expiry and never reacts to a `401` from the API: a token the
-  server stopped accepting inside its five minutes (a disabled account, a
-  revoked session, a skewed device clock) leaves the Profile tab on "Couldn't
-  load your profile." until the local expiry passes. Force a refresh on a
-  `401` and retry the call once. Deferred in the iteration 9 task 14 pull
-  request.
-
-- **COULD-104** *(confirmed 2026-10-31)* — `ci.yml`'s `mobile-e2e` job downloads
-  Maestro's 350 MB zip and compiles the whole Android app cold on every run,
-  with no cache for either. Cache the Maestro directory and Gradle's home once
-  the job's run time is a measured cost; a cache key built from the lockfile
-  keeps a stale build out.
-
-- **COULD-105** *(confirmed 2026-10-31)* — `mobile/.maestro/catalog-lists-beers.yaml`
-  asserts a Wikidata-import beer that happens to sort into the first screen,
-  so a catalog change that adds an earlier name fails the required check with
-  no change to the app. Give the flow a beer of its own the first page always
-  holds, or read the first row's name instead of naming one.
 
 ## Retired
 
@@ -600,3 +340,45 @@ live section they came from.
 - ~~SHOULD-88~~ (red `dev` runs after a merge are never logged) — lifted into [iteration-9 task 17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-89~~ (PRs merge without CI against the current `dev`) — lifted into [iteration-9 task 17](iteration-9/17-dev-stays-green-and-its-failures-are-logged.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-90~~ (a `/code-review` "new task" finding has no home) — lifted into [iteration-9 task 19](iteration-9/19-review-feedback-outlives-its-pr.md).
+- ~~SHOULD-68~~ (any signed-in user reading `/actuator/prometheus`) — lifted into [iteration-10 task 10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-69~~ (Keycloak's master realm served on the public edge) — lifted into [iteration-10 task 10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-70~~ (Mailpit, SMTP defaults and loopback ports in the deployable base) — lifted into [iteration-10 task 11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md).
+- ~~SHOULD-71~~ (the Keycloak and pulled images never scanned) — lifted into [iteration-10 task 12](iteration-10/12-every-image-the-stack-runs-is-scanned.md).
+- ~~SHOULD-72~~ (another contributor's pending beer blocking an identical one) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-73~~ (the pending-cap 429 shown as a generic failure) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
+- ~~SHOULD-74~~ (a concurrent bottle remove or update answering 500) — lifted into [iteration-10 task 13](iteration-10/13-cellar-survives-a-concurrent-change.md).
+- ~~SHOULD-75~~ (holders adding bottles to a rejected or removed beer) — lifted into [iteration-10 task 15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-76~~ (rejection publishing what review withheld) — lifted into [iteration-10 task 15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-77~~ (the backend and Keycloak sharing the Postgres superuser) — lifted into [iteration-10 task 11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-78~~ (the unbounded owner cellar read loaded on every signed-in page) — lifted into [iteration-10 task 14](iteration-10/14-the-owner-cellar-read-is-bounded.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-84~~ (the README's architecture diagram restating §2) — lifted into [iteration-10 task 18](iteration-10/18-each-fact-kept-once.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-87~~ (the feature list kept four times) — lifted into [iteration-10 task 18](iteration-10/18-each-fact-kept-once.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-91~~ (the worktree skill's teardown steps not running) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-92~~ (a withheld beer's details link 404ing) — lifted into [iteration-10 task 15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md).
+- ~~SHOULD-93~~ (the add-beer flow calling a pending beer public) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
+- ~~SHOULD-94~~ (the code-comment policy not reaching `mobile/`) — lifted into [iteration-10 task 09](iteration-10/09-the-checks-reach-mobile.md).
+- ~~SHOULD-95~~ (anonymous app calls failing with a failed refresh) — lifted into [iteration-10 task 08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md).
+- ~~SHOULD-96~~ (the Android end-to-end check failing on a sick emulator) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
+- ~~COULD-61~~ (`AddBeerDialog` holding five concerns) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
+- ~~COULD-73~~ (a cross-site callback link signing the visitor out) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
+- ~~COULD-74~~ (the back-channel logout endpoint published on the edge) — lifted into [iteration-10 task 10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md).
+- ~~COULD-76~~ (the public cellar's two reads racing a last-bottle delete) — lifted into [iteration-10 task 13](iteration-10/13-cellar-survives-a-concurrent-change.md).
+- ~~COULD-78~~ (the feed actions' stale cursor-key comment) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md).
+- ~~COULD-80~~ (the client accepting `\p{Cf}` the server refuses) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
+- ~~COULD-82~~ (sign-in implemented four times) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
+- ~~COULD-84~~ (§3 understating what `fi.kalia.web` holds) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-85~~ (§5 omitting the cellar's `public-cellar` tag exception) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md).
+- ~~COULD-86~~ (the cellar action building its route by hand) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
+- ~~COULD-87~~ (ADR-0007 citing dropped store modules) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-88~~ (smaller doc staleness) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md).
+- ~~COULD-89~~ (the edge rate and pending cap restated outside their homes) — lifted into [iteration-10 task 18](iteration-10/18-each-fact-kept-once.md).
+- ~~COULD-90~~ (the PR template's unfillable required-checks clause) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md).
+- ~~COULD-91~~ (PRs that only tick after-merge criteria) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-92~~ (no playbook entry for Trivy's Java DB mirror 404) — lifted into [iteration-10 task 12](iteration-10/12-every-image-the-stack-runs-is-scanned.md).
+- ~~COULD-93~~ (`CLAUDE.md` at 199 of 200 lines) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-94~~ (the Copilot review rule that never runs) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-96~~ (bottles added together reading back in no fixed order) — lifted into [iteration-10 task 13](iteration-10/13-cellar-survives-a-concurrent-change.md).
+- ~~COULD-101~~ (Dependabot bumping Expo-managed packages one at a time) — lifted into [iteration-10 task 09](iteration-10/09-the-checks-reach-mobile.md).
+- ~~COULD-102~~ (the app never reacting to a `401`) — lifted into [iteration-10 task 08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md).
+- ~~COULD-104~~ (no cache for Maestro or Gradle in the Android job) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
+- ~~COULD-105~~ (the Catalog flow naming a beer that happens to sort first) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
