@@ -37,88 +37,19 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Needed to diff against the base branch rather than one commit.
+          # Needed to diff against the merge base with dev, or against the
+          # commit before a push to dev, rather than one commit.
           fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      # The rules, what a push is compared against and when everything runs
+      # are stated and tested in the script, not here.
       - id: filter
         name: Decide which suites this push can affect
-        # Fails open on purpose: anything this cannot classify with certainty
-        # (a push to dev, a first push with no merge base, a shared root file
-        # like docker-compose.yml or this workflow) runs everything. A missed
-        # run is a broken merge; a redundant run costs a few free minutes.
-        run: |
-          everything() {
-            echo "$1: running everything"
-            echo "backend=true" >> "$GITHUB_OUTPUT"
-            echo "web=true" >> "$GITHUB_OUTPUT"
-            echo "mobile=true" >> "$GITHUB_OUTPUT"
-            echo "mobile-e2e=true" >> "$GITHUB_OUTPUT"
-            echo "keycloak=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          }
-
-          if [ "${GITHUB_REF_NAME}" = "dev" ] || [ "${GITHUB_REF_NAME}" = "main" ]; then
-            everything "on ${GITHUB_REF_NAME}"
-          fi
-
-          base=$(git merge-base origin/dev HEAD 2>/dev/null || true)
-          if [ -z "$base" ] || [ "$base" = "$(git rev-parse HEAD)" ]; then
-            everything "no usable merge base with origin/dev"
-          fi
-
-          changed=$(git diff --name-only "$base" HEAD)
-          echo "Changed files:"
-          echo "$changed" | sed 's/^/  /'
-
-          # Files outside backend/ and web/ that either suite depends on.
-          # the docker-compose.* files build and wire both; this workflow defines
-          # how they run; .node-version pins the Node every web job
-          # installs; docs/architecture.md is asserted against the
-          # backend's actual modules by ArchitectureDocumentationTest;
-          # keycloak/, postgres/ and the seed script with its helper feed the
-          # keycloak, postgres and keycloak-seed services e2e's stack starts;
-          # edge/ is the proxy every request to that stack passes through.
-          shared=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|docs/architecture\.md|\.node-version|\.dockerignore|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin)\.mjs)' || true)
-
-          # What keycloak-realm-check below can be affected by: the services
-          # it starts and the scripts it runs. Neither backend/ nor web/
-          # is among them.
-          keycloak_inputs=$(echo "$changed" | grep -E '^(docker-compose\.|\.github/workflows/|edge/|keycloak/|postgres/|scripts/(seed-keycloak-account|keycloak-admin|check-keycloak-signin|check-keycloak-realm-config|check-keycloak-pkce-flow)\.mjs)' || true)
-
-          # Written as `if` blocks rather than `cmd && var=true`: steps run
-          # under `bash -e`, where a grep that legitimately matches nothing
-          # is a non-zero exit, and whether that aborts the script depends on
-          # subtleties of how `-e` treats `&&` lists. `if` conditions are
-          # explicitly exempt.
-          backend=false
-          web=false
-          mobile=false
-          mobile_e2e=false
-          keycloak=false
-          if [ -n "$shared" ]; then
-            backend=true
-            web=true
-            mobile=true
-            mobile_e2e=true
-          fi
-          if [ -n "$keycloak_inputs" ]; then keycloak=true; fi
-          if echo "$changed" | grep -q '^backend/'; then backend=true; fi
-          # backend/openapi.json is what packages/api generates from, so a change to
-          # it is a change to what the web compiles even though it sits in backend/.
-          if echo "$changed" | grep -qE '^(web/|packages/|package(-lock)?\.json$|backend/openapi\.json$)'; then web=true; fi
-          # The mobile app compiles the same packages, and type-checks against
-          # the same generated client, so it follows them.
-          if echo "$changed" | grep -qE '^(mobile/|packages/|package(-lock)?\.json$|backend/openapi\.json$|Makefile$|scripts/mobile-env)'; then mobile=true; fi
-
-          # The flow drives the built app against the whole stack, so it also
-          # follows the backend, which no other mobile job does.
-          if echo "$changed" | grep -qE '^(mobile/|packages/|backend/|package(-lock)?\.json$|Makefile$|scripts/(mobile-e2e|mobile-env|stack-ports))'; then mobile_e2e=true; fi
-
-          echo "backend=$backend" >> "$GITHUB_OUTPUT"
-          echo "web=$web" >> "$GITHUB_OUTPUT"
-          echo "mobile=$mobile" >> "$GITHUB_OUTPUT"
-          echo "mobile-e2e=$mobile_e2e" >> "$GITHUB_OUTPUT"
-          echo "keycloak=$keycloak" >> "$GITHUB_OUTPUT"
-          echo "Result: backend=$backend web=$web mobile=$mobile mobile-e2e=$mobile_e2e keycloak=$keycloak"
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: node scripts/ci-changes.mjs
 
   static-checks:
     name: Static checks
@@ -265,9 +196,9 @@ jobs:
   api-breaking-change:
     name: API breaking-change check
     # Diffs backend/openapi.json against dev's copy and fails on a change an
-    # installed app would notice (ADR-0093). Only the spec and the files that
-    # configure the diff matter, but a push to dev or a shared file runs
-    # everything, so this follows the backend filter.
+    # installed app would notice (ADR-0093). The spec sits in backend/, so this
+    # follows the backend filter; the script that configures the diff has its
+    # own test in static-checks.
     needs: [changes]
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
