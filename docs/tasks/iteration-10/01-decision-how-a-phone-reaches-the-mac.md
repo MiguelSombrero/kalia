@@ -1,6 +1,6 @@
 # Task 01: Decide how a real phone reaches the stack on the Mac
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-5
 
@@ -105,12 +105,12 @@ keeps serving the browser and both simulators on `localhost`.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the route, the issuer, what is exposed on which network,
+- [x] An ADR records the route, the issuer, what is exposed on which network,
       the rejected alternatives and their costs, and passes
       `node scripts/check-adrs.mjs`
-- [ ] ADR-0095 is amended where the decision changes what it states about the
+- [x] ADR-0095 is amended where the decision changes what it states about the
       issuer or the redirect URIs
-- [ ] Each test the decision implies — the issuer every consumer validates
+- [x] Each test the decision implies — the issuer every consumer validates
       matching the one Keycloak stamps under the new name, the default stack
       still serving `localhost` — is named in the acceptance criteria of
       [task 02](02-the-phone-reaches-the-stack.md) before it is refined
