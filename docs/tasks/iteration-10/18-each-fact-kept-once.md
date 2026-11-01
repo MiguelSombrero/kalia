@@ -1,4 +1,4 @@
-# Task 19: The architecture diagram, feature list and limits are each kept once
+# Task 18: The architecture diagram, feature list and limits are each kept once
 
 - **Status:** needs-refinement
 - **Iteration:** [10](../iteration-10.md)

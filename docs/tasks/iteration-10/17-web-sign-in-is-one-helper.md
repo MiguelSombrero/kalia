@@ -1,4 +1,4 @@
-# Task 18: Web sign-in is one helper, and a cross-site link cannot sign anyone out
+# Task 17: Web sign-in is one helper, and a cross-site link cannot sign anyone out
 
 - **Status:** needs-refinement
 - **Iteration:** [10](../iteration-10.md)

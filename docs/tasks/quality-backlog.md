@@ -56,8 +56,22 @@ they're already cross-referenced from merged PRs and
 
 ## SHOULD
 
-*None open — every SHOULD filed up to 2026-10-31 was lifted into
-[iteration 10](iteration-10.md).*
+Every other SHOULD filed up to 2026-10-31 was lifted into
+[iteration 10](iteration-10.md).
+
+- **SHOULD-80** *(confirmed 2026-10-27)* **[needs decision]** — moderation is
+  `scripts/moderate-contributor.sql`, run through `docker compose exec`
+  (`Makefile:19-21`): it acts on all of a contributor's rows at once
+  (removing one bad beer also removes their approved ones), writes `catalog`
+  tables around the domain, reads `profile.profile` cross-schema, and has no
+  deployment story; rejected rows leave the pending count
+  (`ContributionService.java:72-75`), so a rejected contributor can resubmit
+  20 more at once, indefinitely. Iteration 9+ mobile with open registration
+  grows the queue before ADR-0091's trigger fires. Per-row actions with
+  rejections counted toward a cooldown, or an operator-role backend endpoint.
+  *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
+  planned for a later iteration replaces the SQL script, and this is fixed
+  there.*
 
 ## COULD
 
@@ -117,6 +131,14 @@ they're already cross-referenced from merged PRs and
   `findIdBySameNameAndCountryCode`, then loads the row with `findById` for
   the name and country the 409 carries. A projection returning those fields
   does it in one query. Deferred in PR #425.
+- **COULD-99** *(confirmed 2026-10-30)* — `make moderate` has no way to look
+  before it acts: `scripts/moderate-contributor.sql` runs in one transaction
+  and commits, over every row a contributor added, so a mistyped `WHO` or
+  `ACTION` is only undone by a second run. A `DRY_RUN=1` that rolls back and
+  prints the same counts. Related to SHOULD-80. Deferred in PR #452.
+  *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
+  planned for a later iteration replaces the SQL script, and this is fixed
+  there.*
 - **COULD-100** *(confirmed 2026-10-30)* — three small gaps around the
   committed spec. `backend/openapi.json` carries the OAuth URLs built from the
   Keycloak issuer setting, so a developer whose environment overrides it fails
@@ -329,35 +351,33 @@ live section they came from.
 - ~~SHOULD-76~~ (rejection publishing what review withheld) — lifted into [iteration-10 task 15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-77~~ (the backend and Keycloak sharing the Postgres superuser) — lifted into [iteration-10 task 11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-78~~ (the unbounded owner cellar read loaded on every signed-in page) — lifted into [iteration-10 task 14](iteration-10/14-the-owner-cellar-read-is-bounded.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-80~~ (moderation acting on all of a contributor's rows at once) — lifted into [iteration-10 task 17](iteration-10/17-moderation-acts-on-one-entry-and-looks-first.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-84~~ (the README's architecture diagram restating §2) — lifted into [iteration-10 task 19](iteration-10/19-each-fact-kept-once.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-87~~ (the feature list kept four times) — lifted into [iteration-10 task 19](iteration-10/19-each-fact-kept-once.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-91~~ (the worktree skill's teardown steps not running) — lifted into [iteration-10 task 21](iteration-10/21-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-84~~ (the README's architecture diagram restating §2) — lifted into [iteration-10 task 18](iteration-10/18-each-fact-kept-once.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-87~~ (the feature list kept four times) — lifted into [iteration-10 task 18](iteration-10/18-each-fact-kept-once.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-91~~ (the worktree skill's teardown steps not running) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-92~~ (a withheld beer's details link 404ing) — lifted into [iteration-10 task 15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md).
 - ~~SHOULD-93~~ (the add-beer flow calling a pending beer public) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
 - ~~SHOULD-94~~ (the code-comment policy not reaching `mobile/`) — lifted into [iteration-10 task 09](iteration-10/09-the-checks-reach-mobile.md).
 - ~~SHOULD-95~~ (anonymous app calls failing with a failed refresh) — lifted into [iteration-10 task 08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md).
 - ~~SHOULD-96~~ (the Android end-to-end check failing on a sick emulator) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
 - ~~COULD-61~~ (`AddBeerDialog` holding five concerns) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
-- ~~COULD-73~~ (a cross-site callback link signing the visitor out) — lifted into [iteration-10 task 18](iteration-10/18-web-sign-in-is-one-helper.md).
+- ~~COULD-73~~ (a cross-site callback link signing the visitor out) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
 - ~~COULD-74~~ (the back-channel logout endpoint published on the edge) — lifted into [iteration-10 task 10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md).
 - ~~COULD-76~~ (the public cellar's two reads racing a last-bottle delete) — lifted into [iteration-10 task 13](iteration-10/13-cellar-survives-a-concurrent-change.md).
-- ~~COULD-78~~ (the feed actions' stale cursor-key comment) — lifted into [iteration-10 task 20](iteration-10/20-docs-and-comments-say-what-is-true.md).
+- ~~COULD-78~~ (the feed actions' stale cursor-key comment) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md).
 - ~~COULD-80~~ (the client accepting `\p{Cf}` the server refuses) — lifted into [iteration-10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
-- ~~COULD-82~~ (sign-in implemented four times) — lifted into [iteration-10 task 18](iteration-10/18-web-sign-in-is-one-helper.md).
-- ~~COULD-84~~ (§3 understating what `fi.kalia.web` holds) — lifted into [iteration-10 task 20](iteration-10/20-docs-and-comments-say-what-is-true.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-85~~ (§5 omitting the cellar's `public-cellar` tag exception) — lifted into [iteration-10 task 20](iteration-10/20-docs-and-comments-say-what-is-true.md).
-- ~~COULD-86~~ (the cellar action building its route by hand) — lifted into [iteration-10 task 18](iteration-10/18-web-sign-in-is-one-helper.md).
-- ~~COULD-87~~ (ADR-0007 citing dropped store modules) — lifted into [iteration-10 task 20](iteration-10/20-docs-and-comments-say-what-is-true.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-88~~ (smaller doc staleness) — lifted into [iteration-10 task 20](iteration-10/20-docs-and-comments-say-what-is-true.md).
-- ~~COULD-89~~ (the edge rate and pending cap restated outside their homes) — lifted into [iteration-10 task 19](iteration-10/19-each-fact-kept-once.md).
-- ~~COULD-90~~ (the PR template's unfillable required-checks clause) — lifted into [iteration-10 task 21](iteration-10/21-process-records-match-practice.md).
-- ~~COULD-91~~ (PRs that only tick after-merge criteria) — lifted into [iteration-10 task 21](iteration-10/21-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-82~~ (sign-in implemented four times) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
+- ~~COULD-84~~ (§3 understating what `fi.kalia.web` holds) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-85~~ (§5 omitting the cellar's `public-cellar` tag exception) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md).
+- ~~COULD-86~~ (the cellar action building its route by hand) — lifted into [iteration-10 task 17](iteration-10/17-web-sign-in-is-one-helper.md).
+- ~~COULD-87~~ (ADR-0007 citing dropped store modules) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-88~~ (smaller doc staleness) — lifted into [iteration-10 task 19](iteration-10/19-docs-and-comments-say-what-is-true.md).
+- ~~COULD-89~~ (the edge rate and pending cap restated outside their homes) — lifted into [iteration-10 task 18](iteration-10/18-each-fact-kept-once.md).
+- ~~COULD-90~~ (the PR template's unfillable required-checks clause) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md).
+- ~~COULD-91~~ (PRs that only tick after-merge criteria) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~COULD-92~~ (no playbook entry for Trivy's Java DB mirror 404) — lifted into [iteration-10 task 12](iteration-10/12-every-image-the-stack-runs-is-scanned.md).
-- ~~COULD-93~~ (`CLAUDE.md` at 199 of 200 lines) — lifted into [iteration-10 task 21](iteration-10/21-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-94~~ (the Copilot review rule that never runs) — lifted into [iteration-10 task 21](iteration-10/21-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-93~~ (`CLAUDE.md` at 199 of 200 lines) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-94~~ (the Copilot review rule that never runs) — lifted into [iteration-10 task 20](iteration-10/20-process-records-match-practice.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~COULD-96~~ (bottles added together reading back in no fixed order) — lifted into [iteration-10 task 13](iteration-10/13-cellar-survives-a-concurrent-change.md).
-- ~~COULD-99~~ (`make moderate` with no dry run) — lifted into [iteration-10 task 17](iteration-10/17-moderation-acts-on-one-entry-and-looks-first.md).
 - ~~COULD-101~~ (Dependabot bumping Expo-managed packages one at a time) — lifted into [iteration-10 task 09](iteration-10/09-the-checks-reach-mobile.md).
 - ~~COULD-102~~ (the app never reacting to a `401`) — lifted into [iteration-10 task 08](iteration-10/08-the-app-survives-a-token-it-cannot-use.md).
 - ~~COULD-104~~ (no cache for Maestro or Gradle in the Android job) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).

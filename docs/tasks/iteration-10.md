@@ -24,7 +24,7 @@ a documented routine rather than a surprise.
 |---|---|---|
 | [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md) | The mobile end-to-end check fails only when the app does | needs-refinement |
 | [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | needs-refinement |
-| [21](iteration-10/21-process-records-match-practice.md) | The process's own rules and records match how work is done | needs-refinement |
+| [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | needs-refinement |
 | [01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md) | Decide how a real phone reaches the stack on the Mac | needs-refinement |
 | [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | needs-refinement |
 | [10](iteration-10/10-the-edge-serves-only-what-a-client-needs.md) | The edge serves only what a client needs | needs-refinement |
@@ -39,15 +39,14 @@ a documented routine rather than a surprise.
 | [14](iteration-10/14-the-owner-cellar-read-is-bounded.md) | The owner's cellar read has a bound before the app caches it | needs-refinement |
 | [15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md) | A rejected or removed beer is treated the same way everywhere | needs-refinement |
 | [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) | Adding a beer says what happens to it, and never dead-ends | needs-refinement |
-| [17](iteration-10/17-moderation-acts-on-one-entry-and-looks-first.md) | An operator moderates one entry at a time, and can look before acting | needs-refinement |
-| [18](iteration-10/18-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | needs-refinement |
-| [19](iteration-10/19-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | needs-refinement |
-| [20](iteration-10/20-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | needs-refinement |
+| [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | needs-refinement |
+| [18](iteration-10/18-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | needs-refinement |
+| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | needs-refinement |
 
-Tasks 01–06 are the ones this iteration was planned with; 07–21 were lifted
+Tasks 01–06 are the ones this iteration was planned with; 07–20 were lifted
 from the [quality backlog](quality-backlog.md) at the product owner's request
 to fill the iteration, with related findings merged into one task each. All
-twenty-one are seeded at `needs-refinement`, to be refined together in one
+twenty are seeded at `needs-refinement`, to be refined together in one
 conversation ([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)).
 The quality tasks advance no `Done when` criterion and say so with
 `Covers: none`.
@@ -59,7 +58,7 @@ The table's order is the order of work:
   before this iteration's build work leans on it hardest;
   [09](iteration-10/09-the-checks-reach-mobile.md) carries the comment check
   and Dependabot's grouping to `mobile/`; and
-  [21](iteration-10/21-process-records-match-practice.md) fixes the worktree
+  [20](iteration-10/20-process-records-match-practice.md) fixes the worktree
   routine every later task uses. Its after-merge-criteria question is settled
   at refinement, since the answer shapes how this iteration's own criteria are
   worded.
@@ -86,16 +85,19 @@ The table's order is the order of work:
   [15](iteration-10/15-a-withheld-beer-is-withheld-consistently.md) settle what
   [iteration 12](iteration-12.md)'s offline cache and replayed writes will
   rely on, and [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md)
-  and [17](iteration-10/17-moderation-acts-on-one-entry-and-looks-first.md)
-  finish the contribution flow that open registration on a phone will grow.
-- **Last, the web and the docs:** [18](iteration-10/18-web-sign-in-is-one-helper.md),
-  then [19](iteration-10/19-each-fact-kept-once.md) and
-  [20](iteration-10/20-docs-and-comments-say-what-is-true.md), which come last
+  finishes the contribution flow that open registration on a phone will
+  grow.
+- **Last, the web and the docs:** [17](iteration-10/17-web-sign-in-is-one-helper.md),
+  then [18](iteration-10/18-each-fact-kept-once.md) and
+  [19](iteration-10/19-docs-and-comments-say-what-is-true.md), which come last
   because every earlier task edits the documents they correct.
 
 Left in the backlog on purpose, as not touching this iteration's work or too
 small to stand alone: COULD-26, COULD-75, COULD-77, COULD-79, COULD-81,
-COULD-83, COULD-95, COULD-97, COULD-98 and COULD-100.
+COULD-83, COULD-95, COULD-97, COULD-98 and COULD-100. SHOULD-80 and COULD-99,
+about the SQL moderation script, were lifted and then returned at the product
+owner's review: an admin page planned for a later iteration replaces the
+script, so they are to be fixed there rather than in it.
 
 This comes before the design work in [iteration 11](iteration-11.md) on
 purpose. Signing and device networking are where a first mobile project loses

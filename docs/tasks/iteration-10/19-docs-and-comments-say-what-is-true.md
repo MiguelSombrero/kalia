@@ -1,4 +1,4 @@
-# Task 20: The documentation and comments say what is true now
+# Task 19: The documentation and comments say what is true now
 
 - **Status:** needs-refinement
 - **Iteration:** [10](../iteration-10.md)
@@ -43,7 +43,7 @@ Each statement above says what is true, in the one place
 
 ## Non-goals
 
-- Facts kept in several places — [task 19](19-each-fact-kept-once.md).
+- Facts kept in several places — [task 18](18-each-fact-kept-once.md).
 
 ## Constraints
 
