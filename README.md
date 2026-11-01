@@ -252,8 +252,9 @@ manifest already says.
 
 ### Web app
 
-- Next.js 16 (App Router), React 19, TypeScript 5 (TS 7 not yet supported by
-  the Next toolchain — revisit when it is)
+- Next.js 16 (App Router), React 19, TypeScript (typescript-eslint does not
+  support TS 7 yet, so ESLint parses with its own TS 5 copy — revisit when it
+  does)
 - Tailwind CSS 4 (styling)
 - @radix-ui/react-dialog and @radix-ui/react-toast (headless primitives behind
   the modal and the toast, the only two UI dependencies — why, in ADR-0021)

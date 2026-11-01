@@ -52,6 +52,7 @@ const IntersectionObserverMock = vi.fn(function (callback: IntersectionObserverC
   const instance: IntersectionObserverStub = {
     root: null,
     rootMargin: "",
+    scrollMargin: "",
     thresholds: [],
     observe: vi.fn(() => {
       callback([{ isIntersecting: sentinelIsIntersecting } as IntersectionObserverEntry], instance);
