@@ -1,20 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { signIn, signOut } from "@/auth";
-import { defaultLocale, isLocale, type Locale } from "@/i18n/settings";
+import { signOut } from "@/auth";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
+import { formLocale, signInReturningTo } from "@/lib/auth/signInReturningTo";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
+import { homeHref, signUpHref } from "@/lib/routes";
 import { keycloakEndSessionUrl } from "./endSessionUrl";
 import { checkSignUpRateLimit } from "./signUpRateLimit";
-
-// The hidden "locale" field on each sign-in form: it becomes signIn()'s
-// `ui_locales` (Keycloak renders its pages in it — ADR-0056) and the
-// locale-prefixed return path.
-const localeFromForm = (formData?: FormData): Locale => {
-  const locale = formData?.get("locale");
-  return typeof locale === "string" && isLocale(locale) ? locale : defaultLocale;
-};
 
 // Do not re-export this from a shared lib/ module instead of defining it
 // here: a Server Action re-exported through a second "use server" file
@@ -22,22 +15,21 @@ const localeFromForm = (formData?: FormData): Locale => {
 // manifest doesn't recognize (UnrecognizedActionError), reproduced live,
 // not caught by any test, lint, or build in this repo.
 export const startSignIn = async (formData?: FormData) => {
-  const locale = localeFromForm(formData);
-  await signIn("keycloak", { redirectTo: `/${locale}` }, { ui_locales: locale });
+  await signInReturningTo(formData, homeHref);
 };
 
 export const startSignUp = async (formData: FormData) => {
-  const locale = localeFromForm(formData);
+  const locale = formLocale(formData);
 
   if (formData.get("agree") !== "on") {
-    redirect(`/${locale}/sign-up?error=agree-required`);
+    redirect(signUpHref(locale, "agree-required"));
   }
 
   if (!(await checkSignUpRateLimit())) {
-    redirect(`/${locale}/sign-up?error=rate-limited`);
+    redirect(signUpHref(locale, "rate-limited"));
   }
 
-  await signIn("keycloak-register", { redirectTo: `/${locale}` }, { ui_locales: locale });
+  await signInReturningTo(formData, homeHref, "keycloak-register");
 };
 
 // Also ends the Keycloak SSO session via end_session_endpoint, this browser's

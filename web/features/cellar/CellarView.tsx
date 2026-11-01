@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageTitle } from "@/components/ui/page-title";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { catalogHref, cellarHref } from "@/lib/routes";
+import { catalogHref, cellarHref, profileHref } from "@/lib/routes";
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
 import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
@@ -37,7 +37,7 @@ export const CellarView = async ({
             </span>
             <span>{visibility.cellarPublic ? t("cellar.visibility.publicLine") : t("cellar.visibility.privateLine")}</span>
             <Link
-              href={visibility.cellarPublic ? cellarHref(locale, visibility.username) : `/${locale}/profile`}
+              href={visibility.cellarPublic ? cellarHref(locale, visibility.username) : profileHref(locale)}
               className="inline-block py-0.5 text-foreground underline underline-offset-2"
             >
               {visibility.cellarPublic ? t("cellar.visibility.view") : t("cellar.visibility.change")}

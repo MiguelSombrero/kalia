@@ -5,6 +5,7 @@ import { SignOutButton } from "@/features/auth";
 import { getProfile, isUsernameTaken, UsernameTaken } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
+import { homeHref } from "@/lib/routes";
 import { Page } from "@/components/ui/page";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -21,7 +22,7 @@ const UsernameTakenPage = async ({ params }: Props) => {
   const taken = session?.user ? await getProfile().then(() => false, isUsernameTaken) : false;
 
   if (!session?.user || !taken) {
-    redirect(`/${locale}`);
+    redirect(homeHref(locale));
   }
 
   const { t } = await getTranslation(locale);

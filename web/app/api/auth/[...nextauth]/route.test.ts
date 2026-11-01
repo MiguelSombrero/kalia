@@ -19,12 +19,14 @@ describe("the Auth.js route", () => {
     vi.clearAllMocks();
   });
 
-  it("ends the local session before the sign-in callback links an account to it", async () => {
+  it("leaves the session alone on a callback request, whatever it carries", async () => {
     const { GET } = await import("./route");
 
+    await GET(new NextRequest("http://localhost:3000/api/auth/callback/keycloak"));
     await GET(new NextRequest("http://localhost:3000/api/auth/callback/keycloak?code=c&state=s"));
 
-    expect(calls).toEqual(["end", "handler:/api/auth/callback/keycloak"]);
+    expect(endCurrentSession).not.toHaveBeenCalled();
+    expect(calls).toEqual(["handler:/api/auth/callback/keycloak", "handler:/api/auth/callback/keycloak"]);
   });
 
   it("leaves the session alone for every other Auth.js request", async () => {

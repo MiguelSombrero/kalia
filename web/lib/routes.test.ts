@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { beerHref, catalogHref, cellarHref, ownCellarHref, shareableCellarHref } from "./routes";
+import {
+  beerHref,
+  catalogHref,
+  cellarHref,
+  homeHref,
+  ownCellarHref,
+  profileHref,
+  shareableCellarHref,
+  signUpHref,
+  usernameTakenHref,
+} from "./routes";
 
 describe("routes", () => {
   it("puts the locale first on every in-app address", () => {
@@ -7,6 +17,15 @@ describe("routes", () => {
     expect(beerHref("fi", "b1")).toBe("/fi/beers/b1");
     expect(cellarHref("fi", "ada")).toBe("/fi/cellars/ada");
     expect(ownCellarHref("fi")).toBe("/fi/cellar");
+    expect(homeHref("fi")).toBe("/fi");
+    expect(profileHref("fi")).toBe("/fi/profile");
+    expect(signUpHref("fi")).toBe("/fi/sign-up");
+    expect(usernameTakenHref("fi")).toBe("/fi/username-taken");
+  });
+
+  it("carries a sign-up refusal as the error the page reads", () => {
+    expect(signUpHref("en", "agree-required")).toBe("/en/sign-up?error=agree-required");
+    expect(signUpHref("en", "rate-limited")).toBe("/en/sign-up?error=rate-limited");
   });
 
   it("appends a query only when it has something in it", () => {

@@ -281,3 +281,19 @@ test("signing in as someone else while signed in starts a session of their own",
     await context.close();
   }
 });
+
+// A link on another site is a top-level navigation, which carries the
+// SameSite=Lax session cookie. Nothing in it comes from a sign-in this browser
+// started, so it must not cost the visitor their session.
+test("following a link to the sign-in callback leaves the visitor signed in", async ({ page, valkey, account }) => {
+  await page.goto("/en");
+  await signIn(page, account);
+  const token = (await page.context().cookies()).find((cookie) => cookie.name === "authjs.session-token")?.value;
+  expect(token, "the sign-in left no Auth.js session cookie").toBeTruthy();
+
+  await page.goto("/api/auth/callback/keycloak?code=forged&state=forged");
+  await page.goto("/en");
+
+  await expect(page.getByRole("link", { name: `Profile: ${account.username}` })).toBeVisible();
+  expect(await valkey.exists(`auth:session:${token}`, `auth:session-account:${token}`)).toBe(2);
+});

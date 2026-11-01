@@ -1,6 +1,7 @@
 import { SignInPrompt as SignInPromptBlock } from "@/components/ui/sign-in-prompt";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { signUpHref } from "@/lib/routes";
 import { startProfileSignIn } from "./actions";
 
 export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
@@ -12,7 +13,7 @@ export const SignInPrompt = async ({ locale }: { locale: Locale }) => {
       hint={t("profile.signIn.hint")}
       signInLabel={t("profile.signIn.action")}
       signUpLabel={t("auth.signUp")}
-      signUpHref={`/${locale}/sign-up`}
+      signUpHref={signUpHref(locale)}
       signInAction={startProfileSignIn}
       locale={locale}
       headingLevel={2}

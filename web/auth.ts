@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import { endingLocalSession } from "@/lib/auth/endingLocalSession";
+import { endingLocalSession, endPreviousSession } from "@/lib/auth/endingLocalSession";
 import { buildKeycloakProvider } from "@/lib/auth/keycloakOptions";
 import { sidFromIdToken } from "@/lib/auth/sessionId";
 import { createdSession } from "@/lib/auth/signInContext";
@@ -35,6 +35,7 @@ const nextAuth = NextAuth({
       },
     }),
   ],
+  callbacks: { signIn: endPreviousSession },
   events: {
     // Do not remove: the only point Auth.js hands the provider's token set
     // to the application, since the Adapter interface has no updateAccount.

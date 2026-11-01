@@ -46,6 +46,36 @@ describe("heading rule (ADR-0073)", () => {
   });
 });
 
+describe("hand-built route rule (docs/architecture.md §5)", () => {
+  const byHand = "export const a = (locale: string) => `/${locale}/profile`;\n";
+
+  it("rejects a locale-prefixed address built by hand in app/, features/ and components/", async () => {
+    for (const filePath of ["app/probe.ts", "app/probe.tsx", "features/cellar/probe.ts", "features/cellar/Probe.tsx", "components/ui/probe.tsx"]) {
+      expect(await messagesFor(byHand, filePath)).toEqual([expect.stringContaining("lib/routes.ts")]);
+    }
+  });
+
+  it("rejects the bare locale segment and a member's locale", async () => {
+    expect(await messagesFor("export const a = (locale: string) => `/${locale}`;\n", "features/cellar/probe.ts")).toEqual([
+      expect.stringContaining("lib/routes.ts"),
+    ]);
+    expect(await messagesFor("export const a = (p: { locale: string }) => `/${p.locale}/x`;\n", "app/probe.ts")).toEqual([
+      expect.stringContaining("lib/routes.ts"),
+    ]);
+  });
+
+  it("leaves lib/routes.ts, tests and other templates alone", async () => {
+    expect(await messagesFor(byHand, "lib/routes.ts")).toEqual([]);
+    expect(await messagesFor(byHand, "features/cellar/probe.test.ts")).toEqual([]);
+    expect(await messagesFor("export const a = (id: string) => `/beers/${id}`;\n", "features/cellar/probe.ts")).toEqual([]);
+  });
+
+  it("keeps the heading rule on a .tsx file that also builds a route", async () => {
+    const both = "export const A = ({ locale }: { locale: string }) => <h1 title={`/${locale}`}>a</h1>;\n";
+    expect(await messagesFor(both, "features/cellar/Probe.tsx")).toHaveLength(2);
+  });
+});
+
 describe("generated client boundary (ADR-0012)", () => {
   it("lets a feature's api.ts import its own generated tag and the shared models", async () => {
     const own =

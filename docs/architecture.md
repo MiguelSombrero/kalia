@@ -764,7 +764,9 @@ conventions README for the day-to-day rules of writing it
   `hreflang`/`canonical` alternates and is served `noindex, nofollow`. Links
   inside the app use the locale-prefixed form, and every in-app catalog, beer
   and cellar address is built in `lib/routes.ts`
-  ([ADR-0050](adr/0050-public-cellar-addressing.md)). The root layout sets
+  ([ADR-0050](adr/0050-public-cellar-addressing.md)); a template literal
+  opening with `/${locale}` in `app/`, `features/` or `components/` fails
+  lint. The root layout sets
   `metadataBase` from `AUTH_URL` so those alternates resolve to absolute URLs.
   A cellar that is not public renders `app/[locale]/not-found.tsx`, the
   generic localized 404 for the subtree. The front page is `noindex,

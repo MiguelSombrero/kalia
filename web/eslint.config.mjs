@@ -50,6 +50,15 @@ const codeStyleSyntax = [
   },
 ];
 
+// A locale-prefixed address is built in lib/routes.ts (docs/architecture.md
+// §5), never as a template literal opening with `/${locale}`. Matches a bare
+// `locale` and `params.locale`.
+const handBuiltRoute = {
+  selector:
+    "TemplateLiteral[quasis.0.value.raw='/']:matches([expressions.0.name='locale'], [expressions.0.property.name='locale'])",
+  message: "Build locale-prefixed routes with a helper from lib/routes.ts, not by hand (docs/architecture.md §5).",
+};
+
 const eslintConfig = defineConfig([
   {
     linterOptions: { reportUnusedDisableDirectives: "error" },
@@ -86,6 +95,15 @@ const eslintConfig = defineConfig([
   // (ADR-0073). A heading that is neither carries an
   // `eslint-disable-next-line no-restricted-syntax -- <why>` comment, and an
   // exception left behind after its heading goes fails as unused.
+  // The .tsx files of app/ and features/ get the same selector from the
+  // heading block below, which replaces this block's options for them.
+  {
+    files: ["app/**/*.ts", "features/**/*.ts", "components/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", ...codeStyleSyntax, handBuiltRoute],
+    },
+  },
   {
     files: ["app/**/*.tsx", "features/**/*.tsx"],
     ignores: ["**/*.test.tsx", "**/*.spec.tsx"],
@@ -93,6 +111,7 @@ const eslintConfig = defineConfig([
       "no-restricted-syntax": [
         "error",
         ...codeStyleSyntax,
+        handBuiltRoute,
         {
           selector: "JSXOpeningElement[name.name='h1']",
           message: "Use `PageTitle` from components/ui/ rather than a hand-written <h1> (ADR-0073).",

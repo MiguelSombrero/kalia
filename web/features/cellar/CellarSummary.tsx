@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
-import { ownCellarHref } from "@/lib/routes";
+import { ownCellarHref, profileHref } from "@/lib/routes";
 
 type Props = {
   locale: Locale;
@@ -45,7 +45,7 @@ export const CellarSummary = ({ locale, counts, cellarPublic }: Props) => {
             ) : (
               <>
                 {t("feed.empty.privateHint")}{" "}
-                <Link href={`/${locale}/profile`} className="text-foreground underline underline-offset-2">
+                <Link href={profileHref(locale)} className="text-foreground underline underline-offset-2">
                   {t("feed.empty.privateLink")}
                 </Link>
               </>

@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { signIn } from "@/auth";
 import { toLocale, type Locale } from "@/i18n/settings";
+import { signInReturningTo } from "@/lib/auth/signInReturningTo";
 import { addBeer, findBreweries, findSimilarBeers, getBeer, listCountries, listStyles, searchBeers } from "./api";
 import { countriesByName, countryName } from "./country";
 import { catalogHref, PARAM_KEYS, parseBeerSearchParams } from "./links";
@@ -22,11 +22,8 @@ export const startCatalogSignIn = async (formData?: FormData) => {
     const value = formData?.get(name);
     return typeof value === "string" ? value.slice(0, MAX_QUERY_LENGTH) : undefined;
   };
-  const locale = toLocale(field("locale") ?? "");
   const search = parseBeerSearchParams(Object.fromEntries(PARAM_KEYS.map((key) => [key, field(key)])));
-  // Rebuilt from validated parts, never taken as a path: handing signIn's
-  // redirectTo a caller-supplied string is an open redirect.
-  await signIn("keycloak", { redirectTo: catalogHref(locale, search) }, { ui_locales: locale });
+  await signInReturningTo(formData, (locale) => catalogHref(locale, search));
 };
 
 const place = (brewery: Pick<Brewery, "countryCode" | "city">, locale: Locale): string => {
