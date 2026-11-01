@@ -214,10 +214,22 @@ started, the device was healthy, and the catalog screen rendered no row. Read
 the stack's logs the job prints, then `maestro-output/android/`.
 
 **`Command failed (host:transport:emulator-5554): device offline` at
-`launchApp`.** The signature this job used to fail on once in seven runs. The
-job now waits for a device that stays healthy through the app's install, so
-seeing it again means the device dropped in the seconds between that wait and
-Maestro's first command. Log it with the run id; the flow is not retried.
+`launchApp`, a second or two into the flow, after the script reported the
+device healthy and quiet.** Not fixed: the original signature of this job, seen
+4 times in 28 runs before iteration 10 task 07 and 2 times in 20 parallel
+trials after it. A healthy-looking emulator drops its adb connection to the
+host the first time Maestro's driver runs a command on it, on a fresh runner's
+first boot (`adbd` logs `host-17: connection terminated: write failed`), and
+reconnects under a second later; the flow's first command lands in the gap. It
+is not the app (it fails at the first command, before any app screen), not the
+emulator's cores or load (it happened at four cores, below the load threshold)
+and not the adb server (restarting it before Maestro did not remove it, 2 in
+20). In an experiment of 20 fresh-runner trials each, running a throwaway
+`launchApp` through Maestro first absorbed it once and the real command then
+passed 19 of 19, against 1 in 20 for the control; that is too few to settle
+anything, and the pre-flight is not in the job. The flow is not retried: re-run
+the job with `gh run rerun <id> --failed`, and log the run id in
+[common-failures.md](common-failures.md).
 
 **`Cannot invoke "java.util.Map.values()" because "hwMap" is null` from
 `avdmanager create avd`.** Seen once, with the emulator action this job used to
