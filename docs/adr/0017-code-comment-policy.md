@@ -10,6 +10,8 @@
   `scripts/check-comments.mjs` (iteration 5 task 18)
 - **Amended:** 2026-10-14 — `scripts/check-comments.mjs` prints its advisory
   findings only with `--advisory`, and holds `scripts/` to its hard tier
+- **Amended:** 2026-11-01 — the check and the rule's `paths` reach
+  `mobile/src` as they reach `web/` (iteration 10 task 09)
 
 ## Context
 

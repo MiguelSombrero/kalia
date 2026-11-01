@@ -22,6 +22,20 @@ updates:
         patterns:
           - "react"
           - "react-dom"
+    # The packages mobile/ takes from the Expo SDK work only as that SDK's
+    # set, which a lone bump breaks in the native build (mobile/README.md
+    # "Upgrade the Expo SDK"). A CVE in one still fails the vulnerability scan
+    # (ADR-0024). react and typescript are deliberately not here: both follow
+    # the web.
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "jest-expo"
+      - dependency-name: "eslint-config-expo"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-safe-area-context"
+      - dependency-name: "react-native-screens"
+      - dependency-name: "@react-native-async-storage/async-storage"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

@@ -34,8 +34,9 @@
 // over the same tree returned 0.13 and 0.18 depending on whether blank
 // lines counted as code):
 //   - Scope is every hand-written `.java` under backend/src and every
-//     `.ts`/`.tsx` under web/ and packages/, except packages/api/src/generated
-//     (orval output, out of ADR-0017's Decision by name) and build/tooling
+//     `.ts`/`.tsx` under web/, packages/ and mobile/src, except
+//     packages/api/src/generated (orval output, out of ADR-0017's Decision
+//     by name) and build/tooling
 //     directories (node_modules, .next, target, coverage, dist, build,
 //     playwright-report, test-results). The `.mjs` files under scripts/ and
 //     web/ are held to the hard tier but left out of the advisory
@@ -57,21 +58,21 @@
 //   - Ratio = comment lines / code lines, matching how ADR-0017's own
 //     0.13 -> 0.09 was expressed.
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, extname, resolve, relative } from "node:path";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 
 const SCAN_ROOTS = [
-  { dir: resolve(ROOT, "backend/src"), extensions: [".java"], counted: true },
-  { dir: resolve(ROOT, "web"), extensions: [".ts", ".tsx"], counted: true },
-  { dir: resolve(ROOT, "packages"), extensions: [".ts", ".tsx"], counted: true },
-  { dir: resolve(ROOT, "web"), extensions: [".mjs"], counted: false },
-  { dir: resolve(ROOT, "packages"), extensions: [".mjs"], counted: false },
-  { dir: resolve(ROOT, "scripts"), extensions: [".mjs"], counted: false },
+  { dir: "backend/src", extensions: [".java"], counted: true },
+  { dir: "web", extensions: [".ts", ".tsx"], counted: true },
+  { dir: "packages", extensions: [".ts", ".tsx"], counted: true },
+  { dir: "mobile/src", extensions: [".ts", ".tsx"], counted: true },
+  { dir: "web", extensions: [".mjs"], counted: false },
+  { dir: "packages", extensions: [".mjs"], counted: false },
+  { dir: "scripts", extensions: [".mjs"], counted: false },
 ];
-const ADVISORY = process.argv.includes("--advisory");
 const IGNORED_DIRS = new Set([
   "node_modules", ".next", "target", "coverage", "dist", "build",
   "playwright-report", "test-results",
@@ -79,7 +80,7 @@ const IGNORED_DIRS = new Set([
 // Exact path, not a name match against every "generated" directory anywhere
 // — a future hand-written directory that happens to share the name must
 // still be scanned.
-const GENERATED_API_CLIENT = resolve(ROOT, "packages/api/src/generated");
+const GENERATED_API_CLIENT = "packages/api/src/generated";
 
 // Each traces to an instance found in the 2026-08-15 sweep (see header).
 // Deliberately excludes `previously` and `no longer` — see header.
@@ -94,21 +95,16 @@ const HARD_PATTERNS = [
 ];
 const ADR_MENTION = /\bADR-\d{4}\b/;
 
-let failures = 0;
-const fail = (file, line, msg) => { console.log(`  FAIL  ${file}:${line}: ${msg}`); failures++; };
-
-const advisories = [];
-const advise = (msg) => { advisories.push(msg); };
-
 /** Recursively lists files under `dir` whose extension is in `extensions`. */
-function listFiles(dir, extensions) {
+function listFiles(root, dir, extensions) {
   const out = [];
+  if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith(".") && entry.name !== ".") continue;
     const full = resolve(dir, entry.name);
     if (entry.isDirectory()) {
-      if (IGNORED_DIRS.has(entry.name) || full === GENERATED_API_CLIENT) continue;
-      out.push(...listFiles(full, extensions));
+      if (IGNORED_DIRS.has(entry.name) || relative(root, full) === GENERATED_API_CLIENT) continue;
+      out.push(...listFiles(root, full, extensions));
     } else if (extensions.includes(extname(entry.name))) {
       out.push(full);
     }
@@ -156,54 +152,74 @@ function toBlocks(lineNumbers) {
   return blocks;
 }
 
-const files = SCAN_ROOTS.flatMap(({ dir, extensions, counted }) =>
-  listFiles(dir, extensions).map((path) => ({ path, counted })),
-);
-console.log(`Checking ${files.length} hand-written source file(s) against the code-comment policy (ADR-0017)\n`);
+/**
+ * Checks every hand-written source file under `root`. Returns the hard-tier
+ * failures and the advisory lines; the caller decides what to print.
+ */
+export function checkComments(root) {
+  const failures = [];
+  const advisories = [];
+  const fail = (file, line, msg) => { failures.push({ file, line, msg }); };
+  const advise = (msg) => { advisories.push(msg); };
 
-/** `n / d` as a fixed-point string, or "n/a" rather than Infinity/NaN when `d` is 0. */
-const formatRatio = (n, d) => (d === 0 ? "n/a" : (n / d).toFixed(2));
+  const files = SCAN_ROOTS.flatMap(({ dir, extensions, counted }) =>
+    listFiles(root, resolve(root, dir), extensions).map((path) => ({ path, counted })),
+  );
 
-let totalCode = 0;
-let totalComment = 0;
+  /** `n / d` as a fixed-point string, or "n/a" rather than Infinity/NaN when `d` is 0. */
+  const formatRatio = (n, d) => (d === 0 ? "n/a" : (n / d).toFixed(2));
 
-for (const { path, counted } of files) {
-  const rel = relative(ROOT, path);
-  const fileText = readFileSync(path, "utf8");
-  const { lines, codeLines, commentLines } = classify(fileText);
+  let totalCode = 0;
+  let totalComment = 0;
 
-  for (const lineNo of commentLines) {
-    const lineText = lines[lineNo - 1];
-    for (const { name, re } of HARD_PATTERNS) {
-      if (re.test(lineText)) fail(rel, lineNo, `comment reads as process narration (matches "${name}")`);
+  for (const { path, counted } of files) {
+    const rel = relative(root, path);
+    const fileText = readFileSync(path, "utf8");
+    const { lines, codeLines, commentLines } = classify(fileText);
+
+    for (const lineNo of commentLines) {
+      const lineText = lines[lineNo - 1];
+      for (const { name, re } of HARD_PATTERNS) {
+        if (re.test(lineText)) fail(rel, lineNo, `comment reads as process narration (matches "${name}")`);
+      }
+    }
+
+    if (!counted) continue;
+
+    for (const block of toBlocks(commentLines)) {
+      if (block.length <= 1) continue;
+      const blockText = block.map((n) => lines[n - 1]).join("\n");
+      if (ADR_MENTION.test(blockText)) {
+        advise(`${rel}:${block[0]}-${block.at(-1)}: ${block.length}-line comment block names an ADR (ADR-0017 allows a one-line pointer)`);
+      }
+    }
+
+    totalCode += codeLines.length;
+    totalComment += commentLines.length;
+    if (commentLines.length > codeLines.length) {
+      advise(`${rel}: ${commentLines.length} comment line(s) outnumber ${codeLines.length} code line(s) (ratio ${formatRatio(commentLines.length, codeLines.length)})`);
     }
   }
 
-  if (!counted) continue;
+  advise(`repository-wide hand-written ratio: ${formatRatio(totalComment, totalCode)} (${totalComment} comment / ${totalCode} code lines; ADR-0017's post-sweep baseline was 0.09)`);
 
-  for (const block of toBlocks(commentLines)) {
-    if (block.length <= 1) continue;
-    const blockText = block.map((n) => lines[n - 1]).join("\n");
-    if (ADR_MENTION.test(blockText)) {
-      advise(`${rel}:${block[0]}-${block.at(-1)}: ${block.length}-line comment block names an ADR (ADR-0017 allows a one-line pointer)`);
-    }
-  }
-
-  totalCode += codeLines.length;
-  totalComment += commentLines.length;
-  if (commentLines.length > codeLines.length) {
-    advise(`${rel}: ${commentLines.length} comment line(s) outnumber ${codeLines.length} code line(s) (ratio ${formatRatio(commentLines.length, codeLines.length)})`);
-  }
+  return { fileCount: files.length, failures, advisories };
 }
 
-advise(`repository-wide hand-written ratio: ${formatRatio(totalComment, totalCode)} (${totalComment} comment / ${totalCode} code lines; ADR-0017's post-sweep baseline was 0.09)`);
+const invokedDirectly =
+  import.meta.main ??
+  (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]));
 
-if (ADVISORY) {
-  console.log("Advisory (never fails the build):");
-  for (const msg of advisories) console.log(`  ADVISE ${msg}`);
-} else {
-  console.log(`${advisories.length} advisory finding(s) hidden; \`--advisory\` prints them.`);
+if (invokedDirectly) {
+  const { fileCount, failures, advisories } = checkComments(resolve(SELF_DIR, ".."));
+  console.log(`Checking ${fileCount} hand-written source file(s) against the code-comment policy (ADR-0017)\n`);
+  for (const { file, line, msg } of failures) console.log(`  FAIL  ${file}:${line}: ${msg}`);
+  if (process.argv.includes("--advisory")) {
+    console.log("Advisory (never fails the build):");
+    for (const msg of advisories) console.log(`  ADVISE ${msg}`);
+  } else {
+    console.log(`${advisories.length} advisory finding(s) hidden; \`--advisory\` prints them.`);
+  }
+  console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
+  process.exit(failures.length === 0 ? 0 : 1);
 }
-
-console.log(failures === 0 ? "\nOK\n" : `\n${failures} failure(s)\n`);
-process.exit(failures === 0 ? 0 : 1);

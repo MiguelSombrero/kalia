@@ -1,6 +1,6 @@
 # Task 09: The repository's own checks reach `mobile/` as they reach `web/`
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -58,12 +58,12 @@ own.
 
 ## Acceptance criteria
 
-- [ ] `scripts/check-comments.mjs` scans `mobile/src`, and its test covers a
+- [x] `scripts/check-comments.mjs` scans `mobile/src`, and its test covers a
       mobile file
-- [ ] `.claude/rules/code-comments.md`'s `paths` include `mobile/src`
-- [ ] `.github/dependabot.yml` ignores the Expo-managed packages, and
+- [x] `.claude/rules/code-comments.md`'s `paths` include `mobile/src`
+- [x] `.github/dependabot.yml` ignores the Expo-managed packages, and
       `react` and `typescript` are not among those ignored
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
