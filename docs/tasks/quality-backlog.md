@@ -180,6 +180,14 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   keyed on the native sources, or caching the `.cxx` directories with Gradle's
   task history. Either is new tooling with a stale-build risk, so it needs an
   ADR-sized look before a task. Found in iteration 10 task 07.
+- **COULD-107** *(confirmed 2026-11-01)* — bottles added together still read
+  back in a different order than they were answered in. `Entry.bottles` orders
+  by `created_at, id`, but a bulk add stamps every bottle with one instant and
+  `id` is a random UUID, so a later read orders the tie by id while the
+  `POST /cellar/bottles` response lists them in insertion order. A client that
+  reconciles by position sees them shuffle once. Giving bottles time-ordered
+  ids (or an ordering column) removes it; the choice is the product owner's.
+  Filed in the iteration 10 task 13 pull request.
 
 ## Retired
 

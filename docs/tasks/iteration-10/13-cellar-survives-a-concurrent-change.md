@@ -1,6 +1,6 @@
 # Task 13: A cellar read or write never answers 500 under a concurrent change
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -60,14 +60,14 @@ snapshot, and an entry's bottles always read back in the same order.
 
 ## Acceptance criteria
 
-- [ ] An integration test removes one bottle from two concurrent requests and
+- [x] An integration test removes one bottle from two concurrent requests and
       gets one `204` and one `404`, and it failed before the fix
-- [ ] An integration test deletes an entry's last bottle while the public
+- [x] An integration test deletes an entry's last bottle while the public
       cellar is being read and gets a `200` whose counts and bottles agree,
       and it failed before the fix
-- [ ] A unit test adds three bottles under a fixed `Clock` and reads them back
+- [x] A unit test adds three bottles under a fixed `Clock` and reads them back
       in insertion order, repeatedly
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

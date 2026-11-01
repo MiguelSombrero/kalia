@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import lombok.AccessLevel;
@@ -43,7 +44,7 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 
 	@Getter(AccessLevel.NONE)
 	@OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("createdAt")
+	@OrderBy("createdAt, id")
 	private final List<Bottle> bottles = new ArrayList<>();
 
 	private Instant createdAt;
@@ -96,29 +97,21 @@ public class Entry extends AbstractAggregateRoot<Entry> {
 		return List.copyOf(bottles.subList(bottles.size() - count, bottles.size()));
 	}
 
-	public Bottle updateBottle(UUID bottleId, ContainerType containerType, @Nullable LocalDate brewedDate,
+	public Optional<Bottle> findBottle(UUID bottleId) {
+		return bottles.stream().filter(b -> b.getId().equals(bottleId)).findFirst();
+	}
+
+	public Bottle updateBottle(Bottle bottle, ContainerType containerType, @Nullable LocalDate brewedDate,
 			@Nullable LocalDate bestBeforeDate, Clock clock) {
-		Bottle bottle = bottleWithId(bottleId);
+		Assert.isTrue(bottles.contains(bottle), "bottle does not belong to this entry");
 		bottle.update(containerType, brewedDate, bestBeforeDate, clock);
 		touch(clock);
 		return bottle;
 	}
 
-	public void removeBottle(UUID bottleId, Clock clock) {
-		removeBottle(bottleWithId(bottleId), clock);
-	}
-
 	public void removeBottle(Bottle bottle, Clock clock) {
 		bottles.remove(bottle);
 		touch(clock);
-	}
-
-	private Bottle bottleWithId(UUID bottleId) {
-		return bottles.stream()
-				.filter(b -> b.getId().equals(bottleId))
-				.findFirst()
-				.orElseThrow(() -> new IllegalStateException(
-						"entry %s does not contain bottle %s".formatted(id, bottleId)));
 	}
 
 	private void touch(Clock clock) {

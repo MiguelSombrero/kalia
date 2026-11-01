@@ -26,7 +26,10 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	// is a property of this query — another user's bottle is indistinguishable
 	// from a missing one (architecture.md §4) — so never relax it to a
 	// load-by-id plus an after-the-fact check.
-	@Query("select b.entry from Bottle b where b.id = :bottleId and b.entry.userId = :userId")
+	@EntityGraph(attributePaths = "bottles")
+	@Query("""
+			select e from Entry e where e.userId = :userId
+			and exists (select 1 from Bottle b where b.id = :bottleId and b.entry = e)""")
 	Optional<Entry> findByBottleIdAndUserId(@Param("bottleId") UUID bottleId, @Param("userId") UUID userId);
 
 	@Query("select e.beerId from Entry e where e.userId = :userId")

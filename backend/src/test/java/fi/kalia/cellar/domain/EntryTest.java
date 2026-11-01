@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -85,6 +86,17 @@ class EntryTest {
 		assertThat(entry.getBottles()).containsExactlyInAnyOrder(created.get(1), created.get(2));
 	}
 
+	@RepeatedTest(5)
+	void bottlesAddedTogetherUnderOneInstantReadBackInInsertionOrder() {
+		Clock fixed = Clock.fixed(Instant.parse("2026-11-01T10:00:00Z"), ZoneOffset.UTC);
+		Entry fresh = Entry.create(UUID.randomUUID(), UUID.randomUUID(), fixed);
+
+		List<Bottle> created = fresh.addBottles(3, ContainerType.BOTTLE, null, null, fixed);
+
+		assertThat(fresh.getBottles()).containsExactlyElementsOf(created);
+		assertThat(fresh.lastBottles(3)).containsExactlyElementsOf(created);
+	}
+
 	@Test
 	void bulkAddRejectsANonPositiveQuantity() {
 		assertThatThrownBy(() -> entry.addBottles(0, ContainerType.BOTTLE, null, null, CLOCK))
@@ -107,7 +119,7 @@ class EntryTest {
 		UUID updatedId = UUID.randomUUID();
 		ReflectionTestUtils.setField(created.getLast(), "id", updatedId);
 		fresh.removeBottle(created.getFirst(), Clock.fixed(later, ZoneOffset.UTC));
-		fresh.updateBottle(updatedId, ContainerType.BOTTLE, null, null,
+		fresh.updateBottle(fresh.findBottle(updatedId).orElseThrow(), ContainerType.BOTTLE, null, null,
 				Clock.fixed(later, ZoneOffset.UTC));
 
 		assertThat(fresh.getUpdatedAt()).isEqualTo(later);

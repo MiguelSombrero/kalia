@@ -410,6 +410,17 @@ a new one, a removal finds the added bottle beside the one it removes. A second
 loss answers `409` (`problem+json`). A pessimistic row lock was rejected: it
 serialises writes, which replayed offline writes would make common.
 
+**A cellar read or write never answers `500` for a bottle that has just gone.** An entry
+is loaded together with its bottles in one statement, and a bottle another
+request removed first is the documented `404` (a retried removal finds the
+bottle gone; `ConcurrentCellarChangeApiIT`). The public cellar reads its counts
+and its bottles in one read-only transaction at repeatable read, so they come
+from one snapshot: an entry whose last bottle is deleted mid-read still shows,
+with the bottle, in that response and is absent from the next. An entry's
+bottles order by `created_at, id`, the order the indexed reads already use;
+bottles added together share an instant, so `id` is what keeps their order the
+same on every read.
+
 **A profile is keyed by the Keycloak `sub` itself** — `profile.profile.id`
 carries no separate generated id — **and is created lazily**, the first time
 anything needs one, rather than at sign-in (ADR-0049). `username` is copied
