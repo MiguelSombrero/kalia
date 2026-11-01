@@ -1,6 +1,6 @@
 # Task 12: Every image the stack runs is scanned, and a mirror outage is not a finding
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -52,14 +52,14 @@ database is unreachable.
 
 ## Acceptance criteria
 
-- [ ] The vulnerability-scan workflow scans the Keycloak build and every
+- [x] The vulnerability-scan workflow scans the Keycloak build and every
       pulled image the base file runs, taking the list from `docker compose
       config --images`, and a test shows an image added to the base file is
       scanned
-- [ ] A run of the workflow on the PR shows every image scanned
-- [ ] `docs/ci-playbook.md` has a "re-run, change nothing" entry for the Java
+- [x] A run of the workflow on the PR shows every image scanned
+- [x] `docs/ci-playbook.md` has a "re-run, change nothing" entry for the Java
       DB mirror failure, with the two run ids
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
