@@ -213,23 +213,30 @@ false: id: beer-row is visible` or a `Timeout`.** A real failure: the app
 started, the device was healthy, and the catalog screen rendered no row. Read
 the stack's logs the job prints, then `maestro-output/android/`.
 
-**`Command failed (host:transport:emulator-5554): device offline` at
-`launchApp`, a second or two into the flow, after the script reported the
-device healthy and quiet.** Not fixed: the original signature of this job, seen
-4 times in 28 runs before iteration 10 task 07 and 2 times in 20 parallel
-trials after it. A healthy-looking emulator drops its adb connection to the
-host the first time Maestro's driver runs a command on it, on a fresh runner's
-first boot (`adbd` logs `host-17: connection terminated: write failed`), and
-reconnects under a second later; the flow's first command lands in the gap. It
-is not the app (it fails at the first command, before any app screen), not the
-emulator's cores or load (it happened at four cores, below the load threshold)
-and not the adb server (restarting it before Maestro did not remove it, 2 in
-20). In an experiment of 20 fresh-runner trials each, running a throwaway
-`launchApp` through Maestro first absorbed it once and the real command then
-passed 19 of 19, against 1 in 20 for the control; that is too few to settle
-anything, and the pre-flight is not in the job. The flow is not retried: re-run
-the job with `gh run rerun <id> --failed`, and log the run id in
-[common-failures.md](common-failures.md).
+**`Maestro's first command on the device failed before the flow ran` in a
+`::warning::`, followed by `Starting the emulator kalia-e2e (attempt 2)`.**
+Expected and handled. A healthy-looking emulator drops its adb connection to
+the host the first time Maestro's driver runs a command on it, on a fresh
+runner's first boot, in about one run in ten (`device offline`; `adbd` logs
+`host-17: connection terminated: write failed`) and reconnects under a second
+later. Before iteration 10 task 07 that landed on the flow's own first command
+and turned the run red (4 times in 28 runs, and 2 times in 20 parallel trials of
+the first version of the script). The job now launches Settings through Maestro
+once before the flow, from `mobile/e2e-preflight/`; a drop there stops the
+emulator and boots it again, and in 20 parallel trials of the final code it
+happened twice and both runs passed on the second boot. It is not the app, not
+the emulator's cores or load, and restarting the adb server did not remove it.
+
+**`Infrastructure failure, not the app` ending in that same sentence.** Both
+boot attempts dropped. Rare (the chance is the square of one in ten), and not
+the diff's fault: re-run the job (`gh run rerun <id> --failed`) and log the run
+id in [common-failures.md](common-failures.md). If it repeats, the pre-flight
+no longer absorbs the drop and the cause is worth looking for again.
+
+**`Command failed (host:transport:emulator-5554): device offline` at the flow's
+first command, with no warning before it.** Should not happen any more: the
+pre-flight sits in front of it. If it does, the drop came after a pre-flight
+that passed; log it with the run id and do not retry the flow.
 
 **`Cannot invoke "java.util.Map.values()" because "hwMap" is null` from
 `avdmanager create avd`.** Seen once, with the emulator action this job used to

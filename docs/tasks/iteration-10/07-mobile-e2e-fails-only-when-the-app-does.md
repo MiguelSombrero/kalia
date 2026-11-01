@@ -82,7 +82,7 @@ where that pays.
       the start-up script covers the unhealthy-device path
 - [x] The Catalog flow passes against a catalog with an extra beer that sorts
       before today's first one, shown by a run on a branch that adds one
-- [ ] 20 parallel trials of the job on the final commit: zero app failures
+- [x] 20 parallel trials of the job on the final commit: zero app failures
       and at most one infrastructure failure, each named "Infrastructure
       failure" by the script and explained in `docs/ci-playbook.md`. (Replaces
       "ten consecutive runs" at the product owner's decision of 2026-11-01:
