@@ -72,7 +72,7 @@
 - **Range:** <!-- a one-line verdict on `git log --oneline origin/dev..HEAD`, such as "4 commits, all this task's". Write it on this line: `scripts/check-pr-body.mjs` reads only the label's own line, and a commit list below it does not count -->
 - **Doc-sync:** <!-- which of docs/architecture.md, the iteration index and the ADRs were checked against this change: updated here, or confirmed accurate. "Not applicable" is valid (a dependency bump); silence is not -->
 - **Code review:** <!-- `/code-review` verdict, each finding marked fix now or new task. A new task is an entry in docs/tasks/quality-backlog.md, filed in this PR; name its ID (SHOULD-N). `scripts/check-pr-body.mjs` fails a body that defers a finding without one -->
-- **Local gate:** <!-- `make verify-fast` (or `make verify`, said explicitly), and the required CI checks once they have run -->
+- **Local gate:** <!-- `make verify-fast` (or `make verify`, said explicitly) -->
 - **Running stack:** <!-- what you saw exercising the changed flow, or "nothing user-facing changed" -->
 - **Acceptance criteria:** <!-- each criterion's own check re-run, then ticked, status set to `done` -->
 - **Iteration Done when:** <!-- re-verified, if this was the iteration's last task; otherwise "not the last task" -->

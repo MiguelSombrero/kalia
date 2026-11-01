@@ -1,6 +1,6 @@
 # Task 20: The process's own rules and records match how work is done
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -76,18 +76,18 @@ is answered, and the Copilot rule is either working or gone.
 
 ## Acceptance criteria
 
-- [ ] A session started after a task's PR merged removes that task's clean
+- [x] A session started after a task's PR merged removes that task's clean
       worktree, shown by `git worktree list`, and a test of the script covers
       a dirty worktree and an unmerged branch being kept
-- [ ] The PR template and `implement-task` no longer ask for the required
+- [x] The PR template and `implement-task` no longer ask for the required
       checks' verdict, and `scripts/check-pr-body.mjs`'s tests pass against
       the new template
-- [ ] The before-merge rule for criteria is in `docs/tasks/template.md` and
+- [x] The before-merge rule for criteria is in `docs/tasks/template.md` and
       the `refine-task` and `refine-iteration` skills
-- [ ] The quality backlog closes COULD-93 as waiting for ADR-0048's third
+- [x] The quality backlog closes COULD-93 as waiting for ADR-0048's third
       overrun, and the PR records the product owner's removal of the Copilot
       rule
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

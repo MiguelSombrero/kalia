@@ -50,16 +50,15 @@ does not count it.
    branch, append one row to it, naming the run id and the failing job in
    *Where*. Only the `CI` workflow is read; the separate `Vulnerability
    scan` and `CodeQL` workflows are not part of this step.
-3. Remove the worktrees whose work has landed. For each one under
-   `.claude/worktrees/` other than your own (`git worktree list`): confirm its
-   pull request merged — `gh pr view <branch> --json state` says `MERGED` —
-   and that it holds nothing unmerged: `git log --oneline origin/dev..<branch>`
-   and `git -C <path> status --porcelain` both print nothing. Then
-   `git worktree remove` it and `git branch -d` its branch. Skip any that
-   fails a test. Finish with `git worktree prune` and delete any empty
-   directory left under `.claude/worktrees/`. The Finish steps cannot do
-   this: the merge happens after the session that would run them has ended,
-   so this is the step that actually runs.
+3. Worktrees whose work has landed are removed for you:
+   `scripts/prune-worktrees.mjs` runs from the `SessionStart` hook in
+   `.claude/settings.json`, so it runs however the session was created, the
+   desktop app's included. It removes a worktree under `.claude/worktrees/`
+   only when a pull request merged exactly its work, its tree is clean and
+   nothing is running in it, and keeps every other one. `git worktree list`
+   shows what is left; `node scripts/prune-worktrees.mjs --dry-run` says what
+   it would remove. The Finish steps cannot do this: the merge happens after
+   the session that would run them has ended.
 4. Create the worktree off the **remote** ref, never the local branch:
    `git worktree add .claude/worktrees/<name> -b <branch> origin/dev`.
    Branch naming is `CLAUDE.md`'s: `iteration-N/<topic>`, `docs/<topic>`,
@@ -87,7 +86,8 @@ does not count it.
 
 ## Finish
 
-9. Confirm the pull request actually merged — `gh pr view --json state` —
+9. Removal by hand is for a worktree the script keeps (a squash-merged one,
+   say). Confirm the pull request actually merged — `gh pr view --json state` —
    before removing anything. A worktree still holding unpushed commits is
    the one case where removal loses work.
 10. `git worktree remove .claude/worktrees/<name>` and

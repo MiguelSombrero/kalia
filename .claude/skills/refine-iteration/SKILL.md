@@ -29,6 +29,10 @@ merging them produces a long agenda with no theme.
    taxonomy per task, exactly as `refine-task` step 3 requires. Produce a
    per-task list first, unmerged. Merging before sweeping loses the questions
    a single task would have raised.
+   Read each task's acceptance criteria in the same sweep: **every one must
+   be checkable before its pull request merges**
+   ([the template](../../../docs/tasks/template.md)'s rule), and one that is
+   not is reworded here, as an agenda item if the rewording is a choice.
 3. **Merge the agenda.** Most of the saving is here, and it is real work
    rather than concatenation:
    - Questions several tasks ask in different words are **one decision**.

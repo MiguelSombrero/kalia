@@ -41,6 +41,10 @@ CLAUDE.md "Refine in one PR, implement in another".
    and get answers. No code changes happen in this pass or while the
    conversation is open — `CLAUDE.md` "Code review is a dialogue" states the
    same discipline for review comments, and it applies here too.
+   While the questions are open, read each acceptance criterion too:
+   **every one must be checkable before its pull request merges**
+   ([the template](../../../docs/tasks/template.md)'s rule). Reword one that
+   needs the merge, or time after it, to what can be run on the branch.
 5. Record answers as `Constraints` — decisions that now bind the task — and
    resolve `Open questions` to `**None.**` only once every category from
    step 3 has actually been swept. Never write `**None.**` as a default.
