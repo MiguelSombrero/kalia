@@ -27,6 +27,14 @@ export type TokenStore = {
   getState: () => AuthState;
   subscribe: (listener: () => void) => () => void;
   getAccessToken: () => Promise<string | undefined>;
+  /**
+   * The API answered 401 to `rejected`: renews it whatever its local expiry
+   * says. Calls rejected together share one refresh, and one rejected after
+   * another has renewed the token gets the renewed one. A call sent without a
+   * token (`undefined`) is `getAccessToken` again. Fails like it when the
+   * refresh fails transiently.
+   */
+  refreshAccessToken: (rejected: string | undefined) => Promise<string | undefined>;
   signIn: (locale: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
 };
@@ -104,15 +112,7 @@ export const createTokenStore = ({
     return next?.accessToken;
   };
 
-  const getAccessToken = async (): Promise<string | undefined> => {
-    await ready;
-    const current = tokens;
-    if (!current) {
-      return undefined;
-    }
-    if (current.expiresAt - now() > EXPIRY_MARGIN_MS) {
-      return current.accessToken;
-    }
+  const refreshShared = (current: StoredTokens): Promise<string | undefined> => {
     if (refreshing?.generation !== session) {
       const promise = refresh(current).finally(() => {
         if (refreshing?.promise === promise) {
@@ -122,6 +122,27 @@ export const createTokenStore = ({
       refreshing = { generation: session, promise };
     }
     return refreshing.promise;
+  };
+
+  const getAccessToken = async (): Promise<string | undefined> => {
+    await ready;
+    const current = tokens;
+    if (!current) {
+      return undefined;
+    }
+    if (current.expiresAt - now() > EXPIRY_MARGIN_MS) {
+      return current.accessToken;
+    }
+    return refreshShared(current);
+  };
+
+  const refreshAccessToken = async (rejected: string | undefined): Promise<string | undefined> => {
+    await ready;
+    const current = tokens;
+    if (!current || rejected === undefined || current.accessToken !== rejected) {
+      return getAccessToken();
+    }
+    return refreshShared(current);
   };
 
   const signIn = async (locale: string): Promise<SignInResult> => {
@@ -169,6 +190,7 @@ export const createTokenStore = ({
       };
     },
     getAccessToken,
+    refreshAccessToken,
     signIn,
     signOut,
   };

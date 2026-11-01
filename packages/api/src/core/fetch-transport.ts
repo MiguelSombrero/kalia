@@ -12,6 +12,13 @@ export type FetchTransportConfig = {
   baseUrl: () => string;
   /** The signed-in caller's access token; `undefined` sends no Authorization header at all. */
   accessToken?: () => Promise<string | undefined>;
+  /**
+   * Renews the token the backend answered 401 to, naming it so concurrent
+   * rejections can share one renewal. A 401 is retried once with the token it
+   * resolves, and only if that differs from the one sent. Absent: a 401 is
+   * returned like any other status.
+   */
+  refreshAccessToken?: (rejected: string | undefined) => Promise<string | undefined>;
   timeoutMs?: number;
 };
 
@@ -37,26 +44,43 @@ export const pathOf = (url: string): string => url.split("?", 1)[0];
 export const createFetchTransport = (config: FetchTransportConfig): Transport =>
   (async (url: string, options: RequestInit): Promise<BackendResult> => {
     refuseReshapedPath(url);
-    const request = await withAccessToken(url, options, config.accessToken);
+    refuseCallerAuthorization(url, options);
+    const token = await config.accessToken?.();
 
-    let response: Response;
-    try {
-      response = await withTimeout(
-        fetch(`${config.baseUrl()}${url}`, request),
-        url,
-        config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-      );
-    } catch (cause) {
-      // TanStack Query recognises the original AbortError and would treat a
-      // wrapper as a real error, retrying a query the user already left.
-      if (isAbortError(cause) || isApiError(cause)) {
-        throw cause;
+    let response = await send(url, options, token, config);
+    if (response.status === 401 && config.refreshAccessToken) {
+      const renewed = await config.refreshAccessToken(token);
+      if (renewed && renewed !== token) {
+        void response.body?.cancel();
+        response = await send(url, options, renewed, config);
       }
-      throw apiError("network", `Could not reach the backend for ${pathOf(url)}`, { cause });
     }
 
     return { data: await readBody(url, response), status: response.status, headers: response.headers };
   }) as Transport;
+
+const send = async (
+  url: string,
+  options: RequestInit,
+  token: string | undefined,
+  config: FetchTransportConfig,
+): Promise<Response> => {
+  const request = withBearer(options, token);
+  try {
+    return await withTimeout(
+      fetch(`${config.baseUrl()}${url}`, request),
+      url,
+      config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    );
+  } catch (cause) {
+    // TanStack Query recognises the original AbortError and would treat a
+    // wrapper as a real error, retrying a query the user already left.
+    if (isAbortError(cause) || isApiError(cause)) {
+      throw cause;
+    }
+    throw apiError("network", `Could not reach the backend for ${pathOf(url)}`, { cause });
+  }
+};
 
 const readBody = async (url: string, response: Response): Promise<unknown> => {
   if ([204, 205, 304].includes(response.status)) {
@@ -104,25 +128,24 @@ const refuseReshapedPath = (url: string): void => {
  * Adds the caller's bearer token, which the backend needs on everything but
  * the catalog (ADR-0028). Nobody signed in means no Authorization header at
  * all rather than an empty one.
- *
- * A caller-supplied Authorization header is refused rather than honoured or
- * overwritten: the transport's token is the only one an app ever sends, and a
- * header derived from request input would otherwise be forwarded verbatim.
  */
-const withAccessToken = async (
-  url: string,
-  options: RequestInit,
-  accessToken: FetchTransportConfig["accessToken"],
-): Promise<RequestInit> => {
+const withBearer = (options: RequestInit, token: string | undefined): RequestInit => {
   const headers = new Headers(options.headers);
-  if (headers.has("Authorization")) {
-    throw apiError("refused", `Refused to call ${pathOf(url)}: a caller-set Authorization header`);
-  }
-  const token = await accessToken?.();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
   return { ...options, headers };
+};
+
+/**
+ * A caller-supplied Authorization header is refused rather than honoured or
+ * overwritten: the transport's token is the only one an app ever sends, and a
+ * header derived from request input would otherwise be forwarded verbatim.
+ */
+const refuseCallerAuthorization = (url: string, options: RequestInit): void => {
+  if (new Headers(options.headers).has("Authorization")) {
+    throw apiError("refused", `Refused to call ${pathOf(url)}: a caller-set Authorization header`);
+  }
 };
 
 /**

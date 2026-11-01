@@ -9,6 +9,10 @@
 - **Amended:** 2026-10-31 — iteration 9 task 14 signed in, refreshed and signed
   out from the app against the local Keycloak, and measured what sign-out does
   there (see Evidence)
+- **Amended:** 2026-11-01 — iteration 10 task 8 widened the refusal that ends
+  the session from `invalid_grant` to every 4xx the token endpoint answers, and
+  made the app send a call without a token while a refresh fails transiently
+  (see Decision)
 
 ## Context
 
@@ -72,6 +76,15 @@ API directly through the edge proxy.**
   token for a new access token itself, and a refresh that Keycloak answers with
   `invalid_grant` ends the app's session — the mobile counterpart of
   ADR-0029's rule, since nothing else will tell the app.
+
+  > **Amended 2026-11-01 (iteration 10 task 8).** Any refusal Keycloak answers
+  > 4xx (RFC 6749 §5.2: `invalid_grant`, `invalid_client` and the rest) ends
+  > the session; a network error, a timeout, a 5xx or a 429 does not. While a
+  > refresh fails that way the app sends the call without a token, so an
+  > anonymous operation still succeeds. A `401` from the API forces one refresh,
+  > shared by every call waiting on it, and one retry; a second `401` shows the
+  > error and keeps the user signed in, since signing out would repair neither
+  > a configuration nor a clock fault.
 - **Mobile refresh tokens rotate; the web keeps reuse.** Reuse stays for the web
   for the reason [ADR-0029](0029-silent-token-refresh.md) gives: the BFF renews
   without a lock, so two tabs refreshing at once must both succeed. A phone has
@@ -326,5 +339,5 @@ built from `mobile/src/lib/auth/`.
   the app's next sign-in showed Keycloak's credential form again rather than
   signing the previous user straight back in. Whether Android's Custom Tabs,
   which share the browser's cookies, behave the same was not measured.
-- **A refresh failure that is not `invalid_grant` leaves the session alone**
+- **A refresh failure that Keycloak does not refuse leaves the session alone**
   is covered by tests with a controlled clock, not measured against a realm.

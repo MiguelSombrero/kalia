@@ -72,6 +72,13 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
   planned for a later iteration replaces the SQL script, and this is fixed
   there.*
+- **SHOULD-97** *(confirmed 2026-11-01)* — while Keycloak is slow rather than
+  down, every API call of a signed-in user waits out its own refresh attempt
+  (the 10 s timeout in `keycloakClient.ts`) before the transport sends it
+  without a token, because a transient failure is not remembered and the next
+  call starts a fresh refresh; the Catalog tab works but each request is 10 s
+  late (found reviewing iteration 10 task 8). Remember the failure for a short
+  window so calls inside it skip the attempt.
 
 ## COULD
 

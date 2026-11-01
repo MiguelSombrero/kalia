@@ -105,13 +105,34 @@ describe("refresh", () => {
     });
   });
 
+  it.each(["invalid_request", "invalid_client", "unauthorized_client", "unsupported_grant_type", "invalid_scope"])(
+    "reports %s, a refusal from Keycloak, as a rejection",
+    async (code) => {
+      refresh.mockRejectedValue(Object.assign(new Error("refused"), { code }));
+
+      await expect(createKeycloakClient({ keycloakOrigin: ORIGIN }).refresh("refresh-1")).resolves.toEqual({
+        kind: "rejected",
+      });
+    },
+  );
+
   it.each([
-    ["another OAuth error", Object.assign(new Error("down"), { code: "server_error" })],
+    ["a server error", Object.assign(new Error("down"), { code: "server_error" })],
+    ["a temporarily unavailable server", Object.assign(new Error("busy"), { code: "temporarily_unavailable" })],
+    ["a gateway answering with HTML", new SyntaxError("JSON Parse error: Unexpected character: <")],
     ["a network failure", new TypeError("Network request failed")],
-  ])("rethrows %s, which is not a rejection", async (_name, failure) => {
+  ])("rethrows %s, which is transient and not a rejection", async (_name, failure) => {
     refresh.mockRejectedValue(failure);
 
     await expect(createKeycloakClient({ keycloakOrigin: ORIGIN }).refresh("refresh-1")).rejects.toBe(failure);
+  });
+
+  it("fails on an answer that carries no access token, which a proxy in front of a stopped Keycloak can give", async () => {
+    refresh.mockResolvedValue({ accessToken: undefined, refreshToken: undefined, expiresIn: undefined } as never);
+
+    await expect(createKeycloakClient({ keycloakOrigin: ORIGIN }).refresh("refresh-1")).rejects.toThrow(
+      "without an access token",
+    );
   });
 
   it("gives up on a refresh that never answers", async () => {
