@@ -34,8 +34,9 @@
 // over the same tree returned 0.13 and 0.18 depending on whether blank
 // lines counted as code):
 //   - Scope is every hand-written `.java` under backend/src and every
-//     `.ts`/`.tsx` under web/, packages/ and mobile/src, except packages/api/src/generated
-//     (orval output, out of ADR-0017's Decision by name) and build/tooling
+//     `.ts`/`.tsx` under web/, packages/ and mobile/src, except
+//     packages/api/src/generated (orval output, out of ADR-0017's Decision
+//     by name) and build/tooling
 //     directories (node_modules, .next, target, coverage, dist, build,
 //     playwright-report, test-results). The `.mjs` files under scripts/ and
 //     web/ are held to the hard tier but left out of the advisory

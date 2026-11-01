@@ -23,7 +23,7 @@ a documented routine rather than a surprise.
 | ID | Task | Status |
 |---|---|---|
 | [07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md) | The mobile end-to-end check fails only when the app does | refined |
-| [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | refined |
+| [09](iteration-10/09-the-checks-reach-mobile.md) | The repository's own checks reach `mobile/` as they reach `web/` | done |
 | [20](iteration-10/20-process-records-match-practice.md) | The process's own rules and records match how work is done | refined |
 | [01](iteration-10/01-decision-how-a-phone-reaches-the-mac.md) | Decide how a real phone reaches the stack on the Mac | refined |
 | [06](iteration-10/06-decision-error-visibility.md) | Decide where the app's errors are visible without a paid service | refined |
