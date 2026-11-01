@@ -202,6 +202,18 @@ first is in the `implement-task` skill's "A red check"; `make trivy-scan`
 reproduces the manifest scan, and the image scan's invocation is in
 `backend/README.md`.
 
+**An image scan fails with `Unable to initialize the Java DB … failed to
+download Java DB … mirror.gcr.io/aquasec/trivy-java-db:1 … unexpected status
+code 404 Not Found`.** Re-run, change nothing. Trivy could not fetch its own
+vulnerability database from the mirror, so the image was never scanned and the
+failure is not a finding; the filesystem scan of the same run found nothing.
+It hit `dev` in run `40166251873` and PR #421 in run `40166341881`, hours
+apart, and passed on a re-run. Re-run the failed jobs (`gh run rerun <id>
+--failed`) and leave the diff alone; fix something only if the same download
+fails on several runs in a row, because then the mirror has moved, not the
+network blipped. One image scan runs per image the deployable stack runs
+(`scripts/scan-images.mjs`), so every leg of the matrix can hit this together.
+
 ## Not CI, but the same recognition problem
 
 **The backend will not boot after pulling `dev`, complaining about a Flyway

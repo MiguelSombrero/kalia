@@ -3,7 +3,7 @@
 # place the check list lives; CLAUDE.md and the skills name the target
 # rather than restating what it runs, so there is exactly one thing to keep
 # in sync with CI. `verify` runs every CI check but one: the two image scans in
-# vulnerability-scan.yml stay CI-only, since building both images costs
+# vulnerability-scan.yml stay CI-only, since building the images costs
 # minutes per run (ADR-0046).
 
 .PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-android mobile-doctor \
