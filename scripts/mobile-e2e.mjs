@@ -307,11 +307,13 @@ const sdk = (tool, args, input) => {
   return result.stdout ?? "";
 };
 
-// avdmanager and the emulator each pick a default directory for virtual
-// devices, and on a runner they picked different ones: the device existed and
-// the emulator reported it unknown. Both are told the same one.
-const avdHome = () => process.env.ANDROID_AVD_HOME ?? join(homedir(), ".android", "avd");
-const avdEnv = () => ({ ...process.env, ANDROID_AVD_HOME: avdHome() });
+// avdmanager honours ANDROID_USER_HOME and ignores ANDROID_AVD_HOME, falling
+// back to $XDG_CONFIG_HOME/.android when that is set, as it is on a runner; the
+// emulator reads ANDROID_AVD_HOME and never looks under XDG. Left alone they
+// disagree about where a virtual device is, so both are told.
+const androidHome = () => process.env.ANDROID_USER_HOME ?? join(homedir(), ".android");
+const avdHome = () => process.env.ANDROID_AVD_HOME ?? join(androidHome(), "avd");
+const avdEnv = () => ({ ...process.env, ANDROID_USER_HOME: androidHome(), ANDROID_AVD_HOME: avdHome() });
 
 // A virtual device for a host that has none. Each tool's output stays
 // visible: avdmanager has crashed on a runner with `"hwMap" is null`, and what
