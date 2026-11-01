@@ -39,6 +39,15 @@ describe("CatalogScreen", () => {
     expect(screen.getByText("Stout")).toBeOnTheScreen();
   });
 
+  it("marks each beer's row with a test id, so a flow can find rows without naming a beer", async () => {
+    transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2), beer("2", "Stout", 7)]));
+
+    await renderWithLocale(<CatalogScreen />);
+    await screen.findByText("Pale Ale");
+
+    expect(screen.getAllByTestId("beer-row")).toHaveLength(2);
+  });
+
   it("asks for the first page only, with an explicit size", async () => {
     transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5)]));
 

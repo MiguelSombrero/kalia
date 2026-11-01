@@ -1,0 +1,5 @@
+appId: com.android.settings
+name: Maestro can drive the device before the real flow runs
+---
+- launchApp:
+    clearState: true

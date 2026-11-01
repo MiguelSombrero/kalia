@@ -449,10 +449,41 @@ jobs:
           exit 1
       # Not the whole stack: the web app is no part of the flow, and a one-shot
       # service that exits (keycloak-seed) made `--wait` fail on the runner.
+      # Retried like the pull above: the backend image's `mvn dependency:go-offline`
+      # reaches Maven Central from inside the build, and one unreachable run
+      # failed the job with no app involved. A real build error fails all three.
       - name: Start the stack the app talks to
-        run: docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
+        run: |
+          for attempt in 1 2 3; do
+            if docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak; then exit 0; fi
+            echo "::warning::starting the stack failed (attempt $attempt/3), retrying"
+            sleep $((attempt * 15))
+          done
+          echo "::error::could not start the stack after 3 attempts"
+          exit 1
+      # The Maestro version is pinned in the script, and the cached directory is
+      # named after it, so a new pin cannot restore the old binary.
+      - name: Read the pinned Maestro version
+        id: maestro
+        run: echo "version=$(node --input-type=module -e 'import { MAESTRO_VERSION } from "./scripts/mobile-e2e.mjs"; console.log(MAESTRO_VERSION)')" >> "$GITHUB_OUTPUT"
+      - name: Cache Maestro
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/kalia/maestro
+          key: maestro-${{ runner.os }}-${{ steps.maestro.outputs.version }}
       - name: Install Maestro
         run: node scripts/mobile-e2e.mjs install-maestro
+      # Gradle's dependencies and its own distribution. No restore-keys: the
+      # android/ project is generated from app.json and the lockfile's React
+      # Native, so a changed lockfile starts clean instead of restoring a
+      # neighbour's cache.
+      - name: Cache Gradle
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'mobile/app.json', 'mobile/plugins/**') }}
       # x86_64 only: the emulator below is x86_64, and the other ABIs would
       # multiply the native compile for nothing.
       - name: Build the Android app with its JavaScript inside
@@ -465,14 +496,14 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       # API 36, Expo SDK 58's target. The API 37 image stayed `offline` in adb
-      # for the whole 600 s boot timeout on this runner.
+      # for the whole 600 s boot timeout on this runner. The script owns the
+      # emulator rather than an action: it waits for a healthy device, boots a
+      # second time if the first never is, and names an infrastructure failure
+      # as one.
+      - name: Prepare the virtual device
+        run: node scripts/mobile-e2e.mjs prepare-emulator
       - name: Run the Maestro flow on an emulator
-        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        with:
-          api-level: 36
-          target: google_apis
-          arch: x86_64
-          script: node scripts/mobile-e2e.mjs test --platform android
+        run: node scripts/mobile-e2e.mjs test --platform android --headless
       - name: Print the stack's logs
         if: failure()
         run: docker compose logs --no-color --tail 200 backend edge
