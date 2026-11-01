@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-25
+- **Amended:** 2026-11-01 — the edge answers `404` for the actuator beyond
+  `health` ([ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
+  so the backend's counters are read inside the compose network, and the
+  deployable stack enables them as well as the local one
 
 ## Context
 
@@ -53,6 +57,8 @@ view any of it.
   actuator endpoint but `health`). The frontend's `/api/metrics` does not exist
   unless `METRICS_TOKEN` is set, and then needs that token. Compose enables
   both for local development only.
+  *(Amended 2026-11-01: the base file enables the backend's too, and the edge
+  does not forward it.)*
 
 This does not add a hosted monitoring service, alerting, a log shipper or a
 dashboard, and does not cover mobile crash reporting.

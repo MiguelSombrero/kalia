@@ -10,6 +10,13 @@ import { fileURLToPath } from "node:url";
 import { originOf, stackEnv } from "./stack-ports.mjs";
 
 export const KEYCLOAK_URL = process.env.KEYCLOAK_URL ?? originOf(stackEnv(), "KEYCLOAK_PORT");
+// The master realm's token endpoint and the admin REST API are not on the
+// public edge port (ADR-0090); the dev overlay publishes them on this one.
+export const KEYCLOAK_ADMIN_URL = process.env.KEYCLOAK_ADMIN_URL ?? originOf(stackEnv(), "KEYCLOAK_ADMIN_PORT");
+// The admin console's public address, which Keycloak's KC_HOSTNAME_ADMIN names
+// and the master realm's frontend URL must too. Where the scripts dial the
+// compose network instead (keycloak-seed), compose passes it separately.
+export const KEYCLOAK_ADMIN_PUBLIC_URL = process.env.KEYCLOAK_ADMIN_PUBLIC_URL ?? originOf(stackEnv(), "KEYCLOAK_ADMIN_PORT");
 const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
 const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
@@ -20,7 +27,8 @@ const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
 // describeError lets each caller keep its own wording for a rejected grant
 // instead of forcing one message on all three.
 export const fetchToken = async ({ realm, username, password, describeError }) => {
-  const response = await fetch(`${KEYCLOAK_URL}/realms/${realm}/protocol/openid-connect/token`, {
+  const origin = realm === "master" ? KEYCLOAK_ADMIN_URL : KEYCLOAK_URL;
+  const response = await fetch(`${origin}/realms/${realm}/protocol/openid-connect/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ grant_type: "password", client_id: "admin-cli", username, password }),
@@ -65,7 +73,7 @@ const adminToken = () =>
   );
 
 const authedRequest = async (token, path, init = {}) => {
-  const response = await fetch(`${KEYCLOAK_URL}${path}`, {
+  const response = await fetch(`${KEYCLOAK_ADMIN_URL}${path}`, {
     ...init,
     headers: {
       Authorization: `Bearer ${token}`,
