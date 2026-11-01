@@ -33,7 +33,9 @@ error names it, in the device's log and on screen.
 ## Constraints
 
 - Filed at iteration 10's refinement, 2026-11-01, as the implementation of
-  task 06's decision; follows that task's ADR, and runs after
+  task 06's decision; follows its
+  [ADR-0098](../../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md),
+  and runs after
   [task 05](05-build-variants.md), whose release build is where the red screen
   is gone and whose build number the screen shows.
 - What the app logs or shows: no token, no query string and no user identity
@@ -62,9 +64,13 @@ error names it, in the device's log and on screen.
       `traceparent`, and the web's unit tests of the shared transport still
       pass
 - [ ] A Jest test shows a failed request's error naming its trace id, and
-      that neither the logged line nor the screen contains the access token
+      that neither the logged line nor the screen contains the access token,
+      a query string or the signed-in user's name
 - [ ] On a release build, a forced error shows the restart screen — verified
       by hand on a simulator or the iPhone and described in the PR
+- [ ] On the same build, the forced error's logged line is found in Console.app
+      or `adb logcat` as `mobile/README.md` says to read it, and the PR says
+      what was seen — the README's filters are corrected if they showed nothing
 - [ ] `make verify-fast` is green
 
 ## Notes

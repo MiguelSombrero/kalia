@@ -321,6 +321,11 @@ in one place, read
   — a physical phone reaches the stack over the owner's tailnet in an opt-in
   phone mode, where one origin is the issuer Keycloak stamps and every consumer
   validates; plain HTTP until a recorded trigger; amends ADR-0095.
+- [ADR-0098](0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)
+  — an installed build's errors are read from the device's own logs
+  (Console.app or Xcode, `adb logcat`) and a crash service is deferred until
+  someone other than the product owner installs Kalia; no endpoint receives
+  client errors.
 
 ## Engineering process and documentation
 
