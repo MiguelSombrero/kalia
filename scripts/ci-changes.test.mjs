@@ -244,6 +244,16 @@ test("a branch with no commit of its own, or no dev to compare with, runs everyt
   });
 });
 
+test("a path with non-ASCII characters is matched as written", () => {
+  inRepo(({ root, run, commit }) => {
+    run("checkout", "-q", "-b", "unicode");
+    commit({ "mobile/assets/öl.txt": "x" });
+    const result = changes({ cwd: root, refName: "unicode", devRef: "dev" });
+    assert.deepEqual(result.files, ["mobile/assets/öl.txt"]);
+    assert.equal(result.outputs.mobile, true);
+  });
+});
+
 test("a file moved out of mobile/ counts as a change to mobile/", () => {
   inRepo(({ root, run }) => {
     run("checkout", "-q", "-b", "move");

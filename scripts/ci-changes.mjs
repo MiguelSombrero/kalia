@@ -11,8 +11,8 @@
 // - dev: the commit before the push (`github.event.before`), so a docs-only
 //   merge runs no app suite;
 // - main, or no usable base (a first push, a dev push whose previous commit
-//   is not an ancestor of the new one after a forced push, a manual dispatch):
-//   everything runs.
+//   is not an ancestor of the new one after a forced push, a manual dispatch
+//   on dev): everything runs.
 // A change to ci.yml or to this script also runs everything: they decide every
 // job, so no job can be skipped as unaffected by them.
 //
@@ -82,12 +82,11 @@ function git(cwd, args) {
   return execFileSync("git", args, { cwd, env: ENV_WITHOUT_REPO, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
 }
 
-function succeeds(cwd, args) {
+function gitOrNull(cwd, args) {
   try {
-    git(cwd, args);
-    return true;
+    return git(cwd, args);
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -100,18 +99,13 @@ export function chooseBase({ cwd, refName, before = "", devRef = "origin/dev" })
 
   if (refName === DEV) {
     if (!before || NO_COMMIT.test(before)) return { everything: "no previous commit for this push to dev" };
-    if (!succeeds(cwd, ["merge-base", "--is-ancestor", before, "HEAD"])) {
+    if (gitOrNull(cwd, ["merge-base", "--is-ancestor", before, "HEAD"]) === null) {
       return { everything: `the previous commit ${before} is not an ancestor of this push to dev` };
     }
     return { base: before };
   }
 
-  let base = "";
-  try {
-    base = git(cwd, ["merge-base", devRef, "HEAD"]);
-  } catch {
-    base = "";
-  }
+  const base = gitOrNull(cwd, ["merge-base", devRef, "HEAD"]);
   if (!base || base === git(cwd, ["rev-parse", "HEAD"])) return { everything: `no usable merge base with ${devRef}` };
   return { base };
 }
@@ -128,7 +122,8 @@ export function changes(push) {
   }
   // --no-renames lists a moved file under both paths: with rename detection a
   // file moved out of mobile/ shows only its new home, and mobile looks untouched.
-  const files = git(push.cwd, ["diff", "--name-only", "--no-renames", chosen.base, "HEAD"]).split("\n").filter(Boolean);
+  // -z keeps a non-ASCII path unquoted, where a quoted one would match no rule.
+  const files = git(push.cwd, ["diff", "--name-only", "-z", "--no-renames", chosen.base, "HEAD"]).split("\0").filter(Boolean);
   return { reason: `compared with ${chosen.base}`, files, outputs: decide(files) };
 }
 

@@ -146,7 +146,7 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
   planned for a later iteration replaces the SQL script, and this is fixed
   there.*
-- **COULD-100** *(confirmed 2026-10-30)* — three small gaps around the
+- **COULD-100** *(confirmed 2026-11-01)* — three small gaps around the
   committed spec. `backend/openapi.json` carries the OAuth URLs built from the
   Keycloak issuer setting, so a developer whose environment overrides it fails
   `CommittedOpenApiSpecIT` without a contract change: drop or normalise
@@ -154,9 +154,11 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   reads `openapi.json` relative to the working directory, which is `backend/`
   only under Maven: resolve it from the module root. And CI's change filter
   does not select `api-breaking-change` when only
-  `scripts/check-api-breaking.mjs` changes, so a broken wrapper is found on the
-  next spec change: add the script to the backend filter. Deferred in the
-  iteration 9 task 09 pull request.
+  `scripts/check-api-breaking.mjs` changes, and since iteration 10 task 22 a
+  push to `dev` no longer runs everything to catch it, so a broken wrapper is
+  found on the next spec change: add the script to the backend rule in
+  `scripts/ci-changes.mjs`. Deferred in the iteration 9 task 09 pull request;
+  reconfirmed reviewing iteration 10 task 22.
 - **COULD-107** *(confirmed 2026-11-01)* — bottles added together still read
   back in a different order than they were answered in. `Entry.bottles` orders
   by `created_at, id`, but a bulk add stamps every bottle with one instant and
