@@ -1,6 +1,6 @@
 # Task 23: The Android build reuses the native code it already compiled
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -62,19 +62,19 @@ measurements why no cache is worth its risk.
 
 ## Acceptance criteria
 
-- [ ] The pull request shows the build step's duration for at least five warm
+- [x] The pull request shows the build step's duration for at least five warm
       runs and a cold run for each candidate and for the unchanged job, with
       run links
-- [ ] An ADR records the choice, or the negative result, and the alternative
+- [x] An ADR records the choice, or the negative result, and the alternative
       not taken
-- [ ] If a cache is merged: a test shows its key changing with a native
+- [x] If a cache is merged: a test shows its key changing with a native
       source, the lockfile, `mobile/app.json` and the toolchain version
-- [ ] If a cache is merged: a run after a deliberate change to a native source
+- [x] If a cache is merged: a run after a deliberate change to a native source
       recompiles that library, and the median build-step time is at least
       three minutes lower than the unchanged job's
-- [ ] The versions of any new Action or tool are agreed by the product owner
+- [x] The versions of any new Action or tool are agreed by the product owner
       in the pull request
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

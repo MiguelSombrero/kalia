@@ -1473,6 +1473,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0096](adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md) | Mobile unit tests run on Jest and end-to-end flows on Maestro, with Android the only CI platform | accepted | 2026-10-30 |
 | [ADR-0097](adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md) | A phone reaches the stack over the owner's tailnet in an opt-in phone mode, where one origin is the issuer | accepted | 2026-11-01 |
 | [ADR-0098](adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) | An installed build's errors are read from the device's own logs, and a crash service waits for a second user | accepted | 2026-11-01 |
+| [ADR-0099](adr/0099-the-android-end-to-end-build-caches-no-native-output-because-neither-ccache-nor-cmakes-output-saves-three-minutes.md) | The Android end-to-end build caches no native output, because neither ccache nor CMake's output saves three minutes | accepted | 2026-11-01 |
 
 ### Engineering process and documentation
 
