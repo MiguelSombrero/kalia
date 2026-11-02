@@ -1,6 +1,6 @@
 # Task 07: The mobile end-to-end check fails only when the app does
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
