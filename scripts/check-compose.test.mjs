@@ -6,7 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { consistencyProblems, deployableAdminProblems, edgeProblems, localAdminProblems, requiredVariables, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { consistencyProblems, deployableAdminProblems, devOnlyProblems, edgeProblems, localAdminProblems, localDevServiceProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -92,4 +92,76 @@ test("localAdminProblems rejects an admin port on every interface", () => {
 test("localAdminProblems rejects a missing admin port and a KC_HOSTNAME_ADMIN that names another", () => {
   assert.match(localAdminProblems({ edge: { ports: [] }, keycloak: keycloakNamingAdmin })[0], /does not publish/);
   assert.match(localAdminProblems({ edge: { ports: [adminPort] }, keycloak: { environment: {} } })[0], /KC_HOSTNAME_ADMIN/);
+});
+
+test("devOnlyProblems accepts a deployable stack with no mail catcher and no data-store port", () => {
+  assert.deepEqual(devOnlyProblems({ postgres: {}, valkey: { ports: [] }, edge: { ports: [{ target: 3000 }] } }), []);
+});
+
+test("devOnlyProblems names a mail catcher and each data store that publishes a port", () => {
+  const problems = devOnlyProblems({
+    mailpit: {},
+    postgres: { ports: [{ target: 5432 }] },
+    valkey: { ports: [{ target: 6379 }] },
+  });
+  assert.equal(problems.length, 3);
+  assert.match(problems[0], /mailpit/);
+  assert.match(problems[1], /postgres publishes a port/);
+  assert.match(problems[2], /valkey publishes a port/);
+});
+
+const onLoopback = (target) => ({ host_ip: "127.0.0.1", target, published: String(target + 1000) });
+
+test("localDevServiceProblems accepts Postgres, Valkey and Mailpit published on the loopback interface", () => {
+  const services = {
+    mailpit: { ports: [onLoopback(8025)] },
+    postgres: { ports: [onLoopback(5432)] },
+    valkey: { ports: [onLoopback(6379)] },
+  };
+  assert.deepEqual(localDevServiceProblems(services), []);
+});
+
+test("localDevServiceProblems names a missing service, an unpublished port and one on every interface", () => {
+  const services = {
+    postgres: { ports: [] },
+    valkey: { ports: [{ target: 6379, published: "6379" }] },
+  };
+  const problems = localDevServiceProblems(services);
+  assert.equal(problems.length, 3);
+  assert.match(problems[0], /postgres/);
+  assert.match(problems[1], /valkey .* not 127\.0\.0\.1/);
+  assert.match(problems[2], /no mailpit service/);
+});
+
+const ownRoles = {
+  postgres: { environment: { POSTGRES_USER: "kalia" } },
+  backend: { environment: { DATABASE_USERNAME: "kalia_app", DATABASE_OWNER_USERNAME: "kalia_owner" } },
+  keycloak: { environment: { KC_DB_USERNAME: "keycloak" } },
+};
+
+test("roleProblems accepts three roles of their own and no superuser password outside Postgres", () => {
+  assert.deepEqual(roleProblems(ownRoles), []);
+});
+
+test("roleProblems names a service that connects as the superuser", () => {
+  const keycloak = { environment: { KC_DB_USERNAME: "kalia" } };
+  const problems = roleProblems({ ...ownRoles, keycloak });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /keycloak connects as kalia, the Postgres superuser/);
+});
+
+test("roleProblems names two services sharing a role and a service naming none", () => {
+  const backend = { environment: { DATABASE_USERNAME: "shared", DATABASE_OWNER_USERNAME: "shared" } };
+  const keycloak = { environment: {} };
+  const problems = roleProblems({ ...ownRoles, backend, keycloak });
+  assert.equal(problems.length, 2);
+  assert.match(problems[0], /same role, shared/);
+  assert.match(problems[1], /keycloak does not name/);
+});
+
+test("roleProblems rejects the superuser's password in the backend's or Keycloak's environment", () => {
+  const backend = { environment: { ...ownRoles.backend.environment, POSTGRES_PASSWORD: "x" } };
+  const problems = roleProblems({ ...ownRoles, backend });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /backend is given POSTGRES_PASSWORD/);
 });

@@ -15,10 +15,11 @@
 # to set it). Do not reintroduce a fixed `name:`.
 #
 # The host ports are variables too, so worktrees can run a stack each at the
-# same time: `make stack-env` writes WEB_PORT, BACKEND_PORT,
-# KEYCLOAK_PORT, POSTGRES_PORT, VALKEY_PORT and MAILPIT_PORT (and
-# METRO_PORT, which only the mobile app's make targets read) into a
-# worktree's own root .env, and unset they are the values below. Every
+# same time: `make stack-env` writes WEB_PORT, BACKEND_PORT, KEYCLOAK_PORT,
+# POSTGRES_PORT, VALKEY_PORT and MAILPIT_PORT (and METRO_PORT, which only the
+# mobile app's make targets read) into a worktree's own root .env, and unset
+# they are the values below. The last three name ports only the dev overlay
+# publishes (docker-compose.override.yml). Every
 # address that names one of them is built from it here, so the issuer Keycloak
 # stamps and the issuer its consumers validate cannot disagree. Container-side
 # ports (keycloak:8080, backend:8080, postgres:5432) never change: each
@@ -34,7 +35,12 @@ services:
     environment:
       # The app's own env contract (ADR-0015), not Spring property names
       DATABASE_JDBC_URL: jdbc:postgresql://postgres:5432/kalia
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD, see README.md}
+      # Two roles, neither the superuser (ADR-0100): the runtime one reads and
+      # writes rows, the owner is Flyway's alone and creates the schema.
+      DATABASE_USERNAME: kalia_app
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?set DATABASE_PASSWORD, see README.md}
+      DATABASE_OWNER_USERNAME: kalia_owner
+      DATABASE_OWNER_PASSWORD: ${DATABASE_OWNER_PASSWORD:?set DATABASE_OWNER_PASSWORD, see README.md}
       FEED_CURSOR_KEY: ${FEED_CURSOR_KEY:?set FEED_CURSOR_KEY, see README.md}
       # Counters at /actuator/prometheus, which needs a bearer token like
       # every actuator endpoint but health (ADR-0088, backend/README.md)
@@ -116,14 +122,20 @@ services:
     environment:
       POSTGRES_DB: kalia
       POSTGRES_USER: kalia
+      # The bootstrap superuser, held by nothing but this container (ADR-0100)
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD, see README.md}
-    ports:
-      # Bound to localhost only: the database is never exposed beyond the dev machine.
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      # Read by the init script below, which gives each role its password.
+      DATABASE_OWNER_PASSWORD: ${DATABASE_OWNER_PASSWORD:?set DATABASE_OWNER_PASSWORD, see README.md}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?set DATABASE_PASSWORD, see README.md}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?set KEYCLOAK_DB_PASSWORD, see README.md}
+    # No published port: the backend and Keycloak dial it on the stack's
+    # network, and the dev overlay publishes it for a developer's host.
     volumes:
       - postgres-data:/var/lib/postgresql
-      # Runs once, only against an empty data directory: creates the second
-      # database Keycloak below persists into, alongside `kalia`.
+      # Runs once, only against an empty data directory: creates the roles and
+      # the second database Keycloak persists into, alongside `kalia`.
+      # An existing volume keeps the roles it has: recreate it with
+      # `docker compose down -v` (README.md).
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kalia -d kalia"]
@@ -142,8 +154,8 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:?set KEYCLOAK_ADMIN, see README.md}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD, see README.md}
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: kalia
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD, see README.md}
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?set KEYCLOAK_DB_PASSWORD, see README.md}
       # Production mode defaults to requiring HTTPS; this stack is HTTP-only.
       KC_HTTP_ENABLED: "true"
       # Fixed to the public address, not request-derived: Keycloak stamps
@@ -170,10 +182,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      # Keycloak only dials mailpit when it actually sends a message, long
-      # after startup — service_started is enough to order them.
-      mailpit:
-        condition: service_started
     # Published by `edge` as KEYCLOAK_PORT (8081 by default, not 8080: the
     # backend takes that one).
     healthcheck:
@@ -220,21 +228,23 @@ services:
       WEB_URL: ${WEB_URL:-http://localhost:${WEB_PORT:-3000}}
       KEYCLOAK_SSL_REQUIRED: ${KEYCLOAK_SSL_REQUIRED:?set KEYCLOAK_SSL_REQUIRED (none, external or all), see README.md}
       KALIA_WEB_CLIENT_SECRET: ${KALIA_WEB_CLIENT_SECRET:?set KALIA_WEB_CLIENT_SECRET in a root .env file (it was KALIA_FRONTEND_CLIENT_SECRET; `make stack-env` renames it), see README.md}
-      # SMTP for the realm's mail (email verification, password reset). These
-      # defaults point Keycloak at the mailpit service below, which needs no
-      # auth or TLS; a deployment overrides them to reach a real sender (Gmail
-      # via smtp.gmail.com:587, auth on, STARTTLS on, an App Password as
+      # SMTP for the realm's mail (email verification, password reset). All
+      # required: a deployment that forgot them would otherwise park every
+      # reset link in a mail catcher. The local stack points Keycloak at the
+      # mailpit service in docker-compose.override.yml through
+      # docker-compose.dev.env; a deployment names a real sender (Gmail via
+      # smtp.gmail.com:587, auth on, STARTTLS on, an App Password as
       # KEYCLOAK_SMTP_PASSWORD). The realm file holds only $(env:...)
       # placeholders — no credential is committed, same rule as
       # KALIA_WEB_CLIENT_SECRET above. keycloak-config-cli resolves
-      # these; scripts/check-keycloak-realm-config.mjs mirrors the defaults so
-      # it can run without compose.
-      KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST:-mailpit}
-      KEYCLOAK_SMTP_PORT: ${KEYCLOAK_SMTP_PORT:-1025}
-      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM:-no-reply@kalia.test}
-      KEYCLOAK_SMTP_AUTH: ${KEYCLOAK_SMTP_AUTH:-false}
-      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:-false}
-      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:-false}
+      # these; scripts/check-keycloak-realm-config.mjs mirrors the dev values
+      # so it can run without compose.
+      KEYCLOAK_SMTP_HOST: ${KEYCLOAK_SMTP_HOST:?set KEYCLOAK_SMTP_HOST, see README.md}
+      KEYCLOAK_SMTP_PORT: ${KEYCLOAK_SMTP_PORT:?set KEYCLOAK_SMTP_PORT, see README.md}
+      KEYCLOAK_SMTP_FROM: ${KEYCLOAK_SMTP_FROM:?set KEYCLOAK_SMTP_FROM, see README.md}
+      KEYCLOAK_SMTP_AUTH: ${KEYCLOAK_SMTP_AUTH:?set KEYCLOAK_SMTP_AUTH (true or false), see README.md}
+      KEYCLOAK_SMTP_STARTTLS: ${KEYCLOAK_SMTP_STARTTLS:?set KEYCLOAK_SMTP_STARTTLS (true or false), see README.md}
+      KEYCLOAK_SMTP_SSL: ${KEYCLOAK_SMTP_SSL:?set KEYCLOAK_SMTP_SSL (true or false), see README.md}
       KEYCLOAK_SMTP_USER: ${KEYCLOAK_SMTP_USER:-}
       KEYCLOAK_SMTP_PASSWORD: ${KEYCLOAK_SMTP_PASSWORD:-}
     volumes:
@@ -257,32 +267,11 @@ services:
         esac
         printf 'requirepass %s\n' "$$VALKEY_PASSWORD" > /tmp/valkey.conf
         exec valkey-server /tmp/valkey.conf
-    ports:
-      # Bound to localhost only, same convention as the other services.
-      - "127.0.0.1:${VALKEY_PORT:-6379}:6379"
+    # No published port, as for postgres above.
     healthcheck:
       # PONG only for an authenticated client: a server that lost its
       # password would answer NOAUTH and fail this check
       test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$VALKEY_PASSWORD\" valkey-cli ping | grep -q PONG"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
-  mailpit:
-    # The local mail catcher for everything Keycloak sends. Nothing in this
-    # stack ever talks to a real SMTP provider — the realm's SMTP config
-    # defaults to this container (keycloak-config's KEYCLOAK_SMTP_* above),
-    # and the e2e spec reads caught messages back over the HTTP API.
-    # Chosen over MailHog, which is effectively unmaintained upstream.
-    image: axllent/mailpit:v1.32.0
-    ports:
-      # Bound to localhost only, same convention as the other services. 8025
-      # is the web UI and HTTP API (container side; the host port is
-      # MAILPIT_PORT); SMTP (1025) is reached only in-network as
-      # mailpit:1025 and is not published.
-      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
-    healthcheck:
-      test: ["CMD", "/mailpit", "readyz"]
       interval: 5s
       timeout: 3s
       retries: 10

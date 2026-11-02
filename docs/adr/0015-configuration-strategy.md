@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-07-25
+- **Amended:** 2026-11-02 by [ADR-0100](0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md) — the database secret is two,
+  `DATABASE_PASSWORD` and `DATABASE_OWNER_PASSWORD`, replacing `POSTGRES_PASSWORD`
+  in the backend's contract
 
 ## Context
 
@@ -42,7 +45,7 @@ nothing in the file marks which settings are meant to vary.
 
   | Kind | Rule | Example |
   |---|---|---|
-  | Secret | No default at all | `${POSTGRES_PASSWORD}` |
+  | Secret | No default at all | `${DATABASE_PASSWORD}` |
   | Exposure flag | Restrictive | `${SPRINGDOC_ENABLED:false}` |
   | Connection target | `localhost` — cannot silently reach a real system | `${DATABASE_JDBC_URL:jdbc:postgresql://localhost:5432/kalia}` |
 
@@ -77,7 +80,7 @@ nothing in the file marks which settings are meant to vary.
   avoids. Every production entry point (`java -jar`, `mvn spring-boot:run`)
   goes through `main()`, so the coverage is equivalent.
 - **`docker-compose.yml` speaks the application's env contract**
-  (`DATABASE_JDBC_URL`, `POSTGRES_PASSWORD`, `LOG_LEVEL`, `SPRINGDOC_ENABLED`)
+  (`DATABASE_JDBC_URL`, `DATABASE_PASSWORD`, `LOG_LEVEL`, `SPRINGDOC_ENABLED`)
   rather than Spring property names, and is the local development
   environment: `LOG_LEVEL=DEBUG` and Swagger enabled.
 - **Tests get their configuration through the same mechanism**, set in the
@@ -85,6 +88,8 @@ nothing in the file marks which settings are meant to vary.
   `src/test/resources/application.properties` (which would shadow the main
   file on the classpath rather than merge with it). The datasource needs
   nothing there: Testcontainers' `@ServiceConnection` replaces it wholesale.
+  Flyway's credentials do, because `spring.flyway.user` wins over that
+  connection ([ADR-0100](0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
 - **Profiles are rejected for configuration only.** `@Profile` on *beans*
   remains available for genuine behavioural variants — a mocked adapter
   standing in for an external service would be a legitimate future use. What

@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
  */
 final class RequiredConfigurationValidator {
 
-	private static final List<String> REQUIRED = List.of("POSTGRES_PASSWORD", "FEED_CURSOR_KEY");
+	private static final List<String> REQUIRED = List.of("DATABASE_PASSWORD", "DATABASE_OWNER_PASSWORD", "FEED_CURSOR_KEY");
 
 	private RequiredConfigurationValidator() {
 	}

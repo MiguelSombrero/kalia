@@ -37,10 +37,10 @@ export const DEV_REALM_FILE = resolve(ROOT, "keycloak/realm-swagger.json");
 // Mirrors docker-compose.dev.env and the keycloak-config service: every value
 // either gives a default, this gives the same, so the check runs without
 // compose. KALIA_WEB_CLIENT_SECRET has no default there — an unset one
-// is an error, not a skipped field. The SMTP block is different: its `:-`
-// defaults point at the mailpit container and an empty user/password is the
-// no-auth local state, not a missing secret — a deployment overrides them to
-// reach a real sender.
+// is an error, not a skipped field. The SMTP block is the dev env file's,
+// pointing at the mailpit container; an empty user/password is the no-auth
+// local state, not a missing secret — a deployment sets every one of them
+// to reach a real sender.
 const ENV_DEFAULTS = {
   KEYCLOAK_SSL_REQUIRED: "none",
   KEYCLOAK_SMTP_HOST: "mailpit",

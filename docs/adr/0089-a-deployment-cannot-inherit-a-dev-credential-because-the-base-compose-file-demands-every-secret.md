@@ -6,6 +6,9 @@
   client" was written for the Swagger client; the realm file the base imports
   gains `kalia-mobile`, a public client that holds no secret and is needed
   wherever the app runs
+- **Amended:** 2026-11-02 by [ADR-0100](0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md) — the mail catcher and the SMTP
+  settings are no longer out of scope: the base file runs no Mailpit and
+  requires the SMTP settings, and Postgres and Valkey publish no port there
 
 ## Context
 
@@ -59,7 +62,7 @@ with `docker-compose.override.yml` for what only development has.
 
 Out of scope: the nginx edge and TLS ([iteration 8.5 task 10](../tasks/iteration-8.5/10-unauthenticated-edges-throttled.md),
 [backlog](../tasks/backlog.md)), the mail catcher and the SMTP defaults, which
-hold no secret, and refresh-token rotation, which
+hold no secret (brought in on 2026-11-02, above), and refresh-token rotation, which
 [ADR-0029](0029-silent-token-refresh.md) now records as deferred to iteration 9.
 
 ## Alternatives considered

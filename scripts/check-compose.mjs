@@ -70,6 +70,68 @@ export const edgeProblems = (services) => {
   return problems;
 };
 
+/** Services that only development runs: the deployable definition must not (the mail catcher). */
+const DEV_ONLY_SERVICES = ["mailpit"];
+
+/** Services whose host port only development needs: the deployable definition publishes none. */
+const DEV_ONLY_PORTS = ["postgres", "valkey"];
+
+/** Problems with what the deployable definition runs or publishes for development's sake alone. */
+export const devOnlyProblems = (services) => {
+  const problems = [];
+  for (const name of DEV_ONLY_SERVICES) {
+    if (name in services) problems.push(`the base file runs ${name}, a dev-only service`);
+  }
+  for (const name of DEV_ONLY_PORTS) {
+    if ((services[name]?.ports ?? []).length > 0) problems.push(`${name} publishes a port, which only the dev overlay may`);
+  }
+  return problems;
+};
+
+/** Problems with who each service connects to Postgres as: three roles of their own, never the bootstrap superuser. */
+export const roleProblems = (services) => {
+  const superuser = services.postgres?.environment?.POSTGRES_USER;
+  const connectsAs = {
+    "the backend (runtime)": services.backend?.environment?.DATABASE_USERNAME,
+    "the backend (Flyway)": services.backend?.environment?.DATABASE_OWNER_USERNAME,
+    keycloak: services.keycloak?.environment?.KC_DB_USERNAME,
+  };
+  const problems = [];
+  const seen = new Map();
+  for (const [who, role] of Object.entries(connectsAs)) {
+    if (!role) problems.push(`${who} does not name the Postgres role it connects as`);
+    else if (role === superuser) problems.push(`${who} connects as ${role}, the Postgres superuser`);
+    else if (seen.has(role)) problems.push(`${who} and ${seen.get(role)} connect as the same role, ${role}`);
+    else seen.set(role, who);
+  }
+  for (const name of ["backend", "keycloak"]) {
+    if ("POSTGRES_PASSWORD" in (services[name]?.environment ?? {})) {
+      problems.push(`${name} is given POSTGRES_PASSWORD, the superuser's, which only Postgres's bootstrap may hold`);
+    }
+  }
+  return problems;
+};
+
+/** What the local stack publishes for a developer's host, with the container port each answers on. */
+const LOCAL_DEV_PORTS = { postgres: 5432, valkey: 6379, mailpit: 8025 };
+
+/** Problems with the dev overlay: Postgres, Valkey and Mailpit published, on the loopback interface only. */
+export const localDevServiceProblems = (services) => {
+  const problems = [];
+  for (const [name, target] of Object.entries(LOCAL_DEV_PORTS)) {
+    if (!services[name]) {
+      problems.push(`the local stack has no ${name} service`);
+      continue;
+    }
+    const published = (services[name].ports ?? []).filter((port) => Number(port.target) === target);
+    if (published.length === 0) problems.push(`the local stack does not publish ${name}'s port ${target}`);
+    for (const port of published) {
+      if (port.host_ip !== "127.0.0.1") problems.push(`${name} is published on ${port.host_ip ?? "every interface"}, not 127.0.0.1`);
+    }
+  }
+  return problems;
+};
+
 /** The edge's container-side port for Keycloak's admin console (edge/nginx.conf). */
 export const ADMIN_TARGET = 8083;
 
@@ -134,7 +196,7 @@ const run = () => {
   if ("keycloak-seed" in base.services) problems.push("the base file defines keycloak-seed, a dev-only service");
   if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
 
-  problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services));
+  problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services), ...devOnlyProblems(base.services), ...roleProblems(base.services));
 
   const scanEnv = { PATH: process.env.PATH, HOME: process.env.HOME, ...everySecret };
   const scanArgs = ["--env-file", "/dev/null", "-f", "docker-compose.base.yml"];
@@ -168,7 +230,7 @@ const run = () => {
         problems.push("keycloak-seed's KEYCLOAK_ADMIN_PASSWORD differs from the admin password Keycloak starts with");
       }
     }
-    problems.push(...localAdminProblems(local.services));
+    problems.push(...localAdminProblems(local.services), ...localDevServiceProblems(local.services));
     if (seed && seed.environment.KEYCLOAK_ADMIN_PUBLIC_URL !== keycloak.KC_HOSTNAME_ADMIN) {
       problems.push("keycloak-seed's KEYCLOAK_ADMIN_PUBLIC_URL differs from the KC_HOSTNAME_ADMIN Keycloak starts with");
     }
