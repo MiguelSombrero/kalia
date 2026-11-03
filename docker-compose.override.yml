@@ -3,6 +3,38 @@
 # docker-compose.base.yml: nothing here may be needed to run that one.
 
 services:
+  # What a developer's host reaches directly. The deployable stack publishes
+  # none of these three: the services dial them on the stack's network.
+  postgres:
+    ports:
+      # Bound to localhost only: the database is never exposed beyond the dev machine.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+
+  valkey:
+    ports:
+      # Bound to localhost only, same convention as the other services.
+      - "127.0.0.1:${VALKEY_PORT:-6379}:6379"
+
+  mailpit:
+    # The local mail catcher for everything Keycloak sends. Nothing in this
+    # stack ever talks to a real SMTP provider — docker-compose.dev.env points
+    # the realm's SMTP settings at this container, and the e2e spec reads
+    # caught messages back over the HTTP API. It is not in the deployable
+    # definition: its API has no authentication.
+    # Chosen over MailHog, which is effectively unmaintained upstream.
+    image: axllent/mailpit:v1.32.0
+    ports:
+      # Bound to localhost only, same convention as the other services. 8025
+      # is the web UI and HTTP API (container side; the host port is
+      # MAILPIT_PORT); SMTP (1025) is reached only in-network as
+      # mailpit:1025 and is not published.
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     environment:
       # This stack is the local development environment: verbose logs
@@ -11,6 +43,11 @@ services:
       SPRINGDOC_ENABLED: "true"
 
   keycloak:
+    depends_on:
+      # Keycloak only dials mailpit when it actually sends a message, long
+      # after startup — service_started is enough to order them.
+      mailpit:
+        condition: service_started
     environment:
       # The admin console's own address, served by the edge's admin port below.
       # Dev only: the deployable stack publishes no admin port (ADR-0090).

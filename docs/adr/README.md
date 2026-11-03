@@ -330,6 +330,10 @@ in one place, read
   (Console.app or Xcode, `adb logcat`) and a crash service is deferred until
   someone other than the product owner installs Kalia; no endpoint receives
   client errors.
+- [ADR-0100](0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)
+  — Postgres has three roles: an owner Flyway uses, a runtime role that reads
+  and writes rows and cannot change the schema, and Keycloak's own; the
+  superuser belongs to Postgres alone.
 
 ## Engineering process and documentation
 

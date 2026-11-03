@@ -1,6 +1,6 @@
 # Task 11: The deployable stack carries no dev convenience and no shared superuser
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -69,17 +69,17 @@ recorded as a trade-off.
 
 ## Acceptance criteria
 
-- [ ] `docker compose -f docker-compose.base.yml config` without SMTP values
+- [x] `docker compose -f docker-compose.base.yml config` without SMTP values
       fails, and `scripts/check-compose.mjs`'s test covers it
-- [ ] The base file runs no Mailpit and publishes no Postgres or Valkey port;
+- [x] The base file runs no Mailpit and publishes no Postgres or Valkey port;
       the local stack still does, through the dev overlay
-- [ ] An integration test shows the backend's runtime role cannot `DROP` a
+- [x] An integration test shows the backend's runtime role cannot `DROP` a
       table, and Flyway's migrations still run at start-up as the owner role
-- [ ] Keycloak connects as its own role and cannot reach the `kalia` database
-- [ ] `docker compose -f docker-compose.base.yml config` without a role's
+- [x] Keycloak connects as its own role and cannot reach the `kalia` database
+- [x] `docker compose -f docker-compose.base.yml config` without a role's
       password fails, and `README.md` says to recreate an existing volume
-- [ ] `make verify` is green
-- [ ] `make verify-fast` is green
+- [x] `make verify` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

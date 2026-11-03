@@ -115,7 +115,19 @@ so a script that floods one gets `429`. Valkey is at `:6379` (password
 `kalia-dev-valkey-password`), Postgres at
 `:5432`, and Mailpit's inbox UI — where every email Keycloak sends locally
 lands — at `:8025`. All bindings are localhost-only, never reachable beyond
-the dev machine.
+the dev machine. Those last three are published by
+`docker-compose.override.yml` alone: the deployable definition runs no Mailpit
+and publishes neither Postgres nor Valkey.
+
+Postgres holds three roles besides the bootstrap superuser `kalia`
+([ADR-0100](docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)):
+`kalia_owner` for Flyway, `kalia_app` for the backend's queries and `keycloak`,
+each with its own password in
+[docker-compose.dev.env](docker-compose.dev.env). They are created by
+`postgres/init` on an empty volume only, so **a volume made before this
+existed must be recreated once — `docker compose down -v` — and loses its
+data.** `make moderate` and `make app-config` still connect as the superuser,
+through `docker compose exec`.
 
 Those are the defaults, and the main checkout keeps them. Each of the seven is
 a variable in the root `.env` (`WEB_PORT`, `BACKEND_PORT`,
@@ -376,11 +388,19 @@ docker compose -f docker-compose.base.yml up
 # required variable POSTGRES_PASSWORD is missing a value: set POSTGRES_PASSWORD, see README.md
 ```
 
-It needs `POSTGRES_PASSWORD`, `FEED_CURSOR_KEY`, `AUTH_SECRET`,
-`KALIA_WEB_CLIENT_SECRET`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`,
-`KEYCLOAK_SSL_REQUIRED` (`none`, `external` or `all`) and `VALKEY_PASSWORD`
-(letters, digits and `. _ ~ -` only: it is carried in the session store's address), from the
-environment or a `.env`. `METRICS_TOKEN` is optional. It has no seeded account
+It needs `POSTGRES_PASSWORD` (the bootstrap superuser's, held by Postgres
+alone), `DATABASE_OWNER_PASSWORD`, `DATABASE_PASSWORD` and
+`KEYCLOAK_DB_PASSWORD` (one per database role), `FEED_CURSOR_KEY`,
+`AUTH_SECRET`, `KALIA_WEB_CLIENT_SECRET`, `KEYCLOAK_ADMIN`,
+`KEYCLOAK_ADMIN_PASSWORD`, `KEYCLOAK_SSL_REQUIRED` (`none`, `external` or
+`all`), `VALKEY_PASSWORD` (letters, digits and `. _ ~ -` only: it is carried
+in the session store's address) and Keycloak's mail settings —
+`KEYCLOAK_SMTP_HOST`, `KEYCLOAK_SMTP_PORT`, `KEYCLOAK_SMTP_FROM` and
+`KEYCLOAK_SMTP_AUTH`, `KEYCLOAK_SMTP_STARTTLS`, `KEYCLOAK_SMTP_SSL` (each
+`true` or `false`), with `KEYCLOAK_SMTP_USER` and `KEYCLOAK_SMTP_PASSWORD`
+optional — from the environment or a `.env`. The database roles are created
+on an empty Postgres volume only, so an existing volume is recreated with
+`docker compose down -v`. `METRICS_TOKEN` is optional. It has no seeded account
 and no Swagger client, and the web app refuses to start on the dev
 `AUTH_SECRET`. A bare `docker compose` is the local stack, so name the file;
 [ADR-0089](docs/adr/0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
