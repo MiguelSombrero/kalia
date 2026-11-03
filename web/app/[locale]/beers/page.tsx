@@ -20,7 +20,7 @@ import {
   searchBeers,
   SearchFilters,
 } from "@/features/catalog";
-import { AddToCellarButton, heldBottlesByBeerOrNone } from "@/features/cellar";
+import { AddToCellarButton, heldBottlesOfOrNone } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { Page } from "@/components/ui/page";
@@ -55,13 +55,13 @@ const BeersPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale((await params).locale);
   const normalized = normalizeBeerSearchParams(parseBeerSearchParams(await searchParams));
   const session = auth();
-  const [{ result, params: beerParams, refusedCountry }, countryCodes, signedIn, heldBottles, { t }] = await Promise.all([
+  const [{ result, params: beerParams, refusedCountry }, countryCodes, signedIn, { t }] = await Promise.all([
     searchOrDropRefusedCountry(normalized.params),
     listBreweryCountries(),
     session.then((current) => Boolean(current?.user)),
-    session.then((current) => (current?.user ? heldBottlesByBeerOrNone() : undefined)),
     getTranslation(locale),
   ]);
+  const heldBottles = signedIn ? await heldBottlesOfOrNone(result.content.map((beer) => beer.id)) : undefined;
   const isSignedIn = signedIn;
   const ignored = refusedCountry ? [...normalized.ignored, "countryCode"] : normalized.ignored;
 

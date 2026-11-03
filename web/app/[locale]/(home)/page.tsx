@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { CellarSummary, cellarCounts, listCellarEntries } from "@/features/cellar";
+import { CellarSummary, getCellarTotals } from "@/features/cellar";
 import {
   FeedEmptyState,
   FeedError,
@@ -41,8 +41,8 @@ const readFeedOrNull = () =>
 const Home = async ({ params }: Props) => {
   const locale = toLocale((await params).locale);
   const [page, session, { t }] = await Promise.all([readFeedOrNull(), auth(), getTranslation(locale)]);
-  const [viewerProfile, cellarRows] = session?.user
-    ? await Promise.all([getOwnProfileOrNull(locale), listCellarEntries().catch(() => null)])
+  const [viewerProfile, cellarCounts] = session?.user
+    ? await Promise.all([getOwnProfileOrNull(locale), getCellarTotals().catch(() => null)])
     : [null, null];
   const now = new Date();
 
@@ -54,7 +54,7 @@ const Home = async ({ params }: Props) => {
           <CellarSummary
             locale={locale}
             cellarPublic={viewerProfile.cellarPublic}
-            counts={cellarRows && cellarCounts(cellarRows)}
+            counts={cellarCounts}
           />
         </>
       ) : (

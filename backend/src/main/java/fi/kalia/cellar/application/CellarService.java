@@ -14,6 +14,7 @@ import fi.kalia.profile.ProfileApi;
 import java.text.Collator;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +55,11 @@ public class CellarService {
 	@Transactional(readOnly = true)
 	public List<EntryView> listEntries(UUID userId) {
 		return joined(entries.findWithBottlesByUserId(userId), userId);
+	}
+
+	@Transactional(readOnly = true)
+	public CellarHoldings holdings(UUID userId, Collection<UUID> beerIds) {
+		return new CellarHoldings(entries.countOf(userId), entries.countHeldOfBeers(userId, Set.copyOf(beerIds)));
 	}
 
 	// One exception for every refusal, so none can be told from another (ADR-0050).

@@ -1,10 +1,10 @@
 export { AddToCellarButton } from "./AddToCellarButton";
-export { cellarCounts, type CellarTotals } from "./cellarTotals";
+export type { CellarTotals } from "./cellarTotals";
 export { CellarSummary } from "./CellarSummary";
 export { CellarView } from "./CellarView";
 export { beerBlock, bottleTiles, cellarHead, cellarTools } from "./layout";
 export { toPublicCellarPage } from "./publicCellarPages";
 export { PublicCellarView } from "./PublicCellarView";
 export { SignInPrompt } from "./SignInPrompt";
-export { getPublicCellar, heldBottlesByBeerOrNone, listCellarEntries } from "./api";
+export { getCellarTotals, getPublicCellar, heldBottlesOfOrNone, listCellarEntries } from "./api";
 export type { CellarBeer, PublicCellar } from "./types";

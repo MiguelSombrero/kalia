@@ -3,12 +3,14 @@ import { logger } from "@/lib/logger";
 import {
   addBottles as generatedAddBottles,
   listEntries as generatedListEntries,
+  readHoldings as generatedReadHoldings,
   removeBottle as generatedRemoveBottle,
   updateBottle as generatedUpdateBottle,
 } from "@kalia/api/generated/cellar/cellar";
-import type { EntryDto, PublicCellarEntryDto } from "@kalia/api/generated/models";
+import type { EntryDto, HoldingsDto, PublicCellarEntryDto } from "@kalia/api/generated/models";
 import { read as generatedReadPublicCellar } from "@kalia/api/generated/public-cellar/public-cellar";
 import { inVintageOrder } from "./cellarOrder";
+import type { CellarTotals } from "./cellarTotals";
 import type { AddBottlesRequest, Bottle, CellarBeer, PublicCellar, UpdateBottleRequest } from "./types";
 
 const readEntries = async (): Promise<EntryDto[]> => {
@@ -25,17 +27,38 @@ const readEntries = async (): Promise<EntryDto[]> => {
 
 export const listCellarEntries = async (): Promise<CellarBeer[]> => (await readEntries()).map(toCellarBeer);
 
-/** Bottles the caller holds, by beer id — the cellar marker on catalog pages. */
-export const heldBottlesByBeer = async (): Promise<Map<string, number>> =>
-  new Map((await readEntries()).map((entry) => [entry.beer.id, entry.quantity]));
+const readHoldings = async (beerIds: readonly string[]): Promise<HoldingsDto> => {
+  const response = await generatedReadHoldings(beerIds.length > 0 ? { beerIds: [...beerIds] } : undefined);
+  if (response.status !== 200) {
+    throw apiError("http", `Cellar holdings lookup failed with status ${response.status}`, {
+      status: response.status,
+    });
+  }
+  return response.data;
+};
 
-/** `heldBottlesByBeer`, or nothing when the read fails: the marker only
- *  decorates a catalog page, so a failure leaves it out (ADR-0069). */
-export const heldBottlesByBeerOrNone = (): Promise<Map<string, number> | undefined> =>
-  heldBottlesByBeer().catch((error: unknown) => {
+/** Bottles the caller holds of the given beers, by beer id — the cellar marker
+ *  on a page of catalog beers. A beer not held is absent. */
+export const heldBottlesOf = async (beerIds: readonly string[]): Promise<Map<string, number>> => {
+  if (beerIds.length === 0) {
+    return new Map();
+  }
+  return new Map((await readHoldings(beerIds)).held.map((held) => [held.beerId, held.quantity]));
+};
+
+/** `heldBottlesOf`, or nothing when the read fails: the marker only decorates
+ *  a catalog page, so a failure leaves it out (ADR-0069). */
+export const heldBottlesOfOrNone = (beerIds: readonly string[]): Promise<Map<string, number> | undefined> =>
+  heldBottlesOf(beerIds).catch((error: unknown) => {
     logger.error(error);
     return undefined;
   });
+
+/** The caller's beers and bottles in all, without reading the cellar. */
+export const getCellarTotals = async (): Promise<CellarTotals> => {
+  const { totalBeers, totalBottles } = await readHoldings([]);
+  return { beers: totalBeers, bottles: totalBottles };
+};
 
 const toCellarBeer = (entry: EntryDto | PublicCellarEntryDto): CellarBeer => ({
   entryId: entry.id,

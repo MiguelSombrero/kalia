@@ -105,6 +105,8 @@ read of a cellar its owner has made public. Its dependencies are in
 | `BottleCount` | How many bottles one entry holds: the read model of a public cellar page, which lists at most a capped number of an entry's bottles and reports the rest as a count. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
 | `BottleListing` | One bottle as a public cellar page lists it: its own fields and its entry's id, read without loading the entry, since an owned entity has no repository of its own. | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
 | `BottleTotals` | Every bottle one user holds and when the newest was added: what a public cellar page reports about the whole cellar it shows (beers that are not approved left out), since a client holding one page cannot count it. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
+| `CellarCounts` | How many beers a user holds bottles of, and how many bottles: the totals the front and profile pages show, counted in the database so no page reads the whole cellar for them. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
+| `HeldBeer` | How many bottles of one beer a user holds: what the catalog's cellar marker reads for the beers on a page. | [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) |
 | `InvalidBottleException` | A domain exception for bottle data that cannot be accepted: a future brewed date, a best-before date not after the brewed date, a non-positive add quantity. | [ADR-0014](adr/0014-shared-exception-handling.md) |
 
 ## feed

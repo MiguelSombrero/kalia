@@ -19,7 +19,7 @@ const line = (username: string, cursor: string) => ({
 
 const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));
 const { getProfile } = vi.hoisted(() => ({ getProfile: vi.fn() }));
-const { listCellarEntries } = vi.hoisted(() => ({ listCellarEntries: vi.fn() }));
+const { getCellarTotals } = vi.hoisted(() => ({ getCellarTotals: vi.fn() }));
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
 // FeedList, FeedError, FrontPagePitch, FeedEmptyState and CellarSummary have
 // their own tests. These stand-ins record what the page handed them, which is
@@ -49,9 +49,8 @@ vi.mock("@/features/feed", () => ({
   },
   feedHeadingRow: "feed-heading-row",
 }));
-vi.mock("@/features/cellar", async (importOriginal) => ({
-  cellarCounts: (await importOriginal<typeof import("@/features/cellar")>()).cellarCounts,
-  listCellarEntries,
+vi.mock("@/features/cellar", () => ({
+  getCellarTotals,
   CellarSummary: (props: unknown) => {
     cellarSummaryProps(props);
     return <div data-testid="cellar-summary" />;
@@ -74,21 +73,6 @@ import Home, { generateMetadata } from "./page";
 
 const params = Promise.resolve({ locale: "en" });
 const emptyFeed: FeedPage = { content: [], nextCursor: undefined, startOver: false };
-const cellarRow = (beerId: string, bottleCount: number) => ({
-  entryId: `entry-${beerId}`,
-  beerId,
-  beerName: beerId,
-  breweryName: "Brewery",
-  style: "IPA",
-  abv: 6,
-  bottles: Array.from({ length: bottleCount }, (_, index) => ({
-    id: `${beerId}-${index}`,
-    entryId: `entry-${beerId}`,
-    containerType: "BOTTLE",
-    createdAt: "2026-01-01",
-    updatedAt: "2026-01-01",
-  })),
-});
 
 const signInAs = (username: string, cellarPublic: boolean) => {
   auth.mockResolvedValue({ user: { name: username } });
@@ -98,7 +82,7 @@ const signInAs = (username: string, cellarPublic: boolean) => {
 beforeEach(() => {
   vi.clearAllMocks();
   auth.mockResolvedValue(null);
-  listCellarEntries.mockResolvedValue([]);
+  getCellarTotals.mockResolvedValue({ beers: 0, bottles: 0 });
 });
 
 describe("generateMetadata", () => {
@@ -151,7 +135,7 @@ describe("Home, signed in", () => {
   it("replaces the pitch with the visitor's cellar and keeps a heading for the page", async () => {
     readFeed.mockResolvedValue({ content: [line("ada", "c1")], nextCursor: undefined, startOver: false });
     signInAs("ada", true);
-    listCellarEntries.mockResolvedValue([cellarRow("kbs", 3), cellarRow("orval", 4)]);
+    getCellarTotals.mockResolvedValue({ beers: 2, bottles: 7 });
 
     render(await Home({ params }));
 
@@ -168,7 +152,7 @@ describe("Home, signed in", () => {
   it("still shows the cellar, without figures, when the cellar cannot be read", async () => {
     readFeed.mockResolvedValue(emptyFeed);
     signInAs("ada", true);
-    listCellarEntries.mockRejectedValue(apiError("network", "could not reach the backend"));
+    getCellarTotals.mockRejectedValue(apiError("network", "could not reach the backend"));
 
     render(await Home({ params }));
 

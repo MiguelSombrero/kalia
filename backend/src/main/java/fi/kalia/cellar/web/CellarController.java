@@ -13,9 +13,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,6 +42,9 @@ import org.springframework.web.bind.annotation.RestController;
 @ApiResponse(responseCode = "401", description = "Missing or invalid bearer token",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 class CellarController {
+
+	/** A catalog search page holds at most 100 beers, and no page asks about more than one page. */
+	static final int MAX_HOLDINGS_BEER_IDS = 100;
 
 	private static final String CONCURRENT_WRITE = """
 			Another request changed the same cellar entry at the same time and the retry lost \
@@ -57,6 +63,25 @@ class CellarController {
 			description = "Every entry the caller owns, each with its bottles and derived quantity. Not paginated.")
 	List<EntryDto> listEntries() {
 		return cellar.listEntries(identity.requireCurrentUserId()).stream().map(EntryDto::from).toList();
+	}
+
+	@GetMapping("/holdings")
+	@ResponseStatus(HttpStatus.OK)
+	@Operation(summary = "Read what the caller holds of some beers",
+			description = """
+					Which of the given beers the caller holds and how many bottles of each, with the \
+					totals of the whole cellar: the beers held and the bottles held. At most \
+					""" + MAX_HOLDINGS_BEER_IDS + """
+					\sbeer ids; a page of beers asks about the beers it shows instead of reading the whole \
+					cellar. Without beer ids it answers the totals alone.\
+					""")
+	@ApiResponse(responseCode = "400", description = "More beer ids than the limit, or an id that is not a beer id",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
+	HoldingsDto readHoldings(
+			@Parameter(description = "Ids of the beers to ask about, at most " + MAX_HOLDINGS_BEER_IDS)
+			@RequestParam(required = false) @Size(max = MAX_HOLDINGS_BEER_IDS) @Nullable List<UUID> beerIds) {
+		return HoldingsDto.from(cellar.holdings(identity.requireCurrentUserId(), beerIds == null ? List.of() : beerIds));
 	}
 
 	@PostMapping("/bottles")

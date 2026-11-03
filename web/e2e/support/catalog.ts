@@ -18,6 +18,10 @@ export const CATALOG_CARD = {
   frontPageFeed: 12,
   /** live-front-page.spec.ts — only needs its own addition to be findable. */
   liveFrontPage: 13,
+  /** held-marks.spec.ts — adds two bottles and reads the mark back. */
+  heldMarks: 8,
+  /** held-marks.spec.ts — a beer nobody adds, whose card must carry no mark. */
+  heldMarksUnheld: 9,
   /** cellar-layout.spec.ts — adds dated bottles, and removes them again. */
   cellarLayout: 18,
 } as const;
