@@ -1,6 +1,6 @@
 # Task 14: The owner's cellar read has a bound before the app caches it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -56,13 +56,13 @@ unboundedness is a recorded trade-off.
 
 ## Acceptance criteria
 
-- [ ] The new read has an integration test of its cap on beer ids and its
+- [x] The new read has an integration test of its cap on beer ids and its
       documented errors, and is in the committed spec
-- [ ] A Playwright test of a catalog search page shows the held marks from the
+- [x] A Playwright test of a catalog search page shows the held marks from the
       new read, and no page but the cellar page calls `GET /cellar`
-- [ ] Architecture §8 lists `GET /cellar`'s unboundedness, with iteration 12
+- [x] Architecture §8 lists `GET /cellar`'s unboundedness, with iteration 12
       as the point it is revisited
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
