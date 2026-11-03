@@ -27,7 +27,7 @@ with its own (`make stack-env`), set `DATABASE_JDBC_URL` and
 ```bash
 BACKEND_PORT=8090 docker compose up -d postgres keycloak keycloak-config edge   # from repo root
 cd backend
-POSTGRES_PASSWORD=kalia FEED_CURSOR_KEY=any-local-key-of-at-least-32-bytes SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
+DATABASE_PASSWORD=kalia-dev-app-password DATABASE_OWNER_PASSWORD=kalia-dev-owner-password FEED_CURSOR_KEY=any-local-key-of-at-least-32-bytes SPRINGDOC_ENABLED=true LOG_LEVEL=DEBUG mvn spring-boot:run
 curl localhost:8080/actuator/health
 curl localhost:8080/api/v1/beers?query=westvleteren
 ```
@@ -48,10 +48,12 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 
 | Variable | Default | Notes |
 |---|---|---|
-| `POSTGRES_PASSWORD` | **none — required** | Startup aborts with the variable named if unset |
+| `DATABASE_PASSWORD` | **none — required** | The runtime role's, which reads and writes rows and cannot change the schema. Startup aborts with the variable named if unset |
+| `DATABASE_OWNER_PASSWORD` | **none — required** | The schema owner's, used by Flyway alone. Startup aborts with the variable named if unset |
 | `FEED_CURSOR_KEY` | **none — required** | HMAC key signing feed cursors, at least 32 bytes (`openssl rand -base64 32`). Every instance must hold the same value and it must survive restarts, or a cursor issued before is rejected with a 400 ([ADR-0060](../docs/adr/0060-feed-delivery-is-polling.md)). Rotating it invalidates cursors in flight, which the client recovers from by reloading the feed. Compose supplies a dev-only value |
 | `DATABASE_JDBC_URL` | `jdbc:postgresql://localhost:5432/kalia` | localhost, so a misconfigured deploy fails loudly rather than reaching a real database |
-| `DATABASE_USERNAME` | `kalia` | |
+| `DATABASE_USERNAME` | `kalia_app` | The runtime role ([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)) |
+| `DATABASE_OWNER_USERNAME` | `kalia_owner` | The role Flyway connects as, which owns every table the migrations create |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
 | `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; compose sets `health,prometheus`. Everything but `health` also needs a bearer token |
@@ -185,6 +187,11 @@ Notable suites:
 - `KaliaApplicationIT` — boots the full context against a PostgreSQL
   Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
   reports UP, Flyway migrations create the module schemas
+- `DatabaseRolesIT` — the postgres `init` script run as the stack runs it, and
+  the application booted as `kalia_app` with Flyway as `kalia_owner`: the
+  runtime role is refused `DROP`, `ALTER`, `TRUNCATE` and `CREATE`, every
+  table belongs to the owner, and Keycloak's role and the application's
+  cannot reach each other's database ([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md))
 - `ArchitectureDocumentationTest` — parses `docs/architecture.md` §2/§3 at
   test time and compares the module set and dependency edges against Spring
   Modulith's own view (`fi.kalia.web` excluded, per ADR-0014); fails the
@@ -209,6 +216,14 @@ Migrations install one PostgreSQL extension, `pg_trgm`
 ([ADR-0044](../docs/adr/0044-catalog-search-indexes.md)). It is a trusted
 extension, so the database owner can create it, but a deployment running
 migrations as a lower-privileged role fails at `CREATE EXTENSION`.
+
+Flyway connects as `kalia_owner` and the application as `kalia_app`, which
+cannot `DROP`, `ALTER`, `TRUNCATE` or create anything
+([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
+`postgres/init` grants `kalia_app` row access to whatever `kalia_owner` creates
+later, so a migration needs no `GRANT` of its own, but code that creates or
+alters a table at run time — a library's schema initializer — fails with
+`permission denied`; Spring Modulith's is switched off for this reason.
 
 **Until Kalia's first deployment, put a schema change in the existing
 migration it belongs to** rather than adding a new one — an index beside the

@@ -239,8 +239,12 @@
 					<!-- The test environment supplies its own configuration through
 					     the same mechanism every other environment uses (ADR-0015);
 					     there is no test profile. The datasource needs nothing here:
-					     Testcontainers' @ServiceConnection replaces it wholesale. -->
+					     Testcontainers' @ServiceConnection replaces it wholesale.
+					     Flyway's own credentials do need it: spring.flyway.user, when
+					     set, wins over that connection, so it names the container's. -->
 					<systemPropertyVariables>
+						<spring.flyway.user>test</spring.flyway.user>
+						<spring.flyway.password>test</spring.flyway.password>
 						<logging.level.fi.kalia>WARN</logging.level.fi.kalia>
 						<kalia.feed.cursor-key>integration-test-cursor-key-not-a-credential</kalia.feed.cursor-key>
 						<springdoc.api-docs.enabled>true</springdoc.api-docs.enabled>

@@ -250,6 +250,11 @@ TypeScript vocabulary a client meets — is catalogued in
   same catalog: a hand-written seed (`V004`) and the Wikidata import (`V008`),
   whose size [ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
   measures.
+- **The backend connects as a role that cannot change the schema.** Flyway runs
+  as `kalia_owner`, the application's queries as `kalia_app` (rows only), and
+  Keycloak, whose database sits in the same server, as `keycloak`; the
+  bootstrap superuser is held by Postgres alone
+  ([ADR-0100](adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
 - **The catalog's data source is Kalia itself, seeded once from Wikidata**
   ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
   `V008` is generated, never hand-edited: `scripts/wikidata-migration.mjs`
@@ -1110,9 +1115,9 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   settings are `$(env:KEYCLOAK_SMTP_*)` placeholders in
   `keycloak/realm-export.json` (so they inherit
   [ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)'s drift check
-  and carry no credential), defaulting to the **Mailpit** container in local
-  dev and test and overridable to a real sender (Gmail SMTP) for a
-  deployment. The sender shows as `Kalia <address>`. The e2e suite reads a
+  and carry no credential), required by the deployable definition, and set
+  to the **Mailpit** container (run by the dev overlay alone) in local dev
+  and test, or to a real sender (Gmail SMTP) in a deployment. The sender shows as `Kalia <address>`. The e2e suite reads a
   real message back out of Mailpit's API
   (`web/e2e/keycloak-email.spec.ts`).
 - **A visitor registers entirely inside Keycloak's own registration flow**
@@ -1480,6 +1485,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0097](adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md) | A phone reaches the stack over the owner's tailnet in an opt-in phone mode, where one origin is the issuer | accepted | 2026-11-01 |
 | [ADR-0098](adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) | An installed build's errors are read from the device's own logs, and a crash service waits for a second user | accepted | 2026-11-01 |
 | [ADR-0099](adr/0099-the-android-end-to-end-build-caches-no-native-output-because-neither-ccache-nor-cmakes-output-saves-three-minutes.md) | The Android end-to-end build caches no native output, because neither ccache nor CMake's output saves three minutes | accepted | 2026-11-01 |
+| [ADR-0100](adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md) | Postgres has three roles — one that owns the schema for Flyway, one that reads and writes rows, one for Keycloak — and the superuser belongs to Postgres alone | accepted | 2026-11-02 |
 
 ### Engineering process and documentation
 
