@@ -18,7 +18,6 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   ([iteration 7](iteration-7.md)) exists, so this waits only on being wanted.
 - Recommendations ("if you liked this IPA…")
 - Following other users, so a feed can be personal rather than global
-- Admin UI + role-based access for catalog management
 - **Editing a catalog beer** — correcting a wrong ABV, a misspelt name.
   [Iteration 8 task 01](iteration-8/01-catalog-data-source.md) decided that
   iteration 8 only adds beers. Editing raises who may change a row others

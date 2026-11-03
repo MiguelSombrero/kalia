@@ -31,9 +31,11 @@ cellar, social — before what only a phone can do. The web keeps working and is
 not held at feature parity. The plan adds no cost (the rule is in
 [`CLAUDE.md`](../CLAUDE.md)): the app runs on the product owner's own iPhone
 and on simulators against the local stack, and what a cost blocks is parked in
-[the backlog](tasks/backlog.md#mobile-client). Iteration 10's
-task files are seeded at `needs-refinement`; iterations 11–14 list planned
-tasks as one line each, their task files written at refinement.
+[the backlog](tasks/backlog.md#mobile-client). Iteration 10.5 is the
+exception: an admin page in the web app that replaces the SQL moderation
+script, before the mobile design work resumes. Iteration 10.5's task files are
+seeded at `needs-refinement`; iterations 11–14 list planned tasks as one line
+each, their task files written at refinement.
 
 **Definition of done (every issue):**
 
@@ -70,6 +72,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [8.5 — Quality sprint before mobile](tasks/iteration-8.5.md) | The API mobile inherits is complete and pruned, and no known MUST or unbounded cost remains | ✅ Done |
 | [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ✅ Done |
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ⬜ Todo |
+| [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ⬜ Todo |
 | [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ⬜ Todo |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
 | [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |

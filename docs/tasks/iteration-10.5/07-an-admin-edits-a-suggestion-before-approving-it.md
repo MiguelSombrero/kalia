@@ -1,0 +1,90 @@
+# Task 07: An admin edits a suggestion before approving it
+
+- **Status:** needs-refinement
+- **Iteration:** [10.5](../iteration-10.5.md)
+- **Covers:** DW-2, DW-3
+
+## Why
+
+Most suggestions worth keeping are nearly right: a typo in the name, the wrong
+style picked from the list, an ABV of `55` meant as `5.5`, a brewery's city
+left out. Rejecting one for that throws away the contributor's effort and asks
+them to type it again; approving it as it is puts the typo into a catalog
+everyone shares. The product owner's brief asks for a third outcome — edit,
+then approve — with the contributor seeing their addition as the admin changed
+it.
+
+An edit is also a write the add-beer path's guards were never asked to cover
+twice: the same name rules, the same duplicate keys, and a contributor whose
+cellar already holds the beer under its old name.
+
+## Scope
+
+An admin changes what [task 02](02-decision-what-reviewing-a-suggestion-does.md)
+allows of a suggestion — the beer's fields, and the new brewery's when it came
+with one — and approves it in one action. The edit is held to the same
+validation and duplicate checks as adding a beer; the contributor's cellar,
+the beer's page and the event all show the edited version; and whether the
+suggestion was edited is recorded as task 02 decided.
+
+## Non-goals
+
+- Editing an approved catalog beer, which stays in
+  [the backlog](../backlog.md) ("Editing a catalog beer").
+- The form — [task 11](11-design-the-admin-review-page.md).
+
+## Constraints
+
+- **This task cannot be refined before [task 02](02-decision-what-reviewing-a-suggestion-does.md)
+  is done**, and follows [task 06](06-an-admin-approves-or-rejects-a-suggestion.md),
+  whose approval it reuses.
+- The rules a beer and brewery are added under bind an edit too: the style
+  must be one the catalog knows, a name with a Unicode `Cf` character is
+  refused `400`, names are folded with NFKC for the duplicate keys, and a
+  country must be listed
+  ([ADR-0091](../../adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md),
+  `ContributionService`). A second copy of those rules for edits is the drift
+  to avoid.
+- A duplicate the edit would create answers the `409` the add path already
+  documents, naming the existing beer or brewery
+  ([iteration 8.5 task 05](../iteration-8.5/05-brewery-questions-answered-by-the-api.md));
+  [task 13](13-domain-time-from-the-clock-and-one-read-per-duplicate.md)
+  makes the brewery's duplicate path one read first.
+- The cellar read is joined with the catalog in the backend
+  ([ADR-0083](../../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)),
+  so a contributor's cellar shows the edited name without a cellar write; a
+  feed line freezes only what `cellar` handed it
+  ([ADR-0058](../../adr/0058-feed-event-recording-model.md)).
+- Bean Validation on the request DTO matches the add path's bounds
+  ([ADR-0042](../../adr/0042-bounded-request-parameters.md)).
+
+## Open questions
+
+Answered by [task 02](02-decision-what-reviewing-a-suggestion-does.md); refined
+once its ADR is accepted. Left for this task:
+
+1. **A partial edit:** the request carries every field, or only those changed.
+2. **Re-pointing at an existing brewery,** if task 02 allows it: the new
+   brewery is then rejected in the same transaction, and the event says so.
+
+## Acceptance criteria
+
+- [ ] An integration test edits a suggestion's name, style and ABV and approves
+      it, and the contributor's cellar and the beer's details then show the
+      edited values
+- [ ] An integration test edits a new brewery's name and country with its beer,
+      and both are approved together
+- [ ] An edit to a name already in the catalog answers the documented `409`;
+      an unknown style, an unlisted country and a `Cf` character answer `400`
+      — tests, each confirmed to fail without its check
+- [ ] The published event carries the edited values and says the suggestion
+      was edited, as task 02 chose — `@ApplicationModuleTest` scenario
+- [ ] The add path and the edit path share one set of validation rules —
+      a unit test of the shared rule, and no copy of it in the edit path
+- [ ] The committed spec carries the operation
+- [ ] `make verify-fast` is green
+
+## Notes
+
+Provenance: the product owner's brief for iteration 10.5 — "edit and approve
+… the user sees his addition as it was changed".

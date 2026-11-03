@@ -56,29 +56,8 @@ they're already cross-referenced from merged PRs and
 
 ## SHOULD
 
-Every other SHOULD filed up to 2026-10-31 was lifted into
-[iteration 10](iteration-10.md).
-
-- **SHOULD-80** *(confirmed 2026-10-27)* **[needs decision]** — moderation is
-  `scripts/moderate-contributor.sql`, run through `docker compose exec`
-  (`Makefile:19-21`): it acts on all of a contributor's rows at once
-  (removing one bad beer also removes their approved ones), writes `catalog`
-  tables around the domain, reads `profile.profile` cross-schema, and has no
-  deployment story; rejected rows leave the pending count
-  (`ContributionService.java:72-75`), so a rejected contributor can resubmit
-  20 more at once, indefinitely. Iteration 9+ mobile with open registration
-  grows the queue before ADR-0091's trigger fires. Per-row actions with
-  rejections counted toward a cooldown, or an operator-role backend endpoint.
-  *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
-  planned for a later iteration replaces the SQL script, and this is fixed
-  there.*
-- **SHOULD-97** *(confirmed 2026-11-01)* — while Keycloak is slow rather than
-  down, every API call of a signed-in user waits out its own refresh attempt
-  (the 10 s timeout in `keycloakClient.ts`) before the transport sends it
-  without a token, because a transient failure is not remembered and the next
-  call starts a fresh refresh; the Catalog tab works but each request is 10 s
-  late (found reviewing iteration 10 task 8). Remember the failure for a short
-  window so calls inside it skip the attempt.
+*None open — every SHOULD filed up to 2026-11-01 was lifted into
+[iteration 10](iteration-10.md) or [iteration 10.5](iteration-10.5.md).*
 
 ## COULD
 
@@ -89,84 +68,6 @@ Every other SHOULD filed up to 2026-10-31 was lifted into
   the login and registration fields carry proper `autocomplete` values — but
   it is stock `keycloak.v2` markup the theme does not touch
   ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
-
-- **COULD-75** *(confirmed 2026-10-27)* **[needs decision]** — the backend's
-  10 r/s per-address zone does not bound anonymous backend load: the BFF
-  calls `backend:8080` directly, so SSR pages and public Server Actions under
-  the 150 r/s web zone (`edge/nginx.conf:40-44`, `:89-92`) drive about
-  15 times that, against ADR-0090:106-108's "a bound a script cannot step
-  around". Tighten the web zone for actions, limit in the backend by
-  forwarded address, or correct the ADR.
-- **COULD-77** *(confirmed 2026-10-27)* **[needs decision]** — after an empty
-  first feed page, `FeedList.tsx:60` polls with `since=""`, the backend treats
-  it as no cursor and returns a backward `nextCursor`
-  (`FeedController.java:83-94`, `FeedService.java:92`, `:100`), and
-  `FeedList.tsx:107-108` adopts it as the forward one, walking deep history
-  and delaying new public lines past ADR-0060's 60 s. Ignore the cursor on a
-  cursor-less poll, or return a forward cursor for a since-less read.
-- **COULD-79** *(confirmed 2026-10-27)* — domain timestamps still bypass the
-  injected `Clock` after 8.5 task 20 (which took COULD-60): `Instant.now()`
-  in `catalog/domain/Beer.java:56`, `Brewery.java:48` and
-  `EventPublicationResubmission.java:66`, and Hibernate VM timestamps in
-  `Profile.java:35-39` and `FeedLine.java:57-61`.
-- **COULD-81** *(confirmed 2026-10-27)* **[needs decision]** — `ProfileApi`
-  publishes usernames only through cellar visibility
-  (`ProfileApi.java:25-37`, `ProfileService.java:25-44`), which the feed
-  uses as its only actor lookup (`FeedService.java:139-151`); any future
-  event not about a cellar cannot name a private-cellar user without
-  reshaping the API. Record it as a constraint on new event types, or split
-  a username lookup from a visibility predicate first.
-- **COULD-83** *(confirmed 2026-10-27)* **[needs decision]** — never-delete
-  decisions are stacking up ahead of account deletion: usernames (ADR-0080),
-  `contributor_id` (ADR-0091) and `feed.line.user_id` (ADR-0058) are kept
-  forever by design, while `docs/tasks/backlog.md` lists GDPR account
-  deletion as needed before store release. Record a tombstone or
-  pseudonymisation strategy now, or accept the rework when deletion lands.
-- **COULD-95** *(confirmed 2026-10-30)* — the 409 a second lost cellar write
-  answers (ADR-0057, `CellarService.addBottles`/`updateBottle`/`removeBottle`)
-  reaches the user as the generic failure: `features/cellar/api.ts` throws
-  for every status but the success one, and no cellar string or test mentions
-  a conflict. Offer "someone changed this cellar, reload and try again" once
-  iteration 12's replayed writes make it ordinary. Deferred in PR #398.
-- **COULD-97** *(confirmed 2026-10-30)* — a `415`/`406` is Boot's
-  `problem+json` but no operation lists it, though `ApiErrorDocumentationIT`
-  fails an operation that lists none of its others, so the generated client
-  cannot type it. List it on body-taking operations, or record why the
-  contract leaves it out. Deferred in PR #425.
-- **COULD-98** *(confirmed 2026-10-30)* — the duplicate-brewery path reads
-  the brewery twice: `ContributionService.newBrewery` finds the id with
-  `findIdBySameNameAndCountryCode`, then loads the row with `findById` for
-  the name and country the 409 carries. A projection returning those fields
-  does it in one query. Deferred in PR #425.
-- **COULD-99** *(confirmed 2026-10-30)* — `make moderate` has no way to look
-  before it acts: `scripts/moderate-contributor.sql` runs in one transaction
-  and commits, over every row a contributor added, so a mistyped `WHO` or
-  `ACTION` is only undone by a second run. A `DRY_RUN=1` that rolls back and
-  prints the same counts. Related to SHOULD-80. Deferred in PR #452.
-  *Kept out of iteration 10 by the product owner (2026-11-01): an admin page
-  planned for a later iteration replaces the SQL script, and this is fixed
-  there.*
-- **COULD-100** *(confirmed 2026-11-01)* — three small gaps around the
-  committed spec. `backend/openapi.json` carries the OAuth URLs built from the
-  Keycloak issuer setting, so a developer whose environment overrides it fails
-  `CommittedOpenApiSpecIT` without a contract change: drop or normalise
-  `components.securitySchemes.oauth2.flows` in the IT's canonical form. The IT
-  reads `openapi.json` relative to the working directory, which is `backend/`
-  only under Maven: resolve it from the module root. And CI's change filter
-  does not select `api-breaking-change` when only
-  `scripts/check-api-breaking.mjs` changes, and since iteration 10 task 22 a
-  push to `dev` no longer runs everything to catch it, so a broken wrapper is
-  found on the next spec change: add the script to the backend rule in
-  `scripts/ci-changes.mjs`. Deferred in the iteration 9 task 09 pull request;
-  reconfirmed reviewing iteration 10 task 22.
-- **COULD-107** *(confirmed 2026-11-01)* — bottles added together still read
-  back in a different order than they were answered in. `Entry.bottles` orders
-  by `created_at, id`, but a bulk add stamps every bottle with one instant and
-  `id` is a random UUID, so a later read orders the tie by id while the
-  `POST /cellar/bottles` response lists them in insertion order. A client that
-  reconciles by position sees them shuffle once. Giving bottles time-ordered
-  ids (or an ordering column) removes it; the choice is the product owner's.
-  Filed in the iteration 10 task 13 pull request.
 
 ## Retired
 
@@ -401,3 +302,16 @@ live section they came from.
 - ~~COULD-104~~ (no cache for Maestro or Gradle in the Android job) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
 - ~~COULD-105~~ (the Catalog flow naming a beer that happens to sort first) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
 - ~~COULD-106~~ (the Android end-to-end build recompiling React Native's native libraries on every run) — lifted into [iteration-10 task 23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md).
+- ~~SHOULD-80~~ (the SQL moderation script acting on a contributor's whole output, and rejections leaving the pending count) — lifted into [iteration-10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-97~~ (a slow Keycloak delaying every app call by its own refresh timeout) — lifted into [iteration-10.5 task 19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md).
+- ~~COULD-75~~ (the backend's per-address zone stepped around through the web) — lifted into [iteration-10.5 task 16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-77~~ (an empty first feed page polling with a backward cursor) — lifted into [iteration-10.5 task 17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-79~~ (domain timestamps still bypassing the injected `Clock`) — lifted into [iteration-10.5 task 13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md).
+- ~~COULD-81~~ (`ProfileApi` naming a user only through cellar visibility) — lifted into [iteration-10.5 task 05](iteration-10.5/05-an-admin-reads-the-review-queue.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-83~~ (never-delete decisions stacking up ahead of account deletion) — lifted into [iteration-10.5 task 15](iteration-10.5/15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-95~~ (a lost concurrent cellar write shown as the generic failure) — lifted into [iteration-10.5 task 18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md).
+- ~~COULD-97~~ (`415`/`406` listed on no operation) — lifted into [iteration-10.5 task 14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md).
+- ~~COULD-98~~ (the duplicate-brewery path reading the brewery twice) — lifted into [iteration-10.5 task 13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md).
+- ~~COULD-99~~ (`make moderate` with no way to look before it acts) — lifted into [iteration-10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md). The script is removed there rather than given a dry run.
+- ~~COULD-100~~ (three gaps around the committed spec) — lifted into [iteration-10.5 task 14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md).
+- ~~COULD-107~~ (bottles added together reading back in another order) — lifted into [iteration-10.5 task 18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md).

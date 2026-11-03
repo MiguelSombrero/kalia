@@ -198,8 +198,10 @@ In roadmap order, a user can:
   becoming Kalia's primary UI _(iteration 9)_
 
 Then, in the mobile app: it runs on the product owner's own iPhone
-_(iteration 10)_, has a design of its own, proven on the catalog _(iteration
-11)_, holds the cellar readable with no signal _(iteration 12)_, brings the
+_(iteration 10)_. In the web app, an admin reviews the beers users suggest —
+approving, rejecting or correcting each — and the contributor is told what
+became of theirs _(iteration 10.5)_. Back in the mobile app, it has a design of
+its own, proven on the catalog _(iteration 11)_, holds the cellar readable with no signal _(iteration 12)_, brings the
 feed, profiles and public cellars _(iteration 13)_, and scans a bottle's
 barcode to put its beer in the cellar _(iteration 14)_
 
