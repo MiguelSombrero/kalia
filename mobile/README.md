@@ -61,7 +61,8 @@ step, and before asking why a build failed.
    export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator
    ```
 
-6. **Dependencies,** once per checkout (a git worktree needs its own):
+6. **Dependencies,** once per checkout (a git worktree needs its own), and again
+   whenever a pull changes a `package.json` or `package-lock.json`:
 
    ```bash
    npm ci
@@ -114,6 +115,10 @@ one.
 - **A build fails with a message that names no version:** run `make
   mobile-doctor` first. A Gradle or CocoaPods failure on the wrong toolchain
   rarely says which tool was wrong.
+- **`PluginError: Failed to resolve plugin for module "expo-…"`** (or any
+  `Cannot find module`) before the build starts: `node_modules` predates a
+  dependency a pull added, and `make mobile-doctor` does not check it. Run `npm
+  ci` from the repository root, then the target again.
 - **`pod install` fails** with an encoding error: the target sets a UTF-8
   locale for it, but running `pod install` by hand needs
   `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`.
