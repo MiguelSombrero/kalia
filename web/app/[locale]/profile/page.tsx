@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { cellarCounts, listCellarEntries } from "@/features/cellar";
+import { getCellarTotals } from "@/features/cellar";
 import { getOwnProfile, ProfileView, SignInPrompt } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
@@ -29,11 +29,11 @@ const ProfilePage = async ({ params }: Props) => {
     );
   }
 
-  const [profile, beers] = await Promise.all([getOwnProfile(locale), listCellarEntries().catch(() => null)]);
+  const [profile, counts] = await Promise.all([getOwnProfile(locale), getCellarTotals().catch(() => null)]);
 
   return (
     <Page width="wide">
-      <ProfileView locale={locale} profile={profile} counts={beers && cellarCounts(beers)} />
+      <ProfileView locale={locale} profile={profile} counts={counts} />
     </Page>
   );
 };

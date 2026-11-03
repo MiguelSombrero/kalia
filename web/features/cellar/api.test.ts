@@ -2,8 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { isApiError } from "@kalia/api";
 import {
   getPublicCellar,
-  heldBottlesByBeer,
-  heldBottlesByBeerOrNone,
+  getCellarTotals,
+  heldBottlesOf,
+  heldBottlesOfOrNone,
   listCellarEntries,
   removeCellarBottle,
   updateCellarBottle,
@@ -67,29 +68,58 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("heldBottlesByBeer", () => {
-  it("counts bottles by beer from the one entries read", async () => {
-    const fetchMock = stubFetch(() => [
-      entry({ quantity: 3 }),
-      entry({ id: secondEntryId, beer: secondBeer, quantity: 2 }),
-    ]);
+describe("heldBottlesOf", () => {
+  it("asks for the given beers only, in one call, and keys the quantities by beer id", async () => {
+    const fetchMock = stubFetch(() => ({
+      totalBeers: 40,
+      totalBottles: 90,
+      held: [
+        { beerId, quantity: 3 },
+        { beerId: secondBeerId, quantity: 2 },
+      ],
+    }));
 
-    await expect(heldBottlesByBeer()).resolves.toEqual(
+    await expect(heldBottlesOf([beerId, secondBeerId])).resolves.toEqual(
       new Map([
         [beerId, 3],
         [secondBeerId, 2],
       ]),
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    const url = new URL(fetchMock.mock.calls[0][0], "http://backend");
+    expect(url.pathname).toBe("/api/v1/cellar/holdings");
+    expect(url.searchParams.get("beerIds")).toBe(`${beerId},${secondBeerId}`);
   });
 
-  it("throws when the entries lookup fails, and the OrNone form logs it and gives nothing", async () => {
+  it("asks nothing when there are no beers to mark", async () => {
+    const fetchMock = stubFetch(() => 500);
+
+    await expect(heldBottlesOf([])).resolves.toEqual(new Map());
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("throws when the lookup fails, and the OrNone form logs it and gives nothing", async () => {
     stubFetch(() => 500);
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    await expect(heldBottlesByBeer()).rejects.toThrow("status 500");
-    await expect(heldBottlesByBeerOrNone()).resolves.toBeUndefined();
+    await expect(heldBottlesOf([beerId])).rejects.toThrow("status 500");
+    await expect(heldBottlesOfOrNone([beerId])).resolves.toBeUndefined();
     expect(consoleError).toHaveBeenCalledOnce();
+  });
+});
+
+describe("getCellarTotals", () => {
+  it("reads the totals alone, naming no beer", async () => {
+    const fetchMock = stubFetch(() => ({ totalBeers: 4, totalBottles: 9, held: [] }));
+
+    await expect(getCellarTotals()).resolves.toEqual({ beers: 4, bottles: 9 });
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/api\/v1\/cellar\/holdings$/);
+  });
+
+  it("throws when the lookup fails", async () => {
+    stubFetch(() => 500);
+
+    await expect(getCellarTotals()).rejects.toThrow("status 500");
   });
 });
 

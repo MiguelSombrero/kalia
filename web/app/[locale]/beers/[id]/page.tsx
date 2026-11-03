@@ -14,7 +14,7 @@ import {
   type RawSearchParams,
   searchBeers,
 } from "@/features/catalog";
-import { AddToCellarButton, heldBottlesByBeerOrNone } from "@/features/cellar";
+import { AddToCellarButton, heldBottlesOfOrNone } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { buttonVariants } from "@/components/ui/button";
@@ -43,18 +43,19 @@ const BeerPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale(rawLocale);
   const search = parseBeerSearchParams(await searchParams);
   const session = auth();
-  const heldBottlesRead = session.then((current) => (current?.user ? heldBottlesByBeerOrNone() : undefined));
   const [beer, isSignedIn] = await Promise.all([getBeer(id), session.then((current) => Boolean(current?.user))]);
   if (!beer) {
     notFound();
   }
-  const [{ t }, sameStyle, sameCountry, heldBottles] = await Promise.all([
+  const [{ t }, sameStyle, sameCountry] = await Promise.all([
     getTranslation(locale),
     searchBeers({ style: beer.style, sort: "abv,desc", size: String(SAME_STYLE_SHOWN + 1) }),
     searchBeers({ countryCode: beer.brewery.countryCode, size: "1" }),
-    heldBottlesRead,
   ]);
   const others = sameStyle.content.filter((other) => other.id !== beer.id).slice(0, SAME_STYLE_SHOWN);
+  const heldBottles = isSignedIn
+    ? await heldBottlesOfOrNone([beer.id, ...others.map((other) => other.id)])
+    : undefined;
   const cameFromSearch = hasSearch(search);
 
   return (

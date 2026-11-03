@@ -146,6 +146,20 @@ class CellarOpenApiDocumentationIT {
 		}
 	}
 
+	@Test
+	void theHoldingsReadDocumentsItsCapOnBeerIdsAndItsBadRequest() {
+		String body = apiDocs();
+		String operation = "$.paths['/api/v1/cellar/holdings'].get";
+
+		List<Integer> cap = JsonPath.read(body, operation + ".parameters[?(@.name=='beerIds')].schema.maxItems");
+		assertThat(cap).containsExactly(CellarController.MAX_HOLDINGS_BEER_IDS);
+		assertThat((Object) JsonPath.read(body, operation + ".responses.200")).isNotNull();
+		assertThat((Object) JsonPath.read(body, operation + ".responses.400.content['application/problem+json']"))
+				.isNotNull();
+		List<String> required = JsonPath.read(body, "$.components.schemas.HoldingsDto.required");
+		assertThat(required).containsExactlyInAnyOrder("totalBeers", "totalBottles", "held");
+	}
+
 	private String apiDocs() {
 		return client.get().uri("/v3/api-docs")
 				.exchange()

@@ -75,4 +75,16 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	BottleTotals totalBottlesOfExcludingBeers(@Param("userId") UUID userId,
 			@Param("excludedBeerIds") Collection<UUID> excludedBeerIds);
 
+	// Keyed on the owner, like the reads above (ADR-0050); an empty collection
+	// asks about no beer and finds none.
+	@Query("""
+			select new fi.kalia.cellar.domain.HeldBeer(b.entry.beerId, count(b)) from Bottle b
+			where b.entry.userId = :userId and b.entry.beerId in :beerIds group by b.entry.beerId""")
+	List<HeldBeer> countHeldOfBeers(@Param("userId") UUID userId, @Param("beerIds") Collection<UUID> beerIds);
+
+	@Query("""
+			select new fi.kalia.cellar.domain.CellarCounts(count(distinct b.entry.beerId), count(b)) from Bottle b
+			where b.entry.userId = :userId""")
+	CellarCounts countOf(@Param("userId") UUID userId);
+
 }

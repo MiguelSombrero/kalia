@@ -17,10 +17,10 @@ vi.mock("next/navigation", async (importOriginal) => ({
   redirect,
 }));
 vi.mock("@/features/cellar/api", () => ({
-  listCellarEntries: vi.fn(async () => []),
+  getCellarTotals: vi.fn(async () => ({ beers: 0, bottles: 0 })),
 }));
 
-import { listCellarEntries } from "@/features/cellar";
+import { getCellarTotals } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { apiError } from "@kalia/api";
 import ProfilePage, { generateMetadata } from "./page";
@@ -32,7 +32,7 @@ import ProfilePage, { generateMetadata } from "./page";
 describe("ProfilePage", () => {
   afterEach(() => {
     vi.mocked(getProfile).mockClear();
-    vi.mocked(listCellarEntries).mockClear();
+    vi.mocked(getCellarTotals).mockClear();
   });
 
   it("fetches the profile and the owner's cellar to count it when signed in", async () => {
@@ -41,12 +41,12 @@ describe("ProfilePage", () => {
     await ProfilePage({ params: Promise.resolve({ locale: "en" }) });
 
     expect(getProfile).toHaveBeenCalledOnce();
-    expect(listCellarEntries).toHaveBeenCalledOnce();
+    expect(getCellarTotals).toHaveBeenCalledOnce();
   });
 
   it("still renders the profile when the cellar cannot be counted", async () => {
     auth.mockResolvedValue({ user: { name: "ada" } });
-    vi.mocked(listCellarEntries).mockRejectedValueOnce(new Error("backend down"));
+    vi.mocked(getCellarTotals).mockRejectedValueOnce(new Error("backend down"));
 
     await expect(ProfilePage({ params: Promise.resolve({ locale: "en" }) })).resolves.toBeTruthy();
   });
@@ -65,7 +65,7 @@ describe("ProfilePage", () => {
     await ProfilePage({ params: Promise.resolve({ locale: "en" }) });
 
     expect(getProfile).not.toHaveBeenCalled();
-    expect(listCellarEntries).not.toHaveBeenCalled();
+    expect(getCellarTotals).not.toHaveBeenCalled();
   });
 });
 

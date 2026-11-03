@@ -479,7 +479,8 @@ GET    /api/v1/feed?size=&since=&before=            -> the most recent events, o
 
 # authenticated
 POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past 20 entries waiting for approval, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them)
-GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity
+GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity; every entry, not paginated
+GET    /api/v1/cellar/holdings?beerIds=             -> which of at most 100 beers the caller holds and how many bottles of each, with the beers and bottles held in all; 400 past 100 ids or for one that is not a beer id
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice
 PATCH  /api/v1/cellar/bottles/{id}                  -> update a bottle; 409 as above
 DELETE /api/v1/cellar/bottles/{id}                  -> remove a bottle; 409 as above
@@ -1294,6 +1295,15 @@ records the latest run.
   expires. The cost is a five-minute window; shortening the lifespan narrows
   it without closing it, and introspection would make every write depend on
   Keycloak being up.
+- **`GET /api/v1/cellar` answers every entry, with no cap on how many an
+  account holds** (SHOULD-78): the cellar page and the app's offline sync need
+  the whole cellar, so the read stays whole and its cost grows with the largest
+  cellar anyone builds. The cost is bounded everywhere else: the catalog
+  pages' held marks and the front and profile pages' counts read
+  `GET /api/v1/cellar/holdings`, which takes at most 100 beer ids and answers
+  from two aggregate queries however large the cellar is. **Revisit in
+  [iteration 12](tasks/iteration-12.md)**, with the offline cache that depends
+  on this read, when the app decides whether to page or sync it by change.
 - **Migrations over an admin UI or a runtime import**: every environment holds
   the same catalog, seed and Wikidata import alike, at the cost of a catalog
   that grew only by migration until users could add beers, which iteration 8

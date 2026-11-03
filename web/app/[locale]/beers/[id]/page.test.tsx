@@ -25,11 +25,12 @@ vi.mock("@/features/catalog/api", async (importOriginal) => ({
 
 vi.mock("@/features/cellar/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/cellar/api")>()),
-  heldBottlesByBeerOrNone: vi.fn(async () => new Map([[westvleteren12.id, 3]])),
+  heldBottlesOfOrNone: vi.fn(async () => new Map([[westvleteren12.id, 3]])),
 }));
 
 import { auth } from "@/auth";
 import { searchBeers } from "@/features/catalog";
+import { heldBottlesOfOrNone } from "@/features/cellar";
 import BeerPage, { generateMetadata } from "./page";
 
 type Element = ReactElement<Record<string, unknown> & { children?: unknown }>;
@@ -57,6 +58,7 @@ const backLink = (tree: unknown) => elements(tree).find((element) => element.typ
 describe("BeerPage", () => {
   beforeEach(() => {
     vi.mocked(searchBeers).mockClear();
+    vi.mocked(heldBottlesOfOrNone).mockClear();
   });
 
   it("links back to the exact search that led here, filters, sort and page included", async () => {
@@ -81,6 +83,7 @@ describe("BeerPage", () => {
     expect(searchBeers).toHaveBeenCalledWith({ countryCode: "BE", size: "1" });
     const view = elements(tree).find((element) => element.props.styleCount !== undefined);
     expect(view?.props).toMatchObject({ styleCount: 3, countryCount: 3, heldBottles: undefined });
+    expect(heldBottlesOfOrNone).not.toHaveBeenCalled();
     const sameStyle = elements(tree).find((element) => Array.isArray(element.props.beers));
     expect((sameStyle?.props.beers as { id: string }[]).map((beer) => beer.id)).toEqual(["r10"]);
   });
@@ -91,6 +94,7 @@ describe("BeerPage", () => {
     const view = elements(await render()).find((element) => element.props.styleCount !== undefined);
 
     expect(view?.props.heldBottles).toBe(3);
+    expect(heldBottlesOfOrNone).toHaveBeenCalledWith([westvleteren12.id, "r10"]);
   });
 
   it("triggers the not-found page for an unknown beer", async () => {

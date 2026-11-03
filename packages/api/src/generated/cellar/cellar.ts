@@ -27,7 +27,9 @@ import type {
   AddBottleRequestDto,
   BottleDto,
   EntryDto,
+  HoldingsDto,
   Problem,
+  ReadHoldingsParams,
   UpdateBottleRequestDto,
   ValidationProblem
 } from '../models';
@@ -547,3 +549,140 @@ export const useUpdateBottle = <TError = ValidationProblem | Problem,
       > => {
       return useMutation(getUpdateBottleMutationOptions(options), queryClient);
     }
+    export type readHoldingsResponse200 = {
+  data: HoldingsDto
+  status: 200
+}
+
+export type readHoldingsResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type readHoldingsResponse401 = {
+  data: Problem
+  status: 401
+}
+
+export type readHoldingsResponse500 = {
+  data: Problem
+  status: 500
+}
+
+export type readHoldingsResponseSuccess = (readHoldingsResponse200) & {
+  headers: Headers;
+};
+export type readHoldingsResponseError = (readHoldingsResponse400 | readHoldingsResponse401 | readHoldingsResponse500) & {
+  headers: Headers;
+};
+
+export type readHoldingsResponse = (readHoldingsResponseSuccess | readHoldingsResponseError)
+
+export const getReadHoldingsUrl = (params?: ReadHoldingsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/cellar/holdings?${stringifiedParams}` : `/api/v1/cellar/holdings`
+}
+
+/**
+ * Which of the given beers the caller holds and how many bottles of each, with the totals of the whole cellar: the beers held and the bottles held. At most 100 beer ids; a page of beers asks about the beers it shows instead of reading the whole cellar. Without beer ids it answers the totals alone.
+ * @summary Read what the caller holds of some beers
+ */
+export const readHoldings = async (params?: ReadHoldingsParams, options?: Parameters<typeof kaliaFetch>[1]): Promise<readHoldingsResponse> => {
+
+  return kaliaFetch<readHoldingsResponse>(getReadHoldingsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getReadHoldingsQueryKey = (params?: ReadHoldingsParams,) => {
+    return [
+    `/api/v1/cellar/holdings`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getReadHoldingsQueryOptions = <TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getReadHoldingsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof readHoldings>>> = ({ signal }) => readHoldings(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ReadHoldingsQueryResult = NonNullable<Awaited<ReturnType<typeof readHoldings>>>
+export type ReadHoldingsQueryError = ValidationProblem | Problem
+
+
+export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
+ params: undefined |  ReadHoldingsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof readHoldings>>,
+          TError,
+          Awaited<ReturnType<typeof readHoldings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
+ params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof readHoldings>>,
+          TError,
+          Awaited<ReturnType<typeof readHoldings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
+ params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Read what the caller holds of some beers
+ */
+
+export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
+ params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getReadHoldingsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

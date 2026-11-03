@@ -3,6 +3,7 @@
 - **Status:** accepted
 - **Date:** 2026-10-23
 - **Amended:** 2026-10-25 — the per-tag boundary covers a tag's operations only, not the shared models (iteration 8.5 task 06); see Consequences
+- **Amended:** 2026-11-03 — the catalog marker and the two cellar counts read `GET /api/v1/cellar/holdings`, not the owner's read (iteration 10 task 14); see the last paragraph of Decision
 - **Amended:** 2026-10-25 — the public read is paginated and its entries come in the order they were added (iteration 8.5 task 11); see the note after Decision
 
 ## Context
@@ -77,9 +78,11 @@ it. A cellar entry without the beer it is of is an incomplete resource, as a
 feed line without its actor was ([ADR-0058](0058-feed-event-recording-model.md)).
 The convention still forbids shaping a response around one page.
 
-Not covered: `heldBottlesByBeer`, the catalog page's cellar marker, keeps
-reading the owner's endpoint. It now gets the beer facts with it and ignores
-them. Neither does this decide where the public cellar's visibility check
+Not covered: the catalog page's cellar marker once read the owner's
+endpoint, and got the beer facts with it and ignored them. It, and the two
+counts on the front and profile pages, now read `GET /api/v1/cellar/holdings`,
+which names no beer fact at all, so the owner's read is the cellar page's
+alone. Neither does this decide where the public cellar's visibility check
 lives (SHOULD-45).
 
 ## Alternatives considered

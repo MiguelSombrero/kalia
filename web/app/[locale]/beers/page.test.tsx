@@ -17,12 +17,13 @@ vi.mock("@/features/catalog/api", async (importOriginal) => ({
 
 vi.mock("@/features/cellar/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/cellar/api")>()),
-  heldBottlesByBeerOrNone: vi.fn(async () => new Map([["b1", 2]])),
+  heldBottlesOfOrNone: vi.fn(async () => new Map([["b1", 2]])),
 }));
 
 import { auth } from "@/auth";
 import { apiError } from "@kalia/api";
 import { IgnoredFilterNote, PastLastPage, searchBeers } from "@/features/catalog";
+import { heldBottlesOfOrNone } from "@/features/cellar";
 import BeersPage, { generateMetadata } from "./page";
 
 type Element = ReactElement<Record<string, unknown> & { children?: unknown }>;
@@ -51,6 +52,7 @@ const beerList = (tree: unknown) => elements(tree).find((element) => Array.isArr
 describe("BeersPage", () => {
   beforeEach(() => {
     vi.mocked(searchBeers).mockClear();
+    vi.mocked(heldBottlesOfOrNone).mockClear();
   });
 
   it("parses raw search params (including array values) before calling searchBeers", async () => {
@@ -125,6 +127,7 @@ describe("BeersPage", () => {
 
     expect(list?.props.search).toMatchObject({ style: "Quadrupel" });
     expect(list?.props.heldBottles).toBeUndefined();
+    expect(heldBottlesOfOrNone).not.toHaveBeenCalled();
   });
 
   it("hands the list the bottles a signed-in visitor holds", async () => {
@@ -134,6 +137,7 @@ describe("BeersPage", () => {
     const list = beerList(await render({}));
 
     expect((list?.props.heldBottles as Map<string, number>).get("b1")).toBe(2);
+    expect(heldBottlesOfOrNone).toHaveBeenCalledWith(["b1"]);
   });
 });
 
