@@ -64,6 +64,8 @@ for (const file of [
   "Makefile",
   "scripts/mobile-e2e.mjs",
   "scripts/mobile-env.mjs",
+  "scripts/mobile-assets.mjs",
+  "web/app/icon.svg",
   "scripts/stack-ports.mjs",
   "scripts/seed-keycloak-account.mjs",
   "scripts/keycloak-admin.mjs",

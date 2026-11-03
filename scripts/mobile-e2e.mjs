@@ -87,6 +87,9 @@ const run = (command, args, options = {}) => {
   if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} exited with ${result.status ?? result.signal}`);
 };
 
+// `expo prebuild` reads the icon and splash PNGs this renders from the mark's SVG.
+const renderAssets = () => run("node", [join(ROOT, "scripts/mobile-assets.mjs")]);
+
 const capture = (command, args, options = {}) => execFileSync(command, args, { encoding: "utf8", ...options }).trim();
 
 const sha256 = async (path) => {
@@ -165,6 +168,7 @@ const ios = {
   },
   // run:ios installs the app it builds, so build and install are one step.
   build: (udid) => {
+    renderAssets();
     run("npx", ["expo", "run:ios", "--configuration", "Release", "--device", udid, "--no-bundler"], {
       cwd: MOBILE,
       env: { ...appEnv(), LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" },
@@ -400,6 +404,7 @@ const jdk17 = () => {
 
 const buildAndroid = (abi) => {
   const env = { ...appEnv(), KALIA_E2E: "1", JAVA_HOME: jdk17() };
+  renderAssets();
   run("npx", ["expo", "prebuild", "--platform", "android", "--no-install"], { cwd: MOBILE, env });
   run("./gradlew", [":app:assembleRelease", ...(abi ? [`-PreactNativeArchitectures=${abi}`] : [])], { cwd: join(MOBILE, "android"), env });
 };

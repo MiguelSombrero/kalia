@@ -154,6 +154,31 @@ to find its line ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-tr
 A native crash leaves only what the operating system itself logs: the app
 closes, and no screen of Kalia's says so.
 
+## Icon, splash and name
+
+The home-screen icon, the Android adaptive icon and the splash screen are
+PNGs rendered from `web/app/icon.svg`, the mark, by
+`scripts/mobile-assets.mjs` into `assets/generated/`. Nothing there is
+committed: `npm run ios`, `npm run android` and `scripts/mobile-e2e.mjs` render
+it before they prebuild, and `npm run assets --workspace mobile` renders it on
+its own. A prebuild started any other way fails on the missing file, so run that
+first. The icon is the mark full bleed; the adaptive foreground is the mark
+inset to Android's safe zone over the mark's teal, which `app.json` names as the
+adaptive background and a test pins to the SVG. The splash is the mark without
+its tile on that teal, so the foam keeps its rounded bottom; Android 12 and
+later crop it to a circle, which the image's margin is sized for. The display
+name comes from `locales/en.json` and `locales/fi.json`, and the identifier
+`fi.kalia.app` is in `app.json`.
+
+`expo run:ios` and `expo run:android` reuse an existing `ios/` or `android/`, so
+after the mark, `app.json` or `locales/` changes, run `npx expo prebuild --clean`
+in `mobile/` (or delete both directories) before building, or the build keeps
+the old icon and splash.
+
+An installed build keeps the identifier, icon, splash and name it shipped with:
+change one and reinstall, and change the identifier only with the product
+owner, since the phone treats a new one as a different app.
+
 ## Test and checks
 
 ```bash

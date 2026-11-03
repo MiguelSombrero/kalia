@@ -1,6 +1,6 @@
 # Task 03: Kalia has its own name, icon and splash screen on a phone
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-1
 
@@ -81,14 +81,14 @@ the shipped image assets pass the raster-image check.
 
 ## Acceptance criteria
 
-- [ ] The app installs on the iOS Simulator and the Android emulator showing
+- [x] The app installs on the iOS Simulator and the Android emulator showing
       Kalia's icon, name and splash screen in both locales — seen by hand and
       described in the PR
-- [ ] A test of the render script shows it produces every image `app.json`
+- [x] A test of the render script shows it produces every image `app.json`
       names, from the SVG source
-- [ ] No PNG is committed, and `check-no-raster-images` passes with its
+- [x] No PNG is committed, and `check-no-raster-images` passes with its
       allowlist unchanged
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
