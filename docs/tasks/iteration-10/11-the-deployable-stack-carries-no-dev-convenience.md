@@ -1,6 +1,6 @@
 # Task 11: The deployable stack carries no dev convenience and no shared superuser
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -78,7 +78,7 @@ recorded as a trade-off.
 - [x] Keycloak connects as its own role and cannot reach the `kalia` database
 - [x] `docker compose -f docker-compose.base.yml config` without a role's
       password fails, and `README.md` says to recreate an existing volume
-- [ ] `make verify` is green
+- [x] `make verify` is green
 - [x] `make verify-fast` is green
 
 ## Notes
