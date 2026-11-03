@@ -88,7 +88,7 @@ const run = (command, args, options = {}) => {
 };
 
 // `expo prebuild` reads the icon and splash PNGs this renders from the mark's SVG.
-const renderAssets = () => run("node", [join(ROOT, "scripts/mobile-assets.mjs")]);
+const renderAssets = () => run("node", [join(MOBILE, "scripts/render-assets.mjs")]);
 
 const capture = (command, args, options = {}) => execFileSync(command, args, { encoding: "utf8", ...options }).trim();
 

@@ -5,13 +5,13 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start --dev-client",
-    "assets": "node ../scripts/mobile-assets.mjs",
+    "assets": "node scripts/render-assets.mjs",
     "preios": "npm run assets",
     "ios": "expo run:ios",
     "preandroid": "npm run assets",
     "android": "expo run:android",
     "lint": "eslint && tsc --noEmit",
-    "test": "jest"
+    "test": "jest && node --test scripts/render-assets.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",

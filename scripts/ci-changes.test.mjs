@@ -35,6 +35,10 @@ test("a docs-only change runs neither mobile job", () => {
   expectOutputs(["docs/roadmap.md", "docs/tasks/iteration-10/22-x.md"], { mobile: false, "mobile-e2e": false });
 });
 
+test("the web's favicon, which the app's icon is rendered from, runs both mobile jobs and web", () => {
+  expectOutputs(["web/app/icon.svg"], { web: true, mobile: true, "mobile-e2e": true });
+});
+
 test("a web-only change runs web and neither mobile job", () => {
   expectOutputs(["web/src/app/page.tsx"], { web: true, backend: false, mobile: false, "mobile-e2e": false });
 });
@@ -64,7 +68,6 @@ for (const file of [
   "Makefile",
   "scripts/mobile-e2e.mjs",
   "scripts/mobile-env.mjs",
-  "scripts/mobile-assets.mjs",
   "web/app/icon.svg",
   "scripts/stack-ports.mjs",
   "scripts/seed-keycloak-account.mjs",

@@ -2,18 +2,19 @@
 // Renders the PNGs the mobile app's icon and splash configuration names, from
 // the mark's SVG, into mobile/assets/generated/, which git ignores like every
 // raster image (no PNG is committed, as ios/ and android/ are not, ADR-0094):
-//   node scripts/mobile-assets.mjs
+//   npm run assets --workspace mobile
 // `expo prebuild` reads them, so every script that runs it runs this first. The
 // SVG is the one the web serves as its favicon, itself pinned by a test to the
 // geometry in web/lib/kaliaMark.ts; this file reads it and owns no shape.
 
+import { Buffer } from "node:buffer";
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
-export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 export const SOURCE = join(ROOT, "web/app/icon.svg");
 export const OUT_DIR = join(ROOT, "mobile/assets/generated");
 
@@ -84,5 +85,5 @@ export const renderAssets = async (outDir = OUT_DIR, source) => {
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  for (const name of await renderAssets()) console.log(`rendered mobile/assets/generated/${name}`);
+  for (const name of await renderAssets()) process.stdout.write(`rendered mobile/assets/generated/${name}\n`);
 }

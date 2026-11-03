@@ -158,7 +158,7 @@ redirect scheme. Its stack:
 - **Identity.** The identifier is `fi.kalia.app` on both platforms and the
   display name "Kalia" in both locales (`mobile/locales/`). The icon and the
   splash are the web favicon's SVG, `web/app/icon.svg`, rendered to PNG by
-  `scripts/mobile-assets.mjs` before each prebuild into the gitignored
+  `mobile/scripts/render-assets.mjs` before each prebuild into the gitignored
   `mobile/assets/generated/`; no PNG is committed, so the raster-image
   allowlist is unchanged ([iteration 10 task 03](tasks/iteration-10/03-app-identity.md)).
 - The web's data, state, form and i18n conventions carry over (TanStack Query

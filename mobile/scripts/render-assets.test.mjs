@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Self-test for mobile-assets.mjs. Runs in `make check`.
+// Self-test for render-assets.mjs. Runs in `make mobile-test`.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -9,7 +9,7 @@ import { join } from "node:path";
 
 import sharp from "sharp";
 
-import { OUT_DIR, ROOT, SOURCE, images, parseMark, renderAssets } from "./mobile-assets.mjs";
+import { OUT_DIR, ROOT, SOURCE, images, parseMark, renderAssets } from "./render-assets.mjs";
 
 const appJson = JSON.parse(readFileSync(join(ROOT, "mobile/app.json"), "utf8")).expo;
 const mark = parseMark(readFileSync(SOURCE, "utf8"));

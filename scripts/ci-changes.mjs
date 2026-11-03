@@ -19,8 +19,9 @@
 // Which jobs a changed path runs, per output:
 // - backend and web: their own trees, plus SHARED, the root files both build
 //   from or are asserted against.
-// - mobile (lint, type check, Jest) compiles mobile/ and the shared packages
-//   against the generated client, so it follows those and nothing in SHARED.
+// - mobile (lint, type check, Jest, the icon render test) compiles mobile/ and
+//   the shared packages against the generated client, and renders the web's
+//   favicon, so it follows those and nothing in SHARED.
 // - mobile-e2e drives a release build against the stack's backend, so it also
 //   follows backend/ and every file that defines that stack, and the web's
 //   favicon, which the app's icon and splash are rendered from. It never runs
@@ -52,7 +53,9 @@ const STACK = /^(docker-compose\.|edge\/|keycloak\/|postgres\/|scripts\/(seed-ke
 const RULES = {
   backend: [SHARED, /^backend\//],
   web: [SHARED, /^(web\/|packages\/|package(-lock)?\.json$|backend\/openapi\.json$)/],
-  mobile: [/^(mobile\/|packages\/|package(-lock)?\.json$|backend\/openapi\.json$|Makefile$|scripts\/mobile-env)/],
+  mobile: [
+    /^(mobile\/|packages\/|package(-lock)?\.json$|backend\/openapi\.json$|Makefile$|scripts\/mobile-env|web\/app\/icon\.svg$)/,
+  ],
   "mobile-e2e": [STACK, /^(mobile\/|packages\/|backend\/|package(-lock)?\.json$|Makefile$|scripts\/(mobile-|stack-ports)|web\/app\/icon\.svg$)/],
   keycloak: [
     STACK,

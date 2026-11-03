@@ -158,7 +158,7 @@ closes, and no screen of Kalia's says so.
 
 The home-screen icon, the Android adaptive icon and the splash screen are
 PNGs rendered from `web/app/icon.svg`, the mark, by
-`scripts/mobile-assets.mjs` into `assets/generated/`. Nothing there is
+`mobile/scripts/render-assets.mjs` into `assets/generated/`. Nothing there is
 committed: `npm run ios`, `npm run android` and `scripts/mobile-e2e.mjs` render
 it before they prebuild, and `npm run assets --workspace mobile` renders it on
 its own. A prebuild started any other way fails on the missing file, so run that
@@ -183,7 +183,7 @@ owner, since the phone treats a new one as a different app.
 
 ```bash
 make mobile-lint   # ESLint (module boundaries included) and strict tsc
-make mobile-test   # Jest + React Native Testing Library, no simulator
+make mobile-test   # Jest + React Native Testing Library, and the icon render test; no simulator
 make mobile-start  # Metro on METRO_PORT, with this checkout's stack as the origins
 ```
 
