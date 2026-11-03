@@ -6,14 +6,26 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/generated/icon.png",
+    "locales": {
+      "en": "./locales/en.json",
+      "fi": "./locales/fi.json"
+    },
     "ios": {
       "bundleIdentifier": "fi.kalia.app",
       "buildNumber": "1",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
     },
     "android": {
       "package": "fi.kalia.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/generated/adaptive-icon-foreground.png",
+        "backgroundColor": "#005b57"
+      }
     },
     "plugins": [
       "expo-router",
@@ -24,6 +36,14 @@
             "ios": ["en", "fi"],
             "android": ["en", "fi"]
           }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/generated/splash.png",
+          "imageWidth": 300,
+          "backgroundColor": "#005b57"
         }
       ],
       "./plugins/withE2eCleartext"

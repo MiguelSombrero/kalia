@@ -11,3 +11,6 @@ expo-env.d.ts
 
 # Maestro's reports and screenshots, from scripts/mobile-e2e.mjs
 maestro-output/
+
+# Rendered from the mark's SVG by scripts/render-assets.mjs before each prebuild
+/assets/generated/
