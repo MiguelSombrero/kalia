@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Builds the development build and runs it on a simulator against this
-// checkout's stack (`make mobile-ios`, `make mobile-android`):
-//   node scripts/mobile-native.mjs ios|android [expo run flags]
+// checkout's stack (`make mobile-ios`, `make mobile-android`), or installs it
+// on the connected iPhone (`make mobile-ios-device`):
+//   node scripts/mobile-native.mjs ios|ios-device|android [expo run flags]
 // Every port comes from the worktree's .env through stack-ports.mjs. The iOS
 // Simulator shares the Mac's network, so the app dials localhost directly; the
 // Android emulator has a network of its own, so `adb reverse` forwards each
@@ -12,7 +13,16 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { mobileEnv } from "./mobile-env.mjs";
-import { ANDROID_API, androidSdk, apiMatches, diagnose, gather, report } from "./mobile-doctor.mjs";
+import {
+  ANDROID_API,
+  TEAM_ID_VARIABLE,
+  androidSdk,
+  apiMatches,
+  diagnose,
+  gather,
+  report,
+  teamFinding,
+} from "./mobile-doctor.mjs";
 import { ROOT, portOf, stackEnv } from "./stack-ports.mjs";
 
 const REVERSED = ["BACKEND_PORT", "KEYCLOAK_PORT", "METRO_PORT"];
@@ -64,27 +74,34 @@ const androidTarget = async (env, avds) => {
 
 const run = async (platform, args) => {
   const stack = stackEnv();
+  const team = teamFinding(stack[TEAM_ID_VARIABLE], true);
+  if (platform === "ios-device" && !team.ok) {
+    report([team]);
+    throw new Error("an iPhone build is signed with your Apple Team ID, which the root .env holds");
+  }
   const facts = gather();
   const findings = diagnose(facts, platform);
   if (!report(findings.filter((finding) => !finding.ok))) {
     throw new Error(`the ${platform} toolchain is incomplete; \`make mobile-doctor\` lists all of it`);
   }
   const env = { ...process.env, ...mobileEnv(stack) };
-  if (platform === "ios") {
+  if (platform === "ios-device") env[TEAM_ID_VARIABLE] = stack[TEAM_ID_VARIABLE];
+  if (platform !== "android") {
     // CocoaPods fails on a non-UTF-8 locale without naming it.
     Object.assign(env, { LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" });
   } else {
     const jdk = facts.jdks.find((candidate) => candidate.major === facts.pins.jdk);
     Object.assign(env, { ANDROID_HOME: await androidTarget(stack, facts.android.avds), JAVA_HOME: jdk.home });
   }
-  const child = spawn("npm", ["run", platform, "--workspace", "mobile", "--", ...args], { cwd: ROOT, env, stdio: "inherit" });
+  const script = platform === "ios-device" ? "ios:device" : platform;
+  const child = spawn("npm", ["run", script, "--workspace", "mobile", "--", ...args], { cwd: ROOT, env, stdio: "inherit" });
   child.on("exit", (code) => process.exit(code ?? 1));
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [platform, ...args] = process.argv.slice(2);
-  if (platform !== "ios" && platform !== "android") {
-    console.error("usage: mobile-native.mjs ios|android [expo run flags]");
+  if (!["ios", "ios-device", "android"].includes(platform)) {
+    console.error("usage: mobile-native.mjs ios|ios-device|android [expo run flags]");
     process.exit(2);
   }
   run(platform, args).catch((error) => {

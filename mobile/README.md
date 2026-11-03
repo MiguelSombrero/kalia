@@ -159,6 +159,78 @@ to find its line ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-tr
 A native crash leaves only what the operating system itself logs: the app
 closes, and no screen of Kalia's says so.
 
+## Install on an iPhone
+
+Xcode signs the development build for your own iPhone with the Personal Team
+of a free Apple ID: no Apple Developer Program, no card, no Expo account. What
+that account cannot do is recorded once, in
+[the backlog's cost list](../docs/tasks/backlog.md#mobile-client): the install
+expires after seven days, a device holds three such apps, and there is no push,
+no universal link and no TestFlight. Following the routine below, a Mac with
+the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
+
+1. **Sign in to Xcode with the Apple ID.** Xcode > Settings > Accounts > **+**
+   > Apple ID. A **Personal Team** appears under it. Joining no program is the
+   point.
+2. **Put the team identifier in the root `.env`,** never in a commit, a pull
+   request or a message. It is the 10-character `OU` of the *Apple Development*
+   certificate for the team ([Apple's own answer](https://developer.apple.com/forums/thread/75415)
+   on finding a Personal Team's ID; a free account has no web portal that shows
+   it). If the Keychain has no such certificate yet, Xcode > Settings >
+   Accounts > the Personal Team > Manage Certificates > **+** > Apple
+   Development creates one. The value in parentheses after your name in the
+   certificate's common name is not the team.
+
+   ```bash
+   security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject
+   echo 'KALIA_APPLE_TEAM_ID=<the OU value>' >> .env
+   ```
+
+   `.env` is gitignored. `app.config.js` passes the variable to `expo prebuild`
+   as `ios.appleTeamId`, so it survives the generated `ios/` being replaced.
+   `make mobile-doctor ARGS=ios-device` names it when it is missing or
+   malformed, and `make mobile-ios-device` refuses to build without it.
+3. **Turn on Developer Mode on the iPhone.** Connect it to the Mac with the
+   cable, unlock it and tap **Trust**. Settings > Privacy & Security >
+   Developer Mode > on; the phone restarts, and after unlocking you confirm
+   **Turn On** with the passcode
+   ([Expo's iPhone setup](https://docs.expo.dev/get-started/set-up-your-environment/?platform=ios&device=physical&mode=development-build&buildEnv=local)).
+4. **Check the mode the root `.env` is in.** An installed app is built for one
+   mode of the stack and signs in again after a switch
+   ([ADR-0097](../docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
+   Until phone mode exists there is only the default one, whose origins and
+   Metro host are `localhost`, which on a phone name the phone itself: this
+   build installs and opens, to the app or to the development launcher or its
+   "could not connect to Metro" screen, and does not sign in or list beers.
+5. **Build and install.**
+
+   ```bash
+   make mobile-doctor ARGS=ios-device
+   make mobile-ios-device
+   ```
+
+   This runs `expo prebuild --platform ios` to put the team into `ios/`, then
+   `expo run:ios --device`, which asks which connected device to install on.
+   The first build takes several minutes. The build's identifier is
+   `fi.kalia.app`, the one task 03 fixed: the first install registers it under
+   the Personal Team, and the phone treats any later build with the same
+   identifier as an update that keeps the app's data.
+6. **Trust the developer on the iPhone.** The first launch is refused as from
+   an untrusted developer: Settings > General > VPN & Device Management > the
+   Apple ID under Developer App > **Trust**, then open Kalia.
+
+### Re-signing after seven days
+
+The install stops opening seven days after it was signed. There is no renewal
+short of the paid program: re-signing is a rebuild and reinstall from source,
+the same `make mobile-ios-device` with the phone connected and the root `.env`
+in the mode you want installed (step 4), because the new build replaces the old
+one. Put the reminder in your own calendar; no file here carries it.
+
+Whether the cellar survives a re-sign has not been observed yet. This section
+records it once the first re-sign has been carried out, and promises nothing
+before.
+
 ## Icon, splash and name
 
 The home-screen icon, the Android adaptive icon and the splash screen are
@@ -176,7 +248,7 @@ name comes from `locales/en.json` and `locales/fi.json`, and the identifier
 `fi.kalia.app` is in `app.json`.
 
 `expo run:ios` and `expo run:android` reuse an existing `ios/` or `android/`, so
-after the mark, `app.json` or `locales/` changes, run `npx expo prebuild --clean`
+after the mark, `app.json`, `app.config.js` or `locales/` changes, run `npx expo prebuild --clean`
 in `mobile/` (or delete both directories) before building, or the build keeps
 the old icon and splash.
 

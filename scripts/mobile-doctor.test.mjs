@@ -4,7 +4,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { ANDROID_API, diagnose, parseJdks } from "./mobile-doctor.mjs";
+import { spawnSync } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { ANDROID_API, TEAM_ID_VARIABLE, diagnose, parseJdks } from "./mobile-doctor.mjs";
 
 const healthy = () => ({
   pins: { xcode: "27.2", jdk: "17", node: "26" },
@@ -142,4 +146,46 @@ test("parseJdks reads java_home -V, which prints the major first", () => {
     { major: "17", home: "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home" },
     { major: "8", home: "/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home" },
   ]);
+});
+
+test("an iPhone build without the Apple Team ID fails, naming the variable and the root .env", () => {
+  const facts = healthy();
+  assert.deepEqual(failureNames(facts, "ios-device"), [TEAM_ID_VARIABLE]);
+  const [finding] = failures(facts, "ios-device");
+  assert.match(finding.message, /root \.env/);
+});
+
+test("the simulator and the emulator do not need the Apple Team ID, but the full check still names it", () => {
+  const facts = healthy();
+  assert.deepEqual(failureNames(facts, "ios"), []);
+  assert.deepEqual(failureNames(facts, "android"), []);
+  assert.deepEqual(failureNames(facts), []);
+  const named = diagnose(facts).find((finding) => finding.tool === TEAM_ID_VARIABLE);
+  assert.match(named.message, /not set/);
+  assert.equal(diagnose(facts, "android").some((finding) => finding.tool === TEAM_ID_VARIABLE), false);
+});
+
+test("a team identifier of the right shape passes and its value is never printed", () => {
+  const facts = { ...healthy(), appleTeamId: "AB12CD34EF" };
+  assert.deepEqual(failureNames(facts, "ios-device"), []);
+  for (const finding of diagnose(facts, "ios-device")) assert.ok(!finding.message.includes("AB12CD34EF"), finding.message);
+});
+
+test("a malformed team identifier fails without being echoed", () => {
+  const facts = { ...healthy(), appleTeamId: "not-a-team" };
+  assert.deepEqual(failureNames(facts, "ios-device"), [TEAM_ID_VARIABLE]);
+  for (const finding of diagnose(facts, "ios-device")) assert.ok(!finding.message.includes("not-a-team"), finding.message);
+});
+
+test("an iPhone build does not look for an Android toolchain", () => {
+  const facts = healthy();
+  facts.jdks = [];
+  assert.deepEqual(failureNames(facts, "ios-device"), [TEAM_ID_VARIABLE]);
+});
+
+test("the command exits 1 naming the variable when the root .env and the environment lack the team", () => {
+  const script = resolve(dirname(fileURLToPath(import.meta.url)), "mobile-doctor.mjs");
+  const run = spawnSync("node", [script, "ios-device"], { encoding: "utf8", env: { ...process.env, [TEAM_ID_VARIABLE]: "" } });
+  assert.equal(run.status, 1);
+  assert.match(run.stdout, new RegExp(`FAIL ${TEAM_ID_VARIABLE}`));
 });
