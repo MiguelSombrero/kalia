@@ -189,3 +189,9 @@ test("the command exits 1 naming the variable when the root .env and the environ
   assert.equal(run.status, 1);
   assert.match(run.stdout, new RegExp(`FAIL ${TEAM_ID_VARIABLE}`));
 });
+
+test("an iPhone build does not need an iOS Simulator runtime", () => {
+  const facts = { ...healthy(), iphoneSimulators: 0, appleTeamId: "AB12CD34EF" };
+  assert.deepEqual(failureNames(facts, "ios-device"), []);
+  assert.deepEqual(failureNames(facts, "ios"), ["iOS Simulator"]);
+});

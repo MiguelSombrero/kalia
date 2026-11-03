@@ -13,7 +13,7 @@
     "preandroid": "npm run assets",
     "android": "expo run:android",
     "lint": "eslint && tsc --noEmit",
-    "test": "jest && node --test scripts/render-assets.test.mjs"
+    "test": "jest && node --test scripts/render-assets.test.mjs scripts/app-config.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",

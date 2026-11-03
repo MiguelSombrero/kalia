@@ -52,7 +52,7 @@ export const teamFinding = (appleTeamId, required) => {
     : fail(TEAM_ID_VARIABLE, "is not a 10-character team identifier; copy it again from Xcode > Settings > Accounts");
 };
 
-const iosFindings = ({ pins, xcode, iphoneSimulators, pod }) => {
+const iosFindings = ({ pins, xcode, iphoneSimulators, pod }, device) => {
   const tool = `Xcode ${pins.xcode}`;
   const [wantMajor, wantMinor = 0] = versionParts(pins.xcode);
   const [haveMajor, haveMinor = 0] = xcode.version ? versionParts(xcode.version) : [];
@@ -69,8 +69,8 @@ const iosFindings = ({ pins, xcode, iphoneSimulators, pod }) => {
     !xcode.version || xcode.developerDir?.includes(".app/Contents/Developer")
       ? ok("Xcode command-line tools", xcode.developerDir || "n/a")
       : fail("Xcode command-line tools", "do not point at Xcode; run `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`"),
-    iphoneSimulators > 0
-      ? ok("iOS Simulator", `${iphoneSimulators} iPhone simulators`)
+    device || iphoneSimulators > 0
+      ? ok("iOS Simulator", device ? "not needed for an iPhone" : `${iphoneSimulators} iPhone simulators`)
       : fail("iOS Simulator", "no iPhone simulator; install an iOS runtime in Xcode > Settings > Components"),
     pod ? ok("CocoaPods", "installed") : fail("CocoaPods", "not installed; `brew install cocoapods`"),
   ];
@@ -120,7 +120,7 @@ const commonFindings = ({ pins, node, stack }) => [
 
 export const diagnose = (facts, platform) => [
   ...commonFindings(facts),
-  ...(platform === "android" ? [] : iosFindings(facts)),
+  ...(platform === "android" ? [] : iosFindings(facts, platform === "ios-device")),
   ...(platform === "android" ? [] : [teamFinding(facts.appleTeamId, platform === "ios-device")]),
   ...(platform === "ios" || platform === "ios-device" ? [] : androidFindings(facts)),
 ];

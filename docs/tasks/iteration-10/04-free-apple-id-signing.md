@@ -1,6 +1,6 @@
 # Task 04: Kalia installs on the product owner's iPhone with a free Apple ID
 
-- **Status:** refined
+- **Status:** in-progress
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-1, DW-3
 
@@ -116,16 +116,16 @@ ADR-0097 was accepted):
       simulate the seven-day expiry, which cannot arrive before the PR merges;
       the PR says what was revoked, what the app did afterwards, whether the
       cellar survived (DW-3), and `mobile/README.md` states only that
-- [ ] ADR-0094 is amended to allow a free Personal Team on the developer's
+- [x] ADR-0094 is amended to allow a free Personal Team on the developer's
       own device, and the limits are recorded in the backlog's cost list with
       pointers from ADR-0094 and `mobile/README.md`
-- [ ] The Apple Team ID is read from the root `.env`, reaches prebuild through
+- [x] The Apple Team ID is read from the root `.env`, reaches prebuild through
       the Expo config, and appears in the PR diff only as the variable's name
       with no value
-- [ ] A test covers the missing-team-identifier case of every script or `make`
+- [x] A test covers the missing-team-identifier case of every script or `make`
       target the routine adds, including `make mobile-doctor` naming it and
       `make mobile-ios-device` refusing to build without it
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
