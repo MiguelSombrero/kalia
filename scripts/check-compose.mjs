@@ -181,13 +181,13 @@ export const issuerProblems = (services) => {
     ["the web app", services.web?.environment?.AUTH_KEYCLOAK_ISSUER],
   ]) {
     if (stamped && issuer !== `${stamped}${ISSUER_PATH}`) {
-      problems.push(`${who} validates issuer ${issuer}, but Keycloak stamps ${stamped}${ISSUER_PATH}`);
+      problems.push(`${who} validates an issuer other than the one Keycloak stamps from KC_HOSTNAME`);
     }
   }
   const publicUrl = services.web?.environment?.AUTH_URL;
   const realmUrl = services["keycloak-config"]?.environment?.WEB_URL;
   if (!publicUrl || publicUrl !== realmUrl) {
-    problems.push(`the web app's AUTH_URL (${publicUrl}) differs from the WEB_URL the realm is built from (${realmUrl})`);
+    problems.push("the web app's AUTH_URL differs from the WEB_URL the realm is built from");
   }
   return problems;
 };
@@ -211,7 +211,7 @@ export const addressProblems = (services, host) => {
   };
   return Object.entries(expected)
     .filter(([, [actual, want]]) => actual !== want)
-    .map(([what, [actual, want]]) => `${what} is ${actual}, not ${want}`);
+    .map(([what, [, want]]) => `${what} is not ${want}`);
 };
 
 /** Problems with who can reach the host's published ports: only the loopback interface, in both modes. */

@@ -192,7 +192,7 @@ test("issuerProblems fails a backend that validates the other mode's issuer", ()
   services.backend.environment.KEYCLOAK_ISSUER_URI = "http://localhost:8381/realms/kalia";
   const problems = issuerProblems(services);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /the backend validates issuer http:\/\/localhost:8381\/realms\/kalia, but Keycloak stamps http:\/\/mac\.example\.ts\.net:8381/);
+  assert.match(problems[0], /the backend validates an issuer other than the one Keycloak stamps/);
 });
 
 test("issuerProblems fails a web app that validates the other mode's issuer, and a changed port", () => {
@@ -200,7 +200,7 @@ test("issuerProblems fails a web app that validates the other mode's issuer, and
   services.web.environment.AUTH_KEYCLOAK_ISSUER = "http://mac.example.ts.net:8081/realms/kalia";
   const problems = issuerProblems(services);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /the web app validates issuer/);
+  assert.match(problems[0], /the web app validates an issuer other than/);
 });
 
 test("issuerProblems fails a Keycloak with no fixed hostname", () => {
@@ -212,7 +212,7 @@ test("issuerProblems fails a Keycloak with no fixed hostname", () => {
 test("issuerProblems fails a realm built from a different web address than the web app's", () => {
   const services = stackFor("localhost");
   services["keycloak-config"].environment.WEB_URL = "http://localhost:3000";
-  assert.match(issuerProblems(services).join("\n"), /AUTH_URL .* differs from the WEB_URL/);
+  assert.match(issuerProblems(services).join("\n"), /AUTH_URL differs from the WEB_URL/);
 });
 
 test("addressProblems names every address that is not the host with the edge's own port", () => {
@@ -221,8 +221,8 @@ test("addressProblems names every address that is not the host with the edge's o
   services.keycloak.environment.KC_HOSTNAME = "http://mac.example.ts.net:8381";
   const problems = addressProblems(services, "localhost");
   assert.equal(problems.length, 2);
-  assert.match(problems.join("\n"), /AUTH_URL is http:\/\/localhost:3000, not http:\/\/localhost:3300/);
-  assert.match(problems.join("\n"), /KC_HOSTNAME is http:\/\/mac\.example\.ts\.net:8381, not http:\/\/localhost:8381/);
+  assert.match(problems.join("\n"), /AUTH_URL is not http:\/\/localhost:3300/);
+  assert.match(problems.join("\n"), /KC_HOSTNAME is not http:\/\/localhost:8381/);
 });
 
 test("addressProblems fails a stack with phone mode off that names the tailnet host", () => {
