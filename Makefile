@@ -6,7 +6,7 @@
 # vulnerability-scan.yml stay CI-only, since building the images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-device mobile-android mobile-doctor phone-mode phone-mode-off \
+.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate app-config
@@ -63,12 +63,20 @@ mobile-start: ## Start Metro for the development build, on this worktree's METRO
 mobile-ios: ## Build the development build and run it on the iOS Simulator against this stack (extra flags: ARGS="--device 'iPhone 17e'")
 	node scripts/mobile-native.mjs ios $(ARGS)
 
+mobile-ios-release: ## Build the release build (JavaScript inside, no dev menu, no Metro) and run it on the iOS Simulator (extra flags: ARGS="...")
+	node scripts/mobile-native.mjs ios --release $(ARGS)
+
 mobile-ios-device: ## Build the development build and install it on the connected iPhone, signed with KALIA_APPLE_TEAM_ID from the root .env
 	node scripts/mobile-native.mjs ios-device
 
-mobile-android: ## Build and run it on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs; refuses in phone mode (extra flags: ARGS="...")
-	@node scripts/phone-mode.mjs refuse "make mobile-android"
+mobile-ios-device-release: ## Build the release build and install it on the connected iPhone, so the app works with the Mac away; needs phone mode (make phone-mode HOST=...)
+	node scripts/mobile-native.mjs ios-device --release
+
+mobile-android: ## Build and run the development build on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs; refuses in phone mode (extra flags: ARGS="...")
 	node scripts/mobile-native.mjs android $(ARGS)
+
+mobile-android-release: ## Build the release build (the end-to-end one: JavaScript inside, cleartext to localhost only) and run it on the Android emulator; refuses in phone mode (extra flags: ARGS="...")
+	node scripts/mobile-native.mjs android --release $(ARGS)
 
 mobile-doctor: ## Check the Mac's native toolchain for the app, naming each missing or wrong-version tool (ARGS="ios", "ios-device" or "android" for one platform; ARGS="phone" for the route to an iPhone)
 	node scripts/mobile-doctor.mjs $(ARGS)

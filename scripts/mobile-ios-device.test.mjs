@@ -73,6 +73,14 @@ test("install and launch address the same device, and the app is the one the bui
   assert.deepEqual(launchArgs(UDID), ["devicectl", "device", "process", "launch", "--device", UDID, "fi.kalia.app"]);
 });
 
+test("the release build is built, found and installed under the Release configuration", () => {
+  const args = xcodebuildArgs({ udid: UDID, teamId: "AB12CD34EF", configuration: "Release" });
+  assert.equal(args[args.indexOf("-configuration") + 1], "Release");
+  assert.equal(xcodebuildArgs({ udid: UDID, teamId: "AB12CD34EF" })[args.indexOf("-configuration") + 1], "Debug");
+  assert.match(appPath("Release"), /Release-iphoneos\/Kalia\.app$/);
+  assert.equal(installArgs(UDID, "Release").at(-1), appPath("Release"));
+});
+
 test("a refused first launch is reported as the expected trust step, not a failure", () => {
   assert.match(LAUNCH_REFUSED, /installed/i);
   assert.match(LAUNCH_REFUSED, /expected/);

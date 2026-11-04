@@ -126,9 +126,12 @@ to HTTPS.**
   an exception. It is generated from the one value into the native projects
   `expo prebuild` writes, which are not committed
   ([ADR-0094](0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
-  as `plugins/withE2eCleartext.js` does for `localhost` under `KALIA_E2E=1`.
+  as `plugins/withCleartextExceptions.js` (which replaced `withE2eCleartext.js`) does for `localhost` under `KALIA_E2E=1`.
   [Task 05](../tasks/iteration-10/05-build-variants.md) owns the check that no
   other build carries it.
+  Task 05 built both: the rule is phone mode, not release, since one prebuild
+  feeds a development and a release build alike, so a development build made in
+  phone mode carries it too, and the Android emulator never does.
 - **Worktrees.** Phone mode forwards the stack's own ports, so whichever one
   worktree is in phone mode serves the phone and nothing assumes the default
   ports. The forwards belong to the machine, not the worktree, so the switch is

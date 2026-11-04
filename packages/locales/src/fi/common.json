@@ -392,6 +392,10 @@
     "title": "Profiili",
     "pageTitle": "Profiili — Kalia",
     "loading": "Ladataan profiilia…",
+    "about": {
+      "version": "Versio {{version}}",
+      "versionBuild": "Versio {{version}}, koontinumero {{build}}"
+    },
     "name": {
       "label": "Nimesi Kaliassa",
       "note": "Tämä nimi näkyy kellarissasi ja Kalian etusivulla. Se on myös kellarisi osoite, joten sitä ei voi vaihtaa."

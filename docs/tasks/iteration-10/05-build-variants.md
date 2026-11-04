@@ -142,23 +142,23 @@ does not answer.
 - [ ] A development build still runs on the iOS Simulator and the Android
       emulator through the existing `make` targets, and `make mobile-e2e`
       passes on both, the iOS Simulator one as a release build
-- [ ] A check over a generated native project fails one that carries a
+- [x] A check over a generated native project fails one that carries a
       cleartext exception outside `KALIA_E2E=1`'s `localhost` (Android) or
       phone mode's tailnet host (iOS), including an app-wide one, and is
       unit-tested with fixture projects for each allowed and each forbidden
       case, using an invented host; every build target runs it after prebuild
-- [ ] A test shows a build target prebuilds on every run, so an end-to-end or
+- [x] A test shows a build target prebuilds on every run, so an end-to-end or
       phone-mode project is not reused by the next build, and that an Android
       build in phone mode stops with a message saying why
-- [ ] A test shows the build number rises with the time of the build, is the
+- [x] A test shows the build number rises with the time of the build, is the
       same value for both platforms and stays within Android's `versionCode`
       range, and `app.json` carries neither column
-- [ ] The Profile tab shows the version and the build number, covered by a
+- [x] The Profile tab shows the version and the build number, covered by a
       screen test, and omits the build number when it is unknown
-- [ ] The version and build-number rules are written down in
+- [x] The version and build-number rules are written down in
       `mobile/README.md`, which also states the cleartext rule that replaces
       its "Android end-to-end build only" bullet
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

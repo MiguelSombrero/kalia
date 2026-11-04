@@ -4,8 +4,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { buildEnv, projectSteps } from "./mobile-build.mjs";
 import {
   InfrastructureError,
+  buildSteps,
   MAESTRO_VERSION,
   maestroBinary,
   parseArgs,
@@ -17,6 +19,21 @@ import {
   waitHealthy,
   waitQuiet,
 } from "./mobile-e2e.mjs";
+
+test("each end-to-end build prebuilds and checks its project, then builds the release variant", () => {
+  const ios = buildSteps("ios", { udid: "UDID-1" });
+  assert.deepEqual(ios.slice(0, 2), projectSteps("ios"));
+  assert.deepEqual(ios[2].args, ["expo", "run:ios", "--configuration", "Release", "--device", "UDID-1", "--no-bundler"]);
+  const android = buildSteps("android", { abi: "x86_64" });
+  assert.deepEqual(android.slice(0, 2), projectSteps("android"));
+  assert.deepEqual(android[2].args, [":app:assembleRelease", "-PreactNativeArchitectures=x86_64"]);
+  assert.deepEqual(buildSteps("android")[2].args, [":app:assembleRelease"]);
+});
+
+test("the end-to-end Android build allows cleartext to localhost, and the iOS one allows none", () => {
+  assert.equal(buildEnv({}, { platform: "android", variant: "release" }).KALIA_E2E, "1");
+  assert.equal(buildEnv({}, { platform: "ios", variant: "release" }).KALIA_E2E, "");
+});
 
 test("no arguments run every platform", () => {
   assert.deepEqual(parseArgs([]), { command: "run", platform: "all", abi: undefined, headless: false });

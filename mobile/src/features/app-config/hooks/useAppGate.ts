@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Platform } from "react-native";
+import { ownBuildNumber } from "@/lib/build/buildInfo";
 import { readAppConfig } from "../api";
-import { ownBuildNumber } from "../buildNumber";
 import { decideGate, minimumFor, type Gate } from "../gate";
 import { readRememberedMinimum, rememberMinimum } from "../rememberedMinimum";
 

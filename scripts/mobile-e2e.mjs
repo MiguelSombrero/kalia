@@ -24,7 +24,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 
-import { mobileEnv } from "./mobile-env.mjs";
+import { buildEnv, projectSteps, runSteps } from "./mobile-build.mjs";
 import { ROOT, originOf, stackEnv } from "./stack-ports.mjs";
 
 export const MAESTRO_VERSION = "2.12.0";
@@ -87,9 +87,6 @@ const run = (command, args, options = {}) => {
   if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} exited with ${result.status ?? result.signal}`);
 };
 
-// `expo prebuild` reads the icon and splash PNGs this renders from the mark's SVG.
-const renderAssets = () => run("node", [join(MOBILE, "scripts/render-assets.mjs")]);
-
 const capture = (command, args, options = {}) => execFileSync(command, args, { encoding: "utf8", ...options }).trim();
 
 const sha256 = async (path) => {
@@ -132,7 +129,18 @@ const stackReachable = async (apiOrigin) => {
   }
 };
 
-const appEnv = () => ({ ...process.env, ...mobileEnv(stackEnv()) });
+// The end-to-end build is the release variant, for each platform: it prebuilds
+// afresh and checks the project for a cleartext exception it may not carry
+// before it builds, as every build target does (mobile-build.mjs).
+const appEnv = (platform) => ({ ...process.env, ...buildEnv(stackEnv(), { platform, variant: "release" }) });
+
+export const buildSteps = (platform, { udid, abi } = {}) =>
+  platform === "ios"
+    ? [...projectSteps("ios"), { command: "npx", args: ["expo", "run:ios", "--configuration", "Release", "--device", udid, "--no-bundler"], cwd: MOBILE }]
+    : [
+        ...projectSteps("android"),
+        { command: "./gradlew", args: [":app:assembleRelease", ...(abi ? [`-PreactNativeArchitectures=${abi}`] : [])], cwd: join(MOBILE, "android") },
+      ];
 
 const runMaestro = (platform, deviceId, flows = FLOWS, name = platform) => {
   const dir = join(OUTPUT, name);
@@ -167,13 +175,7 @@ const ios = {
     throw new Error("no simulator of that name would boot");
   },
   // run:ios installs the app it builds, so build and install are one step.
-  build: (udid) => {
-    renderAssets();
-    run("npx", ["expo", "run:ios", "--configuration", "Release", "--device", udid, "--no-bundler"], {
-      cwd: MOBILE,
-      env: { ...appEnv(), LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" },
-    });
-  },
+  build: (udid) => runSteps(buildSteps("ios", { udid }), { ...appEnv("ios"), LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" }),
 };
 
 const sdkTool = (relative, name) => {
@@ -402,12 +404,7 @@ const jdk17 = () => {
   }
 };
 
-const buildAndroid = (abi) => {
-  const env = { ...appEnv(), KALIA_E2E: "1", JAVA_HOME: jdk17() };
-  renderAssets();
-  run("npx", ["expo", "prebuild", "--platform", "android", "--no-install"], { cwd: MOBILE, env });
-  run("./gradlew", [":app:assembleRelease", ...(abi ? [`-PreactNativeArchitectures=${abi}`] : [])], { cwd: join(MOBILE, "android"), env });
-};
+const buildAndroid = (abi) => runSteps(buildSteps("android", { abi }), { ...appEnv("android"), JAVA_HOME: jdk17() });
 
 // The emulator reaches the host's stack through `adb reverse`, so the app
 // dials localhost there as it does on the iOS Simulator.

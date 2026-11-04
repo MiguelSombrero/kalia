@@ -392,6 +392,10 @@
     "title": "Profile",
     "pageTitle": "Profile — Kalia",
     "loading": "Loading your profile…",
+    "about": {
+      "version": "Version {{version}}",
+      "versionBuild": "Version {{version}}, build {{build}}"
+    },
     "name": {
       "label": "Your name on Kalia",
       "note": "People see this name on your cellar and on Kalia's front page. It is also your cellar's address, so it can't be changed."

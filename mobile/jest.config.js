@@ -3,5 +3,5 @@ module.exports = {
   setupFiles: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/src/$1" },
   testTimeout: 20_000,
-  testPathIgnorePatterns: ["/node_modules/", "/eslint-fixtures/", "<rootDir>/scripts/"],
+  testPathIgnorePatterns: ["/node_modules/", "/eslint-fixtures/", "<rootDir>/scripts/", "<rootDir>/plugins/"],
 };

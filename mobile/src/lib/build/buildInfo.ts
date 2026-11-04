@@ -1,4 +1,4 @@
-import { nativeBuildVersion } from "expo-application";
+import { nativeApplicationVersion, nativeBuildVersion } from "expo-application";
 
 export const ownBuildNumber = (): number | null => {
   if (!nativeBuildVersion) {
@@ -7,3 +7,5 @@ export const ownBuildNumber = (): number | null => {
   const build = Number(nativeBuildVersion);
   return Number.isInteger(build) && build >= 0 ? build : null;
 };
+
+export const ownVersion = (): string | null => nativeApplicationVersion || null;
