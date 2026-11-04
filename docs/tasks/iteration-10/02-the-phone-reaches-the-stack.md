@@ -113,7 +113,7 @@ directing; ADR-0097 leaves the switch and the variable's name to this task):
       This also shows Keycloak's `sslRequired` of `none` answering a sign-in
       over HTTP on a name that is not `localhost`, and the development build
       reaching the tailnet host over HTTP
-- [ ] With phone mode off, the web app signs in on `localhost`, the iOS
+- [x] With phone mode off, the web app signs in on `localhost`, the iOS
       Simulator signs in and lists the catalog by hand (described in the PR),
       and the Android flow passes through `make mobile-e2e`
 - [ ] With phone mode on, the web app signs in from the Mac's browser on the
