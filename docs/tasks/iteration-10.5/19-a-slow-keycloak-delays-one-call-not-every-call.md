@@ -1,6 +1,6 @@
 # Task 19: A slow Keycloak delays one call in the app, not every call
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -41,15 +41,20 @@ is handled as task 08 decided, unchanged.
   Android the only CI platform
   ([ADR-0096](../../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)).
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **The window is 30 seconds,** and **the app shows nothing new while it
+  lasts:** a signed-in screen's own error state covers a call refused for want
+  of a token. A 60-second window and a signed-out notice were rejected.
+
 ## Open questions
 
-1. **The window's length,** and whether a signed-in screen tells the user the
-   app is running signed out while it lasts.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A Jest test with a refresh that times out shows the next call inside the
-      window sent at once without a token, and a call after the window trying
+      30-second window sent at once without a token, and a call after the window trying
       again; it failed before the change
 - [ ] A Jest test shows a refused refresh still handled as task 08 decided
 - [ ] `npm test` in `mobile/` and `make verify-fast` are green

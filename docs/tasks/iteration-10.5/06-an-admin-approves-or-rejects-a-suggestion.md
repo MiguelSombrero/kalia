@@ -37,7 +37,7 @@ state.
 
 - **This task cannot be refined before [task 02](02-decision-what-reviewing-a-suggestion-does.md)
   is done**, and builds on [task 05](05-an-admin-reads-the-review-queue.md)'s
-  module.
+  admin API.
 - Events are registered on the aggregate root and drained on `save`, never
   published from a service
   ([ADR-0053](../../adr/0053-cellar-domain-events-on-the-aggregate-root.md));
@@ -55,15 +55,21 @@ state.
 - Every response is `problem+json` and in the spec; the operations are new
   paths, so the change is additive
   ([ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+- What each outcome does, the shared-brewery rule, the reason list, the event
+  and the `409` are [task 02](02-decision-what-reviewing-a-suggestion-does.md)'s
+  decisions, as is keeping the public cellar's read-time exclusion.
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **A decision answers `200` with the suggestion as decided** — the outcome,
+  when, and the values decided — as the cellar's writes answer with what they
+  made. A bare `204` was rejected.
 
 ## Open questions
 
-Answered by [task 02](02-decision-what-reviewing-a-suggestion-does.md); refined
-once its ADR is accepted. Left for this task:
-
-1. **The response:** the decided suggestion, or `204` with nothing.
-2. **The public cellar's read-time exclusion:** kept, or replaced by a copy the
-   event keeps current, if task 02's ADR leaves the choice here.
+Every question was answered at refinement on 2026-11-04 — task 02's in its
+Constraints, this task's above. The task moves to `refined` once task 02's ADR is accepted
+and this file is checked against it.
 
 ## Acceptance criteria
 
@@ -72,6 +78,10 @@ once its ADR is accepted. Left for this task:
       search, details and the brewery list
 - [ ] An integration test rejects each kind, and both the beer and the new
       brewery are withheld afterwards, with no row deleted
+- [ ] A pending brewery shared by two suggestions is approved with the first
+      approval, stays pending when one is rejected while the other waits, and
+      is rejected with the last — integration test
+- [ ] A rejection without a reason from task 02's list answers `400` — test
 - [ ] Exactly one event is published per decision, with or without a new
       brewery, carrying what task 02 chose — `@ApplicationModuleTest` scenario
 - [ ] Two concurrent decisions on one suggestion end as task 02 chose and never

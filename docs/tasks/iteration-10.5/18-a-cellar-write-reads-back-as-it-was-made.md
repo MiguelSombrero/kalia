@@ -1,6 +1,6 @@
 # Task 18: A cellar write reads back as it was made, and a lost one says why
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -47,17 +47,25 @@ locales.
   ([ADR-0023](../../adr/0023-typed-api-failures.md)); every string in `en` and
   `fi` ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **COULD-107: a bottle's id is a time-ordered UUIDv7** from Hibernate's
+  generator, so the existing `created_at, id` order lists bottles added
+  together as they were added, with no schema change. An ordering column was
+  rejected. If the generator turns out not to order ids made within one
+  millisecond, stop and re-refine rather than improvise.
+- **Wording** of the conflict message is drafted in the PR, in both locales.
+
 ## Open questions
 
-1. **The order (COULD-107, the product owner's choice):** time-ordered ids
-   (UUIDv7) for bottles, or an ordering column.
-2. **Wording** of the conflict message — drafted in the PR for review.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] An integration test adds several bottles in one request and reads them
       back in the order the response listed them, repeated enough to have
-      failed before the change
+      failed before the change, and with bottles created within one
+      millisecond
 - [ ] A component test shows a `409` from a cellar write presented as a
       conflict with a reload, not the generic failure; it failed before
 - [ ] `make verify-fast` is green

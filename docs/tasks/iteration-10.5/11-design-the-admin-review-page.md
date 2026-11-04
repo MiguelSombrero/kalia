@@ -22,9 +22,11 @@ choice.
 ## Scope
 
 The admin review page: the queue of suggestions, one suggestion with its beer
-and any new brewery, and the three outcomes — approve, reject, and edit then
-approve — with their confirmation, loading, error, empty and conflict states,
-in both locales. The interaction is a choice the product owner makes from built
+and any new brewery, its contributor's pending and rejected counts, and the
+three outcomes — approve, reject with a reason from
+[task 02](02-decision-what-reviewing-a-suggestion-does.md)'s list, and edit
+then approve, re-pointing at an existing brewery included — with their
+confirmation, loading, error, empty and conflict states, in both locales. The interaction is a choice the product owner makes from built
 alternatives, at least on:
 
 - the queue and the suggestion on one page side by side, a list opening a page
@@ -38,6 +40,7 @@ alternatives, at least on:
 
 - The route guard and navigation entry — [task 10](10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md).
 - A mobile admin surface.
+- Removing an approved beer — [task 20](20-an-admin-removes-an-approved-beer-from-its-page.md).
 - Admin features beyond review.
 
 ## Constraints
@@ -64,30 +67,39 @@ alternatives, at least on:
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 - A mockup is built outside the repository and never committed; a screenshot
   never leaves the scratchpad ([rule](../../../.claude/rules/no-screenshots.md)).
+- What the admin sees beside a suggestion is
+  [task 05](05-an-admin-reads-the-review-queue.md)'s decision; the outcomes,
+  the reason list and what an edit may change are task 02's.
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **The page is designed for both agreed web widths,** like every
+  reader-facing page; desktop alone was rejected.
+- **Wording** of the outcomes, the reasons and the confirmation is drafted in
+  the PR, in both locales, for the product owner's review.
 
 ## Open questions
 
-1. **Widths:** the two agreed for the web, or desktop only for a tool an admin
-   uses at a desk.
-2. **What the admin sees beside a suggestion:** the catalog's similar names,
-   the contributor's history (task 05's open question 2).
-3. **Wording** of the outcomes and the confirmation, in both locales — drafted
-   in the PR for the product owner's review.
+Every question was answered at refinement on 2026-11-04 — task 02's and task
+05's in their Constraints, this task's above. The task moves to `refined` once
+task 02's ADR is accepted and task 10 is done, and this file is checked against
+both.
 
 ## Acceptance criteria
 
 - [ ] The product owner chose from built alternatives, at minimum the queue's
       layout, how editing is entered, and how a destructive outcome is
       guarded. An ADR records the directions and the choice, and the product
-      owner signed off the built page in the browser pane
-- [ ] A Playwright test signs in as the development admin, approves one
+      owner signed off the built page in the browser pane at both agreed widths
+- [ ] A Playwright test signs in as an admin the suite provisions, approves one
       suggestion, rejects one, and edits and approves one, each then shown
       decided — against the running stack
 - [ ] A component test shows a suggestion with a new brewery presenting both
       as approved together
 - [ ] A component test shows a `409` from a concurrent decision, and a
       server-side refusal of an edit, shown to the admin rather than swallowed
-- [ ] Every rendered state passes `axe` with no violations, in both locales
+- [ ] Every rendered state passes `axe` with no violations, in both locales and
+      at both agreed widths
 - [ ] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes

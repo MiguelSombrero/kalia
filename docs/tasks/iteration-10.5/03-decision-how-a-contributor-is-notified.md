@@ -1,6 +1,6 @@
 # Task 03: Decide how a contributor is told what became of a suggestion
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-3, DW-4
 
@@ -59,28 +59,32 @@ learns there is something unread, and how long a notification is kept.
   decides that strategy in this iteration, and the two should agree.
 - `/api/v1` is additive only
   ([ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+- The event a notification is written from is `SuggestionReviewed`
+  ([task 02](02-decision-what-reviewing-a-suggestion-does.md)'s Constraints).
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **A new `notification` module** keeps per-user notifications, written by an
+  idempotent listener on `SuggestionReviewed`; the backlog's likes and
+  comments would reuse it. `catalog` answering "your decided suggestions"
+  was rejected.
+- **A notification freezes its facts when written** — the outcome, the beer's
+  id, its name as decided, the name as suggested when edited, and the reason
+  code — and the client renders them in its own language. A later edit or
+  removal does not rewrite it. A live reference was rejected.
+- **Each notification is acknowledged on its own; an acknowledged one
+  disappears and its row is deleted,** and an unread one never expires — so
+  retention is "until acknowledged". Opening the list marking everything read,
+  and keeping read ones listed, were rejected.
+- **The web reads the unread count once per signed-in page render,** with no
+  polling loop: decisions are rare, and a second loop
+  ([ADR-0060](../../adr/0060-feed-delivery-is-polling.md)) costs every page.
+- **An approval links to the beer's page; a rejection links nowhere** and
+  states its reason.
 
 ## Open questions
 
-1. **Where notifications live:** a new `notification` module listening to the
-   review events, or the review module answering "your decided suggestions"
-   with an acknowledged flag — the first generalises to later event types, the
-   second adds no module.
-2. **What one holds:** the facts frozen at write time (the beer's name as
-   decided, the outcome, the reason) and rendered by the client in its own
-   language, or a reference read live — and what it says when the beer was
-   later edited or removed.
-3. **What "read" means:** opening the list marks everything read; each one is
-   dismissed on its own; or following its link to the beer marks it — and
-   whether a read notification disappears or stays listed as read.
-4. **How a client learns there is something unread:** a count read on each
-   page load, polled while a page is open, or both.
-5. **Retention:** read notifications kept for good, for a number of days, or
-   removed when read; and whether an unread one ever expires.
-6. **A rejected beer's notification links to** nothing, to the add form with
-   the suggestion filled in for a retry, or to an explanation — given that
-   [iteration 10 task 15](../iteration-10/15-a-withheld-beer-is-withheld-consistently.md)
-   withholds a rejected beer everywhere.
+**None.**
 
 ## Acceptance criteria
 

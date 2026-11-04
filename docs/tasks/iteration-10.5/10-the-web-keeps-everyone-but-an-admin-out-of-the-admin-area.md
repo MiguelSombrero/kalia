@@ -39,33 +39,39 @@ alone. The route exists with a placeholder the design task replaces.
   [ADR-0030](../../adr/0030-per-session-token-storage.md)); a role read from
   the access token is read in the BFF, and a decision made in the browser is
   never the authority.
-- The edge answers `404` for `/admin`, meant for Keycloak's console
-  ([architecture §6](../../architecture.md#6-authentication-and-identity));
-  the admin route's path, and the locale redirect that serves a locale-less
-  address, must not collide with it.
+- The edge's `404` for `/admin` applies to Keycloak's origin only
+  ([task 01](01-decision-who-is-an-admin.md)'s Constraints); the web's origin
+  serves the admin route.
 - This Next.js version postdates model training: request interception is
   `proxy.ts`, not `middleware.ts`, and guessing fails silently — check
   `node_modules/next/dist/docs/` first.
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)); the page shell is
   [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md)'s.
+- How the web learns the role, and what a signed-out visitor and a signed-in
+  non-admin are answered, are [task 01](01-decision-who-is-an-admin.md)'s
+  decisions; the Playwright suite's own admin is
+  [task 04](04-the-admin-role-exists-and-the-api-refuses-everyone-else.md)'s,
+  and is built here.
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **The path is `/[locale]/admin`.**
+- **The navigation entry reads "Admin" / "Ylläpito" and shows no count,** so
+  an admin's page render makes no extra backend call.
 
 ## Open questions
 
-Answered by [task 01](01-decision-who-is-an-admin.md); refined once its ADR is
-accepted. Left for this task:
-
-1. **The path:** `/[locale]/admin`, or another name that cannot meet the
-   edge's `/admin` rule.
-2. **The navigation entry:** its label, and whether it shows how many
-   suggestions are waiting.
+Every question was answered at refinement on 2026-11-04 — task 01's in its
+Constraints, this task's above. The task moves to `refined` once task 01's ADR
+is accepted and this file is checked against it.
 
 ## Acceptance criteria
 
-- [ ] A Playwright test signs in as the development admin and reaches the admin
-      route; signs in as `testuser` and is answered as task 01 decided; and
-      signed out, is sent to sign in or answered the same — each without the
-      page's content in the response
+- [ ] A Playwright test signs in as an admin the suite provisions and reaches
+      the admin route; signs in as an ordinary worker account and is answered
+      the not-found page; and signed out, is sent to sign in — each without
+      the page's content in the response
 - [ ] A component test shows the navigation entry to an admin and to nobody
       else
 - [ ] A test shows the admin decision is made server-side from the session,

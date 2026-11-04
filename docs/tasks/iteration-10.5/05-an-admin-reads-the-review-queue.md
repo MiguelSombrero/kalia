@@ -24,10 +24,11 @@ contributor with a private cellar has no way to name them (COULD-81).
 The admin API lists the suggestions waiting for review, oldest first and
 paginated, each with the suggested beer, its brewery and whether that brewery
 is new, the contributor's username, and when it was suggested; and reads one
-suggestion by id. Only an admin may call either
+suggestion by id. Each suggestion also carries how many of its contributor's suggestions are
+pending and how many were rejected. Only an admin may call either
 ([task 04](04-the-admin-role-exists-and-the-api-refuses-everyone-else.md)).
-The module exists, is in the architecture's module table and diagram, and
-passes the boundary checks.
+The API is `catalog`'s, as task 02 decided, and `catalog` names the
+contributor through `ProfileApi`.
 
 ## Non-goals
 
@@ -41,10 +42,10 @@ passes the boundary checks.
 
 - **This task cannot be refined before [task 02](02-decision-what-reviewing-a-suggestion-does.md)
   is done.**
-- A new module follows [architecture §3](../../architecture.md#3-backend-modules):
-  layered `domain`/`application`/`web`, its root package empty until a
-  consumer arrives, verified by `ModularityTest` and `ArchitectureTest`; the
-  module diagram in §2 is drift-checked by `ArchitectureDocumentationTest`.
+- A module dependency follows [architecture §3](../../architecture.md#3-backend-modules):
+  through the root-package API, verified by `ModularityTest` and
+  `ArchitectureTest`; the module diagram in §2 is drift-checked by
+  `ArchitectureDocumentationTest`.
 - DTOs at the API boundary, never a domain entity
   ([iteration 7 task 13](../iteration-7/13-guard-dtos-at-the-api-boundary.md)).
 - Every list is paginated in the one envelope and every parameter bounded
@@ -57,16 +58,21 @@ passes the boundary checks.
   ([iteration 8 task 03](../iteration-8/03-add-beer-ui.md)); an admin read is
   the one place it is served.
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **COULD-81: `ProfileApi` gains a username lookup by id, apart from the
+  cellar-visibility predicate.** Whether a username may be shown is decided by
+  the module that serves it — here, an admin-only read. A lookup scoped to
+  admin reads alone was rejected.
+- **Beside each suggestion: its contributor's pending and rejected counts.**
+  The catalog's similar names were left out; the admin can search the catalog.
+- **Oldest first,** as a queue, in the one paginated envelope.
+
 ## Open questions
 
-1. **Naming the contributor (COULD-81, `[needs decision]`):** split a username
-   lookup from the cellar-visibility predicate in `ProfileApi`, so any module
-   can name a user, or record that only an admin-facing read may name a
-   private-cellar user and add a lookup for that alone.
-2. **What the list shows beside each suggestion:** the contributor's other
-   pending suggestions, how many of their earlier ones were rejected, or the
-   catalog's similar names that may make it a duplicate.
-3. **Page size and order:** oldest first, as a queue, or newest first.
+Every question was answered at refinement on 2026-11-04 — task 02's in its
+Constraints, this task's above. The task moves to `refined` once task 02's ADR is accepted
+and this file is checked against it.
 
 ## Acceptance criteria
 
@@ -76,10 +82,15 @@ passes the boundary checks.
 - [ ] An integration test shows the list and the single read refused to a
       non-admin and to an anonymous caller
 - [ ] A suggestion already approved or rejected is not in the list — test
+- [ ] Each listed suggestion carries its contributor's pending and rejected
+      counts — integration test
+- [ ] `ProfileApi`'s username lookup names a user whose cellar is private,
+      while `publicCellarOwnerId` still hides them — test
 - [ ] `ModularityTest`, `ArchitectureTest` and `ArchitectureDocumentationTest`
-      pass with the new module, and §3's table and §2's diagram name it
+      pass with `catalog` reading `ProfileApi`, and §2's diagram and §3 show
+      the dependency
 - [ ] The committed spec carries both operations, the generated web client is
-      regenerated, and the glossary carries the module's terms
+      regenerated, and the glossary carries *suggestion*
 - [ ] `make verify-fast` is green
 
 ## Notes

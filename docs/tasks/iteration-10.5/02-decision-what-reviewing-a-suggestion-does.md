@@ -1,6 +1,6 @@
 # Task 02: Decide what a suggestion is and what reviewing one does
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2, DW-3, DW-4
 
@@ -84,51 +84,64 @@ an edit may change, the events and what they carry, and what replaces
   calls the user a **contributor** and the dialog's copy already says a beer
   "has already been suggested".
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **The term is *suggestion*** — for the domain type, the admin API's path
+  (`/api/v1/admin/suggestions`), the events and the copy; *ehdotus* in
+  Finnish.
+- **Review lives inside `catalog`, behind an admin API of its own** under
+  `/api/v1/admin/**` ([task 01](01-decision-who-is-an-admin.md)), not in a new
+  Modulith module. Reviewing changes the catalog's own rows under the
+  catalog's own validation rules, so a separate module would need either a
+  command on `CatalogApi` — an exception to events-for-writes — or a decision
+  the catalog applies later on an event, whose edit could not answer its
+  `400` or `409` to the admin who made it. Both were rejected; the brief's
+  "own module" is met as its own API.
+- **The queue is derived from the catalog's pending beers,** each with its
+  brewery when that is pending too, and **a review record is written when a
+  suggestion is decided** — who decided, when, the outcome, the values as
+  suggested when edited, and the reason. Today's pending rows need no
+  migration. A suggestion row written at add time was rejected.
+- **A pending brewery shared by several suggestions is approved by the first
+  approval that needs it, and rejected only with the last pending suggestion
+  that needs it;** rejecting one while another still waits leaves it pending.
+- **An edit may change** the beer's name, style and ABV, a new brewery's name,
+  country and city, and **may re-point the beer at an existing brewery** — the
+  new brewery then rejected under the rule above. An edit is held to the add
+  path's validation and duplicate checks, and the values as suggested are kept
+  in the review record.
+- **A rejection carries a required reason from a fixed list** — already in the
+  catalog, not a real beer, inappropriate, incorrect details — stored as a
+  code and shown to the contributor in their own language. Free text and no
+  reason were rejected.
+- **One event type, `SuggestionReviewed`,** is published per decision, whether
+  or not the brewery was new, carrying its own `eventId`, the suggestion's id,
+  the contributor's and the beer's ids, the outcome, the beer's name as
+  decided, whether it was edited and the name as suggested, the reason code,
+  and `occurredAt`. A pair of event types was rejected.
+- **Removing an approved beer stays, as an admin operation:** through the admin
+  API ([task 08](08-the-sql-moderation-script-is-retired.md)) and from the
+  beer's details page ([task 20](20-an-admin-removes-an-approved-beer-from-its-page.md)).
+  It publishes an event, named in the ADR, and notifies nobody.
+- **The pending cap counts suggestions:** 20 per contributor, a beer with a new
+  brewery counting once.
+- **Rejections limit nothing** this iteration; SHOULD-80 returns to
+  [the quality backlog](../quality-backlog.md).
+- **Deciding a suggestion that is already decided, or decided concurrently,
+  answers `409` `problem+json`** saying how it was decided. A silent no-op was
+  rejected.
+- *Derived:* **the public cellar's read-time exclusion stays.** A decision is
+  synchronous and a cellar read is joined with the catalog
+  ([ADR-0083](../../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)),
+  so no copy exists for an event to keep current.
+
 ## Open questions
 
-1. **The word:** *suggestion*, *contribution* or *submission* — for the
-   domain type, the API path, the events and the copy, in both locales — and
-   the module's name (`moderation`, `review`, `admin`).
-2. **Where reviewing lives and how it writes the catalog:** a new module that
-   owns review records and publishes a decision the catalog applies on an
-   event; a new module calling a command on `CatalogApi` (a recorded exception
-   to the events-for-writes rule); or review inside `catalog` behind its own
-   admin controller, with "own module" meaning its own API rather than its own
-   Modulith module.
-3. **What a suggestion is in the data:** derived from the pending beer (and its
-   pending brewery when it came with one), or a row of its own linking them
-   and recording who decided, when, and what was changed.
-4. **The pending brewery shared by several suggestions.** A contributor can add
-   a second beer to their own still-pending brewery. Does approving the first
-   approve the brewery for both; does rejecting the first reject the second,
-   leave it pending, or forbid the rejection until both are decided?
-5. **What an edit may change:** the beer's name, style and ABV; the new
-   brewery's name, country and city; and whether the admin may re-point the
-   beer at an *existing* brewery instead of the new one (the new brewery then
-   rejected) — the common fix for a brewery suggested twice under slightly
-   different names.
-6. **What an edit is held to:** the same validation and duplicate checks as
-   adding (styles, the `Cf` refusal, the folded-name keys); and whether the
-   original as suggested is kept for the record or overwritten.
-7. **A reason for rejection:** none, a fixed list, or free text — and whether
-   the contributor sees it, since free text is untranslated and is itself
-   content the admin writes.
-8. **The events:** names (`BeerSuggestionApproved` and
-   `BeerSuggestionRejected`, one `SuggestionReviewed` carrying its outcome, or
-   another pair), and what they carry — the suggestion, contributor and beer
-   ids, the beer's name as decided, whether it was edited, the reason.
-9. **Removing an approved beer.** `make moderate ACTION=remove` takes one down;
-   does the admin page do the same, and does removal publish an event and
-   notify the contributor too?
-10. **The pending cap:** does a suggestion with a new brewery still count as
-    two of the 20, and do rejections count toward a cooldown (SHOULD-80, which
-    [task 08](08-the-sql-moderation-script-is-retired.md) implements)?
-11. **Two admins deciding one suggestion at once:** the second answered `409`,
-    or the first decision wins and the second is a no-op.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] An ADR records the term, the owning module and how it changes the
+- [ ] An ADR records the term, where review lives and how it changes the
       catalog, what a suggestion is in the data, each outcome's effect on beer
       and brewery, the edit rules, the events and their payload, removal, the
       pending cap, and the rejected alternatives, and passes

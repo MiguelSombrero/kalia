@@ -22,25 +22,26 @@ finds out what became of theirs, which replaces the SQL moderation script.
 
 | ID | Task | Status |
 |---|---|---|
-| [14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md) | The committed spec lists every response, and its own checks hold anywhere | needs-refinement |
-| [13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md) | Domain timestamps come from the Clock, and a duplicate brewery is read once | needs-refinement |
-| [01](iteration-10.5/01-decision-who-is-an-admin.md) | Decide who is an admin, and how every tier knows it | needs-refinement |
-| [02](iteration-10.5/02-decision-what-reviewing-a-suggestion-does.md) | Decide what a suggestion is and what reviewing one does | needs-refinement |
-| [03](iteration-10.5/03-decision-how-a-contributor-is-notified.md) | Decide how a contributor is told what became of a suggestion | needs-refinement |
-| [15](iteration-10.5/15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md) | Decide what deleting an account does to what Kalia keeps forever | needs-refinement |
+| [14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md) | The committed spec lists every response, and its own checks hold anywhere | refined |
+| [13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md) | Domain timestamps come from the Clock, and a duplicate brewery is read once | refined |
+| [01](iteration-10.5/01-decision-who-is-an-admin.md) | Decide who is an admin, and how every tier knows it | refined |
+| [02](iteration-10.5/02-decision-what-reviewing-a-suggestion-does.md) | Decide what a suggestion is and what reviewing one does | refined |
+| [03](iteration-10.5/03-decision-how-a-contributor-is-notified.md) | Decide how a contributor is told what became of a suggestion | refined |
+| [15](iteration-10.5/15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md) | Decide what deleting an account does to what Kalia keeps forever | refined |
 | [04](iteration-10.5/04-the-admin-role-exists-and-the-api-refuses-everyone-else.md) | The admin role exists, and the API refuses everyone else | needs-refinement |
 | [05](iteration-10.5/05-an-admin-reads-the-review-queue.md) | An admin reads the queue of suggestions waiting for review | needs-refinement |
 | [06](iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md) | An admin approves or rejects a suggestion, and one event says so | needs-refinement |
 | [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | needs-refinement |
-| [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and a rejection counts against its contributor | needs-refinement |
+| [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and an admin can remove an approved beer | needs-refinement |
 | [09](iteration-10.5/09-a-contributor-is-told-what-became-of-their-suggestion.md) | A contributor is told what became of their suggestion | needs-refinement |
 | [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | needs-refinement |
-| [16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md) | The backend's request limit holds for the calls the web makes on a visitor's behalf | needs-refinement |
+| [16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md) | The backend's request limit holds for the calls the web makes on a visitor's behalf | refined |
 | [11](iteration-10.5/11-design-the-admin-review-page.md) | An admin reviews suggestions on a page of their own | needs-refinement |
+| [20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md) | An admin removes an approved beer from its page | needs-refinement |
 | [12](iteration-10.5/12-design-the-contributors-notifications.md) | A contributor sees what became of their suggestion until they have read it | needs-refinement |
-| [17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md) | A feed that opened empty polls only for what is new | needs-refinement |
-| [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | needs-refinement |
-| [19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md) | A slow Keycloak delays one call in the app, not every call | needs-refinement |
+| [17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md) | A feed that opened empty polls only for what is new | refined |
+| [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | refined |
+| [19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md) | A slow Keycloak delays one call in the app, not every call | refined |
 
 Numbered 10.5 for the reason [iteration 8.5](iteration-8.5.md) was: iteration
 11 is already drafted, and this work lands before it. It is web-only — the
@@ -52,11 +53,13 @@ iteration's tasks settle the moderation rules this one builds on:
 [task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) (what the
 add dialog says, and the anonymous "already suggested" `409`).
 
-Tasks 01–12 are the admin feature, from the product owner's brief, and lift the
-[backlog](backlog.md)'s "Admin UI + role-based access for catalog management"
-item together with SHOULD-80, COULD-81 and COULD-99 from the
+Tasks 01–12 and 20 are the admin feature, from the product owner's brief, and
+lift the [backlog](backlog.md)'s "Admin UI + role-based access for catalog
+management" item together with SHOULD-80, COULD-81 and COULD-99 from the
 [quality backlog](quality-backlog.md); SHOULD-80 and COULD-99 were returned
-from iteration 10 to be fixed here. Tasks 13–19 fill the iteration from the
+from iteration 10 to be fixed here. Refinement on 2026-11-04 added task 20 and
+returned SHOULD-80's second half — rejections limiting further suggestions —
+to the quality backlog. Tasks 13–19 fill the iteration from the
 quality backlog, chosen by their impact on the product and merged where
 findings touch the same code. Every task is seeded at `needs-refinement`, to
 be refined together in one conversation
@@ -79,7 +82,8 @@ The table's order is the order of work:
   is the quality backlog's, placed here because this iteration adds two new
   kinds of row that name a user. Each ADR is accepted before the tasks it binds
   are refined, as in iterations 9 and 10, so those tasks carry a short second
-  refinement pass.
+  refinement pass: their questions were answered on 2026-11-04, and that pass
+  checks each file against its ADR.
 - **Then the backend, in the order each depends on the last:** the role
   ([04](iteration-10.5/04-the-admin-role-exists-and-the-api-refuses-everyone-else.md)),
   the queue ([05](iteration-10.5/05-an-admin-reads-the-review-queue.md)),
@@ -95,8 +99,10 @@ The table's order is the order of work:
   ([16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md))
   before the pages add Server Actions that change data, and the two design
   tasks — the review page
-  ([11](iteration-10.5/11-design-the-admin-review-page.md)) and the
-  contributor's notifications
+  ([11](iteration-10.5/11-design-the-admin-review-page.md)), then removing an
+  approved beer from its page
+  ([20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md)),
+  and the contributor's notifications
   ([12](iteration-10.5/12-design-the-contributors-notifications.md)), whose
   Playwright journey covers the iteration end to end.
 - **Last, quality work on other surfaces:** the empty feed's poll

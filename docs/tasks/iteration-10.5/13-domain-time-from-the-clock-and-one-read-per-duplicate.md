@@ -1,6 +1,6 @@
 # Task 13: Domain timestamps come from the Clock, and a duplicate brewery is read once
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -41,10 +41,14 @@ the brewery once.
 - The `409`'s body stays as documented
   ([iteration 8.5 task 05](../iteration-8.5/05-brewery-questions-answered-by-the-api.md)).
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **`EventPublicationResubmission` is in scope:** its cutoff reads the
+  injected `Clock`, so no system-time read is left in `backend/src/main/java`.
+
 ## Open questions
 
-1. **`EventPublicationResubmission`** is application wiring, not a domain type:
-   in scope, or left as the one place the system time is read, with a reason.
+**None.**
 
 ## Acceptance criteria
 
@@ -53,8 +57,9 @@ the brewery once.
       the change
 - [ ] A test of the duplicate-brewery path counts one query for the brewery
       (Hibernate statistics or a repository spy), and failed before
+- [ ] `EventPublicationResubmission`'s cutoff moves with a fixed `Clock` — test
 - [ ] `grep` finds no `Instant.now()` or VM-sourced timestamp annotation left in
-      `backend/src/main/java` beyond any refinement keeps, and §3 says so
+      `backend/src/main/java`, and §3 says so
 - [ ] `make verify-fast` is green
 
 ## Notes
