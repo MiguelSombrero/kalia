@@ -116,7 +116,7 @@ directing; ADR-0097 leaves the switch and the variable's name to this task):
 - [x] With phone mode off, the web app signs in on `localhost`, the iOS
       Simulator signs in and lists the catalog by hand (described in the PR),
       and the Android flow passes through `make mobile-e2e`
-- [ ] With phone mode on, the web app signs in from the Mac's browser on the
+- [x] With phone mode on, the web app signs in from the Mac's browser on the
       tailnet origin, and the iOS Simulator, on a build made for phone mode,
       signs in and lists the catalog — by hand, described in the PR
 - [x] The issuer Keycloak stamps matches the one the backend and the web

@@ -275,5 +275,12 @@ short tailnet name as the one origin:
   `*.ts.net` name was not tried. The release build's reach is
   [task 05](../tasks/iteration-10/05-build-variants.md)'s.
 
+The iOS Simulator, with phone mode on and Metro restarted with a cleared cache
+(no native rebuild: the origins come from Metro's environment), listed the
+catalog and signed in through the tailnet origin; its sign-in prompt named the
+tailnet host, not `localhost`. The session it held from before the switch ended
+with "You were signed out", as the Consequences say it would. With phone mode
+off, the same build listed the catalog and signed in on `localhost`.
+
 Not yet shown: two worktrees, one in phone mode and one not, running beside each
-other, and the iOS Simulator in phone mode.
+other.
