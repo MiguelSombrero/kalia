@@ -77,7 +77,7 @@ test("a search that found nothing adds the beer, lands on the search finding it,
   await expect(row).toBeVisible();
   await expect(row.getByText("Just added")).toBeVisible();
   // exact: Radix also copies the toast's text into its own live-region announcer.
-  await expect(page.getByText(`${name} is in the catalog.`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`${name} was added. Only you can see it until it has been reviewed.`, { exact: true })).toBeVisible();
   expect(await stillSameDocument(), "adding the beer reloaded the page").toBe(true);
   await expectNoA11yViolations(page);
 
@@ -134,7 +134,7 @@ test("a beer whose name the search would bury past its first page lands on its o
   await expect(page).toHaveURL(/\/en\/beers\/[0-9a-f-]{36}$/);
   await expect(page.getByRole("heading", { level: 1, name: "IPA", exact: true })).toBeVisible();
   await expect(page.getByText(brewery).first()).toBeVisible();
-  await expect(page.getByText("IPA is in the catalog.", { exact: true })).toBeVisible();
+  await expect(page.getByText("IPA was added. Only you can see it until it has been reviewed.", { exact: true })).toBeVisible();
   await expect(page.getByRole("main")).toBeFocused();
   expect(await stillSameDocument(), "adding the beer reloaded the page").toBe(true);
   await expectNoA11yViolations(page);
