@@ -106,7 +106,7 @@ directing; ADR-0097 leaves the switch and the variable's name to this task):
 
 ## Acceptance criteria
 
-- [ ] On the iPhone, with the development build loading its JavaScript from
+- [x] On the iPhone, with the development build loading its JavaScript from
       Metro on the tailnet, a user signs in through the Mac's Keycloak, sees
       the Catalog tab list real beers, and signs out — verified by hand and
       described in the PR, with no host address or name in the description.
@@ -142,7 +142,7 @@ directing; ADR-0097 leaves the switch and the variable's name to this task):
 - [x] A test in `SecurityConfigTest` shows the backend, configured for one
       issuer, refusing a token whose issuer differs from it only by host (the
       other mode's), in both directions (ADR-0028)
-- [ ] With phone mode on, Keycloak's discovery document fetched on the tailnet
+- [x] With phone mode on, Keycloak's discovery document fetched on the tailnet
       origin names, as its issuer, the value the backend and the web validate —
       run by hand with the stack in phone mode and described in the PR, with no
       host name in the description

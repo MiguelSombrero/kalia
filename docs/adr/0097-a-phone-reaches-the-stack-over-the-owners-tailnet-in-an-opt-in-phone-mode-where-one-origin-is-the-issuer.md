@@ -255,3 +255,25 @@ shows.
 The points under **Not verified** that need a tailnet are shown by the
 product owner's run on the Mac and the iPhone, and are recorded here when
 reported.
+
+**Shown on the product owner's Mac and iPhone, 2026-11-04**, with the Mac's
+short tailnet name as the one origin:
+
+- `tailscale serve --bg --http=<port> http://127.0.0.1:<port>` forwards plain
+  HTTP for the web app's, the API's, Keycloak's and Metro's ports under the same
+  numbers, and the three origins answered through them.
+- The Mac reaches its own tailnet name on those ports: the doctor's checks
+  passed and the browser on the Mac signed in at the tailnet origin.
+- Keycloak's discovery document, fetched on the tailnet origin, names that
+  origin as its issuer.
+- Keycloak, with the local stack's `sslRequired` of `none`, answered the
+  iPhone's sign-in over HTTP on a name that is not `localhost`.
+- The iPhone's development build, loading its JavaScript from Metro through the
+  forward, reached the API over HTTP with no exception in the build: it listed
+  the catalog and signed in and out. The short name is what makes that true,
+  because App Transport Security leaves unqualified names alone and the
+  `*.ts.net` name was not tried. The release build's reach is
+  [task 05](../tasks/iteration-10/05-build-variants.md)'s.
+
+Not yet shown: two worktrees, one in phone mode and one not, running beside each
+other, and the iOS Simulator in phone mode.
