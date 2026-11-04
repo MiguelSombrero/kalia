@@ -295,7 +295,8 @@
       "bottleCount_one": "{{count}} bottle",
       "bottleCount_other": "{{count}} bottles",
       "listed_one": "Showing its oldest bottle",
-      "listed_other": "Showing its {{count}} oldest bottles"
+      "listed_other": "Showing its {{count}} oldest bottles",
+      "withdrawn": "This beer was withdrawn from the catalog. You keep your bottles but can't add more."
     },
     "bottle": {
       "list": "Bottles of {{beer}}",

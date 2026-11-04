@@ -18,4 +18,6 @@ export interface EntryDto {
   /** Derived by counting bottles, never stored */
   quantity: number;
   updatedAt: string;
+  /** True when an operator rejected or removed the beer: the caller keeps the bottles but cannot add more, and the beer has no details page */
+  withdrawn: boolean;
 }

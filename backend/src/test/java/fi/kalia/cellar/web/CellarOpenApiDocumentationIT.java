@@ -114,7 +114,7 @@ class CellarOpenApiDocumentationIT {
 
 		List<String> entryRequired = JsonPath.read(body, "$.components.schemas.EntryDto.required");
 		assertThat(entryRequired)
-				.containsExactlyInAnyOrder("id", "beer", "quantity", "createdAt", "updatedAt", "bottles");
+				.containsExactlyInAnyOrder("id", "beer", "quantity", "createdAt", "updatedAt", "bottles", "withdrawn");
 
 		List<String> bottleRequired = JsonPath.read(body, "$.components.schemas.BottleDto.required");
 		// springdoc does not infer "required" from Java non-nullability alone —

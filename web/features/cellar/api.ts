@@ -68,6 +68,7 @@ const toCellarBeer = (entry: EntryDto | PublicCellarEntryDto): CellarBeer => ({
   style: entry.beer.style,
   abv: entry.beer.abv,
   bottles: inVintageOrder(entry.bottles),
+  ...("withdrawn" in entry && entry.withdrawn && { withdrawn: true }),
   ...(entry.quantity > entry.bottles.length && { unlistedBottles: entry.quantity - entry.bottles.length }),
 });
 
