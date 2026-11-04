@@ -89,7 +89,7 @@ export const getListEntriesUrl = () => {
 }
 
 /**
- * Every entry the caller owns, each with its bottles and derived quantity. Not paginated.
+ * Every entry the caller owns, each with its bottles and derived quantity. Not paginated. An entry of a beer an operator rejected or removed is still returned, with withdrawn true.
  * @summary List the caller's cellar
  */
 export const listEntries = async ( options?: Parameters<typeof kaliaFetch>[1]): Promise<listEntriesResponse> => {
@@ -229,7 +229,7 @@ export const getAddBottlesUrl = () => {
 }
 
 /**
- * Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned.
+ * Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned. A beer an operator rejected or removed cannot be added to, even by a caller who already holds it.
  * @summary Add bottles
  */
 export const addBottles = async (addBottleRequestDto: AddBottleRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<addBottlesResponse> => {

@@ -139,8 +139,8 @@ public class CellarService {
 				.toList();
 	}
 
-	// A beer still awaiting approval is left out of a public read on purpose (ADR-0091); any
-	// other missing beer breaks the catalog's rule that its rows are never deleted.
+	// A beer the reader may not be shown is left out on purpose (ADR-0091); any other missing
+	// beer breaks the catalog's rule that its rows are never deleted.
 	private void warnUnlessWithheld(Entry entry, BeerSummaries beers) {
 		if (!beers.withheld().contains(entry.getBeerId())) {
 			log.warn("Left cellar entry {} out: its beer {} is not in the catalog", entry.getId(), entry.getBeerId());
@@ -162,16 +162,13 @@ public class CellarService {
 		return entry.findBottle(bottleId).orElseThrow(() -> new BottleNotFoundException(bottleId));
 	}
 
-	// Checks the existing entry before the catalog: an entry already proves
-	// the beer exists, since nothing deletes catalog beers (ADR-0091).
+	// Asks the catalog even when an entry exists: a holder keeps their bottles of a beer an
+	// operator has since rejected or removed but cannot add to them (ADR-0091).
 	private Entry entryFor(UUID userId, UUID beerId) {
-		return entries.findByUserIdAndBeerId(userId, beerId)
-				.orElseGet(() -> {
-					if (!catalog.beerExists(beerId, userId)) {
-						throw new BeerNotFoundException(beerId);
-					}
-					return Entry.create(userId, beerId, clock);
-				});
+		if (!catalog.beerExists(beerId, userId)) {
+			throw new BeerNotFoundException(beerId);
+		}
+		return entries.findByUserIdAndBeerId(userId, beerId).orElseGet(() -> Entry.create(userId, beerId, clock));
 	}
 
 }

@@ -41,9 +41,11 @@ public class CatalogApi {
 	}
 
 	/**
-	 * Every beer that exists, hidden ones too, except another contributor's still-pending one, which
-	 * is {@link BeerSummaries#withheld}. An id matching no beer is in neither, and no value is null.
-	 * {@code viewerId} is null for a public read (ADR-0091).
+	 * The beers among {@code beerIds} that {@code viewerId} may be shown, and those it may not
+	 * ({@link BeerSummaries#withheld}). A null {@code viewerId} is a public read, which shows
+	 * {@code APPROVED} beers alone. A non-null one is a read of that viewer's own holdings: it adds
+	 * their own pending beers and the rejected or removed ones, marked {@link BeerSummary#withdrawn}.
+	 * An id matching no beer is in neither, and no value is null (ADR-0091).
 	 */
 	public BeerSummaries getBeerSummaries(Collection<UUID> beerIds, @Nullable UUID viewerId) {
 		Map<UUID, BeerSummary> found = new HashMap<>();

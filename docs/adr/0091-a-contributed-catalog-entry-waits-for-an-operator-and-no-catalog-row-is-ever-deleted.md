@@ -5,6 +5,11 @@
 - **Amended:** 2026-10-30 — a public cellar leaves out every beer that is not
   `APPROVED`, so its pages and totals count only what the reader is shown; an
   owner's own cellar and the feed still name a `REJECTED` or `REMOVED` beer
+  (the feed half is superseded by the next amendment)
+- **Amended:** 2026-11-04 — a `REJECTED` or `REMOVED` beer is withheld
+  everywhere by one rule, the feed included; a holder keeps their bottles but
+  cannot add another, and sees the beer unlinked in their own cellar
+  (iteration 10 task 15); see the "Withdrawn" bullet of Decision
 
 ## Context
 
@@ -38,8 +43,17 @@ ever deleted.
   Search, a beer's details, the brewery list, adding to a cellar and adding a
   beer to an existing brewery all apply it. A `PENDING` row is also left out of
   every public read of a cellar and of the feed. A `REJECTED` or `REMOVED` row
-  is hidden from all of those and from a public cellar, and still named
-  wherever else something points at it: an owner's cellar and the feed.
+  is never visible, to its contributor either.
+- **Withdrawn** is a `REJECTED` or `REMOVED` beer, and one rule decides it
+  everywhere. A public read leaves it out exactly as it leaves out a `PENDING`
+  one: no feed line and no public-cellar entry, before or after the operator
+  acts, so rejecting a beer never publishes what review held back. A user who
+  holds it keeps their bottles, since no row is deleted, but cannot add
+  another: the add answers `404`, the refusal it already documents for a beer
+  that does not exist, so the contract gains no status. Their own cellar
+  (`GET /api/v1/cellar`) still returns the entry, with `withdrawn: true`, which
+  a client shows unlinked and with a note, because the beer's details page
+  answers `404`. A client does not infer this from a failed details lookup.
 - **A contributor may have 20 entries waiting** (`PENDING` beers plus
   breweries; a beer with a new brewery is two). An add past that answers `429`
   `problem+json` until some are approved or rejected. Two adds by one
@@ -51,8 +65,8 @@ ever deleted.
   `PENDING` into `APPROVED`, *reject* turns `PENDING` into `REJECTED`, *remove*
   turns `PENDING` or `APPROVED` into `REMOVED`.
 - **No catalog row is deleted**, by the command or by anything else. Hidden is
-  a state, not an absence, and an integration test pins that an owner's cellar entry
-  and a feed line pointing at a rejected or removed beer still render.
+  a state, not an absence, and an integration test pins that the rows and a
+  holder's cellar entry for a rejected or removed beer remain.
 - **A hidden row leaves the duplicate key.** The unique indexes on
   `(brewery, folded name)` and `(folded name, country)` cover `PENDING` and
   `APPROVED` rows only, so a name an operator refused can be proposed again.
@@ -103,10 +117,12 @@ ever deleted.
   one they cannot: proposing the name of someone else's pending entry answers
   `409` with an id that then reads as not found, and for a brewery discloses its
   name and country and offers a brewery the proposer cannot use.
-- Bad, because a hidden beer's details page answers `404` while a cellar entry
-  and a feed line still render it, so their link to it is dead; and a public
-  cellar omits a rejected or removed beer that the owner's cellar and the feed
-  still show.
+- Bad, because a holder of a beer that is later rejected or removed sees it
+  vanish from public view and from the add path without being told why beyond
+  the note in their own cellar; nothing notifies them (see the revisit trigger).
+- Bad, because the owner's cellar read is the one place a withdrawn beer is
+  still returned, so a client that ignores `withdrawn` links to a details page
+  that answers `404`.
 - Bad, because removing a brewery hides nothing of another contributor's beers
   in it; they stay visible, under a brewery the lists no longer show.
 - Neutral, because every catalog read now filters on `moderation_status`; the

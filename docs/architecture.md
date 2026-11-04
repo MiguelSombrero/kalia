@@ -359,16 +359,20 @@ row is found, opened and cellared by its contributor alone, and is left out of
 search, the brewery list, other users' reads, every public cellar and the feed
 until approved. A contributor may have 20 entries waiting (a new brewery counts
 as one); an add past that answers `429` `problem+json`. A `REJECTED` or
-`REMOVED` row is hidden from search and lists the same way, and is dropped from
-the duplicate key so its name can be proposed again.
+`REMOVED` row is withheld the same way from search, lists, every public read
+and the feed, whoever contributed it, and is dropped from the duplicate key so
+its name can be proposed again.
 
 **A catalog beer is never deleted.** Cellar entries and feed lines point at one
 by id across a module boundary with no foreign key, so a deleted beer would
 leave entries its owner can no longer see. Hiding is a state, not an absence:
-a `REJECTED` or `REMOVED` beer is still named in an owner's cellar and the feed,
-but not in a public cellar. `CellarService` and `FeedService` therefore treat a beer
-they cannot resolve as a defect (the cellar logs it at `WARN`), except one
-that is not `APPROVED`, which a public cellar read withholds on purpose.
+a `REJECTED` or `REMOVED` beer is withheld from every public read, the feed
+included, and is named only in the cellar of a user who holds it, as an entry
+with `withdrawn: true`: its details page answers `404`, and a holder keeps the
+bottles but cannot add another (the add answers `404`, as for a beer that does
+not exist). `CellarService` and `FeedService` therefore treat a beer they cannot
+resolve as a defect (the cellar logs it at `WARN`), except one the reader may
+not be shown, which a read withholds on purpose.
 
 Catalog search is served by indexes matching the shape of each filter: a
 `pg_trgm` trigram `GIN` index on `lower(beer.name)` for substring matching, and

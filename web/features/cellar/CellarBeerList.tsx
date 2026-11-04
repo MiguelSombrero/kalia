@@ -113,12 +113,16 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
           {/* eslint-disable-next-line no-restricted-syntax -- a beer's name heads its own row: neither a page title nor a section heading */}
           <h2 id={headingId} className="text-xl/snug font-bold text-foreground">
-            <Link
-              href={beerHref(locale, beer.beerId)}
-              className="inline-block py-0.5 hover:text-primary hover:underline hover:underline-offset-2"
-            >
-              {beer.beerName}
-            </Link>
+            {beer.withdrawn ? (
+              beer.beerName
+            ) : (
+              <Link
+                href={beerHref(locale, beer.beerId)}
+                className="inline-block py-0.5 hover:text-primary hover:underline hover:underline-offset-2"
+              >
+                {beer.beerName}
+              </Link>
+            )}
           </h2>
           <span className="text-sm font-semibold tabular-nums text-foreground">
             {t("cellar.entry.bottleCount", { count: bottles.length + (beer.unlistedBottles ?? 0) })}
@@ -127,6 +131,7 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
             {beer.breweryName} · {beer.style} · <span className="tabular-nums">{formatAbv(beer.abv, locale)}</span>
           </p>
         </div>
+        {beer.withdrawn && <p className="text-sm text-muted-foreground">{t("cellar.entry.withdrawn")}</p>}
         {beer.unlistedBottles !== undefined && (
           <p className="text-sm text-muted-foreground">
             {t("cellar.entry.listed", { count: bottles.length })}
@@ -144,7 +149,7 @@ const CellarBeerBlock = ({ locale, beer, owner }: { locale: Locale; beer: Cellar
               lastBottle={bottles.length === 1}
             />
           ))}
-          {owner && (
+          {owner && !beer.withdrawn && (
             <li className="flex">
               <AddBottleDialog beerId={beer.beerId} beerName={beer.beerName} trigger="tile" />
             </li>

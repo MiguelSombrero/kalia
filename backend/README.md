@@ -277,9 +277,8 @@ make moderate ACTION=remove  WHO=<username or id>
 turns `PENDING` into `REJECTED`; *remove* turns `PENDING` and `APPROVED` into
 `REMOVED`. It runs `scripts/moderate-contributor.sql` in one transaction and
 prints how many beers and breweries changed. An unknown action or contributor
-fails and changes nothing. A hidden row stays in the table, and the cellar
-entries and feed lines pointing at it keep rendering: never `DELETE` a catalog
-row.
+fails and changes nothing. A hidden row stays in the table, and a holder's
+cellar entry pointing at it keeps rendering: never `DELETE` a catalog row.
 
 To see what is waiting:
 

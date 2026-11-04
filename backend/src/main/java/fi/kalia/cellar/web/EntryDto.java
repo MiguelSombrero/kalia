@@ -14,13 +14,17 @@ public record EntryDto(
 		@Schema(description = "Derived by counting bottles, never stored", requiredMode = Schema.RequiredMode.REQUIRED) long quantity,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<BottleDto> bottles) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<BottleDto> bottles,
+		@Schema(description = """
+				True when an operator rejected or removed the beer: the caller keeps the bottles but \
+				cannot add more, and the beer has no details page\
+				""", requiredMode = Schema.RequiredMode.REQUIRED) boolean withdrawn) {
 
 	static EntryDto from(EntryView view) {
 		Entry entry = view.entry();
 		List<BottleDto> bottles = entry.getBottles().stream().map(BottleDto::from).toList();
 		return new EntryDto(entry.getId(), CellarBeerDto.from(view.beer()), bottles.size(), entry.getCreatedAt(),
-				entry.getUpdatedAt(), bottles);
+				entry.getUpdatedAt(), bottles, view.beer().withdrawn());
 	}
 
 }

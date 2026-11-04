@@ -333,9 +333,13 @@
           "updatedAt" : {
             "format" : "date-time",
             "type" : "string"
+          },
+          "withdrawn" : {
+            "description" : "True when an operator rejected or removed the beer: the caller keeps the bottles but cannot add more, and the beer has no details page",
+            "type" : "boolean"
           }
         },
-        "required" : [ "beer", "bottles", "createdAt", "id", "quantity", "updatedAt" ],
+        "required" : [ "beer", "bottles", "createdAt", "id", "quantity", "updatedAt", "withdrawn" ],
         "type" : "object"
       },
       "FeedLineDto" : {
@@ -1224,7 +1228,7 @@
     },
     "/api/v1/cellar" : {
       "get" : {
-        "description" : "Every entry the caller owns, each with its bottles and derived quantity. Not paginated.",
+        "description" : "Every entry the caller owns, each with its bottles and derived quantity. Not paginated. An entry of a beer an operator rejected or removed is still returned, with withdrawn true.",
         "operationId" : "listEntries",
         "responses" : {
           "200" : {
@@ -1270,7 +1274,7 @@
     },
     "/api/v1/cellar/bottles" : {
       "post" : {
-        "description" : "Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned.",
+        "description" : "Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned. A beer an operator rejected or removed cannot be added to, even by a caller who already holds it.",
         "operationId" : "addBottles",
         "requestBody" : {
           "content" : {
@@ -1328,7 +1332,7 @@
                 }
               }
             },
-            "description" : "No catalog beer with the given id"
+            "description" : "No catalog beer the caller may add to has the given id: none exists, it is another contributor's and awaiting approval, or an operator rejected or removed it"
           },
           "409" : {
             "content" : {
