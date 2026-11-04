@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -62,22 +61,30 @@ public class CatalogService {
 		return beers.findOne(visibleTo(id, viewerId)).orElseThrow(() -> new BeerNotFoundException(id));
 	}
 
-	// A rejected or removed beer is still summarised: cellar entries and feed lines
-	// keep showing what they point at (ADR-0091). Only a pending beer is withheld.
+	// A rejected or removed beer is summarised, marked withdrawn, only for a viewer reading their
+	// own holdings (a non-null viewerId); a public read withholds everything not approved (ADR-0091).
 	public BeerSummaries getBeerSummaries(Collection<UUID> ids, @Nullable UUID viewerId) {
 		Map<UUID, BeerSummary> found = new HashMap<>();
 		Set<UUID> withheld = new HashSet<>();
 		for (Beer beer : beers.findByIdIn(ids)) {
-			boolean pendingForSomeoneElse = beer.getModerationStatus() == ModerationStatus.PENDING
-					&& !Objects.equals(beer.getContributorId(), viewerId);
-			if (pendingForSomeoneElse) {
-				withheld.add(beer.getId());
-			} else {
+			if (shownTo(beer, viewerId)) {
+				boolean withdrawn = beer.getModerationStatus() == ModerationStatus.REJECTED
+						|| beer.getModerationStatus() == ModerationStatus.REMOVED;
 				found.put(beer.getId(), new BeerSummary(beer.getId(), beer.getName(), beer.getBrewery().getName(),
-						beer.getStyle(), beer.getAbv()));
+						beer.getStyle(), beer.getAbv(), withdrawn));
+			} else {
+				withheld.add(beer.getId());
 			}
 		}
 		return new BeerSummaries(found, withheld);
+	}
+
+	private static boolean shownTo(Beer beer, @Nullable UUID viewerId) {
+		return switch (beer.getModerationStatus()) {
+			case APPROVED -> true;
+			case PENDING -> viewerId != null && viewerId.equals(beer.getContributorId());
+			case REJECTED, REMOVED -> viewerId != null;
+		};
 	}
 
 	public Set<UUID> withheldFromPublic(Collection<UUID> ids) {

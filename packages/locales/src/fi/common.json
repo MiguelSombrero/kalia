@@ -295,7 +295,8 @@
       "bottleCount_one": "{{count}} pullo",
       "bottleCount_other": "{{count}} pulloa",
       "listed_one": "Näytetään sen vanhin pullo",
-      "listed_other": "Näytetään sen {{count}} vanhinta pulloa"
+      "listed_other": "Näytetään sen {{count}} vanhinta pulloa",
+      "withdrawn": "Tämä olut on poistettu oluiden luettelosta. Pullosi säilyvät, mutta et voi lisätä uusia."
     },
     "bottle": {
       "list": "Oluen {{beer}} pullot",

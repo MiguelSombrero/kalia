@@ -7,6 +7,7 @@ import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
 import fi.kalia.catalog.domain.BreweryRepository;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,6 +34,9 @@ class CatalogModuleApiIT {
 
 	@Autowired
 	private JdbcTemplate jdbc;
+
+	@Autowired
+	private EntityManager entityManager;
 
 	private CatalogApi api;
 
@@ -95,6 +99,41 @@ class CatalogModuleApiIT {
 
 		assertThat(api.withheldFromPublic(ids)).containsExactlyInAnyOrderElementsOf(notApproved);
 		assertThat(api.withheldFromPublic(List.of())).isEmpty();
+	}
+
+	@Test
+	void aRejectedOrRemovedBeerIsWithheldFromAPublicReadAndMarkedWithdrawnInAHoldersOwn() {
+		List<Beer> seeded = beers.findAll(Pageable.ofSize(5)).getContent();
+		UUID approved = seeded.get(0).getId();
+		UUID viewer = UUID.randomUUID();
+		UUID ownPending = seeded.get(1).getId();
+		UUID othersPending = seeded.get(2).getId();
+		UUID rejected = seeded.get(3).getId();
+		UUID removed = seeded.get(4).getId();
+		markContributed(ownPending, "PENDING", viewer);
+		markContributed(othersPending, "PENDING", UUID.randomUUID());
+		markContributed(rejected, "REJECTED", viewer);
+		markContributed(removed, "REMOVED", viewer);
+		entityManager.clear();
+		List<UUID> ids = List.of(approved, ownPending, othersPending, rejected, removed);
+
+		BeerSummaries publicRead = api.getBeerSummaries(ids, null);
+		BeerSummaries ownRead = api.getBeerSummaries(ids, viewer);
+
+		assertThat(publicRead.found()).containsOnlyKeys(approved);
+		assertThat(publicRead.withheld()).containsExactlyInAnyOrder(ownPending, othersPending, rejected, removed);
+		assertThat(ownRead.found()).containsOnlyKeys(approved, ownPending, rejected, removed);
+		assertThat(ownRead.withheld()).containsExactly(othersPending);
+		assertThat(ownRead.found().get(approved).withdrawn()).isFalse();
+		assertThat(ownRead.found().get(ownPending).withdrawn()).isFalse();
+		assertThat(ownRead.found().get(rejected).withdrawn()).isTrue();
+		assertThat(ownRead.found().get(removed).withdrawn()).isTrue();
+	}
+
+	private void markContributed(UUID beerId, String status, UUID contributor) {
+		jdbc.update("""
+				UPDATE catalog.beer SET source = 'USER', wikidata_qid = NULL, moderation_status = ?,
+				contributor_id = ? WHERE id = ?""", status, contributor, beerId);
 	}
 
 	@Test

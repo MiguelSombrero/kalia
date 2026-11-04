@@ -132,7 +132,7 @@ public class FeedService {
 
 	}
 
-	// A line whose beer is awaiting approval, or whose person is not public, is dropped. Shared by
+	// A line whose beer is not approved, or whose person is not public, is dropped. Shared by
 	// every read so the visibility filter cannot diverge between them.
 	private List<FeedLineView> resolve(List<FeedLine> page) {
 		Set<UUID> userIds = page.stream().map(FeedLine::getUserId).collect(Collectors.toSet());

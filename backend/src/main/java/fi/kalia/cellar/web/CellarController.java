@@ -60,7 +60,11 @@ class CellarController {
 	// drop this operation's 200 from /v3/api-docs (backend/README.md traps).
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(summary = "List the caller's cellar",
-			description = "Every entry the caller owns, each with its bottles and derived quantity. Not paginated.")
+			description = """
+					Every entry the caller owns, each with its bottles and derived quantity. Not paginated. \
+					An entry of a beer an operator rejected or removed is still returned, with withdrawn \
+					true.\
+					""")
 	List<EntryDto> listEntries() {
 		return cellar.listEntries(identity.requireCurrentUserId()).stream().map(EntryDto::from).toList();
 	}
@@ -90,13 +94,18 @@ class CellarController {
 			description = """
 					Adds the requested quantity of identical bottles, each its own independently \
 					editable row. Extends the entry for this catalog beer if the caller already has \
-					one, otherwise creates it. Bottle ids are always server-assigned.\
+					one, otherwise creates it. Bottle ids are always server-assigned. A beer an operator \
+					rejected or removed cannot be added to, even by a caller who already holds it.\
 					""")
 	@ApiResponses({
 			@ApiResponse(responseCode = "400", description = "The bottle's dates or quantity are invalid",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
-			@ApiResponse(responseCode = "404", description = "No catalog beer with the given id",
+			@ApiResponse(responseCode = "404",
+					description = """
+							No catalog beer the caller may add to has the given id: none exists, it is another \
+							contributor's and awaiting approval, or an operator rejected or removed it\
+							""",
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = CONCURRENT_WRITE,

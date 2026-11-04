@@ -1,6 +1,6 @@
 # Task 15: A rejected or removed beer is treated the same way everywhere
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -66,13 +66,13 @@ reads, and what its details link leads to.
 
 ## Acceptance criteria
 
-- [ ] `ContributionModerationIT` covers a holder adding to, and reading the
+- [x] `ContributionModerationIT` covers a holder adding to, and reading the
       public views of, a rejected and a removed beer, and asserts the rule
       refinement chose; the changed assertions failed before the fix
-- [ ] A test of the web's cellar shows a withheld beer unlinked, with the
+- [x] A test of the web's cellar shows a withheld beer unlinked, with the
       withdrawn note in both locales
-- [ ] ADR-0091 states the rule for both statuses
-- [ ] `make verify-fast` is green
+- [x] ADR-0091 states the rule for both statuses
+- [x] `make verify-fast` is green
 
 ## Notes
 

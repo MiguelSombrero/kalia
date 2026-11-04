@@ -120,6 +120,7 @@ class ContributionModerationIT {
 		awaitFeedLine(contributorId);
 
 		assertThat(cellarBeerIds(CONTRIBUTOR)).as("the owner's own cellar").containsExactly(beerId);
+		assertThat(cellarValues("$[*].withdrawn")).as("a pending beer is not withdrawn").containsExactly(false);
 		assertThat(publicCellarBeerIds()).as("the public cellar").isEmpty();
 		assertThat(feedBeerIds()).as("the anonymous feed").doesNotContain(beerId);
 
@@ -203,7 +204,7 @@ class ContributionModerationIT {
 	}
 
 	@Test
-	void aRejectedBeerIsHiddenButItsRowStaysAndItsOwnersCellarAndTheFeedStillRender() {
+	void aRejectedBeerIsWithheldEverywhereButItsRowAndItsHoldersBottlesStay() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
@@ -219,7 +220,7 @@ class ContributionModerationIT {
 	}
 
 	@Test
-	void aRemovedBeerIsHiddenButItsRowStaysAndItsOwnersCellarAndTheFeedStillRender() {
+	void aRemovedBeerIsWithheldEverywhereButItsRowAndItsHoldersBottlesStay() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
@@ -300,8 +301,12 @@ class ContributionModerationIT {
 			get(viewer, "/api/v1/beers/" + beerId).expectStatus().isNotFound();
 		}
 		assertThat(cellarBeerIds(CONTRIBUTOR)).as("the owner's cellar").containsExactly(beerId);
+		assertThat(cellarValues("$[*].withdrawn")).as("flagged withdrawn").containsExactly(true);
+		assertThat(cellarValues("$[*].quantity")).as("the holder keeps the bottle").containsExactly(1);
 		assertThat(publicCellarBeerIds()).as("the public cellar").isEmpty();
-		assertThat(feedBeerIds()).as("the feed").contains(beerId);
+		assertThat(feedBeerIds()).as("the feed").doesNotContain(beerId);
+		addBottle(CONTRIBUTOR, beerId).expectStatus().isNotFound();
+		assertThat(cellarValues("$[*].quantity")).as("the refused add changed nothing").containsExactly(1);
 	}
 
 	private void moderate(String action) {
@@ -366,6 +371,12 @@ class ContributionModerationIT {
 
 	private List<String> cellarBeerIds(String bearer) {
 		return ids(get(bearer, "/api/v1/cellar"), "$[*].beer.id");
+	}
+
+	private List<Object> cellarValues(String path) {
+		String body = get(CONTRIBUTOR, "/api/v1/cellar").expectStatus().isOk().expectBody(String.class).returnResult()
+				.getResponseBody();
+		return JsonPath.read(body, path);
 	}
 
 	private String addedBeerId(Map<String, Object> body) {

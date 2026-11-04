@@ -26,6 +26,8 @@ export type CellarBeer = {
   abv: number;
   /** A public cellar's bottles are its own DTO, field-for-field alike (ADR-0050). */
   bottles: BottleDto[];
+  /** Set only on the owner's own cellar, for a beer an operator rejected or removed (ADR-0091). */
+  withdrawn?: boolean;
   /** Bottles held beyond those listed, set only when a public read capped the list. */
   unlistedBottles?: number;
 };

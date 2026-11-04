@@ -144,6 +144,18 @@ describe("listCellarEntries", () => {
     await expect(listCellarEntries()).resolves.toEqual(expected);
   });
 
+  it("carries a withdrawn beer's flag onto its row and sets none on a beer still in the catalog", async () => {
+    stubFetch(() => [
+      entry({ id: secondEntryId, beer: secondBeer, withdrawn: true }),
+      entry({ withdrawn: false }),
+    ]);
+
+    const [withdrawn, listed] = await listCellarEntries();
+
+    expect(withdrawn.withdrawn).toBe(true);
+    expect(listed).not.toHaveProperty("withdrawn");
+  });
+
   it("reads a cellar of many beers in one backend call, keeping the backend's order", async () => {
     const fetchMock = stubFetch((url) => {
       if (url.includes("/api/v1/cellar")) {
