@@ -58,7 +58,7 @@ export const hostProblem = (host, facts) => {
   if (!host || !validHost(host)) return "HOST must be this Mac's name on the tailnet, as `tailscale status` lists it";
   if (!facts.installed) return "Tailscale is not installed; see mobile/README.md, \"Reach the stack from the iPhone\"";
   if (!facts.running) return "Tailscale is not running or not signed in; open it and sign in first";
-  if (!facts.names.includes(host.toLowerCase())) return "HOST is not the name Tailscale gives this Mac; copy it from `tailscale status`";
+  if (!facts.names.includes(host.toLowerCase())) return "HOST is not the name Tailscale gives this Mac; it is the first column of `tailscale status` for this Mac, not the display name";
   return undefined;
 };
 

@@ -17,7 +17,7 @@ export const findTailscale = () => ["tailscale", APP_CLI].find((command) => run(
 
 export const parseVersion = (output) => output.match(/^\s*(\d+\.\d+\.\d+)/)?.[1];
 
-// A running Tailscale, and the two names this Mac answers to on the tailnet.
+// A running Tailscale, and the two names this Mac answers to on the tailnet: its MagicDNS name and that name's first label. `Self.HostName` is the machine's display name ("Someone's MacBook") and is no DNS name.
 // `Self.DNSName` ends in a dot, which no URL takes.
 export const parseStatus = (json) => {
   let status;
@@ -26,7 +26,8 @@ export const parseStatus = (json) => {
   } catch {
     return { running: false, names: [] };
   }
-  const names = [status.Self?.DNSName?.replace(/\.$/, ""), status.Self?.HostName].filter(Boolean).map((name) => name.toLowerCase());
+  const dnsName = status.Self?.DNSName?.replace(/\.$/, "");
+  const names = [dnsName, dnsName?.split(".")[0]].filter(Boolean).map((name) => name.toLowerCase());
   return { running: status.BackendState === "Running", names };
 };
 

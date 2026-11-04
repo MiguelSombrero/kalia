@@ -69,8 +69,8 @@ test("parseVersion reads the first line of `tailscale version`", () => {
 });
 
 test("parseStatus reads the running state and the Mac's two names, without the DNS name's final dot", () => {
-  const json = JSON.stringify({ BackendState: "Running", Self: { DNSName: "Mac.example.ts.net.", HostName: "Mac" } });
-  assert.deepEqual(parseStatus(json), { running: true, names: ["mac.example.ts.net", "mac"] });
+  const json = JSON.stringify({ BackendState: "Running", Self: { DNSName: "Mac-1.example.ts.net.", HostName: "Someone's Mac" } });
+  assert.deepEqual(parseStatus(json), { running: true, names: ["mac-1.example.ts.net", "mac-1"] });
   assert.equal(parseStatus(JSON.stringify({ BackendState: "NeedsLogin" })).running, false);
   assert.deepEqual(parseStatus("Tailscale is stopped."), { running: false, names: [] });
 });

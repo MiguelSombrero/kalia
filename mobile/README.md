@@ -265,8 +265,10 @@ tailnet's name and the Mac's live in the root `.env` alone.
    account. `tailscale status` lists the Mac under its name. If `tailscale
    serve` later says Serve is not enabled for the tailnet, it prints a link:
    open it and enable it.
-2. **Turn phone mode on** with the Mac's *short* name from `tailscale status`
-   (one label, no dots), in the checkout whose stack the phone should reach:
+2. **Turn phone mode on** with the Mac's *short* name, the first label of its
+   MagicDNS name (one word, no dots, no spaces: the first column of `tailscale
+   status` for this Mac, not the machine's display name), in the checkout whose
+   stack the phone should reach:
 
    ```bash
    make phone-mode HOST=<the Mac's name from tailscale status>
