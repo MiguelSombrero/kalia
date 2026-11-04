@@ -166,3 +166,8 @@ test("the plist reader handles nested structures, entities and self-closing valu
   const parsed = parsePlist(`<plist><dict><key>a&amp;b</key><array><string>x</string><string/><integer>3</integer></array><key>c</key><true/></dict></plist>`);
   assert.deepEqual(parsed, { "a&b": ["x", "", 3], c: true });
 });
+
+test("the plist reader skips comments, the declaration and the doctype, and does not read a comment's contents", () => {
+  const parsed = parsePlist(`<?xml version="1.0"?><!DOCTYPE plist><!-- <key>x</key><true/> --><plist><dict><!-- note --><key>a</key><false/></dict></plist>`);
+  assert.deepEqual(parsed, { a: false });
+});

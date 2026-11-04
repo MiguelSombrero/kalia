@@ -25,10 +25,9 @@ const decode = (text) => text.replace(/&(amp|lt|gt|quot|apos);/g, (entity) => EN
 
 // Only what an Info.plist holds: nested dictionaries, arrays, strings, booleans and numbers.
 export const parsePlist = (xml) => {
-  const stripped = xml.replace(/<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>]*>/g, "");
-  const tokens = [...stripped.matchAll(/<(\/?)([A-Za-z]+)\s*(\/?)>|([^<]+)/g)]
-    .map(([, closing, name, selfClosing, text]) => (name ? { name, closing: closing === "/", selfClosing: selfClosing === "/" } : { text }))
-    .filter((token) => token.name || token.text.trim() !== "");
+  const tokens = [...xml.matchAll(/<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>]*>|<(\/?)([A-Za-z]+)\s*(\/?)>|([^<]+)/g)]
+    .filter(([, , name, , text]) => name || (text !== undefined && text.trim() !== ""))
+    .map(([, closing, name, selfClosing, text]) => (name ? { name, closing: closing === "/", selfClosing: selfClosing === "/" } : { text }));
   let at = 0;
   const textUntilClose = () => {
     let text = "";
