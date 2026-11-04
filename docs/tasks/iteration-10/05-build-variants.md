@@ -1,6 +1,6 @@
 # Task 05: A development build and a release build run on both platforms
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-4
 
@@ -132,14 +132,14 @@ does not answer.
 
 ## Acceptance criteria
 
-- [ ] A release build launches on the iPhone, in phone mode, with no Metro
+- [x] A release build launches on the iPhone, in phone mode, with no Metro
       running and no dev menu, signs in and lists the catalog — verified by
       hand and described in the PR, with no host address or name in the
       description
-- [ ] A release build launches on the Android emulator with no Metro running
+- [x] A release build launches on the Android emulator with no Metro running
       and no dev menu, signs in and lists the catalog, as `make mobile-e2e`'s
       Android leg does against `localhost`
-- [ ] A development build still runs on the iOS Simulator and the Android
+- [x] A development build still runs on the iOS Simulator and the Android
       emulator through the existing `make` targets, and `make mobile-e2e`
       passes on both, the iOS Simulator one as a release build
 - [x] A check over a generated native project fails one that carries a
