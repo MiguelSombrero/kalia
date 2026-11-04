@@ -130,7 +130,12 @@ decides to spend:
   here first:
   - **Seven days.** The provisioning profile, and so the install, expires
     seven days after it is issued; the app then stops opening until it is
-    rebuilt and reinstalled from source.
+    rebuilt and reinstalled from source. **The first real expiry is still to
+    be observed:** [task 04](iteration-10/04-free-apple-id-signing.md) shipped
+    the re-signing routine unobserved, about a week after the first install on
+    2026-11-04, and what the app does at expiry and whether the cellar survives
+    a re-sign are written into `mobile/README.md` only once someone has watched
+    it happen.
   - **Three apps per device,** and ten App IDs a week; the device is the
     developer's own, never a tester's.
   - **No push notifications, no universal links, no TestFlight.** Apple's

@@ -237,23 +237,35 @@ the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
    Launcher] Strip Local Network Keys for Release". It comes from
    `expo-dev-launcher` and is harmless: it is not why a build fails, so read
    above it for the error.
-6. **Trust the developer on the iPhone.** The first launch is refused as from
-   an untrusted developer: Settings > General > VPN & Device Management > the
-   Apple ID under Developer App > **Trust**, then open Kalia.
+6. **Trust the developer on the iPhone.** On a free Personal Team the first
+   launch is refused, because the phone does not yet trust the developer:
+   `make mobile-ios-device` finishes by saying the app is installed and to trust
+   it, which is the expected outcome, not a failure. Settings > General > VPN &
+   Device Management > the Apple ID under Developer App > **Trust**, then open
+   Kalia. With no Metro running it opens to the Expo development launcher,
+   "searching for development servers": that is as far as this build goes
+   before phone mode ([task 02](../docs/tasks/iteration-10/02-the-phone-reaches-the-stack.md)).
+
+The scripted build and install above, with the trust step, were carried out
+once on the product owner's iPhone on 2026-11-04: the build succeeded, the app
+installed, and after trusting the developer it opened to the development
+launcher.
 
 ### Re-signing after seven days
 
 The install stops opening seven days after it was signed. There is no renewal
-short of the paid program: re-signing is a rebuild and reinstall from source,
-the same `make mobile-ios-device` with the phone connected and the root `.env`
-in the mode you want installed (step 4), because the new build replaces the old
-one. The build's `-allowProvisioningUpdates` is what renews the profile. Put the reminder in your own calendar; no file here carries it.
+short of the paid program, so the routine is a rebuild and reinstall from
+source: `make mobile-ios-device` again with the phone connected and the root
+`.env` in the mode you want installed (step 4), because the new build replaces
+the old one. The build's `-allowProvisioningUpdates` is meant to renew the
+profile. Put the reminder in your own calendar; no file here carries it.
 
-The scripted build, install and launch above have not yet been seen to complete
-on a phone, and whether the cellar survives a re-sign has not been observed
-either. This section records each as it is observed and claims nothing before. This section
-records it once the first re-sign has been carried out, and promises nothing
-before.
+**This routine has not been observed.** Nobody has yet watched an install
+expire or re-signed one, so this README claims nothing about what the app does
+when it expires, whether the re-sign works as written, or whether the cellar
+survives it. The first real expiry is tracked in
+[the backlog](../docs/tasks/backlog.md#mobile-client); this section is
+corrected from what is seen then.
 
 ## Icon, splash and name
 

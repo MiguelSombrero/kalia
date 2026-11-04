@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { REFUSALS, appPath, chooseDevice, installArgs, launchArgs, physicalPhones, xcodebuildArgs } from "./mobile-ios-device.mjs";
+import { LAUNCH_REFUSED, REFUSALS, appPath, chooseDevice, installArgs, launchArgs, physicalPhones, xcodebuildArgs } from "./mobile-ios-device.mjs";
 
 const UDID = "00000000-FAKEFAKEFAKEFAKE";
 
@@ -71,4 +71,11 @@ test("install and launch address the same device, and the app is the one the bui
   assert.equal(installArgs(UDID).at(-1), appPath());
   assert.match(appPath(), /Debug-iphoneos\/Kalia\.app$/);
   assert.deepEqual(launchArgs(UDID), ["devicectl", "device", "process", "launch", "--device", UDID, "fi.kalia.app"]);
+});
+
+test("a refused first launch is reported as the expected trust step, not a failure", () => {
+  assert.match(LAUNCH_REFUSED, /installed/i);
+  assert.match(LAUNCH_REFUSED, /expected/);
+  assert.match(LAUNCH_REFUSED, /Trust/);
+  assert.doesNotMatch(LAUNCH_REFUSED, /fail|error/i);
 });

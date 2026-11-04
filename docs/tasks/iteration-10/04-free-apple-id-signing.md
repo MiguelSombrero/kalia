@@ -21,8 +21,8 @@ demo.
 `mobile/README.md` takes a developer from an iPhone that has never run Kalia
 to Kalia installed on it, at no cost: the Personal Team, developer mode,
 trusting the developer on the phone, and the build that installs. The routine
-for re-signing after the seven-day expiry is written down and carried out
-once. What a free Personal Team cannot do is recorded where planning will meet
+for re-signing after the seven-day expiry is written down; carrying it out is
+not part of this task (see the 2026-11-04 change below). What a free Personal Team cannot do is recorded where planning will meet
 it.
 
 ## Non-goals
@@ -68,8 +68,9 @@ it.
   ADR-0094's amendment and `mobile/README.md`'s re-signing routine point to it.
 - **Re-signing is a rebuild and reinstall from source.** A reminder is the
   product owner's own calendar entry, never a repository file.
-- **Whether the cellar survives a re-sign:** the README states what the DW-3
-  run observed, and promises nothing more.
+- **Whether the cellar survives a re-sign:** the README states only what has
+  been observed, and promises nothing more. Superseded as to when by the
+  2026-11-04 change below: nothing is observed within this task.
 - **The product owner's own iPhone is the only device** DW-1 and DW-3 are
   verified on.
 - The first install fixes [task 03](03-app-identity.md)'s identifier; if a
@@ -98,13 +99,29 @@ ADR-0097 was accepted):
   local network Xcode pairs with, and Tailscale is task 02's dependency, not
   this one's.
 
+**Changed during implementation, 2026-11-04** (product owner):
+
+- **The re-signing criterion is dropped from this task.** Revoking the install
+  to simulate the seven-day expiry is complicated, and the real expiry arrives
+  about a week after the first install anyway. The routine ships as written
+  (`make mobile-ios-device` again, with the phone connected), **unobserved**:
+  `mobile/README.md` claims nothing about re-signing or about whether the cellar
+  survives it until someone has watched a real expiry. That observation is
+  recorded in [the backlog](../backlog.md#mobile-client)'s cost list so it is
+  not lost, and [iteration 10](../iteration-10.md)'s DW-3 stays unmet until it
+  is made.
+- **The first launch is expected to be refused.** On a free Personal Team the
+  phone does not yet trust the developer, so `devicectl`'s launch fails after
+  a successful install; `make mobile-ios-device` says so as the next step,
+  not as a failure.
+
 ## Open questions
 
 **None.**
 
 ## Acceptance criteria
 
-- [ ] Following `mobile/README.md` from an iPhone that has never run Kalia,
+- [x] Following `mobile/README.md` from an iPhone that has never run Kalia,
       the app is installed and opens, to the app or to the development
       launcher, without a stack or a tailnet — carried out by the product
       owner and described in the PR without any device or account identifier
@@ -112,10 +129,6 @@ ADR-0097 was accepted):
       before any other Kalia build is installed on the phone, and shows task
       03's icon, name and splash screen — the PR says so, from the product
       owner's run
-- [ ] The re-signing routine is carried out once by revoking the install to
-      simulate the seven-day expiry, which cannot arrive before the PR merges;
-      the PR says what was revoked, what the app did afterwards, whether the
-      cellar survived (DW-3), and `mobile/README.md` states only that
 - [x] ADR-0094 is amended to allow a free Personal Team on the developer's
       own device, and the limits are recorded in the backlog's cost list with
       pointers from ADR-0094 and `mobile/README.md`

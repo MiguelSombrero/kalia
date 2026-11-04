@@ -75,6 +75,8 @@ export const appPath = () => resolve(DERIVED_DATA, "Build/Products/Debug-iphoneo
 
 export const installArgs = (udid) => ["devicectl", "device", "install", "app", "--device", udid, appPath()];
 
+export const LAUNCH_REFUSED =
+  "Kalia is installed. The phone refused to launch it because it does not trust the developer yet, which is expected on the first install: on the iPhone, Settings > General > VPN & Device Management > the Apple ID under Developer App > Trust, then open Kalia from the home screen.";
 export const launchArgs = (udid) => ["devicectl", "device", "process", "launch", "--device", udid, BUNDLE_ID];
 
 export const listDevices = () => {
@@ -100,7 +102,7 @@ export const installOnDevice = ({ env, teamId, prebuild }) => {
   prebuild();
   step("xcodebuild", xcodebuildArgs({ udid: choice.udid, teamId }), env);
   step("xcrun", installArgs(choice.udid), env);
-  // A phone that does not yet trust the developer refuses the launch; the install has still happened.
+  // A free Personal Team's developer is untrusted on first install, so the launch is refused; the install has still happened.
   const launch = spawnSync("xcrun", launchArgs(choice.udid), { cwd: ROOT, env, stdio: "inherit" });
-  if (launch.status !== 0) console.log("installed, but the app did not launch: trust the developer on the iPhone, then open Kalia from its home screen");
+  if (launch.status !== 0) console.log(LAUNCH_REFUSED);
 };

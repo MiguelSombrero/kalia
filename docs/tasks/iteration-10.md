@@ -12,7 +12,11 @@ a documented routine rather than a surprise.
   Mac and browses the catalog served from it, without breaking the browser or
   simulator setup.
 - **DW-3:** The routine for re-signing after the free Apple ID's seven-day
-  expiry is written down and has been carried out once.
+  expiry is written down and has been carried out once. *The product owner
+  dropped carrying it out by revoking the install on 2026-11-04
+  ([task 04](iteration-10/04-free-apple-id-signing.md)); it is carried out at
+  the first real expiry, kept in
+  [the backlog](backlog.md#mobile-client), and DW-3 stays unmet until then.*
 - **DW-4:** A release-mode build — bundled JavaScript, no dev menu — runs on
   both the iPhone and the Android emulator.
 - **DW-5:** How a real phone reaches the Mac, and where app errors are visible
@@ -131,7 +135,8 @@ here:
 - **Every acceptance criterion is checkable before its pull request merges**
   ([task 20](iteration-10/20-process-records-match-practice.md)'s answer to
   COULD-91). This iteration's criteria were worded to it: the seven-day
-  re-sign can be simulated by revoking the install, the ten end-to-end runs
+  re-sign could be simulated by revoking the install (dropped for task 04 on
+  2026-11-04, above), the ten end-to-end runs
   happen on the PR's own branch, and the first look at the icon on the iPhone
   is [task 04](iteration-10/04-free-apple-id-signing.md)'s, not
   [task 03](iteration-10/03-app-identity.md)'s.
