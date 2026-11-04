@@ -80,6 +80,13 @@ message: two branches each claimed the next number, because each read only
 its own working tree. Renumber whichever has not merged, and allocate with
 `make next-adr` — which scans every remote-tracking ref, for exactly this
 reason ([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)).
+The quality backlog's version of a collision is **"SHOULD-n is listed twice
+as an open finding"**: two branches each filed one past the same "Highest
+issued" number, and both changes merged cleanly because they raised the
+line to the same value. Give the later entry the next free number and raise
+the line again. More often the two entries, appended at the end of the same
+section, conflict first: resolve by keeping both and renumbering yours the
+same way.
 
 ## E2E (Playwright)
 

@@ -225,6 +225,48 @@ export function checkTasks(root) {
   return failures;
 }
 
+const BACKLOG_CATEGORIES = ["MUST", "SHOULD", "COULD"];
+
+/**
+ * The ID rule it enforces is docs/tasks/quality-backlog.md's header.
+ * @param {string} text contents of docs/tasks/quality-backlog.md
+ * @returns {string[]} one message per failure; empty means OK
+ */
+export function checkQualityBacklog(text) {
+  const file = "docs/tasks/quality-backlog.md";
+  const failures = [];
+  const markLines = text.split("\n").filter((line) => line.startsWith("**Highest issued:**"));
+  if (markLines.length !== 1) {
+    return [`${file}: needs exactly one "**Highest issued:**" line, found ${markLines.length}`];
+  }
+  const highest = {};
+  for (const category of BACKLOG_CATEGORIES) {
+    const match = markLines[0].match(new RegExp(`\\b${category}-(\\d+)\\b`));
+    if (!match) {
+      failures.push(`${file}: the "Highest issued" line names no ${category}-N`);
+      continue;
+    }
+    highest[category] = Number(match[1]);
+  }
+  const retiredAt = text.indexOf("\n## Retired\n");
+  const live = retiredAt === -1 ? text : text.slice(0, retiredAt);
+  const entry = /^- (?:\*\*|~~)(MUST|SHOULD|COULD)-(\d+)(?:\*\*|~~)/gm;
+  const seen = { open: new Set(), retired: new Set() };
+  for (const match of text.matchAll(entry)) {
+    const [, category, n] = match;
+    const id = `${category}-${n}`;
+    if (highest[category] !== undefined && Number(n) > highest[category]) {
+      failures.push(`${file}: ${id} is above the "Highest issued" ${category}-${highest[category]}; raise that line`);
+    }
+    const section = match.index < live.length ? "open" : "retired";
+    if (seen[section].has(id)) {
+      failures.push(`${file}: ${id} is listed twice ${section === "open" ? "as an open finding" : "in Retired"}`);
+    }
+    seen[section].add(id);
+  }
+  return failures;
+}
+
 const invokedDirectly =
   import.meta.main ??
   (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]));
@@ -237,7 +279,10 @@ if (invokedDirectly) {
     process.exit(0);
   }
   console.log(`Checking ${iterations.length} templated iteration(s) in docs/tasks/\n`);
-  const failures = checkTasks(root);
+  const failures = [
+    ...checkTasks(root),
+    ...checkQualityBacklog(readFileSync(resolve(root, "docs/tasks/quality-backlog.md"), "utf8")),
+  ];
   for (const f of failures) console.log(`  FAIL  ${f}`);
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

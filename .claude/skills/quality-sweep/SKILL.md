@@ -182,13 +182,22 @@ anything, then for each new finding:
   a concrete repro that didn't exist before, a changed severity). Keep its
   ID. Do not add a second entry for the same issue.
 - **No longer reproducible** even though nothing else in this sweep
-  explicitly fixed it: move it to the "Retired" section with a one-line
-  resolution note, same as an explicitly-confirmed fix.
+  explicitly fixed it: delete the entry and give its one-line resolution
+  in the PR description. An entry that names no task would be pruned from
+  "Retired" in this same PR anyway, so it never goes there.
 - **Genuinely new**: append it to the end of its MUST/SHOULD/COULD section
-  with the next unused ID in that category — one past the highest ID ever
-  issued there, counting both the live list and the "Retired" section (an
-  ID is permanent and never reused once assigned, even after the finding
-  it named is resolved or lifted).
+  with one past that category's number on the file's **Highest issued**
+  line, and raise the line in the same edit. Do not take the ID by looking
+  at the entries in the file: pruning removes most retired IDs, so the
+  highest *listed* ID is often one that has already been issued. If the
+  finding repeats one whose task is done, it is a regression: give it a new
+  ID and name the old one in its description.
+
+Then prune "Retired", as the file's header describes: delete every entry
+whose destination task is now `done` and every entry that names no task,
+and say in the PR description how many were pruned. The entries kept are
+the ones whose tasks are still in progress, so a sweep does not list that
+work again.
 
 Do **not** bump the confirmed-date of an entry this sweep's subagents
 didn't happen to re-find — an old date just means "not independently

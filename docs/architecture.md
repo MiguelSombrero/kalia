@@ -1400,7 +1400,8 @@ an index row here, that it is also listed in
 job in [ci.yml](../.github/workflows/ci.yml) runs with every other
 dependency-free checker. Its sibling `scripts/check-tasks.mjs`
 does the same for task files against their iteration index
-([ADR-0026](adr/0026-task-file-format.md)), `scripts/sync-indexes.mjs --check`
+([ADR-0026](adr/0026-task-file-format.md)) and for the quality backlog's IDs
+against its "Highest issued" line, `scripts/sync-indexes.mjs --check`
 fails an index cell that disagrees with its file, `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
 ([ADR-0017](adr/0017-code-comment-policy.md)), and `scripts/check-links.mjs`
