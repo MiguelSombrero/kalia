@@ -1,6 +1,6 @@
 # Task 02: The phone signs in and browses against the stack on the Mac
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-2
 
@@ -146,12 +146,13 @@ directing; ADR-0097 leaves the switch and the variable's name to this task):
       origin names, as its issuer, the value the backend and the web validate —
       run by hand with the stack in phone mode and described in the PR, with no
       host name in the description
-- [ ] The remaining ADR points are each shown true on the running stack, or the
+- [x] The remaining ADR points are each shown true on the running stack, or the
       ADR is amended in the PR: `tailscale serve` forwarding plain HTTP for each
       forwarded port, under the same number, to `127.0.0.1`; the Mac reaching
-      its own tailnet name, from its browser and from the iOS Simulator; two
-      worktrees, one in phone mode and one not, running beside each other with
-      `make phone-mode` replacing the forwards rather than colliding with them
+      its own tailnet name, from its browser and from the iOS Simulator. Two
+      worktrees beside each other, one in phone mode and one not, moved to
+      the quality backlog by the product owner on 2026-11-04
+      ([COULD-108](../quality-backlog.md)); the ADR says it is not yet shown
 - [x] ADR-0097 is amended for the fourth forwarded port, Metro's, and the
       address it listens on, and passes `node scripts/check-adrs.mjs`
 - [x] With phone mode on, `make mobile-android` and `make mobile-e2e` stop
