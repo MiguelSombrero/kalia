@@ -96,17 +96,19 @@ class ApiErrorDocumentationIT {
 	}
 
 	@Test
-	void theDuplicateConflictsOfAddingABeerAreDeclaredWithTheirOwnSchemas() {
+	void theConflictsOfAddingABeerAreDeclaredWithTheirOwnSchemas() {
 		String body = apiDocs();
 
 		List<String> refs = JsonPath.read(body,
 				"$.paths['/api/v1/beers'].post.responses['409'].content['application/problem+json'].schema.oneOf[*].$ref");
 		assertThat(refs).containsExactlyInAnyOrder("#/components/schemas/DuplicateBeerProblem",
-				"#/components/schemas/DuplicateBreweryProblem");
+				"#/components/schemas/DuplicateBreweryProblem", "#/components/schemas/PendingElsewhereProblem");
 		Map<String, Object> schemas = JsonPath.read(body, "$.components.schemas");
 		assertThat(properties(schemas, "DuplicateBeerProblem")).containsKey("existingBeerId");
 		assertThat(properties(schemas, "DuplicateBreweryProblem"))
 				.containsKeys("existingBreweryId", "existingBreweryName", "existingBreweryCountryCode");
+		assertThat(properties(schemas, "PendingElsewhereProblem")).doesNotContainKeys("existingBeerId",
+				"existingBreweryId");
 	}
 
 	private List<String> operationsViolating(Predicate<Map<String, Object>> holds) {

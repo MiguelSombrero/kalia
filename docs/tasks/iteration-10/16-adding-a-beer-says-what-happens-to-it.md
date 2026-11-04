@@ -1,6 +1,6 @@
 # Task 16: Adding a beer says what happens to it, and never dead-ends
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -77,18 +77,18 @@ same message.
 
 ## Acceptance criteria
 
-- [ ] A unit test shows the cap's 429 producing its own message, and it failed
+- [x] A unit test shows the cap's 429 producing its own message, and it failed
       before the fix
-- [ ] `JustAdded.test.tsx` and the dialog's tests assert the review-waiting
+- [x] `JustAdded.test.tsx` and the dialog's tests assert the review-waiting
       wording in both locales
-- [ ] An integration test covers a second contributor adding a name another
+- [x] An integration test covers a second contributor adding a name another
       contributor holds as pending, and gets the documented pending-elsewhere
       `409` naming no contributor and no entry
-- [ ] A unit test shows the dialog's pending-elsewhere message, with no entry
+- [x] A unit test shows the dialog's pending-elsewhere message, with no entry
       offered to choose
-- [ ] A unit test shows a zero-width space refused client-side with
+- [x] A unit test shows a zero-width space refused client-side with
       `nameInvalid`
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

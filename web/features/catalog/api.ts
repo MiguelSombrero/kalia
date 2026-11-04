@@ -75,16 +75,22 @@ export const addBeer = async (request: AddBeerRequest): Promise<AddBeerResult> =
     case 404:
       return { kind: "refused", fields: [{ field: "breweryId", message: response.data.detail ?? "" }] };
     case 409:
-      return "existingBeerId" in response.data
-        ? { kind: "duplicateBeer", existingBeerId: response.data.existingBeerId }
-        : {
-            kind: "duplicateBrewery",
-            existing: {
-              id: response.data.existingBreweryId,
-              name: response.data.existingBreweryName,
-              countryCode: response.data.existingBreweryCountryCode,
-            },
-          };
+      if ("existingBeerId" in response.data) {
+        return { kind: "duplicateBeer", existingBeerId: response.data.existingBeerId };
+      }
+      if ("existingBreweryId" in response.data) {
+        return {
+          kind: "duplicateBrewery",
+          existing: {
+            id: response.data.existingBreweryId,
+            name: response.data.existingBreweryName,
+            countryCode: response.data.existingBreweryCountryCode,
+          },
+        };
+      }
+      return { kind: "pendingElsewhere" };
+    case 429:
+      return { kind: "pendingCap" };
     default:
       throw apiError("http", `Adding a beer failed with status ${response.status}`, { status: response.status });
   }

@@ -100,6 +100,13 @@ describe("addBeerAction", () => {
     expect(api.findBreweries).not.toHaveBeenCalled();
   });
 
+  it.each([{ kind: "pendingElsewhere" }, { kind: "pendingCap" }])("passes $kind through as it is", async (answer) => {
+    api.addBeer.mockResolvedValue(answer);
+
+    await expect(addBeerAction(request)).resolves.toEqual(answer);
+    expect(api.getBeer).not.toHaveBeenCalled();
+  });
+
   it("passes a refusal through for the form to mark", async () => {
     const refused = { kind: "refused", fields: [{ field: "style", message: "unknown" }] };
     api.addBeer.mockResolvedValue(refused);

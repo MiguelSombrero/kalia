@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-30
+- **Amended:** 2026-11-04 — a new `oneOf` member in a 4xx or 5xx response body
+  is additive, and the breaking-diff job lets exactly that finding through
+  (iteration 10 task 16); see the "Additive" bullet of Decision
 
 ## Context
 
@@ -38,7 +41,11 @@ test and a CI job fail a drift or a breaking diff before merge.**
   unknown enum value as a fallback.** The web and the mobile app each
   hold it. It is what makes the rest of this list safe.
 - **Additive** (allowed at any time): a new endpoint, a new optional response
-  field, a new optional request parameter, a new enum value.
+  field, a new optional request parameter, a new enum value, a new member of
+  the `oneOf` in a 4xx or 5xx response body (a client already treats an error
+  body it does not recognise as a generic failure, and the new member is that
+  kind of body; the same addition to a 2xx body stays breaking, since a client
+  parses a success).
   **Breaking:** removing, renaming or retyping anything, making an optional
   field required, and tightening a request's validation.
 - **A deprecated element lives until the minimum supported app build
@@ -132,6 +139,14 @@ author cannot reach. The checks cost one test and one CI job.
   developer only through a lint rule that flags its use, and no such rule is
   configured today. Enabling it, and any dependency that needs, is task 09's
   to ask.
+- Bad, because letting an added error-body `oneOf` member through trusts that
+  no client branches on an error body's shape without a fallback; the web's
+  `addBeer` reads a `409` with neither id as the new member, and a client that
+  guessed otherwise would mislabel it. Nothing checks that either client keeps
+  a fallback.
+- Bad, because the allowance is one finding id on one status range in
+  `scripts/check-api-breaking.mjs`, a second rule beside oasdiff's own, which
+  has to be kept when oasdiff renames the check.
 - Bad, because the additive list holds only if both clients keep their
   promise, and nothing checks that they do. A client that parses strictly or
   switches exhaustively on an enum breaks on a change the spec diff correctly

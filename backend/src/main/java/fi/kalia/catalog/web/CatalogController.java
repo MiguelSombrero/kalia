@@ -166,9 +166,12 @@ class CatalogController {
 							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = """
 					The catalog already has this beer, named by `existingBeerId`, or already has the \
-					new brewery, named by `existingBreweryId` and spelled as the catalog spells it\
+					new brewery, named by `existingBreweryId` and spelled as the catalog spells it; or \
+					another contributor's suggestion of this beer is waiting for review, which names \
+					neither the contributor nor the beer\
 					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(oneOf = {DuplicateBeerProblem.class, DuplicateBreweryProblem.class})))})
+							schema = @Schema(oneOf = {DuplicateBeerProblem.class, DuplicateBreweryProblem.class,
+									PendingElsewhereProblem.class})))})
 	BeerDetailsDto addBeer(@Valid @RequestBody AddBeerRequestDto request) {
 		return BeerDetailsDto.from(contributions.addBeer(identity.requireCurrentUserId(),
 				request.breweryChoice(), request.name(), request.style(), request.abv()));

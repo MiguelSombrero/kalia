@@ -149,6 +149,38 @@ class AddBeerApiIT {
 	}
 
 	@Test
+	void anotherContributorsPendingBeerIsAnAnonymousConflictThatOffersNothingToChoose() {
+		String name = uniqueName("Abt Twelve");
+		UUID otherId = UUID.randomUUID();
+		given(jwtDecoder.decode("other-token")).willReturn(TestTokens.user(otherId.toString(), "other"));
+		UUID pendingId = idOf(addBeer(beer(name, STYLE, 10.5).withBrewery(westvleteren)).expectStatus().isCreated()
+				.expectBody(String.class).returnResult().getResponseBody());
+
+		client.post().uri("/api/v1/beers")
+				.header("Authorization", "Bearer other-token")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(beer(name.toLowerCase(Locale.ROOT), STYLE, 10.5).withBrewery(westvleteren).body)
+				.exchange()
+				.expectStatus().isEqualTo(409)
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat(body)
+						.doesNotContain("existingBeerId", "existingBreweryId", pendingId.toString(),
+								contributorId.toString(), "contributor"));
+
+		assertThat(jdbc.queryForObject(
+				"SELECT count(*) FROM catalog.beer WHERE brewery_id = ? AND catalog.fold_name(name) = catalog.fold_name(?)",
+				Long.class, westvleteren, name)).isEqualTo(1);
+
+		addBeer(beer(name, STYLE, 10.5).withBrewery(westvleteren))
+				.expectStatus().isEqualTo(409)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.existingBeerId"))
+						.as("the contributor's own pending beer is still one they can open")
+						.isEqualTo(pendingId.toString()));
+	}
+
+	@Test
 	void aFullwidthTwinOfAnExistingNameIsADuplicate() {
 		String name = uniqueName("Abt Twelve");
 		UUID id = idOf(addBeer(beer(name, STYLE, 10.5).withBrewery(westvleteren)).expectStatus().isCreated()

@@ -215,6 +215,18 @@ describe("addBeer", () => {
     });
   });
 
+  it("tells a suggestion waiting elsewhere from a duplicate, since it names nothing to open", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { detail: "Someone has already suggested this beer" })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "pendingElsewhere" });
+  });
+
+  it("reports the pending cap's 429 as its own answer, not as a failure", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(429, { detail: "You already have entries waiting" })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "pendingCap" });
+  });
+
   it("lists every field a 400 refuses", async () => {
     const errors = [
       { field: "style", message: "must be one of the catalog's styles" },

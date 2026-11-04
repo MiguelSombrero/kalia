@@ -35,7 +35,8 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
   locally with `make api-breaking` after `brew install oasdiff`). A removal of
   an element `dev` already marks `deprecated` needs a line in
   `backend/openapi-breaking-ignore.txt` naming the minimum supported app build
-  that excludes its last user.
+  that excludes its last user. A new `oneOf` member in a 4xx or 5xx response
+  body passes without one; in a 2xx body it fails.
 
 ## `@kalia/locales`
 

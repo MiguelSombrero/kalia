@@ -43,6 +43,12 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 			nativeQuery = true)
 	Optional<UUID> findIdByBreweryIdAndSameName(UUID breweryId, String name);
 
+	@Query("""
+			SELECT COUNT(b) > 0 FROM Beer b WHERE b.id = :id
+			AND (b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.APPROVED
+			  OR (b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.PENDING AND b.contributorId = :viewerId))""")
+	boolean isVisibleTo(UUID id, UUID viewerId);
+
 	// Do not call this inside a transaction the search does not own: SET LOCAL
 	// lasts until the outermost transaction ends. Past pgjdbc's prepareThreshold
 	// Postgres may switch to a generic plan, and for LIKE $1 that picks the

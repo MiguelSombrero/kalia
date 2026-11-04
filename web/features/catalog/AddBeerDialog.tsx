@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useCallback, useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -19,6 +18,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { FieldError, fieldClasses } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Locale } from "@/i18n/settings";
+import { AddBeerOutcomeAlert } from "./AddBeerOutcomeAlert";
 import { addBeerSchema, type AddBeerFormValues, toAddBeerRequest } from "./addBeerSchema";
 import { BreweryField } from "./BreweryField";
 import { useAddBeer, useAddBeerOptions } from "./hooks/useAddBeer";
@@ -319,55 +319,16 @@ export const AddBeerDialog = ({
               {errors.abv && <FieldError id={`${ids}-abv-error`}>{errorText("abv")}</FieldError>}
             </div>
 
-            {outcome?.kind === "duplicateBeer" && (
-              <ErrorAlert
-                action={
-                  <Link
-                    href={beerHref(locale, outcome.existing.id)}
-                    className="text-sm font-semibold text-foreground underline underline-offset-2 hover:text-primary"
-                  >
-                    {t("catalog.add.duplicateOpen", { beer: outcome.existing.name })}
-                  </Link>
-                }
-              >
-                <span className="font-semibold">
-                  {outcome.existing.breweryName
-                    ? t("catalog.add.duplicateBeer", {
-                        beer: outcome.existing.name,
-                        brewery: outcome.existing.breweryName,
-                      })
-                    : t("catalog.add.duplicateBeerNoBrewery", { beer: outcome.existing.name })}
-                </span>{" "}
-                <span className="text-muted-foreground">{t("catalog.add.duplicateHint")}</span>
-              </ErrorAlert>
-            )}
-            {outcome?.kind === "duplicateBrewery" && (
-              <ErrorAlert
-                action={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      pickBrewery(outcome.existing);
-                      addBeer.reset();
-                    }}
-                  >
-                    {t("catalog.add.useBrewery")}
-                  </Button>
-                }
-              >
-                <span className="font-semibold">
-                  {t("catalog.add.duplicateBrewery", {
-                    brewery: outcome.existing.name,
-                    place: outcome.existing.place,
-                  })}
-                </span>
-              </ErrorAlert>
-            )}
-            {outcome?.kind === "refused" && (
-              <ErrorAlert>{t(refusedMarked ? "catalog.add.refused" : "catalog.add.refusedUnmarked")}</ErrorAlert>
-            )}
-            {addBeer.isError && <ErrorAlert>{t("catalog.add.failed")}</ErrorAlert>}
+            <AddBeerOutcomeAlert
+              locale={locale}
+              outcome={outcome}
+              failed={addBeer.isError}
+              refusalMarked={refusedMarked}
+              onUseBrewery={(existing) => {
+                pickBrewery(existing);
+                addBeer.reset();
+              }}
+            />
 
             <div className="mt-2 flex justify-end gap-2">
               <DialogClose className={buttonVariants("outline")}>{t("catalog.add.cancel")}</DialogClose>

@@ -13,6 +13,11 @@
 // comments) raises it to an error, and backend/openapi-breaking-ignore.txt is
 // where a removal is waived.
 //
+// One finding is let through without a waiver: a new `oneOf` member in the body
+// of a 4xx or 5xx response, since a client treats an error body it does not
+// recognise as a generic failure. The same finding on a 2xx response still
+// fails.
+//
 // Usage: node scripts/check-api-breaking.mjs [base-ref]    (default origin/dev)
 // Needs `oasdiff` on PATH (CI installs the pinned release; brew install oasdiff).
 
@@ -26,6 +31,10 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SPEC = "backend/openapi.json";
 const SEVERITY = "backend/openapi-severity.txt";
 const IGNORE = "backend/openapi-breaking-ignore.txt";
+
+const ERROR_ONE_OF_ADDED = /^response-body-one-of-added$/;
+const ERROR_STATUS = /for the response status `[45]\d\d`$/;
+const ERR = 3;
 
 const WAIVABLE = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) \S+ .+\[api-(path-)?removed-with-deprecation\]$/;
 const BUILD_STATED = /^#.*minimum supported build \d+/i;
@@ -48,6 +57,19 @@ export function problemsInWaivers(text) {
     }
   });
   return problems;
+}
+
+/**
+ * @param {{ id: string, text: string, level: number }[]} findings oasdiff's findings as JSON
+ * @returns {{ id: string, text: string, level: number }[]} the findings that fail the check
+ */
+export function blockingFindings(findings) {
+  return findings.filter((f) => f.level >= ERR && !isAllowedErrorOneOf(f));
+}
+
+/** @param {{ id: string, text: string }} finding */
+export function isAllowedErrorOneOf({ id, text }) {
+  return ERROR_ONE_OF_ADDED.test(id) && ERROR_STATUS.test(text);
 }
 
 const main = () => {
@@ -84,14 +106,21 @@ const main = () => {
     }
     const run = spawnSync(
       "oasdiff",
-      ["breaking", baseFile, resolve(ROOT, SPEC), "--severity-levels", resolve(ROOT, SEVERITY), "--err-ignore", resolve(ROOT, IGNORE), "--fail-on", "ERR"],
-      { stdio: "inherit" },
+      ["breaking", baseFile, resolve(ROOT, SPEC), "--severity-levels", resolve(ROOT, SEVERITY), "--err-ignore", resolve(ROOT, IGNORE), "--format", "json"],
+      { encoding: "utf8" },
     );
-    if (run.error) {
-      console.log(`  FAIL  could not run oasdiff (${run.error.message}) — brew install oasdiff, or see https://github.com/oasdiff/oasdiff`);
+    if (run.error || run.status !== 0) {
+      const why = run.error?.message ?? run.stderr;
+      console.log(`  FAIL  could not run oasdiff (${why}) — brew install oasdiff, or see https://github.com/oasdiff/oasdiff`);
       process.exit(1);
     }
-    process.exit(run.status ?? 1);
+    const findings = JSON.parse(run.stdout || "[]");
+    for (const f of findings.filter(isAllowedErrorOneOf)) {
+      console.log(`  ok    ${f.operation} ${f.path} ${f.text} [${f.id}] (an error body may gain a member)`);
+    }
+    const blocking = blockingFindings(findings);
+    for (const f of blocking) console.log(`  FAIL  ${f.operation} ${f.path} ${f.text} [${f.id}]`);
+    process.exit(blocking.length === 0 ? 0 : 1);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
