@@ -46,12 +46,16 @@ another user's. Retention is applied as task 03 decided.
   ([ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - What account deletion does to a notification follows
   [task 15](15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md)'s
-  decision.
+  decision: it is deleted with the account, which is not built here.
+- The module, what a notification holds, acknowledgement, retention and the
+  unread count are [task 03](03-decision-how-a-contributor-is-notified.md)'s
+  decisions, recorded in its Constraints.
 
 ## Open questions
 
-Answered by [task 03](03-decision-how-a-contributor-is-notified.md); refined
-once its ADR is accepted.
+Every question was answered at refinement on 2026-11-04, in task 03's
+Constraints. The task moves to `refined` once task 03's ADR is accepted and
+this file is checked against it.
 
 ## Acceptance criteria
 
@@ -62,8 +66,9 @@ once its ADR is accepted.
       acknowledges one, and the count falls
 - [ ] An integration test shows another user can neither read nor acknowledge
       them, and an anonymous caller is refused
-- [ ] Retention is applied as task 03 decided — test
-- [ ] The module, if a new one, passes `ModularityTest`, `ArchitectureTest` and
+- [ ] An acknowledged notification's row is deleted, and an unread one is kept
+      whatever its age — test
+- [ ] The `notification` module passes `ModularityTest`, `ArchitectureTest` and
       `ArchitectureDocumentationTest`, and is in §3's table and §2's diagram
 - [ ] The committed spec carries the operations, and the glossary the terms
 - [ ] `make verify-fast` is green

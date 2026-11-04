@@ -20,7 +20,7 @@ decided; a self-registered account never holds it; the local stack seeds one
 development admin account beside `testuser`, and the deployable definition
 seeds none; the backend admits the role's holder to the admin API and answers
 everyone else as task 01 decided; and the README says how to sign in as the
-development admin and how a deployment would make one.
+development admin, and that a deployment's first admin is not yet decided.
 
 ## Non-goals
 
@@ -48,15 +48,23 @@ development admin and how a deployment would make one.
   spec ([iteration 8.5 task 01](../iteration-8.5/01-api-errors-complete-and-typed.md)).
 - A credential the seeded admin uses is a dev-only value, never a commit
   outside the dev env file, never in a PR body.
+- The role, the rule, the refusal and the development admin are
+  [task 01](01-decision-who-is-an-admin.md)'s decisions, recorded in its
+  Constraints.
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **The Playwright suite provisions its own admin** at run time and grants it
+  the role through Keycloak's admin API, as it provisions its `e2e-worker-N`
+  accounts, so the suite does not depend on the local stack's `testadmin`
+  seed. [Task 10](10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md)
+  builds it, as the first Playwright test to sign in as an admin.
 
 ## Open questions
 
-Answered by [task 01](01-decision-who-is-an-admin.md); refined once its ADR is
-accepted. Left for this task:
-
-1. **The end-to-end accounts:** whether the Playwright suite gets a
-   deterministic admin account of its own, as it has deterministic test users
-   ([iteration 6.5 task 09](../iteration-6.5/09-deterministic-test-accounts.md)).
+Every question was answered at refinement on 2026-11-04 — task 01's in its
+Constraints, this task's above. The task moves to `refined` once task 01's ADR
+is accepted and this file is checked against it.
 
 ## Acceptance criteria
 
@@ -70,8 +78,9 @@ accepted. Left for this task:
 - [ ] The development admin signs in on the running stack and its access token
       carries the role — checked by a script `make verify` runs, as
       `check-keycloak-signin.mjs` checks `testuser`
-- [ ] `README.md` names the development admin account and how a deployment's
-      first admin is made; `docs/architecture.md` §6 describes the role
+- [ ] `README.md` names the development admin account and says a deployment's
+      first admin is not yet decided; `docs/architecture.md` §6 describes the
+      role
 - [ ] `make verify-fast` is green
 
 ## Notes

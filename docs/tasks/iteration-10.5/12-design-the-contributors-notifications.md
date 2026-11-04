@@ -48,9 +48,8 @@ is a choice the product owner makes from built alternatives, at least on:
   under the `design-task` skill; [`docs/design.md`](../../design.md) and the
   page shell of [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md)
   bind every direction.
-- A count read on every signed-in page is a backend call on every page;
-  polling follows [ADR-0060](../../adr/0060-feed-delivery-is-polling.md) if
-  task 03 chose it, and a page's backend calls are pinned by its
+- The unread count is one backend call on every signed-in page render, with
+  no polling (task 03), and a page's backend calls are pinned by its
   `backendCalls` test.
 - Radix is the UI dependency for dialogs and toasts; a new one is asked, not
   researched (`CLAUDE.md`).
@@ -58,13 +57,23 @@ is a choice the product owner makes from built alternatives, at least on:
   WCAG 2.2 AA — an unread mark is announced to a screen reader, not only
   coloured — and every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
+- How a notification is acknowledged, what it holds and links to, and that the
+  unread count is read once per render are
+  [task 03](03-decision-how-a-contributor-is-notified.md)'s decisions.
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **Wording** of each outcome's notification is drafted in the PR, in both
+  locales, for the product owner's review.
+- *Derived:* **the unread signal appears on every page that renders the
+  signed-in page shell,** the admin area included, wherever the chosen
+  direction places it; a page without that shell shows nothing.
 
 ## Open questions
 
-1. **Wording** of each outcome's notification, in both locales — drafted in the
-   PR for the product owner's review.
-2. **Signed-in pages that show nothing:** whether the admin area, sign-up and
-   the error pages carry the signal too.
+Every question was answered at refinement on 2026-11-04 — task 03's in its
+Constraints, this task's above. The task moves to `refined` once task 03's ADR
+is accepted and this file is checked against it.
 
 ## Acceptance criteria
 
@@ -73,7 +82,7 @@ is a choice the product owner makes from built alternatives, at least on:
       ADR records the directions and the choice, and the product owner signed
       off the built flow in the browser pane at both agreed widths
 - [ ] A Playwright test covers the iteration's journey on the running stack: a
-      user suggests a beer with a new brewery, the development admin edits and
+      user suggests a beer with a new brewery, an admin the suite provisions edits and
       approves it, the user sees one unread notification naming the edited
       beer, acknowledges it, and it is gone after a reload
 - [ ] A Playwright test covers a rejection reaching its contributor the same

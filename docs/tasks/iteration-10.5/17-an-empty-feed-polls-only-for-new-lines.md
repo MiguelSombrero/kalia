@@ -1,6 +1,6 @@
 # Task 17: A feed that opened empty polls only for what is new
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -32,19 +32,24 @@ interval ADR-0060 states, and never reads history it already passed.
 - The feed respects cellar visibility at read time
   ([ADR-0059](../../adr/0059-feed-respects-cellar-visibility.md)).
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **COULD-77 is fixed in the client:** a `FeedList` that opened empty polls
+  without a cursor until a line arrives, then takes its forward cursor from
+  the newest line, never from the page's backward `nextCursor`. The backend's
+  contract is unchanged; returning a forward cursor for a read with no `since`
+  was rejected.
+
 ## Open questions
 
-1. **COULD-77 (`[needs decision]`):** the client ignores the cursor a
-   cursor-less poll returns, or the backend returns a forward cursor for a
-   read with no `since`.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A component test of `FeedList` opened on an empty page shows a line added
       later arriving on the next poll, and no poll carrying a backward cursor;
       it failed before the fix
-- [ ] If the backend answer changes, an integration test pins what a read with
-      an empty `since` returns, and the spec documents it
+- [ ] The committed `backend/openapi.json` is unchanged
 - [ ] `npm test` and `make verify-fast` are green
 
 ## Notes

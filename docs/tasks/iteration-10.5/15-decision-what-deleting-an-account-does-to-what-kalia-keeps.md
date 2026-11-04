@@ -1,6 +1,6 @@
 # Task 15: Decide what deleting an account does to what Kalia keeps forever
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -44,16 +44,24 @@ that survives it, without implementing deletion.
 - Accepted ADRs are amended, not rewritten
   ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **The strategy is recorded now** (COULD-83), so this iteration's review
+  records and notifications are shaped for it rather than reworked.
+- **A deleted user's cellar, its entries and their feed lines are deleted**
+  with the account; the feed loses those lines. Keeping them under a
+  placeholder name was rejected.
+- **A username is still never reused**
+  ([ADR-0080](../../adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md)):
+  a tombstone keeps its folded form alone, with no `sub` and nothing else.
+  Releasing it was rejected.
+- **A review record is kept with its contributor's and deciding admin's ids
+  removed,** as iteration 8 task 02 decided for a contributed beer's
+  contributor link; **a notification is deleted with the account.**
+
 ## Open questions
 
-1. **COULD-83 (`[needs decision]`):** record a tombstone or pseudonymisation
-   strategy now, or accept the rework when deletion lands and say so in the
-   affected ADRs.
-2. **A deleted user's feed lines and public cellar:** gone, or kept under a
-   placeholder name.
-3. **A deleted user's username:** still never reused (ADR-0080), or released.
-4. **This iteration's review records and notifications:** deleted with the
-   account, or kept pseudonymised for the catalog's history.
+**None.**
 
 ## Acceptance criteria
 

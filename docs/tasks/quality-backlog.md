@@ -56,8 +56,17 @@ they're already cross-referenced from merged PRs and
 
 ## SHOULD
 
-*None open — every SHOULD filed up to 2026-11-01 was lifted into
-[iteration 10](iteration-10.md) or [iteration 10.5](iteration-10.5.md).*
+- **SHOULD-80** **[needs decision]** *(confirmed 2026-11-04)* — A rejected
+  suggestion leaves the pending count (`ContributionService.requireRoomForPending`),
+  so a contributor whose 20 suggestions are all rejected can suggest 20 more
+  at once, without end; open registration on a phone grows that queue. The
+  finding's other half, `make moderate` acting on a contributor's whole
+  output, is fixed by
+  [iteration 10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md).
+  Returned here at iteration 10.5's refinement: the product owner chose to
+  limit nothing on rejections yet. The decision left open is the shape of a
+  limit — rejections counting toward the cap for a period, a cooldown after
+  several, or none.
 
 ## COULD
 
@@ -302,7 +311,7 @@ live section they came from.
 - ~~COULD-104~~ (no cache for Maestro or Gradle in the Android job) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
 - ~~COULD-105~~ (the Catalog flow naming a beer that happens to sort first) — lifted into [iteration-10 task 07](iteration-10/07-mobile-e2e-fails-only-when-the-app-does.md).
 - ~~COULD-106~~ (the Android end-to-end build recompiling React Native's native libraries on every run) — lifted into [iteration-10 task 23](iteration-10/23-the-android-build-reuses-the-native-code-it-compiled.md).
-- ~~SHOULD-80~~ (the SQL moderation script acting on a contributor's whole output, and rejections leaving the pending count) — lifted into [iteration-10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-80~~ (the SQL moderation script acting on a contributor's whole output, and rejections leaving the pending count) — the script half lifted into [iteration-10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md); the rejection half reopened under SHOULD above at that iteration's refinement, 2026-11-04.
 - ~~SHOULD-97~~ (a slow Keycloak delaying every app call by its own refresh timeout) — lifted into [iteration-10.5 task 19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md).
 - ~~COULD-75~~ (the backend's per-address zone stepped around through the web) — lifted into [iteration-10.5 task 16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~COULD-77~~ (an empty first feed page polling with a backward cursor) — lifted into [iteration-10.5 task 17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md). Its `[needs decision]` is an open question there, settled at refinement.

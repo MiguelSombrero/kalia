@@ -57,15 +57,24 @@ suggestion was edited is recorded as task 02 decided.
   ([ADR-0058](../../adr/0058-feed-event-recording-model.md)).
 - Bean Validation on the request DTO matches the add path's bounds
   ([ADR-0042](../../adr/0042-bounded-request-parameters.md)).
+- What an edit may change, re-pointing at an existing brewery included, and
+  what the review record and the event keep of it are
+  [task 02](02-decision-what-reviewing-a-suggestion-does.md)'s decisions.
+
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **An edit carries every field,** validated whole by the add path's rules; a
+  partial patch was rejected.
+- *Derived:* **re-pointing at an existing brewery rejects the new brewery in
+  the same transaction,** unless another pending suggestion still needs it
+  (task 02's shared-brewery rule), and the event says the suggestion was
+  edited.
 
 ## Open questions
 
-Answered by [task 02](02-decision-what-reviewing-a-suggestion-does.md); refined
-once its ADR is accepted. Left for this task:
-
-1. **A partial edit:** the request carries every field, or only those changed.
-2. **Re-pointing at an existing brewery,** if task 02 allows it: the new
-   brewery is then rejected in the same transaction, and the event says so.
+Every question was answered at refinement on 2026-11-04 — task 02's in its
+Constraints, this task's above. The task moves to `refined` once task 02's ADR is accepted
+and this file is checked against it.
 
 ## Acceptance criteria
 
@@ -74,6 +83,9 @@ once its ADR is accepted. Left for this task:
       edited values
 - [ ] An integration test edits a new brewery's name and country with its beer,
       and both are approved together
+- [ ] An integration test re-points a suggestion at an existing brewery: the
+      beer is approved under it, and the new brewery is rejected — or left
+      pending while another suggestion still needs it
 - [ ] An edit to a name already in the catalog answers the documented `409`;
       an unknown style, an unlisted country and a `Cf` character answer `400`
       — tests, each confirmed to fail without its check

@@ -1,6 +1,6 @@
 # Task 16: The backend's request limit holds for the calls the web makes on a visitor's behalf
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -36,19 +36,27 @@ the stack actually has.
 - The edge configuration's checks (`scripts/check-compose.mjs` and the edge
   tests) fail a zone that is not pinned.
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **COULD-75: Server Actions get an edge zone of their own,** tighter than the
+  web zone, keyed on the request Next.js marks as a Server Action — checked in
+  `node_modules/next/dist/docs/`, never memory. **ADR-0090 is amended to state
+  the backend bound page renders actually have:** the web zone times the
+  backend calls one render makes. A limit inside the backend on the forwarded
+  address (a new dependency) and correcting the ADR alone were rejected.
+- *Derived:* **one request is what the edge sees** — a page render, or one
+  Server Action call — and the ADR states the backend load each can drive.
+
 ## Open questions
 
-1. **COULD-75 (`[needs decision]`):** tighten the web zone for Server Actions;
-   limit in the backend by the forwarded client address; or correct ADR-0090
-   to the bound the stack has.
-2. **What counts as one request:** a page's render with all its backend calls,
-   or each call.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A test shows the chosen bound holding for backend calls made through the
-      web on one address's behalf — or, if the ADR is corrected instead, the
-      ADR states the figure and a test pins the zones it is computed from
+- [ ] The edge tests show a Server Action held to its own zone and an ordinary
+      page request held to the web zone, and the configuration checks pin both
+- [ ] ADR-0090 states the backend load one address can drive through page
+      renders, and the figure it is computed from is pinned by a test
 - [ ] ADR-0090 is amended to what the stack enforces, and §6 matches
 - [ ] `make verify-fast` is green
 

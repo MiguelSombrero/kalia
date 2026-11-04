@@ -1,6 +1,6 @@
 # Task 01: Decide who is an admin, and how every tier knows it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-4
 
@@ -56,44 +56,65 @@ would make its first one.
   a role claim has the same failure shape.
 - An access token outlives a change to the user's roles for up to its lifespan
   ([architecture §8](../../architecture.md#8-trade-offs-made-explicit)).
-- The edge answers `404` for `/admin`, Keycloak's console path
+- The edge answers `404` for `/admin` on Keycloak's origin only — the
+  `8081` server in `edge/nginx.conf`
   ([architecture §6](../../architecture.md#6-authentication-and-identity));
-  a web route there is unreachable through the edge.
+  the web's origin serves `/[locale]/admin` like any other route.
+- The Playwright specs sign in as `e2e-worker-N` accounts they provision at
+  run time, not as `testuser`
+  ([iteration 6.5 task 09](../iteration-6.5/09-deterministic-test-accounts.md)).
 - The decision is an ADR only if it passes
   [ADR-0032](../../adr/0032-when-a-decision-earns-an-adr.md)'s three tests; a
   privileged role every later admin feature inherits is expected to.
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **A realm role named `admin`,** granted to nobody by default and never a
+  member of `default-roles-kalia`. Keycloak's built-in `roles` client scope
+  already writes realm roles to the access token's `realm_access.roles` for
+  both clients that sign in, `kalia-web` and `kalia-mobile`, so no mapper is
+  added. A client role on `kalia-backend`
+  and a group carrying the role were rejected.
+- **The backend maps `realm_access.roles` to Spring authorities and enforces
+  one rule on the path prefix `/api/v1/admin/**`** in the security chain,
+  pinned by a test. `IdentityApi` gains no "is the caller an admin" until
+  another module needs it.
+- **A non-admin is answered `403` `problem+json` by the API;** an anonymous
+  caller keeps its `401`. A `404` was rejected: the committed spec is public,
+  so it would hide nothing. **The web answers everyone but an admin — a
+  signed-out visitor and a signed-in non-admin alike — with its ordinary
+  not-found page,** so the area is never shown to exist; an admin signs in
+  first and follows the navigation entry. The cellar's in-page sign-in prompt
+  and a redirect to sign in were rejected, since both show a signed-out
+  visitor that the area exists.
+- **The web reads the role in the BFF, from the access token** the session
+  already holds — the token the backend authorises, so the two cannot
+  disagree. Only a boolean reaches the browser, to render the navigation
+  entry; the backend stays the authority on every call. Asking the backend on
+  every render and reading the ID token were rejected.
+- **The local stack seeds a second account, `testadmin`,** beside `testuser`
+  through `keycloak-seed`, its password a dev default in
+  `docker-compose.dev.env`; the base compose file seeds none. `testuser` keeps
+  showing what an ordinary user sees. Playwright's own admin is
+  [task 04](04-the-admin-role-exists-and-the-api-refuses-everyone-else.md)'s.
+- **A deployment's first admin is left undecided** until a deployment exists:
+  the ADR says so, and [the backlog](../backlog.md)'s deployment item carries
+  it.
+- **A revoked role holds until the access token expires** — the realm's
+  `accessTokenLifespan`, 300 s — the trade-off
+  [architecture §8](../../architecture.md#8-trade-offs-made-explicit) already
+  accepts. Checking Keycloak on each admin call was rejected.
+
 ## Open questions
 
-1. **Where the role is defined:** a realm role, a role of the `kalia-backend`
-   client, or a group whose membership carries it — and its name (`ADMIN`,
-   `admin`, `kalia-admin`).
-2. **How the backend reads it:** the token's role claim mapped to a Spring
-   authority, with the rule on a path prefix (`/api/v1/admin/**`) or on each
-   method — and whether `identity` exposes "is the caller an admin" to other
-   modules through `IdentityApi`.
-3. **What a non-admin is answered** by an admin endpoint — `403`
-   `problem+json`, or `404` so the endpoint's existence is not disclosed — and
-   by an admin page in the web.
-4. **How the web knows:** read from the access token the session already
-   holds, or asked of the backend; and whether the answer is ever sent to the
-   browser or only used server-side.
-5. **The development admin:** a second seeded account beside `testuser` (its
-   username and password), or `testuser` itself holding the role — weighed
-   against the end-to-end suites, which sign in as `testuser` and would then
-   always see admin navigation.
-6. **The first admin of a deployment:** granted by hand in Keycloak's admin
-   console, by a seed step that runs only when asked, or not yet decided
-   because no deployment exists — and where that is written down.
-7. **How quickly a revoked role takes effect,** given the access token's
-   lifespan: accepted as the existing trade-off, or checked against Keycloak
-   on admin calls.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] An ADR records where the role is defined and granted, how the backend
       and the web each read it, what a non-admin is answered, the development
-      admin, a deployment's first admin, and the rejected alternatives, and
+      admin, that a deployment's first admin is left undecided, and the
+      rejected alternatives, and
       passes `node scripts/check-adrs.mjs`
 - [ ] Each test the decision implies — a self-registered account not holding
       the role, a token without it refused, a token with it admitted, the base

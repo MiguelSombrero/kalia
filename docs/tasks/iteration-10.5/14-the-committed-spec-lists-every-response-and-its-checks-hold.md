@@ -1,6 +1,6 @@
 # Task 14: The committed spec lists every response, and its own checks hold anywhere
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -45,17 +45,22 @@ it.
 - `scripts/ci-changes.mjs` has a test that pins each rule
   (`ci-changes.test.mjs`).
 
+**Decided at refinement, 2026-11-04** (product owner):
+
+- **COULD-97: `415` is listed on every body-taking operation,** since a
+  wrongly built request is a client bug the client can fix; **`406` is left
+  out,** and [architecture §4](../../architecture.md#4-api-design) records
+  why — no client sends a restrictive `Accept`.
+
 ## Open questions
 
-1. **`415` and `406` (COULD-97):** listed on every body-taking operation (and
-   `406` on every one), or recorded in §4 as responses the contract leaves out
-   because no client can fix them.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `ApiErrorDocumentationIT` (or a sibling test) fails a body-taking
-      operation that omits `415`, if refinement chooses to list it, and the
-      regenerated client types it
+      operation that omits `415`, and the regenerated client types it
+- [ ] §4 records that the contract leaves `406` out, and why
 - [ ] `CommittedOpenApiSpecIT` passes with the issuer overridden, and when run
       from the repository root — both shown in the test, and the second
       confirmed to fail before
