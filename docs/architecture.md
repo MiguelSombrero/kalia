@@ -697,7 +697,9 @@ so `/api/v1` changes additively only
   job runs `oasdiff` against `dev`'s copy and fails on a breaking change. The
   removal of an element `dev` already marks `deprecated` is let through only by
   a line in `backend/openapi-breaking-ignore.txt` stating the minimum supported
-  build that excludes its last user; nothing else can be waived there.
+  build that excludes its last user; nothing else can be waived there. The one
+  addition let through unwaived is a new `oneOf` member in a 4xx or 5xx response
+  body.
 
 ## 5. Client design
 

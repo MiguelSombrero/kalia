@@ -6,7 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { problemsInWaivers } from "./check-api-breaking.mjs";
+import { blockingFindings, problemsInWaivers } from "./check-api-breaking.mjs";
 
 const removal = "GET /api/v1/styles api path removed with deprecation [api-path-removed-with-deprecation]";
 
@@ -41,4 +41,32 @@ test("a removal of something never deprecated cannot be waived", () => {
 test("a response property removal cannot be waived", () => {
   const property = "POST /api/v1/beers removed the required property `name` from the response [response-required-property-removed]";
   assert.equal(problemsInWaivers(`# minimum supported build 14 excludes it\n${property}\n`).length, 1);
+});
+
+const oneOfAdded = (status) => ({
+  id: "response-body-one-of-added",
+  text: `added \`#/components/schemas/PendingElsewhereProblem\` to the response body \`oneOf\` list for the response status \`${status}\``,
+  level: 3,
+});
+
+test("a oneOf member added to an error response does not fail", () => {
+  for (const status of ["400", "409", "429", "500"]) {
+    assert.deepEqual(blockingFindings([oneOfAdded(status)]), [], status);
+  }
+});
+
+test("a oneOf member added to a 2xx response still fails", () => {
+  for (const status of ["200", "201"]) {
+    assert.equal(blockingFindings([oneOfAdded(status)]).length, 1, status);
+  }
+});
+
+test("nothing else about an error response is let through", () => {
+  const removed = { id: "response-body-one-of-removed", text: oneOfAdded("409").text, level: 3 };
+  const property = { id: "response-required-property-removed", text: "removed the required property `title`", level: 3 };
+  assert.equal(blockingFindings([removed, property, oneOfAdded("409")]).length, 2);
+});
+
+test("a finding below error level never fails", () => {
+  assert.deepEqual(blockingFindings([{ ...oneOfAdded("200"), level: 2 }]), []);
 });
