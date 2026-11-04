@@ -71,9 +71,9 @@ no `iteration-N/` directory at all is.
   heading, never bold text pretending to be one — iterations 3 and 4 each
   picked a different one of those.
 - IDs are permanent and never reused. Order of work is the table's order, not
-  the ID; a dropped task keeps its file and row with status `dropped`, exactly
-  as retired findings keep their IDs in
-  [quality-backlog.md](quality-backlog.md).
+  the ID; a dropped task keeps its file and row with status `dropped`, the
+  way a retired finding's ID stays issued in
+  [quality-backlog.md](quality-backlog.md) after its entry is pruned.
 - Status uses the same vocabulary as the task files, so the table doubles as
   the answer to "what is ready to pick up" — anything still
   `needs-refinement` is not.

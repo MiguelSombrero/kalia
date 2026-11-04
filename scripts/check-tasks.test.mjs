@@ -11,7 +11,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { checkTasks } from "./check-tasks.mjs";
+import { checkQualityBacklog, checkTasks } from "./check-tasks.mjs";
 
 const TEST_CRITERION = "- [ ] `npm test` covers the new behaviour\n";
 const ALTERNATIVES_CRITERION =
@@ -117,4 +117,43 @@ test("fails an unknown Kind value", () => {
     assert.equal(failures.length, 1);
     assert.match(failures[0], /Kind "bespoke" is not one of: design/);
   });
+});
+
+const backlog = ({ mark = "**Highest issued:** MUST-3 · SHOULD-9 · COULD-20", live = "", retired = "" }) =>
+  ["# Quality backlog", "", mark, "", "## SHOULD", "", live, "", "## Retired", "", retired, ""].join("\n");
+
+test("passes a backlog whose entries are all at or below the Highest issued line", () => {
+  const text = backlog({
+    live: "- **SHOULD-9** *(confirmed 2026-11-04)* — open",
+    retired: "- ~~SHOULD-9~~ (an earlier half) — lifted\n- ~~COULD-20~~ (x) — lifted",
+  });
+  assert.deepEqual(checkQualityBacklog(text), []);
+});
+
+test("fails an entry numbered above the Highest issued line", () => {
+  const failures = checkQualityBacklog(backlog({ live: "- **SHOULD-10** *(confirmed 2026-11-04)* — new" }));
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /SHOULD-10 is above the "Highest issued" SHOULD-9/);
+});
+
+test("fails one ID listed twice as an open finding", () => {
+  const failures = checkQualityBacklog(
+    backlog({ live: "- **SHOULD-8** *(confirmed 2026-11-04)* — one\n- **SHOULD-8** *(confirmed 2026-11-04)* — two" }),
+  );
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /SHOULD-8 is listed twice/);
+});
+
+test("fails one ID listed twice in Retired", () => {
+  const failures = checkQualityBacklog(backlog({ retired: "- ~~COULD-5~~ (a) — lifted\n- ~~COULD-5~~ (b) — lifted" }));
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /COULD-5 is listed twice in Retired/);
+});
+
+test("fails a backlog with no Highest issued line, or one missing a category", () => {
+  assert.match(checkQualityBacklog(backlog({ mark: "" }))[0], /exactly one "\*\*Highest issued:\*\*" line, found 0/);
+  assert.match(
+    checkQualityBacklog(backlog({ mark: "**Highest issued:** MUST-3 · SHOULD-9" }))[0],
+    /names no COULD-N/,
+  );
 });

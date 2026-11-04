@@ -60,8 +60,9 @@ their own condition from that ADR before they apply.
 8. **Code-review gate.** Run `/code-review` on the diff — local, in-session,
    no separate service — and mark each finding worth acting on **fix now** or
    **new task**. A **new task** is filed in this pull request as an entry in
-   `docs/tasks/quality-backlog.md` (its next free `SHOULD-N` or `COULD-N`, per
-   that file's header), and the description names the ID: a "follow-up" that
+   `docs/tasks/quality-backlog.md` (one past its **Highest issued** line, which
+   the same edit raises; never one past the highest ID listed, which pruning
+   makes unsafe), and the description names the ID: a "follow-up" that
    lives only in the description is lost when the PR merges, and
    `scripts/check-pr-body.mjs` fails a body that defers a finding without an
    ID. This runs *before* the local
