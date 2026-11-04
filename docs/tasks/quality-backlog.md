@@ -67,6 +67,44 @@ they're already cross-referenced from merged PRs and
   limit nothing on rejections yet. The decision left open is the shape of a
   limit — rejections counting toward the cap for a period, a cooldown after
   several, or none.
+- **SHOULD-99** *(confirmed 2026-11-04)* —
+  `ProfileServiceModuleIT.concurrentFirstSignInsForANewUserBothSucceedAgainstOneSharedProfile`
+  still fails at random. It asserts `reads > bothSawNoProfile.getParties()`,
+  that the service retried, but a retry happens only when one of the two
+  sign-ins loses the insert race, and timing decides whether either does. It
+  went red on `dev` in run 41231274792 and passed on its pull request
+  ([common-failures](../common-failures.md), the 2026-10-31 row for that run,
+  "not fixed here"). Fix it as the 2026-10-30 row for
+  `ProfileServiceConcurrencyIT` was fixed: force the interleaving so the
+  conflict always happens, rather than asserting that it did.
+- **SHOULD-100** *(confirmed 2026-11-04)* — Four rows in
+  [common-failures](../common-failures.md) are tests that race themselves,
+  not the product: `ObservabilityIT` read a log line written after the
+  response (two rows), and two `ProfileService*IT` tests asserted that a race
+  happened without causing it (two rows, one still open as SHOULD-99).
+  `docs/architecture.md`'s testing strategy has no rule for either shape. Add
+  two, so the next such test is written right the first time: a concurrency
+  test forces the interleaving it checks (barriers placed so the conflict
+  always happens, or a hook that delays one side) and never asserts that a
+  race occurred; a side effect that happens after the response, such as a
+  log line or a listener's write, is awaited, never read once. Add a way to
+  run one integration test many times in a row (for example a `make` target
+  taking the test name and a count), and have the rule say that a new or
+  changed concurrency test passes it before its pull request opens.
+- **SHOULD-101** **[needs decision]** *(confirmed 2026-11-04)* — A
+  [common-failures](../common-failures.md) row can record a live defect with
+  no owner. The 2026-10-31 row for run 41231274792 says "not fixed here" and
+  names nothing that will fix it, and the defect sat unfiled until this entry
+  (SHOULD-99). `check-pr-body.mjs` already refuses a PR body that defers a
+  finding without a quality-backlog ID; the log has no such rule, so a
+  deferral there is lost the way bare "follow-ups" were (SHOULD-90).
+  [ADR-0084](../adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)
+  would be amended to say that a row whose failure is a repository defect left
+  unfixed names a quality-backlog ID, a task or a playbook entry. The decision
+  left open is the enforcement: that sentence in the log's header and the
+  ADR, or a checker in `make check` (which has to tell "not fixed" apart from
+  a cause outside the repository, such as a registry outage, which needs no
+  owner).
 
 ## COULD
 
@@ -77,6 +115,56 @@ they're already cross-referenced from merged PRs and
   the login and registration fields carry proper `autocomplete` values — but
   it is stock `keycloak.v2` markup the theme does not touch
   ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
+- **COULD-109** *(confirmed 2026-11-04)* — A root `scripts/*.mjs` file that
+  imports an npm package passes `make verify-fast` locally and fails in CI,
+  because the `Static checks` job runs `make check` with no `npm ci` by
+  design ([common-failures](../common-failures.md), the 2026-11-03 row,
+  `ERR_MODULE_NOT_FOUND … 'sharp'`). Add a checker to `make check`, and so to
+  the edit-time hook, that fails a root `scripts/` file importing anything
+  other than a `node:` built-in or a relative path, and points at
+  `mobile/scripts/` or a package's own scripts instead.
+- **COULD-110** *(confirmed 2026-11-04)* — `check-pr-body.mjs` runs only in
+  CI, after the push, although it already takes `--body-file` and
+  `--diff-file`. Three `Gates section: no verdict on a line starting
+  "- **Range:**"` rows in [common-failures](../common-failures.md) each cost a
+  CI round trip and a body edit. `implement-task` step 12 would draft the body
+  in the scratchpad, run the checker against it and `git diff
+  origin/dev...HEAD`, then open the PR with `gh pr create --body-file`.
+- **COULD-111** **[needs decision]** *(confirmed 2026-11-04)* — CodeQL has
+  failed two pull requests on new `scripts/` code that `verify-fast` passed:
+  `js/incomplete-multi-character-sanitization` on a single-pass comment strip
+  (PR 434) and `js/clear-text-logging` on a message carrying a `process.env`
+  value (PR 500). Nothing local runs those queries. The decision left open:
+  an opt-in `make codeql` running the CodeQL CLI's JavaScript default suite
+  over `scripts/` (a new tool, so a version question under CLAUDE.md's "New
+  dependencies"), or a `docs/ci-playbook.md` entry naming the two queries and
+  the patterns that satisfy them (strip until stable; never log a value
+  derived from `process.env`).
+- **COULD-112** *(confirmed 2026-11-04)* — `docker compose up --wait` fails
+  when it names a one-shot service, or names none so that every one-shot is
+  included. Locally Compose races and exits `1` on a container that exited
+  `0` ([ci-playbook](../ci-playbook.md#not-ci-but-the-same-recognition-problem));
+  on the runner it failed every time (`container kalia-keycloak-seed-1
+  exited (0)`, the 2026-10-31 `mobile-e2e` row in
+  [common-failures](../common-failures.md)). `check-compose.mjs` could fail a
+  `--wait` in the `Makefile`, a workflow or a script that does not name only
+  long-running services.
+- **COULD-113** *(confirmed 2026-11-04)* — Trivy's Java DB mirror
+  (`mirror.gcr.io/aquasec/trivy-java-db:1`) 404ed twice on 2026-10-25, on
+  `dev` and on PR 421, failing the image scan without scanning anything; the
+  remedy is a manual re-run ([ci-playbook](../ci-playbook.md#vulnerability-scan)).
+  Configure a second Java DB repository (`ghcr.io/aquasecurity/trivy-java-db:1`)
+  for Trivy to fall back to, after confirming that the Trivy version the
+  pinned `trivy-action` runs accepts more than one.
+- **COULD-114** *(confirmed 2026-11-04)* — A full disk has twice failed work
+  with an error that does not say so at first sight: Postgres in Testcontainers
+  could not write its WAL (Docker's build cache, 2026-10-30), and a Gradle
+  release build could not extract an AAR (several worktrees' Xcode
+  DerivedData, 2026-10-31; both in [common-failures](../common-failures.md)).
+  Every worktree adds both caches. The SessionStart hook that runs
+  `prune-worktrees.mjs` could warn, in the session only, when free space is
+  low and name the two caches; the `worktree` skill's teardown could delete
+  the removed worktree's own DerivedData.
 
 ## Retired
 
