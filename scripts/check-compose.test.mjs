@@ -6,7 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { consistencyProblems, deployableAdminProblems, devOnlyProblems, edgeProblems, localAdminProblems, localDevServiceProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { addressProblems, consistencyProblems, deployableAdminProblems, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -164,4 +164,78 @@ test("roleProblems rejects the superuser's password in the backend's or Keycloak
   const problems = roleProblems({ ...ownRoles, backend });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /backend is given POSTGRES_PASSWORD/);
+});
+
+const stackFor = (host, { web = 3300, keycloak = 8381 } = {}) => ({
+  edge: {
+    ports: [
+      { target: 3000, published: String(web), host_ip: "127.0.0.1" },
+      { target: 8080, published: "8380", host_ip: "127.0.0.1" },
+      { target: 8081, published: String(keycloak), host_ip: "127.0.0.1" },
+    ],
+  },
+  keycloak: { environment: { KC_HOSTNAME: `http://${host}:${keycloak}` } },
+  backend: { environment: { KEYCLOAK_ISSUER_URI: `http://${host}:${keycloak}/realms/kalia` } },
+  web: { environment: { AUTH_KEYCLOAK_ISSUER: `http://${host}:${keycloak}/realms/kalia`, AUTH_URL: `http://${host}:${web}` } },
+  "keycloak-config": { environment: { WEB_URL: `http://${host}:${web}` } },
+});
+
+for (const host of ["localhost", "mac.example.ts.net"]) {
+  test(`issuerProblems and addressProblems accept a stack that names ${host} everywhere`, () => {
+    assert.deepEqual(issuerProblems(stackFor(host)), []);
+    assert.deepEqual(addressProblems(stackFor(host), host), []);
+  });
+}
+
+test("issuerProblems fails a backend that validates the other mode's issuer", () => {
+  const services = stackFor("mac.example.ts.net");
+  services.backend.environment.KEYCLOAK_ISSUER_URI = "http://localhost:8381/realms/kalia";
+  const problems = issuerProblems(services);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /the backend validates issuer http:\/\/localhost:8381\/realms\/kalia, but Keycloak stamps http:\/\/mac\.example\.ts\.net:8381/);
+});
+
+test("issuerProblems fails a web app that validates the other mode's issuer, and a changed port", () => {
+  const services = stackFor("mac.example.ts.net");
+  services.web.environment.AUTH_KEYCLOAK_ISSUER = "http://mac.example.ts.net:8081/realms/kalia";
+  const problems = issuerProblems(services);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /the web app validates issuer/);
+});
+
+test("issuerProblems fails a Keycloak with no fixed hostname", () => {
+  const services = stackFor("localhost");
+  delete services.keycloak.environment.KC_HOSTNAME;
+  assert.match(issuerProblems(services)[0], /not given KC_HOSTNAME/);
+});
+
+test("issuerProblems fails a realm built from a different web address than the web app's", () => {
+  const services = stackFor("localhost");
+  services["keycloak-config"].environment.WEB_URL = "http://localhost:3000";
+  assert.match(issuerProblems(services).join("\n"), /AUTH_URL .* differs from the WEB_URL/);
+});
+
+test("addressProblems names every address that is not the host with the edge's own port", () => {
+  const services = stackFor("localhost");
+  services.web.environment.AUTH_URL = "http://localhost:3000";
+  services.keycloak.environment.KC_HOSTNAME = "http://mac.example.ts.net:8381";
+  const problems = addressProblems(services, "localhost");
+  assert.equal(problems.length, 2);
+  assert.match(problems.join("\n"), /AUTH_URL is http:\/\/localhost:3000, not http:\/\/localhost:3300/);
+  assert.match(problems.join("\n"), /KC_HOSTNAME is http:\/\/mac\.example\.ts\.net:8381, not http:\/\/localhost:8381/);
+});
+
+test("addressProblems fails a stack with phone mode off that names the tailnet host", () => {
+  assert.equal(addressProblems(stackFor("mac.example.ts.net"), "localhost").length, 5);
+});
+
+test("loopbackProblems accepts loopback ports and names one on every interface or on another address", () => {
+  assert.deepEqual(loopbackProblems(stackFor("localhost")), []);
+  const services = stackFor("localhost");
+  services.edge.ports[0].host_ip = "0.0.0.0";
+  delete services.edge.ports[1].host_ip;
+  const problems = loopbackProblems(services);
+  assert.equal(problems.length, 2);
+  assert.match(problems[0], /edge publishes port 3300 on 0\.0\.0\.0, beyond 127\.0\.0\.1/);
+  assert.match(problems[1], /on every interface/);
 });

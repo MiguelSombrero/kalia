@@ -47,3 +47,14 @@ export const stackEnv = (env = process.env, root = ROOT) => ({ ...readEnvFile(re
 export const portOf = (env, portName) => env[portName] || PORT_DEFAULTS[portName];
 
 export const originOf = (env, portName) => `http://localhost:${portOf(env, portName)}`;
+
+// Phone mode (ADR-0097) is on exactly when this is non-empty: the Mac's name
+// on the owner's tailnet, held in the root .env and nowhere that is committed.
+export const PHONE_HOST_VARIABLE = "KALIA_PHONE_HOST";
+
+export const phoneHostOf = (env) => env[PHONE_HOST_VARIABLE]?.trim() || undefined;
+
+// What the stack calls itself to its clients: the issuer Keycloak stamps, the
+// web app's public URL, the origins the app dials. `originOf` stays the
+// loopback address a script on the Mac dials, which is the same in both modes.
+export const publicOriginOf = (env, portName) => `http://${phoneHostOf(env) ?? "localhost"}:${portOf(env, portName)}`;

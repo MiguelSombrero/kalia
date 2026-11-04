@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
 import { KEYCLOAK_ADMIN_URL, fetchToken, withRetry } from "./keycloak-admin.mjs";
-import { ROOT, originOf, readEnvFile } from "./stack-ports.mjs";
+import { ROOT, originOf, publicOriginOf, readEnvFile } from "./stack-ports.mjs";
 
 export const REALM_FILE = resolve(ROOT, "keycloak/realm-export.json");
 // The dev stack's second file (docker-compose.override.yml, ADR-0089): the
@@ -55,9 +55,10 @@ const ENV_DEFAULTS = {
 
 // The two public addresses are built from the stack's host ports, exactly as
 // compose builds them, so a worktree's own ports (`make stack-env`) change the
-// expected redirect URIs with no other edit.
+// expected redirect URIs with no other edit. The web app's is the one phone
+// mode moves (ADR-0097); Swagger UI is served from the Mac's own port.
 const derivedDefaults = (env) => ({
-  WEB_URL: originOf(env, "WEB_PORT"),
+  WEB_URL: publicOriginOf(env, "WEB_PORT"),
   BACKEND_PUBLIC_URL: originOf(env, "BACKEND_PORT"),
 });
 
@@ -94,6 +95,31 @@ export const resolvePlaceholders = (value, env) => {
     return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolvePlaceholders(item, env)]));
   }
   return value;
+};
+
+export const MOBILE_REDIRECT_URI = "kalia://auth/callback";
+
+// What the realm must say about the stack's one web origin, whichever mode it
+// is in, read off a realm spec's clients (the committed file once its
+// placeholders are resolved, or the live realm). The diff below says whether
+// the live realm equals the file; this says whether the file is right, so a
+// realm file that stopped following the origin cannot pass by being applied.
+export const originProblems = (clients, origin) => {
+  const byId = Object.fromEntries(clients.map((client) => [client.clientId, client]));
+  const problems = [];
+  const names = (label, value, expected) => {
+    if (JSON.stringify(value ?? null) !== JSON.stringify(expected)) {
+      problems.push(`${label} is ${JSON.stringify(value)}, not ${JSON.stringify(expected)}`);
+    }
+  };
+  for (const id of ["kalia-web", "kalia-mobile"]) {
+    names(`client "${id}".rootUrl`, byId[id]?.rootUrl, origin);
+    names(`client "${id}".baseUrl`, byId[id]?.baseUrl, origin);
+  }
+  names('client "kalia-web".redirectUris', byId["kalia-web"]?.redirectUris, [`${origin}/*`]);
+  names('client "kalia-web".webOrigins', byId["kalia-web"]?.webOrigins, [origin]);
+  names('client "kalia-mobile".redirectUris', byId["kalia-mobile"]?.redirectUris, [MOBILE_REDIRECT_URI]);
+  return problems;
 };
 
 // One spec from several files, the way keycloak-config imports them: the
@@ -261,10 +287,21 @@ const run = async () => {
   const delayMs = 2000;
   const fetchWithRetry = () => withRetry(() => fetchLiveRealm(clientIds), { attempts: 15, delayMs });
 
-  let { mismatches, compared } = diffRealm(committed, await fetchWithRetry());
+  const origin = process.env.WEB_URL || publicOriginOf(process.env, "WEB_PORT");
+  const check = async () => {
+    const live = await fetchWithRetry();
+    const result = diffRealm(committed, live);
+    const found = [
+      ...originProblems(committed.clients ?? [], origin).map((problem) => `committed file: ${problem}`),
+      ...originProblems(Object.values(live.clients), origin).map((problem) => `live realm: ${problem}`),
+    ];
+    return { mismatches: [...result.mismatches, ...found], compared: result.compared };
+  };
+
+  let { mismatches, compared } = await check();
   if (mismatches.length > 0) {
     await new Promise((r) => setTimeout(r, delayMs));
-    ({ mismatches, compared } = diffRealm(committed, await fetchWithRetry()));
+    ({ mismatches, compared } = await check());
   }
 
   if (compared === 0) {

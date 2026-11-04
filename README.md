@@ -328,6 +328,10 @@ manifest already says.
 - nginx (`edge/`, the `edge` service) — the one published service: it
   limits requests and body sizes per client address in front of the web app,
   backend and Keycloak ([ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
+- Tailscale (the owner's own tailnet — how a physical iPhone reaches the stack
+  on the Mac, opt-in with `make phone-mode`; its version is the one in
+  `.tailscale-version`, which `make mobile-doctor` checks —
+  [ADR-0097](docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md))
 - Docker Compose: full stack (edge + PostgreSQL + backend + web app +
   Keycloak + Valkey + Mailpit)
 - Base images: Maven and Eclipse Temurin (backend), Node on Alpine (web app);

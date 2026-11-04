@@ -95,7 +95,9 @@ opens it. The first build takes several minutes; later ones reuse the generated
 project. Extra `expo run` flags go in `ARGS`, for example to pick a simulator:
 `make mobile-ios ARGS="--device 'iPhone 17e'"`.
 
-- **iOS** reaches the Mac's `localhost` directly, so nothing is forwarded.
+- **iOS** reaches the Mac's `localhost` directly, so nothing is forwarded; in
+  phone mode it dials the tailnet host instead
+  ([below](#reach-the-stack-from-the-iphone)).
 - **Android** has a network of its own. `make mobile-android` starts the
   emulator if none is running, then runs `adb reverse` for the API's, Keycloak's
   and Metro's ports — the three the app dials — each from this worktree's
@@ -207,10 +209,11 @@ the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
 4. **Check the mode the root `.env` is in.** An installed app is built for one
    mode of the stack and signs in again after a switch
    ([ADR-0097](../docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
-   Until phone mode exists there is only the default one, whose origins and
-   Metro host are `localhost`, which on a phone name the phone itself: this
-   build installs and opens, to the app or to the development launcher or its
-   "could not connect to Metro" screen, and does not sign in or list beers.
+   In the default mode the origins and Metro host are `localhost`, which on a
+   phone name the phone itself: the build installs and opens, to the app or to
+   the development launcher, and does not sign in or list beers. Phone mode
+   ([Reach the stack from the iPhone](#reach-the-stack-from-the-iphone)) is what
+   makes them reach the Mac.
 5. **Build and install.** The Apple ID must still be signed in under Xcode >
    Settings > Accounts: the build uses it to create the app's provisioning
    profile.
@@ -243,13 +246,66 @@ the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
    it, which is the expected outcome, not a failure. Settings > General > VPN &
    Device Management > the Apple ID under Developer App > **Trust**, then open
    Kalia. With no Metro running it opens to the Expo development launcher,
-   "searching for development servers": that is as far as this build goes
-   before phone mode ([task 02](../docs/tasks/iteration-10/02-the-phone-reaches-the-stack.md)).
+   "searching for development servers": the next section points it at one.
 
 The scripted build and install above, with the trust step, were carried out
 once on the product owner's iPhone on 2026-11-04: the build succeeded, the app
 installed, and after trusting the developer it opened to the development
 launcher.
+
+### Reach the stack from the iPhone
+
+The phone reaches the stack on the Mac over your own Tailscale tailnet, in an
+opt-in phone mode ([ADR-0097](../docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
+Tailscale's free personal plan asks for no card. Nothing here is committed: the
+tailnet's name and the Mac's live in the root `.env` alone.
+
+1. **Install Tailscale** on the Mac (the version in `.tailscale-version` or a
+   later 1.x) and from the App Store on the iPhone, and sign both in to the same
+   account. `tailscale status` lists the Mac under its name. If `tailscale
+   serve` later says Serve is not enabled for the tailnet, it prints a link:
+   open it and enable it.
+2. **Turn phone mode on** with the Mac's *short* name from `tailscale status`
+   (one label, no dots), in the checkout whose stack the phone should reach:
+
+   ```bash
+   make phone-mode HOST=<the Mac's name from tailscale status>
+   make mobile-doctor ARGS=phone
+   ```
+
+   The short name matters for the development build: iOS's App Transport
+   Security applies to fully qualified names such as `*.ts.net` and not to a
+   single-label one, so plain HTTP to the short name needs no exception in the
+   build. `make phone-mode` writes `KALIA_PHONE_HOST` to the root `.env`,
+   recreates the services that carry it (Keycloak, the realm import, the backend
+   and the web app), and replaces the machine's `tailscale serve` forwards with
+   this stack's four ports: the web app's, the API's, Keycloak's and Metro's. A
+   worktree in phone mode serves the phone; switching another worktree on
+   replaces the first one's forwards. The doctor's `phone` check names Tailscale
+   not running, phone mode off, and any of the three origins that does not
+   answer.
+3. **Start Metro with the origins cleared,** so the app is built from the
+   tailnet origins and not the cached `localhost` ones:
+
+   ```bash
+   make mobile-start ARGS="--clear"
+   ```
+
+   In phone mode Metro listens on loopback only and advertises the tailnet host,
+   so it is reachable from the tailnet through the forward only while this runs.
+4. **Open Kalia on the iPhone** (installed as above) and, in the development
+   launcher, scan the QR code Metro prints or enter `http://<name>:<METRO_PORT>`.
+   Sign in as the seeded dev account, open the Catalog tab, and sign out.
+5. **Turn it off** with `make phone-mode-off`, which clears the line, recreates
+   the services and removes the forwards. Switching either way changes the
+   issuer, so an installed app signs in again.
+
+With phone mode on, the browser on the Mac signs in at the tailnet origin
+(`http://<name>:<WEB_PORT>`), the iOS Simulator needs a build made while it is on
+(`make mobile-ios` reads the same origins), and the Android emulator is not
+supported: `make mobile-android` and `make mobile-e2e` refuse, naming `make
+phone-mode-off`. A development build that cannot reach its API logs `No response
+from <origin>` to Metro's console, which names the origin it tried.
 
 ### Re-signing after seven days
 
