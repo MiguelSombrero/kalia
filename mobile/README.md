@@ -186,15 +186,24 @@ the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
    echo 'KALIA_APPLE_TEAM_ID=<the OU value>' >> .env
    ```
 
-   `.env` is gitignored. `app.config.js` passes the variable to `expo prebuild`
+   `.env` is gitignored and belongs to one checkout: a git worktree has its own,
+   separate from the main checkout's, and `make` reads the one in the directory
+   it runs from. `make mobile-doctor ARGS=ios-device` and `make
+   mobile-ios-device` exist only on a checkout that has this routine, so on
+   `dev` they appear when it merges. `app.config.js` passes the variable to `expo prebuild`
    as `ios.appleTeamId`, so it survives the generated `ios/` being replaced.
    `make mobile-doctor ARGS=ios-device` names it when it is missing or
    malformed, and `make mobile-ios-device` refuses to build without it.
-3. **Turn on Developer Mode on the iPhone.** Connect it to the Mac with the
-   cable, unlock it and tap **Trust**. Settings > Privacy & Security >
-   Developer Mode > on; the phone restarts, and after unlocking you confirm
-   **Turn On** with the passcode
+3. **Get the iPhone detected.** Connect it to the Mac with the cable, unlock it
+   and tap **Trust** (Trust This Computer), and turn on Developer Mode:
+   Settings > Privacy & Security > Developer Mode > on; the phone restarts, and
+   after unlocking you confirm **Turn On** with the passcode
    ([Expo's iPhone setup](https://docs.expo.dev/get-started/set-up-your-environment/?platform=ios&device=physical&mode=development-build&buildEnv=local)).
+   Xcode > Window > Devices and Simulators should list the phone as connected.
+   `make mobile-ios-device` installs only on a physical iPhone and refuses,
+   saying which of these is missing, when none is connected or Developer Mode is
+   off; with two connected it asks you to unplug one. It never offers a
+   simulator.
 4. **Check the mode the root `.env` is in.** An installed app is built for one
    mode of the stack and signs in again after a switch
    ([ADR-0097](../docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
@@ -202,7 +211,9 @@ the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
    Metro host are `localhost`, which on a phone name the phone itself: this
    build installs and opens, to the app or to the development launcher or its
    "could not connect to Metro" screen, and does not sign in or list beers.
-5. **Build and install.**
+5. **Build and install.** The Apple ID must still be signed in under Xcode >
+   Settings > Accounts: the build uses it to create the app's provisioning
+   profile.
 
    ```bash
    make mobile-doctor ARGS=ios-device
@@ -210,11 +221,22 @@ the toolchain above takes an iPhone that has never run Kalia to Kalia installed.
    ```
 
    This runs `expo prebuild --platform ios` to put the team into `ios/`, then
-   `expo run:ios --device`, which asks which connected device to install on.
-   The first build takes several minutes. The build's identifier is
-   `fi.kalia.app`, the one task 03 fixed: the first install registers it under
-   the Personal Team, and the phone treats any later build with the same
-   identifier as an update that keeps the app's data.
+   `xcodebuild` with `-allowProvisioningUpdates` and
+   `-allowProvisioningDeviceRegistration` for the connected iPhone, which
+   registers the phone and creates or renews the profile, and installs and
+   launches the result with `xcrun devicectl`. `expo run:ios --device` is not
+   used, because it asks for those two flags only while the Xcode project has no
+   team, and `app.config.js` gives it one. Metro is not started; the first launch
+   needs none, and `make mobile-start` starts it later. The first build takes
+   several minutes. The build's identifier is `fi.kalia.app`, the one task 03
+   fixed: the first install registers it under the Personal Team, and the
+   phone treats any later build with the same identifier as an update that
+   keeps the app's data.
+
+   The build prints a warning, "Script has ambiguous dependencies … [Expo Dev
+   Launcher] Strip Local Network Keys for Release". It comes from
+   `expo-dev-launcher` and is harmless: it is not why a build fails, so read
+   above it for the error.
 6. **Trust the developer on the iPhone.** The first launch is refused as from
    an untrusted developer: Settings > General > VPN & Device Management > the
    Apple ID under Developer App > **Trust**, then open Kalia.
@@ -225,9 +247,11 @@ The install stops opening seven days after it was signed. There is no renewal
 short of the paid program: re-signing is a rebuild and reinstall from source,
 the same `make mobile-ios-device` with the phone connected and the root `.env`
 in the mode you want installed (step 4), because the new build replaces the old
-one. Put the reminder in your own calendar; no file here carries it.
+one. The build's `-allowProvisioningUpdates` is what renews the profile. Put the reminder in your own calendar; no file here carries it.
 
-Whether the cellar survives a re-sign has not been observed yet. This section
+The scripted build, install and launch above have not yet been seen to complete
+on a phone, and whether the cellar survives a re-sign has not been observed
+either. This section records each as it is observed and claims nothing before. This section
 records it once the first re-sign has been carried out, and promises nothing
 before.
 

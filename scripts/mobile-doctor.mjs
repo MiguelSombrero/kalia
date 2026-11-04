@@ -44,7 +44,7 @@ export const apiMatches = (name, api) => new RegExp(`^android-${api}(\\.\\d+)?$`
 export const teamFinding = (appleTeamId, required) => {
   if (!appleTeamId) {
     return required
-      ? fail(TEAM_ID_VARIABLE, "not set; put your Apple Team ID in the root .env (mobile/README.md, \"Install on an iPhone\")")
+      ? fail(TEAM_ID_VARIABLE, "not set; put your Apple Team ID in this checkout's root .env (a git worktree has its own, apart from the main checkout's; mobile/README.md, \"Install on an iPhone\")")
       : ok(TEAM_ID_VARIABLE, "not set; only `make mobile-ios-device` needs it");
   }
   return /^[A-Z0-9]{10}$/.test(appleTeamId)

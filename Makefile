@@ -63,8 +63,8 @@ mobile-start: ## Start Metro for the development build, on this worktree's METRO
 mobile-ios: ## Build the development build and run it on the iOS Simulator against this stack (extra flags: ARGS="--device 'iPhone 17e'")
 	node scripts/mobile-native.mjs ios $(ARGS)
 
-mobile-ios-device: ## Build the development build and install it on the connected iPhone, signed with KALIA_APPLE_TEAM_ID from the root .env (extra flags: ARGS="...")
-	node scripts/mobile-native.mjs ios-device $(ARGS)
+mobile-ios-device: ## Build the development build and install it on the connected iPhone, signed with KALIA_APPLE_TEAM_ID from the root .env
+	node scripts/mobile-native.mjs ios-device
 
 mobile-android: ## Build and run it on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs (extra flags: ARGS="...")
 	node scripts/mobile-native.mjs android $(ARGS)

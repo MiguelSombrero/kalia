@@ -153,6 +153,7 @@ test("an iPhone build without the Apple Team ID fails, naming the variable and t
   assert.deepEqual(failureNames(facts, "ios-device"), [TEAM_ID_VARIABLE]);
   const [finding] = failures(facts, "ios-device");
   assert.match(finding.message, /root \.env/);
+  assert.match(finding.message, /worktree has its own/);
 });
 
 test("the simulator and the emulator do not need the Apple Team ID, but the full check still names it", () => {

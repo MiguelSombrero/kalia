@@ -23,6 +23,7 @@ import {
   report,
   teamFinding,
 } from "./mobile-doctor.mjs";
+import { installOnDevice } from "./mobile-ios-device.mjs";
 import { ROOT, portOf, stackEnv } from "./stack-ports.mjs";
 
 const REVERSED = ["BACKEND_PORT", "KEYCLOAK_PORT", "METRO_PORT"];
@@ -93,8 +94,15 @@ const run = async (platform, args) => {
     const jdk = facts.jdks.find((candidate) => candidate.major === facts.pins.jdk);
     Object.assign(env, { ANDROID_HOME: await androidTarget(stack, facts.android.avds), JAVA_HOME: jdk.home });
   }
-  const script = platform === "ios-device" ? "ios:device" : platform;
-  const child = spawn("npm", ["run", script, "--workspace", "mobile", "--", ...args], { cwd: ROOT, env, stdio: "inherit" });
+  if (platform === "ios-device") {
+    installOnDevice({
+      env,
+      teamId: stack[TEAM_ID_VARIABLE],
+      prebuild: () => execFileSync("npm", ["run", "ios:prebuild", "--workspace", "mobile"], { cwd: ROOT, env, stdio: "inherit" }),
+    });
+    return;
+  }
+  const child = spawn("npm", ["run", platform, "--workspace", "mobile", "--", ...args], { cwd: ROOT, env, stdio: "inherit" });
   child.on("exit", (code) => process.exit(code ?? 1));
 };
 
