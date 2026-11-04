@@ -4,7 +4,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { spawnSync } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { TEAM_ID_VARIABLE } from "./mobile-doctor.mjs";
 import { parseEmulators, reverseCalls } from "./mobile-native.mjs";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const withoutTeam = { ...process.env, [TEAM_ID_VARIABLE]: "" };
 
 test("adb reverse forwards the API, Keycloak and Metro ports, each to itself, from the worktree's ports", () => {
   assert.deepEqual(reverseCalls({ BACKEND_PORT: "8280", KEYCLOAK_PORT: "8281", METRO_PORT: "8282" }), [
@@ -28,4 +36,17 @@ R58M123ABC	device
 
 `;
   assert.deepEqual(parseEmulators(output), ["emulator-5554"]);
+});
+
+test("the script refuses an iPhone build without the Apple Team ID, naming it, before it probes a toolchain or builds", () => {
+  const run = spawnSync("node", [resolve(ROOT, "scripts/mobile-native.mjs"), "ios-device"], { encoding: "utf8", env: withoutTeam });
+  assert.equal(run.status, 1);
+  assert.match(run.stdout, new RegExp(`FAIL ${TEAM_ID_VARIABLE}`));
+  assert.doesNotMatch(run.stdout, /Xcode/);
+});
+
+test("make mobile-ios-device refuses the same way", () => {
+  const run = spawnSync("make", ["--no-print-directory", "-C", ROOT, "mobile-ios-device"], { encoding: "utf8", env: withoutTeam });
+  assert.notEqual(run.status, 0);
+  assert.match(run.stdout, new RegExp(`FAIL ${TEAM_ID_VARIABLE}`));
 });

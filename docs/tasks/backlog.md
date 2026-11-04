@@ -125,7 +125,29 @@ decides to spend:
 
 - **Apple Developer Program (yearly fee):** TestFlight and any tester on an
   iPhone, push notifications, universal links, and installs that do not
-  expire.
+  expire. What a free Apple ID's Personal Team, which
+  [iteration 10](iteration-10.md) signs with, cannot do is the same list and
+  this section is its one home; a task that plans on any line of it stops
+  here first:
+  - **Seven days.** The provisioning profile, and so the install, expires
+    seven days after it is issued; the app then stops opening until it is
+    rebuilt and reinstalled from source. **The first real expiry is still to
+    be observed:** [task 04](iteration-10/04-free-apple-id-signing.md) shipped
+    the re-signing routine unobserved, about a week after the first install on
+    2026-11-04, and what the app does at expiry and whether the cellar survives
+    a re-sign are written into `mobile/README.md` only once someone has watched
+    it happen.
+  - **Three apps per device,** and ten App IDs a week; the device is the
+    developer's own, never a tester's.
+  - **No push notifications, no universal links, no TestFlight.** Apple's
+    [membership comparison](https://developer.apple.com/support/compare-memberships/)
+    states the seven days and the three apps; its table of supported
+    capabilities was not readable as text when this was written, so the
+    absence of push and associated domains rests on the product owner's
+    refinement of [task 04](iteration-10/04-free-apple-id-signing.md), and a
+    task that needs either checks Apple's
+    [supported capabilities](https://developer.apple.com/help/account/reference/supported-capabilities-ios)
+    first.
 - **Google Play Console (one-time fee):** Play distribution. An APK handed to
   an Android tester is free, but useless without a backend they can reach.
 - **Hosting and a domain:** a backend anyone else can reach, a shared

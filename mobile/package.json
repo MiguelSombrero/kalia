@@ -8,10 +8,12 @@
     "assets": "node scripts/render-assets.mjs",
     "preios": "npm run assets",
     "ios": "expo run:ios",
+    "preios:prebuild": "npm run assets",
+    "ios:prebuild": "expo prebuild --platform ios",
     "preandroid": "npm run assets",
     "android": "expo run:android",
     "lint": "eslint && tsc --noEmit",
-    "test": "jest && node --test scripts/render-assets.test.mjs"
+    "test": "jest && node --test scripts/render-assets.test.mjs scripts/app-config.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",

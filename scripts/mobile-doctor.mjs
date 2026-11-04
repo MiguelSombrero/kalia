@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Checks the Mac for the native toolchain the mobile app builds with and names
 // each tool that is missing or the wrong version (`make mobile-doctor`).
-//   node scripts/mobile-doctor.mjs [ios|android]
+//   node scripts/mobile-doctor.mjs [ios|ios-device|android]
 // The versions come from the manifests that own them: .node-version,
 // .xcode-version and mobile/.java-version. The Android API level is the one
 // Expo SDK's generated project compiles against, pinned here because no
-// manifest of ours holds it. Exits 1 when any check fails.
+// manifest of ours holds it. `ios-device` adds the Apple Team ID an iPhone
+// build is signed with, which only the root .env can hold. Exits 1 when any
+// check fails.
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -19,6 +21,8 @@ export const ANDROID_API = 37;
 
 export const androidSdk = (env = process.env) =>
   env.ANDROID_HOME || env.ANDROID_SDK_ROOT || resolve(homedir(), "Library/Android/sdk");
+
+export const TEAM_ID_VARIABLE = "KALIA_APPLE_TEAM_ID";
 
 export const androidAvdHome = (env = process.env) => env.ANDROID_AVD_HOME || resolve(homedir(), ".android/avd");
 
@@ -36,7 +40,19 @@ const fail = (tool, message) => ({ tool, ok: false, message });
 
 export const apiMatches = (name, api) => new RegExp(`^android-${api}(\\.\\d+)?$`).test(name);
 
-const iosFindings = ({ pins, xcode, iphoneSimulators, pod }) => {
+// The value is never echoed: a team identifier belongs to the machine.
+export const teamFinding = (appleTeamId, required) => {
+  if (!appleTeamId) {
+    return required
+      ? fail(TEAM_ID_VARIABLE, "not set; put your Apple Team ID in this checkout's root .env (a git worktree has its own, apart from the main checkout's; mobile/README.md, \"Install on an iPhone\")")
+      : ok(TEAM_ID_VARIABLE, "not set; only `make mobile-ios-device` needs it");
+  }
+  return /^[A-Z0-9]{10}$/.test(appleTeamId)
+    ? ok(TEAM_ID_VARIABLE, "set in .env")
+    : fail(TEAM_ID_VARIABLE, "is not a 10-character team identifier; copy it again from Xcode > Settings > Accounts");
+};
+
+const iosFindings = ({ pins, xcode, iphoneSimulators, pod }, device) => {
   const tool = `Xcode ${pins.xcode}`;
   const [wantMajor, wantMinor = 0] = versionParts(pins.xcode);
   const [haveMajor, haveMinor = 0] = xcode.version ? versionParts(xcode.version) : [];
@@ -53,8 +69,8 @@ const iosFindings = ({ pins, xcode, iphoneSimulators, pod }) => {
     !xcode.version || xcode.developerDir?.includes(".app/Contents/Developer")
       ? ok("Xcode command-line tools", xcode.developerDir || "n/a")
       : fail("Xcode command-line tools", "do not point at Xcode; run `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`"),
-    iphoneSimulators > 0
-      ? ok("iOS Simulator", `${iphoneSimulators} iPhone simulators`)
+    device || iphoneSimulators > 0
+      ? ok("iOS Simulator", device ? "not needed for an iPhone" : `${iphoneSimulators} iPhone simulators`)
       : fail("iOS Simulator", "no iPhone simulator; install an iOS runtime in Xcode > Settings > Components"),
     pod ? ok("CocoaPods", "installed") : fail("CocoaPods", "not installed; `brew install cocoapods`"),
   ];
@@ -104,8 +120,9 @@ const commonFindings = ({ pins, node, stack }) => [
 
 export const diagnose = (facts, platform) => [
   ...commonFindings(facts),
-  ...(platform === "android" ? [] : iosFindings(facts)),
-  ...(platform === "ios" ? [] : androidFindings(facts)),
+  ...(platform === "android" ? [] : iosFindings(facts, platform === "ios-device")),
+  ...(platform === "android" ? [] : [teamFinding(facts.appleTeamId, platform === "ios-device")]),
+  ...(platform === "ios" || platform === "ios-device" ? [] : androidFindings(facts)),
 ];
 
 const probe = (command, args, options) => {
@@ -170,6 +187,7 @@ export const gather = (env = process.env) => {
       buildTools: listDir(resolve(sdk, "build-tools")),
       avds,
     },
+    appleTeamId: stackEnv(env)[TEAM_ID_VARIABLE],
     stack: { isWorktree: gitDir !== commonDir, metroPort: stackEnv(env).METRO_PORT },
   };
 };
@@ -181,8 +199,8 @@ export const report = (findings) => {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const platform = process.argv[2];
-  if (platform && platform !== "ios" && platform !== "android") {
-    console.error("usage: mobile-doctor.mjs [ios|android]");
+  if (platform && !["ios", "ios-device", "android"].includes(platform)) {
+    console.error("usage: mobile-doctor.mjs [ios|ios-device|android]");
     process.exit(2);
   }
   process.exit(report(diagnose(gather(), platform)) ? 0 : 1);

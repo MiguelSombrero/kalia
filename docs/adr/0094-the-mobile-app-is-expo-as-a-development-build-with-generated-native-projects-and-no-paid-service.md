@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-30
+- **Amended:** 2026-11-03 — iteration 10 task 04 allows a free Apple ID's
+  Personal Team to install the development build on the developer's own
+  iPhone, so a physical device is no longer out of scope (see Decision)
 
 ## Context
 
@@ -77,6 +80,19 @@ build or run path.**
   iteration's goal says, and a physical device is out of scope until that
   decision is made.
 
+  > **Amended 2026-11-03 (iteration 10 task 04).** The last two sentences
+  > above no longer hold: Xcode signs a development build for the developer's
+  > own iPhone with the Personal Team of a free Apple ID, which costs nothing
+  > and puts no card on file, so a physical device is in scope on that route
+  > and on no other. The Apple Developer Program is still what a paid install
+  > needs, and it stays parked. The team identifier is read from the root
+  > `.env` and reaches `expo prebuild` through `app.config.js`, since `ios/` is
+  > generated. What the free account cannot do (an install that expires after
+  > seven days, three apps per device, no push, no universal links, no
+  > TestFlight) is recorded in
+  > [the backlog's cost list](../tasks/backlog.md#mobile-client); the install
+  > routine is in [mobile/README.md](../../mobile/README.md#install-on-an-iphone).
+
 ## Alternatives considered
 
 - **Expo Go.** Rejected because
@@ -145,6 +161,8 @@ build or run path.**
   iteration 11 chooses a token format.
 - Neutral, because a physical device is unverified until the product owner
   decides to pay for what installing on one needs.
+  (Amended 2026-11-03: a free Personal Team installs on the developer's own
+  device; the limits are in the backlog's cost list.)
 - **Revisit trigger:** the product owner decides to spend (EAS, a developer
   account or a store release), or the app needs a native module the config
   plugins cannot express.

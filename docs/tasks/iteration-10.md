@@ -12,7 +12,11 @@ a documented routine rather than a surprise.
   Mac and browses the catalog served from it, without breaking the browser or
   simulator setup.
 - **DW-3:** The routine for re-signing after the free Apple ID's seven-day
-  expiry is written down and has been carried out once.
+  expiry is written down and has been carried out once. *The product owner
+  dropped carrying it out by revoking the install on 2026-11-04
+  ([task 04](iteration-10/04-free-apple-id-signing.md)); it is carried out at
+  the first real expiry, kept in
+  [the backlog](backlog.md#mobile-client), and DW-3 stays unmet until then.*
 - **DW-4:** A release-mode build — bundled JavaScript, no dev menu — runs on
   both the iPhone and the Android emulator.
 - **DW-5:** How a real phone reaches the Mac, and where app errors are visible
@@ -33,7 +37,7 @@ a documented routine rather than a surprise.
 | [11](iteration-10/11-the-deployable-stack-carries-no-dev-convenience.md) | The deployable stack carries no dev convenience and no shared superuser | done |
 | [12](iteration-10/12-every-image-the-stack-runs-is-scanned.md) | Every image the stack runs is scanned, and a mirror outage is not a finding | done |
 | [03](iteration-10/03-app-identity.md) | Kalia has its own name, icon and splash screen on a phone | done |
-| [04](iteration-10/04-free-apple-id-signing.md) | Kalia installs on the product owner's iPhone with a free Apple ID | refined |
+| [04](iteration-10/04-free-apple-id-signing.md) | Kalia installs on the product owner's iPhone with a free Apple ID | done |
 | [02](iteration-10/02-the-phone-reaches-the-stack.md) | The phone signs in and browses against the stack on the Mac | refined |
 | [05](iteration-10/05-build-variants.md) | A development build and a release build run on both platforms | refined |
 | [21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md) | An error on a phone leaves something to read | refined |
@@ -131,7 +135,8 @@ here:
 - **Every acceptance criterion is checkable before its pull request merges**
   ([task 20](iteration-10/20-process-records-match-practice.md)'s answer to
   COULD-91). This iteration's criteria were worded to it: the seven-day
-  re-sign can be simulated by revoking the install, the ten end-to-end runs
+  re-sign could be simulated by revoking the install (dropped for task 04 on
+  2026-11-04, above), the ten end-to-end runs
   happen on the PR's own branch, and the first look at the icon on the iPhone
   is [task 04](iteration-10/04-free-apple-id-signing.md)'s, not
   [task 03](iteration-10/03-app-identity.md)'s.
