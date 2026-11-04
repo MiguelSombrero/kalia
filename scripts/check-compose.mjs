@@ -157,6 +157,71 @@ export const localAdminProblems = (services) => {
   return problems;
 };
 
+/** The realm every issuer names (keycloak/realm-export.json). */
+const ISSUER_PATH = "/realms/kalia";
+
+/** The edge's container-side ports, which the host ports it publishes map from (edge/nginx.conf). */
+const EDGE_TARGETS = { web: 3000, backend: 8080, keycloak: 8081 };
+
+const publishedAs = (services, target) => (services.edge?.ports ?? []).find((port) => Number(port.target) === target)?.published;
+
+/**
+ * Problems with who validates the issuer Keycloak stamps (ADR-0097): the
+ * hostname Keycloak is configured with, the issuer the backend and the web
+ * app validate, and the web app's public URL as the realm sees it must be
+ * one origin each. A mismatch presents as a broken sign-in, not as a
+ * configuration error, so it is asserted on the rendered configuration.
+ */
+export const issuerProblems = (services) => {
+  const stamped = services.keycloak?.environment?.KC_HOSTNAME;
+  const problems = [];
+  if (!stamped) problems.push("keycloak is not given KC_HOSTNAME, so it stamps an issuer derived from each request");
+  for (const [who, issuer] of [
+    ["the backend", services.backend?.environment?.KEYCLOAK_ISSUER_URI],
+    ["the web app", services.web?.environment?.AUTH_KEYCLOAK_ISSUER],
+  ]) {
+    if (stamped && issuer !== `${stamped}${ISSUER_PATH}`) {
+      problems.push(`${who} validates an issuer other than the one Keycloak stamps from KC_HOSTNAME`);
+    }
+  }
+  const publicUrl = services.web?.environment?.AUTH_URL;
+  const realmUrl = services["keycloak-config"]?.environment?.WEB_URL;
+  if (!publicUrl || publicUrl !== realmUrl) {
+    problems.push("the web app's AUTH_URL differs from the WEB_URL the realm is built from");
+  }
+  return problems;
+};
+
+/**
+ * Problems with the addresses that name the stack, for one host: each is that
+ * host with the edge's own published port for the service, so a worktree's
+ * ports are what is expected and never an assumed default. The host is
+ * `localhost` with phone mode off and the tailnet name with it on.
+ */
+export const addressProblems = (services, host) => {
+  const web = publishedAs(services, EDGE_TARGETS.web);
+  const keycloak = publishedAs(services, EDGE_TARGETS.keycloak);
+  if (!web || !keycloak) return ["the edge does not publish the web app's and Keycloak's ports, so no address can be checked"];
+  const expected = {
+    "keycloak KC_HOSTNAME": [services.keycloak?.environment?.KC_HOSTNAME, `http://${host}:${keycloak}`],
+    "the backend's KEYCLOAK_ISSUER_URI": [services.backend?.environment?.KEYCLOAK_ISSUER_URI, `http://${host}:${keycloak}${ISSUER_PATH}`],
+    "the web app's AUTH_KEYCLOAK_ISSUER": [services.web?.environment?.AUTH_KEYCLOAK_ISSUER, `http://${host}:${keycloak}${ISSUER_PATH}`],
+    "the web app's AUTH_URL": [services.web?.environment?.AUTH_URL, `http://${host}:${web}`],
+    "the realm's WEB_URL": [services["keycloak-config"]?.environment?.WEB_URL, `http://${host}:${web}`],
+  };
+  return Object.entries(expected)
+    .filter(([, [actual, want]]) => actual !== want)
+    .map(([what, [, want]]) => `${what} is not ${want}`);
+};
+
+/** Problems with who can reach the host's published ports: only the loopback interface, in both modes. */
+export const loopbackProblems = (services) =>
+  Object.entries(services).flatMap(([name, definition]) =>
+    (definition.ports ?? [])
+      .filter((port) => port.host_ip !== "127.0.0.1")
+      .map((port) => `${name} publishes port ${port.published} on ${port.host_ip ?? "every interface"}, beyond 127.0.0.1`),
+  );
+
 // A clean environment: nothing from the caller's shell or root .env may fill
 // in a variable the check means to leave unset.
 const compose = (args, extraEnv) =>
@@ -231,6 +296,18 @@ const run = () => {
       }
     }
     problems.push(...localAdminProblems(local.services), ...localDevServiceProblems(local.services));
+    problems.push(...issuerProblems(local.services), ...addressProblems(local.services, "localhost"), ...loopbackProblems(local.services));
+
+    // Phone mode (ADR-0097): the same stack with the one value set.
+    const phoneHost = "check-compose.example.ts.net";
+    const phoneEnv = join(dir, "phone.env");
+    writeFileSync(phoneEnv, `KALIA_WEB_CLIENT_SECRET=check-compose-value\nKALIA_PHONE_HOST=${phoneHost}\n`);
+    const phone = JSON.parse(compose(["--env-file", phoneEnv, "config", "--format", "json"], {}));
+    problems.push(
+      ...issuerProblems(phone.services).map((problem) => `phone mode: ${problem}`),
+      ...addressProblems(phone.services, phoneHost).map((problem) => `phone mode: ${problem}`),
+      ...loopbackProblems(phone.services).map((problem) => `phone mode: ${problem}`),
+    );
     if (seed && seed.environment.KEYCLOAK_ADMIN_PUBLIC_URL !== keycloak.KC_HOSTNAME_ADMIN) {
       problems.push("keycloak-seed's KEYCLOAK_ADMIN_PUBLIC_URL differs from the KC_HOSTNAME_ADMIN Keycloak starts with");
     }

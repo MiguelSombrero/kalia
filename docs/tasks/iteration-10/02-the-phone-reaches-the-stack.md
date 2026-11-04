@@ -1,6 +1,6 @@
 # Task 02: The phone signs in and browses against the stack on the Mac
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-2
 
@@ -106,66 +106,67 @@ directing; ADR-0097 leaves the switch and the variable's name to this task):
 
 ## Acceptance criteria
 
-- [ ] On the iPhone, with the development build loading its JavaScript from
+- [x] On the iPhone, with the development build loading its JavaScript from
       Metro on the tailnet, a user signs in through the Mac's Keycloak, sees
       the Catalog tab list real beers, and signs out — verified by hand and
       described in the PR, with no host address or name in the description.
       This also shows Keycloak's `sslRequired` of `none` answering a sign-in
       over HTTP on a name that is not `localhost`, and the development build
       reaching the tailnet host over HTTP
-- [ ] With phone mode off, the web app signs in on `localhost`, the iOS
+- [x] With phone mode off, the web app signs in on `localhost`, the iOS
       Simulator signs in and lists the catalog by hand (described in the PR),
       and the Android flow passes through `make mobile-e2e`
-- [ ] With phone mode on, the web app signs in from the Mac's browser on the
+- [x] With phone mode on, the web app signs in from the Mac's browser on the
       tailnet origin, and the iOS Simulator, on a build made for phone mode,
       signs in and lists the catalog — by hand, described in the PR
-- [ ] The issuer Keycloak stamps matches the one the backend and the web
+- [x] The issuer Keycloak stamps matches the one the backend and the web
       validate, in phone mode and with it off: `scripts/check-compose.mjs`
       fails a rendered configuration in which they differ, and was seen to
       fail against a mismatched one
       ([ADR-0097](../../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md))
-- [ ] With phone mode off, the rendered default stack is unchanged: every
+- [x] With phone mode off, the rendered default stack is unchanged: every
       address that names the stack is `localhost` with the stack's own port,
       and the edge's three ports are published on `127.0.0.1` only — checked by
       the same script, which also fails a phone-mode configuration that
       publishes a port beyond loopback
-- [ ] The realm follows the one origin: a unit test of the drift check
+- [x] The realm follows the one origin: a unit test of the drift check
       (`scripts/check-keycloak-realm-config.mjs`) shows it failing a
       phone-mode realm whose `kalia-web` redirect URIs or web origins, or
       either client's root or base URL, do not name that origin, and one in
       which `kalia-mobile`'s redirect URIs are anything but the single exact
       `kalia://auth/callback`
-- [ ] A unit test of `scripts/mobile-env.mjs` shows the app's API and Keycloak
+- [x] A unit test of `scripts/mobile-env.mjs` shows the app's API and Keycloak
       origins and Metro's advertised host built from the one value and the
       stack's own ports in phone mode, `localhost` with them in the default,
       and the one value coming from the root `.env` and no committed file
-- [ ] A test in `SecurityConfigTest` shows the backend, configured for one
+- [x] A test in `SecurityConfigTest` shows the backend, configured for one
       issuer, refusing a token whose issuer differs from it only by host (the
       other mode's), in both directions (ADR-0028)
-- [ ] With phone mode on, Keycloak's discovery document fetched on the tailnet
+- [x] With phone mode on, Keycloak's discovery document fetched on the tailnet
       origin names, as its issuer, the value the backend and the web validate —
       run by hand with the stack in phone mode and described in the PR, with no
       host name in the description
-- [ ] The remaining ADR points are each shown true on the running stack, or the
+- [x] The remaining ADR points are each shown true on the running stack, or the
       ADR is amended in the PR: `tailscale serve` forwarding plain HTTP for each
       forwarded port, under the same number, to `127.0.0.1`; the Mac reaching
-      its own tailnet name, from its browser and from the iOS Simulator; two
-      worktrees, one in phone mode and one not, running beside each other with
-      `make phone-mode` replacing the forwards rather than colliding with them
-- [ ] ADR-0097 is amended for the fourth forwarded port, Metro's, and the
+      its own tailnet name, from its browser and from the iOS Simulator. Two
+      worktrees beside each other, one in phone mode and one not, moved to
+      the quality backlog by the product owner on 2026-11-04
+      ([COULD-108](../quality-backlog.md)); the ADR says it is not yet shown
+- [x] ADR-0097 is amended for the fourth forwarded port, Metro's, and the
       address it listens on, and passes `node scripts/check-adrs.mjs`
-- [ ] With phone mode on, `make mobile-android` and `make mobile-e2e` stop
+- [x] With phone mode on, `make mobile-android` and `make mobile-e2e` stop
       naming `make phone-mode-off`; `make mobile-doctor ARGS="phone"` reports
       Tailscale not running, phone mode off, and a phone-mode origin that
       does not answer — each covered by a unit test
-- [ ] A Jest test shows a development build logging the origin a request that
+- [x] A Jest test shows a development build logging the origin a request that
       got no response tried, and a release build logging none — origin only,
       no path, query string or token (ADR-0013)
-- [ ] The docs the change touches say what is true: `mobile/README.md` says how
+- [x] The docs the change touches say what is true: `mobile/README.md` says how
       to point the app at the Mac from a phone, and
       [architecture.md](../../architecture.md)'s statements of the issuer and the
       app's origins name phone mode
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

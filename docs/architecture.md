@@ -167,7 +167,7 @@ redirect scheme. Its stack:
   browser-only parts of them do not.
 - The SDK version lives in `mobile/package.json` alone, and minimum OS versions
   are the SDK's own. The native toolchain is pinned beside it —
-  `.xcode-version`, `mobile/.java-version` for the Android build's JDK — and
+  `.xcode-version`, `.tailscale-version`, `mobile/.java-version` for the Android build's JDK — and
   `make mobile-doctor` names whatever on a Mac does not match.
 - No paid service is on the build or run path: no EAS builds or updates, so no
   over-the-air updates, and the app is run on the iOS Simulator and the Android
@@ -175,7 +175,13 @@ redirect scheme. Its stack:
 - A physical phone reaches the stack over the owner's tailnet in an opt-in
   phone mode, with one origin as the issuer
   ([ADR-0097](adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md));
-  decided in iteration 10, built by its [task 02](tasks/iteration-10/02-the-phone-reaches-the-stack.md).
+  built in iteration 10's [task 02](tasks/iteration-10/02-the-phone-reaches-the-stack.md).
+  Phone mode is on exactly when `KALIA_PHONE_HOST` is set in the root `.env`
+  (`make phone-mode`, `make phone-mode-off`); with it off every address is
+  `localhost:<port>`. Keycloak's issuer, the backend's and web app's
+  configured issuer, the web app's public URL and the app's two origins are
+  all that one host joined to the stack's own ports, and
+  `scripts/check-compose.mjs` fails a rendered stack in which they differ.
 
 The app calls the Spring API directly through the edge, with no BFF of its own,
 and signs in as a public Keycloak client
@@ -894,7 +900,9 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   `EXPO_PUBLIC_KEYCLOAK_ORIGIN`, which the mobile `make` targets set from the
   stack's ports through `scripts/mobile-env.mjs`, along with Metro's own
   `METRO_PORT`; no port is written in the
-  app, and the module throws at start-up when either is missing.
+  app, and the module throws at start-up when either is missing. Both are
+  `localhost` with the stack's ports, and in phone mode the tailnet host
+  instead, as is the host Metro advertises to the phone.
 - **Transport.** The root layout registers the shared fetch core from
   `@kalia/api` with the API origin as its base URL
   (`src/lib/api/registerTransport.ts`), as the web registers its own, with the

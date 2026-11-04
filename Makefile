@@ -6,7 +6,7 @@
 # vulnerability-scan.yml stay CI-only, since building the images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-device mobile-android mobile-doctor \
+.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-device mobile-android mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate app-config
@@ -57,8 +57,8 @@ mobile-lint: ## Lint and type-check the mobile app (strict TypeScript; no Docker
 mobile-test: ## Run the mobile app's Jest unit tests (no network, no simulator)
 	npm test --workspace mobile
 
-mobile-start: ## Start Metro for the development build, on this worktree's METRO_PORT and with its stack as the origins (extra flags: ARGS="...")
-	env $$(node scripts/mobile-env.mjs) npm start --workspace mobile -- $(ARGS)
+mobile-start: ## Start Metro for the development build, on this worktree's METRO_PORT and with its stack as the origins; after a switch of mode add ARGS="--clear" (extra flags: ARGS="...")
+	env $$(node scripts/mobile-env.mjs) npm start --workspace mobile -- $$(node scripts/phone-mode.mjs metro-args) $(ARGS)
 
 mobile-ios: ## Build the development build and run it on the iOS Simulator against this stack (extra flags: ARGS="--device 'iPhone 17e'")
 	node scripts/mobile-native.mjs ios $(ARGS)
@@ -66,11 +66,19 @@ mobile-ios: ## Build the development build and run it on the iOS Simulator again
 mobile-ios-device: ## Build the development build and install it on the connected iPhone, signed with KALIA_APPLE_TEAM_ID from the root .env
 	node scripts/mobile-native.mjs ios-device
 
-mobile-android: ## Build and run it on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs (extra flags: ARGS="...")
+mobile-android: ## Build and run it on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs; refuses in phone mode (extra flags: ARGS="...")
+	@node scripts/phone-mode.mjs refuse "make mobile-android"
 	node scripts/mobile-native.mjs android $(ARGS)
 
-mobile-doctor: ## Check the Mac's native toolchain for the app, naming each missing or wrong-version tool (ARGS="ios", "ios-device" or "android" for one platform)
+mobile-doctor: ## Check the Mac's native toolchain for the app, naming each missing or wrong-version tool (ARGS="ios", "ios-device" or "android" for one platform; ARGS="phone" for the route to an iPhone)
 	node scripts/mobile-doctor.mjs $(ARGS)
+
+phone-mode: ## Let a phone reach this stack over the tailnet: make phone-mode HOST=<this Mac's tailnet name> (rewrites the root .env, recreates the services, replaces the machine's tailscale serve forwards)
+	@test -n "$(HOST)" || { echo "usage: make phone-mode HOST=<this Mac's tailnet name>"; exit 1; }
+	node scripts/phone-mode.mjs on "$(HOST)"
+
+phone-mode-off: ## Back to localhost only: clear the phone host from the root .env, recreate the services, remove the tailscale serve forwards
+	node scripts/phone-mode.mjs off
 
 web-build: ## Production build of the web app (includes type checking)
 	npm run build --workspace web
@@ -153,7 +161,8 @@ verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift
 # (ADR-0096). It starts the stack itself, as web-e2e does, and fails when no
 # platform ran. Maestro is a one-off download: node scripts/mobile-e2e.mjs install-maestro
 .PHONY: mobile-e2e
-mobile-e2e: ## Run the mobile end-to-end flow on the iOS Simulator and Android emulator this host has; fails if neither ran (needs Docker and Maestro; one platform: ARGS="--platform ios")
+mobile-e2e: ## Run the mobile end-to-end flow on the iOS Simulator and Android emulator this host has; fails if neither ran; refuses in phone mode (needs Docker and Maestro; one platform: ARGS="--platform ios")
+	@node scripts/phone-mode.mjs refuse "make mobile-e2e"
 	docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
 	node scripts/mobile-e2e.mjs $(ARGS)
 

@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ANDROID_API, TEAM_ID_VARIABLE, diagnose, parseJdks } from "./mobile-doctor.mjs";
+import { ANDROID_API, TEAM_ID_VARIABLE, diagnose, parseJdks, phoneFindings } from "./mobile-doctor.mjs";
 
 const healthy = () => ({
   pins: { xcode: "27.2", jdk: "17", node: "26" },
@@ -195,4 +195,68 @@ test("an iPhone build does not need an iOS Simulator runtime", () => {
   const facts = { ...healthy(), iphoneSimulators: 0, appleTeamId: "AB12CD34EF" };
   assert.deepEqual(failureNames(facts, "ios-device"), []);
   assert.deepEqual(failureNames(facts, "ios"), ["iOS Simulator"]);
+});
+
+const phoneFacts = () => ({
+  pin: "1.104.4",
+  tailscale: { installed: true, version: "1.104.4", running: true, names: ["mac.example.ts.net", "mac"] },
+  phoneHost: "mac.example.ts.net",
+  answers: { web: true, api: true, keycloak: true },
+});
+
+const phoneFailures = (facts) => phoneFindings(facts).filter((finding) => !finding.ok).map((finding) => finding.tool);
+
+test("a running Tailscale, phone mode on and three answering origins have no failure", () => {
+  assert.deepEqual(phoneFailures(phoneFacts()), []);
+});
+
+test("Tailscale not installed is named, once, with no state to report", () => {
+  const facts = phoneFacts();
+  facts.tailscale = { installed: false };
+  assert.deepEqual(phoneFailures(facts), ["Tailscale 1.104.4"]);
+});
+
+test("Tailscale installed but not running is named", () => {
+  const facts = phoneFacts();
+  facts.tailscale = { ...facts.tailscale, running: false };
+  assert.deepEqual(phoneFailures(facts), ["Tailscale state"]);
+});
+
+test("a Tailscale older than the pin, or another major line, is named with what was found", () => {
+  for (const version of ["1.98.0", "2.0.0"]) {
+    const facts = phoneFacts();
+    facts.tailscale.version = version;
+    const [finding] = phoneFindings(facts).filter((candidate) => !candidate.ok);
+    assert.equal(finding.tool, "Tailscale 1.104.4");
+    assert.match(finding.message, new RegExp(version));
+  }
+});
+
+test("phone mode off is a failure of the phone check, and no origin is asked about", () => {
+  const facts = phoneFacts();
+  facts.phoneHost = undefined;
+  facts.answers = {};
+  assert.deepEqual(phoneFailures(facts), ["KALIA_PHONE_HOST"]);
+  assert.equal(phoneFindings(facts).length, 3);
+});
+
+test("each phone-mode origin that does not answer is named", () => {
+  const facts = phoneFacts();
+  facts.answers = { web: true, api: false, keycloak: false };
+  assert.deepEqual(phoneFailures(facts), ["API origin", "Keycloak origin"]);
+});
+
+test("a host that is not a name Tailscale gives this Mac is named, without repeating it", () => {
+  const facts = phoneFacts();
+  facts.phoneHost = "other.example.ts.net";
+  const findings = phoneFindings(facts);
+  assert.deepEqual(phoneFailures(facts), ["KALIA_PHONE_HOST name"]);
+  assert.ok(findings.every((finding) => !finding.message.includes("other.example")));
+});
+
+test("the phone platform reports only the route, and the default run adds it only when phone facts exist", () => {
+  const facts = { ...healthy(), phone: phoneFacts() };
+  assert.equal(diagnose({ phone: phoneFacts() }, "phone").length, phoneFindings(phoneFacts()).length);
+  assert.equal(diagnose(facts).length, diagnose(healthy()).length + phoneFindings(phoneFacts()).length);
+  assert.equal(diagnose(healthy()).some((finding) => finding.tool.startsWith("Tailscale")), false);
 });

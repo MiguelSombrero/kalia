@@ -199,3 +199,73 @@ describe("a token the app cannot use", () => {
     });
   });
 });
+
+describe("a request that got no response", () => {
+  const fetchMock = jest.fn();
+  const devFlag = globalThis as { __DEV__?: boolean };
+  const original = devFlag.__DEV__;
+  let warn: jest.SpyInstance;
+
+  beforeEach(() => {
+    Reflect.deleteProperty(globalThis, SLOT);
+    fetchMock.mockReset().mockRejectedValue(new TypeError("Network request failed"));
+    jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
+    warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    registerMobileTransport();
+  });
+
+  afterEach(() => {
+    devFlag.__DEV__ = original;
+    jest.restoreAllMocks();
+  });
+
+  const fetchProfile = () => kaliaFetch("/api/v1/profile?token=secret", { method: "GET" });
+
+  it("is logged by a development build with the origin it tried, and nothing else of the request", async () => {
+    devFlag.__DEV__ = true;
+
+    await expect(fetchProfile()).rejects.toMatchObject({ kind: "network" });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith("No response from http://api.test");
+    expect(JSON.stringify(warn.mock.calls)).not.toMatch(/profile|secret|Bearer/);
+  });
+
+  it("is not logged by a release build", async () => {
+    devFlag.__DEV__ = false;
+
+    await expect(fetchProfile()).rejects.toMatchObject({ kind: "network" });
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("is logged when it times out", async () => {
+    devFlag.__DEV__ = true;
+    fetchMock.mockImplementation(() => new Promise(() => undefined));
+    jest.useFakeTimers();
+    try {
+      const outcome = expect(fetchProfile()).rejects.toMatchObject({ kind: "timeout" });
+      await jest.advanceTimersByTimeAsync(10_001);
+      await outcome;
+    } finally {
+      jest.useRealTimers();
+    }
+
+    expect(warn).toHaveBeenCalledWith("No response from http://api.test");
+  });
+
+  it("is not logged when the API answered, even with an error status", async () => {
+    devFlag.__DEV__ = true;
+    fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 503 }));
+
+    await expect(fetchProfile()).resolves.toMatchObject({ status: 503 });
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("still throws the generic network error the screens show", async () => {
+    devFlag.__DEV__ = true;
+
+    await expect(fetchProfile()).rejects.toThrow("Could not reach the backend for /api/v1/profile");
+  });
+});

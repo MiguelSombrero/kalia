@@ -166,6 +166,18 @@ they're already cross-referenced from merged PRs and
   low and name the two caches; the `worktree` skill's teardown could delete
   the removed worktree's own DerivedData.
 
+- **COULD-108** *(confirmed 2026-11-04)* — Two worktrees, one in phone mode and
+  one not, have never been run beside each other. [Iteration 10 task 02](iteration-10/02-the-phone-reaches-the-stack.md)
+  built `make phone-mode` to replace the machine's `tailscale serve` forwards
+  with the calling worktree's four ports ([ADR-0097](../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)),
+  and shows it on one worktree (forwards made, replaced on a switch, removed);
+  the claim that a second worktree's switch leaves the first's forwards gone
+  rather than colliding is reasoned from `tailscale serve reset` and not shown.
+  To close it: stand up a second worktree's stack (`make stack-env`, `make up`),
+  run `make phone-mode` in each in turn, and read `tailscale serve status`
+  after each. If it shows a collision, the fix is in `scripts/phone-mode.mjs`,
+  and the ADR's last unverified point is amended either way.
+
 ## Retired
 
 Permanent, append-only record of resolved or lifted findings — kept so IDs

@@ -44,6 +44,24 @@ class SecurityConfigTest {
 				.hasErrors()).isTrue();
 	}
 
+	// ADR-0097: a stack in either mode refuses the other mode's tokens.
+	private static final String PHONE_ISSUER = "http://mac.example.ts.net:8081/realms/kalia";
+
+	@Test
+	void aStackConfiguredForLocalhostRefusesATokenFromThePhoneModeIssuer() {
+		assertThat(validate(ISSUER, token(PHONE_ISSUER, List.of(AUDIENCE))).hasErrors()).isTrue();
+	}
+
+	@Test
+	void aStackConfiguredForThePhoneModeIssuerRefusesATokenFromLocalhost() {
+		assertThat(validate(PHONE_ISSUER, token(ISSUER, List.of(AUDIENCE))).hasErrors()).isTrue();
+	}
+
+	@Test
+	void aStackConfiguredForThePhoneModeIssuerAcceptsItsOwnTokens() {
+		assertThat(validate(PHONE_ISSUER, token(PHONE_ISSUER, List.of(AUDIENCE))).hasErrors()).isFalse();
+	}
+
 	@Test
 	void rejectsAnExpiredToken() {
 		Jwt expired = builder(ISSUER)
@@ -56,7 +74,11 @@ class SecurityConfigTest {
 	}
 
 	private static OAuth2TokenValidatorResult validate(Jwt jwt) {
-		return SecurityConfig.tokenValidator(ISSUER, AUDIENCE).validate(jwt);
+		return validate(ISSUER, jwt);
+	}
+
+	private static OAuth2TokenValidatorResult validate(String configuredIssuer, Jwt jwt) {
+		return SecurityConfig.tokenValidator(configuredIssuer, AUDIENCE).validate(jwt);
 	}
 
 	private static Jwt token(String issuer, @Nullable List<String> audience) {

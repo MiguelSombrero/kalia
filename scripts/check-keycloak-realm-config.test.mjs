@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { DEV_REALM_FILE, REALM_FILE, diffRealm, mergeRealmFiles, resolvePlaceholders } from "./check-keycloak-realm-config.mjs";
+import { DEV_REALM_FILE, REALM_FILE, diffRealm, mergeRealmFiles, originProblems, resolvePlaceholders } from "./check-keycloak-realm-config.mjs";
 
 const committedFixture = () => ({
   realm: "kalia",
@@ -329,4 +329,73 @@ test("mergeRealmFiles keeps the first file's realm settings and every file's cli
   ]);
   assert.equal(merged.accessTokenLifespan, 300);
   assert.deepEqual(merged.clients.map((client) => client.clientId), ["a", "b"]);
+});
+
+// Phone mode (ADR-0097): one origin, the Mac's tailnet name joined to the web
+// port, is every address the realm names for the web app.
+const PHONE_ENV = { ...env, WEB_URL: undefined, KALIA_PHONE_HOST: "mac.example.ts.net", WEB_PORT: "3300" };
+const PHONE_ORIGIN = "http://mac.example.ts.net:3300";
+
+const phoneRealm = () => resolvePlaceholders(mergeRealmFiles([readRealmFile(REALM_FILE)]), PHONE_ENV);
+
+const clientOf = (realm, id) => realm.clients.find(({ clientId }) => clientId === id);
+
+test("resolvePlaceholders builds the web app's address from the phone host and the stack's web port", () => {
+  const web = clientOf(phoneRealm(), "kalia-web");
+  assert.deepEqual(web.redirectUris, [`${PHONE_ORIGIN}/*`]);
+  assert.deepEqual(web.webOrigins, [PHONE_ORIGIN]);
+  assert.equal(web.rootUrl, PHONE_ORIGIN);
+});
+
+test("resolvePlaceholders leaves the Swagger client on the Mac's own port in phone mode", () => {
+  const resolved = resolvePlaceholders(committedFixture(), { ...PHONE_ENV, BACKEND_PUBLIC_URL: undefined, BACKEND_PORT: "8380" });
+  assert.deepEqual(resolved.clients[1].webOrigins, ["http://localhost:8380"]);
+});
+
+test("originProblems passes the committed realm in phone mode and with it off", () => {
+  assert.deepEqual(originProblems(phoneRealm().clients, PHONE_ORIGIN), []);
+  const off = resolvePlaceholders(readRealmFile(REALM_FILE), { ...env, WEB_URL: undefined });
+  assert.deepEqual(originProblems(off.clients, "http://localhost:3000"), []);
+});
+
+test("originProblems fails a phone-mode realm whose kalia-web redirect URIs do not name the origin", () => {
+  const realm = phoneRealm();
+  clientOf(realm, "kalia-web").redirectUris = ["http://localhost:3300/*"];
+  assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), /kalia-web"\.redirectUris/);
+});
+
+test("originProblems fails a phone-mode realm whose kalia-web web origins do not name the origin", () => {
+  const realm = phoneRealm();
+  clientOf(realm, "kalia-web").webOrigins = ["http://localhost:3300"];
+  assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), /kalia-web"\.webOrigins/);
+});
+
+for (const id of ["kalia-web", "kalia-mobile"]) {
+  for (const field of ["rootUrl", "baseUrl"]) {
+    test(`originProblems fails a phone-mode realm whose ${id} ${field} does not name the origin`, () => {
+      const realm = phoneRealm();
+      clientOf(realm, id)[field] = "http://localhost:3300";
+      assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), new RegExp(`${id}"\\.${field}`));
+    });
+  }
+}
+
+for (const [label, redirectUris] of [
+  ["a second URI", ["kalia://auth/callback", "kalia://other"]],
+  ["a wildcard", ["kalia://*"]],
+  ["the web origin", [`${PHONE_ORIGIN}/*`]],
+  ["a different path", ["kalia://auth/callback/"]],
+  ["none", []],
+]) {
+  test(`originProblems fails kalia-mobile redirect URIs of ${label}`, () => {
+    const realm = phoneRealm();
+    clientOf(realm, "kalia-mobile").redirectUris = redirectUris;
+    assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), /kalia-mobile"\.redirectUris/);
+  });
+}
+
+test("diffRealm fails a live realm still holding the other mode's web addresses", () => {
+  const live = { realm: {}, clients: { "kalia-web": { ...clientOf(phoneRealm(), "kalia-web"), redirectUris: ["http://localhost:3300/*"], webOrigins: ["http://localhost:3300"] } } };
+  const { mismatches } = diffRealm(phoneRealm(), live);
+  assert.ok(mismatches.some((m) => /kalia-web".redirectUris/.test(m)), mismatches.join("\n"));
 });

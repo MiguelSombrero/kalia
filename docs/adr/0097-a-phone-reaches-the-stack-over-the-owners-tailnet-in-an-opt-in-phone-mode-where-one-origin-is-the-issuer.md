@@ -2,6 +2,23 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-01
+- **Amended:** 2026-11-04 — iteration 10
+  [task 02](../tasks/iteration-10/02-the-phone-reaches-the-stack.md) built the
+  mode and settled what this ADR left to it. **Four ports are forwarded, not
+  three:** a development build on the phone loads its JavaScript from Metro, so
+  `METRO_PORT` is forwarded beside the edge's three and `mobile-env` advertises
+  the tailnet host as Metro's (`REACT_NATIVE_PACKAGER_HOSTNAME`). **The
+  exposure paragraph reads accordingly:** in phone mode the tailnet's members
+  reach the edge's three ports and, only while `make mobile-start` runs,
+  Metro, which serves the app's JavaScript and source to whoever asks; and
+  nothing listens beyond loopback, because in phone mode `make mobile-start`
+  passes `--localhost`, which makes Expo CLI bind Metro to `127.0.0.1` (its
+  default, `--lan`, binds every interface) while the advertised host is
+  still overridden. **The switch is `KALIA_PHONE_HOST`:** phone mode is on
+  exactly when it is non-empty in the root `.env`, and `make phone-mode` and
+  `make phone-mode-off` change it, recreate the services that carry it and
+  replace the machine's `tailscale serve` forwards, which is where another
+  worktree's are removed. The decision itself stands
 
 ## Context
 
@@ -210,3 +227,60 @@ on the running stack, amending this ADR if one is not.
   tailnet host over HTTP with only the exception described above;
 - that two worktrees, one in phone mode and one not, run beside each other
   without the machine's forwards colliding.
+
+**Checked by [task 02](../tasks/iteration-10/02-the-phone-reaches-the-stack.md),
+2026-11-04**, on a running stack with a placeholder host standing for the
+tailnet name (no forward made):
+
+- Keycloak stamps the configured host whatever the request names:
+  its discovery document, fetched through `localhost`, names the placeholder
+  as the issuer, and with phone mode switched off again names
+  `localhost`. The backend, the web app and the realm's web addresses carry the
+  same host, and `scripts/check-keycloak-realm-config.mjs` matched the
+  reconciled realm in both modes.
+- Switching is a recreate of `keycloak`, `backend`, `web` and
+  `keycloak-config` and nothing else, and switching back restores the default
+  stack; the realm follows without an edit.
+- Metro, started with `--localhost`, listens on `127.0.0.1` only and
+  advertises the configured host in its manifest.
+
+The development build's reach is a finding to carry into the run: the
+generated `Info.plist` keeps `NSAllowsArbitraryLoads` off and
+`NSAllowsLocalNetworking` on, and App Transport Security is understood not to
+apply to unqualified (single-label) host names, so the README tells the
+product owner to give the Mac's short tailnet name, not its `*.ts.net` one.
+Whether the build reaches that name over HTTP is one of the points the run
+shows.
+
+The points under **Not verified** that need a tailnet are shown by the
+product owner's run on the Mac and the iPhone, and are recorded here when
+reported.
+
+**Shown on the product owner's Mac and iPhone, 2026-11-04**, with the Mac's
+short tailnet name as the one origin:
+
+- `tailscale serve --bg --http=<port> http://127.0.0.1:<port>` forwards plain
+  HTTP for the web app's, the API's, Keycloak's and Metro's ports under the same
+  numbers, and the three origins answered through them.
+- The Mac reaches its own tailnet name on those ports: the doctor's checks
+  passed and the browser on the Mac signed in at the tailnet origin.
+- Keycloak's discovery document, fetched on the tailnet origin, names that
+  origin as its issuer.
+- Keycloak, with the local stack's `sslRequired` of `none`, answered the
+  iPhone's sign-in over HTTP on a name that is not `localhost`.
+- The iPhone's development build, loading its JavaScript from Metro through the
+  forward, reached the API over HTTP with no exception in the build: it listed
+  the catalog and signed in and out. The short name is what makes that true,
+  because App Transport Security leaves unqualified names alone and the
+  `*.ts.net` name was not tried. The release build's reach is
+  [task 05](../tasks/iteration-10/05-build-variants.md)'s.
+
+The iOS Simulator, with phone mode on and Metro restarted with a cleared cache
+(no native rebuild: the origins come from Metro's environment), listed the
+catalog and signed in through the tailnet origin; its sign-in prompt named the
+tailnet host, not `localhost`. The session it held from before the switch ended
+with "You were signed out", as the Consequences say it would. With phone mode
+off, the same build listed the catalog and signed in on `localhost`.
+
+Not yet shown: two worktrees, one in phone mode and one not, running beside each
+other.
