@@ -1,5 +1,6 @@
-// Installs the development build on the connected iPhone (`make
-// mobile-ios-device`, through mobile-native.mjs). `expo run:ios --device` is not
+// Installs the build on the connected iPhone (`make mobile-ios-device` for the
+// development build, `make mobile-ios-device-release` for the release one,
+// through mobile-native.mjs). `expo run:ios --device` is not
 // used: it passes -allowProvisioningUpdates to xcodebuild only while the Xcode
 // project has no development team, and the team in app.config.js puts one
 // there, so the provisioning profile would never be created or renewed. This
@@ -54,13 +55,13 @@ export const chooseDevice = (listing) => {
   return connected[0].developerMode ? { udid: connected[0].udid } : { refusal: REFUSALS.developerMode };
 };
 
-export const xcodebuildArgs = ({ udid, teamId }) => [
+export const xcodebuildArgs = ({ udid, teamId, configuration = "Debug" }) => [
   "-workspace",
   resolve(IOS_DIR, `${SCHEME}.xcworkspace`),
   "-scheme",
   SCHEME,
   "-configuration",
-  "Debug",
+  configuration,
   "-destination",
   `id=${udid}`,
   "-derivedDataPath",
@@ -71,9 +72,9 @@ export const xcodebuildArgs = ({ udid, teamId }) => [
   "build",
 ];
 
-export const appPath = () => resolve(DERIVED_DATA, "Build/Products/Debug-iphoneos", `${SCHEME}.app`);
+export const appPath = (configuration = "Debug") => resolve(DERIVED_DATA, `Build/Products/${configuration}-iphoneos`, `${SCHEME}.app`);
 
-export const installArgs = (udid) => ["devicectl", "device", "install", "app", "--device", udid, appPath()];
+export const installArgs = (udid, configuration) => ["devicectl", "device", "install", "app", "--device", udid, appPath(configuration)];
 
 export const LAUNCH_REFUSED =
   "Kalia is installed. The phone refused to launch it because it does not trust the developer yet, which is expected on the first install: on the iPhone, Settings > General > VPN & Device Management > the Apple ID under Developer App > Trust, then open Kalia from the home screen.";
@@ -95,13 +96,13 @@ const step = (command, args, env) => {
   if (status !== 0) throw new Error(`${command} ${args[0]} failed (exit ${status})`);
 };
 
-// The phone is chosen before the build, which takes minutes.
-export const installOnDevice = ({ env, teamId, prebuild }) => {
+// The phone is chosen before the build, which takes minutes. The native project
+// is already prebuilt and checked.
+export const installOnDevice = ({ env, teamId, configuration = "Debug" }) => {
   const choice = chooseDevice(listDevices());
   if (choice.refusal) throw new Error(choice.refusal);
-  prebuild();
-  step("xcodebuild", xcodebuildArgs({ udid: choice.udid, teamId }), env);
-  step("xcrun", installArgs(choice.udid), env);
+  step("xcodebuild", xcodebuildArgs({ udid: choice.udid, teamId, configuration }), env);
+  step("xcrun", installArgs(choice.udid, configuration), env);
   // A free Personal Team's developer is untrusted on first install, so the launch is refused; the install has still happened.
   const launch = spawnSync("xcrun", launchArgs(choice.udid), { cwd: ROOT, env, stdio: "inherit" });
   if (launch.status !== 0) console.log(LAUNCH_REFUSED);

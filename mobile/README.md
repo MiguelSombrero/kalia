@@ -69,8 +69,9 @@ step, and before asking why a build failed.
    ```
 
 The reference devices are the iPhone simulator Xcode creates by default and the
-Pixel above. `ios/` and `android/` are generated from `app.json` by the build
-targets and ignored by git; never edit them, delete them to start clean.
+Pixel above. `ios/` and `android/` are generated from `app.json`,
+`app.config.js` and the plugins by the build targets and ignored by git; never
+edit them, delete them to start clean.
 
 ## Run the app
 
@@ -90,10 +91,16 @@ make mobile-android   # the same on the Android emulator
 ```
 
 Each target starts Metro on this worktree's `METRO_PORT` with the stack's
-origins in the environment, builds the native project, installs the app and
-opens it. The first build takes several minutes; later ones reuse the generated
-project. Extra `expo run` flags go in `ARGS`, for example to pick a simulator:
-`make mobile-ios ARGS="--device 'iPhone 17e'"`.
+origins in the environment, prebuilds and checks the native project
+([Build variants](#build-variants-version-and-build-number)), builds it, installs
+the app and opens it. The first build takes several minutes. Extra `expo run`
+flags go in `ARGS`, for example to pick a simulator: `make mobile-ios
+ARGS="--device 'iPhone 17e'"`.
+
+Each has a release variant, with the JavaScript inside and no dev menu or Metro:
+`make mobile-ios-release`, `make mobile-android-release` and, on the iPhone,
+`make mobile-ios-device-release`
+([below](#a-release-build-on-the-iphone)).
 
 - **iOS** reaches the Mac's `localhost` directly, so nothing is forwarded; in
   phone mode it dials the tailnet host instead
@@ -309,6 +316,37 @@ supported: `make mobile-android` and `make mobile-e2e` refuse, naming `make
 phone-mode-off`. A development build that cannot reach its API logs `No response
 from <origin>` to Metro's console, which names the origin it tried.
 
+### A release build on the iPhone
+
+A development build opens to the launcher and loads its JavaScript from Metro on
+the Mac, so it stops working when `make mobile-start` does. A release build has
+its JavaScript inside: no Metro, no dev menu, no launcher. It still dials the
+API and Keycloak on the Mac's stack over the tailnet, so the Mac must be on with
+the stack up and Tailscale running; what it no longer needs is Metro.
+
+Its origins are fixed when it is built, so it needs phone mode, and
+`make mobile-ios-device-release` refuses without it, saying so. With the phone
+connected, the Apple ID signed in to Xcode and the team in the root `.env` (steps
+1 to 3 above) and phone mode on ([Reach the stack](#reach-the-stack-from-the-iphone),
+step 2):
+
+```bash
+make mobile-doctor ARGS=phone
+make mobile-ios-device-release
+```
+
+It builds, installs and launches as `make mobile-ios-device` does, over the
+development build if one is installed, and keeps the app's data. Trust the
+developer on the phone if it asks (step 6 above). Then, with Metro not running:
+
+1. Kalia opens to the app itself, not the development launcher, and shaking the
+   phone opens no developer menu.
+2. Sign in as the seeded dev account, open the Catalog tab: beers are listed.
+3. The Profile tab ends with the version and the build number.
+
+Switching phone mode off or onto another name changes the origins the build
+dialled, so rebuild; the tailnet exception in the build is for that one name.
+
 ### Re-signing after seven days
 
 The install stops opening seven days after it was signed. There is no renewal
@@ -324,6 +362,68 @@ when it expires, whether the re-sign works as written, or whether the cellar
 survives it. The first real expiry is tracked in
 [the backlog](../docs/tasks/backlog.md#mobile-client); this section is
 corrected from what is seen then.
+
+## Build variants, version and build number
+
+Two variants are built on the developer's machine, with `expo run:*` and
+Xcode; EAS Build is out because it needs an Expo login
+([ADR-0094](../docs/adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)).
+A **development build** has the dev menu and loads its JavaScript from Metro. A
+**release build** has its JavaScript inside and no dev menu. Origins are inlined
+at build time (`EXPO_PUBLIC_*`), so a release build's are fixed when it is made.
+
+| Target | Variant | Origins it dials |
+| --- | --- | --- |
+| `make mobile-ios` | development, iOS Simulator | `localhost`; the tailnet host in phone mode |
+| `make mobile-ios-release` | release, iOS Simulator | the same |
+| `make mobile-ios-device` | development, iPhone | the tailnet host in phone mode; `localhost` otherwise, which on a phone is the phone |
+| `make mobile-ios-device-release` | release, iPhone | the tailnet host; refuses without phone mode |
+| `make mobile-android` | development, Android emulator | `localhost` through `adb reverse`; refuses in phone mode |
+| `make mobile-android-release` | release, Android emulator | `localhost`; refuses in phone mode |
+
+The Android release build is the end-to-end one `make mobile-e2e` runs and is
+always `KALIA_E2E=1` on `localhost`; the iOS Simulator's `make mobile-e2e` leg is
+a release build too.
+
+**Every target prebuilds on every run.** `expo run:*` reuses an existing `ios/`
+or `android/`, which would keep the last build's cleartext exception, origins
+and build number, so each target runs `expo prebuild` for its platform first,
+then `mobile/scripts/check-cleartext.mjs` on the result, then builds. A
+development build made after an end-to-end one does not inherit its exception.
+
+**Cleartext HTTP has two allowed cases and no others.** Both platforms refuse
+plain HTTP in a release build unless the app declares an exception, and the
+exception follows the host, not the build type
+([ADR-0097](../docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
+`plugins/withCleartextExceptions.js` writes it at prebuild and takes it out of
+any prebuild that does not ask for it:
+
+- **Android: `localhost`, under `KALIA_E2E=1`,** in a network security config
+  that refuses plain HTTP elsewhere. Never the app-wide
+  `usesCleartextTraffic`. The emulator reaches the stack through `adb reverse`.
+- **iOS: the tailnet host named by `KALIA_PHONE_HOST`, in phone mode,** as an
+  App Transport Security exception for that host alone. iOS needs none for
+  `localhost`, and nothing sets `NSAllowsArbitraryLoads`. Expo's stock
+  `NSAllowsLocalNetworking` is left as generated.
+
+Because one prebuild feeds a development and a release build alike, the iOS
+exception is present in phone mode in either. The check fails a project with an
+app-wide exception or one for any other host, and ignores Expo's `debug`
+overlay on Android, which allows cleartext for Metro and is merged only into the
+debug variant.
+
+**The version is semantic and raised by hand** in `app.json`: patch for a fix
+a person would notice, minor for a feature, major for a change that breaks what
+was installed before. It is for people to read and the app-config check ignores
+it. **The build number is never edited:** `app.config.js` derives it each time
+the project is prebuilt, as the seconds since 2026-01-01 UTC, and writes the one
+value to the iOS build number and to the Android version code. A later build is
+always higher, two builds never share one, and the value stays under Android's
+2,100,000,000 until 2092. The app shows it on the Profile tab, beside the
+version, and the app-config check compares it with the server's minimum. To
+require a build, read its number there and set it with `make app-config
+IOS=<number> ANDROID=<number>`: every build made before that moment is then
+blocked ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 
 ## Icon, splash and name
 
@@ -341,10 +441,11 @@ later crop it to a circle, which the image's margin is sized for. The display
 name comes from `locales/en.json` and `locales/fi.json`, and the identifier
 `fi.kalia.app` is in `app.json`.
 
-`expo run:ios` and `expo run:android` reuse an existing `ios/` or `android/`, so
-after the mark, `app.json`, `app.config.js` or `locales/` changes, run `npx expo prebuild --clean`
-in `mobile/` (or delete both directories) before building, or the build keeps
-the old icon and splash.
+The build targets prebuild on every run, but `expo prebuild` without `--clean`
+keeps the icon and splash files already in `ios/` and `android/`, so after the
+mark, `app.json` or `locales/` changes, run `npx expo prebuild --clean` in
+`mobile/` (or delete both directories) before building, or the build keeps the
+old icon and splash.
 
 An installed build keeps the identifier, icon, splash and name it shipped with:
 change one and reinstall, and change the identifier only with the product
@@ -424,12 +525,13 @@ the Android one is a running emulator, else the first virtual device, or
   not the app` at the top of the log. The flow is never retried. The emulator's
   own log is `maestro-output/emulator-<attempt>.log`, which the job uploads on
   failure.
-- **Cleartext HTTP is allowed in the Android end-to-end build only.** The app
-  dials `http://localhost` (the emulator reaches the stack through `adb
-  reverse`), which a release build refuses, so `scripts/mobile-e2e.mjs` runs
-  the prebuild with `KALIA_E2E=1`, which `plugins/withE2eCleartext.js` turns
-  into the manifest flag; a prebuild without it takes the flag out again. iOS
-  allows `localhost` by default.
+- **The end-to-end build is the release variant.** On Android the app dials
+  `http://localhost` (the emulator reaches the stack through `adb reverse`),
+  which a release build refuses, so `scripts/mobile-e2e.mjs` prebuilds with
+  `KALIA_E2E=1`, which `plugins/withCleartextExceptions.js` turns into an
+  exception for `localhost` alone; the cleartext rule and its check are in
+  [Build variants](#build-variants-version-and-build-number). iOS allows
+  `localhost` by default.
 - **A new flow is confirmed to fail** against a build with the thing it checks
   broken, so a pass means something.
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-// Builds the development build and runs it on a simulator against this
-// checkout's stack (`make mobile-ios`, `make mobile-android`), or installs it
-// on the connected iPhone (`make mobile-ios-device`):
-//   node scripts/mobile-native.mjs ios|ios-device|android [expo run flags]
+// Builds the app and runs it on a simulator or emulator against this checkout's
+// stack (`make mobile-ios`, `make mobile-android`), or installs it on the
+// connected iPhone (`make mobile-ios-device`). A development build has the dev
+// menu and Metro; with --release (the `-release` targets) the build has its
+// JavaScript inside and no dev menu:
+//   node scripts/mobile-native.mjs ios|ios-device|android [--release] [expo run flags]
 // Every port comes from the worktree's .env through stack-ports.mjs. The iOS
 // Simulator shares the Mac's network, so the app dials localhost directly; the
 // Android emulator has a network of its own, so `adb reverse` forwards each
@@ -12,7 +14,7 @@ import { execFileSync, spawn } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { mobileEnv } from "./mobile-env.mjs";
+import { PLATFORMS, buildPlan, runSteps } from "./mobile-build.mjs";
 import {
   ANDROID_API,
   TEAM_ID_VARIABLE,
@@ -28,8 +30,9 @@ import { ROOT, portOf, stackEnv } from "./stack-ports.mjs";
 
 const REVERSED = ["BACKEND_PORT", "KEYCLOAK_PORT", "METRO_PORT"];
 
-export const reverseCalls = (env) =>
-  REVERSED.map((name) => `tcp:${portOf(env, name)}`).map((port) => ["reverse", port, port]);
+// A release build has its JavaScript inside and never dials Metro.
+export const reverseCalls = (env, variant = "development") =>
+  REVERSED.filter((name) => variant === "development" || name !== "METRO_PORT").map((name) => `tcp:${portOf(env, name)}`).map((port) => ["reverse", port, port]);
 
 export const parseEmulators = (output) =>
   output.split("\n").flatMap((line) => {
@@ -62,19 +65,21 @@ const bootEmulator = async (sdk, adb, avds) => {
 
 // Every running emulator gets the forwards, so the one `expo run:android`
 // installs on has them whichever it picks.
-const androidTarget = async (env, avds) => {
+const androidTarget = async (env, avds, variant) => {
   const sdk = androidSdk(env);
   const adb = resolve(sdk, "platform-tools/adb");
   const running = parseEmulators(execFileSync(adb, ["devices"], { encoding: "utf8" }));
   const serials = running.length > 0 ? running : await bootEmulator(sdk, adb, avds);
   for (const serial of serials) {
-    for (const call of reverseCalls(env)) execFileSync(adb, ["-s", serial, ...call], { stdio: "inherit" });
+    for (const call of reverseCalls(env, variant)) execFileSync(adb, ["-s", serial, ...call], { stdio: "inherit" });
   }
   return sdk;
 };
 
-const run = async (platform, args) => {
+const run = async (platform, variant, args) => {
   const stack = stackEnv();
+  const plan = buildPlan(stack, { platform, variant, args });
+  if (plan.problem) throw new Error(plan.problem);
   const team = teamFinding(stack[TEAM_ID_VARIABLE], true);
   if (platform === "ios-device" && !team.ok) {
     report([team]);
@@ -85,34 +90,34 @@ const run = async (platform, args) => {
   if (!report(findings.filter((finding) => !finding.ok))) {
     throw new Error(`the ${platform} toolchain is incomplete; \`make mobile-doctor\` lists all of it`);
   }
-  const env = { ...process.env, ...mobileEnv(stack) };
+  const env = { ...process.env, ...plan.env };
   if (platform === "ios-device") env[TEAM_ID_VARIABLE] = stack[TEAM_ID_VARIABLE];
   if (platform !== "android") {
     // CocoaPods fails on a non-UTF-8 locale without naming it.
     Object.assign(env, { LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" });
-  } else {
+  }
+  const build = plan.steps.at(-1);
+  runSteps(plan.steps.slice(0, -1), env);
+  if (platform === "android") {
     const jdk = facts.jdks.find((candidate) => candidate.major === facts.pins.jdk);
-    Object.assign(env, { ANDROID_HOME: await androidTarget(stack, facts.android.avds), JAVA_HOME: jdk.home });
+    Object.assign(env, { ANDROID_HOME: await androidTarget(stack, facts.android.avds, variant), JAVA_HOME: jdk.home });
   }
   if (platform === "ios-device") {
-    installOnDevice({
-      env,
-      teamId: stack[TEAM_ID_VARIABLE],
-      prebuild: () => execFileSync("npm", ["run", "ios:prebuild", "--workspace", "mobile"], { cwd: ROOT, env, stdio: "inherit" }),
-    });
+    installOnDevice({ env, teamId: stack[TEAM_ID_VARIABLE], configuration: build.configuration });
     return;
   }
-  const child = spawn("npm", ["run", platform, "--workspace", "mobile", "--", ...args], { cwd: ROOT, env, stdio: "inherit" });
+  const child = spawn(build.command, build.args, { cwd: ROOT, env, stdio: "inherit" });
   child.on("exit", (code) => process.exit(code ?? 1));
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const [platform, ...args] = process.argv.slice(2);
-  if (!["ios", "ios-device", "android"].includes(platform)) {
-    console.error("usage: mobile-native.mjs ios|ios-device|android [expo run flags]");
+  const [platform, ...rest] = process.argv.slice(2);
+  const release = rest[0] === "--release";
+  if (!PLATFORMS.includes(platform)) {
+    console.error("usage: mobile-native.mjs ios|ios-device|android [--release] [expo run flags]");
     process.exit(2);
   }
-  run(platform, args).catch((error) => {
+  run(platform, release ? "release" : "development", release ? rest.slice(1) : rest).catch((error) => {
     console.error(error.message);
     process.exit(1);
   });

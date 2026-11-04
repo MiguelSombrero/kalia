@@ -13,7 +13,6 @@
     },
     "ios": {
       "bundleIdentifier": "fi.kalia.app",
-      "buildNumber": "1",
       "supportsTablet": false,
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true
@@ -21,7 +20,6 @@
     },
     "android": {
       "package": "fi.kalia.app",
-      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/generated/adaptive-icon-foreground.png",
         "backgroundColor": "#005b57"
@@ -46,7 +44,7 @@
           "backgroundColor": "#005b57"
         }
       ],
-      "./plugins/withE2eCleartext"
+      "./plugins/withCleartextExceptions"
     ]
   }
 }

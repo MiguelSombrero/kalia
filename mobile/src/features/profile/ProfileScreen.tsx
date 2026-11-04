@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { ownBuildNumber, ownVersion } from "@/lib/build/buildInfo";
 import { useMyProfile } from "./hooks/useMyProfile";
 
 const SignedOut = ({ expired }: { expired: boolean }) => {
@@ -53,6 +54,16 @@ const SignedIn = () => {
   );
 };
 
+const BuildInfo = () => {
+  const { t } = useTranslation();
+  const version = ownVersion();
+  const build = ownBuildNumber();
+  if (version === null) {
+    return null;
+  }
+  return <Text style={styles.build}>{build === null ? t("profile.about.version", { version }) : t("profile.about.versionBuild", { version, build })}</Text>;
+};
+
 export const ProfileScreen = () => {
   const { t } = useTranslation();
   const { state } = useAuth();
@@ -64,6 +75,7 @@ export const ProfileScreen = () => {
       </Text>
       {state.status === "signedOut" ? <SignedOut expired={state.expired} /> : null}
       {state.status === "signedIn" ? <SignedIn /> : null}
+      <BuildInfo />
     </SafeAreaView>
   );
 };
@@ -73,5 +85,6 @@ const styles = StyleSheet.create({
   heading: { fontSize: 28, fontWeight: "700", color: "#111111" },
   lead: { marginTop: 16, fontSize: 20, fontWeight: "600", color: "#111111" },
   body: { marginTop: 8, fontSize: 17, color: "#444444" },
+  build: { marginTop: 32, fontSize: 15, color: "#444444" },
   notice: { marginTop: 16, fontSize: 17, color: "#8a1c1c" },
 });

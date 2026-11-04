@@ -4,6 +4,9 @@ import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { ProfileScreen } from "./ProfileScreen";
 
+jest.mock("expo-application", () => ({ nativeApplicationVersion: "0.1.0", nativeBuildVersion: "26569207" }));
+const application = jest.requireMock<{ nativeApplicationVersion: string | null; nativeBuildVersion: string | null }>("expo-application");
+
 const transport = jest.fn();
 const answerWith = (username: string) =>
   transport.mockResolvedValue({ data: { username, cellarPublic: false }, status: 200, headers: new Headers() });
@@ -12,6 +15,8 @@ const signedIn = () => fakeTokenStore({ status: "signedIn" });
 const signedOut = (expired = false) => fakeTokenStore({ status: "signedOut", expired });
 
 beforeEach(() => {
+  application.nativeApplicationVersion = "0.1.0";
+  application.nativeBuildVersion = "26569207";
   transport.mockReset();
   registerTransport(transport as unknown as Transport);
 });
@@ -182,5 +187,48 @@ describe("ProfileScreen signed in", () => {
     await screen.findByText("Couldn't load your profile.");
 
     expect(screen.getByRole("button", { name: "Sign out" })).toBeOnTheScreen();
+  });
+});
+
+describe("ProfileScreen's version line", () => {
+  it.each([
+    ["en", "Version 0.1.0, build 26569207"],
+    ["fi", "Versio 0.1.0, koontinumero 26569207"],
+  ] as const)("names the version and the build number, in %s", async (locale, line) => {
+    await renderWithLocale(<ProfileScreen />, locale, signedOut());
+
+    expect(screen.getByText(line)).toBeOnTheScreen();
+  });
+
+  it("is there whether or not the user is signed in", async () => {
+    answerWith("miika");
+    await renderWithLocale(<ProfileScreen />, "en", signedIn());
+
+    expect(await screen.findByText("Version 0.1.0, build 26569207")).toBeOnTheScreen();
+  });
+
+  it.each([
+    ["en", "Version 0.1.0"],
+    ["fi", "Versio 0.1.0"],
+  ] as const)("leaves the build number out when the build does not report one, in %s", async (locale, line) => {
+    application.nativeBuildVersion = null;
+    await renderWithLocale(<ProfileScreen />, locale, signedOut());
+
+    expect(screen.getByText(line)).toBeOnTheScreen();
+    expect(screen.queryByText(/build|koontinumero|null|undefined/)).not.toBeOnTheScreen();
+  });
+
+  it("leaves the build number out when it is not a number", async () => {
+    application.nativeBuildVersion = "abc";
+    await renderWithLocale(<ProfileScreen />, "en", signedOut());
+
+    expect(screen.getByText("Version 0.1.0")).toBeOnTheScreen();
+  });
+
+  it("shows no line at all when the version is unknown", async () => {
+    application.nativeApplicationVersion = null;
+    await renderWithLocale(<ProfileScreen />, "en", signedOut());
+
+    expect(screen.queryByText(/Version/)).not.toBeOnTheScreen();
   });
 });

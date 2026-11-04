@@ -907,6 +907,19 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   app, and the module throws at start-up when either is missing. Both are
   `localhost` with the stack's ports, and in phone mode the tailnet host
   instead, as is the host Metro advertises to the phone.
+- **Build variants and cleartext.** Two variants are built on the developer's
+  machine: a development build, with the dev menu and Metro, and a release
+  build, with its JavaScript inside. Each build target runs `expo prebuild`
+  afresh, then `mobile/scripts/check-cleartext.mjs` over the generated project,
+  then builds, so a project never carries the previous build's origins, build
+  number or exception. A release build dials plain HTTP only where the build is
+  one of two: Android's `KALIA_E2E=1` build, to `localhost`, and phone mode's
+  iOS build, to the tailnet host, each a per-host exception written by
+  `mobile/plugins/withCleartextExceptions.js`; the check fails an app-wide one
+  and any other host
+  ([task 05](tasks/iteration-10/05-build-variants.md),
+  [ADR-0097](adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
+  The Profile tab shows the version and the build number.
 - **Transport.** The root layout registers the shared fetch core from
   `@kalia/api` with the API origin as its base URL
   (`src/lib/api/registerTransport.ts`), as the web registers its own, with the
@@ -940,9 +953,10 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   launch and on returning to the foreground, at most once every 30 seconds,
   and covers the whole app, tabs included, with an update-required or a
   maintenance screen (maintenance first, since updating does not help when the
-  server is down). The app compares its own build number — the iOS build
-  number or Android version code in `app.json`, read with `expo-application` —
-  with its platform's minimum, and remembers that minimum, not a verdict, in
+  server is down). The app compares its own build number — the one
+  integer `app.config.js` derives from the time of the build and writes to both
+  the iOS build number and the Android version code, read with
+  `expo-application` — with its platform's minimum, and remembers that minimum, not a verdict, in
   `@react-native-async-storage/async-storage`, so an update demanded once keeps
   blocking offline and clears itself when the installed build meets it. An
   endpoint that cannot be reached fails open. The screens' wording is the app's
