@@ -18,6 +18,8 @@ export type AddBeerResult =
   | { kind: "added"; beer: BeerDetailsDto }
   | { kind: "duplicateBeer"; existingBeerId: string }
   | { kind: "duplicateBrewery"; existing: Pick<Brewery, "id" | "name" | "countryCode"> }
+  | { kind: "pendingElsewhere" }
+  | { kind: "pendingCap" }
   | { kind: "refused"; fields: FieldRefusal[] };
 
 /** A brewery as the add-a-beer form offers it, its place already named in the reader's language. */
@@ -31,6 +33,8 @@ export type AddBeerOutcome =
   | { kind: "added"; beer: { id: string; name: string }; landsOnSearch: boolean }
   | { kind: "duplicateBeer"; existing: { id: string; name: string; breweryName: string } }
   | { kind: "duplicateBrewery"; existing: BreweryOption }
+  | { kind: "pendingElsewhere" }
+  | { kind: "pendingCap" }
   | { kind: "refused"; fields: FieldRefusal[] };
 
 /** URL search param values as they arrive from the page — all optional strings. */

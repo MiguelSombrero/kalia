@@ -36,13 +36,16 @@ describe("addBeerSchema", () => {
   });
 
   // Mirrors AddBeerRequestDto.name: @NotBlank @Size(max = 200), a letter or
-  // digit, no control characters.
+  // digit, no control or invisible formatting characters.
   it.each([
     ["", "catalog.add.error.nameRequired"],
     ["   ", "catalog.add.error.nameRequired"],
     ["x".repeat(201), "catalog.add.error.nameTooLong"],
     ["!!!", "catalog.add.error.nameNeedsLetter"],
     ["Öö\u0007", "catalog.add.error.nameInvalid"],
+    ["Öö\u200B", "catalog.add.error.nameInvalid"],
+    ["\u202EÖö", "catalog.add.error.nameInvalid"],
+    ["Ö\u00ADö", "catalog.add.error.nameInvalid"],
   ])("refuses the name %j", (name, message) => {
     expect(errorsOf({ ...valid, name })).toEqual({ name: message });
   });

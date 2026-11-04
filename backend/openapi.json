@@ -551,6 +551,31 @@
         "required" : [ "content", "page", "totalElements", "totalPages" ],
         "type" : "object"
       },
+      "PendingElsewhereProblem" : {
+        "description" : "A 409: another contributor has already suggested this beer and it waits for review. It names neither the contributor nor the beer, since the caller cannot open it",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "format" : "uri",
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "format" : "uri",
+            "type" : "string"
+          }
+        },
+        "required" : [ "status", "title" ],
+        "type" : "object"
+      },
       "Problem" : {
         "description" : "An RFC 9457 problem: the body of every error response",
         "properties" : {
@@ -1020,11 +1045,13 @@
                     "$ref" : "#/components/schemas/DuplicateBeerProblem"
                   }, {
                     "$ref" : "#/components/schemas/DuplicateBreweryProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/PendingElsewhereProblem"
                   } ]
                 }
               }
             },
-            "description" : "The catalog already has this beer, named by `existingBeerId`, or already has the new brewery, named by `existingBreweryId` and spelled as the catalog spells it"
+            "description" : "The catalog already has this beer, named by `existingBeerId`, or already has the new brewery, named by `existingBreweryId` and spelled as the catalog spells it; or another contributor's suggestion of this beer is waiting for review, which names neither the contributor nor the beer"
           },
           "429" : {
             "content" : {

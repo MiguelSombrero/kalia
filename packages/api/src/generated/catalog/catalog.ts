@@ -31,6 +31,7 @@ import type {
   ListBreweriesParams,
   PageDtoBeerSummaryDto,
   PageDtoBreweryDto,
+  PendingElsewhereProblem,
   Problem,
   SearchBeersParams,
   ValidationProblem
@@ -211,7 +212,7 @@ export type addBeerResponse404 = {
 }
 
 export type addBeerResponse409 = {
-  data: DuplicateBeerProblem | DuplicateBreweryProblem
+  data: DuplicateBeerProblem | DuplicateBreweryProblem | PendingElsewhereProblem
   status: 409
 }
 
@@ -277,7 +278,7 @@ return kaliaFetch<addBeerResponse>(getAddBeerUrl(),
 
 export const getAddBeerMutationKey = () => ['addBeer'] as const;
 
-export const getAddBeerMutationOptions = <TError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem,
+export const getAddBeerMutationOptions = <TError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem | PendingElsewhereProblem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeer>>, TError,AddBeerMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof addBeer>>, TError,AddBeerMutationVariables, TContext> => {
 
@@ -306,13 +307,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AddBeerMutationResult = NonNullable<Awaited<ReturnType<typeof addBeer>>>
     export type AddBeerMutationBody = AddBeerRequestDto
-    export type AddBeerMutationError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem
+    export type AddBeerMutationError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem | PendingElsewhereProblem
     export type AddBeerMutationVariables = {data: AddBeerRequestDto}
 
     /**
  * @summary Add a beer
  */
-export const useAddBeer = <TError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem,
+export const useAddBeer = <TError = ValidationProblem | Problem | DuplicateBeerProblem | DuplicateBreweryProblem | PendingElsewhereProblem,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeer>>, TError,AddBeerMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof addBeer>>,

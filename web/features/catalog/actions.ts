@@ -93,6 +93,8 @@ export const addBeerAction = async (request: AddBeerRequest, locale: string = "e
     }
     case "duplicateBrewery":
       return { kind: "duplicateBrewery", existing: toOption(result.existing, toLocale(locale)) };
+    case "pendingElsewhere":
+    case "pendingCap":
     case "refused":
       return result;
   }

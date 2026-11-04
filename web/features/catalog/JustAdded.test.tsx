@@ -6,13 +6,17 @@ import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { beforeEach, describe, expect, it } from "vitest";
 import enCommon from "@kalia/locales/en/common.json";
-import { getOptions } from "@/i18n/settings";
+import fiCommon from "@kalia/locales/fi/common.json";
+import { getOptions, type Locale } from "@/i18n/settings";
 import { BeerRow, JustAddedBadge, JustAddedLanding, JustAddedToast } from "./JustAdded";
 import { useJustAddedStore } from "./store";
 
-const withI18n = (children: ReactNode) => {
+const withI18n = (children: ReactNode, locale: Locale = "en") => {
   const i18n = createInstance();
-  i18n.use(initReactI18next).init({ ...getOptions("en"), resources: { en: { common: enCommon } } });
+  i18n.use(initReactI18next).init({
+    ...getOptions(locale),
+    resources: { en: { common: enCommon }, fi: { common: fiCommon } },
+  });
   return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
 };
 
@@ -120,8 +124,19 @@ describe("the just-added marks", () => {
     render(withI18n(<JustAddedToast />));
     act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
 
-    expect(await screen.findByText("Öö Bourbon is in the catalog.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Öö Bourbon was added. Only you can see it until it has been reviewed."),
+    ).toBeInTheDocument();
     act(() => useJustAddedStore.getState().dismissToast());
     expect(useJustAddedStore.getState().beer).toEqual({ id: "new", name: "Öö Bourbon" });
+  });
+
+  it("say in Finnish that the added beer waits for review", async () => {
+    render(withI18n(<JustAddedToast />, "fi"));
+    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
+
+    expect(
+      await screen.findByText("Öö Bourbon lisättiin. Vain sinä näet sen, kunnes se on tarkistettu."),
+    ).toBeInTheDocument();
   });
 });

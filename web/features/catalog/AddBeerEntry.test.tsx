@@ -79,7 +79,7 @@ describe("AddBeerEntry", () => {
   it("says so in Finnish, signed out", async () => {
     const { container } = await renderEntry({ locale: "fi", search: { query: "Öö" }, isSignedIn: false, placement: "empty" });
 
-    expect(screen.getByText("Kirjaudu sisään, niin voit lisätä sen kaikkien nähtäväksi.")).toBeInTheDocument();
+    expect(screen.getByText("Kirjaudu sisään, niin voit lisätä sen. Muut näkevät sen vasta tarkistuksen jälkeen.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Kirjaudu sisään" })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });

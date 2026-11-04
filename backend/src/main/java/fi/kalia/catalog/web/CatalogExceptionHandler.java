@@ -5,6 +5,7 @@ import fi.kalia.catalog.application.BreweryNotFoundException;
 import fi.kalia.catalog.application.DuplicateBeerException;
 import fi.kalia.catalog.application.DuplicateBreweryException;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.catalog.application.PendingElsewhereException;
 import fi.kalia.catalog.application.TooManyPendingEntriesException;
 import fi.kalia.catalog.application.UnknownCountryException;
 import fi.kalia.catalog.application.UnknownStyleException;
@@ -33,6 +34,11 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(DuplicateBeerException.class)
 	DuplicateBeerProblem duplicateBeer(DuplicateBeerException e) {
 		return new DuplicateBeerProblem(e.getMessage(), e.getExistingBeerId());
+	}
+
+	@ExceptionHandler(PendingElsewhereException.class)
+	PendingElsewhereProblem pendingElsewhere(PendingElsewhereException e) {
+		return new PendingElsewhereProblem(e.getMessage());
 	}
 
 	@ExceptionHandler(DuplicateBreweryException.class)

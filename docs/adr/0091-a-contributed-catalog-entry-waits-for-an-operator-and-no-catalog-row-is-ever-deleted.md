@@ -10,6 +10,10 @@
   everywhere by one rule, the feed included; a holder keeps their bottles but
   cannot add another, and sees the beer unlinked in their own cellar
   (iteration 10 task 15); see the "Withdrawn" bullet of Decision
+- **Amended:** 2026-11-04 — adding a beer whose name another contributor holds
+  as `PENDING` answers an anonymous `409` that offers no beer to open, and the
+  add-beer flow says a beer waits for review and when the cap is reached
+  (iteration 10 task 16); see the "Pending elsewhere" and cap bullets of Decision
 
 ## Context
 
@@ -58,7 +62,16 @@ ever deleted.
   breweries; a beer with a new brewery is two). An add past that answers `429`
   `problem+json` until some are approved or rejected. Two adds by one
   contributor are serialised by a transaction-scoped advisory lock, so the
-  count cannot be read by both.
+  count cannot be read by both. A client says so in its own words rather than
+  as a failure to add, and does not restate the number.
+- **Pending elsewhere.** Adding a beer whose name another contributor holds as
+  `PENDING` answers `409` with `PendingElsewhereProblem`, which names no
+  contributor and no beer, since the caller cannot open it. The duplicate
+  lookup still sees that row, so two copies of one name are never submitted;
+  the caller's own `PENDING` row, which they can open, still answers with its
+  id. A client tells the shapes apart by which of `existingBeerId` and
+  `existingBreweryId` the body carries. A new brewery whose name another
+  contributor holds as `PENDING` still discloses that brewery.
 - **The operator command** is `make moderate`, which runs
   `scripts/moderate-contributor.sql` against the stack's PostgreSQL. It acts on
   everything one contributor added, named by username or id: *approve* turns
@@ -113,10 +126,12 @@ ever deleted.
   statement.
 - Bad, because review is manual and needs an operator with database access; a
   contributor who is never reviewed waits forever, and nothing tells them.
-- Bad, because the duplicate check cannot tell a row the viewer can see from
-  one they cannot: proposing the name of someone else's pending entry answers
-  `409` with an id that then reads as not found, and for a brewery discloses its
-  name and country and offers a brewery the proposer cannot use.
+- Bad, because a beer's `409` discloses that its name is pending somewhere,
+  though not whose, and the proposer cannot add it until an operator acts.
+- Bad, because the duplicate brewery check cannot tell a row the viewer can see
+  from one they cannot: proposing the name of someone else's pending brewery
+  discloses its name and country and offers a brewery the proposer cannot use
+  ([SHOULD-102](../tasks/quality-backlog.md)).
 - Bad, because a holder of a beer that is later rejected or removed sees it
   vanish from public view and from the add path without being told why beyond
   the note in their own cellar; nothing notifies them (see the revisit trigger).

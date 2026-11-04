@@ -52,6 +52,9 @@ public class ContributionService {
 		Brewery brewery = breweries.findVisibleById(breweryId, contributorId)
 				.orElseThrow(() -> new BreweryNotFoundException(breweryId));
 		beers.findIdByBreweryIdAndSameName(breweryId, beerName).ifPresent(existingId -> {
+			if (!beers.isVisibleTo(existingId, contributorId)) {
+				throw new PendingElsewhereException();
+			}
 			throw new DuplicateBeerException(existingId);
 		});
 		return brewery;

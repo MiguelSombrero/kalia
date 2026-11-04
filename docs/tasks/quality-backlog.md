@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-23 · SHOULD-101 · COULD-114
+**Highest issued:** MUST-23 · SHOULD-102 · COULD-114
 
 ## MUST
 
@@ -65,6 +65,15 @@ repeats, so the recurrence stays visible once the old entry is gone.
 
 ## SHOULD
 
+- **SHOULD-102** *(confirmed 2026-11-04)* — Proposing a new brewery whose name
+  and country another contributor holds as `PENDING` answers
+  `DuplicateBreweryProblem` with that brewery's id, name and country, and the
+  add-beer dialog offers "Use it"; choosing it then answers `404`
+  (`findVisibleById` hides the row), the dead end SHOULD-72 closed for beers.
+  `ContributionService.newBrewery` has the same lookup as `existingBrewery`
+  without the visibility check; it wants the same anonymous `409`, or a
+  decision that a brewery's name may be disclosed. Found while implementing
+  [iteration 10 task 16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md).
 - **SHOULD-80** **[needs decision]** *(confirmed 2026-11-04)* — A rejected
   suggestion leaves the pending count (`ContributionService.requireRoomForPending`),
   so a contributor whose 20 suggestions are all rejected can suggest 20 more

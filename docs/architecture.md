@@ -358,7 +358,9 @@ seeded and imported row; an operator moves a contributor's rows to `APPROVED`,
 row is found, opened and cellared by its contributor alone, and is left out of
 search, the brewery list, other users' reads, every public cellar and the feed
 until approved. A contributor may have 20 entries waiting (a new brewery counts
-as one); an add past that answers `429` `problem+json`. A `REJECTED` or
+as one); an add past that answers `429` `problem+json`. Adding a beer whose
+name another contributor holds as pending answers an anonymous `409`, with no
+beer to open. A `REJECTED` or
 `REMOVED` row is withheld the same way from search, lists, every public read
 and the feed, whoever contributed it, and is dropped from the duplicate key so
 its name can be proposed again.
@@ -500,7 +502,7 @@ GET    /api/v1/app-config                           -> {minimumBuild: {ios, andr
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
-POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past 20 entries waiting for approval, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them)
+POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past 20 entries waiting for approval, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them), or naming nothing when another contributor's suggestion of the beer is waiting for review
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity; every entry, not paginated
 GET    /api/v1/cellar/holdings?beerIds=             -> which of at most 100 beers the caller holds and how many bottles of each, with the beers and bottles held in all; 400 past 100 ids or for one that is not a beer id
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice

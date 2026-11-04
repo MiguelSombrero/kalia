@@ -202,6 +202,47 @@ describe("AddBeerDialog", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["en", "A beer you add is yours to cellar at once. Others see it after it has been reviewed."],
+    ["fi", "Lisäämäsi oluen voit laittaa heti omaan kellariisi. Muut näkevät sen vasta tarkistuksen jälkeen."],
+  ] as const)("says in %s that an added beer waits for review", async (locale, description) => {
+    await openForm(locale);
+
+    expect(screen.getByRole("dialog")).toHaveAccessibleDescription(description);
+  });
+
+  it("says the pending limit is reached, and keeps the form for a retry later, on the API's 429", async () => {
+    posted = { status: 429, body: { status: 429, detail: "You already have 20 entries waiting for review" } };
+    await openForm();
+    await fillValidBeer();
+
+    submit();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(
+      "You already have as many additions waiting for review as Kalia allows. Add more once some of them have been reviewed.",
+    );
+    expect(alert).not.toHaveTextContent("Could not add the beer");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("says a beer someone else suggested waits for review, offering nothing to open, on the API's anonymous 409", async () => {
+    posted = { status: 409, body: { status: 409, detail: "Someone has already suggested this beer" } };
+    await openForm("en", "öö");
+    await fillValidBeer();
+
+    submit();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(
+      "Someone has already suggested this beer, and it is waiting for review. Check back once it has been reviewed.",
+    );
+    expect(within(alert).queryByRole("link")).not.toBeInTheDocument();
+    expect(within(alert).queryByRole("button")).not.toBeInTheDocument();
+    expect(requests.some((request) => request.url.pathname.startsWith("/api/v1/beers/"))).toBe(false);
+  });
+
   it("offers the existing brewery when a new one duplicates it, and picks it", async () => {
     posted = {
       status: 409,

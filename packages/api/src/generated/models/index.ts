@@ -30,6 +30,7 @@ export * from './minimumBuildDto';
 export * from './newBreweryRequestDto';
 export * from './pageDtoBeerSummaryDto';
 export * from './pageDtoBreweryDto';
+export * from './pendingElsewhereProblem';
 export * from './problem';
 export * from './profileDto';
 export * from './publicCellarBottleDto';

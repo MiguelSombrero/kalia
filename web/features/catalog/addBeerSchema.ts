@@ -8,7 +8,7 @@ export const MAX_CITY_LENGTH = 100;
 const MAX_ABV = 100;
 
 const HAS_LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
-const NO_CONTROL_CHARACTERS = /^\P{Cc}*$/u;
+const NO_CONTROL_OR_INVISIBLE_CHARACTERS = /^[^\p{Cc}\p{Cf}]*$/u;
 const ABV_FORMAT = /^\d{1,3}(?:[.,]\d+)?$/;
 const ABV_ONE_DECIMAL = /^\d{1,3}(?:[.,]\d)?$/;
 
@@ -31,7 +31,7 @@ const checkName = (value: string, messages: NameMessages): string | undefined =>
   if (value.trim() === "") return messages.required;
   if (value.trim().length > MAX_NAME_LENGTH) return messages.tooLong;
   if (!HAS_LETTER_OR_DIGIT.test(value)) return "catalog.add.error.nameNeedsLetter";
-  if (!NO_CONTROL_CHARACTERS.test(value)) return "catalog.add.error.nameInvalid";
+  if (!NO_CONTROL_OR_INVISIBLE_CHARACTERS.test(value)) return "catalog.add.error.nameInvalid";
   return undefined;
 };
 
@@ -73,7 +73,7 @@ export const addBeerSchema = z
       fail("newBreweryCountry", values.newBreweryCountry === "" ? "catalog.add.error.countryRequired" : undefined);
       fail("newBreweryCity", values.newBreweryCity.trim().length > MAX_CITY_LENGTH
         ? "catalog.add.error.cityTooLong"
-        : NO_CONTROL_CHARACTERS.test(values.newBreweryCity) ? undefined : "catalog.add.error.cityInvalid");
+        : NO_CONTROL_OR_INVISIBLE_CHARACTERS.test(values.newBreweryCity) ? undefined : "catalog.add.error.cityInvalid");
     } else if (values.breweryMode === "unset" || values.breweryId === "") {
       fail("breweryId", "catalog.add.error.breweryRequired");
     }
