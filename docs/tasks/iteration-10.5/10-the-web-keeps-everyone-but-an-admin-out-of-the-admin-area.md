@@ -48,8 +48,8 @@ alone. The route exists with a placeholder the design task replaces.
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)); the page shell is
   [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md)'s.
-- How the web learns the role, and what a signed-out visitor and a signed-in
-  non-admin are answered, are [task 01](01-decision-who-is-an-admin.md)'s
+- How the web learns the role, and that a signed-out visitor and a signed-in
+  non-admin are both answered the not-found page, are [task 01](01-decision-who-is-an-admin.md)'s
   decisions; the Playwright suite's own admin is
   [task 04](04-the-admin-role-exists-and-the-api-refuses-everyone-else.md)'s,
   and is built here.
@@ -69,9 +69,9 @@ is accepted and this file is checked against it.
 ## Acceptance criteria
 
 - [ ] A Playwright test signs in as an admin the suite provisions and reaches
-      the admin route; signs in as an ordinary worker account and is answered
-      the not-found page; and signed out, is sent to sign in — each without
-      the page's content in the response
+      the admin route; signs in as an ordinary worker account, and visits
+      signed out, and each time is answered the not-found page — without the
+      page's content in the response
 - [ ] A component test shows the navigation entry to an admin and to nobody
       else
 - [ ] A test shows the admin decision is made server-side from the session,

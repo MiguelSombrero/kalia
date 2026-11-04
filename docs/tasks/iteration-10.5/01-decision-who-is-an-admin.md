@@ -72,7 +72,8 @@ would make its first one.
 - **A realm role named `admin`,** granted to nobody by default and never a
   member of `default-roles-kalia`. Keycloak's built-in `roles` client scope
   already writes realm roles to the access token's `realm_access.roles` for
-  all three clients, so no mapper is added. A client role on `kalia-backend`
+  both clients that sign in, `kalia-web` and `kalia-mobile`, so no mapper is
+  added. A client role on `kalia-backend`
   and a group carrying the role were rejected.
 - **The backend maps `realm_access.roles` to Spring authorities and enforces
   one rule on the path prefix `/api/v1/admin/**`** in the security chain,
@@ -80,9 +81,12 @@ would make its first one.
   another module needs it.
 - **A non-admin is answered `403` `problem+json` by the API;** an anonymous
   caller keeps its `401`. A `404` was rejected: the committed spec is public,
-  so it would hide nothing. **The web sends a signed-out visitor to sign in,**
-  as its other signed-in pages do, and **answers a signed-in non-admin with
-  its ordinary not-found page,** so the area is never advertised.
+  so it would hide nothing. **The web answers everyone but an admin — a
+  signed-out visitor and a signed-in non-admin alike — with its ordinary
+  not-found page,** so the area is never shown to exist; an admin signs in
+  first and follows the navigation entry. The cellar's in-page sign-in prompt
+  and a redirect to sign in were rejected, since both show a signed-out
+  visitor that the area exists.
 - **The web reads the role in the BFF, from the access token** the session
   already holds — the token the backend authorises, so the two cannot
   disagree. Only a boolean reaches the browser, to render the navigation

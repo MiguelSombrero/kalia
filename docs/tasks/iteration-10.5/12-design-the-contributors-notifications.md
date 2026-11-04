@@ -48,9 +48,8 @@ is a choice the product owner makes from built alternatives, at least on:
   under the `design-task` skill; [`docs/design.md`](../../design.md) and the
   page shell of [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md)
   bind every direction.
-- A count read on every signed-in page is a backend call on every page;
-  polling follows [ADR-0060](../../adr/0060-feed-delivery-is-polling.md) if
-  task 03 chose it, and a page's backend calls are pinned by its
+- The unread count is one backend call on every signed-in page render, with
+  no polling (task 03), and a page's backend calls are pinned by its
   `backendCalls` test.
 - Radix is the UI dependency for dialogs and toasts; a new one is asked, not
   researched (`CLAUDE.md`).

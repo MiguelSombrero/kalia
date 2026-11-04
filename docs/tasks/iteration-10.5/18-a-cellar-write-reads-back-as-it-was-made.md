@@ -40,7 +40,7 @@ locales.
 - The cellar read is the backend-joined one
   ([ADR-0083](../../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)),
   bounded per [iteration 10 task 14](../iteration-10/14-the-owner-cellar-read-is-bounded.md);
-  a new ordering column needs an index the bounded read can use.
+  its `created_at, id` order is what the UUIDv7 ids below keep.
 - A schema change is a Flyway migration owned by the schema-owning role
   ([ADR-0100](../../adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
 - A failure reaches the UI as a typed `ApiError`
