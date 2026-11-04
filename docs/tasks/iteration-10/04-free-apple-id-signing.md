@@ -1,6 +1,6 @@
 # Task 04: Kalia installs on the product owner's iPhone with a free Apple ID
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** DW-1, DW-3
 
@@ -125,7 +125,7 @@ ADR-0097 was accepted):
       the app is installed and opens, to the app or to the development
       launcher, without a stack or a tailnet — carried out by the product
       owner and described in the PR without any device or account identifier
-- [ ] That first install registers `fi.kalia.app` under the Personal Team
+- [x] That first install registers `fi.kalia.app` under the Personal Team
       before any other Kalia build is installed on the phone, and shows task
       03's icon, name and splash screen — the PR says so, from the product
       owner's run
