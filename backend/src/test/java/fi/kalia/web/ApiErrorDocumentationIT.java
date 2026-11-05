@@ -54,6 +54,13 @@ class ApiErrorDocumentationIT {
 	}
 
 	@Test
+	void everyOperationTakingABodyListsItsUnsupportedMediaType() {
+		assertThat(operationsViolating(operation ->
+				!operation.containsKey("requestBody") || errorCodes(operation).contains("415")))
+				.as("operations taking a body that list no 415").isEmpty();
+	}
+
+	@Test
 	void everyErrorResponseIsProblemJsonWithADeclaredSchema() {
 		assertThat(operationsViolating(operation -> errorCodes(operation).stream().allMatch(code -> {
 			Map<String, Object> content = content(operation, code);

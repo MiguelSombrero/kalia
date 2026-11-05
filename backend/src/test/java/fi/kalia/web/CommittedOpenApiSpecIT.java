@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import fi.kalia.TestcontainersConfiguration;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -26,12 +27,19 @@ import tools.jackson.databind.json.JsonMapper;
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		// The *ProbeController classes under src/test are scanned like any
 		// controller; they are not part of the contract.
-		properties = "springdoc.paths-to-exclude=/test/**")
+		properties = {
+				"springdoc.paths-to-exclude=/test/**",
+				// Swagger UI's OAuth URLs are built from the issuer setting, which
+				// a developer's environment may override (phone mode); a test
+				// property outranks the environment, so the spec is the same everywhere.
+				"kalia.auth.issuer-uri=http://localhost:8081/realms/kalia",
+				"kalia.auth.swagger-authorization-url=http://localhost:8081/realms/kalia/protocol/openid-connect/auth",
+				"kalia.auth.swagger-token-url=http://localhost:8081/realms/kalia/protocol/openid-connect/token" })
 @AutoConfigureRestTestClient
 class CommittedOpenApiSpecIT {
 
-	/** Maven runs failsafe from {@code backend/}. */
-	private static final Path COMMITTED = Path.of("openapi.json");
+	/** {@code backend/target/test-classes} up to {@code backend/}, whatever the working directory. */
+	private static final Path COMMITTED = backendDirectory().resolve("openapi.json");
 
 	/**
 	 * Sorted keys and fixed indentation, so the file changes only when the
@@ -58,6 +66,16 @@ class CommittedOpenApiSpecIT {
 		assertThat(Files.readString(COMMITTED).replace("\r\n", "\n"))
 				.as("backend/openapi.json differs from /v3/api-docs; run `make openapi-spec` and commit the result")
 				.isEqualTo(served);
+	}
+
+	private static Path backendDirectory() {
+		try {
+			Path testClasses = Path.of(CommittedOpenApiSpecIT.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			return testClasses.getParent().getParent();
+		}
+		catch (URISyntaxException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/** Without {@code servers}: springdoc fills it with this test's random port. */

@@ -144,6 +144,10 @@ test("backend, web and keycloak keep their own triggers", () => {
   expectOutputs(["web/src/app/page.tsx"], { keycloak: false });
 });
 
+test("the breaking-change script alone runs the backend output, which gates api-breaking-change", () => {
+  expectOutputs(["scripts/check-api-breaking.mjs"], { backend: true, web: false, mobile: false, keycloak: false });
+});
+
 function repo() {
   const root = mkdtempSync(resolve(tmpdir(), "ci-changes-"));
   const run = (...args) =>

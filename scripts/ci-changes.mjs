@@ -19,6 +19,9 @@
 // Which jobs a changed path runs, per output:
 // - backend and web: their own trees, plus SHARED, the root files both build
 //   from or are asserted against.
+// - backend also follows scripts/check-api-breaking.mjs: the api-breaking-change
+//   job runs it on that output, and nothing else would run it for a change to
+//   the script alone.
 // - mobile (lint, type check, Jest, the icon render test) compiles mobile/ and
 //   the shared packages against the generated client, and renders the web's
 //   favicon, so it follows those and nothing in SHARED.
@@ -51,7 +54,7 @@ const STACK = /^(docker-compose\.|edge\/|keycloak\/|postgres\/|scripts\/(seed-ke
 // backend/openapi.json is what packages/api generates from, so it is a change
 // to what the web and the app compile even though it sits in backend/.
 const RULES = {
-  backend: [SHARED, /^backend\//],
+  backend: [SHARED, /^(backend\/|scripts\/check-api-breaking\.mjs$)/],
   web: [SHARED, /^(web\/|packages\/|package(-lock)?\.json$|backend\/openapi\.json$)/],
   mobile: [
     /^(mobile\/|packages\/|package(-lock)?\.json$|backend\/openapi\.json$|Makefile$|scripts\/mobile-env|web\/app\/icon\.svg$)/,
