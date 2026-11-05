@@ -1,3 +1,4 @@
+export * from './admin-suggestions/admin-suggestions';
 export * from './app-config/app-config';
 export * from './catalog/catalog';
 export * from './cellar/cellar';

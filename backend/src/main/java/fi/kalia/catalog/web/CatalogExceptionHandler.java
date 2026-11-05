@@ -6,6 +6,7 @@ import fi.kalia.catalog.application.DuplicateBeerException;
 import fi.kalia.catalog.application.DuplicateBreweryException;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
 import fi.kalia.catalog.application.PendingElsewhereException;
+import fi.kalia.catalog.application.SuggestionNotFoundException;
 import fi.kalia.catalog.application.TooManyPendingEntriesException;
 import fi.kalia.catalog.application.UnknownCountryException;
 import fi.kalia.catalog.application.UnknownStyleException;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "fi.kalia.catalog.web")
 class CatalogExceptionHandler {
 
-	@ExceptionHandler({BeerNotFoundException.class, BreweryNotFoundException.class})
+	@ExceptionHandler({BeerNotFoundException.class, BreweryNotFoundException.class, SuggestionNotFoundException.class})
 	ProblemDetail notFound(RuntimeException e) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
 	}

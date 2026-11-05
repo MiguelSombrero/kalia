@@ -21,6 +21,19 @@ public class ProfileApi {
 
 	private final ProfileService profile;
 
+	/**
+	 * The username of each id that has a profile row, whatever its cellar's visibility, for a
+	 * reader the caller has already decided may see it, such as an admin. A public read must
+	 * use {@link #publicUsernames} (COULD-81).
+	 */
+	public Map<UUID, String> usernames(Collection<UUID> userIds) {
+		return userIds.stream()
+				.distinct()
+				.gather(Gatherers.windowFixed(MAX_BATCH_IDS))
+				.flatMap(chunk -> profile.usernames(chunk).entrySet().stream())
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
 	/** Empty when there is no public cellar for {@code username}; the caller cannot tell why (ADR-0050). */
 	public Optional<UUID> publicCellarOwnerId(String username) {
 		return profile.publicCellarOwnerId(username);

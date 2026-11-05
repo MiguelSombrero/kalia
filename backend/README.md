@@ -188,6 +188,15 @@ Notable suites:
   anonymous caller `401`, and an absent or malformed claim `403`, never `500`.
   Its target is a controller in `src/test/java/securityfixture/`, outside
   `fi.kalia` so no other test's context scans it into the spec
+- `AdminSuggestionApiIT` — the admin's read of the review queue
+  ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
+  oldest first with the id as tiebreak across page boundaries, only `PENDING`
+  beers that have a contributor, `404` for anything not waiting, the contributor
+  named whatever their cellar's visibility and listed without a name when they
+  have no profile row, `403` and `401` on both operations. It rewrites the
+  shared database's pending rows to `REMOVED` first, as the suites before it
+  leave suggestions waiting; `SuggestionReviewServiceIT` pins that a page's
+  statements do not grow with its rows
 - `MobileClientTokenIT` — the one integration test that keeps the real
   `JwtDecoder`, pointed at a JWKS served by the test and signing with a test key:
   a token shaped like `kalia-mobile`'s is accepted with the `kalia-backend`
@@ -291,7 +300,9 @@ prints how many beers and breweries changed. An unknown action or contributor
 fails and changes nothing. A hidden row stays in the table, and a holder's
 cellar entry pointing at it keeps rendering: never `DELETE` a catalog row.
 
-To see what is waiting:
+To see what is waiting, an admin calls `GET /api/v1/admin/suggestions`
+([iteration 10.5 task 05](../docs/tasks/iteration-10.5/05-an-admin-reads-the-review-queue.md)),
+or from a shell:
 
 ```bash
 docker compose exec postgres psql -U kalia -d kalia -c \

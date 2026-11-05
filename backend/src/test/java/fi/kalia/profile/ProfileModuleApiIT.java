@@ -71,6 +71,32 @@ class ProfileModuleApiIT {
 		assertThat(usernames).containsExactly(Map.entry(publicUserId, "carol"));
 	}
 
+	// COULD-81: the lookup by id names a user for a reader the caller has decided
+	// may see it, so it does not apply the visibility the public lookups hide behind.
+	@Test
+	void aUsernameLookupNamesAUserWithAPrivateCellarWhileThePublicLookupsStillHideThem() {
+		UUID privateUserId = UUID.randomUUID();
+		UUID publicUserId = UUID.randomUUID();
+		UUID unknownUserId = UUID.randomUUID();
+		profiles.save(Profile.create(privateUserId, "bob", Clock.systemUTC()));
+		profiles.save(makePublic(Profile.create(publicUserId, "alice", Clock.systemUTC())));
+
+		assertThat(api.usernames(List.of(privateUserId, publicUserId, unknownUserId)))
+				.containsOnly(Map.entry(privateUserId, "bob"), Map.entry(publicUserId, "alice"));
+		assertThat(api.publicUsernames(List.of(privateUserId))).isEmpty();
+		assertThat(api.publicCellarOwnerId("bob")).isEmpty();
+	}
+
+	@Test
+	void aUsernameLookupOverTheIdCapResolvesAUsernameBeyondTheFirstChunk() {
+		UUID userId = UUID.randomUUID();
+		profiles.save(Profile.create(userId, "dave", Clock.systemUTC()));
+		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(ProfileApi.MAX_BATCH_IDS),
+				Stream.of(userId)).toList();
+
+		assertThat(api.usernames(ids)).containsExactly(Map.entry(userId, "dave"));
+	}
+
 	private static Profile makePublic(Profile profile) {
 		profile.changeCellarVisibility(true, Clock.systemUTC());
 		return profile;

@@ -1,5 +1,11 @@
 package fi.kalia.catalog.web;
 
+import static fi.kalia.catalog.web.PageBounds.MAX_OFFSET;
+import static fi.kalia.catalog.web.PageBounds.MAX_PAGE_SIZE;
+import static fi.kalia.catalog.web.PageBounds.OFFSET_BOUND;
+import static fi.kalia.catalog.web.PageBounds.PAGE_DESCRIPTION;
+import static fi.kalia.catalog.web.PageBounds.requireBoundedOffset;
+
 import fi.kalia.catalog.application.BeerSearchQuery;
 import fi.kalia.catalog.application.CatalogService;
 import fi.kalia.catalog.application.ContributionService;
@@ -59,16 +65,6 @@ class CatalogController {
 
 	/** Bounds search terms without truncating real input. */
 	private static final int MAX_FILTER_LENGTH = 100;
-
-	/** A single page pulls at most this many rows, so no one response can return an unbounded slice of a table. */
-	private static final long MAX_PAGE_SIZE = 100;
-
-	/** Rows a page may skip (page × size): keeps one request's cost fixed however large the catalog grows, since past it a visitor narrows the search instead. */
-	private static final long MAX_OFFSET = 10_000;
-
-	private static final String OFFSET_BOUND = "A page skipping more than " + MAX_OFFSET + " rows (page × size) is refused with 400 problem+json.";
-
-	private static final String PAGE_DESCRIPTION = "Zero-based page index; page × size is at most " + MAX_OFFSET;
 
 	private static final String PENDING_CAP_SENTENCE = "At most " + ContributionService.MAX_PENDING_ENTRIES + " entries may wait for approval per contributor.";
 
@@ -224,14 +220,6 @@ class CatalogController {
 		if (minAbv != null && maxAbv != null && minAbv.compareTo(maxAbv) > 0) {
 			throw new InvalidSearchParameterException(
 					"minAbv (%s) must not be greater than maxAbv (%s)".formatted(minAbv, maxAbv));
-		}
-	}
-
-	private static void requireBoundedOffset(int page, int size) {
-		if ((long) page * size > MAX_OFFSET) {
-			throw new InvalidSearchParameterException(
-					"page (%d) × size (%d) must not skip more than %d rows; narrow the search instead"
-							.formatted(page, size, MAX_OFFSET));
 		}
 	}
 

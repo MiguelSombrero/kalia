@@ -59,6 +59,7 @@ catalog data a signed-out visitor may read; the contributor is never served.
 | `BrewerySortKey` | A brewery name folded the way `String.CASE_INSENSITIVE_ORDER` folds it, stored as `name_sort_key` so the database can order the brewery list in the Java order. | [ADR-0087](adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) |
 | `BeerSearchCriteria` | A value object bundling the catalog search and filter inputs (free-text query, style, brewery, country, ABV range). | [ADR-0044](adr/0044-catalog-search-indexes.md) |
 | `BeerSpecifications` | A factory of JPA `Specification<Beer>` predicates built from a `BeerSearchCriteria`, with `LIKE` wildcards escaped. | [ADR-0044](adr/0044-catalog-search-indexes.md) |
+| `ContributorStatusCount` | How many of one contributor's beers hold one `ModerationStatus`: the grouped read that gives a page of the review queue its pending and rejected counts in one query. | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
 | `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`; the catalog's distinct styles; and the same-name duplicate check within a brewery. | [ADR-0007](adr/0007-backend-package-structure.md) |
 | `BreweryRepository` | Persistence for the `Brewery` entity, including the sort-key-ordered page of breweries and the name search over it, the same-name-and-country duplicate check and the codes of the countries breweries are in. | [ADR-0007](adr/0007-backend-package-structure.md) |
 
@@ -191,7 +192,7 @@ and they drift from the Java names that produced them.
 | `/breweries/countries` | The countries the catalog has breweries in, which the catalog's country filter offers. A public read. |
 | `/app-config` | What the server tells the mobile app: the minimum build of each platform that may run and the maintenance flag. Public, parameterless and never cached. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
-| `/admin/suggestions` | The admin's view of what users have added: the suggestions waiting for review, and the decisions on them. Every path under `/admin` is for an admin alone ([iteration 10.5 task 01](tasks/iteration-10.5/01-decision-who-is-an-admin.md)); the decisions are [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)'s. Built by iteration 10.5. |
+| `/admin/suggestions`, `/admin/suggestions/{id}` | The admin's view of what users have added: the suggestions waiting for review, oldest first, read as a page or one by its beer's id; and the decisions on them. Every path under `/admin` is for an admin alone ([iteration 10.5 task 01](tasks/iteration-10.5/01-decision-who-is-an-admin.md)); the decisions are [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)'s. The reads are built by [iteration 10.5 task 05](tasks/iteration-10.5/05-an-admin-reads-the-review-queue.md). |
 
 ### JSON field names
 
@@ -205,6 +206,9 @@ and they drift from the Java names that produced them.
 | `containerType` | A `ContainerType` on the wire: the string `BOTTLE`, `CAN` or `KEG`. |
 | `existingBeerId`, `existingBreweryId` | On a `409` from `POST /beers`: the row the catalog already holds, which the refused beer or brewery duplicates. A duplicate brewery's `409` also carries `existingBreweryName` and `existingBreweryCountryCode`, spelled as the catalog holds them. |
 | `similarTo` | On `GET /beers`, with `breweryId`: the beers of that brewery whose name contains any word of this text — the add-beer form's similar-beers hint ([ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)). |
+| `breweryIsNew` | On `SuggestionDto`: `true` when the suggestion's brewery was added with the beer and is `PENDING` too, so approving the suggestion approves it. |
+| `contributor`, `pendingCount`, `rejectedCount` | On `SuggestionDto`, an admin read only: who suggested the beer. `contributor.username` is absent when they have no profile row, whatever their cellar's visibility otherwise; `pendingCount` is how many of their suggestions wait for review, the one shown included, and `rejectedCount` how many were rejected. The contributor's id is never served. |
+| `suggestedAt` | On `SuggestionDto`: when the beer was added, the order of the queue. |
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`; `PublicCellarDto` carries the same four, with `username`, `totalBottles` and `lastBottleAddedAt` beside them. |

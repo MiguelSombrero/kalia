@@ -15,6 +15,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificationExecutor<Beer> {
 
+	// A suggestion is a pending beer that has a contributor (ADR-0102).
+	String IS_SUGGESTION = """
+			b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.PENDING
+			AND b.contributorId IS NOT NULL""";
+
 	@Override
 	@EntityGraph(attributePaths = "brewery")
 	Page<Beer> findAll(Specification<Beer> spec, Pageable pageable);
@@ -64,6 +69,27 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 
 	@Query("SELECT b.id FROM Beer b WHERE b.id IN :ids AND b.moderationStatus <> :status")
 	List<UUID> findIdsByIdInAndModerationStatusNot(Collection<UUID> ids, ModerationStatus status);
+
+	// The id breaks a tie in createdAt, so a page boundary never repeats or drops a row
+	// of two added in the same instant. The pageable carries no sort of its own.
+	@EntityGraph(attributePaths = "brewery")
+	@Query(value = "SELECT b FROM Beer b WHERE " + IS_SUGGESTION + " ORDER BY b.createdAt, b.id",
+			countQuery = "SELECT COUNT(b) FROM Beer b WHERE " + IS_SUGGESTION)
+	Page<Beer> findSuggestions(Pageable pageable);
+
+	@EntityGraph(attributePaths = "brewery")
+	@Query("SELECT b FROM Beer b WHERE b.id = :id AND " + IS_SUGGESTION)
+	Optional<Beer> findSuggestionById(UUID id);
+
+	// One grouped read for a whole page of contributors; a status a contributor has none of is absent.
+	@Query("""
+			SELECT new fi.kalia.catalog.domain.ContributorStatusCount(b.contributorId, b.moderationStatus, COUNT(b))
+			FROM Beer b
+			WHERE b.contributorId IN :contributorIds
+			AND b.moderationStatus IN (fi.kalia.catalog.domain.ModerationStatus.PENDING,
+			                           fi.kalia.catalog.domain.ModerationStatus.REJECTED)
+			GROUP BY b.contributorId, b.moderationStatus""")
+	List<ContributorStatusCount> countPendingAndRejectedByContributor(Collection<UUID> contributorIds);
 
 	long countByContributorIdAndModerationStatus(UUID contributorId, ModerationStatus moderationStatus);
 
