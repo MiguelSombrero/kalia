@@ -79,6 +79,20 @@ class ErrorBodyShapesIT {
 	}
 
 	@Test
+	void aBodyInAnUnsupportedMediaTypeIsRefusedAsProblemJsonAsTheSpecLists() {
+		given(jwtDecoder.decode("shapes-token")).willReturn(TestTokens.user(contributorId.toString(), "shapes"));
+
+		client.post().uri("/api/v1/beers")
+				.header("Authorization", BEARER)
+				.contentType(MediaType.TEXT_PLAIN)
+				.body("not json".getBytes(StandardCharsets.UTF_8))
+				.exchange()
+				.expectStatus().isEqualTo(415)
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody().jsonPath("$.status").isEqualTo(415);
+	}
+
+	@Test
 	void aDuplicateBeerNamesTheBeerItDuplicatesAtTheTopLevel() {
 		String name = "Shape Stout " + UUID.randomUUID();
 		String added = postBeer("""

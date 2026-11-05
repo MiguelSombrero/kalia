@@ -202,6 +202,11 @@ export type changeVisibilityResponse409 = {
   status: 409
 }
 
+export type changeVisibilityResponse415 = {
+  data: Problem
+  status: 415
+}
+
 export type changeVisibilityResponse500 = {
   data: Problem
   status: 500
@@ -210,7 +215,7 @@ export type changeVisibilityResponse500 = {
 export type changeVisibilityResponseSuccess = (changeVisibilityResponse200) & {
   headers: Headers;
 };
-export type changeVisibilityResponseError = (changeVisibilityResponse400 | changeVisibilityResponse401 | changeVisibilityResponse409 | changeVisibilityResponse500) & {
+export type changeVisibilityResponseError = (changeVisibilityResponse400 | changeVisibilityResponse401 | changeVisibilityResponse409 | changeVisibilityResponse415 | changeVisibilityResponse500) & {
   headers: Headers;
 };
 

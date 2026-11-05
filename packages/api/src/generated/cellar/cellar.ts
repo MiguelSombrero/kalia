@@ -206,6 +206,11 @@ export type addBottlesResponse409 = {
   status: 409
 }
 
+export type addBottlesResponse415 = {
+  data: Problem
+  status: 415
+}
+
 export type addBottlesResponse500 = {
   data: Problem
   status: 500
@@ -214,7 +219,7 @@ export type addBottlesResponse500 = {
 export type addBottlesResponseSuccess = (addBottlesResponse201) & {
   headers: Headers;
 };
-export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409 | addBottlesResponse500) & {
+export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409 | addBottlesResponse415 | addBottlesResponse500) & {
   headers: Headers;
 };
 
@@ -446,6 +451,11 @@ export type updateBottleResponse409 = {
   status: 409
 }
 
+export type updateBottleResponse415 = {
+  data: Problem
+  status: 415
+}
+
 export type updateBottleResponse500 = {
   data: Problem
   status: 500
@@ -454,7 +464,7 @@ export type updateBottleResponse500 = {
 export type updateBottleResponseSuccess = (updateBottleResponse200) & {
   headers: Headers;
 };
-export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404 | updateBottleResponse409 | updateBottleResponse500) & {
+export type updateBottleResponseError = (updateBottleResponse400 | updateBottleResponse401 | updateBottleResponse404 | updateBottleResponse409 | updateBottleResponse415 | updateBottleResponse500) & {
   headers: Headers;
 };
 

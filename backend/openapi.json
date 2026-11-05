@@ -1053,6 +1053,16 @@
             },
             "description" : "The catalog already has this beer, named by `existingBeerId`, or already has the new brewery, named by `existingBreweryId` and spelled as the catalog spells it; or another contributor's suggestion of this beer is waiting for review, which names neither the contributor nor the beer"
           },
+          "415" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The request body is not in a media type the operation consumes"
+          },
           "429" : {
             "content" : {
               "application/problem+json" : {
@@ -1371,6 +1381,16 @@
             },
             "description" : "Another request changed the same cellar entry at the same time and the retry lost again. Nothing was changed; repeat the request."
           },
+          "415" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The request body is not in a media type the operation consumes"
+          },
           "500" : {
             "content" : {
               "application/problem+json" : {
@@ -1541,6 +1561,16 @@
               }
             },
             "description" : "Another request changed the same cellar entry at the same time and the retry lost again. Nothing was changed; repeat the request."
+          },
+          "415" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The request body is not in a media type the operation consumes"
           },
           "500" : {
             "content" : {
@@ -1938,6 +1968,16 @@
               }
             },
             "description" : "The caller has no profile yet, and its username belongs to another account"
+          },
+          "415" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The request body is not in a media type the operation consumes"
           },
           "500" : {
             "content" : {
