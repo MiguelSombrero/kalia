@@ -84,8 +84,20 @@ and this file is checked against it.
 - [ ] A rejection without a reason from task 02's list answers `400` — test
 - [ ] Exactly one event is published per decision, with or without a new
       brewery, carrying what task 02 chose — `@ApplicationModuleTest` scenario
-- [ ] Two concurrent decisions on one suggestion end as task 02 chose and never
-      in `500` — integration test
+- [ ] Two concurrent decisions on one suggestion (two threads released
+      together) leave exactly one decision, one review record and one event,
+      and the loser answers `409` `problem+json` saying how it was decided,
+      never `500` — integration test
+- [ ] Deciding a suggestion that is already decided answers the same `409`
+      with the outcome, whether it was approved or rejected — integration test
+- [ ] Two suggestions sharing a pending brewery, rejected concurrently, leave
+      the brewery `REJECTED` and not stranded `PENDING` — integration test,
+      confirmed to fail without the row locks
+- [ ] A decision writes one review record with who decided, when, the outcome
+      and, for a rejection, the reason code, which the event also carries —
+      integration test
+- [ ] The beer and its new brewery change status in one transaction: a failure
+      after the beer's update leaves both `PENDING` — test
 - [ ] A non-admin's decision is refused — integration test
 - [ ] The committed spec carries the operations; ADR-0091 and
       `docs/architecture.md` describe the application path

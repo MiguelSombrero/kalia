@@ -82,6 +82,8 @@ and this file is checked against it.
 - [ ] An integration test shows the list and the single read refused to a
       non-admin and to an anonymous caller
 - [ ] A suggestion already approved or rejected is not in the list — test
+- [ ] A listed suggestion's id is its beer's id, and reading an imported beer by
+      that id answers `404`, since it is not a suggestion — integration test
 - [ ] Each listed suggestion carries its contributor's pending and rejected
       counts — integration test
 - [ ] `ProfileApi`'s username lookup names a user whose cellar is private,
