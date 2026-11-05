@@ -89,8 +89,15 @@ and this file is checked against it.
 - [ ] An edit to a name already in the catalog answers the documented `409`;
       an unknown style, an unlisted country and a `Cf` character answer `400`
       — tests, each confirmed to fail without its check
-- [ ] The published event carries the edited values and says the suggestion
-      was edited, as task 02 chose — `@ApplicationModuleTest` scenario
+- [ ] The published event carries the edited values, says the suggestion was
+      edited and holds the name as suggested; an unedited approval's event
+      says neither — `@ApplicationModuleTest` scenario
+- [ ] The review record keeps the values as suggested when edited, and a
+      request whose values equal the suggested ones is recorded as an approval
+      as it is, not an edit — integration test
+- [ ] Re-pointing at a brewery that is not `APPROVED` is refused, and editing a
+      brewery's fields after a sibling's approval has approved it is refused —
+      integration tests, each confirmed to fail without its check
 - [ ] The add path and the edit path share one set of validation rules —
       a unit test of the shared rule, and no copy of it in the edit path
 - [ ] The committed spec carries the operation
