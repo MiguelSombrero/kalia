@@ -1,16 +1,6 @@
 import { useEffect } from "react";
-import { create } from "zustand";
 import { logUncaught } from "./reportUncaught";
-
-type UncaughtErrorState = { error: Error | undefined };
-
-const useUncaughtErrorStore = create<UncaughtErrorState>(() => ({ error: undefined }));
-
-export const useUncaughtError = (): Error | undefined => useUncaughtErrorStore((state) => state.error);
-
-export const showUncaughtError = (error: Error): void => useUncaughtErrorStore.setState({ error });
-
-export const clearUncaughtError = (): void => useUncaughtErrorStore.setState({ error: undefined });
+import { useUncaughtErrorStore } from "./store";
 
 type GlobalHandler = (error: unknown, isFatal?: boolean) => void;
 type ErrorUtilsLike = { getGlobalHandler: () => GlobalHandler; setGlobalHandler: (handler: GlobalHandler) => void };
@@ -30,7 +20,7 @@ export const installUncaughtErrorHandler = (errorUtils: ErrorUtilsLike = ErrorUt
     }
     const error = thrown instanceof Error ? thrown : new Error(String(thrown));
     logUncaught(error, "global");
-    showUncaughtError(error);
+    useUncaughtErrorStore.getState().show(error);
   });
 };
 

@@ -4,7 +4,8 @@ import { Text } from "react-native";
 import { apiError } from "@kalia/api";
 import { CrashBoundary } from "./CrashBoundary";
 import { UncaughtErrorGate } from "./UncaughtErrorGate";
-import { clearUncaughtError, installUncaughtErrorHandler, showUncaughtError } from "./uncaughtError";
+import { useUncaughtErrorStore } from "./store";
+import { installUncaughtErrorHandler } from "./uncaughtError";
 
 jest.mock("expo-application", () => ({ nativeApplicationVersion: "0.1.0", nativeBuildVersion: "26569207" }));
 jest.mock("expo-localization", () => ({ useLocales: jest.fn() }));
@@ -40,7 +41,7 @@ beforeEach(() => {
   broken = true;
   failure = new TypeError(`undefined is not a function (reading https://api.test/x?token=${TOKEN})`);
   speak("en");
-  clearUncaughtError();
+  useUncaughtErrorStore.getState().clear();
   // React logs a caught render error itself; the lines under test are Kalia's.
   error = jest.spyOn(console, "error").mockImplementation(() => undefined);
   warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
@@ -186,7 +187,7 @@ describe("an error thrown outside rendering", () => {
     broken = false;
     await renderApp();
 
-    await act(async () => showUncaughtError(new Error("late")));
+    await act(async () => useUncaughtErrorStore.getState().show(new Error("late")));
 
     expect(screen.getByRole("heading", { name: "Something went wrong" })).toBeOnTheScreen();
   });

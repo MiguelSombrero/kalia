@@ -587,6 +587,9 @@ browser, so a rule stated there and not below still binds.
 
 **Data and configuration**
 
+- **Client UI state goes in a feature-scoped Zustand store**,
+  `features/<feature>/store.ts`, never API data
+  ([ADR-0009](../docs/adr/0009-zustand-ui-state.md)).
 - **The generated client is reached only through a feature's `api.ts`**, never
   edited by hand, and regenerated with `make api-drift` from the repository
   root ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
