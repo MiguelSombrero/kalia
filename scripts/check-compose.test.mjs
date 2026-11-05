@@ -6,7 +6,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { addressProblems, consistencyProblems, deployableAdminProblems, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { addressProblems, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -238,4 +238,68 @@ test("loopbackProblems accepts loopback ports and names one on every interface o
   assert.equal(problems.length, 2);
   assert.match(problems[0], /edge publishes port 3300 on 0\.0\.0\.0, beyond 127\.0\.0\.1/);
   assert.match(problems[1], /on every interface/);
+});
+
+test("consistencyProblems lets the dev env file supply the override's admin password, which the base never reads", () => {
+  assert.deepEqual(consistencyProblems({ baseText: "X: ${A:?set A}", devEnvText: "A=1\nKALIA_DEV_ADMIN_PASSWORD=pw\n" }), []);
+});
+
+test("variableValue reads one name from an env file", () => {
+  assert.equal(variableValue("A=1\nKALIA_DEV_ADMIN_PASSWORD = pw \n", "KALIA_DEV_ADMIN_PASSWORD"), "pw");
+  assert.equal(variableValue("A=1\n", "KALIA_DEV_ADMIN_PASSWORD"), undefined);
+});
+
+test("deployableSeedProblems accepts a base file with no account seeding", () => {
+  assert.deepEqual(deployableSeedProblems({ baseText: "services: {}", services: { backend: { image: "x" } } }), []);
+});
+
+test("deployableSeedProblems fails a base file that seeds an admin, in its text or its rendering", () => {
+  const text = deployableSeedProblems({ baseText: "entrypoint: node seed-keycloak-account.mjs testadmin", services: {} });
+  assert.equal(text.length, 1);
+  assert.match(text[0], /testadmin/);
+  const service = deployableSeedProblems({ baseText: "", services: { seed: { entrypoint: ["node", "/seed-keycloak-account.mjs"] } } });
+  assert.match(service[0], /seed-keycloak-account/);
+  const rendered = deployableSeedProblems({ baseText: "", services: { seed: { environment: { KALIA_DEV_ADMIN_PASSWORD: "x" } } } });
+  assert.match(rendered[0], /KALIA_DEV_ADMIN_PASSWORD/);
+});
+
+const devEnv = "KALIA_DEV_ADMIN_PASSWORD=pw123\n";
+const seeding = (overrides = {}) => ({
+  environment: { KALIA_DEV_ADMIN_PASSWORD: "pw123" },
+  entrypoint: [
+    "sh",
+    "-c",
+    'node /seed-keycloak-account.mjs testuser testuser123 && node /seed-keycloak-account.mjs testadmin "$KALIA_DEV_ADMIN_PASSWORD" admin',
+  ],
+  ...overrides,
+});
+
+test("localSeedProblems accepts testadmin seeded with the role and the dev env file's password", () => {
+  assert.deepEqual(localSeedProblems(seeding(), devEnv), []);
+});
+
+test("localSeedProblems fails a stack that seeds no admin, or gives testuser a role", () => {
+  const none = localSeedProblems(seeding({ entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"] }), devEnv);
+  assert.match(none[0], /does not seed testadmin with the admin role/);
+  const granted = localSeedProblems(
+    seeding({
+      entrypoint: ["sh", "-c", 'node /seed-keycloak-account.mjs testuser testuser123 admin && node /seed-keycloak-account.mjs testadmin "$KALIA_DEV_ADMIN_PASSWORD" admin'],
+    }),
+    devEnv,
+  );
+  assert.match(granted.join("\n"), /testuser with something beyond a password/);
+});
+
+test("localSeedProblems fails a password that differs from the dev env file's or is spelled out beside the account", () => {
+  assert.match(localSeedProblems(seeding({ environment: { KALIA_DEV_ADMIN_PASSWORD: "other" } }), devEnv)[0], /differs/);
+  const literal = localSeedProblems(
+    seeding({ entrypoint: ["sh", "-c", "node /seed-keycloak-account.mjs testuser testuser123 && node /seed-keycloak-account.mjs testadmin pw123 admin"] }),
+    devEnv,
+  );
+  assert.match(literal.join("\n"), /spells the development admin's password out/);
+});
+
+test("localSeedProblems fails a missing seed service and a dev env file with no admin password", () => {
+  assert.match(localSeedProblems(undefined, devEnv)[0], /no keycloak-seed/);
+  assert.match(localSeedProblems(seeding(), "A=1\n")[0], /does not give KALIA_DEV_ADMIN_PASSWORD/);
 });

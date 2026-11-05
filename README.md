@@ -136,7 +136,15 @@ from the file; re-apply with `docker compose run --rm keycloak-config`.
 To sign in to Kalia itself (not
 the Keycloak admin console), use the seeded dev account `testuser` /
 `testuser123`, created idempotently on every startup by the `keycloak-seed`
-service rather than baked into the realm export. The `kalia-swagger` client Swagger UI
+service rather than baked into the realm export. The same service seeds a
+development admin, `testadmin`, holding the `admin` realm role
+([ADR-0101](docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)):
+sign in as it to reach what only an admin may, and as `testuser` to see what
+everyone else sees. Its password is `KALIA_DEV_ADMIN_PASSWORD` in
+[docker-compose.dev.env](docker-compose.dev.env), a dev-only value like the
+rest. The realm defines the role and grants it to no one, a self-registered
+account never holds it, and the deployable definition seeds no account, so a
+deployment has no admin yet: how its first one is made is not decided. The `kalia-swagger` client Swagger UI
 signs in with is a second realm file, [keycloak/realm-swagger.json](keycloak/realm-swagger.json),
 that only the local stack imports. For development with hot
 reload, run the apps natively — see [backend/README.md](backend/README.md)

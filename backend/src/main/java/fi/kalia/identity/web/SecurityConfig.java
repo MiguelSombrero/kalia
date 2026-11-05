@@ -1,5 +1,7 @@
 package fi.kalia.identity.web;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -16,6 +19,8 @@ import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 // ADR-0028; guarded by ArchitectureTest.onlyIdentityConfiguresWebSecurity.
@@ -59,9 +64,11 @@ class SecurityConfig {
 						.requestMatchers("/actuator/health/**").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.permitAll()
+						// ADR-0101: the whole prefix, so a later admin route needs no rule of its own.
+						.requestMatchers("/api/v1/admin/**").hasRole(RealmRoleAuthorities.ADMIN)
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2
-						.jwt(Customizer.withDefaults())
+						.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
 						.authenticationEntryPoint(problems.authenticationEntryPoint())
 						.accessDeniedHandler(problems.accessDenied()))
 				.sessionManagement(session -> session
@@ -77,6 +84,18 @@ class SecurityConfig {
 				// IdentityApiIT fails if that changes (ADR-0028).
 				.csrf(csrf -> csrf.disable())
 				.build();
+	}
+
+	static JwtAuthenticationConverter jwtAuthenticationConverter() {
+		JwtGrantedAuthoritiesConverter scopes = new JwtGrantedAuthoritiesConverter();
+		RealmRoleAuthorities roles = new RealmRoleAuthorities();
+		JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+		converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+			Collection<GrantedAuthority> authorities = new ArrayList<>(scopes.convert(jwt));
+			authorities.addAll(roles.convert(jwt));
+			return authorities;
+		});
+		return converter;
 	}
 
 	/**

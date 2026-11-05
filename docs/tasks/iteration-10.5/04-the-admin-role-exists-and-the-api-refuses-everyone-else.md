@@ -1,6 +1,6 @@
 # Task 04: The admin role exists, and the API refuses everyone else
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-1
 
@@ -81,34 +81,34 @@ and that a deployment's first admin is not yet decided.
 
 ## Acceptance criteria
 
-- [ ] An integration test, against a controller that exists only in test
+- [x] An integration test, against a controller that exists only in test
       sources and sits under `/api/v1/admin/` with no rule of its own (the
       first real admin endpoint is [task 05](05-an-admin-reads-the-review-queue.md)'s),
       shows a token without the role refused `403` `problem+json`, a token
       with it admitted, and an anonymous caller answered `401`; the refusal
       test was confirmed to fail with the rule removed
-- [ ] The same test shows a token with no `realm_access` claim, and one whose
+- [x] The same test shows a token with no `realm_access` claim, and one whose
       claim is malformed, refused `403` and never `500`
-- [ ] A test shows the role is not among the realm's default roles — read from
+- [x] A test shows the role is not among the realm's default roles — read from
       `keycloak/realm-export.json` — and the running-stack script below shows a
       freshly created account's token without it, so it holds for the realm as
       applied and not only for a hand-built token
-- [ ] `scripts/check-compose.mjs` (or its test) fails a base compose file that
+- [x] `scripts/check-compose.mjs` (or its test) fails a base compose file that
       seeds an admin account, and passes the local stack seeding one
-- [ ] The development admin signs in on the running stack and its access token
+- [x] The development admin signs in on the running stack and its access token
       carries the role, and `testuser`'s does not — checked by a script that
       `make verify` and `ci.yml`'s Keycloak job both run, as
       `check-keycloak-signin.mjs` checks `testuser`
-- [ ] The script above also asserts the `roles` client scope is still a default
+- [x] The script above also asserts the `roles` client scope is still a default
       scope of `kalia-web` and `kalia-mobile`, since a client given an explicit
       scope list drops the claim and locks every admin out without an error
       ([ADR-0101](../../adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md))
-- [ ] [ADR-0028](../../adr/0028-resource-server-and-current-user.md) is amended
+- [x] [ADR-0028](../../adr/0028-resource-server-and-current-user.md) is amended
       to say `/api/v1/admin/**` requires the role
-- [ ] `README.md` names the development admin account and says a deployment's
+- [x] `README.md` names the development admin account and says a deployment's
       first admin is not yet decided; `docs/architecture.md` §6 describes the
       role; the glossary carries *admin*
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

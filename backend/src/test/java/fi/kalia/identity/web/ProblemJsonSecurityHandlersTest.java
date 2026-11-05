@@ -14,8 +14,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import tools.jackson.databind.json.JsonMapper;
 
-// The 403 half of ProblemJsonSecurityErrorsIT: no route can answer 403 today
-// (nothing requires an authority), so the handler is exercised directly.
 class ProblemJsonSecurityHandlersTest {
 
 	private final ProblemJsonSecurityHandlers handlers = new ProblemJsonSecurityHandlers(JsonMapper.builder().build());

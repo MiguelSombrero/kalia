@@ -35,6 +35,16 @@ export const variablesWithDefault = (composeText) => [
   ...new Set([...composeText.matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*):-(?!\})/g)].map((match) => match[1])),
 ];
 
+/**
+ * What docker-compose.dev.env supplies for docker-compose.override.yml alone:
+ * the development admin's password (ADR-0101), which the base file must never
+ * read, since it seeds no account.
+ */
+export const OVERRIDE_VARIABLES = ["KALIA_DEV_ADMIN_PASSWORD"];
+
+export const variableValue = (envText, name) =>
+  envText.match(new RegExp(`^\\s*${name}\\s*=\\s*(.*?)\\s*$`, "m"))?.[1];
+
 /** Problems with how the dev env file and the base file line up. */
 export const consistencyProblems = ({ baseText, devEnvText }) => {
   const required = new Set(requiredVariables(baseText));
@@ -44,9 +54,43 @@ export const consistencyProblems = ({ baseText, devEnvText }) => {
     if (defaulted.has(name)) {
       problems.push(`docker-compose.base.yml gives ${name} a \`:-\` default, which docker-compose.dev.env already supplies`);
     }
-    if (!baseText.includes("${" + name)) {
+    if (!OVERRIDE_VARIABLES.includes(name) && !baseText.includes("${" + name)) {
       problems.push(`docker-compose.dev.env supplies ${name}, which docker-compose.base.yml does not use`);
     }
+  }
+  return problems;
+};
+
+/** Problems with the deployable definition seeding any account: it seeds none, the development admin least (ADR-0101). */
+export const deployableSeedProblems = ({ baseText, services }) => {
+  const rendered = JSON.stringify(services);
+  const problems = [];
+  // The base file's comments may name the seed script; only a service running it seeds.
+  for (const needle of ["seed-keycloak-account", "testadmin", ...OVERRIDE_VARIABLES]) {
+    if ((needle !== "seed-keycloak-account" && baseText.includes(needle)) || rendered.includes(needle)) {
+      problems.push(`the base file mentions ${needle}, so a deployment would seed a development account`);
+    }
+  }
+  return problems;
+};
+
+/** Problems with the local stack seeding `testadmin` with the role and `testuser` with none (ADR-0101). */
+export const localSeedProblems = (seed, devEnvText) => {
+  if (!seed) return ["the local stack has no keycloak-seed service"];
+  const problems = [];
+  const [name] = OVERRIDE_VARIABLES;
+  const entrypoint = (seed.entrypoint ?? []).join(" ");
+  const wanted = variableValue(devEnvText, name);
+  if (!wanted) problems.push(`docker-compose.dev.env does not give ${name}`);
+  else {
+    if (seed.environment?.[name] !== wanted) problems.push(`keycloak-seed's ${name} differs from the value docker-compose.dev.env holds`);
+    if (entrypoint.includes(wanted)) problems.push(`keycloak-seed spells the development admin's password out instead of reading ${name}`);
+  }
+  if (!new RegExp(`seed-keycloak-account\\.mjs testadmin "\\$\\$?${name}" admin(\\s|$)`).test(entrypoint)) {
+    problems.push("keycloak-seed does not seed testadmin with the admin role");
+  }
+  if (!/seed-keycloak-account\.mjs testuser \S+ (&&|$)/.test(entrypoint)) {
+    problems.push("keycloak-seed seeds testuser with something beyond a password");
   }
   return problems;
 };
@@ -261,6 +305,7 @@ const run = () => {
   if ("keycloak-seed" in base.services) problems.push("the base file defines keycloak-seed, a dev-only service");
   if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
 
+  problems.push(...deployableSeedProblems({ baseText, services: base.services }));
   problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services), ...devOnlyProblems(base.services), ...roleProblems(base.services));
 
   const scanEnv = { PATH: process.env.PATH, HOME: process.env.HOME, ...everySecret };
@@ -286,8 +331,8 @@ const run = () => {
     const local = JSON.parse(compose(["--env-file", rootEnv, "config", "--format", "json"], {}));
     const seed = local.services["keycloak-seed"];
     const keycloak = local.services.keycloak.environment;
-    if (!seed) problems.push("the local stack has no keycloak-seed service");
-    else {
+    problems.push(...localSeedProblems(seed, devEnvText));
+    if (seed) {
       if (seed.environment.KEYCLOAK_ADMIN !== keycloak.KC_BOOTSTRAP_ADMIN_USERNAME) {
         problems.push("keycloak-seed's KEYCLOAK_ADMIN differs from the admin Keycloak starts with");
       }

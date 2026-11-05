@@ -28,6 +28,14 @@
   "maxDeltaTimeSeconds": 43200,
   "quickLoginCheckMilliSeconds": 1000,
   "minimumQuickLoginWaitSeconds": 60,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Reviews contributed catalog entries. Granted to no one by this file and not a default role (ADR-0101)."
+      }
+    ]
+  },
   "smtpServer": {
     "host": "$(env:KEYCLOAK_SMTP_HOST)",
     "port": "$(env:KEYCLOAK_SMTP_PORT)",
