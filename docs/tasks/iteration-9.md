@@ -70,9 +70,6 @@ rewrites their paths. And the public cellar's response (21) has to settle
 before [04](iteration-9/04-decision-api-compatibility-policy.md)'s policy
 freezes it.
 
-The 401 `problem+json` fix this list once carried moved to
-[iteration 8.5 task 01](iteration-8.5/01-api-errors-complete-and-typed.md).
-
 The iOS Simulator reaches the Mac's `localhost` directly, and Keycloak's issuer
 is already pinned to `http://localhost:8081`, so nothing in this iteration needs
 the stack reachable from another device; the Android emulator gets the same

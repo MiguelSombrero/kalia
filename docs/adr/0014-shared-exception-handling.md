@@ -4,8 +4,9 @@
 - **Date:** 2026-07-25
 - **Amended:** 2026-09-20 — each module's own advice must declare
   `basePackages`, build-enforced; 2026-10-25 — every error is a declared type
-  and the filter chain's 401 and 403 are problem+json; see the Amendment
-  sections
+  and the filter chain's 401 and 403 are problem+json; 2026-11-05 —
+  `fi.kalia.web` is module-neutral web infrastructure, not only exception
+  handling; see the Amendment sections
 
 ## Context
 
@@ -128,6 +129,18 @@ second client would have had to as well.
   (`UnexpectedFailureDocumentation`), and `ApiErrorDocumentationIT` fails when
   an operation lists no error, an authenticated one lists no `401`, or one that
   takes input lists no `400`.
+
+**Amended 2026-11-05 — `fi.kalia.web` is module-neutral web infrastructure,
+and the decision's "exception-handling" names only the first thing in it**
+([iteration-10 task 19](../tasks/iteration-10/19-docs-and-comments-say-what-is-true.md)).
+The package also holds `RequestLogFilter`
+([ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md))
+and `UnexpectedFailureDocumentation`, neither an advice. What makes something
+belong is that it serves every module's HTTP surface and names none of their
+subdomains; `fi.kalia.web` depends on no module, every module may depend on it,
+and `ArchitectureDocumentationTest` leaves it out of the module map on those
+grounds. Nothing moved: this records what the package already was, and the
+two-location rule for `@RestControllerAdvice` is unchanged.
 
 ## Alternatives considered
 

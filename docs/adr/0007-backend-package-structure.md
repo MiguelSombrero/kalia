@@ -68,7 +68,9 @@ with separate JPA entities) was weighed and rejected for this codebase.
   framework-free-domain purity; separating domain classes from JPA entities
   would double every module's mapping surface for little gain at this scale.
 - **Full ports/adapters ceremony is deferred** to modules whose domain earns
-  it (payment's `PaymentProvider`, ordering's state machine).
+  it (payment's `PaymentProvider`, ordering's state machine — *superseded as
+  examples by the 2026-10-24 amendment above: both named dropped store
+  modules; the deferral itself stands*).
 - **ArchUnit 1.4.2 enforces the rules as tests** (`ArchitectureTest`): layer
   dependency direction, the module root depending on no `domain` type,
   controllers/advice only in `web`, entities and repositories

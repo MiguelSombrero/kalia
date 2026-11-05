@@ -48,7 +48,12 @@ a documented routine rather than a surprise.
 | [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) | Adding a beer says what happens to it, and never dead-ends | done |
 | [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | done |
 | [18](iteration-10/18-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | done |
-| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | refined |
+| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | done |
+
+Every task is done and the iteration is still open, for DW-3 alone: the
+re-signing routine is written down and unobserved until the free Apple ID's
+first real expiry (seven days after the 2026-11-04 install). DW-1, DW-2, DW-4 and DW-5 were each
+re-checked on 2026-11-05 against the evidence their tasks recorded.
 
 Tasks 01–06 are the ones this iteration was planned with, and 21 was filed
 at refinement to implement 06's decision; 07–20 were lifted

@@ -1,6 +1,6 @@
 # Task 19: The documentation and comments say what is true now
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -70,14 +70,14 @@ Each statement above says what is true, in the one place
 
 ## Acceptance criteria
 
-- [ ] Each statement listed is corrected or confirmed already fixed, and the
+- [x] Each statement listed is corrected or confirmed already fixed, and the
       PR lists which
-- [ ] `ArchitectureDocumentationTest` describes `fi.kalia.web` as
+- [x] `ArchitectureDocumentationTest` describes `fi.kalia.web` as
       module-neutral web infrastructure, and that test still passes
-- [ ] Each npm override is re-tested against today's `next`, and the PR says
+- [x] Each npm override is re-tested against today's `next`, and the PR says
       which were kept and why
-- [ ] `node scripts/check-links.mjs` and `node scripts/check-adrs.mjs` pass
-- [ ] `make verify-fast` is green
+- [x] `node scripts/check-links.mjs` and `node scripts/check-adrs.mjs` pass
+- [x] `make verify-fast` is green
 
 ## Notes
 

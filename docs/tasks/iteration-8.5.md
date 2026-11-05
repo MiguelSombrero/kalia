@@ -49,7 +49,7 @@ this sprint has to land before it.
 The tasks were chosen from the [2026-10-24 sweep](quality-backlog.md) and the
 [backlog](backlog.md) in the product owner's priority order: what helps the
 mobile client first (tasks 01–08), then security (09–14), then performance and
-architecture (15–17), then the rest (18–20). The table's order is the order of
+architecture (15–17), then the rest (18–22). The table's order is the order of
 work, with two exceptions to that grouping:
 
 - **[09](iteration-8.5/09-sign-up-limiter-cannot-lock-forever.md) and

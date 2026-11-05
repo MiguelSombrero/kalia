@@ -30,8 +30,9 @@ class ArchitectureDocumentationTest {
 
 	private static final Path ARCHITECTURE_DOC = Path.of("..", "docs", "architecture.md");
 
-	// ADR-0014: a module-neutral exception §2/§3 deliberately describe in
-	// prose rather than as a subdomain, so it is excluded from both sides.
+	// ADR-0014: fi.kalia.web is module-neutral web infrastructure, not a
+	// subdomain. Every module may depend on it and it depends on none, so §2/§3
+	// describe it in prose and it is excluded from both sides.
 	private static final String EXCLUDED_MODULE = "web";
 
 	private static final Pattern SECTION_2_HEADING = Pattern.compile("^## 2\\. High-level design$");
@@ -84,10 +85,9 @@ class ArchitectureDocumentationTest {
 	private static String generateComponentDiagram(Path outputDir) throws IOException {
 		ApplicationModules modules = ApplicationModules.of(KaliaApplication.class);
 		Documenter documenter = new Documenter(modules, Options.defaults().withOutputFolder(outputDir.toString()));
-		// VISIBLE so an isolated module (like fi.kalia.web, with no dependency
-		// edges) still yields a Component() line for the EXCLUDED_MODULE filter
-		// below to name explicitly, rather than silently vanishing from the
-		// diagram on its own.
+		// VISIBLE so the diagram names every module, with edges or without, and
+		// the EXCLUDED_MODULE filter below drops fi.kalia.web explicitly rather
+		// than by its absence.
 		documenter.writeModulesAsPlantUml(
 				DiagramOptions.defaults().withElementsWithoutRelationships(ElementsWithoutRelationships.VISIBLE));
 		return Files.readString(outputDir.resolve("components.puml"));
