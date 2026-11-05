@@ -1061,7 +1061,12 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   The proxy overwrites `X-Forwarded-For` with the address it saw; Keycloak and
   Spring honour that header only from the stack's private ranges, and both log
   the address they resolved. Authentication stays the protection of the API;
-  the limits bound how fast an anonymous caller can ask. The loopback binding
+  the limits bound how fast an anonymous caller can ask. The web app reaches
+  Spring over the compose network, past the `backend` zone, so a visitor's
+  backend load is bounded by the web zone's page renders (up to 600 backend
+  calls a second per address) and by a zone of its own for Server Actions (up
+  to 20), which the edge recognises by their `Next-Action` header or form body
+  (ADR-0090's 2026-11-05 amendment; `edge/limits.json` pins the figures). The loopback binding
   stays until a deployment story exists. What the edge serves is only what a
   client needs: it answers `404` for `/actuator/*` but `health`, for `/admin`
   and `/realms/master`, and for `/api/auth/backchannel-logout`, which Keycloak
