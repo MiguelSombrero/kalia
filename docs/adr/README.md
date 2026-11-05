@@ -252,7 +252,7 @@ and the third keeps that identifier from ever passing to someone else.
 
 ## Authentication and identity
 
-Twelve independent decisions, in the order they were made — later ones fix
+Thirteen independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
 ([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
@@ -296,6 +296,11 @@ in one place, read
   — the mobile app signs in through the system browser as a public PKCE
   client, holds an offline token in secure storage and calls Spring directly
   through the edge; amends ADR-0003 and ADR-0029.
+- [ADR-0101](0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)
+  — an admin holds the realm role `admin`, which the access token carries: the
+  backend refuses everyone else with `403` on `/api/v1/admin/**`, the web
+  answers everyone else with its not-found page, and the local stack seeds a
+  development admin; a deployment's first admin is left undecided.
 
 ## Configuration, security and operations
 

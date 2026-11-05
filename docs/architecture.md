@@ -1336,7 +1336,8 @@ records the latest run.
   copy at sign-out; a mobile token on a lost phone does not go away until it
   expires. The cost is a five-minute window; shortening the lifespan narrows
   it without closing it, and introspection would make every write depend on
-  Keycloak being up.
+  Keycloak being up. A revoked admin role holds for the same window
+  ([ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - **`GET /api/v1/cellar` answers every entry, with no cap on how many an
   account holds** (SHOULD-78): the cellar page and the app's offline sync need
   the whole cellar, so the read stays whole and its cost grows with the largest
@@ -1528,6 +1529,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0098](adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) | An installed build's errors are read from the device's own logs, and a crash service waits for a second user | accepted | 2026-11-01 |
 | [ADR-0099](adr/0099-the-android-end-to-end-build-caches-no-native-output-because-neither-ccache-nor-cmakes-output-saves-three-minutes.md) | The Android end-to-end build caches no native output, because neither ccache nor CMake's output saves three minutes | accepted | 2026-11-01 |
 | [ADR-0100](adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md) | Postgres has three roles — one that owns the schema for Flyway, one that reads and writes rows, one for Keycloak — and the superuser belongs to Postgres alone | accepted | 2026-11-02 |
+| [ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md) | An admin is a realm role in the access token, which the backend enforces on one path prefix and the web reads in its BFF | accepted | 2026-11-05 |
 | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) | A suggestion is a pending beer with its new brewery, and an admin reviews it inside catalog, which publishes one event per decision | accepted | 2026-11-05 |
 
 ### Engineering process and documentation

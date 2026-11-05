@@ -1,6 +1,6 @@
 # Task 01: Decide who is an admin, and how every tier knows it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-4
 
@@ -111,12 +111,12 @@ would make its first one.
 
 ## Acceptance criteria
 
-- [ ] An ADR records where the role is defined and granted, how the backend
+- [x] An ADR records where the role is defined and granted, how the backend
       and the web each read it, what a non-admin is answered, the development
       admin, that a deployment's first admin is left undecided, and the
       rejected alternatives, and
       passes `node scripts/check-adrs.mjs`
-- [ ] Each test the decision implies — a self-registered account not holding
+- [x] Each test the decision implies — a self-registered account not holding
       the role, a token without it refused, a token with it admitted, the base
       compose file seeding no admin — is named in the acceptance criteria of
       [task 04](04-the-admin-role-exists-and-the-api-refuses-everyone-else.md)
