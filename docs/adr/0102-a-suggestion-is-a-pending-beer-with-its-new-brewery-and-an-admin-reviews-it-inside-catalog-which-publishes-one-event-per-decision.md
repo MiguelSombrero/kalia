@@ -86,13 +86,13 @@ events and the copy; *ehdotus* in Finnish.
   suggestion, drained on `save` ([ADR-0053](0053-cellar-domain-events-on-the-aggregate-root.md)),
   and consumers are idempotent on `eventId`
   ([ADR-0058](0058-feed-event-recording-model.md)). It carries `eventId`,
-  `suggestionId`, `contributorId`, `beerId`, the outcome, the beer's name as
+  `contributorId`, `beerId`, the outcome, the beer's name as
   decided, whether it was edited, the name as suggested (present only when
   edited), the reason code (present only on a rejection) and `occurredAt`.
-  `suggestionId` and `beerId` hold the same value today, since a suggestion's
-  id is its beer's; both are carried so a consumer names the suggestion without
-  relying on that identity. A pair of event types, one for the beer and one for
-  the brewery, was rejected, as was carrying the brewery.
+  There is no `suggestionId`: a suggestion's id is its beer's, so `beerId`
+  names it, and a second field would hold the same value. A pair of event
+  types, one for the beer and one for the brewery, was rejected, as was
+  carrying the brewery.
 - **The decision is synchronous.** The catalog is changed, and the admin
   answered, before any consumer runs; a consumer such as a notification is
   eventually consistent, and the admin's request never waits for it.
@@ -179,8 +179,9 @@ events and the copy; *ehdotus* in Finnish.
   nothing records when it left the queue except the review record, and a
   suggestion approved before this iteration (by the script) has no record at
   all.
-- Bad, because `suggestionId` and `beerId` are the same value, and a consumer
-  that treats them as different keys would be wrong.
+- Bad, because the suggestion's id and the beer's are one value; a suggestion
+  that ever gets an id of its own (see the revisit trigger) adds a field to the
+  event then.
 - Neutral, because the review record holds the deciding admin's id, which
   [task 15](../tasks/iteration-10.5/15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md)'s
   account-deletion strategy has to account for.
