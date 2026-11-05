@@ -7,8 +7,10 @@ import static fi.kalia.catalog.web.PageBounds.PAGE_DESCRIPTION;
 import static fi.kalia.catalog.web.PageBounds.requireBoundedOffset;
 
 import fi.kalia.catalog.application.SuggestionReviewService;
+import fi.kalia.identity.IdentityApi;
 import fi.kalia.web.Problem;
 import fi.kalia.web.ValidationProblem;
+import org.jspecify.annotations.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
@@ -26,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -46,6 +51,8 @@ import org.springframework.web.bind.annotation.RestController;
 class AdminSuggestionController {
 
 	private final SuggestionReviewService review;
+
+	private final IdentityApi identity;
 
 	@GetMapping
 	// Do not remove: matches Spring's default, but its absence would silently
@@ -84,6 +91,51 @@ class AdminSuggestionController {
 			description = "One suggestion, as the list serves it, by its beer's id.")
 	SuggestionDto getSuggestion(@Parameter(description = "The suggested beer's id") @PathVariable UUID id) {
 		return SuggestionDto.from(review.pendingSuggestion(id));
+	}
+
+	@PostMapping("/{id}/approval")
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponses({
+			@ApiResponse(responseCode = "400", description = "The id is not a UUID, or the body names a reason",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
+			@ApiResponse(responseCode = "404", description = """
+					No suggestion is waiting under this id: it is unknown, or is a beer nobody suggested, \
+					such as an imported one""",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = Problem.class))),
+			@ApiResponse(responseCode = "409", description = "The suggestion was decided already, or is being decided by another request",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = SuggestionAlreadyDecidedProblem.class)))})
+	@Operation(summary = "Approve a suggestion as it is", description = """
+			Makes the beer, and the brewery added with it, visible to everyone. A brewery another \
+			suggestion needs is approved with the first approval. Takes no body.""")
+	SuggestionDecisionDto approve(@Parameter(description = "The suggested beer's id") @PathVariable UUID id,
+			@RequestBody(required = false) @Valid @Nullable ApproveSuggestionRequestDto body) {
+		return SuggestionDecisionDto.from(review.approve(id, identity.requireCurrentUserId()));
+	}
+
+	@PostMapping("/{id}/rejection")
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponses({
+			@ApiResponse(responseCode = "400", description = "The id is not a UUID, or the reason is missing or not on the list",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
+			@ApiResponse(responseCode = "404", description = """
+					No suggestion is waiting under this id: it is unknown, or is a beer nobody suggested, \
+					such as an imported one""",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = Problem.class))),
+			@ApiResponse(responseCode = "409", description = "The suggestion was decided already, or is being decided by another request",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = SuggestionAlreadyDecidedProblem.class)))})
+	@Operation(summary = "Reject a suggestion", description = """
+			Withholds the beer for good, with a reason from a fixed list. The brewery added with it is \
+			rejected too, unless another suggestion that needs it is still waiting; the last of them \
+			rejects it. No row is deleted.""")
+	SuggestionDecisionDto reject(@Parameter(description = "The suggested beer's id") @PathVariable UUID id,
+			@RequestBody @Valid RejectSuggestionRequestDto body) {
+		return SuggestionDecisionDto.from(review.reject(id, identity.requireCurrentUserId(), body.reason()));
 	}
 
 }

@@ -1,5 +1,7 @@
 package fi.kalia.catalog.domain;
 
+import jakarta.persistence.LockModeType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface BreweryRepository extends JpaRepository<Brewery, UUID> {
@@ -39,6 +42,11 @@ public interface BreweryRepository extends JpaRepository<Brewery, UUID> {
 			AND (b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.APPROVED
 			  OR (b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.PENDING AND b.contributorId = :viewerId))""")
 	Optional<Brewery> findVisibleById(UUID id, @Nullable UUID viewerId);
+
+	// Locked in id order, so two decisions that each need two breweries cannot wait on each other (ADR-0102).
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT b FROM Brewery b WHERE b.id IN :ids ORDER BY b.id")
+	List<Brewery> findAllByIdForUpdate(Collection<UUID> ids);
 
 	long countByContributorIdAndModerationStatus(UUID contributorId, ModerationStatus moderationStatus);
 

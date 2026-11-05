@@ -1,5 +1,7 @@
 package fi.kalia.catalog.domain;
 
+import fi.kalia.catalog.RejectionReason;
+import fi.kalia.catalog.SuggestionReviewed;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,13 +19,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.util.Assert;
 
 @Entity
 @Table(name = "beer", schema = "catalog")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Beer {
+public class Beer extends AbstractAggregateRoot<Beer> {
 
 	@Id
 	@GeneratedValue
@@ -74,6 +77,37 @@ public class Beer {
 		beer.contributorId = contributorId;
 		beer.moderationStatus = ModerationStatus.PENDING;
 		return beer;
+	}
+
+	public boolean isSuggestion() {
+		return contributorId != null && moderationStatus == ModerationStatus.PENDING;
+	}
+
+	public Instant approve(Clock clock) {
+		requireSuggestion();
+		Instant decidedAt = clock.instant();
+		moderationStatus = ModerationStatus.APPROVED;
+		registerEvent(reviewed(SuggestionReviewed.Outcome.APPROVED, null, decidedAt));
+		return decidedAt;
+	}
+
+	public Instant reject(RejectionReason reason, Clock clock) {
+		Assert.notNull(reason, "reason must not be null");
+		requireSuggestion();
+		Instant decidedAt = clock.instant();
+		moderationStatus = ModerationStatus.REJECTED;
+		registerEvent(reviewed(SuggestionReviewed.Outcome.REJECTED, reason, decidedAt));
+		return decidedAt;
+	}
+
+	private void requireSuggestion() {
+		Assert.state(isSuggestion(), "only a suggestion waiting for review can be decided");
+	}
+
+	private SuggestionReviewed reviewed(SuggestionReviewed.Outcome outcome, @Nullable RejectionReason reason,
+			Instant decidedAt) {
+		return new SuggestionReviewed(UUID.randomUUID(), contributorId, id, outcome, name, false, null, reason,
+				decidedAt);
 	}
 
 }

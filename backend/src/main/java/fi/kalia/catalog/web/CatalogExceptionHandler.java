@@ -6,6 +6,7 @@ import fi.kalia.catalog.application.DuplicateBeerException;
 import fi.kalia.catalog.application.DuplicateBreweryException;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
 import fi.kalia.catalog.application.PendingElsewhereException;
+import fi.kalia.catalog.application.SuggestionAlreadyDecidedException;
 import fi.kalia.catalog.application.SuggestionNotFoundException;
 import fi.kalia.catalog.application.TooManyPendingEntriesException;
 import fi.kalia.catalog.application.UnknownCountryException;
@@ -40,6 +41,11 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(PendingElsewhereException.class)
 	PendingElsewhereProblem pendingElsewhere(PendingElsewhereException e) {
 		return new PendingElsewhereProblem(e.getMessage());
+	}
+
+	@ExceptionHandler(SuggestionAlreadyDecidedException.class)
+	SuggestionAlreadyDecidedProblem alreadyDecided(SuggestionAlreadyDecidedException e) {
+		return new SuggestionAlreadyDecidedProblem(e.getMessage(), e.getOutcome(), e.getDecidedAt());
 	}
 
 	@ExceptionHandler(DuplicateBreweryException.class)
