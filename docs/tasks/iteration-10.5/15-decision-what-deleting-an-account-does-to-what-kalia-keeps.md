@@ -1,6 +1,6 @@
 # Task 15: Decide what deleting an account does to what Kalia keeps forever
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -65,12 +65,12 @@ that survives it, without implementing deletion.
 
 ## Acceptance criteria
 
-- [ ] An ADR records, for every table that names a user, what deletion does to
+- [x] An ADR records, for every table that names a user, what deletion does to
       it and the identifier that survives, and passes
       `node scripts/check-adrs.mjs`
-- [ ] ADR-0058, ADR-0080 and ADR-0091 are amended where the answer changes
+- [x] ADR-0058, ADR-0080 and ADR-0091 are amended where the answer changes
       what they state
-- [ ] Each test the decision implies is named in the acceptance criteria of
+- [x] Each test the decision implies is named in the acceptance criteria of
       [task 09](09-a-contributor-is-told-what-became-of-their-suggestion.md),
       or in a backlog entry for the deletion work, before task 09 is refined
 
