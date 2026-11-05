@@ -21,35 +21,8 @@ clarity, testability, and iterative delivery** over premature scale.
 
 ### Functional requirements
 
-Built:
-
-- Search beers by name, and filter them by style, the brewery's country and
-  ABV
-- Beer detail view
-- Sign-in and sign-out (Keycloak); browsing stays anonymous
-- Personal beer cellar: the signed-in user's owned bottles, each carrying its
-  own brewed and best-before dates, grouped by the catalog beer they are
-  bottles of *(iteration 5)*
-- A user profile and a cellar-visibility control; a public cellar readable by
-  anyone from a link or the owner's profile *(iteration 6)*
-- Self-registration with email verification, so someone other than the author
-  can create an account *(iteration 6.5)*
-- A front-page activity feed of the bottles people add to their cellars,
-  kept current by polling *(iteration 7)*
-- A designed visual identity — colour and type tokens, icons, the Kalia mark
-  and a layout for every page, the Keycloak pages included *(iteration 7.5)*
-- A catalog seeded once from Wikidata, to which a signed-in user adds a beer
-  it lacks, and its brewery, with catalog search held within its latency
-  budget at 150k beers *(iteration 8)*
-- An API a second client can inherit: every error documented and typed, what
-  nobody used removed, contributed catalog entries visible to others only once
-  an operator approves them and never hard-deleted, the unauthenticated edges
-  throttled by an nginx proxy, and a stack that refuses to start as a
-  deployment without its secrets *(iteration 8.5)*
-- An Expo mobile app that runs on the iOS Simulator and the Android emulator
-  against the local stack, signs in through Keycloak and out again, lists the
-  catalog from `/api/v1`, and blocks itself behind an "update required" screen
-  when the server's minimum build exceeds its own *(iteration 9)*
+What each iteration built is listed once, in
+[docs/roadmap.md](roadmap.md#what-each-iteration-built).
 
 No iteration is in progress. The next is [iteration 10](tasks/iteration-10.md),
 which puts the app on the product owner's own iPhone.
@@ -358,8 +331,9 @@ seeded and imported row; an operator moves a contributor's rows to `APPROVED`,
 ([backend/README.md](../backend/README.md#moderating-contributions)). A pending
 row is found, opened and cellared by its contributor alone, and is left out of
 search, the brewery list, other users' reads, every public cellar and the feed
-until approved. A contributor may have 20 entries waiting (a new brewery counts
-as one); an add past that answers `429` `problem+json`. Adding a beer whose
+until approved. How many entries a contributor may have waiting is capped
+([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)),
+and an add past the cap answers `429` `problem+json`. Adding a beer whose
 name another contributor holds as pending answers an anonymous `409`, with no
 beer to open. A `REJECTED` or
 `REMOVED` row is withheld the same way from search, lists, every public read
@@ -503,7 +477,7 @@ GET    /api/v1/app-config                           -> {minimumBuild: {ios, andr
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
-POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past 20 entries waiting for approval, 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them), or naming nothing when another contributor's suggestion of the beer is waiting for review
+POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past the pending cap ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)), 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them), or naming nothing when another contributor's suggestion of the beer is waiting for review
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity; every entry, not paginated
 GET    /api/v1/cellar/holdings?beerIds=             -> which of at most 100 beers the caller holds and how many bottles of each, with the beers and bottles held in all; 400 past 100 ids or for one that is not a beer id
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice

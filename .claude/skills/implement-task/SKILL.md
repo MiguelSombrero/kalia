@@ -115,11 +115,12 @@ their own condition from that ADR before they apply.
     tasks to close the gap. The same coverage check applies when planning an
     iteration ([ADR-0026](../../../docs/adr/0026-task-file-format.md)). Once it
     is genuinely done, update every document that states the iteration's
-    status, in the same pull request: its `Status` in `docs/roadmap.md`; the
-    status blockquote and the "What Kalia does" feature list in `README.md`;
-    and `docs/architecture.md` §1's "Built:" list and its "No iteration is in
-    progress. The next is …" line. Missing the last three is how the close of
-    5.5, 6 and 7 drifted.
+    status, in the same pull request: its `Status` in `docs/roadmap.md` and its
+    entry under "What each iteration built" there (finish it and drop its "in
+    progress" marker if an earlier task began it), the one home of the feature
+    list that `README.md` and `docs/architecture.md` §1 point to; and
+    `docs/architecture.md` §1's "No iteration is in progress. The next is …"
+    line. Missing these is how the close of 5.5, 6 and 7 drifted.
 12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 

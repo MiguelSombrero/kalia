@@ -79,3 +79,51 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [14 — Scan the bottle in your hand](tasks/iteration-14.md) | A barcode puts a beer in the cellar | ⬜ Todo |
 
 Unscheduled work: [Backlog](tasks/backlog.md) · [Quality backlog](tasks/quality-backlog.md)
+
+## What each iteration built
+
+The one home for what Kalia can do, iteration by iteration. The root
+[README](../README.md) and [architecture.md](architecture.md) §1 point here
+instead of repeating it
+([ADR-0020](adr/0020-documentation-roles.md)); an iteration's close adds its
+entry here and nowhere else. Iterations 3 and 5.5 built no feature a user
+meets, so they have no entry; the table above says what they were for.
+
+- **Browse** craft beers, searching by name and filtering by style, the
+  brewery's country and alcohol content (ABV), with a detail view for each —
+  no account needed *(iteration 1)*
+- **Use Kalia in English or Finnish** (`/en`, `/fi`; detected on first visit,
+  switchable at any time) *(iteration 2)*
+- **Sign in and out** with Keycloak; browsing stays anonymous *(iteration 4)*
+- **A personal beer cellar:** the bottles the signed-in user owns, each with
+  its own brewed and best-before dates, grouped by the catalog beer they are
+  bottles of *(iteration 5)*
+- **A profile, and a cellar that can be made public** — browsable from a link
+  or the owner's profile by anyone, signed in or not *(iteration 6)*
+- **Self-registration** with email verification, so someone other than the
+  author can create an account *(iteration 6.5)*
+- **A live front-page feed** of the bottles people add to their public
+  cellars, kept current by polling *(iteration 7)*
+- **A visual identity of Kalia's own** — colour and type tokens, icons, the
+  Kalia mark and a layout for every page, the Keycloak pages included, usable
+  at a phone and a desktop width *(iteration 7.5)*
+- **A catalog that grows:** seeded once from Wikidata, with a signed-in user
+  adding a beer it lacks, and its brewery, and putting a bottle of it in the
+  cellar at once; catalog search is held within its latency budget at 150k
+  beers *(iteration 8)*
+- **An API a second client can inherit:** every error documented and typed,
+  what nobody used removed, contributed catalog entries visible to others only
+  once an operator approves them and never hard-deleted, the unauthenticated
+  edges throttled by an nginx proxy, and a stack that refuses to start as a
+  deployment without its secrets *(iteration 8.5)*
+- **A mobile app:** an Expo app on the iOS Simulator and the Android emulator
+  that signs in through Keycloak and out again, lists the catalog from
+  `/api/v1`, and blocks itself behind an "update required" screen when the
+  server's minimum build exceeds its own *(iteration 9)*
+- **The app on a real phone** *(iteration 10, in progress)*: Kalia has its own
+  name, icon and splash screen; it installs on the product owner's iPhone with
+  a free Apple ID and signs in and browses against the stack on the Mac; a
+  development build and a release build (bundled JavaScript, no dev menu) run
+  on both platforms; an error on the phone leaves a screen and a trace id to
+  read; the app survives a token it cannot refresh; and adding a beer says
+  what happens to it and never dead-ends

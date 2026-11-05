@@ -78,8 +78,8 @@ nobody has committed to becomes a constraint anyway.
   that keeps the Java sort's order in every environment.
 - [ADR-0091](0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)
   — a contributed beer or brewery is seen by its contributor alone until an
-  operator approves it, at most 20 may wait per contributor, and no catalog row
-  is ever deleted, so cellar entries and feed lines keep what they point at.
+  operator approves it, the number waiting per contributor is capped, and no
+  catalog row is ever deleted, so cellar entries and feed lines keep what they point at.
 - [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)
   — a suggestion is a pending beer with the brewery added with it; an admin
   approves, rejects or edits it through an admin API inside `catalog`, which

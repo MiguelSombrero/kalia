@@ -8,7 +8,8 @@ each depends on: [docs/architecture.md §3](../docs/architecture.md#3-backend-mo
 Full stack in containers: `docker compose up --build` from the repo root.
 The backend is reached at `localhost:8080` through the `edge` proxy (loopback
 only — see [docs/architecture.md](../docs/architecture.md) §6), which limits
-requests per client address to 10 a second. It is an OAuth2 resource server and
+requests per client address ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)
+holds the rates). It is an OAuth2 resource server and
 denies by default, but the loopback binding stays until a deployment story
 exists, so treat it as defence in depth rather than surplus. Behind the proxy
 the request log names the client address Spring resolved from
