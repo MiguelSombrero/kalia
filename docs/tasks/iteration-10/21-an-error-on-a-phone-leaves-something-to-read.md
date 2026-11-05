@@ -1,6 +1,6 @@
 # Task 21: An error on a phone leaves something to read
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -66,9 +66,9 @@ error names it, in the device's log and on screen.
 - [x] A Jest test shows a failed request's error naming its trace id, and
       that neither the logged line nor the screen contains the access token,
       a query string or the signed-in user's name
-- [ ] On a release build, a forced error shows the restart screen — verified
+- [x] On a release build, a forced error shows the restart screen — verified
       by hand on a simulator or the iPhone and described in the PR
-- [ ] On the same build, the forced error's logged line is found in Console.app
+- [x] On the same build, the forced error's logged line is found in Console.app
       or `adb logcat` as `mobile/README.md` says to read it, and the PR says
       what was seen — the README's filters are corrected if they showed nothing
 - [x] `make verify-fast` is green

@@ -181,8 +181,16 @@ backend's JSON log for the id to find its line
   for a phone. `adb logcat '*:S' ReactNativeJS:V` keeps the JavaScript's lines
   only; a native crash is in the unfiltered output.
 
-A development build writes the same lines as warnings, to Metro's terminal. A
-native crash leaves only what the operating system itself logs: the app
+A development build writes the same lines as warnings, to Metro's terminal.
+
+**One line is not Kalia's and is not scrubbed.** For a render error React also
+writes its own `console.error`, which shows the error and its component stack,
+and a release build's frames there name the folder the app was built in by its
+absolute path, home directory included. Clean such a line before it goes in a
+pull request, a message or any other service (CLAUDE.md, host data); Kalia's
+own `Uncaught error` line beside it carries bundle-relative frames only.
+
+A native crash leaves only what the operating system itself logs: the app
 closes, and no screen of Kalia's says so.
 
 ## Install on an iPhone

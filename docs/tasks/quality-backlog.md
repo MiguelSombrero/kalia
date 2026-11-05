@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-23 · SHOULD-102 · COULD-116
+**Highest issued:** MUST-23 · SHOULD-102 · COULD-117
 
 ## MUST
 
