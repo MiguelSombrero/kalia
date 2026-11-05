@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-130
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-131
 
 ## MUST
 
@@ -493,6 +493,13 @@ repeats, so the recurrence stays visible once the old entry is gone.
   (`.claude/skills/design-task/SKILL.md:99-101`) lists `make verify` among
   `implement-task`'s gates, where `implement-task` step 9 and CLAUDE.md make
   `make verify-fast` the local gate.
+- **COULD-131** *(confirmed 2026-11-05)* — The review queue's contributor
+  counts (`BeerRepository.countPendingAndRejectedByContributor`, iteration 10.5
+  task 05) can use `beer_pending_contributor_idx` only for `PENDING`; the
+  `REJECTED` half scans `catalog.beer`, imported rows included, on every admin
+  page. Harmless while few beers are rejected; add a partial index on
+  `contributor_id` where it is not null when rejections accumulate, and check
+  the plan as `BeerSearchIndexIT` does.
 
 ## Retired
 
