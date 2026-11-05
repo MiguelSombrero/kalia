@@ -1048,7 +1048,11 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   The local stack seeds `testadmin` with the role (`keycloak-seed`); the
   deployable definition seeds none. A revoked role holds until the access token
   expires. `AdminAccessIT` pins the rule and `scripts/check-keycloak-admin.mjs`
-  (`make verify`, CI's Keycloak job) pins the realm as applied.
+  (`make verify`, CI's Keycloak job) pins the realm as applied. The web reads
+  the same claim from the access token its session holds
+  (`web/lib/auth/adminRole.ts`), on the server only: `/[locale]/admin` answers
+  everyone but an admin, a signed-out visitor included, the not-found page, and
+  only a boolean reaches the browser, for the navigation entry.
 - **Only the `edge` proxy is published**, on `127.0.0.1`: the API at
   `BACKEND_PORT` (default 8080, for direct access and Swagger UI on the dev
   machine), the web app and Keycloak each at their own port, every request

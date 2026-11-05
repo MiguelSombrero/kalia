@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminHref,
   beerHref,
   catalogHref,
   cellarHref,
@@ -13,6 +14,7 @@ import {
 
 describe("routes", () => {
   it("puts the locale first on every in-app address", () => {
+    expect(adminHref("fi")).toBe("/fi/admin");
     expect(catalogHref("fi")).toBe("/fi/beers");
     expect(beerHref("fi", "b1")).toBe("/fi/beers/b1");
     expect(cellarHref("fi", "ada")).toBe("/fi/cellars/ada");

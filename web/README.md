@@ -152,6 +152,12 @@ A new spec that needs to sign in imports `test`/`expect` from that support
 file and uses the `account` fixture, the same way
 `e2e/sign-in-out.spec.ts` does.
 
+A spec that needs an admin takes the worker-scoped `adminAccount` fixture
+beside it: `e2e-admin-N`, provisioned the same way and then granted the realm's
+`admin` role through Keycloak's admin API. The suite never signs in as the
+local stack's seeded `testadmin`
+([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
+
 **Nothing needs resetting before running the suite.** Keycloak's realm
 persists across restarts ([iteration 6.5 task
 01](../docs/tasks/iteration-6.5/01-persist-keycloak-state.md)), so a
@@ -311,6 +317,16 @@ Why the rationale lives there and not here:
   makes `kaliaFetch` throw an `ApiError` of kind `refused` and send nothing
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
   [ADR-0029](../docs/adr/0029-silent-token-refresh.md)).
+- **Whether the viewer is an admin is decided on the server, from the
+  session's access token** (`currentUserIsAdmin` in `lib/auth/adminRole.ts`),
+  never from a cookie, header or query parameter the browser sends and never
+  in a client component. Only a boolean reaches the browser (`SiteNav`'s
+  `isAdmin`). `/[locale]/admin` calls `notFound()` before rendering anything of
+  itself for a signed-out visitor and a non-admin alike, and has no
+  `loading.tsx`: a boundary that streams the shell first would send `200`
+  ahead of the `404`. The token is decoded without checking its signature, so
+  the backend's own check backs every admin call
+  ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - **Per-user data keys on the access token's `sub`**, which the backend reads
   itself ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) —
   never on an Auth.js user or session id, which are this app's own.

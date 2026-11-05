@@ -34,7 +34,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | refined |
 | [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and an admin can remove an approved beer | refined |
 | [09](iteration-10.5/09-a-contributor-is-told-what-became-of-their-suggestion.md) | A contributor is told what became of their suggestion | needs-refinement |
-| [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | refined |
+| [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | done |
 | [16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md) | The backend's request limit holds for the calls the web makes on a visitor's behalf | refined |
 | [11](iteration-10.5/11-design-the-admin-review-page.md) | An admin reviews suggestions on a page of their own | needs-refinement |
 | [20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md) | An admin removes an approved beer from its page | refined |

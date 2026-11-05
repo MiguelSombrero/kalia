@@ -16,9 +16,14 @@
     "home": "Home",
     "catalog": "Catalog",
     "cellar": "Cellar",
+    "admin": "Admin",
     "menu": "Menu",
     "closeMenu": "Close menu",
     "language": "Language"
+  },
+  "admin": {
+    "pageTitle": "Admin — Kalia",
+    "title": "Admin"
   },
   "placeholder": {
     "comingSoon": "Coming soon"

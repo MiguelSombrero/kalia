@@ -9,6 +9,10 @@ export const homeHref = (locale: Locale): string => {
   return `/${locale}`;
 };
 
+export const adminHref = (locale: Locale): string => {
+  return `/${locale}/admin`;
+};
+
 export const profileHref = (locale: Locale): string => {
   return `/${locale}/profile`;
 };

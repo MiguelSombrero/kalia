@@ -67,6 +67,29 @@ describe("SiteNav", () => {
     expect(screen.getByRole("link", { name: "nav.home" })).not.toHaveAttribute("aria-current");
   });
 
+  it("offers the admin area, reading as the nav.admin string with no count, to an admin", () => {
+    usePathname.mockReturnValue("/en");
+    render(<SiteNav locale="en" isAdmin />);
+
+    const link = screen.getByRole("link", { name: "nav.admin" });
+    expect(link).toHaveAttribute("href", "/en/admin");
+    expect(link).toHaveTextContent(/^nav\.admin$/);
+  });
+
+  it("marks the admin area active on its own route", () => {
+    usePathname.mockReturnValue("/fi/admin");
+    render(<SiteNav locale="fi" isAdmin variant="menu" />);
+
+    expect(screen.getByRole("link", { name: "nav.admin" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("offers no admin entry unless told the viewer is an admin", () => {
+    usePathname.mockReturnValue("/en");
+    render(<SiteNav locale="en" />);
+
+    expect(screen.queryByRole("link", { name: "nav.admin" })).not.toBeInTheDocument();
+  });
+
   it("has no axe violations", async () => {
     usePathname.mockReturnValue("/en/beers");
     const { container } = render(<SiteNav locale="en" />);
