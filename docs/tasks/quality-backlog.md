@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-131
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-132
 
 ## MUST
 
@@ -500,6 +500,12 @@ repeats, so the recurrence stays visible once the old entry is gone.
   page. Harmless while few beers are rejected; add a partial index on
   `contributor_id` where it is not null when rejections accumulate, and check
   the plan as `BeerSearchIndexIT` does.
+- **COULD-132** *(confirmed 2026-11-05)* — `SuggestionDecisionDto.outcome`
+  (iteration 10.5 task 06) is typed `ReviewOutcome`, so the spec and generated
+  client allow `REMOVED` on the `200` of an approval or rejection, a value only
+  the `409` can carry. Give the `200` its own two-value enum when task 07 or 08
+  next regenerates the client; the change is additive-breaking for a client that
+  switches on it, so do it before an app build depends on it.
 
 ## Retired
 

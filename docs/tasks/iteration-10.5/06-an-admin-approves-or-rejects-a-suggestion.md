@@ -1,6 +1,6 @@
 # Task 06: An admin approves or rejects a suggestion, and one event says so
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2, DW-3
 
@@ -89,45 +89,45 @@ state.
 
 ## Acceptance criteria
 
-- [ ] An integration test approves a suggestion with an existing brewery and
+- [x] An integration test approves a suggestion with an existing brewery and
       one with a new brewery, and each is then visible to another user in
       search, details and the brewery list
-- [ ] An integration test rejects each kind, and both the beer and the new
+- [x] An integration test rejects each kind, and both the beer and the new
       brewery are withheld afterwards, with no row deleted
-- [ ] A pending brewery shared by two suggestions is approved with the first
+- [x] A pending brewery shared by two suggestions is approved with the first
       approval, stays pending when one is rejected while the other waits, and
       is rejected with the last — integration test
-- [ ] A rejection without a reason from ADR-0102's list, or with a code outside
+- [x] A rejection without a reason from ADR-0102's list, or with a code outside
       it, answers `400`, and an approval that carries a reason answers `400` —
       tests
-- [ ] Exactly one event is published per decision, with or without a new
+- [x] Exactly one event is published per decision, with or without a new
       brewery, carrying `eventId`, `contributorId`, `beerId`, the outcome, the
       beer's name as decided, `edited`, and `occurredAt` from the `Clock`, and
       for a rejection its reason code — `@ApplicationModuleTest` scenario
-- [ ] Two concurrent decisions on one suggestion (two threads released
+- [x] Two concurrent decisions on one suggestion (two threads released
       together) leave exactly one decision, one review record and one event,
       and the loser answers `409` `problem+json` saying how it was decided,
       never `500` — integration test
-- [ ] Deciding a suggestion that is already decided answers the same `409`
+- [x] Deciding a suggestion that is already decided answers the same `409`
       with the outcome, whether it was approved or rejected, and with when it
       was decided where a review record exists — integration test; an unknown
       id and an imported beer answer `404`
-- [ ] Two suggestions sharing a pending brewery, rejected concurrently, leave
+- [x] Two suggestions sharing a pending brewery, rejected concurrently, leave
       the brewery `REJECTED` and not stranded `PENDING` — integration test,
       confirmed to fail without the row locks
-- [ ] A decision writes one review record with who decided, when, the outcome
+- [x] A decision writes one review record with who decided, when, the outcome
       and, for a rejection, the reason code, which the event also carries; the
       deciding admin's id is nullable — integration test and schema check
-- [ ] The beer and its new brewery change status in one transaction: a failure
+- [x] The beer and its new brewery change status in one transaction: a failure
       after the beer's update leaves both `PENDING` — test
-- [ ] A non-admin's decision is refused — integration test
-- [ ] The committed spec carries the operations with their `400`, `403`, `404`
+- [x] A non-admin's decision is refused — integration test
+- [x] The committed spec carries the operations with their `400`, `403`, `404`
       and `409` responses; ADR-0091 and `docs/architecture.md` describe the
       application path, and §4's reason for the public cellar's read-time
       exclusion no longer says it is waiting on a path that can publish
       events — ADR-0102's reason is that the cellar read is joined with the
       catalog, so no copy exists to keep current
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
