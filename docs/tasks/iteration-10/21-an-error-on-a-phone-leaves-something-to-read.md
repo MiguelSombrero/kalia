@@ -58,12 +58,12 @@ error names it, in the device's log and on screen.
 
 ## Acceptance criteria
 
-- [ ] A Jest test throws inside a screen and sees the restart screen in both
+- [x] A Jest test throws inside a screen and sees the restart screen in both
       locales, with the build number, and restarting renders the app again
-- [ ] A Jest test shows every API call the app makes carrying a valid
+- [x] A Jest test shows every API call the app makes carrying a valid
       `traceparent`, and the web's unit tests of the shared transport still
       pass
-- [ ] A Jest test shows a failed request's error naming its trace id, and
+- [x] A Jest test shows a failed request's error naming its trace id, and
       that neither the logged line nor the screen contains the access token,
       a query string or the signed-in user's name
 - [ ] On a release build, a forced error shows the restart screen — verified
@@ -71,7 +71,7 @@ error names it, in the device's log and on screen.
 - [ ] On the same build, the forced error's logged line is found in Console.app
       or `adb logcat` as `mobile/README.md` says to read it, and the PR says
       what was seen — the README's filters are corrected if they showed nothing
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
