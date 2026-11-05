@@ -243,7 +243,12 @@
   "error": {
     "title": "Jokin meni pieleen",
     "message": "Odottamaton virhe tapahtui. Yritä uudelleen.",
-    "retry": "Yritä uudelleen"
+    "retry": "Yritä uudelleen",
+    "reference": "Viite: {{id}}",
+    "crash": {
+      "body": "Kalia kohtasi odottamattoman virheen. Käynnistä se uudelleen jatkaaksesi.",
+      "restart": "Käynnistä Kalia uudelleen"
+    }
   },
   "auth": {
     "signIn": "Kirjaudu sisään",

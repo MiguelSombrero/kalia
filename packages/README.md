@@ -26,7 +26,10 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
   is the core: base URL, timeout, JSON parsing, a non-2xx status returned
   rather than thrown, and the typed `ApiError` of
   [ADR-0023](../docs/adr/0023-typed-api-failures.md). The app supplies where the
-  access token comes from, and wraps the core with what is its own. The web's
+  access token comes from and, optionally, how a call without its own
+  `traceparent` gets one, and wraps the core with what is its own. A failure's
+  `ApiError` names the call's trace id, and `httpFailure()` makes the same of an
+  unexpected status. The web's
   is `web/lib/api/mutator.ts`, registered in `web/instrumentation.ts`.
 - **What CI checks:** the backend's `CommittedOpenApiSpecIT` (the committed spec
   is the served one), the `api-client-drift` job (`make api-drift`: the committed

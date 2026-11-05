@@ -1,4 +1,5 @@
-import { apiError, isApiError } from "./api-error";
+import { apiError, isApiError, type ApiError } from "./api-error";
+import { traceIdOf } from "./traceparent";
 import type { Transport } from "./transport";
 
 /**
@@ -19,10 +20,27 @@ export type FetchTransportConfig = {
    * returned like any other status.
    */
   refreshAccessToken?: (rejected: string | undefined) => Promise<string | undefined>;
+  /**
+   * A new `traceparent` header value. Called once per call that arrives with
+   * none of its own, so a caller that sets one (the web's BFF) keeps it.
+   * Absent: such a call is sent without one.
+   */
+  traceparent?: () => string;
   timeoutMs?: number;
 };
 
 type BackendResult = { data: unknown; status: number; headers: Headers };
+
+// Not a field on the result: the web's tests and the generated types pin its shape.
+const traceIds = new WeakMap<object, string>();
+
+export const traceIdOfResponse = (response: object): string | undefined => traceIds.get(response);
+
+export const httpFailure = (what: string, response: { status: number }): ApiError =>
+  apiError("http", `${what} failed with status ${response.status}`, {
+    status: response.status,
+    traceId: traceIdOfResponse(response),
+  });
 
 /** A caller-initiated abort is cancellation, not failure. */
 export const isAbortError = (cause: unknown): boolean =>
@@ -45,25 +63,44 @@ export const createFetchTransport = (config: FetchTransportConfig): Transport =>
   (async (url: string, options: RequestInit): Promise<BackendResult> => {
     refuseReshapedPath(url);
     refuseCallerAuthorization(url, options);
+    const traced = withTrace(options, config);
+    const traceId = traceIdOf(new Headers(traced.headers).get("traceparent"));
     const token = await config.accessToken?.();
 
-    let response = await send(url, options, token, config);
+    let response = await send(url, traced, token, config, traceId);
     if (response.status === 401 && config.refreshAccessToken) {
       const renewed = await config.refreshAccessToken(token);
       if (renewed && renewed !== token) {
         void response.body?.cancel();
-        response = await send(url, options, renewed, config);
+        response = await send(url, traced, renewed, config, traceId);
       }
     }
 
-    return { data: await readBody(url, response), status: response.status, headers: response.headers };
+    const result: BackendResult = {
+      data: await readBody(url, response, traceId),
+      status: response.status,
+      headers: response.headers,
+    };
+    if (traceId) {
+      traceIds.set(result, traceId);
+    }
+    return result;
   }) as Transport;
+
+const withTrace = (options: RequestInit, config: FetchTransportConfig): RequestInit => {
+  const headers = new Headers(options.headers);
+  if (!headers.has("traceparent") && config.traceparent) {
+    headers.set("traceparent", config.traceparent());
+  }
+  return { ...options, headers };
+};
 
 const send = async (
   url: string,
   options: RequestInit,
   token: string | undefined,
   config: FetchTransportConfig,
+  traceId: string | undefined,
 ): Promise<Response> => {
   const request = withBearer(options, token);
   try {
@@ -71,6 +108,7 @@ const send = async (
       fetch(`${config.baseUrl()}${url}`, request),
       url,
       config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      traceId,
     );
   } catch (cause) {
     // TanStack Query recognises the original AbortError and would treat a
@@ -78,11 +116,11 @@ const send = async (
     if (isAbortError(cause) || isApiError(cause)) {
       throw cause;
     }
-    throw apiError("network", `Could not reach the backend for ${pathOf(url)}`, { cause });
+    throw apiError("network", `Could not reach the backend for ${pathOf(url)}`, { cause, traceId });
   }
 };
 
-const readBody = async (url: string, response: Response): Promise<unknown> => {
+const readBody = async (url: string, response: Response, traceId: string | undefined): Promise<unknown> => {
   if ([204, 205, 304].includes(response.status)) {
     return null;
   }
@@ -94,6 +132,7 @@ const readBody = async (url: string, response: Response): Promise<unknown> => {
     throw apiError("network", `Response body from ${pathOf(url)} could not be read`, {
       status: response.status,
       cause,
+      traceId,
     });
   }
   // A bodyless error response must not crash the caller, which checks
@@ -108,6 +147,7 @@ const readBody = async (url: string, response: Response): Promise<unknown> => {
     throw apiError("parse", `Response body from ${pathOf(url)} was not JSON`, {
       status: response.status,
       cause,
+      traceId,
     });
   }
 };
@@ -158,7 +198,12 @@ const refuseCallerAuthorization = (url: string, options: RequestInit): void => {
  * abandoned rather than cancelled; the caller's own signal passes through
  * untouched, so TanStack Query cancellation still works.
  */
-const withTimeout = async (request: Promise<Response>, url: string, timeoutMs: number): Promise<Response> => {
+const withTimeout = async (
+  request: Promise<Response>,
+  url: string,
+  timeoutMs: number,
+  traceId: string | undefined,
+): Promise<Response> => {
   // The race leaves this promise unobserved when the timer wins; without a
   // handler its eventual rejection surfaces as an unhandled rejection.
   request.catch(() => {});
@@ -166,7 +211,7 @@ const withTimeout = async (request: Promise<Response>, url: string, timeoutMs: n
   let timer: ReturnType<typeof setTimeout> | undefined;
   const expiry = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => reject(apiError("timeout", `Request to ${pathOf(url)} timed out after ${timeoutMs} ms`)),
+      () => reject(apiError("timeout", `Request to ${pathOf(url)} timed out after ${timeoutMs} ms`, { traceId })),
       timeoutMs,
     );
   });
