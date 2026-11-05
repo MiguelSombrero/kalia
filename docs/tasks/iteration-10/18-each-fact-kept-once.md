@@ -1,6 +1,6 @@
 # Task 18: The architecture diagram, feature list and limits are each kept once
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10](../iteration-10.md)
 - **Covers:** none
 
@@ -51,14 +51,14 @@ or the product owner accepts a copy, and the reason is recorded.
 
 ## Acceptance criteria
 
-- [ ] The README's diagram is replaced by a pointer to §2
-- [ ] What each iteration built is listed only in `docs/roadmap.md`, and every
+- [x] The README's diagram is replaced by a pointer to §2
+- [x] What each iteration built is listed only in `docs/roadmap.md`, and every
       other mention is a pointer to it
-- [ ] The edge rate and the pending cap appear only in their homes, with
+- [x] The edge rate and the pending cap appear only in their homes, with
       pointers elsewhere
-- [ ] `node scripts/check-links.mjs` passes, and its test still covers a
+- [x] `node scripts/check-links.mjs` passes, and its test still covers a
       broken pointer
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

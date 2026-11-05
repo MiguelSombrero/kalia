@@ -2,37 +2,9 @@
 
 [![CI](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/MiguelSombrero/kalia/actions/workflows/ci.yml)
 
-> **Status:** iterations 0–9 complete — a visitor can browse and search
-> the seeded beer catalog end to end (verified: find "Westvleteren" by name,
-> filter Belgian quads 9–12 % ABV, open beer details), production-readiness
-> foundations (logging, exception handling, config, security headers,
-> dependency scanning) are in place, users can sign in and out via Keycloak,
-> and a signed-in user can add, edit and remove bottles in their own personal
-> beer cellar, grouped by beer with brewed/best-before dates. A user has a
-> profile and can make that cellar public: anyone with the link — signed in
-> or not — can browse it, and set back to private it leaks nothing, not even
-> that it exists. Someone other than the author can sign up for their own
-> account with an email address and a password, verify it, and reach their
-> own empty cellar, on branded sign-up and sign-in pages in the visitor's own
-> language. The front page shows a live feed of what people are adding to
-> their public cellars, newest first, updating without a reload (iteration
-> 7). Every surface has since been laid out again in an identity the product
-> owner picked from prototyped alternatives — "Can art, square" — with
-> token-only styling and colour contrast enforced by the build, WCAG 2.2 AA
-> checked at lint, unit and end-to-end level, and every page usable at a
-> phone and a desktop width (iteration 7.5). The catalog, seeded once from
-> Wikidata, now grows: a signed-in user who cannot find a beer adds it, and
-> can put a bottle of it in their cellar at once (iteration 8). A quality
-> sprint then readied the API for a second client: every error documented
-> and typed, what nobody used removed, a beer someone adds seen by others
-> only once an operator approves it, and the unauthenticated edges throttled
-> (iteration 8.5). An Expo mobile app, the product's primary UI from here on,
-> then ran on both the iOS Simulator and the Android emulator: it signs in
-> through Keycloak, lists the catalog from the API and tells an out-of-date
-> build to update (iteration 9). Next: the app on the product owner's own
-> iPhone (iteration 10). Implementation proceeds one issue at a time.
-> See [docs/roadmap.md](docs/roadmap.md) for what gets built and in which
-> order.
+> **Status:** which iterations are done and which is in progress is the
+> table in [docs/roadmap.md](docs/roadmap.md#iterations), and what each built
+> is listed under it. Implementation proceeds one issue at a time.
 
 ## Goal
 
@@ -172,42 +144,12 @@ and [web/README.md](web/README.md).
 
 ## What Kalia does
 
-In roadmap order, a user can:
-
-- Browse craft beers, searching by name and filtering by style, the brewery's country, and alcohol content (ABV) — no account needed
-- Use Kalia in English or Finnish (`/en`, `/fi`; auto-detected on first visit, switchable anytime)
-- View beer details (brewery, country, style, ABV)
-- Sign in with Keycloak
-- Maintain a personal beer cellar: the bottles they own, each with its brewed
-  and best-before dates, grouped by beer _(iteration 5)_
-- Set up a profile and make their cellar public — browsable by anyone with the
-  link, signed in or not _(iteration 6)_
-- Sign up for an account without the product owner creating it by hand
-  _(iteration 6.5)_
-- See a live front-page feed of what people are adding to their public
-  cellars, updating without a reload _(iteration 7)_
-- Use all of it in Kalia's own visual identity, at a phone or a desktop
-  width _(iteration 7.5)_
-- Add a beer the catalog lacks, from a search that found nothing, and put a
-  bottle of it in their cellar at once _(iteration 8)_
-- Have the beers and breweries they add reviewed by an operator before anyone
-  else sees them, while keeping them in their own cellar from the start
-  _(iteration 8.5)_
-- Sign in and out of a native Expo app on the iOS Simulator or the Android
-  emulator and see the catalog in it, which is the start of the mobile app
-  becoming Kalia's primary UI _(iteration 9)_
-
-Then, in the mobile app: it runs on the product owner's own iPhone
-_(iteration 10)_. In the web app, an admin reviews the beers users suggest —
-approving, rejecting or correcting each — and the contributor is told what
-became of theirs _(iteration 10.5)_. Back in the mobile app, it has a design of
-its own, proven on the catalog _(iteration 11)_, holds the cellar readable with no signal _(iteration 12)_, brings the
-feed, profiles and public cellars _(iteration 13)_, and scans a bottle's
-barcode to put its beer in the cellar _(iteration 14)_
-
-Further out, in the [backlog](docs/tasks/backlog.md): beer ratings sourced from
-an external platform, likes and comments on feed events, and — dependent on
-whether beer shops publish usable APIs — showing where a beer can be bought.
+What a user can do, iteration by iteration, is listed once, in
+[docs/roadmap.md](docs/roadmap.md#what-each-iteration-built), beside what is
+planned next. Further out, in the [backlog](docs/tasks/backlog.md): beer ratings
+sourced from an external platform, likes and comments on feed events, and —
+dependent on whether beer shops publish usable APIs — showing where a beer can
+be bought.
 
 ## Architecture
 
@@ -216,15 +158,8 @@ backend. The web app follows the **backend-for-frontend (BFF)** pattern: the
 browser talks only to Next.js, and the Next.js server calls the Spring Boot
 REST API. Auth tokens and sessions stay server-side.
 
-```mermaid
-flowchart LR
-    Browser -->|HTML / fetch| Next[Next.js web app<br/>BFF]
-    Next -->|REST /api/v1| Spring[Spring Boot modulith]
-    Spring --> PG[(PostgreSQL)]
-    Next -->|sessions| Valkey[(Valkey)]
-    Next -->|auth| KC[Keycloak]
-    Spring -->|token validation| KC
-```
+The diagram of how the clients, the `edge` proxy, the services and the
+data stores connect is [docs/architecture.md §2](docs/architecture.md#2-high-level-design).
 
 The backend is a single deployable split into Spring Modulith modules —
 listed in [docs/architecture.md §3](docs/architecture.md#3-backend-modules) —
