@@ -53,7 +53,7 @@ public class FeedService {
 		if (lines.existsByEventId(eventId)) {
 			return;
 		}
-		lines.save(FeedLine.bottleAdded(eventId, userId, beerId, quantity, brewedDate, occurredAt));
+		lines.save(FeedLine.bottleAdded(eventId, userId, beerId, quantity, brewedDate, occurredAt, clock));
 	}
 
 	// Do not call with size below 1 — FeedController's Bean Validation is the

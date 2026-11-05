@@ -5,16 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.SourceType;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.generator.EventType;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
@@ -54,30 +52,30 @@ public class FeedLine {
 	@Column(insertable = false, updatable = false)
 	private long sequenceNumber;
 
-	@CreationTimestamp(source = SourceType.VM)
 	private Instant createdAt;
 
-	@UpdateTimestamp(source = SourceType.VM)
 	private Instant updatedAt;
 
 	private FeedLine(UUID eventId, UUID userId, UUID beerId, int quantity, @Nullable LocalDate brewedDate,
-			Instant occurredAt) {
+			Instant occurredAt, Instant recordedAt) {
 		this.eventId = eventId;
 		this.userId = userId;
 		this.beerId = beerId;
 		this.quantity = quantity;
 		this.brewedDate = brewedDate;
 		this.occurredAt = occurredAt;
+		this.createdAt = recordedAt;
+		this.updatedAt = recordedAt;
 	}
 
 	public static FeedLine bottleAdded(UUID eventId, UUID userId, UUID beerId, int quantity,
-			@Nullable LocalDate brewedDate, Instant occurredAt) {
+			@Nullable LocalDate brewedDate, Instant occurredAt, Clock clock) {
 		Assert.notNull(eventId, "eventId must not be null");
 		Assert.notNull(userId, "userId must not be null");
 		Assert.notNull(beerId, "beerId must not be null");
 		Assert.isTrue(quantity > 0, "quantity must be positive");
 		Assert.notNull(occurredAt, "occurredAt must not be null");
-		return new FeedLine(eventId, userId, beerId, quantity, brewedDate, occurredAt);
+		return new FeedLine(eventId, userId, beerId, quantity, brewedDate, occurredAt, clock.instant());
 	}
 
 }

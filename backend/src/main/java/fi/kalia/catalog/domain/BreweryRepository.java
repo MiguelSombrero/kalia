@@ -44,11 +44,11 @@ public interface BreweryRepository extends JpaRepository<Brewery, UUID> {
 
 	// Do not change these expressions apart from brewery_folded_name_country_idx (V003).
 	@Query(value = """
-			SELECT id FROM catalog.brewery
+			SELECT * FROM catalog.brewery
 			WHERE catalog.fold_name(name) = catalog.fold_name(:name) AND country_code = :countryCode
 			AND moderation_status IN ('PENDING', 'APPROVED')""",
 			nativeQuery = true)
-	Optional<UUID> findIdBySameNameAndCountryCode(String name, String countryCode);
+	Optional<Brewery> findBySameNameAndCountryCode(String name, String countryCode);
 
 	@Query("""
 			SELECT DISTINCT b.countryCode FROM Brewery b

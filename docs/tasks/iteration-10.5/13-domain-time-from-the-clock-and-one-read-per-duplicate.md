@@ -1,6 +1,6 @@
 # Task 13: Domain timestamps come from the Clock, and a duplicate brewery is read once
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -52,15 +52,15 @@ the brewery once.
 
 ## Acceptance criteria
 
-- [ ] A test per entity — `Beer`, `Brewery`, `Profile`, `FeedLine` — creates
+- [x] A test per entity — `Beer`, `Brewery`, `Profile`, `FeedLine` — creates
       it under a fixed `Clock` and reads that instant back; each failed before
       the change
-- [ ] A test of the duplicate-brewery path counts one query for the brewery
+- [x] A test of the duplicate-brewery path counts one query for the brewery
       (Hibernate statistics or a repository spy), and failed before
-- [ ] `EventPublicationResubmission`'s cutoff moves with a fixed `Clock` — test
-- [ ] `grep` finds no `Instant.now()` or VM-sourced timestamp annotation left in
+- [x] `EventPublicationResubmission`'s cutoff moves with a fixed `Clock` — test
+- [x] `grep` finds no `Instant.now()` or VM-sourced timestamp annotation left in
       `backend/src/main/java`, and §3 says so
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

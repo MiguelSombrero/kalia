@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,13 +27,13 @@ class ProfileServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new ProfileService(profiles);
+		service = new ProfileService(profiles, Clock.systemUTC());
 	}
 
 	@Test
 	void currentProfileReturnsTheCallersOwnRowWhenItAppearsAfterTheLookupMissed() {
 		UUID userId = UUID.randomUUID();
-		Profile committedMeanwhile = Profile.create(userId, "alice");
+		Profile committedMeanwhile = Profile.create(userId, "alice", Clock.systemUTC());
 		given(profiles.findById(userId)).willReturn(Optional.empty());
 		given(profiles.findByUsernameIgnoringCase("Alice")).willReturn(Optional.of(committedMeanwhile));
 
@@ -43,8 +44,8 @@ class ProfileServiceTest {
 	@Test
 	void publicCellarOwnerIdResolvesTheOwnerOfAPublicCellar() {
 		UUID userId = UUID.randomUUID();
-		Profile profile = Profile.create(userId, "alice");
-		profile.changeCellarVisibility(true);
+		Profile profile = Profile.create(userId, "alice", Clock.systemUTC());
+		profile.changeCellarVisibility(true, Clock.systemUTC());
 		given(profiles.findByUsernameIgnoringCase("alice")).willReturn(Optional.of(profile));
 
 		assertThat(service.publicCellarOwnerId("alice")).contains(userId);
@@ -53,7 +54,7 @@ class ProfileServiceTest {
 	// A private cellar and an unknown username must be one answer (ADR-0050).
 	@Test
 	void publicCellarOwnerIdIsEmptyForAPrivateCellarOrAnUnknownUsername() {
-		Profile privateProfile = Profile.create(UUID.randomUUID(), "alice");
+		Profile privateProfile = Profile.create(UUID.randomUUID(), "alice", Clock.systemUTC());
 		given(profiles.findByUsernameIgnoringCase("alice")).willReturn(Optional.of(privateProfile));
 		given(profiles.findByUsernameIgnoringCase("nobody")).willReturn(Optional.empty());
 

@@ -90,7 +90,7 @@ class CellarServiceIT {
 	@BeforeEach
 	void setUp() {
 		catalog = new CatalogApi(new CatalogService(beers, breweries));
-		service = new CellarService(entries, catalog, new ProfileApi(new ProfileService(profiles)), CLOCK);
+		service = new CellarService(entries, catalog, new ProfileApi(new ProfileService(profiles, CLOCK)), CLOCK);
 		beerId = beers.findAll().stream().findFirst().map(Beer::getId).orElseThrow();
 	}
 
@@ -247,7 +247,7 @@ class CellarServiceIT {
 		UUID owner = UUID.randomUUID();
 		service.addBottles(owner, beerId, 1, ContainerType.BOTTLE, null, null);
 		String privateName = "private-" + owner;
-		profiles.saveAndFlush(Profile.create(owner, privateName));
+		profiles.saveAndFlush(Profile.create(owner, privateName, CLOCK));
 		String publicName = publicUsernameOf(UUID.randomUUID());
 
 		assertThatThrownBy(() -> service.readPublicCellar(privateName, FIRST_PAGE))
@@ -460,8 +460,8 @@ class CellarServiceIT {
 	}
 
 	private String publicUsernameOf(UUID owner) {
-		Profile profile = Profile.create(owner, "public-" + owner);
-		profile.changeCellarVisibility(true);
+		Profile profile = Profile.create(owner, "public-" + owner, CLOCK);
+		profile.changeCellarVisibility(true, CLOCK);
 		return profiles.saveAndFlush(profile).getUsername();
 	}
 

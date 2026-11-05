@@ -7,6 +7,7 @@ import fi.kalia.catalog.domain.BreweryRepository;
 import fi.kalia.catalog.domain.Country;
 import fi.kalia.catalog.domain.ModerationStatus;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +23,8 @@ public class ContributionService {
 	private final BeerRepository beers;
 
 	private final BreweryRepository breweries;
+
+	private final Clock clock;
 
 	/** Most entries one contributor may have waiting for review at once (ADR-0091). */
 	public static final int MAX_PENDING_ENTRIES = 20;
@@ -45,7 +48,7 @@ public class ContributionService {
 				brewery = breweries.saveAndFlush(newBrewery);
 			}
 		}
-		return beers.saveAndFlush(Beer.addedBy(contributorId, brewery, name, knownStyle, abv));
+		return beers.saveAndFlush(Beer.addedBy(contributorId, brewery, name, knownStyle, abv, clock));
 	}
 
 	private Brewery existingBrewery(UUID contributorId, UUID breweryId, String beerName) {
@@ -64,11 +67,10 @@ public class ContributionService {
 		if (!Country.isListed(added.countryCode())) {
 			throw new UnknownCountryException();
 		}
-		breweries.findIdBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existingId -> {
-			Brewery existing = breweries.findById(existingId).orElseThrow();
-			throw new DuplicateBreweryException(existingId, existing.getName(), existing.getCountryCode());
+		breweries.findBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existing -> {
+			throw new DuplicateBreweryException(existing.getId(), existing.getName(), existing.getCountryCode());
 		});
-		return Brewery.addedBy(contributorId, added.name(), added.countryCode(), added.city());
+		return Brewery.addedBy(contributorId, added.name(), added.countryCode(), added.city(), clock);
 	}
 
 	private void requireRoomForPending(UUID contributorId, int adding) {

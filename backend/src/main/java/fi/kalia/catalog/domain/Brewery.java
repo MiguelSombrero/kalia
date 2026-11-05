@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -39,24 +40,26 @@ public class Brewery {
 
 	private Instant createdAt;
 
-	private Brewery(String name, String countryCode, @Nullable String city) {
+	private Brewery(String name, String countryCode, @Nullable String city, Instant createdAt) {
 		this.name = name;
 		this.nameSortKey = BrewerySortKey.of(name);
 		this.countryCode = countryCode;
 		this.city = city;
 		this.moderationStatus = ModerationStatus.APPROVED;
-		this.createdAt = Instant.now();
+		this.createdAt = createdAt;
 	}
 
-	public static Brewery create(String name, String countryCode, @Nullable String city) {
+	public static Brewery create(String name, String countryCode, @Nullable String city,
+			Clock clock) {
 		Assert.hasText(name, "name must not be blank");
 		Assert.isTrue(Country.isListed(countryCode), "countryCode must be a listed ISO 3166-1 code");
-		return new Brewery(name, countryCode, city);
+		return new Brewery(name, countryCode, city, clock.instant());
 	}
 
-	public static Brewery addedBy(UUID contributorId, String name, String countryCode, @Nullable String city) {
+	public static Brewery addedBy(UUID contributorId, String name, String countryCode, @Nullable String city,
+			Clock clock) {
 		Assert.notNull(contributorId, "contributorId must not be null");
-		Brewery brewery = create(name.strip(), countryCode, city == null || city.isBlank() ? null : city.strip());
+		Brewery brewery = create(name.strip(), countryCode, city == null || city.isBlank() ? null : city.strip(), clock);
 		brewery.contributorId = contributorId;
 		brewery.moderationStatus = ModerationStatus.PENDING;
 		return brewery;

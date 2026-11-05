@@ -15,6 +15,7 @@ import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -404,9 +405,9 @@ class FeedControllerIT {
 
 	private UUID saveProfile(String username, boolean cellarPublic) {
 		UUID userId = UUID.randomUUID();
-		Profile profile = Profile.create(userId, username);
+		Profile profile = Profile.create(userId, username, Clock.systemUTC());
 		if (cellarPublic) {
-			profile.changeCellarVisibility(true);
+			profile.changeCellarVisibility(true, Clock.systemUTC());
 		}
 		profiles.save(profile);
 		return userId;
@@ -414,12 +415,12 @@ class FeedControllerIT {
 
 	private void flipVisibility(UUID userId, boolean cellarPublic) {
 		Profile profile = profiles.findById(userId).orElseThrow();
-		profile.changeCellarVisibility(cellarPublic);
+		profile.changeCellarVisibility(cellarPublic, Clock.systemUTC());
 		profiles.save(profile);
 	}
 
 	private FeedLine recordLine(UUID userId, UUID beerId, int quantity, Instant occurredAt) {
-		return lines.save(FeedLine.bottleAdded(UUID.randomUUID(), userId, beerId, quantity, null, occurredAt));
+		return lines.save(FeedLine.bottleAdded(UUID.randomUUID(), userId, beerId, quantity, null, occurredAt, Clock.systemUTC()));
 	}
 
 	private List<FeedLine> recordPrivateRun(String username, int count) {
