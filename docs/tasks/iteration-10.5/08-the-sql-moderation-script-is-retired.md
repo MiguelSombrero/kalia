@@ -81,8 +81,11 @@ and this file is checked against it.
 - [ ] The add dialog's cap message speaks of pending suggestions, in both
       locales — component test
 - [ ] An integration test removes an approved beer through the admin API with
-      the effects ADR-0091 states, publishing the event task 02 named, and a
-      non-admin's removal is refused
+      the effects ADR-0091 states, leaving its brewery as it was, writing a
+      review record and publishing exactly one `BeerRemoved`, and a non-admin's
+      removal is refused
+- [ ] Removing a beer that is not `APPROVED` (pending, rejected or already
+      removed) answers `409` `problem+json` and publishes nothing — test
 - [ ] ADR-0091, `backend/README.md` and `docs/architecture.md` describe the
       admin path instead of the script
 - [ ] `make verify-fast` is green

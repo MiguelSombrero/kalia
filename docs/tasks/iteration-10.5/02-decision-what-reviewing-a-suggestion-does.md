@@ -1,6 +1,6 @@
 # Task 02: Decide what a suggestion is and what reviewing one does
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2, DW-3, DW-4
 
@@ -141,18 +141,18 @@ an edit may change, the events and what they carry, and what replaces
 
 ## Acceptance criteria
 
-- [ ] An ADR records the term, where review lives and how it changes the
+- [x] An ADR records the term, where review lives and how it changes the
       catalog, what a suggestion is in the data, each outcome's effect on beer
       and brewery, the edit rules, the events and their payload, removal, the
       pending cap, and the rejected alternatives, and passes
       `node scripts/check-adrs.mjs`
-- [ ] ADR-0091 is amended where the decision changes what it states — the
+- [x] ADR-0091 is amended where the decision changes what it states — the
       operator command, the cap's count, the revisit trigger — rather than
       contradicted ([ADR-0019](../../adr/0019-adr-format-and-conventions.md))
-- [ ] The glossary entry for the chosen term, and for the events, is drafted
+- [x] The glossary entry for the chosen term, and for the events, is drafted
       in the ADR's PR so [task 05](05-an-admin-reads-the-review-queue.md)
       inherits one vocabulary
-- [ ] Each test the decision implies — one event per suggestion with or
+- [x] Each test the decision implies — one event per suggestion with or
       without a new brewery, an edited name read back by the contributor, the
       shared-brewery case, a concurrent second decision — is named in the
       acceptance criteria of tasks

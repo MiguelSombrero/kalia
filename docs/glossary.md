@@ -62,6 +62,20 @@ catalog data a signed-out visitor may read; the contributor is never served.
 | `BeerRepository` | Persistence for the `Beer` entity: paged specification search and by-id lookup, both eager-loading `Brewery`; the catalog's distinct styles; and the same-name duplicate check within a brewery. | [ADR-0007](adr/0007-backend-package-structure.md) |
 | `BreweryRepository` | Persistence for the `Brewery` entity, including the sort-key-ordered page of breweries and the name search over it, the same-name-and-country duplicate check and the codes of the countries breweries are in. | [ADR-0007](adr/0007-backend-package-structure.md) |
 
+### Terms decided in iteration 10.5, built by its tasks
+
+Not yet types, so not in the table above, which `scripts/check-glossary.mjs`
+holds to the code. Each moves into the table in the task that builds it.
+
+| Term | Meaning in this module | Why |
+|---|---|---|
+| **suggestion** (*ehdotus*) | What a user adds: a `PENDING` beer together with the brewery added with it, when that brewery is `PENDING` too. Not a stored row — the beer's id is the suggestion's id, and the review queue is a query over pending beers. A **contributor** makes one; an **admin** reviews it. Never "entry" (that is `cellar.Entry`) or "submission". | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
+| **review** | The admin act on a suggestion with three outcomes: *approve as it is*, *reject* with a reason, or *edit and approve*. Removing an already-approved beer is a decision too, but it is not a review: no suggestion is waiting. | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
+| **review record** | The row written when a suggestion is decided (or an approved beer removed): who, when, the outcome, the reason code, and the values as suggested when it was edited. Not the queue, which holds only what is undecided. | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
+| **reason code** | One of a fixed list on a rejection — already in the catalog, not a real beer, inappropriate, incorrect details. Stored as a code, shown in the reader's language. | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
+| `SuggestionReviewed` | The one event per decision on a suggestion, whether or not its brewery was new. Names the suggestion rather than the module's root: `Beer` registers it. Carries the outcome, the beer's name as decided, whether it was edited, the name as suggested and the reason code. | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
+| `BeerRemoved` | The event published when an admin removes an approved beer. Nothing consumes it and it notifies nobody. | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) |
+
 ## identity
 
 The security filter chain, bearer-token validation, and resolving the current
@@ -171,6 +185,7 @@ and they drift from the Java names that produced them.
 | `/breweries/countries` | The countries the catalog has breweries in, which the catalog's country filter offers. A public read. |
 | `/app-config` | What the server tells the mobile app: the minimum build of each platform that may run and the maintenance flag. Public, parameterless and never cached. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
+| `/admin/suggestions` | The admin's view of what users have added: the suggestions waiting for review, and the decisions on them. Every path under `/admin` is for an admin alone ([iteration 10.5 task 01](tasks/iteration-10.5/01-decision-who-is-an-admin.md)); the decisions are [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)'s. Built by iteration 10.5. |
 
 ### JSON field names
 

@@ -14,6 +14,11 @@
   as `PENDING` answers an anonymous `409` that offers no beer to open, and the
   add-beer flow says a beer waits for review and when the cap is reached
   (iteration 10 task 16); see the "Pending elsewhere" and cap bullets of Decision
+- **Amended:** 2026-11-05 by [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) — a contributed beer and the brewery added
+  with it are one *suggestion* that an admin approves, rejects or edits through
+  an admin API, one event per decision; the operator command, the cap's count
+  (20 suggestions, not entries) and the revisit trigger are replaced, as
+  iteration 10.5 builds them
 
 ## Context
 
@@ -59,7 +64,9 @@ ever deleted.
   a client shows unlinked and with a note, because the beer's details page
   answers `404`. A client does not infer this from a failed details lookup.
 - **A contributor may have 20 entries waiting** (`PENDING` beers plus
-  breweries; a beer with a new brewery is two). An add past that answers `429`
+  breweries; a beer with a new brewery is two; counted as 20 suggestions, a
+  beer with a new brewery one, once iteration 10.5 task 08 lands — see
+  ADR-0102). An add past that answers `429`
   `problem+json` until some are approved or rejected. Two adds by one
   contributor are serialised by a transaction-scoped advisory lock, so the
   count cannot be read by both. A client says so in its own words rather than
@@ -72,7 +79,9 @@ ever deleted.
   id. A client tells the shapes apart by which of `existingBeerId` and
   `existingBreweryId` the body carries. A new brewery whose name another
   contributor holds as `PENDING` still discloses that brewery.
-- **The operator command** is `make moderate`, which runs
+- **The operator command** (retired by iteration 10.5 task 08 for the admin
+  API of [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md))
+  is `make moderate`, which runs
   `scripts/moderate-contributor.sql` against the stack's PostgreSQL. It acts on
   everything one contributor added, named by username or id: *approve* turns
   `PENDING` into `APPROVED`, *reject* turns `PENDING` into `REJECTED`, *remove*
@@ -148,4 +157,5 @@ ever deleted.
   edge ([iteration 8.5 task 10](../tasks/iteration-8.5/10-unauthenticated-edges-throttled.md)).
 - **Revisit trigger:** a second operator, or a contributor-visible outcome
   (a notification that an entry was approved or rejected), either of which
-  asks for the roles and page the backlog already names.
+  asks for the roles and page the backlog already names. *Met by iteration
+  10.5:* an admin role and page, and a notification, replace the command.
