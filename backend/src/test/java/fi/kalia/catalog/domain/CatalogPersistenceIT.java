@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -50,9 +51,9 @@ class CatalogPersistenceIT {
 
 	@Test
 	void persistsAndReloadsABeer() {
-		Brewery brewery = breweries.save(Brewery.create("Test Brewery", "FI", "Helsinki"));
+		Brewery brewery = breweries.save(Brewery.create("Test Brewery", "FI", "Helsinki", Clock.systemUTC()));
 		Beer saved = beers.save(Beer.create(
-				brewery, "Test IPA", "IPA", new BigDecimal("6.5")));
+				brewery, "Test IPA", "IPA", new BigDecimal("6.5"), Clock.systemUTC()));
 
 		Beer reloaded = beers.findById(saved.getId()).orElseThrow();
 
@@ -64,8 +65,8 @@ class CatalogPersistenceIT {
 	// column default V008 sets, which nothing in Java would notice changing.
 	@Test
 	void aRowTheAppInsertsIsMarkedUserAddedWithNoQid() {
-		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null));
-		Beer beer = beers.saveAndFlush(Beer.create(brewery, "Test IPA", "IPA", new BigDecimal("6.5")));
+		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null, Clock.systemUTC()));
+		Beer beer = beers.saveAndFlush(Beer.create(brewery, "Test IPA", "IPA", new BigDecimal("6.5"), Clock.systemUTC()));
 
 		assertThat(provenance("catalog.brewery", brewery.getId()))
 				.containsEntry("source", "USER").containsEntry("wikidata_qid", null);
@@ -77,11 +78,11 @@ class CatalogPersistenceIT {
 	// concurrent inserts: this saves straight through the repository.
 	@Test
 	void theDatabaseRefusesASecondBeerOfTheSameFoldedNameAtOneBrewery() {
-		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null));
-		beers.saveAndFlush(Beer.create(brewery, "Test I.P.A.", "IPA", new BigDecimal("6.5")));
+		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null, Clock.systemUTC()));
+		beers.saveAndFlush(Beer.create(brewery, "Test I.P.A.", "IPA", new BigDecimal("6.5"), Clock.systemUTC()));
 
 		assertThatThrownBy(() -> beers.saveAndFlush(
-				Beer.create(brewery, " test ipa", "IPA", new BigDecimal("6.5"))))
+				Beer.create(brewery, " test ipa", "IPA", new BigDecimal("6.5"), Clock.systemUTC())))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 

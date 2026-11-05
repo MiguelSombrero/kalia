@@ -23,7 +23,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | ID | Task | Status |
 |---|---|---|
 | [14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md) | The committed spec lists every response, and its own checks hold anywhere | done |
-| [13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md) | Domain timestamps come from the Clock, and a duplicate brewery is read once | refined |
+| [13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md) | Domain timestamps come from the Clock, and a duplicate brewery is read once | done |
 | [01](iteration-10.5/01-decision-who-is-an-admin.md) | Decide who is an admin, and how every tier knows it | done |
 | [02](iteration-10.5/02-decision-what-reviewing-a-suggestion-does.md) | Decide what a suggestion is and what reviewing one does | done |
 | [03](iteration-10.5/03-decision-how-a-contributor-is-notified.md) | Decide how a contributor is told what became of a suggestion | done |

@@ -6,6 +6,7 @@ import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.profile.application.ProfileService;
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,15 +30,15 @@ class ProfileModuleApiIT {
 
 	@BeforeEach
 	void setUp() {
-		api = new ProfileApi(new ProfileService(profiles));
+		api = new ProfileApi(new ProfileService(profiles, Clock.systemUTC()));
 	}
 
 	@Test
 	void resolvesUsernamesForEveryPubliclyVisibleCellarInOneBatch() {
 		UUID publicUserId = UUID.randomUUID();
 		UUID privateUserId = UUID.randomUUID();
-		profiles.save(makePublic(Profile.create(publicUserId, "alice")));
-		profiles.save(Profile.create(privateUserId, "bob"));
+		profiles.save(makePublic(Profile.create(publicUserId, "alice", Clock.systemUTC())));
+		profiles.save(Profile.create(privateUserId, "bob", Clock.systemUTC()));
 
 		Map<UUID, String> usernames = api.publicUsernames(List.of(publicUserId, privateUserId));
 
@@ -51,7 +52,7 @@ class ProfileModuleApiIT {
 	void aMissingProfileRowAndAPrivateCellarAreIndistinguishable() {
 		UUID privateUserId = UUID.randomUUID();
 		UUID unknownUserId = UUID.randomUUID();
-		profiles.save(Profile.create(privateUserId, "bob"));
+		profiles.save(Profile.create(privateUserId, "bob", Clock.systemUTC()));
 
 		Map<UUID, String> usernames = api.publicUsernames(List.of(privateUserId, unknownUserId));
 
@@ -61,7 +62,7 @@ class ProfileModuleApiIT {
 	@Test
 	void aLookupOverTheIdCapResolvesAUsernameBeyondTheFirstChunk() {
 		UUID publicUserId = UUID.randomUUID();
-		profiles.save(makePublic(Profile.create(publicUserId, "carol")));
+		profiles.save(makePublic(Profile.create(publicUserId, "carol", Clock.systemUTC())));
 		List<UUID> ids = Stream.concat(Stream.generate(UUID::randomUUID).limit(ProfileApi.MAX_BATCH_IDS),
 				Stream.of(publicUserId)).toList();
 
@@ -71,7 +72,7 @@ class ProfileModuleApiIT {
 	}
 
 	private static Profile makePublic(Profile profile) {
-		profile.changeCellarVisibility(true);
+		profile.changeCellarVisibility(true, Clock.systemUTC());
 		return profile;
 	}
 

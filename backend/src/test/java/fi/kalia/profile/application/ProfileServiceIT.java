@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ class ProfileServiceIT {
 
 	@BeforeEach
 	void setUp() {
-		service = new ProfileService(profiles);
+		service = new ProfileService(profiles, Clock.systemUTC());
 	}
 
 	@Test
@@ -65,17 +66,17 @@ class ProfileServiceIT {
 
 	@Test
 	void aSecondProfileWithAnExistingUsernameIsRefusedByTheDatabase() {
-		profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice"));
+		profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice", Clock.systemUTC()));
 
-		assertThatThrownBy(() -> profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice")))
+		assertThatThrownBy(() -> profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice", Clock.systemUTC())))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test
 	void aUsernameDifferingOnlyInCaseIsRefusedByTheDatabase() {
-		profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice"));
+		profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "alice", Clock.systemUTC()));
 
-		assertThatThrownBy(() -> profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "Alice")))
+		assertThatThrownBy(() -> profiles.saveAndFlush(Profile.create(UUID.randomUUID(), "Alice", Clock.systemUTC())))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
@@ -84,7 +85,7 @@ class ProfileServiceIT {
 	@Test
 	void aUsernameWhoseAccountNoLongerExistsIsNotGivenToANewAccount() {
 		UUID departedId = UUID.randomUUID();
-		profiles.saveAndFlush(makePublic(Profile.create(departedId, "alice")));
+		profiles.saveAndFlush(makePublic(Profile.create(departedId, "alice", Clock.systemUTC())));
 		UUID newcomerId = UUID.randomUUID();
 
 		assertThatThrownBy(() -> service.currentProfile(newcomerId, "alice"))
@@ -100,13 +101,13 @@ class ProfileServiceIT {
 	// username, which the frontend's owner check compares to the stored one.
 	@Test
 	void publicCellarOwnerIdMatchesOnlyTheExactSpelling() {
-		profiles.saveAndFlush(makePublic(Profile.create(UUID.randomUUID(), "alice")));
+		profiles.saveAndFlush(makePublic(Profile.create(UUID.randomUUID(), "alice", Clock.systemUTC())));
 
 		assertThat(service.publicCellarOwnerId("Alice")).isEmpty();
 	}
 
 	private static Profile makePublic(Profile profile) {
-		profile.changeCellarVisibility(true);
+		profile.changeCellarVisibility(true, Clock.systemUTC());
 		return profile;
 	}
 

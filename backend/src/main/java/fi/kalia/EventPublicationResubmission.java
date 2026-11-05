@@ -2,6 +2,7 @@ package fi.kalia;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -32,6 +33,8 @@ class EventPublicationResubmission implements SmartInitializingSingleton {
 
 	private final Counter exhausted;
 
+	private final Clock clock;
+
 	private final Duration minAge;
 
 	private final int maxAttempts;
@@ -39,6 +42,7 @@ class EventPublicationResubmission implements SmartInitializingSingleton {
 	private final Set<UUID> reportedExhausted = ConcurrentHashMap.newKeySet();
 
 	EventPublicationResubmission(IncompleteEventPublications incomplete, JdbcTemplate jdbc, MeterRegistry meters,
+			Clock clock,
 			@Value("${kalia.events.resubmission.min-age}") Duration minAge,
 			@Value("${kalia.events.resubmission.max-attempts}") int maxAttempts) {
 		Assert.isTrue(!minAge.isNegative(), "kalia.events.resubmission.min-age must not be negative");
@@ -48,6 +52,7 @@ class EventPublicationResubmission implements SmartInitializingSingleton {
 		// Prometheus omits a counter until its first increment; register both now.
 		this.retries = meters.counter("kalia.events.publication.retries");
 		this.exhausted = meters.counter("kalia.events.publication.exhausted");
+		this.clock = clock;
 		this.minAge = minAge;
 		this.maxAttempts = maxAttempts;
 	}
@@ -63,7 +68,7 @@ class EventPublicationResubmission implements SmartInitializingSingleton {
 	@Scheduled(fixedDelayString = "${kalia.events.resubmission.interval}",
 			initialDelayString = "${kalia.events.resubmission.interval}")
 	void resubmitStale() {
-		Instant cutoff = Instant.now().minus(minAge);
+		Instant cutoff = clock.instant().minus(minAge);
 		incomplete.resubmitIncompletePublications(
 				publication -> lastAttemptStarted(publication).isBefore(cutoff) && hasAttemptsLeft(publication));
 	}

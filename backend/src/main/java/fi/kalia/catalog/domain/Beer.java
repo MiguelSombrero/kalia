@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -46,30 +47,30 @@ public class Beer {
 	private Instant createdAt;
 
 	private Beer(Brewery brewery, String name, String style, BigDecimal abv,
-			@Nullable UUID contributorId) {
+			@Nullable UUID contributorId, Instant createdAt) {
 		this.brewery = brewery;
 		this.name = name;
 		this.style = style;
 		this.abv = abv;
 		this.contributorId = contributorId;
 		this.moderationStatus = ModerationStatus.APPROVED;
-		this.createdAt = Instant.now();
+		this.createdAt = createdAt;
 	}
 
 	public static Beer create(Brewery brewery, String name, String style,
-			BigDecimal abv) {
+			BigDecimal abv, Clock clock) {
 		Assert.notNull(brewery, "brewery must not be null");
 		Assert.hasText(name, "name must not be blank");
 		Assert.hasText(style, "style must not be blank");
 		Assert.notNull(abv, "abv must not be null");
 		Assert.isTrue(abv.signum() >= 0, "abv must not be negative");
-		return new Beer(brewery, name, style, abv, null);
+		return new Beer(brewery, name, style, abv, null, clock.instant());
 	}
 
 	public static Beer addedBy(UUID contributorId, Brewery brewery, String name, String style,
-			BigDecimal abv) {
+			BigDecimal abv, Clock clock) {
 		Assert.notNull(contributorId, "contributorId must not be null");
-		Beer beer = create(brewery, name.strip(), style, abv);
+		Beer beer = create(brewery, name.strip(), style, abv, clock);
 		beer.contributorId = contributorId;
 		beer.moderationStatus = ModerationStatus.PENDING;
 		return beer;

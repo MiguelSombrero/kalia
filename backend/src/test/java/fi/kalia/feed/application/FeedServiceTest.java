@@ -400,7 +400,7 @@ class FeedServiceTest {
 	}
 
 	private static FeedLine line() {
-		return FeedLine.bottleAdded(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, null, NOW);
+		return FeedLine.bottleAdded(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 1, null, NOW, Clock.systemUTC());
 	}
 
 }

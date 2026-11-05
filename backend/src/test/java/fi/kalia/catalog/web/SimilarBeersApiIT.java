@@ -9,6 +9,7 @@ import fi.kalia.catalog.domain.BeerRepository;
 import fi.kalia.catalog.domain.Brewery;
 import fi.kalia.catalog.domain.BreweryRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -46,11 +47,11 @@ class SimilarBeersApiIT {
 
 	@BeforeEach
 	void setUp() {
-		brewery = breweries.save(Brewery.create("Similar Beers Fixture Brewery", "FI", null));
+		brewery = breweries.save(Brewery.create("Similar Beers Fixture Brewery", "FI", null, Clock.systemUTC()));
 		List<Beer> catalog = new ArrayList<>(IntStream.rangeClosed(1, FILLER_BEERS)
-				.mapToObj(n -> Beer.create(brewery, "Filler %03d".formatted(n), "IPA", new BigDecimal("5.0")))
+				.mapToObj(n -> Beer.create(brewery, "Filler %03d".formatted(n), "IPA", new BigDecimal("5.0"), Clock.systemUTC()))
 				.toList());
-		catalog.add(Beer.create(brewery, LAST_BY_NAME, "IPA", new BigDecimal("5.0")));
+		catalog.add(Beer.create(brewery, LAST_BY_NAME, "IPA", new BigDecimal("5.0"), Clock.systemUTC()));
 		beers.saveAll(catalog);
 	}
 

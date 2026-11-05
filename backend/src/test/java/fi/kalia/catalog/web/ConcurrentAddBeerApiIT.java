@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.domain.BeerRepository;
+import fi.kalia.catalog.domain.Brewery;
 import fi.kalia.catalog.domain.BreweryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -126,15 +127,15 @@ class ConcurrentAddBeerApiIT {
 				bothSawNoBrewery.await(5, TimeUnit.SECONDS);
 			}
 			return entityManager.createNativeQuery("""
-					SELECT id FROM catalog.brewery
+					SELECT * FROM catalog.brewery
 					WHERE catalog.fold_name(name) = catalog.fold_name(:name) AND country_code = :countryCode
 					AND moderation_status IN ('PENDING', 'APPROVED')""",
-					UUID.class)
+					Brewery.class)
 					.setParameter("name", invocation.getArgument(0))
 					.setParameter("countryCode", invocation.getArgument(1))
 					.getResultStream()
 					.findFirst();
-		}).when(breweries).findIdBySameNameAndCountryCode(any(), any());
+		}).when(breweries).findBySameNameAndCountryCode(any(), any());
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		try {

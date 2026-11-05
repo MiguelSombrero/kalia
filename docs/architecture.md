@@ -176,9 +176,13 @@ base package itself holds only application-wide wiring that belongs to no module
 entry point, its required-configuration check, event publication
 resubmission, and `ApplicationConfig` — method-level resilience
 (`@EnableResilientMethods`, which every module's `@Retryable` relies on) and
-the application's one `Clock`, in UTC, which the cellar's timestamps and
-`BottleAdded`'s `occurredAt` and the feed's 30-day window read rather than the
-system time. Inside each
+the application's one `Clock`, in UTC, which every domain timestamp reads
+rather than the system time: the catalog's, the profile's, the cellar's and the
+feed's, `BottleAdded`'s `occurredAt`, the feed's 30-day window and event
+resubmission's cutoff. A domain entity takes the `Clock` as an argument of its
+factory or behaviour method and never injects it, and no `Instant.now()` or
+Hibernate `@CreationTimestamp`/`@UpdateTimestamp` is left in
+`backend/src/main/java`. Inside each
 subdomain module, DDD-lite layers as direct subpackages — all
 Modulith-internal by default
 ([ADR-0007](adr/0007-backend-package-structure.md)): `domain` (rich JPA

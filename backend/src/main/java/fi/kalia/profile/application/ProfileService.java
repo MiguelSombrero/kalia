@@ -2,6 +2,7 @@ package fi.kalia.profile.application;
 
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.time.Clock;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileService {
 
 	private final ProfileRepository profiles;
+
+	private final Clock clock;
 
 	// Do not add a per-entry visibility flag: an id with no profile row and one
 	// whose cellar is private must stay indistinguishable, so both are simply
@@ -64,7 +67,7 @@ public class ProfileService {
 	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
 	public Profile changeCellarVisibility(UUID userId, String username, boolean cellarPublic) {
 		Profile profile = currentProfile(userId, username);
-		profile.changeCellarVisibility(cellarPublic);
+		profile.changeCellarVisibility(cellarPublic, clock);
 		return profile;
 	}
 
@@ -76,7 +79,7 @@ public class ProfileService {
 			}
 			throw new UsernameTakenException();
 		}
-		return profiles.save(Profile.create(userId, username));
+		return profiles.save(Profile.create(userId, username, clock));
 	}
 
 }

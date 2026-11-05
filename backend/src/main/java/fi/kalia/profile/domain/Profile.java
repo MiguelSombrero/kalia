@@ -6,14 +6,12 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SourceType;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.domain.Persistable;
 import org.springframework.util.Assert;
 
@@ -32,10 +30,8 @@ public class Profile implements Persistable<UUID> {
 
 	private boolean cellarPublic;
 
-	@CreationTimestamp(source = SourceType.VM)
 	private Instant createdAt;
 
-	@UpdateTimestamp(source = SourceType.VM)
 	private Instant updatedAt;
 
 	// A manually assigned id is never null, so Spring Data's default isNew()
@@ -45,20 +41,25 @@ public class Profile implements Persistable<UUID> {
 	@Transient
 	private boolean isNew = true;
 
-	private Profile(UUID id, String username) {
+	private Profile(UUID id, String username, Instant now) {
 		this.id = id;
 		this.username = username;
 		this.cellarPublic = false;
+		this.createdAt = now;
+		this.updatedAt = now;
 	}
 
-	public static Profile create(UUID id, String username) {
+	public static Profile create(UUID id, String username, Clock clock) {
 		Assert.notNull(id, "id must not be null");
 		Assert.hasText(username, "username must not be blank");
-		return new Profile(id, username);
+		return new Profile(id, username, clock.instant());
 	}
 
-	public void changeCellarVisibility(boolean cellarPublic) {
-		this.cellarPublic = cellarPublic;
+	public void changeCellarVisibility(boolean cellarPublic, Clock clock) {
+		if (this.cellarPublic != cellarPublic) {
+			this.cellarPublic = cellarPublic;
+			this.updatedAt = clock.instant();
+		}
 	}
 
 	@Override

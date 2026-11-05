@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.application.CatalogService;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,7 @@ class BreweryReadIT {
 	void punctuationAndAccentsOrderByCodePointAfterCaseFolding() {
 		List<String> added = List.of("Zqx Éclair", "Zqx d'Orval", "Zqx de Rochefort", "Zqx Põhjala", "Zqx Pohjola",
 				"Zqx Äpple", "Zqx _under", "Zqx 10 Barrels", "ZQX ZEBRA", "Zqx zebra works", "Zqx-Dash");
-		added.forEach(name -> breweries.save(Brewery.create(name, "FI", null)));
+		added.forEach(name -> breweries.save(Brewery.create(name, "FI", null, Clock.systemUTC())));
 		breweries.flush();
 
 		Page<Brewery> found = catalog.listBreweries("zqx", null, PageRequest.of(0, 100));
@@ -121,8 +122,8 @@ class BreweryReadIT {
 
 	@Test
 	void theSearchTakesLikeWildcardsLiterally() {
-		breweries.saveAndFlush(Brewery.create("Zw 100% Brewing", "FI", null));
-		breweries.saveAndFlush(Brewery.create("Zw 100x Brewing", "FI", null));
+		breweries.saveAndFlush(Brewery.create("Zw 100% Brewing", "FI", null, Clock.systemUTC()));
+		breweries.saveAndFlush(Brewery.create("Zw 100x Brewing", "FI", null, Clock.systemUTC()));
 
 		assertThat(catalog.listBreweries("100%", null, PageRequest.of(0, 20)).map(Brewery::getName))
 				.containsExactly("Zw 100% Brewing");

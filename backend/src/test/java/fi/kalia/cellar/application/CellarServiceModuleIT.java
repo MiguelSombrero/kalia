@@ -8,6 +8,7 @@ import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.cellar.domain.EntryRepository;
 import fi.kalia.profile.domain.Profile;
 import fi.kalia.profile.domain.ProfileRepository;
+import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,8 +55,8 @@ class CellarServiceModuleIT {
 	@Test
 	void readPublicCellarRunsReadOnly() {
 		UUID owner = UUID.randomUUID();
-		Profile profile = Profile.create(owner, "owner-" + owner);
-		profile.changeCellarVisibility(true);
+		Profile profile = Profile.create(owner, "owner-" + owner, Clock.systemUTC());
+		profile.changeCellarVisibility(true, Clock.systemUTC());
 		profiles.save(profile);
 
 		service.readPublicCellar(profile.getUsername(), PageRequest.of(0, 20));
