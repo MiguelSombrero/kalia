@@ -123,7 +123,8 @@ Key properties:
 - **One trace id per browser request, JSON logs and counters, no viewer**
   ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)):
   `proxy.ts` starts a W3C `traceparent`, the BFF forwards it on every backend
-  call, and both tiers log it in JSON lines. Counters are served by the
+  call, and both tiers log it in JSON lines. The mobile app starts one per
+  call it makes. Counters are served by the
   backend at `/actuator/prometheus` and the web app at `/api/metrics`, each
   behind a token. How to read them is in the two READMEs.
 
@@ -932,7 +933,21 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   fails transiently, so the catalog and the launch check still answer. A `401`
   makes the transport ask the store for one `refreshAccessToken`, shared by
   every call rejected with that token, and retry once; a second `401` is
-  returned as it is and the user stays signed in.
+  returned as it is and the user stays signed in. The transport starts a W3C
+  `traceparent` for every call and keeps one retry's the same, so the backend's
+  log line for a call carries the id the app's own error names
+  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+- **Errors on a device.** A release build has no red screen and Kalia runs no
+  crash service, so an error is left in the device's own log
+  ([ADR-0098](adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)).
+  `src/lib/log/deviceLog.ts` is the one path to it, a JSON line per failure with
+  no token, query string or user identity; a failed request logs its method,
+  path, status and trace id, and the `ApiError` it raises and the screen that
+  shows it name the same trace id. An uncaught JavaScript error shows
+  `features/crash-recovery`'s restart screen, with the build number, in place of
+  the app: the root layout's `ErrorBoundary` catches a render error, and a fatal
+  error thrown outside rendering, which no boundary sees, is caught by the
+  global handler a release build installs. A native crash is not covered.
 - **Sign-in.** `src/lib/auth/` holds the session
   ([task 14](tasks/iteration-9/14-sign-in-on-mobile.md),
   [ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)):
