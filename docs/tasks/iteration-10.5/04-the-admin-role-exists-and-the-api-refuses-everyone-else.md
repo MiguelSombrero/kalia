@@ -78,6 +78,12 @@ is accepted and this file is checked against it.
 - [ ] The development admin signs in on the running stack and its access token
       carries the role — checked by a script `make verify` runs, as
       `check-keycloak-signin.mjs` checks `testuser`
+- [ ] The script above also asserts the `roles` client scope is still a default
+      scope of `kalia-web` and `kalia-mobile`, since a client given an explicit
+      scope list drops the claim and locks every admin out without an error
+      ([ADR-0101](../../adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md))
+- [ ] [ADR-0028](../../adr/0028-resource-server-and-current-user.md) is amended
+      to say `/api/v1/admin/**` requires the role
 - [ ] `README.md` names the development admin account and says a deployment's
       first admin is not yet decided; `docs/architecture.md` §6 describes the
       role

@@ -80,8 +80,9 @@ Engineering work:
   Keycloak itself and calls the API directly. Today the API is bound to
   `127.0.0.1:8080`, and [iteration 10](iteration-10.md) reaches it from one
   phone without hosting, because hosting is parked as a cost (Mobile client
-  section below). How a deployment makes its first admin is decided with it
-  ([iteration 10.5 task 01](iteration-10.5/01-decision-who-is-an-admin.md)).
+  section below). How a deployment makes its first admin is decided with it,
+  including whether a grant made in Keycloak's console survives the next
+  reconcile ([ADR-0101](../adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - GDPR: account deletion, data export, and the consent story — becomes real
   the moment anyone but the author uses this. What deletion does to a beer the
   user added is already decided in

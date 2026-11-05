@@ -24,7 +24,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 |---|---|---|
 | [14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md) | The committed spec lists every response, and its own checks hold anywhere | refined |
 | [13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md) | Domain timestamps come from the Clock, and a duplicate brewery is read once | refined |
-| [01](iteration-10.5/01-decision-who-is-an-admin.md) | Decide who is an admin, and how every tier knows it | refined |
+| [01](iteration-10.5/01-decision-who-is-an-admin.md) | Decide who is an admin, and how every tier knows it | done |
 | [02](iteration-10.5/02-decision-what-reviewing-a-suggestion-does.md) | Decide what a suggestion is and what reviewing one does | refined |
 | [03](iteration-10.5/03-decision-how-a-contributor-is-notified.md) | Decide how a contributor is told what became of a suggestion | refined |
 | [15](iteration-10.5/15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md) | Decide what deleting an account does to what Kalia keeps forever | refined |
