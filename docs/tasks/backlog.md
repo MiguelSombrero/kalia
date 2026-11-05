@@ -81,9 +81,10 @@ Engineering work:
 - Deployment target + IaC. **A prerequisite for the mobile client reaching
   anyone but its developer**, not merely adjacent to it: both the Spring API
   and Keycloak become internet-facing, since a phone runs the OIDC flow against
-  Keycloak itself and calls the API directly. Today the API is bound to
-  `127.0.0.1:8080`, and [iteration 10](iteration-10.md) reaches it from one
-  phone without hosting, because hosting is parked as a cost (Mobile client
+  Keycloak itself and calls the API directly. Today the API is reachable on the
+  Mac's loopback only, through the edge's `BACKEND_PORT`, and
+  [iteration 10](iteration-10.md) reaches it from one phone without hosting,
+  because hosting is parked as a cost (Mobile client
   section below). How a deployment makes its first admin is decided with it,
   including whether a grant made in Keycloak's console survives the next
   reconcile ([ADR-0101](../adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
@@ -91,8 +92,9 @@ Engineering work:
   the moment anyone but the author uses this. What deletion does to a beer the
   user added is already decided in
   [iteration 8 task 02](iteration-8/02-add-beer-api.md)
-- Search engine — PostgreSQL full-text is fine at this size; OpenSearch only if
-  faceted search outgrows it
+- Search engine — PostgreSQL substring matching on a trigram index is fine at
+  this size ([ADR-0044](../adr/0044-catalog-search-indexes.md)); OpenSearch
+  only if faceted search outgrows it
 
 ## Mobile client
 
@@ -250,8 +252,10 @@ Each is ADR-shaped and none is decided:
    feed. [Iteration 7](iteration-7.md) builds a global one, so "following other
    users" above becomes a prerequisite rather than a nice extra.
 8. **A mobile testing strategy.** Playwright cannot drive a native app.
-9. **Public API exposure** — TLS, rate limiting, and an anonymous catalog that
-   will be scraped.
+9. **Public API exposure** — TLS, and an anonymous catalog that will be
+   scraped. The edge already throttles by client address
+   ([ADR-0090](../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
+   so rate limiting is no longer open.
 
 ### Must exist in the app's first release, or never
 

@@ -71,7 +71,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [8 — Catalog beyond seed data](tasks/iteration-8.md) | Users add the beers they cannot find | ✅ Done |
 | [8.5 — Quality sprint before mobile](tasks/iteration-8.5.md) | The API mobile inherits is complete and pruned, and no known MUST or unbounded cost remains | ✅ Done |
 | [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ✅ Done |
-| [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ⬜ Todo |
+| [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ✅ Done |
 | [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ⬜ Todo |
 | [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ⬜ Todo |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
@@ -120,10 +120,11 @@ meets, so they have no entry; the table above says what they were for.
   that signs in through Keycloak and out again, lists the catalog from
   `/api/v1`, and blocks itself behind an "update required" screen when the
   server's minimum build exceeds its own *(iteration 9)*
-- **The app on a real phone** *(iteration 10, in progress)*: Kalia has its own
+- **The app on a real phone** *(iteration 10)*: Kalia has its own
   name, icon and splash screen; it installs on the product owner's iPhone with
   a free Apple ID and signs in and browses against the stack on the Mac; a
   development build and a release build (bundled JavaScript, no dev menu) run
   on both platforms; an error on the phone leaves a screen and a trace id to
   read; the app survives a token it cannot refresh; and adding a beer says
-  what happens to it and never dead-ends
+  what happens to it and never dead-ends. The seven-day re-sign is written
+  down but not yet observed, and is tracked in the backlog

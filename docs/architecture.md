@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-10-31. This document describes **what is built**, plus the
+*Last updated: 2026-11-05. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -24,8 +24,8 @@ clarity, testability, and iterative delivery** over premature scale.
 What each iteration built is listed once, in
 [docs/roadmap.md](roadmap.md#what-each-iteration-built).
 
-No iteration is in progress. The next is [iteration 10](tasks/iteration-10.md),
-which puts the app on the product owner's own iPhone.
+No iteration is in progress. The next is [iteration 10.5](tasks/iteration-10.5.md),
+in which an admin reviews what users add in the web app.
 
 ### Non-functional requirements
 
@@ -167,11 +167,12 @@ goes through the system browser to Keycloak
 ## 3. Backend modules
 
 Base package `fi.kalia`, one Spring Modulith module per subdomain — with
-one sanctioned exception: `fi.kalia.web` holds shared, module-neutral
-exception-handling advice and the error types it answers with, with no
-subdomain of its own, which every module may depend on
-([ADR-0014](adr/0014-shared-exception-handling.md)). The base package
-itself holds only application-wide wiring that belongs to no module: the
+one sanctioned exception: `fi.kalia.web` holds module-neutral web
+infrastructure — the shared exception advice and the error types it answers
+with, the request-log filter, and the documentation of an unexpected failure —
+with no subdomain of its own, which every module may depend on and which
+depends on none ([ADR-0014](adr/0014-shared-exception-handling.md)). The
+base package itself holds only application-wide wiring that belongs to no module: the
 entry point, its required-configuration check, event publication
 resubmission, and `ApplicationConfig` — method-level resilience
 (`@EnableResilientMethods`, which every module's `@Retryable` relies on) and
@@ -754,6 +755,9 @@ conventions README for the day-to-day rules of writing it
   own tag's operations, so data from two backend modules is joined in the
   backend, never in a feature
   ([ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
+  The one exception is the cellar feature, which also reaches the
+  `public-cellar` tag, because the backend serves a public cellar under a tag
+  of its own (`eslint.config.mjs`).
   The shared `models` folder is outside that rule, since one DTO can belong to
   several tags. Runtime failures surface as a tagged
   `ApiError` ([ADR-0023](adr/0023-typed-api-failures.md)).

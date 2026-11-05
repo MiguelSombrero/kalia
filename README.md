@@ -223,13 +223,15 @@ manifest already says.
   see ADR-0093)
 - Vitest + React Testing Library (unit/component tests), Playwright (E2E,
   chromium only, against the docker compose stack)
-- `package.json` `overrides` pin `postcss` and `sharp` — the one place a
-  number below is load-bearing, since JSON takes no comments: next 16.3.1 (as
-  published) bundled vulnerable versions of both and npm could not resolve a
-  fix inside next's own dependency range. The removal condition is worth
-  re-testing on every `next` bump — drop each override once `npm audit` stays
-  clean without it (the same `js-yaml`
-  override was dropped once orval bundled the fix itself)
+- **No `package.json` `overrides`.** The two it once carried, `postcss` and
+  `sharp`, were re-tested on 2026-11-05 and removed — resolved and audited against
+  `next` 16.4.5 (the latest) and 16.4.3 (the pin), and built on 16.4.3: `next` pins its own `postcss` at a version
+  `npm audit` accepts, `sharp` resolves to the 0.35 line through `next`'s
+  optional dependency and `mobile`'s own, and `postcss` as an override had
+  forced `next`'s exact pin down to a version the audit now flags. Re-test when
+  an `npm audit` finding names either package or `next` pins a vulnerable one:
+  an override is justified by an audit that stays clean only with it, and
+  comes out once it stays clean without it
 - eslint-plugin-jsx-a11y, jest-axe (+ @types/jest-axe), @axe-core/playwright —
   WCAG 2.2 AA enforcement at lint/unit/E2E time (ADR-0075)
 - eslint-plugin-boundaries (import boundaries between `app/`, `features/`,
@@ -313,7 +315,7 @@ kalia/
 ├── Makefile          # `make help`; `make verify-fast` is the local gate
 ├── docker-compose.yml           # the local stack: includes the base with the dev values
 ├── docker-compose.override.yml  # what only development has: seed account, Swagger client
-├── docker-compose.dev.env       # a dev value for every secret the base requires
+├── docker-compose.dev.env       # dev values for the base's secrets; the web client's comes from .env
 └── docker-compose.base.yml      # the deployable definition: requires every secret
 ```
 

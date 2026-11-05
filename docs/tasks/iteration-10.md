@@ -48,7 +48,7 @@ a documented routine rather than a surprise.
 | [16](iteration-10/16-adding-a-beer-says-what-happens-to-it.md) | Adding a beer says what happens to it, and never dead-ends | done |
 | [17](iteration-10/17-web-sign-in-is-one-helper.md) | Web sign-in is one helper, and a cross-site link cannot sign anyone out | done |
 | [18](iteration-10/18-each-fact-kept-once.md) | The architecture diagram, feature list and limits are each kept once | done |
-| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | refined |
+| [19](iteration-10/19-docs-and-comments-say-what-is-true.md) | The documentation and comments say what is true now | done |
 
 Tasks 01–06 are the ones this iteration was planned with, and 21 was filed
 at refinement to implement 06's decision; 07–20 were lifted
@@ -159,3 +159,14 @@ ADR is accepted, as iteration 9's build tasks waited for theirs; a short
 second pass then moves them. [Task 21](iteration-10/21-an-error-on-a-phone-leaves-something-to-read.md)
 follows [06](iteration-10/06-decision-error-visibility.md)'s ADR but needs
 nothing from it that refinement did not already settle.
+
+## Closed 2026-11-05
+
+All 23 tasks are done and every criterion in "Done when" was re-checked
+against the evidence its tasks recorded, apart from one that the product owner
+closed the iteration over rather than meet: **DW-3 is unmet.** The re-signing
+routine is written down in `mobile/README.md`, but it has not been carried out
+and nobody has watched an install expire. The first real expiry, seven days
+after the 2026-11-04 install, is tracked in
+[the backlog](backlog.md#mobile-client) and is not carried into another
+iteration: whoever watches it corrects `mobile/README.md` from what is seen.
