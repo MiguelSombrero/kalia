@@ -89,6 +89,12 @@ dependencies are in [architecture.md §3](architecture.md#3-backend-modules).
 |---|---|---|
 | `CurrentUser` | The authenticated caller behind the bearer token. `id` is the identity provider's `sub` (the stable per-user key); `username` is `preferred_username`, display-only and **never** a key. | [ADR-0028](adr/0028-resource-server-and-current-user.md) |
 
+### Terms
+
+| Term | Meaning in this module | Why |
+|---|---|---|
+| **admin** | A caller whose access token carries the `admin` realm role. The role is Keycloak's, defined in `keycloak/realm-export.json` and held by no registered user by default; `identity` maps it to an authority and requires it on `/api/v1/admin/**`. Never a user type or a table: `IdentityApi` does not say who is one. | [ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md) |
+
 ## profile
 
 Who a user is to *other* users: a username copied once from the identity

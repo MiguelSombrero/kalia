@@ -260,6 +260,8 @@ jobs:
         run: node scripts/check-keycloak-realm-config.mjs
       - name: Verify the mobile client signs in with PKCE and gets the backend audience
         run: node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
+      - name: Verify the development admin's token carries the admin role, an ordinary user's and a new account's do not, and both clients still get the roles scope
+        run: node scripts/check-keycloak-admin.mjs testadmin testuser testuser123
       # Recreated rather than restarted: a restart keeps the container's own
       # filesystem, so only a fresh container proves the account lives in
       # Postgres. --no-deps leaves keycloak-seed alone, so nothing re-creates

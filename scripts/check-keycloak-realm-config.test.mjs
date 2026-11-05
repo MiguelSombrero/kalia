@@ -399,3 +399,17 @@ test("diffRealm fails a live realm still holding the other mode's web addresses"
   const { mismatches } = diffRealm(phoneRealm(), live);
   assert.ok(mismatches.some((m) => /kalia-web".redirectUris/.test(m)), mismatches.join("\n"));
 });
+
+test("diffRealm pins a realm role by name and ignores the built-in roles the file does not list", () => {
+  const committed = resolvePlaceholders({ ...committedFixture(), roles: { realm: [{ name: "admin", description: "Reviews" }] } }, env);
+  const live = { ...liveFixture(), roles: [{ id: "x", name: "offline_access" }, { id: "y", name: "admin", description: "Reviews" }] };
+  assert.deepEqual(diffRealm(committed, live).mismatches, []);
+});
+
+test("diffRealm catches a realm role missing live, and one whose description was changed in the console", () => {
+  const committed = resolvePlaceholders({ ...committedFixture(), roles: { realm: [{ name: "admin", description: "Reviews" }] } }, env);
+  const missing = diffRealm(committed, { ...liveFixture(), roles: [{ name: "offline_access" }] });
+  assert.match(missing.mismatches.join("\n"), /realm role "admin"/);
+  const changed = diffRealm(committed, { ...liveFixture(), roles: [{ name: "admin", description: "Everyone" }] });
+  assert.match(changed.mismatches.join("\n"), /description/);
+});

@@ -15,6 +15,10 @@
   people by username only. The decision below to expose it, and the
   verification that calls it, record what was built then (iteration 8.5
   task 02)
+- **Amended:** 2026-11-05 by [ADR-0101](0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)
+  — the filter chain now maps the token's `realm_access.roles` to authorities
+  and requires the `admin` role on `/api/v1/admin/**`, so "every signed-in
+  caller is authorised alike" holds everywhere else (iteration 10.5 task 04)
 
 ## Context
 
@@ -43,6 +47,12 @@ canonical user identifier.**
   requires a valid token. Browsing stays anonymous
   ([ADR-0006](0006-cellar-first.md)) and every endpoint added later is
   protected unless someone deliberately opens it.
+- **One rule beyond authentication: `/api/v1/admin/**` requires the `admin`
+  realm role.** A signed-in caller without it is answered `403`
+  `problem+json`, an anonymous one `401`; a token whose `realm_access` claim is
+  absent or malformed holds no authority and is refused the same `403`. The
+  role, its source and the reasoning are
+  [ADR-0101](0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)'s.
 - **Three checks on a token:** signature against Keycloak's JWKS, `iss`, and
   `aud` containing `kalia-backend`. The realm gains a `kalia-backend` client
   and an audience mapper on `kalia-frontend` so that audience exists. Without

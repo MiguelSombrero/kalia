@@ -99,6 +99,7 @@ services:
       # they ever differ.
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KALIA_DEV_ADMIN_PASSWORD: ${KALIA_DEV_ADMIN_PASSWORD:-testadmin123}
     volumes:
       - ./scripts/seed-keycloak-account.mjs:/seed-keycloak-account.mjs:ro
       # seed-keycloak-account.mjs imports its token-fetch/retry helper from
@@ -108,4 +109,8 @@ services:
       # file; KEYCLOAK_URL and KEYCLOAK_ADMIN_URL are set here, so they go
       # unused in the container.
       - ./scripts/stack-ports.mjs:/stack-ports.mjs:ro
-    entrypoint: ["node", "/seed-keycloak-account.mjs", "testuser", "testuser123"]
+    # testuser stays an ordinary user; testadmin holds the admin role (ADR-0101).
+    entrypoint:
+      - sh
+      - -c
+      - node /seed-keycloak-account.mjs testuser testuser123 && node /seed-keycloak-account.mjs testadmin "$$KALIA_DEV_ADMIN_PASSWORD" admin

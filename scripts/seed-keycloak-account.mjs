@@ -6,9 +6,9 @@ const REALM = process.env.KEYCLOAK_REALM ?? "kalia";
 const ADMIN_USERNAME = process.env.KEYCLOAK_ADMIN ?? "admin";
 const ADMIN_PASSWORD = process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin";
 
-const [username, password] = process.argv.slice(2);
+const [username, password, realmRole] = process.argv.slice(2);
 if (!username || !password) {
-  console.error("usage: node scripts/seed-keycloak-account.mjs <username> <password>");
+  console.error("usage: node scripts/seed-keycloak-account.mjs <username> <password> [realm-role]");
   process.exit(1);
 }
 
@@ -91,14 +91,33 @@ const ensureAdminConsoleOrigin = async (token) => {
   }
 };
 
+// Granting is idempotent: Keycloak answers 204 for a mapping the user already has.
+const grantRealmRole = async (token, userId, roleName) => {
+  const roleResponse = await fetch(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/roles/${encodeURIComponent(roleName)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!roleResponse.ok) {
+    throw new Error(`could not read realm role ${roleName}: ${roleResponse.status} ${await roleResponse.text()}`);
+  }
+  const role = await roleResponse.json();
+  const response = await fetch(`${KEYCLOAK_ADMIN_URL}/admin/realms/${REALM}/users/${userId}/role-mappings/realm`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify([{ id: role.id, name: role.name }]),
+  });
+  if (!response.ok) {
+    throw new Error(`could not grant realm role ${roleName} to ${username}: ${response.status} ${await response.text()}`);
+  }
+};
+
 const ensureUser = async (token) => {
   const existing = await findUser(token);
   if (existing) {
     await resetPassword(token, existing.id);
-    return;
+    return existing.id;
   }
   if (await createUser(token)) {
-    return;
+    return (await findUser(token)).id;
   }
   // Lost a create race (409) against a concurrent invocation claiming the
   // same username; the winner already carries the desired password, so
@@ -107,11 +126,15 @@ const ensureUser = async (token) => {
   if (!winner) {
     throw new Error(`could not create Keycloak user ${username}`);
   }
+  return winner.id;
 };
 
 const ensureAccount = async () => {
   const token = await adminToken();
-  await ensureUser(token);
+  const userId = await ensureUser(token);
+  if (realmRole) {
+    await grantRealmRole(token, userId, realmRole);
+  }
   await ensureAdminConsoleOrigin(token);
 };
 
@@ -126,4 +149,4 @@ const ensureAccount = async () => {
 // one-line message — don't add one without also reconciling the wording.
 await withRetry(ensureAccount, { attempts: 15, delayMs: 2000 });
 
-console.log(`Keycloak account ${username} is present in realm ${REALM}`);
+console.log(`Keycloak account ${username} is present in realm ${REALM}${realmRole ? ` holding ${realmRole}` : ""}`);

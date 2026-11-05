@@ -1035,6 +1035,20 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   ArchUnit keeps that chain in place: it must exist, live in `identity`, and
   configure `oauth2ResourceServer`, and no other module may configure web
   security.
+- **An admin is a holder of the `admin` realm role**
+  ([ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
+  `keycloak/realm-export.json` defines it and grants it to no one, and it is
+  not among the realm's default roles, so a self-registered account never
+  holds it. Keycloak's built-in `roles` client scope, a default scope of
+  `kalia-web` and `kalia-mobile`, writes it into the access token's
+  `realm_access.roles`; the backend maps that claim to authorities and
+  requires the role on one path prefix, `/api/v1/admin/**`. A caller without it
+  is answered `403` `problem+json`, an anonymous one `401`, and a token whose
+  claim is absent or malformed holds no role and gets the `403`, never a `500`.
+  The local stack seeds `testadmin` with the role (`keycloak-seed`); the
+  deployable definition seeds none. A revoked role holds until the access token
+  expires. `AdminAccessIT` pins the rule and `scripts/check-keycloak-admin.mjs`
+  (`make verify`, CI's Keycloak job) pins the realm as applied.
 - **Only the `edge` proxy is published**, on `127.0.0.1`: the API at
   `BACKEND_PORT` (default 8080, for direct access and Swagger UI on the dev
   machine), the web app and Keycloak each at their own port, every request

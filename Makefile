@@ -141,7 +141,7 @@ api-breaking: ## Fail if backend/openapi.json breaks an installed app against or
 # the admin console fails the check instead of being healed and never reported
 # (ADR-0054). With nothing running, a fresh realm is imported first so the
 # check has something to compare against.
-keycloak-check: ## Fail if Keycloak's realm rejects sign-in (web or mobile client), has drifted from keycloak/realm-export.json, or loses an account to a fresh container (needs Docker)
+keycloak-check: ## Fail if Keycloak's realm rejects sign-in (web or mobile client), has drifted from keycloak/realm-export.json, lets anyone but testadmin hold the admin role, or loses an account to a fresh container (needs Docker)
 	@docker compose up -d --build --wait --wait-timeout 120 edge
 	@docker compose ps --status running --quiet keycloak | grep -q . \
 	    || { docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge \
@@ -150,6 +150,7 @@ keycloak-check: ## Fail if Keycloak's realm rejects sign-in (web or mobile clien
 	docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 	node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
+	node scripts/check-keycloak-admin.mjs testadmin testuser testuser123
 	docker compose up -d --force-recreate --no-deps --wait --wait-timeout 120 keycloak
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 

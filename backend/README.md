@@ -181,6 +181,13 @@ Notable suites:
   problem+json with a declared schema that nests nothing under `properties`
   (ADR-0014); `ErrorBodyShapesIT` pins the same shapes on the wire, and
   `ProblemJsonSecurityErrorsIT` the filter chain's `401` body and challenge
+- `AdminAccessIT` — the one rule on `/api/v1/admin/**`
+  ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)):
+  through the real authority converter, a token with `realm_access.roles`
+  holding `admin` is admitted, one without it is `403` problem+json, an
+  anonymous caller `401`, and an absent or malformed claim `403`, never `500`.
+  Its target is a controller in `src/test/java/securityfixture/`, outside
+  `fi.kalia` so no other test's context scans it into the spec
 - `MobileClientTokenIT` — the one integration test that keeps the real
   `JwtDecoder`, pointed at a JWKS served by the test and signing with a test key:
   a token shaped like `kalia-mobile`'s is accepted with the `kalia-backend`
@@ -376,6 +383,8 @@ lives there rather than in this file.
   `requireCurrentUsername()` outside `identity`, or `CurrentUserService`
   directly inside it — and passes the id into the application service. No
   other module touches a `Jwt` (`ArchitectureTest.onlyIdentityReadsTokenClaims`),
+  and a route under `/api/v1/admin/` is covered by `SecurityConfig`'s one
+  `admin`-role rule without one of its own,
   and a token whose claims `identity` cannot map is an
   `InvalidBearerTokenException`, answered `401` from any route
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),

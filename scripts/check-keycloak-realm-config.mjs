@@ -179,6 +179,17 @@ export const diffRealm = (spec, live) => {
 
   for (const [key, value] of Object.entries(spec)) {
     if (key === "realm" || key === "clients") continue;
+    if (key === "roles") {
+      // Realm roles come from their own endpoint, not the realm representation.
+      // Keyed by name: only the roles the file defines are pinned, so the
+      // built-in ones need no listing. A role live that the file does not
+      // define is not drift here; membership of the default roles is the job
+      // of check-keycloak-admin.mjs.
+      for (const role of value.realm ?? []) {
+        compare(`realm role "${role.name}"`, role, (live.roles ?? []).find((candidate) => candidate.name === role.name));
+      }
+      continue;
+    }
     if (key === "smtpServer" && value !== null && typeof value === "object") {
       // Keycloak returns smtpServer.password masked as "**********" on every
       // read (a client secret, by contrast, comes back in full), so it can
@@ -263,7 +274,8 @@ const fetchLiveRealm = async (clientIds) => {
     );
     if (client) clients[clientId] = client;
   }
-  return { realm, clients };
+  const roles = await fetchJson(token, `/admin/realms/${REALM}/roles`);
+  return { realm, clients, roles };
 };
 
 const run = async () => {
