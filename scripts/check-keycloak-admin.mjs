@@ -115,6 +115,7 @@ const run = async () => {
       }),
     });
     const id = created.location?.split("/").pop();
+    expect(id, `creating ${fresh} returned no Location header, so it cannot be cleaned up`);
     try {
       const claims = await tokenFor(fresh, freshPassword);
       expect(rolesOf(claims).includes("default-roles-kalia"), `realm_access.roles is ${JSON.stringify(rolesOf(claims))}`);
