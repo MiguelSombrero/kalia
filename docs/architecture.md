@@ -24,9 +24,8 @@ clarity, testability, and iterative delivery** over premature scale.
 What each iteration built is listed once, in
 [docs/roadmap.md](roadmap.md#what-each-iteration-built).
 
-[Iteration 10](tasks/iteration-10.md), which puts the app on the product
-owner's own iPhone, is in progress: every task is done, and it closes when the
-free signing's first real seven-day expiry has been watched (its DW-3).
+No iteration is in progress. The next is [iteration 10.5](tasks/iteration-10.5.md),
+in which an admin reviews what users add in the web app.
 
 ### Non-functional requirements
 
