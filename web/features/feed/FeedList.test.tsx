@@ -478,6 +478,47 @@ describe("FeedList live polling", () => {
     }
   });
 
+  it("keeps polling without a cursor while a feed that opened empty gets only a backward cursor back", async () => {
+    // With no `since` the backend answers with the most recent page and a
+    // cursor that points backward, so it must not become the forward cursor.
+    pollFeedAction.mockResolvedValueOnce({ content: [], nextCursor: "backward-1", startOver: false });
+    pollFeedAction.mockResolvedValueOnce({ content: [], nextCursor: "backward-2", startOver: false });
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [], nextCursor: undefined, startOver: false });
+
+      await advancePoll();
+      await advancePoll();
+
+      expect(pollFeedAction.mock.calls.map(([since]) => since)).toEqual(["", ""]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("takes the forward cursor of a feed that opened empty from its newest line, and polls for what is new from there", async () => {
+    pollFeedAction.mockResolvedValueOnce({
+      content: [line("c2", "bob"), line("c1", "alice")],
+      nextCursor: "backward-0",
+      startOver: false,
+    });
+    pollFeedAction.mockResolvedValueOnce({ content: [line("c3", "carol")], nextCursor: undefined, startOver: false });
+    vi.useFakeTimers();
+    try {
+      renderList({ content: [], nextCursor: undefined, startOver: false });
+
+      await advancePoll();
+      expect(screen.getByRole("button", { name: "2 new events" })).toBeInTheDocument();
+
+      await advancePoll();
+
+      expect(pollFeedAction.mock.calls.map(([since]) => since)).toEqual(["", "c2"]);
+      expect(screen.getByRole("button", { name: "3 new events" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("surfaces a new-events control and holds arrivals out of the list until it is activated", async () => {
     pollFeedAction.mockResolvedValue({ content: [line("c2", "bob")], nextCursor: undefined, startOver: false });
     vi.useFakeTimers();

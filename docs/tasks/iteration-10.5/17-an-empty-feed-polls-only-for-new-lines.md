@@ -1,6 +1,6 @@
 # Task 17: A feed that opened empty polls only for what is new
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -46,11 +46,11 @@ interval ADR-0060 states, and never reads history it already passed.
 
 ## Acceptance criteria
 
-- [ ] A component test of `FeedList` opened on an empty page shows a line added
+- [x] A component test of `FeedList` opened on an empty page shows a line added
       later arriving on the next poll, and no poll carrying a backward cursor;
       it failed before the fix
-- [ ] The committed `backend/openapi.json` is unchanged
-- [ ] `npm test` and `make verify-fast` are green
+- [x] The committed `backend/openapi.json` is unchanged
+- [x] `npm test` and `make verify-fast` are green
 
 ## Notes
 

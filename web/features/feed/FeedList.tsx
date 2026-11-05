@@ -105,7 +105,14 @@ export const FeedList = ({ locale, now, initialPage, emptyState, viewerUsername 
     // poll reach whatever real event comes after, rather than re-reading
     // the same filtered batch forever.
     if (poll.data.content.length > 0 || poll.data.nextCursor) {
-      setSinceCursor(poll.data.nextCursor ?? poll.data.content[0]!.cursor);
+      // Do not adopt nextCursor from a poll sent with no cursor: the backend
+      // answers that with the latest page and a *backward* cursor, which
+      // would walk the feed into history. Until a line arrives, poll with none.
+      setSinceCursor((since) =>
+        since === ""
+          ? (poll.data.content[0]?.cursor ?? "")
+          : (poll.data.nextCursor ?? poll.data.content[0]!.cursor),
+      );
     }
   }, [poll.data]);
 
