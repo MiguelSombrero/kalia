@@ -33,6 +33,15 @@ public class ProfileService {
 				.collect(Collectors.toMap(Profile::getId, Profile::getUsername));
 	}
 
+	// Every profile row named, whatever its cellar's visibility: the caller decides
+	// who may see the name, so this is not for a public read (COULD-81). An id with no
+	// profile row is absent, as the row is created lazily (ADR-0049).
+	@Transactional(readOnly = true)
+	public Map<UUID, String> usernames(Collection<UUID> userIds) {
+		return profiles.findAllById(userIds).stream()
+				.collect(Collectors.toMap(Profile::getId, Profile::getUsername));
+	}
+
 	// Empty for an unknown username, a missing profile row and a private cellar
 	// alike — the caller must not be able to tell them apart (ADR-0050). Do not
 	// drop the exact-spelling filter: the public route echoes the requested

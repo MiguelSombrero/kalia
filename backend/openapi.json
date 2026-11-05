@@ -551,6 +551,30 @@
         "required" : [ "content", "page", "totalElements", "totalPages" ],
         "type" : "object"
       },
+      "PageDtoSuggestionDto" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/SuggestionDto"
+            },
+            "type" : "array"
+          },
+          "page" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "content", "page", "totalElements", "totalPages" ],
+        "type" : "object"
+      },
       "PendingElsewhereProblem" : {
         "description" : "A 409: another contributor has already suggested this beer and it waits for review. It names neither the contributor nor the beer, since the caller cannot open it",
         "properties" : {
@@ -730,6 +754,64 @@
         "required" : [ "beer", "bottles", "createdAt", "id", "quantity", "updatedAt" ],
         "type" : "object"
       },
+      "SuggestionContributorDto" : {
+        "description" : "Who suggested a beer, as only an admin sees them",
+        "properties" : {
+          "pendingCount" : {
+            "description" : "How many of the contributor's suggestions are waiting for review, this one included",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "rejectedCount" : {
+            "description" : "How many of the contributor's suggestions were rejected",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "username" : {
+            "description" : "Absent when the contributor has no profile row, which is created on a user's first request",
+            "type" : "string"
+          }
+        },
+        "required" : [ "pendingCount", "rejectedCount" ],
+        "type" : "object"
+      },
+      "SuggestionDto" : {
+        "description" : "A beer a user added, waiting for an admin to review it, with the brewery added with it",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent",
+            "type" : "number"
+          },
+          "brewery" : {
+            "$ref" : "#/components/schemas/BreweryDto"
+          },
+          "breweryIsNew" : {
+            "description" : "True when the brewery was added with the beer and waits for review too",
+            "type" : "boolean"
+          },
+          "contributor" : {
+            "$ref" : "#/components/schemas/SuggestionContributorDto"
+          },
+          "id" : {
+            "description" : "The suggested beer's id, which is the suggestion's",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "style" : {
+            "type" : "string"
+          },
+          "suggestedAt" : {
+            "description" : "When the beer was added",
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "brewery", "breweryIsNew", "contributor", "id", "name", "style", "suggestedAt" ],
+        "type" : "object"
+      },
       "UpdateBottleRequestDto" : {
         "description" : "A bottle's new details, replacing all of them",
         "properties" : {
@@ -804,6 +886,181 @@
   },
   "openapi" : "3.1.0",
   "paths" : {
+    "/api/v1/admin/suggestions" : {
+      "get" : {
+        "description" : "Every suggestion no admin has decided, the oldest first, with its beer, its brewery and whether that brewery is new, its contributor's username, and how many of the contributor's suggestions wait or were rejected.A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.",
+        "operationId" : "listSuggestions",
+        "parameters" : [ {
+          "description" : "Zero-based page index; page × size is at most 10000",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "format" : "int32",
+            "maximum" : 10000,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Page size, 1-100",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageDtoSuggestionDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ValidationProblem"
+                  }, {
+                    "$ref" : "#/components/schemas/Problem"
+                  } ]
+                }
+              }
+            },
+            "description" : "A page parameter is out of range, or the page skips more rows than allowed"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The caller does not hold the admin role"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "List the suggestions waiting for review",
+        "tags" : [ "Admin suggestions" ]
+      }
+    },
+    "/api/v1/admin/suggestions/{id}" : {
+      "get" : {
+        "description" : "One suggestion, as the list serves it, by its beer's id.",
+        "operationId" : "getSuggestion",
+        "parameters" : [ {
+          "description" : "The suggested beer's id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SuggestionDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The id is not a UUID"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The caller does not hold the admin role"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No suggestion is waiting under this id: it is unknown, was decided already, or is a beer nobody suggested, such as an imported one"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Get a suggestion waiting for review",
+        "tags" : [ "Admin suggestions" ]
+      }
+    },
     "/api/v1/app-config" : {
       "get" : {
         "description" : "An app below the minimum build for its platform must stop and ask to be updated, and one that reads maintenance true must stop and say Kalia is down. The same for every caller, signed in or out, and never cached: a change has to be seen at the next check.",
@@ -2034,6 +2291,9 @@
   "tags" : [ {
     "description" : "The signed-in caller's own cellar",
     "name" : "Cellar"
+  }, {
+    "description" : "What users have added to the catalog and an admin reviews; admin role only",
+    "name" : "Admin suggestions"
   }, {
     "description" : "A cellar its owner has made public, addressed by username",
     "name" : "Public cellar"

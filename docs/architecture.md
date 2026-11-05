@@ -64,7 +64,7 @@ flowchart LR
     EDGE -.->|API, Swagger UI, mobile app| API
     NX -->|REST, JSON| API
     API --> CAT & CEL & IDN & PROF & FED & CFG
-    CAT --> IDN
+    CAT --> IDN & PROF
     CEL --> CAT & IDN & PROF
     PROF --> IDN
     FED --> CEL & CAT & PROF
@@ -206,7 +206,7 @@ cross-module *reads* via the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
-| `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)* | `identity` (current user, recorded as a user-added row's contributor) |
+| `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)*; an admin's read of the suggestions waiting for review, under `/api/v1/admin/suggestions` *(iteration 10.5, [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md))* | `identity` (current user, recorded as a user-added row's contributor), `profile` (read: a contributor's username, whatever their cellar's visibility, for the admin read alone) |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer; a public cellar read for anyone, which `CellarService` itself refuses unless the owner made it public | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public | `identity` (current user: the caller's id and username, for the caller's own profile) |

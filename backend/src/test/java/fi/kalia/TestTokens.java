@@ -2,6 +2,7 @@ package fi.kalia;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 // Access tokens for integration tests, paired with a mocked JwtDecoder;
@@ -35,6 +36,19 @@ public final class TestTokens {
 				.claim("preferred_username", username)
 				.claim("email", username + "@example.com")
 				.claim("name", username)
+				.issuedAt(Instant.now())
+				.expiresAt(Instant.now().plusSeconds(300))
+				.build();
+	}
+
+	// A caller holding the admin realm role, which is all /api/v1/admin/** asks of a token (ADR-0101).
+	public static Jwt admin(String subject, String username) {
+		return Jwt.withTokenValue("token")
+				.header("alg", "RS256")
+				.subject(subject)
+				.claim("aud", List.of("kalia-backend"))
+				.claim("preferred_username", username)
+				.claim("realm_access", Map.of("roles", List.of("offline_access", "admin")))
 				.issuedAt(Instant.now())
 				.expiresAt(Instant.now().plusSeconds(300))
 				.build();

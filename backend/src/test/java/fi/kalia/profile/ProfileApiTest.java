@@ -41,4 +41,21 @@ class ProfileApiTest {
 		assertThat(usernames).containsOnlyKeys(ids);
 	}
 
+	@Test
+	void aUsernameLookupOverTheIdCapIsServedInChunksNoneOverTheCap() {
+		List<Collection<UUID>> lookups = new ArrayList<>();
+		given(profile.usernames(anyCollection())).willAnswer(invocation -> {
+			Collection<UUID> chunk = List.copyOf(invocation.<Collection<UUID>>getArgument(0));
+			lookups.add(chunk);
+			return chunk.stream().collect(Collectors.toMap(Function.identity(), UUID::toString));
+		});
+		List<UUID> ids = Stream.generate(UUID::randomUUID).limit(2L * ProfileApi.MAX_BATCH_IDS + 1).toList();
+
+		Map<UUID, String> usernames = new ProfileApi(profile).usernames(ids);
+
+		assertThat(lookups).hasSize(3).allSatisfy(chunk -> assertThat(chunk).hasSizeLessThanOrEqualTo(
+				ProfileApi.MAX_BATCH_IDS));
+		assertThat(usernames).containsOnlyKeys(ids);
+	}
+
 }

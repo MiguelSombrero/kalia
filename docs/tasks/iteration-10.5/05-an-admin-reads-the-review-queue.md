@@ -1,6 +1,6 @@
 # Task 05: An admin reads the queue of suggestions waiting for review
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2
 
@@ -101,32 +101,32 @@ through `ProfileApi`.
 
 ## Acceptance criteria
 
-- [ ] An integration test lists suggestions with and without a new brewery,
+- [x] An integration test lists suggestions with and without a new brewery,
       oldest first and paginated, each naming its contributor — including a
       contributor whose cellar is private and one with no profile row, who is
       listed with no username — and two suggestions added in the same instant
       are never repeated or dropped across a page boundary
-- [ ] An integration test shows the list and the single read refused to a
+- [x] An integration test shows the list and the single read refused to a
       non-admin and to an anonymous caller
-- [ ] A suggestion already approved or rejected is not in the list — test
-- [ ] A listed suggestion's id is its beer's id, and reading by that id an
+- [x] A suggestion already approved or rejected is not in the list — test
+- [x] A listed suggestion's id is its beer's id, and reading by that id an
       imported beer, an approved or rejected one, or an unknown id answers
       `404`, since none is waiting — integration test
-- [ ] Each listed suggestion carries its contributor's pending and rejected
+- [x] Each listed suggestion carries its contributor's pending and rejected
       counts, and a page's counts cost one query rather than one per row —
       integration test
-- [ ] `ProfileApi`'s username lookup by id, batched at the catalog's batch size
+- [x] `ProfileApi`'s username lookup by id, batched at the catalog's batch size
       as `publicUsernames` is ([ADR-0042](../../adr/0042-bounded-request-parameters.md)),
       names a user whose cellar is private, while `publicCellarOwnerId` and
       `publicUsernames` still hide them — test
-- [ ] `ModularityTest`, `ArchitectureTest` and `ArchitectureDocumentationTest`
+- [x] `ModularityTest`, `ArchitectureTest` and `ArchitectureDocumentationTest`
       pass with `catalog` reading `ProfileApi`, and §2's diagram and §3 show
       the dependency
-- [ ] The committed spec carries both operations under their own tag, the
+- [x] The committed spec carries both operations under their own tag, the
       generated web client is regenerated, and the glossary's JSON field names
       carry what the response adds (the brewery's newness and the two counts);
       *suggestion* is already there
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
