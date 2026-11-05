@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-23 · SHOULD-102 · COULD-114
+**Highest issued:** MUST-23 · SHOULD-102 · COULD-117
 
 ## MUST
 
@@ -183,6 +183,23 @@ repeats, so the recurrence stays visible once the old entry is gone.
   `prune-worktrees.mjs` could warn, in the session only, when free space is
   low and name the two caches; the `worktree` skill's teardown could delete
   the removed worktree's own DerivedData.
+
+- **COULD-115** *(confirmed 2026-11-05)* — The mobile transport's failure log
+  (`mobile/src/lib/api/registerTransport.ts`) writes an error line for every
+  status of 400 or above. Nothing the app calls today treats a 4xx as an
+  expected answer, but a screen that does (a 404 read as "no such beer", a 409
+  as a lost race) would write one error line per visit, which
+  [ADR-0013](../adr/0013-logging-conventions.md) says an anticipated status
+  should not. Log a status only where the feature that reads it calls it a
+  failure, by moving the line from the transport to `httpFailure`'s callers, or
+  let a call say which statuses it expects.
+- **COULD-116** *(confirmed 2026-11-05)* — The same log line carries the request's
+  path unredacted. No call the app makes today has a user's name in its path,
+  but a public profile or public cellar read would
+  (`/api/v1/profiles/{username}`), and writing it to the device log breaks
+  ADR-0013's no-user-identity rule. When the first such call is added, log the
+  operation's path template instead of the built URL, or add a check that fails
+  a logged path with a segment the generated client takes as a parameter.
 
 - **COULD-108** *(confirmed 2026-11-04)* — Two worktrees, one in phone mode and
   one not, have never been run beside each other. [Iteration 10 task 02](iteration-10/02-the-phone-reaches-the-stack.md)

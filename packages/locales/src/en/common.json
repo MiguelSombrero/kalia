@@ -243,7 +243,12 @@
   "error": {
     "title": "Something went wrong",
     "message": "An unexpected error occurred. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "reference": "Reference: {{id}}",
+    "crash": {
+      "body": "Kalia ran into an unexpected error. Restart it to carry on.",
+      "restart": "Restart Kalia"
+    }
   },
   "auth": {
     "signIn": "Sign in",

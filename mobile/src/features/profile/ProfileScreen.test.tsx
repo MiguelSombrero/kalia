@@ -1,5 +1,6 @@
-import { apiError, registerTransport, type Transport } from "@kalia/api";
+import { apiError, registerTransport, traceIdOf, type Transport } from "@kalia/api";
 import { act, fireEvent, screen } from "@testing-library/react-native";
+import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { ProfileScreen } from "./ProfileScreen";
@@ -230,5 +231,35 @@ describe("ProfileScreen's version line", () => {
     await renderWithLocale(<ProfileScreen />, "en", signedOut());
 
     expect(screen.queryByText(/Version/)).not.toBeOnTheScreen();
+  });
+});
+
+describe("ProfileScreen when the profile request fails", () => {
+  const TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtaWlrYSJ9.c2lnbmF0dXJl";
+  const fetchMock = jest.fn();
+
+  beforeEach(() => {
+    fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 503 }));
+    jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each([
+    ["en", "Reference: "],
+    ["fi", "Viite: "],
+  ] as const)("names the request's trace id on screen, in %s", async (locale, label) => {
+    const store = signedIn();
+    store.getAccessToken.mockResolvedValue(TOKEN);
+    registerMobileTransport(store);
+    const error = jest.spyOn(console, "error").mockImplementation(() => undefined);
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    await renderWithLocale(<ProfileScreen />, locale, store);
+
+    const sentTraceId = traceIdOf(new Headers(fetchMock.mock.calls[0][1].headers).get("traceparent"));
+    expect(await screen.findByText(`${label}${sentTraceId}`)).toBeOnTheScreen();
+    expect(screen.queryByText(/eyJ|miika|\?/)).not.toBeOnTheScreen();
+    expect(error).not.toHaveBeenCalledWith(expect.stringMatching(/eyJ|miika/));
   });
 });

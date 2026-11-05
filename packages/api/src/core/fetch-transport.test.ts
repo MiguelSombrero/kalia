@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isApiError } from "./api-error";
-import { createFetchTransport } from "./fetch-transport";
+import { createFetchTransport, httpFailure } from "./fetch-transport";
 import { kaliaFetch, registerTransport } from "./transport";
 
 const baseUrl = () => "http://backend:8080";
@@ -258,5 +258,115 @@ describe("kaliaFetch", () => {
     await expect(kaliaFetch("/api/v1/beers?query=westvleteren", {})).rejects.toThrow(
       /No transport registered.*\/api\/v1\/beers$/,
     );
+  });
+});
+
+describe("the trace of a call", () => {
+  const OWN = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+  const GENERATED = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it("sends the header its source supplies when the call has none", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createFetchTransport({ baseUrl, traceparent: () => GENERATED })("/api/v1/beers", {});
+
+    expect(new Headers(initOf(fetchMock).headers).get("traceparent")).toBe(GENERATED);
+  });
+
+  it("keeps a header the caller set, which is the web's own", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    const source = vi.fn(() => GENERATED);
+
+    await createFetchTransport({ baseUrl, traceparent: source })("/api/v1/beers", { headers: { traceparent: OWN } });
+
+    expect(new Headers(initOf(fetchMock).headers).get("traceparent")).toBe(OWN);
+    expect(source).not.toHaveBeenCalled();
+  });
+
+  it("sends none when there is neither", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createFetchTransport({ baseUrl })("/api/v1/beers", {});
+
+    expect(new Headers(initOf(fetchMock).headers).has("traceparent")).toBe(false);
+  });
+
+  it("starts one trace for a call and its renewed retry", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(async () => Response.json({}, { status: 401 }))
+      .mockImplementationOnce(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+    const source = vi.fn(() => GENERATED);
+
+    await createFetchTransport({
+      baseUrl,
+      traceparent: source,
+      accessToken: async () => "old",
+      refreshAccessToken: async () => "new",
+    })("/api/v1/cellar", {});
+
+    const sent = (fetchMock.mock.calls as unknown as [string, RequestInit][]).map(([, init]) =>
+      new Headers(init.headers).get("traceparent"),
+    );
+    expect(sent).toEqual([GENERATED, GENERATED]);
+    expect(source).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["a lost request", () => Promise.reject(new TypeError("Network request failed")), "network"],
+    ["a body that is not JSON", async () => new Response("<html>", { status: 502 }), "parse"],
+  ])("names its trace id in the error of %s", async (_, answer, kind) => {
+    vi.stubGlobal("fetch", vi.fn(answer));
+
+    const failure = await createFetchTransport({ baseUrl, traceparent: () => GENERATED })("/api/v1/beers?q=ipa", {}).catch(
+      (e: unknown) => e,
+    );
+
+    expect(isApiError(failure) && [failure.kind, failure.traceId]).toEqual([kind, "0af7651916cd43dd8448eb211c80319c"]);
+    expect((failure as Error).message).toContain("0af7651916cd43dd8448eb211c80319c");
+    expect((failure as Error).message).not.toContain("q=ipa");
+  });
+
+  it("names its trace id in the error of a timeout", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+    const call = createFetchTransport({ baseUrl, traceparent: () => GENERATED, timeoutMs: 50 })("/api/v1/beers", {}).catch(
+      (e: unknown) => e,
+    );
+
+    await vi.advanceTimersByTimeAsync(60);
+    const failure = await call;
+
+    expect(isApiError(failure) && [failure.kind, failure.traceId]).toEqual(["timeout", "0af7651916cd43dd8448eb211c80319c"]);
+  });
+
+  it("lets a caller turn an unexpected status into an error naming the trace", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({}, { status: 503 })));
+    const response = await createFetchTransport({ baseUrl, traceparent: () => GENERATED })<{ status: number }>(
+      "/api/v1/beers",
+      {},
+    );
+
+    const failure = httpFailure("Beer search", response);
+
+    expect([failure.kind, failure.status, failure.traceId, failure.message]).toEqual([
+      "http",
+      503,
+      "0af7651916cd43dd8448eb211c80319c",
+      "Beer search failed with status 503 (trace 0af7651916cd43dd8448eb211c80319c)",
+    ]);
+  });
+
+  it("makes an error with no trace, for a response it never sent", () => {
+    expect(httpFailure("Beer search", { status: 500 }).message).toBe("Beer search failed with status 500");
   });
 });

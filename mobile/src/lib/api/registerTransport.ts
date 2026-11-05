@@ -1,7 +1,16 @@
-import { createFetchTransport, isApiError, registerTransport, type Transport } from "@kalia/api";
+import {
+  createFetchTransport,
+  isApiError,
+  pathOf,
+  registerTransport,
+  traceIdOfResponse,
+  type Transport,
+} from "@kalia/api";
 import { getTokenStore } from "@/lib/auth/defaultTokenStore";
 import type { TokenStore } from "@/lib/auth/tokenStore";
 import { origins } from "@/lib/config/origins";
+import { logError } from "@/lib/log/deviceLog";
+import { startTrace } from "./traceparent";
 
 // A refresh that failed transiently must not fail a call that needs no token.
 const unlessUnreachable = async (token: Promise<string | undefined>): Promise<string | undefined> => {
@@ -15,16 +24,23 @@ const unlessUnreachable = async (token: Promise<string | undefined>): Promise<st
   }
 };
 
-// Origin only, never a path or token (ADR-0013).
-const loggingUnreachableOrigin = (transport: Transport): Transport =>
+// Method and path only: never the query string, a token or a body (ADR-0013).
+const loggingFailures = (transport: Transport): Transport =>
   (async (url: string, options: RequestInit) => {
+    const call = { method: options.method ?? "GET", path: pathOf(url) };
     try {
-      return await transport(url, options);
+      const reply = await transport<{ status: number }>(url, options);
+      if (reply.status >= 400) {
+        logError("Request answered with an error status", {
+          ...call,
+          status: reply.status,
+          traceId: traceIdOfResponse(reply),
+        });
+      }
+      return reply;
     } catch (cause) {
-      const noResponse = isApiError(cause) && cause.status === undefined && (cause.kind === "network" || cause.kind === "timeout");
-      if (__DEV__ && noResponse) {
-        // eslint-disable-next-line no-console -- the one development-only log: Metro's console is where it is read
-        console.warn(`No response from ${origins.api}`);
+      if (isApiError(cause)) {
+        logError("Request failed", { ...call, kind: cause.kind, status: cause.status, traceId: cause.traceId });
       }
       throw cause;
     }
@@ -32,9 +48,10 @@ const loggingUnreachableOrigin = (transport: Transport): Transport =>
 
 export const registerMobileTransport = (tokenStore: TokenStore = getTokenStore()): void =>
   registerTransport(
-    loggingUnreachableOrigin(
+    loggingFailures(
       createFetchTransport({
         baseUrl: () => origins.api,
+        traceparent: startTrace,
         accessToken: () => unlessUnreachable(tokenStore.getAccessToken()),
         refreshAccessToken: (rejected) => unlessUnreachable(tokenStore.refreshAccessToken(rejected)),
       }),

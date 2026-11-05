@@ -15,3 +15,9 @@ jest.mock("expo-secure-store", () => {
     deleteItemAsync: async (key) => void items.delete(key),
   };
 });
+
+// jest-expo's own stub fills with zeros, which would give every trace the same id.
+jest.mock("expo-crypto", () => ({
+  ...jest.requireActual("expo-crypto"),
+  getRandomValues: (array) => require("node:crypto").randomFillSync(array),
+}));

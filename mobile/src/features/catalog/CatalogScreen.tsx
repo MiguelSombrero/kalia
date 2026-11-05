@@ -1,6 +1,7 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { ErrorReference } from "@/components/ErrorReference";
 import type { BeerSummary } from "./api";
 import { useBeers } from "./hooks/useBeers";
 
@@ -21,6 +22,7 @@ export const CatalogScreen = () => {
       {beers.isError && (
         <>
           <Text style={styles.notice}>{t("catalog.list.error")}</Text>
+          <ErrorReference error={beers.error} />
           <Pressable
             role="button"
             accessibilityLabel={retry}

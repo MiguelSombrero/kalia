@@ -48,6 +48,17 @@ describe("CatalogScreen", () => {
     expect(screen.getAllByTestId("beer-row")).toHaveLength(2);
   });
 
+  it.each([
+    ["en", "Reference: 0af7651916cd43dd8448eb211c80319c"],
+    ["fi", "Viite: 0af7651916cd43dd8448eb211c80319c"],
+  ] as const)("names the failed request's trace id, in %s", async (locale, reference) => {
+    transport.mockRejectedValue(apiError("network", "Could not reach the backend", { traceId: "0af7651916cd43dd8448eb211c80319c" }));
+
+    await renderWithLocale(<CatalogScreen />, locale);
+
+    expect(await screen.findByText(reference)).toBeOnTheScreen();
+  });
+
   it("asks for the first page only, with an explicit size", async () => {
     transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5)]));
 

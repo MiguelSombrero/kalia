@@ -1,4 +1,4 @@
-import { kaliaFetch } from "@kalia/api";
+import { isApiError, kaliaFetch, traceIdOf } from "@kalia/api";
 import { createTokenStore, type OAuthClient, type StoredTokens, type TokenStorage } from "@/lib/auth/tokenStore";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { registerMobileTransport } from "./registerTransport";
@@ -200,18 +200,59 @@ describe("a token the app cannot use", () => {
   });
 });
 
-describe("a request that got no response", () => {
+describe("a call's trace", () => {
+  const fetchMock = jest.fn();
+
+  beforeEach(() => {
+    Reflect.deleteProperty(globalThis, SLOT);
+    fetchMock.mockReset().mockImplementation(async () => new Response("{}", { status: 200 }));
+    jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
+    registerMobileTransport(fakeTokenStore({ status: "signedOut", expired: false }));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  const sentTraceparents = () =>
+    fetchMock.mock.calls.map(([, init]) => new Headers(init.headers).get("traceparent"));
+
+  it.each([
+    ["the catalog", "/api/v1/beers?page=0&size=20"],
+    ["the launch check", "/api/v1/app-config"],
+    ["the profile", "/api/v1/profile"],
+  ])("is sent with the call that reads %s, as a valid traceparent", async (_, url) => {
+    await kaliaFetch(url, { method: "GET" });
+
+    const [sent] = sentTraceparents();
+    expect(sent).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/);
+    expect(traceIdOf(sent)).toBeDefined();
+  });
+
+  it("starts a new trace for each call", async () => {
+    await kaliaFetch("/api/v1/beers", { method: "GET" });
+    await kaliaFetch("/api/v1/beers", { method: "GET" });
+
+    const [first, second] = sentTraceparents().map(traceIdOf);
+    expect(first).not.toBe(second);
+  });
+});
+
+describe("a failed request", () => {
   const fetchMock = jest.fn();
   const devFlag = globalThis as { __DEV__?: boolean };
   const original = devFlag.__DEV__;
+  const TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqb3VuaSJ9.c2lnbmF0dXJl";
+  let error: jest.SpyInstance;
   let warn: jest.SpyInstance;
 
   beforeEach(() => {
     Reflect.deleteProperty(globalThis, SLOT);
     fetchMock.mockReset().mockRejectedValue(new TypeError("Network request failed"));
     jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
+    error = jest.spyOn(console, "error").mockImplementation(() => undefined);
     warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
-    registerMobileTransport();
+    const store = fakeTokenStore({ status: "signedIn" });
+    store.getAccessToken.mockResolvedValue(TOKEN);
+    registerMobileTransport(store);
   });
 
   afterEach(() => {
@@ -219,28 +260,40 @@ describe("a request that got no response", () => {
     jest.restoreAllMocks();
   });
 
-  const fetchProfile = () => kaliaFetch("/api/v1/profile?token=secret", { method: "GET" });
+  const fetchProfile = () => kaliaFetch("/api/v1/profile?username=jouni&token=secret", { method: "GET" });
+  const loggedLine = (spy: jest.SpyInstance) => JSON.parse(spy.mock.calls[0][0]);
+  const sentTraceId = () => traceIdOf(new Headers(fetchMock.mock.calls[0][1].headers).get("traceparent"));
 
-  it("is logged by a development build with the origin it tried, and nothing else of the request", async () => {
+  it("logs one line to the device log naming the trace id its error names, in a release build", async () => {
+    devFlag.__DEV__ = false;
+
+    const failure = await fetchProfile().catch((e: unknown) => e);
+
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(loggedLine(error)).toEqual({
+      level: "error",
+      message: "Request failed",
+      method: "GET",
+      path: "/api/v1/profile",
+      kind: "network",
+      traceId: sentTraceId(),
+    });
+    expect(isApiError(failure) && failure.traceId).toBe(sentTraceId());
+    expect((failure as Error).message).toContain(sentTraceId());
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("is written as a warning by a development build, which Metro shows without LogBox's error overlay", async () => {
     devFlag.__DEV__ = true;
 
     await expect(fetchProfile()).rejects.toMatchObject({ kind: "network" });
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith("No response from http://api.test");
-    expect(JSON.stringify(warn.mock.calls)).not.toMatch(/profile|secret|Bearer/);
+    expect(error).not.toHaveBeenCalled();
   });
 
-  it("is not logged by a release build", async () => {
+  it("logs a timeout", async () => {
     devFlag.__DEV__ = false;
-
-    await expect(fetchProfile()).rejects.toMatchObject({ kind: "network" });
-
-    expect(warn).not.toHaveBeenCalled();
-  });
-
-  it("is logged when it times out", async () => {
-    devFlag.__DEV__ = true;
     fetchMock.mockImplementation(() => new Promise(() => undefined));
     jest.useFakeTimers();
     try {
@@ -251,21 +304,40 @@ describe("a request that got no response", () => {
       jest.useRealTimers();
     }
 
-    expect(warn).toHaveBeenCalledWith("No response from http://api.test");
+    expect(loggedLine(error)).toMatchObject({ message: "Request failed", kind: "timeout", traceId: sentTraceId() });
   });
 
-  it("is not logged when the API answered, even with an error status", async () => {
-    devFlag.__DEV__ = true;
+  it("logs an error status the API answered with, and still returns it", async () => {
+    devFlag.__DEV__ = false;
     fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 503 }));
 
     await expect(fetchProfile()).resolves.toMatchObject({ status: 503 });
 
-    expect(warn).not.toHaveBeenCalled();
+    expect(loggedLine(error)).toEqual({
+      level: "error",
+      message: "Request answered with an error status",
+      method: "GET",
+      path: "/api/v1/profile",
+      status: 503,
+      traceId: sentTraceId(),
+    });
   });
 
-  it("still throws the generic network error the screens show", async () => {
-    devFlag.__DEV__ = true;
+  it("logs nothing for a call that succeeded", async () => {
+    devFlag.__DEV__ = false;
+    fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 200 }));
 
-    await expect(fetchProfile()).rejects.toThrow("Could not reach the backend for /api/v1/profile");
+    await fetchProfile();
+
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("puts neither the token, the query string nor the user's name in its line or its error", async () => {
+    devFlag.__DEV__ = false;
+
+    const failure = await fetchProfile().catch((e: unknown) => e);
+
+    const everything = JSON.stringify(error.mock.calls) + String(failure);
+    expect(everything).not.toMatch(/eyJ|jouni|secret|Bearer|\?/);
   });
 });

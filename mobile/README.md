@@ -152,18 +152,43 @@ one.
 A release build has no Metro terminal and no red screen, and Kalia runs no crash
 service: the device's own log is where a developer reads an error
 ([ADR-0098](../docs/adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)).
-The app writes no token, query string or user identity there, and a failed
-request's error names its trace id: search the backend's JSON log for that id
-to find its line ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+The app writes one JSON line per failure to it, through `src/lib/log/deviceLog.ts`,
+with no token, query string or user identity: a failed request is `Request
+failed` (no answer: `kind` is `network` or `timeout`) or `Request answered with
+an error status`, with its `method`, `path`, `status` and `traceId`, and an
+uncaught JavaScript error is `Uncaught error`, with its `source` (`render` or
+`global`), the error's `name` and `message` and its first stack frames. The
+device keeps a line to about 1 KB, so the stack is last and short. The screen
+that shows a failed request prints the same `traceId` as `Reference: <id>`, and
+an uncaught error shows the restart screen with the build number: search the
+backend's JSON log for the id to find its line
+([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
 
 - **iPhone:** connect it to the Mac and trust the Mac, then open Console.app and
   pick the phone in the sidebar, or open Xcode's Window → Devices and
   Simulators, select the phone and choose Open Console. Filter on the process
-  name, `Kalia`. The iOS Simulator logs to the Mac's own log, in the same
-  Console.app.
+  name, `Kalia`, and search for `"level":"error"`: the app's lines are at error
+  level, from the subsystem `com.facebook.react.log`: React Native writes
+  `console.error` as an error the system keeps and shows by default, and
+  `console.warn` as an info message it hides. The iOS Simulator logs to the Mac's own
+  log, in the same Console.app, or from a terminal:
+
+  ```bash
+  xcrun simctl spawn booted log stream --predicate 'process == "Kalia"'
+  ```
+
 - **Android:** `adb logcat` reads the device or emulator, with USB debugging on
   for a phone. `adb logcat '*:S' ReactNativeJS:V` keeps the JavaScript's lines
   only; a native crash is in the unfiltered output.
+
+A development build writes the same lines as warnings, to Metro's terminal.
+
+**One line is not Kalia's and is not scrubbed.** For a render error React also
+writes its own `console.error`, which shows the error and its component stack,
+and a release build's frames there name the folder the app was built in by its
+absolute path, home directory included. Clean such a line before it goes in a
+pull request, a message or any other service (CLAUDE.md, host data); Kalia's
+own `Uncaught error` line beside it carries bundle-relative frames only.
 
 A native crash leaves only what the operating system itself logs: the app
 closes, and no screen of Kalia's says so.
@@ -313,8 +338,9 @@ With phone mode on, the browser on the Mac signs in at the tailnet origin
 (`http://<name>:<WEB_PORT>`), the iOS Simulator needs a build made while it is on
 (`make mobile-ios` reads the same origins), and the Android emulator is not
 supported: `make mobile-android` and `make mobile-e2e` refuse, naming `make
-phone-mode-off`. A development build that cannot reach its API logs `No response
-from <origin>` to Metro's console, which names the origin it tried.
+phone-mode-off`. A development build that cannot reach its API logs a `Request
+failed` line to Metro's console, which names the path and trace id of the call
+([below](#reading-an-installed-builds-errors)).
 
 ### A release build on the iPhone
 
@@ -555,10 +581,15 @@ browser, so a rule stated there and not below still binds.
 - **Arrow functions, no classes, `type` over `interface`, no `console.*`** —
   enforced by ESLint, as on the web
   ([ADR-0037](../docs/adr/0037-functional-modules.md),
-  [ADR-0013](../docs/adr/0013-logging-conventions.md)).
+  [ADR-0013](../docs/adr/0013-logging-conventions.md)). What the app writes to
+  the device's log goes through `src/lib/log/deviceLog.ts`, the one exempt
+  file; it takes fields, never an object a token or a user could be inside.
 
 **Data and configuration**
 
+- **Client UI state goes in a feature-scoped Zustand store**,
+  `features/<feature>/store.ts`, never API data
+  ([ADR-0009](../docs/adr/0009-zustand-ui-state.md)).
 - **The generated client is reached only through a feature's `api.ts`**, never
   edited by hand, and regenerated with `make api-drift` from the repository
   root ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
