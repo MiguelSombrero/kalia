@@ -5,13 +5,18 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
-import { catalogHref, homeHref, ownCellarHref } from "@/lib/routes";
+import { adminHref, catalogHref, homeHref, ownCellarHref } from "@/lib/routes";
 
-type Props = { locale: Locale; variant?: "bar" | "menu" };
+type Props = {
+  locale: Locale;
+  variant?: "bar" | "menu";
+  isAdmin?: boolean;
+};
 
 const navItems = ["home", "catalog", "cellar"] as const;
+type NavItem = (typeof navItems)[number] | "admin";
 
-const hrefFor = (locale: Locale, item: (typeof navItems)[number]): string => {
+const hrefFor = (locale: Locale, item: NavItem): string => {
   switch (item) {
     case "home":
       return homeHref(locale);
@@ -19,6 +24,8 @@ const hrefFor = (locale: Locale, item: (typeof navItems)[number]): string => {
       return catalogHref(locale);
     case "cellar":
       return ownCellarHref(locale);
+    case "admin":
+      return adminHref(locale);
   }
 };
 
@@ -40,14 +47,15 @@ const stateClasses = {
   menu: { active: "border-l-foreground font-bold text-foreground", idle: "border-l-transparent text-muted-foreground" },
 } as const;
 
-export const SiteNav = ({ locale, variant = "bar" }: Props) => {
+export const SiteNav = ({ locale, variant = "bar", isAdmin = false }: Props) => {
   const pathname = usePathname();
   const { t } = useTranslation();
   const homeHref = hrefFor(locale, "home");
+  const items: readonly NavItem[] = isAdmin ? [...navItems, "admin"] : navItems;
 
   return (
     <nav aria-label={t("nav.label")} className={navClasses[variant]}>
-      {navItems.map((item) => {
+      {items.map((item) => {
         const href = hrefFor(locale, item);
         // Home's href prefixes every route; exact match only (see SiteNav.test.tsx).
         const active = item === "home" ? pathname === homeHref : isActive(pathname, href);

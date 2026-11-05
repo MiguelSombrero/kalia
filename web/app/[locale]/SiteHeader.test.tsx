@@ -1,17 +1,30 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
+const { auth, currentAccessToken, navProps } = vi.hoisted(() => ({
+  auth: vi.fn(),
+  currentAccessToken: vi.fn(),
+  navProps: [] as Record<string, unknown>[],
+}));
 vi.mock("@/auth", () => ({ auth }));
+vi.mock("@/lib/api/accessToken", () => ({ currentAccessToken }));
 vi.mock("@/features/auth", () => ({
   AuthStatus: ({ name, placement }: { name: string | null; placement: string }) => (
     <div data-testid={`auth-${placement}`}>{name === null ? "signed-out" : name}</div>
   ),
 }));
-vi.mock("@/features/navigation", async () => ({
-  ...(await vi.importActual<object>("@/features/navigation/index")),
-  SiteBrand: () => <a href="#brand">brand</a>,
-}));
+vi.mock("@/features/navigation", async () => {
+  const actual = await vi.importActual<typeof import("@/features/navigation")>("@/features/navigation/index");
+  return {
+    ...actual,
+    SiteBrand: () => <a href="#brand">brand</a>,
+    // Records what the server hands the client component, then renders the real one.
+    SiteNav: (props: React.ComponentProps<typeof actual.SiteNav>) => {
+      navProps.push(props);
+      return <actual.SiteNav {...props} />;
+    },
+  };
+});
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -19,9 +32,19 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/en/beers", useSearchPar
 
 import { SiteHeader } from "./SiteHeader";
 
+// An unsigned JWT: the header only decodes the payload, as the web does for the
+// session id.
+const accessTokenWith = (claims: Record<string, unknown>) => {
+  const part = (value: object) => Buffer.from(JSON.stringify(value)).toString("base64url");
+  return `${part({ alg: "none" })}.${part(claims)}.signature`;
+};
+
 beforeEach(() => {
   auth.mockReset();
   auth.mockResolvedValue(null);
+  currentAccessToken.mockReset();
+  currentAccessToken.mockResolvedValue(undefined);
+  navProps.length = 0;
 });
 
 // No axe scan here: jsdom has no stylesheet, so the bar's and the menu's
@@ -63,5 +86,48 @@ describe("SiteHeader", () => {
     await SiteHeader({ locale: "en" });
 
     expect(auth).toHaveBeenCalledTimes(1);
+  });
+
+  describe("the admin entry in the navigation", () => {
+    const signedInWith = (token: string | undefined) => {
+      auth.mockResolvedValue({ user: { name: "Ada", email: "ada@example.com" } });
+      currentAccessToken.mockResolvedValue(token);
+    };
+
+    it("shows Admin, linking to the admin area with no count, in the bar and the menu, to an admin", async () => {
+      signedInWith(accessTokenWith({ realm_access: { roles: ["default-roles-kalia", "admin"] } }));
+      render(await SiteHeader({ locale: "fi" }));
+
+      const links = screen.getAllByRole("link", { name: "nav.admin" });
+      expect(links).toHaveLength(2);
+      for (const link of links) {
+        expect(link).toHaveAttribute("href", "/fi/admin");
+        expect(link).toHaveTextContent(/^nav\.admin$/);
+      }
+    });
+
+    it.each([
+      ["a signed-out visitor", () => undefined],
+      ["a signed-in non-admin", () => accessTokenWith({ realm_access: { roles: ["default-roles-kalia"] } })],
+      ["a session with no role claim", () => accessTokenWith({ sub: "user-1" })],
+    ])("shows no Admin entry to %s", async (_name, token) => {
+      signedInWith(token());
+      render(await SiteHeader({ locale: "en" }));
+
+      expect(screen.queryByRole("link", { name: "nav.admin" })).not.toBeInTheDocument();
+    });
+
+    it("hands the browser a boolean and never the token", async () => {
+      const token = accessTokenWith({ realm_access: { roles: ["admin"] } });
+      signedInWith(token);
+      await SiteHeader({ locale: "en" }).then((header) => render(header));
+
+      expect(navProps.length).toBeGreaterThan(0);
+      for (const props of navProps) {
+        expect(props.isAdmin).toBe(true);
+        expect(JSON.stringify(props)).not.toContain(token);
+        expect(JSON.stringify(props)).not.toContain("realm_access");
+      }
+    });
   });
 });

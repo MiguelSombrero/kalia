@@ -16,9 +16,14 @@
     "home": "Etusivu",
     "catalog": "Oluet",
     "cellar": "Kellari",
+    "admin": "Ylläpito",
     "menu": "Valikko",
     "closeMenu": "Sulje valikko",
     "language": "Kieli"
+  },
+  "admin": {
+    "pageTitle": "Ylläpito — Kalia",
+    "title": "Ylläpito"
   },
   "placeholder": {
     "comingSoon": "Tulossa pian"

@@ -1,6 +1,6 @@
 # Task 10: The web keeps everyone but an admin out of the admin area
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-1
 
@@ -82,22 +82,22 @@ the Playwright suite's admin account that every later admin spec signs in as.
 
 ## Acceptance criteria
 
-- [ ] A Playwright test signs in as an admin the suite provisions and reaches
+- [x] A Playwright test signs in as an admin the suite provisions and reaches
       the admin route; signs in as an ordinary worker account, and visits
       signed out, and each time is answered status `404` and the not-found
       page — without the admin page's content in the response — in both
       locales
-- [ ] A component test shows the navigation entry, reading "Admin" and
+- [x] A component test shows the navigation entry, reading "Admin" and
       "Ylläpito" and showing no count, to an admin and to nobody else — a
       signed-out visitor, a signed-in non-admin and a session with no role
       claim
-- [ ] A test shows the admin decision is made server-side from the session: a
+- [x] A test shows the admin decision is made server-side from the session: a
       request that carries an admin hint of its own (a cookie, a header, a
       query parameter) but a non-admin session is answered the not-found page,
       and the props that reach the browser hold a boolean and no token
-- [ ] The route is reachable through the edge — Playwright run against the edge
+- [x] The route is reachable through the edge — Playwright run against the edge
       origin
-- [ ] `npm test`, `npm run lint` and `npm run build` are green, and
+- [x] `npm test`, `npm run lint` and `npm run build` are green, and
       `make verify-fast`
 
 ## Notes

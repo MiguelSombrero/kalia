@@ -171,6 +171,40 @@ const ensureKeycloakAccount = async (
   expect(winner, `could not create Keycloak user ${account.username}`).toBeTruthy();
 };
 
+// Re-granting a role the user already holds is a no-op in Keycloak.
+const grantRealmRole = async (
+  apiRequest: APIRequestContext,
+  adminToken: string,
+  userId: string,
+  roleName: string,
+): Promise<void> => {
+  const headers = { Authorization: `Bearer ${adminToken}` };
+  const roleResponse = await apiRequest.get(
+    `${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/${REALM}/roles/${roleName}`,
+    { headers },
+  );
+  expect(roleResponse.ok(), `the realm has no role ${roleName}`).toBeTruthy();
+  const role = (await roleResponse.json()) as { id: string; name: string };
+
+  const grant = await apiRequest.post(
+    `${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/${REALM}/users/${userId}/role-mappings/realm`,
+    { headers, data: [role] },
+  );
+  expect(grant.ok(), `could not grant ${roleName} to Keycloak user ${userId}`).toBeTruthy();
+};
+
+// The suite's own admin, never the stack's seeded `testadmin` (ADR-0101).
+export const ensureAdminAccount = async (
+  apiRequest: APIRequestContext,
+  account: KeycloakAccount,
+): Promise<void> => {
+  const adminToken = await keycloakAdminToken(apiRequest);
+  await ensureKeycloakAccount(apiRequest, adminToken, account);
+  const user = await findKeycloakUser(apiRequest, adminToken, account.username);
+  expect(user, `Keycloak user ${account.username} missing right after provisioning`).toBeTruthy();
+  await grantRealmRole(apiRequest, adminToken, user!.id, "admin");
+};
+
 /**
  * A new account of its own for a test that must start from an empty, private
  * cellar, or that must not share the worker `account` below.
@@ -204,7 +238,7 @@ export const signIn = async (page: Page, account: KeycloakAccount): Promise<void
 // provisioned-account pool past the worker count over a long or flaky run.
 export const test = base.extend<
   { signUpBudget: void },
-  { account: KeycloakAccount; valkey: Redis }
+  { account: KeycloakAccount; adminAccount: KeycloakAccount; valkey: Redis }
 >({
   account: [
     async ({}, use, workerInfo) => {
@@ -222,6 +256,25 @@ export const test = base.extend<
       }
 
       await use(account);
+    },
+    { scope: "worker" },
+  ],
+
+  adminAccount: [
+    async ({}, use, workerInfo) => {
+      const adminAccount: KeycloakAccount = {
+        username: `e2e-admin-${workerInfo.parallelIndex}`,
+        password: ACCOUNT_PASSWORD,
+      };
+
+      const apiRequest = await request.newContext();
+      try {
+        await ensureAdminAccount(apiRequest, adminAccount);
+      } finally {
+        await apiRequest.dispose();
+      }
+
+      await use(adminAccount);
     },
     { scope: "worker" },
   ],

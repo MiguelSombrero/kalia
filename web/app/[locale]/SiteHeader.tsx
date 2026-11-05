@@ -5,9 +5,11 @@ import { LocaleSwitcher } from "@/features/i18n";
 import { MobileMenu, MobileMenuButton, MobileMenuPanel, SiteBrand, SiteNav } from "@/features/navigation";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+import { currentUserIsAdmin } from "@/lib/auth/adminRole";
 
 export const SiteHeader = async ({ locale }: { locale: Locale }) => {
   const [session, { t }] = await Promise.all([auth(), getTranslation(locale)]);
+  const isAdmin = session?.user ? await currentUserIsAdmin() : false;
   const name = session?.user ? (session.user.name ?? session.user.email ?? "") : null;
 
   return (
@@ -16,7 +18,7 @@ export const SiteHeader = async ({ locale }: { locale: Locale }) => {
         <div className={shellFrame}>
           <div className="flex min-h-14 items-center gap-2">
             <SiteBrand locale={locale} />
-            <SiteNav locale={locale} variant="bar" />
+            <SiteNav locale={locale} variant="bar" isAdmin={isAdmin} />
             <div className="flex-1" />
             <div className="hidden items-center gap-2 lg:flex">
               <AuthStatus locale={locale} name={name} placement="bar" />
@@ -28,7 +30,7 @@ export const SiteHeader = async ({ locale }: { locale: Locale }) => {
             </div>
           </div>
           <MobileMenuPanel>
-            <SiteNav locale={locale} variant="menu" />
+            <SiteNav locale={locale} variant="menu" isAdmin={isAdmin} />
             <AuthStatus locale={locale} name={name} placement="menu" />
             <div className="flex items-center justify-between">
               <span className="text-label font-semibold uppercase text-muted-foreground">
