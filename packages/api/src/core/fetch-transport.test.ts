@@ -267,6 +267,7 @@ describe("the trace of a call", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it("sends the header its source supplies when the call has none", async () => {
@@ -344,7 +345,6 @@ describe("the trace of a call", () => {
 
     await vi.advanceTimersByTimeAsync(60);
     const failure = await call;
-    vi.useRealTimers();
 
     expect(isApiError(failure) && [failure.kind, failure.traceId]).toEqual(["timeout", "0af7651916cd43dd8448eb211c80319c"]);
   });

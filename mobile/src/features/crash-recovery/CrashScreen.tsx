@@ -7,6 +7,7 @@ import { ActionButton } from "@/components/ActionButton";
 import { BuildInfo } from "@/components/BuildInfo";
 import { ErrorReference } from "@/components/ErrorReference";
 import { createI18n } from "@/lib/i18n/createI18n";
+import { scrub } from "@/lib/log/deviceLog";
 
 const Content = ({ error, onRestart }: { error: Error; onRestart: () => void }) => {
   const { t } = useTranslation();
@@ -17,6 +18,7 @@ const Content = ({ error, onRestart }: { error: Error; onRestart: () => void }) 
         {t("error.title")}
       </Text>
       <Text style={styles.body}>{t("error.crash.body")}</Text>
+      {__DEV__ ? <Text style={styles.detail}>{scrub(error.message)}</Text> : null}
       <ErrorReference error={error} />
       <BuildInfo />
       <ActionButton label={t("error.crash.restart")} onPress={onRestart} />
@@ -41,5 +43,6 @@ export const CrashScreen = ({ locale, error, onRestart }: { locale: Locale; erro
 const styles = StyleSheet.create({
   screen: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#ffffff" },
   title: { fontSize: 28, fontWeight: "700", color: "#111111" },
+  detail: { marginTop: 8, fontSize: 13, color: "#8a1c1c" },
   body: { marginTop: 8, fontSize: 17, color: "#444444" },
 });

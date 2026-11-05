@@ -12,6 +12,6 @@ export const logUncaught = (error: Error, source: UncaughtSource): void => {
     name: error.name,
     error: scrub(error.message).slice(0, MESSAGE_LIMIT),
     traceId: isApiError(error) ? error.traceId : undefined,
-    stack: error.stack ? scrub(error.stack.split("\n").slice(0, STACK_FRAMES).join("\n")) : undefined,
+    stack: error.stack ? scrub(error.stack.split("\n").slice(1, STACK_FRAMES + 1).join("\n")) : undefined,
   });
 };

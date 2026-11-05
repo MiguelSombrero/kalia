@@ -4,7 +4,7 @@ describe("scrub", () => {
   it.each([
     ["a URL's query string", "failed https://api.test/api/v1/beers?q=ipa&token=abc now", "failed https://api.test/api/v1/beers now"],
     ["a path's query string", "GET /api/v1/profile?user=jouni failed", "GET /api/v1/profile failed"],
-    ["a build machine's absolute path", "at CellarScreen (/Users/someone/Library/Build/Release-iphonesimulator/main.jsbundle:119040:22)", "at CellarScreen (main.jsbundle:119040:22)"],
+    ["a build machine's absolute path", `at CellarScreen (${["", "Users", "someone"].join("/")}/Library/Build/main.jsbundle:119040:22)`, "at CellarScreen (main.jsbundle:119040:22)"],
     ["a bearer token", "rejected Bearer abc.def", "rejected Bearer [removed]"],
     ["a JWT", "bad token eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln here", "bad token [removed] here"],
     ["text with nothing to remove", "Undefined is not a function", "Undefined is not a function"],

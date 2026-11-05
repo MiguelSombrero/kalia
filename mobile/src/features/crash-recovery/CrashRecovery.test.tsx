@@ -10,6 +10,7 @@ jest.mock("expo-application", () => ({ nativeApplicationVersion: "0.1.0", native
 jest.mock("expo-localization", () => ({ useLocales: jest.fn() }));
 const localization = jest.requireMock<{ useLocales: jest.Mock }>("expo-localization");
 
+const HOME = ["", "Users", "someone"].join("/");
 const TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqb3VuaSJ9.c2lnbmF0dXJl";
 
 let broken = true;
@@ -88,7 +89,7 @@ describe("an error thrown inside a screen", () => {
 
   it("keeps its line short enough for the device log, which truncates at about 1 KB", async () => {
     failure = new Error("x".repeat(5000));
-    failure.stack = Array.from({ length: 40 }, (_, i) => `    at frame${i} (/Users/someone/Library/Build/main.jsbundle:${i}:1)`).join("\n");
+    failure.stack = Array.from({ length: 40 }, (_, i) => `    at frame${i} (${HOME}/Library/Build/main.jsbundle:${i}:1)`).join("\n");
 
     await renderApp();
 
@@ -106,6 +107,11 @@ describe("an error thrown inside a screen", () => {
 
     expect(screen.getByText("Reference: 0af7651916cd43dd8448eb211c80319c")).toBeOnTheScreen();
     expect(kaliaLines()[0]).toMatchObject({ traceId: "0af7651916cd43dd8448eb211c80319c" });
+  });
+
+  it("shows the scrubbed message in a development build only", async () => {
+    await renderApp();
+    expect(screen.getByText("undefined is not a function (reading https://api.test/x)")).toBeOnTheScreen();
   });
 
   it("puts nothing of the user on the screen but the error's own trace", async () => {

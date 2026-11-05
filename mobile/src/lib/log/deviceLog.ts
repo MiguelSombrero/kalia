@@ -6,7 +6,7 @@ type Fields = Record<string, string | number | boolean | undefined>;
 export const scrub = (text: string): string =>
   text
     .replace(/(?:file:\/\/)?\/(?:Users|home|private)\/[^\s()]*\/([^\s/()]+)/g, "$1")
-    .replace(/(\bhttps?:\/\/[^\s?#"']*|\/[\w./~%-]*)\?[^\s"']*/g, "$1")
+    .replace(/(\bhttps?:\/\/[^\s?#"']*|\/[\w./~%-]*)\?[^\s"')]*/g, "$1")
     .replace(/\bBearer\s+\S+/gi, "Bearer [removed]")
     .replace(/\beyJ[\w-]+\.[\w-]+\.[\w-]*/g, "[removed]");
 
