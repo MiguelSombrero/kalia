@@ -62,12 +62,21 @@ this file is checked against it.
 - [ ] An `@ApplicationModuleTest` scenario shows an approval, a rejection and
       an edited approval each writing one notification for the contributor,
       and a redelivered event writing none
+- [ ] The same scenario shows a notification freezing the outcome, the beer's
+      id, the name as decided, the name as suggested when edited and the
+      reason code, a later edit or removal of the beer leaving it unchanged,
+      and a removal event writing none
+- [ ] The same scenario shows a decision on the admin's own suggestion
+      notifying the admin as contributor
 - [ ] An integration test reads a user's notifications and unread count,
-      acknowledges one, and the count falls
+      acknowledges one, and the count falls; the count is read without the
+      notifications, and the list is paginated and its parameters bounded
 - [ ] An integration test shows another user can neither read nor acknowledge
-      them, and an anonymous caller is refused
+      them, that acknowledging another user's is answered exactly as a
+      notification that does not exist, and an anonymous caller is refused
 - [ ] An acknowledged notification's row is deleted, and an unread one is kept
-      whatever its age — test
+      whatever its age — test; opening the list leaves every notification
+      unread
 - [ ] The `notification` module passes `ModularityTest`, `ArchitectureTest` and
       `ArchitectureDocumentationTest`, and is in §3's table and §2's diagram
 - [ ] The committed spec carries the operations, and the glossary the terms

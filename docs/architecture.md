@@ -1546,6 +1546,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0100](adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md) | Postgres has three roles — one that owns the schema for Flyway, one that reads and writes rows, one for Keycloak — and the superuser belongs to Postgres alone | accepted | 2026-11-02 |
 | [ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md) | An admin is a realm role in the access token, which the backend enforces on one path prefix and the web reads in its BFF | accepted | 2026-11-05 |
 | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) | A suggestion is a pending beer with its new brewery, and an admin reviews it inside catalog, which publishes one event per decision | accepted | 2026-11-05 |
+| [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) | A contributor is told what became of a suggestion by a notification that a new module keeps until they acknowledge it, and then deletes | accepted | 2026-11-05 |
 
 ### Engineering process and documentation
 

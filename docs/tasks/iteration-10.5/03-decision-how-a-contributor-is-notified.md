@@ -1,6 +1,6 @@
 # Task 03: Decide how a contributor is told what became of a suggestion
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-3, DW-4
 
@@ -88,10 +88,10 @@ learns there is something unread, and how long a notification is kept.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the owning module, the notification's content and source
+- [x] An ADR records the owning module, the notification's content and source
       events, what "read" means, how unread ones are discovered, retention,
       and the rejected alternatives, and passes `node scripts/check-adrs.mjs`
-- [ ] Each test the decision implies — one notification per decision under a
+- [x] Each test the decision implies — one notification per decision under a
       redelivered event, a notification acknowledged and gone, another user
       unable to read or acknowledge it — is named in the acceptance criteria of
       [task 09](09-a-contributor-is-told-what-became-of-their-suggestion.md)

@@ -125,6 +125,15 @@ nobody has committed to becomes a constraint anyway.
   rather than Modulith's restart property. A completed publication is
   deleted.
 
+## Notifications
+
+- [ADR-0103](0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md)
+  — a new `notification` module keeps one notification per review decision,
+  written by an idempotent listener on `SuggestionReviewed` that freezes the
+  decision's facts. The contributor acknowledges each on its own and the row is
+  deleted then; an unread one never expires; the web reads the unread count once
+  per signed-in page render.
+
 ## Profiles and public cellars
 
 What a user is to other users, and how the one thing they can publish is
