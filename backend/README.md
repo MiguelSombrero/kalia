@@ -172,9 +172,12 @@ Notable suites:
   `/v3/api-docs` serves (ADR-0093). After an API change, `make openapi-spec`
   rewrites the file and regenerates the client; commit both. The test serves
   the spec without the `src/test` probe controllers, and without `servers`,
-  whose port changes per run
+  whose port changes per run; it pins the Keycloak issuer setting, so an
+  environment that overrides it does not fail the test, and finds the file
+  from its own classpath, so the working directory does not matter
 - `ApiErrorDocumentationIT` — reads `/v3/api-docs`: every operation lists an
-  error, an authenticated one a `401`, one taking input a `400`, each as
+  error, an authenticated one a `401`, one taking input a `400`, one taking a
+  body a `415` (added once by `UnsupportedMediaTypeDocumentation`), each as
   problem+json with a declared schema that nests nothing under `properties`
   (ADR-0014); `ErrorBodyShapesIT` pins the same shapes on the wire, and
   `ProblemJsonSecurityErrorsIT` the filter chain's `401` body and challenge

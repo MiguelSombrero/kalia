@@ -40,7 +40,7 @@ class UnexpectedFailureDocumentation {
 		};
 	}
 
-	private static Schema<?> problemSchemaIn(OpenAPI openApi) {
+	static Schema<?> problemSchemaIn(OpenAPI openApi) {
 		if (openApi.getComponents() == null) {
 			openApi.setComponents(new Components());
 		}

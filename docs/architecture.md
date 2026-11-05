@@ -640,7 +640,10 @@ Conventions:
   challenge. An error with fields of its own (a validation `400`'s `errors`, a
   duplicate's existing ids) is a declared type whose members sit at the top
   level of the body and in the OpenAPI spec, so a generated client types them;
-  every operation documents its error codes. `detail` only ever carries
+  every operation documents its error codes, and one that takes a body its
+  `415`. The contract leaves `406` out: no client sends a restrictive
+  `Accept`, so a refusal of one is not a response a client could meet.
+  `detail` only ever carries
   messages from exception types designed as API responses; unexpected
   exceptions return message-less problems and are logged
   ([ADR-0014](adr/0014-shared-exception-handling.md); see backend/README.md

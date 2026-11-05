@@ -216,6 +216,11 @@ export type addBeerResponse409 = {
   status: 409
 }
 
+export type addBeerResponse415 = {
+  data: Problem
+  status: 415
+}
+
 export type addBeerResponse429 = {
   data: Problem
   status: 429
@@ -229,7 +234,7 @@ export type addBeerResponse500 = {
 export type addBeerResponseSuccess = (addBeerResponse201) & {
   headers: Headers;
 };
-export type addBeerResponseError = (addBeerResponse400 | addBeerResponse401 | addBeerResponse404 | addBeerResponse409 | addBeerResponse429 | addBeerResponse500) & {
+export type addBeerResponseError = (addBeerResponse400 | addBeerResponse401 | addBeerResponse404 | addBeerResponse409 | addBeerResponse415 | addBeerResponse429 | addBeerResponse500) & {
   headers: Headers;
 };
 

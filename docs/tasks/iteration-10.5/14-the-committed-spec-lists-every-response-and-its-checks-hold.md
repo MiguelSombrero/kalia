@@ -1,6 +1,6 @@
 # Task 14: The committed spec lists every response, and its own checks hold anywhere
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -58,15 +58,15 @@ it.
 
 ## Acceptance criteria
 
-- [ ] `ApiErrorDocumentationIT` (or a sibling test) fails a body-taking
+- [x] `ApiErrorDocumentationIT` (or a sibling test) fails a body-taking
       operation that omits `415`, and the regenerated client types it
-- [ ] §4 records that the contract leaves `406` out, and why
-- [ ] `CommittedOpenApiSpecIT` passes with the issuer overridden, and when run
+- [x] §4 records that the contract leaves `406` out, and why
+- [x] `CommittedOpenApiSpecIT` passes with the issuer overridden, and when run
       from the repository root — both shown in the test, and the second
       confirmed to fail before
-- [ ] `ci-changes.test.mjs` shows a change to `scripts/check-api-breaking.mjs`
+- [x] `ci-changes.test.mjs` shows a change to `scripts/check-api-breaking.mjs`
       alone selecting `api-breaking-change`
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

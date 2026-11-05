@@ -22,22 +22,22 @@ finds out what became of theirs, which replaces the SQL moderation script.
 
 | ID | Task | Status |
 |---|---|---|
-| [14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md) | The committed spec lists every response, and its own checks hold anywhere | refined |
+| [14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md) | The committed spec lists every response, and its own checks hold anywhere | done |
 | [13](iteration-10.5/13-domain-time-from-the-clock-and-one-read-per-duplicate.md) | Domain timestamps come from the Clock, and a duplicate brewery is read once | done |
 | [01](iteration-10.5/01-decision-who-is-an-admin.md) | Decide who is an admin, and how every tier knows it | done |
 | [02](iteration-10.5/02-decision-what-reviewing-a-suggestion-does.md) | Decide what a suggestion is and what reviewing one does | done |
 | [03](iteration-10.5/03-decision-how-a-contributor-is-notified.md) | Decide how a contributor is told what became of a suggestion | done |
 | [15](iteration-10.5/15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md) | Decide what deleting an account does to what Kalia keeps forever | refined |
-| [04](iteration-10.5/04-the-admin-role-exists-and-the-api-refuses-everyone-else.md) | The admin role exists, and the API refuses everyone else | needs-refinement |
-| [05](iteration-10.5/05-an-admin-reads-the-review-queue.md) | An admin reads the queue of suggestions waiting for review | needs-refinement |
-| [06](iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md) | An admin approves or rejects a suggestion, and one event says so | needs-refinement |
-| [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | needs-refinement |
-| [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and an admin can remove an approved beer | needs-refinement |
+| [04](iteration-10.5/04-the-admin-role-exists-and-the-api-refuses-everyone-else.md) | The admin role exists, and the API refuses everyone else | refined |
+| [05](iteration-10.5/05-an-admin-reads-the-review-queue.md) | An admin reads the queue of suggestions waiting for review | refined |
+| [06](iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md) | An admin approves or rejects a suggestion, and one event says so | refined |
+| [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | refined |
+| [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and an admin can remove an approved beer | refined |
 | [09](iteration-10.5/09-a-contributor-is-told-what-became-of-their-suggestion.md) | A contributor is told what became of their suggestion | needs-refinement |
-| [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | needs-refinement |
+| [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | refined |
 | [16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md) | The backend's request limit holds for the calls the web makes on a visitor's behalf | refined |
 | [11](iteration-10.5/11-design-the-admin-review-page.md) | An admin reviews suggestions on a page of their own | needs-refinement |
-| [20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md) | An admin removes an approved beer from its page | needs-refinement |
+| [20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md) | An admin removes an approved beer from its page | refined |
 | [12](iteration-10.5/12-design-the-contributors-notifications.md) | A contributor sees what became of their suggestion until they have read it | needs-refinement |
 | [17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md) | A feed that opened empty polls only for what is new | refined |
 | [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | refined |
@@ -97,14 +97,16 @@ The table's order is the order of work:
   ([10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md)),
   the backend bound on calls made through the web
   ([16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md))
-  before the pages add Server Actions that change data, and the two design
+  before the pages add Server Actions that change data, the two design
   tasks — the review page
-  ([11](iteration-10.5/11-design-the-admin-review-page.md)), then removing an
-  approved beer from its page
-  ([20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md)),
-  and the contributor's notifications
+  ([11](iteration-10.5/11-design-the-admin-review-page.md)) and the
+  contributor's notifications
   ([12](iteration-10.5/12-design-the-contributors-notifications.md)), whose
-  Playwright journey covers the iteration end to end.
+  Playwright journey covers the iteration end to end — and, between them,
+  removing an approved beer from its page
+  ([20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md)),
+  an ordinary task: one action and one confirmation leave nothing to choose
+  between built alternatives.
 - **Last, quality work on other surfaces:** the empty feed's poll
   ([17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md)), cellar
   writes reading back as made
