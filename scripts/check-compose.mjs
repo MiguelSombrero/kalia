@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 import { renderMatrix } from "./scan-images.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const ADR_0090 = "0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md";
 
 /** Variables a compose file refuses to render without: `${NAME:?message}`. */
 export const requiredVariables = (composeText) => [
@@ -110,6 +111,119 @@ export const edgeProblems = (services) => {
   const keycloak = services.keycloak?.environment ?? {};
   if (keycloak.KC_PROXY_HEADERS !== "xforwarded" || !keycloak.KC_PROXY_TRUSTED_ADDRESSES) {
     problems.push("keycloak does not take the client address from X-Forwarded-For only from trusted addresses");
+  }
+  return problems;
+};
+
+/** The zones, bursts and backend-call figures ADR-0090's limits are computed from (edge/limits.json). */
+export const readEdgeLimits = () => JSON.parse(readFileSync(join(ROOT, "edge", "limits.json"), "utf8"));
+
+/** `{ name: { rate, key } }` for every `limit_req_zone` in an nginx configuration. */
+const zonesDeclared = (nginxText) =>
+  Object.fromEntries(
+    [...nginxText.matchAll(/limit_req_zone\s+(\S+)\s+zone=(\w+):\w+\s+rate=(\S+?);/g)].map((match) => [match[2], { key: match[1], rate: match[3] }]),
+  );
+
+/** `{ name: [burst, ...] }`, ascending and without repeats, for every `limit_req` that applies a zone. */
+const burstsApplied = (nginxText) => {
+  const applied = {};
+  for (const match of nginxText.matchAll(/limit_req\s+zone=(\w+)\s+burst=(\d+)/g)) {
+    applied[match[1]] = [...new Set([...(applied[match[1]] ?? []), Number(match[2])])].sort((a, b) => a - b);
+  }
+  return applied;
+};
+
+/** The text between the braces opening at `open`, which must index a `{`. */
+const bracedFrom = (text, open) => {
+  let depth = 0;
+  for (let at = open; at < text.length; at += 1) {
+    if (text[at] === "{") depth += 1;
+    else if (text[at] === "}" && --depth === 0) return text.slice(open + 1, at);
+  }
+  return "";
+};
+
+/** The body of the web app's catch-all `location /`, or "" when there is none. */
+const webCatchAll = (nginxText) => {
+  for (const server of nginxText.matchAll(/\bserver\s*\{/g)) {
+    const body = bracedFrom(nginxText, server.index + server[0].length - 1);
+    if (!/listen\s+3000;/.test(body)) continue;
+    const location = body.match(/location\s+\/\s*\{/);
+    return location ? bracedFrom(body, location.index + location[0].length - 1) : "";
+  }
+  return "";
+};
+
+/** ADR-0090's rate cell as nginx writes it: "150 per second" is `150r/s`. */
+const nginxRate = (cell) => {
+  const match = cell.match(/^(\d+) per (second|minute)$/);
+  return match ? `${match[1]}r/${match[2][0]}` : cell;
+};
+
+/** `{ zone: { rate, burst } }` from the rows of ADR-0090's zone table. */
+const zonesInAdr = (adrText) =>
+  Object.fromEntries(
+    adrText
+      .split("\n")
+      .map((line) => line.split("|").map((cell) => cell.trim()))
+      .filter((cells) => cells.length >= 7 && /^[a-z]+$/.test(cells[1]) && /^\d+ per (second|minute)$/.test(cells[3]))
+      .map((cells) => [cells[1], { rate: nginxRate(cells[3]), burst: Number(cells[4]) }]),
+  );
+
+/** Requests a second one address can sustain on a zone, from its `150r/s` or `6r/m` rate. */
+const perSecond = (rate) => {
+  const [count, unit] = rate.split("r/");
+  return unit === "s" ? Number(count) : Number(count) / 60;
+};
+
+/** The backend calls a second one address can drive through page renders and through Server Actions. */
+export const backendLoad = (limits) => ({
+  pageRenders: perSecond(limits.zones.web.rate) * limits.backendCallsPerPageRender,
+  serverActions: perSecond(limits.zones.action.rate) * limits.backendCallsPerServerAction,
+});
+
+/**
+ * Problems with the edge's zones: every one in `edge/nginx.conf` is pinned in
+ * `edge/limits.json` at its rate and bursts, none pinned is missing, a Server
+ * Action is held by the action zone as well as the web zone, and ADR-0090
+ * states the same table and the backend load the pins compute.
+ */
+export const edgeZoneProblems = ({ nginxText, limits, adrText }) => {
+  const problems = [];
+  const declared = zonesDeclared(nginxText);
+  const bursts = burstsApplied(nginxText);
+  for (const [name, zone] of Object.entries(declared)) {
+    const pinned = limits.zones[name];
+    if (!pinned) problems.push(`nginx.conf declares the zone ${name}, which edge/limits.json does not pin`);
+    else if (zone.rate !== pinned.rate) problems.push(`the zone ${name} allows ${zone.rate}, but edge/limits.json pins ${pinned.rate}`);
+  }
+  for (const [name, pinned] of Object.entries(limits.zones)) {
+    if (!declared[name]) problems.push(`edge/limits.json pins the zone ${name}, which nginx.conf does not declare`);
+    else if (JSON.stringify(bursts[name] ?? []) !== JSON.stringify(pinned.bursts)) {
+      problems.push(`the zone ${name} is applied with bursts [${bursts[name] ?? ""}], but edge/limits.json pins [${pinned.bursts}]`);
+    }
+  }
+
+  if (declared.action && declared.action.key !== "$server_action_caller") {
+    problems.push(`the action zone is keyed on ${declared.action.key}, so it would count more than Server Actions`);
+  }
+  if (!nginxText.includes("$http_next_action")) problems.push("nginx.conf never looks at the Next-Action header that marks a Server Action");
+  const catchAll = webCatchAll(nginxText);
+  for (const zone of ["web", "action"]) {
+    if (!new RegExp(`limit_req\\s+zone=${zone}\\s`).test(catchAll)) problems.push(`the web app's location / does not apply the ${zone} zone`);
+  }
+
+  const inAdr = zonesInAdr(adrText);
+  for (const [name, pinned] of Object.entries(limits.zones)) {
+    const row = inAdr[name];
+    if (!row) problems.push(`ADR-0090's zone table has no row for ${name} with a rate`);
+    else if (row.rate !== pinned.rate || row.burst !== pinned.bursts[0]) {
+      problems.push(`ADR-0090 gives the zone ${name} ${row.rate} with burst ${row.burst}, but edge/limits.json pins ${pinned.rate} with burst ${pinned.bursts[0]}`);
+    }
+  }
+  const load = backendLoad(limits);
+  for (const [what, figure] of [["page renders", load.pageRenders], ["Server Actions", load.serverActions]]) {
+    if (!adrText.includes(`${figure} backend calls a second`)) problems.push(`ADR-0090 does not state ${figure} backend calls a second for ${what}, which edge/limits.json computes`);
   }
   return problems;
 };
@@ -306,6 +420,13 @@ const run = () => {
   if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
 
   problems.push(...deployableSeedProblems({ baseText, services: base.services }));
+  problems.push(
+    ...edgeZoneProblems({
+      nginxText: readFileSync(join(ROOT, "edge", "nginx.conf"), "utf8"),
+      limits: readEdgeLimits(),
+      adrText: readFileSync(join(ROOT, "docs", "adr", ADR_0090), "utf8"),
+    }),
+  );
   problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services), ...devOnlyProblems(base.services), ...roleProblems(base.services));
 
   const scanEnv = { PATH: process.env.PATH, HOME: process.env.HOME, ...everySecret };

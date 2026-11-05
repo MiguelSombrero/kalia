@@ -5,8 +5,9 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
-import { addressProblems, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -302,4 +303,68 @@ test("localSeedProblems fails a password that differs from the dev env file's or
 test("localSeedProblems fails a missing seed service and a dev env file with no admin password", () => {
   assert.match(localSeedProblems(undefined, devEnv)[0], /no keycloak-seed/);
   assert.match(localSeedProblems(seeding(), "A=1\n")[0], /does not give KALIA_DEV_ADMIN_PASSWORD/);
+});
+
+const nginxText = readFileSync(new URL("../edge/nginx.conf", import.meta.url), "utf8");
+const adrText = readFileSync(
+  new URL("../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md", import.meta.url),
+  "utf8",
+);
+const zones = () => ({ nginxText, adrText, limits: readEdgeLimits() });
+
+test("edgeZoneProblems accepts the edge as committed", () => {
+  assert.deepEqual(edgeZoneProblems(zones()), []);
+});
+
+test("edgeZoneProblems names a zone nginx.conf declares that is not pinned", () => {
+  const problems = edgeZoneProblems({
+    ...zones(),
+    nginxText: nginxText.replace("limit_req_zone $binary_remote_addr zone=backend", "limit_req_zone $binary_remote_addr zone=extra:1m rate=1r/s;\n    limit_req_zone $binary_remote_addr zone=backend"),
+  });
+  assert.match(problems[0], /declares the zone extra, which edge\/limits\.json does not pin/);
+});
+
+test("edgeZoneProblems names a pinned zone nginx.conf no longer declares", () => {
+  const problems = edgeZoneProblems({ ...zones(), nginxText: nginxText.replace(/\s*limit_req_zone \$server_action_caller zone=action:10m rate=10r\/s;/, "") });
+  assert.ok(problems.some((problem) => /pins the zone action, which nginx\.conf does not declare/.test(problem)));
+});
+
+test("edgeZoneProblems names a rate that moved", () => {
+  const problems = edgeZoneProblems({ ...zones(), nginxText: nginxText.replace("zone=web:10m rate=150r/s", "zone=web:10m rate=300r/s") });
+  assert.ok(problems.some((problem) => /zone web allows 300r\/s, but edge\/limits\.json pins 150r\/s/.test(problem)));
+});
+
+test("edgeZoneProblems names a burst that moved", () => {
+  const problems = edgeZoneProblems({ ...zones(), nginxText: nginxText.replace("limit_req zone=action burst=30", "limit_req zone=action burst=300") });
+  assert.ok(problems.some((problem) => /zone action is applied with bursts \[300\], but edge\/limits\.json pins \[30\]/.test(problem)));
+});
+
+test("edgeZoneProblems rejects a web catch-all that leaves Server Actions out of the action zone", () => {
+  const problems = edgeZoneProblems({ ...zones(), nginxText: nginxText.replace("            limit_req zone=action burst=30 nodelay;\n", "") });
+  assert.ok(problems.some((problem) => /location \/ does not apply the action zone/.test(problem)));
+  assert.ok(problems.some((problem) => /zone action is applied with bursts \[\], but/.test(problem)));
+});
+
+test("edgeZoneProblems rejects an action zone that counts every request", () => {
+  const problems = edgeZoneProblems({ ...zones(), nginxText: nginxText.replace("limit_req_zone $server_action_caller", "limit_req_zone $binary_remote_addr") });
+  assert.ok(problems.some((problem) => /action zone is keyed on \$binary_remote_addr/.test(problem)));
+});
+
+test("edgeZoneProblems rejects an edge that never looks at the Next-Action header", () => {
+  const problems = edgeZoneProblems({ ...zones(), nginxText: nginxText.replaceAll("$http_next_action", "$http_x_other") });
+  assert.ok(problems.some((problem) => /never looks at the Next-Action header/.test(problem)));
+});
+
+test("edgeZoneProblems names an ADR table row that disagrees with the pins", () => {
+  const problems = edgeZoneProblems({ ...zones(), adrText: adrText.replace("| 150 per second | 300 |", "| 100 per second | 300 |") });
+  assert.ok(problems.some((problem) => /ADR-0090 gives the zone web 100r\/s with burst 300, but edge\/limits\.json pins 150r\/s/.test(problem)));
+});
+
+test("edgeZoneProblems names the backend load the ADR must state", () => {
+  const limits = readEdgeLimits();
+  const load = backendLoad(limits);
+  assert.deepEqual(load, { pageRenders: 600, serverActions: 20 });
+  const raised = { ...limits, backendCallsPerPageRender: limits.backendCallsPerPageRender + 1 };
+  const problems = edgeZoneProblems({ nginxText, adrText, limits: raised });
+  assert.deepEqual(problems, ["ADR-0090 does not state 750 backend calls a second for page renders, which edge/limits.json computes"]);
 });

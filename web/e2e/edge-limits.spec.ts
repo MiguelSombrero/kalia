@@ -168,6 +168,31 @@ test.describe("the edge proxy's limits", () => {
       .toBe(answered);
   });
 
+  test("a Server Action is held to its own zone, tighter than the web zone an ordinary page request is held to", async ({
+    request,
+  }) => {
+    const burst = 120;
+    const statuses = async (send: () => Promise<{ status: () => number }>) =>
+      (await Promise.all(Array.from({ length: burst }, send))).map((response) => response.status());
+    const post = (options: Parameters<typeof request.post>[1]) =>
+      request.post(`${WEB_ORIGIN}/en`, { failOnStatusCode: false, ...options });
+
+    const pages = await statuses(() => request.get(`${WEB_ORIGIN}/api/metrics`, { failOnStatusCode: false }));
+    expect(pages.filter((status) => status === 429), "an ordinary request was refused at this volume").toHaveLength(0);
+
+    const header = await statuses(() => post({ headers: { "Next-Action": "0".repeat(40) } }));
+    expect(header.filter((status) => status === 429).length, "no Server Action was refused").toBeGreaterThan(0);
+    expect(header.filter((status) => status !== 429).length, "the zone let the whole burst through").toBeLessThan(burst / 2);
+
+    // A form posted without JavaScript reaches a Server Action with no header.
+    await expect.poll(async () => (await post({ form: { a: "b" } })).status(), { timeout: 30_000 }).not.toBe(429);
+    const form = await statuses(() => post({ form: { a: "b" } }));
+    expect(form.filter((status) => status === 429).length, "a form post was not held to the zone").toBeGreaterThan(0);
+
+    // The zone refills, so it throttles a flood and not the next person.
+    await expect.poll(async () => (await post({ headers: { "Next-Action": "0".repeat(40) } })).status(), { timeout: 30_000 }).not.toBe(429);
+  });
+
   test("a registration is refused past the limit, at Keycloak's endpoint and through Kalia's button", async ({
     page,
     request,
