@@ -1,4 +1,5 @@
 import { AppGate } from "@/features/app-config";
+import { CrashBoundary, installUncaughtErrorHandler, UncaughtErrorGate } from "@/features/crash-recovery";
 import { resolveLocale } from "@/lib/i18n/resolveLocale";
 import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { AppProviders } from "@/lib/providers/AppProviders";
@@ -7,17 +8,22 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 registerMobileTransport();
+installUncaughtErrorHandler();
+
+export const ErrorBoundary = CrashBoundary;
 
 const RootLayout = () => {
   const locales = useLocales();
 
   return (
-    <AppProviders locale={resolveLocale(locales.map((locale) => locale.languageCode))}>
-      <StatusBar style="dark" />
-      <AppGate>
-        <Stack screenOptions={{ headerShown: false }} />
-      </AppGate>
-    </AppProviders>
+    <UncaughtErrorGate>
+      <AppProviders locale={resolveLocale(locales.map((locale) => locale.languageCode))}>
+        <StatusBar style="dark" />
+        <AppGate>
+          <Stack screenOptions={{ headerShown: false }} />
+        </AppGate>
+      </AppProviders>
+    </UncaughtErrorGate>
   );
 };
 

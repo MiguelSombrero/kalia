@@ -3,8 +3,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
+import { BuildInfo } from "@/components/BuildInfo";
+import { ErrorReference } from "@/components/ErrorReference";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { ownBuildNumber, ownVersion } from "@/lib/build/buildInfo";
 import { useMyProfile } from "./hooks/useMyProfile";
 
 const SignedOut = ({ expired }: { expired: boolean }) => {
@@ -46,22 +47,13 @@ const SignedIn = () => {
       {profile.isError ? (
         <>
           <Text style={styles.notice}>{t("session.profileFailed")}</Text>
+          <ErrorReference error={profile.error} />
           <ActionButton label={t("error.retry")} onPress={() => void profile.refetch()} busy={profile.isFetching} />
         </>
       ) : null}
       <ActionButton label={t("auth.signOut")} onPress={() => void signOut().catch(() => undefined)} />
     </View>
   );
-};
-
-const BuildInfo = () => {
-  const { t } = useTranslation();
-  const version = ownVersion();
-  const build = ownBuildNumber();
-  if (version === null) {
-    return null;
-  }
-  return <Text style={styles.build}>{build === null ? t("profile.about.version", { version }) : t("profile.about.versionBuild", { version, build })}</Text>;
 };
 
 export const ProfileScreen = () => {
@@ -85,6 +77,5 @@ const styles = StyleSheet.create({
   heading: { fontSize: 28, fontWeight: "700", color: "#111111" },
   lead: { marginTop: 16, fontSize: 20, fontWeight: "600", color: "#111111" },
   body: { marginTop: 8, fontSize: 17, color: "#444444" },
-  build: { marginTop: 32, fontSize: 15, color: "#444444" },
   notice: { marginTop: 16, fontSize: 17, color: "#8a1c1c" },
 });
