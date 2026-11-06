@@ -38,6 +38,14 @@ const suggest = async (browser: Browser, baseURL: string | undefined, { name, ne
   }
 };
 
+// Clicking Next returns before the next page has rendered, so counting rows straight away counts the old page's.
+const goToNextQueuePage = async (page: Page, label: string) => {
+  const before = page.url();
+  await page.getByRole("link", { name: label }).click();
+  await page.waitForURL((url) => url.href !== before);
+  await page.waitForLoadState("networkidle");
+};
+
 const openSuggestion = async (page: Page, name: string) => {
   await page.goto("/en/admin");
   const queue = page.getByRole("list", { name: "Queue" });
@@ -45,7 +53,7 @@ const openSuggestion = async (page: Page, name: string) => {
   await expect(queue).toBeVisible();
   const row = queue.getByRole("button", { name: new RegExp(name) });
   for (let attempt = 0; attempt < 20 && (await row.count()) === 0; attempt++) {
-    await page.getByRole("link", { name: "Next" }).click();
+    await goToNextQueuePage(page, "Next");
   }
   await row.click();
   await expect(page.getByRole("heading", { level: 2, name, exact: true })).toBeVisible();
@@ -128,7 +136,7 @@ for (const locale of ["en", "fi"] as const) {
       await expect(page.getByRole("list", { name: locale === "en" ? "Queue" : "Jono" })).toBeVisible();
       const row = page.getByRole("button", { name: new RegExp(name) });
       for (let attempt = 0; attempt < 20 && (await row.count()) === 0; attempt++) {
-        await page.getByRole("link", { name: locale === "en" ? "Next" : "Seuraava" }).click();
+        await goToNextQueuePage(page, locale === "en" ? "Next" : "Seuraava");
       }
       await row.click();
       await expect(page.getByRole("button", { name: labels.approve })).toBeVisible();
