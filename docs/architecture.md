@@ -1123,6 +1123,10 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   (`web/lib/auth/adminRole.ts`), on the server only: `/[locale]/admin` answers
   everyone but an admin, a signed-out visitor included, the not-found page, and
   only a boolean reaches the browser, for the navigation entry.
+  For an admin it is the review page
+  ([ADR-0105](adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)):
+  the queue is read once per render and each decision is one Server Action over
+  `/api/v1/admin/suggestions`.
 - **Only the `edge` proxy is published**, on `127.0.0.1`: the API at
   `BACKEND_PORT` (default 8080, for direct access and Swagger UI on the dev
   machine), the web app and Keycloak each at their own port, every request
@@ -1633,6 +1637,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) | A suggestion is a pending beer with its new brewery, and an admin reviews it inside catalog, which publishes one event per decision | accepted | 2026-11-05 |
 | [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) | A contributor is told what became of a suggestion by a notification that a new module keeps until they acknowledge it, and then deletes | accepted | 2026-11-05 |
 | [ADR-0104](adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) | Deleting an account deletes what is the user's own, unlinks what is shared, and leaves a tombstone of the folded username | accepted | 2026-11-05 |
+| [ADR-0105](adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md) | The admin reviews suggestions in a queue beside the suggestion, edits in place, and rejects through a dialog that asks for the reason | accepted | 2026-11-06 |
 
 ### Engineering process and documentation
 

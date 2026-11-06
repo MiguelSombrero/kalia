@@ -7,7 +7,7 @@ import { expect, signIn, test } from "./support/keycloakAccount";
 const NAV_NAME = { en: "Main navigation", fi: "Päänavigaatio" } as const;
 const ADMIN_LABEL = { en: "Admin", fi: "Ylläpito" } as const;
 const NOT_FOUND_TITLE = { en: "Page not found", fi: "Sivua ei löytynyt" } as const;
-const PLACEHOLDER = { en: "Coming soon", fi: "Tulossa pian" } as const;
+const REVIEW_TITLE = { en: "Review suggestions", fi: "Ehdotusten tarkistus" } as const;
 
 const locales = ["en", "fi"] as const;
 
@@ -20,7 +20,7 @@ const expectNotFound = async (page: Page, path: string, locale: keyof typeof NAV
   expect(response?.status(), `${path} status`).toBe(404);
   await expect(page.getByRole("heading", { level: 1, name: NOT_FOUND_TITLE[locale] })).toBeVisible();
   const body = (await response?.text()) ?? "";
-  expect(body, `${path} body`).not.toContain(PLACEHOLDER[locale]);
+  expect(body, `${path} body`).not.toContain(REVIEW_TITLE[locale]);
   await expect(adminLink(page, locale)).toHaveCount(0);
 };
 
@@ -61,13 +61,12 @@ test.describe("the admin area", () => {
 
     await entry.click();
     await expect(page).toHaveURL(/\/en\/admin$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Admin" })).toBeVisible();
-    await expect(page.getByText(PLACEHOLDER.en)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: REVIEW_TITLE.en })).toBeVisible();
     await expectNoA11yViolations(page);
 
     const response = await page.goto("/fi/admin");
     expect(response?.status()).toBe(200);
-    await expect(page.getByRole("heading", { level: 1, name: "Ylläpito" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: REVIEW_TITLE.fi })).toBeVisible();
     await expect(adminLink(page, "fi")).toHaveAttribute("aria-current", "page");
   });
 });

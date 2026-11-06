@@ -376,6 +376,37 @@ How Kalia tells a visitor what happened. Chosen in
   Making a cellar public asks once, inline, and lists what becomes visible;
   making it private happens at once.
 
+## The admin review page
+
+Kalia's first tool rather than a page for readers: an admin works through the
+suggestions waiting for review. Its structure (a queue beside the suggestion,
+editing in place, a dialog guarding rejection) was chosen from built
+alternatives in [iteration 10.5 task 11](tasks/iteration-10.5/11-design-the-admin-review-page.md)
+([ADR-0105](adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)).
+What holds on it, beyond the rules above:
+
+- **A decided suggestion shows its outcome where it was**, until the admin moves
+  on to the next. The outcome is page state, not only a toast: it says what
+  happened to the beer and, when the brewery came with it, to the brewery.
+- **A brewery left `PENDING` is never called rejected.** Rejecting one of
+  several suggestions that need the same new brewery leaves it waiting, and the
+  page says so.
+- **A refusal is shown where the action was.** A decision lost to another admin
+  says how it was decided and when; one on a suggestion no longer waiting says
+  so; the edit's refusals stay in the form, on the field they name or in the
+  box above it.
+- **Rejecting asks first, and the reason is chosen in the asking.** The red
+  confirm stays disabled until a reason is picked, so a reason is never chosen
+  before the admin has been asked and never skipped.
+- **Editing shows what was suggested.** A changed field says what it was
+  suggested as, and a choice between the brewery a suggestion came with and an
+  existing one is named for what it is, never "as suggested".
+- **An empty queue says nothing is waiting, and loading is the queue's own
+  skeleton.** The admin route has no `loading.tsx`
+  ([web README](../web/README.md)), so the skeleton is drawn below the guard.
+- **Below the large breakpoint the list and the suggestion take turns**, and
+  nothing is marked as chosen while only the list shows.
+
 ## Imagery and the mark
 
 **Kalia draws no pictures of beers.** There are no beer photographs to show,

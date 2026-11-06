@@ -10,7 +10,10 @@ import AdminPage, { generateMetadata } from "./page";
 const tokenWith = async (claims: Record<string, unknown>) =>
   new SignJWT(claims).setProtectedHeader({ alg: "HS256" }).sign(new TextEncoder().encode("secret"));
 
-const props = (locale = "en") => ({ params: Promise.resolve({ locale }) });
+const props = (locale = "en", page?: string) => ({
+  params: Promise.resolve({ locale }),
+  searchParams: Promise.resolve({ page }),
+});
 
 // What notFound() throws: Next's own 404 marker, which its renderer turns into
 // the not-found page and a 404 status.
@@ -39,16 +42,31 @@ describe("the admin page", () => {
     await expect(AdminPage(props())).rejects.toMatchObject(NOT_FOUND);
   });
 
-  it("renders the placeholder for an admin, in each locale", async () => {
+  it("renders the review page for an admin, titled in each locale, with the queue still to load", async () => {
     currentAccessToken.mockResolvedValue(await tokenWith({ realm_access: { roles: ["admin"] } }));
 
     const en = JSON.stringify(await AdminPage(props("en")));
     const fi = JSON.stringify(await AdminPage(props("fi")));
 
-    expect(en).toContain('"children":"Admin"');
-    expect(en).toContain("Coming soon");
-    expect(fi).toContain('"children":"Ylläpito"');
-    expect(fi).toContain("Tulossa pian");
+    expect(en).toContain('"children":"Review suggestions"');
+    expect(fi).toContain('"children":"Ehdotusten tarkistus"');
+    expect(en).not.toContain("Coming soon");
+    expect(fi).not.toContain("Tulossa pian");
+  });
+
+  it.each([
+    [undefined, 0],
+    ["1", 0],
+    ["3", 2],
+    ["0", 0],
+    ["abc", 0],
+    ["-2", 0],
+  ])("asks for the queue's page %s as the API's page %s", async (raw, expected) => {
+    currentAccessToken.mockResolvedValue(await tokenWith({ realm_access: { roles: ["admin"] } }));
+
+    const rendered = JSON.stringify(await AdminPage(props("en", raw)));
+
+    expect(rendered).toContain(`"page":${expected}`);
   });
 
   it("titles the page only for an admin, and otherwise like a missing page", async () => {

@@ -63,3 +63,16 @@ test("no page render makes more backend calls than edge/limits.json pins, and th
   const heaviest = Math.max(...Object.values(measured));
   expect(heaviest, JSON.stringify(measured, null, 1)).toBe(backendCallsPerPageRender);
 });
+
+test("the admin review page's render makes no more backend calls than edge/limits.json pins", async ({
+  page,
+  adminAccount,
+}) => {
+  await page.goto("/en");
+  await signIn(page, adminAccount);
+
+  const made = await callsMadeRendering(page, "/en/admin");
+
+  expect(made, "calls made rendering /en/admin").toBeGreaterThan(0);
+  expect(made, "calls made rendering /en/admin").toBeLessThanOrEqual(backendCallsPerPageRender);
+});

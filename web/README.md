@@ -327,7 +327,10 @@ Why the rationale lives there and not here:
   gets the button at all. `/[locale]/admin` calls `notFound()` before rendering anything of
   itself for a signed-out visitor and a non-admin alike, and has no
   `loading.tsx`: a boundary that streams the shell first would send `200`
-  ahead of the `404`. The token is decoded without checking its signature, so
+  ahead of the `404`; the queue's loading state is therefore a `Suspense`
+  fallback the page renders below that check
+  ([ADR-0105](../docs/adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)).
+  The token is decoded without checking its signature, so
   the backend's own check backs every admin call
   ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - **Per-user data keys on the access token's `sub`**, which the backend reads
