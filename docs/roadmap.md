@@ -35,8 +35,9 @@ and on simulators against the local stack, and what a cost blocks is parked in
 exception: an admin page in the web app that replaces the SQL moderation
 script, before the mobile design work resumes. Iteration 10.5's task files were
 seeded at `needs-refinement` and are refined as the decisions they wait on
-land; iterations 11–14 list planned tasks as one line
-each, their task files written at refinement.
+land; so are iteration 11's, which also carry quality-backlog findings.
+Iterations 12–14 list planned tasks as one line each, their task files written
+at refinement.
 
 **Definition of done (every issue):**
 
