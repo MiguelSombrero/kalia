@@ -1,6 +1,6 @@
 # Task 21: A failure CI would report is caught before the push
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -73,52 +73,76 @@ added is measured against the past failures it would have caught.
   variables, because the pre-push hook exports them
   ([common-failures](../../common-failures.md), 2026-11-01).
 
+**Decided at refinement, 2026-11-06** (product owner):
+
+- **ADR-0046 is amended**, not replaced. It already owns what the pre-push
+  gate runs and why. A new ADR was rejected.
+- **CI parity for root script tests is an import check** in `make check`. It
+  fails a `scripts/*.test.mjs`, or a script one loads, that imports anything
+  but a Node built-in or a repository file, and names the line. Running
+  `make check` against a copy of the tree without `node_modules` was rejected
+  as slower for the same catch.
+- **CodeQL's two patterns get targeted checks in the gate:** a value read
+  from `process.env` or from rendered configuration reaching console output,
+  and stripping comments or markup with a regex. The CodeQL CLI is not
+  adopted, so no new dependency is added. Leaving CodeQL to CI alone was
+  rejected.
+- **`make api-breaking` joins `make verify-fast`,** so `oasdiff` becomes a
+  prerequisite of every push. When a branch was cut before `dev` changed the
+  spec (PR 545), the failure says to merge `dev` in. Requiring it from
+  `implement-task` instead was rejected, because remembering to run it is what
+  failed before.
+  - *Derived:* the target's fetch of `origin/dev` only warns when it fails,
+    so an offline push still runs the check, against the last fetched `dev`.
+  - *Derived:* the README lists `oasdiff` as a prerequisite of
+    `make verify-fast`. The version stays where ADR-0093 records it.
+- **The Action-pin check runs in `make verify` and CI, not in the gate,** so
+  an offline push still works. It fails a workflow that pins an Action to a
+  commit SHA that does not exist. Putting it in the gate, or not adopting it,
+  was rejected.
+- **Stale contract tests are named in `implement-task`,** not mapped by a
+  script. The procedure names the changes that need them (a DTO, an endpoint,
+  an error type, `backend/openapi.json`) and the Maven command that runs the
+  documentation integration tests before the push. They need Docker, so they
+  stay out of the gate.
+- **The replay uses the Why's list:** PR 536 (the `sharp` import), PRs 500 and
+  541 (clear-text logging), PR 545 (regex sanitization) and PR 546
+  (`api-breaking`). Each check must catch every failure it targets, and a miss
+  is reported with its cause. A wider set held to a majority was rejected.
+- **The new checks may add at most 10 s** to `make verify-fast`, measured
+  before and after on the same machine. It measured about 42 s on the product
+  owner's Mac on 2026-11-06, against the ~10 s that `CLAUDE.md` states.
+  **`CLAUDE.md`'s figure is corrected** to the measured one.
+  - *Derived:* `README.md` states the same figure and is corrected with it.
+
 ## Open questions
 
-1. **Decision home.** Is this an amendment of ADR-0046 (what the pre-push gate
-   runs), or a new ADR because it adds a check outside the gate?
-2. **CI parity for root script tests.** Which: a check that fails a
-   `scripts/*.test.mjs` importing anything but Node built-ins, or running
-   `make check` against a copy of the tree without `node_modules`? The first
-   is fast; the second is closer to CI.
-3. **CodeQL locally.** Should the gate run the CodeQL CLI, if its licence
-   allows that here, or grow two targeted checks for the patterns that fired:
-   an environment or config value reaching `console.log`, and regex
-   sanitization? The CLI is complete but slow; the targeted checks are fast
-   but cover only what has already happened.
-4. **`make api-breaking`.** Should it move into `make verify-fast`, which makes
-   `oasdiff` a prerequisite of every push and blocks a stale branch the way
-   PR 545 was blocked? Or should `implement-task` require it whenever
-   `backend/openapi.json` changes?
-5. **Action pins.** A check that the version a workflow pins exists needs the
-   network (`gh api`). Should it run in the gate, and so fail an offline push,
-   or only in CI and `make verify`?
-6. **Stale contract tests.** Should `implement-task` require running the
-   integration tests that assert on a changed DTO, endpoint or error type
-   before the push? Should a script list those tests from the changed files,
-   or is naming the classes in the procedure enough?
-7. **Measuring it.** The replay runs each new check against the commit that
-   failed in CI. Which failures count (the Why's list, or more from
-   `docs/common-failures.md`), and how many must it catch for the task to be
-   worth keeping?
-8. **Time budget.** How much slower may `make verify-fast` get? It takes about
-   10 s today.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] Each check added to the gate has a self-test that fails on a fixture of
-      the failure it targets and passes on the corrected case. For example,
-      the parity check fails a root script test that imports an npm package
-      and passes one that imports only Node built-ins.
-- [ ] Against each failing commit agreed at refinement, each check is run on
-      the branch, and the PR records, failure by failure, whether it would
-      have been caught
-- [ ] `make verify-fast`'s run time before and after is recorded in the PR,
-      and is within the budget agreed at refinement
-- [ ] ADR-0046 is amended, or a new ADR is accepted, stating what runs before
-      a push and why, with at least one Bad or Neutral consequence
-- [ ] Where a check stays outside the gate, `implement-task` names the change
-      that requires it and the `make` target to run
+- [ ] The import check's self-test fails a root script test that imports an
+      npm package, and passes one that imports only Node built-ins and
+      repository files
+- [ ] Each targeted check's self-test fails a fixture of its pattern (an
+      environment or configuration value logged; a regex that strips
+      comments or markup), and passes the corrected form
+- [ ] `make verify-fast` runs `make api-breaking`, and a test shows that its
+      failure on a branch cut before `dev` changed the spec says to merge
+      `dev` in
+- [ ] A test, with the GitHub call stubbed, shows the Action-pin check fails
+      a workflow that pins a SHA that does not exist, and `make verify` and
+      CI run it
+- [ ] Each check is run on the branch against the failing commit of PRs 536,
+      500, 541, 545 and 546, and the PR records each result. Every failure a
+      check targets is caught, or the miss is reported with its cause
+- [ ] `make verify-fast`'s run time before and after, on the same machine, is
+      recorded in the PR and grows by at most 10 s. `CLAUDE.md` and
+      `README.md` state the measured figure
+- [ ] ADR-0046 is amended to say what runs before a push and why, with at
+      least one Bad or Neutral consequence
+- [ ] `implement-task` names the changes that need the documentation
+      integration tests and the Maven command that runs them before the push
 - [ ] `make verify-fast` is green
 
 ## Notes
