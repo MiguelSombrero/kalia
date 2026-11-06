@@ -1,6 +1,6 @@
 # Task 20: An admin removes an approved beer from its page
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2
 
@@ -87,20 +87,20 @@ state.
 
 ## Acceptance criteria
 
-- [ ] A component test shows the remove action to an admin and to nobody else
-- [ ] A Playwright test signs in as the admin the suite provisions, removes an
+- [x] A component test shows the remove action to an admin and to nobody else
+- [x] A Playwright test signs in as the admin the suite provisions, removes an
       approved beer it created for the purpose after confirming, lands on the
       search with the notice, and the beer is then absent from search and its
       page answers `404` and the not-found page — against the running stack
-- [ ] A component test shows a refused or failed removal — `403`, `404`, `409`
+- [x] A component test shows a refused or failed removal — `403`, `404`, `409`
       and a network failure — shown to the admin rather than swallowed, with the
       admin left on the page, and a successful removal sending them to the
       catalog's search with the notice announced as a status message
-- [ ] A component test shows the confirmation naming the beer and saying it
+- [x] A component test shows the confirmation naming the beer and saying it
       disappears for everyone while those who hold it keep their bottles, and
       that cancelling it changes nothing
-- [ ] Every rendered state passes `axe` with no violations, in both locales
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] Every rendered state passes `axe` with no violations, in both locales
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

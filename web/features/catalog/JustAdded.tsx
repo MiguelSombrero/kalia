@@ -3,7 +3,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
-import { Toast, ToastDescription, ToastProvider, ToastViewport } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import { useJustAddedStore } from "./store";
 
@@ -48,23 +47,4 @@ export const JustAddedLanding = ({ beerId }: { beerId: string }) => {
   }, [isNew, focusPending, focusTaken]);
 
   return null;
-};
-
-/** Mounted once per catalog page, outside the list the dialog that added the beer lived in. */
-export const JustAddedToast = () => {
-  const { t } = useTranslation();
-  const beer = useJustAddedStore((state) => state.beer);
-  const open = useJustAddedStore((state) => state.toastOpen);
-  const dismissToast = useJustAddedStore((state) => state.dismissToast);
-
-  return (
-    <ToastProvider swipeDirection="right">
-      <Toast variant="success" open={open && beer !== null} onOpenChange={(next) => !next && dismissToast()}>
-        <ToastDescription className="flex-1 text-sm text-foreground">
-          {beer && t("catalog.add.added", { beer: beer.name })}
-        </ToastDescription>
-      </Toast>
-      <ToastViewport />
-    </ToastProvider>
-  );
 };

@@ -28,8 +28,11 @@ vi.mock("@/features/cellar/api", async (importOriginal) => ({
   heldBottlesOfOrNone: vi.fn(async () => new Map([[westvleteren12.id, 3]])),
 }));
 
+vi.mock("@/lib/auth/adminRole", () => ({ currentUserIsAdmin: vi.fn(async () => false) }));
+
 import { auth } from "@/auth";
-import { searchBeers } from "@/features/catalog";
+import { RemoveBeerDialog, searchBeers } from "@/features/catalog";
+import { currentUserIsAdmin } from "@/lib/auth/adminRole";
 import { heldBottlesOfOrNone } from "@/features/cellar";
 import BeerPage, { generateMetadata } from "./page";
 
@@ -95,6 +98,25 @@ describe("BeerPage", () => {
 
     expect(view?.props.heldBottles).toBe(3);
     expect(heldBottlesOfOrNone).toHaveBeenCalledWith([westvleteren12.id, "r10"]);
+  });
+
+  describe("the remove action (ADR-0101)", () => {
+    const removeAction = (tree: unknown) => elements(tree).find((element) => element.type === RemoveBeerDialog);
+
+    it("is offered to an admin, for this beer", async () => {
+      vi.mocked(currentUserIsAdmin).mockResolvedValueOnce(true);
+
+      const action = removeAction(await render());
+
+      expect(action?.props).toMatchObject({ locale: "en", beerId: westvleteren12.id, beerName: "Westvleteren 12" });
+    });
+
+    it("is absent for anyone who is not an admin, signed in or not", async () => {
+      expect(removeAction(await render())).toBeUndefined();
+
+      vi.mocked(auth).mockResolvedValueOnce({ user: { name: "olutharrastaja_88" }, expires: "" } as never);
+      expect(removeAction(await render())).toBeUndefined();
+    });
   });
 
   it("triggers the not-found page for an unknown beer", async () => {

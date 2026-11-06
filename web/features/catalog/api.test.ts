@@ -6,6 +6,7 @@ import {
   findSimilarBeers,
   listCountries,
   listStyles,
+  removeBeer,
   searchBeers,
 } from "./api";
 import type { BeerDetails, BeerPage } from "./types";
@@ -315,5 +316,40 @@ describe("the add-a-beer form's reads", () => {
     await expect(listCountries()).rejects.toMatchObject({ kind: "http", status: 503 });
     await expect(findBreweries("x")).rejects.toMatchObject({ kind: "http", status: 503 });
     await expect(findSimilarBeers(breweryId, "Öö")).rejects.toMatchObject({ kind: "http", status: 503 });
+  });
+});
+
+describe("removeBeer", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("posts to the admin API's removal of the beer, with no body", async () => {
+    const fetchMock = vi.fn(async () => Response.json({ id: beerId, moderationStatus: "REMOVED" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(removeBeer(beerId)).resolves.toEqual({ kind: "removed" });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(new URL(url).pathname).toBe(`/api/v1/admin/beers/${beerId}/removal`);
+    expect(init.method).toBe("POST");
+    expect(init.body).toBeUndefined();
+  });
+
+  it.each([403, 404, 409])("answers a %i as a refusal, which is an answer and not a failure", async (status) => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(status, {})));
+
+    await expect(removeBeer(beerId)).resolves.toEqual({ kind: "refused", status });
+  });
+
+  it.each([400, 401, 500, 503])("throws a tagged http ApiError for a %i", async (status) => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(status, {})));
+
+    await expect(removeBeer(beerId)).rejects.toMatchObject({ kind: "http", status });
+  });
+
+  it("lets a network failure through as its own tagged ApiError", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("fetch failed"))));
+
+    await expect(removeBeer(beerId)).rejects.toMatchObject({ kind: "network" });
   });
 });

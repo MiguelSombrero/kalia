@@ -5,13 +5,14 @@ import { auth } from "@/auth";
 import {
   BeerDetailsView,
   BeerList,
+  CatalogToasts,
   catalogHref,
   getBeer,
   hasSearch,
   JustAddedLanding,
-  JustAddedToast,
   parseBeerSearchParams,
   type RawSearchParams,
+  RemoveBeerDialog,
   searchBeers,
 } from "@/features/catalog";
 import { AddToCellarButton, heldBottlesOfOrNone } from "@/features/cellar";
@@ -20,6 +21,7 @@ import { toLocale } from "@/i18n/settings";
 import { buttonVariants } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { currentUserIsAdmin } from "@/lib/auth/adminRole";
 import { cn } from "@/lib/cn";
 
 const SAME_STYLE_SHOWN = 5;
@@ -43,7 +45,11 @@ const BeerPage = async ({ params, searchParams }: Props) => {
   const locale = toLocale(rawLocale);
   const search = parseBeerSearchParams(await searchParams);
   const session = auth();
-  const [beer, isSignedIn] = await Promise.all([getBeer(id), session.then((current) => Boolean(current?.user))]);
+  const [beer, isSignedIn, isAdmin] = await Promise.all([
+    getBeer(id),
+    session.then((current) => Boolean(current?.user)),
+    currentUserIsAdmin(),
+  ]);
   if (!beer) {
     notFound();
   }
@@ -73,12 +79,15 @@ const BeerPage = async ({ params, searchParams }: Props) => {
         countryCount={sameCountry.totalElements}
         heldBottles={heldBottles?.get(beer.id)}
         actions={
-          <AddToCellarButton
-            locale={locale}
-            beerId={beer.id}
-            beerName={beer.name}
-            isSignedIn={isSignedIn}
-          />
+          <>
+            <AddToCellarButton
+              locale={locale}
+              beerId={beer.id}
+              beerName={beer.name}
+              isSignedIn={isSignedIn}
+            />
+            {isAdmin && <RemoveBeerDialog locale={locale} beerId={beer.id} beerName={beer.name} />}
+          </>
         }
       />
       {others.length > 0 && (
@@ -105,7 +114,7 @@ const BeerPage = async ({ params, searchParams }: Props) => {
         </section>
       )}
       <JustAddedLanding beerId={beer.id} />
-      <JustAddedToast />
+      <CatalogToasts />
     </Page>
   );
 };

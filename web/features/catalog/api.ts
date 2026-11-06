@@ -8,12 +8,14 @@ import {
   listStyles as generatedListStyles,
   searchBeers as generatedSearchBeers,
 } from "@kalia/api/generated/catalog/catalog";
+import { remove as generatedRemoveBeer } from "@kalia/api/generated/admin-beers/admin-beers";
 import { normalizeBeerSearchParams } from "./searchParams";
 import {
   type AddBeerRequest,
   type AddBeerResult,
   type BeerDetails,
   type BeerPage,
+  type BeerRemovalResult,
   type BeerSearchParams,
   type BeerSummary,
   type Brewery,
@@ -93,6 +95,21 @@ export const addBeer = async (request: AddBeerRequest): Promise<AddBeerResult> =
       return { kind: "pendingCap" };
     default:
       throw apiError("http", `Adding a beer failed with status ${response.status}`, { status: response.status });
+  }
+};
+
+/** 403, 404 and 409 are answers; anything else that is not a 200 throws. */
+export const removeBeer = async (id: string): Promise<BeerRemovalResult> => {
+  const response = await generatedRemoveBeer(id);
+  switch (response.status) {
+    case 200:
+      return { kind: "removed" };
+    case 403:
+    case 404:
+    case 409:
+      return { kind: "refused", status: response.status };
+    default:
+      throw apiError("http", `Removing a beer failed with status ${response.status}`, { status: response.status });
   }
 };
 

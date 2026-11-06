@@ -232,7 +232,22 @@
     "sameStyle": "Samaa tyyliä · {{style}}",
     "inYourCellar_one": "Kellarissasi: {{count}} pullo",
     "inYourCellar_other": "Kellarissasi: {{count}} pulloa",
-    "openInCellar": "Avaa kellari"
+    "openInCellar": "Avaa kellari",
+    "remove": {
+      "action": "Poista luettelosta",
+      "title": "Poistetaanko tämä olut?",
+      "description": "{{beer}} poistuu kaikkien näkyviltä. Ne, joilla olut on kellarissaan, pitävät pullonsa, mutta heille olut näkyy ilman linkkiä.",
+      "cancel": "Peruuta",
+      "confirm": "Poista olut",
+      "confirming": "Poistetaan…",
+      "notice": "{{beer}} poistettiin luettelosta.",
+      "error": {
+        "forbidden": "Sinulla ei ole oikeutta poistaa oluita.",
+        "notFound": "Tämä olut ei ole enää luettelossa.",
+        "notApproved": "Tämä olut ei ole enää hyväksytty, joten sitä ei voi poistaa. Toinen ylläpitäjä on voinut poistaa sen jo.",
+        "failed": "Olutta ei poistettu. Yritä uudelleen."
+      }
+    }
   },
   "notFound": {
     "pageTitle": "Olutta ei löytynyt — Kalia",

@@ -21,3 +21,18 @@ export const useJustAddedStore = create<JustAddedStore>((set) => ({
   dismissToast: () => set({ toastOpen: false, focusPending: false }),
   focusTaken: () => set({ focusPending: false }),
 }));
+
+type RemovedBeer = { name: string };
+
+type BeerRemovedStore = {
+  /** The beer this admin removed most recently, until its notice is dismissed; gone on a reload. */
+  beer: RemovedBeer | null;
+  announce: (beer: RemovedBeer) => void;
+  dismiss: () => void;
+};
+
+export const useBeerRemovedStore = create<BeerRemovedStore>((set) => ({
+  beer: null,
+  announce: (beer) => set({ beer }),
+  dismiss: () => set({ beer: null }),
+}));
