@@ -37,7 +37,7 @@ class SharedBeerConstraintsTest {
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("requestTypes")
 	void aNameWithAnInvisibleFormattingCharacterIsRefused(String type, BiFunction<String, BigDecimal, Object> request) {
-		for (String invisible : List.of("​", "‍", "‮", "⁦", "﻿", "­")) {
+		for (String invisible : List.of("\u200B", "\u200D", "\u202E", "\u2066", "\uFEFF", "\u00AD")) {
 			assertThat(VALIDATOR.validate(request.apply("Abt" + invisible + "12", new BigDecimal("10.5"))))
 					.extracting(violation -> violation.getMessage())
 					.containsExactly(AddBeerRequestDto.NO_CONTROL_CHARACTERS_MESSAGE);
