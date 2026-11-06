@@ -45,6 +45,6 @@ for (const file of Object.keys(CAPS)) {
   test(`fails ${file} one line over its cap and says by how much`, (t) => {
     const result = run({ [file]: CAPS[file] + 1 }, t);
     assert.equal(result.status, 1);
-    assert.match(result.stdout, new RegExp(`FAIL  ${file.replace(/[./]/g, "\\$&")}: ${CAPS[file] + 1} lines, 1 over the cap`));
+    assert.ok(result.stdout.includes(`FAIL  ${file}: ${CAPS[file] + 1} lines, 1 over the cap`), result.stdout);
   });
 }
