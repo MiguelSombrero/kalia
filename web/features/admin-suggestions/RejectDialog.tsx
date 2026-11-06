@@ -34,6 +34,7 @@ export const RejectDialog = ({
   const confirm = () => {
     if (reason === null) return;
     setIsOpen(false);
+    setReason(null);
     onReject(reason);
   };
 

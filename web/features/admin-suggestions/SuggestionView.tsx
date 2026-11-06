@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import type { Locale } from "@/i18n/settings";
@@ -76,9 +77,7 @@ export const SuggestionView = ({
           {suggestion.breweryIsNew && (
             <>
               {" "}
-              <span className="inline-flex items-center rounded-control border border-border bg-accent px-2 py-0.5 text-label font-semibold uppercase text-accent-foreground">
-                {t("admin.review.queue.newBrewery")}
-              </span>
+              <Badge variant="accent">{t("admin.review.queue.newBrewery")}</Badge>
             </>
           )}
           <div className="text-sm text-muted-foreground">{suggestion.brewery.place}</div>

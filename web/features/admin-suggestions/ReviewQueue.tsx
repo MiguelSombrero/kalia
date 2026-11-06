@@ -1,9 +1,11 @@
-import { redirect } from "next/navigation";
+import { isApiError } from "@kalia/api";
+import { notFound, redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { countryName } from "@/lib/countryName";
+import { logger } from "@/lib/logger";
 import { formatRelativeInstant } from "@/lib/relativeInstant";
 import { adminHref } from "@/lib/routes";
 import { listSuggestions } from "./api";
@@ -38,10 +40,17 @@ const toRows = (page: SuggestionPage, locale: Locale): SuggestionRow[] => {
   });
 };
 
+const FORBIDDEN = [401, 403];
+
 const load = async (page: number): Promise<SuggestionPage | null> => {
   try {
     return await listSuggestions(page);
-  } catch {
+  } catch (error) {
+    // The backend's own check refused: this is no longer an admin, so the area does not exist for them.
+    if (isApiError(error) && error.kind === "http" && FORBIDDEN.includes(error.status ?? 0)) {
+      notFound();
+    }
+    logger.error("Loading the review queue failed", { page });
     return null;
   }
 };

@@ -66,7 +66,7 @@
         "why": "Syy, jonka ehdottaja näkee",
         "confirm": "Hylkää ehdotus",
         "cancel": "Peruuta",
-        "breweryWith": "{{brewery}} hylätään samalla.",
+        "breweryWith": "{{brewery}} hylätään samalla, ellei toinen ehdotus tarvitse sitä.",
         "breweryStays": "{{brewery}} jää odottamaan: toinen ehdotus tarvitsee sitä yhä."
       },
       "reason": {

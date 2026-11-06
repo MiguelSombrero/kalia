@@ -7,7 +7,12 @@ const { redirect } = vi.hoisted(() => ({
     throw new Error(`NEXT_REDIRECT ${path}`);
   }),
 }));
-vi.mock("next/navigation", () => ({ redirect }));
+const { notFound } = vi.hoisted(() => ({
+  notFound: vi.fn(() => {
+    throw new Error("NEXT_NOT_FOUND");
+  }),
+}));
+vi.mock("next/navigation", () => ({ redirect, notFound }));
 
 import { ReviewQueue } from "./ReviewQueue";
 import type { QueuePage } from "./types";
@@ -88,6 +93,12 @@ describe("ReviewQueue", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("The suggestions could not be loaded.");
     expect(screen.getByRole("link", { name: "Try again" })).toHaveAttribute("href", "/en/admin");
+  });
+
+  it("answers the not-found page when the backend refuses the caller, as the guard does", async () => {
+    answer = { status: 403, body: { status: 403, title: "Forbidden" } };
+
+    await expect(queueOf()).rejects.toThrow("NEXT_NOT_FOUND");
   });
 
   it("sends a page past the end of a queue that shrank to the last page", async () => {

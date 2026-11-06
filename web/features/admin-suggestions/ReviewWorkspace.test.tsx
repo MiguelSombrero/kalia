@@ -230,7 +230,7 @@ describe("rejecting", () => {
     renderWorkspace([hazy]);
 
     fireEvent.click(screen.getByRole("button", { name: "Reject" }));
-    expect(within(screen.getByRole("dialog")).getByText("Sahalahti Brewing Co. is rejected with it.")).toBeInTheDocument();
+    expect(within(screen.getByRole("dialog")).getByText("Sahalahti Brewing Co. is rejected with it, unless another suggestion still needs it.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("radio", { name: "Inappropriate" }));
     fireEvent.click(screen.getByRole("button", { name: "Reject suggestion" }));
 
