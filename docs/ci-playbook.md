@@ -200,8 +200,8 @@ without a second occurrence there is no signature to write down.
 
 ## Mobile E2E (Maestro, Android)
 
-The job boots its own emulator through `scripts/mobile-e2e.mjs`; its design is
-in [mobile/README.md](../mobile/README.md#end-to-end-flow) and the rows that led
+The job boots its own emulator through `scripts/mobile-e2e.mjs`, which holds
+the health wait's design (the flow itself is in [mobile/README.md](../mobile/README.md#end-to-end-flow)); the rows that led
 to it are in [common-failures.md](common-failures.md). Read the first red line,
 then match it:
 
