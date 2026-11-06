@@ -133,6 +133,11 @@ nobody has committed to becomes a constraint anyway.
   decision's facts. The contributor acknowledges each on its own and the row is
   deleted then; an unread one never expires; the web reads the unread count once
   per signed-in page render.
+- [ADR-0106](0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md)
+  — a contributor's unread notifications are one signal in the sticky bar on
+  every signed-in page, absent with nothing unread, which opens a panel over
+  the page where each is acknowledged on its own and an edit shows as the name
+  pair.
 
 ## Profiles and public cellars
 

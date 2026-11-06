@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { auth, currentAccessToken, navProps } = vi.hoisted(() => ({
+const { auth, currentAccessToken, navProps, readUnreadCount } = vi.hoisted(() => ({
   auth: vi.fn(),
   currentAccessToken: vi.fn(),
   navProps: [] as Record<string, unknown>[],
+  readUnreadCount: vi.fn(),
 }));
 vi.mock("@/auth", () => ({ auth }));
 vi.mock("@/lib/api/accessToken", () => ({ currentAccessToken }));
@@ -25,6 +26,10 @@ vi.mock("@/features/navigation", async () => {
     },
   };
 });
+vi.mock("@/features/notifications", () => ({
+  readUnreadCount,
+  NotificationsTray: ({ count }: { count: number }) => <div data-testid="tray">{count}</div>,
+}));
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
@@ -45,6 +50,8 @@ beforeEach(() => {
   currentAccessToken.mockReset();
   currentAccessToken.mockResolvedValue(undefined);
   navProps.length = 0;
+  readUnreadCount.mockReset();
+  readUnreadCount.mockResolvedValue(0);
 });
 
 // No axe scan here: jsdom has no stylesheet, so the bar's and the menu's
@@ -86,6 +93,35 @@ describe("SiteHeader", () => {
     await SiteHeader({ locale: "en" });
 
     expect(auth).toHaveBeenCalledTimes(1);
+  });
+
+  describe("the unread notifications signal", () => {
+    const signedIn = () => auth.mockResolvedValue({ user: { name: "Ada", email: "ada@example.com" } });
+
+    it("hands the signed-in viewer's unread count to the tray, read once on the server", async () => {
+      signedIn();
+      readUnreadCount.mockResolvedValue(3);
+      render(await SiteHeader({ locale: "en" }));
+
+      expect(screen.getByTestId("tray")).toHaveTextContent("3");
+      expect(readUnreadCount).toHaveBeenCalledTimes(1);
+    });
+
+    it("reads nothing and shows nothing to a signed-out visitor", async () => {
+      render(await SiteHeader({ locale: "en" }));
+
+      expect(readUnreadCount).not.toHaveBeenCalled();
+      expect(screen.queryByTestId("tray")).not.toBeInTheDocument();
+    });
+
+    it("draws the bar without a signal when the count cannot be read, rather than failing the page", async () => {
+      signedIn();
+      readUnreadCount.mockRejectedValue(new Error("backend down"));
+      render(await SiteHeader({ locale: "en" }));
+
+      expect(screen.getByRole("banner")).toBeInTheDocument();
+      expect(screen.getByTestId("tray")).toHaveTextContent("0");
+    });
   });
 
   describe("the admin entry in the navigation", () => {

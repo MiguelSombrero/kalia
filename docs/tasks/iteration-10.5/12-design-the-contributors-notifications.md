@@ -1,6 +1,6 @@
 # Task 12: A contributor sees what became of their suggestion until they have read it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-3
 - **Kind:** design
@@ -120,31 +120,31 @@ Constraints, this task's above.
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum where the
+- [x] The product owner chose from built alternatives, at minimum where the
       unread signal sits, how notifications open, and how an edit is shown. An
       ADR records the directions and the choice, and the product owner signed
       off the built flow in the browser pane at both agreed widths
-- [ ] A Playwright test covers the iteration's journey on the running stack: a
+- [x] A Playwright test covers the iteration's journey on the running stack: a
       fresh contributor account suggests a beer with a new brewery, the
       suite's `adminAccount` edits and approves it, the contributor sees one
       unread notification naming the edited beer, acknowledges it, and it is
       gone after a reload
-- [ ] A Playwright test covers a rejection reaching its contributor the same
+- [x] A Playwright test covers a rejection reaching its contributor the same
       way, the reason shown in the reader's language
-- [ ] A component test shows the unread signal announced to assistive
+- [x] A component test shows the unread signal announced to assistive
       technology, and absent for a user with nothing unread
-- [ ] A component test shows an approval's notification linking to the beer's
+- [x] A component test shows an approval's notification linking to the beer's
       page and a rejection's linking nowhere, an edited approval showing the
       name as suggested and as decided — and as edited, with no rename, when
       the names match — and an acknowledgement answered `404` removing the
       notification from the list without an error
-- [ ] The heaviest signed-in render makes five backend calls with the count
+- [x] The heaviest signed-in render makes five backend calls with the count
       read in it: `edge/limits.json` pins 5, ADR-0090 states the load that
       computes from it, and `scripts/check-compose.mjs` and
       `web/e2e/backend-calls-per-render.spec.ts` pass
-- [ ] Every rendered state passes `axe` with no violations, in both locales and
+- [x] Every rendered state passes `axe` with no violations, in both locales and
       at both agreed widths
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

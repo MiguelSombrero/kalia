@@ -163,6 +163,47 @@
       }
     }
   },
+  "notifications": {
+    "label": "Notifications",
+    "unread_one": "{{count}} unread notification",
+    "unread_other": "{{count}} unread notifications",
+    "close": "Close notifications",
+    "hint": "What became of the beers you suggested. A notification stays until you press Got it.",
+    "loading": "Loading notifications",
+    "retry": "Try again",
+    "viewBeer": "View beer",
+    "acknowledge": "Got it",
+    "edited": "Edited",
+    "reasonLabel": "Reason",
+    "outcome": {
+      "approved": "Approved",
+      "rejected": "Not approved"
+    },
+    "sentence": {
+      "approved": "Your suggestion {{name}} is now in the catalog.",
+      "editedRenamed": "An admin edited your suggestion before approving it.",
+      "editedSameName": "Your suggestion {{name}} is now in the catalog. An admin corrected its details; the beer's page shows them.",
+      "rejected": "Your suggestion {{name}} was not added to the catalog."
+    },
+    "pair": {
+      "suggested": "You suggested {{name}}.",
+      "decided": "It was approved as {{name}}."
+    },
+    "reason": {
+      "ALREADY_IN_CATALOG": "The catalog already has this beer.",
+      "NOT_A_REAL_BEER": "This is not a real beer.",
+      "INAPPROPRIATE": "It does not belong in Kalia.",
+      "INCORRECT_DETAILS": "The details were wrong and could not be corrected."
+    },
+    "empty": {
+      "title": "Nothing new",
+      "hint": "Decisions on your suggestions show up here until you have read them."
+    },
+    "error": {
+      "load": "The notifications could not be loaded.",
+      "acknowledge": "That notification could not be marked as read. Try again."
+    }
+  },
   "placeholder": {
     "comingSoon": "Coming soon"
   },

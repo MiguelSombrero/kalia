@@ -407,6 +407,44 @@ What holds on it, beyond the rules above:
 - **Below the large breakpoint the list and the suggestion take turns**, and
   nothing is marked as chosen while only the list shows.
 
+## Notifications
+
+The first thing Kalia says to one person rather than to everyone: what became
+of a beer the contributor suggested. Its structure (one signal in the sticky
+bar, a panel over the page) was chosen from built alternatives in
+[iteration 10.5 task 12](tasks/iteration-10.5/12-design-the-contributors-notifications.md)
+([ADR-0106](adr/0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md)).
+What holds on it, beyond the rules above:
+
+- **The signal is in the bar on every page that renders the signed-in shell,**
+  the admin area included, and nowhere else. Nothing is drawn when nothing is
+  unread: an empty signal would be a control with nothing behind it.
+- **The signal is one object.** On a phone the envelope and the count are drawn
+  together as a single filled control, never an icon with a separate box
+  beside it, so they cannot read as two things. From the large breakpoint up it
+  is a word and a count.
+- **The signal is announced, not only drawn.** A screen reader hears how many
+  are unread; the count the eye sees is hidden from it so it is not read twice.
+- **Opening the panel acknowledges nothing.** A notification is acknowledged by
+  pressing its own control, it leaves the panel at once, and one that was
+  already gone is simply gone, with no error. When the last one leaves, the
+  panel says nothing is new and the signal leaves the bar once the panel closes.
+- **The panel is a dialog.** Focus moves into it on opening and returns to the
+  signal on closing, and Escape closes it. It carries the dialog's scrim and ink
+  edge; it is not a toast and does not go away by itself, because a
+  notification stays until it is read.
+- **An outcome is told in its own mark, never in the error red.** An approval
+  takes the success cell with a tick; a rejection takes a hollow ink square. A
+  rejection is a decision on a suggestion, not a failure of anything the
+  contributor did.
+- **An approval links to the beer; a rejection links nowhere** and states its
+  reason in the reader's language.
+- **An edit is shown as a pair.** The name as suggested, struck through, then the
+  name as decided, with the edit marked. An edit that left the name alone is
+  marked as edited and points to the beer's page, which shows the rest.
+- **Several unread are listed newest first, each with its time**, and the panel
+  scrolls inside itself rather than growing past the window.
+
 ## Imagery and the mark
 
 **Kalia draws no pictures of beers.** There are no beer photographs to show,

@@ -477,6 +477,14 @@ rather than behind a link ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
   `next build`, so the CSP cannot be driven by a runtime environment
   variable. Measured, see [ADR-0025](../docs/adr/0025-authjs-valkey-adapter.md)'s
   Evidence.
+- **The bar's unread count must be read again on navigation, by the tray itself.**
+  `SiteHeader` lives in the layout, and a layout is not rendered again when the
+  viewer moves between pages, so the count the server read goes stale without a
+  word: nothing fails, a decision made meanwhile just never shows until a full
+  load. `features/notifications`' tray refetches it through a Server Action when
+  the path changes, and never on mount, where the render's own count is
+  already current
+  ([ADR-0106](../docs/adr/0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md)).
 - **A client component's `queryFn` must not call a feature's `api.ts`
   directly when the read is authenticated.** `kaliaFetch`'s token lookup
   drags `lib/auth/valkeyAdapter.ts` and `ioredis` into the client bundle,

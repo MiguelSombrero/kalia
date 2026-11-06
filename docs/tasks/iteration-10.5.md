@@ -38,7 +38,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | [16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md) | The backend's request limit holds for the calls the web makes on a visitor's behalf | done |
 | [11](iteration-10.5/11-design-the-admin-review-page.md) | An admin reviews suggestions on a page of their own | done |
 | [20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md) | An admin removes an approved beer from its page | done |
-| [12](iteration-10.5/12-design-the-contributors-notifications.md) | A contributor sees what became of their suggestion until they have read it | refined |
+| [12](iteration-10.5/12-design-the-contributors-notifications.md) | A contributor sees what became of their suggestion until they have read it | done |
 | [17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md) | A feed that opened empty polls only for what is new | done |
 | [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | done |
 | [19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md) | A slow Keycloak delays one call in the app, not every call | done |

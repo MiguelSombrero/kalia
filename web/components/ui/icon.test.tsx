@@ -3,7 +3,7 @@ import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { Icon, type IconName } from "./icon";
 
-const names: IconName[] = ["menu", "close", "search", "plus", "arrow", "back", "check"];
+const names: IconName[] = ["menu", "close", "search", "plus", "arrow", "back", "check", "mail"];
 
 describe("Icon", () => {
   it.each(names)("draws the %s icon with currentColor and is hidden when it sits beside a word", async (name) => {

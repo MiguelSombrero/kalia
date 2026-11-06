@@ -363,8 +363,8 @@ test("edgeZoneProblems names an ADR table row that disagrees with the pins", () 
 test("edgeZoneProblems names the backend load the ADR must state", () => {
   const limits = readEdgeLimits();
   const load = backendLoad(limits);
-  assert.deepEqual(load, { pageRenders: 600, serverActions: 20 });
+  assert.deepEqual(load, { pageRenders: 750, serverActions: 20 });
   const raised = { ...limits, backendCallsPerPageRender: limits.backendCallsPerPageRender + 1 };
   const problems = edgeZoneProblems({ nginxText, adrText, limits: raised });
-  assert.deepEqual(problems, ["ADR-0090 does not state 750 backend calls a second for page renders, which edge/limits.json computes"]);
+  assert.deepEqual(problems, ["ADR-0090 does not state 900 backend calls a second for page renders, which edge/limits.json computes"]);
 });
