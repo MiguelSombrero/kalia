@@ -38,6 +38,9 @@ const MIGRATION_COLUMNS = new Set([
 ]);
 
 const SCHEMA_COLUMN = /\b\w*(untappd|score|rating|review)\w*\b/i;
+// Only the tables holding a beer's or a brewery's facts: catalog.review is the
+// moderation trail of an admin's decisions (ADR-0102), not anyone's opinion of a beer.
+const FACT_TABLES = /CREATE TABLE catalog\.(?:brewery|beer) \([\s\S]*?(?:^\);|\);$)/gm;
 
 /**
  * @param {{snapshot: string, migration: string, schema: string}} contents the three files' text
@@ -73,8 +76,8 @@ export function checkNoUntappd(contents) {
     if (!MIGRATION_COLUMNS.has(columns)) failures.push(`${FILES.migration} inserts ${columns}, which is not a column list the import may write`);
   }
 
-  const column = contents.schema.match(SCHEMA_COLUMN);
-  if (column) failures.push(`${FILES.schema} declares ${column[0]}; the catalog stores no review data`);
+  const column = (contents.schema.match(FACT_TABLES) ?? []).join("\n").match(SCHEMA_COLUMN);
+  if (column) failures.push(`${FILES.schema} declares ${column[0]} on a beer or brewery; the catalog stores no review data`);
 
   return failures;
 }

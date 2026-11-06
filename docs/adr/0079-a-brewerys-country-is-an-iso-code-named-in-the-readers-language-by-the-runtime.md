@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-22
+- **Amended:** 2026-11-06 — the seed migration `V004` inserts the codes
+  itself, and the generator reads them from it
 
 ## Context
 
@@ -119,7 +121,8 @@ one can pick it.
   names them.
 - Bad, because it is a schema change through generated code. The import's
   generator must emit codes, and `V008` is regenerated. The seed migration
-  `V004` stays unchanged, so its rows get their codes some other way.
+  `V004` inserts its rows with their codes, and the generator reads them from
+  it, so the codes have one home.
 - Neutral, because the 44 formerly codeless breweries now show where they
   stood, not the state they were in. A brewery from Königsberg reads as
   Russian.

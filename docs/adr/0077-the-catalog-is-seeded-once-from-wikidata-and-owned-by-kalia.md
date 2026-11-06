@@ -11,6 +11,9 @@
 - **Amended:** 2026-10-26 — `V004` lost its `description` column and values
   ([iteration 8.5 task 02](../tasks/iteration-8.5/02-api-contract-pruned-before-it-freezes.md));
   its breweries, beers and ids are as before
+- **Amended:** 2026-11-06 — `V004` is no longer left unchanged around the
+  schema: it states each seeded row's country code, sort key and source
+  itself, and `V008` carries no `ALTER` or `UPDATE` to repair it
 
 ## Context
 
@@ -87,7 +90,9 @@ Untappd, and every row records where it came from.**
   ([Terms of Use](https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use)
   §4, §12). It runs once, paced, with an identifying User-Agent, and never
   from a running app or from CI.
-- **The existing seed stays.** `V004__catalog_seed_data.sql` is unchanged. The
+- **The existing seed stays.** `V004__catalog_seed_data.sql` keeps its
+  breweries, beers and values, and inserts each row's country code, sort key
+  and `SEED` source explicitly, so no later migration repairs it. The
   import skips any beer or brewery that matches a seeded row, so seeded ids,
   and the cellar entries that point at them, survive. The hand-checked values
   also survive: Orval stays 6.2%, where Wikidata says 5.2%.

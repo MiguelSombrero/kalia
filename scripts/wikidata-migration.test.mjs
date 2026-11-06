@@ -23,7 +23,7 @@ const styles = [
   { qid: "Q85745517", style: null },
 ];
 const seed = {
-  breweries: [{ name: "Seed Brouwerij", country: "Belgium", qid: "Q101" }],
+  breweries: [{ name: "Seed Brouwerij", countryCode: "BE", qid: "Q101" }],
   beers: [{ brewery: "Seed Brouwerij", name: "Seeded Beer", qid: "Q11" }],
 };
 const countries = { codes: { Belgium: "BE", France: "FR", Netherlands: "NL" } };
@@ -117,10 +117,12 @@ test("a hand-reviewed country settles a brewery's conflicting countries", () => 
   );
 });
 
-test("a brewery is stored under its country's code, and a seeded one is given its code by its country", () => {
+test("a brewery is stored under its country's code, and a seeded one is matched by the code V004 gives it", () => {
   assert.equal(converted.breweries.find((b) => b.qid === "Q100").countryCode, "NL");
-  assert.deepEqual(converted.seedCountries, [{ country: "Belgium", countryCode: "BE" }]);
-  assert.throws(() => convert(snapshot, styles, seed, { codes: { Netherlands: "NL" } }), /Seeded country Belgium/);
+  const dutchSeed = { ...seed, breweries: [{ name: "Fixture Brewery", countryCode: "NL", qid: null }] };
+  assert.throws(() => convert(snapshot, styles, { ...dutchSeed, beers: [] }, countries), /Fixture Brewery/);
+  const belgianSeed = { ...seed, breweries: [{ name: "Fixture Brewery", countryCode: "BE", qid: null }] };
+  assert.doesNotThrow(() => convert(snapshot, styles, { ...belgianSeed, beers: [] }, countries));
 });
 
 const formerState = {
@@ -160,7 +162,7 @@ test("a style class missing from the mapping stops the conversion", () => {
 });
 
 test("a brewery or beer that collides with an unmapped seeded row stops the conversion", () => {
-  const unmappedBrewery = { ...seed, breweries: [{ name: "Fixture Brewery", country: "Netherlands", qid: null }] };
+  const unmappedBrewery = { ...seed, breweries: [{ name: "Fixture Brewery", countryCode: "NL", qid: null }] };
   assert.throws(() => convert(snapshot, styles, { ...unmappedBrewery, beers: [] }, countries), /Fixture Brewery/);
   const unmappedBeer = { ...seed, beers: [{ brewery: "Seed Brouwerij", name: "Seed's other BEER", qid: null }] };
   assert.throws(() => convert(snapshot, styles, unmappedBeer, countries), /Q22/);
@@ -170,15 +172,22 @@ test("the SQL escapes quotes and carries provenance on every imported row", () =
   const sql = toSql(converted);
   assert.match(sql, /'Greater Twin''s Other Beer'/);
   assert.match(sql, /\('Fixture Brewery', 'fixture brewery', 'NL', 'Alkmaar', 'WIKIDATA', 'Q100'\)/);
-  assert.match(sql, /\('Belgium', 'BE'\)\n\) AS v\(country, country_code\)/);
   assert.match(sql, new RegExp(`source = 'WIKIDATA'\\) <> ${converted.breweries.length}\n`));
   assert.match(sql, new RegExp(`source = 'WIKIDATA'\\) <> ${converted.beers.length} THEN`));
 });
 
-test("every brewery's sort key is stored, and V004's rows get theirs before the column is NOT NULL", () => {
-  const sql = toSql(converted);
-  assert.match(sql, /\('Seed Brouwerij', 'seed brouwerij'\)\n\) AS v\(name, name_sort_key\)/);
-  assert.ok(sql.indexOf("AS v(name, name_sort_key)") < sql.indexOf("ALTER COLUMN name_sort_key SET NOT NULL"));
+test("the migration only inserts: it alters, updates and sets no default", () => {
+  assert.doesNotMatch(toSql(converted), /^\s*(ALTER|UPDATE|DROP)\b|SET DEFAULT/im);
+  assert.match(toSql(converted), /INSERT INTO catalog\.brewery \(name, name_sort_key, country_code, city, source, wikidata_qid\)/);
+});
+
+test("V004 gives every seeded brewery a valid country code and the sort key the generator would compute", () => {
+  const { breweries } = parseSeed(readFileSync(SEED_PATH, "utf8"));
+  assert.equal(breweries.length, 20);
+  for (const { name, nameSortKey, countryCode } of breweries) {
+    assert.equal(nameSortKey, sortKey(name), `${name}: V004's name_sort_key is not sortKey(name)`);
+    assert.match(countryCode, /^[A-Z]{2}$/, `${name}: V004's country_code`);
+  }
 });
 
 test("the sort key folds case one UTF-16 unit at a time, as String.CASE_INSENSITIVE_ORDER does", () => {

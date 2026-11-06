@@ -62,7 +62,7 @@ class CatalogPersistenceIT {
 	}
 
 	// The entities do not map source: a row the app writes is marked by the
-	// column default V008 sets, which nothing in Java would notice changing.
+	// column default V003 sets, which nothing in Java would notice changing.
 	@Test
 	void aRowTheAppInsertsIsMarkedUserAddedWithNoQid() {
 		Brewery brewery = breweries.saveAndFlush(Brewery.create("Test Brewery", "FI", null, Clock.systemUTC()));

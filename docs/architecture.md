@@ -302,7 +302,7 @@ import's style mapping.
 imported one, carries the Wikidata item it came from in `wikidata_qid`.
 Provenance lives in the schema alone: `Beer` and `Brewery` do not map either
 column, and a row the application inserts is marked `USER` by the column's
-default, which `V008` sets once the seed and the import have written theirs. Every
+default, and the seed and the import insert theirs explicitly. Every
 Wikidata-sourced row can therefore be found, or removed, in one statement. A
 brewery is unique by its name, with case, whitespace and punctuation folded by
 `catalog.fold_name()`, within its country, and a beer by its folded name within
@@ -313,8 +313,7 @@ cellar entries that point at them survive the import.
 ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)).
 The API carries it as `countryCode`, and the web app names it in the
 reader's language with `Intl.DisplayNames`, on the server. `V004` inserts its
-breweries by English name into a column `V003` keeps for them alone; `V008`
-gives those rows their codes and drops it.
+breweries with their codes.
 
 **A signed-in user can add a beer the catalog lacks**, and its brewery with it
 when that is missing too. It is held to the imported catalog's bar: a style the catalog already
