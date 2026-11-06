@@ -312,8 +312,11 @@ node scripts/wikidata-migration.mjs        # rewrites V008, prints what it dropp
 node scripts/wikidata-migration.mjs --check
 ```
 
-The generator also writes each brewery's `name_sort_key`, which the `Brewery`
-entity writes for the breweries users add ([ADR-0087](../docs/adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)).
+`V008` only inserts. The seeded breweries it matches are read from `V004`,
+which states their country codes and `name_sort_key`s itself; a test holds
+those keys equal to the generator's. The generator writes each imported
+brewery's `name_sort_key`, which the `Brewery` entity writes for the breweries
+users add ([ADR-0087](../docs/adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)).
 A new style class, a new collision with a seeded row, or a brewery in a state
 with no ISO code stops the generator with the entry to add. Re-taking the
 snapshot (`node scripts/wikidata-extract.mjs`) queries Wikidata and is a new
