@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { containerTypes } from "./addBottleSchema";
 import { todayIso } from "./bottleDateRules";
+import { CellarConflictAlert } from "./CellarConflictAlert";
+import { isCellarConflict } from "./conflict";
 import { type EditBottleFormValues, editBottleSchema } from "./editBottleSchema";
 import { useUpdateBottle } from "./hooks/useBottles";
 import type { Bottle } from "./types";
@@ -166,11 +168,12 @@ export const EditBottleDialog = ({
             )}
           </div>
 
-          {updateBottle.isError && (
-            <ErrorAlert>
-              {t("cellar.edit.error.failed")}
-            </ErrorAlert>
-          )}
+          {updateBottle.isError &&
+            (isCellarConflict(updateBottle.error) ? (
+              <CellarConflictAlert />
+            ) : (
+              <ErrorAlert>{t("cellar.edit.error.failed")}</ErrorAlert>
+            ))}
 
           <div className="mt-2 flex justify-end gap-2">
             <DialogClose className={buttonVariants("outline")}>{t("cellar.edit.cancel")}</DialogClose>

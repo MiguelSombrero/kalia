@@ -51,6 +51,20 @@ class CellarPersistenceIT {
 		assertThat(reloaded.quantity()).isEqualTo(2);
 	}
 
+	@RepeatedTest(10)
+	void bottlesCreatedAtTheSameInstantReloadInTheOrderTheyWereAdded() {
+		Clock frozen = Clock.fixed(Instant.parse("2026-11-04T10:00:00.123Z"), ZoneOffset.UTC);
+		Entry entry = entries.save(Entry.create(UUID.randomUUID(), UUID.randomUUID(), frozen));
+		entry.addBottles(24, ContainerType.CAN, null, null, frozen);
+		entries.saveAndFlush(entry);
+		List<UUID> answered = entry.lastBottles(24).stream().map(Bottle::getId).toList();
+		testEntityManager.clear();
+
+		Entry reloaded = entries.findById(entry.getId()).orElseThrow();
+
+		assertThat(reloaded.getBottles()).extracting(Bottle::getId).containsExactlyElementsOf(answered);
+	}
+
 	@Test
 	void populatesCreatedAtAndUpdatedAtOnCreate() {
 		Entry entry = entries.saveAndFlush(Entry.create(UUID.randomUUID(), UUID.randomUUID(), CLOCK));

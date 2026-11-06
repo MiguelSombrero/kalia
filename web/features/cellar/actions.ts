@@ -8,6 +8,7 @@ import {
   removeCellarBottle,
   updateCellarBottle,
 } from "./api";
+import { type CellarConflict, isConflictResult, lostToConcurrentChange } from "./conflict";
 import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 
 // Do not re-export this from a shared lib/ module instead of defining it
@@ -31,8 +32,11 @@ const beerIdFrom = (formData?: FormData): string | undefined => {
   return typeof beerId === "string" && UUID_PATTERN.test(beerId) ? beerId : undefined;
 };
 
-export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[]> => {
-  const created = await addBottlesToCellar(request);
+export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[] | CellarConflict> => {
+  const created = await lostToConcurrentChange(() => addBottlesToCellar(request));
+  if (isConflictResult(created)) {
+    return created;
+  }
   revalidatePath("/[locale]/cellar", "page");
   // The catalog's cellar marker is how an add from there confirms itself.
   revalidatePath("/[locale]/beers", "page");
@@ -43,13 +47,19 @@ export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bott
 export const updateBottleAction = async (
   id: string,
   request: UpdateBottleRequest,
-): Promise<Bottle> => {
-  const updated = await updateCellarBottle(id, request);
+): Promise<Bottle | CellarConflict> => {
+  const updated = await lostToConcurrentChange(() => updateCellarBottle(id, request));
+  if (isConflictResult(updated)) {
+    return updated;
+  }
   revalidatePath("/[locale]/cellar", "page");
   return updated;
 };
 
-export const removeBottleAction = async (id: string): Promise<void> => {
-  await removeCellarBottle(id);
+export const removeBottleAction = async (id: string): Promise<CellarConflict | void> => {
+  const removed = await lostToConcurrentChange(() => removeCellarBottle(id));
+  if (isConflictResult(removed)) {
+    return removed;
+  }
   revalidatePath("/[locale]/cellar", "page");
 };

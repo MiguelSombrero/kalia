@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { isCellarConflict } from "./conflict";
 import { useRemoveBottle } from "./hooks/useBottles";
 import { useBottleRemovalStore } from "./store";
 import type { Bottle } from "./types";
@@ -55,7 +56,9 @@ export const RemoveBottleDialog = ({
     removeBottle
       .mutateAsync({ id: bottle.id })
       .then(() => finishRemoving(removal, { lastBottle }))
-      .catch(() => finishRemoving(removal, { failed: true }));
+      .catch((error: unknown) =>
+        finishRemoving(removal, isCellarConflict(error) ? { failed: true, conflict: true } : { failed: true }),
+      );
   };
 
   return (

@@ -16,6 +16,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
@@ -27,6 +28,7 @@ public class Bottle {
 
 	@Id
 	@GeneratedValue
+	@UuidGenerator(style = UuidGenerator.Style.VERSION_7)
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

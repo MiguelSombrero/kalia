@@ -6,7 +6,7 @@ type Removal = {
 };
 
 /** What the outcome toast reports once a removal's `DELETE` settles. */
-type RemovalOutcome = { lastBottle: boolean } | { failed: true };
+type RemovalOutcome = { lastBottle: boolean } | { failed: true; conflict?: true };
 
 type BottleRemovalStore = {
   /** Bottles whose `DELETE` is in flight — hidden optimistically until it settles. */

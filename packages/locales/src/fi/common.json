@@ -310,6 +310,10 @@
       "listed_other": "Näytetään sen {{count}} vanhinta pulloa",
       "withdrawn": "Tämä olut on poistettu oluiden luettelosta. Pullosi säilyvät, mutta et voi lisätä uusia."
     },
+    "conflict": {
+      "message": "Kellariasi muutettiin samaan aikaan toisaalla, joten muutosta ei tallennettu. Päivitä sivu nähdäksesi sen nykytilan ja yritä sitten uudelleen.",
+      "reload": "Päivitä sivu"
+    },
     "bottle": {
       "list": "Oluen {{beer}} pullot",
       "container": {

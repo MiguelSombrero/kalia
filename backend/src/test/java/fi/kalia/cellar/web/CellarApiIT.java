@@ -13,6 +13,7 @@ import fi.kalia.catalog.domain.BeerRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -362,6 +363,37 @@ class CellarApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(entries -> assertThat((int) JsonPath.read(entries, "$[0].quantity")).isEqualTo(5));
+	}
+
+	@Test
+	void bottlesAddedTogetherReadBackInTheOrderTheWriteAnsweredThem() {
+		int rounds = 10;
+		int perRound = 24;
+		List<String> answered = new ArrayList<>();
+		for (int round = 0; round < rounds; round++) {
+			Map<String, Object> request = new LinkedHashMap<>();
+			request.put("beerId", beerId.toString());
+			request.put("containerType", "CAN");
+			request.put("quantity", perRound);
+			String body = client.post().uri("/api/v1/cellar/bottles")
+					.header("Authorization", USER_A)
+					.contentType(MediaType.APPLICATION_JSON)
+					.body(request)
+					.exchange()
+					.expectStatus().isCreated()
+					.expectBody(String.class)
+					.returnResult().getResponseBody();
+			List<String> ids = JsonPath.read(body, "$[*].id");
+			answered.addAll(ids);
+		}
+
+		client.get().uri("/api/v1/cellar")
+				.header("Authorization", USER_A)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(String.class)
+				.value(body -> assertThat((List<String>) JsonPath.read(body, "$[0].bottles[*].id"))
+						.containsExactlyElementsOf(answered));
 	}
 
 	@Test

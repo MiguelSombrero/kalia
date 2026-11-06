@@ -186,6 +186,31 @@ describe("AddBottleDialog", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
+  it.each([
+    ["en", "Your cellar was changed somewhere else at the same moment, so this was not saved. Reload to see it as it is now, then try again.", "Reload page"],
+    ["fi", "Kellariasi muutettiin samaan aikaan toisaalla, joten muutosta ei tallennettu. Päivitä sivu nähdäksesi sen nykytilan ja yritä sitten uudelleen.", "Päivitä sivu"],
+  ])("tells a lost concurrent add apart from any other failure, with a reload, in %s", async (locale, message, reload) => {
+    addBottlesAction.mockResolvedValue({ conflict: true });
+    const reloadPage = vi.fn();
+    const location = vi.spyOn(window, "location", "get").mockReturnValue({ ...window.location, reload: reloadPage });
+    try {
+      await openDialog(locale as Locale);
+
+      submit(locale === "en" ? "Add" : "Lisää");
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(message);
+      expect(screen.queryByText(/Could not add to your cellar|Kellariin lisääminen/)).not.toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(reloadPage).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole("button", { name: reload }));
+
+      expect(reloadPage).toHaveBeenCalledTimes(1);
+    } finally {
+      location.mockRestore();
+    }
+  });
+
   it("closes on Escape and returns focus to the trigger", async () => {
     const { trigger } = await openDialog();
 

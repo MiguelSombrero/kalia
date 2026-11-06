@@ -25,6 +25,8 @@ import {
   MIN_QUANTITY,
 } from "./addBottleSchema";
 import { todayIso } from "./bottleDateRules";
+import { CellarConflictAlert } from "./CellarConflictAlert";
+import { isCellarConflict } from "./conflict";
 import { useAddBottle } from "./hooks/useBottles";
 
 export type AddBottleTrigger = "default" | "compact" | "tile";
@@ -216,11 +218,12 @@ export const AddBottleDialog = ({
             )}
           </div>
 
-          {addBottle.isError && (
-            <ErrorAlert>
-              {t("cellar.add.error.failed")}
-            </ErrorAlert>
-          )}
+          {addBottle.isError &&
+            (isCellarConflict(addBottle.error) ? (
+              <CellarConflictAlert />
+            ) : (
+              <ErrorAlert>{t("cellar.add.error.failed")}</ErrorAlert>
+            ))}
 
           <div className="mt-2 flex justify-end gap-2">
             <DialogClose className={buttonVariants("outline")}>{t("cellar.add.cancel")}</DialogClose>
