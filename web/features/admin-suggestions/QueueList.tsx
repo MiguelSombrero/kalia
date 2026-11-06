@@ -8,10 +8,13 @@ import type { SuggestionRow } from "./types";
 export const QueueList = ({
   rows,
   selectedId,
+  detailOpen,
   onSelect,
 }: {
   rows: SuggestionRow[];
   selectedId: string | undefined;
+  /** Below the large breakpoint the list stands alone until a suggestion is opened, so nothing is marked as chosen. */
+  detailOpen: boolean;
   onSelect: (id: string) => void;
 }) => {
   const { t } = useTranslation();
@@ -26,7 +29,10 @@ export const QueueList = ({
             onClick={() => onSelect(row.id)}
             className={cn(
               "flex w-full items-stretch text-left hover:bg-surface-sunken",
-              row.id === selectedId && "bg-accent outline outline-1 -outline-offset-1 outline-border",
+              row.id === selectedId &&
+                (detailOpen
+                  ? "bg-accent outline outline-1 -outline-offset-1 outline-border"
+                  : "lg:bg-accent lg:outline lg:outline-1 lg:-outline-offset-1 lg:outline-border"),
             )}
           >
             <BeerSlot variant="strip" beerStyle={row.style} />

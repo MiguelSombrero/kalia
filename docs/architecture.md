@@ -1123,6 +1123,10 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   (`web/lib/auth/adminRole.ts`), on the server only: `/[locale]/admin` answers
   everyone but an admin, a signed-out visitor included, the not-found page, and
   only a boolean reaches the browser, for the navigation entry.
+  For an admin it is the review page
+  ([ADR-0105](adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)):
+  the queue is read once per render and each decision is one Server Action over
+  `/api/v1/admin/suggestions`.
 - **Only the `edge` proxy is published**, on `127.0.0.1`: the API at
   `BACKEND_PORT` (default 8080, for direct access and Swagger UI on the dev
   machine), the web app and Keycloak each at their own port, every request

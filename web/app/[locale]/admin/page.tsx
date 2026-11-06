@@ -26,7 +26,6 @@ export const generateMetadata = async ({ params }: Pick<Props, "params">): Promi
   };
 };
 
-// The URL's page is one-based; the API's is zero-based.
 const queuePage = (raw: string | undefined): number => {
   const page = Number(raw);
   return Number.isInteger(page) && page >= 1 ? page - 1 : 0;

@@ -71,6 +71,7 @@ export const ReviewWorkspace = ({
           <QueueList
             rows={queue.rows}
             selectedId={outcome ? undefined : selected?.id}
+            detailOpen={detailOpen}
             onSelect={(id) => {
               setOutcome(null);
               setSelectedId(id);

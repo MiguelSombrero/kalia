@@ -1,7 +1,5 @@
-// Exercises the admin review page against the compose stack through the edge
-// (ADR-0105): the queue is shared by every worker and every run, so each test
-// finds its own suggestion by a name no one else has, made by a contributor
-// account of its own, and acts as the worker's admin.
+// The queue is shared by every worker and every run, so each test finds its own
+// suggestion by a name no one else has, made by a contributor account of its own.
 import { request, type Browser, type Page } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
 import { createFreshAccount, expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
@@ -12,7 +10,6 @@ const uniqueName = (prefix: string) => uniqueUsername(prefix).replace(/-/g, " ")
 
 type Suggestion = { name: string; newBrewery?: string };
 
-// A contributor adds a beer through the add-a-beer dialog (ADR-0082).
 const suggest = async (browser: Browser, baseURL: string | undefined, { name, newBrewery }: Suggestion) => {
   const apiRequest = await request.newContext();
   const account = await createFreshAccount(apiRequest, "e2e-review").finally(() => apiRequest.dispose());
@@ -41,7 +38,6 @@ const suggest = async (browser: Browser, baseURL: string | undefined, { name, ne
   }
 };
 
-// The queue may hold other specs' suggestions, so the page is walked until the name shows.
 const openSuggestion = async (page: Page, name: string) => {
   await page.goto("/en/admin");
   const queue = page.getByRole("list", { name: "Queue" });
