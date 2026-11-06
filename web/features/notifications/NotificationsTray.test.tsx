@@ -124,6 +124,23 @@ describe("the unread signal", () => {
   });
 });
 
+describe("the count after the panel has been opened", () => {
+  it("follows the latest read, not the list that was cached when the panel closed", async () => {
+    actions.readNotificationsAction.mockResolvedValue(pageOf(approved));
+    const { rerenderWith } = renderTray(1);
+    const { dialog } = await open();
+    await within(dialog).findByText("Öö");
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    actions.readUnreadCountAction.mockResolvedValue(3);
+    pathname.current = "/en/beers";
+    rerenderWith(1);
+
+    expect(await screen.findByRole("button", { name: "3 unread notifications" })).toBeInTheDocument();
+  });
+});
+
 describe("the panel", () => {
   it("reads the list only when it is opened, and opening acknowledges nothing", async () => {
     renderTray(1);

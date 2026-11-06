@@ -34,7 +34,7 @@ export const NotificationsTray = ({ locale, count }: Props) => {
     void refetchUnread();
   }, [pathname, refetchUnread]);
 
-  const unreadNow = list.data?.totalElements ?? unread.data;
+  const unreadNow = open && list.data ? list.data.totalElements : unread.data;
   if (unreadNow === 0 && !open) return null;
 
   const items = list.data?.content ?? [];
