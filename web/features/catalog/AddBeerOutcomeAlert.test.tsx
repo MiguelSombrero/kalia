@@ -84,11 +84,11 @@ describe("AddBeerOutcomeAlert", () => {
   it.each([
     [
       "en",
-      "You already have as many additions waiting for review as Kalia allows. Add more once some of them have been reviewed.",
+      "You already have as many suggestions waiting for review as Kalia allows. Only suggestions waiting for review count towards the limit. You can add more once some of them have been reviewed.",
     ],
     [
       "fi",
-      "Sinulla on jo niin monta lisäystä odottamassa tarkistusta kuin Kalia sallii. Voit lisätä uusia, kun osa niistä on tarkistettu.",
+      "Sinulla on jo niin monta ehdotusta odottamassa tarkistusta kuin Kalia sallii. Rajaan lasketaan vain tarkistusta odottavat ehdotukset. Voit lisätä uusia, kun osa niistä on tarkistettu.",
     ],
   ] as const)("says in %s that the pending limit is reached", (locale, text) => {
     renderAlert({ kind: "pendingCap" }, { locale });

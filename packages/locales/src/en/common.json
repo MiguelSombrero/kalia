@@ -194,7 +194,7 @@
       "duplicateBrewery": "{{brewery}} ({{place}}) is already in the catalog.",
       "useBrewery": "Use it",
       "pendingElsewhere": "Someone has already suggested this beer, and it is waiting for review. Check back once it has been reviewed.",
-      "pendingCap": "You already have as many additions waiting for review as Kalia allows. Add more once some of them have been reviewed.",
+      "pendingCap": "You already have as many suggestions waiting for review as Kalia allows. Only suggestions waiting for review count towards the limit. You can add more once some of them have been reviewed.",
       "refused": "Kalia did not accept this beer. Check the marked field and try again.",
       "refusedUnmarked": "Kalia did not accept this beer. Check it and try again.",
       "failed": "Could not add the beer. Please try again.",

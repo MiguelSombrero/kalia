@@ -3,7 +3,7 @@ package fi.kalia.catalog.application;
 public class TooManyPendingEntriesException extends RuntimeException {
 
 	TooManyPendingEntriesException(int limit) {
-		super("You already have %d entries waiting for review; add more once some are approved or rejected"
+		super("You already have %d suggestions waiting for review; add more once some are reviewed"
 				.formatted(limit));
 	}
 

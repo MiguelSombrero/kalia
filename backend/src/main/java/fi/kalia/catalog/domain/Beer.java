@@ -1,5 +1,6 @@
 package fi.kalia.catalog.domain;
 
+import fi.kalia.catalog.BeerRemoved;
 import fi.kalia.catalog.RejectionReason;
 import fi.kalia.catalog.SuggestionReviewed;
 import jakarta.persistence.Entity;
@@ -115,6 +116,14 @@ public class Beer extends AbstractAggregateRoot<Beer> {
 		Instant decidedAt = clock.instant();
 		moderationStatus = ModerationStatus.REJECTED;
 		registerEvent(reviewed(SuggestionReviewed.Outcome.REJECTED, reason, decidedAt));
+		return decidedAt;
+	}
+
+	public Instant remove(Clock clock) {
+		Assert.state(moderationStatus == ModerationStatus.APPROVED, "only an approved beer can be removed");
+		Instant decidedAt = clock.instant();
+		moderationStatus = ModerationStatus.REMOVED;
+		registerEvent(new BeerRemoved(UUID.randomUUID(), id, decidedAt));
 		return decidedAt;
 	}
 

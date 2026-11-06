@@ -11,9 +11,9 @@ import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-@Schema(description = "A suggestion as an admin decided it")
+@Schema(description = "A beer as an admin decided it: a suggestion approved or rejected, or an approved beer removed")
 public record SuggestionDecisionDto(
-		@Schema(description = "The suggested beer's id, which is the suggestion's", requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(description = "The beer's id, which is also the suggestion's when it was one", requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) ReviewOutcome outcome,
 		@Schema(description = "When the decision was made", requiredMode = Schema.RequiredMode.REQUIRED) Instant decidedAt,
 		@Schema(description = "Present on a rejection only") @Nullable RejectionReason reason,

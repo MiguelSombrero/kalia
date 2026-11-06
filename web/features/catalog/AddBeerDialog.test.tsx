@@ -211,8 +211,8 @@ describe("AddBeerDialog", () => {
     expect(screen.getByRole("dialog")).toHaveAccessibleDescription(description);
   });
 
-  it("says the pending limit is reached, and keeps the form for a retry later, on the API's 429", async () => {
-    posted = { status: 429, body: { status: 429, detail: "You already have 20 entries waiting for review" } };
+  it("says pending suggestions count towards the limit, and keeps the form for a retry later, on the API's 429", async () => {
+    posted = { status: 429, body: { status: 429, detail: "You already have 20 suggestions waiting for review" } };
     await openForm();
     await fillValidBeer();
 
@@ -220,7 +220,7 @@ describe("AddBeerDialog", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(
-      "You already have as many additions waiting for review as Kalia allows. Add more once some of them have been reviewed.",
+      "You already have as many suggestions waiting for review as Kalia allows. Only suggestions waiting for review count towards the limit. You can add more once some of them have been reviewed.",
     );
     expect(alert).not.toHaveTextContent("Could not add the beer");
     expect(screen.getByRole("dialog")).toBeInTheDocument();

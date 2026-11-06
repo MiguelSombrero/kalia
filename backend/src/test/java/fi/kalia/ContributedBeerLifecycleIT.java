@@ -6,8 +6,6 @@ import static org.mockito.BDDMockito.given;
 
 import com.jayway.jsonpath.JsonPath;
 import fi.kalia.catalog.application.ContributionService;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -28,39 +26,31 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
-import org.testcontainers.containers.Container.ExecResult;
-import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 /**
- * A contributed catalog entry waits for an operator (ADR-0091), across the
- * catalog, the cellar and the feed, and is never deleted. The operator command
- * is the real {@code scripts/moderate-contributor.sql}, run through {@code psql}
- * in the test database's own container.
+ * A contributed catalog entry waits for an admin (ADR-0091, ADR-0102), across the catalog, the
+ * cellar and the feed, and is never deleted. Every decision here goes through the admin API.
  */
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-class ContributionModerationIT {
+class ContributedBeerLifecycleIT {
 
 	private static final String CONTRIBUTOR = "Bearer contributor-token";
 
 	private static final String OTHER = "Bearer other-token";
 
+	private static final String ADMIN = "Bearer admin-token";
+
 	private static final String ANONYMOUS = "";
 
 	private static final String STYLE = "Quadrupel";
-
-	private static final String SCRIPT = "/tmp/moderate-contributor.sql";
 
 	@Autowired
 	private RestTestClient client;
 
 	@Autowired
 	private JdbcTemplate jdbc;
-
-	@Autowired
-	private PostgreSQLContainer postgres;
 
 	@MockitoBean
 	private JwtDecoder jwtDecoder;
@@ -74,17 +64,16 @@ class ContributionModerationIT {
 	private UUID westvleteren;
 
 	@BeforeEach
-	void setUp() throws IOException, InterruptedException {
+	void setUp() {
 		contributorId = UUID.randomUUID();
 		contributorName = "contributor-" + UUID.randomUUID();
 		otherId = UUID.randomUUID();
 		given(jwtDecoder.decode("contributor-token"))
 				.willReturn(TestTokens.user(contributorId.toString(), contributorName));
 		given(jwtDecoder.decode("other-token")).willReturn(TestTokens.user(otherId.toString(), "other-" + otherId));
+		given(jwtDecoder.decode("admin-token")).willReturn(TestTokens.admin(UUID.randomUUID().toString(), "admin"));
 		westvleteren = jdbc.queryForObject(
 				"SELECT id FROM catalog.brewery WHERE name = 'Brouwerij Westvleteren'", UUID.class);
-		postgres.copyFileToContainer(
-				MountableFile.forHostPath(Path.of("..", "scripts", "moderate-contributor.sql").toAbsolutePath()), SCRIPT);
 	}
 
 	@Test
@@ -124,7 +113,7 @@ class ContributionModerationIT {
 		assertThat(publicCellarBeerIds()).as("the public cellar").isEmpty();
 		assertThat(feedBeerIds()).as("the anonymous feed").doesNotContain(beerId);
 
-		moderate("approve");
+		approve(beerId);
 
 		assertThat(publicCellarBeerIds()).containsExactly(beerId);
 		assertThat(feedBeerIds()).contains(beerId);
@@ -151,7 +140,8 @@ class ContributionModerationIT {
 		assertThat((int) JsonPath.read(page, "$.totalBottles")).isEqualTo(2);
 		assertThat(Instant.parse(JsonPath.read(page, "$.lastBottleAddedAt"))).isEqualTo(lastApprovedBottle);
 
-		moderate("approve");
+		approve(firstPending);
+		approve(lastPending);
 
 		page = publicCellar("size=2&page=0");
 		assertThat(contentIds(page)).containsExactly(firstPending, approved.get(0));
@@ -161,7 +151,8 @@ class ContributionModerationIT {
 		assertThat(Instant.parse(JsonPath.read(page, "$.lastBottleAddedAt"))).isEqualTo(bottleAddedAt(lastPending));
 		assertThat(contentIds(publicCellar("size=2&page=1"))).containsExactly(approved.get(1), lastPending);
 
-		moderate("remove");
+		remove(firstPending);
+		remove(lastPending);
 
 		page = publicCellar("size=2&page=0");
 		assertThat(contentIds(page)).as("a removed beer is left out of a public cellar").containsExactly(approved.get(0),
@@ -172,7 +163,8 @@ class ContributionModerationIT {
 
 	@Test
 	void aContributorAtThePendingCapIsRefusedWithAProblemUntilSomeAreReviewed() {
-		for (int added = 0; added < ContributionService.MAX_PENDING_ENTRIES; added++) {
+		String first = addedBeerId(existingBreweryBeer(uniqueName("Abt"), westvleteren));
+		for (int added = 1; added < ContributionService.MAX_PENDING_ENTRIES; added++) {
 			add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
 		}
 
@@ -182,24 +174,41 @@ class ContributionModerationIT {
 				.expectBody(String.class)
 				.value(body -> {
 					assertThat((int) JsonPath.read(body, "$.status")).isEqualTo(429);
-					assertThat((String) JsonPath.read(body, "$.detail")).contains("waiting for review");
+					assertThat((String) JsonPath.read(body, "$.detail")).contains("suggestions waiting for review");
 				});
 		add(OTHER, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
 
-		moderate("approve");
+		approve(first);
 
 		add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
 	}
 
 	@Test
-	void aNewBreweryCountsAsAnEntryOfItsOwnTowardsTheCap() {
-		for (int added = 0; added < ContributionService.MAX_PENDING_ENTRIES - 1; added++) {
+	void aBeerWithANewBreweryCountsOnceTowardsTheCap() {
+		int half = ContributionService.MAX_PENDING_ENTRIES / 2;
+		for (int added = 0; added < half; added++) {
+			add(CONTRIBUTOR, newBreweryBeer(uniqueName("Sahti"), uniqueName("Panimo"))).expectStatus().isCreated();
+		}
+		for (int added = 0; added < half; added++) {
 			add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
 		}
 
+		assertThat(pendingSuggestions(contributorId)).isEqualTo(ContributionService.MAX_PENDING_ENTRIES);
 		add(CONTRIBUTOR, newBreweryBeer(uniqueName("Sahti"), uniqueName("Panimo"))).expectStatus().isEqualTo(429);
+		add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isEqualTo(429);
+		assertThat(pendingSuggestions(contributorId)).isEqualTo(ContributionService.MAX_PENDING_ENTRIES);
+	}
 
-		assertThat(pendingCount(contributorId)).isEqualTo(ContributionService.MAX_PENDING_ENTRIES - 1);
+	@Test
+	void rejectionsLimitNothingAMoreRoomOpensWhenASuggestionIsRejected() {
+		String first = addedBeerId(existingBreweryBeer(uniqueName("Abt"), westvleteren));
+		for (int added = 1; added < ContributionService.MAX_PENDING_ENTRIES; added++) {
+			add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
+		}
+		add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isEqualTo(429);
+
+		reject(first);
+
 		add(CONTRIBUTOR, existingBreweryBeer(uniqueName("Abt"), westvleteren)).expectStatus().isCreated();
 	}
 
@@ -213,7 +222,7 @@ class ContributionModerationIT {
 		awaitFeedLine(contributorId);
 		long rows = rowCount();
 
-		moderate("reject");
+		reject(beerId);
 
 		assertHiddenButKept(beerId, beerName, rows);
 		assertThat(statusOf(beerId)).isEqualTo("REJECTED");
@@ -225,13 +234,13 @@ class ContributionModerationIT {
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
 		setCellarPublic(CONTRIBUTOR);
-		moderate("approve");
+		approve(beerId);
 		addBottle(CONTRIBUTOR, beerId).expectStatus().isCreated();
 		awaitFeedLine(contributorId);
 		assertThat(searchIds(ANONYMOUS, beerName)).containsExactly(beerId);
 		long rows = rowCount();
 
-		moderate("remove");
+		remove(beerId);
 
 		assertHiddenButKept(beerId, beerName, rows);
 		assertThat(statusOf(beerId)).isEqualTo("REMOVED");
@@ -243,55 +252,13 @@ class ContributionModerationIT {
 		UUID breweryId = westvleteren;
 		String beerId = JsonPath.read(add(CONTRIBUTOR, existingBreweryBeer(beerName, breweryId)).expectStatus()
 				.isCreated().expectBody(String.class).returnResult().getResponseBody(), "$.id");
-		moderate("reject");
+		reject(beerId);
 
 		addBottle(CONTRIBUTOR, beerId).expectStatus().isNotFound();
 		String again = add(OTHER, existingBreweryBeer(beerName, breweryId)).expectStatus().isCreated()
 				.expectBody(String.class).returnResult().getResponseBody();
 
 		assertThat((String) JsonPath.read(again, "$.id")).isNotEqualTo(beerId);
-	}
-
-	@Test
-	void theOperatorCommandReviewsOnlyTheNamedContributorsEntriesInTheStatesItNames() {
-		String approvedByName = uniqueName("Abt");
-		String rejectedName = uniqueName("Abt");
-		String removedName = uniqueName("Abt");
-		String othersName = uniqueName("Abt");
-		add(OTHER, existingBreweryBeer(othersName, westvleteren)).expectStatus().isCreated();
-		setCellarPublic(CONTRIBUTOR);
-
-		add(CONTRIBUTOR, newBreweryBeer(approvedByName, uniqueName("Panimo"))).expectStatus().isCreated();
-		ExecResult approved = moderate("approve", contributorId.toString());
-		assertThat(approved.getStderr()).contains("1 beers and 1 breweries now APPROVED");
-		assertThat(statusOfBeerNamed(approvedByName)).isEqualTo("APPROVED");
-		assertThat(statusOfBeerNamed(othersName)).as("another contributor's").isEqualTo("PENDING");
-
-		add(CONTRIBUTOR, existingBreweryBeer(rejectedName, westvleteren)).expectStatus().isCreated();
-		moderate("reject", contributorName.toUpperCase());
-		assertThat(statusOfBeerNamed(rejectedName)).isEqualTo("REJECTED");
-		assertThat(statusOfBeerNamed(approvedByName)).as("reject leaves approved rows alone").isEqualTo("APPROVED");
-
-		add(CONTRIBUTOR, existingBreweryBeer(removedName, westvleteren)).expectStatus().isCreated();
-		moderate("remove", contributorName);
-		assertThat(statusOfBeerNamed(removedName)).isEqualTo("REMOVED");
-		assertThat(statusOfBeerNamed(approvedByName)).as("remove takes down approved rows").isEqualTo("REMOVED");
-		assertThat(statusOfBeerNamed(rejectedName)).as("a rejected row stays rejected").isEqualTo("REJECTED");
-		assertThat(statusOfBeerNamed(othersName)).as("another contributor's").isEqualTo("PENDING");
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog.brewery WHERE contributor_id = ? AND moderation_status = 'REMOVED'",
-				Long.class, contributorId)).isEqualTo(1);
-	}
-
-	@Test
-	void theOperatorCommandRefusesAnUnknownActionOrContributorAndChangesNothing() {
-		String name = uniqueName("Abt");
-		add(CONTRIBUTOR, existingBreweryBeer(name, westvleteren)).expectStatus().isCreated();
-
-		assertThat(moderate("delete", contributorName).getExitCode()).isNotZero();
-		assertThat(moderate("approve", "nobody-" + UUID.randomUUID()).getExitCode()).isNotZero();
-		assertThat(moderate("approve", "not a user or an id").getExitCode()).isNotZero();
-
-		assertThat(statusOfBeerNamed(name)).isEqualTo("PENDING");
 	}
 
 	private void assertHiddenButKept(String beerId, String beerName, long rowsBefore) {
@@ -309,18 +276,23 @@ class ContributionModerationIT {
 		assertThat(cellarValues("$[*].quantity")).as("the refused add changed nothing").containsExactly(1);
 	}
 
-	private void moderate(String action) {
-		ExecResult result = moderate(action, contributorId.toString());
-		assertThat(result.getExitCode()).as(result.getStderr()).isZero();
+	private void approve(String beerId) {
+		decide(beerId, "/approval", null);
 	}
 
-	private ExecResult moderate(String action, String who) {
-		try {
-			return postgres.execInContainer("psql", "-U", postgres.getUsername(), "-d", postgres.getDatabaseName(),
-					"-v", "action=" + action, "-v", "who=" + who, "-f", SCRIPT);
-		} catch (IOException | InterruptedException e) {
-			throw new IllegalStateException(e);
-		}
+	private void reject(String beerId) {
+		decide(beerId, "/rejection", Map.of("reason", "INAPPROPRIATE"));
+	}
+
+	private void decide(String beerId, String operation, Map<String, Object> body) {
+		RestTestClient.RequestBodySpec request = client.post().uri("/api/v1/admin/suggestions/" + beerId + operation)
+				.header("Authorization", ADMIN).contentType(MediaType.APPLICATION_JSON);
+		(body == null ? request : request.body(body)).exchange().expectStatus().isOk();
+	}
+
+	private void remove(String beerId) {
+		client.post().uri("/api/v1/admin/beers/" + beerId + "/removal").header("Authorization", ADMIN).exchange()
+				.expectStatus().isOk();
 	}
 
 	private RestTestClient.ResponseSpec add(String bearer, Map<String, Object> body) {
@@ -423,20 +395,15 @@ class ContributionModerationIT {
 				Long.class);
 	}
 
-	private long pendingCount(UUID contributor) {
-		return jdbc.queryForObject("""
-				SELECT (SELECT count(*) FROM catalog.beer WHERE contributor_id = ? AND moderation_status = 'PENDING')
-				     + (SELECT count(*) FROM catalog.brewery WHERE contributor_id = ? AND moderation_status = 'PENDING')""",
-				Long.class, contributor, contributor);
+	private long pendingSuggestions(UUID contributor) {
+		return jdbc.queryForObject(
+				"SELECT count(*) FROM catalog.beer WHERE contributor_id = ? AND moderation_status = 'PENDING'", Long.class,
+				contributor);
 	}
 
 	private String statusOf(String beerId) {
 		return jdbc.queryForObject("SELECT moderation_status FROM catalog.beer WHERE id = ?", String.class,
 				UUID.fromString(beerId));
-	}
-
-	private String statusOfBeerNamed(String name) {
-		return jdbc.queryForObject("SELECT moderation_status FROM catalog.beer WHERE name = ?", String.class, name);
 	}
 
 	// Rows this class adds outlive each test, so names never repeat.

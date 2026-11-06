@@ -10,7 +10,7 @@ import type { SuggestionDecisionDtoOutcome } from './suggestionDecisionDtoOutcom
 import type { SuggestionDecisionDtoReason } from './suggestionDecisionDtoReason';
 
 /**
- * A suggestion as an admin decided it
+ * A beer as an admin decided it: a suggestion approved or rejected, or an approved beer removed
  */
 export interface SuggestionDecisionDto {
   /** Alcohol by volume, percent */
@@ -20,7 +20,7 @@ export interface SuggestionDecisionDto {
   breweryStatus: SuggestionDecisionDtoBreweryStatus;
   /** When the decision was made */
   decidedAt: string;
-  /** The suggested beer's id, which is the suggestion's */
+  /** The beer's id, which is also the suggestion's when it was one */
   id: string;
   name: string;
   outcome: SuggestionDecisionDtoOutcome;

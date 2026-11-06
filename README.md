@@ -98,8 +98,8 @@ each with its own password in
 [docker-compose.dev.env](docker-compose.dev.env). They are created by
 `postgres/init` on an empty volume only, so **a volume made before this
 existed must be recreated once — `docker compose down -v` — and loses its
-data.** `make moderate` and `make app-config` still connect as the superuser,
-through `docker compose exec`.
+data.** `make app-config` still connects as the superuser, through
+`docker compose exec`.
 
 Those are the defaults, and the main checkout keeps them. Each of the seven is
 a variable in the root `.env` (`WEB_PORT`, `BACKEND_PORT`,

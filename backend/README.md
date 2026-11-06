@@ -219,13 +219,21 @@ Notable suites:
   fails if the brewery's row lock is removed; the API test races two decisions
   on one suggestion and fails without the beer's. The API test collects the
   event with a listener of its own
+- `AdminBeerRemovalApiIT` and `ContributedBeerLifecycleIT` — removing an approved
+  beer ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
+  a contributed and an imported beer withdrawn with their brewery left as it was,
+  one review record and one `BeerRemoved`, `403` for a non-admin, `409` for a beer
+  that is pending, rejected or removed already, and no catalog row deleted by a
+  removal or a rejection with a holder's cellar entry kept and flagged
+  withdrawn. The lifecycle test also pins what a pending beer shows each reader
+  through the admin API's decisions, and the cap of 20 suggestions, a beer with a
+  new brewery counting once
 - `SuggestionReviewedListenerModuleIT`, `NotificationApiIT`,
   `NotificationPersistenceIT` and `SuggestionDecisionNotificationIT` — what a
   contributor is told ([ADR-0103](../docs/adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md)):
   the listener publishes `SuggestionReviewed` itself and polls the repository
   (an approval, a rejection and an edited approval each writing one row, a
-  redelivery none, `BeerRemoved` none — a stand-in record until the removal
-  exists); the API test reads, counts and acknowledges only the caller's own
+  redelivery none, `BeerRemoved` none); the API test reads, counts and acknowledges only the caller's own
   rows, answers another user's, an acknowledged one and an unknown one with the
   same `404`, and refuses an anonymous caller; the persistence test deletes by
   recipient, as an account deletion will; and the last runs an admin's real
@@ -314,33 +322,34 @@ task, not a routine step: the import only ever adds rows. Like any edited migrat
 
 ## Moderating contributions
 
-A beer or brewery a user adds is `PENDING` until an operator reviews it, and
+A beer or brewery a user adds is `PENDING` until an admin reviews it, and
 nobody but its contributor sees it before
 ([ADR-0091](../docs/adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
-From the repository root, with the stack's `postgres` up:
+Review is the admin API, one suggestion at a time, in `catalog`
+([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)),
+and it needs a token holding the `admin` realm role (the seeded `testadmin` in
+development):
 
-```bash
-make moderate ACTION=approve WHO=<username or id>
-make moderate ACTION=reject  WHO=<username or id>
-make moderate ACTION=remove  WHO=<username or id>
-```
+- `GET /api/v1/admin/suggestions` lists what waits
+  ([iteration 10.5 task 05](../docs/tasks/iteration-10.5/05-an-admin-reads-the-review-queue.md)).
+- `POST /api/v1/admin/suggestions/{id}/approval` or `…/rejection` (with a
+  `reason`) decides one
+  ([task 06](../docs/tasks/iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md)),
+  and `…/edited-approval` corrects it first
+  ([task 07](../docs/tasks/iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md)).
+- `POST /api/v1/admin/beers/{id}/removal` takes an `APPROVED` beer down, an
+  imported or seeded one included, leaving its brewery as it is
+  ([task 08](../docs/tasks/iteration-10.5/08-the-sql-moderation-script-is-retired.md)).
+  It takes no body, answers `409` for a beer that is not `APPROVED`, and notifies
+  nobody.
 
-`WHO` is the contributor's username (any case) or their id, the Keycloak `sub`.
-*approve* turns everything of theirs that is `PENDING` into `APPROVED`; *reject*
-turns `PENDING` into `REJECTED`; *remove* turns `PENDING` and `APPROVED` into
-`REMOVED`. It runs `scripts/moderate-contributor.sql` in one transaction and
-prints how many beers and breweries changed. An unknown action or contributor
-fails and changes nothing. A hidden row stays in the table, and a holder's
-cellar entry pointing at it keeps rendering: never `DELETE` a catalog row.
+Swagger UI's Authorize button signs in with the realm's own flow, so "Try it
+out" works for any of them. A decision writes a review record and publishes its
+event; a hidden row stays in the table, and a holder's cellar entry pointing at
+it keeps rendering unlinked: never `DELETE` a catalog row. There is no database
+script for any of this.
 
-To see what is waiting, an admin calls `GET /api/v1/admin/suggestions`
-([iteration 10.5 task 05](../docs/tasks/iteration-10.5/05-an-admin-reads-the-review-queue.md)),
-and decides one with `POST /api/v1/admin/suggestions/{id}/approval` or
-`…/rejection` with a `reason`
-([task 06](../docs/tasks/iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md)),
-or corrects it first with `…/edited-approval`
-([task 07](../docs/tasks/iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md)),
-or from a shell:
+To see what waits without the API, read the table:
 
 ```bash
 docker compose exec postgres psql -U kalia -d kalia -c \

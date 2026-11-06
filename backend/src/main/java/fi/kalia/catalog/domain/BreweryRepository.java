@@ -48,8 +48,6 @@ public interface BreweryRepository extends JpaRepository<Brewery, UUID> {
 	@Query("SELECT b FROM Brewery b WHERE b.id IN :ids ORDER BY b.id")
 	List<Brewery> findAllByIdForUpdate(Collection<UUID> ids);
 
-	long countByContributorIdAndModerationStatus(UUID contributorId, ModerationStatus moderationStatus);
-
 	// Do not change these expressions apart from brewery_folded_name_country_idx (V003).
 	@Query(value = """
 			SELECT * FROM catalog.brewery

@@ -1,17 +1,37 @@
 // Exercises adding a beer from a search that found nothing (ADR-0082) against
-// the compose stack; credentials are a per-worker account provisioned by
-// ./support/keycloakAccount.ts.
-import type { Page } from "@playwright/test";
-import { expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
+// the compose stack; credentials are an account of this spec's own, provisioned
+// by ./support/keycloakAccount.ts.
+import { request, type Page } from "@playwright/test";
+import {
+  createFreshAccount,
+  expect,
+  signIn,
+  test as baseTest,
+  uniqueUsername,
+  type KeycloakAccount,
+} from "./support/keycloakAccount";
 import { expectNoA11yViolations } from "./support/a11y";
-import { approveContributionsOf } from "./support/moderation";
 
-// Shares one account per worker with the other specs, which cycle sign-in/out.
-test.describe.configure({ mode: "serial" });
-
-test.beforeAll(({ account }) => {
-  approveContributionsOf(account.username);
+// A worker account would carry its waiting suggestions into the next run, where
+// the backend's cap on them (20, ADR-0102) would answer 429 in the add dialog.
+// A new account per worker and run starts every run with none waiting.
+const test = baseTest.extend<object, { account: KeycloakAccount }>({
+  account: [
+    async ({}, use) => {
+      const apiRequest = await request.newContext();
+      let account: KeycloakAccount;
+      try {
+        account = await createFreshAccount(apiRequest, "e2e-add-beer");
+      } finally {
+        await apiRequest.dispose();
+      }
+      await use(account);
+    },
+    { scope: "worker" },
+  ],
 });
+
+test.describe.configure({ mode: "serial" });
 
 // Every name starts past "Z" or with "Öö", so an added beer never lands among
 // the first page's rows that CATALOG_CARD (./support/catalog.ts) indexes.

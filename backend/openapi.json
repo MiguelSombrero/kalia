@@ -116,6 +116,36 @@
         "required" : [ "abv", "brewery", "id", "name", "style" ],
         "type" : "object"
       },
+      "BeerNotApprovedProblem" : {
+        "description" : "A 409: the beer is not approved, so it cannot be removed",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "format" : "uri",
+            "type" : "string"
+          },
+          "moderationStatus" : {
+            "description" : "Where the beer stands: waiting, rejected, or removed already",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "REMOVED" ],
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "format" : "uri",
+            "type" : "string"
+          }
+        },
+        "required" : [ "moderationStatus", "status", "title" ],
+        "type" : "object"
+      },
       "BeerSummaryDto" : {
         "description" : "A beer as it appears in search results",
         "properties" : {
@@ -933,7 +963,7 @@
         "type" : "object"
       },
       "SuggestionDecisionDto" : {
-        "description" : "A suggestion as an admin decided it",
+        "description" : "A beer as an admin decided it: a suggestion approved or rejected, or an approved beer removed",
         "properties" : {
           "abv" : {
             "description" : "Alcohol by volume, percent",
@@ -953,7 +983,7 @@
             "type" : "string"
           },
           "id" : {
-            "description" : "The suggested beer's id, which is the suggestion's",
+            "description" : "The beer's id, which is also the suggestion's when it was one",
             "format" : "uuid",
             "type" : "string"
           },
@@ -1098,6 +1128,99 @@
   },
   "openapi" : "3.1.0",
   "paths" : {
+    "/api/v1/admin/beers/{id}/removal" : {
+      "post" : {
+        "description" : "Withholds an approved beer, an imported one included, from search, lists and every public view. A holder keeps their bottles and sees the beer unlinked. The beer's brewery stays as it is and no row is deleted. Takes no body and no reason, and notifies nobody.",
+        "operationId" : "remove",
+        "parameters" : [ {
+          "description" : "The beer's id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SuggestionDecisionDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The id is not a UUID"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Missing or invalid bearer token"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "The caller does not hold the admin role"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "No beer has this id"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BeerNotApprovedProblem"
+                }
+              }
+            },
+            "description" : "The beer is not approved: it is still waiting, was rejected, or was removed already, perhaps by another admin a moment ago"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "An unexpected failure; the body carries no message"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ ]
+        } ],
+        "summary" : "Remove an approved beer",
+        "tags" : [ "Admin beers" ]
+      }
+    },
     "/api/v1/admin/suggestions" : {
       "get" : {
         "description" : "Every suggestion no admin has decided, the oldest first, with its beer, its brewery and whether that brewery is new, its contributor's username, and how many of the contributor's suggestions wait or were rejected.A page skipping more than 10000 rows (page × size) is refused with 400 problem+json.",
@@ -3073,5 +3196,8 @@
   }, {
     "description" : "Search, browse and add to the beer catalog",
     "name" : "Catalog"
+  }, {
+    "description" : "Taking an approved beer down; admin role only",
+    "name" : "Admin beers"
   } ]
 }

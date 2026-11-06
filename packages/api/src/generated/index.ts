@@ -1,3 +1,4 @@
+export * from './admin-beers/admin-beers';
 export * from './admin-suggestions/admin-suggestions';
 export * from './app-config/app-config';
 export * from './catalog/catalog';

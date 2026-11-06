@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import fi.kalia.TestcontainersConfiguration;
+import fi.kalia.catalog.BeerRemoved;
 import fi.kalia.catalog.RejectionReason;
 import fi.kalia.catalog.SuggestionReviewed;
 import fi.kalia.catalog.SuggestionReviewed.Outcome;
@@ -140,9 +141,8 @@ class SuggestionReviewedListenerModuleIT {
 		assertThat(notifications.findAll()).filteredOn(n -> n.getBeerId().equals(beer)).hasSize(2);
 	}
 
-	// A removal publishes its own event and notifies nobody (ADR-0102). That event is not in the
-	// code yet, so a record of its shape stands in. Once a later decision's row exists, the removal
-	// has had every chance to be handled.
+	// A removal publishes its own event and notifies nobody (ADR-0102). Once a later decision's row
+	// exists, the removal has had every chance to be handled.
 	@Test
 	void aBeerRemovedEventWritesNothing(Scenario scenario) {
 		UUID removedBeer = UUID.randomUUID();
@@ -176,10 +176,6 @@ class SuggestionReviewedListenerModuleIT {
 	private static SuggestionReviewed approval(UUID contributor, String name) {
 		return new SuggestionReviewed(UUID.randomUUID(), contributor, UUID.randomUUID(), Outcome.APPROVED, name,
 				false, null, null, DECIDED_AT);
-	}
-
-	private record BeerRemoved(UUID eventId, UUID beerId, Instant occurredAt) {
-
 	}
 
 }

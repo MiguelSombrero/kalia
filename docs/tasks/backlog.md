@@ -24,8 +24,8 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   rely on, and what a later re-import does to a row a user has changed.
 - **Removing an approved brewery** — an admin can remove a beer
   ([ADR-0102](../adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md))
-  but not the brewery added with it, which stays listed; `make moderate` could
-  remove a contributor's breweries. Waits on someone needing it.
+  but not the brewery added with it, which stays listed, as the retired SQL script's
+  removal of a contributor's breweries is no longer possible. Waits on someone needing it.
 - **Other-language names for a beer.** Wikidata labels a beer in several
   languages, and [iteration 8 task 17](iteration-8/17-seed-the-catalog-from-wikidata.md)
   imports one name per beer and keeps no aliases. A search for "Westvleteren 12"
