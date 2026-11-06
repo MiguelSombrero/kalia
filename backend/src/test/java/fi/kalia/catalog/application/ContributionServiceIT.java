@@ -23,7 +23,7 @@ import org.springframework.test.context.TestPropertySource;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ TestcontainersConfiguration.class, ContributionService.class, ContributionServiceIT.Config.class })
+@Import({ TestcontainersConfiguration.class, ContributionService.class, CatalogEntryRules.class, ContributionServiceIT.Config.class })
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 class ContributionServiceIT {
 

@@ -300,7 +300,8 @@ kalia/
 │       ├── identity/ # token validation, current-user resolution
 │       ├── cellar/   # personal beer cellar
 │       ├── profile/  # user profile, public cellar visibility
-│       └── feed/     # front-page activity feed
+│       ├── feed/     # front-page activity feed
+│       └── notification/ # what a user is told and has not yet acknowledged
 ├── web/              # Next.js app (BFF + UI), an npm workspace
 ├── mobile/           # Expo app (development build), an npm workspace (ADR-0094)
 ├── packages/         # shared TypeScript source, npm workspaces (ADR-0092)

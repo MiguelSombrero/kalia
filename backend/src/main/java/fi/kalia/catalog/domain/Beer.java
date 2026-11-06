@@ -91,6 +91,24 @@ public class Beer extends AbstractAggregateRoot<Beer> {
 		return decidedAt;
 	}
 
+	public Instant approveEdited(String editedName, String editedStyle, BigDecimal editedAbv, Brewery editedBrewery,
+			Clock clock) {
+		requireSuggestion();
+		Assert.hasText(editedName, "name must not be blank");
+		Assert.hasText(editedStyle, "style must not be blank");
+		Assert.isTrue(editedAbv.signum() >= 0, "abv must not be negative");
+		String suggestedName = name;
+		name = editedName;
+		style = editedStyle;
+		abv = editedAbv;
+		brewery = editedBrewery;
+		Instant decidedAt = clock.instant();
+		moderationStatus = ModerationStatus.APPROVED;
+		registerEvent(new SuggestionReviewed(UUID.randomUUID(), contributorId, id, SuggestionReviewed.Outcome.APPROVED,
+				name, true, suggestedName, null, decidedAt));
+		return decidedAt;
+	}
+
 	public Instant reject(RejectionReason reason, Clock clock) {
 		Assert.notNull(reason, "reason must not be null");
 		requireSuggestion();

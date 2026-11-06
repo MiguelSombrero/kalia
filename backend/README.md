@@ -200,6 +200,16 @@ Notable suites:
   shared database's pending rows to `REMOVED` first, as the suites before it
   leave suggestions waiting; `SuggestionReviewServiceIT` pins that a page's
   statements do not grow with its rows
+- `AdminSuggestionEditApiIT`, `CatalogEntryRulesTest` and `SharedBeerConstraintsTest`
+  — an admin's edited approval
+  ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
+  the contributor's cellar and the beer's page showing the edited values, a new
+  brewery edited with its beer, re-pointing at an existing brewery, each refusal
+  (style, country, invisible character, duplicate beer or brewery whatever its
+  status, brewery not approved, brewery approved by a sibling, brewery added to
+  an existing one) and what the review record keeps. Each refusal test fails
+  with its check removed. The unit tests pin the rules both the add and the
+  edit take from one place
 - `AdminSuggestionDecisionApiIT`, `SuggestionDecisionLockingIT` and
   `SuggestionReviewEventPublishingIT` — an admin's decision
   ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
@@ -207,8 +217,19 @@ Notable suites:
   the `400`, `403`, `404` and `409`, and one event and one review record per
   decision. The locking test holds one rejection open while a second starts, and
   fails if the brewery's row lock is removed; the API test races two decisions
-  on one suggestion and fails without the beer's. Nothing in the application
-  consumes the event yet, so the API test collects it with a listener of its own
+  on one suggestion and fails without the beer's. The API test collects the
+  event with a listener of its own
+- `SuggestionReviewedListenerModuleIT`, `NotificationApiIT`,
+  `NotificationPersistenceIT` and `SuggestionDecisionNotificationIT` — what a
+  contributor is told ([ADR-0103](../docs/adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md)):
+  the listener publishes `SuggestionReviewed` itself and polls the repository
+  (an approval, a rejection and an edited approval each writing one row, a
+  redelivery none, `BeerRemoved` none — a stand-in record until the removal
+  exists); the API test reads, counts and acknowledges only the caller's own
+  rows, answers another user's, an acknowledged one and an unknown one with the
+  same `404`, and refuses an anonymous caller; the persistence test deletes by
+  recipient, as an account deletion will; and the last runs an admin's real
+  decision through to the contributor's list
 - `MobileClientTokenIT` — the one integration test that keeps the real
   `JwtDecoder`, pointed at a JWKS served by the test and signing with a test key:
   a token shaped like `kalia-mobile`'s is accepted with the `kalia-backend`
@@ -317,6 +338,8 @@ To see what is waiting, an admin calls `GET /api/v1/admin/suggestions`
 and decides one with `POST /api/v1/admin/suggestions/{id}/approval` or
 `…/rejection` with a `reason`
 ([task 06](../docs/tasks/iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md)),
+or corrects it first with `…/edited-approval`
+([task 07](../docs/tasks/iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md)),
 or from a shell:
 
 ```bash

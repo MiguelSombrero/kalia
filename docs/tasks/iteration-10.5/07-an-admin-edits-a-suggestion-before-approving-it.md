@@ -1,6 +1,6 @@
 # Task 07: An admin edits a suggestion before approving it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2, DW-3
 
@@ -98,39 +98,39 @@ ADR decides.
 
 ## Acceptance criteria
 
-- [ ] An integration test edits a suggestion's name, style and ABV and approves
+- [x] An integration test edits a suggestion's name, style and ABV and approves
       it, and the contributor's cellar and the beer's details then show the
       edited values
-- [ ] An integration test edits a new brewery's name and country with its beer,
+- [x] An integration test edits a new brewery's name and country with its beer,
       and both are approved together
-- [ ] An integration test re-points a suggestion at an existing brewery: the
+- [x] An integration test re-points a suggestion at an existing brewery: the
       beer is approved under it, and the new brewery is rejected — or left
       pending while another suggestion still needs it
-- [ ] An edit to a name already in the catalog answers the documented `409`;
+- [x] An edit to a name already in the catalog answers the documented `409`;
       an unknown style, an unlisted country and a `Cf` character answer `400`
       — tests, each confirmed to fail without its check
-- [ ] An edit to a name another contributor holds as `PENDING` answers `409`
+- [x] An edit to a name another contributor holds as `PENDING` answers `409`
       naming that beer or brewery, whose id the admin can open through task
       05's read — integration test
-- [ ] An edit of a suggestion that is already decided, or decided
+- [x] An edit of a suggestion that is already decided, or decided
       concurrently, answers `409` as task 06's does; a non-suggestion answers
       `404`, a non-admin `403`, and the response of a successful edit is the
       suggestion as decided, `200` — integration tests
-- [ ] The published event carries the edited values, says the suggestion was
+- [x] The published event carries the edited values, says the suggestion was
       edited and holds the name as suggested; an unedited approval's event
       says neither — `@ApplicationModuleTest` scenario
-- [ ] The review record keeps the values as suggested when edited, and a
+- [x] The review record keeps the values as suggested when edited, and a
       request whose values equal the suggested ones is recorded as an approval
       as it is, not an edit — integration test
-- [ ] Re-pointing at a brewery that is not `APPROVED` answers `404`, editing a
+- [x] Re-pointing at a brewery that is not `APPROVED` answers `404`, editing a
       brewery's fields after a sibling's approval has approved it answers
       `409`, and adding a brewery to a suggestion that came with an existing
       one answers `400` — integration tests, each confirmed to fail without
       its check
-- [ ] The add path and the edit path share one set of validation rules —
+- [x] The add path and the edit path share one set of validation rules —
       a unit test of the shared rule, and no copy of it in the edit path
-- [ ] The committed spec carries the operation
-- [ ] `make verify-fast` is green
+- [x] The committed spec carries the operation
+- [x] `make verify-fast` is green
 
 ## Notes
 

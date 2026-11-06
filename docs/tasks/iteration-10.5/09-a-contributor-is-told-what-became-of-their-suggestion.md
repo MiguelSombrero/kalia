@@ -1,6 +1,6 @@
 # Task 09: A contributor is told what became of their suggestion
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-3
 
@@ -103,37 +103,37 @@ this file against ADR-0103, ADR-0104 and the event task 06 shipped):
 
 ## Acceptance criteria
 
-- [ ] An `@ApplicationModuleTest` scenario publishing `SuggestionReviewed`
+- [x] An `@ApplicationModuleTest` scenario publishing `SuggestionReviewed`
       directly shows an approval, a rejection and an edited approval each
       writing one notification for the contributor, and a redelivered event
       writing none
-- [ ] The same scenario shows a notification freezing the outcome, whether it
+- [x] The same scenario shows a notification freezing the outcome, whether it
       was edited, the beer's id, the name as decided, the name as suggested
       when the event holds one, the reason code and when it was decided, a
       later edit or removal of the beer leaving it unchanged, and a
       `BeerRemoved` event writing none
-- [ ] The same scenario shows a decision on the admin's own suggestion
+- [x] The same scenario shows a decision on the admin's own suggestion
       notifying the admin as contributor
-- [ ] An integration test reads a user's notifications and unread count,
+- [x] An integration test reads a user's notifications and unread count,
       acknowledges one, and the count falls; the count is read without the
       notifications, and the list is paginated and its parameters bounded; a
       response carries codes and names, no sentence and no recipient id
-- [ ] An integration test shows another user can neither read nor acknowledge
+- [x] An integration test shows another user can neither read nor acknowledge
       them, that acknowledging another user's, one already acknowledged and
       one that never existed are each answered `404` alike, and an anonymous
       caller is refused
-- [ ] An acknowledged notification's row is deleted, and an unread one is kept
+- [x] An acknowledged notification's row is deleted, and an unread one is kept
       whatever its age — test; opening the list leaves every notification
       unread
-- [ ] A repository test deletes every notification for one recipient and
+- [x] A repository test deletes every notification for one recipient and
       leaves another recipient's, so the table can be emptied by user when an
       account is deleted ([task 15](15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md)'s
       decision; the other tests it implies are named in
       [the backlog's](../backlog.md) GDPR item)
-- [ ] The `notification` module passes `ModularityTest`, `ArchitectureTest` and
+- [x] The `notification` module passes `ModularityTest`, `ArchitectureTest` and
       `ArchitectureDocumentationTest`, and is in §3's table and §2's diagram
-- [ ] The committed spec carries the operations, and the glossary the terms
-- [ ] `make verify-fast` is green
+- [x] The committed spec carries the operations, and the glossary the terms
+- [x] `make verify-fast` is green
 
 ## Notes
 
