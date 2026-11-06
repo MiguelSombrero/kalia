@@ -15,12 +15,11 @@
 // when it is handed the whole environment object, so a flow through another
 // module is CodeQL's to find.
 
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { depthChange, matching, tokenize } from "./js-tokens.mjs";
+import { depthChange, javascriptFiles, matching, tokenize } from "./js-tokens.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -421,7 +420,7 @@ export function clearTextLogs(source) {
 }
 
 const main = () => {
-  const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "*.mjs", "*.cjs", "*.js"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
+  const files = javascriptFiles(ROOT);
   const problems = files.flatMap((file) =>
     clearTextLogs(readFileSync(resolve(ROOT, file), "utf8")).map((line) => `${file}:${line} prints a value read from the environment or a rendered configuration`),
   );

@@ -4,6 +4,25 @@
 // knows strings, template literals, regex literals and comments, so a checker
 // never mistakes a fixture string or a comment for code; it does not parse.
 
+import { execFileSync } from "node:child_process";
+
+// See check-no-raster-images.mjs: a git hook's GIT_DIR would point git at
+// the hook's repository instead of `root`.
+const { GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, ...ENV_WITHOUT_REPO } = process.env;
+
+/**
+ * @param {string} root repository root
+ * @returns {string[]} its JavaScript files, tracked or new but not ignored, repository-relative
+ */
+export const javascriptFiles = (root) =>
+  execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "*.mjs", "*.cjs", "*.js"], {
+    cwd: root,
+    env: ENV_WITHOUT_REPO,
+    encoding: "utf8",
+  })
+    .split("\n")
+    .filter(Boolean);
+
 const PUNCTUATORS = [
   ">>>=", "...", "===", "!==", "**=", "<<=", ">>=", ">>>", "&&=", "||=", "??=",
   "=>", "==", "!=", "<=", ">=", "&&", "||", "??", "?.", "++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "**", "<<", ">>",
@@ -91,7 +110,10 @@ export function tokenize(source) {
     } else if (c === "'" || c === '"') {
       const startLine = line;
       let j = i + 1;
-      while (j < source.length && source[j] !== c && source[j] !== "\n") j += source[j] === "\\" ? 2 : 1;
+      while (j < source.length && source[j] !== c && source[j] !== "\n") {
+        if (source[j] === "\\" && source[j + 1] === "\n") line++;
+        j += source[j] === "\\" ? 2 : 1;
+      }
       push({ type: "str", value: source.slice(i + 1, j), line: startLine });
       i = j + 1;
     } else if (c === "`") {

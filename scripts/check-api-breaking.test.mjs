@@ -93,7 +93,7 @@ test("a passing check asks nothing about the branch and prints nothing", () => {
 const fixtureRepo = () => {
   const root = mkdtempSync(join(tmpdir(), "api-breaking-fork-"));
   const env = { ...cleanEnv, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@example.com", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@example.com" };
-  const git = (...args) => execFileSync("git", args, { cwd: root, env, stdio: "ignore" });
+  const git = (...args) => execFileSync("git", ["-c", "commit.gpgsign=false", ...args], { cwd: root, env, stdio: "ignore" });
   const commitSpec = (text, message) => {
     writeFileSync(join(root, "backend", "openapi.json"), text);
     git("add", "-A");

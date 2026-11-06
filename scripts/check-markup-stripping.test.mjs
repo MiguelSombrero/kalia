@@ -16,7 +16,12 @@ test("fails a regex that strips comments, declarations or processing instruction
 test("fails a regex that strips tags, with replace or replaceAll", () => {
   assert.deepEqual(markupStrippings('html.replace(/<[^>]*>/g, "");'), [1]);
   assert.deepEqual(markupStrippings('html.replaceAll(/<\\/?[a-z]+>/gi, " ");'), [1]);
-  assert.deepEqual(markupStrippings('html?.replace(/<script.*?>/, "");'), [1]);
+  assert.deepEqual(markupStrippings('html?.replace(/<script.*?>/g, "");'), [1]);
+});
+
+test("fails a regex held in a constant and passed by name, reporting the call", () => {
+  const source = 'const COMMENT = /<!--[\\s\\S]*?-->/g;\nconst OTHER = /x/g;\nconst lines = body.replace(COMMENT, "").replace(OTHER, "").split("\\n");';
+  assert.deepEqual(markupStrippings(source), [3]);
 });
 
 test("passes the corrected form, which matches the markup as tokens", () => {
@@ -24,14 +29,15 @@ test("passes the corrected form, which matches the markup as tokens", () => {
   assert.deepEqual(markupStrippings(source), []);
 });
 
-test("passes a pattern anchored to the start or end, which removes one match in a fixed place", () => {
-  assert.deepEqual(markupStrippings('svg.replace(/^\\s*<svg[^>]*>/, "").replace(/<\\/svg>\\s*$/, "");'), []);
+test("passes a pattern that removes one match: without the g flag, or anchored", () => {
+  assert.deepEqual(markupStrippings('const TILE = /<rect [^>]*\\/>/;\nsvg.replace(TILE, "").replace(/<!--.*?-->/, "");'), []);
+  assert.deepEqual(markupStrippings('svg.replace(/^\\s*<svg[^>]*>/g, "").replace(/<\\/svg>\\s*$/g, "");'), []);
   assert.ok(stripsMarkup("^<!--|-->"), "an alternation escapes the anchor");
 });
 
 test("passes a CSS comment, a lookbehind, an escaped angle bracket and a lone <", () => {
   assert.deepEqual(markupStrippings('css.replace(/\\/\\*[\\s\\S]*?\\*\\//g, "");'), []);
-  assert.deepEqual(markupStrippings('s.replace(/(?<=a)b/g, "").replace(/(?<!x)y/g, "").replace(/(?<name>z)/, "");'), []);
+  assert.deepEqual(markupStrippings('s.replace(/(?<=a)b/g, "").replace(/(?<!x)y/g, "").replace(/(?<name>z)/g, "");'), []);
   assert.deepEqual(markupStrippings('target.replace(/^<|>$/g, "");'), []);
 });
 

@@ -240,9 +240,10 @@ What this covers, and what it does not:
   >   without it fails the gate until it is installed.
   > - Bad, because the two CodeQL stand-ins approximate CodeQL one file at a
   >   time and read JavaScript only. A flow through another module, or in
-  >   TypeScript, is still found first by CI; the open alert on
-  >   `scripts/mobile-native.mjs`, whose value comes from `stackEnv()` in
-  >   another module, is one they miss.
+  >   TypeScript, is still found first by CI. The alert open on `dev` against
+  >   `scripts/mobile-native.mjs:121` is one they miss: CodeQL names no flow
+  >   path for it, and none the stand-in follows within that file reaches the
+  >   line.
   > - Neutral, because a direct `process.env.NAME` read is not a source for
   >   the clear-text check, matching what CodeQL has passed on `dev` for
   >   months (`KEYCLOAK_REALM` printed by the Keycloak scripts); a stricter
