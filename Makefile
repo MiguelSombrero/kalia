@@ -93,8 +93,9 @@ web-e2e: ## Run the web app's E2E tests (needs the stack up)
 lint: ## Lint the web app and the shared packages
 	npm run lint --workspace web --workspace @kalia/api --workspace @kalia/locales
 
-check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping checks and their self-tests
+check: ## Run doc/architecture-size/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping checks and their self-tests
 	node scripts/check-adrs.mjs
+	node scripts/check-architecture-size.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
 	node scripts/check-glossary.mjs

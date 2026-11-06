@@ -46,7 +46,7 @@ describe("heading rule (ADR-0073)", () => {
   });
 });
 
-describe("hand-built route rule (docs/architecture.md §5)", () => {
+describe("hand-built route rule (web/README.md)", () => {
   const byHand = "export const a = (locale: string) => `/${locale}/profile`;\n";
 
   it("rejects a locale-prefixed address built by hand in app/, features/ and components/", async () => {

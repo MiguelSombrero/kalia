@@ -238,7 +238,7 @@ and they drift from the Java names that produced them.
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`; `PublicCellarDto` carries the same four, with `username`, `totalBottles` and `lastBottleAddedAt` beside them. |
-| `content`, `nextCursor`, `startOver` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`. `nextCursor` is opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. `startOver` is `true` when a `since` cursor is older than that window ([architecture.md §4](architecture.md#4-api-design) says what a caller does then). |
+| `content`, `nextCursor`, `startOver` | The cursor-form pagination envelope (`FeedPageDto`), on `/feed`. `nextCursor` is opaque, round-tripped rather than parsed, and `null` once a page reaches the end of the served window. `startOver` is `true` when a `since` cursor is older than that window ([ADR-0060](adr/0060-feed-delivery-is-polling.md) says what a caller does then). |
 
 ### Generated TypeScript types
 
@@ -255,7 +255,7 @@ its own type** — `BottleDtoContainerType`, `AddBottleRequestDtoContainerType`
 |---|---|---|
 | Domain event naming | Past participle on the thing whose state changed, never repeating the module name: `BottleAdded` (not `CellarBottleAddedEvent`) — the package `fi.kalia.cellar` already carries the module. Yields `BottleRemoved`, `EntryEmptied`, `CellarVisibilityChanged`. | [ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md) |
 | Aggregate writes | A non-root entity (`Bottle`) is created, changed and removed only through its aggregate root (`Entry`), which is the only object in the aggregate with a repository. | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
-| Timestamp columns | Every new table carries `created_at` and `updated_at`. `catalog.beer` predates the convention and has only `created_at`. | [architecture.md §3](architecture.md#3-backend-modules) |
+| Timestamp columns | Every new table carries `created_at` and `updated_at`. `catalog.beer` predates the convention and has only `created_at`. | [backend/README.md](../backend/README.md#code-conventions) |
 
 ## Terms weighed and dropped
 
@@ -266,5 +266,5 @@ Recorded so a later session does not re-propose them.
 | Renaming `cellar.Bottle` | Proposed (iteration 5 [task 09](tasks/iteration-5/09-bottle-beer-naming.md)) to remove the `Bottle` / `ContainerType.BOTTLE` overlap and the looser `Beer` / `Bottle` echo. **Dropped 2026-08-15**: the churn through REST paths, the OpenAPI schema and the generated frontend types was judged not worth it. The pair of meanings is the live convention. |
 | A separate handle + editable display name | Rejected in [ADR-0049](adr/0049-profile-module-and-public-identity.md). Kalia has one immutable `username` and no rename path; revisit when someone actually asks to be called something else. |
 | An opaque profile `UUID` as the public-cellar URL segment | Rejected in [ADR-0049](adr/0049-profile-module-and-public-identity.md) / [ADR-0050](adr/0050-public-cellar-addressing.md): a link has to tell its recipient whose cellar it is. `username` is the segment. |
-| A "drunk" / "consumed" bottle state | Not rejected, deferred: a bottle is removed by deleting its row, with no lifecycle state yet ([architecture.md §3](architecture.md#3-backend-modules)). Listed so the absence is known to be deliberate. |
+| A "drunk" / "consumed" bottle state | Not rejected, deferred: a bottle is removed by deleting its row, with no lifecycle state yet ([ADR-0034](adr/0034-cellar-two-level-bottle-model.md)). Listed so the absence is known to be deliberate. |
 | `Beer.price` / `catalog.domain.Money` | Removed (iteration 6.5 [task 10](tasks/iteration-6.5/10-remove-beer-price.md)): price is not a property of a beer — one beer has many shop prices, and Kalia has no shop integration. A leftover from the deprecated "sell beer" vision ([ADR-0004](adr/0004-backend-cart.md), [ADR-0005](adr/0005-defer-auth-mock-payments.md)). Not a rejected rename — a dropped concept, listed so it is not re-added without a fresh design. |

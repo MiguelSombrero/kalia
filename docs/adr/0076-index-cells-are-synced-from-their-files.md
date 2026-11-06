@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-14
+- **Amended:** 2026-11-06 by the architecture cut — the ADR
+  index moved from `docs/architecture.md` §9 to the "All ADRs by number" section
+  of [adr/README.md](README.md); `sync-indexes.mjs` and `check-adrs.mjs` read it there
 
 ## Context
 

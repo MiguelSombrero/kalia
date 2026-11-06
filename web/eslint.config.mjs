@@ -50,13 +50,13 @@ const codeStyleSyntax = [
   },
 ];
 
-// A locale-prefixed address is built in lib/routes.ts (docs/architecture.md
-// §5), never as a template literal opening with `/${locale}`. Matches a bare
+// A locale-prefixed address is built in lib/routes.ts (web/README.md
+// conventions), never as a template literal opening with `/${locale}`. Matches a bare
 // `locale` and `params.locale`.
 const handBuiltRoute = {
   selector:
     "TemplateLiteral[quasis.0.value.raw='/']:matches([expressions.0.name='locale'], [expressions.0.property.name='locale'])",
-  message: "Build locale-prefixed routes with a helper from lib/routes.ts, not by hand (docs/architecture.md §5).",
+  message: "Build locale-prefixed routes with a helper from lib/routes.ts, not by hand (web/README.md).",
 };
 
 const eslintConfig = defineConfig([

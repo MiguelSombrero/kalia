@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-25
+- **Amended:** 2026-11-06 — the link to the measurement method points at
+  [backend/README.md](../../backend/README.md#catalog-read-latency), where it moved from
+  `docs/architecture.md` §7
 - **Amended:** 2026-11-06 — `V004` stores the seeded breweries' keys itself;
   the generator no longer writes them
 - **Supersedes:** [ADR-0045](0045-brewery-list-paginates-in-application.md) — the brewery list no longer loads and sorts the whole table in Java
@@ -101,6 +104,6 @@ decided against a catalog cache, and a miss would still hydrate the table.
 
 The brewery list, brewery search and `/styles` at 150k are in
 [ADR-0078](0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)'s
-Evidence, measured by [architecture.md §7](../architecture.md#catalog-read-latency).
+Evidence, measured by [backend/README.md](../../backend/README.md#catalog-read-latency).
 `BreweryReadIT` pins the plans and compares the whole table's order, 4.9k
 names, against `String.CASE_INSENSITIVE_ORDER`.

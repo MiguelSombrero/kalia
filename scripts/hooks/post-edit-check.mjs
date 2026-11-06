@@ -60,11 +60,12 @@ const isPackageSource = (p) =>
 
 const isJavaScript = (p) => /\.(mjs|cjs|js)$/.test(p) && !p.includes("/node_modules/");
 
-// Which check owns which path. docs/architecture.md and docs/adr/ are one
-// entry because check-adrs.mjs validates the ADR files against that file's
-// index; docs/roadmap.md joins docs/tasks/ for the mirrored reason.
+// Which check owns which path. docs/adr/ is one entry because check-adrs.mjs
+// validates the ADR files against the index in docs/adr/README.md;
+// docs/roadmap.md joins docs/tasks/ for the mirrored reason.
 const ROUTES = [
-  { check: checker("check-adrs.mjs"), covers: (p) => p.startsWith("docs/adr/") || p === "docs/architecture.md" },
+  { check: checker("check-adrs.mjs"), covers: (p) => p.startsWith("docs/adr/") },
+  { check: checker("check-architecture-size.mjs"), covers: (p) => p === "docs/architecture.md" },
   { check: checker("check-tasks.mjs"), covers: (p) => p.startsWith("docs/tasks/") || p === "docs/roadmap.md" },
   { check: checker("check-links.mjs"), covers: (p) => p.endsWith(".md") },
   {
@@ -130,7 +131,7 @@ if (rel.startsWith("..") || rel.startsWith(sep)) process.exit(0);
 // copies with one right answer (ADR-0076).
 const synced = [];
 const failures = [];
-if (/^docs\/(adr\/|tasks\/|architecture\.md$|roadmap\.md$)/.test(rel)) {
+if (/^docs\/(adr\/|tasks\/|roadmap\.md$)/.test(rel)) {
   try {
     for (const { path, text } of syncIndexes(ROOT)) {
       writeFileSync(resolve(ROOT, path), text);

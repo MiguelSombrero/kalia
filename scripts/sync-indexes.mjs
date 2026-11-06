@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Rewrites the cells of the index tables that mirror a file — an ADR's title,
-// status and date in docs/architecture.md, a task's title and status in its
+// status and date in docs/adr/README.md, a task's title and status in its
 // iteration's `## Tasks` table — from that file. Plain Node with no
 // dependencies, like the check-*.mjs checkers. Never adds or moves a row:
 // ADR-0076.
@@ -16,10 +16,10 @@ import { templatedIterations } from "./check-tasks.mjs";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 
-const ADR_INDEX_HEADING = /^## \d+\. Architecture decision records$/m;
+const ADR_INDEX_HEADING = /^## All ADRs by number$/m;
 // Loose about spacing, because check-adrs.mjs and check-tasks.mjs accept any
 // row that carries the link: a row this skipped would never be synced at all.
-const ADR_ROW = /^\|\s*(\[ADR-\d{4}\]\(adr\/([^)]+)\))\s*\|/;
+const ADR_ROW = /^\|\s*(\[ADR-\d{4}\]\(([^)]+)\))\s*\|/;
 const TASK_ROW = /^\|\s*(\[\d{2}\]\((iteration-\d+(?:\.\d+)?\/[^)]+)\))\s*\|/;
 
 const field = (text, name) => text.match(new RegExp(`^- \\*\\*${name}:\\*\\* (.+)$`, "m"))?.[1]?.trim();
@@ -39,9 +39,9 @@ export function syncIndexes(root) {
     const cells = [text.match(/^# ADR-\d{4}: (.+)$/m)?.[1], field(text, "Status"), field(text, "Date")];
     if (cells.every(Boolean)) adrs.set(file, cells);
   }
-  // Only from the index heading on: architecture.md links ADRs from other
-  // tables too, which are not mirrors of anything.
-  syncRows(root, "docs/architecture.md", stale, ADR_INDEX_HEADING, (line) => {
+  // Only from the index heading on: the subject sections above it link ADRs
+  // too, and are not mirrors of anything.
+  syncRows(root, "docs/adr/README.md", stale, ADR_INDEX_HEADING, (line) => {
     const match = line.match(ADR_ROW);
     const cells = match && adrs.get(match[2]);
     return cells ? row(match[1], cells) : line;

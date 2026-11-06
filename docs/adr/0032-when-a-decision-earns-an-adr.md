@@ -6,6 +6,10 @@
   ADR only when it binds work *now*
 - **Amended:** 2026-09-04 — added a third test: whether the task file that
   made the decision is itself a sufficient home for it
+- **Amended:** 2026-11-06 — the ADR index is now one table, in
+  `docs/adr/README.md`'s "All ADRs by number"; `docs/architecture.md` §9 lists
+  only the decisions that define the system, so the Neutral consequence below
+  about two indexes no longer holds
 
 ## Context
 

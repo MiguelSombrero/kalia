@@ -355,6 +355,22 @@ Why the rationale lives there and not here:
   The Keycloak auth pages are the exception — Keycloak translates those, not
   i18next; the sign-in actions pass `ui_locales`
   ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)).
+  `proxy.ts` redirects a locale-less request by `Accept-Language`. A generated
+  icon's URL has no extension, so `proxy.ts` excludes that family from the
+  redirect by name; **a new extensionless generated route needs the same
+  exclusion, or it redirects instead of serving**.
+- **The public cellar is the one page addressed without a locale**
+  (`/cellars/{username}`, the app's only externally shared URL): it carries
+  `hreflang` and `canonical` alternates, is served `noindex, nofollow`, and the
+  root layout sets `metadataBase` from `AUTH_URL` so they resolve to absolute
+  URLs. The front page is `noindex, nofollow` too, since it shows usernames
+  ([ADR-0050](../docs/adr/0050-public-cellar-addressing.md),
+  [ADR-0059](../docs/adr/0059-feed-respects-cellar-visibility.md)).
+- **Three route handlers, and no more:** `app/api/auth/[...nextauth]`, the
+  unauthenticated `app/api/auth/backchannel-logout`, and `app/api/metrics`
+  (off unless `METRICS_TOKEN` is set). The front page feed polls through a
+  Server Action, not a fourth handler
+  ([ADR-0060](../docs/adr/0060-feed-delivery-is-polling.md)).
 - **Design tokens are two-layer**: components reference the semantic layer
   (`--color-primary`), never raw primitives (`--cobalt-700`). Shared primitives
   live in `components/ui/` ([ADR-0021](../docs/adr/0021-design-tokens-ui-primitives.md)).

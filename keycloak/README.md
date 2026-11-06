@@ -59,3 +59,32 @@ proves accounts live in Postgres rather than the container. Both run in
 `scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's
 colours and mark to the app's, in `make check`, hence CI. See
 [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity).
+
+## Realm settings that fail silently
+
+All of these are in `realm-export.json` under the drift check
+([ADR-0054](../docs/adr/0054-keycloak-config-cli-realm-management.md)).
+
+- **`kalia-web` and `kalia-mobile` carry `rootUrl` and `baseUrl`.** Keycloak
+  renders its error page's "Back to Application" link only for a client with a
+  `baseUrl`; without one the page is a dead end, reached from an emailed link.
+  Keycloak accepts only an `http` or `https` address there, so `kalia-mobile`'s
+  link opens the website, not the app.
+- **`kalia-mobile`'s one redirect URI is `kalia://auth/callback`,** exact and
+  never a wildcard, with PKCE `S256` required and its own `kalia-backend`
+  audience mapper, because the backend rejects a token without it
+  ([ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+- **An offline session lapses after 30 days unused** and has no maximum while
+  in use (`offlineSessionIdleTimeout`, `offlineSessionMaxLifespanEnabled`).
+  Refresh tokens are reused, not rotated (`revokeRefreshToken` is realm-wide, so
+  rotating the app's would rotate the web's)
+  ([ADR-0029](../docs/adr/0029-silent-token-refresh.md)).
+- **Lockout is temporary:** `bruteForceProtected`, 10 failures
+  (`failureFactor`), a 60-second first wait that doubles to a 15-minute cap,
+  the count forgotten after 12 hours
+  ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
+- **Mail is Keycloak's alone,** through `$(env:KEYCLOAK_SMTP_*)` placeholders:
+  Mailpit in the dev overlay, a real sender in a deployment.
+- **The `admin` realm role** is granted to no one and is not a default role;
+  the local stack seeds `testadmin` with it
+  ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).

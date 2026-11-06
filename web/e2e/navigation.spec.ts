@@ -1,5 +1,5 @@
 // Exercises the whole stack against compose-run backend and Postgres
-// (docs/architecture.md §7, §9).
+// (docs/architecture.md §7).
 import { expect, test, type Page } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
 

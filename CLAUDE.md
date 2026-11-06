@@ -40,8 +40,8 @@ build, hosting or billed CI minute. Anything that needs one is parked in the
 backlog until the product owner decides to spend.** Read before making
 changes:
 
-- [docs/architecture.md](docs/architecture.md) — module boundaries, API
-  conventions, persistence rules, testing strategy
+- [docs/architecture.md](docs/architecture.md) — the shape: module map,
+  layers, persistence and API conventions, the main decisions; under 500 lines
 - [docs/roadmap.md](docs/roadmap.md) — iteration index and status; tasks live
   under [docs/tasks/](docs/tasks/), one file per task from iteration 5 on,
   written to [its template](docs/tasks/template.md) before work starts

@@ -53,7 +53,11 @@ their own condition from that ADR before they apply.
    `docs/architecture.md`, the iteration index, any ADRs and the README of each
    subtree the change touches (`backend/README.md`, `web/README.md`,
    `mobile/README.md`), and update them in the same PR — or state in the description that
-   they were checked and remain accurate. The task file is the exception: it
+   they were checked and remain accurate. **`docs/architecture.md` changes only
+   when the shape changes** (a module, a dependency edge, a layer, a flow, a
+   trade-off); behaviour, endpoints, config and procedures go to the README,
+   and reasons to an ADR. It has a 500-line cap that `make check` enforces
+   ([ADR-0020](../../../docs/adr/0020-documentation-roles.md)). The task file is the exception: it
    records what was *asked for*, so it is frozen at completion apart from its
    status and a dead link, which is repointed or unlinked
    ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).

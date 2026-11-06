@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
  * Boot sends as problem+json, so the spec says so once instead of each handler
  * repeating it (ADR-0014). A request built with the wrong {@code Content-Type}
  * is a client bug the client can fix, which is why it is typed. The
- * {@code 406} counterpart is left out; architecture.md §4 says why. A handler
+ * {@code 406} counterpart is left out; backend/README.md's API contract convention says why. A handler
  * that declares its own 415 keeps it.
  */
 @Configuration

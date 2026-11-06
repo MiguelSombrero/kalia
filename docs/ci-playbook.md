@@ -75,7 +75,7 @@ fixed by `make sync-indexes`, never by editing the cell
 ([ADR-0076](adr/0076-index-cells-are-synced-from-their-files.md)); it means the
 file changed somewhere the edit-time hook did not run. The one failure it cannot phrase helpfully is a **number
 collision**, which arrives as a merge conflict in
-[architecture.md](architecture.md)'s ADR index rather than as a checker
+[adr/README.md](adr/README.md)'s ADR index rather than as a checker
 message: two branches each claimed the next number, because each read only
 its own working tree. Renumber whichever has not merged, and allocate with
 `make next-adr` — which scans every remote-tracking ref, for exactly this
