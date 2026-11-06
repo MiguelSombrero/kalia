@@ -65,7 +65,7 @@ const isJavaScript = (p) => /\.(mjs|cjs|js)$/.test(p) && !p.includes("/node_modu
 // docs/roadmap.md joins docs/tasks/ for the mirrored reason.
 const ROUTES = [
   { check: checker("check-adrs.mjs"), covers: (p) => p.startsWith("docs/adr/") },
-  { check: checker("check-architecture-size.mjs"), covers: (p) => p === "docs/architecture.md" },
+  { check: checker("check-doc-size.mjs"), covers: (p) => p === "docs/architecture.md" || p === "backend/README.md" },
   { check: checker("check-tasks.mjs"), covers: (p) => p.startsWith("docs/tasks/") || p === "docs/roadmap.md" },
   { check: checker("check-links.mjs"), covers: (p) => p.endsWith(".md") },
   {

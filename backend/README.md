@@ -5,25 +5,8 @@ each depends on: [docs/architecture.md §3](../docs/architecture.md#3-backend-mo
 
 ## Run locally
 
-Full stack in containers: `docker compose up --build` from the repo root.
-The backend is reached at `localhost:8080` through the `edge` proxy (loopback
-only), which limits
-requests per client address ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)
-holds the rates). It is an OAuth2 resource server and
-denies by default, but the loopback binding stays until a deployment story
-exists, so treat it as defence in depth rather than surplus. Behind the proxy
-the request log names the client address Spring resolved from
-`X-Forwarded-For` (`from <address>`), trusted only from the stack's private
-ranges.
-
-For development with hot reload, run natively against the compose database.
-Name the services: a bare `docker compose up -d` also starts the `backend`
-container, behind the `edge` proxy's `127.0.0.1:8080`, the port the native run
-needs. Keycloak is published only by `edge`, so it is started with it, on a
-different backend port so the two do not meet; it is there for bearer tokens
-and Swagger UI's Authorize button, and the backend starts without it. The native run assumes the default ports: in a worktree
-with its own (`make stack-env`), set `DATABASE_JDBC_URL` and
-`KEYCLOAK_ISSUER_URI` to its `POSTGRES_PORT` and `KEYCLOAK_PORT`.
+Full stack: `docker compose up --build` from the repo root, backend at `localhost:8080` through `edge`.
+Hot reload: run natively against the compose database. Name the services, as a bare `up -d` also starts the `backend` container that holds port 8080:
 
 ```bash
 BACKEND_PORT=8090 docker compose up -d postgres keycloak keycloak-config edge   # from repo root
@@ -33,13 +16,8 @@ curl localhost:8080/actuator/health
 curl localhost:8080/api/v1/beers?query=westvleteren
 ```
 
-API docs (springdoc): `/v3/api-docs` (OpenAPI 3.1) and Swagger UI at
-`/swagger-ui/index.html`, both at `localhost:8080`. The compose stack
-enables them; running natively needs `SPRINGDOC_ENABLED=true` as above,
-since they are off unless a deployment opts in. Swagger UI's Authorize
-button drives a real Authorization Code + PKCE sign-in against Keycloak
-(`kalia-swagger` client) and attaches the resulting token to "Try it out"
-requests — no manual token copying.
+A worktree with its own ports (`make stack-env`) sets `DATABASE_JDBC_URL` and `KEYCLOAK_ISSUER_URI` to its `POSTGRES_PORT` and `KEYCLOAK_PORT`.
+Swagger UI: `/swagger-ui/index.html` (natively needs `SPRINGDOC_ENABLED=true`); Authorize signs in for real against Keycloak. The seeded `testadmin` holds the `admin` role.
 
 ## Configuration
 
@@ -49,22 +27,21 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 
 | Variable | Default | Notes |
 |---|---|---|
-| `DATABASE_PASSWORD` | **none — required** | The runtime role's, which reads and writes rows and cannot change the schema. Startup aborts with the variable named if unset |
-| `DATABASE_OWNER_PASSWORD` | **none — required** | The schema owner's, used by Flyway alone. Startup aborts with the variable named if unset |
-| `FEED_CURSOR_KEY` | **none — required** | HMAC key signing feed cursors, at least 32 bytes (`openssl rand -base64 32`). Every instance must hold the same value and it must survive restarts, or a cursor issued before is rejected with a 400 ([ADR-0060](../docs/adr/0060-feed-delivery-is-polling.md)). Rotating it invalidates cursors in flight, which the client recovers from by reloading the feed. Compose supplies a dev-only value |
-| `DATABASE_JDBC_URL` | `jdbc:postgresql://localhost:5432/kalia` | localhost, so a misconfigured deploy fails loudly rather than reaching a real database |
-| `DATABASE_USERNAME` | `kalia_app` | The runtime role ([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)) |
-| `DATABASE_OWNER_USERNAME` | `kalia_owner` | The role Flyway connects as, which owns every table the migrations create |
+| `DATABASE_PASSWORD` | **none — required** | Runtime role's; reads and writes rows, cannot change the schema |
+| `DATABASE_OWNER_PASSWORD` | **none — required** | Schema owner's; Flyway alone uses it |
+| `FEED_CURSOR_KEY` | **none — required** | HMAC key for feed cursors, ≥ 32 bytes (`openssl rand -base64 32`); see Traps |
+| `DATABASE_JDBC_URL` | `jdbc:postgresql://localhost:5432/kalia` | localhost, so a misconfigured deploy fails loudly |
+| `DATABASE_USERNAME` | `kalia_app` | Runtime role ([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)) |
+| `DATABASE_OWNER_USERNAME` | `kalia_owner` | The role Flyway connects as; owns every table |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
-| `ACTUATOR_ENDPOINTS` | `health` | Web-exposed actuator endpoints, declared rather than inherited from Spring's default; compose sets `health,prometheus`. Everything but `health` also needs a bearer token |
+| `ACTUATOR_ENDPOINTS` | `health` | Compose sets `health,prometheus`; all but `health` need a bearer token |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8081/realms/kalia` | The `iss` every accepted token must carry |
-| `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Where signing keys are fetched. A *different address* from the issuer under docker-compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
-| `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud` claim; rejects tokens minted for another client of the realm |
-| `KEYCLOAK_SWAGGER_CLIENT_ID` | `kalia-swagger` | Public, no secret — pre-fills Swagger UI's Authorize dialog (keycloak/realm-export.json) |
+| `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Signing keys; differs from the issuer under compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
+| `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud`; rejects tokens minted for another client |
+| `KEYCLOAK_SWAGGER_CLIENT_ID` | `kalia-swagger` | Public client; pre-fills Swagger UI's Authorize |
 
-Adding a setting that must not have a default means adding it to
-`RequiredConfigurationValidator.REQUIRED` as well as the properties file.
+A setting that must not have a default goes in `RequiredConfigurationValidator.REQUIRED` as well as the properties file.
 
 ## Test
 
@@ -75,297 +52,46 @@ mvn verify                    # + integration tests (*IT, Testcontainers —
 mvn clean verify              # after any pom.xml or plugin change
 ```
 
-Naming convention: **unit tests end in `*Test`** (run by surefire in the
-`test` phase), **integration tests end in `*IT`** (run by failsafe in the
-`verify` phase). Anything booting a Spring context or a Testcontainer is an
-integration test.
+Unit tests end in `*Test` (surefire); anything booting a Spring context or a Testcontainer ends in `*IT` (failsafe).
+A green run is ~285 lines; keep the counts with `mvn verify 2>&1 | grep -E "Tests run:|ERROR|FAIL|BUILD"`, and **on failure re-run unfiltered** (or read `target/failsafe-reports/`) before diagnosing.
+Before a push run `make verify` from the repo root, or `make verify-fast` without Docker ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)); `verify-fast` skips the suites below.
 
-Use `clean` after changing `pom.xml` or a plugin: an incremental build can
-report success against stale `target/classes` output.
+When you change:
 
-**Maven must run on JDK 25, not merely have it installed.** Java stays on 25
-([ADR-0085](../docs/adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md)), and Lombok's
-annotation processor reaches into `javac` internals, so a newer JDK fails the
-`compile` goal with `Fatal error compiling:
-java.lang.ExceptionInInitializerError: com.sun.tools.javac.tree.EndPosTable`
-— which names neither Lombok nor the JDK, and looks like a broken build
-rather than a wrong toolchain. `mvn -version` reports the JDK Maven itself
-runs on, which is *not* necessarily the one `java -version` shows (Homebrew's
-`maven` formula depends on its own `openjdk`). Point it at 25 if they differ:
+- **the API** (DTO, endpoint, error type): `CommittedOpenApiSpecIT` fails; run `make openapi-spec`, commit `openapi.json` and the regenerated client ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+- **an operation's error docs**: `ApiErrorDocumentationIT` wants an error on every operation, a `401` if authenticated, a `400` if it takes input, a `415` if it takes a body.
+- **the module set or its edges**: `ArchitectureDocumentationTest` compares them with architecture.md §2/§3 in both directions.
+- **public routes**: `PublicRoutesIT` compares `SecurityConfig` with architecture.md §6.
+- **an ArchUnit rule** that is `noClasses()`-style: add a fixture in `src/test/java/archfixture/` (see Traps).
+
+Coverage: `target/site/jacoco-merged/` after `mvn verify`; the ≥ 80 % aim is measured, not gated.
+CI fails on a `HIGH`/`CRITICAL` CVE with a fix ([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)): bump the dependency in `pom.xml` and confirm with `make trivy-scan` (root; `brew install trivy`).
+An image OS-package finding needs no edit, so rebuild and confirm (root; the image scans are the one CI check `make verify` leaves out):
 
 ```bash
-JAVA_HOME=$(/usr/libexec/java_home -v 25) mvn clean verify
+docker compose build backend
+trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml <compose project>-backend
 ```
-
-Before pushing, run the whole gate rather than this suite alone: `make verify`
-from the repository root, or `make verify-fast` for the subset that needs no
-Docker ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
-`verify-fast` runs none of the documentation tests below; after a DTO,
-endpoint, error-type or spec change, `implement-task` step 9 names the
-command that runs them.
-
-`mvn verify` prints ~285 lines, mostly Spring context startup. To keep a
-green run cheap for an AI-agent session, filter it — this keeps every
-`Tests run:` count, so the run is still evidence:
-
-```bash
-mvn verify 2>&1 | grep -E "Tests run:|ERROR|FAIL|BUILD"
-```
-
-Triage only, not lossless: it names a failing test and its line but drops
-the assertion detail. **On a failure, re-run unfiltered** (or read
-`target/failsafe-reports/`) before diagnosing anything.
-
-Coverage: JaCoCo merges unit + integration data into
-`target/site/jacoco-merged/` on `mvn verify`; CI prints the instruction
-coverage in the job log. The ≥ 80 % aim is measured, not gated — see
-Testing conventions below.
-
-CI also scans `pom.xml` and the built image (and every other image the deployable stack runs) for known CVEs and fails on a
-`HIGH`/`CRITICAL` finding with a fix available
-([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)). A finding
-is fixed in place on whatever branch is open (CLAUDE.md), by bumping the
-flagged dependency to Trivy's named fixed version in `pom.xml` — confirm the
-fix locally before pushing with `make trivy-scan` from the repository root,
-which runs CI's `vulnerability-scan.yml` manifest scan with its exact flags
-(Trivy is a local prerequisite, `brew install trivy`). An OS-package finding in the
-image needs no edit: the runtime stage's `apt-get upgrade` takes Ubuntu's
-fixed package at build time, so rebuild and confirm with
-`docker compose build backend` then
-`trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml <compose project>-backend`
-from the repository root. The image scans are the one CI check `make verify`
-leaves out.
-
-Notable suites:
-
-- `ModularityTest` — Spring Modulith `ApplicationModules.verify()`; fails on
-  illegal cross-module dependencies
-- `ArchitectureTest` — the ArchUnit rules: layer placement and dependency
-  direction ([ADR-0007](../docs/adr/0007-backend-package-structure.md)),
-  including the module-root API never naming a `domain` type,
-  and the guard that keeps the one resource-server filter chain in `identity`
-  ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) — a
-  module bringing its own security configuration, or the chain going missing,
-  fails the build — and the one that keeps token claims there: a `Jwt`
-  used outside `identity` fails it
-- `ArchitectureRulesRejectViolationsTest` — runs the rules above that no
-  production class ever triggers against `src/test/java/archfixture/`, a tree
-  that breaks them, and the two that require the filter chain against a
-  codebase that has none. **Only those rules get a fixture.** `entitiesLiveInDomain` needs
-  none: `Beer` is an `@Entity`, so a mistake in the rule fails
-  `ArchitectureTest` itself. A `noClasses()` rule — or a `classes().should()`
-  rule every production class merely satisfies — is
-  the opposite: passing means its condition never met a violator, so a wrong
-  condition looks exactly like a satisfied one. Adding a fixture for an
-  already-exercised rule tests ArchUnit, not this codebase; don't
-- `HttpBoundaryTest` — the HTTP-boundary ArchUnit rules, kept apart from
-  `ArchitectureTest` because that class is about layer direction and this one
-  about what a handler may put on the wire: a controller handler may
-  neither return nor accept (`@RequestBody`) a JPA entity, seen through
-  `List`, `Page`, `Optional` and `ResponseEntity` wrappers alike; an advice
-  `@ExceptionHandler` may not answer with a body type that reaches an entity
-  through its fields, and an advice may not call `ProblemDetail.setProperty`
-  ([docs/architecture.md §4](../docs/architecture.md#4-api-design))
-- `HttpBoundaryRulesRejectViolationsTest` — same reasoning as
-  `ArchitectureRulesRejectViolationsTest` above, applied to `HttpBoundaryTest`:
-  none of its rules has a production violator, so each is re-run against
-  `archfixture/httpboundary/`
-- `CommittedOpenApiSpecIT` — fails when `backend/openapi.json`, which the web
-  and the mobile app generate their client from, differs from what
-  `/v3/api-docs` serves (ADR-0093). After an API change, `make openapi-spec`
-  rewrites the file and regenerates the client; commit both. The test serves
-  the spec without the `src/test` probe controllers, and without `servers`,
-  whose port changes per run; it pins the Keycloak issuer setting, so an
-  environment that overrides it does not fail the test, and finds the file
-  from its own classpath, so the working directory does not matter
-- `ApiErrorDocumentationIT` — reads `/v3/api-docs`: every operation lists an
-  error, an authenticated one a `401`, one taking input a `400`, one taking a
-  body a `415` (added once by `UnsupportedMediaTypeDocumentation`), each as
-  problem+json with a declared schema that nests nothing under `properties`
-  (ADR-0014); `ErrorBodyShapesIT` pins the same shapes on the wire, and
-  `ProblemJsonSecurityErrorsIT` the filter chain's `401` body and challenge
-- `AdminAccessIT` — the one rule on `/api/v1/admin/**`
-  ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)):
-  through the real authority converter, a token with `realm_access.roles`
-  holding `admin` is admitted, one without it is `403` problem+json, an
-  anonymous caller `401`, and an absent or malformed claim `403`, never `500`.
-  Its target is a controller in `src/test/java/securityfixture/`, outside
-  `fi.kalia` so no other test's context scans it into the spec
-- `AdminSuggestionApiIT` — the admin's read of the review queue
-  ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
-  oldest first with the id as tiebreak across page boundaries, only `PENDING`
-  beers that have a contributor, `404` for anything not waiting, the contributor
-  named whatever their cellar's visibility and listed without a name when they
-  have no profile row, `403` and `401` on both operations. It rewrites the
-  shared database's pending rows to `REMOVED` first, as the suites before it
-  leave suggestions waiting; `SuggestionReviewServiceIT` pins that a page's
-  statements do not grow with its rows
-- `AdminSuggestionEditApiIT`, `CatalogEntryRulesTest` and `SharedBeerConstraintsTest`
-  — an admin's edited approval
-  ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
-  the contributor's cellar and the beer's page showing the edited values, a new
-  brewery edited with its beer, re-pointing at an existing brewery, each refusal
-  (style, country, invisible character, duplicate beer or brewery whatever its
-  status, brewery not approved, brewery approved by a sibling, brewery added to
-  an existing one) and what the review record keeps. Each refusal test fails
-  with its check removed. The unit tests pin the rules both the add and the
-  edit take from one place
-- `AdminSuggestionDecisionApiIT`, `SuggestionDecisionLockingIT` and
-  `SuggestionReviewEventPublishingIT` — an admin's decision
-  ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
-  what each outcome does to the beer and its brewery, the shared-brewery rule,
-  the `400`, `403`, `404` and `409`, and one event and one review record per
-  decision. The locking test holds one rejection open while a second starts, and
-  fails if the brewery's row lock is removed; the API test races two decisions
-  on one suggestion and fails without the beer's. The API test collects the
-  event with a listener of its own
-- `AdminBeerRemovalApiIT` and `ContributedBeerLifecycleIT` — removing an approved
-  beer ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
-  a contributed and an imported beer withdrawn with their brewery left as it was,
-  one review record and one `BeerRemoved`, `403` for a non-admin, `409` for a beer
-  that is pending, rejected or removed already, and no catalog row deleted by a
-  removal or a rejection with a holder's cellar entry kept and flagged
-  withdrawn. The lifecycle test also pins what a pending beer shows each reader
-  through the admin API's decisions, and the cap of 20 suggestions, a beer with a
-  new brewery counting once
-- `SuggestionReviewedListenerModuleIT`, `NotificationApiIT`,
-  `NotificationPersistenceIT` and `SuggestionDecisionNotificationIT` — what a
-  contributor is told ([ADR-0103](../docs/adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md)):
-  the listener publishes `SuggestionReviewed` itself and polls the repository
-  (an approval, a rejection and an edited approval each writing one row, a
-  redelivery none, `BeerRemoved` none); the API test reads, counts and acknowledges only the caller's own
-  rows, answers another user's, an acknowledged one and an unknown one with the
-  same `404`, and refuses an anonymous caller; the persistence test deletes by
-  recipient, as an account deletion will; and the last runs an admin's real
-  decision through to the contributor's list
-- `MobileClientTokenIT` — the one integration test that keeps the real
-  `JwtDecoder`, pointed at a JWKS served by the test and signing with a test key:
-  a token shaped like `kalia-mobile`'s is accepted with the `kalia-backend`
-  audience and answered `401` without it
-  ([ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md));
-  that the realm's mapper puts the audience in a real token is
-  `scripts/check-keycloak-pkce-flow.mjs`'s to prove
-- `KaliaApplicationIT` — boots the full context against a PostgreSQL
-  Testcontainer (pinned in `TestcontainersConfiguration`): health endpoint
-  reports UP, Flyway migrations create the module schemas
-- `DatabaseRolesIT` — the postgres `init` script run as the stack runs it, and
-  the application booted as `kalia_app` with Flyway as `kalia_owner`: the
-  runtime role is refused `DROP`, `ALTER`, `TRUNCATE` and `CREATE`, every
-  table belongs to the owner, and Keycloak's role and the application's
-  cannot reach each other's database ([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md))
-- `ArchitectureDocumentationTest` — parses `docs/architecture.md` §2/§3 at
-  test time and compares the module set and dependency edges against Spring
-  Modulith's own view (`fi.kalia.web` excluded, per ADR-0014); fails the
-  build the moment the code and the hand-written docs disagree, in either
-  direction, or either section can't be found. Runs as a `*Test` since
-  `Documenter` needs no Spring context or Testcontainer
 
 ## Database migrations
 
-Flyway owns the schema (`ddl-auto=validate`). Locations under
-`src/main/resources/db/migration/`:
+Flyway owns the schema (`ddl-auto=validate`). Migrations live under `src/main/resources/db/migration/`: `common/` (module schemas, Modulith `event_publication`) and one directory per module, registered in `spring.flyway.locations`.
+Version numbers (`V001`, `V002`, …) are **globally unique across all directories**: take the next free one.
 
-- `common/` — cross-module infrastructure (module schemas, Spring Modulith
-  `event_publication` registry)
-- one directory per module, added when the module lands (registered in
-  `spring.flyway.locations`)
+**Until the first deployment, edit the migration a change belongs to** instead of adding one ([ADR-0036](../docs/adr/0036-pre-deployment-migration-edits.md)).
+A Postgres volume that ran the old version then fails Flyway validation on the checksum; `docker compose down -v` wipes it.
 
-Version numbers (`V001`, `V002`, …) are **globally unique across all
-directories** — take the next free number regardless of directory.
-
-Migrations install one PostgreSQL extension, `pg_trgm`
-([ADR-0044](../docs/adr/0044-catalog-search-indexes.md)). It is a trusted
-extension, so the database owner can create it, but a deployment running
-migrations as a lower-privileged role fails at `CREATE EXTENSION`.
-
-Flyway connects as `kalia_owner` and the application as `kalia_app`, which
-cannot `DROP`, `ALTER`, `TRUNCATE` or create anything
-([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
-`postgres/init` grants `kalia_app` row access to whatever `kalia_owner` creates
-later, so a migration needs no `GRANT` of its own, but code that creates or
-alters a table at run time — a library's schema initializer — fails with
-`permission denied`; Spring Modulith's is switched off for this reason.
-
-**Until Kalia's first deployment, put a schema change in the existing
-migration it belongs to** rather than adding a new one — an index beside the
-table it indexes, say
-([ADR-0036](../docs/adr/0036-pre-deployment-migration-edits.md)). Editing an
-applied migration changes its checksum, so a `docker compose` Postgres volume
-that ran the old version fails Flyway validation until `docker compose down -v`
-wipes it. Forward-only — an applied migration is never edited, and undoing one
-is a new migration — resumes the moment a database exists whose schema state
-outlives a developer's machine or CI.
-
-### The Wikidata import (`V008`)
-
-`catalog/V008__catalog_wikidata_import.sql` is generated — **do not edit it by
-hand**; `make check` fails when it differs from what the committed inputs
-produce ([ADR-0077](../docs/adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
-Its inputs live in `scripts/wikidata/`: the snapshot and the five hand-reviewed
-mappings (styles, seeded rows, brewery countries, country codes, and the
-present-day countries of breweries in states with no code). To change a rule or a
-mapping, edit the generator or the mapping and regenerate, from the repository
-root, without network access:
+`catalog/V008__catalog_wikidata_import.sql` is generated: **never edit it by hand**, `make check` fails when it differs from its inputs in `scripts/wikidata/` ([ADR-0077](../docs/adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
+Change the generator or a mapping, then regenerate from the repo root:
 
 ```bash
 node scripts/wikidata-migration.mjs        # rewrites V008, prints what it dropped and why
 node scripts/wikidata-migration.mjs --check
 ```
 
-`V008` only inserts. The seeded breweries it matches are read from `V004`,
-which states their country codes and `name_sort_key`s itself; a test holds
-those keys equal to the generator's. The generator writes each imported
-brewery's `name_sort_key`, which the `Brewery` entity writes for the breweries
-users add ([ADR-0087](../docs/adr/0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)).
-A new style class, a new collision with a seeded row, or a brewery in a state
-with no ISO code stops the generator with the entry to add. Re-taking the
-snapshot (`node scripts/wikidata-extract.mjs`) queries Wikidata and is a new
-task, not a routine step: the import only ever adds rows. Like any edited migration before the first deployment, a changed
-migration, `V008` included, needs `docker compose down -v` on an existing local database.
+## Operating the app config
 
-## Moderating contributions
-
-A beer or brewery a user adds is `PENDING` until an admin reviews it, and
-nobody but its contributor sees it before
-([ADR-0091](../docs/adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
-Review is the admin API, one suggestion at a time, in `catalog`
-([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)),
-and it needs a token holding the `admin` realm role (the seeded `testadmin` in
-development):
-
-- `GET /api/v1/admin/suggestions` lists what waits
-  ([iteration 10.5 task 05](../docs/tasks/iteration-10.5/05-an-admin-reads-the-review-queue.md)).
-- `POST /api/v1/admin/suggestions/{id}/approval` or `…/rejection` (with a
-  `reason`) decides one
-  ([task 06](../docs/tasks/iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md)),
-  and `…/edited-approval` corrects it first
-  ([task 07](../docs/tasks/iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md)).
-- `POST /api/v1/admin/beers/{id}/removal` takes an `APPROVED` beer down, an
-  imported or seeded one included, leaving its brewery as it is
-  ([task 08](../docs/tasks/iteration-10.5/08-the-sql-moderation-script-is-retired.md)).
-  It takes no body, answers `409` for a beer that is not `APPROVED`, and notifies
-  nobody.
-
-Swagger UI's Authorize button signs in with the realm's own flow, so "Try it
-out" works for any of them. A decision writes a review record and publishes its
-event; a hidden row stays in the table, and a holder's cellar entry pointing at
-it keeps rendering unlinked: never `DELETE` a catalog row. There is no database
-script for any of this.
-
-To see what waits without the API, read the table:
-
-```bash
-docker compose exec postgres psql -U kalia -d kalia -c \
-  "SELECT contributor_id, count(*) FROM catalog.beer WHERE moderation_status = 'PENDING' GROUP BY 1"
-```
-
-## Telling the app to update or that Kalia is down
-
-`GET /api/v1/app-config` answers the mobile app with the lowest build number of
-each platform that may run and a maintenance flag, from a one-row table
-(`appconfig.app_config`) that starts at 0, 0 and off, so no build is blocked
-until an operator says so ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
-From the repository root, with the stack's `postgres` up:
+`GET /api/v1/app-config` serves the mobile app its minimum build per platform and a maintenance flag, from one row (`appconfig.app_config`) that starts at 0, 0 and off ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)). From the repo root, with `postgres` up:
 
 ```bash
 make app-config MAINTENANCE=on               # raise maintenance, mid-incident
@@ -373,285 +99,54 @@ make app-config MAINTENANCE=off
 make app-config IOS=5 ANDROID=5              # builds below 5 must update
 ```
 
-Any of `IOS`, `ANDROID` and `MAINTENANCE` may be given, and one left out keeps
-its current value. It runs `scripts/set-app-config.sql` in one transaction and
-prints the row as it now stands; a value that is not a non-negative build
-number, or not `on`/`off`, fails and changes nothing. The app sees the change
-at its next check, because the response is `Cache-Control: no-store`. Raising a
-minimum is what permits removing a deprecated element of the API, never before
-the last build that uses it is below the new minimum.
-
-## Catalog read latency
-
-Catalog reads are measured, not benchmarked in CI. `BeerSearchIndexIT` and
-`BreweryReadIT` pin which index each filter's plan and the default sort use,
-and that a short name query's count keeps its custom plan while other searches
-keep the default, but not how long the query takes. The latency budget in
-[docs/architecture.md §1](../docs/architecture.md#non-functional-requirements)
-is checked by repeating this measurement whenever the catalog's size or its
-queries change shape.
-[ADR-0078](../docs/adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
-records the latest run.
-
-1. **Set up an isolated database.** Run a scratch Postgres of the version
-   `docker-compose.base.yml` pins, and a backend jar against it. Leave the
-   settings at their defaults, since the figures depend on them:
-   - HikariCP's pool of 10, which queues 20 concurrent clients;
-   - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a
-     statement to its generic plan. A search with a 1–2-character name term
-     overrides this with `plan_cache_mode = force_custom_plan`.
-
-   Enable Tomcat's access log, unbuffered, with pattern `%U %s %{ms}T`, so
-   the last field is the server time in ms. Flyway migrates the imported
-   catalog.
-2. **Generate the larger catalog.** For the larger size, clone the imported
-   catalog in SQL:
-   - each brewery gets ten copies in its own country;
-   - each generated beer copies a real beer's name with a numeric suffix,
-     plus its style and ABV, onto a copy of that beer's
-     brewery;
-
-   This keeps the style, country and name-trigram distributions the import
-   has. Generated rows default to `source = USER`. On a scratch database
-   that has no real user rows, they delete by that column, beers before
-   breweries. `VACUUM ANALYZE` both tables before measuring.
-3. **Confirm index use.** Capture the SQL Hibernate issues for each search
-   shape, page and count, from the Postgres statement log. Run
-   `EXPLAIN (ANALYZE, BUFFERS)` on it with representative values.
-4. **Load each scenario.** Drive each scenario separately with 20 concurrent
-   clients: 200 warm-up requests, then 2,000 measured. A dependency-free Node
-   script using `fetch` is enough. The scenarios are:
-   - an unfiltered page under the default sort, and under `sort=abv,desc`;
-   - name queries of 3+ characters and of 1–2 characters;
-   - the style filter, the country filter, and all three combined;
-   - beer detail;
-   - page 500;
-   - the brewery list, and a brewery search of 1, 2 and 3+ characters;
-   - `GET /styles`.
-5. **Read the result.** Report p95 from the access-log lines each scenario
-   produced, as the median of three runs. A shape over 300 ms is first
-   checked for a missing index.
+Any of `IOS`, `ANDROID`, `MAINTENANCE` may be given; one left out keeps its value. The app sees the change at its next check.
+Raising a minimum is what permits removing a deprecated API element, never before the last build using it is below the new minimum.
 
 ## Code conventions
 
-Rules for writing code here; each links to the ADR holding the reasoning —
-see [ADR-0020](../docs/adr/0020-documentation-roles.md) for why the rationale
-lives there rather than in this file.
+Each rule links the ADR or test holding its reasoning ([ADR-0020](../docs/adr/0020-documentation-roles.md)).
 
-- **Package structure per module**, enforced by `ArchitectureTest`: shape and
-  rationale live in
-  [docs/architecture.md §3](../docs/architecture.md#3-backend-modules) and
-  [ADR-0007](../docs/adr/0007-backend-package-structure.md).
-- **Every domain timestamp reads the application's one `Clock`** (UTC, declared
-  in `ApplicationConfig`, which also enables `@Retryable` through
-  `@EnableResilientMethods`). A domain entity takes the `Clock` as an argument
-  of its factory or behaviour method and never injects it, and no
-  `Instant.now()` or `@CreationTimestamp`/`@UpdateTimestamp` is left in
-  `src/main/java`. A new table carries `created_at` and `updated_at`
-  (`catalog.beer` predates the convention and has only `created_at`).
-- **Every event listener is idempotent.** Delivery through the JDBC event
-  registry is at-least-once
-  ([ADR-0081](../docs/adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)):
-  `EventPublicationResubmission` resubmits an incomplete publication at startup
-  and then on a schedule, and after a capped number of attempts logs it at
-  `ERROR` and leaves it in `event_publication`. The timings and the cap are
-  `kalia.events.resubmission.*` in `application.properties`. A listener keys
-  its write on the event's `eventId` (`feed.line.event_id` is unique).
-- **A get-or-create or a write to an existing aggregate retries once** in a
-  fresh transaction on the constraint or `@Version` failure it can lose a race
-  to, and a second loss answers `409`
-  ([ADR-0057](../docs/adr/0057-retry-on-constraint-violation-for-get-or-create.md)).
-- **The API contract.** Every operation documents its error codes and a body
-  operation its `415`; the contract leaves `406` out, because no client sends a
-  restrictive `Accept` and a refusal of one is not a response a client could
-  meet (`UnsupportedMediaTypeDocumentation`). `detail` carries only messages
-  from exception types designed as API responses. A removal of an element `dev`
-  already marks `deprecated` is let through `make api-breaking` only by a line
-  in `openapi-breaking-ignore.txt` stating the minimum supported build that
-  excludes its last user; the one addition let through unwaived is a new
-  `oneOf` member in a 4xx or 5xx body
-  ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
-- **Entity→DTO mapping lives in `web`**, as static `from(...)` factories on
-  the DTOs — so repositories must eager-load the relations the boundary needs
-  (entity graphs), since mapping runs outside the service transaction.
-- **Lombok for boilerplate, not for domain semantics.** Class-level `@Getter`
-  and `@NoArgsConstructor(access = PROTECTED)` (the JPA constructor) on
-  entities. Never `@Setter`, `@Data` or `@Builder` on an entity — state
-  changes go through factory and behavior methods that enforce invariants.
-- Value objects and DTOs are Java records, which need no Lombok.
-- **JSpecify nullability.** Every package has a `package-info.java` with
-  `@NullMarked`; types are non-null by default and anything nullable is
-  annotated `@org.jspecify.annotations.Nullable` — fields, record components,
-  parameters and returns alike. New packages must add the marker.
-- **SpringDoc annotations on every public endpoint.** `@Tag` on the controller
-  class, `@Operation` on every handler, `@Parameter` on every
-  `@RequestParam`/`@PathVariable`, `@Schema` descriptions on DTOs. New
-  endpoints and DTOs ship annotated — undocumented API surface is a gap, not
-  a later task. Document each handler's response codes with `@ApiResponse`/
-  `@ApiResponses`; a response every handler in the controller shares (e.g.
-  401 on a controller where every route requires authentication) goes on the
-  class instead of repeating it per method. An error is documented with the
-  declared type it is sent as (`Problem`, or `ValidationProblem`,
-  `DuplicateBeerProblem` and the like), as `application/problem+json`; a `400`
-  that may be either a field refusal or a malformed request is
-  `@Schema(oneOf = {ValidationProblem.class, Problem.class})`. The `500` every
-  operation can end in is added once by `UnexpectedFailureDocumentation`, not
-  per handler. `ApiErrorDocumentationIT` fails an operation that lists no error,
-  an authenticated one with no `401`, or one taking input with no `400`.
-- **Text blocks (`"""`), not string concatenation, for a multiline string
-  literal** — including annotation values (`@Operation(description = """…""")`),
-  which accept a text block as a compile-time constant the same as any other
-  string literal. A trailing `\` at the end of a line suppresses that line's
-  newline, for a literal that should read as one continuous sentence. Where
-  an annotation value needs a constant, join text blocks to it
-  (`""" … """ + MAX + """ … """`). `scripts/check-text-blocks.mjs`, run by
-  `make check`, fails a literal continued with `+` across lines.
-- **Import a type rather than referencing it fully-qualified inline** —
-  `List<String>`, not `java.util.List<String>` — including in test code, a
-  cast, or a one-off local variable. Existing fully-qualified inline
-  references are not being retrofitted wholesale; fix the ones a change
-  actually touches.
-- **Every request parameter is bounded**: named constants, not bare
-  annotation values, and a constraint spanning two parameters is checked in
-  the handler and reported through `detail`
-  ([ADR-0042](../docs/adr/0042-bounded-request-parameters.md)).
-- **Endpoints are protected unless listed as public.** `SecurityConfig`
-  (`fi.kalia.identity.web`) permits the routes
-  [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity)
-  lists, and `PublicRoutesIT` fails when the two differ; everything else
-  needs a bearer token. A controller resolves
-  the caller at the web edge — via `IdentityApi.requireCurrentUserId()` and
-  `requireCurrentUsername()` outside `identity`, or `CurrentUserService`
-  directly inside it — and passes the id into the application service. No
-  other module touches a `Jwt` (`ArchitectureTest.onlyIdentityReadsTokenClaims`),
-  and a route under `/api/v1/admin/` is covered by `SecurityConfig`'s one
-  `admin`-role rule without one of its own,
-  and a token whose claims `identity` cannot map is an
-  `InvalidBearerTokenException`, answered `401` from any route
-  ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
-  [ADR-0049](../docs/adr/0049-profile-module-and-public-identity.md)). A
-  service that returns *another* user's data decides whether it may: a public
-  read takes the owner's username and enforces visibility itself
-  (`CellarService.readPublicCellar`, `FeedService`), so no second controller or
-  client can skip the check
-  ([ADR-0050](../docs/adr/0050-public-cellar-addressing.md),
-  [ADR-0059](../docs/adr/0059-feed-respects-cellar-visibility.md)).
-- Code comments carry only what the repo cannot — full policy in
-  [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), which
-  loads on its own when you open a file here
-  ([ADR-0017](../docs/adr/0017-code-comment-policy.md)).
-
-**Traps — do not "fix" these**
-
-Each fails silently rather than at build time, so the warning stays here
-rather than behind a link.
-
-- **Every non-`@Nullable` DTO field needs
-  `@Schema(requiredMode = Schema.RequiredMode.REQUIRED)`.** springdoc infers
-  `required` from nothing — not non-nullability, not primitives — so without
-  it the field silently becomes optional in the generated schema, and the
-  web app's client is wrong ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
-- **Null fields must stay omitted from JSON**
-  (`spring.jackson.default-property-inclusion=non_null`), never `"field":
-  null` — that is what keeps `city?: string` sound across the schema, the
-  generated types and the wire. The per-module `*DtoSerializationIT` classes pin it.
-- **Don't add a handler for a generic Spring MVC exception without first
-  measuring what Boot already returns.** A `ProblemDetail` return carries no
-  response headers, so overriding an exception whose Boot handling sets one
-  (405 sets the RFC-required `Allow`) silently drops it
-  ([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
-- **Module advice and `GlobalExceptionHandler` must never handle the same
-  type.** Two advice beans on one exception type is not a startup error —
-  Spring resolves it silently by `@Order`, and `GlobalExceptionHandler` runs
-  at `Ordered.HIGHEST_PRECEDENCE`, so it wins and masks the mistake.
-- **A handler with any `@ApiResponse` needs an explicit `@ResponseStatus`,
-  even one matching Spring's own default (`200`).** Without it, springdoc
-  stops synthesizing the success response from the return type the moment
-  any `@ApiResponse` applies to that operation — including one declared at
-  the class level — and silently drops the success response from
-  `/v3/api-docs` instead of adding to it. No compile error, no test failure
-  unless something asserts on the generated spec.
-- **Change the API's wire format through a `ServerHttpMessageConvertersCustomizer`,
-  never an `HttpMessageConverter` bean.** Boot hands every converter bean to
-  the HTTP clients as well — `RestClient` and the tests' `RestTestClient` —
-  ahead of their defaults, so a stricter or reformatting JSON converter
-  silently changes how outgoing calls decode responses too. In tests it can
-  take over reading a `problem+json` body as a `String`, failing ITs that
-  never touched JSON.
-
-## Error-handling convention
-
-`ProblemDetail.detail` carries only messages from exception types **explicitly
-designed as API responses** (e.g. `BeerNotFoundException`,
-`InvalidSearchParameterException`) — their messages are written for API
-consumers and contain nothing internal. **Never map broad exception types**
-(`IllegalArgumentException`, `RuntimeException`) to responses: a library
-exception caught by such a handler would leak internal messages. Everything
-unexpected falls through to Spring Boot's defaults — 500 problem+json without
-a message (`server.error.include-message=never`), logged server-side.
-
-Business exceptions live in each module's own `<module>.web` advice, scoped to
-that module's controllers with `@RestControllerAdvice(basePackages =
-"fi.kalia.<module>.web")` — a bare `@RestControllerAdvice` registers for every
-controller in the application, not just the owning module's. `ArchitectureTest`
-fails the build on a new advice outside `fi.kalia.web` with no `basePackages`.
-The one shared advice, `fi.kalia.web.GlobalExceptionHandler`, handles only the
-two Bean Validation exceptions where Boot omits field-level detail
-([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
-
-An error with fields beyond RFC 9457's is a class extending `fi.kalia.web.Problem`
-with those fields as declared getters (see `ValidationProblem`), returned by its
-handler — never `ProblemDetail.setProperty`, which `HttpBoundaryTest` fails on:
-it is untyped, so neither the generated clients nor the entity guard can see
-it. A field-error item is `fi.kalia.web.FieldErrorDto`, shared by every `400`.
-The filter chain's own `401` and `403` are problem+json through
-`ProblemJsonSecurityHandlers`, which keeps Spring Security's `WWW-Authenticate`
-challenge and adds only a body.
-
-## Logging conventions
-
-SLF4J via Lombok's `@Slf4j`, parameterized only, level chosen by what's being
-logged rather than by the mechanism that produced it. Full convention and
-rationale: [ADR-0013](../docs/adr/0013-logging-conventions.md).
+- **Package structure per module**: `domain`, `application`, `web`; [architecture.md §3](../docs/architecture.md#3-backend-modules), [ADR-0007](../docs/adr/0007-backend-package-structure.md), `ArchitectureTest`.
+- **Entity→DTO mapping lives in `web`**, as static `from(...)` factories. It runs outside the service transaction, so repositories eager-load what the boundary needs (entity graphs).
+- **Lombok on entities**: class-level `@Getter` and `@NoArgsConstructor(access = PROTECTED)`; never `@Setter`, `@Data` or `@Builder`. State changes go through factory and behaviour methods.
+- **Value objects and DTOs are records.**
+- **JSpecify**: every package has a `package-info.java` with `@NullMarked`; anything nullable is `@org.jspecify.annotations.Nullable`, fields, parameters and returns alike.
+- **SpringDoc annotations on every public endpoint**: `@Tag` on the controller, `@Operation` on each handler, `@Parameter` on each parameter, `@Schema` on DTOs. Document responses with `@ApiResponse`, shared ones on the class; an error is documented as `application/problem+json` with the declared type it is sent as (`Problem`, `ValidationProblem`, …). `UnexpectedFailureDocumentation` adds the `500`.
+- **Text blocks (`"""`)**, never `+` across lines, for multiline strings, annotation values included; a trailing `\` suppresses a newline. `scripts/check-text-blocks.mjs` fails otherwise.
+- **Import types**, never fully-qualified inline; fix the ones a change touches.
+- **Every request parameter is bounded** by named constants; a constraint spanning two parameters is checked in the handler ([ADR-0042](../docs/adr/0042-bounded-request-parameters.md)).
+- **Endpoints are protected unless listed public** in `SecurityConfig` ([architecture.md §6](../docs/architecture.md#6-authentication-and-identity); `PublicRoutesIT`). A controller resolves the caller at the web edge via `IdentityApi.requireCurrentUserId()`/`requireCurrentUsername()` and passes the id on; only `identity` touches a `Jwt` (`ArchitectureTest`); `/api/v1/admin/**` is covered by one `admin`-role rule ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md), [ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
+  A service returning *another* user's data enforces visibility itself, taking the owner's username ([ADR-0050](../docs/adr/0050-public-cellar-addressing.md), [ADR-0059](../docs/adr/0059-feed-respects-cellar-visibility.md)).
+- **One `Clock`** (UTC, `ApplicationConfig`): an entity takes it as an argument and never injects it; no `Instant.now()` or `@CreationTimestamp`/`@UpdateTimestamp` in `src/main/java`. A new table carries `created_at` and `updated_at`.
+- **Every event listener is idempotent**: delivery is at least once ([ADR-0081](../docs/adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)); key the write on the event's `eventId`.
+- **Get-or-create and writes to an existing aggregate retry once** in a fresh transaction on the constraint or `@Version` failure; a second loss answers `409` ([ADR-0057](../docs/adr/0057-retry-on-constraint-violation-for-get-or-create.md)).
+- **The API contract**: every operation documents its errors and a body operation its `415`, never a `406`. A removal of an already-`deprecated` element passes `make api-breaking` only through a line in `openapi-breaking-ignore.txt` naming the minimum build that excludes its last user ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+- **Errors**: `detail` carries messages only from exception types designed as API responses; never map broad types (`IllegalArgumentException`, `RuntimeException`). Module advice is `@RestControllerAdvice(basePackages = "fi.kalia.<module>.web")` (`ArchitectureTest`). Extra fields come from a `Problem` subclass with declared getters, never `ProblemDetail.setProperty` (`HttpBoundaryTest`); [ADR-0014](../docs/adr/0014-shared-exception-handling.md).
+- **Logging**: `@Slf4j`, parameterized only; level by what is logged ([ADR-0013](../docs/adr/0013-logging-conventions.md)).
+- **Testing conventions**: aim for ≥ 80 % through valuable tests, not getters or framework wiring. Use real collaborators (Testcontainers `@DataJpaTest`, `@SpringBootTest` + `RestTestClient`); mock-heavy tests asserting calls are a smell.
+- **Code comments** carry only what the repo cannot: [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), [ADR-0017](../docs/adr/0017-code-comment-policy.md).
 
 ## Observability
 
-Logs, counters and trace ids are built in; nothing in the stack views them
-([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+Logs, counters and trace ids exist; nothing views them ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
 
-- **Logs** are one JSON object per line on stdout in every environment, with
-  `traceId` and `spanId` on each line written while a request is being served.
-  `RequestLogFilter` writes one `INFO` line per request (the readiness probe
-  at `TRACE`, which compose's healthcheck would otherwise repeat every 5 s). Read them with `docker compose logs backend --no-log-prefix |
-  jq -c '[.["@timestamp"], .log.level, .message, .traceId]'`, or follow one
-  request across both tiers with `docker compose logs --no-log-prefix | grep
-  <traceId>`.
-- **Trace id.** An incoming W3C `traceparent` header is continued; a request
-  without one starts a trace. The web app sends one on every call
-  ([web/README.md](../web/README.md#observability)). There is no
-  exporter, so the id exists only in logs and on the wire.
-- **Counters** at `/actuator/prometheus` (compose exposes it; natively set
-  `ACTUATOR_ENDPOINTS=health,prometheus`). It needs a bearer token like every
-  actuator endpoint but `health`, and the edge answers `404` for it
-  ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
-  so under compose it is read from inside the network. For a token, sign in at
-  Swagger UI (`/swagger-ui/index.html`), run any request there and copy the
-  token from the `curl` it shows, then
-  `docker compose exec backend curl -H "Authorization: Bearer <token>" localhost:8080/actuator/prometheus`
-  (natively, `curl` it at `localhost:8080` directly).
-  The ones this app adds: `kalia_events_publication_retries_total` and
-  `kalia_events_publication_exhausted_total` (an event whose listener failed,
-  and one given up on after `max-attempts`). 5xx by route is
-  `http_server_requests_seconds_count{outcome="SERVER_ERROR"}`, whose `uri`
-  label is the route template.
+- **Logs**: JSON per line on stdout, `traceId`/`spanId` on each line written during a request. Read: `docker compose logs backend --no-log-prefix | jq -c '[.["@timestamp"], .log.level, .message, .traceId]'`. Follow a request across both tiers: `docker compose logs --no-log-prefix | grep <traceId>`.
+- **Counters** at `/actuator/prometheus` need a bearer token and the edge answers `404` ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)), so read it inside the network, with a token copied from the `curl` Swagger UI shows after a request: `docker compose exec backend curl -H "Authorization: Bearer <token>" localhost:8080/actuator/prometheus`. Natively set `ACTUATOR_ENDPOINTS=health,prometheus`.
+- Ours: `kalia_events_publication_retries_total` and `kalia_events_publication_exhausted_total`.
 
-## Testing conventions
+## Traps — do not "fix" these
 
-- **Aim for ≥ 80 % coverage of the backend — through valuable tests, not
-  coverage theater.** Test domain logic, filtering/sorting, mappings and
-  error paths; do not test trivial code (plain getters, dumb DTOs,
-  framework wiring).
-- Test behavior against real collaborators where practical: specifications
-  and repositories run against PostgreSQL via Testcontainers
-  (`@DataJpaTest`), the API via `@SpringBootTest` + `RestTestClient`.
-  Mock-heavy unit tests that assert implementation calls are a smell.
+Each fails silently rather than at build time, so the warning stays here.
+
+- **Maven must run on JDK 25**, not merely have it installed. A newer JDK fails `compile` with `Fatal error compiling: java.lang.ExceptionInInitializerError: com.sun.tools.javac.tree.EndPosTable`, naming neither Lombok nor the JDK. `mvn -version` is not `java -version`; if they differ: `JAVA_HOME=$(/usr/libexec/java_home -v 25) mvn clean verify` ([ADR-0085](../docs/adr/0085-runtimes-follow-long-term-support-not-the-newest-major.md)).
+- **`mvn clean` after any `pom.xml` or plugin change.** An incremental build reports success against stale `target/classes`.
+- **The runtime role cannot DDL** ([ADR-0100](../docs/adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)). A library's schema initializer fails with `permission denied`; Modulith's is off. A migration needs no `GRANT`.
+- **`FEED_CURSOR_KEY` must be the same on every instance and survive restarts**, or cursors issued earlier are rejected with a `400` ([ADR-0060](../docs/adr/0060-feed-delivery-is-polling.md)).
+- **Every non-`@Nullable` DTO field needs `@Schema(requiredMode = Schema.RequiredMode.REQUIRED)`.** springdoc infers `required` from nothing, so the field silently becomes optional in the spec and the generated client ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+- **Null fields stay omitted from JSON** (`spring.jackson.default-property-inclusion=non_null`); it keeps `city?: string` sound end to end. Each module's `*DtoSerializationIT` pins it.
+- **Measure before adding a handler for a generic Spring MVC exception.** A `ProblemDetail` return carries no headers, so overriding one whose Boot handling sets one (405's `Allow`) drops it ([ADR-0014](../docs/adr/0014-shared-exception-handling.md)).
+- **Module advice and `GlobalExceptionHandler` must never handle the same type.** Spring resolves it by `@Order` without error, and `GlobalExceptionHandler` (`HIGHEST_PRECEDENCE`) wins and masks the mistake.
+- **A handler with any `@ApiResponse` needs an explicit `@ResponseStatus`**, even `200`. Otherwise springdoc drops the success response from `/v3/api-docs`, with no compile error and no test failure unless one asserts on the spec.
+- **Change the wire format through a `ServerHttpMessageConvertersCustomizer`, never an `HttpMessageConverter` bean.** Boot hands every converter bean to `RestClient` and `RestTestClient` too, silently changing how outgoing calls decode, e.g. a `problem+json` body read as a `String`.
+- **A `noClasses()` ArchUnit rule (or a `classes().should()` rule every class satisfies) passes when it never meets a violator**, so a wrong condition looks satisfied. Such a rule gets a fixture in `src/test/java/archfixture/`; a rule already exercised by production code, like `entitiesLiveInDomain`, does not.
+- **Event-listener tests poll the repository**, scoped per test. `verify(spy, timeout(…)).save(any())` races the listener's own commit.

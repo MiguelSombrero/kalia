@@ -23,8 +23,7 @@ import org.springframework.modulith.docs.Documenter.Options;
 
 /**
  * Fails CI when the backend's actual module map drifts from the module set
- * and dependency edges docs/architecture.md §2/§3 describe by hand. See
- * backend/README.md "Notable suites".
+ * and dependency edges docs/architecture.md §2/§3 describe by hand.
  */
 class ArchitectureDocumentationTest {
 

@@ -56,8 +56,9 @@ The three homes:
   > `docs/design.md`, a term to `docs/glossary.md`. A warning whose violation
   > fails silently still goes where an editor meets it, which is the README or
   > a code comment. The document is capped at 500 lines, which
-  > `scripts/check-architecture-size.mjs` enforces in `make check`, and the
+  > `scripts/check-doc-size.mjs` enforces in `make check`, and the
   > doc-sync step in `implement-task` changes it only when the shape changes.
+  > It also caps `backend/README.md` at 300 lines (`backend/CLAUDE.md` loads it).
 - **READMEs record how** — the commands and day-to-day rules for working in
   that codebase, at the granularity the product owner set for them: short
   enough that a developer or agent catches the intention immediately.
