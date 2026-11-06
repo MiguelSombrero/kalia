@@ -40,7 +40,7 @@ const MIGRATION_COLUMNS = new Set([
 const SCHEMA_COLUMN = /\b\w*(untappd|score|rating|review)\w*\b/i;
 // Only the tables holding a beer's or a brewery's facts: catalog.review is the
 // moderation trail of an admin's decisions (ADR-0102), not anyone's opinion of a beer.
-const FACT_TABLES = /CREATE TABLE catalog\.(?:brewery|beer) \([\s\S]*?\);/g;
+const FACT_TABLES = /CREATE TABLE catalog\.(?:brewery|beer) \([\s\S]*?(?:^\);|\);$)/gm;
 
 /**
  * @param {{snapshot: string, migration: string, schema: string}} contents the three files' text

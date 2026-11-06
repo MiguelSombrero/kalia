@@ -321,7 +321,7 @@ A new style class, a new collision with a seeded row, or a brewery in a state
 with no ISO code stops the generator with the entry to add. Re-taking the
 snapshot (`node scripts/wikidata-extract.mjs`) queries Wikidata and is a new
 task, not a routine step: the import only ever adds rows. Like any edited migration before the first deployment, a changed
-`V008` needs `docker compose down -v` on an existing local database.
+migration, `V008` included, needs `docker compose down -v` on an existing local database.
 
 ## Moderating contributions
 
