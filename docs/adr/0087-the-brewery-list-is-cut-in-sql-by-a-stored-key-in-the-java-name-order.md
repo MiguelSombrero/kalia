@@ -5,6 +5,8 @@
 - **Amended:** 2026-11-06 — the link to the measurement method points at
   [backend/README.md](../../backend/README.md#catalog-read-latency), where it moved from
   `docs/architecture.md` §7
+- **Amended:** 2026-11-06 — `V004` stores the seeded breweries' keys itself;
+  the generator no longer writes them
 - **Supersedes:** [ADR-0045](0045-brewery-list-paginates-in-application.md) — the brewery list no longer loads and sorts the whole table in Java
 
 ## Context
@@ -40,9 +42,9 @@ comparator does per char, so sorting its bytes sorts the names as the Java sort
 did.
 
 Two writers produce the key: the `Brewery` entity, for every brewery a user
-adds, and the Wikidata generator, for the imported ones and V004's seeded ones.
-Both are held equal by a test that checks every stored key against the
-application's. The column is `NOT NULL`, so a writer that forgets the key fails
+adds, and the Wikidata generator, for the imported ones; V004's seeded ones are
+written into it. A test holds V004's keys equal to the generator's, and
+another checks every stored key against the application's. The column is `NOT NULL`, so a writer that forgets the key fails
 loudly. The search filter is `lower(name) LIKE`, served by a trigram index as the beer
 search is ([ADR-0044](0044-catalog-search-indexes.md)).
 

@@ -58,3 +58,10 @@ test("fails a migration writing a column the import may not write", () => {
 test("fails a schema declaring a review column", () => {
   assert.equal(checkNoUntappd({ ...clean, schema: schema.replace("source text", "review_score numeric") }).length, 1);
 });
+
+test("passes the moderation trail's review table, and fails a review column on a brewery", () => {
+  const trail = `${schema}\nCREATE TABLE catalog.review (id uuid, beer_id uuid, outcome text);`;
+  assert.deepEqual(checkNoUntappd({ ...clean, schema: trail }), []);
+  const brewery = "CREATE TABLE catalog.brewery (id uuid, name text, rating numeric);";
+  assert.equal(checkNoUntappd({ ...clean, schema: `${trail}\n${brewery}` }).length, 1);
+});
