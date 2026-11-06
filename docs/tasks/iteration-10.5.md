@@ -42,7 +42,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | [17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md) | A feed that opened empty polls only for what is new | done |
 | [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | refined |
 | [19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md) | A slow Keycloak delays one call in the app, not every call | refined |
-| [21](iteration-10.5/21-a-failure-ci-would-report-is-caught-before-the-push.md) | A failure CI would report is caught before the push | needs-refinement |
+| [21](iteration-10.5/21-a-failure-ci-would-report-is-caught-before-the-push.md) | A failure CI would report is caught before the push | refined |
 
 Numbered 10.5 for the reason [iteration 8.5](iteration-8.5.md) was: iteration
 11 is already drafted, and this work lands before it. It is web-only — the
