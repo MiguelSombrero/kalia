@@ -1,6 +1,6 @@
 # Task 19: A slow Keycloak delays one call in the app, not every call
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -53,11 +53,11 @@ is handled as task 08 decided, unchanged.
 
 ## Acceptance criteria
 
-- [ ] A Jest test with a refresh that times out shows the next call inside the
+- [x] A Jest test with a refresh that times out shows the next call inside the
       30-second window sent at once without a token, and a call after the window trying
       again; it failed before the change
-- [ ] A Jest test shows a refused refresh still handled as task 08 decided
-- [ ] `npm test` in `mobile/` and `make verify-fast` are green
+- [x] A Jest test shows a refused refresh still handled as task 08 decided
+- [x] `npm test` in `mobile/` and `make verify-fast` are green
 
 ## Notes
 

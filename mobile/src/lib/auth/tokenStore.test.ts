@@ -208,6 +208,7 @@ describe("refreshAccessToken", () => {
     oauth.refresh.mockRejectedValueOnce(new TypeError("Network request failed")).mockResolvedValueOnce(grant(2));
     advance(FIVE_MINUTES + 1);
     await store.getAccessToken().catch(() => undefined);
+    advance(30);
 
     await expect(store.refreshAccessToken(undefined)).resolves.toBe("access-2");
   });
@@ -269,12 +270,13 @@ describe("a refresh that fails", () => {
     expect(persisted()).toEqual(stored());
   });
 
-  it("for a transient reason is tried again by the next call", async () => {
+  it("for a transient reason is tried again by the first call after the window", async () => {
     const { store, oauth, advance } = setup();
     oauth.refresh.mockRejectedValueOnce(new TypeError("Network request failed")).mockResolvedValueOnce(grant(2));
     advance(FIVE_MINUTES + 1);
 
     await store.getAccessToken().catch(() => undefined);
+    advance(30);
 
     await expect(store.getAccessToken()).resolves.toBe("access-2");
   });
@@ -292,6 +294,87 @@ describe("a refresh that fails", () => {
     await expect(pending).resolves.toBeUndefined();
     expect(persisted()).toBeNull();
     expect(store.getState()).toEqual({ status: "signedOut", expired: false });
+  });
+});
+
+describe("a transient refresh failure's window", () => {
+  const WINDOW_SECONDS = 30;
+  const failing = () => {
+    const context = setup();
+    context.oauth.refresh.mockRejectedValue(new TypeError("Network request failed"));
+    context.advance(FIVE_MINUTES + 1);
+    return context;
+  };
+
+  it("makes a call inside it fail at once without asking Keycloak, keeping the session and the stored tokens", async () => {
+    const { store, oauth, advance, persisted, storage } = failing();
+    await store.getAccessToken().catch(() => undefined);
+
+    advance(WINDOW_SECONDS - 1);
+    const outcome = await store.getAccessToken().catch((error: unknown) => error);
+
+    expect(isApiError(outcome) && outcome.kind).toBe("network");
+    expect(oauth.refresh).toHaveBeenCalledTimes(1);
+    expect(store.getState()).toEqual({ status: "signedIn" });
+    expect(storage.clear).not.toHaveBeenCalled();
+    expect(persisted()).toEqual(stored());
+  });
+
+  it("also covers the refresh a 401 forces", async () => {
+    const { store, oauth, advance } = failing();
+    await store.getAccessToken().catch(() => undefined);
+
+    advance(WINDOW_SECONDS - 1);
+    const outcome = await store.refreshAccessToken("access-1").catch((error: unknown) => error);
+
+    expect(isApiError(outcome) && outcome.kind).toBe("network");
+    expect(oauth.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("is over after 30 seconds: the next call asks Keycloak again", async () => {
+    const { store, oauth, advance } = failing();
+    await store.getAccessToken().catch(() => undefined);
+    oauth.refresh.mockResolvedValue(grant(2));
+
+    advance(WINDOW_SECONDS);
+
+    await expect(store.getAccessToken()).resolves.toBe("access-2");
+    expect(oauth.refresh).toHaveBeenCalledTimes(2);
+  });
+
+  it("opens again when the call after it fails too", async () => {
+    const { store, oauth, advance } = failing();
+    await store.getAccessToken().catch(() => undefined);
+    advance(WINDOW_SECONDS);
+    await store.getAccessToken().catch(() => undefined);
+
+    advance(WINDOW_SECONDS - 1);
+    await store.getAccessToken().catch(() => undefined);
+
+    expect(oauth.refresh).toHaveBeenCalledTimes(2);
+  });
+
+  it("still ends the session when Keycloak refuses the refresh after the window", async () => {
+    const { store, oauth, advance } = failing();
+    await store.getAccessToken().catch(() => undefined);
+    oauth.refresh.mockResolvedValue({ kind: "rejected" });
+
+    advance(WINDOW_SECONDS);
+    await expect(store.getAccessToken()).resolves.toBeUndefined();
+
+    expect(store.getState()).toEqual({ status: "signedOut", expired: true });
+  });
+
+  it("does not outlive a sign-out followed by a sign-in", async () => {
+    const { store, oauth, advance } = failing();
+    await store.getAccessToken().catch(() => undefined);
+    await store.signOut();
+    oauth.authorize.mockResolvedValue({ kind: "granted", grant: grant(3).grant });
+    await store.signIn("en");
+    advance(FIVE_MINUTES + 1);
+    oauth.refresh.mockResolvedValue(grant(4));
+
+    await expect(store.getAccessToken()).resolves.toBe("access-4");
   });
 });
 

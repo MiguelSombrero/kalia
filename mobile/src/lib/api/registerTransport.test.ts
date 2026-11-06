@@ -67,6 +67,7 @@ describe("a token the app cannot use", () => {
   const fetchMock = jest.fn();
   const refresh = jest.fn();
 
+  let clock = START;
   const storeHolding = (tokens: StoredTokens) => {
     const storage = {
       load: jest.fn(async () => tokens),
@@ -74,7 +75,7 @@ describe("a token the app cannot use", () => {
       clear: jest.fn(async () => undefined),
     } satisfies TokenStorage;
     const oauth = { authorize: jest.fn(), refresh, revoke: jest.fn() } satisfies OAuthClient;
-    return createTokenStore({ storage, oauth, now: () => START });
+    return createTokenStore({ storage, oauth, now: () => clock });
   };
   const expired = { accessToken: "stale", refreshToken: "refresh-1", expiresAt: START - 1000 };
   const fresh = { accessToken: "stale", refreshToken: "refresh-1", expiresAt: START + 300_000 };
@@ -93,6 +94,7 @@ describe("a token the app cannot use", () => {
 
   beforeEach(() => {
     Reflect.deleteProperty(globalThis, SLOT);
+    clock = START;
     fetchMock.mockReset();
     refresh.mockReset();
     jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
@@ -126,14 +128,43 @@ describe("a token the app cannot use", () => {
       await expect(readProfile()).resolves.toMatchObject({ status: 401 });
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
+  });
 
-    it("retries that call with a token once Keycloak answers again", async () => {
-      refresh.mockRejectedValueOnce(new TypeError("Network request failed")).mockResolvedValueOnce(granted);
-      answer(401, 200);
+  describe("when Keycloak is slow rather than down", () => {
+    const timedOut = new Error("The refresh timed out after 10000 ms");
 
-      await expect(readCatalog()).resolves.toMatchObject({ status: 200 });
+    beforeEach(() => {
+      refresh.mockRejectedValue(timedOut);
+      registerMobileTransport(storeHolding(expired));
+    });
 
-      expect([authorizationOf(0), authorizationOf(1)]).toEqual([null, "Bearer renewed"]);
+    it("sends the calls of the next 30 seconds at once, without a token, and tries again after them", async () => {
+      answer(200, 200, 200);
+
+      await readCatalog();
+      expect(refresh).toHaveBeenCalledTimes(1);
+
+      clock += 29_000;
+      await readCatalog();
+      await readLaunchCheck();
+      expect(refresh).toHaveBeenCalledTimes(1);
+      expect([authorizationOf(1), authorizationOf(2)]).toEqual([null, null]);
+
+      refresh.mockResolvedValueOnce(granted);
+      answer(200);
+      clock += 1_000;
+      await readCatalog();
+      expect(refresh).toHaveBeenCalledTimes(2);
+      expect(authorizationOf(3)).toBe("Bearer renewed");
+    });
+
+    it("leaves a call that needs a user to the API's 401 inside the window, without a refresh", async () => {
+      answer(200, 401);
+      await readCatalog();
+
+      await expect(readProfile()).resolves.toMatchObject({ status: 401 });
+
+      expect(refresh).toHaveBeenCalledTimes(1);
     });
   });
 
