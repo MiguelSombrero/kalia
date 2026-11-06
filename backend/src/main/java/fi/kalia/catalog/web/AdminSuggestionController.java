@@ -115,6 +115,39 @@ class AdminSuggestionController {
 		return SuggestionDecisionDto.from(review.approve(id, identity.requireCurrentUserId()));
 	}
 
+	@PostMapping("/{id}/edited-approval")
+	@ResponseStatus(HttpStatus.OK)
+	@ApiResponses({
+			@ApiResponse(responseCode = "400", description = """
+					The id is not a UUID; a field breaks the rules a beer is added under, such as a style \
+					the catalog lacks, a country it does not list or a name with an invisible formatting \
+					character; both or neither of breweryId and newBrewery are given; or newBrewery is \
+					given for a suggestion that came with an existing brewery""",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(oneOf = {ValidationProblem.class, Problem.class}))),
+			@ApiResponse(responseCode = "404", description = """
+					No suggestion is waiting under this id: it is unknown, or is a beer nobody suggested, \
+					such as an imported one; or breweryId names no approved brewery""",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = Problem.class))),
+			@ApiResponse(responseCode = "409", description = """
+					The suggestion was decided already or is being decided by another request; the edit \
+					duplicates a beer, or a brewery, the catalog holds in any status (the body names it); \
+					or newBrewery edits a brewery another suggestion's approval has approved""",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(oneOf = {SuggestionAlreadyDecidedProblem.class, DuplicateBeerProblem.class,
+									DuplicateBreweryProblem.class, Problem.class})))})
+	@Operation(summary = "Edit a suggestion and approve it", description = """
+			Applies the edit and approves the suggestion in one action, under the rules a beer is added \
+			under, so what the contributor sees was checked as if they had entered it. Pointing the \
+			beer at an existing brewery rejects the brewery it came with, unless another suggestion \
+			still needs it. The review record keeps the values as suggested, and the event says the \
+			suggestion was edited. A request equal to the suggestion is an approval as it is.""")
+	SuggestionDecisionDto approveEdited(@Parameter(description = "The suggested beer's id") @PathVariable UUID id,
+			@RequestBody @Valid EditSuggestionRequestDto body) {
+		return SuggestionDecisionDto.from(review.approveEdited(id, identity.requireCurrentUserId(), body.edit()));
+	}
+
 	@PostMapping("/{id}/rejection")
 	@ResponseStatus(HttpStatus.OK)
 	@ApiResponses({

@@ -4,7 +4,6 @@ import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.BeerRepository;
 import fi.kalia.catalog.domain.Brewery;
 import fi.kalia.catalog.domain.BreweryRepository;
-import fi.kalia.catalog.domain.Country;
 import fi.kalia.catalog.domain.ModerationStatus;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -24,6 +23,8 @@ public class ContributionService {
 
 	private final BreweryRepository breweries;
 
+	private final CatalogEntryRules rules;
+
 	private final Clock clock;
 
 	/** Most entries one contributor may have waiting for review at once (ADR-0091). */
@@ -33,7 +34,7 @@ public class ContributionService {
 	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
 	public Beer addBeer(UUID contributorId, BreweryChoice breweryChoice, String name, String style,
 			BigDecimal abv) {
-		String knownStyle = knownStyle(style);
+		String knownStyle = rules.knownStyle(style);
 		// Two adds by one contributor queue here, so the count below cannot be read by both.
 		beers.lockContributorAdds(contributorId.getMostSignificantBits() ^ contributorId.getLeastSignificantBits());
 		Brewery brewery;
@@ -64,9 +65,7 @@ public class ContributionService {
 	}
 
 	private Brewery newBrewery(UUID contributorId, BreweryChoice.New added) {
-		if (!Country.isListed(added.countryCode())) {
-			throw new UnknownCountryException();
-		}
+		rules.requireListedCountry(added.countryCode());
 		breweries.findBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existing -> {
 			throw new DuplicateBreweryException(existing.getId(), existing.getName(), existing.getCountryCode());
 		});
@@ -79,11 +78,6 @@ public class ContributionService {
 		if (waiting + adding > MAX_PENDING_ENTRIES) {
 			throw new TooManyPendingEntriesException(MAX_PENDING_ENTRIES);
 		}
-	}
-
-	private String knownStyle(String style) {
-		return beers.findStylesIgnoringCase(style.strip()).stream().findFirst()
-				.orElseThrow(UnknownStyleException::new);
 	}
 
 }

@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -38,6 +39,20 @@ public class Review {
 
 	private Instant decidedAt;
 
+	private @Nullable String suggestedName;
+
+	private @Nullable String suggestedStyle;
+
+	private @Nullable BigDecimal suggestedAbv;
+
+	private @Nullable UUID suggestedBreweryId;
+
+	private @Nullable String suggestedBreweryName;
+
+	private @Nullable String suggestedBreweryCountryCode;
+
+	private @Nullable String suggestedBreweryCity;
+
 	private Review(UUID beerId, UUID decidedBy, ReviewOutcome outcome, @Nullable RejectionReason reasonCode,
 			Instant decidedAt) {
 		this.beerId = beerId;
@@ -49,6 +64,18 @@ public class Review {
 
 	public static Review approval(UUID beerId, UUID decidedBy, Instant decidedAt) {
 		return new Review(beerId, decidedBy, ReviewOutcome.APPROVED, null, decidedAt);
+	}
+
+	public static Review editedApproval(UUID beerId, UUID decidedBy, SuggestedValues suggested, Instant decidedAt) {
+		Review review = approval(beerId, decidedBy, decidedAt);
+		review.suggestedName = suggested.beerName();
+		review.suggestedStyle = suggested.style();
+		review.suggestedAbv = suggested.abv();
+		review.suggestedBreweryId = suggested.breweryId();
+		review.suggestedBreweryName = suggested.breweryName();
+		review.suggestedBreweryCountryCode = suggested.breweryCountryCode();
+		review.suggestedBreweryCity = suggested.breweryCity();
+		return review;
 	}
 
 	public static Review rejection(UUID beerId, UUID decidedBy, RejectionReason reason, Instant decidedAt) {

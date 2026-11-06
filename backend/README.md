@@ -197,6 +197,16 @@ Notable suites:
   shared database's pending rows to `REMOVED` first, as the suites before it
   leave suggestions waiting; `SuggestionReviewServiceIT` pins that a page's
   statements do not grow with its rows
+- `AdminSuggestionEditApiIT`, `CatalogEntryRulesTest` and `SharedBeerConstraintsTest`
+  — an admin's edited approval
+  ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
+  the contributor's cellar and the beer's page showing the edited values, a new
+  brewery edited with its beer, re-pointing at an existing brewery, each refusal
+  (style, country, invisible character, duplicate beer or brewery whatever its
+  status, brewery not approved, brewery approved by a sibling, brewery added to
+  an existing one) and what the review record keeps. Each refusal test fails
+  with its check removed. The unit tests pin the rules both the add and the
+  edit take from one place
 - `AdminSuggestionDecisionApiIT`, `SuggestionDecisionLockingIT` and
   `SuggestionReviewEventPublishingIT` — an admin's decision
   ([ADR-0102](../docs/adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)):
@@ -314,6 +324,8 @@ To see what is waiting, an admin calls `GET /api/v1/admin/suggestions`
 and decides one with `POST /api/v1/admin/suggestions/{id}/approval` or
 `…/rejection` with a `reason`
 ([task 06](../docs/tasks/iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md)),
+or corrects it first with `…/edited-approval`
+([task 07](../docs/tasks/iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md)),
 or from a shell:
 
 ```bash

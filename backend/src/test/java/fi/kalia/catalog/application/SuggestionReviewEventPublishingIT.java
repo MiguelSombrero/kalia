@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import fi.kalia.TestcontainersConfiguration;
 import fi.kalia.catalog.RejectionReason;
 import fi.kalia.catalog.SuggestionReviewed;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
@@ -83,6 +84,34 @@ class SuggestionReviewEventPublishingIT {
 			assertThat(event.reason()).isEqualTo(RejectionReason.ALREADY_IN_CATALOG);
 		});
 		assertThat(published).extracting(SuggestionReviewed::eventId).doesNotHaveDuplicates();
+	}
+
+	@Test
+	void anEditedApprovalPublishesOneEventCarryingTheEditedNameTheSuggestedOneAndTheFlag(AssertablePublishedEvents events) {
+		UUID contributor = UUID.randomUUID();
+		UUID existing = brewery("Event Edit Target", "APPROVED", null);
+		UUID edited = beer(brewery("Event Edit New Brewery", "PENDING", contributor), "Event Typo Name", contributor);
+		UUID plain = beer(existing, "Event Unedited", contributor);
+
+		service.approveEdited(edited, ADMIN,
+				new SuggestionEdit("Event Fixed Name", "Quadrupel", new BigDecimal("10.5"), new BreweryChoice.Existing(existing)));
+		service.approveEdited(plain, ADMIN,
+				new SuggestionEdit("Event Unedited", "IPA", new BigDecimal("5.5"), new BreweryChoice.Existing(existing)));
+
+		List<SuggestionReviewed> published = published(events);
+		assertThat(published).hasSize(2);
+		assertThat(forBeer(published, edited)).satisfies(event -> {
+			assertThat(event.outcome()).isEqualTo(SuggestionReviewed.Outcome.APPROVED);
+			assertThat(event.contributorId()).isEqualTo(contributor);
+			assertThat(event.beerName()).isEqualTo("Event Fixed Name");
+			assertThat(event.edited()).isTrue();
+			assertThat(event.suggestedName()).isEqualTo("Event Typo Name");
+			assertThat(event.reason()).isNull();
+		});
+		assertThat(forBeer(published, plain)).satisfies(event -> {
+			assertThat(event.edited()).isFalse();
+			assertThat(event.suggestedName()).isNull();
+		});
 	}
 
 	// The registry stores the event as JSON and replays it on resubmission, so what a consumer is handed

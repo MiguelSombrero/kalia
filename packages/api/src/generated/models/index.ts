@@ -21,6 +21,7 @@ export * from './cellarBeerDto';
 export * from './changeVisibilityRequestDto';
 export * from './duplicateBeerProblem';
 export * from './duplicateBreweryProblem';
+export * from './editSuggestionRequestDto';
 export * from './entryDto';
 export * from './feedLineDto';
 export * from './feedPageDto';
