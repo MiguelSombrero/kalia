@@ -310,6 +310,10 @@
       "listed_other": "Showing its {{count}} oldest bottles",
       "withdrawn": "This beer was withdrawn from the catalog. You keep your bottles but can't add more."
     },
+    "conflict": {
+      "message": "Your cellar was changed somewhere else at the same moment, so this was not saved. Reload to see it as it is now, then try again.",
+      "reload": "Reload page"
+    },
     "bottle": {
       "list": "Bottles of {{beer}}",
       "container": {

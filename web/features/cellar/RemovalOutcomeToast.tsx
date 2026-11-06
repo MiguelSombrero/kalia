@@ -1,8 +1,10 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Toast, ToastDescription, ToastProvider, ToastViewport } from "@/components/ui/toast";
+import { Toast, ToastAction, ToastDescription, ToastProvider, ToastViewport } from "@/components/ui/toast";
 import { useBottleRemovalStore } from "./store";
+
+const CONFLICT_TOAST_MS = 15_000;
 
 /**
  * Mounted once per cellar page (in CellarView), outside the list: removing the
@@ -18,9 +20,10 @@ export const RemovalOutcomeToast = () => {
   const dismissOutcome = useBottleRemovalStore((state) => state.dismissOutcome);
 
   const failed = outcome !== null && "failed" in outcome;
+  const conflicted = outcome !== null && "conflict" in outcome;
   const message =
     outcome && "failed" in outcome
-      ? t("cellar.bottle.remove.error")
+      ? t(conflicted ? "cellar.conflict.message" : "cellar.bottle.remove.error")
       : outcome?.lastBottle
         ? t("cellar.bottle.remove.toastLastBottle")
         : t("cellar.bottle.remove.toast");
@@ -30,11 +33,17 @@ export const RemovalOutcomeToast = () => {
       <Toast
         variant={failed ? "destructive" : "success"}
         open={outcome !== null}
+        duration={conflicted ? CONFLICT_TOAST_MS : undefined}
         onOpenChange={(open) => {
           if (!open) dismissOutcome();
         }}
       >
         <ToastDescription className="flex-1 text-sm text-foreground">{message}</ToastDescription>
+        {conflicted && (
+          <ToastAction altText={t("cellar.conflict.reload")} onClick={() => window.location.reload()}>
+            {t("cellar.conflict.reload")}
+          </ToastAction>
+        )}
       </Toast>
       <ToastViewport />
     </ToastProvider>

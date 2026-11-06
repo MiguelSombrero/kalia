@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { isApiError } from "@kalia/api";
 import { describe, expect, it, vi } from "vitest";
 
 const { addBottlesAction, updateBottleAction, removeBottleAction } = vi.hoisted(() => ({
@@ -70,5 +71,22 @@ describe("useRemoveBottle", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(removeBottleAction).toHaveBeenCalledWith("b1");
+  });
+});
+
+describe("a conflict result from a cellar action", () => {
+  it.each([
+    ["useAddBottle", () => useAddBottle(), addBottlesAction, (m: ReturnType<typeof useAddBottle>) => m.mutate({ beerId: "beer-1", containerType: "CAN" })],
+    ["useUpdateBottle", () => useUpdateBottle(), updateBottleAction, (m: ReturnType<typeof useUpdateBottle>) => m.mutate({ id: "b1", request: { containerType: "CAN" } })],
+    ["useRemoveBottle", () => useRemoveBottle(), removeBottleAction, (m: ReturnType<typeof useRemoveBottle>) => m.mutate({ id: "b1" })],
+  ] as const)("fails %s with a typed ApiError carrying status 409", async (_, useHook, action, run) => {
+    action.mockResolvedValue({ conflict: true });
+
+    const { result } = renderHook(() => useHook(), { wrapper: createHarness().Wrapper });
+    run(result.current as never);
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    const error = result.current.error;
+    expect(isApiError(error) && error.kind === "http" && error.status).toBe(409);
   });
 });

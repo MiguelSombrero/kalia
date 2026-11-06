@@ -1,6 +1,6 @@
 # Task 18: A cellar write reads back as it was made, and a lost one says why
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -62,13 +62,13 @@ locales.
 
 ## Acceptance criteria
 
-- [ ] An integration test adds several bottles in one request and reads them
+- [x] An integration test adds several bottles in one request and reads them
       back in the order the response listed them, repeated enough to have
       failed before the change, and with bottles created within one
       millisecond
-- [ ] A component test shows a `409` from a cellar write presented as a
+- [x] A component test shows a `409` from a cellar write presented as a
       conflict with a reload, not the generic failure; it failed before
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

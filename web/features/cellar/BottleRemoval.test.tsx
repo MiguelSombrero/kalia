@@ -32,6 +32,8 @@ const CANCEL = "cellar.bottle.remove.cancel";
 const TOAST = "cellar.bottle.remove.toast";
 const TOAST_LAST_BOTTLE = "cellar.bottle.remove.toastLastBottle";
 const TOAST_ERROR = "cellar.bottle.remove.error";
+const TOAST_CONFLICT = "cellar.conflict.message";
+const RELOAD = "cellar.conflict.reload";
 
 const bottle = (id: string, entryId: string, containerType: Bottle["containerType"]): Bottle => ({
   id,
@@ -134,6 +136,30 @@ describe("bottle removal with an upfront confirmation", () => {
     await waitFor(() => expect(screen.getByText(TOAST_ERROR)).toBeInTheDocument());
     expect(screen.getByText(TOAST_ERROR).closest("[data-variant]")).toHaveAttribute("data-variant", "destructive");
     expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
+  });
+
+  it("reports a removal that lost to a concurrent change as a conflict with a reload, and restores the bottle", async () => {
+    removeBottleAction.mockResolvedValue({ conflict: true });
+    const reload = vi.fn();
+    const location = vi.spyOn(window, "location", "get").mockReturnValue({ ...window.location, reload });
+    try {
+      renderCellar();
+
+      fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+      await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+      fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
+
+      await waitFor(() => expect(screen.getByText(TOAST_CONFLICT)).toBeInTheDocument());
+      expect(screen.getByText(TOAST_CONFLICT).closest("[data-variant]")).toHaveAttribute("data-variant", "destructive");
+      expect(screen.queryByText(TOAST_ERROR)).not.toBeInTheDocument();
+      expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
+
+      fireEvent.click(screen.getByRole("button", { name: RELOAD }));
+
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      location.mockRestore();
+    }
   });
 
   it("removes a beer once its last bottle is removed, and the toast names the consequence", async () => {

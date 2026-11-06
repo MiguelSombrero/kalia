@@ -441,8 +441,10 @@ and its bottles in one read-only transaction at repeatable read, so they come
 from one snapshot: an entry whose last bottle is deleted mid-read still shows,
 with the bottle, in that response and is absent from the next. An entry's
 bottles order by `created_at, id`, the order the indexed reads already use;
-bottles added together share an instant, so `id` is what keeps their order the
-same on every read.
+bottles added together share an instant, so `id` breaks the tie, and a bottle's
+`id` is a time-ordered UUIDv7 from Hibernate's generator (monotonic within a
+millisecond), so a later read lists them in the order the write answered them
+(`CellarPersistenceIT`, `CellarApiIT`).
 
 **A profile is keyed by the Keycloak `sub` itself** — `profile.profile.id`
 carries no separate generated id — **and is created lazily**, the first time
