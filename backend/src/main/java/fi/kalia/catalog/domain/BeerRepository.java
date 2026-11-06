@@ -1,5 +1,6 @@
 package fi.kalia.catalog.domain;
 
+import jakarta.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -90,6 +92,17 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 			                           fi.kalia.catalog.domain.ModerationStatus.REJECTED)
 			GROUP BY b.contributorId, b.moderationStatus""")
 	List<ContributorStatusCount> countPendingAndRejectedByContributor(Collection<UUID> contributorIds);
+
+	// The first lock a decision takes (ADR-0102): a second decision on the same beer waits here and then
+	// reads the status the first one left. The brewery is not joined, so its lock is taken apart.
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT b FROM Beer b WHERE b.id = :id")
+	Optional<Beer> findByIdForUpdate(UUID id);
+
+	@Query("""
+			SELECT COUNT(b) > 0 FROM Beer b WHERE b.brewery.id = :breweryId AND b.id <> :beerId
+			AND b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.PENDING""")
+	boolean existsOtherPendingAt(UUID breweryId, UUID beerId);
 
 	long countByContributorIdAndModerationStatus(UUID contributorId, ModerationStatus moderationStatus);
 

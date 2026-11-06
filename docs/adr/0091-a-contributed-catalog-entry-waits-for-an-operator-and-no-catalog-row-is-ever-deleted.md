@@ -18,7 +18,11 @@
   with it are one *suggestion* that an admin approves, rejects or edits through
   an admin API, one event per decision; the operator command, the cap's count
   (20 suggestions, not entries) and the revisit trigger are replaced, as
-  iteration 10.5 builds them
+  iteration 10.5 builds them. Task 06 builds the application path for approving
+  and rejecting: `POST /api/v1/admin/suggestions/{id}/approval` and `…/rejection`
+  change the beer and a brewery new with it in one transaction, write a review
+  record and publish `SuggestionReviewed`. `make moderate` stays beside it until
+  task 08 retires it
 - **Amended:** 2026-11-05 by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) — deleting a contributor's account
   keeps the beer and the brewery and removes `contributor_id`; a suggestion
   still `PENDING` is rejected in the same transaction; see the "No catalog row
@@ -90,6 +94,9 @@ ever deleted.
   everything one contributor added, named by username or id: *approve* turns
   `PENDING` into `APPROVED`, *reject* turns `PENDING` into `REJECTED`, *remove*
   turns `PENDING` or `APPROVED` into `REMOVED`.
+- **The application path** is the admin API: a decision locks the beer's row and
+  then its brewery's, so a decision a moment ahead of it is answered `409`, and
+  no row is ever deleted by it either.
 - **No catalog row is deleted**, by the command or by anything else. Hidden is
   a state, not an absence, and an integration test pins that the rows and a
   holder's cellar entry for a rejected or removed beer remain.

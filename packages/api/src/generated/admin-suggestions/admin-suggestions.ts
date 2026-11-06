@@ -5,24 +5,32 @@
  * OpenAPI spec version: v0
  */
 import {
+  useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
+  ApproveSuggestionRequestDto,
   ListSuggestionsParams,
   PageDtoSuggestionDto,
   Problem,
+  RejectSuggestionRequestDto,
+  SuggestionAlreadyDecidedProblem,
+  SuggestionDecisionDto,
   SuggestionDto,
   ValidationProblem
 } from '../models';
@@ -331,3 +339,279 @@ export function useGetSuggestion<TData = Awaited<ReturnType<typeof getSuggestion
 
 
 
+export type approveResponse200 = {
+  data: SuggestionDecisionDto
+  status: 200
+}
+
+export type approveResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type approveResponse401 = {
+  data: Problem
+  status: 401
+}
+
+export type approveResponse403 = {
+  data: Problem
+  status: 403
+}
+
+export type approveResponse404 = {
+  data: Problem
+  status: 404
+}
+
+export type approveResponse409 = {
+  data: SuggestionAlreadyDecidedProblem
+  status: 409
+}
+
+export type approveResponse415 = {
+  data: Problem
+  status: 415
+}
+
+export type approveResponse500 = {
+  data: Problem
+  status: 500
+}
+
+export type approveResponseSuccess = (approveResponse200) & {
+  headers: Headers;
+};
+export type approveResponseError = (approveResponse400 | approveResponse401 | approveResponse403 | approveResponse404 | approveResponse409 | approveResponse415 | approveResponse500) & {
+  headers: Headers;
+};
+
+export type approveResponse = (approveResponseSuccess | approveResponseError)
+
+export const getApproveUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/admin/suggestions/${encodeURIComponent(String(id))}/approval`
+}
+
+/**
+ * Makes the beer, and the brewery added with it, visible to everyone. A brewery another suggestion needs is approved with the first approval. Takes no body.
+ * @summary Approve a suggestion as it is
+ */
+export const approve = async (id: string,
+    approveSuggestionRequestDto?: ApproveSuggestionRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<approveResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return kaliaFetch<approveResponse>(getApproveUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(approveSuggestionRequestDto)
+  }
+);}
+
+
+
+
+
+export const getApproveMutationKey = () => ['approve'] as const;
+
+export const getApproveMutationOptions = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approve>>, TError,ApproveMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approve>>, TError,ApproveMutationVariables, TContext> => {
+
+const mutationKey = getApproveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approve>>, ApproveMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  approve(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveMutationResult = NonNullable<Awaited<ReturnType<typeof approve>>>
+    export type ApproveMutationBody = ApproveSuggestionRequestDto | undefined
+    export type ApproveMutationError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem
+    export type ApproveMutationVariables = {id: string;data?: ApproveSuggestionRequestDto}
+
+    /**
+ * @summary Approve a suggestion as it is
+ */
+export const useApprove = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approve>>, TError,ApproveMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof approve>>,
+        TError,
+        ApproveMutationVariables,
+        TContext
+      > => {
+      return useMutation(getApproveMutationOptions(options), queryClient);
+    }
+    export type rejectResponse200 = {
+  data: SuggestionDecisionDto
+  status: 200
+}
+
+export type rejectResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type rejectResponse401 = {
+  data: Problem
+  status: 401
+}
+
+export type rejectResponse403 = {
+  data: Problem
+  status: 403
+}
+
+export type rejectResponse404 = {
+  data: Problem
+  status: 404
+}
+
+export type rejectResponse409 = {
+  data: SuggestionAlreadyDecidedProblem
+  status: 409
+}
+
+export type rejectResponse415 = {
+  data: Problem
+  status: 415
+}
+
+export type rejectResponse500 = {
+  data: Problem
+  status: 500
+}
+
+export type rejectResponseSuccess = (rejectResponse200) & {
+  headers: Headers;
+};
+export type rejectResponseError = (rejectResponse400 | rejectResponse401 | rejectResponse403 | rejectResponse404 | rejectResponse409 | rejectResponse415 | rejectResponse500) & {
+  headers: Headers;
+};
+
+export type rejectResponse = (rejectResponseSuccess | rejectResponseError)
+
+export const getRejectUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/admin/suggestions/${encodeURIComponent(String(id))}/rejection`
+}
+
+/**
+ * Withholds the beer for good, with a reason from a fixed list. The brewery added with it is rejected too, unless another suggestion that needs it is still waiting; the last of them rejects it. No row is deleted.
+ * @summary Reject a suggestion
+ */
+export const reject = async (id: string,
+    rejectSuggestionRequestDto: RejectSuggestionRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<rejectResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return kaliaFetch<rejectResponse>(getRejectUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(rejectSuggestionRequestDto)
+  }
+);}
+
+
+
+
+
+export const getRejectMutationKey = () => ['reject'] as const;
+
+export const getRejectMutationOptions = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reject>>, TError,RejectMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reject>>, TError,RejectMutationVariables, TContext> => {
+
+const mutationKey = getRejectMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reject>>, RejectMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  reject(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RejectMutationResult = NonNullable<Awaited<ReturnType<typeof reject>>>
+    export type RejectMutationBody = RejectSuggestionRequestDto
+    export type RejectMutationError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem
+    export type RejectMutationVariables = {id: string;data: RejectSuggestionRequestDto}
+
+    /**
+ * @summary Reject a suggestion
+ */
+export const useReject = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reject>>, TError,RejectMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof reject>>,
+        TError,
+        RejectMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRejectMutationOptions(options), queryClient);
+    }

@@ -65,4 +65,16 @@ public class Brewery {
 		return brewery;
 	}
 
+	public void approveIfPending() {
+		if (moderationStatus == ModerationStatus.PENDING) {
+			moderationStatus = ModerationStatus.APPROVED;
+		}
+	}
+
+	public void rejectIfPending() {
+		if (moderationStatus == ModerationStatus.PENDING) {
+			moderationStatus = ModerationStatus.REJECTED;
+		}
+	}
+
 }
