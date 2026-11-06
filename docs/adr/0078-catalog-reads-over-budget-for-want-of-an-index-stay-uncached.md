@@ -10,6 +10,9 @@
   [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
   cuts their page in SQL, and `GET /styles` is measured and within budget; the
   figures are the last table in Evidence
+- **Amended:** 2026-11-06 — the measurement method moved from `docs/architecture.md` §7 to
+  [backend/README.md](../../backend/README.md#catalog-read-latency); the links
+  below point there
 
 ## Context
 
@@ -68,7 +71,7 @@ anything else, or HTTP caching headers that serve another purpose.
 
 - The catalog passes 150k beers, the largest size measured.
 - A repeat of the method in
-  [architecture.md §7](../architecture.md#catalog-read-latency) shows a
+  [backend/README.md](../../backend/README.md#catalog-read-latency) shows a
   catalog read over 300 ms p95 that no index can serve.
 
 A cache adopted then still has to meet the three constraints above.
@@ -138,7 +141,7 @@ measuring, because it says nothing about growth.
   latency. A regression that keeps the plans but loses the speed is caught
   only when someone repeats the method.
 - **Revisit trigger:** the catalog passes 150k beers. Or a repeat of the
-  method in [architecture.md §7](../architecture.md#catalog-read-latency)
+  method in [backend/README.md](../../backend/README.md#catalog-read-latency)
   shows a read over 300 ms p95 that no index can serve. An index-served read
   over budget returns to task 18's shape of fix first.
 
@@ -155,7 +158,7 @@ Measured 2026-10-18 against `dev` at `8cbeb2d`.
 - **Contention:** the machine was shared with other work, which accounts
   for the outlier ranges.
 
-The method is in [architecture.md §7](../architecture.md#catalog-read-latency).
+The method is in [backend/README.md](../../backend/README.md#catalog-read-latency).
 The figures are p95 server time from Tomcat's access log, as the median of
 three runs with the range in brackets. Each run is 2,000 requests per
 scenario from 20 concurrent clients, after 200 warm-up requests. Client-side

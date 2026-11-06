@@ -7,6 +7,9 @@
 - **Amended:** 2026-10-14 by
   [ADR-0076](0076-index-cells-are-synced-from-their-files.md) — an index row's
   title and status are synced from the ADR rather than checked against it
+- **Amended:** 2026-11-06 — the ADR index checked and synced by `scripts/check-adrs.mjs`
+  moved from `docs/architecture.md` §9 to the "All ADRs by number" section of
+  [README.md](README.md); "the index" below means that table
 
 ## Context
 

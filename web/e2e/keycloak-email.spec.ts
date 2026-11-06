@@ -1,5 +1,5 @@
 // Exercises the mail path end to end against the compose stack: Keycloak
-// sends over SMTP to the mailpit container (docs/architecture.md §6), and the
+// sends over SMTP to the mailpit container (keycloak/README.md), and the
 // message is read back over mailpit's HTTP API — no real mailbox involved.
 import { expect, test } from "@playwright/test";
 

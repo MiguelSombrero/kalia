@@ -64,7 +64,7 @@ Each fix is a plan that `BeerSearchIndexIT` can pin.
   write amplification on the add-a-beer path
   ([task 02](02-add-beer-api.md)), and it needs naming against that.
 - Measured with the method in
-  [architecture.md §7](../../architecture.md#catalog-read-latency), so the
+  [backend/README.md](../../../backend/README.md#catalog-read-latency), so the
   before and after figures compare.
 
 **Decided at refinement, 2026-10-23** (product owner):

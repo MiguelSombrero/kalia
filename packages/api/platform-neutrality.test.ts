@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 // The real packages pass this rule, so a pattern that matched nothing would
 // stay green; linting each committed violating fixture, placed as if it sat
-// in either package, is what shows each one still fires (architecture.md §7).
+// in either package, is what shows each one still fires (ADR-0092).
 const packagesDir = path.resolve(import.meta.dirname, "..");
 const eslint = new ESLint({ cwd: packagesDir });
 

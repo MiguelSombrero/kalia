@@ -6,6 +6,8 @@
   [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — the `CLAUDE.md`
   carve-out below does not apply where a path-scoped rule can deliver the rule
   instead
+- **Amended:** 2026-11-06 — `docs/architecture.md` records shape *only*, with a
+  bar and a cap; see the amendment under the three homes
 
 ## Context
 
@@ -45,6 +47,17 @@ The three homes:
 - **`docs/architecture.md` records shape** — the module map, layer direction,
   data flow, and the cross-cutting structure a reader needs before opening any
   code. It describes how the parts relate, not how to write a given file.
+
+  > **Amended 2026-11-06.** Doc-sync let each task add what it built, and the
+  > file reached 1,667 lines. The bar is now: **no endpoint lists, status
+  > codes, class or file names beyond module and package anchors, config keys,
+  > procedures or per-task narration**, and every *why* is a link to its ADR.
+  > Behaviour goes to the README of the code it describes, visual intent to
+  > `docs/design.md`, a term to `docs/glossary.md`. A warning whose violation
+  > fails silently still goes where an editor meets it, which is the README or
+  > a code comment. The document is capped at 500 lines, which
+  > `scripts/check-architecture-size.mjs` enforces in `make check`, and the
+  > doc-sync step in `implement-task` changes it only when the shape changes.
 - **READMEs record how** — the commands and day-to-day rules for working in
   that codebase, at the granularity the product owner set for them: short
   enough that a developer or agent catches the intention immediately.

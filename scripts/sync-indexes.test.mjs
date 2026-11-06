@@ -23,22 +23,22 @@ function fixture() {
   write("docs/adr/0001-first.md", lines("# ADR-0001: First, renamed", "", "- **Status:** superseded", "- **Date:** 2026-01-02"));
   write("docs/adr/0002-second.md", lines("# ADR-0002: Second", "", "- **Status:** accepted", "- **Date:** 2026-01-03"));
   write(
-    "docs/architecture.md",
+    "docs/adr/README.md",
     lines(
-      "## 7. Testing",
+      "## Subjects",
       "",
       "| Area | Decided in |",
       "|---|---|",
-      "| [ADR-0001](adr/0001-first.md) | not an index row |",
+      "| [ADR-0001](0001-first.md) | not an index row |",
       "",
-      "## 9. Architecture decision records",
+      "## All ADRs by number",
       "",
       "### Process",
       "",
       "| Id | Title | Status | Date |",
       "|---|---|---|---|",
-      "| [ADR-0002](adr/0002-second.md) | Second | accepted | 2026-01-03 |",
-      "| [ADR-0001](adr/0001-first.md) | First | accepted | 2026-01-01 |",
+      "| [ADR-0002](0002-second.md) | Second | accepted | 2026-01-03 |",
+      "| [ADR-0001](0001-first.md) | First | accepted | 2026-01-01 |",
     ),
   );
 
@@ -65,10 +65,10 @@ test("rewrites each stale cell from the file it mirrors, keeping row order", (t)
 
   const stale = Object.fromEntries(syncIndexes(root).map(({ path, text }) => [path, text]));
 
-  assert.deepEqual(Object.keys(stale).sort(), ["docs/architecture.md", "docs/tasks/iteration-1.md"]);
+  assert.deepEqual(Object.keys(stale).sort(), ["docs/adr/README.md", "docs/tasks/iteration-1.md"]);
   assert.match(
-    stale["docs/architecture.md"],
-    /\| \[ADR-0002\]\(adr\/0002-second\.md\) \| Second \| accepted \| 2026-01-03 \|\n\| \[ADR-0001\]\(adr\/0001-first\.md\) \| First, renamed \| superseded \| 2026-01-02 \|/,
+    stale["docs/adr/README.md"],
+    /\| \[ADR-0002\]\(0002-second\.md\) \| Second \| accepted \| 2026-01-03 \|\n\| \[ADR-0001\]\(0001-first\.md\) \| First, renamed \| superseded \| 2026-01-02 \|/,
   );
   assert.match(
     stale["docs/tasks/iteration-1.md"],
@@ -82,7 +82,7 @@ test("leaves a link outside the ADR index alone, and adds no row for a file that
 
   const stale = Object.fromEntries(syncIndexes(root).map(({ path, text }) => [path, text]));
 
-  assert.match(stale["docs/architecture.md"], /\| \[ADR-0001\]\(adr\/0001-first\.md\) \| not an index row \|/);
+  assert.match(stale["docs/adr/README.md"], /\| \[ADR-0001\]\(0001-first\.md\) \| not an index row \|/);
   assert.doesNotMatch(stale["docs/tasks/iteration-1.md"], /03-gamma/);
 });
 

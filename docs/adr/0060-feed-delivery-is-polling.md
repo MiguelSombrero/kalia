@@ -6,6 +6,8 @@
   extra": the feed cursor's signing key is now configured and shared, and
   what polling does not remove is recorded in
   [architecture.md §8](../architecture.md#8-trade-offs-made-explicit)
+- **Amended:** 2026-11-06 — the route-handler inventory the Consequences cite moved from
+  `docs/architecture.md` §5 to [web/README.md](../../web/README.md) conventions
 
 ## Context
 

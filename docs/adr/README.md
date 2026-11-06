@@ -13,12 +13,14 @@ was rejected to get there ([ADR-0020](0020-documentation-roles.md)). For the
   or a README, and a reader who wasn't already going to open the task file
   that made it would need to find it.
 - **The authoritative index** — title, status and date for every ADR — is
+  [All ADRs by number](#all-adrs-by-number), at the end of this file. The
+  sections between group the same set by subject so a related run of
+  decisions can be read as one; they are deliberately not a second copy of the
+  titles. The few decisions that define the system are listed in
   [docs/architecture.md §9](../architecture.md#9-architecture-decision-records).
-  This file groups the same set by subject so a related run of decisions can
-  be read as one; it is deliberately not a second copy of the titles.
 
-`scripts/check-adrs.mjs` runs in CI and fails if an ADR is missing from either
-index.
+`scripts/check-adrs.mjs` runs in CI and fails if an ADR is missing from the
+table or from the subject sections.
 
 ## Foundations
 
@@ -425,3 +427,144 @@ to bound.
 - [ADR-0076](0076-index-cells-are-synced-from-their-files.md) — an index row's
   title, status and date are copied from the file it links by a script, never
   kept by hand; adding the row, and placing it, stay hand steps.
+
+## All ADRs by number
+
+Add a row when adding an ADR, in the table it belongs to. Its title, status
+and date cells are copied from the ADR by `scripts/sync-indexes.mjs`, so a
+status is changed in the ADR, never here
+([ADR-0076](0076-index-cells-are-synced-from-their-files.md)). New ADRs follow
+[template.md](template.md); the format and the rules behind it are
+[ADR-0019](0019-adr-format-and-conventions.md), and what earns an ADR in the
+first place is [ADR-0032](0032-when-a-decision-earns-an-adr.md).
+
+The table is split in two because the two sets grow for different reasons:
+decisions about the product, and decisions about how the project works on
+itself. The status column holds the vocabulary token only. What superseded or
+amended a decision is recorded in that ADR's own `Supersedes` /
+`Superseded-by` / `Amended` fields, so it lives in exactly one place.
+
+`scripts/check-adrs.mjs` runs in `make check` and fails an ADR with no row here
+or no entry in the subject sections above, a row with no file, and an ADR
+following the template with no `Bad` or `Neutral` consequence. A `PostToolUse`
+hook runs it, and syncs the index cells, after an edit under `docs/adr/`
+([ADR-0046](0046-edit-time-checks-and-one-verify-gate.md)).
+
+### Product and system architecture
+
+| Id | Title | Status | Date |
+|---|---|---|---|
+| [ADR-0001](0001-monorepo.md) | Monorepo for frontend and backend | accepted | 2026-07-15 |
+| [ADR-0002](0002-spring-modulith.md) | Spring Modulith backend, not microservices | accepted | 2026-07-15 |
+| [ADR-0003](0003-bff-pattern.md) | Backend-for-frontend (BFF) pattern | accepted | 2026-07-15 |
+| [ADR-0004](0004-backend-cart.md) | Cart is a backend domain module | deprecated | 2026-07-15 |
+| [ADR-0005](0005-defer-auth-mock-payments.md) | Defer authentication; mock the payment provider | deprecated | 2026-07-15 |
+| [ADR-0006](0006-cellar-first.md) | Cellar first — store flow deferred to backlog | accepted | 2026-07-17 |
+| [ADR-0007](0007-backend-package-structure.md) | DDD-lite package structure inside Modulith modules | accepted | 2026-07-21 |
+| [ADR-0008](0008-tanstack-query.md) | TanStack Query for client-component API calls | accepted | 2026-07-21 |
+| [ADR-0009](0009-zustand-ui-state.md) | Zustand for client UI state | accepted | 2026-07-21 |
+| [ADR-0010](0010-react-hook-form-zod.md) | react-hook-form + Zod for forms and validation | accepted | 2026-07-21 |
+| [ADR-0011](0011-i18next-localization.md) | i18next localization (English + Finnish) | accepted | 2026-07-21 |
+| [ADR-0012](0012-orval-api-client.md) | orval-generated API client from the backend's OpenAPI spec | accepted | 2026-07-22 |
+| [ADR-0013](0013-logging-conventions.md) | Structured logging conventions | accepted | 2026-07-24 |
+| [ADR-0014](0014-shared-exception-handling.md) | Shared, module-neutral exception-handling strategy | accepted | 2026-07-25 |
+| [ADR-0015](0015-configuration-strategy.md) | Environment-variable configuration, not Spring profiles | accepted | 2026-07-25 |
+| [ADR-0016](0016-security-response-headers.md) | Security response headers via `next.config.ts` | accepted | 2026-07-26 |
+| [ADR-0018](0018-frontend-env-var-validation.md) | Frontend environment-variable validation via `instrumentation.ts` | accepted | 2026-07-26 |
+| [ADR-0021](0021-design-tokens-ui-primitives.md) | Two-layer CSS design tokens and three shared UI primitives, no new dependency | partially-superseded | 2026-07-27 |
+| [ADR-0022](0022-loading-error-empty-states.md) | Shape-matched loading skeletons, one error boundary at the locale root | accepted | 2026-07-27 |
+| [ADR-0023](0023-typed-api-failures.md) | API failures are a tagged `ApiError`, and a non-2xx status is not one | accepted | 2026-07-27 |
+| [ADR-0024](0024-dependency-vulnerability-scanning.md) | Trivy scans dependencies and images in CI; Dependabot opens the fixes | accepted | 2026-07-27 |
+| [ADR-0025](0025-authjs-valkey-adapter.md) | Auth.js with a custom Valkey adapter for Keycloak authentication | accepted | 2026-07-28 |
+| [ADR-0028](0028-resource-server-and-current-user.md) | The backend is an OAuth2 resource server, and the token's subject is the user | accepted | 2026-07-31 |
+| [ADR-0029](0029-silent-token-refresh.md) | Renew access tokens lazily, and end the session when the grant is gone | accepted | 2026-08-07 |
+| [ADR-0030](0030-per-session-token-storage.md) | Store the Keycloak token set per session, not per user | accepted | 2026-08-07 |
+| [ADR-0031](0031-backchannel-logout.md) | Validate Keycloak's Back-Channel Logout token and end the matching session by sid | accepted | 2026-08-07 |
+| [ADR-0033](0033-keycloak-account-relinking.md) | Allow email-based Keycloak account re-linking, since it is the only provider | accepted | 2026-08-08 |
+| [ADR-0034](0034-cellar-two-level-bottle-model.md) | Cellar holds one row per bottle, quantity always derived — never a stored count | accepted | 2026-08-09 |
+| [ADR-0036](0036-pre-deployment-migration-edits.md) | Applied Flyway migrations may be edited before Kalia's first deployment | accepted | 2026-08-09 |
+| [ADR-0037](0037-functional-modules.md) | The frontend is functional — no classes, discriminated unions over polymorphism, factory functions for DI | accepted | 2026-08-11 |
+| [ADR-0040](0040-client-reads-via-server-actions.md) | A client component's read of authenticated data goes through a Server Action, not the generated client directly | accepted | 2026-08-16 |
+| [ADR-0041](0041-tanstack-query-feature-owned-hooks.md) | Client components call a feature-owned hook, never `useQuery`/`useMutation` directly | accepted | 2026-08-16 |
+| [ADR-0042](0042-bounded-request-parameters.md) | Every backend request parameter is bounded, named, and cross-field checks report through `detail` | accepted | 2026-08-23 |
+| [ADR-0043](0043-createuser-race-safety.md) | `createUser` claims the email index with SET NX so a losing concurrent sign-in joins the winner | accepted | 2026-08-23 |
+| [ADR-0044](0044-catalog-search-indexes.md) | Catalog name search stays substring matching, served by a pg_trgm trigram index | accepted | 2026-08-28 |
+| [ADR-0045](0045-brewery-list-paginates-in-application.md) | The brewery list paginates in the application, keeping its Java-side name sort | superseded | 2026-08-29 |
+| [ADR-0049](0049-profile-module-and-public-identity.md) | A `profile` module owns who a user is to other users | accepted | 2026-08-30 |
+| [ADR-0050](0050-public-cellar-addressing.md) | A public cellar has one locale-less URL and is indistinguishable from nothing when private | accepted | 2026-08-30 |
+| [ADR-0052](0052-cellar-aggregate-owns-its-writes.md) | A bottle is written only through the entry that owns it, and a violated bottle rule is a cellar type from the start | accepted | 2026-09-02 |
+| [ADR-0053](0053-cellar-domain-events-on-the-aggregate-root.md) | A cellar's domain events are registered on the aggregate root, not published from the service | accepted | 2026-09-04 |
+| [ADR-0054](0054-keycloak-config-cli-realm-management.md) | keycloak-config-cli owns realm import, not Keycloak's native placeholders | accepted | 2026-09-05 |
+| [ADR-0055](0055-self-registration-via-keycloak.md) | Self-registration via Keycloak's own registration flow | accepted | 2026-09-06 |
+| [ADR-0056](0056-branded-bilingual-keycloak-pages.md) | Kalia's Keycloak pages — a minimal theme, realm-level i18n, and Keycloak's own translations | accepted | 2026-09-08 |
+| [ADR-0057](0057-retry-on-constraint-violation-for-get-or-create.md) | A get-or-create write retries once on its own unique-constraint violation, each attempt its own transaction | accepted | 2026-09-11 |
+| [ADR-0058](0058-feed-event-recording-model.md) | Feed's event-recording model — an idempotent listener freezing an act's own facts, reading nothing live | accepted | 2026-09-12 |
+| [ADR-0059](0059-feed-respects-cellar-visibility.md) | A feed line exists only for a public cellar, filtered at read time, and the front page stays noindex | accepted | 2026-09-13 |
+| [ADR-0060](0060-feed-delivery-is-polling.md) | The front-page feed reaches an already-open browser by polling, not a stream | accepted | 2026-09-13 |
+| [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md) | Brute-force lockout is temporary, growing, and disclosed to the person locked out | accepted | 2026-09-19 |
+| [ADR-0064](0064-visual-identity-can-art-square.md) | Kalia's identity had outgrown the catalog it was chosen for, so it becomes Can art drawn square, with beer styles coloured by group | accepted | 2026-10-03 |
+| [ADR-0065](0065-imagery-icons-and-mark-specimen.md) | Kalia has no beer pictures and no mark in its own app, so a beer is shown by its strength on its style colour, a person by initials, and the mark is a cellar rack | accepted | 2026-10-03 |
+| [ADR-0066](0066-token-only-styling-is-a-build-check.md) | Styling outside the semantic token layer fails the build, through a dependency-free checker rather than an ESLint rule | accepted | 2026-10-03 |
+| [ADR-0067](0067-page-shell-sticky-bar-and-page-component.md) | Every page sits in one sticky bar and one `Page` component, with a Menu button on a phone, so that header and pages share a frame | accepted | 2026-10-04 |
+| [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md) | The front page is one column, a pitch or the visitor's cellar above a ruled feed, so that the feed starts on the first screen for both audiences | accepted | 2026-10-04 |
+| [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md) | The catalog is one ruled column of beers beside a filter column that folds on a phone, with one Search button that always comes last | accepted | 2026-10-09 |
+| [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md) | The cellar is a sortable list of beers, each beside its style band with every bottle shown as a tile headed by its vintage | accepted | 2026-10-10 |
+| [ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md) | The profile is a name tag above two visibility choices that each list what they show, and every error in Kalia uses one style | accepted | 2026-10-11 |
+| [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) | The rack read as any app launcher, so Kalia's mark is a bottle pouring into foam on a deep teal tile | accepted | 2026-10-11 |
+| [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md) | A design system would serve a consumer that will never exist, so `components/ui/` stays the web app's own primitives | accepted | 2026-10-11 |
+| [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md) | Keycloak's pages were the last surface in the old identity, so they drop the card for one open column under Kalia's lockup, and a check holds their palette to the app's | accepted | 2026-10-11 |
+| [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md) | WCAG 2.1 AA could pass a redesign that hid focus under its sticky bars and was cramped to tap, so Kalia's bar becomes WCAG 2.2 AA | accepted | 2026-10-11 |
+| [ADR-0077](0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md) | A catalog that could only grow by migration is seeded once from Wikidata and owned by Kalia, taking facts only and recording each row's source | accepted | 2026-10-15 |
+| [ADR-0078](0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md) | Catalog reads that break their budget at 150k beers lack an index, not a cache, so the catalog stays uncached | accepted | 2026-10-18 |
+| [ADR-0079](0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md) | A brewery's country, shown in English to every reader, becomes an ISO 3166-1 code named in the reader's language by the runtime | accepted | 2026-10-22 |
+| [ADR-0080](0080-a-username-is-unique-regardless-of-case-and-never-reused.md) | A reused username would hand old links to someone else, so a username is unique regardless of case and never reused | accepted | 2026-10-22 |
+| [ADR-0081](0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md) | Feed events were documented as at-least-once and delivered at most once, so incomplete publications are resubmitted, five attempts at most, and completed ones deleted | accepted | 2026-10-22 |
+| [ADR-0082](0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md) | A beer the catalog lacks is added in a dialog over the search that missed it, and a button sending its form fades only as far as its label stays legible | accepted | 2026-10-23 |
+| [ADR-0083](0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md) | A cellar read arrives joined with its beers from the backend, so no client rebuilds it and no feature reads another's generated client | accepted | 2026-10-23 |
+| [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md) | The brewery list is cut in SQL by a stored sort key that keeps the Java name order | accepted | 2026-10-25 |
+| [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) | Both tiers log JSON and share a W3C trace id, and failures are counted with built-in tooling and no viewer | accepted | 2026-10-25 |
+| [ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md) | A deployment cannot inherit a dev credential, because the base compose file demands every secret and the dev stack adds its own | accepted | 2026-10-26 |
+| [ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md) | An nginx edge proxy bounds the anonymous edges and names the client address the services trust | accepted | 2026-10-26 |
+| [ADR-0091](0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md) | A contributed catalog entry waits for an operator, and no catalog row is ever deleted | accepted | 2026-10-27 |
+| [ADR-0092](0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) | The repository is plain npm workspaces of `web/`, `mobile/` and two packages that ship TypeScript source | accepted | 2026-10-30 |
+| [ADR-0093](0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md) | The API is additive-only while an app is installed, and a committed spec fails a breaking diff | accepted | 2026-10-30 |
+| [ADR-0094](0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md) | The mobile app is Expo as a development build with generated native projects and no paid service | accepted | 2026-10-30 |
+| [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) | The mobile app signs in as a public PKCE client, holds an offline token and calls Spring directly through the edge | accepted | 2026-10-30 |
+| [ADR-0096](0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md) | Mobile unit tests run on Jest and end-to-end flows on Maestro, with Android the only CI platform | accepted | 2026-10-30 |
+| [ADR-0097](0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md) | A phone reaches the stack over the owner's tailnet in an opt-in phone mode, where one origin is the issuer | accepted | 2026-11-01 |
+| [ADR-0098](0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) | An installed build's errors are read from the device's own logs, and a crash service waits for a second user | accepted | 2026-11-01 |
+| [ADR-0099](0099-the-android-end-to-end-build-caches-no-native-output-because-neither-ccache-nor-cmakes-output-saves-three-minutes.md) | The Android end-to-end build caches no native output, because neither ccache nor CMake's output saves three minutes | accepted | 2026-11-01 |
+| [ADR-0100](0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md) | Postgres has three roles — one that owns the schema for Flyway, one that reads and writes rows, one for Keycloak — and the superuser belongs to Postgres alone | accepted | 2026-11-02 |
+| [ADR-0101](0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md) | An admin is a realm role in the access token, which the backend enforces on one path prefix and the web reads in its BFF | accepted | 2026-11-05 |
+| [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) | A suggestion is a pending beer with its new brewery, and an admin reviews it inside catalog, which publishes one event per decision | accepted | 2026-11-05 |
+| [ADR-0103](0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) | A contributor is told what became of a suggestion by a notification that a new module keeps until they acknowledge it, and then deletes | accepted | 2026-11-05 |
+| [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) | Deleting an account deletes what is the user's own, unlinks what is shared, and leaves a tombstone of the folded username | accepted | 2026-11-05 |
+| [ADR-0105](0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md) | The admin reviews suggestions in a queue beside the suggestion, edits in place, and rejects through a dialog that asks for the reason | accepted | 2026-11-06 |
+| [ADR-0106](0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md) | A contributor's unread notifications are one signal in the sticky bar that opens a panel over the page | accepted | 2026-11-06 |
+
+### Engineering process and documentation
+
+How the project works on itself. Kept separate because it grows for its own
+reasons and its rate is worth watching independently
+([ADR-0032](0032-when-a-decision-earns-an-adr.md)).
+
+| Id | Title | Status | Date |
+|---|---|---|---|
+| [ADR-0017](0017-code-comment-policy.md) | Code comments carry only what the repo cannot | accepted | 2026-07-26 |
+| [ADR-0019](0019-adr-format-and-conventions.md) | A fixed ADR structure, with alternatives and costs given their own sections | accepted | 2026-07-26 |
+| [ADR-0020](0020-documentation-roles.md) | Each documented fact has one home — ADR why, architecture shape, README how | accepted | 2026-07-27 |
+| [ADR-0026](0026-task-file-format.md) | One file per task, with acceptance criteria that include tests | accepted | 2026-07-30 |
+| [ADR-0027](0027-process-weight.md) | Match process weight to task size — implement directly by default | accepted | 2026-07-31 |
+| [ADR-0032](0032-when-a-decision-earns-an-adr.md) | An ADR is earned by a rejected alternative, not by a decision's size | accepted | 2026-08-07 |
+| [ADR-0035](0035-agent-context-layout.md) | Per-directory CLAUDE.md files are pointers to their README, not copies of it | accepted | 2026-08-09 |
+| [ADR-0038](0038-in-repo-spec-driven-process.md) | Keep the in-repo spec-driven process rather than adopt GitHub Spec Kit | accepted | 2026-08-15 |
+| [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) | A rule agents keep breaking earns a mechanism, not more prose | accepted | 2026-08-15 |
+| [ADR-0046](0046-edit-time-checks-and-one-verify-gate.md) | One verify gate, run at edit time as a report and at push time as a block | accepted | 2026-08-30 |
+| [ADR-0047](0047-refinement-is-batched-per-iteration.md) | Refinement's unit is one iteration, not one task | accepted | 2026-08-30 |
+| [ADR-0048](0048-what-survives-a-claude-md-bullet.md) | A CLAUDE.md bullet keeps the rule and sheds the reason | accepted | 2026-08-30 |
+| [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md) | Process retrospection belongs to the sweep, not to every task | accepted | 2026-08-30 |
+| [ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md) | A design task has no known outcome, so it runs under a skill and a template marker | accepted | 2026-09-29 |
+| [ADR-0063](0063-design-intent-has-its-own-document.md) | Kalia's design intent has its own document, which holds meaning and never values | accepted | 2026-10-03 |
+| [ADR-0076](0076-index-cells-are-synced-from-their-files.md) | An index cell that mirrors a file is synced from that file, not kept in step by hand | accepted | 2026-10-14 |
+| [ADR-0084](0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
+| [ADR-0085](0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |

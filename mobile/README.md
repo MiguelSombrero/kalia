@@ -602,6 +602,27 @@ browser, so a rule stated there and not below still binds.
   `src/lib/auth/`. The username is read from the profile endpoint on each
   visit and not stored
   ([ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+- **The token store is a state machine with its storage, OAuth client and
+  clock injected,** so a test drives expiry without a realm. A refresh is
+  single-flight: calls that find the token expired together wait for one
+  refresh, and the new refresh token is stored before the access token is
+  handed out. A 4xx refusal (`invalid_grant` and the other RFC 6749 §5.2 codes)
+  ends the session and raises a notice on the Profile tab; any other failure
+  (no connection, a timeout, a 5xx, a 429) leaves the user signed in and sends
+  the call without a token, and the store skips the refresh for 30 seconds.
+  Signing out forgets the tokens on the device first, then revokes at Keycloak
+  when it can.
+- **The transport registers `@kalia/api`'s fetch core** with the API origin
+  (`src/lib/api/registerTransport.ts`). A `401` makes it ask the store for one
+  shared refresh and retry once; a second `401` is returned as it is. It starts
+  a W3C `traceparent` per call and keeps it across the retry
+  ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+- **The launch check reads `GET /api/v1/app-config`** on launch and on
+  returning to the foreground, at most every 30 seconds, and covers the whole
+  app with an update-required or maintenance screen (maintenance first). It
+  remembers the platform's minimum build, not a verdict, so an update demanded
+  once keeps blocking offline; an endpoint that cannot be reached fails open
+  ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 
 **UI**
 

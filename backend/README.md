@@ -7,7 +7,7 @@ each depends on: [docs/architecture.md §3](../docs/architecture.md#3-backend-mo
 
 Full stack in containers: `docker compose up --build` from the repo root.
 The backend is reached at `localhost:8080` through the `edge` proxy (loopback
-only — see [docs/architecture.md](../docs/architecture.md) §6), which limits
+only), which limits
 requests per client address ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)
 holds the rates). It is an OAuth2 resource server and
 denies by default, but the loopback binding stays until a deployment story
@@ -39,7 +39,7 @@ enables them; running natively needs `SPRINGDOC_ENABLED=true` as above,
 since they are off unless a deployment opts in. Swagger UI's Authorize
 button drives a real Authorization Code + PKCE sign-in against Keycloak
 (`kalia-swagger` client) and attaches the resulting token to "Try it out"
-requests — no manual token copying (docs/architecture.md §6).
+requests — no manual token copying.
 
 ## Configuration
 
@@ -165,7 +165,7 @@ Notable suites:
   `List`, `Page`, `Optional` and `ResponseEntity` wrappers alike; an advice
   `@ExceptionHandler` may not answer with a body type that reaches an entity
   through its fields, and an advice may not call `ProblemDetail.setProperty`
-  (architecture.md §4, §7)
+  ([docs/architecture.md §4](../docs/architecture.md#4-api-design))
 - `HttpBoundaryRulesRejectViolationsTest` — same reasoning as
   `ArchitectureRulesRejectViolationsTest` above, applied to `HttpBoundaryTest`:
   none of its rules has a production violator, so each is re-run against
@@ -378,6 +378,57 @@ at its next check, because the response is `Cache-Control: no-store`. Raising a
 minimum is what permits removing a deprecated element of the API, never before
 the last build that uses it is below the new minimum.
 
+## Catalog read latency
+
+Catalog reads are measured, not benchmarked in CI. `BeerSearchIndexIT` and
+`BreweryReadIT` pin which index each filter's plan and the default sort use,
+and that a short name query's count keeps its custom plan while other searches
+keep the default, but not how long the query takes. The latency budget in
+[docs/architecture.md §1](../docs/architecture.md#non-functional-requirements)
+is checked by repeating this measurement whenever the catalog's size or its
+queries change shape.
+[ADR-0078](../docs/adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)
+records the latest run.
+
+1. **Set up an isolated database.** Run a scratch Postgres of the version
+   `docker-compose.base.yml` pins, and a backend jar against it. Leave the
+   settings at their defaults, since the figures depend on them:
+   - HikariCP's pool of 10, which queues 20 concurrent clients;
+   - pgjdbc's `prepareThreshold` of 5, after which Postgres may switch a
+     statement to its generic plan. A search with a 1–2-character name term
+     overrides this with `plan_cache_mode = force_custom_plan`.
+
+   Enable Tomcat's access log, unbuffered, with pattern `%U %s %{ms}T`, so
+   the last field is the server time in ms. Flyway migrates the imported
+   catalog.
+2. **Generate the larger catalog.** For the larger size, clone the imported
+   catalog in SQL:
+   - each brewery gets ten copies in its own country;
+   - each generated beer copies a real beer's name with a numeric suffix,
+     plus its style and ABV, onto a copy of that beer's
+     brewery;
+
+   This keeps the style, country and name-trigram distributions the import
+   has. Generated rows default to `source = USER`. On a scratch database
+   that has no real user rows, they delete by that column, beers before
+   breweries. `VACUUM ANALYZE` both tables before measuring.
+3. **Confirm index use.** Capture the SQL Hibernate issues for each search
+   shape, page and count, from the Postgres statement log. Run
+   `EXPLAIN (ANALYZE, BUFFERS)` on it with representative values.
+4. **Load each scenario.** Drive each scenario separately with 20 concurrent
+   clients: 200 warm-up requests, then 2,000 measured. A dependency-free Node
+   script using `fetch` is enough. The scenarios are:
+   - an unfiltered page under the default sort, and under `sort=abv,desc`;
+   - name queries of 3+ characters and of 1–2 characters;
+   - the style filter, the country filter, and all three combined;
+   - beer detail;
+   - page 500;
+   - the brewery list, and a brewery search of 1, 2 and 3+ characters;
+   - `GET /styles`.
+5. **Read the result.** Report p95 from the access-log lines each scenario
+   produced, as the median of three runs. A shape over 300 ms is first
+   checked for a missing index.
+
 ## Code conventions
 
 Rules for writing code here; each links to the ADR holding the reasoning —
@@ -388,6 +439,35 @@ lives there rather than in this file.
   rationale live in
   [docs/architecture.md §3](../docs/architecture.md#3-backend-modules) and
   [ADR-0007](../docs/adr/0007-backend-package-structure.md).
+- **Every domain timestamp reads the application's one `Clock`** (UTC, declared
+  in `ApplicationConfig`, which also enables `@Retryable` through
+  `@EnableResilientMethods`). A domain entity takes the `Clock` as an argument
+  of its factory or behaviour method and never injects it, and no
+  `Instant.now()` or `@CreationTimestamp`/`@UpdateTimestamp` is left in
+  `src/main/java`. A new table carries `created_at` and `updated_at`
+  (`catalog.beer` predates the convention and has only `created_at`).
+- **Every event listener is idempotent.** Delivery through the JDBC event
+  registry is at-least-once
+  ([ADR-0081](../docs/adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)):
+  `EventPublicationResubmission` resubmits an incomplete publication at startup
+  and then on a schedule, and after a capped number of attempts logs it at
+  `ERROR` and leaves it in `event_publication`. The timings and the cap are
+  `kalia.events.resubmission.*` in `application.properties`. A listener keys
+  its write on the event's `eventId` (`feed.line.event_id` is unique).
+- **A get-or-create or a write to an existing aggregate retries once** in a
+  fresh transaction on the constraint or `@Version` failure it can lose a race
+  to, and a second loss answers `409`
+  ([ADR-0057](../docs/adr/0057-retry-on-constraint-violation-for-get-or-create.md)).
+- **The API contract.** Every operation documents its error codes and a body
+  operation its `415`; the contract leaves `406` out, because no client sends a
+  restrictive `Accept` and a refusal of one is not a response a client could
+  meet (`UnsupportedMediaTypeDocumentation`). `detail` carries only messages
+  from exception types designed as API responses. A removal of an element `dev`
+  already marks `deprecated` is let through `make api-breaking` only by a line
+  in `openapi-breaking-ignore.txt` stating the minimum supported build that
+  excludes its last user; the one addition let through unwaived is a new
+  `oneOf` member in a 4xx or 5xx body
+  ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **Entity→DTO mapping lives in `web`**, as static `from(...)` factories on
   the DTOs — so repositories must eager-load the relations the boundary needs
   (entity graphs), since mapping runs outside the service transaction.
