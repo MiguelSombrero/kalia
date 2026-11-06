@@ -152,6 +152,23 @@ convention would otherwise suggest.
 
 ---
 
+## notification
+
+What a user is told and has not yet acknowledged. Its dependencies are in
+[architecture.md §3](architecture.md#3-backend-modules). **"Notification" is a
+kept, per-user row, not a toast:** the web's transient toasts are not this, and
+nothing here is a push or an email. "Read" means acknowledged, and acknowledging
+deletes the row, so "unread" is the existence of a row.
+
+### Domain types (`fi.kalia.notification.domain`)
+
+| Type | Meaning in this module | Why |
+|---|---|---|
+| `Notification` | What became of one suggestion for its contributor, frozen when the `catalog.SuggestionReviewed` that created it was handled: the outcome, whether it was edited, the beer's id, its name as decided, the name as suggested when changed, the reason code and when it was decided. Never updated, and deleted when acknowledged. | [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) |
+| `NotificationRepository` | Persistence for `Notification`, including the `existsByEventId` idempotency check a redelivered event relies on, the one-statement acknowledgement scoped to its recipient, and the delete by recipient an account deletion uses. | [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md), [ADR-0104](adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) |
+
+---
+
 ## appconfig
 
 What the server tells an installed app about itself. Its dependencies are in
@@ -194,6 +211,7 @@ and they drift from the Java names that produced them.
 | `/styles`, `/countries` | The vocabularies a beer is added with: every style a catalog beer has, and every country a brewery can be in. Public reads. |
 | `/breweries/countries` | The countries the catalog has breweries in, which the catalog's country filter offers. A public read. |
 | `/app-config` | What the server tells the mobile app: the minimum build of each platform that may run and the maintenance flag. Public, parameterless and never cached. |
+| `/notifications`, `/notifications/unread-count`, `/notifications/{id}` | The **caller's own** notifications ([ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md)): a page of them, how many are unacknowledged, and acknowledging one by its id (`DELETE`), which deletes it. The user is implied by the bearer token. |
 | `/feed` | Recent activity from cellars currently public, newest first; identical for every caller, signed in or out ([task 09](tasks/iteration-7/09-feed-and-private-cellars.md)). |
 | `/admin/suggestions`, `/admin/suggestions/{id}`, `/admin/suggestions/{id}/approval`, `/admin/suggestions/{id}/rejection` | The admin's view of what users have added: the suggestions waiting for review, oldest first, read as a page or one by its beer's id; and the decisions on them. Every path under `/admin` is for an admin alone ([iteration 10.5 task 01](tasks/iteration-10.5/01-decision-who-is-an-admin.md)); the decisions are [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)'s. The reads are built by [iteration 10.5 task 05](tasks/iteration-10.5/05-an-admin-reads-the-review-queue.md), the approval and rejection by [task 06](tasks/iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md). |
 
@@ -213,6 +231,8 @@ and they drift from the Java names that produced them.
 | `contributor`, `pendingCount`, `rejectedCount` | On `SuggestionDto`, an admin read only: who suggested the beer. `contributor.username` is absent when they have no profile row, whatever their cellar's visibility otherwise; `pendingCount` is how many of their suggestions wait for review, the one shown included, and `rejectedCount` how many were rejected. The contributor's id is never served. |
 | `suggestedAt` | On `SuggestionDto`: when the beer was added, the order of the queue. |
 | `outcome`, `decidedAt`, `reason`, `breweryStatus` | On `SuggestionDecisionDto`, the `200` of an approval or rejection: how the suggestion was decided (`APPROVED` or `REJECTED`), when, a rejection's reason code (absent on an approval), and where its brewery stands after (`PENDING` while another suggestion that needs it waits). `outcome` and `decidedAt` are also on the `409` of deciding a decided suggestion, where `outcome` may be `REMOVED` and `decidedAt` is absent for a suggestion the script decided. |
+| `outcome`, `edited`, `beerName`, `suggestedName`, `reason`, `decidedAt` | On `NotificationDto`: what became of the caller's suggestion as it stood when decided. `outcome` is `APPROVED` or `REJECTED`; `edited` is whether an admin changed the suggestion before approving it, kept as the review said it, so it can be true while `suggestedName` is absent (the name was not what changed); `beerName` is the name as decided and `suggestedName` the name as suggested, present only when changed; `reason` is a rejection's code, absent on an approval. Codes and names only, never a sentence, and never the recipient's id. |
+| `count` | On `UnreadCountDto`, `GET /notifications/unread-count`: how many notifications the caller has not acknowledged. |
 | `newBrewery` | On `AddBeerRequestDto`: a brewery added together with the beer, given instead of `breweryId`. |
 | `countryCode` | A brewery's country as its ISO 3166-1 alpha-2 code, on `BreweryDto` and `NewBreweryRequestDto` and as the `/beers` filter. A client names it in its reader's language ([ADR-0079](adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md)). |
 | `content`, `totalElements`, `totalPages`, `page` | The pagination envelope (`PageDto`), on `/beers` and `/breweries`; `PublicCellarDto` carries the same four, with `username`, `totalBottles` and `lastBottleAddedAt` beside them. |
