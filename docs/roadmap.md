@@ -33,8 +33,10 @@ not held at feature parity. The plan adds no cost (the rule is in
 and on simulators against the local stack, and what a cost blocks is parked in
 [the backlog](tasks/backlog.md#mobile-client). Iteration 10.5 is the
 exception: an admin page in the web app that replaces the SQL moderation
-script, before the mobile design work resumes. Iterations 11–14 list planned
-tasks as one line each, their task files written at refinement.
+script, before the mobile design work resumes. Iteration 11's task files are
+refined as the decisions they wait on land, and also carry quality-backlog
+findings. Iterations 12–14 list planned tasks as one line each, their task
+files written at refinement.
 
 **Definition of done (every issue):**
 
