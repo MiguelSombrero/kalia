@@ -70,6 +70,12 @@ jobs:
       # Here rather than in `make check` so that stays Docker-free.
       - name: Check the deployable compose file refuses without a secret
         run: make compose-check
+      # Asks GitHub whether each pinned commit exists, which is why it is here
+      # and not in `make check`: the pre-push gate runs that offline.
+      - name: Check every pinned Action is a commit its repository has
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: make action-pins
 
   backend:
     name: Backend (Maven)

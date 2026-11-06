@@ -84,6 +84,21 @@ their own condition from that ADR before they apply.
    piping a long `make`/`mvn`/`npm` run to `tail` or `head` reports the
    *pager's* exit code, not the command's, and scrolls the failing line out
    of view.
+
+   **A change to a DTO, an endpoint, an error type or `backend/openapi.json`
+   also runs the backend's documentation integration tests before the push.**
+   They read the served spec and the error bodies, so their assertions go
+   stale with any of those changes, and they need Docker, so `verify-fast`
+   cannot run them and CI's backend job is otherwise the first to. From the
+   repository root, on JDK 25 (`CLAUDE.md`) with Docker running, about 20 s:
+
+   ```bash
+   (cd backend && mvn -B verify -Dtest=NoSuch -Dsurefire.failIfNoSpecifiedTests=false -Dit.test='*OpenApi*IT,ApiErrorDocumentationIT,ErrorBodyShapesIT,ProblemJsonSecurityErrorsIT')
+   ```
+
+   The pattern picks the tests up by name: a new documentation test that does
+   not end in `OpenApiDocumentationIT` is skipped here without a word, so name
+   it that way or add it to the list.
 10. **Run the change against a running stack and watch it work.** `make
    verify` proves the suites pass, which is a different claim: a Server
    Action that 404s after a re-export refactor, a quantity field cleared on

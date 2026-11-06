@@ -34,8 +34,9 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
 - **What CI checks:** the backend's `CommittedOpenApiSpecIT` (the committed spec
   is the served one), the `api-client-drift` job (`make api-drift`: the committed
   client is what the spec generates), and the `api-breaking-change` job
-  (`scripts/check-api-breaking.mjs`: `oasdiff` against `dev`'s spec; run it
-  locally with `make api-breaking` after `brew install oasdiff`). A removal of
+  (`scripts/check-api-breaking.mjs`: `oasdiff` against `dev`'s spec, which
+  `make verify-fast` also runs before a push, so install it with
+  `brew install oasdiff`). A removal of
   an element `dev` already marks `deprecated` needs a line in
   `backend/openapi-breaking-ignore.txt` naming the minimum supported app build
   that excludes its last user. A new `oneOf` member in a 4xx or 5xx response

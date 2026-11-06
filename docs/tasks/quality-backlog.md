@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-133
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-135
 
 ## MUST
 
@@ -309,27 +309,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
   the login and registration fields carry proper `autocomplete` values — but
   it is stock `keycloak.v2` markup the theme does not touch
   ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
-- **COULD-109** *(confirmed 2026-11-04)* — A root `scripts/*.mjs` file that
-  imports an npm package passes `make verify-fast` locally and fails in CI,
-  because the `Static checks` job runs `make check` with no `npm ci` by
-  design ([common-failures](../common-failures.md), the 2026-11-03 row,
-  `ERR_MODULE_NOT_FOUND … 'sharp'`). Add a checker to `make check`, and so to
-  the edit-time hook, that fails a root `scripts/` file importing anything
-  other than a `node:` built-in or a relative path, and points at
-  `mobile/scripts/` or a package's own scripts instead.
-- **COULD-111** *(confirmed 2026-11-05)* **[needs decision]** — CodeQL has
-  failed four pull requests on new script code that `verify-fast` passed, each
-  query twice: `js/incomplete-multi-character-sanitization` on a single-pass
-  comment strip (PR 434, and PR 545 in `mobile/scripts/check-cleartext.mjs`,
-  after this entry had named the remedy) and `js/clear-text-logging` on a
-  message carrying a `process.env` value (PR 500, and PR 541 in
-  `scripts/check-compose.mjs`). `docs/ci-playbook.md` still has no CodeQL
-  section. Nothing local runs those queries. The decision left open:
-  an opt-in `make codeql` running the CodeQL CLI's JavaScript default suite
-  over `scripts/` (a new tool, so a version question under CLAUDE.md's "New
-  dependencies"), or a `docs/ci-playbook.md` entry naming the two queries and
-  the patterns that satisfy them (strip until stable; never log a value
-  derived from `process.env`).
 - **COULD-112** *(confirmed 2026-11-04)* — `docker compose up --wait` fails
   when it names a one-shot service, or names none so that every one-shot is
   included. Locally Compose races and exits `1` on a container that exited
@@ -513,6 +492,21 @@ repeats, so the recurrence stays visible once the old entry is gone.
   answers the documented `409` (ADR-0057, `ConcurrentAddBeerApiIT`). An admin
   re-submitting gets the `409`; fix is the add path's `@Retryable` with a race
   test. Found by the review of iteration 10.5 task 07.
+- **COULD-134** *(confirmed 2026-11-06)* — CodeQL alert 8,
+  `js/clear-text-logging` on `scripts/mobile-native.mjs:121`
+  (`console.error(error.message)`), has been open on `dev` since 2026-11-04,
+  and the local stand-in `scripts/check-clear-text-logging.mjs` does not reach
+  it: the alert names no flow path, and the one candidate in that file, an
+  emulator name from `process.env.AVD` built into an Error, is a direct read
+  CodeQL passes elsewhere. It fails no pull request, being on `dev` already.
+  Find the flow (the alert's page shows it to the owner), make the message say
+  what failed without the value, and add the flow's shape to the stand-in's
+  fixtures if it can follow it.
+- **COULD-135** *(confirmed 2026-11-06)* — CodeQL alert 5,
+  `js/incomplete-sanitization` on `scripts/sync-indexes.mjs:26`, has been open
+  on `dev` since 2026-10-14: the index-cell writer escapes `|` and not `\`, so
+  a title holding `\|` is written as `\\|`, whose pipe then ends the cell. No local
+  check covers that query.
 
 ## Retired
 
@@ -532,3 +526,5 @@ went; pruned as described above.
 - ~~COULD-99~~ (`make moderate` with no way to look before it acts) — lifted into [iteration-10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md). The script is removed there rather than given a dry run.
 - ~~COULD-100~~ (three gaps around the committed spec) — lifted into [iteration-10.5 task 14](iteration-10.5/14-the-committed-spec-lists-every-response-and-its-checks-hold.md).
 - ~~COULD-107~~ (bottles added together reading back in another order) — lifted into [iteration-10.5 task 18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md).
+- ~~COULD-109~~ (a root script test importing an npm package, red only in CI's Static checks) — resolved in [iteration-10.5 task 21](iteration-10.5/21-a-failure-ci-would-report-is-caught-before-the-push.md): `make check` runs `scripts/check-script-imports.mjs`.
+- ~~COULD-111~~ (CodeQL's two script queries reaching only CI) — resolved in [iteration-10.5 task 21](iteration-10.5/21-a-failure-ci-would-report-is-caught-before-the-push.md): `make check` runs a local stand-in for each, and the CodeQL CLI was not adopted.

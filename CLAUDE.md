@@ -68,8 +68,8 @@ the generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md
 
 ## Commands
 
-**`make verify-fast` is the local gate** — the ~10 s subset needing neither
-Docker, a build nor Trivy, run by the `pre-push` hook from `make
+**`make verify-fast` is the local gate** — the ~40 s subset needing neither
+Docker, a build nor Trivy (it needs `oasdiff`), run by the `pre-push` hook from `make
 install-hooks`; green before every push. **The required CI checks are the
 Docker gate:** `ci-passed` and the vulnerability scan run every `make verify`
 check plus the image scans; a red one blocks the merge. `make verify` is that

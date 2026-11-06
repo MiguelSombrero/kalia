@@ -732,8 +732,9 @@ so `/api/v1` changes additively only
   not time. `app-config` is itself under this rule from its first release.
 - The spec is a committed file, `backend/openapi.json`, that both clients
   generate from. `CommittedOpenApiSpecIT` fails when it differs from the one the
-  application serves (`make openapi-spec` rewrites it), and CI's `api-breaking-change`
-  job runs `oasdiff` against `dev`'s copy and fails on a breaking change. The
+  application serves (`make openapi-spec` rewrites it), and `make api-breaking`
+  runs `oasdiff` against `dev`'s copy and fails on a breaking change, before a
+  push in `make verify-fast` and again in CI's `api-breaking-change` job. The
   removal of an element `dev` already marks `deprecated` is let through only by
   a line in `backend/openapi-breaking-ignore.txt` stating the minimum supported
   build that excludes its last user; nothing else can be waived there. The one
@@ -1307,7 +1308,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
 | The `boundaries/dependencies` policies | Each re-run by `web/eslint.config.test.ts` (vitest, ESLint's Node API) against a committed violating fixture in `web/eslint-fixtures/boundaries/` | The real tree passes every policy, so each is proven to fire by a fixture that breaks it: `app` into a feature's internals, feature to feature, a feature reaching the generated client outside `api.ts`/`types.ts` or another feature's tag from inside them, `components/ui/` or `lib/` reaching upward, and an import no layer classifies |
 | Mobile import boundaries and font scaling | `eslint-plugin-boundaries` and `no-restricted-syntax` in `mobile/eslint.config.js` (`make mobile-lint`), re-run by `mobile/eslint.config.test.ts` (Jest, ESLint's Node API) against committed fixtures in `mobile/eslint-fixtures/boundaries/` | The same layers as the web's, for `mobile/src`: feature to feature, `app` into a feature's internals, the generated client outside a feature's `api.ts` or another feature's tag, `lib` reaching upward, and `allowFontScaling={false}`. The real tree passes, so each is proven to fire by a fixture linted as if it sat in its layer |
 | Shared packages stay platform-neutral | ESLint `no-restricted-imports` (`packages/eslint.config.mjs`, in each package's `npm run lint`), re-run by `packages/api/platform-neutrality.test.ts` against committed violating fixtures in `packages/eslint-fixtures/neutrality/` | CI fails on a package importing `react-dom`, `next`, `react-native` or anything of `web/` or `mobile/` ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)). The real packages pass, so each pattern is proven to fire by a fixture placed as if it sat in either package |
-| API client and spec | `CommittedOpenApiSpecIT` (backend), `make api-drift` (regenerate `@kalia/api` from `backend/openapi.json`, diff), CI's `api-breaking-change` job (`oasdiff` against `dev`'s spec) | CI fails when the committed spec differs from the served one, when the committed client differs from what the spec generates, and on a breaking change to the spec ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)); the fetch core is unit-tested in `packages/api` (token, non-2xx returned, typed failures, unregistered transport) |
+| API client and spec | `CommittedOpenApiSpecIT` (backend), `make api-drift` (regenerate `@kalia/api` from `backend/openapi.json`, diff), `make api-breaking` in `make verify-fast` and CI's `api-breaking-change` job (`oasdiff` against `dev`'s spec) | CI fails when the committed spec differs from the served one, when the committed client differs from what the spec generates, and on a breaking change to the spec ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)); the fetch core is unit-tested in `packages/api` (token, non-2xx returned, typed failures, unregistered transport) |
 | Language bundles | Vitest in `packages/locales` | CI fails on a key present in `en` and not in `fi`, or the reverse |
 | Backend architecture rules | ArchUnit (`ArchitectureTest`) | Layer placement and dependency direction ([ADR-0007](adr/0007-backend-package-structure.md)), the guard keeping the one resource-server filter chain in `identity` ([ADR-0028](adr/0028-resource-server-and-current-user.md)), and the guard requiring every module's own `@RestControllerAdvice` to declare `basePackages` ([ADR-0014](adr/0014-shared-exception-handling.md)) |
 | The rules among those that no production class triggers | Re-run against `backend/src/test/java/archfixture/` (`ArchitectureRulesRejectViolationsTest`) | A rule no production class triggers passes whether or not its condition is right, so those rules — `noClasses()` rules and the `classes()` rules every production class merely satisfies — and only those are also run against a codebase that breaks them |
@@ -1517,7 +1518,14 @@ fails an index cell that disagrees with its file, `scripts/check-comments.mjs`
 enforces the mechanically decidable half of the code-comment policy
 ([ADR-0017](adr/0017-code-comment-policy.md)), and `scripts/check-links.mjs`
 fails a relative link in any tracked Markdown file that resolves to no file.
-All of them also run locally —
+Three stand in for failures CI used to be the first to report:
+`scripts/check-script-imports.mjs` fails a root script test, or a script it
+loads, that imports a package, which that job's run without `node_modules`
+cannot resolve; `scripts/check-clear-text-logging.mjs` and
+`scripts/check-markup-stripping.mjs` approximate the two CodeQL queries that
+failed pull requests on script code. Workflow Action pins are checked against
+GitHub by `make action-pins`, in that job and in `make verify` but not before
+a push. All of them also run locally —
 inside `make verify`, and at edit time via a `PostToolUse` hook that reports
 the failure back to the agent without blocking. The same hook runs ESLint on
 an edited web file, and syncs the index cells itself after an edit under
