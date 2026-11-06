@@ -1,6 +1,6 @@
 # Task 12: A contributor sees what became of their suggestion until they have read it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-3
 - **Kind:** design
@@ -41,16 +41,47 @@ is a choice the product owner makes from built alternatives, at least on:
 
 ## Constraints
 
-- **This task cannot be refined before [task 03](03-decision-how-a-contributor-is-notified.md)
-  is done**, and follows [task 09](09-a-contributor-is-told-what-became-of-their-suggestion.md).
+- Follows [task 09](09-a-contributor-is-told-what-became-of-their-suggestion.md),
+  whose API it reads, [task 07](07-an-admin-edits-a-suggestion-before-approving-it.md)
+  and [task 11](11-design-the-admin-review-page.md), whose edit and approval
+  the journey's admin performs on the page.
 - **This is a design task**
   ([ADR-0062](../../adr/0062-a-design-task-is-a-skill-and-a-marker.md)), run
-  under the `design-task` skill; [`docs/design.md`](../../design.md) and the
-  page shell of [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md)
-  bind every direction.
+  under the `design-task` skill: directions are built, the product owner
+  chooses, an ADR records the choice, and the same task then builds it.
+  [`docs/design.md`](../../design.md) and the page shell of
+  [ADR-0067](../../adr/0067-page-shell-sticky-bar-and-page-component.md) bind
+  every direction unless the ADR records a departure.
+- **Each direction is built from the notification's real content:** an
+  approval, a rejection with each of the four reasons, an approval after an
+  edit, and several unread at once, in Finnish as well as English.
 - The unread count is one backend call on every signed-in page render, with
-  no polling (task 03), and a page's backend calls are pinned by its
-  `backendCalls` test.
+  no polling (task 03), made on the server and never in a client component.
+  **The signed-in beer page already makes four backend calls, which is what
+  `edge/limits.json` pins as `backendCallsPerPageRender`**,
+  [ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)
+  states the load it computes, and `web/e2e/backend-calls-per-render.spec.ts`
+  asserts the heaviest render makes exactly that many. The count is a fifth, so
+  this task raises the pin to 5 and amends ADR-0090's stated load in the same
+  change; `scripts/check-compose.mjs` fails until the two agree. Task 09's API
+  serves the count apart from the list so that this call carries nothing else.
+  A page's own render calls are pinned by its `page.backendCalls.test.tsx`
+  where it has one ([ADR-0083](../../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)'s
+  Evidence).
+- Reading the list and acknowledging one are Server Actions, within
+  `backendCallsPerServerAction`. Acknowledging a notification already gone
+  answers `404` (task 09), and the web treats that as "already gone": it
+  refreshes the list rather than showing an error.
+- What the notification can say of an edit is what ADR-0103 froze: the name as
+  suggested and as decided, and that it was edited. An edit that left the name
+  alone is shown as edited, with the link to the beer's page, which shows the
+  rest.
+- **The journeys' contributor is a fresh account of its own**
+  (`createFreshAccount`, `web/e2e/support/keycloakAccount.ts`), so the
+  notifications it holds are exactly the ones that journey caused; the worker
+  `account` is shared by every spec. The admin is the worker-scoped
+  `adminAccount`, and finds the suggestion in the queue by its unique name, as
+  [task 11](11-design-the-admin-review-page.md) does.
 - Radix is the UI dependency for dialogs and toasts; a new one is asked, not
   researched (`CLAUDE.md`).
 - Tokens only, states per [ADR-0022](../../adr/0022-loading-error-empty-states.md),
@@ -69,11 +100,23 @@ is a choice the product owner makes from built alternatives, at least on:
   signed-in page shell,** the admin area included, wherever the chosen
   direction places it; a page without that shell shows nothing.
 
+**Decided at refinement, 2026-11-06** (product owner; the second pass checked
+this file against ADR-0103 and the event task 06 shipped):
+
+- **The unread count is the fifth backend call of the heaviest render:** the
+  pin rises to 5 and ADR-0090's stated load with it, wherever it states it (600
+  to 750 backend calls a second through page renders). Folding the count into
+  a call the render already makes, or keeping it off the beer page, was
+  rejected.
+- **An edit is told as the name pair and an `edited` mark, nothing more**
+  ([task 09](09-a-contributor-is-told-what-became-of-their-suggestion.md)'s
+  decision), so how an edited approval shows what the admin changed is a choice
+  among ways of showing that, not of showing more.
+
 ## Open questions
 
-Every question was answered at refinement on 2026-11-04 — task 03's in its
-Constraints, this task's above. The task moves to `refined` once task 03's ADR
-is accepted and this file is checked against it.
+**None.** Every question was answered at refinement — task 03's in its
+Constraints, this task's above.
 
 ## Acceptance criteria
 
@@ -82,13 +125,23 @@ is accepted and this file is checked against it.
       ADR records the directions and the choice, and the product owner signed
       off the built flow in the browser pane at both agreed widths
 - [ ] A Playwright test covers the iteration's journey on the running stack: a
-      user suggests a beer with a new brewery, an admin the suite provisions edits and
-      approves it, the user sees one unread notification naming the edited
-      beer, acknowledges it, and it is gone after a reload
+      fresh contributor account suggests a beer with a new brewery, the
+      suite's `adminAccount` edits and approves it, the contributor sees one
+      unread notification naming the edited beer, acknowledges it, and it is
+      gone after a reload
 - [ ] A Playwright test covers a rejection reaching its contributor the same
-      way
+      way, the reason shown in the reader's language
 - [ ] A component test shows the unread signal announced to assistive
       technology, and absent for a user with nothing unread
+- [ ] A component test shows an approval's notification linking to the beer's
+      page and a rejection's linking nowhere, an edited approval showing the
+      name as suggested and as decided — and as edited, with no rename, when
+      the names match — and an acknowledgement answered `404` removing the
+      notification from the list without an error
+- [ ] The heaviest signed-in render makes five backend calls with the count
+      read in it: `edge/limits.json` pins 5, ADR-0090 states the load that
+      computes from it, and `scripts/check-compose.mjs` and
+      `web/e2e/backend-calls-per-render.spec.ts` pass
 - [ ] Every rendered state passes `axe` with no violations, in both locales and
       at both agreed widths
 - [ ] `npm test`, `npm run lint` and `npm run build` are green

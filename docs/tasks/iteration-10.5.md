@@ -33,12 +33,12 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | [06](iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md) | An admin approves or rejects a suggestion, and one event says so | done |
 | [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | refined |
 | [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and an admin can remove an approved beer | refined |
-| [09](iteration-10.5/09-a-contributor-is-told-what-became-of-their-suggestion.md) | A contributor is told what became of their suggestion | needs-refinement |
+| [09](iteration-10.5/09-a-contributor-is-told-what-became-of-their-suggestion.md) | A contributor is told what became of their suggestion | refined |
 | [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | done |
 | [16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md) | The backend's request limit holds for the calls the web makes on a visitor's behalf | done |
-| [11](iteration-10.5/11-design-the-admin-review-page.md) | An admin reviews suggestions on a page of their own | needs-refinement |
+| [11](iteration-10.5/11-design-the-admin-review-page.md) | An admin reviews suggestions on a page of their own | refined |
 | [20](iteration-10.5/20-an-admin-removes-an-approved-beer-from-its-page.md) | An admin removes an approved beer from its page | refined |
-| [12](iteration-10.5/12-design-the-contributors-notifications.md) | A contributor sees what became of their suggestion until they have read it | needs-refinement |
+| [12](iteration-10.5/12-design-the-contributors-notifications.md) | A contributor sees what became of their suggestion until they have read it | refined |
 | [17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md) | A feed that opened empty polls only for what is new | done |
 | [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | refined |
 | [19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md) | A slow Keycloak delays one call in the app, not every call | refined |
