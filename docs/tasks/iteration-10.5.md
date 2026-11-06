@@ -31,7 +31,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | [04](iteration-10.5/04-the-admin-role-exists-and-the-api-refuses-everyone-else.md) | The admin role exists, and the API refuses everyone else | done |
 | [05](iteration-10.5/05-an-admin-reads-the-review-queue.md) | An admin reads the queue of suggestions waiting for review | done |
 | [06](iteration-10.5/06-an-admin-approves-or-rejects-a-suggestion.md) | An admin approves or rejects a suggestion, and one event says so | done |
-| [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | refined |
+| [07](iteration-10.5/07-an-admin-edits-a-suggestion-before-approving-it.md) | An admin edits a suggestion before approving it | done |
 | [08](iteration-10.5/08-the-sql-moderation-script-is-retired.md) | The SQL moderation script is retired, and an admin can remove an approved beer | refined |
 | [09](iteration-10.5/09-a-contributor-is-told-what-became-of-their-suggestion.md) | A contributor is told what became of their suggestion | done |
 | [10](iteration-10.5/10-the-web-keeps-everyone-but-an-admin-out-of-the-admin-area.md) | The web keeps everyone but an admin out of the admin area | done |

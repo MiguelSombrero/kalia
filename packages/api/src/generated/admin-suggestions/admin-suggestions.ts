@@ -25,6 +25,9 @@ import type {
 
 import type {
   ApproveSuggestionRequestDto,
+  DuplicateBeerProblem,
+  DuplicateBreweryProblem,
+  EditSuggestionRequestDto,
   ListSuggestionsParams,
   PageDtoSuggestionDto,
   Problem,
@@ -476,6 +479,144 @@ export const useApprove = <TError = ValidationProblem | Problem | SuggestionAlre
         TContext
       > => {
       return useMutation(getApproveMutationOptions(options), queryClient);
+    }
+    export type approveEditedResponse200 = {
+  data: SuggestionDecisionDto
+  status: 200
+}
+
+export type approveEditedResponse400 = {
+  data: ValidationProblem | Problem
+  status: 400
+}
+
+export type approveEditedResponse401 = {
+  data: Problem
+  status: 401
+}
+
+export type approveEditedResponse403 = {
+  data: Problem
+  status: 403
+}
+
+export type approveEditedResponse404 = {
+  data: Problem
+  status: 404
+}
+
+export type approveEditedResponse409 = {
+  data: SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem | Problem
+  status: 409
+}
+
+export type approveEditedResponse415 = {
+  data: Problem
+  status: 415
+}
+
+export type approveEditedResponse500 = {
+  data: Problem
+  status: 500
+}
+
+export type approveEditedResponseSuccess = (approveEditedResponse200) & {
+  headers: Headers;
+};
+export type approveEditedResponseError = (approveEditedResponse400 | approveEditedResponse401 | approveEditedResponse403 | approveEditedResponse404 | approveEditedResponse409 | approveEditedResponse415 | approveEditedResponse500) & {
+  headers: Headers;
+};
+
+export type approveEditedResponse = (approveEditedResponseSuccess | approveEditedResponseError)
+
+export const getApproveEditedUrl = (id: string,) => {
+
+
+
+
+  return `/api/v1/admin/suggestions/${encodeURIComponent(String(id))}/edited-approval`
+}
+
+/**
+ * Applies the edit and approves the suggestion in one action, under the rules a beer is added under, so what the contributor sees was checked as if they had entered it. Pointing the beer at an existing brewery rejects the brewery it came with, unless another suggestion still needs it. The review record keeps the values as suggested, and the event says the suggestion was edited. A request equal to the suggestion is an approval as it is.
+ * @summary Edit a suggestion and approve it
+ */
+export const approveEdited = async (id: string,
+    editSuggestionRequestDto: EditSuggestionRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<approveEditedResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return kaliaFetch<approveEditedResponse>(getApproveEditedUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(editSuggestionRequestDto)
+  }
+);}
+
+
+
+
+
+export const getApproveEditedMutationKey = () => ['approveEdited'] as const;
+
+export const getApproveEditedMutationOptions = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEdited>>, TError,ApproveEditedMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveEdited>>, TError,ApproveEditedMutationVariables, TContext> => {
+
+const mutationKey = getApproveEditedMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveEdited>>, ApproveEditedMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  approveEdited(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveEditedMutationResult = NonNullable<Awaited<ReturnType<typeof approveEdited>>>
+    export type ApproveEditedMutationBody = EditSuggestionRequestDto
+    export type ApproveEditedMutationError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem
+    export type ApproveEditedMutationVariables = {id: string;data: EditSuggestionRequestDto}
+
+    /**
+ * @summary Edit a suggestion and approve it
+ */
+export const useApproveEdited = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEdited>>, TError,ApproveEditedMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof approveEdited>>,
+        TError,
+        ApproveEditedMutationVariables,
+        TContext
+      > => {
+      return useMutation(getApproveEditedMutationOptions(options), queryClient);
     }
     export type rejectResponse200 = {
   data: SuggestionDecisionDto

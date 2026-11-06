@@ -1,10 +1,12 @@
 package fi.kalia.catalog.web;
 
 import fi.kalia.catalog.application.BeerNotFoundException;
+import fi.kalia.catalog.application.BreweryApprovedAlreadyException;
 import fi.kalia.catalog.application.BreweryNotFoundException;
 import fi.kalia.catalog.application.DuplicateBeerException;
 import fi.kalia.catalog.application.DuplicateBreweryException;
 import fi.kalia.catalog.application.InvalidSearchParameterException;
+import fi.kalia.catalog.application.NewBreweryNotAllowedException;
 import fi.kalia.catalog.application.PendingElsewhereException;
 import fi.kalia.catalog.application.SuggestionAlreadyDecidedException;
 import fi.kalia.catalog.application.SuggestionNotFoundException;
@@ -67,6 +69,16 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(UnknownCountryException.class)
 	ValidationProblem unknownCountry(UnknownCountryException e) {
 		return validationFailed("newBrewery.countryCode", e.getMessage());
+	}
+
+	@ExceptionHandler(BreweryApprovedAlreadyException.class)
+	ProblemDetail breweryApprovedAlready(BreweryApprovedAlreadyException e) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+	}
+
+	@ExceptionHandler(NewBreweryNotAllowedException.class)
+	ValidationProblem newBreweryNotAllowed(NewBreweryNotAllowedException e) {
+		return validationFailed("newBrewery", e.getMessage());
 	}
 
 	@ExceptionHandler(BreweryChoiceException.class)

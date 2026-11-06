@@ -101,7 +101,7 @@ class CatalogPersistenceIT {
 				.isNotEmpty().allSatisfy(code -> assertThat(Country.isListed(code)).as(code).isTrue());
 		assertThat(jdbc.queryForList("""
 				SELECT column_name FROM information_schema.columns
-				WHERE table_schema = 'catalog' AND column_name LIKE '%country%'""", String.class))
+				WHERE table_schema = 'catalog' AND table_name = 'brewery' AND column_name LIKE '%country%'""", String.class))
 				.containsExactly("country_code");
 	}
 
