@@ -137,7 +137,8 @@ Playwright project that waits for every other spec: `--project=edge-limits`
 therefore runs the whole suite first, and `--no-deps` skips that when the
 stack is already warm. If a spec you add makes many requests in a burst, the
 symptom of hitting a limit is a `429` page from nginx, not an application
-error.
+error. Server Actions have a tighter zone than pages (10 a second, burst 30),
+so a spec that fires many of them at once meets it first.
 
 A spec that signs in gets its Keycloak account from the worker-scoped
 `account` fixture (`e2e/support/keycloakAccount.ts`), never a hardcoded

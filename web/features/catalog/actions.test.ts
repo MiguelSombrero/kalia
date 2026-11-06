@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({
@@ -198,5 +200,39 @@ describe("startCatalogSignIn", () => {
       { redirectTo: `/en/beers?query=${"x".repeat(100)}` },
       { ui_locales: "en" },
     );
+  });
+});
+
+// edge/limits.json pins the most backend calls one Server Action call makes,
+// which the edge's action zone turns into the load ADR-0090 states.
+describe("the backend calls one Server Action call makes", () => {
+  const { backendCallsPerServerAction } = JSON.parse(
+    readFileSync(resolve(__dirname, "../../../edge/limits.json"), "utf8"),
+  ) as { backendCallsPerServerAction: number };
+  const callsMade = () => Object.values(api).reduce((total, mock) => total + mock.mock.calls.length, 0);
+
+  it("is the pinned figure for the heaviest action, an add that then looks for the beer", async () => {
+    api.addBeer.mockResolvedValue({
+      kind: "added",
+      beer: { id: beerId, name: "Öö Bourbon", style: "Imperial Stout", abv: 12.5, brewery: pohjala },
+    });
+    api.searchBeers.mockResolvedValue({ content: [{ id: beerId }], totalElements: 1 });
+
+    await addBeerAction(request);
+
+    expect(callsMade()).toBe(backendCallsPerServerAction);
+  });
+
+  it("is no more for an add that finds the beer already there, or for the form's options", async () => {
+    api.addBeer.mockResolvedValue({ kind: "duplicateBeer", existingBeerId: beerId });
+    api.getBeer.mockResolvedValue({ name: "Öö", brewery: pohjala });
+    await addBeerAction(request);
+    expect(callsMade()).toBeLessThanOrEqual(backendCallsPerServerAction);
+
+    vi.clearAllMocks();
+    api.listStyles.mockResolvedValue([]);
+    api.listCountries.mockResolvedValue([]);
+    await loadAddBeerOptionsAction("en");
+    expect(callsMade()).toBeLessThanOrEqual(backendCallsPerServerAction);
   });
 });

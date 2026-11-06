@@ -91,7 +91,35 @@ Engineering work:
 - GDPR: account deletion, data export, and the consent story — becomes real
   the moment anyone but the author uses this. What deletion does to a beer the
   user added is already decided in
-  [iteration 8 task 02](iteration-8/02-add-beer-api.md)
+  [iteration 8 task 02](iteration-8/02-add-beer-api.md), and what it does to
+  every other row that names a user in
+  [ADR-0104](../adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md). That ADR decides
+  the strategy; this item is building it, deleting the Keycloak account, and
+  the export and consent flow. Building it needs, at least, these tests
+  (iteration 10.5 task 15 named them before its notification and review record
+  were built):
+  - the user's entries, bottles and feed lines are gone, and another user's
+    are untouched;
+  - the profile row is replaced by a tombstone that holds `lower(username)` and
+    no `sub`, a newcomer whose username matches in any case still gets `409`,
+    and the public cellar address answers `404`;
+  - the user's beers and breweries remain with `contributor_id` null, an
+    `APPROVED` one stays `APPROVED`, and other users' entries for them are
+    intact;
+  - a suggestion still `PENDING` becomes `REJECTED` in the same transaction,
+    leaves the review queue and the duplicate key, and writes no review record,
+    event or notification;
+  - a review record the user decided or suggested remains with both ids null,
+    which needs those columns nullable in the migration that adds them;
+  - the user's notifications are gone, and another user's are untouched;
+  - no `event_publication` row names the user, and a redelivered
+    `BottleAdded` or `SuggestionReviewed` for a deleted user writes no feed
+    line and no notification;
+  - after deletion no table holds the user's `sub`, scanned across every
+    schema, so a table added later that names a user fails the test until
+    deletion handles it;
+  - an admin who is deleted leaves the review records they decided in place
+    with the admin id null.
 - Search engine — PostgreSQL substring matching on a trigram index is fine at
   this size ([ADR-0044](../adr/0044-catalog-search-indexes.md)); OpenSearch
   only if faceted search outgrows it

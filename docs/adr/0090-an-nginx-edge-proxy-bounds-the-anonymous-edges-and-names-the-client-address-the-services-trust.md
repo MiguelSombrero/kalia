@@ -6,6 +6,9 @@
   actuator beyond `health`, no master realm, no back-channel logout route, and
   Keycloak's admin console on a loopback admin port of the dev overlay; see
   the amendment under Decision
+- **Amended:** 2026-11-05 — a Server Action has a zone of its own, and the
+  backend load one address can drive through the web app is stated; see the
+  second amendment under Decision
 
 ## Context
 
@@ -94,11 +97,40 @@ puts in the base whatever is not a dev convenience).
 | backend | everything on the backend's port | 10 per second | 30 | 64 KiB |
 | keycloak | everything else on Keycloak's port | 20 per second | 60 | 256 KiB |
 | admin | everything on the admin port (dev overlay only) | 20 per second | 60 | 1 MiB |
-| frontend | every page and action | 150 per second | 300 | 1 MiB |
+| web | everything on the web app's port but `/_next/static/` | 150 per second | 300 | 1 MiB |
+| action | a `POST` Next.js treats as a Server Action (see below); also counted in `web` | 10 per second | 30 | 1 MiB |
 | static | `/_next/static/` and Keycloak's `/resources/` | 150 per second | 400 | — |
 
 Per-user limits stay in Spring as business rules; this decision adds none.
 TLS waits for a deployment.
+
+> **Amended 2026-11-05** ([iteration 10.5 task 16](../tasks/iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md),
+> COULD-75). **The backend zone bounds only the calls that reach the backend's
+> own port; the web app calls Spring over the compose network, so a visitor's
+> backend load is bounded by the web zone, and a Server Action call by the
+> `action` zone as well.** One request is what the edge sees, and it is not one
+> backend call. A page render makes at most 4 backend calls (the signed-in beer
+> page: the beer, two searches for its neighbours and the caller's holdings),
+> so the web zone's 150 requests a second let one address drive up to **600
+> backend calls a second** through page renders, 60 times what the `backend`
+> zone allows directly, plus the burst allowance. A Server Action call makes
+> at most 2 (adding a beer, then looking for it), so the `action` zone's 10 a
+> second lets one address drive up to **20 backend calls a second** that way,
+> twice the `backend` zone's rate and the whole bound on the calls that change
+> data. The zone keys on the request Next.js marks as a Server Action: a
+> `POST` carrying a `Next-Action` header, or whose body is URL-encoded or
+> multipart, which is how a form submitted without JavaScript reaches one
+> (`next/dist/server/lib/server-action-request-meta.js`); the header alone
+> would leave that spelling, and any request that omits the header, outside
+> the zone. A feed poll is one Server Action call every 15 seconds
+> ([ADR-0060](0060-feed-delivery-is-polling.md)),
+> so the zone leaves room for a hundred open tabs behind one address.
+> `edge/limits.json` pins every zone's rate and bursts and the two call counts
+> these figures come from; `scripts/check-compose.mjs` fails when
+> `edge/nginx.conf`, the pins or this table disagree, or when this decision
+> does not state the load the pins compute, and the edge e2e spec holds the
+> call counts against the running stack. The sign-in routes' `POST`s carry a
+> form body and are counted in the zone too.
 
 ## Alternatives considered
 
@@ -112,6 +144,17 @@ in the Next.js proxy). Rejected: Keycloak's registration endpoint, the one the
 bypass uses, would stay unthrottled, and a limiter keyed on a header the
 application is handed is only as good as whoever set it. The sign-up counter
 stays as the bound on Kalia's own button.
+
+**A limit inside Spring on the forwarded address** (a Bucket4j filter keyed on
+`X-Forwarded-For`, so that the web app's calls count too). Rejected by the
+product owner at refinement (COULD-75): it adds a dependency and a second
+place the figure lives, and the edge already sees every request that causes
+the calls. The web app's calls would also be counted only if it forwarded the
+address, and a limit keyed on a header is only as good as whoever sets it.
+
+**Correcting this decision to state the load, without a zone for Server
+Actions.** Rejected by the product owner: the calls that change data would
+share the web zone's 150 a second.
 
 **Trusting forwarded headers from the proxy's exact address.** Rejected: it
 means pinning the compose network's subnet, which two worktrees running a stack
@@ -146,6 +189,13 @@ them.
   gets many budgets, and many people behind one address share one. On Docker
   Desktop every local client arrives from the gateway's address, so the e2e
   suite is one client.
+- Bad, because a page render's backend calls are bounded only by the web
+  zone: one address can drive 600 backend calls a second that way, 60 times
+  the 10 a second the `backend` zone allows direct callers. The web zone
+  stays at 150 because the e2e suite, one address, peaks at 136 a second.
+- Bad, because the `action` zone counts the `POST`s of the sign-in routes
+  too, and an address behind which many people sign in at once shares its 10
+  a second.
 - Bad, because the browser-facing zones are loose. A full `npm run test:e2e`
   from one address is the worst realistic client, and the limits sit about
   twice its peak (see Evidence); only registration, logout and the backend
@@ -207,6 +257,15 @@ configuration never loads. Trivy found no fixable HIGH or CRITICAL finding in
 either. The earlier `nginxinc/nginx-unprivileged:1.30.6-alpine` carried two
 (`brotli-libs`, and `curl` with `libcurl`), which is what `apk upgrade` is
 kept for; Docker Hub now points that repository to `nginx/nginx-unprivileged`.
+
+Measured on 2026-11-05 against the local stack, counting backend log lines
+under one request's trace id: the front page makes 1 backend call signed out
+and 3 signed in, the catalog search 2 and 3, a beer's page 3 and 4, the
+caller's cellar 0 and 2, their profile 0 and 2, a public cellar 1 and 1, and a
+Server Action call at most 2. The page figures are `edge/limits.json`'s, held
+by `backend-calls-per-render.spec.ts`, which fails when the heaviest render
+makes more or fewer; the action figure is held by the catalog's
+`actions.test.ts`.
 
 A request carrying `X-Forwarded-For: 203.0.113.77` through the proxy was logged
 by Spring, by Keycloak and, via the frontend, by Spring again, under the

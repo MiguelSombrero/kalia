@@ -452,7 +452,9 @@ even if a later token carries a different one; it is both the profile's
 whole public identity and the URL segment a public cellar is addressed by
 ([ADR-0050](adr/0050-public-cellar-addressing.md)). **A username belongs to
 one profile ever**, compared regardless of case, and a profile row is never
-deleted, so a departed account's name stays reserved; a newcomer whose
+deleted, so a departed account's name stays reserved (deleting an account
+replaces the row with a tombstone of the folded username and no `sub`,
+[ADR-0104](adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md)); a newcomer whose
 Keycloak username a profile already holds gets no profile, and the profile
 routes answer `409`
 ([ADR-0080](adr/0080-a-username-is-unique-regardless-of-case-and-never-reused.md)).
@@ -1087,7 +1089,12 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   The proxy overwrites `X-Forwarded-For` with the address it saw; Keycloak and
   Spring honour that header only from the stack's private ranges, and both log
   the address they resolved. Authentication stays the protection of the API;
-  the limits bound how fast an anonymous caller can ask. The loopback binding
+  the limits bound how fast an anonymous caller can ask. The web app reaches
+  Spring over the compose network, past the `backend` zone, so a visitor's
+  backend load is bounded by the web zone's page renders (up to 600 backend
+  calls a second per address) and by a zone of its own for Server Actions (up
+  to 20), which the edge recognises by their `Next-Action` header or form body
+  (ADR-0090's 2026-11-05 amendment; `edge/limits.json` pins the figures). The loopback binding
   stays until a deployment story exists. What the edge serves is only what a
   client needs: it answers `404` for `/actuator/*` but `health`, for `/admin`
   and `/realms/master`, and for `/api/auth/backchannel-logout`, which Keycloak
@@ -1577,6 +1584,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md) | An admin is a realm role in the access token, which the backend enforces on one path prefix and the web reads in its BFF | accepted | 2026-11-05 |
 | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) | A suggestion is a pending beer with its new brewery, and an admin reviews it inside catalog, which publishes one event per decision | accepted | 2026-11-05 |
 | [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) | A contributor is told what became of a suggestion by a notification that a new module keeps until they acknowledge it, and then deletes | accepted | 2026-11-05 |
+| [ADR-0104](adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) | Deleting an account deletes what is the user's own, unlinks what is shared, and leaves a tombstone of the folded username | accepted | 2026-11-05 |
 
 ### Engineering process and documentation
 

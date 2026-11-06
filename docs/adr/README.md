@@ -152,6 +152,10 @@ and the third keeps that identifier from ever passing to someone else.
   — a username belongs to one profile ever, compared regardless of case. A
   departed account's name stays reserved, and a newcomer whose Keycloak
   username is held is told the name is taken.
+- [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md)
+  — deleting an account deletes its cellar, entries, feed lines and
+  notifications, removes its id from the catalog rows and review records that
+  must stay, and leaves a tombstone of the folded username with no `sub`.
 
 ## Backend structure and conventions
 

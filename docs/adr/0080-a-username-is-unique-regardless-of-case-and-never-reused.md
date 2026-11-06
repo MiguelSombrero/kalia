@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-22
+- **Amended:** 2026-11-05 by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) — deleting an account replaces
+  its profile row with a tombstone of the folded username and no `sub`; the
+  name stays reserved, but "a profile row is never deleted" no longer holds
 
 ## Context
 
@@ -38,6 +41,9 @@ username reserved permanently.** The product owner decided this on
   by username.
 - The row is the reservation. No "departed" marker is added, because nothing
   could ever set it.
+- **Deletion** (amended): when an account is deleted its row is replaced by
+  a tombstone holding `lower(username)` alone, with no `sub`, which reserves the
+  name in the same index ([ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md)).
 - A newcomer whose Keycloak username Kalia already holds gets no profile. Kalia
   shows them a page saying the name is taken, with a way to sign out. The
   backend answers `409` on the profile routes.
@@ -88,4 +94,5 @@ does not control.
   everything they do stays private (ADR-0049) and carries no link.
 - **Revisit trigger:** Kalia gains its own account deletion, or a signal from
   Keycloak when an account is deleted. Either one makes a "departed" state
-  possible.
+  possible. *Met by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md):* a deleted account leaves a tombstone of its
+  folded username, which is the "departed" state.

@@ -1,6 +1,6 @@
 # Task 16: The backend's request limit holds for the calls the web makes on a visitor's behalf
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -53,12 +53,12 @@ the stack actually has.
 
 ## Acceptance criteria
 
-- [ ] The edge tests show a Server Action held to its own zone and an ordinary
+- [x] The edge tests show a Server Action held to its own zone and an ordinary
       page request held to the web zone, and the configuration checks pin both
-- [ ] ADR-0090 states the backend load one address can drive through page
+- [x] ADR-0090 states the backend load one address can drive through page
       renders, and the figure it is computed from is pinned by a test
-- [ ] ADR-0090 is amended to what the stack enforces, and §6 matches
-- [ ] `make verify-fast` is green
+- [x] ADR-0090 is amended to what the stack enforces, and §6 matches
+- [x] `make verify-fast` is green
 
 ## Notes
 
