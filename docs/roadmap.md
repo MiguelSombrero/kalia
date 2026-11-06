@@ -33,10 +33,8 @@ not held at feature parity. The plan adds no cost (the rule is in
 and on simulators against the local stack, and what a cost blocks is parked in
 [the backlog](tasks/backlog.md#mobile-client). Iteration 10.5 is the
 exception: an admin page in the web app that replaces the SQL moderation
-script, before the mobile design work resumes. Iteration 10.5's task files were
-seeded at `needs-refinement` and are refined as the decisions they wait on
-land; iterations 11–14 list planned tasks as one line
-each, their task files written at refinement.
+script, before the mobile design work resumes. Iterations 11–14 list planned
+tasks as one line each, their task files written at refinement.
 
 **Definition of done (every issue):**
 
@@ -73,7 +71,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [8.5 — Quality sprint before mobile](tasks/iteration-8.5.md) | The API mobile inherits is complete and pruned, and no known MUST or unbounded cost remains | ✅ Done |
 | [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ✅ Done |
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ✅ Done |
-| [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ⬜ Todo |
+| [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ✅ Done |
 | [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ⬜ Todo |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
 | [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |
@@ -129,3 +127,12 @@ meets, so they have no entry; the table above says what they were for.
   read; the app survives a token it cannot refresh; and adding a beer says
   what happens to it and never dead-ends. The seven-day re-sign is written
   down but not yet observed, and is tracked in the backlog
+- **An admin reviews what users add** *(iteration 10.5)*: a signed-in user with
+  the admin role reaches an admin area of the web app that no one else reaches
+  or sees offered, and approves, rejects with a reason, or edits and approves
+  each suggested beer, together with its brewery when that was new, in a queue
+  beside the suggestion; an admin can also remove an approved beer from its
+  page. The SQL moderation script is gone. Each decision publishes one event,
+  and the contributor sees what became of their suggestion in a signal in the
+  sticky bar that opens a panel, where each notification stays until they
+  acknowledge it.

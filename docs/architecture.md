@@ -24,8 +24,7 @@ clarity, testability, and iterative delivery** over premature scale.
 What each iteration built is listed once, in
 [docs/roadmap.md](roadmap.md#what-each-iteration-built).
 
-No iteration is in progress. The next is [iteration 10.5](tasks/iteration-10.5.md),
-in which an admin reviews what users add in the web app.
+No iteration is in progress. The next is [iteration 11](tasks/iteration-11.md).
 
 ### Non-functional requirements
 
