@@ -1,6 +1,6 @@
 # Task 11: An admin reviews suggestions on a page of their own
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-1, DW-2
 - **Kind:** design
@@ -139,33 +139,33 @@ and task 05's in their Constraints, this task's above.
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the queue's
+- [x] The product owner chose from built alternatives, at minimum the queue's
       layout, how editing is entered, and how a destructive outcome is
       guarded. An ADR records the directions and the choice, and the product
       owner signed off the built page in the browser pane at both agreed widths
-- [ ] A Playwright test signs in as the suite's `adminAccount`, approves one
+- [x] A Playwright test signs in as the suite's `adminAccount`, approves one
       suggestion, rejects one, and edits and approves one — each made by a
       fresh contributor and found by its unique name with other suggestions
       pending — each then shown decided, against the running stack
-- [ ] A component test shows a suggestion with a new brewery presenting both
+- [x] A component test shows a suggestion with a new brewery presenting both
       as approved together, and a rejection whose brewery stays `PENDING`
       not presenting it as rejected
-- [ ] A component test shows a `409` from a concurrent decision saying how it
+- [x] A component test shows a `409` from a concurrent decision saying how it
       was decided, a `404` on a suggestion decided meanwhile, and a
       server-side refusal of an edit — the `400`, the duplicate `409` and the
       stale-brewery `409` — each shown to the admin rather than swallowed
-- [ ] A component test shows a contributor with no username, and a queue
+- [x] A component test shows a contributor with no username, and a queue
       longer than a page paging
-- [ ] Every page this task adds under `/[locale]/admin` answers a signed-out
+- [x] Every page this task adds under `/[locale]/admin` answers a signed-out
       visitor and a non-admin the not-found page, with status `404` and none
       of its content in the response, and the placeholder's strings and
       assertions are gone — test
-- [ ] The admin page's render is one of the routes
+- [x] The admin page's render is one of the routes
       `web/e2e/backend-calls-per-render.spec.ts` measures, and makes no more
       backend calls than `edge/limits.json` pins
-- [ ] Every rendered state passes `axe` with no violations, in both locales and
+- [x] Every rendered state passes `axe` with no violations, in both locales and
       at both agreed widths
-- [ ] `npm test`, `npm run lint` and `npm run build` are green
+- [x] `npm test`, `npm run lint` and `npm run build` are green
 
 ## Notes
 

@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-135
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-137
 
 ## MUST
 
@@ -507,6 +507,14 @@ repeats, so the recurrence stays visible once the old entry is gone.
   on `dev` since 2026-10-14: the index-cell writer escapes `|` and not `\`, so
   a title holding `\|` is written as `\\|`, whose pipe then ends the cell. No local
   check covers that query.
+- **COULD-136** *(confirmed 2026-11-06)* — `web/features/admin-suggestions/OutcomePanel.tsx`
+  builds a success box (icon cell, ink edge, message) that `Toast` and `ErrorAlert`
+  each build too; a success counterpart to `ErrorAlert` in `components/ui/` would
+  leave one copy to keep in step.
+- **COULD-137** *(confirmed 2026-11-06)* — `web/e2e/admin-review.spec.ts`'s
+  `catalogShows` asserts a beer's absence after `networkidle`, which can pass
+  before the catalog's streamed results render, so "a rejected beer is withheld"
+  could pass vacuously; it needs a positive signal that the results are in.
 
 ## Retired
 
