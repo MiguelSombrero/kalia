@@ -232,7 +232,22 @@
     "sameStyle": "Same style · {{style}}",
     "inYourCellar_one": "In your cellar: {{count}} bottle",
     "inYourCellar_other": "In your cellar: {{count}} bottles",
-    "openInCellar": "Open my cellar"
+    "openInCellar": "Open my cellar",
+    "remove": {
+      "action": "Remove from catalog",
+      "title": "Remove this beer?",
+      "description": "{{beer}} will disappear from the catalog for everyone. Anyone who holds it keeps their bottles and sees the beer unlinked.",
+      "cancel": "Cancel",
+      "confirm": "Remove beer",
+      "confirming": "Removing…",
+      "notice": "{{beer}} was removed from the catalog.",
+      "error": {
+        "forbidden": "You are not allowed to remove beers.",
+        "notFound": "This beer is no longer in the catalog.",
+        "notApproved": "This beer is no longer approved, so it can't be removed. Another admin may have removed it already.",
+        "failed": "The beer was not removed. Please try again."
+      }
+    }
   },
   "notFound": {
     "pageTitle": "Beer not found — Kalia",

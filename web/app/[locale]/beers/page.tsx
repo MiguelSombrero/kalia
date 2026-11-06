@@ -4,12 +4,12 @@ import { isApiError } from "@kalia/api";
 import {
   AddBeerEntry,
   BeerList,
+  CatalogToasts,
   catalogColumns,
   hasFilters,
   IgnoredFilterNote,
   isPastLastPage,
   normalizeBeerSearchParams,
-  JustAddedToast,
   Pagination,
   parseBeerSearchParams,
   PastLastPage,
@@ -105,7 +105,7 @@ const BeersPage = async ({ params, searchParams }: Props) => {
           <Pagination locale={locale} params={beerParams} result={result} />
         </div>
       </div>
-      <JustAddedToast />
+      <CatalogToasts announceRemoval />
     </Page>
   );
 };

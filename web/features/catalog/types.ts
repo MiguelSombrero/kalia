@@ -22,6 +22,9 @@ export type AddBeerResult =
   | { kind: "pendingCap" }
   | { kind: "refused"; fields: FieldRefusal[] };
 
+/** What `POST /api/v1/admin/beers/{id}/removal` answered, short of a failure to answer at all. */
+export type BeerRemovalResult = { kind: "removed" } | { kind: "refused"; status: 403 | 404 | 409 };
+
 /** A brewery as the add-a-beer form offers it, its place already named in the reader's language. */
 export type BreweryOption = { id: string; name: string; place: string };
 

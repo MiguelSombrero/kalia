@@ -3,10 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { toLocale, type Locale } from "@/i18n/settings";
 import { signInReturningTo } from "@/lib/auth/signInReturningTo";
-import { addBeer, findBreweries, findSimilarBeers, getBeer, listCountries, listStyles, searchBeers } from "./api";
+import { addBeer, findBreweries, findSimilarBeers, getBeer, listCountries, listStyles, removeBeer, searchBeers } from "./api";
 import { countriesByName, countryName } from "./country";
 import { catalogHref, PARAM_KEYS, parseBeerSearchParams } from "./links";
-import type { AddBeerOptions, AddBeerOutcome, AddBeerRequest, Brewery, BreweryOption } from "./types";
+import type {
+  AddBeerOptions,
+  AddBeerOutcome,
+  AddBeerRequest,
+  BeerRemovalResult,
+  Brewery,
+  BreweryOption,
+} from "./types";
 
 // The catalog API's bound on a search term (CatalogController.MAX_FILTER_LENGTH):
 // a longer one is a 400, not an empty answer.
@@ -98,4 +105,14 @@ export const addBeerAction = async (request: AddBeerRequest, locale: string = "e
     case "refused":
       return result;
   }
+};
+
+// Do not throw a refusal: a Server Action's thrown error loses its status on the
+// way to the client, and the dialog tells 403, 404 and 409 apart by it.
+export const removeBeerAction = async (id: string): Promise<BeerRemovalResult> => {
+  const result = await removeBeer(id);
+  revalidatePath("/[locale]/beers", "page");
+  revalidatePath("/[locale]/beers/[id]", "page");
+  revalidatePath("/[locale]/cellar", "page");
+  return result;
 };

@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import enCommon from "@kalia/locales/en/common.json";
 import fiCommon from "@kalia/locales/fi/common.json";
 import { getOptions, type Locale } from "@/i18n/settings";
-import { BeerRow, JustAddedBadge, JustAddedLanding, JustAddedToast } from "./JustAdded";
+import { BeerRow, JustAddedBadge, JustAddedLanding } from "./JustAdded";
 import { useJustAddedStore } from "./store";
 
 const withI18n = (children: ReactNode, locale: Locale = "en") => {
@@ -118,25 +118,5 @@ describe("the just-added marks", () => {
     );
 
     expect(document.body).toHaveFocus();
-  });
-
-  it("announce the added beer in a toast, which keeps the badge when dismissed", async () => {
-    render(withI18n(<JustAddedToast />));
-    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
-
-    expect(
-      await screen.findByText("Öö Bourbon was added. Only you can see it until it has been reviewed."),
-    ).toBeInTheDocument();
-    act(() => useJustAddedStore.getState().dismissToast());
-    expect(useJustAddedStore.getState().beer).toEqual({ id: "new", name: "Öö Bourbon" });
-  });
-
-  it("say in Finnish that the added beer waits for review", async () => {
-    render(withI18n(<JustAddedToast />, "fi"));
-    act(() => useJustAddedStore.getState().announce({ id: "new", name: "Öö Bourbon" }));
-
-    expect(
-      await screen.findByText("Öö Bourbon lisättiin. Vain sinä näet sen, kunnes se on tarkistettu."),
-    ).toBeInTheDocument();
   });
 });

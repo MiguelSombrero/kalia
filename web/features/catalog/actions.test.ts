@@ -9,6 +9,7 @@ const api = vi.hoisted(() => ({
   findSimilarBeers: vi.fn(),
   listCountries: vi.fn(),
   listStyles: vi.fn(),
+  removeBeer: vi.fn(),
   searchBeers: vi.fn(),
 }));
 vi.mock("./api", () => api);
@@ -21,6 +22,7 @@ import {
   findBreweriesAction,
   findSimilarBeersAction,
   loadAddBeerOptionsAction,
+  removeBeerAction,
   startCatalogSignIn,
 } from "./actions";
 
@@ -234,5 +236,31 @@ describe("the backend calls one Server Action call makes", () => {
     api.listCountries.mockResolvedValue([]);
     await loadAddBeerOptionsAction("en");
     expect(callsMade()).toBeLessThanOrEqual(backendCallsPerServerAction);
+  });
+});
+
+describe("removeBeerAction", () => {
+  it("answers a removal and refreshes the pages that showed the beer", async () => {
+    api.removeBeer.mockResolvedValue({ kind: "removed" });
+
+    await expect(removeBeerAction(beerId)).resolves.toEqual({ kind: "removed" });
+
+    expect(api.removeBeer).toHaveBeenCalledWith(beerId);
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/beers", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/beers/[id]", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/cellar", "page");
+  });
+
+  it("hands a refusal back as it came, since a thrown error loses its status on the way to the client", async () => {
+    api.removeBeer.mockResolvedValue({ kind: "refused", status: 409 });
+
+    await expect(removeBeerAction(beerId)).resolves.toEqual({ kind: "refused", status: 409 });
+  });
+
+  it("lets a failure to remove throw", async () => {
+    api.removeBeer.mockRejectedValue(new Error("down"));
+
+    await expect(removeBeerAction(beerId)).rejects.toThrow("down");
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

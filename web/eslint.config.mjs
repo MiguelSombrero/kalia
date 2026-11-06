@@ -194,6 +194,11 @@ const eslintConfig = defineConfig([
               from: { element: { type: "feature", captured: { featureName: "cellar" } }, file: { categories: "feature-api" } },
               allow: { to: { element: { type: "generated-tag", captured: { tagName: "public-cellar" } } } },
             },
+            // The backend serves the admin's removal of a beer under a tag of its own.
+            {
+              from: { element: { type: "feature", captured: { featureName: "catalog" } }, file: { categories: "feature-api" } },
+              allow: { to: { element: { type: "generated-tag", captured: { tagName: "admin-beers" } } } },
+            },
             { from: componentsUi, allow: { to: [sharedPackage, ...lib] } },
             { from: lib, allow: { to: [sharedPackage, ...lib] } },
           ],

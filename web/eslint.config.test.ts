@@ -88,6 +88,14 @@ describe("generated client boundary (ADR-0012)", () => {
     const catalog = 'import { getBeer } from "@kalia/api/generated/catalog/catalog";\nexport const probe = getBeer;\n';
     expect(await messagesFor(catalog, "features/catalog/api.ts")).toEqual([]);
   });
+
+  it("lets the catalog's api.ts, and no other feature's, import the admin's removal of a beer", async () => {
+    const removal = 'import { remove } from "@kalia/api/generated/admin-beers/admin-beers";\nexport const probe = remove;\n';
+    expect(await messagesFor(removal, "features/catalog/api.ts")).toEqual([]);
+    expect(await messagesFor(removal, "features/cellar/api.ts")).toEqual([
+      expect.stringContaining("must not import @kalia/api/generated/admin-beers/admin-beers"),
+    ]);
+  });
 });
 
 // Each fixture is linted as if it sat at `lintAs`, since the plugin places a

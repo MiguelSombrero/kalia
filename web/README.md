@@ -322,7 +322,9 @@ Why the rationale lives there and not here:
   session's access token** (`currentUserIsAdmin` in `lib/auth/adminRole.ts`),
   never from a cookie, header or query parameter the browser sends and never
   in a client component. Only a boolean reaches the browser (`SiteNav`'s
-  `isAdmin`). `/[locale]/admin` calls `notFound()` before rendering anything of
+  `isAdmin`); a beer's page renders its remove action (`RemoveBeerDialog`, the
+  catalog's `api.ts` calling the admin API) only for an admin, and no one else
+  gets the button at all. `/[locale]/admin` calls `notFound()` before rendering anything of
   itself for a signed-out visitor and a non-admin alike, and has no
   `loading.tsx`: a boundary that streams the shell first would send `200`
   ahead of the `404`. The token is decoded without checking its signature, so

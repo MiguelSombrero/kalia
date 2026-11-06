@@ -4,6 +4,7 @@
 - **Date:** 2026-10-23
 - **Amended:** 2026-10-25 — the per-tag boundary covers a tag's operations only, not the shared models (iteration 8.5 task 06); see Consequences
 - **Amended:** 2026-11-03 — the catalog marker and the two cellar counts read `GET /api/v1/cellar/holdings`, not the owner's read (iteration 10 task 14); see the last paragraph of Decision
+- **Amended:** 2026-11-06 — the catalog's `api.ts` also reaches the `admin-beers` tag, for an admin's removal of a beer from its page (iteration 10.5 task 20); see the generated-client bullet of Decision
 - **Amended:** 2026-10-25 — the public read is paginated and its entries come in the order they were added (iteration 8.5 task 11); see the note after Decision
 
 ## Context
@@ -61,7 +62,7 @@ feature's `api.ts` may import only its own tag of the generated client.
 - **The generated-client boundary is per tag.** `eslint.config.mjs` lets a
   feature's `api.ts` and `types.ts` reach the shared generated models and the
   generated tag named after the feature, plus the cellar's own `public-cellar`
-  tag. A join across modules therefore has to be built in the backend, behind
+  tag and the catalog's own `admin-beers` tag. A join across modules therefore has to be built in the backend, behind
   a module's public API, and cannot reappear in a feature.
 
 > **Amended 2026-10-25** ([iteration-8.5 task 11](../tasks/iteration-8.5/11-one-account-cannot-inflate-an-anonymous-read.md)):

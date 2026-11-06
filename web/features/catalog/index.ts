@@ -1,6 +1,8 @@
 export { AddBeerEntry } from "./AddBeerEntry";
 export { BeerList } from "./BeerList";
-export { JustAddedLanding, JustAddedToast } from "./JustAdded";
+export { CatalogToasts } from "./CatalogToasts";
+export { JustAddedLanding } from "./JustAdded";
+export { RemoveBeerDialog } from "./RemoveBeerDialog";
 export { Pagination } from "./Pagination";
 export { ResultSummary } from "./ResultSummary";
 export { SearchFilters } from "./SearchFilters";
