@@ -23,6 +23,9 @@
   checks)
 - **Amended:** 2026-10-30 — that requirement is reversed: its cost in waiting
   outweighed the race it closed
+- **Amended:** 2026-11-06 by iteration 10.5 task 21 — `make verify-fast` also
+  runs `make api-breaking` and three checkers that stand in for failures only
+  CI reported; `make verify` and CI check that every pinned Action exists
 
 ## Context
 
@@ -188,6 +191,62 @@ What this covers, and what it does not:
   `make install-hooks` as a copy rather than a symlink: the shared hooks
   directory outlives every worktree, and a link into one dangles when it is
   removed. `git push --no-verify` remains the deliberate bypass.
+
+  > **Amended 2026-11-06.** In iteration 10, CI was again the first to report
+  > failures on commits `verify-fast` had passed: PRs 500, 536, 541, 545 and
+  > 546 ([common-failures](../common-failures.md), 2026-10-31 to 2026-11-04).
+  > What runs before a push therefore grows where the check is cheap enough to
+  > stay in the gate, and is named in `implement-task` where it is not:
+  >
+  > - **`make api-breaking` joins `verify-fast`,** so `oasdiff` becomes a
+  >   prerequisite of every push. It ran only in `make verify`, and the `409`
+  >   PR 546 added broke it unseen. When it fails on a branch cut before `dev`
+  >   changed the spec, as PR 545's did, it says to merge `dev` in. Its fetch
+  >   of `origin/dev` only warns when it fails, so an offline push still runs
+  >   the check, against the last fetched `dev`. Rejected: having
+  >   `implement-task` require it, since remembering to run it is what failed.
+  > - **`make check` fails a root script test that imports a package.**
+  >   `check-script-imports.mjs` allows a `scripts/*.test.mjs`, and every
+  >   script it loads, only Node built-ins and repository files, because CI's
+  >   Static checks job runs those tests without `npm ci` (PR 536's `sharp`).
+  >   Rejected: running `make check` against a copy of the tree without
+  >   `node_modules`, which is slower for the same catch.
+  > - **`make check` stands in for the two CodeQL queries that failed PRs.**
+  >   `check-clear-text-logging.mjs` fails the environment object, or a
+  >   rendered configuration's `environment` value, reaching console output
+  >   (`js/clear-text-logging`, PRs 500 and 541), and
+  >   `check-markup-stripping.mjs` fails markup or a markup comment stripped
+  >   with a regex (`js/incomplete-multi-character-sanitization`, PR 545).
+  >   Both read the JavaScript files through one dependency-free tokenizer,
+  >   `scripts/js-tokens.mjs`. Rejected: the CodeQL CLI, a new tool for a
+  >   local copy of what CI already runs; and leaving both queries to CI.
+  > - **`make action-pins` fails a workflow pinning an Action to a commit SHA
+  >   its repository does not have.** It asks GitHub, so it runs in
+  >   `make verify` and CI's Static checks job and not in the gate, which keeps
+  >   an offline push working. Rejected: the gate, and not adopting it.
+  > - **The backend's documentation integration tests stay out of the gate.**
+  >   They go stale after a DTO, endpoint, error-type or `backend/openapi.json`
+  >   change and need Docker; `implement-task` names those changes and the
+  >   Maven command that runs the tests before the push. Rejected: a script
+  >   mapping changed files to tests.
+  >
+  > Measured on the same Mac before and after, three runs each: `verify-fast`
+  > took 38, 36 and 39 s before and 38, 38 and 37 s after, while the new
+  > pieces alone take about 1.9 s (`api-breaking` 1.6 s with its fetch). The
+  > "about ten seconds" in the Evidence below was the gate of August, with
+  > three checkers and one test suite.
+  >
+  > - Bad, because `oasdiff` is now a prerequisite of every push: a machine
+  >   without it fails the gate until it is installed.
+  > - Bad, because the two CodeQL stand-ins approximate CodeQL one file at a
+  >   time and read JavaScript only. A flow through another module, or in
+  >   TypeScript, is still found first by CI; the open alert on
+  >   `scripts/mobile-native.mjs`, whose value comes from `stackEnv()` in
+  >   another module, is one they miss.
+  > - Neutral, because a direct `process.env.NAME` read is not a source for
+  >   the clear-text check, matching what CodeQL has passed on `dev` for
+  >   months (`KEYCLOAK_REALM` printed by the Keycloak scripts); a stricter
+  >   local rule would fail lines CI accepts.
 - **Long or fanned-out work checkpoints to `.claude/session-checkpoint.md`
   first** — branch, base ref, ordered steps, and the scope handed to each
   dispatched agent. Gitignored, because it describes the session rather than
@@ -276,6 +335,7 @@ drift this ADR is trying to remove.
   requires saying which was run, which makes the choice visible rather than
   correct. Since the 2026-10-25 amendment `verify-fast` is the answer, and the
   Docker-backed failures it cannot see surface after the push, in CI.
+  (Amended 2026-11-06: `verify-fast` takes about 38 s, measured.)
 - Bad, because up-to-date branches make every merge to `dev` invalidate the
   green of each other open pull request: with three open, merging one sends
   the other two back through CI. Parallel sessions make that frequent, and it

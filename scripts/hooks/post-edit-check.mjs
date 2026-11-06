@@ -58,6 +58,8 @@ const isPackageSource = (p) =>
   !p.startsWith("packages/api/src/generated/") &&
   !p.includes("/node_modules/");
 
+const isJavaScript = (p) => /\.(mjs|cjs|js)$/.test(p) && !p.includes("/node_modules/");
+
 // Which check owns which path. docs/architecture.md and docs/adr/ are one
 // entry because check-adrs.mjs validates the ADR files against that file's
 // index; docs/roadmap.md joins docs/tasks/ for the mirrored reason.
@@ -103,6 +105,9 @@ const ROUTES = [
       (p.startsWith("mobile/src/") && /\.tsx?$/.test(p)) ||
       (p.startsWith("scripts/") && p.endsWith(".mjs")),
   },
+  { check: checker("check-script-imports.mjs"), covers: (p) => p.startsWith("scripts/") && p.endsWith(".mjs") },
+  { check: checker("check-clear-text-logging.mjs"), covers: (p) => isJavaScript(p) },
+  { check: checker("check-markup-stripping.mjs"), covers: (p) => isJavaScript(p) },
 ];
 
 const readStdin = async () => {

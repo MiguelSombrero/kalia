@@ -100,6 +100,9 @@ JAVA_HOME=$(/usr/libexec/java_home -v 25) mvn clean verify
 Before pushing, run the whole gate rather than this suite alone: `make verify`
 from the repository root, or `make verify-fast` for the subset that needs no
 Docker ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
+`verify-fast` runs none of the documentation tests below; after a DTO,
+endpoint, error-type or spec change, `implement-task` step 9 names the
+command that runs them.
 
 `mvn verify` prints ~285 lines, mostly Spring context startup. To keep a
 green run cheap for an AI-agent session, filter it — this keeps every

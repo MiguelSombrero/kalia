@@ -7,7 +7,7 @@
 # minutes per run (ADR-0046).
 
 .PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
-        web-build web-e2e lint check compose-check api-drift api-breaking openapi-spec \
+        web-build web-e2e lint check compose-check action-pins api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env moderate app-config
 
@@ -97,7 +97,7 @@ web-e2e: ## Run the web app's E2E tests (needs the stack up)
 lint: ## Lint the web app and the shared packages
 	npm run lint --workspace web --workspace @kalia/api --workspace @kalia/locales
 
-check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link checks and their self-tests
+check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping checks and their self-tests
 	node scripts/check-adrs.mjs
 	node scripts/check-tasks.mjs
 	node scripts/check-comments.mjs
@@ -113,10 +113,16 @@ check: ## Run doc/task/comment/glossary/design-token/token-styling/contrast/keyc
 	node scripts/check-no-untappd.mjs
 	node scripts/wikidata-migration.mjs --check
 	node scripts/check-links.mjs
+	node scripts/check-script-imports.mjs
+	node scripts/check-clear-text-logging.mjs
+	node scripts/check-markup-stripping.mjs
 	node --test scripts/*.test.mjs
 
 compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only (needs the docker CLI, no daemon)
 	node scripts/check-compose.mjs
+
+action-pins: ## Fail if a workflow pins an Action to a commit SHA its repository does not have (asks GitHub; GITHUB_TOKEN optional)
+	node scripts/check-action-pins.mjs
 
 # Two halves, neither needing a running backend (ADR-0093): the backend's own
 # CommittedOpenApiSpecIT holds backend/openapi.json equal to what the
@@ -164,7 +170,7 @@ trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.x
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml package-lock.json
 	trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile .trivyignore.yaml backend/pom.xml
 
-verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift ## Everything CI checks that needs neither Docker nor a build (the pre-push gate)
+verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift api-breaking ## Everything CI checks that needs neither Docker nor a build (the pre-push gate; needs oasdiff)
 
 # The flow in mobile/.maestro/ on every simulator or emulator this host has
 # (ADR-0096). It starts the stack itself, as web-e2e does, and fails when no
@@ -175,7 +181,7 @@ mobile-e2e: ## Run the mobile end-to-end flow on the iOS Simulator and Android e
 	docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
 	node scripts/mobile-e2e.mjs $(ARGS)
 
-verify: verify-fast compose-check web-build backend-verify api-breaking keycloak-check trivy-scan web-e2e mobile-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
+verify: verify-fast compose-check action-pins web-build backend-verify keycloak-check trivy-scan web-e2e mobile-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)
 
 install-hooks: ## Install scripts/hooks/pre-push as this repository's git pre-push hook
 	@dest="$$(git rev-parse --git-common-dir)/hooks/pre-push"; \

@@ -227,8 +227,8 @@ manifest already says.
   `app/providers.tsx` — see ADR-0011)
 - orval (API client generated from the backend's committed OpenAPI spec into
   `packages/api`, committed + CI drift check — see ADR-0012, ADR-0093)
-- oasdiff (CI's breaking-change diff of the committed spec against `dev`'s —
-  see ADR-0093)
+- oasdiff (the breaking-change diff of the committed spec against `dev`'s,
+  run by `make verify-fast` before a push and by CI — see ADR-0093)
 - Vitest + React Testing Library (unit/component tests), Playwright (E2E,
   chromium only, against the docker compose stack)
 - **No `package.json` `overrides`.** The two it once carried, `postcss` and
@@ -368,11 +368,15 @@ each variable.
   persistence, Playwright for critical user flows.
 - **One issue at a time:** each roadmap task is a small, independently
   reviewable change with tests and updated docs.
-- **Checks run locally, not in CI first:** `make verify-fast` is the ~10 s
-  local gate and `make install-hooks` puts it behind `git push`; the
-  Docker-backed checks are the required CI checks, which block a merge when
-  red. `make verify` runs the same list locally, minus the image vulnerability
-  scans (and needs [Trivy](https://trivy.dev) installed)
+- **Checks run locally, not in CI first:** `make verify-fast` is the ~40 s
+  local gate and `make install-hooks` puts it behind `git push`. It needs
+  [oasdiff](https://github.com/oasdiff/oasdiff) installed
+  (`brew install oasdiff`, at the version CI's `api-breaking-change` job
+  pins) and, for its API check, a fetch of `origin/dev`, which falls back to
+  the last one fetched when offline. The Docker-backed checks are the
+  required CI checks, which block a merge when red. `make verify` runs the
+  same list locally, minus the image vulnerability scans (and needs
+  [Trivy](https://trivy.dev) installed)
   ([ADR-0046](docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
   Nothing invokes an AI agent on your behalf at push time. To hand a failure
   to one deliberately, run it yourself:

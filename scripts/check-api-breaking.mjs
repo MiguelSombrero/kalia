@@ -72,6 +72,36 @@ export function isAllowedErrorOneOf({ id, text }) {
   return ERROR_ONE_OF_ADDED.test(id) && ERROR_STATUS.test(text);
 }
 
+/**
+ * @param {string} baseRef the ref the spec is compared against
+ * @param {string} cwd the repository to ask
+ * @param {Record<string, string | undefined>} env the environment git runs with
+ * @returns {boolean} whether baseRef changed the spec after this branch was cut from it
+ */
+export function baseChangedSpecSinceFork(baseRef, cwd = ROOT, env = process.env) {
+  const git = (...args) => spawnSync("git", args, { cwd, env, encoding: "utf8" });
+  const mergeBase = git("merge-base", "HEAD", baseRef);
+  if (mergeBase.status !== 0) return false;
+  return git("diff", "--quiet", mergeBase.stdout.trim(), baseRef, "--", SPEC).status === 1;
+}
+
+/** @param {string} baseRef */
+export const staleBranchAdvice = (baseRef) =>
+  `${baseRef} has changed ${SPEC} since this branch was cut from it, so a finding above may be its change read backwards: ` +
+  `merge it in (git merge ${baseRef}) and run the check again`;
+
+/**
+ * @param {{ operation: string, path: string, text: string, id: string }[]} blocking the findings that fail the check
+ * @param {string} baseRef
+ * @param {() => boolean} baseChanged whether baseRef changed the spec after this branch was cut, asked only on a failure
+ * @returns {string[]} the lines the check prints for them
+ */
+export function failureReport(blocking, baseRef, baseChanged) {
+  const lines = blocking.map((f) => `  FAIL  ${f.operation} ${f.path} ${f.text} [${f.id}]`);
+  if (blocking.length > 0 && baseChanged()) lines.push("", staleBranchAdvice(baseRef));
+  return lines;
+}
+
 const main = () => {
   const baseRef = process.argv[2] ?? "origin/dev";
 
@@ -119,7 +149,7 @@ const main = () => {
       console.log(`  ok    ${f.operation} ${f.path} ${f.text} [${f.id}] (an error body may gain a member)`);
     }
     const blocking = blockingFindings(findings);
-    for (const f of blocking) console.log(`  FAIL  ${f.operation} ${f.path} ${f.text} [${f.id}]`);
+    for (const line of failureReport(blocking, baseRef, () => baseChangedSpecSinceFork(baseRef))) console.log(line);
     process.exit(blocking.length === 0 ? 0 : 1);
   } finally {
     rmSync(dir, { recursive: true, force: true });
