@@ -1,6 +1,6 @@
 # Task 21: A failure CI would report is caught before the push
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** none
 
@@ -121,29 +121,29 @@ added is measured against the past failures it would have caught.
 
 ## Acceptance criteria
 
-- [ ] The import check's self-test fails a root script test that imports an
+- [x] The import check's self-test fails a root script test that imports an
       npm package, and passes one that imports only Node built-ins and
       repository files
-- [ ] Each targeted check's self-test fails a fixture of its pattern (an
+- [x] Each targeted check's self-test fails a fixture of its pattern (an
       environment or configuration value logged; a regex that strips
       comments or markup), and passes the corrected form
-- [ ] `make verify-fast` runs `make api-breaking`, and a test shows that its
+- [x] `make verify-fast` runs `make api-breaking`, and a test shows that its
       failure on a branch cut before `dev` changed the spec says to merge
       `dev` in
-- [ ] A test, with the GitHub call stubbed, shows the Action-pin check fails
+- [x] A test, with the GitHub call stubbed, shows the Action-pin check fails
       a workflow that pins a SHA that does not exist, and `make verify` and
       CI run it
-- [ ] Each check is run on the branch against the failing commit of PRs 536,
+- [x] Each check is run on the branch against the failing commit of PRs 536,
       500, 541, 545 and 546, and the PR records each result. Every failure a
       check targets is caught, or the miss is reported with its cause
-- [ ] `make verify-fast`'s run time before and after, on the same machine, is
+- [x] `make verify-fast`'s run time before and after, on the same machine, is
       recorded in the PR and grows by at most 10 s. `CLAUDE.md` and
       `README.md` state the measured figure
-- [ ] ADR-0046 is amended to say what runs before a push and why, with at
+- [x] ADR-0046 is amended to say what runs before a push and why, with at
       least one Bad or Neutral consequence
-- [ ] `implement-task` names the changes that need the documentation
+- [x] `implement-task` names the changes that need the documentation
       integration tests and the Maven command that runs them before the push
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

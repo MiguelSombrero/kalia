@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-132
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-134
 
 ## MUST
 
@@ -485,6 +485,21 @@ repeats, so the recurrence stays visible once the old entry is gone.
   the `409` can carry. Give the `200` its own two-value enum when task 07 or 08
   next regenerates the client; the change is additive-breaking for a client that
   switches on it, so do it before an app build depends on it.
+- **COULD-133** *(confirmed 2026-11-06)* — CodeQL alert 8,
+  `js/clear-text-logging` on `scripts/mobile-native.mjs:121`
+  (`console.error(error.message)`), has been open on `dev` since 2026-11-04,
+  and the local stand-in `scripts/check-clear-text-logging.mjs` does not reach
+  it: the alert names no flow path, and the one candidate in that file, an
+  emulator name from `process.env.AVD` built into an Error, is a direct read
+  CodeQL passes elsewhere. It fails no pull request, being on `dev` already.
+  Find the flow (the alert's page shows it to the owner), make the message say
+  what failed without the value, and add the flow's shape to the stand-in's
+  fixtures if it can follow it.
+- **COULD-134** *(confirmed 2026-11-06)* — CodeQL alert 5,
+  `js/incomplete-sanitization` on `scripts/sync-indexes.mjs:26`, has been open
+  on `dev` since 2026-10-14: the index-cell writer escapes `|` and not `\`, so
+  a title holding `\|` is written as `\\|`, whose pipe then ends the cell. No local
+  check covers that query.
 
 ## Retired
 
