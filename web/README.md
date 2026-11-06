@@ -25,12 +25,11 @@ in containers: `docker compose up --build` from the root.
 | `AUTH_KEYCLOAK_ID` / `AUTH_KEYCLOAK_SECRET` | — | Keycloak client credentials. Required |
 | `AUTH_KEYCLOAK_ISSUER` | — | Keycloak's public realm URL, equal to its `KC_HOSTNAME`. Required |
 | `AUTH_KEYCLOAK_INTERNAL_ORIGIN` | — | Where this container reaches Keycloak (`lib/auth/internalKeycloakFetch.ts`). Required |
-| `VALKEY_URL` | `redis://localhost:6379` | Session store; carries the password: `redis://:<password>@host:6379` |
+| `VALKEY_URL` | `redis://localhost:6379` | Session store; carries the password `redis://:<password>@host:6379` (dev: `docker-compose.dev.env`) |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 | `METRICS_TOKEN` | — | Bearer token for `/api/metrics`; unset answers 404. Optional |
 
-Compose sets all of them (dev values: `docker-compose.dev.env`). A variable
-that must be set in production goes in `REQUIRED_IN_PRODUCTION`
+Compose sets all of them. One needed in production goes in `REQUIRED_IN_PRODUCTION`
 (`lib/config/requiredConfiguration.ts`).
 
 ## Observability
@@ -84,8 +83,9 @@ npm run test:e2e   # Playwright — starts the docker compose stack if not runni
 - Nothing needs resetting between runs: Keycloak's realm persists.
 - **A spec that registers must import `test` from the support file, not
   `@playwright/test`.** `/sign-up` has one shared rate limit that a few runs
-  exhaust; the support file clears it per test. Otherwise the spec times out
-  on Keycloak's `#username` and says nothing about rate limiting
+  exhaust; the support file's fixtures clear it per test (else call
+  `clearSignUpRateLimit` from `e2e/support/valkey.ts`). Otherwise the spec times
+  out on Keycloak's `#username` and says nothing about rate limiting
   ([ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md)).
 
 ## Conventions
@@ -96,9 +96,11 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
 
 - **Feature packages**: `features/<feature>/` owns its components, hooks and API
   access; `app/` stays thin. Code moves to `components/` or `lib/` once a second
-  feature uses it. A feature never imports another; `app/` composes them (a host
-  takes a slot such as `BeerList`'s `renderActions`, the route fills it).
-  Consumers import only a feature's `index.ts`. Enforced by
+  feature uses it. `app/` may import `features/`, `components/ui/` and `lib/`;
+  `components/ui/` imports `lib/` only (`i18n/` and root `auth.ts` count as
+  `lib`); a feature never imports another, so `app/` composes them (a host takes
+  a slot such as `BeerList`'s `renderActions`). Consumers import only a feature's
+  `index.ts`; an unclaimed folder is rejected. Enforced by
   `eslint-plugin-boundaries` ([ADR-0012](../docs/adr/0012-orval-api-client.md));
   a new policy gets a breaking fixture in `eslint-fixtures/boundaries/`.
 - Server components by default; `'use client'` only where interactivity needs it.
@@ -137,9 +139,10 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   `signOut()`: it also ends Keycloak's SSO session, this browser's only.
 - **Tokens are stored per session**, keyed by the session token, never per user
   ([ADR-0030](../docs/adr/0030-per-session-token-storage.md)); server code reads
-  them via `currentSessionToken()`. Per-user data keys on the access token's
+  them via `currentSessionToken()` (`auth()` does not expose it). Per-user data keys on the access token's
   `sub`, never an Auth.js user or session id (ADR-0028).
 - **`kaliaFetch` attaches the bearer token; callers never do**
+  (`instrumentation.ts` registers it at startup; a generated call before throws)
   ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md),
   [ADR-0029](../docs/adr/0029-silent-token-refresh.md)).
 - **Admin is decided on the server** from the session's access token
@@ -181,8 +184,7 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
 
 **Testing**
 
-- Component tests sit beside the component (`page.test.tsx` by `page.tsx`).
-- **Every full `render(...)` runs `expect(await axe(container)).toHaveNoViolations()`**
+- Tests sit beside the component. **Every full `render(...)` runs `expect(await axe(container)).toHaveNoViolations()`**
   (`jest-axe`). WCAG 2.2 AA is the bar ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)).
   2.2's layout checks run only at E2E (jsdom has no layout): specs call
   `expectNoA11yViolations` (`e2e/support/a11y.ts`) and `tabTo`
@@ -214,8 +216,7 @@ Each fails silently or only in production, so the warning stays here
   parameter.** The token is decoded unverified; the backend's check backs every
   admin call. `/[locale]/admin` has no `loading.tsx`: it would stream `200`
   ahead of the `404` `notFound()` sends non-admins.
-- **Back-channel logout uses the token's `sid`, never `sub`**, which would sign
-  the user out of every device.
+- **Back-channel logout uses the token's `sid`, never `sub`** (every device).
 - **Radix-wrapped `dialog.tsx` and `toast.tsx` supply focus trap and restore,
   `Escape`, `aria-live` and auto-dismiss**, which fail silently when hand-rolled.
   No other primitive takes a UI dependency without amending ADR-0021.
