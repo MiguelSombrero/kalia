@@ -19,6 +19,10 @@
   an admin API, one event per decision; the operator command, the cap's count
   (20 suggestions, not entries) and the revisit trigger are replaced, as
   iteration 10.5 builds them
+- **Amended:** 2026-11-05 by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) — deleting a contributor's account
+  keeps the beer and the brewery and removes `contributor_id`; a suggestion
+  still `PENDING` is rejected in the same transaction; see the "No catalog row
+  is deleted" bullet of Decision
 
 ## Context
 
@@ -89,6 +93,10 @@ ever deleted.
 - **No catalog row is deleted**, by the command or by anything else. Hidden is
   a state, not an absence, and an integration test pins that the rows and a
   holder's cellar entry for a rejected or removed beer remain.
+  Deleting a contributor's account is no exception: the rows stay and only
+  `contributor_id` is set to null, and a row still `PENDING` becomes `REJECTED`
+  first, since a pending row without a contributor is in no queue and still
+  holds its name ([ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md)).
 - **A hidden row leaves the duplicate key.** The unique indexes on
   `(brewery, folded name)` and `(folded name, country)` cover `PENDING` and
   `APPROVED` rows only, so a name an operator refused can be proposed again.
@@ -144,6 +152,9 @@ ever deleted.
 - Bad, because a holder of a beer that is later rejected or removed sees it
   vanish from public view and from the add path without being told why beyond
   the note in their own cellar; nothing notifies them (see the revisit trigger).
+- Neutral, because a contributor's id is kept only while the account exists:
+  a deleted account leaves its beers and breweries in the catalog with no
+  contributor ([ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md)).
 - Bad, because the owner's cellar read is the one place a withdrawn beer is
   still returned, so a client that ignores `withdrawn` links to a details page
   that answers `404`.

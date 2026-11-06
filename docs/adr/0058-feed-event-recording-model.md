@@ -5,6 +5,8 @@
 - **Amended:** 2026-10-22 by [ADR-0081](0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)
   — the redelivery this ADR relies on was never configured. That ADR
   configures it, which makes duplicate delivery routine.
+- **Amended:** 2026-11-05 by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) — a feed line is
+  deleted with its user's account, so the facts it freezes are kept only while the account exists.
 
 ## Context
 
@@ -104,6 +106,9 @@ boundary or hand live data into a record whose whole point is to freeze it.
   after a later edit to the bottle. That divergence is a design given
   (task 01's acceptance criteria require it), not a bug, but a reader of
   `feed.line` who has not seen this ADR could easily conclude it is one.
+- Neutral, because deleting a user's account deletes their feed lines by
+  `user_id` ([ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md)); a line freezes facts for the life of the account, not
+  beyond it, and the feed loses those lines.
 - **Revisit trigger:** the day a second event kind exists (task 01's
   non-goals), whether `FeedLine`'s frozen-fact columns generalize past
   `quantity`/`brewedDate` or need a per-kind shape is an open question this

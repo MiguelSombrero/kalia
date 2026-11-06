@@ -77,6 +77,11 @@ this file is checked against it.
 - [ ] An acknowledged notification's row is deleted, and an unread one is kept
       whatever its age — test; opening the list leaves every notification
       unread
+- [ ] A repository test deletes every notification for one recipient and
+      leaves another recipient's, so the table can be emptied by user when an
+      account is deleted ([task 15](15-decision-what-deleting-an-account-does-to-what-kalia-keeps.md)'s
+      decision; the other tests it implies are named in
+      [the backlog's](../backlog.md) GDPR item)
 - [ ] The `notification` module passes `ModularityTest`, `ArchitectureTest` and
       `ArchitectureDocumentationTest`, and is in §3's table and §2's diagram
 - [ ] The committed spec carries the operations, and the glossary the terms
