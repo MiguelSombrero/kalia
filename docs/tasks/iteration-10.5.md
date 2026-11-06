@@ -43,6 +43,7 @@ finds out what became of theirs, which replaces the SQL moderation script.
 | [18](iteration-10.5/18-a-cellar-write-reads-back-as-it-was-made.md) | A cellar write reads back as it was made, and a lost one says why | done |
 | [19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md) | A slow Keycloak delays one call in the app, not every call | done |
 | [21](iteration-10.5/21-a-failure-ci-would-report-is-caught-before-the-push.md) | A failure CI would report is caught before the push | done |
+| [22](iteration-10.5/22-the-catalog-migrations-create-the-schema-as-it-is.md) | The catalog migrations create the schema as it is, with no ALTER or UPDATE | refined |
 
 Numbered 10.5 for the reason [iteration 8.5](iteration-8.5.md) was: iteration
 11 is already drafted, and this work lands before it. It is web-only — the
@@ -120,6 +121,11 @@ The table's order is the order of work:
   added on 2026-11-06 at the product owner's request, catches before the push
   the failures that iteration 10 first saw in CI. It touches no product code,
   so its place in the order is free.
+  [22](iteration-10.5/22-the-catalog-migrations-create-the-schema-as-it-is.md),
+  also added on 2026-11-06 at the product owner's request, folds the catalog's
+  later migrations into the ones they belong to and takes the fixups out of
+  `V008`. It touches no product behaviour, but it edits migrations other tasks
+  also edit, so it goes last, after every task that adds to the catalog schema.
 
 Left in the quality backlog on purpose: COULD-26, the password-reset page's
 `autocomplete="off"`, which is stock Keycloak markup, touches nothing here,
