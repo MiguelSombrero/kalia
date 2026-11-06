@@ -10,9 +10,9 @@
   [ADR-0087](0087-the-brewery-list-is-cut-in-sql-by-a-stored-key-in-the-java-name-order.md)
   cuts their page in SQL, and `GET /styles` is measured and within budget; the
   figures are the last table in Evidence
-- **Amended:** 2026-11-06 — the measurement method moved from `docs/architecture.md` §7 to
-  [backend/README.md](../../backend/README.md#catalog-read-latency); the links
-  below point there
+- **Amended:** 2026-11-06 — the measurement method, which lived in
+  `docs/architecture.md` §7 and then `backend/README.md`, is the Method
+  paragraph in Evidence; the links below point there
 
 ## Context
 
@@ -71,7 +71,7 @@ anything else, or HTTP caching headers that serve another purpose.
 
 - The catalog passes 150k beers, the largest size measured.
 - A repeat of the method in
-  [backend/README.md](../../backend/README.md#catalog-read-latency) shows a
+  [Evidence](#evidence) shows a
   catalog read over 300 ms p95 that no index can serve.
 
 A cache adopted then still has to meet the three constraints above.
@@ -141,7 +141,7 @@ measuring, because it says nothing about growth.
   latency. A regression that keeps the plans but loses the speed is caught
   only when someone repeats the method.
 - **Revisit trigger:** the catalog passes 150k beers. Or a repeat of the
-  method in [backend/README.md](../../backend/README.md#catalog-read-latency)
+  method in [Evidence](#evidence)
   shows a read over 300 ms p95 that no index can serve. An index-served read
   over budget returns to task 18's shape of fix first.
 
@@ -158,7 +158,14 @@ Measured 2026-10-18 against `dev` at `8cbeb2d`.
 - **Contention:** the machine was shared with other work, which accounts
   for the outlier ranges.
 
-The method is in [backend/README.md](../../backend/README.md#catalog-read-latency).
+**Method:** a scratch Postgres of the version `docker-compose.base.yml` pins
+and a backend jar against it, all settings default, Tomcat's access log
+unbuffered (`%U %s %{ms}T`). The larger catalog is cloned in SQL from the
+imported one (ten copies of each brewery, each beer copied with a numeric
+suffix onto a copy of its brewery), then `VACUUM ANALYZE`d. A dependency-free
+Node script drives each scenario alone; a shape over 300 ms is checked for a
+missing index with `EXPLAIN (ANALYZE, BUFFERS)` first.
+
 The figures are p95 server time from Tomcat's access log, as the median of
 three runs with the range in brackets. Each run is 2,000 requests per
 scenario from 20 concurrent clients, after 200 warm-up requests. Client-side
