@@ -1633,6 +1633,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) | A suggestion is a pending beer with its new brewery, and an admin reviews it inside catalog, which publishes one event per decision | accepted | 2026-11-05 |
 | [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) | A contributor is told what became of a suggestion by a notification that a new module keeps until they acknowledge it, and then deletes | accepted | 2026-11-05 |
 | [ADR-0104](adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) | Deleting an account deletes what is the user's own, unlinks what is shared, and leaves a tombstone of the folded username | accepted | 2026-11-05 |
+| [ADR-0105](adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md) | The admin reviews suggestions in a queue beside the suggestion, edits in place, and rejects through a dialog that asks for the reason | accepted | 2026-11-06 |
 
 ### Engineering process and documentation
 

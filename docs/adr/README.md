@@ -217,6 +217,10 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0067](0067-page-shell-sticky-bar-and-page-component.md) — every page
   sits in one sticky bar and one `Page` component with a Menu button on a
   phone; header and pages share one frame and its left edge.
+- [ADR-0105](0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)
+  — the admin review page is a queue with the suggestion beside it; editing is
+  a mode of the suggestion, approving is one click, and rejecting asks in a
+  dialog where the mandatory reason is chosen.
 - [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)
   — the front page is one column: the pitch or the visitor's cellar above a
   feed of ruled rows, with "N new" laid over it and failures kept in the page.
