@@ -27,7 +27,7 @@ public class ContributionService {
 
 	private final Clock clock;
 
-	/** Most entries one contributor may have waiting for review at once (ADR-0091). */
+	/** Most suggestions one contributor may have waiting for review at once (ADR-0102). */
 	public static final int MAX_PENDING_ENTRIES = 20;
 
 	// ADR-0057; the retry finding the winner's row is verified by ConcurrentAddBeerApiIT.
@@ -41,11 +41,11 @@ public class ContributionService {
 		switch (breweryChoice) {
 			case BreweryChoice.Existing existing -> {
 				brewery = existingBrewery(contributorId, existing.breweryId(), name);
-				requireRoomForPending(contributorId, 1);
+				requireRoomForPending(contributorId);
 			}
 			case BreweryChoice.New added -> {
 				Brewery newBrewery = newBrewery(contributorId, added);
-				requireRoomForPending(contributorId, 2);
+				requireRoomForPending(contributorId);
 				brewery = breweries.saveAndFlush(newBrewery);
 			}
 		}
@@ -72,10 +72,9 @@ public class ContributionService {
 		return Brewery.addedBy(contributorId, added.name(), added.countryCode(), added.city(), clock);
 	}
 
-	private void requireRoomForPending(UUID contributorId, int adding) {
-		long waiting = beers.countByContributorIdAndModerationStatus(contributorId, ModerationStatus.PENDING)
-				+ breweries.countByContributorIdAndModerationStatus(contributorId, ModerationStatus.PENDING);
-		if (waiting + adding > MAX_PENDING_ENTRIES) {
+	private void requireRoomForPending(UUID contributorId) {
+		long waiting = beers.countByContributorIdAndModerationStatus(contributorId, ModerationStatus.PENDING);
+		if (waiting >= MAX_PENDING_ENTRIES) {
 			throw new TooManyPendingEntriesException(MAX_PENDING_ENTRIES);
 		}
 	}

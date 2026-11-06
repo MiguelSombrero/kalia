@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-02
+- **Amended:** 2026-11-06 by [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) — `make moderate` was retired
+  (iteration 10.5 task 08), so `make app-config` is the one operator command left
+  that connects as the superuser
 
 ## Context
 
@@ -21,7 +24,7 @@ cannot simply lose its rights to change the schema: something has to keep them.
 
 Postgres has three roles, created once by the init script in `postgres/init/`,
 and the bootstrap superuser is used by nothing but Postgres's own start-up,
-its health check and an operator's `make moderate` and `make app-config`.
+its health check and an operator's `make app-config`.
 
 - **`kalia_owner`** owns the `kalia` database and everything Flyway creates in
   it. The backend uses it for migrations alone, through Spring's separate
@@ -79,8 +82,8 @@ as the owner and fails only in a deployment, where the role differs.
   Flyway's `V002` is the only definition of that table.
 - Bad, because a developer's existing Postgres volume does not have the roles
   and must be recreated, losing its data.
-- Neutral, because an operator's `make moderate` and `make app-config` still
-  run as the superuser: they are manual and not reachable from the network.
+- Neutral, because an operator's `make app-config` still runs as the superuser:
+  it is manual and not reachable from the network.
 - **Revisit trigger:** the first deployment, which may want the superuser's
   password destroyed after bootstrap or a managed database whose roles are not
   created by an init script.

@@ -208,7 +208,7 @@ cross-module *reads* via the root-package API.
 
 | Module | Responsibility | Depends on |
 |---|---|---|
-| `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)*; an admin's read of the suggestions waiting for review, and the approval, edited approval or rejection of one, under `/api/v1/admin/suggestions`, which publishes one `SuggestionReviewed` per decision *(iteration 10.5, [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md))* | `identity` (current user, recorded as a user-added row's contributor), `profile` (read: a contributor's username, whatever their cellar's visibility, for the admin read alone) |
+| `catalog` | Beers, breweries, styles; search & filtering; a signed-in user adding a beer, and its brewery, the catalog lacks *(iteration 8)*; an admin's read of the suggestions waiting for review, and the approval, edited approval or rejection of one, under `/api/v1/admin/suggestions`, which publishes one `SuggestionReviewed` per decision, and the removal of an approved beer, under `/api/v1/admin/beers`, which publishes `BeerRemoved` *(iteration 10.5, [ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md))* | `identity` (current user, recorded as a user-added row's contributor), `profile` (read: a contributor's username, whatever their cellar's visibility, for the admin read alone) |
 | `identity` | Security filter chain, bearer-token validation, current-user resolution from the token's `sub` | — |
 | `cellar` | The signed-in user's owned bottles, grouped by catalog beer; a public cellar read for anyone, which `CellarService` itself refuses unless the owner made it public | `catalog` (read: beer existence; name, brewery, style and strength), `identity` (current user), `profile` (read: public-cellar visibility) |
 | `profile` | Who a user is to other users: a username copied once from the identity provider, plus whether their cellar is public | `identity` (current user: the caller's id and username, for the caller's own profile) |
@@ -335,15 +335,15 @@ control, soft hyphen) is refused with `400` before the check can see it.
 **A contributed row is reviewed before anyone but its contributor sees it**
 ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
 `moderation_status` is `PENDING` for a row a user adds and `APPROVED` for every
-seeded and imported row; an operator moves a contributor's rows to `APPROVED`,
-`REJECTED` or `REMOVED` with `make moderate`
-([backend/README.md](../backend/README.md#moderating-contributions)), and an
-admin approves or rejects one suggestion through the admin API, below. A pending
+seeded and imported row; an admin approves or rejects one suggestion, or removes
+an approved beer, through the admin API, below
+([backend/README.md](../backend/README.md#moderating-contributions)). A pending
 row is found, opened and cellared by its contributor alone, and is left out of
 search, the brewery list, other users' reads, every public cellar and the feed
-until approved. How many entries a contributor may have waiting is capped
-([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)),
-and an add past the cap answers `429` `problem+json`. Adding a beer whose
+until approved. How many suggestions a contributor may have waiting is capped
+at 20, a beer added with a new brewery counting once
+([ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)),
+and an add past the cap answers `429` `problem+json`; a rejection limits nothing. Adding a beer whose
 name another contributor holds as pending answers an anonymous `409`, with no
 beer to open. A `REJECTED` or
 `REMOVED` row is withheld the same way from search, lists, every public read
@@ -367,6 +367,16 @@ and one `catalog.review` row records who, when, the outcome and a rejection's
 reason code; its `decided_by` is nullable, so deleting an account can clear it.
 A beer decided before that table existed has no row. Nothing consumes the event
 yet. No row is deleted.
+
+**Removing an approved beer is one more outcome of the same machinery**
+(`POST /api/v1/admin/beers/{id}/removal`, `AdminBeerController`). The service
+locks the beer's row, answers `404` for an unknown id and `409` `problem+json`
+naming the beer's status unless it is `APPROVED`, then moves it to `REMOVED`,
+writes a review record with no reason and publishes `BeerRemoved` (`eventId`,
+`beerId`, `occurredAt`) from `Beer`, which nothing consumes, so it notifies
+nobody. Any approved beer qualifies, an imported or seeded one included, and its
+brewery stays as it is. The beer is then withheld everywhere and a holder's
+cellar entry for it stays and renders unlinked; no row is deleted.
 
 **An edited approval is the same approval with the edit applied first**
 (`POST …/edited-approval`). The request carries every field and is held to
@@ -525,7 +535,7 @@ GET    /api/v1/app-config                           -> {minimumBuild: {ios, andr
 GET    /api/v1/feed?size=&since=&before=            -> the most recent events, or (with since) everything recorded after a previously seen one, or (with before) everything recorded before one, for paging toward older history; newest first, from cellars currently public; identical for every caller
 
 # authenticated
-POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an operator approves it), 429 past the pending cap ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)), 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them), or naming nothing when another contributor's suggestion of the beer is waiting for review
+POST   /api/v1/beers                                -> add a beer (name, style, abv) with breweryId or a newBrewery; 201 with its details (visible to its contributor until an admin approves it), 429 past the pending cap of 20 suggestions ([ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)), 409 naming the existing beer (existingBeerId) or brewery (existingBreweryId, with its name and country as the catalog holds them), or naming nothing when another contributor's suggestion of the beer is waiting for review
 GET    /api/v1/cellar                              -> the caller's entries, each with its beer, its bottles and a derived quantity; every entry, not paginated
 GET    /api/v1/cellar/holdings?beerIds=             -> which of at most 100 beers the caller holds and how many bottles of each, with the beers and bottles held in all; 400 past 100 ids or for one that is not a beer id
 POST   /api/v1/cellar/bottles                       -> add 1-24 identical bottles (body carries the catalog beerId); 409 when a concurrent write to the same entry beat it twice
@@ -545,6 +555,7 @@ GET    /api/v1/admin/suggestions/{id}               -> one waiting suggestion by
 POST   /api/v1/admin/suggestions/{id}/approval      -> approve as it is; 200 with the suggestion as decided; 400 for a body that names a reason, 404 as above, 409 `problem+json` saying how it was decided already and when
 POST   /api/v1/admin/suggestions/{id}/edited-approval -> edit every field of a suggestion (name, style, ABV, and `breweryId` or the new brewery's `newBrewery`) and approve it in one action, under the rules a beer is added under; 200 as above; 400 for a style the catalog lacks, an unlisted country, a name with an invisible formatting character, both or neither brewery, or `newBrewery` on a suggestion that came with an existing brewery; 404 as above, or for a `breweryId` that is not an approved brewery; 409 as above, for a duplicate naming the existing beer or brewery whatever its status, or for `newBrewery` on a brewery a sibling's approval approved
 POST   /api/v1/admin/suggestions/{id}/rejection     -> reject with a `reason` (ALREADY_IN_CATALOG, NOT_A_REAL_BEER, INAPPROPRIATE or INCORRECT_DETAILS); 200 as above; 400 for a missing or unknown reason; 404 and 409 as above
+POST   /api/v1/admin/beers/{id}/removal             -> remove an approved beer, an imported one included; takes no body; 200 with the beer as decided (`outcome` REMOVED); 404 for an unknown id; 409 `problem+json` naming its `moderationStatus` unless it is APPROVED
 ```
 
 The cellar's endpoints are two-level, following the data model in
@@ -1440,11 +1451,10 @@ records the latest run.
 - **Contributions are reviewed, and a catalog row is hidden, never deleted**
   ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)):
   an offensive or junk entry reaches nobody but its contributor before an
-  operator looks, and no cellar entry or feed line is orphaned: a catalog
+  admin looks, and no cellar entry or feed line is orphaned: a catalog
   beer is never deleted, so what points at it keeps resolving, which the
-  no-cross-schema-foreign-key rule would otherwise leave to chance. The cost is a manual step with no interface: an
-  operator with database access runs `make moderate` or an admin calls the
-  admin API ([ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)),
+  no-cross-schema-foreign-key rule would otherwise leave to chance. The cost is a manual step with no interface yet: an
+  admin calls the admin API ([ADR-0102](adr/0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md)),
   and a contributor is not yet told the outcome.
 - **No catalog read cache, measured rather than assumed**
   ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)):

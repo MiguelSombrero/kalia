@@ -78,6 +78,10 @@ public class Review {
 		return review;
 	}
 
+	public static Review removal(UUID beerId, UUID decidedBy, Instant decidedAt) {
+		return new Review(beerId, decidedBy, ReviewOutcome.REMOVED, null, decidedAt);
+	}
+
 	public static Review rejection(UUID beerId, UUID decidedBy, RejectionReason reason, Instant decidedAt) {
 		Assert.notNull(reason, "reason must not be null");
 		return new Review(beerId, decidedBy, ReviewOutcome.REJECTED, reason, decidedAt);

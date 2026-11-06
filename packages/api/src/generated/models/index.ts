@@ -12,6 +12,8 @@ export * from './appConfigDto';
 export * from './approveSuggestionRequestDto';
 export * from './approveSuggestionRequestDtoReason';
 export * from './beerDetailsDto';
+export * from './beerNotApprovedProblem';
+export * from './beerNotApprovedProblemModerationStatus';
 export * from './beerSummaryDto';
 export * from './bottleDto';
 export * from './bottleDtoContainerType';

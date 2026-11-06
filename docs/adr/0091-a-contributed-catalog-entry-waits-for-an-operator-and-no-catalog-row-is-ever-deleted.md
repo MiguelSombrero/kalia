@@ -21,8 +21,16 @@
   iteration 10.5 builds them. Task 06 builds the application path for approving
   and rejecting: `POST /api/v1/admin/suggestions/{id}/approval` and `…/rejection`
   change the beer and a brewery new with it in one transaction, write a review
-  record and publish `SuggestionReviewed`. `make moderate` stays beside it until
-  task 08 retires it
+  record and publish `SuggestionReviewed`
+- **Amended:** 2026-11-06 by [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) — the operator
+  command `make moderate` and `scripts/moderate-contributor.sql` are retired
+  (iteration 10.5 task 08): an admin removes an `APPROVED` beer through
+  `POST /api/v1/admin/beers/{id}/removal`, which the command's *remove* did for
+  a contributor's whole output, and everything else it did is the approval and
+  rejection of a suggestion. The cap counts a contributor's `PENDING`
+  suggestions (20), a beer added with a new brewery counting once; the refusal
+  stays `429`. The Decision's operator-command bullet is read as the admin API
+  below
 - **Amended:** 2026-11-05 by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) — deleting a contributor's account
   keeps the beer and the brewery and removes `contributor_id`; a suggestion
   still `PENDING` is rejected in the same transaction; see the "No catalog row
@@ -87,17 +95,15 @@ ever deleted.
   id. A client tells the shapes apart by which of `existingBeerId` and
   `existingBreweryId` the body carries. A new brewery whose name another
   contributor holds as `PENDING` still discloses that brewery.
-- **The operator command** (retired by iteration 10.5 task 08 for the admin
-  API of [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md))
-  is `make moderate`, which runs
-  `scripts/moderate-contributor.sql` against the stack's PostgreSQL. It acts on
-  everything one contributor added, named by username or id: *approve* turns
-  `PENDING` into `APPROVED`, *reject* turns `PENDING` into `REJECTED`, *remove*
-  turns `PENDING` or `APPROVED` into `REMOVED`.
+- **An admin reviews** through the admin API of
+  [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md),
+  one beer at a time: *approve* turns a `PENDING` beer into `APPROVED`, *reject*
+  turns it into `REJECTED`, and *remove* turns an `APPROVED` beer, an imported
+  one included, into `REMOVED`. The brewery of a removed beer is left as it is.
 - **The application path** is the admin API: a decision locks the beer's row and
   then its brewery's, so a decision a moment ahead of it is answered `409`, and
   no row is ever deleted by it either.
-- **No catalog row is deleted**, by the command or by anything else. Hidden is
+- **No catalog row is deleted**, by an admin's decision or by anything else. Hidden is
   a state, not an absence, and an integration test pins that the rows and a
   holder's cellar entry for a rejected or removed beer remain.
   Deleting a contributor's account is no exception: the rows stay and only
@@ -145,11 +151,11 @@ ever deleted.
   and an offensive name is never public before an operator has looked at it.
 - Good, because a cellar or feed line never loses what it points at: the
   invariant is a stated policy with a test, where it was an assumption.
-- Good, because the same hidden-not-deleted rule covers the removal of a
-  contributor's whole output, which `make moderate remove` does in one
-  statement.
-- Bad, because review is manual and needs an operator with database access; a
-  contributor who is never reviewed waits forever, and nothing tells them.
+- Good, because the same hidden-not-deleted rule covers the removal of an
+  approved beer, which an admin does through the API.
+- Bad, because review is manual and needs an admin; a contributor who is never
+  reviewed waits forever (they are told the outcome once it comes, by the
+  notification of iteration 10.5).
 - Bad, because a beer's `409` discloses that its name is pending somewhere,
   though not whose, and the proposer cannot add it until an operator acts.
 - Bad, because the duplicate brewery check cannot tell a row the viewer can see

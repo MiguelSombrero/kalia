@@ -1,5 +1,6 @@
 package fi.kalia.catalog.web;
 
+import fi.kalia.catalog.application.BeerNotApprovedException;
 import fi.kalia.catalog.application.BeerNotFoundException;
 import fi.kalia.catalog.application.BreweryApprovedAlreadyException;
 import fi.kalia.catalog.application.BreweryNotFoundException;
@@ -48,6 +49,11 @@ class CatalogExceptionHandler {
 	@ExceptionHandler(SuggestionAlreadyDecidedException.class)
 	SuggestionAlreadyDecidedProblem alreadyDecided(SuggestionAlreadyDecidedException e) {
 		return new SuggestionAlreadyDecidedProblem(e.getMessage(), e.getOutcome(), e.getDecidedAt());
+	}
+
+	@ExceptionHandler(BeerNotApprovedException.class)
+	BeerNotApprovedProblem notApproved(BeerNotApprovedException e) {
+		return new BeerNotApprovedProblem(e.getMessage(), e.getModerationStatus());
 	}
 
 	@ExceptionHandler(DuplicateBreweryException.class)

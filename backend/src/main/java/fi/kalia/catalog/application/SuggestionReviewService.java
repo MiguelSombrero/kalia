@@ -117,6 +117,19 @@ public class SuggestionReviewService {
 		return new SuggestionDecision(beer, brewery, ReviewOutcome.REJECTED, reason, decidedAt);
 	}
 
+	@Transactional
+	public SuggestionDecision remove(UUID id, UUID adminId) {
+		Beer beer = beers.findByIdForUpdate(id).orElseThrow(() -> new BeerNotFoundException(id));
+		if (beer.getModerationStatus() != ModerationStatus.APPROVED) {
+			throw new BeerNotApprovedException(beer.getModerationStatus());
+		}
+		Brewery brewery = breweries.findById(beer.getBrewery().getId()).orElseThrow();
+		Instant decidedAt = beer.remove(clock);
+		beers.saveAndFlush(beer);
+		reviews.save(Review.removal(id, adminId, decidedAt));
+		return new SuggestionDecision(beer, brewery, ReviewOutcome.REMOVED, null, decidedAt);
+	}
+
 	private BreweryEdit repointing(BreweryChoice.Existing existing, Brewery current, @Nullable Brewery target) {
 		if (target == null || target.getModerationStatus() != ModerationStatus.APPROVED) {
 			throw new BreweryNotFoundException(existing.breweryId());
