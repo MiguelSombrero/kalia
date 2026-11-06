@@ -133,15 +133,15 @@ Each module's terms: [docs/glossary.md](glossary.md).
   ([ADR-0100](adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
 - **The catalog ships as migrations**, seeded once from Wikidata
   ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)); generator detail is in [backend/README.md](../backend/README.md).
-- **Events use Modulith's JDBC registry, delivered at least once**
-  ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)). **Every listener must be idempotent:** a duplicate
+- **Events use Modulith's JDBC registry;** delivery is at least once, with
+  incomplete publications resubmitted ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)). **Every listener must be idempotent:** a duplicate
   delivery that is not absorbed corrupts data without an error.
 
 ### Data model sketch
 
 ```
-catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, moderation_status, created_at)
-catalog.beer(id, brewery_id, name, style, abv, source, wikidata_qid, contributor_id, moderation_status, created_at)
+catalog.brewery(id, name, country_code, city, source, wikidata_qid, contributor_id, moderation_status, created_at) — unique (fold_name(name), country_code) over pending and approved rows, unique (wikidata_qid)
+catalog.beer(id, brewery_id, name, style, abv, source, wikidata_qid, contributor_id, moderation_status, created_at) — unique (brewery_id, fold_name(name)) over pending and approved rows, unique (wikidata_qid)
 cellar.entry(id, user_id, beer_id, version, created_at, updated_at) — unique (user_id, beer_id)
 cellar.bottle(id, entry_id, container_type, brewed_date, best_before_date, created_at, updated_at)
 profile.profile(id, username, cellar_public, created_at, updated_at) — unique (lower(username))
@@ -175,7 +175,8 @@ notification.notification(id, event_id, recipient_id, outcome, ...) — deleted 
 ## 4. API design
 
 Source of truth: `backend/openapi.json` and Swagger UI. Reasons:
-[ADR-0042](adr/0042-bounded-request-parameters.md), [ADR-0050](adr/0050-public-cellar-addressing.md), [ADR-0058](adr/0058-feed-event-recording-model.md) to
+[ADR-0042](adr/0042-bounded-request-parameters.md), [ADR-0050](adr/0050-public-cellar-addressing.md),
+[ADR-0059](adr/0059-feed-respects-cellar-visibility.md),
 [ADR-0060](adr/0060-feed-delivery-is-polling.md), [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md).
 
 - **REST JSON under `/api/v1`,** client-agnostic: a resource is shaped for the
@@ -206,9 +207,10 @@ day-to-day rules ([web/README.md](../web/README.md),
 ### The web app
 
 - **App Router, server components by default;** a client component only where
-  the browser is needed ([ADR-0010](adr/0010-react-hook-form-zod.md)).
+  the browser is needed, and only client components use TanStack Query
+  ([ADR-0008](adr/0008-tanstack-query.md)).
 - **`features/<feature>/` owns its components, hooks and API access;** `app/`
-  stays thin, and ESLint enforces the layers ([ADR-0012](adr/0012-orval-api-client.md)).
+  stays thin, and ESLint enforces the layers ([ADR-0012](adr/0012-orval-api-client.md), amended 2026-08-15).
 - **Server components and Server Actions call the backend;** a client
   component reads authenticated data through a Server Action
   ([ADR-0040](adr/0040-client-reads-via-server-actions.md)).
@@ -230,8 +232,9 @@ day-to-day rules ([web/README.md](../web/README.md),
 
 - **Expo Router,** a development build, with `ios/` and `android/` generated
   and never committed ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)).
-- **The web's conventions carry over** where they are not about the browser,
-  each enforced by lint: layers, generated client, strings ([ADR-0012](adr/0012-orval-api-client.md)).
+- **The web's conventions carry over** where they are not about the browser
+  ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)); ESLint enforces the layers and the generated client's isolation
+  ([ADR-0012](adr/0012-orval-api-client.md)).
 - **The app signs in as a public PKCE client** and holds an offline token
   ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
 - **A launch check asks `GET /api/v1/app-config`** and blocks an outdated build
