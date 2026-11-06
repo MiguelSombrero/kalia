@@ -66,7 +66,7 @@ When you change:
 
 Coverage: `target/site/jacoco-merged/` after `mvn verify`; the ≥ 80 % aim is measured, not gated.
 CI fails on a `HIGH`/`CRITICAL` CVE with a fix ([ADR-0024](../docs/adr/0024-dependency-vulnerability-scanning.md)): bump the dependency in `pom.xml` and confirm with `make trivy-scan` (root; `brew install trivy`).
-An image OS-package finding needs no edit, so rebuild and confirm (root; the image scans are the one CI check `make verify` leaves out):
+An image OS-package finding needs no edit, as the runtime stage's `apt-get upgrade` takes the fixed package at build time: rebuild and confirm (root; the image scans are the one CI check `make verify` leaves out):
 
 ```bash
 docker compose build backend
@@ -123,7 +123,7 @@ Each rule links the ADR or test holding its reasoning ([ADR-0020](../docs/adr/00
 - **The API contract**: every operation documents its errors and a body operation its `415`, never a `406`. A removal of an already-`deprecated` element passes `make api-breaking` only through a line in `openapi-breaking-ignore.txt` naming the minimum build that excludes its last user ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **Errors**: `detail` carries messages only from exception types designed as API responses; never map broad types (`IllegalArgumentException`, `RuntimeException`). Module advice is `@RestControllerAdvice(basePackages = "fi.kalia.<module>.web")` (`ArchitectureTest`). Extra fields come from a `Problem` subclass with declared getters, never `ProblemDetail.setProperty` (`HttpBoundaryTest`); [ADR-0014](../docs/adr/0014-shared-exception-handling.md).
 - **Logging**: `@Slf4j`, parameterized only; level by what is logged ([ADR-0013](../docs/adr/0013-logging-conventions.md)).
-- **Testing conventions**: aim for ≥ 80 % through valuable tests, not getters or framework wiring. Use real collaborators (Testcontainers `@DataJpaTest`, `@SpringBootTest` + `RestTestClient`); mock-heavy tests asserting calls are a smell.
+- **Testing conventions**: test through valuable tests, not getters or framework wiring. Use real collaborators (Testcontainers `@DataJpaTest`, `@SpringBootTest` + `RestTestClient`); mock-heavy tests asserting calls are a smell.
 - **Code comments** carry only what the repo cannot: [`.claude/rules/code-comments.md`](../.claude/rules/code-comments.md), [ADR-0017](../docs/adr/0017-code-comment-policy.md).
 
 ## Observability
