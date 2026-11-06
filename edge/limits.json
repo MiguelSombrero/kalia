@@ -8,6 +8,6 @@
     "static": { "rate": "150r/s", "bursts": [400] },
     "backend": { "rate": "10r/s", "bursts": [30] }
   },
-  "backendCallsPerPageRender": 4,
+  "backendCallsPerPageRender": 5,
   "backendCallsPerServerAction": 2
 }

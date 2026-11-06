@@ -1,7 +1,7 @@
 import type { ReactNode, SVGProps } from "react";
 import { cn } from "@/lib/cn";
 
-export type IconName = "menu" | "close" | "search" | "plus" | "arrow" | "back" | "check";
+export type IconName = "menu" | "close" | "search" | "plus" | "arrow" | "back" | "check" | "mail";
 
 const shapes: Record<IconName, ReactNode> = {
   menu: <path d="M3 6h18M3 12h18M3 18h18" />,
@@ -16,6 +16,12 @@ const shapes: Record<IconName, ReactNode> = {
   arrow: <path d="M4 12h16M13 5l7 7-7 7" />,
   back: <path d="M20 12H4M11 5l-7 7 7 7" />,
   check: <path d="M4 12l5 5L20 6" />,
+  mail: (
+    <>
+      <rect x="3" y="5" width="18" height="14" />
+      <path d="M3 6l9 7 9-7" />
+    </>
+  ),
 };
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, "children" | "name"> & {

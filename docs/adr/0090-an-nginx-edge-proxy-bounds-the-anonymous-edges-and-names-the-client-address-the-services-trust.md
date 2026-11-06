@@ -9,6 +9,9 @@
 - **Amended:** 2026-11-05 — a Server Action has a zone of its own, and the
   backend load one address can drive through the web app is stated; see the
   second amendment under Decision
+- **Amended:** 2026-11-06 — the signed-in page render makes a fifth backend
+  call, the unread notification count, so the load computed from it rises from
+  600 to 750 backend calls a second; see the second amendment under Decision
 
 ## Context
 
@@ -109,11 +112,13 @@ TLS waits for a deployment.
 > own port; the web app calls Spring over the compose network, so a visitor's
 > backend load is bounded by the web zone, and a Server Action call by the
 > `action` zone as well.** One request is what the edge sees, and it is not one
-> backend call. A page render makes at most 4 backend calls (the signed-in beer
-> page: the beer, two searches for its neighbours and the caller's holdings),
-> so the web zone's 150 requests a second let one address drive up to **600
-> backend calls a second** through page renders, 60 times what the `backend`
-> zone allows directly, plus the burst allowance. A Server Action call makes
+> backend call. A page render makes at most 5 backend calls (the signed-in beer
+> page: the beer, two searches for its neighbours, the caller's holdings and,
+> since [iteration 10.5 task 12](../tasks/iteration-10.5/12-design-the-contributors-notifications.md),
+> the caller's unread notification count), so the web zone's 150 requests a
+> second let one address drive up to **750 backend calls a second** through
+> page renders, 75 times what the `backend` zone allows directly, plus the
+> burst allowance. A Server Action call makes
 > at most 2 (adding a beer, then looking for it), so the `action` zone's 10 a
 > second lets one address drive up to **20 backend calls a second** that way,
 > twice the `backend` zone's rate and the whole bound on the calls that change
@@ -190,7 +195,7 @@ them.
   Desktop every local client arrives from the gateway's address, so the e2e
   suite is one client.
 - Bad, because a page render's backend calls are bounded only by the web
-  zone: one address can drive 600 backend calls a second that way, 60 times
+  zone: one address can drive 750 backend calls a second that way, 75 times
   the 10 a second the `backend` zone allows direct callers. The web zone
   stays at 150 because the e2e suite, one address, peaks at 136 a second.
 - Bad, because the `action` zone counts the `POST`s of the sign-in routes

@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-11-05. This document describes **what is built**, plus the
+*Last updated: 2026-11-06. This document describes **what is built**, plus the
 iteration currently being built — nothing beyond it. What might come next lives
 in [docs/roadmap.md](roadmap.md) and [docs/tasks/](tasks/); why a shape was
 chosen lives in the ADRs ([ADR-0020](adr/0020-documentation-roles.md)). Update
@@ -778,6 +778,15 @@ conventions README for the day-to-day rules of writing it
   agreed: `eslint.config.mjs` states the layers and the directions allowed
   between them ([ADR-0012](adr/0012-orval-api-client.md)), the web app's
   counterpart to Spring Modulith's module verification.
+- **A signed-in viewer's unread notifications are one signal in the sticky bar.**
+  `SiteHeader` reads the count once on the server for each render of the
+  layout, the fifth backend call of the heaviest render
+  ([ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
+  and hands it to `features/notifications`' client tray, which reads the list
+  and acknowledges one notification through Server Actions
+  ([ADR-0106](adr/0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md)).
+  A layout is not rendered again when the viewer navigates, so the tray reads
+  the count again, through a Server Action, on each change of path.
 - Three route handlers: `app/api/auth/[...nextauth]`, Auth.js's own OIDC
   endpoints, the deliberately unauthenticated
   `app/api/auth/backchannel-logout`, which Keycloak calls server-to-server
@@ -1137,7 +1146,7 @@ data ([ADR-0006](adr/0006-cellar-first.md)):
   the address they resolved. Authentication stays the protection of the API;
   the limits bound how fast an anonymous caller can ask. The web app reaches
   Spring over the compose network, past the `backend` zone, so a visitor's
-  backend load is bounded by the web zone's page renders (up to 600 backend
+  backend load is bounded by the web zone's page renders (up to 750 backend
   calls a second per address) and by a zone of its own for Server Actions (up
   to 20), which the edge recognises by their `Next-Action` header or form body
   (ADR-0090's 2026-11-05 amendment; `edge/limits.json` pins the figures). The loopback binding
@@ -1638,6 +1647,7 @@ an edited web file, and syncs the index cells itself after an edit under
 | [ADR-0103](adr/0103-a-contributor-is-told-what-became-of-a-suggestion-by-a-notification-that-a-new-module-keeps-until-they-acknowledge-it-and-then-deletes.md) | A contributor is told what became of a suggestion by a notification that a new module keeps until they acknowledge it, and then deletes | accepted | 2026-11-05 |
 | [ADR-0104](adr/0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) | Deleting an account deletes what is the user's own, unlinks what is shared, and leaves a tombstone of the folded username | accepted | 2026-11-05 |
 | [ADR-0105](adr/0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md) | The admin reviews suggestions in a queue beside the suggestion, edits in place, and rejects through a dialog that asks for the reason | accepted | 2026-11-06 |
+| [ADR-0106](adr/0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md) | A contributor's unread notifications are one signal in the sticky bar that opens a panel over the page | accepted | 2026-11-06 |
 
 ### Engineering process and documentation
 

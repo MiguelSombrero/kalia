@@ -163,6 +163,47 @@
       }
     }
   },
+  "notifications": {
+    "label": "Ilmoitukset",
+    "unread_one": "{{count}} lukematon ilmoitus",
+    "unread_other": "{{count}} lukematonta ilmoitusta",
+    "close": "Sulje ilmoitukset",
+    "hint": "Mitä ehdottamillesi oluille tapahtui. Ilmoitus pysyy, kunnes painat Selvä.",
+    "loading": "Ladataan ilmoituksia",
+    "retry": "Yritä uudelleen",
+    "viewBeer": "Avaa olut",
+    "acknowledge": "Selvä",
+    "edited": "Muokattu",
+    "reasonLabel": "Syy",
+    "outcome": {
+      "approved": "Hyväksytty",
+      "rejected": "Ei hyväksytty"
+    },
+    "sentence": {
+      "approved": "Ehdotuksesi {{name}} on nyt oluiden joukossa.",
+      "editedRenamed": "Ylläpitäjä muokkasi ehdotustasi ennen hyväksymistä.",
+      "editedSameName": "Ehdotuksesi {{name}} on nyt oluiden joukossa. Ylläpitäjä korjasi sen tietoja, ja ne näkyvät oluen sivulla.",
+      "rejected": "Ehdotustasi {{name}} ei lisätty oluiden joukkoon."
+    },
+    "pair": {
+      "suggested": "Ehdotit nimeä {{name}}.",
+      "decided": "Olut hyväksyttiin nimellä {{name}}."
+    },
+    "reason": {
+      "ALREADY_IN_CATALOG": "Olut on jo oluiden joukossa.",
+      "NOT_A_REAL_BEER": "Tämä ei ole oikea olut.",
+      "INAPPROPRIATE": "Se ei sovi Kaliaan.",
+      "INCORRECT_DETAILS": "Tiedot olivat virheelliset, eikä niitä voitu korjata."
+    },
+    "empty": {
+      "title": "Ei uutta",
+      "hint": "Ehdotustesi päätökset näkyvät täällä, kunnes olet lukenut ne."
+    },
+    "error": {
+      "load": "Ilmoitusten lataus ei onnistunut.",
+      "acknowledge": "Ilmoitusta ei voitu merkitä luetuksi. Yritä uudelleen."
+    }
+  },
   "placeholder": {
     "comingSoon": "Tulossa pian"
   },
