@@ -23,7 +23,145 @@
   },
   "admin": {
     "pageTitle": "Ylläpito — Kalia",
-    "title": "Ylläpito"
+    "review": {
+      "title": "Ehdotusten tarkistus",
+      "subtitle": "{{n}} odottaa, vanhin ensin",
+      "empty": {
+        "title": "Mikään ei odota",
+        "body": "Kaikki ehdotukset on käsitelty. Uudet ilmestyvät tähän, kun joku lisää oluen, jota katalogissa ei ole."
+      },
+      "loadFailed": "Ehdotuksia ei voitu ladata.",
+      "reload": "Yritä uudelleen",
+      "loadingLabel": "Ladataan ehdotuksia",
+      "queue": {
+        "label": "Jono",
+        "summary": "Sivu {{page}}/{{totalPages}}",
+        "previous": "Edellinen",
+        "next": "Seuraava",
+        "back": "Takaisin jonoon",
+        "newBrewery": "Uusi panimo",
+        "noUsername": "Ei käyttäjänimeä vielä",
+        "by": "{{who}} · {{waited}}"
+      },
+      "fact": {
+        "brewery": "Panimo",
+        "by": "Ehdottaja",
+        "record": "Heidän ehdotuksensa",
+        "suggested": "Ehdotettu",
+        "pending": "{{n}} odottaa",
+        "rejected": "{{n}} hylätty",
+        "style": "Tyyli",
+        "abv": "Vahvuus"
+      },
+      "action": {
+        "approve": "Hyväksy",
+        "approveBoth": "Hyväksy olut ja panimo",
+        "edit": "Muokkaa ja hyväksy",
+        "reject": "Hylkää",
+        "approving": "Hyväksytään…"
+      },
+      "reject": {
+        "title": "Haluatko varmasti hylätä tämän ehdotuksen?",
+        "lead": "{{beer}}, {{brewery}}. Valitse syy; ehdottaja saa tietää sen.",
+        "why": "Syy, jonka ehdottaja näkee",
+        "confirm": "Hylkää ehdotus",
+        "cancel": "Peruuta",
+        "breweryWith": "{{brewery}} hylätään samalla.",
+        "breweryStays": "{{brewery}} jää odottamaan: toinen ehdotus tarvitsee sitä yhä."
+      },
+      "reason": {
+        "ALREADY_IN_CATALOG": "Jo katalogissa",
+        "NOT_A_REAL_BEER": "Ei oikea olut",
+        "INAPPROPRIATE": "Sopimaton",
+        "INCORRECT_DETAILS": "Virheelliset tiedot"
+      },
+      "outcome": {
+        "approved": "Hyväksytty. {{beer}} on katalogissa.",
+        "approvedBoth": "Hyväksytty. {{beer}} ja {{brewery}} ovat katalogissa.",
+        "approvedEdited": "Hyväksytty muokattuna. Ehdottaja näkee nimen ”{{beer}}”.",
+        "approvedEditedBoth": "Hyväksytty muokattuna. ”{{beer}}” ja {{brewery}} ovat katalogissa.",
+        "rejected": "Hylätty: {{reason}}.",
+        "rejectedBreweryWith": "{{brewery}} hylätään samalla.",
+        "rejectedBreweryStays": "{{brewery}} jää odottamaan: toinen ehdotus tarvitsee sitä yhä.",
+        "next": "Seuraava ehdotus",
+        "toQueue": "Takaisin jonoon",
+        "toastRejected": "Hylätty: {{beer}}."
+      },
+      "conflict": {
+        "title": "Jo käsitelty",
+        "body": "Toinen ylläpitäjä {{verb}} tämän ehdotuksen {{when}}. Mitään ei muutettu.",
+        "bodyUntimed": "Toinen ylläpitäjä {{verb}} tämän ehdotuksen. Mitään ei muutettu.",
+        "verb": {
+          "APPROVED": "hyväksyi",
+          "REJECTED": "hylkäsi",
+          "REMOVED": "poisti"
+        }
+      },
+      "gone": {
+        "title": "Ei enää odota",
+        "body": "Ehdotusta ei ole enää jonossa. Se käsiteltiin, kun sinulla oli se auki."
+      },
+      "failed": "Jokin meni pieleen, eikä mitään muutettu. Yritä uudelleen.",
+      "edit": {
+        "name": "Nimi",
+        "style": "Tyyli",
+        "abv": "Alkoholi, %",
+        "brewery": "Panimo",
+        "newBrewery": "Uusi panimo",
+        "existingBrewery": "Olemassa oleva panimo",
+        "breweryName": "Panimon nimi",
+        "country": "Maa",
+        "city": "Kaupunki",
+        "findBrewery": "Hae panimo katalogista",
+        "findPlaceholder": "Kirjoita panimon nimi",
+        "searching": "Haetaan…",
+        "noMatches": "Katalogissa ei ole sopivaa panimoa.",
+        "chosen": "Valittu: {{brewery}}",
+        "was": "Ehdotettu: {{value}}",
+        "wasNewBrewery": "Ehdotettu: uusi panimo {{brewery}}",
+        "note": "Ehdottaja näkee oluen sellaisena kuin sen tallennat.",
+        "save": "Tallenna ja hyväksy",
+        "saving": "Tallennetaan",
+        "cancel": "Peruuta",
+        "chooseCountry": "Valitse maa",
+        "loadFailed": "Tyylejä ja maita ei voitu ladata.",
+        "error": {
+          "nameRequired": "Anna oluelle nimi.",
+          "nameTooLong": "Nimessä voi olla enintään 200 merkkiä.",
+          "nameNeedsLetter": "Nimessä pitää olla ainakin yksi kirjain tai numero.",
+          "nameInvalid": "Poista nimestä tavallisesta poikkeavat merkit.",
+          "breweryRequired": "Valitse panimo.",
+          "breweryNameRequired": "Anna panimolle nimi.",
+          "breweryNameTooLong": "Panimon nimessä voi olla enintään 200 merkkiä.",
+          "countryRequired": "Valitse panimon maa.",
+          "cityTooLong": "Kaupungin nimessä voi olla enintään 100 merkkiä.",
+          "cityInvalid": "Poista kaupungin nimestä tavallisesta poikkeavat merkit.",
+          "styleRequired": "Valitse tyyli.",
+          "abvRange": "Anna alkoholipitoisuus väliltä 0–100 %.",
+          "abvPrecision": "Anna alkoholipitoisuus enintään yhden desimaalin tarkkuudella.",
+          "refusedField": "Katalogi ei hyväksynyt tätä arvoa."
+        },
+        "refused": {
+          "title": "Katalogi ei ota tätä vastaan",
+          "body": "Korjaa merkityt kentät ja tallenna uudelleen.",
+          "bodyUnplaced": "Katalogi hylkäsi arvot. Tarkista ne ja tallenna uudelleen."
+        },
+        "duplicateBeer": {
+          "title": "Jo katalogissa",
+          "body": "Tämän niminen olut tältä panimolta on jo katalogissa tilastaan riippumatta.",
+          "open": "Avaa se"
+        },
+        "duplicateBrewery": {
+          "title": "Jo katalogissa",
+          "body": "{{brewery}} ({{place}}) on jo katalogissa tilastaan riippumatta. Käytä sitä olemassa olevana panimona.",
+          "use": "Käytä: {{brewery}}"
+        },
+        "breweryApproved": {
+          "title": "Panimo ehdittiin hyväksyä",
+          "body": "Se hyväksyttiin toisen ehdotuksen mukana. Käytä sitä olemassa olevana panimona."
+        }
+      }
+    }
   },
   "placeholder": {
     "comingSoon": "Tulossa pian"

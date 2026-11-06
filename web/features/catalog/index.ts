@@ -1,4 +1,5 @@
 export { AddBeerEntry } from "./AddBeerEntry";
+export { findBreweriesAction, loadAddBeerOptionsAction } from "./actions";
 export { BeerList } from "./BeerList";
 export { CatalogToasts } from "./CatalogToasts";
 export { JustAddedLanding } from "./JustAdded";

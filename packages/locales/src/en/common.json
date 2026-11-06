@@ -23,7 +23,145 @@
   },
   "admin": {
     "pageTitle": "Admin — Kalia",
-    "title": "Admin"
+    "review": {
+      "title": "Review suggestions",
+      "subtitle": "{{n}} waiting, oldest first",
+      "empty": {
+        "title": "Nothing is waiting",
+        "body": "Every suggestion has been decided. New ones appear here when someone adds a beer the catalog lacks."
+      },
+      "loadFailed": "The suggestions could not be loaded.",
+      "reload": "Try again",
+      "loadingLabel": "Loading suggestions",
+      "queue": {
+        "label": "Queue",
+        "summary": "Page {{page}} of {{totalPages}}",
+        "previous": "Previous",
+        "next": "Next",
+        "back": "Back to the queue",
+        "newBrewery": "New brewery",
+        "noUsername": "No username yet",
+        "by": "{{who}} · {{waited}}"
+      },
+      "fact": {
+        "brewery": "Brewery",
+        "by": "Suggested by",
+        "record": "Their suggestions",
+        "suggested": "Suggested",
+        "pending": "{{n}} waiting",
+        "rejected": "{{n}} rejected",
+        "style": "Style",
+        "abv": "Strength"
+      },
+      "action": {
+        "approve": "Approve",
+        "approveBoth": "Approve beer and brewery",
+        "edit": "Edit and approve",
+        "reject": "Reject",
+        "approving": "Approving…"
+      },
+      "reject": {
+        "title": "Do you really want to reject this suggestion?",
+        "lead": "{{beer}} from {{brewery}}. Choose why; the contributor is told.",
+        "why": "Reason, shown to the contributor",
+        "confirm": "Reject suggestion",
+        "cancel": "Cancel",
+        "breweryWith": "{{brewery}} is rejected with it.",
+        "breweryStays": "{{brewery}} stays pending: another suggestion still needs it."
+      },
+      "reason": {
+        "ALREADY_IN_CATALOG": "Already in the catalog",
+        "NOT_A_REAL_BEER": "Not a real beer",
+        "INAPPROPRIATE": "Inappropriate",
+        "INCORRECT_DETAILS": "Incorrect details"
+      },
+      "outcome": {
+        "approved": "Approved. {{beer}} is in the catalog.",
+        "approvedBoth": "Approved. {{beer}} and {{brewery}} are in the catalog.",
+        "approvedEdited": "Approved as edited. The contributor sees “{{beer}}”.",
+        "approvedEditedBoth": "Approved as edited. “{{beer}}” and {{brewery}} are in the catalog.",
+        "rejected": "Rejected: {{reason}}.",
+        "rejectedBreweryWith": "{{brewery}} is rejected with it.",
+        "rejectedBreweryStays": "{{brewery}} stays pending: another suggestion still needs it.",
+        "next": "Next suggestion",
+        "toQueue": "Back to the queue",
+        "toastRejected": "Rejected {{beer}}."
+      },
+      "conflict": {
+        "title": "Already decided",
+        "body": "Another admin {{verb}} this suggestion at {{when}}. Nothing was changed.",
+        "bodyUntimed": "Another admin {{verb}} this suggestion. Nothing was changed.",
+        "verb": {
+          "APPROVED": "approved",
+          "REJECTED": "rejected",
+          "REMOVED": "removed"
+        }
+      },
+      "gone": {
+        "title": "No longer waiting",
+        "body": "This suggestion is not in the queue any more. It was decided while you had it open."
+      },
+      "failed": "Something went wrong and nothing was changed. Try again.",
+      "edit": {
+        "name": "Name",
+        "style": "Style",
+        "abv": "ABV, %",
+        "brewery": "Brewery",
+        "newBrewery": "New brewery",
+        "existingBrewery": "Existing brewery",
+        "breweryName": "Brewery name",
+        "country": "Country",
+        "city": "City",
+        "findBrewery": "Find a brewery in the catalog",
+        "findPlaceholder": "Type a brewery's name",
+        "searching": "Searching…",
+        "noMatches": "No brewery in the catalog matches.",
+        "chosen": "Chosen: {{brewery}}",
+        "was": "Suggested: {{value}}",
+        "wasNewBrewery": "Suggested: new brewery {{brewery}}",
+        "note": "The contributor sees the beer as you save it.",
+        "save": "Save and approve",
+        "saving": "Saving",
+        "cancel": "Cancel",
+        "chooseCountry": "Choose a country",
+        "loadFailed": "The styles and countries could not be loaded.",
+        "error": {
+          "nameRequired": "Give the beer a name.",
+          "nameTooLong": "Keep the name to 200 characters.",
+          "nameNeedsLetter": "A name needs at least one letter or digit.",
+          "nameInvalid": "Remove the unusual characters from the name.",
+          "breweryRequired": "Choose a brewery.",
+          "breweryNameRequired": "Give the brewery a name.",
+          "breweryNameTooLong": "Keep the brewery's name to 200 characters.",
+          "countryRequired": "Choose the brewery's country.",
+          "cityTooLong": "Keep the city to 100 characters.",
+          "cityInvalid": "Remove the unusual characters from the city.",
+          "styleRequired": "Choose a style.",
+          "abvRange": "Give a strength between 0 and 100 %.",
+          "abvPrecision": "Give the strength to one decimal at most.",
+          "refusedField": "The catalog did not accept this value."
+        },
+        "refused": {
+          "title": "The catalog would not take this",
+          "body": "Fix the marked fields and save again.",
+          "bodyUnplaced": "The catalog refused the values. Check them and save again."
+        },
+        "duplicateBeer": {
+          "title": "Already in the catalog",
+          "body": "A beer with this name from this brewery is already in the catalog, whatever its status.",
+          "open": "Open it"
+        },
+        "duplicateBrewery": {
+          "title": "Already in the catalog",
+          "body": "{{brewery}} in {{place}} is already in the catalog, whatever its status. Use it as an existing brewery.",
+          "use": "Use {{brewery}}"
+        },
+        "breweryApproved": {
+          "title": "That brewery was approved meanwhile",
+          "body": "It was approved with another suggestion. Use it as an existing brewery."
+        }
+      }
+    }
   },
   "placeholder": {
     "comingSoon": "Coming soon"
