@@ -1,6 +1,6 @@
 # Task 08: The SQL moderation script is retired, and an admin can remove an approved beer
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [10.5](../iteration-10.5.md)
 - **Covers:** DW-2
 
@@ -103,30 +103,30 @@ beers, so a beer added with a new brewery counts once.
 
 ## Acceptance criteria
 
-- [ ] `make moderate`, its script, `ContributionModerationIT` and every
+- [x] `make moderate`, its script, `ContributionModerationIT` and every
       reference to them are gone — a search of the repository for
       `make moderate` and `moderate-contributor` finds them only in finished
       task files, the quality backlog's lifted entries and ADR amendment notes
       that name the retirement, and `make check` passes
-- [ ] An integration test through the admin API pins that no catalog row is
+- [x] An integration test through the admin API pins that no catalog row is
       deleted by a rejection or a removal, and that a holder's cellar entry for
       the beer remains and renders unlinked
-- [ ] An integration test shows a beer with a new brewery counting once against
+- [x] An integration test shows a beer with a new brewery counting once against
       the cap of 20, and was confirmed to fail before the change
-- [ ] The add dialog's cap message speaks of pending suggestions, in both
+- [x] The add dialog's cap message speaks of pending suggestions, in both
       locales — component test
-- [ ] An integration test removes an approved beer — a contributed one and an
+- [x] An integration test removes an approved beer — a contributed one and an
       imported one — through the admin API with the effects ADR-0091 states,
       leaving its brewery as it was, writing a review record with no reason
       and publishing exactly one `BeerRemoved`, and a non-admin's removal is
       refused `403`
-- [ ] Removing a beer that is not `APPROVED` (pending, rejected or already
+- [x] Removing a beer that is not `APPROVED` (pending, rejected or already
       removed) answers `409` `problem+json` and publishes nothing — test
-- [ ] ADR-0091, ADR-0100, `backend/README.md`, `docs/architecture.md`, the
+- [x] ADR-0091, ADR-0100, `backend/README.md`, `docs/architecture.md`, the
       glossary and the backlog describe the admin path instead of the script,
       and the committed spec carries the removal with its `403`, `404` and
       `409` responses
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
