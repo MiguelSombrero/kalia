@@ -983,7 +983,9 @@ rules for writing it are in [mobile/README.md](../mobile/README.md):
   (`src/lib/api/registerTransport.ts`), as the web registers its own, with the
   token store's `getAccessToken` as its token source; a signed-out app sends no
   `Authorization` header at all, and nor does a signed-in one while its refresh
-  fails transiently, so the catalog and the launch check still answer. A `401`
+  fails transiently, so the catalog and the launch check still answer. After
+  such a failure the store skips the refresh for 30 seconds, so calls in that
+  window go without a token at once rather than each waiting out the timeout. A `401`
   makes the transport ask the store for one `refreshAccessToken`, shared by
   every call rejected with that token, and retry once; a second `401` is
   returned as it is and the user stays signed in. The transport starts a W3C

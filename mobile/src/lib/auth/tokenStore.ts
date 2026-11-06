@@ -40,6 +40,7 @@ export type TokenStore = {
 };
 
 const EXPIRY_MARGIN_MS = 30_000;
+const TRANSIENT_FAILURE_WINDOW_MS = 30_000;
 
 export const createTokenStore = ({
   storage,
@@ -53,6 +54,7 @@ export const createTokenStore = ({
   let state: AuthState = { status: "loading" };
   let tokens: StoredTokens | null = null;
   let session = 0;
+  let transientFailure: { generation: number; at: number } | undefined;
   let refreshing: { generation: number; promise: Promise<string | undefined> } | undefined;
   const listeners = new Set<() => void>();
 
@@ -96,11 +98,15 @@ export const createTokenStore = ({
     try {
       outcome = await oauth.refresh(current.refreshToken);
     } catch (cause) {
+      if (generation === session) {
+        transientFailure = { generation, at: now() };
+      }
       throw apiError("network", "Could not refresh the sign-in", { cause });
     }
     if (generation !== session) {
       return undefined;
     }
+    transientFailure = undefined;
     if (outcome.kind === "rejected") {
       session += 1;
       tokens = null;
@@ -112,8 +118,19 @@ export const createTokenStore = ({
     return next?.accessToken;
   };
 
+  const inTransientFailureWindow = (): boolean => {
+    if (transientFailure?.generation !== session) {
+      return false;
+    }
+    const elapsed = now() - transientFailure.at;
+    return elapsed >= 0 && elapsed < TRANSIENT_FAILURE_WINDOW_MS;
+  };
+
   const refreshShared = (current: StoredTokens): Promise<string | undefined> => {
     if (refreshing?.generation !== session) {
+      if (inTransientFailureWindow()) {
+        return Promise.reject(apiError("network", "Skipped the sign-in refresh after a recent failure"));
+      }
       const promise = refresh(current).finally(() => {
         if (refreshing?.promise === promise) {
           refreshing = undefined;

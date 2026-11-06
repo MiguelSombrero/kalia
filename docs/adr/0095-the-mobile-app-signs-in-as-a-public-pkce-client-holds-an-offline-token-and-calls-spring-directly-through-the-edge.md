@@ -13,6 +13,8 @@
   the session from `invalid_grant` to every 4xx the token endpoint answers, and
   made the app send a call without a token while a refresh fails transiently
   (see Decision)
+- **Amended:** 2026-11-06 — iteration 10.5 task 19 made a transient refresh
+  failure skip the next 30 seconds' attempts (see Decision)
 
 ## Context
 
@@ -85,6 +87,11 @@ API directly through the edge proxy.**
   > shared by every call waiting on it, and one retry; a second `401` shows the
   > error and keeps the user signed in, since signing out would repair neither
   > a configuration nor a clock fault.
+  >
+  > **Amended 2026-11-06 (iteration 10.5 task 19).** After a refresh fails
+  > that way, calls made in the next 30 seconds skip the attempt and go without
+  > a token at once; the first call after the window tries again. A skipped
+  > refresh discards neither the offline token nor the session.
 - **Mobile refresh tokens rotate; the web keeps reuse.** Reuse stays for the web
   for the reason [ADR-0029](0029-silent-token-refresh.md) gives: the BFF renews
   without a lock, so two tabs refreshing at once must both succeed. A phone has
