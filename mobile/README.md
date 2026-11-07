@@ -26,9 +26,11 @@ step: it names what is missing or wrong.
 
 ## Run the app
 
+Start the stack first ([root README](../README.md#run-locally): `make stack-env`
+in a worktree, which gives Metro its own port too, then `make up`), then check
+the toolchain:
+
 ```bash
-make stack-env   # in a git worktree only: its own ports, Metro's included
-make up
 make mobile-doctor
 ```
 
