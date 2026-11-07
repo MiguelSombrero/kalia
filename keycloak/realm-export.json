@@ -95,6 +95,8 @@
       "directAccessGrantsEnabled": false,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
+      "defaultClientScopes": ["web-origins", "acr", "profile", "basic", "email"],
+      "optionalClientScopes": ["offline_access"],
       "attributes": {
         "pkce.code.challenge.method": "S256"
       },

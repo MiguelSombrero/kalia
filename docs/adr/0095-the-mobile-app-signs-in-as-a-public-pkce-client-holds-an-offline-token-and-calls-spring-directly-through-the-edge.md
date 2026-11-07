@@ -15,6 +15,8 @@
   (see Decision)
 - **Amended:** 2026-11-06 — iteration 10.5 task 19 made a transient refresh
   failure skip the next 30 seconds' attempts (see Decision)
+- **Amended:** 2026-11-07 — iteration 11 task 19: the app's token never carries
+  the admin role, and an admin surface in the app joins the revisit trigger
 
 ## Context
 
@@ -110,6 +112,14 @@ API directly through the edge proxy.**
   > replays until the user signs out or the offline session lapses after its 30
   > idle days. **Revisit before the app is installed beyond the product owner's
   > own phone.** The measurements are in Evidence.
+  >
+  > **Amended 2026-11-07 (iteration 11 task 19).** What a replayed token can
+  > do is narrower than it was: `kalia-mobile` has an explicit client-scope
+  > list without `roles`, so the offline token never yields an access token
+  > with the admin role
+  > ([ADR-0101](0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
+  > The replay itself is still accepted. An admin surface in the app, or a
+  > second user, reopens it.
 - **Sign-out forgets the tokens on the device at once, then revokes them at
   Keycloak, ending the session, when there is a connection.** Offline,
   sign-out still completes on the device and the server-side session lapses at
@@ -222,7 +232,7 @@ a rooted device, for no saving.
   `ssoSessionMaxLifespan`; the two clients now have different session lifetimes
   on purpose.
 - **Revisit trigger:** the app being installed beyond the product owner's own
-  phone, which brings rotation back (it is realm-wide, so for both clients
+  phone, or an admin surface in the app, which brings rotation back (it is realm-wide, so for both clients
   and behind a renewal lock for the web); a hosted deployment that changes the issuer
   or the redirect URIs (the tailnet origin of a physical phone is
   [ADR-0097](0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)'s: the issuer is one origin per mode, never

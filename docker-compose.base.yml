@@ -47,8 +47,8 @@ services:
       DATABASE_OWNER_USERNAME: kalia_owner
       DATABASE_OWNER_PASSWORD: ${DATABASE_OWNER_PASSWORD:?set DATABASE_OWNER_PASSWORD, see README.md}
       FEED_CURSOR_KEY: ${FEED_CURSOR_KEY:?set FEED_CURSOR_KEY, see README.md}
-      # Counters at /actuator/prometheus, which needs a bearer token like
-      # every actuator endpoint but health (ADR-0088, backend/README.md)
+      # Counters at /actuator/prometheus: no token, since the edge refuses
+      # the actuator but health and this port is unpublished (ADR-0088)
       ACTUATOR_ENDPOINTS: health,prometheus
       # Two addresses for one Keycloak, the same split ADR-0025 records for
       # the web app: the issuer is the identity stamped into every token

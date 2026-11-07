@@ -253,7 +253,7 @@ day-to-day rules ([web/README.md](../web/README.md),
   `identity` is the only module that reads a token's claims
   ([ADR-0028](adr/0028-resource-server-and-current-user.md)).
 - **An admin is a realm role** enforced on `/api/v1/admin/**` and read by the
-  web's BFF ([ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
+  web's BFF; the mobile app's token never carries it ([ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - **Keycloak owns** registration, mail, lockout and the branded sign-in pages
   ([ADR-0055](adr/0055-self-registration-via-keycloak.md), [ADR-0056](adr/0056-branded-bilingual-keycloak-pages.md), [ADR-0061](adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)); the realm
   is applied from `keycloak/realm-export.json` ([ADR-0054](adr/0054-keycloak-config-cli-realm-management.md)).
@@ -270,7 +270,9 @@ fails when the set differs:
   ([ADR-0050](adr/0050-public-cellar-addressing.md));
 - the feed, `GET /api/v1/feed` ([ADR-0059](adr/0059-feed-respects-cellar-visibility.md));
 - `GET /api/v1/app-config` ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md));
-- `GET /actuator/health` and its groups;
+- the actuator, `/actuator/**`: whatever `ACTUATOR_ENDPOINTS` exposes, `health`
+  alone by default; the edge refuses all of it but `health`
+  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md));
 - the API docs where `SPRINGDOC_ENABLED` is on: `/v3/api-docs`,
   `/v3/api-docs/swagger-config`, `/swagger-ui.html`, `/swagger-ui/`.
 

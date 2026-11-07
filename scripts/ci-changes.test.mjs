@@ -141,6 +141,7 @@ test("backend, web and keycloak keep their own triggers", () => {
   expectOutputs(["backend/openapi.json"], { backend: true, web: true });
   expectOutputs(["packages/api/src/client.ts"], { web: true, backend: false });
   expectOutputs(["scripts/check-keycloak-pkce-flow.mjs"], { keycloak: true, backend: false, web: false });
+  expectOutputs(["scripts/check-keycloak-admin.mjs"], { keycloak: true, backend: false, web: false });
   expectOutputs(["web/src/app/page.tsx"], { keycloak: false });
 });
 

@@ -1,8 +1,6 @@
 package fi.kalia;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -46,26 +44,16 @@ class KaliaApplicationIT {
 				.value(body -> assertThat(body).doesNotContain("components").doesNotContain("PostgreSQL"));
 	}
 
-	// Pins the declared exposure so an upgrade can't widen it unnoticed.
-	// Must be authenticated, or 401 masks a widened exposure as a narrow one.
+	// Pins the declared exposure so an upgrade can't widen it unnoticed. Without
+	// a token an unexposed endpoint is a 404: the actuator needs none (ADR-0088),
+	// so exposure is the only thing between a caller and an endpoint.
 	@Test
 	void unexposedActuatorEndpointsAreNotReachable() {
-		given(jwtDecoder.decode(anyString())).willReturn(TestTokens.testUser());
-
 		for (String endpoint : List.of("env", "beans", "configprops", "loggers", "mappings", "metrics", "prometheus")) {
 			restTestClient.get().uri("/actuator/" + endpoint)
-					.header("Authorization", "Bearer test-token")
 					.exchange()
 					.expectStatus().isNotFound();
 		}
-	}
-
-	/** Everything under /actuator but health needs a token (ADR-0028). */
-	@Test
-	void actuatorBeyondHealthIsNotPubliclyReadable() {
-		restTestClient.get().uri("/actuator/metrics")
-				.exchange()
-				.expectStatus().isUnauthorized();
 	}
 
 	@Test

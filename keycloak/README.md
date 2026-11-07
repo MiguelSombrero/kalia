@@ -59,7 +59,9 @@ proves accounts live in Postgres rather than the container;
 `scripts/check-keycloak-pkce-flow.mjs` signs in as `kalia-mobile` and asserts
 the audience and the registration [ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) promises;
 `scripts/check-keycloak-admin.mjs` asserts the `admin` role reaches
-`testadmin`'s token and no one else's. All four run in `make keycloak-check` and in CI, whenever a push touches
+`testadmin`'s `kalia-web` token and no one else's, never `kalia-mobile`'s, and,
+with `--backend`, that the API refuses the app's token at `/api/v1/admin/**`.
+All four run in `make keycloak-check` and in CI, whenever a push touches
 Keycloak's inputs.
 `scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's
 colours and mark to the app's, in `make check`, hence CI. See
@@ -90,6 +92,15 @@ All of these are in `realm-export.json` under the drift check
   ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
 - **Mail is Keycloak's alone,** through `$(env:KEYCLOAK_SMTP_*)` placeholders:
   Mailpit in the dev overlay, a real sender in a deployment.
+- **`kalia-mobile` lists its client scopes** (default `web-origins`, `acr`,
+  `profile`, `basic`, `email`; optional `offline_access`), with no `roles`. A
+  client with no list inherits the realm's, `roles` included, and `roles` is what
+  writes the admin role into a token, so the app's offline refresh token would
+  carry it for as long as it is refreshed. The audience does not come from that
+  scope, so leaving it out costs the token nothing the backend reads. `kalia-web`
+  keeps no list on purpose: it must keep `roles`, or every admin is refused
+  without an error. Add a scope the app needs to both lists, never `roles`
+  ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - **The `admin` realm role** is granted to no one and is not a default role;
   the local stack seeds `testadmin` with it
   ([ADR-0101](../docs/adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).

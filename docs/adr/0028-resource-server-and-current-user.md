@@ -19,6 +19,10 @@
   — the filter chain now maps the token's `realm_access.roles` to authorities
   and requires the `admin` role on `/api/v1/admin/**`, so "every signed-in
   caller is authorised alike" holds everywhere else (iteration 10.5 task 04)
+- **Amended:** 2026-11-07 by
+  [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)
+  — the chain permits every `/actuator/**` path the backend serves, not only
+  `health`; the edge and `ACTUATOR_ENDPOINTS` bound what is reachable
 
 ## Context
 

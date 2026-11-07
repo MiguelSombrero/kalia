@@ -74,14 +74,14 @@ class ObservabilityIT {
 	}
 
 	@Test
-	void metricsAreNotPubliclyReadable() {
+	void metricsAreReadableWithoutATokenBecauseTheNetworkIsTheBoundary() {
 		client.get().uri("/actuator/prometheus")
 				.exchange()
-				.expectStatus().isUnauthorized();
+				.expectStatus().isOk();
 	}
 
 	@Test
-	void serverErrorsByRouteAndEventPublicationCountersAreReadableWithAToken(CapturedOutput output) {
+	void serverErrorsByRouteAndEventPublicationCountersAreReadable(CapturedOutput output) {
 		given(jwtDecoder.decode(anyString())).willReturn(TestTokens.testUser());
 		client.get().uri("/test/observability-probe/fail")
 				.header("Authorization", "Bearer test-token")
@@ -91,7 +91,6 @@ class ObservabilityIT {
 		assertThat(requestLog(output, "GET /test/observability-probe/fail -> 500")).isNotEmpty();
 
 		client.get().uri("/actuator/prometheus")
-				.header("Authorization", "Bearer test-token")
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class)

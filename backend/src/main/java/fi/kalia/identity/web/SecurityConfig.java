@@ -60,8 +60,10 @@ class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/v1/feed").permitAll()
 						// An installed app asks before it has a token worth sending (ADR-0093).
 						.requestMatchers(HttpMethod.GET, "/api/v1/app-config").permitAll()
+						// ADR-0088: no token. The edge refuses all of it but health, and
+						// ACTUATOR_ENDPOINTS bounds what exists.
+						.requestMatchers("/actuator/**").permitAll()
 						// "/swagger-ui.html" needs its own entry — it is not under /swagger-ui/.
-						.requestMatchers("/actuator/health/**").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.permitAll()
 						// ADR-0101: the whole prefix, so a later admin route needs no rule of its own.

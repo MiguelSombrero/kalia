@@ -35,7 +35,7 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 | `DATABASE_OWNER_USERNAME` | `kalia_owner` | The role Flyway connects as; owns every table |
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
-| `ACTUATOR_ENDPOINTS` | `health` | Compose sets `health,prometheus`; all but `health` need a bearer token |
+| `ACTUATOR_ENDPOINTS` | `health` | Compose sets `health,prometheus`; the actuator needs no token, so list only what the network may see ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)) |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8081/realms/kalia` | The `iss` every accepted token must carry |
 | `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Signing keys; differs from the issuer under compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
 | `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud`; rejects tokens minted for another client |
@@ -139,7 +139,7 @@ Each rule links the ADR or test holding its reasoning ([ADR-0020](../docs/adr/00
 Logs, counters and trace ids exist; nothing views them ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
 
 - **Logs**: JSON per line on stdout, `traceId`/`spanId` on each line written during a request. Read: `docker compose logs backend --no-log-prefix | jq -c '[.["@timestamp"], .log.level, .message, .traceId]'`. Follow a request across both tiers: `docker compose logs --no-log-prefix | grep <traceId>`.
-- **Counters** at `/actuator/prometheus` need a bearer token and the edge answers `404` ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)), so read it inside the network, with a token copied from the `curl` Swagger UI shows after a request: `docker compose exec backend curl -H "Authorization: Bearer <token>" localhost:8080/actuator/prometheus`. Natively set `ACTUATOR_ENDPOINTS=health,prometheus`.
+- **Counters** at `/actuator/prometheus` need no token and the edge answers `404` ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)), so the network is what keeps them private ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)): read them inside it, `docker compose exec backend curl localhost:8080/actuator/prometheus`, and let a scraper join the compose network rather than publish the port. Natively set `ACTUATOR_ENDPOINTS=health,prometheus`. Never list `env`, `heapdump` or `beans`: nothing else guards them.
 - Ours: `kalia_events_publication_retries_total` and `kalia_events_publication_exhausted_total`.
 
 ## Traps — do not "fix" these
