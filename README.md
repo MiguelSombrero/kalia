@@ -179,7 +179,7 @@ a manifest; don't restate what the manifest says.
 
 ### CI
 
-- GitHub Actions: `make verify`'s checks on every push, each suite only when the push can affect it (`scripts/ci-changes.mjs`). Every action is SHA-pinned with its tag in a trailing comment; `pr-body.yml` checks that a task-completing pull request fills in the template's Gates section
+- GitHub Actions: `make verify`'s checks on every push, each suite only when the push can affect it (`scripts/ci-changes.mjs`). Every action is SHA-pinned with its tag in a trailing comment; `pr-body.yml` checks that a task-completing pull request fills in the template's Gates section, and `merge-ref-check.yml` runs `make check` on the merge of the branch into `dev`
 
 ## Repository layout
 
