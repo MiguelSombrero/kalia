@@ -11,5 +11,4 @@ export type SuggestionDecisionDtoOutcome = typeof SuggestionDecisionDtoOutcome[k
 export const SuggestionDecisionDtoOutcome = {
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
-  REMOVED: 'REMOVED',
 } as const;

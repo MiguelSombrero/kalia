@@ -25,7 +25,7 @@ browsing and searching the catalog.
 | [14](iteration-11/14-concurrency-tests-force-the-interleaving-they-check.md) | A concurrency test forces the interleaving it checks | done |
 | [15](iteration-11/15-a-pull-request-is-checked-against-the-base-it-will-merge-into.md) | A pull request is checked against the base it will merge into | done |
 | [13](iteration-11/13-the-readme-and-architecture-describe-a-project-with-a-mobile-app.md) | The README and the architecture describe a project with a mobile app | done |
-| [18](iteration-11/18-a-client-falls-back-on-an-enum-value-it-does-not-know.md) | A client falls back on an enum value it does not know | refined |
+| [18](iteration-11/18-a-client-falls-back-on-an-enum-value-it-does-not-know.md) | A client falls back on an enum value it does not know | done |
 | [01](iteration-11/01-decision-how-a-mobile-direction-is-prototyped-and-signed-off.md) | Decide how a mobile direction is prototyped and signed off | refined |
 | [06](iteration-11/06-decision-the-design-token-format.md) | Decide the design token format | done |
 | [07](iteration-11/07-token-pipeline.md) | One token source generates the web's CSS and the app's theme | needs-refinement |

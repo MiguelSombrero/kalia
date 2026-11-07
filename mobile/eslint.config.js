@@ -4,6 +4,7 @@ const expoConfig = require("eslint-config-expo/flat");
 const boundaries = require("eslint-plugin-boundaries");
 const path = require("node:path");
 const { dependencies } = require("./package.json");
+const { plugin: enumLookupPlugin } = require("../packages/api/eslint/enum-lookup-rules.cjs");
 
 const reactVersion = dependencies.react;
 
@@ -87,6 +88,14 @@ const eslintConfig = defineConfig([
         },
       ],
     },
+  },
+  // A label or colour per API enum value goes through enumLookup() so a value a
+  // newer backend adds has a fallback (ADR-0093).
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx"],
+    plugins: { kalia: enumLookupPlugin },
+    rules: { "kalia/no-closed-enum-map": "error" },
   },
   {
     files: ["*.js"],

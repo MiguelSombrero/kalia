@@ -50,3 +50,21 @@ describe("font scaling", () => {
     expect(await messagesFor(code, "src/components/probe.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("allowFontScaling")]]);
   });
 });
+
+describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
+  const enumFixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixtures", "enum-lookup", `${name}.ts`), "utf8");
+  const ruleIds = async (code: string, filePath: string) => (await messagesFor(code, filePath)).map(([ruleId]) => ruleId);
+
+  // The mapped-type fixture imports the generated models, which only a feature's api.ts may.
+  it.each([
+    { name: "closed-record-lookup", lintAs: "src/features/catalog/probe.ts" },
+    { name: "closed-mapped-type-lookup", lintAs: "src/features/catalog/api.ts" },
+  ])("rejects $name", async ({ name, lintAs }) => {
+    expect(await ruleIds(enumFixture(name), lintAs)).toEqual(["kalia/no-closed-enum-map"]);
+  });
+
+  it("leaves a map keyed by the app's own union, and a test, alone", async () => {
+    expect(await ruleIds(enumFixture("own-record-is-not-an-api-enum"), "src/features/catalog/probe.ts")).toEqual([]);
+    expect(await ruleIds(enumFixture("closed-record-lookup"), "src/features/catalog/probe.test.ts")).toEqual([]);
+  });
+});

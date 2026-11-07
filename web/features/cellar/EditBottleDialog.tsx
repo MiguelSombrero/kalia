@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { containerTypes } from "./addBottleSchema";
+import { containerLabelKey } from "./bottleFacts";
 import { todayIso } from "./bottleDateRules";
 import { CellarConflictAlert } from "./CellarConflictAlert";
 import { isCellarConflict } from "./conflict";
@@ -39,6 +40,9 @@ export const EditBottleDialog = ({
   const [isOpen, setIsOpen] = useState(false);
   const updateBottle = useUpdateBottle();
   const ids = useId();
+  const containerOptions = containerTypes.includes(bottle.containerType)
+    ? containerTypes
+    : [...containerTypes, bottle.containerType];
 
   const form = useForm<EditBottleFormValues>({
     resolver: zodResolver(editBottleSchema),
@@ -121,9 +125,9 @@ export const EditBottleDialog = ({
               className={fieldClasses}
               {...form.register("containerType")}
             >
-              {containerTypes.map((type) => (
+              {containerOptions.map((type) => (
                 <option key={type} value={type}>
-                  {t(`cellar.bottle.container.${type}`)}
+                  {t(containerLabelKey(type))}
                 </option>
               ))}
             </select>

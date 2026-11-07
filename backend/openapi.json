@@ -146,6 +146,45 @@
         "required" : [ "moderationStatus", "status", "title" ],
         "type" : "object"
       },
+      "BeerRemovalDto" : {
+        "description" : "An approved beer as an admin removed it",
+        "properties" : {
+          "abv" : {
+            "description" : "Alcohol by volume, percent",
+            "type" : "number"
+          },
+          "brewery" : {
+            "$ref" : "#/components/schemas/BreweryDto"
+          },
+          "breweryStatus" : {
+            "description" : "Where the brewery stands, unchanged by the removal",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "REMOVED" ],
+            "type" : "string"
+          },
+          "decidedAt" : {
+            "description" : "When the removal was made",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "description" : "The beer's id",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "outcome" : {
+            "enum" : [ "REMOVED" ],
+            "type" : "string"
+          },
+          "style" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "abv", "brewery", "breweryStatus", "decidedAt", "id", "name", "outcome", "style" ],
+        "type" : "object"
+      },
       "BeerSummaryDto" : {
         "description" : "A beer as it appears in search results",
         "properties" : {
@@ -963,7 +1002,7 @@
         "type" : "object"
       },
       "SuggestionDecisionDto" : {
-        "description" : "A beer as an admin decided it: a suggestion approved or rejected, or an approved beer removed",
+        "description" : "A suggestion as an admin decided it: approved or rejected",
         "properties" : {
           "abv" : {
             "description" : "Alcohol by volume, percent",
@@ -991,7 +1030,7 @@
             "type" : "string"
           },
           "outcome" : {
-            "enum" : [ "APPROVED", "REJECTED", "REMOVED" ],
+            "enum" : [ "APPROVED", "REJECTED" ],
             "type" : "string"
           },
           "reason" : {
@@ -1147,7 +1186,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SuggestionDecisionDto"
+                  "$ref" : "#/components/schemas/BeerRemovalDto"
                 }
               }
             },

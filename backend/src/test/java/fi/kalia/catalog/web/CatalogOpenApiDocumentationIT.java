@@ -68,6 +68,23 @@ class CatalogOpenApiDocumentationIT {
 	}
 
 	@Test
+	void eachReviewDecisionBodyIsTypedToTheOutcomesItsEndpointCanReturn() {
+		String body = apiDocs();
+
+		List<String> decided = JsonPath.read(body, "$.components.schemas.SuggestionDecisionDto.properties.outcome.enum");
+		assertThat(decided).containsExactly("APPROVED", "REJECTED");
+		List<String> removed = JsonPath.read(body, "$.components.schemas.BeerRemovalDto.properties.outcome.enum");
+		assertThat(removed).containsExactly("REMOVED");
+
+		for (String path : List.of("/api/v1/admin/suggestions/{id}/approval", "/api/v1/admin/suggestions/{id}/rejection")) {
+			assertThat((String) JsonPath.read(body, "$.paths['" + path + "'].post.responses['200'].content['*/*'].schema['$ref']"))
+					.as(path).endsWith("/SuggestionDecisionDto");
+		}
+		assertThat((String) JsonPath.read(body, "$.paths['/api/v1/admin/beers/{id}/removal'].post.responses['200'].content['*/*'].schema['$ref']"))
+				.endsWith("/BeerRemovalDto");
+	}
+
+	@Test
 	void swaggerUiIsServed() {
 		client.get().uri("/swagger-ui/index.html")
 				.exchange()

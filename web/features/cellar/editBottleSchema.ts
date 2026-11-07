@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { applyBottleDateRules } from "./bottleDateRules";
-import { containerTypeValues } from "./types";
+import type { ContainerType } from "./types";
 
 export const editBottleSchema = z
   .object({
-    containerType: z.enum(containerTypeValues),
+    containerType: z.custom<ContainerType>((value) => typeof value === "string" && value !== ""),
     brewedDate: z.string().optional(),
     bestBeforeDate: z.string().optional(),
   })

@@ -21,6 +21,15 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
   ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
   After changing the API, `make openapi-spec` first rewrites that file from what
   the application serves. Never hand-edit `src/generated/`.
+- **An API enum value is looked up through `enumLookup()`**, never a bare
+  `Record`: the backend only adds values, so an installed app meets ones its
+  build never saw. `enumLookup<E, V>(entries, fallback)` returns a function
+  that answers `fallback` for an unlisted value; labels use
+  `UNKNOWN_VALUE_LABEL_KEY` ("Other" in `en`, "Muu" in `fi`). The
+  `kalia/no-closed-enum-map` rule (`eslint/enum-lookup-rules.cjs`, loaded by
+  the web and mobile configs) fails a `Record` or mapped type keyed by a type
+  imported from a `types` or `api` file or the generated client
+  ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **The generated client calls a transport the app registers once at startup**,
   with `registerTransport()`; a call before that throws. `createFetchTransport()`
   is the core: base URL, timeout, JSON parsing, a non-2xx status returned

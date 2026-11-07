@@ -16,8 +16,8 @@ import type {
 
 import type {
   BeerNotApprovedProblem,
-  Problem,
-  SuggestionDecisionDto
+  BeerRemovalDto,
+  Problem
 } from '../models';
 
 import { kaliaFetch } from '../../core/transport';
@@ -28,7 +28,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 export type removeResponse200 = {
-  data: SuggestionDecisionDto
+  data: BeerRemovalDto
   status: 200
 }
 
