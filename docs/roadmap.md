@@ -35,7 +35,8 @@ and on simulators against the local stack, and what a cost blocks is parked in
 exception: an admin page in the web app that replaces the SQL moderation
 script, before the mobile design work resumes. Iteration 11's task files are
 refined as the decisions they wait on land, and also carry quality-backlog
-findings. Iterations 12–14 list planned tasks as one line each, their task
+findings. Iteration 11.5 starts with an opt-in local observability
+profile that agents can query; the rest of it is added later. Iterations 12–14 list planned tasks as one line each, their task
 files written at refinement.
 
 **Definition of done (every issue):**
@@ -75,6 +76,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ✅ Done |
 | [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ✅ Done |
 | [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ⬜ Todo |
+| [11.5 — An agent can see what the stack did](tasks/iteration-11.5.md) | A local observability profile an agent can query, request by request | ⬜ Todo |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
 | [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |
 | [14 — Scan the bottle in your hand](tasks/iteration-14.md) | A barcode puts a beer in the cellar | ⬜ Todo |

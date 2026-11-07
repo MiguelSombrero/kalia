@@ -132,7 +132,7 @@ Each module's terms: [docs/glossary.md](glossary.md).
 - **Flyway owns the schema**, and the connection role cannot change it
   ([ADR-0100](adr/0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
 - **The catalog ships as migrations**, seeded once from Wikidata
-  ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)); generator detail is in [backend/README.md](../backend/README.md).
+  ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)); how to regenerate it is in [backend/README.md](../backend/README.md#database-migrations).
 - **Events use Modulith's JDBC registry;** delivery is at least once, with
   incomplete publications resubmitted ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)). **Every listener must be idempotent:** a duplicate
   delivery that is not absorbed corrupts data without an error.
@@ -313,7 +313,7 @@ local gate and the CI gate: [ADR-0046](adr/0046-edit-time-checks-and-one-verify-
   that points at a beer is orphaned ([ADR-0091](adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
 - **No catalog read cache, measured:** indexes keep reads inside the budget, at
   the cost of re-measuring when the catalog's size or queries change
-  ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)); the procedure is in [backend/README.md](../backend/README.md).
+  ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)); the method is in the ADR's Evidence.
 - **Built-in observability and no viewer:** counters are per process and reset
   on restart ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
 - **Single instance, accepted where written down:** a second backend instance

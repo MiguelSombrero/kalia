@@ -103,7 +103,7 @@ defers full metrics/tracing).
 - Task 3 (configuration strategy) inherited the per-environment levels
   above as a known requirement; it delivered them via `LOG_LEVEL` rather
   than profiles ([ADR-0015](0015-configuration-strategy.md)).
-- `backend/README.md`'s "Logging conventions" section summarizes the rules
+- `backend/README.md`'s logging bullet summarizes the rules
   for day-to-day reference and links here; this ADR is the full statement and
   the record of why. It originally carried a full restatement instead — see
   the `Amended` field above.

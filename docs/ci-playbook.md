@@ -41,7 +41,7 @@ handler — including one declared at the class level — makes springdoc stop
 synthesising the success response from the return type, and drop it from
 `/v3/api-docs` rather than add to it. There is no compile error and no test
 failure. The rule, and the `@ResponseStatus` that fixes it, is in
-[backend/README.md](../backend/README.md)'s conventions.
+[backend/README.md](../backend/README.md)'s Traps.
 
 Run it locally before pushing either way: `make api-drift` (it regenerates from
 `backend/openapi.json`, needing neither Docker nor a backend). An orval bump is

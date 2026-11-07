@@ -17,8 +17,7 @@ Two forces decide it. The backend is built and run on Java 25 throughout
 to be built against the API it serves, so the runtime is chosen for years of
 support rather than for the newest language level. And Lombok's annotation
 processor reaches into `javac` internals, so a JDK newer than 25 fails the
-`compile` goal ([backend/README.md](../../backend/README.md), "Maven must run
-on JDK 25").
+`compile` goal ([backend/README.md](../../backend/README.md), "Traps").
 
 ## Decision
 
