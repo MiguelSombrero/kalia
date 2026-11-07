@@ -48,11 +48,19 @@ class ProfileServiceModuleIT {
 	@PersistenceContext
 	private EntityManager entityManager;
 
+	// Both sign-ins miss the row and both find the username free before either
+	// commits, so both insert and the loser always trips profile_pkey. Do not
+	// move the username query below its barrier: a thread that runs it after the
+	// winner committed finds the winner's row, never inserts, and the conflict
+	// this test exists to cover does not happen.
 	@Test
 	void concurrentFirstSignInsForANewUserBothSucceedAgainstOneSharedProfile() throws Exception {
 		UUID userId = UUID.randomUUID();
+		String username = "racer-" + UUID.randomUUID();
 		CyclicBarrier bothSawNoProfile = new CyclicBarrier(2);
+		CyclicBarrier bothSawTheNameFree = new CyclicBarrier(2);
 		AtomicInteger reads = new AtomicInteger();
+		AtomicInteger checks = new AtomicInteger();
 		// See ProfileServiceConcurrencyIT for why this reads through the
 		// EntityManager instead of calling the real repository method.
 		doAnswer(invocation -> {
@@ -61,15 +69,25 @@ class ProfileServiceModuleIT {
 			}
 			return Optional.ofNullable(entityManager.find(Profile.class, userId));
 		}).when(profiles).findById(eq(userId));
+		doAnswer(invocation -> {
+			Optional<Profile> holder = entityManager
+					.createQuery("select p from Profile p where lower(p.username) = lower(:username)", Profile.class)
+					.setParameter("username", username)
+					.getResultStream().findFirst();
+			if (checks.getAndIncrement() < bothSawTheNameFree.getParties()) {
+				bothSawTheNameFree.await(5, TimeUnit.SECONDS);
+			}
+			return holder;
+		}).when(profiles).findByUsernameIgnoringCase(eq(username));
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		try {
-			Future<Profile> first = pool.submit(() -> service.currentProfile(userId, "racer"));
-			Future<Profile> second = pool.submit(() -> service.currentProfile(userId, "racer"));
+			Future<Profile> first = pool.submit(() -> service.currentProfile(userId, username));
+			Future<Profile> second = pool.submit(() -> service.currentProfile(userId, username));
 
 			assertThat(first.get(10, TimeUnit.SECONDS).getId()).isEqualTo(userId);
 			assertThat(second.get(10, TimeUnit.SECONDS).getId()).isEqualTo(userId);
-			assertThat(reads.get()).isGreaterThan(bothSawNoProfile.getParties());
+			assertThat(profiles.findAllById(List.of(userId))).hasSize(1);
 		} finally {
 			pool.shutdownNow();
 		}

@@ -52,6 +52,14 @@ mvn verify                    # + integration tests (*IT, Testcontainers —
 mvn clean verify              # after any pom.xml or plugin change
 ```
 
+One integration test, repeated until it fails or the count runs out (from the repo root, ~20 s a run, needs Docker):
+
+```bash
+make repeat-it TEST=ProfileServiceModuleIT#concurrentFirstSignInsForANewUserBothSucceedAgainstOneSharedProfile COUNT=20
+```
+
+`COUNT` defaults to 20. `TEST` must name a method, as a name matching nothing fails rather than passing.
+
 Unit tests end in `*Test` (surefire); anything booting a Spring context or a Testcontainer ends in `*IT` (failsafe).
 A green run is ~285 lines; keep the counts with `mvn verify 2>&1 | grep -E "Tests run:|ERROR|FAIL|BUILD"`, and **on failure re-run unfiltered** (or read `target/failsafe-reports/`) before diagnosing.
 Before a push run `make verify` from the repo root, or `make verify-fast` without Docker ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)); `verify-fast` skips the suites below.
@@ -149,4 +157,5 @@ Each fails silently rather than at build time, so the warning stays here.
 - **A handler with any `@ApiResponse` needs an explicit `@ResponseStatus`**, even `200`. Otherwise springdoc drops the success response from `/v3/api-docs`, with no compile error and no test failure unless one asserts on the spec.
 - **Change the wire format through a `ServerHttpMessageConvertersCustomizer`, never an `HttpMessageConverter` bean.** Boot hands every converter bean to `RestClient` and `RestTestClient` too, silently changing how outgoing calls decode, e.g. a `problem+json` body read as a `String`.
 - **A `noClasses()` ArchUnit rule (or a `classes().should()` rule every class satisfies) passes when it never meets a violator**, so a wrong condition looks satisfied. Such a rule gets a fixture in `src/test/java/archfixture/`; a rule already exercised by production code, like `entitiesLiveInDomain`, does not.
-- **Event-listener tests poll the repository**, scoped per test. `verify(spy, timeout(…)).save(any())` races the listener's own commit.
+- **Event-listener tests poll the repository**, scoped per test. `verify(spy, timeout(…)).save(any())` races the listener's own commit. The same holds for any side effect after the response, a log line included: await it by polling until it appears or a deadline passes, never read it once.
+- **A concurrency test forces its conflict and never asserts that a race occurred.** Barriers (or a hook delaying one side) go where both sides have read and neither has written, and a query a barrier guards runs before it, returning after; a thread that reads late sees the winner's row and the conflict silently never happens. A new or changed concurrency test shows 20 consecutive clean runs on its branch by `make repeat-it` before its pull request opens, stated in the pull request body; no checker looks for it, since a script cannot tell a concurrency test from any other.

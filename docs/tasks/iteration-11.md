@@ -22,7 +22,7 @@ browsing and searching the catalog.
 | ID | Task | Status |
 |---|---|---|
 | [12](iteration-11/12-the-process-documents-name-what-exists.md) | The process documents name what exists | done |
-| [14](iteration-11/14-concurrency-tests-force-the-interleaving-they-check.md) | A concurrency test forces the interleaving it checks | refined |
+| [14](iteration-11/14-concurrency-tests-force-the-interleaving-they-check.md) | A concurrency test forces the interleaving it checks | done |
 | [15](iteration-11/15-a-pull-request-is-checked-against-the-base-it-will-merge-into.md) | A pull request is checked against the base it will merge into | done |
 | [13](iteration-11/13-the-readme-and-architecture-describe-a-project-with-a-mobile-app.md) | The README and the architecture describe a project with a mobile app | done |
 | [18](iteration-11/18-a-client-falls-back-on-an-enum-value-it-does-not-know.md) | A client falls back on an enum value it does not know | refined |
