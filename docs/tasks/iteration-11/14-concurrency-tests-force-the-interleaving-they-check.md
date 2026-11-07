@@ -24,7 +24,7 @@ adds a race test of its own.
 
 The open test is fixed as the 2026-10-30 row for `ProfileServiceConcurrencyIT`
 was: the interleaving is forced so the conflict always happens, rather than
-asserted to have happened. The testing strategy gains two rules — a concurrency
+asserted to have happened. The backend README gains two rules — a concurrency
 test forces the interleaving it checks (barriers placed so the conflict always
 happens, or a hook delaying one side) and never asserts that a race occurred; a
 side effect after the response, such as a log line or a listener's write, is
@@ -70,11 +70,17 @@ its pull request opens.
       branch
 - [x] The target runs one named integration test a given number of times and
       stops at the first failure
-- [x] `docs/architecture.md`'s testing strategy states the two rules and the
-      repeat requirement, and the common-failures row names this task
+- [x] The backend README's Traps state the two rules and the repeat
+      requirement, and the common-failures row names this task
 - [x] `make verify-fast` is green
 
 ## Notes
+
+The two rules first went into `docs/architecture.md`'s testing strategy; the
+product owner moved them to the backend README on review of the pull request,
+since how to write a test is a README's role, not architecture's
+([ADR-0020](../../adr/0020-documentation-roles.md)). The Scope and the
+criterion above follow that call.
 
 Provenance: [quality backlog](../quality-backlog.md) SHOULD-99 and SHOULD-100.
 Runs early, since a flaky test undermines every gate after it

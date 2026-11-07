@@ -288,17 +288,6 @@ fails when the set differs:
 | Import boundaries and the API contract | ESLint, `make api-drift`, `make api-breaking` | The layers, the generated client, the spec ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)) |
 | Static and security checks | `make check`, Trivy | Docs, tasks, links, tokens; dependencies and images ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)) |
 
-Two rules keep a test from racing itself. **A concurrency test forces the
-interleaving it checks** — barriers placed so the conflict always happens, or a
-hook delaying one side — and asserts the outcome, never that a race occurred: a
-test that cannot cause its race passes or fails by timing. **A side effect after
-the response, such as a log line or a listener's write, is awaited**, polled
-until it appears or a deadline passes, and never read once. A new or changed
-concurrency test shows 20 consecutive clean runs on its branch, by `make
-repeat-it`, before its pull request opens, and the pull request body says so;
-no checker looks for it, since a script cannot tell a concurrency test from any
-other.
-
 Test naming and commands: [backend/README.md](../backend/README.md),
 [web/README.md](../web/README.md), [mobile/README.md](../mobile/README.md). The
 local gate and the CI gate: [ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md).
