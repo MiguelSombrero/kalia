@@ -1,6 +1,6 @@
 # Task 18: A client falls back on an enum value it does not know
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -66,18 +66,18 @@ save; and the `200` of a review decision is typed to what it can carry.
 
 ## Acceptance criteria
 
-- [ ] A component test renders the web's `BottleTile` with a container type the
+- [x] A component test renders the web's `BottleTile` with a container type the
       client does not list and shows a fallback label; it failed before
-- [ ] A test shows `editBottleSchema` keeping an unknown container type on save
-- [ ] A lint fixture with an enum lookup that bypasses the helper fails the
+- [x] A test shows `editBottleSchema` keeping an unknown container type on save
+- [x] A lint fixture with an enum lookup that bypasses the helper fails the
       rule
-- [ ] A test shows the app's style-group mapping, or the helper it uses, giving
+- [x] A test shows the app's style-group mapping, or the helper it uses, giving
       an unknown value a fallback
-- [ ] The `200` of a review decision is typed with its own enum, the committed
+- [x] The `200` of a review decision is typed with its own enum, the committed
       spec and generated client are regenerated, and `make openapi-spec` shows
       no breaking diff beyond the documented waiver
-- [ ] §4 of `docs/architecture.md` and ADR-0093 state what holds
-- [ ] `make verify-fast` is green
+- [x] §4 of `docs/architecture.md` and ADR-0093 state what holds
+- [x] `make verify-fast` is green
 
 ## Notes
 
