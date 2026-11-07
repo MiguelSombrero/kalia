@@ -1,6 +1,6 @@
 # Task 21: Reads that scan history are indexed, and their plans are pinned
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -42,21 +42,25 @@ shows the catalog search's, and the schema carries whatever index makes it so.
   ([ADR-0091](../../adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)),
   so rejected rows accumulate.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The feed's reads are bounded by an index on `feed.line(occurred_at)`;**
+  the queries stay as written.
+- **The contributor counts get a partial index on `contributor_id` for
+  `REJECTED` rows now,** since no catalog row is deleted and rejections only
+  accumulate. Each index is a migration of its own module's schema.
+
 ## Open questions
 
-- **Domain and data model.** For the feed, SHOULD-105's options: index
-  `occurred_at`, or turn the cutoff into a lower bound on `sequence_number`.
-- **Constraints and trade-offs.** Whether COULD-131's partial index on
-  `contributor_id` is wanted now, when few beers are rejected, or only the plan
-  is pinned and the index waits for a number.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A plan test shows the feed's front-page read and its `?before=` read near
       the window's edge touching a bounded number of rows on a table holding
       many older lines; it failed before the migration
-- [ ] A plan test shows the contributor counts' `REJECTED` half using an index,
-      or documents the number of rejections at which the index is added
+- [ ] A plan test shows the contributor counts' `REJECTED` half using an index;
+      it failed before the migration
 - [ ] The migration passes the schema checks and the existing feed and review
       queue tests are green
 - [ ] `make verify-fast` is green

@@ -1,6 +1,6 @@
 # Task 18: A client falls back on an enum value it does not know
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -49,23 +49,28 @@ save; and the `200` of a review decision is typed to what it can carry.
 - The web deploys with the backend, so its unknown value is a transient
   inconsistency; the app's is permanent until updated.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **A label-with-fallback helper in `@kalia/api` serves both clients,** and a
+  lint rule fails an enum lookup that bypasses it. The rule is not narrowed to
+  mobile, so §4 stands as a promise both clients keep.
+- **An unknown value reads as a generic word,** "Other" in `en` and "Muu" in
+  `fi`; a form keeps the value it was given and saves it unchanged.
+- **The app's style-group colour mapping uses the helper,** and this task lands
+  before [task 03](03-design-kalias-identity-on-a-phone.md), whose rows need
+  the fallback.
+
 ## Open questions
 
-- **Functional scope.** SHOULD-108's options: a mechanism — open enums from an
-  Orval override, or a label-with-fallback helper in `@kalia/api` with a lint
-  rule — or narrow the rule to mobile, since the web deploys with the backend,
-  and correct §4.
-- **Interaction.** What a user reads for an unknown value: the raw code, a
-  generic word, or nothing.
-- **Module boundaries.** Where the helper would live and how the style-group
-  colour mapping of [task 03](03-design-kalias-identity-on-a-phone.md) uses it.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A component test renders the web's `BottleTile` with a container type the
       client does not list and shows a fallback label; it failed before
-- [ ] A test shows `editBottleSchema` keeping an unknown container type on save,
-      or the decision narrowing the rule and §4 saying so
+- [ ] A test shows `editBottleSchema` keeping an unknown container type on save
+- [ ] A lint fixture with an enum lookup that bypasses the helper fails the
+      rule
 - [ ] A test shows the app's style-group mapping, or the helper it uses, giving
       an unknown value a fallback
 - [ ] The `200` of a review decision is typed with its own enum, the committed

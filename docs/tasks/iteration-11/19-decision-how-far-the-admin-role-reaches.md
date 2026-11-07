@@ -1,6 +1,6 @@
 # Task 19: Decide how far the admin role reaches
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -48,29 +48,34 @@ is made.
   Keycloak (`make keycloak-check`).
 - Kalia adds no cost ([`CLAUDE.md`](../../../CLAUDE.md)).
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **`kalia-mobile` gets an explicit client-scope list without `roles`,** so a
+  token it is issued never carries the admin role; the realm drift check pins
+  the list. Admin stays on the web. Keycloak's `roles` scope also carries the
+  audience mapper, so the task first confirms the app's token still holds the
+  audience the backend validates.
+- **For `/actuator/**`, the network is the boundary.** The edge refuses every
+  actuator path but health, a test pins that, and the backend permits the rest
+  without a token on the stack's internal network, so a scraper needs no
+  credential. ADR-0088 records it.
+  [Iteration 11.5 task 01](../iteration-11.5/01-decision-the-local-observability-stack.md)'s
+  scrape question is refined against this.
+
 ## Open questions
 
-- **Non-functional.** For the role in the mobile token, SHOULD-103's options:
-  the admin rule also requires `azp == kalia-web`, pinned by a test with a
-  `kalia-mobile` token; an explicit `kalia-mobile` scope list without `roles`,
-  checked by the realm drift check; or accept it and amend ADR-0101's
-  consequence and ADR-0095's revisit trigger to name admin.
-- **Non-functional.** For the metrics endpoint, COULD-126's: require `admin` on
-  `/actuator/**` except health, or record in ADR-0088 that the network is the
-  boundary.
-- **Constraints.** Whether the product owner will ever want admin on the phone;
-  that is the cost of the strictest option.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] An ADR amendment records the decision for each of the two, passes
       `node scripts/check-adrs.mjs`, and amends ADR-0101
-- [ ] A test pins the chosen behaviour for a `kalia-mobile` token carrying the
-      admin role at `/api/v1/admin/**`, and failed before the change unless the
-      decision is to accept it
-- [ ] A test pins the chosen behaviour of `/actuator/prometheus` for an ordinary
-      signed-in user, and `/actuator/health` stays open
-- [ ] `make keycloak-check` passes, if the realm changed
+- [ ] A test shows a `kalia-mobile` token for an admin user carrying no admin
+      role and refused at `/api/v1/admin/**`; it failed before the change
+- [ ] A test shows the backend answering `/actuator/prometheus` without a
+      token, another the edge refusing every actuator path but health, and
+      `/actuator/health` stays open
+- [ ] `make keycloak-check` passes with the realm changed
 - [ ] `make verify-fast` is green
 
 ## Notes

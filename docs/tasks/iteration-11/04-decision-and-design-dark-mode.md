@@ -1,6 +1,6 @@
-# Task 04: Decide whether the app has a dark mode, and design it if so
+# Task 04: Design the app's dark mode
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -21,9 +21,8 @@ against a light surface. It is cheapest to decide before the token format
 
 ## Scope
 
-A decision, then — if the answer is yes — a design. The decision: whether the
-app has a dark mode, and whether it follows the system, offers its own switch,
-or both. The design, only if it has one: the dark palette, the style-group
+The app's dark mode, which follows the system (decided at refinement), and
+its design: the dark palette, the style-group
 colours on it, the beer and person slots on it, and how it is checked, built on
 the real screens beside the light identity of [task 03](03-design-kalias-identity-on-a-phone.md).
 
@@ -38,9 +37,7 @@ the real screens beside the light identity of [task 03](03-design-kalias-identit
 - **This is a design task**
   ([ADR-0062](../../adr/0062-a-design-task-is-a-skill-and-a-marker.md)), run
   under the `design-task` skill as [task 01](01-decision-how-a-mobile-direction-is-prototyped-and-signed-off.md)
-  amends it. If the product owner decides against a dark mode, the alternatives
-  built are the light-only app with and without the system's dark chrome (status
-  bar, keyboard, alerts) handled.
+  amends it.
 - Every colour pairing of the dark palette passes the contrast the identity is
   held to ([ADR-0075](../../adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md),
   `scripts/check-contrast.mjs`), including each style group's pair.
@@ -51,28 +48,34 @@ the real screens beside the light identity of [task 03](03-design-kalias-identit
   ([task 08](08-mobile-ui-primitives.md)) must be right in whichever mode the
   system is in.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The app has a dark mode, and it follows the system setting,** with no
+  in-app switch. `userInterfaceStyle` in `mobile/app.json` becomes
+  `automatic`. What this task designs is the dark palette, from built
+  directions; the light-only alternatives no longer apply.
+- **Whether the style-group colours are re-derived on dark** is a choice
+  between directions; each must still name its style at a glance and pass
+  contrast on its surface.
+- **The splash follows the system's mode, and the first frame reads the
+  system's scheme before it draws,** so no light frame flashes in dark.
+- The token source ([task 06](06-decision-the-design-token-format.md),
+  [07](07-token-pipeline.md)) models two modes from the start; this task
+  writes the dark values into it.
+
 ## Open questions
 
-- **Functional scope.** Whether there is a dark mode at all, and what the
-  alternative is worth if there is not.
-- **Interaction.** Follow the system, an in-app switch, or both; and where a
-  switch would live and whether it persists.
-- **Domain.** Whether the style-group colours are the same in both modes or
-  are re-derived, and whether a re-derived one still names its style at a
-  glance.
-- **Edge cases.** The splash screen and the first frame before the theme loads.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] The product owner decided whether the app has a dark mode from built
-      alternatives, and if it does, chose its palette from built directions,
+- [ ] The product owner chose the dark palette from built alternatives,
       judged in a dark room on the route task 01 chose; an ADR records the
-      directions and the choice
-- [ ] `scripts/check-contrast.mjs` covers every pairing of the dark palette,
-      or of the dark chrome in the light-only case, and fails on a pairing
-      below AA — test
-- [ ] A component test renders a screen in both modes (or, light-only, with the
-      system's dark setting on) and shows the screen readable
+      decision to follow the system, the directions and the choice
+- [ ] `scripts/check-contrast.mjs` covers every pairing of the dark palette
+      and fails on a pairing below AA — test
+- [ ] A component test renders a screen in both modes and shows it readable,
+      and the "update required" and "maintenance" screens in both
 - [ ] The product owner signed off the built result live
 - [ ] `make verify-fast` is green
 

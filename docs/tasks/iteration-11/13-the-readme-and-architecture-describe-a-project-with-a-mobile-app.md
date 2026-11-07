@@ -1,6 +1,6 @@
 # Task 13: The README and the architecture describe a project with a mobile app
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -61,14 +61,19 @@ from its manifest.
 - Accepted ADRs are amended, not rewritten
   ([ADR-0019](../../adr/0019-adr-format-and-conventions.md)).
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The README tree is the home of the layout:** it shows the top-level
+  directories, `packages/` included, and points at §3's table for the backend
+  modules; §2's layout block becomes a pointer to the tree.
+- **The tech stack is kept in step with the manifests by editing;** no check
+  is added.
+- **`docs/architecture.md` no longer mentions `make moderate`,** which
+  iteration 10.5 replaced: that part of COULD-122 is confirmed and dropped.
+
 ## Open questions
 
-- **Module boundaries.** For the tree: add the two packages to it, or point its
-  module lines at §3 and reduce §2's layout block to a pointer at the README.
-- **Completion signals.** Whether a check should keep the tech stack in step
-  with the manifests, or this stays an editing task.
-- **Functional scope.** How much of `docs/architecture.md` §8's admin text is
-  now built and how much waits for the admin pages of iteration 10.5.
+**None.**
 
 ## Acceptance criteria
 
@@ -77,8 +82,9 @@ from its manifest.
 - [ ] `README.md` names the mobile app in its Architecture paragraph, lists
       every technology `mobile/package.json` installs and Maestro, and names
       nginx among the base images
-- [ ] The README tree and `docs/architecture.md` §2 and §3 agree, and the test
-      that asserts §3's table, `ArchitectureDocumentationTest`, passes
+- [ ] The README tree names `packages/` and points at §3 for the backend
+      modules, §2's layout block is a pointer to it, and the test that asserts
+      §3's table, `ArchitectureDocumentationTest`, passes
 - [ ] No version number is restated outside its manifest in the README's
       overrides note, and the stale sentence in `mobile/README.md` is gone
 - [ ] Each smaller item of COULD-122 is corrected, and a search finds no

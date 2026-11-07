@@ -1,6 +1,6 @@
 # Task 16: Signing in or out clears what the last viewer saw
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -40,15 +40,18 @@ button.
 - Reads go through a feature-owned hook
   ([ADR-0041](../../adr/0041-tanstack-query-feature-owned-hooks.md)).
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **Every change of viewer clears the whole query client:** sign-in, sign-out,
+  and a forced sign-out from a refresh the server refuses, which takes the same
+  path as the button. Clearing everything means no query can be missed; the
+  catalog just refetches.
+- **In-flight queries are cancelled before the clear,** so an answer that
+  arrives after the viewer changed has nowhere to land.
+
 ## Open questions
 
-- **Functional scope.** Clear the whole query client on every sign-in and
-  sign-out, or only the queries that depend on the viewer, or key them by
-  viewer.
-- **Edge cases.** A session that ends without the button — a refresh token the
-  server no longer accepts — and whether it takes the same path as a sign-out.
-- **Edge cases.** A request in flight when the viewer changes, and whether its
-  answer may land in the new viewer's cache.
+**None.**
 
 ## Acceptance criteria
 

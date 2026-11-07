@@ -1,6 +1,6 @@
 # Task 12: The process documents name what exists
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -38,9 +38,8 @@ process documents:
 
 ## Scope
 
-Each is corrected: the open iteration is marked in the docs, by a step in
-`implement-task` that does it when an iteration's first task finishes (or by a
-check, per the open question); the playbook names `web/` and the commands that
+Each is corrected: the open iteration is stated in `docs/roadmap.md` alone,
+and a check keeps it in step with the indexes; the playbook names `web/` and the commands that
 work; the lists of manifests include every home a version has; the `worktree`
 skill tells an agent to rename a harness-made branch before its first push; and
 `design-task` step 9 names the right gate.
@@ -62,27 +61,38 @@ skill tells an agent to rename a harness-made branch before its first push; and
 - Each fact has one home
   ([ADR-0020](../../adr/0020-documentation-roles.md)), so the manifest list is
   stated in one place and pointed at from the other.
-- Whichever of iteration 10.5 and this task finishes second, the open-iteration
-  fix is about the iteration that is open then, not 10.5.
+- Iteration 10.5 is closed; the open-iteration fix is about whichever
+  iteration is open when this task lands.
+
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **`docs/roadmap.md` is the one place an iteration's status is stated,** and
+  `check-tasks.mjs` fails when it disagrees with the indexes — an iteration
+  with a `done` task not marked in progress, or one marked done before every
+  task is — covered by a fixture test.
+- **`docs/architecture.md` states no iteration's status:** §1's "No
+  iteration is in progress" line goes, and `implement-task` step 11 stops
+  telling an agent to update it. A shape document says nothing about progress.
+- **The dead-path check reads `docs/ci-playbook.md` and
+  `docs/common-failures.md`,** the two documents followed when something is
+  red. A row naming a path that has since moved is corrected to where it is
+  now.
+- **`CLAUDE.md` names the manifests generically** — every `package.json`,
+  `pom.xml`, compose file, Dockerfile, workflow and toolchain pin file — so
+  it gains no line, and `README.md` holds the full list.
 
 ## Open questions
 
-- **Functional scope.** A step in `implement-task`, or a check that fails when
-  an index has a `done` task and `roadmap.md` still says `⬜ Todo` — the second
-  cannot be forgotten; does it belong in `check-tasks.mjs`?
-- **Completion signals.** A check that fails a document naming a path that no
-  longer exists, for `ci-playbook.md` at least.
-- **Module boundaries.** Where the manifest list lives (`CLAUDE.md`, the root
-  README, or `mobile-doctor.mjs`'s list).
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `docs/architecture.md` §1 and `docs/roadmap.md` agree with the iteration
-      indexes about which iteration is in progress, and `implement-task` has
-      the step that keeps them so — or `make check` fails when they disagree,
-      with a fixture test for it
+- [ ] `docs/roadmap.md` agrees with the iteration indexes about which
+      iteration is in progress, and `make check` fails when they disagree —
+      a fixture test shows it; `docs/architecture.md` states no iteration's
+      status, and `implement-task` step 11 does not name it
 - [ ] `docs/ci-playbook.md` names no `frontend/` path, and a test fails a path
-      it names that does not exist
+      it or `docs/common-failures.md` names that does not exist
 - [ ] `CLAUDE.md` and `README.md` agree on where a version lives, and every
       manifest `scripts/mobile-doctor.mjs` reads is among them; `CLAUDE.md` is
       under 200 lines
