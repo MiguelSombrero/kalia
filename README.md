@@ -111,8 +111,10 @@ be bought.
 ## Architecture
 
 A **monorepo**: a Next.js web app, an Expo mobile app and a Spring Boot
-**modulith** backend. The clients follow the **backend-for-frontend** pattern for
-auth: tokens and sessions stay server-side. How the clients, the `edge` proxy,
+**modulith** backend. The web app is a **backend-for-frontend**: the browser
+never calls the API, and tokens and sessions stay server-side. The mobile app
+signs in as a public PKCE client and calls the API directly through the `edge`
+proxy ([ADR-0095](docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)). How the clients, the `edge` proxy,
 the services and the data stores connect:
 [docs/architecture.md §2](docs/architecture.md#2-high-level-design); the backend
 modules: [§3](docs/architecture.md#3-backend-modules). Decision records:
@@ -157,11 +159,11 @@ a manifest; don't restate what the manifest says.
 ### Mobile app
 
 - Expo (SDK generation in `mobile/package.json`) as a development build with generated native projects, React 19, React Native, TypeScript ([ADR-0094](docs/adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md))
-- Expo Router (file-based navigation); expo-dev-client, expo-splash-screen and the other Expo modules are listed in `mobile/package.json`
+- Expo Router (file-based navigation) with react-native-screens and react-native-safe-area-context; expo-dev-client, expo-splash-screen, expo-status-bar, expo-system-ui, expo-linking, expo-constants and expo-application
 - expo-auth-session and expo-web-browser (public PKCE client, ADR-0095), expo-secure-store (the offline token), expo-crypto
 - `@kalia/api` and `@kalia/locales`, shared with the web app: the generated API client and the en/fi strings (react-i18next, i18next, expo-localization)
 - TanStack Query, Zustand, react-hook-form with Zod and @hookform/resolvers, the same roles as on the web (@react-native-async-storage/async-storage persists client state)
-- Jest with jest-expo and React Native Testing Library (unit); Maestro (end-to-end, Android the only CI platform, [ADR-0096](docs/adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md))
+- Jest with jest-expo, `@react-native/jest-preset` and React Native Testing Library (unit); sharp (renders the app's icons and splash from the web app's mark, `mobile/scripts/render-assets.mjs`); Maestro (end-to-end, Android the only CI platform, [ADR-0096](docs/adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md))
 - eslint-config-expo, @tanstack/eslint-plugin-query, eslint-plugin-boundaries (checked by `npm run lint --workspace mobile`)
 - Native toolchain pins: `.xcode-version` and `mobile/.java-version`, checked by `make mobile-doctor`
 
@@ -170,9 +172,9 @@ a manifest; don't restate what the manifest says.
 - Keycloak 26 (identity provider; `keycloak/Dockerfile` also bakes in the login theme, [ADR-0056](docs/adr/0056-branded-bilingual-keycloak-pages.md))
 - keycloak-config-cli (the `keycloak-config` service reconciles the realm on every startup, [ADR-0054](docs/adr/0054-keycloak-config-cli-realm-management.md))
 - Valkey (session store); Mailpit (catches Keycloak's email locally; a deployment uses SMTP, see [the email task](docs/tasks/iteration-6.5/04-send-email-from-kalia.md))
-- nginx (`edge/`, the one published service: per-client rate and body limits, [ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
+- nginx (`edge/`, the only service the deployable stack publishes: per-client rate and body limits, [ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
 - Tailscale (a physical iPhone reaches the stack over the owner's tailnet, opt-in with `make phone-mode`, [ADR-0097](docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md))
-- Docker Compose (the full stack); base images (Maven, Eclipse Temurin, Node on Alpine) are tagged in each `Dockerfile`
+- Docker Compose (the full stack); base images (Maven, Eclipse Temurin, Node on Alpine, nginx, Keycloak) are tagged in each `Dockerfile`
 
 ### CI
 
@@ -232,7 +234,7 @@ A bare `docker compose` is the local stack, so name the file
   the catalog first, then the cellar, then what makes it social.
 - **Test-driven:** tests are written with (or before) the code: unit tests for
   domain logic, Testcontainers for APIs and persistence, Playwright for critical
-  user flows.
+  web user flows and Maestro for the mobile app's.
 - **One issue at a time:** each roadmap task is a small, independently
   reviewable change with tests and updated docs.
 - **Checks run locally, not in CI first:** `make verify-fast` is the ~40 s local

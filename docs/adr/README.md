@@ -3,15 +3,17 @@
 Every decision in this directory records **why** something was chosen and what
 was rejected to get there ([ADR-0020](0020-documentation-roles.md)). For the
 *shape* of the system read [docs/architecture.md](../architecture.md); for
-*how* to work in either app read the two READMEs.
+*how* to work in an app read its README ([backend](../../backend/README.md),
+[web](../../web/README.md), [mobile](../../mobile/README.md)).
 
 - **Format:** [template.md](template.md), with the rules in
   [ADR-0019](0019-adr-format-and-conventions.md).
 - **When a decision earns an ADR at all:**
   [ADR-0032](0032-when-a-decision-earns-an-adr.md) — a credible alternative
-  was rejected, the reason would not survive in the code, `architecture.md`
-  or a README, and a reader who wasn't already going to open the task file
-  that made it would need to find it.
+  was rejected and the reason would not survive in the code,
+  `architecture.md` or a README; it binds work now, since a possibility being
+  carried is a backlog item; and a reader who wasn't already going to open the
+  task file that made it would need to find it.
 - **The authoritative index** — title, status and date for every ADR — is
   [All ADRs by number](#all-adrs-by-number), at the end of this file. The
   sections between group the same set by subject so a related run of

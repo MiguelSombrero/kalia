@@ -12,6 +12,9 @@
 - **Amended:** 2026-11-06 — the signed-in page render makes a fifth backend
   call, the unread notification count, so the load computed from it rises from
   600 to 750 backend calls a second; see the second amendment under Decision
+- **Amended:** 2026-11-07 — the Evidence table and one Dockerfile path used
+  the web app's earlier name; the zone is `web` in `edge/nginx.conf` and the
+  directory `web/`
 
 ## Context
 
@@ -67,7 +70,7 @@ puts in the base whatever is not a dev convenience).
 - **Upstreams are resolved on each request**, through Docker's DNS, so the
   proxy needs no `depends_on` and keeps working when a service is recreated.
 - **The image is `nginx/nginx-unprivileged`, pinned to the current stable
-  tag without the Perl module, with `apk upgrade` on top**, as `frontend/Dockerfile` does for the same
+  tag without the Perl module, with `apk upgrade` on top**, as `web/Dockerfile` does for the same
   reason ([ADR-0024](0024-dependency-vulnerability-scanning.md)). The vulnerability scan builds and scans it with
   the other two images.
 - `X-Content-Type-Options: nosniff` joins [ADR-0016](0016-security-response-headers.md)'s
@@ -242,8 +245,8 @@ minutes, one address), counting the proxy's access log in windows:
 
 | Zone | Peak per second | Peak per 10 s | Peak per minute |
 |---|---|---|---|
-| frontend | 136 | 993 | 4,588 |
-| static | 193 (frontend) and 54 (Keycloak) | 757 and 291 | 3,122 and 745 |
+| web | 136 | 993 | 4,588 |
+| static | 193 (web) and 54 (Keycloak) | 757 and 291 | 3,122 and 745 |
 | keycloak | 21 | 82 | 261 |
 | registration submissions | — | 8 in the whole run | 8 |
 | backend | 1 | 3 | 3 |
