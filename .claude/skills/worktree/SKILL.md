@@ -63,7 +63,10 @@ does not count it.
    `git worktree add .claude/worktrees/<name> -b <branch> origin/dev`.
    Branch naming is `CLAUDE.md`'s: `iteration-N/<topic>`, `docs/<topic>`,
    `fix/<topic>`. (`claude --worktree <name>`, or asking Claude Code for a
-   worktree, does the equivalent and puts it in the same place.) Worktrees
+   worktree, puts it in the same place but names the branch
+   `claude/<name>-<hash>`, against that rule: rename it before its first push
+   with `git branch -m <branch>`. #416, #476 and #522 merged under such
+   names.) Worktrees
    share one object database, so an extra one costs no extra clone — only
    isolation, and the disk the removal in step 3 reclaims.
 5. Install the JavaScript dependencies: `npm ci` at the repository root, one

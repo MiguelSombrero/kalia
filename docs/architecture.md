@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-11-06. The shape of what is built, nothing beyond it.
+*Last updated: 2026-11-07. The shape of what is built, nothing beyond it.
 Behaviour is in the READMEs, reasons are in the ADRs, and what comes next is
 in [docs/roadmap.md](roadmap.md) ([ADR-0020](adr/0020-documentation-roles.md)). It changes when the
 shape changes, and stays under 500 lines.*
@@ -16,8 +16,6 @@ iterative delivery** over scale.
 ### Functional requirements
 
 What each iteration built: [docs/roadmap.md](roadmap.md#what-each-iteration-built).
-
-No iteration is in progress. The next is [iteration 11](tasks/iteration-11.md).
 
 ### Non-functional requirements
 

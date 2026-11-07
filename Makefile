@@ -106,7 +106,7 @@ web-e2e: ## Run the web app's E2E tests (needs the stack up)
 lint: ## Lint the web app and the shared packages
 	npm run lint --workspace web --workspace @kalia/api --workspace @kalia/locales
 
-check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping checks and their self-tests
+check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping/failure-doc-path checks and their self-tests
 	node scripts/check-adrs.mjs
 	node scripts/check-doc-size.mjs
 	node scripts/check-tasks.mjs
@@ -126,6 +126,7 @@ check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast
 	node scripts/check-script-imports.mjs
 	node scripts/check-clear-text-logging.mjs
 	node scripts/check-markup-stripping.mjs
+	node scripts/check-failure-doc-paths.mjs
 	node --test scripts/*.test.mjs
 
 compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only (needs the docker CLI, no daemon)
