@@ -12,6 +12,7 @@ file is applied and kept from drifting:
 |---|---|
 | `Dockerfile` | `quay.io/keycloak/keycloak` + `kc.sh build`, then the `kalia` theme copied to `/opt/keycloak/themes/` |
 | `realm-export.json` | the whole realm — clients, SMTP, registration, i18n, `loginTheme`; every value is a literal or a `$(env:…)` placeholder, no credential ([ADR-0054](../docs/adr/0054-keycloak-config-cli-realm-management.md)) |
+| `realm-swagger.json` | the Swagger UI's client, in the dev overlay only: `docker-compose.override.yml` hands it to keycloak-config-cli beside `realm-export.json` |
 | `themes/kalia/login/` | the login theme ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)) |
 
 ## The `kalia` login theme
@@ -54,8 +55,12 @@ change that drops a style without moving the column passes it.
 `scripts/check-keycloak-realm-config.mjs` asserts the running realm still
 matches `realm-export.json`; `scripts/check-keycloak-signin.mjs` asserts it
 accepts a sign-in, and again after Keycloak's container is recreated, which
-proves accounts live in Postgres rather than the container. Both run in
-`make keycloak-check` and in CI, whenever a push touches Keycloak's inputs.
+proves accounts live in Postgres rather than the container;
+`scripts/check-keycloak-pkce-flow.mjs` signs in as `kalia-mobile` and asserts
+the audience and the registration [ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) promises;
+`scripts/check-keycloak-admin.mjs` asserts the `admin` role reaches
+`testadmin`'s token and no one else's. All four run in `make keycloak-check` and in CI, whenever a push touches
+Keycloak's inputs.
 `scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's
 colours and mark to the app's, in `make check`, hence CI. See
 [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity).
