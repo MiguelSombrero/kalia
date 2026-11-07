@@ -128,3 +128,43 @@ describe("import boundaries reject each crossing a fixture makes (ADR-0012)", ()
     ]);
   });
 });
+
+describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
+  const fixture = (name: string) => readFileSync(`${import.meta.dirname}/eslint-fixtures/enum-lookup/${name}.ts`, "utf8");
+  const ruleIds = async (code: string, filePath: string) => {
+    const [result] = await eslint.lintText(code, { filePath });
+    return result.messages.map((m) => m.ruleId);
+  };
+
+  // The mapped-type fixture imports the generated models, which only a feature's types.ts may.
+  it.each([
+    { name: "closed-record-lookup", lintAs: "features/cellar/probe.ts" },
+    { name: "closed-mapped-type-lookup", lintAs: "features/cellar/types.ts" },
+  ])("rejects $name", async ({ name, lintAs }) => {
+    expect(await ruleIds(fixture(name), lintAs)).toEqual(["kalia/no-closed-enum-map"]);
+  });
+
+  it("rejects it in components/ and lib/ as well", async () => {
+    for (const filePath of ["components/ui/probe.ts", "lib/probe.ts"]) {
+      expect(await ruleIds(fixture("closed-record-lookup"), filePath)).toContain("kalia/no-closed-enum-map");
+    }
+  });
+
+  it("leaves a map keyed by the app's own union, and a test, alone", async () => {
+    expect(await ruleIds(fixture("own-record-is-not-an-api-enum"), "features/cellar/probe.ts")).toEqual([]);
+    expect(await ruleIds(fixture("closed-record-lookup"), "features/cellar/probe.test.ts")).toEqual([]);
+  });
+
+  it("leaves a map keyed by a type from @kalia/api's own exports alone", async () => {
+    const code =
+      'import type { ApiErrorKind } from "@kalia/api";\nexport const m: Record<ApiErrorKind, string> = { http: "a", network: "b", timeout: "c", refused: "d" };\n';
+    expect(await ruleIds(code, "features/cellar/probe.ts")).toEqual([]);
+  });
+
+  it("accepts enumLookup()", async () => {
+    const code =
+      'import { enumLookup } from "@kalia/api";\nimport type { ContainerType } from "./types";\n' +
+      'export const labelKey = enumLookup<ContainerType, string>({ BOTTLE: "a", CAN: "b", KEG: "c" }, "other");\n';
+    expect(await ruleIds(code, "features/cellar/probe.ts")).toEqual([]);
+  });
+});

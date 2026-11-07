@@ -15,6 +15,17 @@ describe("editBottleSchema", () => {
     expect(editBottleSchema.safeParse(base).success).toBe(true);
   });
 
+  it("keeps a container type this build does not list, so saving the bottle sends it back unchanged", () => {
+    const result = editBottleSchema.safeParse({ containerType: "GROWLER" });
+
+    expect(result.success && result.data.containerType).toBe("GROWLER");
+  });
+
+  it("still refuses a container type that is not a word", () => {
+    expect(editBottleSchema.safeParse({ containerType: "" }).success).toBe(false);
+    expect(editBottleSchema.safeParse({}).success).toBe(false);
+  });
+
   it("rejects a brewed date in the future", () => {
     expect(errorFor({ ...base, brewedDate: "2999-01-01" }, "brewedDate")).toBe(
       "cellar.bottle.dateError.brewedInFuture",

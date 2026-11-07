@@ -30,7 +30,7 @@ export const BottleTile = ({
 }) => {
   const { t } = useTranslation();
   const today = useLocalToday();
-  const name = t("cellar.bottle.number", { container: t(containerLabelKey[bottle.containerType]), number });
+  const name = t("cellar.bottle.number", { container: t(containerLabelKey(bottle.containerType)), number });
   const vintage = vintageOf(bottle);
   const past = today !== null && isPastBestBefore(bottle, today);
 

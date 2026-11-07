@@ -148,9 +148,16 @@ author cannot reach. The checks cost one test and one CI job.
   `scripts/check-api-breaking.mjs`, a second rule beside oasdiff's own, which
   has to be kept when oasdiff renames the check.
 - Bad, because the additive list holds only if both clients keep their
-  promise, and nothing checks that they do. A client that parses strictly or
+  promise, and only part of it is checked. A client that parses strictly or
   switches exhaustively on an enum breaks on a change the spec diff correctly
-  calls additive. Neither client has been audited against it yet.
+  calls additive. Both clients were audited for enums they map to a label, a
+  colour or a form, and each now looks one up through `enumLookup()` in
+  `@kalia/api`, which answers a fallback (the generic word "Other" or "Muu";
+  a form keeps the value it was given and saves it unchanged). A lint rule
+  (`kalia/no-closed-enum-map`) fails a `Record` or mapped type keyed by an
+  API type, but it is syntactic: a template-literal key
+  (`` t(`x.${value}`) ``), a `switch` and a plain object lookup are not
+  caught, and the admin pages are not audited.
 - Neutral, because `app-config` fails open when unreachable, so the minimum
   protects only an app that can reach the server: an install that was offline
   when the minimum was raised keeps its old build, and the first calls it

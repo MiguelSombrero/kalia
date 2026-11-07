@@ -247,6 +247,10 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **Layers.** `src/app/` route files only re-export a screen from
   `src/features/<feature>/index.ts`; a feature never imports another. ESLint
   enforces it, and a new policy gets a fixture in `eslint-fixtures/` ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+- **A label or colour per API enum value comes from `enumLookup()`** in
+  `@kalia/api`, never a `Record` keyed by the enum (ESLint,
+  [packages/README.md](../packages/README.md)): an installed app outlives the
+  backend build it was written against.
 - **A route file never holds a test:** Expo Router makes every file under `src/app/` a route.
 - **Arrow functions, no classes, `type` over `interface`, no `console.*`**
   ([ADR-0037](../docs/adr/0037-functional-modules.md),

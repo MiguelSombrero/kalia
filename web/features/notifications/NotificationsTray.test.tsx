@@ -176,6 +176,18 @@ describe("the panel", () => {
     expect(await within(dialog).findByText("Tämä ei ole oikea olut.")).toBeInTheDocument();
   });
 
+  it("states a rejection reason this build does not list with the generic word", async () => {
+    actions.readNotificationsAction.mockResolvedValue(
+      pageOf(notification({ ...rejected, reason: "TOO_STRONG" as Notification["reason"] })),
+    );
+    renderTray(1);
+
+    const { dialog } = await open();
+
+    expect(await within(dialog).findByText("Other", { selector: "p", exact: false })).toHaveTextContent("Reason Other");
+    expect(within(dialog).queryByText(/notifications\.reason/)).not.toBeInTheDocument();
+  });
+
   it("shows an edited approval's name as suggested and as decided", async () => {
     actions.readNotificationsAction.mockResolvedValue(pageOf(renamed));
     renderTray(1);

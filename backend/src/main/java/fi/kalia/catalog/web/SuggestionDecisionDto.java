@@ -4,17 +4,16 @@ import fi.kalia.catalog.RejectionReason;
 import fi.kalia.catalog.application.SuggestionDecision;
 import fi.kalia.catalog.domain.Beer;
 import fi.kalia.catalog.domain.ModerationStatus;
-import fi.kalia.catalog.domain.ReviewOutcome;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-@Schema(description = "A beer as an admin decided it: a suggestion approved or rejected, or an approved beer removed")
+@Schema(description = "A suggestion as an admin decided it: approved or rejected")
 public record SuggestionDecisionDto(
 		@Schema(description = "The beer's id, which is also the suggestion's when it was one", requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) ReviewOutcome outcome,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Outcome outcome,
 		@Schema(description = "When the decision was made", requiredMode = Schema.RequiredMode.REQUIRED) Instant decidedAt,
 		@Schema(description = "Present on a rejection only") @Nullable RejectionReason reason,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
@@ -25,9 +24,18 @@ public record SuggestionDecisionDto(
 				Where the brewery stands after the decision: still PENDING when another suggestion \
 				that needs it is waiting""", requiredMode = Schema.RequiredMode.REQUIRED) ModerationStatus breweryStatus) {
 
+	/** What a suggestion's decision can be; a removal has its own body, {@link BeerRemovalDto}. */
+	public enum Outcome {
+
+		APPROVED,
+
+		REJECTED
+
+	}
+
 	static SuggestionDecisionDto from(SuggestionDecision decision) {
 		Beer beer = decision.beer();
-		return new SuggestionDecisionDto(beer.getId(), decision.outcome(), decision.decidedAt(), decision.reason(),
+		return new SuggestionDecisionDto(beer.getId(), Outcome.valueOf(decision.outcome().name()), decision.decidedAt(), decision.reason(),
 				beer.getName(), beer.getStyle(), beer.getAbv(), BreweryDto.from(decision.brewery()),
 				decision.brewery().getModerationStatus());
 	}

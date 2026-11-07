@@ -126,6 +126,10 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
 - **The generated client** (`@kalia/api/generated/*`) is reachable only from a
   feature's `api.ts` and `types.ts`, and only its `models/` and its own tag
   (ESLint). Never edit it: `make api-drift` regenerates it, discarding edits.
+- **A label or colour per API enum value comes from `enumLookup()`**
+  (`@kalia/api`), never a `Record` keyed by the enum: a value a newer backend
+  adds then reads "Other" instead of `undefined` (ESLint,
+  [packages/README.md](../packages/README.md)).
 - **API failures are a tagged `ApiError`**: branch on `e.kind`, never a message.
   A non-2xx status is not raised ([ADR-0023](../docs/adr/0023-typed-api-failures.md)).
 

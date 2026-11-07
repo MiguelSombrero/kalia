@@ -193,6 +193,9 @@ Source of truth: `backend/openapi.json` and Swagger UI. Reasons:
 - **Another user's resource answers `404`, never `403`.**
 - **The spec is committed** and the API changes additively only while an app
   is installed ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
+- **A client shows an enum value it does not know as "Other",** through
+  `enumLookup()` in `@kalia/api`; lint fails a map keyed by an API enum that
+  skips it ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **A breaking change is a new path** beside a `deprecated` one, removed only
   once `app-config`'s minimum build excludes every user of it.
 - **`make api-breaking` and `CommittedOpenApiSpecIT`** fail a breaking diff

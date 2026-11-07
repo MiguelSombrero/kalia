@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -9,7 +10,17 @@ import { Icon } from "@/components/ui/icon";
 import { RelativeTime } from "@/components/ui/relative-time";
 import type { Locale } from "@/i18n/settings";
 import { beerHref } from "@/lib/routes";
-import type { Notification } from "./types";
+import type { Notification, RejectionReason } from "./types";
+
+const reasonLabelKey = enumLookup<RejectionReason, string>(
+  {
+    ALREADY_IN_CATALOG: "notifications.reason.ALREADY_IN_CATALOG",
+    NOT_A_REAL_BEER: "notifications.reason.NOT_A_REAL_BEER",
+    INAPPROPRIATE: "notifications.reason.INAPPROPRIATE",
+    INCORRECT_DETAILS: "notifications.reason.INCORRECT_DETAILS",
+  },
+  UNKNOWN_VALUE_LABEL_KEY,
+);
 
 const NAME_SLOT = "\u0001";
 
@@ -82,7 +93,7 @@ export const NotificationItem = ({ notification, locale, now, acknowledging, fai
       {notification.reason && (
         <p className="text-sm">
           <span className="text-label font-semibold uppercase text-muted-foreground">{t("notifications.reasonLabel")}</span>{" "}
-          {t(`notifications.reason.${notification.reason}`)}
+          {t(reasonLabelKey(notification.reason))}
         </p>
       )}
       {failed && <ErrorAlert>{t("notifications.error.acknowledge")}</ErrorAlert>}

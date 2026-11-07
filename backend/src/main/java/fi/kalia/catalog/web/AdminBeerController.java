@@ -57,8 +57,8 @@ class AdminBeerController {
 			Withholds an approved beer, an imported one included, from search, lists and every public \
 			view. A holder keeps their bottles and sees the beer unlinked. The beer's brewery stays as \
 			it is and no row is deleted. Takes no body and no reason, and notifies nobody.""")
-	SuggestionDecisionDto remove(@Parameter(description = "The beer's id") @PathVariable UUID id) {
-		return SuggestionDecisionDto.from(review.remove(id, identity.requireCurrentUserId()));
+	BeerRemovalDto remove(@Parameter(description = "The beer's id") @PathVariable UUID id) {
+		return BeerRemovalDto.from(review.remove(id, identity.requireCurrentUserId()));
 	}
 
 }

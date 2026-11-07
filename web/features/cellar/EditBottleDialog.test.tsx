@@ -89,6 +89,26 @@ describe("EditBottleDialog", () => {
     expect(screen.getByLabelText("Best before (optional)")).toHaveValue("2027-01-01");
   });
 
+  it("offers a container type this build does not list as the current choice and saves it unchanged", async () => {
+    renderDialog("en", { ...bottle, containerType: "GROWLER" as Bottle["containerType"] });
+    fireEvent.click(screen.getByRole("button", { name: "Edit Bottle 1 of Westvleteren 12" }));
+    await screen.findByRole("dialog");
+
+    expect(screen.getByLabelText("Container")).toHaveValue("GROWLER");
+    expect(screen.getByRole("option", { name: "Other" })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Brewed (optional)"), { target: { value: "2024-06-01" } });
+    submit();
+
+    await waitFor(() =>
+      expect(updateBottleAction).toHaveBeenCalledWith("bottle-1", {
+        containerType: "GROWLER",
+        brewedDate: "2024-06-01",
+        bestBeforeDate: "2027-01-01",
+      }),
+    );
+  });
+
   it("reflects the latest bottle values on reopen, not the ones from first mount", async () => {
     const { rerenderWithBottle } = renderDialog();
     fireEvent.click(screen.getByRole("button", { name: "Edit Bottle 1 of Westvleteren 12" }));

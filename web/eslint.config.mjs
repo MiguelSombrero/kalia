@@ -4,7 +4,10 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
 import path from "node:path";
+import { createRequire } from "node:module";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+
+const { plugin: enumLookupPlugin } = createRequire(import.meta.url)("../packages/api/eslint/enum-lookup-rules.cjs");
 
 // Selectors for the web app's import layers (ADR-0012). Two of them carry a
 // second, file-category arm: Next.js and Auth.js require those modules at the
@@ -123,6 +126,14 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // A label or colour per API enum value goes through enumLookup() so a value a
+  // newer backend adds has a fallback (ADR-0093).
+  {
+    files: ["app/**/*.{ts,tsx}", "features/**/*.{ts,tsx}", "components/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx"],
+    plugins: { kalia: enumLookupPlugin },
+    rules: { "kalia/no-closed-enum-map": "error" },
+  },
   {
     files: ["lib/logger.ts"],
     rules: {
@@ -213,6 +224,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "eslint-fixtures/**",
   ]),
 ]);
 
