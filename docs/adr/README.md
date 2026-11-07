@@ -221,6 +221,10 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0066](0066-token-only-styling-is-a-build-check.md) — a colour or
   typeface outside the semantic token layer fails the build, through a
   `scripts/` checker rather than an ESLint rule.
+- [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)
+  — one TypeScript token source in its own package generates the web's CSS, the
+  app's theme and Keycloak's stylesheet through a generator of our own, drift
+  fails `make check`, and ADR-0073 stands.
 - [ADR-0067](0067-page-shell-sticky-bar-and-page-component.md) — every page
   sits in one sticky bar and one `Page` component with a Menu button on a
   phone; header and pages share one frame and its left edge.
@@ -541,6 +545,7 @@ hook runs it, and syncs the index cells, after an edit under `docs/adr/`
 | [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) | Deleting an account deletes what is the user's own, unlinks what is shared, and leaves a tombstone of the folded username | accepted | 2026-11-05 |
 | [ADR-0105](0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md) | The admin reviews suggestions in a queue beside the suggestion, edits in place, and rejects through a dialog that asks for the reason | accepted | 2026-11-06 |
 | [ADR-0106](0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md) | A contributor's unread notifications are one signal in the sticky bar that opens a panel over the page | accepted | 2026-11-06 |
+| [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md) | One TypeScript token source generates the web's CSS, the app's theme and Keycloak's stylesheet, through a generator of our own rather than Style Dictionary | accepted | 2026-11-07 |
 
 ### Engineering process and documentation
 

@@ -1,6 +1,6 @@
 # Task 06: Decide the design token format
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2
 
@@ -95,17 +95,17 @@ from `globals.css`. It records that ADR-0073 stands for components.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the format, the generators' contract and the alternatives
+- [x] An ADR records the format, the generators' contract and the alternatives
       rejected, amends ADR-0066 for where the layers are read from, and passes
       `node scripts/check-adrs.mjs`
-- [ ] The ADR records that ADR-0073 stands and names the signal that would
+- [x] The ADR records that ADR-0073 stands and names the signal that would
       reopen it
-- [ ] A throwaway spike generated both outputs from a three-token source and
+- [x] A throwaway spike generated both outputs from a three-token source and
       the decision cites what it showed — nothing from it is committed
-- [ ] The ADR lists each test the decision implies, for
+- [x] The ADR lists each test the decision implies, for
       [task 07](07-token-pipeline.md)'s refinement to carry into its
       acceptance criteria
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
