@@ -1,6 +1,6 @@
 # Task 16: Signing in or out clears what the last viewer saw
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -55,15 +55,15 @@ button.
 
 ## Acceptance criteria
 
-- [ ] A test signs A out and B in inside the `staleTime` and shows B's catalog
+- [x] A test signs A out and B in inside the `staleTime` and shows B's catalog
       holding none of A's pending beer; it failed before the change
-- [ ] A test shows a user who has just signed in seeing their own pending beer
+- [x] A test shows a user who has just signed in seeing their own pending beer
       on the first page, not a stale one
-- [ ] A test shows a forced sign-out, from a refresh the server refuses, clearing
+- [x] A test shows a forced sign-out, from a refresh the server refuses, clearing
       the same
-- [ ] A test shows a response that arrives after the viewer changed not entering
+- [x] A test shows a response that arrives after the viewer changed not entering
       the new viewer's cache
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
