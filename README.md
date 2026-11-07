@@ -181,8 +181,11 @@ Decision records: [docs/adr/](docs/adr/)
 
 What this project is built with, and why — an inventory, not a version list.
 **The version of a thing lives in the file that installs it** and nowhere
-else: `backend/pom.xml`, `web/package.json`, the `docker-compose*.yml` files, the
-`Dockerfile`s and `.github/workflows/`
+else — the manifests: `backend/pom.xml`, every `package.json` (the root's,
+`web/`, `mobile/` and `packages/*/`), the `docker-compose*.yml` files, the
+`Dockerfile`s, `.github/workflows/`, and the toolchain pin files
+(`.node-version`, `.xcode-version`, `.tailscale-version` and
+`mobile/.java-version`)
 ([ADR-0020](docs/adr/0020-documentation-roles.md)'s one-home rule, amended
 2026-09-11). A number appears below only where the number is the point of the
 sentence — a major version that tells you which framework generation this is,

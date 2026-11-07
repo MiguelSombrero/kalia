@@ -92,11 +92,11 @@ same way.
 
 **`Error: Timed out waiting 300000ms from config.webServer` — no test ran.**
 Not a test failure: Playwright's `webServer` starts `docker compose up --build`,
-and a cold CI runner has no BuildKit cache, so the frontend image's own
+and a cold CI runner has no BuildKit cache, so the web image's own
 `npm ci` alone takes 3–5 min (slow-registry days) before `next build` and the
 stack's containers come up healthy. The 5-minute default overran on `dev` itself
 (runs `33842075895`, `33838096364`) and on PR #219. The wait budget lives in
-`frontend/playwright.config.ts`'s `webServer.timeout` — raised to 12 min. If it
+`web/playwright.config.ts`'s `webServer.timeout` — raised to 12 min. If it
 still overruns, the build itself is the thing to speed up (layer-cache the
 image in a CI step, then `docker compose up` without `--build`), not the timer.
 
@@ -164,7 +164,7 @@ to `VERIFY_EMAIL`, yet its Mailpit lookup finds the winner's message; opening
 that link in a browser with no Keycloak auth session ends on an info page
 whose "Back to application" goes to `/` signed out (observed 2026-10-04: 4
 of 8, then 1 of 8). Registering specs name accounts with `uniqueUsername`
-(`frontend/e2e/support/keycloakAccount.ts`); a new one that uses a bare
+(`web/e2e/support/keycloakAccount.ts`); a new one that uses a bare
 `Date.now()` brings this back.
 
 **A spec fails only against a brand-new stack (`docker compose down -v`), and
@@ -179,10 +179,10 @@ checks were reliable only once the feed had entries. Scope a shell assertion to
 
 **A short page's height check fails with `scrollHeight` 907 against an
 800-pixel window, and passes on a rerun.** It measured the loading skeleton:
-the first request to a route after the frontend starts can resolve `goto`
+the first request to a route after the web app starts can resolve `goto`
 while one or two skeleton `<main>`s are still in the DOM, and the page's own
 content arrives later. Traced 2026-10-11 on `/en/beers/<unknown id>` by
-restarting the frontend container before each run. Wait for something only the
+restarting the `web` container before each run. Wait for something only the
 settled page has, such as its `<h1>`, before measuring layout.
 
 **`profile-visibility.spec.ts` fails `toBeChecked()` on "Anyone with the
@@ -192,7 +192,7 @@ optimistically, so its confirmation text is visible 11–43 ms before the
 Server Action's `POST` returns, and which request the backend served first
 decided the outcome. It flaked about one run in three, across six PRs before
 anyone diagnosed it; fixed in [PR #328](https://github.com/MiguelSombrero/kalia/pull/328)
-by saving through `setCellarVisibility` (`frontend/e2e/support/visibility.ts`),
+by saving through `setCellarVisibility` (`web/e2e/support/visibility.ts`),
 which waits for the `POST`. A recurrence means a spec toggled visibility and
 reloaded without that helper. Separately, axe once reported `document-title`
 on the profile page right after a save and has not been reproduced since;
@@ -304,17 +304,18 @@ on the branch for iteration 6.5 task 03, because the failing line had been
 piped to `tail` — which also hid it (see `implement-task` step 9: read `make`
 output from a file, not a pager).
 
-**`make verify` fails at `frontend-build` with a TypeScript error in a file
-your diff never touched.** In a newly created worktree, `frontend/node_modules`
-does not arrive in a state matching `package-lock.json` — `git worktree add`
-does not populate it, and a copied or previously-installed tree can be several
-bumps behind. The symptom is a type error, not a version complaint:
+**`make verify` fails at `web-build` with a TypeScript error in a file
+your diff never touched.** In a newly created worktree, the repository root's
+`node_modules` (npm hoists every workspace's dependencies there) does not
+arrive in a state matching `package-lock.json` — `git worktree add` does not
+populate it, and a copied or previously-installed tree can be several bumps
+behind. The symptom is a type error, not a version complaint:
 `vitest.setup.ts(14,13): error TS2428: All declarations of 'Matchers' must have
 identical type parameters`, because that file re-declares vitest's `Matchers`
 for `jest-axe` against vitest 5's type shape while vitest 4 is what is actually
 installed. `npm test` passes throughout and prints `RUN v4.1.10` — that banner,
-compared against the lockfile, is the tell. Run `(cd frontend && npm ci)` before
-the first `make verify` in a fresh worktree. Observed 2026-09-19 on the branch
+compared against the lockfile, is the tell. Run `npm ci` at the repository root
+before the first `make verify` in a fresh worktree. Observed 2026-09-19 on the branch
 for this file's sign-up rate-limit entry above.
 
 **`mvn` fails to compile the backend with

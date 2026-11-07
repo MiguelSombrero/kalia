@@ -11,7 +11,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { checkQualityBacklog, checkTasks } from "./check-tasks.mjs";
+import { checkQualityBacklog, checkRoadmapStatus, checkTasks } from "./check-tasks.mjs";
 
 const TEST_CRITERION = "- [ ] `npm test` covers the new behaviour\n";
 const ALTERNATIVES_CRITERION =
@@ -156,4 +156,79 @@ test("fails a backlog with no Highest issued line, or one missing a category", (
     checkQualityBacklog(backlog({ mark: "**Highest issued:** MUST-3 · SHOULD-9" }))[0],
     /names no COULD-N/,
   );
+});
+
+// docs/roadmap.md is the one place an iteration's status is stated, and these
+// fixtures are the only place a roadmap that disagrees with the indexes exists.
+function roadmapFixture({ roadmapStatus, taskStatuses }) {
+  const root = mkdtempSync(resolve(tmpdir(), "roadmap-check-"));
+  mkdirSync(resolve(root, "docs/tasks/iteration-1"), { recursive: true });
+  const rows = taskStatuses.map(
+    (status, i) => `| [0${i + 1}](iteration-1/0${i + 1}-sample.md) | Sample | ${status} |`,
+  );
+  writeFileSync(
+    resolve(root, "docs/tasks/iteration-1.md"),
+    ["# Iteration 1 — Fixture", "", "## Tasks", "", "| ID | Task | Status |", "|---|---|---|", ...rows, ""].join("\n"),
+  );
+  writeFileSync(
+    resolve(root, "docs/roadmap.md"),
+    [
+      "# Roadmap",
+      "",
+      "| Iteration | Goal | Status |",
+      "|---|---|---|",
+      `| [1 — Fixture](tasks/iteration-1.md) | A goal | ${roadmapStatus} |`,
+      "",
+    ].join("\n"),
+  );
+  return root;
+}
+
+function checkRoadmap(options, assertions) {
+  const root = roadmapFixture(options);
+  try {
+    assertions(checkRoadmapStatus(root));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+test("passes a roadmap whose status matches its index", () => {
+  checkRoadmap({ roadmapStatus: "⬜ Todo", taskStatuses: ["refined", "refined"] }, (f) => assert.deepEqual(f, []));
+  checkRoadmap({ roadmapStatus: "🔄 In progress", taskStatuses: ["done", "refined"] }, (f) => assert.deepEqual(f, []));
+  checkRoadmap({ roadmapStatus: "✅ Done", taskStatuses: ["done", "dropped"] }, (f) => assert.deepEqual(f, []));
+});
+
+test("fails an iteration with a done task that the roadmap still calls Todo", () => {
+  checkRoadmap({ roadmapStatus: "⬜ Todo", taskStatuses: ["done", "refined"] }, (f) => {
+    assert.equal(f.length, 1);
+    assert.match(f[0], /iteration-1.*Todo.*in progress/i);
+  });
+});
+
+test("fails an iteration with a task in progress that the roadmap still calls Todo", () => {
+  checkRoadmap({ roadmapStatus: "⬜ Todo", taskStatuses: ["in-progress", "refined"] }, (f) => assert.equal(f.length, 1));
+});
+
+test("fails an iteration the roadmap calls Done before every task is", () => {
+  checkRoadmap({ roadmapStatus: "✅ Done", taskStatuses: ["done", "refined"] }, (f) => {
+    assert.equal(f.length, 1);
+    assert.match(f[0], /Done.*every task/i);
+  });
+});
+
+test("fails an iteration whose tasks are all done but the roadmap says in progress", () => {
+  checkRoadmap({ roadmapStatus: "🔄 In progress", taskStatuses: ["done", "done"] }, (f) => assert.equal(f.length, 1));
+});
+
+test("fails an iteration with task files that has no roadmap row", () => {
+  const root = roadmapFixture({ roadmapStatus: "⬜ Todo", taskStatuses: ["refined"] });
+  try {
+    writeFileSync(resolve(root, "docs/roadmap.md"), "# Roadmap\n\n| Iteration | Goal | Status |\n|---|---|---|\n");
+    const f = checkRoadmapStatus(root);
+    assert.equal(f.length, 1);
+    assert.match(f[0], /no row/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

@@ -227,6 +227,46 @@ export function checkTasks(root) {
 
 const BACKLOG_CATEGORIES = ["MUST", "SHOULD", "COULD"];
 
+const ROADMAP_STATUS = { todo: "⬜ Todo", inProgress: "🔄 In progress", done: "✅ Done" };
+
+/**
+ * docs/roadmap.md is the one place an iteration's status is stated; this keeps
+ * it in step with the task rows of the iteration indexes. An iteration with a
+ * task begun is not Todo, and one is Done only when every live task is.
+ * @param {string} root repository root to check
+ * @returns {string[]} one message per failure; empty means OK
+ */
+export function checkRoadmapStatus(root) {
+  const file = "docs/roadmap.md";
+  const roadmap = readFileSync(resolve(root, file), "utf8");
+  const statusOf = new Map(
+    [...roadmap.matchAll(/^\| \[[^\]]*\]\(tasks\/(iteration-\d+(?:\.\d+)?)\.md\) \|.*\| ([^|]+?) \|$/gm)].map((m) => [m[1], m[2]]),
+  );
+  const failures = [];
+  for (const iteration of templatedIterations(root)) {
+    const index = readFileSync(resolve(root, `docs/tasks/${iteration}.md`), "utf8");
+    const tasks = [...index.matchAll(new RegExp(`^\\| \\[\\d+\\]\\(${iteration}/[^)]+\\) \\|.*\\| ([\\w-]+) \\|$`, "gm"))]
+      .map((m) => m[1])
+      .filter((s) => s !== "dropped");
+    const stated = statusOf.get(iteration);
+    if (stated === undefined) {
+      failures.push(`${file}: has no row for ${iteration}, which has task files`);
+      continue;
+    }
+    const begun = tasks.some((s) => s === "done" || s === "in-progress");
+    const finished = tasks.length > 0 && tasks.every((s) => s === "done");
+    if (stated === ROADMAP_STATUS.todo && begun) {
+      failures.push(`${file}: ${iteration} has a task begun but is marked "${stated}"; mark it "${ROADMAP_STATUS.inProgress}"`);
+    } else if (stated === ROADMAP_STATUS.done && !finished) {
+      failures.push(`${file}: ${iteration} is marked "${stated}" before every task is done`);
+    } else if (stated === ROADMAP_STATUS.inProgress && finished) {
+      failures.push(`${file}: ${iteration} has every task done but is marked "${stated}"; mark it "${ROADMAP_STATUS.done}" with its Done-when verified`);
+    }
+  }
+  return failures;
+}
+
+
 /**
  * The ID rule it enforces is docs/tasks/quality-backlog.md's header.
  * @param {string} text contents of docs/tasks/quality-backlog.md
@@ -281,6 +321,7 @@ if (invokedDirectly) {
   console.log(`Checking ${iterations.length} templated iteration(s) in docs/tasks/\n`);
   const failures = [
     ...checkTasks(root),
+    ...checkRoadmapStatus(root),
     ...checkQualityBacklog(readFileSync(resolve(root, "docs/tasks/quality-backlog.md"), "utf8")),
   ];
   for (const f of failures) console.log(`  FAIL  ${f}`);
