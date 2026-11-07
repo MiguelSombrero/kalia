@@ -40,7 +40,7 @@ browsing and searching the catalog.
 | [10](iteration-11/10-beer-details.md) | A user opens a beer and reads its details on their phone | needs-refinement |
 | [11](iteration-11/11-mobile-accessibility-conventions.md) | Mobile accessibility is written down and checked in tests | needs-refinement |
 | [19](iteration-11/19-decision-how-far-the-admin-role-reaches.md) | Decide how far the admin role reaches | refined |
-| [20](iteration-11/20-an-anticipated-failure-gets-the-documented-answer.md) | An anticipated failure gets the documented answer | refined |
+| [20](iteration-11/20-an-anticipated-failure-gets-the-documented-answer.md) | An anticipated failure gets the documented answer | done |
 | [21](iteration-11/21-reads-that-scan-history-are-indexed-and-their-plans-pinned.md) | Reads that scan history are indexed, and their plans are pinned | refined |
 
 Tasks 01–11 are the iteration's own plan, one task for each line the plan held,
