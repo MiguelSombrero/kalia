@@ -41,7 +41,13 @@ test.describe("the client address", () => {
     const id = randomUUID().replaceAll("-", "");
     const forged = { "X-Forwarded-For": FORGED_ADDRESS };
 
-    await request.get(`${BACKEND_ORIGIN}/api/v1/probe-${id}`, { headers: forged, failOnStatusCode: false });
+    // Spring logs a route template, never the path (ADR-0013), so its line is
+    // found by the trace id the probe carries.
+    const probeTraceId = randomBytes(16).toString("hex");
+    await request.get(`${BACKEND_ORIGIN}/api/v1/probe-${id}`, {
+      headers: { ...forged, traceparent: `00-${probeTraceId}-${randomBytes(8).toString("hex")}-01` },
+      failOnStatusCode: false,
+    });
     await request.get(`${KEYCLOAK_ORIGIN}/realms/kalia/probe-${id}`, { headers: forged, failOnStatusCode: false });
     const traceId = randomBytes(16).toString("hex");
     await request.get(`${WEB_ORIGIN}/en/beers`, {
@@ -51,7 +57,7 @@ test.describe("the client address", () => {
     const seen = addressSeenByEdge(`probe-${id}`);
     expect(seen).not.toBe(FORGED_ADDRESS);
 
-    const [backendLine] = linesMentioning(logsOf("backend"), `probe-${id}`);
+    const [backendLine] = linesMentioning(logsOf("backend"), probeTraceId);
     expect(backendLine, "Spring logged no request for the probe").toBeTruthy();
     expect(backendLine).toContain(`from ${seen}"`);
 
@@ -150,9 +156,13 @@ test.describe("the edge proxy's limits", () => {
   test("a burst on the backend is refused with 429 before it reaches Spring", async ({ request }) => {
     const id = randomUUID();
     const url = `${BACKEND_ORIGIN}/api/v1/burst-${id}?query=canary-${id}`;
+    // Spring logs a route template, never the path (ADR-0013), so its lines
+    // are counted by the trace id every request of the burst carries.
+    const burstTraceId = randomBytes(16).toString("hex");
+    const traceparent = `00-${burstTraceId}-${randomBytes(8).toString("hex")}-01`;
 
     const responses = await Promise.all(
-      Array.from({ length: 120 }, () => request.get(url, { failOnStatusCode: false })),
+      Array.from({ length: 120 }, () => request.get(url, { headers: { traceparent }, failOnStatusCode: false })),
     );
     const refused = responses.filter((response) => response.status() === 429);
     const answered = responses.length - refused.length;
@@ -164,7 +174,7 @@ test.describe("the edge proxy's limits", () => {
     expect(logsOf("edge"), "a refusal logged the query string").not.toContain(`canary-${id}`);
     // A request Spring answered is a request Spring logged; the others never got there.
     await expect
-      .poll(() => linesMentioning(logsOf("backend"), `burst-${id}`).length)
+      .poll(() => linesMentioning(logsOf("backend"), burstTraceId).length)
       .toBe(answered);
   });
 

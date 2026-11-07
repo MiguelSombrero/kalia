@@ -327,6 +327,30 @@ describe("kaliaFetch", () => {
       expect(JSON.stringify(vi.mocked(logger.info).mock.calls)).not.toContain("westvleteren");
     });
 
+    it("logs a call to a user's cellar under its route template, never the user's name", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
+
+      await kaliaFetch("/api/v1/cellars/jouni?page=0", { method: "GET" });
+
+      expect(logger.info).toHaveBeenCalledExactlyOnceWith(
+        "Backend call completed",
+        expect.objectContaining({ path: "/api/v1/cellars/{username}" }),
+      );
+      expect(JSON.stringify(vi.mocked(logger.info).mock.calls)).not.toContain("jouni");
+    });
+
+    it("logs a failed call to a user's cellar under its route template, in the line and the error", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("fetch failed"))));
+
+      await kaliaFetch("/api/v1/cellars/jouni", { method: "GET" }).catch(() => undefined);
+
+      expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
+        "Backend call failed",
+        expect.objectContaining({ path: "/api/v1/cellars/{username}" }),
+      );
+      expect(JSON.stringify(vi.mocked(logger.warn).mock.calls)).not.toContain("jouni");
+    });
+
     it("counts and warns about a server error the backend answered", async () => {
       vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
 
@@ -384,7 +408,7 @@ describe("kaliaFetch", () => {
           vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
         }],
       ])(
-        "logs and raises %s without the query string",
+        "logs and raises %s as its route template, without the query string",
         async (_, kind, url, arrange) => {
           arrange();
 
@@ -395,7 +419,7 @@ describe("kaliaFetch", () => {
           expect(isApiError(error) && error.kind).toBe(kind);
           expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
             "Backend call failed",
-            expect.objectContaining({ kind, path: url.split("?", 1)[0] }),
+            expect.objectContaining({ kind, path: url.startsWith("/api/v1/beers") ? "/api/v1/beers" : "/api/v1/cellars/{username}" }),
           );
           expect(JSON.stringify(vi.mocked(logger.warn).mock.calls)).not.toContain("westvleteren");
           expect(JSON.stringify(error, Object.getOwnPropertyNames(error))).not.toContain(

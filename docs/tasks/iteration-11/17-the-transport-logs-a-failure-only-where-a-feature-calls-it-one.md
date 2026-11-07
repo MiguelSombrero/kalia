@@ -1,6 +1,6 @@
 # Task 17: The app's transport logs a failure only where a feature calls it one
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -64,15 +64,15 @@ conventions say why.
 
 ## Acceptance criteria
 
-- [ ] A test shows a `404` read as "no such beer" writing no error line, and a
+- [x] A test shows a `404` read as "no such beer" writing no error line, and a
       `500` still writing one; the first failed before the change
-- [ ] A test shows a status the calling feature expects, given as the call
+- [x] A test shows a status the calling feature expects, given as the call
       says, writing no error line
-- [ ] A test in each tier — the backend, the web's transport, the app's
+- [x] A test in each tier — the backend, the web's transport, the app's
       transport and the edge's configuration — shows
       `/api/v1/profiles/{username}` logged as its template, and ADR-0013 says
       why
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

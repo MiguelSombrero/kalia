@@ -1,9 +1,14 @@
+import { routeTemplateOf } from "./route-template";
+
+/** `fetch`'s options plus the statuses the call's feature reads as answers (ADR-0013); never sent. */
+export type CallOptions = RequestInit & { answers?: readonly number[] };
+
 /**
  * What the generated client calls for every request: the URL orval built and
  * the options it chose. Resolves to `{ data, status, headers }` typed by the
  * generated response union, so a non-2xx status is a return value.
  */
-export type Transport = <T>(url: string, options: RequestInit) => Promise<T>;
+export type Transport = <T>(url: string, options: CallOptions) => Promise<T>;
 
 // On globalThis, not in a module variable: a bundler may instantiate this
 // module more than once (Next.js compiles each server layer separately, and
@@ -24,11 +29,11 @@ export const registerTransport = (transport: Transport): void => {
  */
 // An explicit signature rather than `: Transport`, because orval reads the
 // options type off this function to type each operation's `request` option.
-export const kaliaFetch = async <T,>(url: string, options: RequestInit): Promise<T> => {
+export const kaliaFetch = async <T,>(url: string, options: CallOptions): Promise<T> => {
   const transport = (globalThis as Holder)[SLOT];
   if (!transport) {
     throw new Error(
-      `No transport registered for @kalia/api: call registerTransport() at startup, before ${url.split("?", 1)[0]}`,
+      `No transport registered for @kalia/api: call registerTransport() at startup, before ${routeTemplateOf(url)}`,
     );
   }
   return transport<T>(url, options);

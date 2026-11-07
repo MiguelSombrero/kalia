@@ -44,7 +44,7 @@ view any of it.
   context. Tracing is context only: no exporter, so nothing leaves the process
   and a tracing backend can be added later without touching either tier.
 - **One request log per tier:** the backend logs each request once at `INFO`
-  (method, path, status, duration; the readiness probe at `TRACE`) from a
+  (method, route template, status, duration; the readiness probe at `TRACE`) from a
   single filter, and the frontend logs each backend call the same way. The
   convention in ADR-0013 against per-method entry/exit logging stands.
 - **Counters:** refresh failures by outcome and reason, backend calls that

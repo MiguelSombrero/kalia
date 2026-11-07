@@ -62,7 +62,7 @@ class ObservabilityIT {
 				.exchange()
 				.expectStatus().isUnauthorized();
 
-		assertThat(requestLog(output, "GET /api/v1/cellar/bottles -> 401")).isNotEmpty();
+		assertThat(requestLog(output, "GET unmatched -> 401")).isNotEmpty();
 	}
 
 	@Test

@@ -38,7 +38,12 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
   access token comes from and, optionally, how a call without its own
   `traceparent` gets one, and wraps the core with what is its own. A failure's
   `ApiError` names the call's trace id, and `httpFailure()` makes the same of an
-  unexpected status. The web's
+  unexpected status. A call may carry `answers: [404]` beside `fetch`'s options,
+  the statuses its feature reads as answers, which an app's transport leaves out
+  of its failure log; the core strips it before `fetch`. `routeTemplateOf()`
+  turns a URL into its operation's path template for anything that writes a call
+  down, from `generated/route-templates.ts`, which `npm run generate` writes
+  from the spec ([ADR-0013](../docs/adr/0013-logging-conventions.md)). The web's
   is `web/lib/api/mutator.ts`, registered in `web/instrumentation.ts`.
 - **What CI checks:** the backend's `CommittedOpenApiSpecIT` (the committed spec
   is the served one), the `api-client-drift` job (`make api-drift`: the committed

@@ -354,6 +354,74 @@ describe("a failed request", () => {
     });
   });
 
+  describe("an error status", () => {
+    beforeEach(() => {
+      devFlag.__DEV__ = false;
+    });
+
+    const answeredWith = (status: number) => fetchMock.mockReset().mockResolvedValue(new Response("{}", { status }));
+    const readBeer = (answers?: number[]) => kaliaFetch("/api/v1/beers/7", { method: "GET", answers });
+
+    it("is not logged when the call reads it as an answer, and is still returned", async () => {
+      answeredWith(404);
+
+      await expect(readBeer([404])).resolves.toMatchObject({ status: 404 });
+
+      expect(error).not.toHaveBeenCalled();
+    });
+
+    it("is logged when the call did not declare it", async () => {
+      answeredWith(404);
+
+      await readBeer();
+
+      expect(loggedLine(error)).toMatchObject({ status: 404, path: "/api/v1/beers/{id}" });
+    });
+
+    it("is logged when the call declared a different status", async () => {
+      answeredWith(500);
+
+      await readBeer([404]);
+
+      expect(loggedLine(error)).toMatchObject({ message: "Request answered with an error status", status: 500 });
+    });
+
+    it.each([409, 429])("is not logged as %i when the call declares it, as the call says", async (status) => {
+      answeredWith(status);
+
+      await kaliaFetch("/api/v1/cellar/bottles", { method: "POST", answers: [409, 429] });
+
+      expect(error).not.toHaveBeenCalled();
+    });
+
+    it("is logged as 429 unless declared, since the app should never reach the limit", async () => {
+      answeredWith(429);
+
+      await readBeer([404]);
+
+      expect(loggedLine(error)).toMatchObject({ status: 429 });
+    });
+  });
+
+  it("logs the route template of a failed call to a user's cellar, never the user's name", async () => {
+    devFlag.__DEV__ = false;
+
+    await kaliaFetch("/api/v1/cellars/jouni?page=0", { method: "GET" }).catch(() => undefined);
+
+    expect(loggedLine(error)).toMatchObject({ path: "/api/v1/cellars/{username}" });
+    expect(JSON.stringify(error.mock.calls)).not.toContain("jouni");
+  });
+
+  it("logs a status line with the route template of the call, never the user's name", async () => {
+    devFlag.__DEV__ = false;
+    fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 500 }));
+
+    await kaliaFetch("/api/v1/cellars/jouni", { method: "GET" });
+
+    expect(loggedLine(error)).toMatchObject({ path: "/api/v1/cellars/{username}", status: 500 });
+    expect(JSON.stringify(error.mock.calls)).not.toContain("jouni");
+  });
+
   it("logs nothing for a call that succeeded", async () => {
     devFlag.__DEV__ = false;
     fetchMock.mockReset().mockResolvedValue(new Response("{}", { status: 200 }));
@@ -370,5 +438,62 @@ describe("a failed request", () => {
 
     const everything = JSON.stringify(error.mock.calls) + String(failure);
     expect(everything).not.toMatch(/eyJ|jouni|secret|Bearer|\?/);
+  });
+});
+
+describe("a 401 in the log", () => {
+  const fetchMock = jest.fn();
+  const devFlag = globalThis as { __DEV__?: boolean };
+  const original = devFlag.__DEV__;
+  let error: jest.SpyInstance;
+
+  const storeThatRenews = () => {
+    const storage = {
+      load: jest.fn(async () => ({ accessToken: "stale", refreshToken: "refresh-1", expiresAt: Date.now() + 300_000 })),
+      save: jest.fn(async () => undefined),
+      clear: jest.fn(async () => undefined),
+    } satisfies TokenStorage;
+    const oauth = {
+      authorize: jest.fn(),
+      refresh: jest.fn(async () => ({
+        kind: "granted" as const,
+        grant: { accessToken: "renewed", refreshToken: "refresh-2", expiresInSeconds: 300 },
+      })),
+      revoke: jest.fn(),
+    } satisfies OAuthClient;
+    return createTokenStore({ storage, oauth, now: Date.now });
+  };
+
+  beforeEach(() => {
+    Reflect.deleteProperty(globalThis, SLOT);
+    devFlag.__DEV__ = false;
+    fetchMock.mockReset();
+    jest.spyOn(globalThis, "fetch").mockImplementation(fetchMock);
+    error = jest.spyOn(console, "error").mockImplementation(() => undefined);
+    registerMobileTransport(storeThatRenews());
+  });
+
+  afterEach(() => {
+    devFlag.__DEV__ = original;
+    jest.restoreAllMocks();
+  });
+
+  it("writes no line when the refresh resolves it", async () => {
+    fetchMock
+      .mockResolvedValueOnce(new Response("{}", { status: 401 }))
+      .mockResolvedValueOnce(new Response("{}", { status: 200 }));
+
+    await expect(kaliaFetch("/api/v1/profile", { method: "GET" })).resolves.toMatchObject({ status: 200 });
+
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("writes one line when the retry is answered 401 too", async () => {
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 401 }));
+
+    await kaliaFetch("/api/v1/profile", { method: "GET" });
+
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(error.mock.calls[0][0])).toMatchObject({ status: 401, path: "/api/v1/profile" });
   });
 });
