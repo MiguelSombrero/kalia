@@ -115,7 +115,7 @@ class ConcurrentAddBeerApiIT {
 	}
 
 	@Test
-	void twoConcurrentAddsOfOneNewBreweryCreateOneRowAndRefuseTheOtherWithItsId() throws Exception {
+	void twoConcurrentAddsOfOneNewBreweryCreateOneRowAndRefuseTheOtherAnonymously() throws Exception {
 		racersAreDifferentContributors();
 		String breweryName = "Race Brewery " + UUID.randomUUID().toString().substring(0, 8);
 
@@ -153,8 +153,8 @@ class ConcurrentAddBeerApiIT {
 					.findFirst().orElseThrow().getResponseBody();
 			String refused = results.stream().filter(result -> result.getStatus().value() == 409)
 					.findFirst().orElseThrow().getResponseBody();
-			assertThat((String) JsonPath.read(refused, "$.existingBreweryId"))
-					.isEqualTo(JsonPath.read(created, "$.brewery.id"));
+			assertThat((String) JsonPath.read(refused, "$.subject")).isEqualTo("BREWERY");
+			assertThat(refused).doesNotContain("existingBreweryId", (String) JsonPath.read(created, "$.brewery.id"));
 			assertThat(jdbc.queryForObject(
 					"SELECT count(*) FROM catalog.brewery WHERE catalog.fold_name(name) = catalog.fold_name(?)",
 					Long.class, breweryName)).isEqualTo(1);

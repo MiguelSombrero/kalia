@@ -217,9 +217,15 @@ describe("addBeer", () => {
   });
 
   it("tells a suggestion waiting elsewhere from a duplicate, since it names nothing to open", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { detail: "Someone has already suggested this beer" })));
+    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { detail: "Someone has already suggested this beer", subject: "BEER" })));
 
-    await expect(addBeer(request)).resolves.toEqual({ kind: "pendingElsewhere" });
+    await expect(addBeer(request)).resolves.toEqual({ kind: "pendingElsewhere", subject: "beer" });
+  });
+
+  it("tells a brewery waiting elsewhere from a beer waiting elsewhere", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => problem(409, { detail: "The catalog already has a brewery", subject: "BREWERY" })));
+
+    await expect(addBeer(request)).resolves.toEqual({ kind: "pendingElsewhere", subject: "brewery" });
   });
 
   it("reports the pending cap's 429 as its own answer, not as a failure", async () => {

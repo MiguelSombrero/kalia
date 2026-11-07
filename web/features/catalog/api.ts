@@ -90,7 +90,7 @@ export const addBeer = async (request: AddBeerRequest): Promise<AddBeerResult> =
           },
         };
       }
-      return { kind: "pendingElsewhere" };
+      return { kind: "pendingElsewhere", subject: response.data.subject === "BREWERY" ? "brewery" : "beer" };
     case 429:
       return { kind: "pendingCap" };
     default:

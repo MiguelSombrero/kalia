@@ -373,6 +373,7 @@
       "duplicateOpen": "Avaa {{beer}}",
       "duplicateBrewery": "{{brewery}} ({{place}}) on jo Kaliassa.",
       "useBrewery": "Valitse se",
+      "pendingBreweryElsewhere": "Tämän niminen panimo tästä maasta on jo katalogissa tilastaan riippumatta.",
       "pendingElsewhere": "Joku on jo ehdottanut tätä olutta, ja se odottaa tarkistusta. Katso myöhemmin uudelleen.",
       "pendingCap": "Sinulla on jo niin monta ehdotusta odottamassa tarkistusta kuin Kalia sallii. Rajaan lasketaan vain tarkistusta odottavat ehdotukset. Voit lisätä uusia, kun osa niistä on tarkistettu.",
       "refused": "Kalia ei hyväksynyt tätä olutta. Tarkista merkitty kenttä ja yritä uudelleen.",

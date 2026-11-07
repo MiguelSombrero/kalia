@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
@@ -56,6 +56,15 @@ describe("AddBeerOutcomeAlert", () => {
     renderAlert({ kind: "duplicateBeer", existing: { id: "b1", name: "Öö", breweryName: "" } });
 
     expect(screen.getByRole("alert")).toHaveTextContent("Öö is already in the catalog.");
+  });
+
+  it("says a brewery waiting for review is in the catalog, offering nothing to choose", () => {
+    renderAlert({ kind: "pendingElsewhere", subject: "brewery" });
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("A brewery with this name in this country is already in the catalog, whatever its status.");
+    expect(within(alert).queryByRole("link")).not.toBeInTheDocument();
+    expect(within(alert).queryByRole("button")).not.toBeInTheDocument();
   });
 
   it("hands the duplicated brewery to the form to use", () => {

@@ -27,6 +27,7 @@ const page = <T,>(content: T[]) => ({ content, totalElements: content.length, to
 type Posted = { status: number; body: unknown };
 let posted: Posted;
 let landing: unknown[];
+let beerReadFails: boolean;
 const requests: { method: string; url: URL; body?: unknown }[] = [];
 
 const backend = async (input: string, init: RequestInit = {}) => {
@@ -45,7 +46,7 @@ const backend = async (input: string, init: RequestInit = {}) => {
     return json(page([oo, virmalised].filter((beer) => words.some((word) => beer.name.toLowerCase().includes(word)))));
   }
   if (url.pathname === "/api/v1/beers" && url.searchParams.has("query")) return json(page(landing));
-  if (url.pathname === `/api/v1/beers/${oo.id}`) return json(oo);
+  if (url.pathname === `/api/v1/beers/${oo.id}`) return beerReadFails ? json({ status: 503 }, 503) : json(oo);
   return new Response(null, { status: 404 });
 };
 
@@ -94,6 +95,7 @@ beforeEach(() => {
   requests.length = 0;
   posted = { status: 201, body: created };
   landing = [created];
+  beerReadFails = false;
   push.mockReset();
   useJustAddedStore.setState({ beer: null, toastOpen: false, focusPending: false });
   vi.stubGlobal("fetch", vi.fn(backend));
@@ -200,6 +202,45 @@ describe("AddBeerDialog", () => {
     expect(within(alert).getByRole("link", { name: "Open Öö" })).toHaveAttribute("href", `/en/beers/${oo.id}`);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it("still says the beer exists, linking to it, when the read naming it fails", async () => {
+    posted = {
+      status: 409,
+      body: { status: 409, detail: "The catalog already has this beer", existingBeerId: oo.id },
+    };
+    beerReadFails = true;
+    await openForm("en", "öö");
+    await fillValidBeer();
+
+    submit();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("öö is already in the catalog.");
+    expect(alert).not.toHaveTextContent("Could not add the beer");
+    expect(within(alert).getByRole("link", { name: "Open öö" })).toHaveAttribute("href", `/en/beers/${oo.id}`);
+  });
+
+  it("says a brewery someone else holds for review is in the catalog, offering nothing to choose", async () => {
+    posted = {
+      status: 409,
+      body: { status: 409, detail: "The catalog already has a brewery of this name", subject: "BREWERY" },
+    };
+    await openForm();
+    fireEvent.focus(brewery());
+    fireEvent.change(brewery(), { target: { value: "Uusi Panimo" } });
+    fireEvent.mouseDown(await screen.findByRole("option", { name: "Add “Uusi Panimo” as a new brewery" }));
+    fill("Country", "EE");
+    fill("Style", "Imperial Stout");
+    fill("Strength (ABV %)", "12.5");
+
+    submit();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("A brewery with this name in this country is already in the catalog, whatever its status.");
+    expect(within(alert).queryByRole("link")).not.toBeInTheDocument();
+    expect(within(alert).queryByRole("button")).not.toBeInTheDocument();
+    expect(requests.some((request) => request.url.pathname.startsWith("/api/v1/breweries/"))).toBe(false);
   });
 
   it.each([

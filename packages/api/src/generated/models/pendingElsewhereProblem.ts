@@ -4,14 +4,17 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { PendingElsewhereProblemSubject } from './pendingElsewhereProblemSubject';
 
 /**
- * A 409: another contributor has already suggested this beer and it waits for review. It names neither the contributor nor the beer, since the caller cannot open it
+ * A 409: another contributor holds this beer, or this brewery, and it waits for review. It names neither the contributor nor the entry, since the caller cannot open it
  */
 export interface PendingElsewhereProblem {
   detail?: string;
   instance?: string;
   status: number;
+  /** What the request duplicates: the beer, or the brewery added with it */
+  subject: PendingElsewhereProblemSubject;
   title: string;
   type?: string;
 }

@@ -114,8 +114,8 @@ class ApiErrorDocumentationIT {
 		assertThat(properties(schemas, "DuplicateBeerProblem")).containsKey("existingBeerId");
 		assertThat(properties(schemas, "DuplicateBreweryProblem"))
 				.containsKeys("existingBreweryId", "existingBreweryName", "existingBreweryCountryCode");
-		assertThat(properties(schemas, "PendingElsewhereProblem")).doesNotContainKeys("existingBeerId",
-				"existingBreweryId");
+		assertThat(properties(schemas, "PendingElsewhereProblem")).containsKey("subject")
+				.doesNotContainKeys("existingBeerId", "existingBreweryId");
 	}
 
 	private List<String> operationsViolating(Predicate<Map<String, Object>> holds) {

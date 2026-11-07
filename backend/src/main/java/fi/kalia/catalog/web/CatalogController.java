@@ -163,8 +163,8 @@ class CatalogController {
 			@ApiResponse(responseCode = "409", description = """
 					The catalog already has this beer, named by `existingBeerId`, or already has the \
 					new brewery, named by `existingBreweryId` and spelled as the catalog spells it; or \
-					another contributor's suggestion of this beer is waiting for review, which names \
-					neither the contributor nor the beer\
+					another contributor's suggestion of this beer or of this brewery is waiting for \
+					review, which names neither the contributor nor the entry\
 					""", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 							schema = @Schema(oneOf = {DuplicateBeerProblem.class, DuplicateBreweryProblem.class,
 									PendingElsewhereProblem.class})))})

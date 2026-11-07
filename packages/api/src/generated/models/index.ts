@@ -46,6 +46,7 @@ export * from './pageDtoBeerSummaryDto';
 export * from './pageDtoBreweryDto';
 export * from './pageDtoSuggestionDto';
 export * from './pendingElsewhereProblem';
+export * from './pendingElsewhereProblemSubject';
 export * from './problem';
 export * from './profileDto';
 export * from './publicCellarBottleDto';

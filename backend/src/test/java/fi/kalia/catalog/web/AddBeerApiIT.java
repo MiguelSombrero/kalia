@@ -166,7 +166,8 @@ class AddBeerApiIT {
 				.expectBody(String.class)
 				.value(body -> assertThat(body)
 						.doesNotContain("existingBeerId", "existingBreweryId", pendingId.toString(),
-								contributorId.toString(), "contributor"));
+								contributorId.toString(), "contributor")
+						.contains("\"subject\":\"BEER\""));
 
 		assertThat(jdbc.queryForObject(
 				"SELECT count(*) FROM catalog.beer WHERE brewery_id = ? AND catalog.fold_name(name) = catalog.fold_name(?)",
@@ -178,6 +179,33 @@ class AddBeerApiIT {
 				.value(body -> assertThat((String) JsonPath.read(body, "$.existingBeerId"))
 						.as("the contributor's own pending beer is still one they can open")
 						.isEqualTo(pendingId.toString()));
+	}
+
+	@Test
+	void aBreweryAnotherContributorHoldsAsPendingIsAnAnonymousConflictThatOffersNothingToChoose() {
+		String breweryName = uniqueName("Panimo");
+		UUID otherId = UUID.randomUUID();
+		given(jwtDecoder.decode("other-token")).willReturn(TestTokens.user(otherId.toString(), "other"));
+		UUID breweryId = UUID.fromString(JsonPath.read(addBeer(beer(uniqueName("Sahti"), STYLE, 8.0)
+				.withNewBrewery(breweryName, "FI", null)).expectStatus().isCreated()
+				.expectBody(String.class).returnResult().getResponseBody(), "$.brewery.id"));
+
+		client.post().uri("/api/v1/beers")
+				.header("Authorization", "Bearer other-token")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(beer(uniqueName("Sahti"), STYLE, 8.0).withNewBrewery(breweryName.toLowerCase(Locale.ROOT), "FI", null).body)
+				.exchange()
+				.expectStatus().isEqualTo(409)
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> {
+					assertThat((String) JsonPath.read(body, "$.subject")).isEqualTo("BREWERY");
+					assertThat(body).doesNotContain("existingBreweryId", "existingBreweryName", breweryName,
+							breweryId.toString(), contributorId.toString());
+				});
+
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog.brewery WHERE catalog.fold_name(name) = catalog.fold_name(?)",
+				Long.class, breweryName)).isEqualTo(1);
 	}
 
 	@Test
