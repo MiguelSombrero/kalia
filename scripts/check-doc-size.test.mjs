@@ -32,8 +32,8 @@ test("counts lines as wc -l does", () => {
   assert.equal(lineCount("a\nb"), 2);
 });
 
-test("caps are 500 for architecture.md and 300 for each of backend/README.md and web/README.md", () => {
-  assert.deepEqual(CAPS, { "docs/architecture.md": 500, "backend/README.md": 300, "web/README.md": 300 });
+test("caps are 500 for architecture.md and 300 for each README", () => {
+  assert.deepEqual(CAPS, { "docs/architecture.md": 500, "backend/README.md": 300, "web/README.md": 300, "README.md": 300 });
 });
 
 test("passes documents of exactly their caps", (t) => {

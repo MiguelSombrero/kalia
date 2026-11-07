@@ -140,7 +140,7 @@ services:
       # Runs once, only against an empty data directory: creates the roles and
       # the second database Keycloak persists into, alongside `kalia`.
       # An existing volume keeps the roles it has: recreate it with
-      # `docker compose down -v` (README.md).
+      # `docker compose down -v` (ADR-0100).
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kalia -d kalia"]

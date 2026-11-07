@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Fails when a capped document grows past its cap. docs/architecture.md shows
-// the shape of the system and no more, and the backend and web READMEs are
-// loaded into every agent session of their tier (ADR-0020); every task's
+// the shape of the system and no more, and the root, backend and web READMEs are
+// the ones every session reads first (ADR-0020); every task's
 // doc-sync step had added what it built until they reached 1,667, 657 and 534
 // lines. A line count is the one regrowth signal that needs no judgement.
 // Plain Node, no dependencies.
@@ -14,6 +14,7 @@ export const CAPS = {
   "docs/architecture.md": 500,
   "backend/README.md": 300,
   "web/README.md": 300,
+  "README.md": 300,
 };
 
 const HINTS = {
@@ -23,6 +24,8 @@ const HINTS = {
     "It is loaded into every backend session: keep commands, conventions and traps, and leave reasons to an ADR and per-suite detail to the test's Javadoc.",
   "web/README.md":
     "It is loaded into every web session: keep commands, conventions and traps, and leave reasons to an ADR.",
+  "README.md":
+    "It is the front door and owns the stack's run instructions: keep commands, traps and what is said nowhere else, and leave reasons to an ADR and shape to docs/architecture.md.",
 };
 
 /**
