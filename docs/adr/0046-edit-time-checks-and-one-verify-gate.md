@@ -26,6 +26,9 @@
 - **Amended:** 2026-11-06 by iteration 10.5 task 21 — `make verify-fast` also
   runs `make api-breaking` and three checkers that stand in for failures only
   CI reported; `make verify` and CI check that every pinned Action exists
+- **Amended:** 2026-11-07 by iteration 11 task 15 — the race the 2026-10-30
+  amendment accepted happened a second time; a `pull_request` job runs `make
+  check` on the merge ref, and the product owner makes it a required check
 
 ## Context
 
@@ -169,6 +172,28 @@ What this covers, and what it does not:
   > ([ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md)'s
   > recurrence bar), with the real cost of a red `dev` in hand. Only the product
   > owner changes the ruleset.
+
+  > **Amended 2026-11-07, answering the reopened question.** The race happened
+  > a second time: #542 filed SHOULD-99 to COULD-114 in the quality backlog, and
+  > #543, branched before it merged, added the **Highest issued** line from a
+  > backlog without them. Each was green on its own head, they merged without a
+  > conflict, and `dev` went red on `check-tasks` (run `41827668769`) until an
+  > unrelated branch fixed it, while every worktree cut from `dev` failed
+  > `verify-fast`. That is the real cost of a red `dev`, which the
+  > 2026-10-30 amendment left to be measured. The answer is
+  > narrower than the requirement reversed on 2026-10-30:
+  > `.github/workflows/merge-ref-check.yml`, on `pull_request`, runs only `make
+  > check` on GitHub's merge ref, the branch merged into the base's current
+  > tip. `ci.yml` runs on `push`, the branch's own head, which never contains
+  > the other side, which is why #543 passed. The job takes seconds, runs on
+  > the free minutes, and does not wait on another pull request's merge, so it
+  > does not bring back the serial queue. Making it a required check is a
+  > ruleset change, the product owner's. It closes the race for what `make
+  > check` reads, which is the whole of the 2026-11-04 case; a behavioural
+  > conflict only the Docker gate sees (#447 and #448) stays open and stays
+  > caught afterwards. Rejected: requiring branches to be up to date again, for
+  > the reason given on 2026-10-30; and running the whole of CI on the merge
+  > ref, which is that cost without the saving.
 - **A `PostToolUse` hook runs whichever checker covers the edited file**, and
   reports the failure into the agent's context. It never blocks. A checker
   legitimately goes red mid-task — a task file exists before its index row
@@ -345,7 +370,9 @@ drift this ADR is trying to remove.
 - Bad, because with the up-to-date requirement off, two green pull requests
   that conflict in behaviour can both merge and turn `dev` red. It is found
   by the push run on `dev` and logged by the next session, which makes it a
-  repair and not a block.
+  repair and not a block. (Narrowed 2026-11-07: for what `make check` reads, a
+  `pull_request` job on the merge ref blocks it, once the product owner
+  requires that check; the Docker gate's share stays a repair.)
 - Bad, because the merge block lives in a GitHub ruleset, which no file in
   this repository records. `ci-passed` and the vulnerability scan being the
   two required checks is a fact about settings outside the tree, and a ruleset

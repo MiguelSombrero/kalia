@@ -5,7 +5,7 @@ each depends on: [docs/architecture.md §3](../docs/architecture.md#3-backend-mo
 
 ## Run locally
 
-Full stack: `docker compose up --build` from the repo root, backend at `localhost:8080` through `edge`.
+The stack: [root README](../README.md#run-locally).
 Hot reload: run natively against the compose database. Name the services, as a bare `up -d` also starts the `backend` container that holds port 8080:
 
 ```bash

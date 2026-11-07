@@ -19,11 +19,13 @@
 // on a pull_request event, so it runs from .github/workflows/pr-body.yml and
 // not from `make check`.
 //
-// usage: check-pr-body.mjs --body-file <path> --diff-file <path> [--author <login>]
-//   body: the PR description; diff: `git diff <base>...HEAD -- docs/tasks`;
-//   author: the PR author's login, which exempts a bot whose body quotes
-//   third-party text from the deferral rule (THIRD_PARTY_BODY_AUTHORS)
+// usage: check-pr-body.mjs --body-file <path> (--diff-file <path> | --merge-ref) [--author <login>]
+//   body: the PR description; diff: a unified diff of docs/tasks, or
+//   --merge-ref to take it from the checkout, which on a pull_request event
+//   is GitHub's merge ref; author: the PR author's login, which exempts a bot
+//   whose body quotes third-party text from the deferral rule (THIRD_PARTY_BODY_AUTHORS)
 
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
@@ -68,6 +70,20 @@ export function completesTask(diff) {
     if (inTaskFile && /^\+- \*\*Status:\*\* done\s*$/.test(line)) return true;
   }
   return false;
+}
+
+// What this PR changes under docs/tasks, read from the merge ref the checkout
+// is on: the diff from its first parent, the base's current tip, to the merge.
+// `pull_request.base.sha` is the tip when the PR was opened or last pushed, so
+// diffing from it counts every task `dev` finished since as this PR's
+// (PRs 513 and 515, SHOULD-117).
+export function mergeRefTasksDiff(cwd = ".") {
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const parents = git("rev-list", "--parents", "-n", "1", "HEAD").trim().split(" ");
+  if (parents.length !== 3) {
+    throw new Error("HEAD is not a merge commit: --merge-ref needs the checkout a pull_request event makes (refs/pull/N/merge)");
+  }
+  return git("diff", parents[1], "HEAD", "--", "docs/tasks");
 }
 
 // Gate labels whose line is missing, or present with nothing after the label
@@ -129,13 +145,21 @@ const isMain =
 if (isMain) {
   const bodyFile = arg("--body-file");
   const diffFile = arg("--diff-file");
-  if (!bodyFile || !diffFile) {
-    console.error("usage: check-pr-body.mjs --body-file <path> --diff-file <path>");
+  const fromMergeRef = process.argv.includes("--merge-ref");
+  if (!bodyFile || !diffFile === !fromMergeRef) {
+    console.error("usage: check-pr-body.mjs --body-file <path> (--diff-file <path> | --merge-ref) [--author <login>]");
+    process.exit(2);
+  }
+  let diff;
+  try {
+    diff = fromMergeRef ? mergeRefTasksDiff() : readFileSync(diffFile, "utf8");
+  } catch (error) {
+    console.error(error.message);
     process.exit(2);
   }
   const problems = checkPrBody({
     body: readFileSync(bodyFile, "utf8"),
-    diff: readFileSync(diffFile, "utf8"),
+    diff,
     author: arg("--author") ?? "",
   });
   if (problems.length > 0) {
