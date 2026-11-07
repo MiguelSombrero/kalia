@@ -9,8 +9,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 @Import(TestcontainersConfiguration.class)
@@ -23,9 +21,6 @@ class KaliaApplicationIT {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-
-	@MockitoBean
-	private JwtDecoder jwtDecoder;
 
 	@Test
 	void healthEndpointReportsUp() {
