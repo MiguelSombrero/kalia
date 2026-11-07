@@ -1,0 +1,32 @@
+name: Merge ref
+
+# `make check` on the merge of the branch into the base's current tip, which
+# is what a pull_request run checks out (refs/pull/N/merge). ci.yml runs on
+# push, the branch's own head, so two branches that are each green and merge
+# without a conflict can still fail a checker together, as #542 and #543 did
+# (ADR-0046). Only `make check`: the Docker-free checkers that read the whole
+# tree are where that happens, and it takes seconds. Required on `dev` by the
+# product owner's ruleset, which no file here can set.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-on-merge-ref:
+    name: make check on the merge ref
+    runs-on: ubuntu-latest
+    steps:
+      # No `ref:`: the default checkout of a pull_request event is the merge.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - name: Run every dependency-free checker on the merged tree
+        run: make check
