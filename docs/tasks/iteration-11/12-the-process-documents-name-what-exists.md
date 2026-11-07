@@ -1,6 +1,6 @@
 # Task 12: The process documents name what exists
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -87,17 +87,17 @@ skill tells an agent to rename a harness-made branch before its first push; and
 
 ## Acceptance criteria
 
-- [ ] `docs/roadmap.md` agrees with the iteration indexes about which
+- [x] `docs/roadmap.md` agrees with the iteration indexes about which
       iteration is in progress, and `make check` fails when they disagree —
       a fixture test shows it; `docs/architecture.md` states no iteration's
       status, and `implement-task` step 11 does not name it
-- [ ] `docs/ci-playbook.md` names no `frontend/` path, and a test fails a path
+- [x] `docs/ci-playbook.md` names no `frontend/` path, and a test fails a path
       it or `docs/common-failures.md` names that does not exist
-- [ ] `CLAUDE.md` and `README.md` agree on where a version lives, and every
+- [x] `CLAUDE.md` and `README.md` agree on where a version lives, and every
       manifest `scripts/mobile-doctor.mjs` reads is among them; `CLAUDE.md` is
       under 200 lines
-- [ ] The `worktree` skill and `design-task` step 9 say what the findings ask
-- [ ] `make verify-fast` is green
+- [x] The `worktree` skill and `design-task` step 9 say what the findings ask
+- [x] `make verify-fast` is green
 
 ## Notes
 

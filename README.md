@@ -121,8 +121,11 @@ modules: [§3](docs/architecture.md#3-backend-modules). Decision records:
 ## Tech stack
 
 An inventory, not a version list. **The version of a thing lives in the file that
-installs it** and nowhere else: `backend/pom.xml`, `web/package.json`, the
-`docker-compose*.yml` files, the `Dockerfile`s and `.github/workflows/`
+installs it** and nowhere else — the manifests: `backend/pom.xml`, every
+`package.json` (the root's, `web/`, `mobile/` and `packages/*/`), the
+`docker-compose*.yml` files, the `Dockerfile`s, `.github/workflows/`, and the
+toolchain pin files (`.node-version`, `.xcode-version`, `.tailscale-version` and
+`mobile/.java-version`)
 ([ADR-0020](docs/adr/0020-documentation-roles.md)). A number appears below only
 where it is the point of the sentence. Add a technology here when you add it to
 a manifest; don't restate what the manifest says.
