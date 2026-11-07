@@ -97,8 +97,8 @@ rank them in a way that pre-empts the pick.
 9. **Hand off to `implement-task`**, resuming at its step 4 and running it
    through its step 11 — not its step 12, which opens the pull request and
    comes after step 10 here. Nothing about its gates changes: comment pass,
-   doc-sync, `/code-review`, `make verify`, each acceptance criterion run and
-   then ticked.
+   doc-sync, `/code-review`, `make verify-fast`, each acceptance criterion run
+   and then ticked.
 10. **Confirm it in the real app**, as part of `implement-task`'s step 10.
     Bring the stack up, open the built page in the desktop app's browser pane
     and look at it at each agreed width. A mockup is a claim about a design;

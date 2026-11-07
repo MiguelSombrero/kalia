@@ -8,6 +8,9 @@
   modules are `catalog`, `identity`, `cellar`, `profile` and `feed`
   ([architecture.md §3](../architecture.md#3-backend-modules)). The decision
   itself stands
+- **Amended:** 2026-11-07 — that list was short: `appconfig` and
+  `notification` are modules too. The module list's one home is
+  [architecture.md §3](../architecture.md#3-backend-modules); read it there
 
 ## Context
 

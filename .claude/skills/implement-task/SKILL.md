@@ -137,9 +137,12 @@ their own condition from that ADR before they apply.
     status, in the same pull request: its `Status` in `docs/roadmap.md` and its
     entry under "What each iteration built" there (finish it and drop its "in
     progress" marker if an earlier task began it), the one home of the feature
-    list that `README.md` and `docs/architecture.md` §1 point to; and
-    `docs/architecture.md` §1's "No iteration is in progress. The next is …"
-    line. Missing these is how the close of 5.5, 6 and 7 drifted.
+    list that `README.md` and `docs/architecture.md` §1 point to.
+    Missing these is how the close of 5.5, 6 and 7 drifted.
+
+    **When this was the iteration's first `done` task,** mark the iteration
+    `🔄 In progress` in `docs/roadmap.md`, the one place an iteration's status
+    is stated; `make check` fails while it still reads `⬜ Todo`.
 12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 

@@ -158,8 +158,9 @@ The gates themselves:
 - **New dependencies: ask, don't research.** When a task introduces one
   (library, starter, plugin, Docker image, GitHub Action), list them and ask
   which versions to use — one batched question per task. Exceptions: versions
-  already pinned in a manifest (`backend/pom.xml`, `web/package.json`,
-  `docker-compose*.yml`, a `Dockerfile`, a workflow) or here, and versions
+  already pinned in a manifest (every `package.json`, `pom.xml`, compose file,
+  `Dockerfile`, workflow and toolchain pin file, listed in the
+  [README](README.md#tech-stack)) or here, and versions
   confirmed from authoritative output (build errors, repository metadata,
   generator output); propose those for confirmation. **The version is recorded
   in that manifest and nowhere else** — the README tech stack inventory names

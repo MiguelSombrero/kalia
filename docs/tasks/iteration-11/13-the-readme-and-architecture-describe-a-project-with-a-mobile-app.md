@@ -1,6 +1,6 @@
 # Task 13: The README and the architecture describe a project with a mobile app
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -77,19 +77,19 @@ from its manifest.
 
 ## Acceptance criteria
 
-- [ ] §4 of `docs/architecture.md` states that the web's BFF and the mobile app
+- [x] §4 of `docs/architecture.md` states that the web's BFF and the mobile app
       both call the API and what that requires of it
-- [ ] `README.md` names the mobile app in its Architecture paragraph, lists
+- [x] `README.md` names the mobile app in its Architecture paragraph, lists
       every technology `mobile/package.json` installs and Maestro, and names
       nginx among the base images
-- [ ] The README tree names `packages/` and points at §3 for the backend
+- [x] The README tree names `packages/` and points at §3 for the backend
       modules, §2's layout block is a pointer to it, and the test that asserts
       §3's table, `ArchitectureDocumentationTest`, passes
-- [ ] No version number is restated outside its manifest in the README's
+- [x] No version number is restated outside its manifest in the README's
       overrides note, and the stale sentence in `mobile/README.md` is gone
-- [ ] Each smaller item of COULD-122 is corrected, and a search finds no
+- [x] Each smaller item of COULD-122 is corrected, and a search finds no
       `frontend` zone in ADR-0090 or the edge's configuration
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

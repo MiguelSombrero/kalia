@@ -1,6 +1,6 @@
 # Kalia — Architecture
 
-*Last updated: 2026-11-06. The shape of what is built, nothing beyond it.
+*Last updated: 2026-11-07. The shape of what is built, nothing beyond it.
 Behaviour is in the READMEs, reasons are in the ADRs, and what comes next is
 in [docs/roadmap.md](roadmap.md) ([ADR-0020](adr/0020-documentation-roles.md)). It changes when the
 shape changes, and stays under 500 lines.*
@@ -16,8 +16,6 @@ iterative delivery** over scale.
 ### Functional requirements
 
 What each iteration built: [docs/roadmap.md](roadmap.md#what-each-iteration-built).
-
-No iteration is in progress. The next is [iteration 11](tasks/iteration-11.md).
 
 ### Non-functional requirements
 
@@ -83,17 +81,13 @@ flowchart LR
   ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
 - **One trace id, JSON logs and counters, no viewer**
   ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
-- **Only the edge proxy is published**, with per-address limits
+- **Only the edge proxy is published by the deployable stack**, with
+  per-address limits; the dev overlay also publishes Postgres, Valkey, Mailpit
+  and Keycloak's admin console on loopback
   ([ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)).
 
-Repository layout, plain npm workspaces ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)):
-
-```text
-backend/    Spring Boot modulith
-web/        the Next.js app
-mobile/     the Expo app
-packages/   @kalia/api (generated client, fetch core) and @kalia/locales
-```
+Repository layout, plain npm workspaces ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)): the tree is in the
+[README](../README.md#repository-layout).
 
 Neither app depends on the other, and a package imports from neither.
 
@@ -179,8 +173,14 @@ Source of truth: `backend/openapi.json` and Swagger UI. Reasons:
 [ADR-0059](adr/0059-feed-respects-cellar-visibility.md),
 [ADR-0060](adr/0060-feed-delivery-is-polling.md), [ADR-0083](adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md).
 
-- **REST JSON under `/api/v1`,** client-agnostic: a resource is shaped for the
-  resource, not for the screen that reads it.
+- **Two callers, one API:** the web app's BFF calls it from the server with a
+  session's token, and the mobile app calls it directly through the edge with
+  its own ([§2](#2-high-level-design)). So a resource is **client-agnostic**:
+  shaped for the resource, not for the screen that reads it, because a change
+  one caller asked for reaches the other. Each endpoint has to stand on its own
+  bearer token, and an installed app cannot be updated at the API's pace, hence
+  the additive-only rule below.
+- **REST JSON under `/api/v1`.**
 - **Pages** carry `content`, `totalElements`, `totalPages`, `page`, with
   bounded `size` and `page` ([ADR-0042](adr/0042-bounded-request-parameters.md)). **The feed is the
   exception:** a cursor, not a page number ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
