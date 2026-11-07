@@ -288,7 +288,9 @@ manifest already says.
   suite only when the push can affect it: `scripts/ci-changes.mjs`). Every action is
   SHA-pinned with its tag in a trailing comment — `.github/workflows/` is the
   list; `pr-body.yml` also checks that a
-  task-completing pull request fills in the template's Gates section
+  task-completing pull request fills in the template's Gates section, and
+  `merge-ref-check.yml` runs `make check` on the merge of the branch into
+  `dev`
 
 ## Repository layout
 

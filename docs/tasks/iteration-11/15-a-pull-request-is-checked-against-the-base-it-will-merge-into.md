@@ -1,6 +1,6 @@
 # Task 15: A pull request is checked against the base it will merge into
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -65,16 +65,16 @@ required `make check` on the merge ref, and ADR-0046 says so.
 
 ## Acceptance criteria
 
-- [ ] A test builds a repository in which `dev` has moved a task to `done` after
+- [x] A test builds a repository in which `dev` has moved a task to `done` after
       the branch point and shows `check-pr-body` no longer counting that task as
       this PR's; it failed against the `"$BASE_SHA"...HEAD` diff
-- [ ] The workflow diffs the merge ref against its first parent
-- [ ] A `pull_request` job runs `make check` on the merge ref and fails on the
+- [x] The workflow diffs the merge ref against its first parent
+- [x] A `pull_request` job runs `make check` on the merge ref and fails on the
       #542/#543 pair reproduced in a fixture, and ADR-0046 is amended with the
       second occurrence and this answer
-- [ ] `docs/common-failures.md` records the false positives and the race with
+- [x] `docs/common-failures.md` records the false positives and the race with
       their cause
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
