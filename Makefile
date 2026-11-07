@@ -149,7 +149,7 @@ openapi-spec: ## Rewrite backend/openapi.json from what the application serves, 
 	(cd backend && mvn -q -B -Dopenapi.write=true -Dit.test=CommittedOpenApiSpecIT -Dtest=NoSuch -Dsurefire.failIfNoSpecifiedTests=false verify)
 	npm run generate --workspace @kalia/api
 
-api-breaking: ## Fail if backend/openapi.json breaks an installed app against origin/dev's copy (needs oasdiff, ADR-0093)
+api-breaking: ## Report a change in backend/openapi.json that would break an installed app, against origin/dev's copy; fails only once ENFORCED is on in the script (needs oasdiff, ADR-0093)
 	@git fetch --quiet origin dev 2>/dev/null || echo "warning: fetch failed — origin/dev may be stale" >&2
 	node scripts/check-api-breaking.mjs origin/dev
 

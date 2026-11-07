@@ -45,7 +45,8 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
   client is what the spec generates), and the `api-breaking-change` job
   (`scripts/check-api-breaking.mjs`: `oasdiff` against `dev`'s spec, which
   `make verify-fast` also runs before a push, so install it with
-  `brew install oasdiff`). A removal of
+  `brew install oasdiff`), advisory until the app is distributed beyond the
+  product owner's own phone. Once it fails, a removal of
   an element `dev` already marks `deprecated` needs a line in
   `backend/openapi-breaking-ignore.txt` naming the minimum supported app build
   that excludes its last user. A new `oneOf` member in a 4xx or 5xx response

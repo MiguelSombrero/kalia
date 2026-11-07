@@ -5,6 +5,10 @@
 - **Amended:** 2026-11-04 — a new `oneOf` member in a 4xx or 5xx response body
   is additive, and the breaking-diff job lets exactly that finding through
   (iteration 10 task 16); see the "Additive" bullet of Decision
+- **Amended:** 2026-11-07 — the policy and the breaking-diff failure apply from
+  the app's first distribution beyond the product owner's own phone, and the
+  check is advisory until then (maintenance change, no iteration task); see
+  "Amendment 2026-11-07" below the Decision's verdict
 
 ## Context
 
@@ -36,6 +40,25 @@ safe to remove.
 beside a deprecated old one, retired once the minimum supported app build
 excludes every build that uses it, and the OpenAPI spec is committed so a
 test and a CI job fail a drift or a breaking diff before merge.**
+
+**Amendment 2026-11-07: the breaking-diff failure waits for distribution.** The
+only installed app is the product owner's own iPhone, which free provisioning
+re-signs from source every seven days, so there is no installed build the
+policy could protect and the additive-only discipline costs more than it
+saves. The rules below stay the design; from now on they bind work from **the
+first distribution of the app beyond the product owner's own phone** — a
+build installed on any device that is not theirs, whether through TestFlight,
+a Play track, an APK handed to a tester or a store release. Until then
+`scripts/check-api-breaking.mjs` still runs, in `make verify-fast`, `make
+verify` and the `api-breaking-change` job, and prints every finding it would
+have failed on, including the removal of a deprecated element no waiver
+covers, labelled advisory; it exits 0. A failure to run it (no `oasdiff`, an
+unreadable spec, a malformed waiver file) still fails. What flips the check is
+one constant, `ENFORCED` in that script, set to `true` as part of the
+distribution work ([backlog](../tasks/backlog.md)). `CommittedOpenApiSpecIT`
+and `make api-drift` check the spec against the served API and the generated
+client, not compatibility, and are unchanged, as is the `app-config`
+endpoint.
 
 - **Both clients make one promise: ignore unknown fields, and treat an
   unknown enum value as a fallback.** The web and the mobile app each
@@ -162,6 +185,16 @@ author cannot reach. The checks cost one test and one CI job.
   protects only an app that can reach the server: an install that was offline
   when the minimum was raised keeps its old build, and the first calls it
   makes on reconnecting can reach a removed element before the check answers.
+- Bad, because while the check is advisory a breaking change can merge
+  unnoticed, and an element the first distributed build calls may already be
+  gone by then; the spec's history is the only record of what an earlier build
+  could call.
+- Bad, because re-arming is by hand: the policy returns only when someone
+  flips `ENFORCED`, and the one line in the backlog that says so is the whole
+  mechanism. A distribution that skips it ships with the check silent.
+- Neutral, because the advisory output keeps the diff, the waiver validation
+  and the stale-branch advice running, so the machinery is exercised on every
+  push and flipping the constant changes only the exit code.
 - **Revisit trigger:** the app is distributed beyond the product owner's own
-  phone — add the time floor, and reconsider the `Deprecation` and `Sunset`
-  headers with it.
+  phone — set `ENFORCED` in `scripts/check-api-breaking.mjs`, add the time
+  floor, and reconsider the `Deprecation` and `Sunset` headers with them.
