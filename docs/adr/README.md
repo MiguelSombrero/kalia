@@ -195,7 +195,8 @@ and the third keeps that identifier from ever passing to someone else.
   — `/api/v1` changes additively only while an app is installed: a breaking
   change is a new path beside a deprecated one, retired once task 12's minimum
   build excludes every build that uses it, and a committed OpenAPI spec fails a
-  test on drift and a CI job on a breaking diff.
+  test on drift and a CI job on a breaking diff, which stays advisory until
+  the app is distributed beyond the product owner's own phone.
 
 ## Frontend structure and conventions
 

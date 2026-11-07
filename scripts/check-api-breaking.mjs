@@ -1,12 +1,18 @@
 #!/usr/bin/env node
-// Fails when backend/openapi.json differs from the copy on a base ref in a way
-// an installed app would notice (ADR-0093): a removed, renamed or retyped
+// Reports when backend/openapi.json differs from the copy on a base ref in a
+// way an installed app would notice (ADR-0093): a removed, renamed or retyped
 // element, an optional field made required, a tightened request. Additive
 // changes pass. The comparison is oasdiff's; this wraps it with the two
 // things the ADR leaves to the repository, which oasdiff does not have: the
 // removal of a deprecated element is an error until a committed waiver names
 // the app build that excludes its last user, and a waiver may cover nothing
 // else.
+//
+// ENFORCED below decides what a finding does. Off, the finding is printed as
+// advisory and the exit is 0; on, it fails the check. It stays off until the app
+// is distributed beyond the product owner's own phone (ADR-0093, amended
+// 2026-11-07). A failure to run the check (no oasdiff, an unreadable spec, a
+// malformed waiver file) fails in both modes.
 //
 // oasdiff reports the removal of an element `dev` marks deprecated as
 // information; backend/openapi-severity.txt (which oasdiff reads without
@@ -31,6 +37,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SPEC = "backend/openapi.json";
 const SEVERITY = "backend/openapi-severity.txt";
 const IGNORE = "backend/openapi-breaking-ignore.txt";
+
+/**
+ * Whether a breaking finding fails the check. Flip to true when the app is first
+ * distributed beyond the product owner's own phone (docs/tasks/backlog.md).
+ */
+export const ENFORCED = false;
 
 const ERROR_ONE_OF_ADDED = /^response-body-one-of-added$/;
 const ERROR_STATUS = /for the response status `[45]\d\d`$/;
@@ -102,6 +114,32 @@ export function failureReport(blocking, baseRef, baseChanged) {
   return lines;
 }
 
+/** @param {string} text escaped as GitHub's workflow commands require */
+const escapeCommand = (text) => text.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+
+/**
+ * @param {{ operation: string, path: string, text: string, id: string }[]} blocking the findings that break the contract
+ * @param {string} baseRef
+ * @param {() => boolean} baseChanged whether baseRef changed the spec after this branch was cut, asked only on a finding
+ * @param {{ enforced?: boolean, annotate?: boolean }} mode annotate adds a GitHub warning annotation per advisory finding
+ * @returns {{ lines: string[], exitCode: number }} what the check prints and how it exits
+ */
+export function breakingReport(blocking, baseRef, baseChanged, { enforced = ENFORCED, annotate = false } = {}) {
+  if (enforced) return { lines: failureReport(blocking, baseRef, baseChanged), exitCode: blocking.length === 0 ? 0 : 1 };
+  if (blocking.length === 0) return { lines: [], exitCode: 0 };
+  const lines = blocking.flatMap((f) => {
+    const finding = `${f.operation} ${f.path} ${f.text} [${f.id}]`;
+    return annotate ? [`  WARN  ${finding}`, `::warning title=API breaking change (advisory)::${escapeCommand(finding)}`] : [`  WARN  ${finding}`];
+  });
+  lines.push(
+    "",
+    `  advisory: ${blocking.length} breaking finding${blocking.length === 1 ? "" : "s"} did not fail the check; ` +
+      "ENFORCED in scripts/check-api-breaking.mjs is off until the app is distributed beyond the product owner's own phone (ADR-0093)",
+  );
+  if (baseChanged()) lines.push("", staleBranchAdvice(baseRef));
+  return { lines, exitCode: 0 };
+}
+
 const main = () => {
   const baseRef = process.argv[2] ?? "origin/dev";
 
@@ -149,8 +187,11 @@ const main = () => {
       console.log(`  ok    ${f.operation} ${f.path} ${f.text} [${f.id}] (an error body may gain a member)`);
     }
     const blocking = blockingFindings(findings);
-    for (const line of failureReport(blocking, baseRef, () => baseChangedSpecSinceFork(baseRef))) console.log(line);
-    process.exit(blocking.length === 0 ? 0 : 1);
+    const { lines, exitCode } = breakingReport(blocking, baseRef, () => baseChangedSpecSinceFork(baseRef), {
+      annotate: process.env.GITHUB_ACTIONS === "true",
+    });
+    for (const line of lines) console.log(line);
+    process.exit(exitCode);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

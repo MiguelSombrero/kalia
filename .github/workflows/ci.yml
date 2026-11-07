@@ -201,10 +201,12 @@ jobs:
 
   api-breaking-change:
     name: API breaking-change check
-    # Diffs backend/openapi.json against dev's copy and fails on a change an
-    # installed app would notice (ADR-0093). The spec sits in backend/, so this
-    # follows the backend filter; the script that configures the diff has its
-    # own test in static-checks.
+    # Diffs backend/openapi.json against dev's copy for a change an installed
+    # app would notice (ADR-0093). Whether a finding fails the job is the
+    # script's ENFORCED switch, advisory for now: a finding then shows as a
+    # warning annotation and exits 0, while a failure to run the diff still
+    # fails. The spec sits in backend/, so this follows the backend filter;
+    # the script that configures the diff has its own test in static-checks.
     needs: [changes]
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
@@ -229,7 +231,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/oasdiff"
           tar -xzf "$RUNNER_TEMP/oasdiff.tar.gz" -C "$RUNNER_TEMP/oasdiff" oasdiff
           echo "$RUNNER_TEMP/oasdiff" >> "$GITHUB_PATH"
-      - name: Fail on a breaking change against dev's spec
+      - name: Check for a breaking change against dev's spec
         run: node scripts/check-api-breaking.mjs origin/dev
 
   keycloak-realm-check:

@@ -192,6 +192,12 @@ decides to spend:
 - **A public store release:** listings, a privacy policy and privacy labels,
   an age rating for alcohol references, in-app account deletion, and store
   review.
+- **Whichever of these first puts a build on a device that is not the product
+  owner's own:** flip `ENFORCED` to `true` in `scripts/check-api-breaking.mjs`,
+  so the breaking-diff failure of
+  [ADR-0093](../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)
+  returns with the time floor and the `Deprecation` and `Sunset` headers it
+  also defers.
 
 ### What already works in mobile's favour
 

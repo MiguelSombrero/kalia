@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Self-test for check-api-breaking.mjs's waiver rules and its stale-branch
-// advice. The committed waiver file is empty, so the validator never has
+// Self-test for check-api-breaking.mjs's waiver rules, its stale-branch
+// advice and what it does with a breaking finding in each enforcement mode. The committed waiver file is empty, so the validator never has
 // anything to refuse there and would stay green if it stopped looking.
 
 import test from "node:test";
@@ -10,7 +10,15 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { baseChangedSpecSinceFork, blockingFindings, failureReport, problemsInWaivers, staleBranchAdvice } from "./check-api-breaking.mjs";
+import {
+  ENFORCED,
+  baseChangedSpecSinceFork,
+  blockingFindings,
+  breakingReport,
+  failureReport,
+  problemsInWaivers,
+  staleBranchAdvice,
+} from "./check-api-breaking.mjs";
 
 const removal = "GET /api/v1/styles api path removed with deprecation [api-path-removed-with-deprecation]";
 
@@ -133,4 +141,66 @@ test("a branch cut after dev's last spec change gets no advice to merge", () => 
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+const deprecatedRemoval = {
+  operation: "GET",
+  path: "/api/v1/styles",
+  text: "api path removed with deprecation",
+  id: "api-path-removed-with-deprecation",
+};
+
+test("enforcing, a breaking finding is a FAIL line and exit 1", () => {
+  const { lines, exitCode } = breakingReport([cellarFinding, deprecatedRemoval], "origin/dev", () => false, { enforced: true });
+  assert.equal(exitCode, 1);
+  assert.deepEqual(lines, [
+    "  FAIL  GET /api/v1/cellar removed the required property items/withdrawn [response-required-property-removed]",
+    "  FAIL  GET /api/v1/styles api path removed with deprecation [api-path-removed-with-deprecation]",
+  ]);
+});
+
+test("advisory, the same findings are printed as advisory and the exit is 0", () => {
+  const { lines, exitCode } = breakingReport([cellarFinding, deprecatedRemoval], "origin/dev", () => false, { enforced: false });
+  assert.equal(exitCode, 0);
+  assert.equal(lines.filter((l) => l.startsWith("  WARN  ")).length, 2);
+  assert.match(lines[0], /^ {2}WARN {2}GET \/api\/v1\/cellar removed the required property items\/withdrawn \[response-required-property-removed\]$/);
+  assert.match(lines[1], /api-path-removed-with-deprecation\]$/);
+  assert.ok(lines.every((l) => !l.includes("FAIL")), "an advisory run never says FAIL");
+  assert.match(lines.at(-1), /advisory.*ENFORCED.*scripts\/check-api-breaking\.mjs.*ADR-0093/);
+});
+
+test("with no breaking finding both modes print nothing and exit 0", () => {
+  for (const enforced of [true, false]) {
+    assert.deepEqual(breakingReport([], "origin/dev", () => assert.fail("asked"), { enforced }), { lines: [], exitCode: 0 });
+  }
+});
+
+test("the stale-branch advice follows a finding in both modes", () => {
+  for (const enforced of [true, false]) {
+    const { lines } = breakingReport([cellarFinding], "origin/dev", () => true, { enforced });
+    assert.equal(lines.at(-1), staleBranchAdvice("origin/dev"), String(enforced));
+  }
+});
+
+test("on GitHub an advisory finding is also a warning annotation, an enforced one is not", () => {
+  const advisory = breakingReport([cellarFinding], "origin/dev", () => false, { enforced: false, annotate: true });
+  assert.ok(
+    advisory.lines.includes(
+      "::warning title=API breaking change (advisory)::GET /api/v1/cellar removed the required property items/withdrawn [response-required-property-removed]",
+    ),
+  );
+  const enforced = breakingReport([cellarFinding], "origin/dev", () => false, { enforced: true, annotate: true });
+  assert.ok(enforced.lines.every((l) => !l.startsWith("::")));
+});
+
+test("an annotation cannot be broken out of by a newline in a finding", () => {
+  const nasty = { ...cellarFinding, text: "a\nb%c" };
+  const { lines } = breakingReport([nasty], "origin/dev", () => false, { enforced: false, annotate: true });
+  const annotation = lines.find((l) => l.startsWith("::warning"));
+  assert.ok(annotation.includes("a%0Ab%25c"));
+  assert.ok(!annotation.includes("\n"));
+});
+
+test("the repository ships with a boolean switch", () => {
+  assert.equal(typeof ENFORCED, "boolean");
 });
