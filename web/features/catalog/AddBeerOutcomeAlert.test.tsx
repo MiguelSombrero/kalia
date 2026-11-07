@@ -82,7 +82,7 @@ describe("AddBeerOutcomeAlert", () => {
     ],
     ["fi", "Joku on jo ehdottanut tätä olutta, ja se odottaa tarkistusta. Katso myöhemmin uudelleen."],
   ] as const)("says in %s that the beer was suggested and waits, with nothing to choose", (locale, text) => {
-    renderAlert({ kind: "pendingElsewhere" }, { locale });
+    renderAlert({ kind: "pendingElsewhere", subject: "beer" }, { locale });
 
     const alert = screen.getByRole("alert");
     expect(alert).toHaveTextContent(text);
@@ -121,7 +121,7 @@ describe("AddBeerOutcomeAlert", () => {
   });
 
   it.each([
-    { kind: "pendingElsewhere" },
+    { kind: "pendingElsewhere", subject: "beer" },
     { kind: "pendingCap" },
     { kind: "duplicateBrewery", existing: pohjala },
   ] as AddBeerOutcome[])("has no a11y violations for $kind", async (outcome) => {
