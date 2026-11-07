@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-03
+- **Amended:** 2026-11-07 by [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)
+  — the semantic and primitive layers are to be read from the token source, not from `globals.css`, once [task 07](../tasks/iteration-11/07-token-pipeline.md) builds it; the contrast check then holds both modes, and the check's scope extends to `mobile/`
 
 ## Context
 

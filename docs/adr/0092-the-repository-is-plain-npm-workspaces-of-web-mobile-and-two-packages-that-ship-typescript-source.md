@@ -6,6 +6,8 @@
   built both packages and found `transpilePackages` unnecessary for them: the
   web builds identically without the entries, so `next.config.ts` has none
   (see Evidence)
+- **Amended:** 2026-11-07 by [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)
+  — design tokens are to be shared after all: one token source in its own package, with generated outputs in each consumer
 
 ## Context
 

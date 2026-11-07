@@ -5,6 +5,8 @@
 - **Amended:** 2026-10-14 — the checker runs in CI's single static-checks job
 - **Amended:** 2026-10-23 — Keycloak's field errors and error alerts carry
   Kalia's error sign, and a theme script ties each field to its error line
+- **Amended:** 2026-11-07 by [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)
+  — the Keycloak theme's `--kalia-color-*` properties are to be generated from the token source, so the per-colour comparison with the app is true by construction
 
 ## Context
 

@@ -37,6 +37,8 @@
   Radix primitive is unchanged. This ADR is the one home of the Radix
   rationale, and the README, `frontend/README.md` and `docs/architecture.md`
   point here
+- **Amended:** 2026-11-07 by [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)
+  — the TypeScript token pipeline it rejected is to be built: a second consuming app, its own revisit trigger, now exists; the two-layer rule stands, with the layers generated from one source
 
 ## Context
 
