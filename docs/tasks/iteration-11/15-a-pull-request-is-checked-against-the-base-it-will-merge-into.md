@@ -1,6 +1,6 @@
 # Task 15: A pull request is checked against the base it will merge into
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -29,8 +29,8 @@ which is the shape that produces both.
 ## Scope
 
 `check-pr-body` compares the pull request with the base it will merge into, and
-is covered by a test that has a moved `dev`. The merge race is settled one of
-three ways, per the open question, and ADR-0046 says which.
+is covered by a test that has a moved `dev`. The merge race is answered by a
+required `make check` on the merge ref, and ADR-0046 says so.
 
 ## Non-goals
 
@@ -48,15 +48,20 @@ three ways, per the open question, and ADR-0046 says which.
 - `scripts/check-pr-body.mjs` is the one place the body's rules live
   ([ADR-0046](../../adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The merge race is answered by a required `make check` on the merge ref:**
+  a workflow on `pull_request` runs only `make check` against GitHub's merge
+  ref, which is the base the branch merges into. `ci.yml` runs on `push`, the
+  branch's own head, which is why #543 passed. Making the job required is a
+  branch-ruleset change, the product owner's, named in the pull request.
+- **`pr-body.yml` stays advisory,** outside `ci-passed` and the ruleset; the
+  product owner reads it at merge.
+- ADR-0046 is amended with the second occurrence and this answer.
+
 ## Open questions
 
-- **Constraints and trade-offs.** For the race, SHOULD-115's options: turn the
-  strict up-to-date requirement back on (every merge waits for a rebase); add a
-  required `pull_request` job running only `make check` (about a second) on the
-  merge ref, which would have failed #543; or accept the race and amend the ADR
-  with the second occurrence.
-- **Functional scope.** Whether `pr-body.yml` joins the checks `ci-passed`
-  requires, so that a red body check cannot merge.
+**None.**
 
 ## Acceptance criteria
 
@@ -64,10 +69,9 @@ three ways, per the open question, and ADR-0046 says which.
       the branch point and shows `check-pr-body` no longer counting that task as
       this PR's; it failed against the `"$BASE_SHA"...HEAD` diff
 - [ ] The workflow diffs the merge ref against its first parent
-- [ ] The chosen answer to the merge race is in place — a required job that
-      fails on the #542/#543 pair reproduced in a fixture, or the stricter
-      requirement, or the ADR amended — and ADR-0046 names the second
-      occurrence
+- [ ] A `pull_request` job runs `make check` on the merge ref and fails on the
+      #542/#543 pair reproduced in a fixture, and ADR-0046 is amended with the
+      second occurrence and this answer
 - [ ] `docs/common-failures.md` records the false positives and the race with
       their cause
 - [ ] `make verify-fast` is green

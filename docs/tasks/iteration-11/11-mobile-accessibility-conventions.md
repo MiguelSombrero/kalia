@@ -57,6 +57,16 @@ all of it, and what fails is fixed here.
   in words.
 - Contrast is already held by `scripts/check-contrast.mjs`.
 
+**Settled at the 2026-11-07 refinement** (product owner); the task is refined
+once the design tasks' ADRs land:
+
+- **VoiceOver is walked by the product owner on their iPhone:** the iOS
+  Simulator has no VoiceOver, only Accessibility Inspector.
+- **TalkBack is walked on a second emulator with a Google Play system image,**
+  used only for hand checks; the product owner signs in to Play on it once to
+  install Android Accessibility Suite. The reference emulator, Maestro's and
+  CI's, is unchanged.
+
 ## Open questions
 
 - **Functional scope.** Which of the checks are worth automating at all, given
@@ -66,10 +76,9 @@ all of it, and what fails is fixed here.
   (iOS's accessibility sizes, Android's font scale) and how a test or a hand
   check reaches it.
 - **Completion signals.** Where a hand check is recorded so a later iteration
-  can repeat it, and who does it — the agent on a simulator, the product owner
-  on their phone with VoiceOver.
-- **Integrations.** Whether Maestro can drive TalkBack on the emulator, and if
-  not, what the hand check on Android is.
+  can repeat it.
+- **Integrations.** Whether Maestro can drive TalkBack on the Google Play
+  emulator, or the TalkBack walk stays by hand.
 
 ## Acceptance criteria
 
@@ -81,8 +90,8 @@ all of it, and what fails is fixed here.
 - [ ] A component test renders each catalog screen at the largest font scale
       and shows no text clipped by a fixed height
 - [ ] The catalog's list, search, filter sheet and beer page were walked on
-      VoiceOver (iOS Simulator or the phone) and TalkBack (the emulator) and at
-      the largest text size, following the written script, and the result is
+      VoiceOver (the product owner's iPhone) and TalkBack (the Google Play
+      emulator) and at the largest text size, following the written script, and the result is
       recorded in the pull request in words
 - [ ] What the hand checks found is fixed, or recorded in the quality backlog
       with an ID that the pull request names

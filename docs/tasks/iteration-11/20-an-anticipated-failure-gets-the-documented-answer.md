@@ -1,6 +1,6 @@
 # Task 20: An anticipated failure gets the documented answer
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -35,7 +35,7 @@ Four places answer an anticipated failure with a `500` or a dead end, and a
 
 Each is answered as documented: a `400` on `beerIds` for a blank element, the
 documented `409` for the edit's race, an anonymous `409` for a brewery held as
-pending (or a recorded decision that its name may be disclosed), and the dialog
+pending, and the dialog
 falling back to "this beer exists" without a name.
 
 ## Non-goals
@@ -59,12 +59,20 @@ falling back to "this beer exists" without a name.
   ([ADR-0090](../../adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
   allows; the fallback adds none.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **A brewery held as `PENDING` by another contributor answers an anonymous
+  `409`,** as the beer path does: no id, name or country, and nothing to click.
+  The dialog says "A brewery with this name in this country is already in the
+  catalog, whatever its status." — in `fi`, "Tämän niminen panimo tästä maasta
+  on jo katalogissa tilastaan riippumatta."
+- **When the `409` arrives and `getBeer` fails,** the dialog shows the existing
+  "Already in the catalog" text, which names no beer, with "Open it" linking by
+  `existingBeerId`; no new wording.
+
 ## Open questions
 
-- **Domain.** For the brewery: the anonymous `409` the beer path answers, or a
-  decision that a brewery's name may be disclosed and "Use it" must then work.
-- **Interaction and UX.** What the dialog says when it has the `409` but not
-  the beer's name; wording in `en` and `fi`.
+**None.**
 
 ## Acceptance criteria
 
@@ -74,7 +82,7 @@ falling back to "this beer exists" without a name.
       duplicate read and its flush, and shows the documented `409`; it passes the
       repeat target
 - [ ] A test shows a brewery held as `PENDING` by another contributor answering
-      as the decision says, and the dialog offering nothing that answers `404`
+      an anonymous `409`, and the dialog offering nothing that answers `404`
 - [ ] A component test shows the add-beer dialog saying the beer exists when
       `getBeer` fails, and failed before
 - [ ] `make verify-fast` is green

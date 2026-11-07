@@ -1,6 +1,6 @@
 # Task 03: Design Kalia's identity on a phone
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -58,18 +58,26 @@ Standing intent lands in a mobile section of [`docs/design.md`](../../design.md)
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **Every direction carries over the mark and the web's style-group colours**
+  ([task 04](04-decision-and-design-dark-mode.md) re-checks them on dark).
+  The typefaces, the rest of the palette, density and shape may differ.
+- **The app icon, splash screen and name stay as shipped**
+  ([mobile README](../../../mobile/README.md#icon-splash-and-name)); they are
+  not redrawn here.
+- **Values are written into the token source of [task 07](07-token-pipeline.md),**
+  which lands before this task, so the token and contrast checks cover them
+  from the first round that is built.
+- **A style group the app has no colour for** takes the fallback of
+  [task 18](18-a-client-falls-back-on-an-enum-value-it-does-not-know.md)'s
+  helper, which lands before this task.
+- System fonts or a bundled face is a choice between directions; a bundled
+  face is a dependency, asked about at the task's start.
+
 ## Open questions
 
-- **Functional scope.** How far the app departs from the web's palette and
-  typefaces, and what must carry over for it to be Kalia.
-- **Interaction and UX.** Density — one beer per row at the largest text size
-  — and whether the style colour tints a row or only marks it.
-- **Non-functional.** System fonts against a bundled face, and the weight a
-  bundled face adds to the build.
-- **Integrations.** Whether the app icon, splash screen and name
-  ([mobile README](../../../mobile/README.md#icon-splash-and-name)) are redrawn
-  with the identity or stay as shipped.
-- **Edge cases.** A style group the app has no colour for.
+**None.**
 
 ## Acceptance criteria
 
@@ -89,5 +97,5 @@ Standing intent lands in a mobile section of [`docs/design.md`](../../design.md)
 ## Notes
 
 Provenance: [iteration 11's plan](../iteration-11.md) ("Design: Kalia's
-identity on a phone"). Built values land as constants until
-[task 07](07-token-pipeline.md) generates them.
+identity on a phone"). Built values land in the token source of
+[task 07](07-token-pipeline.md), which runs before this task.

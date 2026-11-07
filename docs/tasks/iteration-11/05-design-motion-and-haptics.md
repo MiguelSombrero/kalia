@@ -1,6 +1,6 @@
 # Task 05: Design what moves and what is felt
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -50,16 +50,22 @@ native prototypes on the real screens, since neither can be judged in a frame.
   ([task 06](06-decision-the-design-token-format.md)): durations and easings
   are values, not literals in a component.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **Haptics and reduced motion follow the system settings;** there is no
+  in-app switch.
+- **What is felt is judged on the product owner's iPhone**
+  ([task 01](01-decision-how-a-mobile-direction-is-prototyped-and-signed-off.md)):
+  the Simulator has no haptic engine.
+- **The lowest-end device is the Android reference emulator:** an animation
+  that drops frames there is a finding for the product owner, not a tuning
+  left to the build.
+- **A list that updates while it is scrolled never moves content under the
+  user's finger:** rows inserted above the viewport keep the scroll position.
+
 ## Open questions
 
-- **Functional scope.** How much moves at all: none beyond the platform's
-  default, a quiet set, or an expressive one.
-- **Interaction.** Which actions are felt — a refresh, a filter applied, a
-  confirmation, a destructive action — and whether Android and iOS differ
-  where their motors do.
-- **Non-functional.** The cost on the lowest-end device the app supports, and
-  the setting a user can turn haptics off with.
-- **Edge cases.** A list that updates while the user scrolls it.
+**None.**
 
 ## Acceptance criteria
 

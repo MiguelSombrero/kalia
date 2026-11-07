@@ -27,8 +27,8 @@ action goes empty but evident in the layout.
 ## Non-goals
 
 - Adding to the cellar, and any other action — [iteration 12](../iteration-12.md).
-- A brewery's own screen; the brewery is named, not linked, unless the product
-  owner asks.
+- A brewery's own screen; the brewery links to the catalog filtered to it.
+- Sharing a beer.
 - Admin actions on a beer, which stay on the web.
 
 ## Constraints
@@ -50,13 +50,22 @@ action goes empty but evident in the layout.
   [task 11](11-mobile-accessibility-conventions.md) to check; every string in
   `en` and `fi`.
 
+**Settled at the 2026-11-07 refinement** (product owner); the task is refined
+once the design tasks' ADRs land:
+
+- **The screen shows similar beers,** from the API's `similarTo` search.
+- **The brewery is a link** that opens the Catalog tab filtered to that
+  brewery ([task 09](09-catalog-search-and-list.md)); there is no brewery
+  screen.
+- **No sharing** this iteration.
+
 ## Open questions
 
 - **Functional scope.** What the screen shows beyond the list row — description,
   brewery country, the style's group — against what the web's page shows, and
-  whether similar beers appear.
+  how many similar beers.
 - **Interaction and UX.** How the screen is dismissed on each platform; whether
-  a long description collapses; what sharing a beer does, if anything.
+  a long description collapses.
 - **Edge cases.** Opening a link to a beer that was removed after the link was
   made; a pending beer of the signed-in contributor, and what it says about
   its status.

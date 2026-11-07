@@ -56,6 +56,14 @@ screens.
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Settled at the 2026-11-07 refinement** (product owner); the task is refined
+once the design tasks' ADRs land:
+
+- **Every primitive and screen is right in both modes;** the app has a dark
+  mode that follows the system
+  ([task 04](04-decision-and-design-dark-mode.md)), "update required" and
+  "maintenance" included.
+
 ## Open questions
 
 - **Interaction and UX.** Whether any primitive needs a built-alternatives round

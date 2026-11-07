@@ -1,6 +1,6 @@
 # Task 17: The app's transport logs a failure only where a feature calls it one
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -26,8 +26,8 @@ private cellars that answer 404. ADR-0013 itself says "secrets/PII".
 ## Scope
 
 A status is logged as a failure only where the feature that reads it calls it
-one. The path question is settled for every tier or for none, and the
-logging conventions say which.
+one. Every tier logs a route template rather than a raw path, and the logging
+conventions say why.
 
 ## Non-goals
 
@@ -44,16 +44,23 @@ logging conventions say which.
 - An installed build's errors are read from the device's own logs, so a line
   the app stops writing is one nobody can read later.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **A call declares the statuses it reads as answers** — the beer read's
+  `404`; the transport keeps logging every other 4xx and 5xx, so an
+  unanticipated failure cannot go silent.
+- **Every tier logs the route template, never the raw path:** the backend's
+  best-matching pattern, the operation's path template in the web's and the
+  app's transports, and a path map in nginx's access log. ADR-0013 is amended
+  to say why — a username beside a client's address is personal data — and the
+  mobile README's reading of it stands.
+- **A `401` the refresh resolves writes no line;** one still returned after the
+  retry is logged. **A `429` is logged as a failure,** since the app should
+  never reach the limit.
+
 ## Open questions
 
-- **Functional scope.** Move the line from the transport to `httpFailure`'s
-  callers, or let a call say which statuses it expects.
-- **Terminology and constraints.** The path question is SHOULD-116's
-  `[needs decision]`: either a public username is not identity — close the
-  finding and amend the mobile README — or every tier logs route templates
-  (the backend's best-matching pattern, the operation's path template in both
-  transports, a path map in nginx). The second changes four places.
-- **Edge cases.** A `401`, which the refresh path handles, and a `429`.
+**None.**
 
 ## Acceptance criteria
 
@@ -61,9 +68,10 @@ logging conventions say which.
       `500` still writing one; the first failed before the change
 - [ ] A test shows a status the calling feature expects, given as the call
       says, writing no error line
-- [ ] The path decision is applied as it falls: either the mobile README and
-      ADR-0013 say a public username is not identity, or a test shows each tier
-      logging the route template for `/api/v1/profiles/{username}`
+- [ ] A test in each tier — the backend, the web's transport, the app's
+      transport and the edge's configuration — shows
+      `/api/v1/profiles/{username}` logged as its template, and ADR-0013 says
+      why
 - [ ] `make verify-fast` is green
 
 ## Notes

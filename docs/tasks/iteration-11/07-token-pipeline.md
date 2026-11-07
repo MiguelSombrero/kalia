@@ -25,8 +25,8 @@ the same reasoned, visible exception marker.
 
 ## Non-goals
 
-- New values: the web is not re-themed, and the app's values are those of
-  tasks [03](03-design-kalias-identity-on-a-phone.md) and
+- New values: the web is not re-themed, and the app's final values are those
+  of tasks [03](03-design-kalias-identity-on-a-phone.md) and
   [04](04-decision-and-design-dark-mode.md).
 - The primitives built on the theme — [task 08](08-mobile-ui-primitives.md).
 
@@ -47,8 +47,26 @@ the same reasoned, visible exception marker.
   [mobile README](../../../mobile/README.md) both say "plain `StyleSheet` until
   iteration 11"; they are rewritten here, not left to a later sweep.
 
+**Settled at the 2026-11-07 refinement** (product owner); the task is refined
+once [task 06](06-decision-the-design-token-format.md)'s ADR lands, with the
+tests that ADR lists:
+
+- **This task lands before the design tasks 02–05,** with the web's values as
+  they are and the app's provisional ones, which tasks
+  [03](03-design-kalias-identity-on-a-phone.md) and
+  [04](04-decision-and-design-dark-mode.md) replace; the token and contrast
+  checks therefore cover the app from this task on.
+- **The source has a light and a dark mode;** the app follows the system
+  ([task 04](04-decision-and-design-dark-mode.md)), and the web uses the
+  light one.
+- **Keycloak's `login.css` custom properties are generated** from the same
+  source, and ADR-0073 stands
+  ([task 06](06-decision-the-design-token-format.md)).
+
 ## Open questions
 
+- **Domain.** The app's provisional values before task 03: the web's semantic
+  values, or today's literals given token names.
 - **Module boundaries.** Where the generated theme lives in `mobile/` and which
   directories the check reads; whether the one script checks both apps or each
   has its own.

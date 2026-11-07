@@ -1,6 +1,6 @@
 # Task 01: Decide how a mobile direction is prototyped and signed off
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 
@@ -61,24 +61,43 @@ is amended to match, so that one skill covers a web and a mobile design task.
   Android ([ADR-0094](../../adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)),
   and only an iPhone is the owner's.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The route splits by what is judged.** Layout, identity and the dark
+  palette are shown as framed Artifacts — a phone frame, real seed data, a
+  switch to the largest text size — and navigation feel, gestures, motion and
+  haptics as native builds. Every chosen direction is confirmed natively
+  before sign-off, whichever route chose it.
+- **Rounds run on the iOS Simulator, sign-off is on the product owner's
+  iPhone.** A native round is shown in the desktop app's live Simulator panel
+  against the local stack, with no phone mode; the chosen direction is signed
+  off on the iPhone in phone mode
+  ([ADR-0097](../../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)).
+  Android is shown once per design task on the emulator, for where its
+  conventions differ. A haptic is felt only on the iPhone, so a choice about
+  what is felt is made there.
+- **When the iPhone's seven-day signing has lapsed mid-task,** the round
+  continues on the Simulator and the sign-off waits for a re-sign; nothing
+  waits for it before then.
+- **A native prototype lives in a scratch git worktree off `dev`,** its
+  direction changes left uncommitted, built against the local stack and
+  removed when the task ends. A build there counts as heavy work under
+  `CLAUDE.md`'s two-session cap.
+- **`Kind: design` gains no platform value,** and `check-tasks.mjs`'s
+  "built alternatives" rule is unchanged: a design task's `Scope` says which
+  app it designs, and the skill's steps branch on that.
+- **What a mobile design task's pull request carries instead of `axe` and
+  keyboard tests:** component tests that find every control by role and
+  accessible name and render the changed screens at the largest font scale,
+  and a VoiceOver walk the product owner does on their iPhone — the Simulator
+  has no VoiceOver — recorded in the pull request in words.
+- **A mobile design task still chooses and builds in one pull request**
+  (ADR-0062), building into the token source of
+  [task 07](07-token-pipeline.md), which lands before the design tasks.
+
 ## Open questions
 
-- **Functional scope.** Which route for which kind of choice: framed Artifacts
-  for layout and identity, a native build for gesture, motion and haptics, or
-  a native build for everything?
-- **Where the product owner judges.** Their iPhone, a simulator, or either
-  depending on the choice; and for Android, which has no phone of theirs,
-  whether an emulator is the sign-off. What does a prototype need from the
-  stack, and does it run in phone mode?
-- **Edge cases.** When the phone's seven-day signing has lapsed mid-task, what
-  is the fallback — the simulator, or a wait?
-- **Where a native prototype lives** so that none of it is committed: the
-  scratchpad, or a branch that is never merged.
-- **Terminology.** Whether the `Kind: design` marker needs a platform, or the
-  skill's steps branch on what the task says; and whether `check-tasks.mjs`'s
-  "built alternatives" rule changes.
-- **Completion signals.** What replaces the `axe` and keyboard criteria in a
-  design task's pull request, stated in words since no image is allowed.
+**None.**
 
 ## Acceptance criteria
 

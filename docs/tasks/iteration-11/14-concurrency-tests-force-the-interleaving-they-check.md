@@ -1,6 +1,6 @@
 # Task 14: A concurrency test forces the interleaving it checks
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -48,22 +48,26 @@ its pull request opens.
   it ([`CLAUDE.md`](../../../CLAUDE.md)): a rule in `architecture.md` alone may
   not reach the person editing a test.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The repeat target is `make repeat-it TEST=<Class>#<method> COUNT=<n>`,**
+  `COUNT` defaulting to 20, stopping at the first failure.
+- **A new or changed concurrency test shows 20 consecutive clean runs** on its
+  branch before its pull request opens, stated in the pull request body; no
+  checker looks for it, since a script cannot tell a concurrency test from any
+  other.
+
 ## Open questions
 
-- **Interaction.** The shape of the repeat target: its name, the arguments
-  (`TEST=` and a count) and the default count.
-- **Completion signals.** Whether a checker can find a concurrency test that
-  has not been repeated, or the rule rests on the pull request body.
-- **Edge cases.** The count a pull request must show clean: ten, fifty, a
-  hundred.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `ProfileServiceModuleIT`'s test forces the conflict — a barrier or a hook
       makes both sign-ins reach the insert together — and asserts the outcome,
       not that a retry occurred; it failed under a build with the retry removed
-- [ ] The test passes in `N` consecutive runs by the new `make` target, on this
-      branch, `N` being the number refinement sets
+- [ ] The test passes in 20 consecutive runs by the new `make` target, on this
+      branch
 - [ ] The target runs one named integration test a given number of times and
       stops at the first failure
 - [ ] `docs/architecture.md`'s testing strategy states the two rules and the

@@ -1,6 +1,6 @@
 # Task 02: Design how the app is navigated
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -59,18 +59,24 @@ platforms' conventions where those differ.
 - Kalia never collects reviews and does not sell beer
   ([`CLAUDE.md`](../../../CLAUDE.md)), so neither appears in a direction.
 
+**Decided at refinement, 2026-11-07** (product owner):
+
+- **The directions design the final structure,** the one iterations 12–14
+  fill, so no tab moves once their screens exist. A tab or a central add or
+  scan action whose content has not arrived yet says so plainly and points at
+  what works now; none is a control that does nothing.
+- **One structure on both platforms, each in its own chrome** — tab bar,
+  header and back behaviour. Android's back button pops within a tab, then
+  returns to the Catalog tab, then leaves the app.
+- **Tab and action labels,** in `en` and `fi`, are proposed with each
+  direction and chosen with it.
+- **A deep link** opens its screen inside its tab with that tab's root beneath
+  it, so back has somewhere to go. **A signed-out user opening the cellar**
+  sees what the cellar is and a sign-in action, not an error.
+
 ## Open questions
 
-- **Functional scope.** How many tabs, and which — does Feed stay a tab before
-  iteration 13 gives it content, and is Profile a tab or reached from a corner?
-- **Interaction.** A central action: whether it exists, and what it does while
-  the cellar it feeds does not yet; a tab that does nothing is a lie.
-- **Platform conventions.** One structure on both platforms, or each its own
-  (an iOS tab bar against Android's bottom navigation), and what Android's back
-  button does in each tab.
-- **Wording.** Tab and action labels in `en` and `fi`.
-- **Edge cases.** A deep link into a screen whose tab has not been visited; a
-  signed-out user opening the cellar.
+**None.**
 
 ## Acceptance criteria
 

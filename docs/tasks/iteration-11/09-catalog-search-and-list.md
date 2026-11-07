@@ -27,7 +27,7 @@ key, the sheet's dismissal — and not the web's.
 - A beer's own page — [task 10](10-beer-details.md).
 - Adding a beer to the catalog, and the cellar — [iteration 12](../iteration-12.md).
 - Working offline.
-- Similar-beer search (`similarTo`), unless the product owner asks.
+- Similar beers, which a beer's page shows ([task 10](10-beer-details.md)).
 
 ## Constraints
 
@@ -51,14 +51,20 @@ key, the sheet's dismissal — and not the web's.
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Settled at the 2026-11-07 refinement** (product owner); the task is refined
+once the design tasks' ADRs land:
+
+- **The phone offers every filter the API has** — style, brewery, country and
+  a strength range — and every sort the web offers.
+- **A search runs after a 300 ms pause in typing, from two characters;** a
+  shorter query shows the unfiltered list.
+- **The query and the filters survive** opening a beer and coming back.
+- **A contributor's own pending beer is marked in the list** with its status.
+
 ## Open questions
 
-- **Functional scope.** Which filters the phone offers — style, brewery,
-  country, strength range — and which sorts.
-- **Interaction and UX.** The pause before a search runs and the shortest query
-  it runs for; whether the filters and query survive leaving for a beer and
-  coming back; how active filters are shown on the list; whether the
-  contributor's own pending beer is marked.
+- **Interaction and UX.** How active filters are shown on the list, which
+  follows task 02's navigation and task 03's identity.
 - **Edge cases.** A page that fails after the first loaded; a list that is
   exhausted; a filter that no beer matches, and wording for it.
 - **Terminology.** The names of styles and countries in Finnish.
