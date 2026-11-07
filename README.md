@@ -154,6 +154,17 @@ a manifest; don't restate what the manifest says.
 - @prometheus-io/client (the token-gated `/api/metrics`, ADR-0088)
 - **No `package.json` `overrides`.** One stays only while `npm audit` is clean only with it, and comes out once it is clean without it. Re-test when an audit finding names a package an override once covered, or `next` pins a vulnerable one
 
+### Mobile app
+
+- Expo (SDK generation in `mobile/package.json`) as a development build with generated native projects, React 19, React Native, TypeScript ([ADR-0094](docs/adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md))
+- Expo Router (file-based navigation); expo-dev-client, expo-splash-screen and the other Expo modules are listed in `mobile/package.json`
+- expo-auth-session and expo-web-browser (public PKCE client, ADR-0095), expo-secure-store (the offline token), expo-crypto
+- `@kalia/api` and `@kalia/locales`, shared with the web app: the generated API client and the en/fi strings (react-i18next, i18next, expo-localization)
+- TanStack Query, Zustand, react-hook-form with Zod and @hookform/resolvers, the same roles as on the web (@react-native-async-storage/async-storage persists client state)
+- Jest with jest-expo and React Native Testing Library (unit); Maestro (end-to-end, Android the only CI platform, [ADR-0096](docs/adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md))
+- eslint-config-expo, @tanstack/eslint-plugin-query, eslint-plugin-boundaries (checked by `npm run lint --workspace mobile`)
+- Native toolchain pins: `.xcode-version` and `mobile/.java-version`, checked by `make mobile-doctor`
+
 ### Local infrastructure
 
 - Keycloak 26 (identity provider; `keycloak/Dockerfile` also bakes in the login theme, [ADR-0056](docs/adr/0056-branded-bilingual-keycloak-pages.md))
