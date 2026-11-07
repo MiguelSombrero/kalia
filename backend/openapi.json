@@ -755,7 +755,7 @@
         "type" : "object"
       },
       "PendingElsewhereProblem" : {
-        "description" : "A 409: another contributor has already suggested this beer and it waits for review. It names neither the contributor nor the beer, since the caller cannot open it",
+        "description" : "A 409: another contributor holds this beer, or this brewery, and it waits for review. It names neither the contributor nor the entry, since the caller cannot open it",
         "properties" : {
           "detail" : {
             "type" : "string"
@@ -768,6 +768,11 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "subject" : {
+            "description" : "What the request duplicates: the beer, or the brewery added with it",
+            "enum" : [ "BEER", "BREWERY" ],
+            "type" : "string"
+          },
           "title" : {
             "type" : "string"
           },
@@ -776,7 +781,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "status", "title" ],
+        "required" : [ "status", "subject", "title" ],
         "type" : "object"
       },
       "Problem" : {
@@ -2040,7 +2045,7 @@
                 }
               }
             },
-            "description" : "The catalog already has this beer, named by `existingBeerId`, or already has the new brewery, named by `existingBreweryId` and spelled as the catalog spells it; or another contributor's suggestion of this beer is waiting for review, which names neither the contributor nor the beer"
+            "description" : "The catalog already has this beer, named by `existingBeerId`, or already has the new brewery, named by `existingBreweryId` and spelled as the catalog spells it; or another contributor's suggestion of this beer or of this brewery is waiting for review, which names neither the contributor nor the entry"
           },
           "415" : {
             "content" : {

@@ -22,9 +22,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +68,8 @@ public class SuggestionReviewService {
 		return new SuggestionDecision(beer, brewery, ReviewOutcome.APPROVED, null, decidedAt);
 	}
 
+	// ADR-0057; the retry meeting the winner's row is verified by ConcurrentSuggestionEditApiIT.
+	@Retryable(includes = DataIntegrityViolationException.class, maxRetries = 1, delay = 0)
 	@Transactional
 	public SuggestionDecision approveEdited(UUID id, UUID adminId, SuggestionEdit edit) {
 		Beer beer = lockSuggestion(id);

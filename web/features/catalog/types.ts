@@ -18,7 +18,7 @@ export type AddBeerResult =
   | { kind: "added"; beer: BeerDetailsDto }
   | { kind: "duplicateBeer"; existingBeerId: string }
   | { kind: "duplicateBrewery"; existing: Pick<Brewery, "id" | "name" | "countryCode"> }
-  | { kind: "pendingElsewhere" }
+  | { kind: "pendingElsewhere"; subject: "beer" | "brewery" }
   | { kind: "pendingCap" }
   | { kind: "refused"; fields: FieldRefusal[] };
 
@@ -36,7 +36,7 @@ export type AddBeerOutcome =
   | { kind: "added"; beer: { id: string; name: string }; landsOnSearch: boolean }
   | { kind: "duplicateBeer"; existing: { id: string; name: string; breweryName: string } }
   | { kind: "duplicateBrewery"; existing: BreweryOption }
-  | { kind: "pendingElsewhere" }
+  | { kind: "pendingElsewhere"; subject: "beer" | "brewery" }
   | { kind: "pendingCap" }
   | { kind: "refused"; fields: FieldRefusal[] };
 

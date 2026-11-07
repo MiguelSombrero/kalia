@@ -79,6 +79,15 @@ const firstPageOfItsNameShows = async (beer: { id: string; name: string }): Prom
   }
 };
 
+// The 409 has answered; a failed read loses only the name.
+const readBeerOrNothing = async (id: string) => {
+  try {
+    return await getBeer(id);
+  } catch {
+    return null;
+  }
+};
+
 export const addBeerAction = async (request: AddBeerRequest, locale: string = "en"): Promise<AddBeerOutcome> => {
   const result = await addBeer(request);
   switch (result.kind) {
@@ -88,7 +97,7 @@ export const addBeerAction = async (request: AddBeerRequest, locale: string = "e
       return { kind: "added", beer, landsOnSearch: await firstPageOfItsNameShows(beer) };
     }
     case "duplicateBeer": {
-      const existing = await getBeer(result.existingBeerId);
+      const existing = await readBeerOrNothing(result.existingBeerId);
       return {
         kind: "duplicateBeer",
         existing: {

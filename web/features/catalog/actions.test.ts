@@ -90,6 +90,16 @@ describe("addBeerAction", () => {
     });
   });
 
+  it("still answers a duplicate whose beer could not be read at all, by the name the user gave", async () => {
+    api.addBeer.mockResolvedValue({ kind: "duplicateBeer", existingBeerId: beerId });
+    api.getBeer.mockRejectedValue(new Error("Beer lookup failed with status 503"));
+
+    await expect(addBeerAction(request)).resolves.toEqual({
+      kind: "duplicateBeer",
+      existing: { id: beerId, name: "Öö Bourbon", breweryName: "" },
+    });
+  });
+
   it("names a duplicate brewery as the catalog spells it, not as it was typed, in the reader's language", async () => {
     api.addBeer.mockResolvedValue({
       kind: "duplicateBrewery",

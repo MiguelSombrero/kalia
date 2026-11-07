@@ -1,6 +1,6 @@
 # Task 20: An anticipated failure gets the documented answer
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -76,16 +76,16 @@ falling back to "this beer exists" without a name.
 
 ## Acceptance criteria
 
-- [ ] `CellarHoldingsApiIT` covers the trailing comma, a lone comma and a blank
+- [x] `CellarHoldingsApiIT` covers the trailing comma, a lone comma and a blank
       repeated parameter, each answering `400` naming `beerIds`, and failed before
-- [ ] A test forces a contributor's add to commit between an admin edit's
+- [x] A test forces a contributor's add to commit between an admin edit's
       duplicate read and its flush, and shows the documented `409`; it passes the
       repeat target
-- [ ] A test shows a brewery held as `PENDING` by another contributor answering
+- [x] A test shows a brewery held as `PENDING` by another contributor answering
       an anonymous `409`, and the dialog offering nothing that answers `404`
-- [ ] A component test shows the add-beer dialog saying the beer exists when
+- [x] A component test shows the add-beer dialog saying the beer exists when
       `getBeer` fails, and failed before
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

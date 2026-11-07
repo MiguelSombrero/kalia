@@ -43,7 +43,7 @@ class CatalogExceptionHandler {
 
 	@ExceptionHandler(PendingElsewhereException.class)
 	PendingElsewhereProblem pendingElsewhere(PendingElsewhereException e) {
-		return new PendingElsewhereProblem(e.getMessage());
+		return new PendingElsewhereProblem(e.getMessage(), e.getSubject());
 	}
 
 	@ExceptionHandler(SuggestionAlreadyDecidedException.class)

@@ -373,6 +373,7 @@
       "duplicateOpen": "Open {{beer}}",
       "duplicateBrewery": "{{brewery}} ({{place}}) is already in the catalog.",
       "useBrewery": "Use it",
+      "pendingBreweryElsewhere": "A brewery with this name in this country is already in the catalog, whatever its status.",
       "pendingElsewhere": "Someone has already suggested this beer, and it is waiting for review. Check back once it has been reviewed.",
       "pendingCap": "You already have as many suggestions waiting for review as Kalia allows. Only suggestions waiting for review count towards the limit. You can add more once some of them have been reviewed.",
       "refused": "Kalia did not accept this beer. Check the marked field and try again.",

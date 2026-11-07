@@ -14,6 +14,8 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -112,6 +114,29 @@ class CellarHoldingsApiIT {
 				.expectStatus().isOk()
 				.expectBody(String.class)
 				.value(body -> assertThat((List<Object>) JsonPath.read(body, "$.held")).isEmpty());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "{a},", ",", ",{a}", "{a},,{b}" })
+	void aBlankElementAmongTheBeerIdsIsABadRequestNamingTheParameter(String ids) {
+		client.get().uri(HOLDINGS + "?beerIds=" + ids, beerIds.get(0), beerIds.get(1))
+				.header("Authorization", owner)
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("beerIds"));
+	}
+
+	@Test
+	void aBlankRepeatedParameterIsABadRequestNamingTheParameter() {
+		client.get().uri(HOLDINGS + "?beerIds=&beerIds={a}", beerIds.get(0))
+				.header("Authorization", owner)
+				.exchange()
+				.expectStatus().isBadRequest()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody(String.class)
+				.value(body -> assertThat((String) JsonPath.read(body, "$.errors[0].field")).isEqualTo("beerIds"));
 	}
 
 	@Test

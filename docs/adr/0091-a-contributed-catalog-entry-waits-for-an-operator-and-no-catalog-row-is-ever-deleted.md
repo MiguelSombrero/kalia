@@ -31,6 +31,10 @@
   suggestions (20), a beer added with a new brewery counting once; the refusal
   stays `429`. The Decision's operator-command bullet is read as the admin API
   below
+- **Amended:** 2026-11-07 — a new brewery whose name and country another
+  contributor holds as `PENDING` answers the same anonymous `409` as a beer,
+  naming no brewery (iteration 11 task 20); see the "Pending elsewhere" bullet
+  of Decision
 - **Amended:** 2026-11-05 by [ADR-0104](0104-deleting-an-account-deletes-what-is-the-users-own-unlinks-what-is-shared-and-leaves-a-tombstone-of-the-folded-username.md) — deleting a contributor's account
   keeps the beer and the brewery and removes `contributor_id`; a suggestion
   still `PENDING` is rejected in the same transaction; see the "No catalog row
@@ -92,9 +96,11 @@ ever deleted.
   contributor and no beer, since the caller cannot open it. The duplicate
   lookup still sees that row, so two copies of one name are never submitted;
   the caller's own `PENDING` row, which they can open, still answers with its
-  id. A client tells the shapes apart by which of `existingBeerId` and
-  `existingBreweryId` the body carries. A new brewery whose name another
-  contributor holds as `PENDING` still discloses that brewery.
+  id. A new brewery whose name and country another contributor holds as
+  `PENDING` answers the same `PendingElsewhereProblem`, so the caller is never
+  offered a brewery they cannot use. A client tells the shapes apart by which of
+  `existingBeerId` and `existingBreweryId` the body carries, and an anonymous
+  one by its `subject`, `BEER` or `BREWERY`.
 - **An admin reviews** through the admin API of
   [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md),
   one beer at a time: *approve* turns a `PENDING` beer into `APPROVED`, *reject*
@@ -158,10 +164,9 @@ ever deleted.
   notification of iteration 10.5).
 - Bad, because a beer's `409` discloses that its name is pending somewhere,
   though not whose, and the proposer cannot add it until an operator acts.
-- Bad, because the duplicate brewery check cannot tell a row the viewer can see
-  from one they cannot: proposing the name of someone else's pending brewery
-  discloses its name and country and offers a brewery the proposer cannot use
-  ([SHOULD-102](../tasks/quality-backlog.md)).
+- Bad, because a brewery's `409` discloses that its name and country are
+  pending somewhere, though not whose, and the proposer cannot add them until an
+  operator acts.
 - Bad, because a holder of a beer that is later rejected or removed sees it
   vanish from public view and from the add path without being told why beyond
   the note in their own cellar; nothing notifies them (see the revisit trigger).

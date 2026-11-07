@@ -57,7 +57,11 @@ export const AddBeerOutcomeAlert = ({ locale, outcome, failed, refusalMarked, on
         </ErrorAlert>
       );
     case "pendingElsewhere":
-      return <ErrorAlert>{t("catalog.add.pendingElsewhere")}</ErrorAlert>;
+      return (
+        <ErrorAlert>
+          {t(outcome.subject === "brewery" ? "catalog.add.pendingBreweryElsewhere" : "catalog.add.pendingElsewhere")}
+        </ErrorAlert>
+      );
     case "pendingCap":
       return <ErrorAlert>{t("catalog.add.pendingCap")}</ErrorAlert>;
     case "refused":

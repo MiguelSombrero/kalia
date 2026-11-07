@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
@@ -84,7 +85,7 @@ class CellarController {
 					schema = @Schema(oneOf = {ValidationProblem.class, Problem.class})))
 	HoldingsDto readHoldings(
 			@Parameter(description = "Ids of the beers to ask about, at most " + MAX_HOLDINGS_BEER_IDS)
-			@RequestParam(required = false) @Size(max = MAX_HOLDINGS_BEER_IDS) @Nullable List<UUID> beerIds) {
+			@RequestParam(required = false) @Size(max = MAX_HOLDINGS_BEER_IDS) @Nullable List<@NotNull UUID> beerIds) {
 		return HoldingsDto.from(cellar.holdings(identity.requireCurrentUserId(), beerIds == null ? List.of() : beerIds));
 	}
 

@@ -57,7 +57,7 @@ public class ContributionService {
 				.orElseThrow(() -> new BreweryNotFoundException(breweryId));
 		beers.findIdByBreweryIdAndSameName(breweryId, beerName).ifPresent(existingId -> {
 			if (!beers.isVisibleTo(existingId, contributorId)) {
-				throw new PendingElsewhereException();
+				throw PendingElsewhereException.beer();
 			}
 			throw new DuplicateBeerException(existingId);
 		});
@@ -67,6 +67,9 @@ public class ContributionService {
 	private Brewery newBrewery(UUID contributorId, BreweryChoice.New added) {
 		rules.requireListedCountry(added.countryCode());
 		breweries.findBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existing -> {
+			if (!existing.isVisibleTo(contributorId)) {
+				throw PendingElsewhereException.brewery();
+			}
 			throw new DuplicateBreweryException(existing.getId(), existing.getName(), existing.getCountryCode());
 		});
 		return Brewery.addedBy(contributorId, added.name(), added.countryCode(), added.city(), clock);
