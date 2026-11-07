@@ -18,7 +18,7 @@ const document = (n) => Array.from({ length: n }, (_, i) => `line ${i + 1}`).joi
 function run(lines, t) {
   const root = mkdtempSync(resolve(tmpdir(), "doc-size-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  for (const dir of ["scripts", "docs", "backend", "web"]) mkdirSync(resolve(root, dir));
+  for (const dir of ["scripts", "docs", "backend", "web", "mobile"]) mkdirSync(resolve(root, dir));
   copyFileSync(SCRIPT, resolve(root, "scripts/check-doc-size.mjs"));
   for (const file of Object.keys(CAPS)) {
     writeFileSync(resolve(root, file), document(lines[file] ?? CAPS[file]));
@@ -32,8 +32,8 @@ test("counts lines as wc -l does", () => {
   assert.equal(lineCount("a\nb"), 2);
 });
 
-test("caps are 500 for architecture.md and 300 for each README", () => {
-  assert.deepEqual(CAPS, { "docs/architecture.md": 500, "backend/README.md": 300, "web/README.md": 300, "README.md": 300 });
+test("caps are 500 for architecture.md, 300 for the root, backend and web READMEs, 320 for mobile/README.md", () => {
+  assert.deepEqual(CAPS, { "docs/architecture.md": 500, "backend/README.md": 300, "web/README.md": 300, "mobile/README.md": 320, "README.md": 300 });
 });
 
 test("passes documents of exactly their caps", (t) => {
