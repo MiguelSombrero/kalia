@@ -58,8 +58,9 @@ The three homes:
   > a code comment. The document is capped at 500 lines, which
   > `scripts/check-doc-size.mjs` enforces in `make check`, and the
   > doc-sync step in `implement-task` changes it only when the shape changes.
-  > It also caps `backend/README.md` and `web/README.md` at 300 lines each
-  > and `mobile/README.md` at 320 (their `CLAUDE.md` files load them).
+  > It also caps `README.md`, `backend/README.md` and `web/README.md` at 300
+  > lines each and `mobile/README.md` at 320 (the three subtree ones are loaded
+  > by their `CLAUDE.md` files).
 - **READMEs record how** — the commands and day-to-day rules for working in
   that codebase, at the granularity the product owner set for them: short
   enough that a developer or agent catches the intention immediately.

@@ -12,8 +12,8 @@ npm run dev        # http://localhost:3000 (hot reload) — redirects to /en or 
 ```
 
 `node_modules/` and the lockfile are at the root ([ADR-0092](../docs/adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md));
-run scripts from `web/` or from the root with `--workspace web`. The full stack
-in containers: `docker compose up --build` from the root.
+run scripts from `web/` or from the root with `--workspace web`. The stack:
+[root README](../README.md#run-locally).
 
 ## Configuration
 
