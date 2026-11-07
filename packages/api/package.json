@@ -9,7 +9,7 @@
     "./generated/*": "./src/generated/*.ts"
   },
   "scripts": {
-    "generate": "orval --config orval.config.ts",
+    "generate": "orval --config orval.config.ts && node scripts/generate-route-templates.mjs",
     "lint": "eslint && tsc --noEmit",
     "test": "vitest run"
   },

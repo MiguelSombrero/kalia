@@ -1,9 +1,11 @@
 import {
+  answersStatus,
   createFetchTransport,
   isApiError,
-  pathOf,
   registerTransport,
+  routeTemplateOf,
   traceIdOfResponse,
+  type CallOptions,
   type Transport,
 } from "@kalia/api";
 import { getTokenStore } from "@/lib/auth/defaultTokenStore";
@@ -24,13 +26,13 @@ const unlessUnreachable = async (token: Promise<string | undefined>): Promise<st
   }
 };
 
-// Method and path only: never the query string, a token or a body (ADR-0013).
+// ADR-0013: the route template, never the path, a query string, a token or a body.
 const loggingFailures = (transport: Transport): Transport =>
-  (async (url: string, options: RequestInit) => {
-    const call = { method: options.method ?? "GET", path: pathOf(url) };
+  (async (url: string, options: CallOptions) => {
+    const call = { method: options.method ?? "GET", path: routeTemplateOf(url) };
     try {
       const reply = await transport<{ status: number }>(url, options);
-      if (reply.status >= 400) {
+      if (reply.status >= 400 && !answersStatus(options, reply.status)) {
         logError("Request answered with an error status", {
           ...call,
           status: reply.status,

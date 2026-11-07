@@ -58,7 +58,8 @@ puts in the base whatever is not a dev convenience).
   carries a query string (ADR-0013): a sign-out's `id_token_hint` is a signed
   token and a search term is the person's own, so the proxy's `log_format`
   and Keycloak's access-log pattern both name the method, the path and the
-  protocol only, and `limit_req_log_level info` keeps a refusal out of the
+  protocol only (the proxy writes a route template where the path carries a
+  user's name), and `limit_req_log_level info` keeps a refusal out of the
   error log, which prints the request line whole.
 - **Per-address limits, one zone per kind of request**, so a flood of page
   loads cannot spend the budget for registrations. The limits are below;

@@ -12,6 +12,9 @@
 - **Amended:** 2026-10-25 by [ADR-0088](0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md) —
   "structured" now also means JSON on stdout, and the one centralised request
   log this ADR deferred exists, at `INFO`, because requests now carry a trace id
+- **Amended:** 2026-11-07 — every tier logs a route template, never a raw path,
+  and an app's transport logs a status as a failure only where the call that
+  reads it has not declared it an answer
 
 ## Context
 
@@ -75,6 +78,27 @@ defers full metrics/tracing).
   `id`) rather than a full domain object. Mostly forward-looking today (no
   auth/PII yet), heading off the Auth iteration from casually violating
   it.
+- **A request is logged by its route template, never its path.** A path such as
+  `/api/v1/cellars/{username}` carries a user's name, and the request line sits
+  beside the client's address in the backend's request log, the web's backend-call
+  log, the app's device log and the edge's access log: a name beside an address
+  is personal data, and the misspelled names and private cellars that answer
+  `404` are logged the same as real ones. So each tier names the pattern that
+  served the call: the backend its best-matching handler pattern, the web's and
+  the app's transports the operation's path template (`@kalia/api`'s
+  `routeTemplateOf()`, from the committed spec), and the edge a `map` in
+  `edge/nginx.conf`. A request no pattern owns (one Spring Security rejects
+  before a handler is chosen, or any path outside the API) is logged as
+  `unmatched`, never as itself.
+- **A status is a failure only where the feature that reads it calls one.** The
+  app's transport logs every response of status 400 or above, except a status
+  the call declared with `answers` (`{ answers: [404] }` on the beer read, where
+  `404` means "no such beer"): an anticipated answer written as an error is the
+  flood of non-incidents the level rule above forbids. An undeclared 4xx and
+  every 5xx stay logged, so an unanticipated failure cannot go silent. A `401`
+  that the token refresh resolves is never seen by the log, since the transport
+  retries inside; one still returned after the retry is logged, and a `429` is
+  logged because the app should never reach the limit.
 - **No manual controller entry/exit logging.** Hand-rolled
   "entering/exiting method" pairs are noisy, go stale as methods change,
   and apply inconsistently across controllers. If request-level
@@ -103,6 +127,14 @@ defers full metrics/tracing).
 - Task 3 (configuration strategy) inherited the per-environment levels
   above as a known requirement; it delivered them via `LOG_LEVEL` rather
   than profiles ([ADR-0015](0015-configuration-strategy.md)).
+- A line the app stops writing is one nobody can read later (an installed
+  build's errors are read from the device's own logs,
+  [ADR-0098](0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)),
+  so a status is declared per call, in the feature that knows what it means,
+  and never as a blanket rule for a status code.
+- A request rejected before a handler is chosen is logged without its route,
+  so the backend's line for a `401` no longer says which endpoint was asked
+  for; the trace id still ties it to the web's line, which does.
 - `backend/README.md`'s logging bullet summarizes the rules
   for day-to-day reference and links here; this ADR is the full statement and
   the record of why. It originally carried a full restatement instead — see

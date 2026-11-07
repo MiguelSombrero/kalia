@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isApiError } from "./api-error";
-import { createFetchTransport, httpFailure } from "./fetch-transport";
+import { answersStatus, createFetchTransport, httpFailure } from "./fetch-transport";
 import { kaliaFetch, registerTransport } from "./transport";
 
 const baseUrl = () => "http://backend:8080";
@@ -136,6 +136,35 @@ describe("createFetchTransport", () => {
 
     expect(isApiError(error) && error.kind).toBe("refused");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("does not hand the statuses a call reads as answers to fetch", async () => {
+    const fetchMock = vi.fn(async () => Response.json({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createFetchTransport({ baseUrl })("/api/v1/beers/1", { method: "GET", answers: [404] });
+
+    expect(initOf(fetchMock)).not.toHaveProperty("answers");
+  });
+
+  it("names the route template, not a user's name, in the error of a call that could not be made", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("Network request failed"))));
+
+    const error = await createFetchTransport({ baseUrl })("/api/v1/cellars/jouni?page=0", {}).catch(
+      (e: unknown) => e,
+    );
+
+    expect((error as Error).message).toContain("/api/v1/cellars/{username}");
+    expect((error as Error).message).not.toMatch(/jouni|page=0/);
+  });
+
+  it("names the route template, not a user's name, when a body is not JSON", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>", { status: 502 })));
+
+    const error = await createFetchTransport({ baseUrl })("/api/v1/cellars/jouni", {}).catch((e: unknown) => e);
+
+    expect((error as Error).message).toContain("/api/v1/cellars/{username}");
+    expect((error as Error).message).not.toContain("jouni");
   });
 
   it("prefixes the base URL and returns the parsed body with its status and headers", async () => {
@@ -368,5 +397,16 @@ describe("the trace of a call", () => {
 
   it("makes an error with no trace, for a response it never sent", () => {
     expect(httpFailure("Beer search", { status: 500 }).message).toBe("Beer search failed with status 500");
+  });
+});
+
+describe("answersStatus", () => {
+  it("is true only for a status the call declared", () => {
+    expect(answersStatus({ answers: [404, 409] }, 404)).toBe(true);
+    expect(answersStatus({ answers: [404, 409] }, 500)).toBe(false);
+  });
+
+  it("is false for a call that declared none", () => {
+    expect(answersStatus({}, 404)).toBe(false);
   });
 });

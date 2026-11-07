@@ -1,5 +1,5 @@
 import "server-only";
-import { createFetchTransport, isAbortError, isApiError, pathOf, type Transport } from "@kalia/api";
+import { createFetchTransport, isAbortError, isApiError, routeTemplateOf, type Transport } from "@kalia/api";
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
 import { currentAccessToken } from "./accessToken";
@@ -24,7 +24,7 @@ export const kaliaFetch: Transport = async <T,>(url: string, options: RequestIni
   // One trace id per browser request, so every backend call a render makes
   // shares it (proxy.ts starts it); a call outside any request starts its own.
   const { header, traceId } = traceparentFor(await currentTraceparent());
-  const call = { traceId, method: options.method ?? "GET", path: pathOf(url) };
+  const call = { traceId, method: options.method ?? "GET", path: routeTemplateOf(url) };
   const started = performance.now();
   try {
     const result = await backendTransport<{ status: number }>(url, await withBffHeaders(options, header));

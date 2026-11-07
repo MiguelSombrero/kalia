@@ -256,6 +256,12 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
   ([ADR-0037](../docs/adr/0037-functional-modules.md),
   [ADR-0013](../docs/adr/0013-logging-conventions.md)); the device log goes
   through `src/lib/log/deviceLog.ts`, which takes fields, never an object.
+- **A call that reads a status as an answer declares it, in its feature's
+  `api.ts`:** `getBeer(id, { answers: [404] })`. The transport logs every other
+  status of 400 or above as an error and a declared one not at all; declare
+  only what the screen shows as an answer, never a status to quieten a log. It
+  logs the route template, never the path, so a user's name stays out of the
+  device log ([ADR-0013](../docs/adr/0013-logging-conventions.md)).
 - **UI state in a feature-scoped Zustand `store.ts`,** never API data ([ADR-0009](../docs/adr/0009-zustand-ui-state.md)).
 - **The generated client is reached only through a feature's `api.ts`,** never
   edited, regenerated with `make api-drift` ([ADR-0012](../docs/adr/0012-orval-api-client.md)).

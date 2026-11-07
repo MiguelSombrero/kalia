@@ -1,6 +1,7 @@
 import { apiError, isApiError, type ApiError } from "./api-error";
 import { traceIdOf } from "./traceparent";
-import type { Transport } from "./transport";
+import { pathOf, routeTemplateOf } from "./route-template";
+import type { CallOptions, Transport } from "./transport";
 
 /**
  * Generous against the <300 ms catalog search target
@@ -46,8 +47,9 @@ export const httpFailure = (what: string, response: { status: number }): ApiErro
 export const isAbortError = (cause: unknown): boolean =>
   typeof cause === "object" && cause !== null && "name" in cause && cause.name === "AbortError";
 
-// Every message names a path, never the query string (ADR-0013).
-export const pathOf = (url: string): string => url.split("?", 1)[0];
+/** Whether the call declared `status` as an answer its feature reads. */
+export const answersStatus = (options: Pick<CallOptions, "answers">, status: number): boolean =>
+  options.answers?.includes(status) ?? false;
 
 /**
  * The platform-neutral half of a transport: adds the base URL and the
@@ -60,7 +62,7 @@ export const pathOf = (url: string): string => url.split("?", 1)[0];
  * an `ApiError` (ADR-0023).
  */
 export const createFetchTransport = (config: FetchTransportConfig): Transport =>
-  (async (url: string, options: RequestInit): Promise<BackendResult> => {
+  (async (url: string, options: CallOptions): Promise<BackendResult> => {
     refuseReshapedPath(url);
     refuseCallerAuthorization(url, options);
     const traced = withTrace(options, config);
@@ -87,7 +89,9 @@ export const createFetchTransport = (config: FetchTransportConfig): Transport =>
     return result;
   }) as Transport;
 
-const withTrace = (options: RequestInit, config: FetchTransportConfig): RequestInit => {
+const withTrace = (given: CallOptions, config: FetchTransportConfig): RequestInit => {
+  const options: CallOptions = { ...given };
+  delete options.answers;
   const headers = new Headers(options.headers);
   if (!headers.has("traceparent") && config.traceparent) {
     headers.set("traceparent", config.traceparent());
@@ -116,7 +120,7 @@ const send = async (
     if (isAbortError(cause) || isApiError(cause)) {
       throw cause;
     }
-    throw apiError("network", `Could not reach the backend for ${pathOf(url)}`, { cause, traceId });
+    throw apiError("network", `Could not reach the backend for ${routeTemplateOf(url)}`, { cause, traceId });
   }
 };
 
@@ -129,7 +133,7 @@ const readBody = async (url: string, response: Response, traceId: string | undef
     text = await response.text();
   } catch (cause) {
     // The connection dropped part-way through the body.
-    throw apiError("network", `Response body from ${pathOf(url)} could not be read`, {
+    throw apiError("network", `Response body from ${routeTemplateOf(url)} could not be read`, {
       status: response.status,
       cause,
       traceId,
@@ -144,7 +148,7 @@ const readBody = async (url: string, response: Response, traceId: string | undef
     return JSON.parse(text);
   } catch (cause) {
     // A proxy or gateway answering with HTML rather than problem+json.
-    throw apiError("parse", `Response body from ${pathOf(url)} was not JSON`, {
+    throw apiError("parse", `Response body from ${routeTemplateOf(url)} was not JSON`, {
       status: response.status,
       cause,
       traceId,
@@ -156,11 +160,10 @@ const readBody = async (url: string, response: Response, traceId: string | undef
 // leaves `.` and `..` intact, and fetch's URL parser resolves them — `%2e`
 // spellings too — so `/api/v1/cellars/..` would reach `/api/v1/`.
 const refuseReshapedPath = (url: string): void => {
-  const path = pathOf(url);
-  const segments = path.split("/").slice(1);
+  const segments = pathOf(url).split("/").slice(1);
   const reshaped = segments.some((segment) => segment === "" || /^(\.|%2e){1,2}$/i.test(segment));
   if (reshaped) {
-    throw apiError("refused", `Refused to call ${path}: a path segment is empty or a dot segment`);
+    throw apiError("refused", `Refused to call ${routeTemplateOf(url)}: a path segment is empty or a dot segment`);
   }
 };
 
@@ -184,7 +187,7 @@ const withBearer = (options: RequestInit, token: string | undefined): RequestIni
  */
 const refuseCallerAuthorization = (url: string, options: RequestInit): void => {
   if (new Headers(options.headers).has("Authorization")) {
-    throw apiError("refused", `Refused to call ${pathOf(url)}: a caller-set Authorization header`);
+    throw apiError("refused", `Refused to call ${routeTemplateOf(url)}: a caller-set Authorization header`);
   }
 };
 
@@ -211,7 +214,7 @@ const withTimeout = async (
   let timer: ReturnType<typeof setTimeout> | undefined;
   const expiry = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => reject(apiError("timeout", `Request to ${pathOf(url)} timed out after ${timeoutMs} ms`, { traceId })),
+      () => reject(apiError("timeout", `Request to ${routeTemplateOf(url)} timed out after ${timeoutMs} ms`, { traceId })),
       timeoutMs,
     );
   });
