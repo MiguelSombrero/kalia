@@ -24,3 +24,8 @@ CREATE TABLE feed.line (
 
 -- Whose cellar the line came from, queryably (docs/architecture.md §3).
 CREATE INDEX line_user_id_idx ON feed.line (user_id);
+
+-- Bounds the 30-day window the feed serves (ADR-0058): without it a read that
+-- finds fewer lines than a page in the window walks sequence_number past every
+-- older line, and the table keeps them all.
+CREATE INDEX line_occurred_at_idx ON feed.line (occurred_at);

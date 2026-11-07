@@ -84,12 +84,14 @@ public interface BeerRepository extends JpaRepository<Beer, UUID>, JpaSpecificat
 	Optional<Beer> findSuggestionById(UUID id);
 
 	// One grouped read for a whole page of contributors; a status a contributor has none of is absent.
+	// Two equalities rather than IN: Postgres reads each as the predicate of a partial index and ORs the two
+	// bitmaps, where an IN list rules out both indexes and scans the catalog.
 	@Query("""
 			SELECT new fi.kalia.catalog.domain.ContributorStatusCount(b.contributorId, b.moderationStatus, COUNT(b))
 			FROM Beer b
 			WHERE b.contributorId IN :contributorIds
-			AND b.moderationStatus IN (fi.kalia.catalog.domain.ModerationStatus.PENDING,
-			                           fi.kalia.catalog.domain.ModerationStatus.REJECTED)
+			AND (b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.PENDING
+			     OR b.moderationStatus = fi.kalia.catalog.domain.ModerationStatus.REJECTED)
 			GROUP BY b.contributorId, b.moderationStatus""")
 	List<ContributorStatusCount> countPendingAndRejectedByContributor(Collection<UUID> contributorIds);
 
