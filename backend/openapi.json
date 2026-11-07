@@ -178,11 +178,6 @@
             "enum" : [ "REMOVED" ],
             "type" : "string"
           },
-          "reason" : {
-            "description" : "Always absent: a removal gives no reason",
-            "enum" : [ "ALREADY_IN_CATALOG", "NOT_A_REAL_BEER", "INAPPROPRIATE", "INCORRECT_DETAILS" ],
-            "type" : "string"
-          },
           "style" : {
             "type" : "string"
           }

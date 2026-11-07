@@ -76,7 +76,7 @@ save; and the `200` of a review decision is typed to what it can carry.
 - [x] The `200` of a review decision is typed with its own enum, the committed
       spec and generated client are regenerated, and `make openapi-spec` shows
       no breaking diff beyond the documented waiver
-- [x] §4 of `docs/architecture.md` and ADR-0093 state what holds
+- [x] ADR-0093 and the READMEs state what holds
 - [x] `make verify-fast` is green
 
 ## Notes

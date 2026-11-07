@@ -17,7 +17,6 @@ export * from './beerNotApprovedProblemModerationStatus';
 export * from './beerRemovalDto';
 export * from './beerRemovalDtoBreweryStatus';
 export * from './beerRemovalDtoOutcome';
-export * from './beerRemovalDtoReason';
 export * from './beerSummaryDto';
 export * from './bottleDto';
 export * from './bottleDtoContainerType';

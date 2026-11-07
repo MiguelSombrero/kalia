@@ -6,7 +6,6 @@
  */
 import type { BeerRemovalDtoBreweryStatus } from './beerRemovalDtoBreweryStatus';
 import type { BeerRemovalDtoOutcome } from './beerRemovalDtoOutcome';
-import type { BeerRemovalDtoReason } from './beerRemovalDtoReason';
 import type { BreweryDto } from './breweryDto';
 
 /**
@@ -24,7 +23,5 @@ export interface BeerRemovalDto {
   id: string;
   name: string;
   outcome: BeerRemovalDtoOutcome;
-  /** Always absent: a removal gives no reason */
-  reason?: BeerRemovalDtoReason;
   style: string;
 }
