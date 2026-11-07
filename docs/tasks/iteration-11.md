@@ -34,7 +34,7 @@ browsing and searching the catalog.
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | refined |
 | [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | refined |
 | [08](iteration-11/08-mobile-ui-primitives.md) | The app has its own primitives, and no screen is left plain | needs-refinement |
-| [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | refined |
+| [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | done |
 | [17](iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md) | The app's transport logs a failure only where a feature calls it one | done |
 | [09](iteration-11/09-catalog-search-and-list.md) | A user searches and filters the catalog on their phone | needs-refinement |
 | [10](iteration-11/10-beer-details.md) | A user opens a beer and reads its details on their phone | needs-refinement |

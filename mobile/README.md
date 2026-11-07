@@ -273,6 +273,12 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **The token store is a state machine** with storage, OAuth client and clock
   injected; refresh is single-flight, the new refresh token stored first. A 4xx
   refusal ends the session; any other failure leaves the user signed in.
+- **A change of viewer resets the whole query client** (`src/lib/query/clearOnViewerChange.ts`,
+  wired in `AppProviders`): sign-in, sign-out and a refresh the server refuses
+  all pass through the token store. A query key therefore need not name the
+  viewer, and a hook that caches viewer-dependent data needs no guard of its
+  own. Reset, not `clear()`: tabs stay mounted and would keep showing the last
+  viewer's data.
 - **The transport** (`src/lib/api/registerTransport.ts`) retries a `401` once after the shared refresh, one `traceparent` per call
   ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
 - **The launch check reads `GET /api/v1/app-config`,** remembers the minimum

@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { getTokenStore } from "@/lib/auth/defaultTokenStore";
 import type { TokenStore } from "@/lib/auth/tokenStore";
 import { createI18n } from "@/lib/i18n/createI18n";
+import { clearOnViewerChange } from "@/lib/query/clearOnViewerChange";
 import { createQueryClient } from "@/lib/query/createQueryClient";
 import { useAppStateFocus } from "@/lib/query/useAppStateFocus";
 
@@ -25,6 +26,8 @@ export const AppProviders = ({
   const [i18n] = useState(() => createI18n(locale));
 
   useAppStateFocus();
+
+  useEffect(() => clearOnViewerChange(tokenStore, queryClient), [tokenStore, queryClient]);
 
   useEffect(() => {
     void i18n.changeLanguage(locale);
