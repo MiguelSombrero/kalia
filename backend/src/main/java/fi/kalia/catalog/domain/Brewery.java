@@ -66,6 +66,12 @@ public class Brewery {
 		return brewery;
 	}
 
+	/** Whether the viewer may see this brewery: it is approved, or it is theirs and pending. */
+	public boolean isVisibleTo(UUID viewerId) {
+		return moderationStatus == ModerationStatus.APPROVED
+				|| (moderationStatus == ModerationStatus.PENDING && viewerId.equals(contributorId));
+	}
+
 	public boolean editWhilePending(String newName, String newCountryCode, @Nullable String newCity) {
 		Assert.state(moderationStatus == ModerationStatus.PENDING, "only a pending brewery can be edited");
 		Assert.hasText(newName, "name must not be blank");

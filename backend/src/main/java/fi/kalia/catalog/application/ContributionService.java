@@ -67,7 +67,7 @@ public class ContributionService {
 	private Brewery newBrewery(UUID contributorId, BreweryChoice.New added) {
 		rules.requireListedCountry(added.countryCode());
 		breweries.findBySameNameAndCountryCode(added.name(), added.countryCode()).ifPresent(existing -> {
-			if (breweries.findVisibleById(existing.getId(), contributorId).isEmpty()) {
+			if (!existing.isVisibleTo(contributorId)) {
 				throw PendingElsewhereException.brewery();
 			}
 			throw new DuplicateBreweryException(existing.getId(), existing.getName(), existing.getCountryCode());
