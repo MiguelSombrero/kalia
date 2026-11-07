@@ -1,6 +1,6 @@
 # Task 19: Decide how far the admin role reaches
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -68,15 +68,15 @@ is made.
 
 ## Acceptance criteria
 
-- [ ] An ADR amendment records the decision for each of the two, passes
+- [x] An ADR amendment records the decision for each of the two, passes
       `node scripts/check-adrs.mjs`, and amends ADR-0101
-- [ ] A test shows a `kalia-mobile` token for an admin user carrying no admin
+- [x] A test shows a `kalia-mobile` token for an admin user carrying no admin
       role and refused at `/api/v1/admin/**`; it failed before the change
-- [ ] A test shows the backend answering `/actuator/prometheus` without a
+- [x] A test shows the backend answering `/actuator/prometheus` without a
       token, another the edge refusing every actuator path but health, and
       `/actuator/health` stays open
-- [ ] `make keycloak-check` passes with the realm changed
-- [ ] `make verify-fast` is green
+- [x] `make keycloak-check` passes with the realm changed
+- [x] `make verify-fast` is green
 
 ## Notes
 

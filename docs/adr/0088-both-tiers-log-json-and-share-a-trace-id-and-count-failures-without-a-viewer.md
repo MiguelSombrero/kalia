@@ -6,6 +6,9 @@
   `health` ([ADR-0090](0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)),
   so the backend's counters are read inside the compose network, and the
   deployable stack enables them as well as the local one
+- **Amended:** 2026-11-07 — iteration 11 task 19: the network is the boundary
+  for the whole actuator, so the backend answers it without a token and the
+  counters need no credential to scrape (see Decision)
 
 ## Context
 
@@ -60,6 +63,29 @@ view any of it.
   *(Amended 2026-11-01: the base file enables the backend's too, and the edge
   does not forward it.)*
 
+
+  > **Amended 2026-11-07 (iteration 11 task 19).** **The network is the
+  > boundary for `/actuator/**`: the backend permits every actuator path it
+  > serves without a token, and the edge refuses every one but
+  > `/actuator/health`.** The bearer-token rule above is withdrawn. It admitted
+  > any signed-in account, and self-registration is open
+  > ([ADR-0055](0055-self-registration-via-keycloak.md)), so it never bounded
+  > who could read the counters; it only made a scraper carry a user's access
+  > token, which expires in five minutes. What bounds them is that the edge
+  > answers `404` for the rest (`edge/nginx.conf`, pinned by
+  > `web/e2e/edge-limits.spec.ts`, which also asserts the backend answers
+  > `/actuator/prometheus` without a token from inside the compose network) and
+  > that `ACTUATOR_ENDPOINTS` lists what exists. A scraper on the stack's
+  > internal network, such as [iteration 11.5](../tasks/iteration-11.5.md)'s,
+  > needs no credential. The frontend's `/api/metrics` is unchanged.
+  >
+  > Two things become load-bearing that were backstopped before. The edge's
+  > `404` is the only thing between the internet and the counters, so a
+  > deployment that publishes the backend's port 8080 other than through the
+  > edge is exposing them. And an endpoint added to `ACTUATOR_ENDPOINTS` is
+  > served to anyone who can reach the backend; `env`, `heapdump` and `beans` do
+  > not belong there.
+
 This does not add a hosted monitoring service, alerting, a log shipper or a
 dashboard, and does not cover mobile crash reporting.
 
@@ -109,7 +135,10 @@ dashboard, and does not cover mobile crash reporting.
 - Bad, because the backend's token-protected endpoint cannot be scraped by a
   stock Prometheus without a Keycloak client for it; a local developer copies a
   token from Swagger UI instead. That is a deployment question this decision
-  leaves open on purpose.
+  leaves open on purpose. *(Amended 2026-11-07: the endpoint needs no token.)*
+- Bad, because the counters are protected by the network layout alone since
+  2026-11-07: a published backend port, or a widened `ACTUATOR_ENDPOINTS`, is an
+  exposure that no credential backs up.
 - Neutral, because `@prometheus-io/client` is at 0.16, so a minor release may
   change its API; it is the Prometheus project's own successor to the
   deprecated `prom-client`, and the use here is a registry and three counters.
@@ -118,7 +147,8 @@ dashboard, and does not cover mobile crash reporting.
   `LOG_LEVEL` still controls it.
 - **Revisit trigger:** a deployment target exists, or a hosted monitoring
   service is wanted — at which point the exporter, the scrape credential and
-  the retention are decided together.
+  the retention are decided together; so is a backend reachable other than
+  through the edge, which brings the token back.
 
 ## Evidence
 

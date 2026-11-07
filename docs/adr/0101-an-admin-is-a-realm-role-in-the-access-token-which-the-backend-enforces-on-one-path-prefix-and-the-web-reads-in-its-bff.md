@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-05
+- **Amended:** 2026-11-07 — iteration 11 task 19: the role reaches the web's
+  token only. `kalia-mobile` gets an explicit client-scope list without
+  `roles`, so the app's token never carries it (see Decision and Evidence)
 
 ## Context
 
@@ -44,6 +47,32 @@ the admin area to nobody else.**
   carry by default and which writes `realm_access.roles`. No mapper is added.
   The mobile app gains no admin surface; it carries the claim only because it
   holds the same scope.
+
+  > **Amended 2026-11-07 (iteration 11 task 19).** Only `kalia-web` keeps the
+  > `roles` scope. **`kalia-mobile` has an explicit client-scope list in
+  > `keycloak/realm-export.json` without `roles`,** default `web-origins`,
+  > `acr`, `profile`, `basic` and `email`, optional `offline_access` alone, so
+  > no token it is issued carries `realm_access`, and a request for the
+  > `roles` scope is refused as an unknown scope. **Admin stays on the web.**
+  > The role would otherwise ride in the app's offline refresh token, which
+  > never rotates and has no maximum lifespan
+  > ([ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)):
+  > a phone's refresh token read off a stolen device would then replay an
+  > admin credential for as long as it was refreshed every 30 days, against
+  > the web session's 10 hours. The app has no admin screen and reads no role,
+  > so nothing is lost. The realm drift check pins the lists
+  > (`scripts/check-keycloak-realm-config.mjs` compares each client's scopes as
+  > sets), and `scripts/check-keycloak-admin.mjs` signs in as the admin
+  > through `kalia-mobile` and asserts the token has no admin role and is
+  > refused `403` at `/api/v1/admin/**` while accepted at `/api/v1/cellar`.
+  >
+  > **The audience survives.** The `kalia-backend` audience the backend
+  > validates ([ADR-0028](0028-resource-server-and-current-user.md)) comes from
+  > `kalia-mobile`'s own `kalia-backend-audience` mapper
+  > ([ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)),
+  > not from the `roles` scope, so no replacement was needed. What the `roles`
+  > scope also wrote was an `account` audience, which the token no longer
+  > carries and nothing reads.
 - **The backend maps `realm_access.roles` to Spring authorities and enforces
   one rule, on the prefix `/api/v1/admin/**`,** in the security chain
   ([ADR-0028](0028-resource-server-and-current-user.md)), pinned by a test. A
@@ -139,8 +168,18 @@ a dev account ([ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-beca
   until that is decided; the local stack and the tests are the only places an
   admin exists.
 - Neutral, because the mobile app's token carries the claim and the app ignores
-  it.
-- **Revisit trigger:** a second privileged role, or a permission finer than
+  it. *(Amended 2026-11-07: it does not, by design.)*
+- Bad, because an admin works on the web only: there is no way to review a
+  suggestion from the phone, which is accepted until an admin surface in the app
+  is wanted, and then needs a second decision on the stolen-phone replay.
+- Bad, because a client given an explicit scope list is the exact lockout the
+  previous Bad consequence describes, now chosen on purpose for `kalia-mobile`;
+  a later edit that gives `kalia-web` an explicit list without `roles` is caught
+  only by `make keycloak-check`, not by any backend test.
+- **Revisit trigger:** an admin surface in the mobile app (which reopens
+  [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)'s
+  accepted replay of a refresh token read off a stolen phone, and wants rotation
+  or a shorter lifespan for an admin first); a second privileged role, or a permission finer than
   "admin"; a second resource server beside `kalia-backend`; a role that must
   be revoked faster than the token's lifespan; or a deployment existing.
 
@@ -162,3 +201,16 @@ the realm as `keycloak-config` applied it, not against a hand-built token.
 - Not verified: the same token for `kalia-web`, which needs a browser sign-in.
   Its default client scopes are the same list, which is the mechanism the claim
   depends on.
+
+**Verified on 2026-11-07, Keycloak 26.8.1, after the change.** A real
+`kalia-mobile` sign-in as `testadmin` with `openid offline_access` returned an
+access token with `azp: kalia-mobile`, `aud: "kalia-backend"`, scope
+`openid offline_access email profile` and no `realm_access` claim; before the
+change the same sign-in carried `realm_access.roles` of `offline_access`,
+`admin`, `uma_authorization`, `default-roles-kalia`, and the API answered `200`
+at `/api/v1/admin/suggestions`. After it the API answers `403` there and `200`
+at `/api/v1/cellar`. A refresh token issued while the client still carried
+`roles` (the scope re-added by hand, then the realm re-applied) yielded an access
+token with no `realm_access` on its next refresh, so a token already on a phone
+loses the role without a new sign-in. A scope-evaluated `kalia-web` token for
+`testadmin` carries `admin`, `testuser`'s does not.

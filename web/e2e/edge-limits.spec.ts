@@ -85,8 +85,14 @@ test.describe("what the edge serves", () => {
   const notServed = [
     ["metrics", BACKEND_ORIGIN, "/actuator/prometheus"],
     ["the actuator index", BACKEND_ORIGIN, "/actuator"],
+    ["the actuator index, with a trailing slash", BACKEND_ORIGIN, "/actuator/"],
     ["a health sub-path", BACKEND_ORIGIN, "/actuator/health/readiness"],
+    ["the health path, with a trailing slash", BACKEND_ORIGIN, "/actuator/health/"],
     ["metrics, percent-encoded", BACKEND_ORIGIN, "/%61ctuator/prometheus"],
+    ["metrics, in another case", BACKEND_ORIGIN, "/Actuator/prometheus"],
+    ["metrics, behind a dot segment", BACKEND_ORIGIN, "/api/v1/../../actuator/prometheus"],
+    ["metrics, behind a doubled slash", BACKEND_ORIGIN, "//actuator/prometheus"],
+    ["an endpoint the backend does not expose", BACKEND_ORIGIN, "/actuator/env"],
     ["the admin console", KEYCLOAK_ORIGIN, "/admin/master/console/"],
     ["the admin API", KEYCLOAK_ORIGIN, "/admin/realms/kalia/users"],
     ["the master realm", KEYCLOAK_ORIGIN, "/realms/master/protocol/openid-connect/token"],
@@ -104,6 +110,27 @@ test.describe("what the edge serves", () => {
       }
     });
   }
+
+  // The edge's pattern does not match these spellings, so Spring's answer is
+  // the only guard left: it must never be a counter.
+  for (const route of ["/actuator;x=1/prometheus", "/actuator%3bx/prometheus", "/%2e%2e/actuator/prometheus"]) {
+    test(`metrics spelled ${route} is never served`, async ({ request }) => {
+      const response = await request.get(`${BACKEND_ORIGIN}${route}`, { failOnStatusCode: false, maxRedirects: 0 });
+      expect([400, 401, 404]).toContain(response.status());
+    });
+  }
+
+  // ADR-0088: the backend needs no token for the actuator, so the 404s above
+  // are all that keeps the counters from a client. Asked from inside the
+  // compose network, past the edge.
+  test("the backend itself answers the counters with no token, which only the edge keeps from a client", () => {
+    const status = execFileSync(
+      "docker",
+      ["compose", "exec", "-T", "backend", "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "http://localhost:8080/actuator/prometheus"],
+      { cwd: ROOT, encoding: "utf8" },
+    );
+    expect(status).toBe("200");
+  });
 
   test("the health probe, the realm's own endpoints and the web app are still served", async ({ request }) => {
     const health = await request.get(`${BACKEND_ORIGIN}/actuator/health`);
