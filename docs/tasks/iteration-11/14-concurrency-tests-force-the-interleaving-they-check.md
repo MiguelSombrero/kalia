@@ -1,6 +1,6 @@
 # Task 14: A concurrency test forces the interleaving it checks
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -63,16 +63,16 @@ its pull request opens.
 
 ## Acceptance criteria
 
-- [ ] `ProfileServiceModuleIT`'s test forces the conflict — a barrier or a hook
+- [x] `ProfileServiceModuleIT`'s test forces the conflict — a barrier or a hook
       makes both sign-ins reach the insert together — and asserts the outcome,
       not that a retry occurred; it failed under a build with the retry removed
-- [ ] The test passes in 20 consecutive runs by the new `make` target, on this
+- [x] The test passes in 20 consecutive runs by the new `make` target, on this
       branch
-- [ ] The target runs one named integration test a given number of times and
+- [x] The target runs one named integration test a given number of times and
       stops at the first failure
-- [ ] `docs/architecture.md`'s testing strategy states the two rules and the
+- [x] `docs/architecture.md`'s testing strategy states the two rules and the
       repeat requirement, and the common-failures row names this task
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

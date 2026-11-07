@@ -6,7 +6,7 @@
 # vulnerability-scan.yml stay CI-only, since building the images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
+.PHONY: help up down restart logs ps backend-test backend-verify repeat-it web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check action-pins api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env app-config
@@ -40,6 +40,19 @@ backend-test: ## Run backend unit tests (fast, no Docker)
 
 backend-verify: ## Run backend unit + integration tests from clean (needs Docker)
 	(cd backend && mvn clean verify)
+
+# Each run is its own Maven invocation, so it boots a fresh context and
+# container (~20 s): slow, but the runs are independent, which is the point.
+repeat-it: ## Run one integration test COUNT times (default 20), stopping at the first failure: make repeat-it TEST=Class#method [COUNT=n] (needs Docker)
+	@case "$(TEST)" in *#*) ;; *) echo "usage: make repeat-it TEST=<Class>#<method> [COUNT=<n>]"; exit 2;; esac
+	@count=$(or $(COUNT),20); \
+	case "$$count" in ''|*[!0-9]*|0) echo "COUNT must be a positive integer, got '$$count'"; exit 2;; esac; \
+	for i in $$(seq 1 $$count); do \
+	    echo "repeat-it: run $$i of $$count: $(TEST)"; \
+	    (cd backend && mvn -B -q verify -Dtest=NoSuch -Dsurefire.failIfNoSpecifiedTests=false -Dit.test='$(TEST)') \
+	        || { echo "repeat-it: FAILED on run $$i of $$count"; exit 1; }; \
+	done; \
+	echo "repeat-it: $$count of $$count runs passed: $(TEST)"
 
 web-test: ## Run the web app's unit tests
 	npm test --workspace web
