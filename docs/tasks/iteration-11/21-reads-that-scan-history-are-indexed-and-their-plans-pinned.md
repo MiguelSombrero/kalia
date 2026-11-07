@@ -1,6 +1,6 @@
 # Task 21: Reads that scan history are indexed, and their plans are pinned
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** none
 
@@ -56,14 +56,14 @@ shows the catalog search's, and the schema carries whatever index makes it so.
 
 ## Acceptance criteria
 
-- [ ] A plan test shows the feed's front-page read and its `?before=` read near
+- [x] A plan test shows the feed's front-page read and its `?before=` read near
       the window's edge touching a bounded number of rows on a table holding
       many older lines; it failed before the migration
-- [ ] A plan test shows the contributor counts' `REJECTED` half using an index;
+- [x] A plan test shows the contributor counts' `REJECTED` half using an index;
       it failed before the migration
-- [ ] The migration passes the schema checks and the existing feed and review
+- [x] The migration passes the schema checks and the existing feed and review
       queue tests are green
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

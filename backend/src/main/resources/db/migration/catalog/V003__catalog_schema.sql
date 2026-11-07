@@ -82,6 +82,12 @@ CREATE UNIQUE INDEX beer_brewery_folded_name_idx
 CREATE INDEX beer_pending_contributor_idx ON catalog.beer (contributor_id)
     WHERE moderation_status = 'PENDING';
 
+-- The admin queue counts a contributor's rejections beside their waiting entries.
+-- Rows are never deleted (ADR-0091), so rejections only accumulate among the
+-- approved catalog.
+CREATE INDEX beer_rejected_contributor_idx ON catalog.beer (contributor_id)
+    WHERE moderation_status = 'REJECTED';
+
 CREATE INDEX beer_brewery_id_idx ON catalog.beer (brewery_id);
 
 -- One row per decision on a contributed beer (ADR-0102): the only trail of who
