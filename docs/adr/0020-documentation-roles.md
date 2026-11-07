@@ -59,7 +59,7 @@ The three homes:
   > `scripts/check-doc-size.mjs` enforces in `make check`, and the
   > doc-sync step in `implement-task` changes it only when the shape changes.
   > It also caps `backend/README.md` and `web/README.md` at 300 lines each
-  > (their `CLAUDE.md` loads them).
+  > and `mobile/README.md` at 320 (their `CLAUDE.md` files load them).
 - **READMEs record how** — the commands and day-to-day rules for working in
   that codebase, at the granularity the product owner set for them: short
   enough that a developer or agent catches the intention immediately.
