@@ -195,7 +195,7 @@ kalia/
 │   └── locales/      # @kalia/locales: the en/fi strings
 ├── keycloak/         # realm export, login theme, image
 ├── edge/             # nginx proxy in front of the web app, backend and Keycloak
-├── postgres/         # init scripts
+├── postgres/         # Postgres image and init scripts
 ├── package.json      # the npm workspaces (ADR-0092)
 ├── package-lock.json # the one lockfile, for every workspace
 ├── scripts/          # dependency-free checkers CI runs, git hooks, generators
