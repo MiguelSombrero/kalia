@@ -193,7 +193,7 @@ kalia/
 ├── packages/         # shared TypeScript source, npm workspaces (ADR-0092)
 │   ├── api/          # @kalia/api: generated API client + fetch core
 │   └── locales/      # @kalia/locales: the en/fi strings
-├── keycloak/         # realm export, login theme, image
+├── keycloak/         # realm export, login theme, Keycloak images
 ├── edge/             # nginx proxy in front of the web app, backend and Keycloak
 ├── postgres/         # Postgres image and init scripts
 ├── package.json      # the npm workspaces (ADR-0092)
