@@ -1,0 +1,17 @@
+{
+  "name": "@kalia/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/tokens.ts"
+  },
+  "scripts": {
+    "lint": "eslint && tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "10.13.0",
+    "eslint-config-next": "16.4.3",
+    "typescript": "^7.0.2"
+  }
+}

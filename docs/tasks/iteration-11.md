@@ -28,7 +28,7 @@ browsing and searching the catalog.
 | [18](iteration-11/18-a-client-falls-back-on-an-enum-value-it-does-not-know.md) | A client falls back on an enum value it does not know | done |
 | [01](iteration-11/01-decision-how-a-mobile-direction-is-prototyped-and-signed-off.md) | Decide how a mobile direction is prototyped and signed off | done |
 | [06](iteration-11/06-decision-the-design-token-format.md) | Decide the design token format | done |
-| [07](iteration-11/07-token-pipeline.md) | One token source generates the web's CSS and the app's theme | refined |
+| [07](iteration-11/07-token-pipeline.md) | One token source generates the web's CSS and the app's theme | done |
 | [02](iteration-11/02-design-the-interaction-model-and-navigation.md) | Design how the app is navigated | refined |
 | [03](iteration-11/03-design-kalias-identity-on-a-phone.md) | Design Kalia's identity on a phone | refined |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | refined |

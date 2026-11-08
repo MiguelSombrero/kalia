@@ -1,3 +1,5 @@
+import { theme } from "@/lib/design/theme.generated";
+import { useThemeColors } from "@/lib/design/useThemeColors";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -9,6 +11,7 @@ const formatAbv = (abv: number, language: string) =>
   `${new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(abv)} %`;
 
 export const CatalogScreen = () => {
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const beers = useBeers();
   const retry = t("error.retry");
@@ -47,30 +50,36 @@ export const CatalogScreen = () => {
   );
 };
 
-const BeerRow = ({ beer, language }: { beer: BeerSummary; language: string }) => (
-  <View testID="beer-row">
-    <Text style={styles.name}>{beer.name}</Text>
-    <Text style={styles.details}>{`${beer.brewery.name} · ${beer.style}`}</Text>
-    <Text style={styles.abv}>{formatAbv(beer.abv, language)}</Text>
-  </View>
-);
+const BeerRow = ({ beer, language }: { beer: BeerSummary; language: string }) => {
+  const styles = useStyles();
+  return (
+    <View testID="beer-row">
+      <Text style={styles.name}>{beer.name}</Text>
+      <Text style={styles.details}>{`${beer.brewery.name} · ${beer.style}`}</Text>
+      <Text style={styles.abv}>{formatAbv(beer.abv, language)}</Text>
+    </View>
+  );
+};
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 24, backgroundColor: "#ffffff" },
-  heading: { fontSize: 28, fontWeight: "700", color: "#111111" },
-  notice: { marginTop: 8, fontSize: 17, color: "#444444" },
-  name: { marginTop: 16, fontSize: 19, fontWeight: "700", color: "#111111" },
-  details: { fontSize: 15, color: "#444444" },
-  abv: { fontSize: 15, color: "#111111" },
-  button: {
-    alignSelf: "flex-start",
-    marginTop: 24,
-    minHeight: 48,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    backgroundColor: "#111111",
-  },
-  buttonBusy: { opacity: 0.5 },
-  buttonText: { fontSize: 17, fontWeight: "600", color: "#ffffff" },
-});
+const useStyles = () => {
+  const colors = useThemeColors();
+  return StyleSheet.create({
+    screen: { flex: 1, padding: theme.spacing.large, backgroundColor: colors.background },
+    heading: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
+    notice: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },
+    name: { marginTop: theme.spacing.medium, fontSize: theme.typography.body.size, fontWeight: theme.weights.bold, color: colors.foreground },
+    details: { fontSize: theme.typography.wordmark.size, color: colors["muted-foreground"] },
+    abv: { fontSize: theme.typography.wordmark.size, color: colors.foreground },
+    button: {
+      alignSelf: "flex-start",
+      marginTop: theme.spacing.large,
+      minHeight: theme.spacing.touch,
+      justifyContent: "center",
+      paddingHorizontal: theme.spacing.large,
+      borderRadius: theme.radius.control,
+      backgroundColor: colors.foreground,
+    },
+    buttonBusy: { opacity: 0.5 },
+    buttonText: { fontSize: theme.typography.body.size, fontWeight: theme.weights.semibold, color: colors.background },
+  });
+};

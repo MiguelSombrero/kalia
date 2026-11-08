@@ -2,7 +2,7 @@
 
 What Kalia is meant to look and feel like, and what a change to how it looks
 is judged against. The values that produce the look live in
-[`web/app/globals.css`](../web/app/globals.css), the structure that
+[`packages/tokens/src/tokens.ts`](../packages/tokens/src/tokens.ts), the structure that
 carries them in [architecture.md §5](architecture.md#5-client-design), and
 the reasons each was chosen in the ADRs; this file holds the part none of
 those can: the intent.
@@ -23,9 +23,8 @@ anything a visitor sees; the `design-task` skill and
 
 - **Every semantic token has exactly one meaning row** under
   [Semantic tokens](#semantic-tokens) below, and every row names a token that
-  exists. A semantic token is anything declared in an `@theme` block of
-  `web/app/globals.css`, inline or not — the layer components consume
-  through Tailwind utilities. A Tailwind sub-property such as
+  exists. Semantic token families are defined in the source; composite
+  animations remain in `web/app/globals.css`. A Tailwind sub-property such as
   `--text-label--letter-spacing` belongs to its token's row rather than
   having one of its own. `scripts/check-design-tokens.mjs` fails the build in
   both directions; it runs under `make check`, hence CI's static-checks job,
@@ -33,14 +32,14 @@ anything a visitor sees; the `design-task` skill and
   nothing in the real tree would otherwise trip it. Add the row in the same pull request as the token.
 - **Every pairing under [Contrast pairings](#contrast-pairings) meets WCAG 2.2
   AA**, and so does every beer-style colour. `scripts/check-contrast.mjs`
-  computes each from `globals.css`'s values and fails the build below AA; it
+  computes each from the token source in both modes and fails the build below AA; it
   runs under `make check`, hence CI's static-checks job, with its own fixture
   self-test.
 - **Everything else is review-maintained.** Whether a feel statement still
   describes what ships, or a layout principle is still followed, is a
   reviewer's call — a checker that judged it would be guessing.
 - **No values, ever.** A hex code, a font name or a pixel size written here is
-  a second copy of `globals.css` or `app/[locale]/layout.tsx`, and a second
+  a second copy of the token source or `app/[locale]/layout.tsx`, and a second
   copy is what drifts. Say what a token is *for*; the file it lives in says
   what it *is*.
 - **This file is not an ADR and does not earn one.** It is the standing brief
@@ -50,8 +49,9 @@ anything a visitor sees; the `design-task` skill and
 
 ## Not covered here
 
-- **Values** — `web/app/globals.css` for colour and every other token,
-  `web/app/[locale]/layout.tsx` for which typefaces load.
+- **Values** — `packages/tokens/src/tokens.ts`; the generator writes the web
+  and Keycloak stylesheets and mobile theme
+  ([ADR-0107](adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)).
 - **The token system's shape** —
   [architecture.md §5](architecture.md#5-client-design), decided in
   [ADR-0021](adr/0021-design-tokens-ui-primitives.md).
@@ -146,6 +146,20 @@ two-layer rule they sit in is
 | `--text-heading` | A section heading inside a page. | A section is headed by `SectionHeading` in `components/ui/`, in one of two looks. This token, in the display face, is the `heading` look: for a section whose heading is read as a sentence and which stands as a block of its own, such as an empty cellar, a sign-in prompt or the profile's visibility choice. The `label` look is `--text-label`: for a section whose heading only names the list or rack directly under it, such as the front page's feed, a beer's same-style list and the cellar summary. |
 | `--text-label` | Small tracked capitals that label rather than read. | Button text, badges, navigation and other one- or two-word labels, always `uppercase` and `font-semibold`, and `SectionHeading`'s `label` look. Never for a sentence. |
 | `--text-wordmark` | The name Kalia, set beside the mark. | The wordmark in the header, `uppercase` and `font-semibold`, in the working face at normal width and spaced wider than a label. Never for anything else: titles are `--font-display`, labels are `--text-label`. |
+| `--text-body` | Provisional app body text. | Ordinary app text until the mobile identity is chosen. |
+| `--weight-normal` | Ordinary text weight. | Provisional app body copy. |
+| `--weight-semibold` | Emphasised text weight. | Provisional app actions and leads. |
+| `--weight-bold` | Strong text weight. | Provisional app headings. |
+
+### Spacing
+
+| Token | Means | Reach for it when |
+|---|---|---|
+| `--spacing-small` | A small separation. | Provisional app text spacing. |
+| `--spacing-medium` | A regular separation. | Provisional app section spacing. |
+| `--spacing-large` | A generous separation. | Provisional app page padding. |
+| `--spacing-xlarge` | A larger separation. | Provisional app footer spacing. |
+| `--spacing-touch` | Minimum touch target. | Provisional app controls. |
 
 ### Shape
 
@@ -159,6 +173,8 @@ two-layer rule they sit in is
 | Token | Means | Reach for it when |
 |---|---|---|
 | `--animate-feed-reveal` | Content the visitor just asked to see, highlighted once so the eye finds it. | Feed entries shown by pressing "N new", and the catalog row of a beer the visitor has just added. Only under `motion-safe:`, so `prefers-reduced-motion` skips it; never on content that arrived without being asked for. |
+| `--duration-feed-reveal` | Duration of a reveal. | The feed reveal animation. |
+| `--easing-out` | A slowing movement. | The feed reveal animation. |
 
 There is no elevation token: nothing in this identity casts a shadow. A dialog
 or a toast is told from the page by its ink edge and, for a dialog, the scrim.
@@ -174,7 +190,7 @@ Porter from a Baltic Porter is the name's job, not the colour's.
 group by keyword, first match wins — so a Belgian IPA is an IPA, a Berliner
 Weisse is a sour before it is a wheat beer, and a Weizenbock is a wheat beer
 before it is a bock. Each group's colour is a `[data-beer-style]` block in
-`web/app/globals.css`. Its test fails if a group has no block or a block
+the generated web token stylesheet. Its test fails if a group has no block or a block
 has no group, and `scripts/check-contrast.mjs` holds every block to AA.
 
 | Group | Takes | Colour |

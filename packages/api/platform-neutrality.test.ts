@@ -20,7 +20,7 @@ const crossings = [
 ];
 
 describe("shared packages stay platform-neutral (ADR-0092)", () => {
-  describe.each(["api", "locales"])("@kalia/%s", (pkg) => {
+  describe.each(["api", "locales", "tokens"])("@kalia/%s", (pkg) => {
     it.each(crossings)("rejects $fixture", async ({ fixture }) => {
       const source = readFileSync(path.join(packagesDir, "eslint-fixtures/neutrality", `${fixture}.ts`), "utf8");
 

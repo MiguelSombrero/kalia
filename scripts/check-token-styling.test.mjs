@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 
 import { checkTokenStyling } from "./check-token-styling.mjs";
+import { tokens } from "../packages/tokens/src/tokens.ts";
 
 const globalsCss = [
   '@import "tailwindcss";',
@@ -29,15 +30,17 @@ const globalsCss = [
 ].join("\n");
 
 /** Builds a throwaway repository from `files` (path relative to the root → text). */
-function run(files, { css = globalsCss } = {}) {
+function run(files, { css = globalsCss, source = tokens } = {}) {
   const root = mkdtempSync(resolve(tmpdir(), "token-styling-check-"));
   try {
+    mkdirSync(resolve(root, "web"), { recursive: true });
+    mkdirSync(resolve(root, "mobile/src"), { recursive: true });
     const all = css === null ? files : { "web/app/globals.css": css, ...files };
     for (const [path, text] of Object.entries(all)) {
       mkdirSync(dirname(resolve(root, path)), { recursive: true });
       writeFileSync(resolve(root, path), text);
     }
-    return checkTokenStyling(root);
+    return checkTokenStyling(root, source);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -204,7 +207,26 @@ test("a failure names the file, the line and the way out", () => {
   assert.match(failure, /token-exception/);
 });
 
-test("a missing or token-less globals.css is reported rather than treated as nothing to check", () => {
-  assert.match(run({}, { css: null })[0], /globals\.css not found/);
-  assert.match(run({}, { css: ":root { --a: 1; }" })[0], /@theme/);
+test("mobile rejects literal color, typeface and static design values; exceptions work", () => {
+  for (const value of ['color: "#fff"', 'color: "red"', 'backgroundColor: "blue"', 'color: "rgb(0,0,0)"', 'className: "bg-red-500"', 'className: "bg-[red]"', 'className: "font-[Georgia]"', 'color: "var(--ink-950)"', 'fontFamily: "Georgia"', "fontSize: 12", "fontWeight: '700'", "padding: 8", "borderRadius: 4", "duration: 200"]) {
+    assert.ok(failing("mobile/src/example.tsx", `const style = { ${value} };\n`).length, value);
+  }
+  assert.deepEqual(failing("mobile/src/example.tsx", '// token-exception: native library requires literal\nconst style = { padding: 8 };\n'), []);
+  assert.deepEqual(failing("mobile/src/example.tsx", "const style = { padding: insets.top, borderWidth: StyleSheet.hairlineWidth };\n"), []);
+  assert.deepEqual(failing("mobile/src/example.tsx", 'const style = { fontFamily: theme.fonts.sans, backgroundColor: "transparent" };\n'), []);
+});
+
+test("missing client directories fail explicitly", () => {
+  const root = mkdtempSync(resolve(tmpdir(), "token-styling-missing-"));
+  try {
+    assert.throws(() => checkTokenStyling(root), /ENOENT/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("source changes teach the checker semantic names without an edit", () => {
+  const source = structuredClone(tokens);
+  source.colors.push({ name: "new-color", light: "white", dark: "white" });
+  assert.deepEqual(run({ "web/components/a.tsx": component("bg-[var(--color-new-color)]") }, { source }), []);
 });

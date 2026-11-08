@@ -159,6 +159,8 @@ build or run path.**
   rather than in TypeScript.
 - Neutral, because plain `StyleSheet` styling written now is rewritten when
   iteration 11 chooses a token format.
+  (Amended 2026-11-08: [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)
+  supplies the generated theme consumed by those styles.)
 - Neutral, because a physical device is unverified until the product owner
   decides to pay for what installing on one needs.
   (Amended 2026-11-03: a free Personal Team installs on the developer's own

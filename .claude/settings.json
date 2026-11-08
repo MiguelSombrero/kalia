@@ -1,7 +1,10 @@
 {
   "permissions": {
     "deny": [
-      "Edit(./packages/api/src/generated/**)"
+      "Edit(./packages/api/src/generated/**)",
+      "Edit(./web/app/tokens.generated.css)",
+      "Edit(./mobile/src/lib/design/theme.generated.ts)",
+      "Edit(./keycloak/themes/kalia/login/resources/css/tokens.generated.css)"
     ]
   },
   "hooks": {

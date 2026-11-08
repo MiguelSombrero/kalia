@@ -1,7 +1,7 @@
 # Shared packages
 
-Two npm workspaces that the web app and the mobile app both import, so the API
-contract and the translations each have one copy
+Shared npm workspaces keep the API contract, translations and design token
+source in one place
 ([ADR-0092](../docs/adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)).
 Each ships TypeScript source — `exports` point at `.ts` files, with no build
 step and no `dist/` — and the importing app compiles it. A package imports
@@ -12,6 +12,10 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
 | --- | --- | --- |
 | `@kalia/api` | `api/` | the API types and TanStack Query client generated from `backend/openapi.json`, and the platform-neutral fetch core |
 | `@kalia/locales` | `locales/` | every string, `en` and `fi`, in `src/{en,fi}/common.json` |
+| `@kalia/tokens` | `tokens/` | source values for the generated web, mobile and Keycloak themes |
+
+`node scripts/generate-tokens.mjs` regenerates the outputs from the token
+source; `node scripts/generate-tokens.mjs --check` detects drift without git.
 
 ## `@kalia/api`
 

@@ -173,6 +173,9 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   `font-[…]`. `scripts/check-token-styling.mjs` fails `make verify-fast`;
   `token-exception: <why>` excuses a literal ([ADR-0066](../docs/adr/0066-token-only-styling-is-a-build-check.md),
   [docs/design.md](../docs/design.md)).
+- **Token values are generated** from `packages/tokens/src/tokens.ts` by
+  `node scripts/generate-tokens.mjs`; do not edit the generated stylesheets
+  ([ADR-0107](../docs/adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)).
 - **A page renders through `<Page width="text" | "wide" | "narrow">`** in its
   `page`, `loading`, `error` and `not-found` files, with no container of its
   own ([ADR-0067](../docs/adr/0067-page-shell-sticky-bar-and-page-component.md)).

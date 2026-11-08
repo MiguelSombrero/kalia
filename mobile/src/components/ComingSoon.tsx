@@ -1,8 +1,11 @@
+import { theme } from "@/lib/design/theme.generated";
+import { useThemeColors } from "@/lib/design/useThemeColors";
 import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 export const ComingSoon = ({ heading }: { heading: string }) => {
+  const styles = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -15,8 +18,11 @@ export const ComingSoon = ({ heading }: { heading: string }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 24, backgroundColor: "#ffffff" },
-  heading: { fontSize: 28, fontWeight: "700", color: "#111111" },
-  notice: { marginTop: 8, fontSize: 17, color: "#444444" },
-});
+const useStyles = () => {
+  const colors = useThemeColors();
+  return StyleSheet.create({
+    screen: { flex: 1, padding: theme.spacing.large, backgroundColor: colors.background },
+    heading: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
+    notice: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },
+  });
+};

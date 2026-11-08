@@ -1,28 +1,10 @@
 #!/usr/bin/env node
-// A component styles itself with a colour or a typeface only through the
-// semantic token layer (ADR-0066, which makes ADR-0021's two-layer rule a
-// build failure). Plain Node with no dependencies, like check-comments.mjs,
-// and self-tested against fixtures because the real tree passes: a checker
-// that matched nothing would stay green.
-//
-// What is read: every .ts/.tsx/.css file under web/ except app/globals.css
-// (where values live), tests, e2e/ and tooling
-// directories. keycloak/themes/.../login.css is outside web/ and is a
-// separate origin's stylesheet that cannot import the app's tokens.
-//
-// The semantic layer is whatever globals.css declares inside an `@theme`
-// block; the primitive layer is every other custom property it declares. Both
-// are read from the file, so a re-theme changes what is checked without
-// touching this script.
-//
-// An exception is a `token-exception: <reason>` comment on the offending line
-// or the line above it. It must state a reason of at least three words, and it
-// must excuse something: a stale one fails, so an exception cannot outlive the
-// violation it was taken for.
+// ADR-0066: enforce the semantic token layer on both clients.
 
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, relative, sep } from "node:path";
+import { tokens } from "../packages/tokens/src/tokens.ts";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -68,25 +50,26 @@ const COLOUR_KEYWORD = /^(?:transparent|currentcolor|inherit|initial|unset)$/i;
  * @param {string} root repository root to check
  * @returns {string[]} one message per failure; empty means OK
  */
-export function checkTokenStyling(root) {
-  const cssPath = resolve(root, "web/app/globals.css");
-  let css;
-  try {
-    css = readFileSync(cssPath, "utf8");
-  } catch {
-    return [`web/app/globals.css not found at ${cssPath}`];
-  }
-  const layers = readLayers(css);
-  if (layers === null) {
-    return ["web/app/globals.css: no `@theme` block — nothing declares the semantic layer to check against"];
-  }
-
-  const web = resolve(root, "web");
+export function checkTokenStyling(root, source = tokens) {
+  const layers = {
+    theme: new Set([
+      ...source.colors.map((t) => `--color-${t.name}`),
+      ...source.fonts.map((t) => `--font-${t.name}`),
+      ...source.typography.map((t) => `--text-${t.name}`),
+      ...source.radius.map((t) => `--radius-${t.name}`),
+    ]),
+    primitive: new Set([
+      ...source.primitives.map((t) => `--${t.name}`),
+      ...source.colors.map((t) => `--${t.name}`),
+    ]),
+  };
   const failures = [];
-  for (const path of listFiles(web, root)) {
-    const rel = relative(root, path).split(sep).join("/");
-    for (const { line, message } of checkFile(readFileSync(path, "utf8"), layers)) {
-      failures.push(`${rel}:${line}: ${message}`);
+  for (const dir of ["web", "mobile/src"]) {
+    for (const path of listFiles(resolve(root, dir), root)) {
+      const rel = relative(root, path).split(sep).join("/");
+      for (const { line, message } of checkFile(readFileSync(path, "utf8"), layers, rel.startsWith("mobile/src/"))) {
+        failures.push(`${rel}:${line}: ${message}`);
+      }
     }
   }
   return failures;
@@ -94,12 +77,7 @@ export function checkTokenStyling(root) {
 
 function listFiles(dir, root) {
   const out = [];
-  let entries;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return out;
-  }
+  const entries = readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.name.startsWith(".")) continue;
     const full = resolve(dir, entry.name);
@@ -107,38 +85,15 @@ function listFiles(dir, root) {
     if (entry.isDirectory()) {
       if (IGNORED_DIRS.has(entry.name)) continue;
       out.push(...listFiles(full, root));
-    } else if (SCANNED.test(entry.name) && !TEST_FILE.test(entry.name) && rel !== "web/app/globals.css") {
+    } else if (SCANNED.test(entry.name) && !TEST_FILE.test(entry.name) && !["web/app/globals.css", "web/app/tokens.generated.css", "mobile/src/lib/design/theme.generated.ts"].includes(rel) && !rel.startsWith("mobile/src/testing/")) {
       out.push(full);
     }
   }
   return out;
 }
 
-/** The custom properties declared inside `@theme` blocks, and those declared anywhere else. */
-function readLayers(css) {
-  const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const blocks = [...source.matchAll(/@theme\b[^{;]*\{/g)];
-  if (blocks.length === 0) return null;
-
-  const theme = new Set();
-  let outside = source;
-  for (const block of [...blocks].reverse()) {
-    const open = block.index + block[0].length - 1;
-    let depth = 0;
-    let end = open;
-    for (; end < source.length; end++) {
-      if (source[end] === "{") depth++;
-      if (source[end] === "}" && --depth === 0) break;
-    }
-    for (const m of source.slice(open + 1, end).matchAll(/(--[\w-]+)\s*:/g)) theme.add(m[1]);
-    outside = outside.slice(0, block.index) + outside.slice(end + 1);
-  }
-  const primitive = new Set([...outside.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]));
-  return { theme, primitive };
-}
-
 /** @returns {{ line: number, message: string }[]} */
-function checkFile(text, { theme, primitive }) {
+function checkFile(text, { theme, primitive }, mobile = false) {
   const lines = text.split("\n").map((l) => l.replace(/\r$/, ""));
   const violations = [];
   const markers = [];
@@ -162,8 +117,16 @@ function checkFile(text, { theme, primitive }) {
     if (trimmed.startsWith("//")) return;
 
     const code = raw.replace(/\/\*.*?\*\//g, " ");
-    for (const { index, length, message } of findViolations(code, theme, primitive)) {
+    for (const { index, length, message } of findViolations(code, theme, primitive, mobile)) {
       violations.push({ line, index, length, message });
+    }
+    if (mobile) {
+      const designValue = /\b(?:fontSize|fontWeight|lineHeight|letterSpacing|padding(?:Top|Bottom|Left|Right|Vertical|Horizontal|Start|End)?|margin(?:Top|Bottom|Left|Right|Vertical|Horizontal|Start|End)?|gap|rowGap|columnGap|borderRadius|border(?:TopLeft|TopRight|BottomLeft|BottomRight)Radius|duration|minHeight|minWidth)\s*:\s*(?:["']\d+["']|-?\d+(?:\.\d+)?)/g;
+      for (const m of code.matchAll(designValue)) violations.push({ line, index: m.index, length: m[0].length, message: `static design value \`${m[0]}\`` });
+      const literalColor = /\b(?:color|backgroundColor|border(?:Top|Bottom|Left|Right|Start|End)?Color|shadowColor|textDecorationColor|tintColor|overlayColor)\s*:\s*(["'])(.*?)\1/g;
+      for (const m of code.matchAll(literalColor)) {
+        if (!COLOUR_KEYWORD.test(m[2])) violations.push({ line, index: m.index, length: m[0].length, message: `literal colour \`${m[0]}\`` });
+      }
     }
   });
 
@@ -210,7 +173,7 @@ function dropContained(violations) {
   return kept;
 }
 
-function* findViolations(code, theme, primitive) {
+function* findViolations(code, theme, primitive, mobile) {
   const hit = (m, message) => ({ index: m.index, length: m[0].length, message });
 
   for (const m of code.matchAll(HEX)) yield hit(m, `hex colour literal \`${m[0]}\``);
@@ -235,6 +198,7 @@ function* findViolations(code, theme, primitive) {
     if (primitive.has(m[1])) yield hit(m, `reference to the primitive layer \`${m[0]}…)\``);
   }
   for (const m of code.matchAll(FONT_FAMILY)) {
+    if (mobile && /^\s*theme\.fonts(?:\.[\w]+|\[["'][\w-]+["']\])\s*[,;}]/.test(m[1])) continue;
     const semantic = m[1].trim().match(/^["'`]?var\(\s*(--[\w-]+)\s*\)["'`]?[\s,;})]*$/);
     if (semantic && theme.has(semantic[1])) continue;
     yield hit(m, "typeface set by hand; use a `font-*` utility or `var(--font-…)` of a semantic font token");
@@ -248,7 +212,7 @@ const invokedDirectly =
 if (invokedDirectly) {
   const root = resolve(SELF_DIR, "..");
   const failures = checkTokenStyling(root);
-  console.log("Checking web/ styling against the semantic token layer (ADR-0066)\n");
+  console.log("Checking web and mobile styling against the semantic token layer (ADR-0066)\n");
   for (const f of failures) console.log(`  FAIL  ${f}`);
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

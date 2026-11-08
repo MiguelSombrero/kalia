@@ -74,11 +74,11 @@ const ROUTES = [
   },
   {
     check: checker("check-design-tokens.mjs"),
-    covers: (p) => p === "docs/design.md" || p === "web/app/globals.css",
+    covers: (p) => p === "docs/design.md" || p === "web/app/globals.css" || p === "packages/tokens/src/tokens.ts",
   },
   {
     check: checker("check-contrast.mjs"),
-    covers: (p) => p === "docs/design.md" || p === "web/app/globals.css",
+    covers: (p) => p === "docs/design.md" || p === "web/app/globals.css" || p === "packages/tokens/src/tokens.ts",
   },
   {
     check: checker("check-keycloak-theme.mjs"),
@@ -90,12 +90,18 @@ const ROUTES = [
   {
     check: checker("check-token-styling.mjs"),
     covers: (p) =>
+      p === "packages/tokens/src/tokens.ts" ||
+      (p.startsWith("mobile/src/") && /\.(tsx?|css)$/.test(p) && !/\.(test|spec)\.tsx?$/.test(p)) ||
       p === "web/app/globals.css" ||
       (p.startsWith("web/") &&
         /\.(tsx?|css)$/.test(p) &&
         !/\.(test|spec)\.tsx?$/.test(p) &&
         !p.startsWith("web/e2e/") &&
         !p.includes("/node_modules/")),
+  },
+  {
+    check: { label: "node scripts/generate-tokens.mjs --check", run: () => execFileSync("node", [resolve(ROOT, "scripts/generate-tokens.mjs"), "--check"], { cwd: ROOT, stdio: "pipe" }) },
+    covers: (p) => p === "packages/tokens/src/tokens.ts" || p === "scripts/generate-tokens.mjs" || p.endsWith("/tokens.generated.css") || p === "mobile/src/lib/design/theme.generated.ts",
   },
   {
     check: checker("check-comments.mjs"),

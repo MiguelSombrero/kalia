@@ -6,8 +6,8 @@ import { markBeer, markBottle, markFoam, markShapes, markStreak, markSvg, markTi
 const read = (file: string): string => readFileSync(path.resolve(__dirname, "..", file), "utf8");
 
 describe("the mark's raw values", () => {
-  it("are the primitives globals.css gives the mark's own tokens", () => {
-    const css = read("app/globals.css");
+  it("are the primitives the generated stylesheet gives the mark's own tokens", () => {
+    const css = read("app/tokens.generated.css");
 
     expect(css).toContain(`--teal-800: ${markTile};`);
     expect(css).toContain(`--sun-300: ${markBeer};`);

@@ -1,0 +1,117 @@
+type Platform = "web" | "mobile" | "keycloak";
+type Scoped = { name: string; platforms?: readonly Platform[] };
+type Primitive = Scoped & { value: `#${string}` };
+export type Color<Name extends string> = Scoped & { light: Name; dark: Name };
+type Font = Scoped & { values: Partial<Record<Platform, string>>; webVariation?: string };
+type Typography = Scoped & { size: string; lineHeight: string; letterSpacing?: string };
+type Dimension = Scoped & { value: string };
+type Variant<Name extends string> = Scoped & {
+  values: readonly { name: string; light: { background: Name; foreground: Name }; dark: { background: Name; foreground: Name } }[];
+};
+
+const primitives = [
+  { name: "white", value: "#ffffff" },
+  { name: "ink-950", value: "#121212" },
+  { name: "grey-600", value: "#555555" },
+  { name: "paper-100", value: "#f2f1ec" },
+  { name: "paper-300", value: "#e2e0d8" },
+  { name: "cobalt-700", value: "#2b37c9" },
+  { name: "cobalt-100", value: "#e3e5ff" },
+  { name: "green-700", value: "#17793b" },
+  { name: "red-600", value: "#c8223a" },
+  { name: "roast-950", value: "#141210" },
+  { name: "roast-900", value: "#2b2724" },
+  { name: "roast-600", value: "#6b4a35" },
+  { name: "straw-100", value: "#fff2b8" },
+  { name: "lemon-300", value: "#ffe94d" },
+  { name: "gold-400", value: "#ffcb45" },
+  { name: "amber-600", value: "#c9772a" },
+  { name: "hop-300", value: "#d4f06b" },
+  { name: "sky-200", value: "#a9d6ff" },
+  { name: "copper-700", value: "#b3472d" },
+  { name: "orange-400", value: "#ff8a3d" },
+  { name: "pink-300", value: "#ffa3c8" },
+  { name: "teal-800", value: "#005b57" },
+  { name: "sun-300", value: "#ffd84a" },
+  { name: "sun-500", value: "#f2b900" },
+  { name: "coral-400", value: "#ff7a59" },
+] as const satisfies readonly Primitive[];
+
+export type PrimitiveName = (typeof primitives)[number]["name"];
+
+export const tokens = {
+  primitives,
+  colors: [
+    { name: "background", light: "white", dark: "white", platforms: ["web", "mobile", "keycloak"] },
+    { name: "surface", light: "white", dark: "white", platforms: ["web", "mobile", "keycloak"] },
+    { name: "surface-sunken", light: "paper-100", dark: "paper-100", platforms: ["web", "mobile", "keycloak"] },
+    { name: "foreground", light: "ink-950", dark: "ink-950", platforms: ["web", "mobile", "keycloak"] },
+    { name: "muted-foreground", light: "grey-600", dark: "grey-600", platforms: ["web", "mobile", "keycloak"] },
+    { name: "border", light: "ink-950", dark: "ink-950", platforms: ["web", "mobile", "keycloak"] },
+    { name: "divider", light: "paper-300", dark: "paper-300", platforms: ["web", "mobile", "keycloak"] },
+    { name: "primary", light: "cobalt-700", dark: "cobalt-700", platforms: ["web", "mobile", "keycloak"] },
+    { name: "primary-foreground", light: "white", dark: "white" },
+    { name: "accent", light: "cobalt-100", dark: "cobalt-100" },
+    { name: "accent-foreground", light: "ink-950", dark: "ink-950" },
+    { name: "success", light: "green-700", dark: "green-700", platforms: ["web", "mobile", "keycloak"] },
+    { name: "success-foreground", light: "white", dark: "white" },
+    { name: "destructive", light: "red-600", dark: "red-600", platforms: ["web", "mobile", "keycloak"] },
+    { name: "destructive-foreground", light: "white", dark: "white", platforms: ["web", "mobile", "keycloak"] },
+    { name: "focus-ring", light: "cobalt-700", dark: "cobalt-700", platforms: ["web", "mobile", "keycloak"] },
+    { name: "style", light: "paper-300", dark: "paper-300" },
+    { name: "style-foreground", light: "ink-950", dark: "ink-950" },
+    { name: "mark-tile", light: "teal-800", dark: "teal-800" },
+    { name: "mark-beer", light: "sun-300", dark: "sun-300" },
+    { name: "mark-streak", light: "sun-500", dark: "sun-500" },
+    { name: "mark-bottle", light: "coral-400", dark: "coral-400" },
+    { name: "mark-foam", light: "white", dark: "white" },
+  ] satisfies readonly Color<PrimitiveName>[],
+  fonts: [
+    { name: "display", values: { web: "var(--font-archivo, sans-serif)", mobile: "system" }, webVariation: '"wdth" 125' },
+    { name: "sans", values: { web: "var(--font-archivo, sans-serif)", mobile: "system", keycloak: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }, platforms: ["web", "mobile", "keycloak"], webVariation: "normal" },
+  ] satisfies readonly Font[],
+  typography: [
+    { name: "display", size: "3rem", lineHeight: "1" },
+    { name: "name", size: "4rem", lineHeight: "0.95" },
+    { name: "title", size: "1.75rem", lineHeight: "1.1" },
+    { name: "heading", size: "1.5rem", lineHeight: "1.2" },
+    { name: "label", size: "0.75rem", lineHeight: "1rem", letterSpacing: "0.12em" },
+    { name: "wordmark", size: "0.875rem", lineHeight: "1rem", letterSpacing: "0.3em" },
+    { name: "body", size: "1rem", lineHeight: "1.5rem", platforms: ["mobile"] },
+  ] satisfies readonly Typography[],
+  weights: [
+    { name: "normal", value: "400", platforms: ["mobile"] },
+    { name: "semibold", value: "600", platforms: ["mobile"] },
+    { name: "bold", value: "700", platforms: ["mobile"] },
+  ] satisfies readonly Dimension[],
+  spacing: [
+    { name: "small", value: "0.5rem", platforms: ["mobile"] },
+    { name: "medium", value: "1rem", platforms: ["mobile"] },
+    { name: "large", value: "1.5rem", platforms: ["mobile"] },
+    { name: "xlarge", value: "2rem", platforms: ["mobile"] },
+    { name: "touch", value: "3rem", platforms: ["mobile"] },
+  ] satisfies readonly Dimension[],
+  radius: [
+    { name: "control", value: "0" },
+    { name: "surface", value: "0" },
+  ] satisfies readonly Dimension[],
+  duration: [{ name: "feed-reveal", value: "2400ms" }] satisfies readonly Dimension[],
+  easing: [{ name: "out", value: "ease-out" }] satisfies readonly Dimension[],
+  variants: [{
+    name: "beer-style",
+    values: [
+      { name: "stout", light: { background: "roast-950", foreground: "white" }, dark: { background: "roast-950", foreground: "white" } },
+      { name: "porter", light: { background: "roast-900", foreground: "white" }, dark: { background: "roast-900", foreground: "white" } },
+      { name: "brown-lager", light: { background: "roast-600", foreground: "white" }, dark: { background: "roast-600", foreground: "white" } },
+      { name: "light-lager", light: { background: "straw-100", foreground: "ink-950" }, dark: { background: "straw-100", foreground: "ink-950" } },
+      { name: "wheat", light: { background: "lemon-300", foreground: "ink-950" }, dark: { background: "lemon-300", foreground: "ink-950" } },
+      { name: "belgian-light", light: { background: "gold-400", foreground: "ink-950" }, dark: { background: "gold-400", foreground: "ink-950" } },
+      { name: "belgian-dark", light: { background: "amber-600", foreground: "ink-950" }, dark: { background: "amber-600", foreground: "ink-950" } },
+      { name: "ipa", light: { background: "hop-300", foreground: "ink-950" }, dark: { background: "hop-300", foreground: "ink-950" } },
+      { name: "pale-ale", light: { background: "sky-200", foreground: "ink-950" }, dark: { background: "sky-200", foreground: "ink-950" } },
+      { name: "english-ale", light: { background: "copper-700", foreground: "white" }, dark: { background: "copper-700", foreground: "white" } },
+      { name: "strong-ale", light: { background: "orange-400", foreground: "ink-950" }, dark: { background: "orange-400", foreground: "ink-950" } },
+      { name: "sour", light: { background: "pink-300", foreground: "ink-950" }, dark: { background: "pink-300", foreground: "ink-950" } },
+    ],
+  }] satisfies readonly Variant<PrimitiveName>[],
+} as const;
