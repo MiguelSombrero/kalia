@@ -77,6 +77,7 @@
 - **Acceptance criteria:** <!-- each criterion's own check re-run, then ticked, status set to `done` -->
 - **Iteration Done when:** <!-- re-verified, if this was the iteration's last task; otherwise "not the last task" -->
 
-<!-- Every PR in this repository is agent-authored (CLAUDE.md's Roles
-     section: the product owner does not code), so this line stays as-is. -->
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+<!-- Optional: include only the signature for the tool used, or omit it.
+     Claude Code: 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+     GitHub Copilot: 🤖 Generated with [GitHub Copilot](https://github.com/features/copilot)
+-->
