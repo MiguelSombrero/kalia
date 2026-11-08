@@ -426,7 +426,8 @@ to bound.
   outcome is a visual choice runs under the `design-task` skill and a
   `Kind: design` marker the task checker enforces; mockups are shown as
   Artifacts, never committed, and each design task records its choice in its
-  own ADR.
+  own ADR. Mobile design tasks use the route and evidence in
+  [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md).
 - [ADR-0063](0063-design-intent-has-its-own-document.md) — standing design
   intent lives in `docs/design.md`, outside the three homes on the glossary's
   model: meaning and intent, never a value, with every semantic token's
@@ -576,3 +577,4 @@ reasons and its rate is worth watching independently
 | [ADR-0076](0076-index-cells-are-synced-from-their-files.md) | An index cell that mirrors a file is synced from that file, not kept in step by hand | accepted | 2026-10-14 |
 | [ADR-0084](0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
 | [ADR-0085](0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |
+| [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md) | A mobile direction is explored as a mockup or native build, then signed off on the owner's phone | accepted | 2026-11-08 |

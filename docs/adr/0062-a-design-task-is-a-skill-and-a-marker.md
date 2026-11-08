@@ -4,6 +4,10 @@
 - **Date:** 2026-09-29
 - **Amended:** 2026-10-14 — `.gitignore` ignores every raster image, so the
   rule is enforced before a commit rather than only after a push
+- **Amended:** 2026-11-08 by
+  [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)
+  — mobile design tasks use framed Artifacts or native builds according to
+  what the direction must prove
 
 ## Context
 
@@ -43,7 +47,7 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   checker unless one acceptance criterion mentions built alternatives, so the
   product owner's choice cannot be left out of a design task's definition of
   done. An unknown value fails too.
-- **Where a direction is looked at.** Directions are self-contained HTML
+- **Web mockups.** For a web design task, directions are self-contained HTML
   mockups carrying real sample data, Finnish strings included
   ([ADR-0011](0011-i18next-localization.md)), published as private claude.ai
   Artifacts the product owner opens side by side. The skill names a fallback —
@@ -52,9 +56,10 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   a required step, as `CLAUDE.md` already holds of plugins. The chosen
   direction is then confirmed in the real app, in that browser pane, at both
   agreed widths.
-- **No screenshot leaves the machine.** None is committed, pushed or uploaded,
-  the pull request says in words what was seen at each width, and a capture
-  taken to look closely stays in the scratchpad. `CLAUDE.md` carries the rule
+- **No screenshot leaves the machine.** For a web design task, none is
+  committed, pushed or uploaded, the pull request says in words what was seen
+  at each width, and a capture taken to look closely stays in the scratchpad.
+  `CLAUDE.md` carries the rule
   because a capture can show something on the product owner's machine that
   nobody noticed, and a commit cannot be taken back. A prose rule alone is the
   shape [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) says
@@ -78,29 +83,40 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   chosen is always one the product owner actually saw.
 - **One task both chooses and builds, in one pull request, in one unbroken
   run.** The choice lives only in the product owner's eye and the ADR's words
-  until it is built, so the build is not handed to another session. Before the
-  pull request opens, the product owner signs off the built page live, in the
-  browser pane, against the chosen mockup, and the pull request records that
-  sign-off. A session interrupted after the choice resumes from the checkpoint
-  and the ADR, and shows the chosen direction again before building.
+  until it is built, so the build is not handed to another session. For a web
+  design task, before the pull request opens, the product owner signs off the
+  built page live in the browser pane against the chosen mockup, and the pull
+  request records that sign-off. Mobile sign-off follows
+  [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md).
+  A session interrupted after the choice resumes from the checkpoint and the
+  ADR, and shows the chosen direction again before building.
 - **Every design task writes its own ADR:** the directions shown, the one
   chosen, and why each other was rejected. Standing intent — what later tasks
   are held against — goes where
   [task 14](../tasks/iteration-7.5/14-where-design-intent-lives.md) decides, not
   into those ADRs.
-- **What "done" means** is the shape iteration 7.5's design tasks already use:
-  a criterion that the product owner chose from built alternatives, plus
-  behavioural tests of what shipped — skeletons matching the new layout,
-  `@axe-core/playwright` scans at both agreed widths, keyboard-only tests
-  where something became interactive.
+- **Web design-task evidence** keeps the shape iteration 7.5's design tasks
+  already use: a criterion that the product owner chose from built
+  alternatives, plus behavioural tests of what shipped — skeletons matching
+  the new layout, `@axe-core/playwright` scans at both agreed widths,
+  keyboard-only tests where something became interactive.
 - **The test rule stands.** [ADR-0026](0026-task-file-format.md) requires an
-  automated test in every task, and a design task satisfies it with those
-  behavioural tests of what it built. Of iteration 7.5's tasks 02–14, only
+  automated test in every task. A web design task satisfies it with the
+  behavioural tests above. A mobile design task's component tests cover the
+  changed behaviour where it is automatable, find each control by role and
+  accessible name, and render changed screens at the largest font scale
+  ([ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)).
+  Behaviour not suited to an automated component test, such as haptic feel,
+  is verified by the mobile task's explicit manual sign-off evidence. Of
+  iteration 7.5's tasks 02–14, only
   [task 12](../tasks/iteration-7.5/12-do-we-need-a-design-system.md) expects to
   take the documented exception for a task that produces no production code
   and therefore no new test, as iteration 7 task 05 and iteration 8 task 01
   did; the rest carry a test criterion of their own, and each is written in its
   own task, not here.
+- **Mobile design tasks use the evidence in
+  [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)**
+  instead of the web's widths and `axe` scans.
 
 **Not decided here:** any design. The first design decision is
 [task 03](../tasks/iteration-7.5/03-visual-identity.md), which is also where

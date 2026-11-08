@@ -1,6 +1,6 @@
 # Task 01: Decide how a mobile direction is prototyped and signed off
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 
@@ -101,17 +101,17 @@ is amended to match, so that one skill covers a web and a mobile design task.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the decision and the alternatives rejected, amends
+- [x] An ADR records the decision and the alternatives rejected, amends
       ADR-0062, and passes `node scripts/check-adrs.mjs`
-- [ ] `.claude/skills/design-task/SKILL.md` names the route for building,
+- [x] `.claude/skills/design-task/SKILL.md` names the route for building,
       showing and confirming a direction for the app, and what the pull
       request carries in place of widths and `axe` scans
-- [ ] Any change to the `Kind` rule is covered by `scripts/check-tasks.test.mjs`
+- [x] Any change to the `Kind` rule is covered by `scripts/check-tasks.test.mjs`
       and fails without the change, or the ADR says none was needed
-- [ ] The chosen route was rehearsed: one throwaway screen was shown to the
+- [x] The chosen route was rehearsed: one throwaway screen was shown to the
       product owner by it, and they confirmed it let them judge what a framed
       page could not
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
