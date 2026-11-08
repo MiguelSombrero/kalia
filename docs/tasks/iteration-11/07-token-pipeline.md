@@ -1,6 +1,6 @@
 # Task 07: One token source generates the web's CSS and the app's theme
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2
 
@@ -47,9 +47,7 @@ the same reasoned, visible exception marker.
   [mobile README](../../../mobile/README.md) both say "plain `StyleSheet` until
   iteration 11"; they are rewritten here, not left to a later sweep.
 
-**Settled at the 2026-11-07 refinement** (product owner); the task is refined
-once [task 06](06-decision-the-design-token-format.md)'s ADR lands, with the
-tests that ADR lists:
+**Settled at refinement, 2026-11-07 and 2026-11-08** (product owner):
 
 - **This task lands before the design tasks 02–05,** with the web's values as
   they are and the app's provisional ones, which tasks
@@ -62,34 +60,57 @@ tests that ADR lists:
 - **Keycloak's `login.css` custom properties are generated** from the same
   source, and ADR-0073 stands
   ([task 06](06-decision-the-design-token-format.md)).
+- **The app's provisional values reuse the web's existing semantic values and
+  dimensions,** with platform-specific font values as the ADR allows; tasks
+  [03](03-design-kalias-identity-on-a-phone.md) and
+  [04](04-decision-and-design-dark-mode.md) replace the app's values.
+- **The generated app theme lives under `mobile/src/lib/design/`.** The
+  existing styling checker covers `mobile/src/` as well as the web; tests and
+  generated files are exempt.
+- **Static design values represented by semantic token families** — colour,
+  typography, spacing, radius and motion — are read from the generated theme,
+  not written into screens. Runtime values supplied by the platform, such as
+  safe-area insets and `StyleSheet.hairlineWidth`, remain allowed; a static
+  value the token vocabulary cannot express uses the existing reasoned
+  `token-exception` marker.
 
 ## Open questions
 
-- **Domain.** The app's provisional values before task 03: the web's semantic
-  values, or today's literals given token names.
-- **Module boundaries.** Where the generated theme lives in `mobile/` and which
-  directories the check reads; whether the one script checks both apps or each
-  has its own.
-- **Edge cases.** Values the app genuinely needs that are not tokens — a
-  hairline width, a safe-area inset — and how the exception marker or the
-  vocabulary covers them.
-- **Completion signals.** What proves the web is unchanged: the generated CSS
-  compared with today's, or the contrast checker and the Playwright suite
-  alone.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The web's generated custom properties equal `web/app/globals.css`'s
-      before this task, value for value — a test compares them, and fails when
-      a token in the source changes without regenerating
-- [ ] A fixture test for the check shows each banned form in a `mobile/` file
-      failing it and an excusing marker passing, and the check fails against
-      a screen that writes `#ffffff`
-- [ ] No colour or typeface literal remains in `mobile/src` outside the
-      exemptions, and `make verify-fast` runs the check
+      before this task, token for token after resolving aliases; a test
+      compares them, and the web build and Playwright suite are unchanged
+- [ ] Generator tests prove drift is detected for source and generated-file
+      edits and fresh output passes; invalid aliases, duplicate names,
+      missing dark values and wrong-kind values fail with the token named,
+      with the package type-check covering missing aliases and modes
+- [ ] Generator tests prove platform-only tokens reach only their intended
+      outputs, font values reach each platform, units convert as ADR-0107
+      specifies, the app theme contains both modes while CSS outputs are light
+      only, repeated runs are byte-identical, and Tailwind emits the semantic
+      color and type utilities it uses, including opacity
+- [ ] Checker fixtures prove each banned styling form fails in both apps and
+      a valid `token-exception` passes; adding a semantic token requires no
+      checker edit, primitive references still fail, both directions of the
+      meaning-row check fail when mismatched, and a failing dark pairing fails
+      contrast validation
+- [ ] The beer-style variant group generates one web block and one keyed app
+      map, with every style passing contrast
+- [ ] Keycloak loads the generated stylesheet before `login.css`, rejects a
+      color literal in `login.css`, and renders its sign-in page in the same
+      colors as before
+- [ ] The token package's import-boundary test rejects imports from either app
+      and from `react-dom`, `next` or `react-native`, and
+      `.claude/settings.json` denies edits to every generated output
+- [ ] No static design value in `mobile/src` is written outside the generated
+      semantic theme and documented exemptions; platform runtime values remain
+      allowed, and `make verify-fast` runs the checks
 - [ ] `docs/architecture.md`, the mobile README and `docs/design.md` describe
       the pipeline, and no document still says styling is plain `StyleSheet`
-- [ ] `make verify-fast` is green, and the web's Playwright suite is unchanged
+- [ ] `make verify-fast` is green
 
 ## Notes
 
