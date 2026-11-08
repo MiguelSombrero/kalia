@@ -1,3 +1,5 @@
+import { theme } from "@/lib/design/theme.generated";
+import { useThemeColors } from "@/lib/design/useThemeColors";
 import type { Locale } from "@kalia/locales";
 import { useState } from "react";
 import { StyleSheet, Text } from "react-native";
@@ -10,6 +12,7 @@ import { createI18n } from "@/lib/i18n/createI18n";
 import { scrub } from "@/lib/log/deviceLog";
 
 const Content = ({ error, onRestart }: { error: Error; onRestart: () => void }) => {
+  const styles = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -40,9 +43,12 @@ export const CrashScreen = ({ locale, error, onRestart }: { locale: Locale; erro
   );
 };
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#ffffff" },
-  title: { fontSize: 28, fontWeight: "700", color: "#111111" },
-  detail: { marginTop: 8, fontSize: 13, color: "#8a1c1c" },
-  body: { marginTop: 8, fontSize: 17, color: "#444444" },
-});
+const useStyles = () => {
+  const colors = useThemeColors();
+  return StyleSheet.create({
+    screen: { flex: 1, justifyContent: "center", padding: theme.spacing.large, backgroundColor: colors.background },
+    title: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
+    detail: { marginTop: theme.spacing.small, fontSize: theme.typography.label.size, color: colors.destructive },
+    body: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },
+  });
+};

@@ -224,6 +224,9 @@ day-to-day rules ([web/README.md](../web/README.md),
 - **Token-driven styling,** one set of primitives, no component library
   ([ADR-0021](adr/0021-design-tokens-ui-primitives.md), [ADR-0073](adr/0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)); intent is in
   [docs/design.md](design.md).
+- **One shared token source generates** the web's stylesheet, mobile theme
+  and Keycloak's stylesheet; each client keeps its own components
+  ([ADR-0107](adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)).
 - **Loading, error and empty states have one standard shape**
   ([ADR-0022](adr/0022-loading-error-empty-states.md)).
 - **WCAG 2.2 AA** ([ADR-0075](adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)).

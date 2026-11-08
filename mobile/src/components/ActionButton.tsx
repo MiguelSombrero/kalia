@@ -1,28 +1,36 @@
+import { theme } from "@/lib/design/theme.generated";
+import { useThemeColors } from "@/lib/design/useThemeColors";
 import { Pressable, StyleSheet, Text } from "react-native";
 
-export const ActionButton = ({ label, onPress, busy = false }: { label: string; onPress: () => void; busy?: boolean }) => (
-  <Pressable
-    role="button"
-    accessibilityLabel={label}
-    accessibilityState={{ busy, disabled: busy }}
-    disabled={busy}
-    onPress={onPress}
-    style={[styles.button, busy && styles.buttonBusy]}
-  >
-    <Text style={styles.buttonText}>{label}</Text>
-  </Pressable>
-);
+export const ActionButton = ({ label, onPress, busy = false }: { label: string; onPress: () => void; busy?: boolean }) => {
+  const styles = useStyles();
+  return (
+    <Pressable
+      role="button"
+      accessibilityLabel={label}
+      accessibilityState={{ busy, disabled: busy }}
+      disabled={busy}
+      onPress={onPress}
+      style={[styles.button, busy && styles.buttonBusy]}
+    >
+      <Text style={styles.buttonText}>{label}</Text>
+    </Pressable>
+  );
+};
 
-const styles = StyleSheet.create({
-  button: {
-    alignSelf: "flex-start",
-    marginTop: 24,
-    minHeight: 48,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    backgroundColor: "#111111",
-  },
-  buttonBusy: { opacity: 0.5 },
-  buttonText: { fontSize: 17, fontWeight: "600", color: "#ffffff" },
-});
+const useStyles = () => {
+  const colors = useThemeColors();
+  return StyleSheet.create({
+    button: {
+      alignSelf: "flex-start",
+      marginTop: theme.spacing.large,
+      minHeight: theme.spacing.touch,
+      justifyContent: "center",
+      paddingHorizontal: theme.spacing.large,
+      borderRadius: theme.radius.control,
+      backgroundColor: colors.foreground,
+    },
+    buttonBusy: { opacity: 0.5 },
+    buttonText: { fontSize: theme.typography.body.size, fontWeight: theme.weights.semibold, color: colors.background },
+  });
+};

@@ -286,7 +286,13 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **Every string comes from `@kalia/locales`** ([ADR-0011](../docs/adr/0011-i18next-localization.md)).
 - **WCAG 2.2 AA** ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)):
   tabs have accessibility labels, headings the heading role, no `allowFontScaling={false}`.
-- **Styling is plain `StyleSheet` until [iteration 11](../docs/tasks/iteration-11.md)** ([ADR-0066](../docs/adr/0066-token-only-styling-is-a-build-check.md)).
+- **Use the generated semantic theme for static styling**, selecting colours
+  with `useColorScheme`; the provisional font is the system default.
+  Edit `packages/tokens/src/tokens.ts` and regenerate with
+  `node scripts/generate-tokens.mjs`; never edit generated files. Runtime
+  platform values remain allowed; a value without a semantic token needs a
+  reasoned `token-exception` ([ADR-0066](../docs/adr/0066-token-only-styling-is-a-build-check.md),
+  [ADR-0107](../docs/adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)).
 
 ## Traps — do not "fix" these
 

@@ -74,8 +74,8 @@ describe("beerStyleGroup", () => {
 });
 
 describe("beerStyleGroups", () => {
-  it("has a [data-beer-style] block in globals.css for every group but other, and no block for anything else", () => {
-    const css = readFileSync(resolve(import.meta.dirname, "../app/globals.css"), "utf8");
+  it("has a generated block for every group but other, and no block for anything else", () => {
+    const css = readFileSync(resolve(import.meta.dirname, "../app/tokens.generated.css"), "utf8");
     const blocks = [...css.matchAll(/\[data-beer-style="([^"]+)"\]/g)].map((m) => m[1]).sort();
 
     expect(blocks).toEqual(beerStyleGroups.filter((g) => g !== "other").sort());

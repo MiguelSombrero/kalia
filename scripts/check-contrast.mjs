@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-// Every colour pairing docs/design.md declares, and every beer-style colour
-// globals.css defines, meets WCAG 2.2 AA. jsdom cannot evaluate rendered
-// colour, so without this a token that breaks contrast passes every unit test
-// and fails only in Playwright (ADR-0021's Bad consequence). Plain Node with no
-// dependencies, self-tested against fixtures like check-design-tokens.mjs.
+// ADR-0107: hold documented pairings and variants to WCAG AA in both modes.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { tokens } from "../packages/tokens/src/tokens.ts";
+import { validateTokens } from "./generate-tokens.mjs";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 const NEEDS = { text: 4.5, "non-text": 3 };
@@ -39,32 +37,21 @@ function expand(hex) {
  * @param {string} root repository root to check
  * @returns {{ failures: string[], results: { label: string, ratio: number, needs: number }[] }}
  */
-export function checkContrast(root) {
-  let css;
+export function checkContrast(root, source = tokens) {
   let design;
-  try {
-    css = readFileSync(resolve(root, "web/app/globals.css"), "utf8");
-  } catch {
-    return { failures: ["web/app/globals.css not found"], results: [] };
-  }
   try {
     design = readFileSync(resolve(root, "docs/design.md"), "utf8");
   } catch {
     return { failures: ["docs/design.md not found"], results: [] };
   }
 
-  const blocks = parseBlocks(css);
-  const rootScope = new Map();
-  const themeTokens = new Set();
-  const styleBlocks = [];
-  for (const { selector, decls } of blocks) {
-    if (selector === ":root" || selector.startsWith("@theme")) {
-      for (const [k, v] of decls) rootScope.set(k, v);
-      if (selector.startsWith("@theme")) for (const k of decls.keys()) themeTokens.add(k);
-    }
-    const style = selector.match(/^\[data-beer-style="([^"]+)"\]$/);
-    if (style) styleBlocks.push({ name: style[1], decls });
+  try {
+    validateTokens(source);
+  } catch (error) {
+    return { failures: [error.message], results: [] };
   }
+  const primitives = new Map(source.primitives.map((token) => [token.name, token.value]));
+  const colors = new Map(source.colors.map((token) => [`--color-${token.name}`, token]));
 
   const pairings = declaredPairings(design);
   if (pairings === null) {
@@ -85,35 +72,20 @@ export function checkContrast(root) {
       failures.push(`docs/design.md: ${label} has kind "${kind}"; use "text" or "non-text"`);
       continue;
     }
-    const missing = [fg, bg].filter((t) => !themeTokens.has(t));
+    const missing = [fg, bg].filter((t) => !colors.has(t));
     if (missing.length > 0) {
-      failures.push(`docs/design.md: ${label} names \`${missing[0]}\`, which no @theme block declares`);
+      failures.push(`docs/design.md: ${label} names \`${missing[0]}\`, which the token source does not declare`);
       continue;
     }
-    const colours = [fg, bg].map((t) => resolveColour(t, rootScope));
-    const unresolved = [fg, bg].find((_, i) => colours[i] === null);
-    if (unresolved) {
-      failures.push(`${label}: cannot resolve \`${unresolved}\` to a #hex colour`);
-      continue;
-    }
-    judge(label, colours[0], colours[1], NEEDS[kind]);
+    for (const mode of ["light", "dark"]) judge(`${label} (${mode})`, primitives.get(colors.get(fg)[mode]), primitives.get(colors.get(bg)[mode]), NEEDS[kind]);
   }
 
-  for (const { name, decls } of styleBlocks) {
-    const label = `[data-beer-style="${name}"]`;
-    const missing = ["--style", "--style-foreground"].filter((k) => !decls.has(k));
-    if (missing.length > 0) {
-      failures.push(`globals.css: ${label} does not set ${missing.join(" and ")}`);
-      continue;
+  for (const group of source.variants) {
+    for (const variant of group.values) {
+      for (const mode of ["light", "dark"]) {
+        judge(`[data-${group.name}="${variant.name}"] (${mode})`, primitives.get(variant[mode].foreground), primitives.get(variant[mode].background), NEEDS.text);
+      }
     }
-    const scope = new Map([...rootScope, ...decls]);
-    const fg = resolveColour("--style-foreground", scope);
-    const bg = resolveColour("--style", scope);
-    if (fg === null || bg === null) {
-      failures.push(`globals.css: ${label}: cannot resolve its colours to #hex`);
-      continue;
-    }
-    judge(label, fg, bg, NEEDS.text);
   }
 
   return { failures, results };
@@ -162,7 +134,7 @@ const invokedDirectly =
 
 if (invokedDirectly) {
   const { failures, results } = checkContrast(resolve(SELF_DIR, ".."));
-  console.log("Checking WCAG 2.2 AA contrast of docs/design.md's pairings and globals.css's beer-style colours\n");
+  console.log("Checking WCAG 2.2 AA contrast of semantic pairings and beer-style colours in both modes\n");
   for (const r of results) {
     console.log(`  ${r.ratio >= r.needs ? "ok  " : "FAIL"}  ${r.ratio.toFixed(2).padStart(5)}:1  (needs ${r.needs}:1)  ${r.label}`);
   }

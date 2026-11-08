@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-07
+- **Amended:** 2026-11-08 — the app uses the platform's default system font
+  provisionally; task 03 decides whether to bundle a font.
 
 ## Context
 
@@ -70,8 +72,10 @@ types (no `enum`, no `namespace`).
   dozen colours and a font, not the vocabulary. A token that exists on one
   platform only says so in its own entry. A token whose material differs by
   platform, which is the font family (the web's comes from `next/font`, the
-  app's from a loaded font, Keycloak's is a system stack), carries a value per
-  platform under the same rule, rather than three tokens with three names.
+  app's is provisionally the platform default, Keycloak's is a system stack),
+  carries a value per platform under the same rule, rather than three tokens
+  with three names. A loaded app font remains an option for
+  [task 03](../tasks/iteration-11/03-design-kalias-identity-on-a-phone.md).
 - *What stays outside it.* What a token means stays a row in
   [`docs/design.md`](../design.md); the source holds values, not meaning.
 

@@ -1,8 +1,8 @@
-export const markTile = "#005b57"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to globals.css
-export const markBeer = "#ffd84a"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to globals.css
-export const markStreak = "#f2b900"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to globals.css
-export const markBottle = "#ff7a59"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to globals.css
-export const markFoam = "#ffffff"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to globals.css
+export const markTile = "#005b57"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to generated tokens
+export const markBeer = "#ffd84a"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to generated tokens
+export const markStreak = "#f2b900"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to generated tokens
+export const markBottle = "#ff7a59"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to generated tokens
+export const markFoam = "#ffffff"; // token-exception: ImageResponse cannot read CSS; kaliaMark.test.ts pins it to generated tokens
 
 type FillPaint = "tile" | "beer" | "foam";
 type LinePaint = "streak" | "bottle";

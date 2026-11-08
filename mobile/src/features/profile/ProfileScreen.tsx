@@ -1,3 +1,5 @@
+import { theme } from "@/lib/design/theme.generated";
+import { useThemeColors } from "@/lib/design/useThemeColors";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,6 +11,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useMyProfile } from "./hooks/useMyProfile";
 
 const SignedOut = ({ expired }: { expired: boolean }) => {
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const { signIn } = useAuth();
   const [failed, setFailed] = useState(false);
@@ -36,6 +39,7 @@ const SignedOut = ({ expired }: { expired: boolean }) => {
 };
 
 const SignedIn = () => {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { signOut } = useAuth();
   const profile = useMyProfile();
@@ -57,6 +61,7 @@ const SignedIn = () => {
 };
 
 export const ProfileScreen = () => {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { state } = useAuth();
 
@@ -72,10 +77,13 @@ export const ProfileScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 24, backgroundColor: "#ffffff" },
-  heading: { fontSize: 28, fontWeight: "700", color: "#111111" },
-  lead: { marginTop: 16, fontSize: 20, fontWeight: "600", color: "#111111" },
-  body: { marginTop: 8, fontSize: 17, color: "#444444" },
-  notice: { marginTop: 16, fontSize: 17, color: "#8a1c1c" },
-});
+const useStyles = () => {
+  const colors = useThemeColors();
+  return StyleSheet.create({
+    screen: { flex: 1, padding: theme.spacing.large, backgroundColor: colors.background },
+    heading: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
+    lead: { marginTop: theme.spacing.medium, fontSize: theme.typography.heading.size, fontWeight: theme.weights.semibold, color: colors.foreground },
+    body: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },
+    notice: { marginTop: theme.spacing.medium, fontSize: theme.typography.body.size, color: colors.destructive },
+  });
+};

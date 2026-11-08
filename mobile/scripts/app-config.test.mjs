@@ -29,6 +29,10 @@ const evaluate = (at, teamId) => {
 
 const NOW = Date.UTC(2026, 10, 4, 12, 0, 0);
 
+test("native appearance follows the system", () => {
+  assert.equal(evaluate(NOW).config.userInterfaceStyle, "automatic");
+});
+
 test("the team identifier in the environment reaches the iOS config, beside the rest of it", () => {
   const { ios } = evaluate(NOW, "AB12CD34EF").config;
   assert.equal(ios.appleTeamId, "AB12CD34EF");

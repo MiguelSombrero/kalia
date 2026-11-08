@@ -1,13 +1,10 @@
 #!/usr/bin/env node
-// Every token globals.css's `@theme` blocks declare has exactly one
-// meaning row in docs/design.md, and every row names a token that still exists
-// (ADR-0063). Plain Node with no dependencies, like check-glossary.mjs, and
-// self-tested against fixtures for the same reason: the real tree never trips
-// it once docs/design.md is current.
+// ADR-0063: each semantic token has one meaning row.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { tokens } from "../packages/tokens/src/tokens.ts";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -15,16 +12,9 @@ const SELF_DIR = dirname(fileURLToPath(import.meta.url));
  * @param {string} root repository root to check
  * @returns {string[]} one message per failure; empty means OK
  */
-export function checkDesignTokens(root) {
-  const cssPath = resolve(root, "web/app/globals.css");
+export function checkDesignTokens(root, source = tokens) {
   const designPath = resolve(root, "docs/design.md");
 
-  let css;
-  try {
-    css = readFileSync(cssPath, "utf8");
-  } catch {
-    return [`web/app/globals.css not found at ${cssPath}`];
-  }
   let design;
   try {
     design = readFileSync(designPath, "utf8");
@@ -32,10 +22,17 @@ export function checkDesignTokens(root) {
     return [`docs/design.md not found at ${designPath}`];
   }
 
-  const declared = themeTokens(css);
-  if (declared === null) {
-    return ["web/app/globals.css: no `@theme` block — nothing declares the semantic layer"];
-  }
+  const declared = [
+    ...source.colors.map((t) => `--color-${t.name}`),
+    ...source.fonts.map((t) => `--font-${t.name}`),
+    ...source.typography.map((t) => `--text-${t.name}`),
+    ...source.spacing.map((t) => `--spacing-${t.name}`),
+    ...source.weights.map((t) => `--weight-${t.name}`),
+    ...source.radius.map((t) => `--radius-${t.name}`),
+    ...source.duration.map((t) => `--duration-${t.name}`),
+    ...source.easing.map((t) => `--easing-${t.name}`),
+    ...(themeTokens(readFileSync(resolve(root, "web/app/globals.css"), "utf8")) ?? []),
+  ];
   const rows = meaningRows(design);
   if (rows === null) {
     return ['docs/design.md: no "## Semantic tokens" section to hold each token\'s meaning'];
@@ -46,7 +43,7 @@ export function checkDesignTokens(root) {
     const count = rows.filter((r) => r === token).length;
     if (count === 0) {
       failures.push(
-        `docs/design.md: \`${token}\` is declared in a globals.css @theme block but has no meaning row ` +
+        `docs/design.md: \`${token}\` is declared in the token source but has no meaning row ` +
           `(add one under "## Semantic tokens")`,
       );
     } else if (count > 1) {
@@ -57,7 +54,7 @@ export function checkDesignTokens(root) {
     if (!declared.includes(token)) {
       failures.push(
         `docs/design.md: the "Semantic tokens" section has a row for \`${token}\`, ` +
-          `which no globals.css @theme block declares`,
+          `which the token source does not declare`,
       );
     }
   }
@@ -112,7 +109,7 @@ const invokedDirectly =
 if (invokedDirectly) {
   const root = resolve(SELF_DIR, "..");
   const failures = checkDesignTokens(root);
-  console.log(`Checking docs/design.md against globals.css's @theme tokens\n`);
+  console.log("Checking docs/design.md against semantic tokens\n");
   for (const f of failures) console.log(`  FAIL  ${f}`);
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

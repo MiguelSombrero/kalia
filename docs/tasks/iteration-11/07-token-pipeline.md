@@ -1,6 +1,6 @@
 # Task 07: One token source generates the web's CSS and the app's theme
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2
 
@@ -80,37 +80,37 @@ the same reasoned, visible exception marker.
 
 ## Acceptance criteria
 
-- [ ] The web's generated custom properties equal `web/app/globals.css`'s
+- [x] The web's generated custom properties equal `web/app/globals.css`'s
       before this task, token for token after resolving aliases; a test
       compares them, and the web build and Playwright suite are unchanged
-- [ ] Generator tests prove drift is detected for source and generated-file
+- [x] Generator tests prove drift is detected for source and generated-file
       edits and fresh output passes; invalid aliases, duplicate names,
       missing dark values and wrong-kind values fail with the token named,
       with the package type-check covering missing aliases and modes
-- [ ] Generator tests prove platform-only tokens reach only their intended
+- [x] Generator tests prove platform-only tokens reach only their intended
       outputs, font values reach each platform, units convert as ADR-0107
       specifies, the app theme contains both modes while CSS outputs are light
       only, repeated runs are byte-identical, and Tailwind emits the semantic
       color and type utilities it uses, including opacity
-- [ ] Checker fixtures prove each banned styling form fails in both apps and
+- [x] Checker fixtures prove each banned styling form fails in both apps and
       a valid `token-exception` passes; adding a semantic token requires no
       checker edit, primitive references still fail, both directions of the
       meaning-row check fail when mismatched, and a failing dark pairing fails
       contrast validation
-- [ ] The beer-style variant group generates one web block and one keyed app
+- [x] The beer-style variant group generates one web block and one keyed app
       map, with every style passing contrast
-- [ ] Keycloak loads the generated stylesheet before `login.css`, rejects a
+- [x] Keycloak loads the generated stylesheet before `login.css`, rejects a
       color literal in `login.css`, and renders its sign-in page in the same
       colors as before
-- [ ] The token package's import-boundary test rejects imports from either app
+- [x] The token package's import-boundary test rejects imports from either app
       and from `react-dom`, `next` or `react-native`, and
       `.claude/settings.json` denies edits to every generated output
-- [ ] No static design value in `mobile/src` is written outside the generated
+- [x] No static design value in `mobile/src` is written outside the generated
       semantic theme and documented exemptions; platform runtime values remain
       allowed, and `make verify-fast` runs the checks
-- [ ] `docs/architecture.md`, the mobile README and `docs/design.md` describe
+- [x] `docs/architecture.md`, the mobile README and `docs/design.md` describe
       the pipeline, and no document still says styling is plain `StyleSheet`
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
