@@ -1,5 +1,6 @@
 import { AuthRequest, exchangeCodeAsync, refreshAsync } from "expo-auth-session";
 import { createKeycloakClient, discoveryFor } from "./keycloakClient";
+import { redirectAuthCallback } from "./redirectAuthCallback";
 
 jest.mock("expo-auth-session", () => ({
   AuthRequest: jest.fn(),
@@ -66,6 +67,18 @@ describe("sign-in", () => {
       kind: "granted",
       grant: { accessToken: "access", refreshToken: "refresh", expiresInSeconds: 300 },
     });
+
+  });
+
+  it("keeps the active screen when the browser returns and restores cold-start routing", async () => {
+    prompt.mockImplementation(async () => {
+      expect(redirectAuthCallback("kalia://auth/callback?code=the-code")).toBe("");
+      return { type: "cancel" };
+    });
+
+    await createKeycloakClient({ keycloakOrigin: ORIGIN }).authorize("en");
+
+    expect(redirectAuthCallback("kalia://auth/callback?code=the-code")).toBe("/profile");
   });
 
   it.each([

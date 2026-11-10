@@ -69,6 +69,15 @@ anything a visitor sees; the `design-task` skill and
 
 ---
 
+## Mobile navigation
+
+Feed, Catalog, a central Add action, Cellar and Profile stay in that order.
+Add, filters and beer details open as sheets with a visible dismissal; the
+platform supplies its own navigation chrome. Icons shown in the navigation
+prototype are placeholders awaiting their own design. Screen-specific layout
+remains for the corresponding screen task.
+([ADR-0109](adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md))
+
 ## Feel
 
 Can art drawn with a ruler. Kalia should feel like a shelf of craft-beer cans

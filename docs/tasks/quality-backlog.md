@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-137
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-138
 
 ## MUST
 
@@ -264,6 +264,11 @@ None open.
   `catalogShows` asserts a beer's absence after `networkidle`, which can pass
   before the catalog's streamed results render, so "a rejected beer is withheld"
   could pass vacuously; it needs a positive signal that the results are in.
+- **COULD-138** *(confirmed 2026-11-10)* — In the built mobile navigation on
+  the product owner's iPhone, a gray shape resembling parts of another tab
+  icon is visible beneath the central Add circle, with two small legs below it.
+  Reproduce the overlap on-device, identify its cause and remove it without
+  changing the approved navigation or the action's accessibility.
 
 ## Retired
 

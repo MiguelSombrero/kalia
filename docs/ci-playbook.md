@@ -99,6 +99,10 @@ stack's containers come up healthy. The 5-minute default overran on `dev` itself
 `web/playwright.config.ts`'s `webServer.timeout` — raised to 12 min. If it
 still overruns, the build itself is the thing to speed up (layer-cache the
 image in a CI step, then `docker compose up` without `--build`), not the timer.
+In run `42762695643` (PR 610), the 12-minute timeout instead caught backend
+and keycloak-config image builds retrying Ubuntu package downloads while
+concurrent image scans reported a mirror sync and a package 404. Retry after
+the mirror recovers; the scan logs distinguish this from a slow web build.
 
 **`Error: Process from config.webServer was not able to start. Exit code: 1`
 — no test ran.** This is the same `docker compose up --build` failing outright

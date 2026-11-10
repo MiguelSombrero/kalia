@@ -1,6 +1,6 @@
 # Task 02: Design how the app is navigated
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -80,16 +80,16 @@ platforms' conventions where those differ.
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the tab
+- [x] The product owner chose from built alternatives, at minimum the tab
       structure, the central action and sheet against pushed screen, judged
       by the route task 01 chose; an ADR records the directions and the choice
-- [ ] A component test shows each tab reachable by its accessible name and the
+- [x] A component test shows each tab reachable by its accessible name and the
       chosen sheets dismissible without a gesture
-- [ ] A Maestro flow visits every tab and opens and dismisses a sheet on
+- [x] A Maestro flow visits every tab and opens and dismisses a sheet on
       Android, and was confirmed to fail against the iteration 9 shell
-- [ ] The product owner signed off the built navigation live, on the route
+- [x] The product owner signed off the built navigation live, on the route
       task 01 chose, next to the chosen direction
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

@@ -1,7 +1,7 @@
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
@@ -12,28 +12,15 @@ import { useMyProfile } from "./hooks/useMyProfile";
 
 const SignedOut = ({ expired }: { expired: boolean }) => {
   const styles = useStyles();
-  const { t, i18n } = useTranslation();
-  const { signIn } = useAuth();
-  const [failed, setFailed] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
-
-  const start = async () => {
-    setFailed(false);
-    setSigningIn(true);
-    try {
-      setFailed((await signIn(i18n.language)) === "failed");
-    } finally {
-      setSigningIn(false);
-    }
-  };
+  const { t } = useTranslation();
+  const router = useRouter();
 
   return (
     <View>
       <Text style={styles.lead}>{t("profile.signIn.title")}</Text>
       <Text style={styles.body}>{t("profile.signIn.hint")}</Text>
-      {expired && !failed ? <Text style={styles.notice}>{t("session.expired")}</Text> : null}
-      {failed ? <Text style={styles.notice}>{t("session.signInFailed")}</Text> : null}
-      <ActionButton label={t("profile.signIn.action")} onPress={() => void start()} busy={signingIn} />
+      {expired ? <Text style={styles.notice}>{t("session.expired")}</Text> : null}
+      <ActionButton label={t("profile.signIn.action")} onPress={() => router.push("/sign-in-sheet")} />
     </View>
   );
 };
@@ -67,12 +54,14 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
-      <Text role="heading" style={styles.heading}>
-        {t("profile.title")}
-      </Text>
-      {state.status === "signedOut" ? <SignedOut expired={state.expired} /> : null}
-      {state.status === "signedIn" ? <SignedIn /> : null}
-      <BuildInfo />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text role="heading" style={styles.heading}>
+          {t("profile.title")}
+        </Text>
+        {state.status === "signedOut" ? <SignedOut expired={state.expired} /> : null}
+        {state.status === "signedIn" ? <SignedIn /> : null}
+        <BuildInfo />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -80,7 +69,8 @@ export const ProfileScreen = () => {
 const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
-    screen: { flex: 1, padding: theme.spacing.large, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.background },
+    content: { padding: theme.spacing.large },
     heading: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
     lead: { marginTop: theme.spacing.medium, fontSize: theme.typography.heading.size, fontWeight: theme.weights.semibold, color: colors.foreground },
     body: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },

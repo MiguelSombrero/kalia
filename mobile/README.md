@@ -49,6 +49,11 @@ Release targets: `mobile-ios-release`, `mobile-android-release`, `mobile-ios-dev
 `make mobile-start` alone starts Metro for an installed build. Its port is its
 own because 8081 is Keycloak's: never type one.
 
+Feed, Catalog, Cellar and Profile are tabs; the central Add action opens a
+sheet and points to the catalog until scanning arrives. Signed-out Cellar and
+Profile open a sign-in sheet from their current context; credentials stay in
+the system browser ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)).
+
 ### When it does not work
 
 - **A build fails naming no version:** run `make mobile-doctor`.

@@ -235,6 +235,9 @@ day-to-day rules ([web/README.md](../web/README.md),
 
 - **Expo Router,** a development build, with `ios/` and `android/` generated
   and never committed ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)).
+- **Four destination tabs and a central Add sheet** share one navigation
+  structure across platforms; sign-in opens from its initiating context
+  ([ADR-0109](adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)).
 - **The web's conventions carry over** where they are not about the browser
   ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)); ESLint enforces the layers and the generated client's isolation
   ([ADR-0012](adr/0012-orval-api-client.md)).

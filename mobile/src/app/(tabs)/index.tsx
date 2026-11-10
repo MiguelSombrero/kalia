@@ -1,1 +1,5 @@
-export { FeedScreen as default } from "@/features/feed";
+import { Redirect } from "expo-router";
+
+const Index = () => <Redirect href="/catalog" />;
+
+export default Index;

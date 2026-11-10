@@ -46,6 +46,9 @@ action goes empty but evident in the layout.
   a signed-out visitor, since the catalog is public, and keeps the sign-in
   redirect intact
   ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
+- A deep link into a beer opens it in Catalog with the Catalog root beneath
+  it, so dismissal returns there as required by
+  [task 02](02-design-the-interaction-model-and-navigation.md).
 - Tokens and primitives only; accessible in platform terms, built for
   [task 11](11-mobile-accessibility-conventions.md) to check; every string in
   `en` and `fi`.
@@ -82,7 +85,8 @@ once the design tasks' ADRs land:
       largest font scale reading in full
 - [ ] A Maestro flow opens a seeded beer from the list and returns on Android,
       and was confirmed to fail without the screen
-- [ ] A test shows the deep link opening the beer, signed out
+- [ ] A test shows the deep link opening the beer, signed out, and dismissal
+      returning to the Catalog root
 - [ ] The product owner used the screen on the route task 01 chose and signed
       it off
 - [ ] `make verify-fast` is green

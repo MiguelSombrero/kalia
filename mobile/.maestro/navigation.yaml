@@ -1,0 +1,37 @@
+appId: fi.kalia.app
+name: Navigate the tabs and dismiss the sheets
+---
+- launchApp:
+    clearState: true
+- tapOn: "Feed|Syöte"
+- assertVisible: "Coming soon|Tulossa pian"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+      - extendedWaitUntil:
+          visible:
+            id: "beer-row"
+          timeout: 60000
+- tapOn: "Catalog|Oluet"
+- tapOn: "Add a beer|Lisää olut"
+- assertVisible: "Add a beer|Lisää olut"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+      - extendedWaitUntil:
+          visible:
+            id: "beer-row"
+          timeout: 60000
+      - tapOn: "Add a beer|Lisää olut"
+      - assertVisible: "Add a beer|Lisää olut"
+- tapOn: "Close|Sulje"
+- tapOn: "Cellar|Kellari"
+- assertVisible: "Keep track of the bottles you own\\.|Pidä kirjaa omistamistasi pulloista\\."
+- tapOn: "Sign in|Kirjaudu sisään"
+- tapOn: "Close|Sulje"
+- tapOn: "Profile|Profiili"
+- assertVisible: "Sign in to see your profile|Kirjaudu sisään nähdäksesi profiilisi"
