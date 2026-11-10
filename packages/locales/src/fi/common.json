@@ -15,6 +15,7 @@
   "nav": {
     "label": "Päänavigaatio",
     "home": "Etusivu",
+    "feed": "Syöte",
     "catalog": "Oluet",
     "cellar": "Kellari",
     "admin": "Ylläpito",
@@ -207,6 +208,15 @@
   },
   "placeholder": {
     "comingSoon": "Tulossa pian"
+  },
+  "mobileNavigation": {
+    "add": "Lisää",
+    "addTitle": "Lisää olut",
+    "scanComingSoon": "Pullon skannaus tulee myöhemmin. Etsi olut nyt katalogista.",
+    "browse": "Etsi katalogista",
+    "close": "Sulje",
+    "signInHint": "Kirjaudu sisään käyttääksesi kellaria ja profiilia.",
+    "cellarInvitation": "Pidä kirjaa omistamistasi pulloista."
   },
   "appConfig": {
     "updateRequired": {

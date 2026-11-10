@@ -29,8 +29,9 @@ browsing and searching the catalog.
 | [01](iteration-11/01-decision-how-a-mobile-direction-is-prototyped-and-signed-off.md) | Decide how a mobile direction is prototyped and signed off | done |
 | [06](iteration-11/06-decision-the-design-token-format.md) | Decide the design token format | done |
 | [07](iteration-11/07-token-pipeline.md) | One token source generates the web's CSS and the app's theme | done |
-| [02](iteration-11/02-design-the-interaction-model-and-navigation.md) | Design how the app is navigated | refined |
+| [02](iteration-11/02-design-the-interaction-model-and-navigation.md) | Design how the app is navigated | done |
 | [03](iteration-11/03-design-kalias-identity-on-a-phone.md) | Design Kalia's identity on a phone | refined |
+| [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | needs-refinement |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | refined |
 | [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | refined |
 | [08](iteration-11/08-mobile-ui-primitives.md) | The app has its own primitives, and no screen is left plain | needs-refinement |
@@ -54,6 +55,8 @@ to be refined together in one conversation
 ([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)). The quality
 tasks advance no `Done when` criterion and say so with `Covers: none`; every
 `[needs decision]` finding they carry was an open question there.
+[Task 22](iteration-11/22-design-mobile-tab-icons.md) was added at the product
+owner's request during task 02 and awaits its own refinement.
 
 The refinement of 2026-11-07 took tasks 01–06 and 12–21 to `refined`. Tasks
 07–11 stay `needs-refinement`: each is written against an ADR not yet made —
@@ -84,7 +87,8 @@ The table's order is the order of work:
   later. The source models a light and a dark mode from the start, because the
   app has a dark mode that follows the system, decided at refinement.
 - **Then the design:** navigation ([02](iteration-11/02-design-the-interaction-model-and-navigation.md)), identity
-  ([03](iteration-11/03-design-kalias-identity-on-a-phone.md)), the dark palette
+  ([03](iteration-11/03-design-kalias-identity-on-a-phone.md)), tab icons
+  ([22](iteration-11/22-design-mobile-tab-icons.md)), the dark palette
   ([04](iteration-11/04-decision-and-design-dark-mode.md)) and motion and haptics
   ([05](iteration-11/05-design-motion-and-haptics.md)), each run under task 01's amendment
   of the skill, and the primitives and restyled screens

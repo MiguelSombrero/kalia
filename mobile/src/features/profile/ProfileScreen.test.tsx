@@ -4,7 +4,10 @@ import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { ProfileScreen } from "./ProfileScreen";
+import { PixelRatio } from "react-native";
 
+const mockPush = jest.fn();
+jest.mock("expo-router", () => ({ ...jest.requireActual("expo-router"), useRouter: () => ({ push: mockPush }) }));
 jest.mock("expo-application", () => ({ nativeApplicationVersion: "0.1.0", nativeBuildVersion: "26569207" }));
 const application = jest.requireMock<{ nativeApplicationVersion: string | null; nativeBuildVersion: string | null }>("expo-application");
 
@@ -18,6 +21,7 @@ const signedOut = (expired = false) => fakeTokenStore({ status: "signedOut", exp
 beforeEach(() => {
   application.nativeApplicationVersion = "0.1.0";
   application.nativeBuildVersion = "26569207";
+  mockPush.mockReset();
   transport.mockReset();
   registerTransport(transport as unknown as Transport);
 });
@@ -36,13 +40,24 @@ describe("ProfileScreen signed out", () => {
     expect(transport).not.toHaveBeenCalled();
   });
 
-  it("starts the sign-in in the app's language", async () => {
+  it("opens sign-in in a sheet from Profile", async () => {
     const store = signedOut();
     await renderWithLocale(<ProfileScreen />, "fi", store);
 
     await fireEvent.press(screen.getByRole("button", { name: "Kirjaudu sisään" }));
 
-    expect(store.signIn).toHaveBeenCalledWith("fi");
+    expect(mockPush).toHaveBeenCalledWith("/sign-in-sheet");
+    expect(store.signIn).not.toHaveBeenCalled();
+  });
+
+  it("renders the sign-in action at the largest text scale", async () => {
+    const scale = jest.spyOn(PixelRatio, "getFontScale").mockReturnValue(3.12);
+    try {
+      await renderWithLocale(<ProfileScreen />, "en", signedOut());
+      expect(screen.getByRole("button", { name: "Sign in" })).toBeOnTheScreen();
+    } finally {
+      scale.mockRestore();
+    }
   });
 
   it.each([
@@ -54,43 +69,6 @@ describe("ProfileScreen signed out", () => {
     expect(screen.getByText(message)).toBeOnTheScreen();
   });
 
-  it.each([
-    ["en", "Sign-in didn't work. Try again."],
-    ["fi", "Kirjautuminen ei onnistunut. Yritä uudelleen."],
-  ] as const)("shows the failure message and the sign-in action again when sign-in fails, in %s", async (locale, message) => {
-    const store = signedOut();
-    store.signIn.mockResolvedValue("failed");
-    await renderWithLocale(<ProfileScreen />, locale, store);
-
-    await fireEvent.press(screen.getByRole("button", { name: locale === "en" ? "Sign in" : "Kirjaudu sisään" }));
-
-    expect(await screen.findByText(message)).toBeOnTheScreen();
-    expect(screen.getByRole("button", { name: locale === "en" ? "Sign in" : "Kirjaudu sisään" })).toBeOnTheScreen();
-  });
-
-  it("returns quietly to signed out when the user cancels", async () => {
-    const store = signedOut();
-    store.signIn.mockResolvedValue("cancelled");
-    await renderWithLocale(<ProfileScreen />, "en", store);
-
-    await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
-
-    expect(await screen.findByRole("button", { name: "Sign in" })).toBeEnabled();
-    expect(screen.queryByText("Sign-in didn't work. Try again.")).not.toBeOnTheScreen();
-  });
-
-  it("clears the failure message when the user tries again", async () => {
-    const store = signedOut();
-    store.signIn.mockResolvedValueOnce("failed").mockResolvedValueOnce("cancelled");
-    await renderWithLocale(<ProfileScreen />, "en", store);
-
-    await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
-    await screen.findByText("Sign-in didn't work. Try again.");
-    await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
-
-    expect(await screen.findByRole("button", { name: "Sign in" })).toBeEnabled();
-    expect(screen.queryByText("Sign-in didn't work. Try again.")).not.toBeOnTheScreen();
-  });
 });
 
 describe("ProfileScreen while the stored session is being read", () => {

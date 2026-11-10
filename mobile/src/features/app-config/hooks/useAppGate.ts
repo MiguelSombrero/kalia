@@ -17,12 +17,14 @@ export const useAppGate = (): { gate: Gate | "loading"; checkAgain: () => void; 
     queryFn: readRememberedMinimum,
     staleTime: Infinity,
     gcTime: Infinity,
+    meta: { viewerIndependent: true },
   });
   const config = useQuery({
     queryKey: appConfigKey,
     queryFn: readAppConfig,
     staleTime: CHECK_INTERVAL_MS,
     retry: false,
+    meta: { viewerIndependent: true },
   });
 
   const named = config.data ? minimumFor(Platform.OS, config.data.minimumBuild) : undefined;

@@ -1,6 +1,6 @@
 ---
 name: design-task
-description: Numbered procedure for a `- **Kind:** design` task whose outcome is a visual choice — building alternatives as framed mockups or native prototypes, putting them in front of the product owner, converging, and recording the choice in an ADR before implement-task builds it. Entry point for any design task; invoke before building anything the task could look like.
+description: Numbered procedure for a `- **Kind:** design` task whose outcome is a visual choice — building alternatives, putting them in front of the product owner, converging, and recording the choice in an ADR before implement-task builds it. Entry point for any design task; invoke before building anything the task could look like.
 ---
 
 # Run a design task
@@ -17,12 +17,7 @@ The choice is the product owner's, never the agent's. An agent builds
 alternatives and lays out the trade-offs; it does not pick one, and does not
 rank them in a way that pre-empts the pick.
 
-For a mobile design task, also follow
-[ADR-0108](../../../docs/adr/0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md).
-The task's `Scope` names the app being designed; `Kind: design` stays
-platform-neutral.
-
-## Procedure
+## Shared setup
 
 1. Read the task file and confirm its `- **Status:**` is `refined` and it
    carries `- **Kind:** design`. A task whose outcome is a visual choice but
@@ -32,27 +27,24 @@ platform-neutral.
    or problem statement it cites, the ADR that recorded any earlier design
    choice it must sit with, and [`docs/design.md`](../../../docs/design.md),
    where standing design intent lives. A direction that contradicts an
-   accepted choice is a new decision, not a fourth option.
+   accepted choice is a new decision, not an option.
 3. Branch off up-to-date `dev` and write `.claude/session-checkpoint.md`, both
    exactly as `implement-task` steps 2–3 say. Add a line per round to the
-   checkpoint as it happens — the mockups and native prototype are not kept,
-   so record a textual account of each direction and round, including the
-   native behavior shown, and any Artifact links until step 8 turns them into
-   an ADR.
-   - For a mobile design task, the native prototype lives in a second,
-     disposable git worktree cut from up-to-date `dev`, set up by the
-     [`worktree` skill](../worktree/SKILL.md). Leave its direction changes
-     uncommitted, give it its own stack ports, and remove it when the design
-     task ends. It uses the local stack with phone mode off. A native build is
-     heavy work under `CLAUDE.md`'s two-session limit.
-4. **Round one: build three distinct directions.** Distinct means they differ
+   checkpoint as it happens. Record a textual account of every direction and
+   round and any Artifact links until the ADR records the choice.
+4. Choose the procedure below from the app named in the task's `Scope`.
+   `Kind: design` stays platform-neutral.
+
+## Web design procedure
+
+5. **Round one: build three distinct directions.** Distinct means they differ
    in a structural choice — layout, hierarchy, density, where the weight
    falls — not in a colour swap of one design. For an identity rather than a
    layout, the structural choice is the feel and what colour, type and shape
    each do in it — one action colour or colour as a category key, a quiet face
-   or a loud one, soft planes or ruled lines — shown applied to the same
-   real screens so only the identity varies.
-   - For a web task, each direction is a self-contained HTML file:
+   or a loud one, soft planes or ruled lines — shown applied to the same real
+   screens so only the identity varies.
+   - Each direction is a self-contained HTML file:
      - carrying real sample data, not lorem ipsum: beers, breweries and feed
        events from the seed or the running app, Finnish strings included
        ([ADR-0011](../../../docs/adr/0011-i18next-localization.md));
@@ -66,24 +58,14 @@ platform-neutral.
        own values, so a direction is never chosen on a palette that fails AA;
      - written outside the repository, in the session's scratchpad. **No
        mockup code is committed.**
-   - For a mobile task, use framed Artifacts for layout, identity and the dark
-     palette. Include real seed data, both locales, and a switch to the largest
-     text size. Use native builds for navigation feel, gestures, motion and
-     haptics; a frame is not evidence for those behaviours.
-5. **Show them.**
-   - For a web task, publish each direction as a private claude.ai Artifact
-     through the `Artifact` tool and give the product owner the links to open
-     side by side. If the tool is not in the session — a harness tool may be
-     absent, as a plugin may — show the same HTML file in the desktop app's
-     browser pane, or say plainly that neither route is available and ask how
-     the product owner wants to look at it. Do not fall back to describing
-     directions in prose: that is what this procedure exists to avoid.
-   - For a mobile task, show framed directions as Artifacts, with the same
-     HTML file in the browser pane as the fallback. Show native rounds in
-     Device Hub's live iOS Simulator against the local stack, with phone mode
-     off. Show Android once per task on the emulator, where its conventions
-     differ. Never substitute a screenshot for a live native round.
-6. **Converge, in as many rounds as the product owner wants.** The product
+6. **Show them.** Publish each direction as a private claude.ai Artifact
+   through the `Artifact` tool and give the product owner the links to open
+   side by side. If the tool is not in the session — a harness tool may be
+   absent, as a plugin may — show the same HTML file in the desktop app's
+   browser pane, or say plainly that neither route is available and ask how
+   the product owner wants to look at it. Do not fall back to describing
+   directions in prose: that is what this procedure exists to avoid.
+7. **Converge, in as many rounds as the product owner wants.** The product
    owner decides when they are satisfied; the skill sets no cap. Each round
    builds what was asked for — a refinement of one direction, a new one, two
    put side by side again. **A blend is allowed only as a new direction that
@@ -91,42 +73,92 @@ platform-neutral.
    chosen is always one the product owner actually saw. A direction carried
    into a later round unchanged keeps its Artifact link rather than being
    republished. Note each round in the checkpoint.
-7. **Stop when the product owner names the direction.** Do not proceed on an
+8. **Stop when the product owner names the direction.** Do not proceed on an
    inference from a comment. If the reply is ambiguous, ask which one. A
    choice that comes with a change attached ("that one, but …") is not yet a
-   direction anyone has seen: build the change, show it as a refinement
-   round, and treat it as chosen only when the product owner says so. A
-   change that raises a question beyond the visual one — where a mapping
-   lives, how much of today's app it reaches — is the product owner's too,
-   asked with the trade-offs before building.
-   Choosing and building are one unbroken run, steps 7 to 11: the direction is
-   only in the product owner's eye and the ADR's words until it is built, so
-   do not hand the build to a different session. If the session is interrupted
-   anyway, the resuming session reads the checkpoint and the ADR, shows the
-   product owner the chosen direction again — from its Artifact if it still
-   exists, rebuilt from the ADR if not — and builds only after they say that
-   is the one they chose.
-   For a mobile task, each chosen direction is confirmed natively. Final
-   sign-off is on the product owner's iPhone in phone mode; haptics are judged
-   only there. If the iPhone's seven-day signing lapses, continue rounds in the
-   Simulator and wait for a re-sign before sign-off.
-8. **Record the choice in this task's own ADR** — `make next-adr`, then
-   [the ADR template](../../../docs/adr/template.md). It holds the directions
-   shown, across every round, each described well enough that a reader who
-   never saw the mockup understands what it was; the one chosen; and why each
-   other was rejected. Standing intent — what later tasks are held against —
-   goes in [`docs/design.md`](../../../docs/design.md), not into this ADR,
-   including a meaning row for every semantic token the choice adds
-   (`scripts/check-design-tokens.mjs` fails without one). The choice does
-   **not** go in the task file: it is the request and is frozen at completion
-   ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
-9. **Hand off to `implement-task`**, resuming at its step 4 and running it
-   through its step 11 — not its step 12, which opens the pull request and
-   comes after step 10 here. Nothing about its gates changes: comment pass,
-   doc-sync, `/code-review`, `make verify-fast`, each acceptance criterion run
-   and then ticked. Choosing and building remain the same task and pull
-   request.
-10. **Confirm it in the real app**, as part of `implement-task`'s step 10.
+   direction anyone has seen: build the change, show it as a refinement round,
+   and treat it as chosen only when the product owner says so. A change that
+   raises a question beyond the visual one — where a mapping lives, how much
+   of today's app it reaches — is the product owner's too, asked with the
+   trade-offs before building.
+
+## Mobile design procedure
+
+For a mobile design task, also follow
+[ADR-0108](../../../docs/adr/0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md).
+The mobile process has two separate prototype phases. **Framed directions come
+first; native prototypes are not started until the product owner explicitly
+selects which direction or directions to take forward.** A frame cannot prove
+native behavior, but native builds cost time and are reserved for candidates
+the owner wants to explore on-device.
+
+5. **Phase one — build framed directions.** Round one has three distinct
+directions, distinguished by structural choices rather than a colour swap.
+Show the app's real screens and real seed data, both locales, and a switch to
+the largest text size. Use framed Artifacts for layout, identity and the dark
+palette. Do not create a native worktree, start the stack for a native build,
+build an app, open a simulator or emulator, or otherwise begin native
+prototyping in this phase.
+6. **Show and iterate on the framed directions.** Show the frames as
+Artifacts, with the same HTML file in the browser pane as the fallback. The
+product owner may request as many rounds as they want: refine a direction,
+introduce another, or compare alternatives. Each changed or blended direction
+must be built and shown before it can be selected. Keep unchanged directions'
+Artifact links and record every round in the checkpoint.
+7. **Stop at the framed-to-native decision gate.** Once the product owner is
+ready to move beyond frames, ask them explicitly which direction or
+directions to prototype natively. Do not infer this selection from feedback,
+and do not build any candidate natively before receiving it. If they ask for
+another frame refinement or comparison, do that and remain in phase one.
+If the selection or requested change is ambiguous, ask which direction(s)
+they mean. Do not record a final design choice or start the implementation
+handoff at this gate: it selects candidates for native exploration, not the
+final direction.
+8. **Phase two — build native prototypes only for the selected direction(s).**
+   - Before the first native build, create a second, disposable git worktree
+     cut from up-to-date `dev`, set up by the [`worktree` skill](../worktree/SKILL.md).
+     Leave its direction changes uncommitted. Give it its own stack ports and
+     use the local stack with phone mode off. A native build, simulator and
+     emulator count as heavy work under `CLAUDE.md`'s two-session limit.
+   - Implement only the candidates the product owner selected; do not
+     prototype the remaining framed options unless the product owner selects
+     them in a later round.
+   - Show each native round in Device Hub's live iOS Simulator against the
+     local stack. Show Android once per task on the emulator, where its
+     conventions differ. Never substitute a screenshot for a live native
+     round.
+   - Iterate for as many rounds as the product owner wants. Each round may
+     refine a selected candidate or add another candidate only after the
+     product owner asks for it. If a direction changes, build and show that
+     native refinement; it is not chosen by inference from a comment.
+9. **Get explicit final sign-off.** Stop when the product owner names the
+   native direction they choose and signs it off. Final sign-off is on the
+   product owner's iPhone in phone mode; haptics are judged only there. If
+   the iPhone's seven-day signing lapses, continue rounds in the Simulator
+   and wait for a re-sign before sign-off. If they have not named a direction,
+   keep converging; do not record a choice or hand off to implementation.
+
+## Record, build and verify
+
+10. **Record the choice in this task's own ADR** — `make next-adr`, then
+    [the ADR template](../../../docs/adr/template.md). It holds the directions
+    shown, across every round, each described well enough that a reader who
+    never saw the mockup or native prototype understands what it was; the one
+    chosen; and why each other was rejected. For mobile, record both the
+    framed and native rounds and the owner's sign-off. Standing intent — what
+    later tasks are held against — goes in
+    [`docs/design.md`](../../../docs/design.md), not into this ADR, including
+    a meaning row for every semantic token the choice adds
+    (`scripts/check-design-tokens.mjs` fails without one). The choice does
+    **not** go in the task file: it is the request and is frozen at completion
+    ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
+11. **Hand off to `implement-task`**, resuming at its step 4 and running it
+    through its step 11 — not its step 12, which opens the pull request and
+    comes after step 12 here. Nothing about its gates changes: comment pass,
+    doc-sync, `/code-review`, `make verify-fast`, each acceptance criterion
+    run and then ticked. Choosing and building remain the same task and pull
+    request.
+12. **Confirm it in the real app**, as part of `implement-task`'s step 10.
     - For a web task, bring the stack up and open the built page in the
       desktop app's browser pane at each agreed width. A mockup is a claim
       about a design; the real page checks whether it survived contact with
@@ -141,9 +173,9 @@ platform-neutral.
     - No screenshot leaves the machine. Any capture taken for close
       inspection stays in the scratchpad and is never committed, pushed or
       uploaded (`CLAUDE.md` and `.claude/rules/no-screenshots.md`).
-11. **Open the pull request** (`implement-task`'s step 12) per
+13. **Open the pull request** (`implement-task`'s step 12) per
     `docs/PULL_REQUEST_TEMPLATE.md`, recording in words what was seen and the
-    product owner's sign-off from step 10 — no image.
+    product owner's sign-off from step 12 — no image.
     - For a web task, the design evidence includes skeletons matching the new
       layout, `@axe-core/playwright` scans at both agreed widths, and
       keyboard-only tests where something became interactive.
@@ -157,5 +189,6 @@ platform-neutral.
 
 The gates report is `implement-task`'s, with two lines added: how many rounds
 ran and how many directions were shown in each, and the ADR that records the
-choice. For a mobile task, also report the iOS Simulator and Android checks,
-the iPhone sign-off and VoiceOver walk, and the component-test coverage.
+choice. For a mobile task, also report which framed directions were selected
+for native prototyping, the iOS Simulator and Android checks, the iPhone
+sign-off and VoiceOver walk, and the component-test coverage.

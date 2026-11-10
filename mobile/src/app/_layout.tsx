@@ -5,6 +5,7 @@ import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { AppProviders } from "@/lib/providers/AppProviders";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { Platform } from "react-native";
 
 registerMobileTransport();
 installUncaughtErrorHandler();
@@ -19,7 +20,11 @@ const RootLayout = () => {
       <AppProviders locale={locale}>
         <StatusBar style="dark" />
         <AppGate>
-          <Stack screenOptions={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
+            <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
+          </Stack>
         </AppGate>
       </AppProviders>
     </UncaughtErrorGate>

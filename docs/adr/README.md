@@ -200,6 +200,9 @@ and the third keeps that identifier from ever passing to someone else.
 
 ## Frontend structure and conventions
 
+- [ADR-0109](0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)
+  — mobile navigation keeps four destinations around a central Add action.
+
 - [ADR-0008](0008-tanstack-query.md) — TanStack Query is the mandatory data
   layer for client components.
 - [ADR-0009](0009-zustand-ui-state.md) — three homes for client state: query
@@ -578,3 +581,4 @@ reasons and its rate is worth watching independently
 | [ADR-0084](0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md) | An unexpected failure is logged as it happens and counted by the sweep, so recurrence survives the session | accepted | 2026-10-24 |
 | [ADR-0085](0085-runtimes-follow-long-term-support-not-the-newest-major.md) | Java and Node follow long-term-support releases, so Dependabot stops proposing the newest major | accepted | 2026-10-25 |
 | [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md) | A mobile direction is explored as a mockup or native build, then signed off on the owner's phone | accepted | 2026-11-08 |
+| [ADR-0109](0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md) | Mobile navigation uses four tabs and a central Add action | accepted | 2026-11-09 |

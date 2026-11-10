@@ -4,6 +4,8 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { focusManager } from "@tanstack/react-query";
 import { Platform, Text } from "react-native";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+import { fakeTokenStore } from "@/testing/fakeTokenStore";
+import { useEffect } from "react";
 import { AppGate } from "./AppGate";
 
 jest.mock("expo-application", () => ({ nativeBuildVersion: "1" }));
@@ -44,6 +46,34 @@ afterEach(() => {
 });
 
 describe("AppGate", () => {
+  it("keeps its navigation children mounted when the viewer changes", async () => {
+    answer(minimum(0));
+    const store = fakeTokenStore({ status: "signedOut", expired: false });
+    const unmounted = jest.fn();
+    const Navigation = () => {
+      useEffect(() => () => unmounted(), []);
+      return <Text>Kalia is open</Text>;
+    };
+    await renderWithLocale(<AppGate><Navigation /></AppGate>, "en", store);
+    await opened();
+    await waitFor(async () => expect(await AsyncStorage.getItem(MEMORY_KEY)).toBe("0"));
+    let finishRead: (value: string | null) => void = () => {};
+    let finishConfig: (value: unknown) => void = () => {};
+    jest.mocked(AsyncStorage.getItem).mockImplementationOnce(() => new Promise((resolve) => { finishRead = resolve; }));
+    transport.mockImplementationOnce(() => new Promise((resolve) => { finishConfig = resolve; }));
+    try {
+      await act(async () => store.set({ status: "signedIn" }));
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 30)); });
+      expect(unmounted).not.toHaveBeenCalled();
+      expect(screen.getByText("Kalia is open")).toBeOnTheScreen();
+    } finally {
+      await act(async () => {
+        finishRead("0");
+        finishConfig({ data: minimum(0), status: 200, headers: new Headers() });
+      });
+    }
+  });
+
   it("opens the app when no minimum has been raised", async () => {
     answer(minimum(0));
 

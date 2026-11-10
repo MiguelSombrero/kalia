@@ -12,6 +12,7 @@ export const clearOnViewerChange = (tokenStore: TokenStore, queryClient: QueryCl
     if (previous === "loading" || status === previous) {
       return;
     }
-    void queryClient.resetQueries();
+    // Do not mark viewer-specific queries viewerIndependent: their cached data must be reset on account changes.
+    void queryClient.resetQueries({ predicate: (query) => query.meta?.viewerIndependent !== true });
   });
 };

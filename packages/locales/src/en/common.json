@@ -15,6 +15,7 @@
   "nav": {
     "label": "Main navigation",
     "home": "Home",
+    "feed": "Feed",
     "catalog": "Catalog",
     "cellar": "Cellar",
     "admin": "Admin",
@@ -207,6 +208,15 @@
   },
   "placeholder": {
     "comingSoon": "Coming soon"
+  },
+  "mobileNavigation": {
+    "add": "Add",
+    "addTitle": "Add a beer",
+    "scanComingSoon": "Bottle scanning is coming later. Find a beer in the catalog now.",
+    "browse": "Find it in the catalog",
+    "close": "Close",
+    "signInHint": "Sign in to use your cellar and profile.",
+    "cellarInvitation": "Keep track of the bottles you own."
   },
   "appConfig": {
     "updateRequired": {

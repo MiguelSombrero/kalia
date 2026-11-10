@@ -1,4 +1,5 @@
 import { AuthRequest, exchangeCodeAsync, refreshAsync } from "expo-auth-session";
+import { withAuthCallbackSuppressed } from "./redirectAuthCallback";
 import type { OAuthClient } from "./tokenStore";
 
 const CLIENT_ID = "kalia-mobile";
@@ -60,7 +61,7 @@ export const createKeycloakClient = ({
         scopes: ["openid", "offline_access"],
         extraParams: { ui_locales: locale },
       });
-      const result = await request.promptAsync(discovery);
+      const result = await withAuthCallbackSuppressed(() => request.promptAsync(discovery));
       if (result.type === "cancel" || result.type === "dismiss") {
         return { kind: "cancelled" };
       }
