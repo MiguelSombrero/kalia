@@ -188,8 +188,10 @@ Porter from a Baltic Porter is the name's job, not the colour's.
 
 `beerStyleGroup()` in `web/lib/beerStyle.ts` maps a style name to its
 group by keyword, first match wins — so a Belgian IPA is an IPA, a Berliner
-Weisse is a sour before it is a wheat beer, and a Weizenbock is a wheat beer
-before it is a bock. Each group's colour is a `[data-beer-style]` block in
+Weisse is a sour before it is a wheat beer, a Weizenbock is a wheat beer
+before it is a bock, and a Wheatwine is a strong ale before it is a wheat beer.
+The ingredient words (fruit, Brett, Faro) are tried last, so a Fruited Stout
+stays a stout. Each group's colour is a `[data-beer-style]` block in
 the generated web token stylesheet. Its test fails if a group has no block or a block
 has no group, and `scripts/check-contrast.mjs` holds every block to AA.
 
@@ -197,17 +199,17 @@ has no group, and `scripts/check-contrast.mjs` holds every block to AA.
 |---|---|---|
 | `stout` | Every stout, whatever its prefix: Imperial, Oatmeal, Milk, Pastry. | Black, white text. |
 | `porter` | Every porter: Porter, Baltic Porter, Robust Porter. | Near-black brown, white text. |
-| `brown-lager` | Dark and amber lagers: Dunkel, Bock, Doppelbock, Schwarzbier, Märzen, Oktoberfest, Vienna and other amber lagers, Rauchbier. | Mid brown, white text. |
-| `light-lager` | Pale lagers: Pils, Helles, Kölsch, everyday lagers, Maibock. | Pale straw — the lightest yellow. |
+| `brown-lager` | Dark and amber lagers: Dunkel, Bock, Doppelbock, Schwarzbier, Märzen, Oktoberfest, Vienna and other amber lagers, Rauchbier and other smoked beers, Steam Beer. | Mid brown, white text. |
+| `light-lager` | Pale lagers: Pils, Helles, Kölsch, everyday lagers, Maibock, Zwickelbier, and the light, ice and rice beers. | Pale straw — the lightest yellow. |
 | `wheat` | Wheat beers: Hefeweizen, Weizenbock, Dunkelweizen, Witbier. | Lemon yellow. |
-| `belgian-light` | Pale Belgian ales: Tripel, Blonde, Strong Golden, Belgian Pale Ale, Saison. | Tripel gold. |
+| `belgian-light` | Pale Belgian ales: Tripel, Blonde, Strong Golden, Belgian Pale Ale, Saison, Farmhouse Ale, Champagne Beer. | Tripel gold. |
 | `belgian-dark` | Dark Belgian ales: Dubbel, Quadrupel, Belgian Strong Dark. | Amber copper. |
 | `ipa` | Every IPA: IPA, Double, Session, Belgian, New England. | Hop green. |
-| `pale-ale` | Pale ales that are not IPAs: Pale Ale, Session Ale, Golden and Blonde Ale. | Sky blue. |
-| `english-ale` | Darker-than-pale British-style ales, wherever brewed: ESB, Bitter, Mild, Brown, Amber and Scottish ales. | Copper-red, white text. |
-| `strong-ale` | Barleywines and strong ales: Barleywine, Old Ale, Wee Heavy, Scotch Ale. | Orange. |
-| `sour` | Sours, lambics and wild ales: Gueuze, Kriek, Fruit Lambic, Wild Ale, Gose, Berliner Weisse. | Pink. |
-| `other` | Anything no keyword matches. | Neutral grey, until the style is given a group. |
+| `pale-ale` | Pale ales that are not IPAs: Pale Ale, Session Ale, Golden, Blonde and Cream Ale. | Sky blue. |
+| `english-ale` | Darker-than-pale British-style ales, wherever brewed: ESB, Bitter, Mild, Brown, Amber and Scottish ales, Altbier, Bière de Garde, Pumpkin Ale. | Copper-red, white text. |
+| `strong-ale` | Barleywines and strong ales: Barleywine, Wheatwine, Old Ale, Wee Heavy, Scotch Ale, Winter Warmer. | Orange. |
+| `sour` | Sours, lambics, wild ales and fruit beers: Gueuze, Kriek, Fruit Lambic, Wild Ale, Brett Beer, Faro, Gose, Berliner Weisse, Fruit Beer. | Pink. |
+| `other` | Anything no keyword matches, including styles that name a strength or an ingredient rather than a colour: Low-Alcohol Beer, Chili Beer, Small Beer, Rye Beer. | Neutral grey, until the style is given a group. |
 
 Colours are expected to be tuned as the pages are laid out. Changing one is a
 `globals.css` edit that the contrast check guards; moving a style between
