@@ -54,7 +54,36 @@ describe("beerStyleGroup", () => {
   });
 
   it.each([
+    ["Fruit Beer", "sour"],
+    ["Brett Beer", "sour"],
+    ["Faro", "sour"],
+    ["Winter Warmer", "strong-ale"],
+    ["Adambier", "strong-ale"],
+    ["Ice Beer", "light-lager"],
+    ["Light Beer", "light-lager"],
+    ["Zwickelbier", "light-lager"],
+    ["Rice Beer", "light-lager"],
+    ["Smoked Beer", "brown-lager"],
+    ["Smoked Lager", "brown-lager"],
+    ["Steam Beer", "brown-lager"],
+    ["Cream Ale", "pale-ale"],
+    ["Champagne Beer", "belgian-light"],
+    ["Farmhouse Ale", "belgian-light"],
+    ["Altbier", "english-ale"],
+    ["Pumpkin Ale", "english-ale"],
+    ["Bière de Garde", "english-ale"],
+    ["Biere de Garde", "english-ale"],
+  ])("puts the Wikidata import's %s in %s", (style, group) => {
+    expect(beerStyleGroup(style)).toBe(group);
+  });
+
+  it.each([
     ["Berliner Weisse", "sour", "a sour before a wheat beer"],
+    ["Wheatwine", "strong-ale", "a strong ale before a wheat beer"],
+    ["Fruited Imperial Stout", "stout", "a stout before a fruit beer"],
+    ["Brett IPA", "ipa", "an IPA before a wild ale"],
+    ["Smoked Porter", "porter", "a porter before a smoked beer"],
+    ["Farmhouse IPA", "ipa", "an IPA before a farmhouse ale"],
     ["Dunkelweizen", "wheat", "a wheat beer before a brown lager"],
     ["Maibock", "light-lager", "a pale lager before a bock"],
     ["Dark Lager", "brown-lager", "a brown lager before a light one"],
@@ -70,6 +99,28 @@ describe("beerStyleGroup", () => {
   it("puts a style no group names in other", () => {
     expect(beerStyleGroup("Mead")).toBe("other");
     expect(beerStyleGroup("")).toBe("other");
+  });
+
+  it.each(["Low-Alcohol Beer", "Chili Beer", "Small Beer", "Rye Beer", "Keut"])(
+    "leaves %s in other, because its name says nothing reliable about colour",
+    (style) => {
+      expect(beerStyleGroup(style)).toBe("other");
+    },
+  );
+
+  it("puts no Wikidata-imported style in other except those that stay grey on purpose", () => {
+    const sql = readFileSync(
+      resolve(import.meta.dirname, "../../backend/src/main/resources/db/migration/catalog/V008__catalog_wikidata_import.sql"),
+      "utf8",
+    );
+    const styles = new Set(
+      [...sql.matchAll(/^\s+\('Q\d+', '(?:[^']|'')*', '((?:[^']|'')*)', [\d.]+, 'Q\d+'\)/gm)].map((m) => m[1].replaceAll("''", "'")),
+    );
+
+    expect(styles.size).toBeGreaterThan(100);
+    expect([...styles].filter((s) => beerStyleGroup(s) === "other").sort()).toEqual(
+      ["Chili Beer", "Keut", "Low-Alcohol Beer", "Rye Beer", "Small Beer"],
+    );
   });
 });
 
