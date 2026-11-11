@@ -1,7 +1,10 @@
 import { act, fireEvent, screen } from "@testing-library/react-native";
+import * as ExpoFont from "expo-font";
 import { renderRouter } from "expo-router/testing-library";
+import * as SplashScreen from "expo-splash-screen";
 import { Text } from "react-native";
 import { apiError } from "@kalia/api";
+import { FontGate } from "@/lib/design/FontGate";
 import { CrashBoundary } from "./CrashBoundary";
 import { UncaughtErrorGate } from "./UncaughtErrorGate";
 import { useUncaughtErrorStore } from "./store";
@@ -9,6 +12,8 @@ import { installUncaughtErrorHandler } from "./uncaughtError";
 
 jest.mock("expo-application", () => ({ nativeApplicationVersion: "0.1.0", nativeBuildVersion: "26569207" }));
 jest.mock("expo-localization", () => ({ useLocales: jest.fn() }));
+jest.mock("expo-font", () => ({ useFonts: jest.fn() }));
+jest.mock("expo-splash-screen", () => ({ preventAutoHideAsync: jest.fn(() => Promise.resolve(true)), hideAsync: jest.fn(() => Promise.resolve()) }));
 const localization = jest.requireMock<{ useLocales: jest.Mock }>("expo-localization");
 
 const HOME = ["", "Users", "someone"].join("/");
@@ -25,7 +30,9 @@ const Screen = () => {
 
 const Layout = () => (
   <UncaughtErrorGate>
-    <Screen />
+    <FontGate>
+      <Screen />
+    </FontGate>
   </UncaughtErrorGate>
 );
 
@@ -38,6 +45,8 @@ let error: jest.SpyInstance;
 let warn: jest.SpyInstance;
 
 beforeEach(() => {
+  jest.mocked(ExpoFont.useFonts).mockReturnValue([true, null]);
+  jest.mocked(SplashScreen.hideAsync).mockClear();
   broken = true;
   failure = new TypeError(`undefined is not a function (reading https://api.test/x?token=${TOKEN})`);
   speak("en");
@@ -67,6 +76,13 @@ describe("an error thrown inside a screen", () => {
     expect(screen.getByRole("heading", { name: title })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: restart })).toBeOnTheScreen();
     expect(screen.getByText(build)).toBeOnTheScreen();
+  });
+
+  it("takes the retained splash screen down so the restart screen is visible, with the font gate installed", async () => {
+    await renderApp();
+
+    expect(screen.getByRole("button", { name: "Restart Kalia" })).toBeOnTheScreen();
+    expect(SplashScreen.hideAsync).toHaveBeenCalled();
   });
 
   it("renders the app again when the user restarts", async () => {

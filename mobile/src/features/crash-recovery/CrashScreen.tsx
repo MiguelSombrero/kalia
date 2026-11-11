@@ -2,7 +2,8 @@ import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import type { Locale } from "@kalia/locales";
-import { useState } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +16,10 @@ import { scrub } from "@/lib/log/deviceLog";
 const Content = ({ error, onRestart }: { error: Error; onRestart: () => void }) => {
   const styles = useStyles();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => undefined);
+  }, []);
 
   return (
     <SafeAreaView style={styles.screen}>
