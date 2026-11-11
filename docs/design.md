@@ -78,6 +78,44 @@ prototype are placeholders awaiting their own design. Screen-specific layout
 remains for the corresponding screen task.
 ([ADR-0109](adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md))
 
+## Mobile identity
+
+Colour fields, set light. On a phone a beer is a flat field of its style group's
+colour with its name set heavy and its strength set large, so the list reads like
+a shelf of cans and a style is learned once and read across the screen. Colour
+still does a job: a beer's style is its field, and cobalt marks the one action.
+The mark and the twelve style colours are the web's; the typeface, the corners
+and the density are the phone's own.
+([ADR-0110](adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md))
+
+- **A light page.** A white ground, a white tab bar with an ink hairline above
+  it, and cobalt for the selected tab. Dark mode is its own decision and
+  follows the system ([task 04](tasks/iteration-11/04-decision-and-design-dark-mode.md)).
+- **One round corner.** Cards, buttons, fields and a person's slot share one
+  radius, `--radius-card`; nothing on the phone is square and nothing is
+  rounder. The web stays square.
+- **One face.** Titles, names and strengths are the heaviest weight, supporting
+  lines one step lighter, and nothing is lighter than ordinary. Reading text
+  scales with the system text size without a limit. A screen title stops at
+  twice its size so one word still fits the width, and the tab bar's labels
+  stay near their default size because its height is fixed. Where the strength
+  would squeeze a beer's name, the card gives it a line of its own.
+- **A card is the beer's slot.** The style colour fills it, the text on it takes
+  the colour paired with that group, and the strength is the largest thing on it.
+  A style that belongs to no group, or a group this build does not list, takes
+  the neutral grey and stays readable.
+- **A person is initials in an ink-edged slot,** never in a colour: colour on
+  the phone means a beer's style or the action.
+- **A main action is one cobalt block** and stretches the width of its
+  container; any other action beside it is the same block outlined in ink, so
+  a screen has one cobalt action.
+- **Taller than a thumb needs.** Pressable things are at least `--spacing-touch`
+  high and the main action `--spacing-action`.
+- **Not decided here.** The mark's place in the app, tab icons
+  ([task 22](tasks/iteration-11/22-design-mobile-tab-icons.md)), search and
+  filters ([task 09](tasks/iteration-11/09-catalog-search-and-list.md)),
+  motion ([task 05](tasks/iteration-11/05-design-motion-and-haptics.md)).
+
 ## Feel
 
 Can art drawn with a ruler. Kalia should feel like a shelf of craft-beer cans
@@ -135,7 +173,7 @@ two-layer rule they sit in is
 | `--color-destructive` | Something is removed for good, or something failed. | The confirm button of a removal that cannot be undone, the red square of every error (see [Feedback and errors](#feedback-and-errors)), and the edge of a field whose value is wrong. Never for a merely cautious action, and never for the words of an error. |
 | `--color-destructive-foreground` | Text and icons placed on `--color-destructive`. | Whenever something sits on a destructive fill; never on its own. |
 | `--color-focus-ring` | Where keyboard focus is. | Only `:focus-visible` outlines. It carries no other meaning, so it is never reused for decoration. |
-| `--color-style` | The colour of a beer's style group. | A style badge, or anything else that labels a beer by its style. The element carries `data-beer-style` set from `beerStyleGroup()` in `lib/beerStyle.ts`; without it, it takes the grey of *Anything else*. See [Style groups](#style-groups). |
+| `--color-style` | The colour of a beer's style group. | A style badge, or anything else that labels a beer by its style. The element carries `data-beer-style` set from `beerStyleGroup()` in `@kalia/api`; without it, it takes the grey of *Anything else*. See [Style groups](#style-groups). |
 | `--color-style-foreground` | Text placed on `--color-style`. | Whenever something sits on a style fill; never on its own. Ink or white, whichever the group's colour needs. |
 | `--color-mark-tile` | The mark's ground: the square its scene is drawn on. | Only inside the mark. Never a page, surface or label colour. |
 | `--color-mark-beer` | The beer in the mark, in the bottle and falling from it. | Only inside the mark. It is not a style colour and never an accent. |
@@ -147,7 +185,7 @@ two-layer rule they sit in is
 
 | Token | Means | Reach for it when |
 |---|---|---|
-| `--font-display` | The voice of the page: Archivo run wide, used large and briefly. | Page titles, dialog titles and `SectionHeading`'s `heading` look. Never for body text or controls. |
+| `--font-display` | The voice of the page: Archivo run wide, used large and briefly. On the phone the display and the working text share one face. | Page titles, dialog titles and `SectionHeading`'s `heading` look. Never for body text or controls. |
 | `--font-sans` | The working face: the same family at normal width, for everything read or operated. | Everything not set in the display face — the body's default, so it rarely needs naming. |
 | `--text-display` | A page title at desktop width. | The page's one `h1`, from the `md` breakpoint up. `PageTitle` in `components/ui/` renders it; a page never sets it by hand. |
 | `--text-name` | A person's username as the title of their own profile, at desktop width. | Only the profile's `h1`, from the `md` breakpoint up, as `PageTitle size="name"`; below it the name takes `--text-title` like any page title. Larger than `--text-display` because the profile is the one page about a name. |
@@ -155,20 +193,26 @@ two-layer rule they sit in is
 | `--text-heading` | A section heading inside a page. | A section is headed by `SectionHeading` in `components/ui/`, in one of two looks. This token, in the display face, is the `heading` look: for a section whose heading is read as a sentence and which stands as a block of its own, such as an empty cellar, a sign-in prompt or the profile's visibility choice. The `label` look is `--text-label`: for a section whose heading only names the list or rack directly under it, such as the front page's feed, a beer's same-style list and the cellar summary. |
 | `--text-label` | Small tracked capitals that label rather than read. | Button text, badges, navigation and other one- or two-word labels, always `uppercase` and `font-semibold`, and `SectionHeading`'s `label` look. Never for a sentence. |
 | `--text-wordmark` | The name Kalia, set beside the mark. | The wordmark in the header, `uppercase` and `font-semibold`, in the working face at normal width and spaced wider than a label. Never for anything else: titles are `--font-display`, labels are `--text-label`. |
-| `--text-body` | Provisional app body text. | Ordinary app text until the mobile identity is chosen. |
-| `--weight-normal` | Ordinary text weight. | Provisional app body copy. |
-| `--weight-semibold` | Emphasised text weight. | Provisional app actions and leads. |
-| `--weight-bold` | Strong text weight. | Provisional app headings. |
+| `--text-screen-title` | A screen's title on the phone. | The one heading that names a screen: Catalog, Profile, the sign-in invitation, "update required". Larger than any other text, tight set, and always the heaviest weight. |
+| `--text-item-title` | The title of one item on the phone. | A beer's name on its card, the line that names the signed-in person, a sheet's heading. Never for a screen's own title. |
+| `--text-strength` | A beer's strength written large, like the figure on a specimen label. | The strength numeral on a beer's card, with its unit set in `--text-supporting`. Never for any other number. |
+| `--text-body` | Ordinary reading text on the phone. | Explanations, hints and button labels. Sized to the platform's own reading size so the system text-size setting scales it as every other app's. |
+| `--text-supporting` | Supporting text on the phone: a line that adds to a heading and is never essential. | A brewery under a beer's name, the build line, the unit after a strength. |
+| `--weight-normal` | Ordinary text weight on the phone. | Text that is only read: a status line, the loading notice. |
+| `--weight-medium` | A little firmer than ordinary, for text read alongside a heading. | Hints, explanations and a brewery under a beer's name. |
+| `--weight-bold` | The weight of everything that names or acts on the phone. | Titles, names, strengths, labels and button text. The phone has no other heavy weight, so a bold line is always one of these. |
 
 ### Spacing
 
 | Token | Means | Reach for it when |
 |---|---|---|
-| `--spacing-small` | A small separation. | Provisional app text spacing. |
-| `--spacing-medium` | A regular separation. | Provisional app section spacing. |
-| `--spacing-large` | A generous separation. | Provisional app page padding. |
-| `--spacing-xlarge` | A larger separation. | Provisional app footer spacing. |
-| `--spacing-touch` | Minimum touch target. | Provisional app controls. |
+| `--spacing-small` | A small separation on the phone. | The gap between cards in a list, and between a heading and the line under it. |
+| `--spacing-tight` | The vertical padding inside a card, a little tighter than the one beside it. | A beer's card, so its colour field hugs the three lines it holds. |
+| `--spacing-medium` | A regular separation on the phone. | A screen's side margin, a card's side padding, the gap before a section. |
+| `--spacing-large` | A generous separation. | The space above a button, and between a screen's blocks. |
+| `--spacing-xlarge` | A larger separation. | The space before a screen's footer, such as the build line. |
+| `--spacing-touch` | The smallest thing a thumb is asked to hit. | The minimum height or width of anything pressable that is not the main action, and the slot a person's initials sit in. |
+| `--spacing-action` | The height of the main action. | A screen's one primary button, which is taller than the least a thumb needs. |
 
 ### Shape
 
@@ -176,6 +220,7 @@ two-layer rule they sit in is
 |---|---|---|
 | `--radius-control` | The corner of anything that can be operated or that labels: buttons, fields, badges, skeleton blocks. | Every control. Square in this identity; it is a token so the next identity can change it in one place. |
 | `--radius-surface` | The corner of a plane: a card, a dialog, a toast. | Every surface. Square in this identity, for the same reason. |
+| `--radius-card` | The one rounded corner of the phone: a card, a button, a field and the slot for a person. | Every plane and every control in the app. It is a token of its own because the phone's identity is round where the web's is square, and the web's two radii do not reach the phone. |
 
 ### Motion
 
@@ -195,7 +240,7 @@ rather than by exact style: twelve groups, and a grey for anything that falls
 outside them. Near-identical styles share a colour on purpose; telling a
 Porter from a Baltic Porter is the name's job, not the colour's.
 
-`beerStyleGroup()` in `web/lib/beerStyle.ts` maps a style name to its
+`beerStyleGroup()` in `@kalia/api` (`packages/api/src/core/beer-style.ts`), which both clients use, maps a style name to its
 group by keyword, first match wins — so a Belgian IPA is an IPA, a Berliner
 Weisse is a sour before it is a wheat beer, a Weizenbock is a wheat beer
 before it is a bock, and a Wheatwine is a strong ale before it is a wheat beer.
@@ -222,7 +267,7 @@ has no group, and `scripts/check-contrast.mjs` holds every block to AA.
 
 Colours are expected to be tuned as the pages are laid out. Changing one is a
 `globals.css` edit that the contrast check guards; moving a style between
-groups, or adding a group, changes `lib/beerStyle.ts`, its test and this table
+groups, or adding a group, changes `beer-style.ts`, its test and this table
 in the same pull request.
 
 ## Contrast pairings

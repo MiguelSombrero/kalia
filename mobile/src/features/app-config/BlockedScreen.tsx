@@ -1,3 +1,4 @@
+import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { StyleSheet, Text } from "react-native";
@@ -22,7 +23,7 @@ export const BlockedScreen = ({
 
   return (
     <SafeAreaView style={styles.screen}>
-      <Text role="heading" style={styles.title}>
+      <Text role="heading" {...titleScale} style={styles.title}>
         {t(`appConfig.${reason}.title`)}
       </Text>
       <Text style={styles.body}>{t(`appConfig.${reason}.body`)}</Text>
@@ -34,8 +35,8 @@ export const BlockedScreen = ({
 const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
-    screen: { flex: 1, justifyContent: "center", padding: theme.spacing.large, backgroundColor: colors.background },
-    title: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
-    body: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },
+    screen: { flex: 1, justifyContent: "center", padding: theme.spacing.medium, backgroundColor: colors.background },
+    title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
+    body: { marginTop: theme.spacing.medium, ...textStyle("body", "medium"), color: colors["muted-foreground"] },
   });
 };

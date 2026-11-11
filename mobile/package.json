@@ -18,6 +18,7 @@
     "test": "jest && node --test scripts/render-assets.test.mjs scripts/app-config.test.mjs scripts/check-cleartext.test.mjs plugins/withCleartextExceptions.test.mjs"
   },
   "dependencies": {
+    "@expo-google-fonts/bricolage-grotesque": "0.4.1",
     "@hookform/resolvers": "^6.0.2",
     "@kalia/api": "*",
     "@kalia/locales": "*",
@@ -29,6 +30,7 @@
     "expo-constants": "~58.0.14",
     "expo-crypto": "~58.0.7",
     "expo-dev-client": "~58.0.17",
+    "expo-font": "~58.0.11",
     "expo-linking": "~58.0.15",
     "expo-localization": "~58.0.5",
     "expo-router": "~58.0.28",

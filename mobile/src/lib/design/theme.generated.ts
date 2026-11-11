@@ -53,56 +53,54 @@ export const theme = {
     }
   },
   "fonts": {
-    "display": "system",
-    "sans": "system"
+    "display": "BricolageGrotesque",
+    "sans": "BricolageGrotesque"
   },
   "typography": {
-    "display": {
-      "size": 48,
-      "lineHeight": 48
-    },
-    "name": {
-      "size": 64,
-      "lineHeight": 60.8
-    },
-    "title": {
-      "size": 28,
-      "lineHeight": 30.800000000000004
-    },
-    "heading": {
-      "size": 24,
-      "lineHeight": 28.799999999999997
-    },
     "label": {
       "size": 12,
       "lineHeight": 16,
       "letterSpacing": 1.44
     },
-    "wordmark": {
-      "size": 14,
-      "lineHeight": 16,
-      "letterSpacing": 4.2
+    "screen-title": {
+      "size": 36,
+      "lineHeight": 36.72,
+      "letterSpacing": -0.54
+    },
+    "item-title": {
+      "size": 22,
+      "lineHeight": 24.200000000000003
+    },
+    "strength": {
+      "size": 34,
+      "lineHeight": 34,
+      "letterSpacing": -0.68
     },
     "body": {
-      "size": 16,
-      "lineHeight": 24
+      "size": 17,
+      "lineHeight": 22.1
+    },
+    "supporting": {
+      "size": 14,
+      "lineHeight": 18.2
     }
   },
   "weights": {
     "normal": "400",
-    "semibold": "600",
+    "medium": "500",
     "bold": "700"
   },
   "spacing": {
     "small": 8,
+    "tight": 14,
     "medium": 16,
     "large": 24,
     "xlarge": 32,
-    "touch": 48
+    "touch": 48,
+    "action": 56
   },
   "radius": {
-    "control": 0,
-    "surface": 0
+    "card": 18
   },
   "duration": {
     "feed-reveal": 2400

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { beerStyleGroup, beerStyleGroups } from "./beerStyle";
+import { beerStyleGroup, beerStyleGroups } from "./beer-style";
 
 describe("beerStyleGroup", () => {
   it.each([
@@ -110,7 +110,7 @@ describe("beerStyleGroup", () => {
 
   it("puts no Wikidata-imported style in other except those that stay grey on purpose", () => {
     const sql = readFileSync(
-      resolve(import.meta.dirname, "../../backend/src/main/resources/db/migration/catalog/V008__catalog_wikidata_import.sql"),
+      resolve(import.meta.dirname, "../../../../backend/src/main/resources/db/migration/catalog/V008__catalog_wikidata_import.sql"),
       "utf8",
     );
     const styles = new Set(
@@ -126,7 +126,7 @@ describe("beerStyleGroup", () => {
 
 describe("beerStyleGroups", () => {
   it("has a generated block for every group but other, and no block for anything else", () => {
-    const css = readFileSync(resolve(import.meta.dirname, "../app/tokens.generated.css"), "utf8");
+    const css = readFileSync(resolve(import.meta.dirname, "../../../../web/app/tokens.generated.css"), "utf8");
     const blocks = [...css.matchAll(/\[data-beer-style="([^"]+)"\]/g)].map((m) => m[1]).sort();
 
     expect(blocks).toEqual(beerStyleGroups.filter((g) => g !== "other").sort());

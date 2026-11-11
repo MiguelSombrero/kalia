@@ -2,6 +2,7 @@ import { apiError, registerTransport, traceIdOf, type Transport } from "@kalia/a
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
+import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { ProfileScreen } from "./ProfileScreen";
 import { PixelRatio } from "react-native";
@@ -28,16 +29,21 @@ beforeEach(() => {
 
 describe("ProfileScreen signed out", () => {
   it.each([
-    ["en", "Profile", "Sign in to see your profile", "Sign in"],
-    ["fi", "Profiili", "Kirjaudu sisään nähdäksesi profiilisi", "Kirjaudu sisään"],
-  ] as const)("invites the user to sign in, in %s", async (locale, heading, title, action) => {
+    ["en", "Sign in to see your profile", "Sign in"],
+    ["fi", "Kirjaudu sisään nähdäksesi profiilisi", "Kirjaudu sisään"],
+  ] as const)("invites the user to sign in, in %s", async (locale, title, action) => {
     await renderWithLocale(<ProfileScreen />, locale, signedOut());
 
-    expect(screen.getByRole("heading", { name: heading })).toBeOnTheScreen();
-    expect(screen.getByText(title)).toBeOnTheScreen();
+    expect(screen.getByRole("heading", { name: title })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: action })).toBeOnTheScreen();
     expect(screen.queryByText(/signed out|ulos\./i)).not.toBeOnTheScreen();
     expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("lets the sign-in invitation grow with the system text size", async () => {
+    await renderWithLocale(<ProfileScreen />, "fi", signedOut());
+
+    expectScalesWithText();
   });
 
   it("opens sign-in in a sheet from Profile", async () => {

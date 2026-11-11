@@ -16,7 +16,7 @@ export const beerStyleGroups = [
 
 export type BeerStyleGroup = (typeof beerStyleGroups)[number];
 
-// First match wins; beerStyle.test.ts pins the cases the order decides.
+// First match wins; beer-style.test.ts pins the cases the order decides.
 const rules: readonly (readonly [BeerStyleGroup, readonly string[]])[] = [
   ["ipa", ["ipa", "india pale"]],
   ["sour", ["sour", "lambic", "gueuze", "geuze", "kriek", "framboise", "wild", "gose", "berliner", "flanders", "oud bruin"]],

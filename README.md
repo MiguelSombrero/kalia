@@ -162,7 +162,7 @@ a manifest; don't restate what the manifest says.
 ### Mobile app
 
 - Expo (SDK generation in `mobile/package.json`) as a development build with generated native projects, React 19, React Native, TypeScript ([ADR-0094](docs/adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md))
-- Expo Router (file-based navigation) with react-native-screens and react-native-safe-area-context; expo-dev-client, expo-splash-screen, expo-status-bar, expo-system-ui, expo-linking, expo-constants and expo-application
+- Expo Router (file-based navigation) with react-native-screens and react-native-safe-area-context; expo-dev-client, expo-font (with Bricolage Grotesque, SIL OFL, bundled as the app's one face, ADR-0110), expo-splash-screen, expo-status-bar, expo-system-ui, expo-linking, expo-constants and expo-application
 - expo-auth-session and expo-web-browser (public PKCE client, ADR-0095), expo-secure-store (the offline token), expo-crypto
 - `@kalia/api` and `@kalia/locales`, shared with the web app: the generated API client and the en/fi strings (react-i18next, i18next, expo-localization)
 - TanStack Query, Zustand, react-hook-form with Zod and @hookform/resolvers, the same roles as on the web (@react-native-async-storage/async-storage persists client state)

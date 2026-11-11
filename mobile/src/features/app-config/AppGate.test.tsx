@@ -3,6 +3,7 @@ import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { focusManager } from "@tanstack/react-query";
 import { Platform, Text } from "react-native";
+import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { useEffect } from "react";
@@ -340,5 +341,12 @@ describe("AppGate", () => {
       const button = screen.getByRole("button", { name: action });
       expect(button.props.accessibilityLabel).toBe(action);
     });
+  });
+
+  it("lets the update-required and maintenance screens grow with the system text size", async () => {
+    answer(minimum(2));
+    await renderGate();
+    await screen.findByRole("heading", { name: "Update required" });
+    expectScalesWithText();
   });
 });

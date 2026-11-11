@@ -1,3 +1,4 @@
+import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { StyleSheet, Text } from "react-native";
@@ -18,6 +19,6 @@ export const BuildInfo = () => {
 const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
-    build: { marginTop: theme.spacing.xlarge, fontSize: theme.typography.wordmark.size, color: colors["muted-foreground"] },
+    build: { marginTop: theme.spacing.xlarge, ...textStyle("supporting", "normal"), color: colors["muted-foreground"] },
   });
 };
