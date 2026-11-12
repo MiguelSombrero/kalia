@@ -1,3 +1,4 @@
+import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { isApiError } from "@kalia/api";
@@ -20,6 +21,6 @@ export const ErrorReference = ({ error }: { error: unknown }) => {
 const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
-    reference: { marginTop: theme.spacing.small, fontSize: theme.typography.label.size, color: colors["muted-foreground"] },
+    reference: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors["muted-foreground"] },
   });
 };

@@ -1,7 +1,7 @@
+import { beerStyleGroup } from "@kalia/api";
 import { Badge } from "@/components/ui/badge";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
-import { beerStyleGroup } from "@/lib/beerStyle";
 import type { SuggestionRow } from "./types";
 
 export const SuggestionHeader = ({ suggestion, locale }: { suggestion: SuggestionRow; locale: Locale }) => {

@@ -14,7 +14,7 @@ const families = ["primitives", "colors", "fonts", "typography", "weights", "spa
 const allowed = (token, platform) => (token.platforms ?? ["web", "mobile"]).includes(platform);
 const length = /^(?:0|(?:\d+(?:\.\d+)?|\.\d+)(?:rem|px))$/;
 const numeric = /^(?:\d+(?:\.\d+)?|\.\d+)$/;
-const spacing = /^(?:\d+(?:\.\d+)?|\.\d+)(?:em|rem|px)$/;
+const spacing = /^-?(?:\d+(?:\.\d+)?|\.\d+)(?:em|rem|px)$/;
 
 export function validateTokens(source) {
   for (const family of families) {

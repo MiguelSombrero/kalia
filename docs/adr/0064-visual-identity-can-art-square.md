@@ -9,6 +9,8 @@
 - **Amended:** 2026-10-11 by [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md)
   — contrast is held to WCAG 2.2 AA, and the Evidence below was recomputed
   against the finished redesign
+- **Amended:** 2026-11-11 by [ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md)
+  — the style-to-group mapping lives in `@kalia/api`, not in the web app alone
 
 ## Context
 

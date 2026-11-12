@@ -1,7 +1,9 @@
+import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import type { Locale } from "@kalia/locales";
-import { useState } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,9 +17,13 @@ const Content = ({ error, onRestart }: { error: Error; onRestart: () => void }) 
   const styles = useStyles();
   const { t } = useTranslation();
 
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => undefined);
+  }, []);
+
   return (
     <SafeAreaView style={styles.screen}>
-      <Text role="heading" style={styles.title}>
+      <Text role="heading" {...titleScale} style={styles.title}>
         {t("error.title")}
       </Text>
       <Text style={styles.body}>{t("error.crash.body")}</Text>
@@ -47,8 +53,8 @@ const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
     screen: { flex: 1, justifyContent: "center", padding: theme.spacing.large, backgroundColor: colors.background },
-    title: { fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
-    detail: { marginTop: theme.spacing.small, fontSize: theme.typography.label.size, color: colors.destructive },
-    body: { marginTop: theme.spacing.small, fontSize: theme.typography.body.size, color: colors["muted-foreground"] },
+    title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
+    detail: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors.destructive },
+    body: { marginTop: theme.spacing.small, ...textStyle("body", "normal"), color: colors["muted-foreground"] },
   });
 };

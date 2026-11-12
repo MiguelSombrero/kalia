@@ -1,5 +1,6 @@
 import { ActionButton } from "@/components/ActionButton";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { useRouter } from "expo-router";
@@ -39,16 +40,16 @@ export const SignInSheet = () => {
   };
   const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    content: { padding: theme.spacing.large },
-    heading: { marginTop: theme.spacing.medium, fontSize: theme.typography.title.size, fontWeight: theme.weights.bold, color: colors.foreground },
-    body: { marginTop: theme.spacing.medium, fontSize: theme.typography.body.size, color: colors.foreground },
-    notice: { marginTop: theme.spacing.medium, fontSize: theme.typography.body.size, color: colors.destructive },
+    content: { padding: theme.spacing.medium },
+    heading: { marginTop: theme.spacing.medium, ...textStyle("item-title", "bold"), color: colors.foreground },
+    body: { marginTop: theme.spacing.medium, ...textStyle("body", "normal"), color: colors.foreground },
+    notice: { marginTop: theme.spacing.medium, ...textStyle("body", "normal"), color: colors.destructive },
   });
 
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <ActionButton label={t("mobileNavigation.close")} onPress={close} busy={busy} />
+        <ActionButton label={t("mobileNavigation.close")} onPress={close} busy={busy} variant="secondary" />
         <Text role="heading" style={styles.heading}>{t("profile.signIn.action")}</Text>
         <Text style={styles.body}>{t("mobileNavigation.signInHint")}</Text>
         {failed ? <Text style={styles.notice}>{t("session.signInFailed")}</Text> : null}

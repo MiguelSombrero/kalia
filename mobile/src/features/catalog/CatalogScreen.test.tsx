@@ -1,5 +1,6 @@
 import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { CatalogScreen } from "./CatalogScreen";
 
@@ -34,9 +35,19 @@ describe("CatalogScreen", () => {
 
     expect(screen.getByRole("heading", { name: heading })).toBeOnTheScreen();
     expect(await screen.findByText("Pale Ale")).toBeOnTheScreen();
-    expect(screen.getByText("Brewery 1 · IPA")).toBeOnTheScreen();
+    expect(screen.getAllByText("Brewery 1")).toHaveLength(1);
+    expect(screen.getAllByText("IPA")).toHaveLength(2);
     expect(screen.getByText(abv)).toBeOnTheScreen();
     expect(screen.getByText("Stout")).toBeOnTheScreen();
+  });
+
+  it("lets the list grow with the system text size", async () => {
+    transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+
+    await renderWithLocale(<CatalogScreen />);
+    await screen.findByText("Pale Ale");
+
+    expectScalesWithText();
   });
 
   it("marks each beer's row with a test id, so a flow can find rows without naming a beer", async () => {

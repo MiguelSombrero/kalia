@@ -1,6 +1,6 @@
 # Task 03: Design Kalia's identity on a phone
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -81,18 +81,18 @@ Standing intent lands in a mobile section of [`docs/design.md`](../../design.md)
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the type,
+- [x] The product owner chose from built alternatives, at minimum the type,
       the density and the colour roles, each judged at the largest Dynamic Type
       size on the route task 01 chose; an ADR records the directions and the
       choice
-- [ ] `docs/design.md` carries the mobile identity as standing intent, and
+- [x] `docs/design.md` carries the mobile identity as standing intent, and
       `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs`
       pass over it — test
-- [ ] A component test shows a beer row with an unknown style group rendering
+- [x] A component test shows a beer row with an unknown style group rendering
       a fallback colour and still readable
-- [ ] The product owner signed off the built identity live on the screens that
+- [x] The product owner signed off the built identity live on the screens that
       exist, next to the chosen direction
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

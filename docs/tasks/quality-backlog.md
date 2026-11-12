@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-138
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-141
 
 ## MUST
 
@@ -269,6 +269,22 @@ None open.
   icon is visible beneath the central Add circle, with two small legs below it.
   Reproduce the overlap on-device, identify its cause and remove it without
   changing the approved navigation or the action's accessibility.
+- **COULD-139** *(confirmed 2026-11-11)* — `mobile/src/lib/design/FontGate.tsx`
+  renders nothing until `useFonts` resolves or errors and has no timeout, so a
+  font load that never settles keeps the splash screen up and hides the
+  "update required" and "maintenance" screens that must open when nothing else
+  does; give the gate a deadline after which it renders in the system face.
+- **COULD-140** *(confirmed 2026-11-11)* — `web/components/ui/beer-slot.tsx`,
+  `web/features/admin-suggestions/SuggestionHeader.tsx` and
+  `web/features/catalog/BeerDetailsView.tsx` import `beerStyleGroup` from the
+  `@kalia/api` root, which also exports the transport and error helpers; a
+  subpath export for the pure mapping would keep a client component from
+  depending on the whole barrel.
+- **COULD-141** *(confirmed 2026-11-11)* — When the bundled face fails to load,
+  `textStyle` in `mobile/src/lib/design/fonts.ts` names a family the device
+  does not have and sets no `fontWeight`, so the system face renders every
+  title, name and button at regular weight; fall back to the system face with
+  the matching `fontWeight` when the faces are not loaded.
 
 ## Retired
 

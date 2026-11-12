@@ -292,7 +292,11 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **WCAG 2.2 AA** ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)):
   tabs have accessibility labels, headings the heading role, no `allowFontScaling={false}`.
 - **Use the generated semantic theme for static styling**, selecting colours
-  with `useColorScheme`; the provisional font is the system default.
+  with `useColorScheme`. The face is Bricolage Grotesque, bundled and loaded
+  behind the splash screen by `FontGate`; set text with `textStyle(token, weight)`,
+  never a size or `fontWeight` by hand, because the face has one file per weight.
+  A beer's colours come from `useBeerStyleColours`, which falls back to the
+  neutral pair ([ADR-0110](../docs/adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)).
   Edit `packages/tokens/src/tokens.ts` and regenerate with
   `node scripts/generate-tokens.mjs`; never edit generated files. Runtime
   platform values remain allowed; a value without a semantic token needs a

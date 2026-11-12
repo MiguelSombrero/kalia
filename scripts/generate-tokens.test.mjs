@@ -20,7 +20,7 @@ const fixture = () => ({
     { name: "web-only", light: "white", dark: "ink", platforms: ["web"] },
   ],
   fonts: [{ name: "sans", values: { web: "var(--font-archivo, sans-serif)", mobile: "system", keycloak: "sans-serif" }, platforms: ["web", "mobile", "keycloak"] }],
-  typography: [{ name: "label", size: "0.75rem", lineHeight: "1rem", letterSpacing: "0.12em" }],
+  typography: [{ name: "label", size: "0.75rem", lineHeight: "1rem", letterSpacing: "0.12em" }, { name: "tight", size: "2rem", lineHeight: "1", letterSpacing: "-0.02em", platforms: ["mobile"] }],
   weights: [],
   spacing: [{ name: "small", value: "12px" }],
   radius: [{ name: "control", value: "0" }],
@@ -59,6 +59,9 @@ test("generates deterministic, platform-scoped outputs with both mobile modes an
   assert.match(outputs.mobile, /"dark"/);
   assert.match(outputs.mobile, /"size": 12/);
   assert.match(outputs.mobile, /"letterSpacing": 1\.44/);
+  assert.match(outputs.mobile, /"letterSpacing": -0\.64/);
+  assert.match(outputs.web, /--text-label--letter-spacing: 0\.12em/);
+  assert.doesNotMatch(outputs.web, /-0\.02em/);
   assert.match(outputs.mobile, /"small": 12/);
   assert.match(outputs.mobile, /"slow": 2400/);
   assert.match(outputs.web, /\[data-beer-style="stout"\]/);

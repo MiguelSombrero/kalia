@@ -1,4 +1,5 @@
 import { AppGate } from "@/features/app-config";
+import { FontGate } from "@/lib/design/FontGate";
 import { CrashBoundary, installUncaughtErrorHandler, UncaughtErrorGate } from "@/features/crash-recovery";
 import { useDeviceLocale } from "@/lib/i18n/useDeviceLocale";
 import { registerMobileTransport } from "@/lib/api/registerTransport";
@@ -17,16 +18,18 @@ const RootLayout = () => {
 
   return (
     <UncaughtErrorGate>
-      <AppProviders locale={locale}>
-        <StatusBar style="dark" />
-        <AppGate>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
-            <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
-          </Stack>
-        </AppGate>
-      </AppProviders>
+      <FontGate>
+        <AppProviders locale={locale}>
+          <StatusBar style="dark" />
+          <AppGate>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
+              <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
+            </Stack>
+          </AppGate>
+        </AppProviders>
+      </FontGate>
     </UncaughtErrorGate>
   );
 };
