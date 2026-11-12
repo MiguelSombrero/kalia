@@ -113,7 +113,7 @@ and the density are the phone's own.
   high and the main action `--spacing-action`.
 - **Not decided here.** The mark's place in the app, tab icons
   ([task 22](tasks/iteration-11/22-design-mobile-tab-icons.md)), search and
-  filters ([task 09](tasks/iteration-11/09-catalog-search-and-list.md)),
+  filters ([task 23](tasks/iteration-11/23-design-the-catalogs-search-and-filters.md)),
   motion ([task 05](tasks/iteration-11/05-design-motion-and-haptics.md)).
 
 ## Feel
