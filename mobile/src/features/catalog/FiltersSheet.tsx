@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { BackHandler, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
@@ -35,10 +35,12 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
   const [draft, setDraft] = useState<Filters>(initial);
   const [page, setPage] = useState<Page>("form");
   const keyboard = useKeyboardHeight();
+  const heading = useRef<HostInstance>(null);
   const count = useResultCount(draft);
   const error = strengthError(draft);
   useEffect(() => {
     if (page === "form") return;
+    if (heading.current) AccessibilityInfo.sendAccessibilityEvent(heading.current, "focus");
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
       setPage("form");
       return true;
@@ -67,7 +69,7 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
     <View style={styles.header}>
       {left}
       {right}
-      <Text role="heading" {...titleScale} style={styles.title}>
+      <Text ref={heading} role="heading" {...titleScale} style={styles.title}>
         {title}
       </Text>
     </View>
