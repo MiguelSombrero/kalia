@@ -32,6 +32,40 @@ does not count it.
   its dependencies installed is several GB, and a full disk fails builds with
   errors that do not name it.
 
+## Waiting on a background command
+
+A tool call that waits on something with no end blocks the session until the
+tool's timeout kills it, and a watch that matches only success expires in
+silence. Three waits stalled sessions that way: a foreground `make mobile-ios`
+(`expo run:ios` stays attached to Metro after the install), a Monitor whose
+filter matched only a success line and expired after 25 minutes, and others
+that ended on a false match (`Installing CocoaPods`) or on the first line of
+output. So:
+
+- **Never run Metro or a native dev build in the foreground.** Start it
+  detached and poll a readiness probe: `make mobile-metro-up` and the
+  `mobile-ios` / `mobile-android` targets return on their own
+  ([mobile/README.md](../../../mobile/README.md#run-the-app)). Anything else
+  that does not end by itself is started with `run_in_background`.
+- **Every wait is an until-loop with a ceiling and a failure exit**, never a
+  bare success-pattern filter. `node scripts/wait-for.mjs --timeout <seconds>
+  --fail '<failure text>' -- <probe command>` is that loop: it exits 0 when the
+  probe does, 1 when its output matches the failure text, 124 at the ceiling,
+  and prints the probe's last lines on each. A Monitor does the same in its own
+  words: `until <ready>; do <failure check && exit 1>; <ceiling check>; sleep 5;
+  done`, with the failure text of the thing watched in the pattern and a
+  pattern that names the *finished* state, not a prefix a step prints on the
+  way. The ceiling is the work's honest duration plus a margin, never "long
+  enough".
+- **Cheap checks that can fail go before the slow work they guard.** The
+  iPhone's reachability is checked before the one-minute prebuild, not after
+  it; a wait that ends in a known cause in seconds beats one that ends in the
+  same cause after minutes.
+- **On expiry or failure the session stops.** It does not re-arm the watch: it
+  calls `wrap_up` with `blocked`, naming what it was waiting on and the last
+  output, and the product owner decides. A second identical wait after a
+  timeout is the same stall again.
+
 ## Start
 
 1. Fetch first: `git fetch origin --prune`. A worktree branched off a local

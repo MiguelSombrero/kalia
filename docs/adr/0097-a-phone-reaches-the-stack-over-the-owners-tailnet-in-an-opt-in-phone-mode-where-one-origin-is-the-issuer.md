@@ -9,9 +9,10 @@
   `METRO_PORT` is forwarded beside the edge's three and `mobile-env` advertises
   the tailnet host as Metro's (`REACT_NATIVE_PACKAGER_HOSTNAME`). **The
   exposure paragraph reads accordingly:** in phone mode the tailnet's members
-  reach the edge's three ports and, only while `make mobile-start` runs,
+  reach the edge's three ports and, only while Metro runs (`make mobile-start`,
+  `make mobile-metro-up` or a development `make mobile-ios`),
   Metro, which serves the app's JavaScript and source to whoever asks; and
-  nothing listens beyond loopback, because in phone mode `make mobile-start`
+  nothing listens beyond loopback, because in phone mode each of them
   passes `--localhost`, which makes Expo CLI bind Metro to `127.0.0.1` (its
   default, `--lan`, binds every interface) while the advertised host is
   still overridden. **The switch is `KALIA_PHONE_HOST`:** phone mode is on

@@ -25,7 +25,8 @@ import {
   report,
   teamFinding,
 } from "./mobile-doctor.mjs";
-import { installOnDevice } from "./mobile-ios-device.mjs";
+import { choosePhone, installOnDevice, startKeepAlive } from "./mobile-ios-device.mjs";
+import { up as metroUp } from "./mobile-metro.mjs";
 import { ROOT, portOf, stackEnv } from "./stack-ports.mjs";
 
 const REVERSED = ["BACKEND_PORT", "KEYCLOAK_PORT", "METRO_PORT"];
@@ -96,18 +97,34 @@ const run = async (platform, variant, args) => {
     // CocoaPods fails on a non-UTF-8 locale without naming it.
     Object.assign(env, { LANG: "en_US.UTF-8", LC_ALL: "en_US.UTF-8" });
   }
-  const build = plan.steps.at(-1);
-  runSteps(plan.steps.slice(0, -1), env);
-  if (platform === "android") {
-    const jdk = facts.jdks.find((candidate) => candidate.major === facts.pins.jdk);
-    Object.assign(env, { ANDROID_HOME: await androidTarget(stack, facts.android.avds, variant), JAVA_HOME: jdk.home });
+  // The phone is checked before the minute-long prebuild, not after it, and
+  // kept awake until the build is installed or has failed.
+  const udid = platform === "ios-device" ? choosePhone() : undefined;
+  const stopKeepAlive = udid ? startKeepAlive(udid) : () => {};
+  try {
+    const build = plan.steps.at(-1);
+    runSteps(plan.steps.slice(0, -1), env);
+    if (platform === "android") {
+      const jdk = facts.jdks.find((candidate) => candidate.major === facts.pins.jdk);
+      Object.assign(env, { ANDROID_HOME: await androidTarget(stack, facts.android.avds, variant), JAVA_HOME: jdk.home });
+    }
+    if (udid) {
+      installOnDevice({ env, teamId: stack[TEAM_ID_VARIABLE], udid, configuration: build.configuration });
+      return;
+    }
+    // `expo run` stays attached to the Metro it starts, so a call that waits
+    // for it never returns. With Metro already up for this project on this
+    // port, it installs, launches and exits.
+    if (variant === "development") {
+      const metro = await metroUp({ stack });
+      if (!metro.ok) throw new Error(metro.message);
+      console.log(metro.message);
+    }
+    const child = spawn(build.command, build.args, { cwd: ROOT, env, stdio: "inherit" });
+    child.on("exit", (code) => process.exit(code ?? 1));
+  } finally {
+    stopKeepAlive();
   }
-  if (platform === "ios-device") {
-    installOnDevice({ env, teamId: stack[TEAM_ID_VARIABLE], configuration: build.configuration });
-    return;
-  }
-  const child = spawn(build.command, build.args, { cwd: ROOT, env, stdio: "inherit" });
-  child.on("exit", (code) => process.exit(code ?? 1));
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

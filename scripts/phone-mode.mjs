@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { PHONE_HOST_VARIABLE, ROOT, phoneHostOf, portOf, stackEnv } from "./stack-ports.mjs";
 import { tailscaleFacts } from "./tailscale.mjs";
 
-// The edge's three published ports, and Metro's, which only `make mobile-start` ever listens on.
+// The edge's three published ports, and Metro's, which only a Metro started by `make mobile-start` or `mobile-metro-up` listens on.
 export const FORWARDED_PORTS = ["WEB_PORT", "BACKEND_PORT", "KEYCLOAK_PORT", "METRO_PORT"];
 
 export const validHost = (host) => host.length <= 253 && /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i.test(host);

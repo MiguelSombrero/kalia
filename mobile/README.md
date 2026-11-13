@@ -32,22 +32,24 @@ the toolchain:
 
 ```bash
 make mobile-doctor
-```
-
-```bash
 make mobile-ios       # build the development build, run it on the iOS Simulator
 make mobile-android   # the same on the Android emulator
 ```
 
-Extra `expo run` flags go in `ARGS`: `make mobile-ios ARGS="--device 'iPhone 17e'"`.
+Both start Metro detached, install, launch and **return**; extra `expo run` flags
+go in `ARGS`: `make mobile-ios ARGS="--device 'iPhone 17e'"`.
 Release targets: `mobile-ios-release`, `mobile-android-release`, `mobile-ios-device-release`.
 
 - **iOS** reaches the Mac's `localhost` directly.
 - **Android** gets `adb reverse` for the API's, Keycloak's and Metro's ports from
   this worktree's `.env`; Keycloak must be `localhost:<port>` (the issuer is pinned).
 
-`make mobile-start` alone starts Metro for an installed build. Its port is its
-own because 8081 is Keycloak's: never type one.
+**Metro and builds never block a tool call.** `make mobile-metro-up` starts Metro
+detached on this worktree's own `METRO_PORT` (8081 is Keycloak's: never type a
+port), returning once `/status` answers or failing with the log's tail after
+120 s; `make mobile-metro-down` stops only that one (after a mode switch: `down`,
+then `up ARGS="--clear"`). `make mobile-start` is the foreground Metro for a
+human's terminal. Waiting on anything else: [the worktree skill](../.claude/skills/worktree/SKILL.md#waiting-on-a-background-command).
 
 Feed, Catalog, Cellar and Profile are tabs; the central Add action opens a
 sheet and points to the catalog until scanning arrives. Signed-out Cellar and
@@ -79,8 +81,6 @@ screen is a traceId to grep in the backend's JSON log.
 - **iPhone or Simulator:** Console.app, process `Kalia`, search `"level":"error"`; or
   `xcrun simctl spawn booted log stream --predicate 'process == "Kalia"'`.
 - **Android:** `adb logcat '*:S' ReactNativeJS:V`; a native crash is in the unfiltered output.
-- **React's own render-error `console.error` is not scrubbed** and carries
-  absolute host paths: clean it before it goes anywhere (CLAUDE.md, host data).
 
 ## Install on an iPhone
 
@@ -110,7 +110,9 @@ screen is a traceId to grep in the backend's JSON log.
    make mobile-ios-device
    ```
 
-   The `expo-dev-launcher` "Script has ambiguous dependencies" warning is harmless.
+   The phone is checked before the prebuild and again before the install, and
+   kept awake between; unplugged, the target fails in seconds. The
+   `expo-dev-launcher` "Script has ambiguous dependencies" warning is harmless.
 6. **Trust the developer on the phone.** A refused first launch is expected:
    Settings > General > VPN & Device Management > the Apple ID > **Trust**, then
    open Kalia, which shows the Expo development launcher.
@@ -203,12 +205,10 @@ mobile` renders them before a hand prebuild. **After the mark, `app.json` or
 ```bash
 make mobile-lint   # ESLint (module boundaries included) and strict tsc
 make mobile-test   # Jest + React Native Testing Library, and the icon render test; no simulator
-make mobile-start  # Metro on METRO_PORT, with this checkout's stack as the origins
 ```
 
-Both checks need neither Docker nor a native build, so `make verify-fast` runs
-them and the `mobile` CI job runs them on a change under `mobile/` or
-`packages/`. Run the whole gate rather than these alone
+Neither needs Docker or a native build: `make verify-fast` runs them, and the
+`mobile` CI job on a change under `mobile/` or `packages/`. Run the whole gate
 ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 
 ## Upgrade the Expo SDK
