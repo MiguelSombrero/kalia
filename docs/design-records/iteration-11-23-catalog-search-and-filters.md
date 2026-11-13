@@ -102,5 +102,8 @@ were in force, and signed the controls off once that was fixed. The agent also
 checked them in Finnish, in dark, at the largest text size and once on the Android
 emulator (full-height sheet, country names, system Back).
 
-Not yet done: the product owner's use of the controls on their iPhone in phone
-mode and the VoiceOver walk, which ADR-0108 makes the final sign-off.
+Not done: the product owner's use of the controls on their iPhone in phone mode
+and the VoiceOver walk, which ADR-0108 makes the final sign-off. The phone would not
+connect to the Mac for a build on 2026-11-13, and the product owner asked for the pull
+request to go ahead without it. The task's sign-off box therefore stays unticked, and
+the iPhone check and the walk are owed.
