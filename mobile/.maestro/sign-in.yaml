@@ -14,6 +14,15 @@ name: Sign in through Keycloak and read the profile from the stack
       platform: iOS
     commands:
       - tapOn: "Continue|Jatka"
+# A fresh Android device's Chrome shows its first-run screen before the page.
+- extendedWaitUntil:
+    visible: "Use without an account|Username or email|Käyttäjätunnus tai sähköposti|Signed in as testuser|Kirjautuneena käyttäjänä testuser"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Use without an account"
+    commands:
+      - tapOn: "Use without an account"
 # The browser keeps Keycloak's session after the app signs out, so a second
 # run on the same device returns signed in without showing the form.
 - extendedWaitUntil:

@@ -185,6 +185,15 @@ trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.x
 
 verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift api-breaking ## Everything CI checks that needs neither Docker nor a build (the pre-push gate; needs oasdiff)
 
+# Waits for the seed to exit, which `up -d` alone does not. Not `run`: on a
+# runner where keycloak-config had not yet run, it recreated postgres and
+# keycloak under the running backend (CI run 43440449766).
+.PHONY: seed-accounts
+seed-accounts: ## Create testuser and testadmin in the running stack and wait until they exist (needs Docker)
+	docker compose up -d --no-recreate keycloak-seed
+	@test "$$(docker wait $$(docker compose ps -aq keycloak-seed))" = 0 \
+	    || { docker compose logs --no-color keycloak-seed; exit 1; }
+
 # The flows in mobile/.maestro/ on every simulator or emulator this host has
 # (ADR-0096). It starts the stack and seeds the sign-in flow's account itself,
 # as web-e2e does, and fails when no platform ran. Maestro is a one-off
@@ -193,7 +202,7 @@ verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift
 mobile-e2e: ## Run the mobile end-to-end flows on the iOS Simulator and Android emulator this host has; fails if neither ran; refuses in phone mode (needs Docker and Maestro; one platform: ARGS="--platform ios")
 	@node scripts/phone-mode.mjs refuse "make mobile-e2e"
 	docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
-	docker compose run --rm keycloak-seed
+	$(MAKE) seed-accounts
 	node scripts/mobile-e2e.mjs $(ARGS)
 
 verify: verify-fast compose-check action-pins web-build backend-verify keycloak-check trivy-scan web-e2e mobile-e2e ## Every check CI runs but the image scans, in CI's order (needs Docker and trivy)

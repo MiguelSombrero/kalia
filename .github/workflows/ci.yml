@@ -403,10 +403,9 @@ jobs:
           done
           echo "::error::could not start the stack after 3 attempts"
           exit 1
-      # The sign-in flow's account. `run`, not `up -d`: it returns when the
-      # account exists, so the flow cannot race the seed.
+      # The sign-in flow's account, waited for (the Makefile says why).
       - name: Seed the demo account
-        run: docker compose run --rm keycloak-seed
+        run: make seed-accounts
       # The Maestro version is pinned in the script, and the cached directory is
       # named after it, so a new pin cannot restore the old binary.
       - name: Read the pinned Maestro version
