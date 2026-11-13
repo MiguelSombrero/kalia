@@ -109,22 +109,22 @@ catalog's loading, error and empty states.
 
 ## Acceptance criteria
 
-- [ ] A component test per primitive shows each of its states in light and
+- [x] A component test per primitive shows each of its states in light and
       dark and — for a row — a long Finnish name at the largest font scale,
       rendering without truncating its meaning
-- [ ] A component test shows the loading, error (with its reference and a
+- [x] A component test shows the loading, error (with its reference and a
       retry) and empty blocks rendering in the catalog and in Profile with the
       words those screens have today
-- [ ] A component test shows the Add, sign-in and filters sheets each rendering
+- [x] A component test shows the Add, sign-in and filters sheets each rendering
       through the one sheet shell, with its close action and heading found by
       role and accessible name in `en` and `fi`
-- [ ] No screen under `mobile/src/app` or `mobile/src/features` styles itself
+- [x] No screen under `mobile/src/app` or `mobile/src/features` styles itself
       outside the primitives and the theme — the token check passes
-- [ ] The mobile README says where a primitive lives and when a control moves
+- [x] The mobile README says where a primitive lives and when a control moves
       into `components/`
 - [ ] The product owner looked at every restyled screen on the route task 01
       chose, in both modes and both locales, and signed them off
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

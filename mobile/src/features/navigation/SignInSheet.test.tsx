@@ -55,3 +55,14 @@ it("keeps its controls available at the largest text scale", async () => {
     scale.mockRestore();
   }
 });
+
+it.each([
+  ["en", "Sign in", "Close"],
+  ["fi", "Kirjaudu sisään", "Sulje"],
+] as const)("is the one sheet shell, with its heading and close action found by role and name, in %s", async (locale, title, close) => {
+  await renderWithLocale(<SignInSheet />, locale, fakeTokenStore({ status: "signedOut", expired: false }));
+
+  expect(screen.getByTestId("sheet")).toBeOnTheScreen();
+  expect(screen.getByRole("heading", { name: title })).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: close })).toBeOnTheScreen();
+});

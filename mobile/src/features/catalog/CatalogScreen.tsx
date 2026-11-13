@@ -1,13 +1,13 @@
-import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { useLayoutEffect, useRef, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { ActionButton } from "@/components/ActionButton";
-import { ErrorReference } from "@/components/ErrorReference";
-import { Reveal, SkeletonBlock, useAnimateListChange } from "@/lib/motion";
+import { EmptyState } from "@/components/EmptyState";
+import { ErrorAlert } from "@/components/ErrorAlert";
+import { LoadingState } from "@/components/LoadingState";
+import { Screen } from "@/components/Screen";
+import { ScreenTitle } from "@/components/ScreenTitle";
+import { Reveal, useAnimateListChange } from "@/lib/motion";
 import { useRouter } from "expo-router";
 import { BeerCard } from "./BeerCard";
 import { FiltersButton, SearchField } from "./filters/controls";
@@ -39,31 +39,16 @@ export const CatalogScreen = () => {
   }, [beers.data, animateListChange]);
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
-      <Text role="heading" {...titleScale} style={styles.heading}>
-        {t("nav.catalog")}
-      </Text>
+    <Screen scroll={false}>
+      <ScreenTitle>{t("nav.catalog")}</ScreenTitle>
       <View style={styles.controls}>
         <SearchField value={applied.query} onChange={setQuery} label={t("catalogFilters.searchLabel")} placeholder={t("catalogFilters.searchPlaceholder")} clearLabel={t("catalogFilters.clearSearch")} />
         <FiltersButton count={inForce} label={inForce > 0 ? t("catalogFilters.buttonN", { count: inForce }) : t("catalogFilters.title")} onPress={() => router.push("/filters-sheet")} />
       </View>
       <FilterChips filters={applied} onRemove={remove} onClearAll={() => apply(emptyFilters())} />
-      {beers.isPending && (
-        <>
-          <Text style={styles.notice}>{t("catalog.loading")}</Text>
-          <View style={styles.placeholders}>
-            {[0, 1, 2].map((slot) => <SkeletonBlock key={slot} style={styles.placeholder} />)}
-          </View>
-        </>
-      )}
-      {beers.isError && (
-        <>
-          <Text style={styles.notice}>{t("catalog.list.error")}</Text>
-          <ErrorReference error={beers.error} />
-          <ActionButton label={t("error.retry")} onPress={() => void beers.refetch()} busy={beers.isFetching} />
-        </>
-      )}
-      {beers.isSuccess && beers.data.length === 0 && <Text style={styles.notice}>{t("catalog.list.empty")}</Text>}
+      {beers.isPending && <LoadingState label={t("catalog.loading")} placeholders={3} />}
+      {beers.isError && <ErrorAlert message={t("catalog.list.error")} error={beers.error} onRetry={() => void beers.refetch()} retrying={beers.isFetching} />}
+      {beers.isSuccess && beers.data.length === 0 && <EmptyState message={t("catalog.list.empty")} />}
       {beers.isSuccess && beers.data.length > 0 && (
         <Reveal style={styles.list}>
           <FlatList
@@ -75,19 +60,12 @@ export const CatalogScreen = () => {
           />
         </Reveal>
       )}
-    </SafeAreaView>
+    </Screen>
   );
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    screen: { flex: 1, paddingHorizontal: theme.spacing.medium, backgroundColor: colors.background },
-    heading: { ...textStyle("screen-title", "bold"), marginTop: theme.spacing.small, marginBottom: theme.spacing.medium, color: colors.foreground },
+const useStyles = () =>
+  StyleSheet.create({
     list: { flex: 1 },
-    controls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.small, marginBottom: theme.spacing.small },
-    placeholders: { marginTop: theme.spacing.medium },
-    placeholder: { height: theme.spacing.action * 1.5, marginBottom: theme.spacing.small, borderRadius: theme.radius.card },
-    notice: { ...textStyle("body", "normal"), color: colors["muted-foreground"] },
+    controls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.small, marginTop: theme.spacing.small, marginBottom: theme.spacing.small },
   });
-};

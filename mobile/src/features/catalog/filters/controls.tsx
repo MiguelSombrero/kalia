@@ -1,17 +1,15 @@
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
 import { PressFeedback } from "@/lib/motion";
+import { EDGE, square } from "@/components/metrics";
 import { MAX_FILTER_LENGTH } from "./model";
 
 const BADGE_SIZE = 22;
 const SWATCH_SIZE = 22;
-const CHECK_SIZE = 26;
 const KNOB_SIZE = 9;
-const EDGE = 1.5;
-const square = (size: number) => ({ width: size, aspectRatio: 1 }) as const;
 
 export const StyleSwatch = ({ style }: { style: string }) => {
   const colors = useThemeColors();
@@ -85,15 +83,6 @@ export const FiltersButton = ({ count, label, onPress }: { count: number; label:
   );
 };
 
-export const TextButton = ({ label, onPress, accessibilityLabel }: { label: string; onPress: () => void; accessibilityLabel?: string }) => {
-  const colors = useThemeColors();
-  return (
-    <Pressable role="button" accessibilityLabel={accessibilityLabel ?? label} onPress={onPress} style={{ minHeight: theme.spacing.touch, paddingHorizontal: theme.spacing.small, justifyContent: "center" }}>
-      <Text style={{ ...textStyle("supporting", "bold"), color: colors.primary }}>{label}</Text>
-    </Pressable>
-  );
-};
-
 export const Chip = ({ label, removeLabel, onPress, style }: { label: string; removeLabel: string; onPress: () => void; style?: string }) => {
   const colors = useThemeColors();
   const dark = useColorMode() === "dark";
@@ -112,56 +101,5 @@ export const Chip = ({ label, removeLabel, onPress, style }: { label: string; re
       <Text style={styles.text}>{label}</Text>
       <Text style={styles.remove}>✕</Text>
     </PressFeedback>
-  );
-};
-
-export const FieldRow = ({ title, value, empty, onPress, swatchStyle, accessibilityLabel }: { title: string; value: string; empty: boolean; onPress: () => void; swatchStyle?: string; accessibilityLabel: string }) => {
-  const colors = useThemeColors();
-  const styles = StyleSheet.create({
-    row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.tight, minHeight: theme.spacing.touch + theme.spacing.small, paddingVertical: theme.spacing.small, paddingHorizontal: theme.spacing.tight, marginBottom: theme.spacing.small, borderWidth: EDGE, borderColor: colors.border, borderRadius: theme.radius.card, backgroundColor: colors.surface },
-    text: { flex: 1 },
-    title: { ...textStyle("label", "bold"), textTransform: "uppercase", color: colors["muted-foreground"] },
-    value: { ...textStyle("body", empty ? "normal" : "bold"), color: empty ? colors["muted-foreground"] : colors.foreground },
-    chevron: { ...textStyle("body", "bold"), color: colors.foreground },
-  });
-  return (
-    <PressFeedback role="button" accessibilityLabel={accessibilityLabel} onPress={onPress} style={styles.row}>
-      <View style={styles.text}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.value}>{value}</Text>
-      </View>
-      {swatchStyle ? <StyleSwatch style={swatchStyle} /> : null}
-      <Text importantForAccessibility="no" style={styles.chevron}>
-        ›
-      </Text>
-    </PressFeedback>
-  );
-};
-
-// iOS has no radio trait: React Native fakes one by appending "radio button" and "checked" or "unchecked" to the
-// row's value, in its own translation table, which VoiceOver can speak in a voice of another language. Button plus
-// selected are traits iOS itself speaks in the voice's language. Android's radio role is announced by TalkBack.
-const choiceSemantics = (selected: boolean) =>
-  Platform.OS === "ios" ? ({ role: "button", accessibilityState: { selected } } as const) : ({ role: "radio", accessibilityState: { checked: selected } } as const);
-
-export const ChoiceRow = ({ label, sub, selected, onPress, swatchStyle, bordered }: { label: string; sub?: string; selected: boolean; onPress: () => void; swatchStyle?: string; bordered?: boolean }) => {
-  const colors = useThemeColors();
-  const styles = StyleSheet.create({
-    row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.tight, minHeight: theme.spacing.touch + theme.spacing.small, paddingVertical: theme.spacing.small, paddingHorizontal: theme.spacing.tight, backgroundColor: selected ? colors.accent : "transparent", ...(bordered ? { borderWidth: EDGE, borderColor: colors.border, borderRadius: theme.radius.card, marginBottom: theme.spacing.small } : { borderBottomWidth: 1, borderBottomColor: colors.divider }) },
-    text: { flex: 1 },
-    label: { ...textStyle("body", selected ? "bold" : "medium"), color: selected ? colors["accent-foreground"] : colors.foreground },
-    sub: { ...textStyle("supporting", "medium"), color: colors["muted-foreground"] },
-    check: { minWidth: CHECK_SIZE, aspectRatio: 1, borderRadius: CHECK_SIZE / 2, borderWidth: EDGE, borderColor: colors.border, alignItems: "center", justifyContent: "center", backgroundColor: selected ? colors.foreground : "transparent" },
-    tick: { ...textStyle("supporting", "bold"), color: colors.background },
-  });
-  return (
-    <Pressable {...choiceSemantics(selected)} accessibilityLabel={sub ? `${label}, ${sub}` : label} onPress={onPress} style={styles.row}>
-      {swatchStyle ? <StyleSwatch style={swatchStyle} /> : null}
-      <View style={styles.text}>
-        <Text style={styles.label}>{label}</Text>
-        {sub ? <Text style={styles.sub}>{sub}</Text> : null}
-      </View>
-      <View style={styles.check}>{selected ? <Text style={styles.tick}>✓</Text> : null}</View>
-    </Pressable>
   );
 };
