@@ -1,6 +1,7 @@
 import { registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
+import { BackHandler } from "react-native";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { FiltersSheet } from "./FiltersSheet";
@@ -149,6 +150,24 @@ describe("FiltersSheet", () => {
     const names = screen.getAllByRole("radio").map((row) => String(row.props.accessibilityLabel));
     expect(names.slice(1)).toEqual([...names.slice(1)].sort((a, b) => a.localeCompare(b, locale)));
     expect(names).toContain(albania);
+  });
+
+  it("steps back from a picker to the form on the system Back button, and does not take it from the form", async () => {
+    let pressBack: (() => unknown) | undefined;
+    const subscribe = jest.spyOn(BackHandler, "addEventListener").mockImplementation((_event, handler) => {
+      pressBack = () => handler({} as never);
+      return { remove: () => (pressBack = undefined) };
+    });
+    await renderSheet();
+    expect(pressBack).toBeUndefined();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Style: Any style" }));
+    await screen.findByRole("searchbox", { name: "Find a style" });
+    expect(subscribe).toHaveBeenCalled();
+    await act(async () => expect(pressBack?.()).toBe(true));
+
+    expect(await screen.findByRole("button", { name: "Style: Any style" })).toBeOnTheScreen();
+    await waitFor(() => expect(pressBack).toBeUndefined());
   });
 
   it("narrows the styles by what is typed, ignoring case and accents", async () => {

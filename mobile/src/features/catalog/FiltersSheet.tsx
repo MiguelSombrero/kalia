@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Keyboard, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { BackHandler, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
@@ -37,6 +37,14 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
   const keyboard = useKeyboardHeight();
   const count = useResultCount(draft);
   const error = strengthError(draft);
+  useEffect(() => {
+    if (page === "form") return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      setPage("form");
+      return true;
+    });
+    return () => subscription.remove();
+  }, [page]);
   const set = (patch: Partial<Filters>) => setDraft((current) => ({ ...current, ...patch }));
   const pick = (patch: Partial<Filters>) => {
     set(patch);
