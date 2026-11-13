@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kalia",
     "slug": "kalia",
-    "scheme": "kaliabroken",
+    "scheme": "kalia",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
