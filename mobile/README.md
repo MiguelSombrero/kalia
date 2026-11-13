@@ -231,7 +231,7 @@ Dependabot ignores the SDK's set (`expo`, `expo-*`, `jest-expo`, `eslint-config-
 
 ```bash
 node scripts/mobile-e2e.mjs install-maestro   # once: the pinned Maestro, checksum-verified, cached under ~/.cache/kalia
-make mobile-e2e                               # starts the stack, then runs the flow on every platform this host has
+make mobile-e2e                               # starts and seeds the stack, then runs the flows on every platform this host has
 ```
 
 It builds a release app and runs `.maestro/` on each platform present, failing
@@ -241,9 +241,9 @@ a UDID) and `KALIA_E2E_AVD` pick the device. `maestro-output/` is gitignored.
 `Infrastructure failure, not the app` in CI means re-run, not debug
 ([ci-playbook](../docs/ci-playbook.md#mobile-e2e-maestro-android)).
 
-- **A flow** prefers a test id to data, starts with `launchApp: clearState: true`
-  and depends on no other flow; **a new one is confirmed to fail** against a build
-  with the thing it checks broken.
+- **A flow** crosses a boundary Jest cannot (release build, stack, browser),
+  prefers a test id, starts with `launchApp: clearState: true`, depends on no
+  other flow, and **is confirmed to fail** against a build that breaks its check.
 
 ## Conventions
 

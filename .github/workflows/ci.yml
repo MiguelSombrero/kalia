@@ -357,7 +357,7 @@ jobs:
 
   mobile-e2e:
     name: Mobile E2E (Maestro, Android)
-    # The flow in mobile/.maestro/ against the whole stack on an Android
+    # The flows in mobile/.maestro/ against the whole stack on an Android
     # emulator (ADR-0096). A failed flow is not retried: a retry would hide a
     # flaky required check, so a red run is read and logged instead
     # (docs/common-failures.md).
@@ -403,6 +403,10 @@ jobs:
           done
           echo "::error::could not start the stack after 3 attempts"
           exit 1
+      # The sign-in flow's account. `run`, not `up -d`: it returns when the
+      # account exists, so the flow cannot race the seed.
+      - name: Seed the demo account
+        run: docker compose run --rm keycloak-seed
       # The Maestro version is pinned in the script, and the cached directory is
       # named after it, so a new pin cannot restore the old binary.
       - name: Read the pinned Maestro version
