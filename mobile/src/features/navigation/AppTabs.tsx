@@ -4,6 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { tabLabelScale, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
+import { useReducedMotion } from "@/lib/motion";
+import { easingFor } from "@/lib/motion/easing";
 
 const tabOptions = (title: string) => ({
   title,
@@ -15,6 +17,7 @@ export const AppTabs = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const colors = useThemeColors();
+  const reducedMotion = useReducedMotion();
   const styles = StyleSheet.create({
     add: {
       width: theme.spacing.touch,
@@ -36,6 +39,8 @@ export const AppTabs = () => {
       backBehavior="initialRoute"
       screenOptions={{
         headerShown: false,
+        animation: reducedMotion ? "none" : "fade",
+        transitionSpec: { animation: "timing", config: { duration: theme.duration.tab, easing: easingFor("in-out") } },
         tabBarStyle: styles.bar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors["muted-foreground"],

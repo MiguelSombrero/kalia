@@ -289,6 +289,9 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **The launch check reads `GET /api/v1/app-config`,** remembers the minimum
   build, and fails open when unreachable (ADR-0093).
 - **Every string comes from `@kalia/locales`** ([ADR-0011](../docs/adr/0011-i18next-localization.md)).
+- **Motion and haptics:** use `src/lib/motion/`'s tokens and primitives, never a literal;
+  `haptic()` is for an action's result, and needs the iPhone's System Haptics and
+  Vibration both on ([ADR-0113](../docs/adr/0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)).
 - **WCAG 2.2 AA** ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)):
   tabs have accessibility labels, headings the heading role, no `allowFontScaling={false}`.
 - **Use the generated semantic theme for static styling**, selecting colours

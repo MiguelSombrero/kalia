@@ -33,7 +33,7 @@ browsing and searching the catalog.
 | [03](iteration-11/03-design-kalias-identity-on-a-phone.md) | Design Kalia's identity on a phone | done |
 | [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | refined |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | done |
-| [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | refined |
+| [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | done |
 | [08](iteration-11/08-mobile-ui-primitives.md) | The app has its own primitives, and no screen is left plain | needs-refinement |
 | [23](iteration-11/23-design-the-catalogs-search-and-filters.md) | Design the catalog's search and filters | refined |
 | [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | done |
