@@ -142,11 +142,12 @@ The gates themselves:
   self-contained verdict sentence, at least one Bad or Neutral consequence, and
   an accepted ADR is amended rather than rewritten
   ([ADR-0019](docs/adr/0019-adr-format-and-conventions.md)).
-- **A decision earns an ADR only when all three hold:** a credible alternative
+- **A decision earns an ADR only when all four hold:** a credible alternative
   was rejected and the reason would not survive in the code,
   `docs/architecture.md` or a README; it binds work now (a carried possibility
-  is a backlog item); and a different task or module will need its reasoning
-  later — otherwise the task file's Constraints or Notes is the home. Decisions
+  is a backlog item); a different task or module will need its reasoning later
+  (else the task's Constraints or Notes); and it is architecturally significant
+  (how a surface looks is a design record in `docs/design-records/`). Decisions
   on one subject stay separate documents ([ADR-0032](docs/adr/0032-when-a-decision-earns-an-adr.md)).
 - **Each documented fact has one home** — ADRs record *why*,
   `docs/architecture.md` *shape*, READMEs *how*; every other mention is a

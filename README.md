@@ -205,6 +205,7 @@ kalia/
 │   ├── design.md     # the visual language
 │   ├── glossary.md   # the ubiquitous language
 │   ├── tasks/        # per-iteration task lists, backlog, quality backlog
+│   ├── design-records/  # the choice each design task made, and why
 │   └── adr/          # architecture decision records
 ├── .claude/          # agent skills, rules and settings
 ├── .github/          # CI workflows, Dependabot

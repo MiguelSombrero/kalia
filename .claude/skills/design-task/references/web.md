@@ -44,8 +44,8 @@ named choice — hold throughout.
 Bring the stack up and open the built page in the desktop app's browser pane
 at each agreed width. Show the built page next to the chosen mockup and get the
 product owner's live sign-off; a difference is fixed and shown again, or
-recorded in the ADR as a deliberate departure they agreed to — never left for
-a reviewer to notice.
+recorded in the design record as a deliberate departure they agreed to —
+never left for a reviewer to notice.
 
 ## Evidence
 
@@ -57,4 +57,4 @@ keyboard-only tests where something became interactive.
 ## Gates
 
 No lines beyond `SKILL.md`'s: the rounds, the directions per round and the
-ADR.
+design record.
