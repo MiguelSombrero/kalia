@@ -1,6 +1,6 @@
 # Task 22: Design the mobile tab icons
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -79,16 +79,16 @@ navigation and record the choice as standing design intent.
 
 ## Acceptance criteria
 
-- [ ] The product owner chooses the tab icons from built alternatives shown
+- [x] The product owner chooses the tab icons from built alternatives shown
       in the mobile navigation, and a design record holds the choice
-- [ ] A component test finds every tab and the central Add action by its
+- [x] A component test finds every tab and the central Add action by its
       accessible name with the chosen icons, and shows each icon hidden from
       assistive technology beside its word
-- [ ] `scripts/check-contrast.mjs` covers every icon state against the tab bar
+- [x] `scripts/check-contrast.mjs` covers every icon state against the tab bar
       and fails on a pairing below 3:1 — test
-- [ ] The product owner signs off the built icons on the mobile design route
+- [x] The product owner signs off the built icons on the mobile design route
       chosen by task 01
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

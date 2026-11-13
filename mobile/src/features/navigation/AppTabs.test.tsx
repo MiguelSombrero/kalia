@@ -1,5 +1,5 @@
 import { AppProviders } from "@/lib/providers/AppProviders";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { Redirect, Stack, useRouter } from "expo-router";
 import { PixelRatio, Pressable, Text } from "react-native";
@@ -66,6 +66,30 @@ describe("AppTabs", () => {
       await fireEvent.press(screen.getByLabelText(tab));
       expect(await screen.findByRole("heading", { name: heading })).toBeOnTheScreen();
     }
+  });
+
+  it.each([
+    ["en", { feed: "Feed", catalog: "Catalog", cellar: "Cellar", profile: "Profile" }, "Add a beer"],
+    ["fi", { feed: "Syöte", catalog: "Oluet", cellar: "Kellari", profile: "Profiili" }, "Lisää olut"],
+  ] as const)("draws an icon beside every tab's word and on Add, hidden from assistive technology, in %s", async (locale, names, add) => {
+    await renderApp(locale);
+
+    for (const [icon, name] of Object.entries(names)) {
+      const tab = screen.getByLabelText(name);
+      expect(within(tab).getByText(name)).toBeOnTheScreen();
+      const drawn = within(tab).getAllByTestId(`tab-icon-${icon}`, { includeHiddenElements: true });
+      expect(drawn.length).toBeGreaterThan(0);
+      for (const layer of drawn) {
+        expect(layer.props.accessibilityElementsHidden).toBe(true);
+        expect(layer.props.importantForAccessibility).toBe("no-hide-descendants");
+      }
+      expect(screen.queryByTestId(`tab-icon-${icon}`)).toBeNull();
+    }
+    const addTab = screen.getByLabelText(add);
+    for (const layer of within(addTab).getAllByTestId("add-icon", { includeHiddenElements: true })) {
+      expect(layer.props.accessibilityElementsHidden).toBe(true);
+    }
+    expect(screen.queryByTestId("add-icon")).toBeNull();
   });
 
   it("keeps all actions accessible at the largest text scale", async () => {

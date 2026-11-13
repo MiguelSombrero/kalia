@@ -4,6 +4,8 @@
 - **Date:** 2026-10-03
 - **Amended:** 2026-10-11 by [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md) — the
   mark is no longer the rack; its bullet below points there
+- **Amended:** 2026-11-13 by [design record](../design-records/iteration-11-22-mobile-tab-icons.md) — the
+  phone's navigation tabs show a picture beside their word; the web's stay words
 - **Amended:** 2026-10-11 — [task 15](../tasks/iteration-7.5/15-feed-line-carries-beer-facts.md)
   gave the feed line a style and ABV, so the feed draws the band
   ([ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md));
