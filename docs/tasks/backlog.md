@@ -16,6 +16,13 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   and no payment in this idea.
 - **Likes and comments on feed events** — the feed
   ([iteration 7](iteration-7.md)) exists, so this waits only on being wanted.
+- **The mark inside the phone app.** [ADR-0110](../adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)
+  left it out because the SVG library it needs was declined;
+  [iteration 11 task 22](iteration-11/22-design-mobile-tab-icons.md) has since
+  added `react-native-svg`, so the dependency is no longer the obstacle. Where
+  it goes (the signed-out Profile and the blocked screens are the natural
+  places; a blocked screen needs it bundled) is a design choice for the product
+  owner, made from built alternatives.
 - Recommendations ("if you liked this IPA…")
 - Following other users, so a feed can be personal rather than global
 - **Editing a catalog beer** — correcting a wrong ABV, a misspelt name.
