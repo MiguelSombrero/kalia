@@ -1,6 +1,6 @@
 # Task 08: The app's screens are built from its own primitives
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2, DW-3
 

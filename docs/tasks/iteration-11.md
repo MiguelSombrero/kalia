@@ -34,8 +34,8 @@ browsing and searching the catalog.
 | [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | done |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | done |
 | [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | done |
-| [25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md) | The update-required, maintenance and crash screens depend on nothing that can change under an installed build | needs-refinement |
-| [08](iteration-11/08-mobile-ui-primitives.md) | The app's screens are built from its own primitives | needs-refinement |
+| [25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md) | The update-required, maintenance and crash screens depend on nothing that can change under an installed build | refined |
+| [08](iteration-11/08-mobile-ui-primitives.md) | The app's screens are built from its own primitives | refined |
 | [23](iteration-11/23-design-the-catalogs-search-and-filters.md) | Design the catalog's search and filters | refined |
 | [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | done |
 | [17](iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md) | The app's transport logs a failure only where a feature calls it one | done |
