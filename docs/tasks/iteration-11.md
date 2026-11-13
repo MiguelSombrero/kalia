@@ -31,7 +31,7 @@ browsing and searching the catalog.
 | [07](iteration-11/07-token-pipeline.md) | One token source generates the web's CSS and the app's theme | done |
 | [02](iteration-11/02-design-the-interaction-model-and-navigation.md) | Design how the app is navigated | done |
 | [03](iteration-11/03-design-kalias-identity-on-a-phone.md) | Design Kalia's identity on a phone | done |
-| [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | refined |
+| [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | done |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | done |
 | [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | done |
 | [08](iteration-11/08-mobile-ui-primitives.md) | The app has its own primitives, and no screen is left plain | needs-refinement |

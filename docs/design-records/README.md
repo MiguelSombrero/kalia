@@ -27,4 +27,4 @@ an architectural decision. A choice of this kind is not an ADR, by
 
 Add a line when adding a record: its link, then the choice in one clause.
 
-*None yet.*
+- [Iteration 11 task 22, mobile tab icons](iteration-11-22-mobile-tab-icons.md) — Shine bubbles, a bottle and a barrel, filled on a soft pill when selected
