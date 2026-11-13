@@ -1,16 +1,21 @@
 import { Tabs, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, type ColorValue } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { tabLabelScale, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { useReducedMotion } from "@/lib/motion";
 import { easingFor } from "@/lib/motion/easing";
+import { AddIcon, TabIcon } from "./TabIcon";
+import { ICON_BOX, type TabIconName } from "./tabIcons";
 
-const tabOptions = (title: string) => ({
+const BAR_CONTENT_HEIGHT = 64;
+
+const tabOptions = (title: string, icon: TabIconName) => ({
   title,
   tabBarAccessibilityLabel: title,
-  tabBarIcon: () => null,
+  tabBarIcon: ({ focused, color }: { focused: boolean; color: ColorValue }) => <TabIcon name={icon} focused={focused} color={color} />,
 });
 
 export const AppTabs = () => {
@@ -18,20 +23,11 @@ export const AppTabs = () => {
   const router = useRouter();
   const colors = useThemeColors();
   const reducedMotion = useReducedMotion();
+  const insets = useSafeAreaInsets();
   const styles = StyleSheet.create({
-    add: {
-      width: theme.spacing.touch,
-      height: theme.spacing.touch,
-      // token-exception: the approved circular action needs a half-width radius.
-      borderRadius: 24,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.primary,
-    },
-    addText: { ...textStyle("item-title", "normal"), color: colors["primary-foreground"] },
-    bar: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors["bar-edge"] },
+    bar: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors["bar-edge"], height: BAR_CONTENT_HEIGHT + insets.bottom },
     label: textStyle("supporting", "medium"),
-    labelOn: { ...textStyle("supporting", "bold"), borderBottomWidth: 3, borderBottomColor: colors.primary },
+    labelOn: textStyle("supporting", "bold"),
   });
 
   return (
@@ -44,31 +40,27 @@ export const AppTabs = () => {
         tabBarStyle: styles.bar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors["muted-foreground"],
-        tabBarIconStyle: { display: "none" },
+        tabBarIconStyle: ICON_BOX,
         tabBarLabel: ({ focused, color, children }) => <Text {...tabLabelScale} style={[focused ? styles.labelOn : styles.label, { color }]}>{children}</Text>,
       }}
     >
       <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="feed" options={tabOptions(t("nav.feed"))} />
-      <Tabs.Screen name="catalog" options={tabOptions(t("nav.catalog"))} />
+      <Tabs.Screen name="feed" options={tabOptions(t("nav.feed"), "feed")} />
+      <Tabs.Screen name="catalog" options={tabOptions(t("nav.catalog"), "catalog")} />
       <Tabs.Screen
         name="add"
         listeners={{ tabPress: (event) => { event.preventDefault(); router.push("/add-sheet"); } }}
         options={{
-          ...tabOptions(t("mobileNavigation.add")),
+          title: t("mobileNavigation.add"),
           tabBarAccessibilityLabel: t("mobileNavigation.addTitle"),
           tabBarShowLabel: false,
           tabBarLabel: () => null,
-          tabBarIcon: () => (
-            <View style={styles.add} accessible={false}>
-              <Text {...tabLabelScale} style={styles.addText}>+</Text>
-            </View>
-          ),
-          tabBarIconStyle: { display: "flex" },
+          tabBarIcon: () => <AddIcon />,
+          tabBarIconStyle: { width: theme.spacing.touch, height: theme.spacing.touch },
         }}
       />
-      <Tabs.Screen name="cellar" options={tabOptions(t("nav.cellar"))} />
-      <Tabs.Screen name="profile" options={tabOptions(t("profile.title"))} />
+      <Tabs.Screen name="cellar" options={tabOptions(t("nav.cellar"), "cellar")} />
+      <Tabs.Screen name="profile" options={tabOptions(t("profile.title"), "profile")} />
     </Tabs>
   );
 };

@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-09
+- **Amended:** 2026-11-13 by [design record](../design-records/iteration-11-22-mobile-tab-icons.md) — the tab icons are no longer placeholders
 
 ## Context
 

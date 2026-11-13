@@ -74,10 +74,31 @@ anything a visitor sees; the `design-task` skill and
 
 Feed, Catalog, a central Add action, Cellar and Profile stay in that order.
 Add, filters and beer details open as sheets with a visible dismissal; the
-platform supplies its own navigation chrome. Icons shown in the navigation
-prototype are placeholders awaiting their own design. Screen-specific layout
-remains for the corresponding screen task.
+platform supplies its own navigation chrome. Screen-specific layout remains for
+the corresponding screen task.
 ([ADR-0109](adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md))
+
+### Tab icons
+
+Every tab shows a picture above its word, always, in English and Finnish: Feed
+is rising bubbles with a glint, Catalog a bottle, Cellar a barrel and Profile a
+person. Add is a plus on its cobalt circle and has no word.
+([design record](design-records/iteration-11-22-mobile-tab-icons.md))
+
+- **Pictures from Kalia's world, drawn by us.** Round ends and joins, one stroke
+  weight, a rounded outline when unselected and the same picture filled when
+  selected. The phone's drawings are its own: the web's navigation stays words
+  ([ADR-0065](adr/0065-imagery-icons-and-mark-specimen.md)).
+- **A picture means one thing.** Catalog is the beer itself, the bottle; Cellar
+  is where it is kept, the barrel. A new destination takes a picture that
+  names it by what it holds or where it lives, and does not reuse one.
+- **The picture takes the bar's tint** and carries no colour of its own, so one
+  drawing is right in light and dark. The selected tab fills its picture, sets
+  it on a pill of the soft action tint and sets its word bold, with no underline.
+- **Decorative beside its word.** The word names the tab, so assistive
+  technology never sees the picture; the Add circle is named by its action.
+- **The bar's height is fixed** and holds the picture and the word, so the word
+  stays near its default size however large the system text is.
 
 ## Mobile identity
 
@@ -112,9 +133,8 @@ and the density are the phone's own.
   a screen has one cobalt action.
 - **Taller than a thumb needs.** Pressable things are at least `--spacing-touch`
   high and the main action `--spacing-action`.
-- **Not decided here.** The mark's place in the app and tab icons
-  ([task 22](tasks/iteration-11/22-design-mobile-tab-icons.md)). Search and filters
-  are [their own section](#mobile-catalog-search-and-filters).
+- **Not decided here.** The mark's place in the app. Search and filters are
+  [their own section](#mobile-catalog-search-and-filters).
 
 ### Dark
 
@@ -416,6 +436,9 @@ for a pairing that only the light identity has (a row with no fourth cell is
 | `--color-destructive` | `--color-background` | non-text | both |
 | `--color-border` | `--color-background` | non-text | both |
 | `--color-border` | `--color-surface` | non-text | both |
+| `--color-muted-foreground` | `--color-surface` | non-text | both |
+| `--color-primary` | `--color-surface` | non-text | both |
+| `--color-primary` | `--color-accent` | non-text | both |
 | `--color-focus-ring` | `--color-background` | non-text | both |
 | `--color-focus-ring` | `--color-surface` | non-text | both |
 | `--color-focus-ring` | `--color-surface-sunken` | non-text | both |
@@ -432,6 +455,11 @@ check on the rendered page. axe skips a disabled control, so it does not see
 a button sending its form: that strength was measured by hand against its
 label, and [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)
 records the figures.
+
+A tab's icon is held to 3:1 in every state it has: the unselected icon in the
+muted ink on the bar, the selected icon in the action colour on the bar, the
+selected icon on its soft pill, and the Add circle against the bar; the glyph
+inside Add is the pairing already held for text on the action colour.
 
 The mark is held part by part against what each part is seen on: the tile
 against the page in light, and the bottle's edge, the beer and the foam against

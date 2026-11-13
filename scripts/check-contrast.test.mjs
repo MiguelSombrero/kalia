@@ -44,4 +44,30 @@ test("a pairing marked light is held in light only, and an unknown mode is a fai
     rmSync(root, { recursive: true, force: true });
   }
 });
+test("every state of a tab icon is held to 3:1 in both modes, and one below it fails", () => {
+  const states = [
+    ["`--color-muted-foreground` on `--color-surface`"],
+    ["`--color-primary` on `--color-surface`"],
+    ["`--color-primary` on `--color-accent`"],
+  ];
+  const real = checkContrast(resolve(import.meta.dirname, ".."));
+  for (const [pairing] of states) {
+    for (const mode of ["light", "dark"]) {
+      const held = real.results.filter((result) => result.label === `${pairing} (${mode})` && result.needs === 3);
+      assert.equal(held.length, 1, `${pairing} (${mode}) is held to 3:1`);
+    }
+  }
+
+  const root = mkdtempSync(resolve(tmpdir(), "contrast-icons-"));
+  try {
+    mkdirSync(resolve(root, "docs"));
+    writeFileSync(resolve(root, "docs/design.md"), `## Contrast pairings\n${states.map(([pairing]) => `| ${pairing.replace(" on ", " | ")} | non-text |`).join("\n")}\n`);
+    const source = structuredClone(tokens);
+    assert.deepEqual(checkContrast(root, source).failures, []);
+    source.colors.find((t) => t.name === "muted-foreground").dark = "graphite-700";
+    assert.ok(checkContrast(root, source).failures.some((failure) => failure.includes("muted-foreground") && failure.includes("(dark)") && failure.includes("needs 3:1")));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 test("all real pairings and variants pass both modes", () => assert.deepEqual(checkContrast(resolve(import.meta.dirname, "..")).failures, []));
