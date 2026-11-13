@@ -7,6 +7,7 @@ const westvleteren12 = {
   style: "Quadrupel",
   abv: 10.2,
   brewery: { id: "br1", name: "Brouwerij Westvleteren" },
+  status: "APPROVED" as const,
 };
 
 vi.mock("@/features/catalog/api", async (importOriginal) => ({

@@ -100,6 +100,46 @@ class ContributedBeerLifecycleIT {
 	}
 
 	@Test
+	void theSearchAndTheDetailsReportAPendingBeerToItsContributorAndAnApprovedOneToEveryReader() {
+		String beerName = uniqueName("Sahti");
+		String created = add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus().isCreated()
+				.expectBody(String.class).returnResult().getResponseBody();
+		String beerId = JsonPath.read(created, "$.id");
+		String approvedId = jdbc.queryForObject(
+				"SELECT id::text FROM catalog.beer WHERE moderation_status = 'APPROVED' LIMIT 1", String.class);
+
+		assertThat((String) JsonPath.read(created, "$.status")).as("the beer just added").isEqualTo("PENDING");
+		assertThat(searchStatuses(CONTRIBUTOR, "$.content[?(@.id == '" + beerId + "')].status", beerName))
+				.as("search as its contributor").containsExactly("PENDING");
+		assertThat(detailsStatus(CONTRIBUTOR, beerId)).as("details as its contributor").isEqualTo("PENDING");
+		assertThat(detailsStatus(CONTRIBUTOR, approvedId)).isEqualTo("APPROVED");
+		for (String reader : List.of(CONTRIBUTOR, OTHER, ANONYMOUS)) {
+			assertThat(searchStatuses(reader, "$.content[*].status", null)).as("a page of search as '%s'", reader)
+					.isNotEmpty().containsOnly("APPROVED");
+			assertThat(detailsStatus(reader, approvedId)).as("details as '%s'", reader).isEqualTo("APPROVED");
+		}
+
+		approve(beerId);
+
+		assertThat(searchStatuses(ANONYMOUS, "$.content[?(@.id == '" + beerId + "')].status", beerName))
+				.containsExactly("APPROVED");
+		for (String reader : List.of(CONTRIBUTOR, OTHER, ANONYMOUS)) {
+			assertThat(detailsStatus(reader, beerId)).as("details as '%s' once approved", reader).isEqualTo("APPROVED");
+		}
+	}
+
+	@Test
+	void noReaderButTheContributorEverReceivesPendingFromASearchOrTheDetails() {
+		String beerName = uniqueName("Sahti");
+		String beerId = addedBeerId(newBreweryBeer(beerName, uniqueName("Panimo")));
+
+		for (String reader : List.of(OTHER, ANONYMOUS)) {
+			assertThat(searchStatuses(reader, "$.content[*].status", beerName)).as("search as '%s'", reader).isEmpty();
+			get(reader, "/api/v1/beers/" + beerId).expectStatus().isNotFound();
+		}
+	}
+
+	@Test
 	void aPendingBeerIsCellaredByItsContributorButHeldFromThePublicCellarAndTheFeedUntilApproved() {
 		String beerName = uniqueName("Sahti");
 		String beerId = JsonPath.read(add(CONTRIBUTOR, newBreweryBeer(beerName, uniqueName("Panimo"))).expectStatus()
@@ -335,6 +375,18 @@ class ContributedBeerLifecycleIT {
 	private List<String> searchIds(String bearer, String name, String breweryId) {
 		return ids(get(bearer, "/api/v1/beers?query={name}&breweryId={breweryId}", name == null ? "" : name,
 				breweryId == null ? "" : breweryId), "$.content[*].id");
+	}
+
+	private List<String> searchStatuses(String bearer, String path, String name) {
+		String body = get(bearer, "/api/v1/beers?query={name}&size=50", name == null ? "" : name).expectStatus().isOk()
+				.expectBody(String.class).returnResult().getResponseBody();
+		return JsonPath.read(body, path);
+	}
+
+	private String detailsStatus(String bearer, String beerId) {
+		String body = get(bearer, "/api/v1/beers/" + beerId).expectStatus().isOk().expectBody(String.class)
+				.returnResult().getResponseBody();
+		return JsonPath.read(body, "$.status");
 	}
 
 	private List<String> breweryIds(String bearer, String name) {

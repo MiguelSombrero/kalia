@@ -39,6 +39,11 @@
   keeps the beer and the brewery and removes `contributor_id`; a suggestion
   still `PENDING` is rejected in the same transaction; see the "No catalog row
   is deleted" bullet of Decision
+- **Amended:** 2026-11-13 — a beer in a catalog search and a beer's details
+  (and the answer to adding one) carry `status`, `APPROVED` or `PENDING`, so a
+  client can mark a contributor's own waiting beer; it reports a row the reader
+  already sees, so who sees a beer is unchanged and no other reader is ever
+  given `PENDING` (iteration 11 task 24); see the "Visible" bullet of Decision
 
 ## Context
 
@@ -73,6 +78,8 @@ ever deleted.
   beer to an existing brewery all apply it. A `PENDING` row is also left out of
   every public read of a cellar and of the feed. A `REJECTED` or `REMOVED` row
   is never visible, to its contributor either.
+  The beer reads report which of the two a visible beer is (`status`), typed
+  to those two values and not to the storage enum.
 - **Withdrawn** is a `REJECTED` or `REMOVED` beer, and one rule decides it
   everywhere. A public read leaves it out exactly as it leaves out a `PENDING`
   one: no feed line and no public-cellar entry, before or after the operator
