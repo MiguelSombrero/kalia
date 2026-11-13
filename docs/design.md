@@ -133,8 +133,8 @@ and the density are the phone's own.
   a screen has one cobalt action.
 - **Taller than a thumb needs.** Pressable things are at least `--spacing-touch`
   high and the main action `--spacing-action`.
-- **Not decided here.** The mark's place in the app, search and
-  filters ([task 23](tasks/iteration-11/23-design-the-catalogs-search-and-filters.md)).
+- **Not decided here.** The mark's place in the app. Search and filters are
+  [their own section](#mobile-catalog-search-and-filters).
 
 ### Dark
 
@@ -161,6 +161,46 @@ in dark and the card itself does not glare.
   scheme, so no light frame flashes in dark.
 - **Not decided here.** A switch of the user's own, and a dark web
   ([ADR-0112](adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)).
+
+## Mobile catalog search and filters
+
+The Catalog is searched and narrowed from a field and a button above the list,
+and the filters in force are said on the list in words that remove them. Every
+control is a plain, labelled tap: none needs a drag or a gesture.
+([design record](design-records/iteration-11-23-catalog-search-and-filters.md))
+
+- **A field and a button under the title.** The search field fills the width and
+  the Filters button sits beside it. The button carries a count of what the
+  sheet holds in force (style, brewery, country, a strength range, and a sort
+  other than the default) and never counts the typed text, so the count and the
+  chips always agree.
+- **The filters in force are chips under the field,** one per filter, each a
+  button named "Remove filter" with the filter in words, and a Clear all at the
+  end. A chip wraps its words to the width of the screen and is never cut. A
+  style chip takes the style's colour in light and a small swatch of it in dark,
+  like a beer; every other chip is the neutral ink-edged slot, because colour on
+  the phone means a beer's style or the action.
+- **The sheet holds its choices and applies them together.** Nothing changes
+  the list while it is open. Close and Clear all are at its head, and one button
+  at its foot names how many beers it would show and is the sheet's one main
+  action; it is dimmed and refuses while a strength is refused.
+- **Style, brewery and country are chosen from their own page inside the sheet.**
+  A row shows the current value, and opens a full-height, searchable,
+  single-choice list with a way back to the sheet; choosing returns at once.
+  A style shows its colour beside it. Breweries are asked for from the server,
+  20 at a time, with an explicit Show more and never a scroll that fetches.
+  Countries are named in the app's language and ordered by that language.
+- **Strength is two number fields, from and to,** with a decimal keypad, a
+  decimal comma read as a point, and a message in words when from is above to or
+  a value is outside the API's bounds. Where the keypad has no return key the
+  sheet offers Done above it.
+- **Sort is five radio rows** in the sheet, named as the web names them.
+- **At the largest text size** the sheet's head stacks, with Close and Clear all
+  above the title. The title and the button stop growing at twice their size, so
+  the button's words wrap to two lines at most, and the form scrolls behind it.
+- **Not decided here.** What a filter does to the list, the list's loading,
+  empty and no-match states, and what the screen remembers
+  ([task 09](tasks/iteration-11/09-catalog-search-and-list.md)).
 
 ## Mobile motion
 

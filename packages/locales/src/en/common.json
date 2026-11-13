@@ -697,5 +697,54 @@
       "agreeRequired": "Please confirm you're old enough to use a beer app.",
       "rateLimited": "Too many sign-up attempts. Please try again in a few minutes."
     }
+  },
+  "catalogFilters": {
+    "title": "Filters",
+    "buttonN": "Filters, {{count}} in force",
+    "close": "Close",
+    "clearAll": "Clear all",
+    "backToFilters": "Back to filters",
+    "style": "Style",
+    "brewery": "Brewery",
+    "country": "Country",
+    "strength": "Strength %",
+    "from": "From",
+    "to": "To",
+    "done": "Done",
+    "sort": "Sort by",
+    "anyStyle": "Any style",
+    "anyBrewery": "Any brewery",
+    "anyCountry": "All countries",
+    "searchLabel": "Search beers",
+    "searchPlaceholder": "Search beers",
+    "clearSearch": "Clear search",
+    "removeFilter": "Remove filter: {{filter}}",
+    "atLeast": "at least {{value}} %",
+    "atMost": "at most {{value}} %",
+    "sortedBy": "Sorted by {{sort}}",
+    "noMatch": "Nothing matches “{{query}}”.",
+    "showing": "Showing {{shown}} of {{total}}",
+    "more": "Show more",
+    "find": {
+      "style": "Find a style",
+      "brewery": "Search breweries",
+      "country": "Search countries"
+    },
+    "apply": {
+      "count_one": "Show {{formatted}} beer",
+      "count_other": "Show {{formatted}} beers",
+      "unknown": "Show beers"
+    },
+    "error": {
+      "order": "From must not be above to.",
+      "bound": "Enter a strength from 0 to 100."
+    },
+    "sorts": {
+      "name,asc": "Name (A–Z)",
+      "name,desc": "Name (Z–A)",
+      "abv,asc": "Strength (low → high)",
+      "abv,desc": "Strength (high → low)",
+      "style,asc": "Style (A–Z)"
+    }
   }
 }

@@ -8,24 +8,31 @@ export const ActionButton = ({
   label,
   onPress,
   busy = false,
+  disabled = false,
+  flush = false,
+  maxFontSizeMultiplier,
   variant = "primary",
 }: {
   label: string;
   onPress: () => void;
   busy?: boolean;
+  disabled?: boolean;
+  flush?: boolean;
+  maxFontSizeMultiplier?: number;
   variant?: "primary" | "secondary";
 }) => {
   const styles = useStyles();
+  const inert = busy || disabled;
   return (
     <PressFeedback
       role="button"
       accessibilityLabel={label}
-      accessibilityState={{ busy, disabled: busy }}
-      disabled={busy}
+      accessibilityState={{ busy, disabled: inert }}
+      disabled={inert}
       onPress={onPress}
-      style={[styles.button, variant === "secondary" ? styles.secondary : styles.primary, busy && styles.buttonBusy]}
+      style={[styles.button, !flush && styles.buttonSpaced, variant === "secondary" ? styles.secondary : styles.primary, inert && styles.buttonBusy]}
     >
-      <Text style={[styles.buttonText, variant === "secondary" && styles.secondaryText]}>{label}</Text>
+      <Text maxFontSizeMultiplier={maxFontSizeMultiplier} style={[styles.buttonText, variant === "secondary" && styles.secondaryText]}>{label}</Text>
     </PressFeedback>
   );
 };
@@ -34,13 +41,13 @@ const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
     button: {
-      marginTop: theme.spacing.large,
       minHeight: theme.spacing.action,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: theme.spacing.large,
       borderRadius: theme.radius.card,
     },
+    buttonSpaced: { marginTop: theme.spacing.large },
     primary: { backgroundColor: colors.primary },
     secondary: { borderWidth: 2, borderColor: colors.border, backgroundColor: colors.background },
     buttonBusy: { opacity: 0.5 },

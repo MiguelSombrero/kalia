@@ -8,7 +8,12 @@ import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
 import { ErrorReference } from "@/components/ErrorReference";
 import { Reveal, SkeletonBlock, useAnimateListChange } from "@/lib/motion";
+import { useRouter } from "expo-router";
 import { BeerCard } from "./BeerCard";
+import { FiltersButton, SearchField } from "./filters/controls";
+import { FilterChips } from "./filters/FilterChips";
+import { emptyFilters, removeFilter, sheetFilterCount, type ActiveFilterKey } from "./filters/model";
+import { useFiltersStore } from "./filters/store";
 import type { BeerSummary } from "./api";
 import { useBeers } from "./hooks/useBeers";
 
@@ -16,6 +21,10 @@ export const CatalogScreen = () => {
   const styles = useStyles();
   const { t, i18n } = useTranslation();
   const beers = useBeers();
+  const router = useRouter();
+  const { applied, apply, setQuery } = useFiltersStore();
+  const inForce = sheetFilterCount(applied);
+  const remove = (key: ActiveFilterKey) => apply(removeFilter(applied, key));
   const animateListChange = useAnimateListChange();
   const [pulled, setPulled] = useState(false);
   const pull = () => {
@@ -34,6 +43,11 @@ export const CatalogScreen = () => {
       <Text role="heading" {...titleScale} style={styles.heading}>
         {t("nav.catalog")}
       </Text>
+      <View style={styles.controls}>
+        <SearchField value={applied.query} onChange={setQuery} label={t("catalogFilters.searchLabel")} placeholder={t("catalogFilters.searchPlaceholder")} clearLabel={t("catalogFilters.clearSearch")} />
+        <FiltersButton count={inForce} label={inForce > 0 ? t("catalogFilters.buttonN", { count: inForce }) : t("catalogFilters.title")} onPress={() => router.push("/filters-sheet")} />
+      </View>
+      <FilterChips filters={applied} onRemove={remove} onClearAll={() => apply(emptyFilters())} />
       {beers.isPending && (
         <>
           <Text style={styles.notice}>{t("catalog.loading")}</Text>
@@ -71,6 +85,7 @@ const useStyles = () => {
     screen: { flex: 1, paddingHorizontal: theme.spacing.medium, backgroundColor: colors.background },
     heading: { ...textStyle("screen-title", "bold"), marginTop: theme.spacing.small, marginBottom: theme.spacing.medium, color: colors.foreground },
     list: { flex: 1 },
+    controls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.small, marginBottom: theme.spacing.small },
     placeholders: { marginTop: theme.spacing.medium },
     placeholder: { height: theme.spacing.action * 1.5, marginBottom: theme.spacing.small, borderRadius: theme.radius.card },
     notice: { ...textStyle("body", "normal"), color: colors["muted-foreground"] },

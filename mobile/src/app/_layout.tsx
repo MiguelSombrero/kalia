@@ -30,6 +30,7 @@ const RootLayout = () => {
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? "fade" : "default", contentStyle: { backgroundColor: colors.background } }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
+              <Stack.Screen name="filters-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: [0.95] }} />
               <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
             </Stack>
           </AppGate>
