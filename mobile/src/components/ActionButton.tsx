@@ -1,7 +1,8 @@
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import { PressFeedback } from "@/lib/motion";
 
 export const ActionButton = ({
   label,
@@ -16,7 +17,7 @@ export const ActionButton = ({
 }) => {
   const styles = useStyles();
   return (
-    <Pressable
+    <PressFeedback
       role="button"
       accessibilityLabel={label}
       accessibilityState={{ busy, disabled: busy }}
@@ -25,7 +26,7 @@ export const ActionButton = ({
       style={[styles.button, variant === "secondary" ? styles.secondary : styles.primary, busy && styles.buttonBusy]}
     >
       <Text style={[styles.buttonText, variant === "secondary" && styles.secondaryText]}>{label}</Text>
-    </Pressable>
+    </PressFeedback>
   );
 };
 

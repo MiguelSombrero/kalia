@@ -113,8 +113,7 @@ and the density are the phone's own.
   high and the main action `--spacing-action`.
 - **Not decided here.** The mark's place in the app, tab icons
   ([task 22](tasks/iteration-11/22-design-mobile-tab-icons.md)), search and
-  filters ([task 23](tasks/iteration-11/23-design-the-catalogs-search-and-filters.md)),
-  motion ([task 05](tasks/iteration-11/05-design-motion-and-haptics.md)).
+  filters ([task 23](tasks/iteration-11/23-design-the-catalogs-search-and-filters.md)).
 
 ### Dark
 
@@ -141,6 +140,39 @@ in dark and the card itself does not glare.
   scheme, so no light frame flashes in dark.
 - **Not decided here.** A switch of the user's own, and a dark web
   ([ADR-0112](adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)).
+
+## Mobile motion
+
+Motion on the phone explains a change and never decorates one, and the amount
+is small. Durations and easings are the tokens under [Motion](#motion); the
+values live in the token source, never in a component.
+
+- **A screen change is quick.** Switching tabs cross-fades over `--duration-tab`.
+  A pushed screen and a sheet use the platform's own transition, which already
+  follows a finger; a sheet is never replaced by a custom one.
+- **A press shrinks the control a little** over `--duration-press` and dims it,
+  and returns on release. Only controls that act do this; text and cards that
+  do not act stay still.
+- **Content that arrives fades in once** over `--duration-reveal`, with no
+  movement and no stagger, so a list that fills never looks like it is
+  travelling.
+- **A list that changes slides the rows that stay** over `--duration-layout`.
+  A list that updates while it is scrolled never moves content under the
+  finger: rows inserted above the viewport keep the scroll position.
+- **Loading shows the shape of what is coming.** Placeholder blocks breathe
+  slowly over `--duration-pulse`, beside the words that say it is loading.
+  Refreshing a list is the platform's own pull indicator.
+- **Reduced motion follows the system setting on both platforms,** with no
+  switch in the app. Every one of the above reaches its final state at once:
+  tabs switch without a fade, a pushed screen cross-fades, a pressed control
+  changes only its opacity, content is simply there, rows jump to their new
+  place and placeholders hold still. No information is carried by motion
+  alone, so a screen reads the same with all of it removed.
+- **What is felt is only the result of an action the person took:** a success
+  when something was saved, a warning when something was removed, an error when
+  it could not be. Taps, tab changes, sheets and refreshes carry no haptic. A
+  haptic is never the only sign of a result, and it follows the system's own
+  haptics setting and does nothing where the device has no motor.
 
 ## Feel
 
@@ -257,7 +289,13 @@ meaning in the phone's dark mode, where it has its own value; a phrase such as
 |---|---|---|
 | `--animate-feed-reveal` | Content the visitor just asked to see, highlighted once so the eye finds it. | Feed entries shown by pressing "N new", and the catalog row of a beer the visitor has just added. Only under `motion-safe:`, so `prefers-reduced-motion` skips it; never on content that arrived without being asked for. |
 | `--duration-feed-reveal` | Duration of a reveal. | The feed reveal animation. |
-| `--easing-out` | A slowing movement. | The feed reveal animation. |
+| `--easing-out` | A slowing movement. | The feed reveal animation; on the phone a press and a reveal. |
+| `--easing-in-out` | A movement that eases at both ends. | On the phone, a tab fade and a placeholder's breathing. |
+| `--duration-press` | How long a pressed control takes to shrink and return. | The phone's pressable controls ([mobile motion](#mobile-motion)). |
+| `--duration-reveal` | How long arriving content takes to fade in. | A list row or other content that has just loaded, on the phone. |
+| `--duration-layout` | How long rows take to slide to their new place. | A list on the phone whose rows are added or removed. |
+| `--duration-tab` | How long the tab cross-fade takes. | Switching tabs on the phone. |
+| `--duration-pulse` | Half a breath of a loading placeholder. | A placeholder block while content loads, on the phone. |
 
 There is no elevation token: nothing in this identity casts a shadow. A dialog
 or a toast is told from the page by its ink edge and, for a dialog, the scrim.

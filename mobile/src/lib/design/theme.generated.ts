@@ -105,10 +105,16 @@ export const theme = {
     "card": 18
   },
   "duration": {
-    "feed-reveal": 2400
+    "feed-reveal": 2400,
+    "press": 100,
+    "reveal": 220,
+    "layout": 220,
+    "tab": 180,
+    "pulse": 700
   },
   "easing": {
-    "out": "ease-out"
+    "out": "ease-out",
+    "in-out": "ease-in-out"
   },
   "variants": {
     "beer-style": {

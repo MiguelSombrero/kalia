@@ -114,8 +114,18 @@ export const tokens = {
     { name: "surface", value: "0", platforms: ["web"] },
     { name: "card", value: "1.125rem", platforms: ["mobile"] },
   ] satisfies readonly Dimension[],
-  duration: [{ name: "feed-reveal", value: "2400ms" }] satisfies readonly Dimension[],
-  easing: [{ name: "out", value: "ease-out" }] satisfies readonly Dimension[],
+  duration: [
+    { name: "feed-reveal", value: "2400ms" },
+    { name: "press", value: "100ms", platforms: ["mobile"] },
+    { name: "reveal", value: "220ms", platforms: ["mobile"] },
+    { name: "layout", value: "220ms", platforms: ["mobile"] },
+    { name: "tab", value: "180ms", platforms: ["mobile"] },
+    { name: "pulse", value: "700ms", platforms: ["mobile"] },
+  ] satisfies readonly Dimension[],
+  easing: [
+    { name: "out", value: "ease-out" },
+    { name: "in-out", value: "ease-in-out", platforms: ["mobile"] },
+  ] satisfies readonly Dimension[],
   variants: [{
     name: "beer-style",
     values: [
