@@ -34,7 +34,8 @@ browsing and searching the catalog.
 | [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | done |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | done |
 | [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | done |
-| [08](iteration-11/08-mobile-ui-primitives.md) | The app has its own primitives, and no screen is left plain | needs-refinement |
+| [25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md) | The update-required, maintenance and crash screens depend on nothing that can change under an installed build | needs-refinement |
+| [08](iteration-11/08-mobile-ui-primitives.md) | The app's screens are built from its own primitives | needs-refinement |
 | [23](iteration-11/23-design-the-catalogs-search-and-filters.md) | Design the catalog's search and filters | refined |
 | [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | done |
 | [17](iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md) | The app's transport logs a failure only where a feature calls it one | done |
@@ -63,14 +64,18 @@ and [24](iteration-11/24-a-contributor-sees-the-status-of-their-own-beers.md)
 were added at the refinement of 2026-11-12: the filters' controls are interface
 choices the product owner makes from built alternatives, and the pending marker
 that tasks 09 and 10 settled needs a status the API does not yet carry.
+[Task 25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md)
+was added at the refinement of 2026-11-13, split out of task 08: the screens that
+cannot be fixed by a release once installed are guarded on their own, and the
+crash screen, which has the same property, joined them.
 
 The refinement of 2026-11-07 took tasks 01–06 and 12–21 to `refined`; task 07
 was refined once task 06's ADR landed, and tasks 04 and 05 are `refined`. The
 refinement of 2026-11-12 took tasks 22, 09, 10, 23 and 24 to `refined`. Tasks
-08 and 11 stay `needs-refinement`: each is written against an ADR not yet made —
-the design tasks' for 08, task 08's and the catalog screens' for 11 — and is
-refined once that lands. The answers that already bind them are recorded in
-each, so that pass is short.
+08 and 11 stayed `needs-refinement` until the design tasks' ADRs and the
+catalog's controls had landed. The refinement of 2026-11-13 answered every
+question in both and added task 25; the status of each is the product owner's to
+move.
 
 The table's order is the order of work:
 
@@ -99,11 +104,18 @@ The table's order is the order of work:
   ([22](iteration-11/22-design-mobile-tab-icons.md)), the dark palette
   ([04](iteration-11/04-decision-and-design-dark-mode.md)) and motion and haptics
   ([05](iteration-11/05-design-motion-and-haptics.md)), each run under task 01's amendment
-  of the skill, and the primitives and restyled screens
-  ([08](iteration-11/08-mobile-ui-primitives.md)) built from what they chose.
-  The catalog's search and filters ([23](iteration-11/23-design-the-catalogs-search-and-filters.md))
-  are designed and their controls built after the primitives, so that task 09
-  has them to wire.
+  of the skill. The catalog's search and filters
+  ([23](iteration-11/23-design-the-catalogs-search-and-filters.md)) were built
+  inside the catalog before the primitives, so what they chose reached the
+  screens first.
+- **Then the primitives,** which extract what those tasks built into the app's
+  shared components and rebuild the screens on them
+  ([08](iteration-11/08-mobile-ui-primitives.md)), beside the screens that must
+  work when nothing else does
+  ([25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md)).
+  They share no file but `ActionButton`, which task 08 only adds to, so they run
+  in parallel and either merges first; task 09 waits for 08, which gives it the
+  primitives to build on.
 - **Then two quality tasks and a status the catalog stands on,** each before the
   screen that would otherwise build on the gap: the query cache that outlives its viewer
   ([16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md)), before search caches many more
@@ -138,3 +150,15 @@ for the sweep; the backlog's own mobile section and the Keycloak link
 -127); the two open CodeQL alerts (COULD-134, -135); SHOULD-80, on which the
 product owner chose on 2026-11-04 to limit nothing yet; COULD-108, which needs a
 second worktree and a tailnet; and COULD-26, stock Keycloak markup.
+
+## The iPhone sign-off
+
+[ADR-0108](../adr/0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)
+names the owner's iPhone in phone mode as the final sign-off, and the phone did
+not connect for tasks 22 and 23. For the tasks that follow, tasks 08, 25, 09 and
+10 included, **a task counts as signed off on the product owner's look at the
+Simulator and one Android check, as task 22 did.** The iPhone leg is owed: it is
+made in [task 11](iteration-11/11-mobile-accessibility-conventions.md)'s walk,
+with the VoiceOver walks tasks 22 and 23 owe, and the product owner may waive it
+in the pull request. Task 23's own sign-off criterion stays open until the phone
+connects.
