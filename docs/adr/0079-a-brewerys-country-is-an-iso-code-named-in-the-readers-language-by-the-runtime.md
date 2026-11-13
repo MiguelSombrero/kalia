@@ -4,6 +4,8 @@
 - **Date:** 2026-10-22
 - **Amended:** 2026-11-06 — the seed migration `V004` inserts the codes
   itself, and the generator reads them from it
+- **Amended:** 2026-11-13 — the mobile app bundles the names, because the
+  runtime it ships does not name a region
 
 ## Context
 
@@ -44,6 +46,14 @@ translations Kalia keeps.**
 - **Clients name countries themselves.** The frontend uses
   `Intl.DisplayNames`. Responses stay identical for every caller, whatever
   language the caller reads.
+
+  > **Amended 2026-11-13.** The mobile app's runtime, Hermes, answered a bare
+  > code where the web's answers a name, so the app does not ask the runtime: it
+  > bundles the names of every listed code in each locale, produced from the CLDR
+  > data of a full-ICU runtime, and a test fails if they drift from it. The
+  > decision stands for the stored form and the API; this is the fallback the
+  > catalog filters' task named for a platform that cannot name a region
+  > ([design record](../design-records/iteration-11-23-catalog-search-and-filters.md)).
 - **A country that has no code is resolved per brewery, to the country where
   the brewery stood, as it is today.** Its predecessor state is never mapped
   wholesale to a successor. The mapping is hand-reviewed and committed beside

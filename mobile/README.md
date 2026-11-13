@@ -286,8 +286,8 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
   viewer's data.
 - **The transport** (`src/lib/api/registerTransport.ts`) retries a `401` once after the shared refresh, one `traceparent` per call
   ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
-- **The launch check reads `GET /api/v1/app-config`,** remembers the minimum
-  build, and fails open when unreachable (ADR-0093).
+- **The launch check reads `GET /api/v1/app-config`,** remembers the minimum build, and fails open when unreachable (ADR-0093).
+- **A country is named by `src/lib/i18n/countryNames.ts`, never `Intl.DisplayNames`:** Hermes on iOS answers a bare code (ADR-0079).
 - **Every string comes from `@kalia/locales`** ([ADR-0011](../docs/adr/0011-i18next-localization.md)).
 - **Motion and haptics:** use `src/lib/motion/`'s tokens and primitives, never a literal;
   `haptic()` is for an action's result, and needs the iPhone's System Haptics and

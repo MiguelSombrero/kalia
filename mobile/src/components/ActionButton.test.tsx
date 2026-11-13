@@ -4,6 +4,25 @@ import { renderWithLocale } from "@/testing/renderWithLocale";
 import { ActionButton } from "./ActionButton";
 
 describe("ActionButton", () => {
+  it("is not pressable while disabled, and says so", async () => {
+    const onPress = jest.fn();
+    await renderWithLocale(<ActionButton label="Show 4 beers" onPress={onPress} disabled />);
+
+    const button = screen.getByRole("button", { name: "Show 4 beers" });
+    expect(button).toBeDisabled();
+    await fireEvent.press(button);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it("keeps its top margin, and drops it when set flush so a footer can place it", async () => {
+    await renderWithLocale(<ActionButton label="Show all" onPress={() => undefined} />);
+    expect(screen.getByRole("button", { name: "Show all" })).toHaveStyle({ marginTop: theme.spacing.large });
+
+    await renderWithLocale(<ActionButton label="Show beers" onPress={() => undefined} flush />);
+
+    expect(screen.getByRole("button", { name: "Show beers" })).not.toHaveStyle({ marginTop: theme.spacing.large });
+  });
+
   it("fills the main action with the action colour", async () => {
     await renderWithLocale(<ActionButton label="Sign in" onPress={() => undefined} />);
 

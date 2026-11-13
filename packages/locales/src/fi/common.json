@@ -697,5 +697,54 @@
       "agreeRequired": "Vahvista, että olet tarpeeksi vanha käyttämään olutsovellusta.",
       "rateLimited": "Liian monta rekisteröitymisyritystä. Yritä uudelleen muutaman minuutin kuluttua."
     }
+  },
+  "catalogFilters": {
+    "title": "Suodattimet",
+    "buttonN": "Suodattimet, {{count}} käytössä",
+    "close": "Sulje",
+    "clearAll": "Tyhjennä kaikki",
+    "backToFilters": "Takaisin suodattimiin",
+    "style": "Tyyli",
+    "brewery": "Panimo",
+    "country": "Maa",
+    "strength": "Alkoholi %",
+    "from": "Vähintään",
+    "to": "Enintään",
+    "done": "Valmis",
+    "sort": "Järjestä",
+    "anyStyle": "Kaikki tyylit",
+    "anyBrewery": "Kaikki panimot",
+    "anyCountry": "Kaikki maat",
+    "searchLabel": "Hae oluita",
+    "searchPlaceholder": "Hae oluita",
+    "clearSearch": "Tyhjennä haku",
+    "removeFilter": "Poista suodatin: {{filter}}",
+    "atLeast": "vähintään {{value}} %",
+    "atMost": "enintään {{value}} %",
+    "sortedBy": "Järjestys: {{sort}}",
+    "noMatch": "Haulla ”{{query}}” ei löydy mitään.",
+    "showing": "Näytetään {{shown}} / {{total}}",
+    "more": "Näytä lisää",
+    "find": {
+      "style": "Etsi tyyliä",
+      "brewery": "Hae panimoita",
+      "country": "Hae maita"
+    },
+    "apply": {
+      "count_one": "Näytä {{formatted}} olut",
+      "count_other": "Näytä {{formatted}} olutta",
+      "unknown": "Näytä oluet"
+    },
+    "error": {
+      "order": "Vähimmäisarvo ei voi olla suurempi kuin enimmäisarvo.",
+      "bound": "Syötä alkoholi väliltä 0–100."
+    },
+    "sorts": {
+      "name,asc": "Nimi (A–Ö)",
+      "name,desc": "Nimi (Ö–A)",
+      "abv,asc": "Alkoholi (matala → korkea)",
+      "abv,desc": "Alkoholi (korkea → matala)",
+      "style,asc": "Tyyli (A–Ö)"
+    }
   }
 }

@@ -6,6 +6,11 @@ import { theme } from "@/lib/design/theme.generated";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { CatalogScreen } from "./CatalogScreen";
+import { emptyFilters } from "./filters/model";
+import { useFiltersStore } from "./filters/store";
+
+const mockPush = jest.fn();
+jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 
 const transport = jest.fn();
 
@@ -27,6 +32,8 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  mockPush.mockReset();
+  useFiltersStore.getState().reset();
   transport.mockReset();
   registerTransport(transport as unknown as Transport);
 });
@@ -166,5 +173,70 @@ describe("CatalogScreen", () => {
     await renderWithLocale(<CatalogScreen />);
 
     expect(await screen.findByText("Couldn't load beers.")).toBeOnTheScreen();
+  });
+
+  describe("search and filters", () => {
+    it.each([
+      ["en", "Search beers", "Filters"],
+      ["fi", "Hae oluita", "Suodattimet"],
+    ] as const)("offers a search field and a Filters button by name, in %s", async (locale, search, filters) => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+
+      await renderWithLocale(<CatalogScreen />, locale);
+
+      expect(screen.getByRole("searchbox", { name: search })).toBeOnTheScreen();
+      expect(screen.getByRole("button", { name: filters })).toBeOnTheScreen();
+      await screen.findByText("Pale Ale");
+    });
+
+    it("keeps what is typed in the search field and offers to clear it", async () => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+      await renderWithLocale(<CatalogScreen />);
+
+      await fireEvent.changeText(screen.getByRole("searchbox", { name: "Search beers" }), "ipa");
+      expect(screen.getByRole("searchbox", { name: "Search beers" })).toHaveDisplayValue("ipa");
+
+      await fireEvent.press(screen.getByRole("button", { name: "Clear search" }));
+      expect(screen.getByRole("searchbox", { name: "Search beers" })).toHaveDisplayValue("");
+      await screen.findByText("Pale Ale");
+    });
+
+    it("opens the filter sheet from the Filters button", async () => {
+      transport.mockResolvedValue(pageOf([]));
+      await renderWithLocale(<CatalogScreen />);
+
+      await fireEvent.press(screen.getByRole("button", { name: "Filters" }));
+
+      expect(mockPush).toHaveBeenCalledWith("/filters-sheet");
+      await screen.findByText("No beers have been added yet.");
+    });
+
+    it("shows the filters in force as chips and a count, and removes one at a time", async () => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+      useFiltersStore.getState().apply({ ...emptyFilters(), style: "IPA", countryCode: "FI", min: "5", sort: "abv,desc" });
+      await renderWithLocale(<CatalogScreen />);
+
+      expect(screen.getByRole("button", { name: "Filters, 4 in force" })).toBeOnTheScreen();
+      expect(screen.getByRole("button", { name: "Remove filter: IPA" })).toBeOnTheScreen();
+      expect(screen.getByRole("button", { name: "Remove filter: Finland" })).toBeOnTheScreen();
+      expect(screen.getByRole("button", { name: "Remove filter: at least 5 %" })).toBeOnTheScreen();
+
+      await fireEvent.press(screen.getByRole("button", { name: "Remove filter: IPA" }));
+      expect(await screen.findByRole("button", { name: "Filters, 3 in force" })).toBeOnTheScreen();
+      expect(screen.queryByRole("button", { name: "Remove filter: IPA" })).not.toBeOnTheScreen();
+
+      await fireEvent.press(screen.getByRole("button", { name: "Clear all" }));
+      expect(await screen.findByRole("button", { name: "Filters" })).toBeOnTheScreen();
+      expect(screen.queryByRole("button", { name: /^Remove filter/ })).not.toBeOnTheScreen();
+    });
+
+    it("lets the controls and chips grow with the system text size", async () => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+      useFiltersStore.getState().apply({ ...emptyFilters(), style: "IPA" });
+      await renderWithLocale(<CatalogScreen />);
+      await screen.findByText("Pale Ale");
+
+      expectScalesWithText();
+    });
   });
 });

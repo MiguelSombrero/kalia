@@ -27,4 +27,4 @@ an architectural decision. A choice of this kind is not an ADR, by
 
 Add a line when adding a record: its link, then the choice in one clause.
 
-*None yet.*
+- [Iteration 11 task 23: the Catalog's search and filters](iteration-11-23-catalog-search-and-filters.md) — a search field and Filters button with removable chips, and a sheet whose style, brewery and country are pushed, searchable pickers (direction A).
