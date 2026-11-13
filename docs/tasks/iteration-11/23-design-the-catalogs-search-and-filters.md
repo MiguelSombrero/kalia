@@ -92,24 +92,24 @@ platforms' conventions where they differ. Standing intent goes in
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum how the
+- [x] The product owner chose from built alternatives, at minimum how the
       filters in force are shown and how a style, a brewery and a country are
       picked, each judged at the largest text size in both locales on the route
       task 01 chose; a design record holds the directions and the choice
-- [ ] A component test finds the search field, every filter control, the
+- [x] A component test finds the search field, every filter control, the
       sheet's close and apply actions and each filter in force's removal by role
       and accessible name
-- [ ] A component test shows apply reporting the chosen values once, clear
+- [x] A component test shows apply reporting the chosen values once, clear
       all emptying them, and a strength with from above to refused with its
       message
-- [ ] A component test renders the sheet and the filters in force with a long
+- [x] A component test renders the sheet and the filters in force with a long
       Finnish brewery and style name at the largest font scale, reading in full
-- [ ] `docs/design.md` carries the chosen search and filters as standing intent,
+- [x] `docs/design.md` carries the chosen search and filters as standing intent,
       and `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs`
       pass over them — test
 - [ ] The product owner signed off the built controls live, next to the chosen
       direction
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

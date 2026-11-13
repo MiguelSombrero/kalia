@@ -75,9 +75,32 @@ The standing intent is [`docs/design.md`](../design.md#mobile-catalog-search-and
 
 ## Agreed departures
 
-Where the built screen differs from what the product owner saw and approved, and
-why. To be completed when the built controls are signed off.
+- **Country names are bundled, not read from the phone.** Hermes on iOS answered a
+  bare code (AL, AM) where the web's runtime answers a name, so the app carries
+  the names of every listed country in English and Finnish
+  ([ADR-0079](../adr/0079-a-brewerys-country-is-an-iso-code-named-in-the-readers-language-by-the-runtime.md),
+  amended).
+- **The decimal keypad's Done sits in the sheet.** iOS gives that keypad no return
+  key; the sheet shows Done above it while the keyboard is up, and the apply
+  button stays above that.
+- **The sheet's title and apply button stop growing at twice their size,** like a
+  screen title, so the button's words wrap to two lines at most at the largest
+  text size. The product owner has not yet seen this at that size.
+- **A picker's way back is the words "‹ Filters" on both platforms,** and the
+  system Back button steps from a picker to the form before it leaves the sheet.
+  The framed Android direction showed an arrow.
+- **The list is not filtered yet.** The controls, the chips and the count work and
+  the sheet reads its options and its count from the API, but what a filter does to
+  the beers shown is task 09's.
 
 ## Sign-off
 
-To be completed when the built controls are signed off.
+The product owner tried the built controls in the iOS Simulator on the real
+catalog (13,607 beers, 120 styles, 4,914 breweries) at the default text size in
+English, found the search field growing to twice its height once several filters
+were in force, and signed the controls off once that was fixed. The agent also
+checked them in Finnish, in dark, at the largest text size and once on the Android
+emulator (full-height sheet, country names, system Back).
+
+Not yet done: the product owner's use of the controls on their iPhone in phone
+mode and the VoiceOver walk, which ADR-0108 makes the final sign-off.
