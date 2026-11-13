@@ -44,8 +44,9 @@ anything a visitor sees; the `design-task` skill and
   what it *is*.
 - **This file is not an ADR and does not earn one.** It is the standing brief
   later work is held against, and it changes as that work adds to it. The
-  decisions it reflects are each recorded in their own ADR, linked from the
-  section they shaped.
+  choices it reflects are each recorded in their own
+  [design record](design-records/README.md) — or, before 2026-11-13, their
+  own ADR — linked from the section they shaped.
 
 ## Not covered here
 
@@ -429,7 +430,7 @@ Measured in the running app at 375px, where the content column is 343px wide:
 ## Layout principles
 
 What holds on every page rather than on one. A rule that holds for one page
-only belongs in that page's own task and ADR, not here. Chosen from built
+only belongs in that page's own task and design record, not here. Chosen from built
 alternatives in [iteration 7.5 task 06](tasks/iteration-7.5/06-page-shell.md);
 the directions that were rejected, and why, are
 [ADR-0067](adr/0067-page-shell-sticky-bar-and-page-component.md). The widths

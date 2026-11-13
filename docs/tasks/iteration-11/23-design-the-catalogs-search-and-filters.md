@@ -95,7 +95,7 @@ platforms' conventions where they differ. Standing intent goes in
 - [ ] The product owner chose from built alternatives, at minimum how the
       filters in force are shown and how a style, a brewery and a country are
       picked, each judged at the largest text size in both locales on the route
-      task 01 chose; an ADR records the directions and the choice
+      task 01 chose; a design record holds the directions and the choice
 - [ ] A component test finds the search field, every filter control, the
       sheet's close and apply actions and each filter in force's removal by role
       and accessible name

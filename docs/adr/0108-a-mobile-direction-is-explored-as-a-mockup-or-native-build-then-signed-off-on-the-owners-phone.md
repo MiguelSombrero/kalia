@@ -2,6 +2,9 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-08
+- **Amended:** 2026-11-13 by
+  [ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md) — a mobile design
+  task's choice is kept in a design record, not an ADR
 
 ## Context
 
@@ -86,6 +89,9 @@ to surface those differences without duplicating every iOS round.
 - Neutral, because rejected mockups and native prototype code do not survive
   in the repository; the ADR records the decision, and the pull request records
   what the owner saw.
+
+  > **Amended 2026-11-13.** The task's design record, not an ADR, records the
+  > decision ([ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md)).
 
 ## Evidence
 

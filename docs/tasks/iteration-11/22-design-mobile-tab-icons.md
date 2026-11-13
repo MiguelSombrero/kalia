@@ -53,7 +53,8 @@ navigation and record the choice as standing design intent.
 - **Each tab shows its icon with its word, always,** in `en` and `fi`; the
   central Add action keeps its circle and no word
   ([ADR-0109](../../adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)).
-  The task's ADR amends ADR-0065 for the phone; the web's navigation stays words.
+  The task's design record departs from ADR-0065 for the phone, which gains
+  an `Amended` line; the web's navigation stays words.
 - **The built alternatives explore both** the web's drawn style, extended from
   the seven icons of ADR-0065, and the platforms' own symbols. Framed
   alternatives may draw anything. The SVG library the owner declined for the
@@ -79,7 +80,7 @@ navigation and record the choice as standing design intent.
 ## Acceptance criteria
 
 - [ ] The product owner chooses the tab icons from built alternatives shown
-      in the mobile navigation, and an ADR records the choice
+      in the mobile navigation, and a design record holds the choice
 - [ ] A component test finds every tab and the central Add action by its
       accessible name with the chosen icons, and shows each icon hidden from
       assistive technology beside its word
