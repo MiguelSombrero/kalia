@@ -61,3 +61,9 @@ test("a thing that has already ended fails the wait without waiting out the ceil
   const result = await waitFor({ probe: () => ({ ok: false, output: "" }), timeoutMs: 60_000, intervalMs: 10, died: () => "it exited" });
   assert.deepEqual([result.outcome, result.reason], ["failed", "it exited"]);
 });
+
+test("an interval longer than the ceiling still probes up to the ceiling, not once", async () => {
+  let probes = 0;
+  const result = await waitFor({ probe: () => ({ ok: ++probes === 2, output: "" }), timeoutMs: 300, intervalMs: 5000 });
+  assert.equal(result.outcome, "ready");
+});

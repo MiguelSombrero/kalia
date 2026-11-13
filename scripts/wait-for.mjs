@@ -38,8 +38,9 @@ export const waitFor = async ({ probe, timeoutMs, intervalMs = 2000, failPattern
     if (seen.ok) return { outcome: "ready", output };
     const reason = died?.();
     if (reason) return { outcome: "failed", output, reason };
-    if (Date.now() - start + intervalMs > timeoutMs) return { outcome: "timeout", output };
-    await sleep(intervalMs);
+    const remaining = timeoutMs - (Date.now() - start);
+    if (remaining <= 0) return { outcome: "timeout", output };
+    await sleep(Math.min(intervalMs, remaining));
   }
 };
 const parse = (argv) => {

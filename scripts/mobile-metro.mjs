@@ -103,6 +103,11 @@ export const up = async ({
   const port = portOf(stack, "METRO_PORT");
   const { state: stateFile, log } = files(dir);
   let state = ownMetro(readState(dir));
+  if (state && String(state.port) !== String(port)) {
+    // METRO_PORT changed since it started: that Metro is ours, but not the one asked for.
+    await stopGroup(state);
+    state = undefined;
+  }
   if (!state) {
     if ((await statusOf(port)).running) {
       return { ok: true, message: `Metro already answers on port ${port}; it was not started by this command, so \`make mobile-metro-down\` leaves it alone.` };
