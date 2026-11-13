@@ -10,6 +10,10 @@
   `docs/adr/README.md`'s "All ADRs by number"; `docs/architecture.md` §9 lists
   only the decisions that define the system, so the Neutral consequence below
   about two indexes no longer holds
+- **Amended:** 2026-11-13 — added a fourth test: a decision must be
+  architecturally significant, so how one surface looks and behaves is a
+  design record ([ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md)),
+  not an ADR
 
 ## Context
 
@@ -141,6 +145,45 @@ in.
 > its reversal's home holds too; the drafted ADR was retracted in the same
 > pull request rather than merged and left for a later cleanup.
 
+> **Amended 2026-11-13 — the fourth test.** The three tests above ask whether a
+> decision's reasoning is worth keeping and who will need it. None asks whether
+> the decision is *architectural*, and a page layout chosen from three built
+> directions passes all three. Add: **a decision earns an ADR only when it is
+> architecturally significant — it sets the system's structure, a quality
+> attribute the system must hold, a dependency, an interface between its parts
+> or with the outside, or a construction technique later changes follow — and
+> reversing it would cost more than the task that made it.** The quality
+> attributes are the ones Kalia already holds itself to: security, privacy,
+> accessibility, performance, reliability, operability and cost.
+>
+> All four tests must pass. What fails the fourth, however many directions were
+> weighed, is how one surface looks and behaves: a page's or screen's layout,
+> the visual identity, the mark, a colour or type choice made inside the token
+> system, copy, and one surface's interaction detail. Such a choice is a
+> **design record** in [`docs/design-records/`](../design-records/README.md),
+> which keeps the directions shown and why each lost — the part worth keeping —
+> without an ADR's standing
+> ([ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md), amended the same
+> day). A choice that one task could redo is not architecture, even when it
+> took a design task to make.
+>
+> Two kinds of decision pass that a narrow reading of "architecture" would drop,
+> and they pass on purpose:
+>
+> - **How this repository works on itself** — its gates, its document homes,
+>   its task format. Kalia is process-first (`CLAUDE.md`), and such a decision
+>   binds every later task the way a construction technique binds every later
+>   change. It stays an ADR, filed under the index's process heading.
+> - **A design choice that carries an architectural one splits.** A page that
+>   fixes what an endpoint returns, or a look held to the app's by a build
+>   check, puts the endpoint or the check in an ADR — or in an amendment of the
+>   ADR it touches — and the look in a design record.
+>
+> This changes nothing already written, as before. The fifteen ADRs filed under
+> ADR-0062's every-design-task-writes-an-ADR rule stay where they are, accepted
+> and linked, and the index groups them under their own heading so a reader
+> looking for architecture can pass them by.
+
 ## Alternatives considered
 
 **Merge ADRs by subject, starting with the authentication cluster.** The
@@ -196,6 +239,52 @@ also has rejected alternatives worth recording — this section — so by the te
 it states, it earns an ADR. `CLAUDE.md` gets the one-line pointer that rule
 prescribes.
 
+> **Amended 2026-11-13** — the fourth test's alternatives:
+>
+> **Keep the bar as it is, reading ADR as "any decision record."** MADR, a
+> widely used ADR template, renamed itself to that, so the reading is held in
+> practice rather than invented here. Rejected because the bar was not
+> choosing: ADR-0062 required an ADR of every design task, and fifteen arrived
+> in six weeks (see Evidence), each one turning the next change of a layout
+> into a superseding ADR rather than an edit. The meaning the term carries from
+> Nygard's original description on is the architecturally significant
+> decision, and a repository practising a professional bar should mean by it
+> what the term means.
+>
+> **Delete the fifteen visual ADRs.** The cleanest log. Rejected because an ADR
+> log is append-only in the practice it would be aligning with, as ADR-0019's
+> "amend, do not rewrite" is here; because their rejected directions are
+> recorded nowhere else, `docs/design.md` holding intent only
+> ([ADR-0063](0063-design-intent-has-its-own-document.md)); and because about
+> 255 references from 86 files — other ADRs, finished task files and web code
+> comments among them — would each need repointing before
+> `scripts/check-links.mjs` passed.
+>
+> **Move the fifteen into `docs/design-records/` now.** Loses nothing, and the
+> path rewrite is mechanical. Deferred rather than rejected: five of them carry
+> an architectural decision that has to find its ADR first — what the cellar
+> read returns ([ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)),
+> the check holding Keycloak's palette to the app's
+> ([ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)),
+> how a duplicate beer or an unpredicted `400` is reported
+> ([ADR-0082](0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)),
+> one error style app-wide
+> ([ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md))
+> and the `Page` component
+> ([ADR-0067](0067-page-shell-sticky-bar-and-page-component.md)) — and that is
+> a judgment on each, not a script. It is a maintenance pull request of its own
+> if the product owner wants the log clean rather than grouped.
+>
+> **Move the process ADRs out as well, as process decision records.** The same
+> argument applies to the eighteen process ADRs, which are not architecture
+> either. Rejected: they are the project's working agreements, cited about 810
+> times from `CLAUDE.md`, the skills, the checkers and the task files, and
+> process is on-mission here rather than overhead.
+>
+> **Enforce the test with a checker.** Rejected for the reason the first test
+> has none: significance is a judgment, and a checker that judged it would be
+> guessing.
+
 ## Consequences
 
 - Good, because "should this be an ADR?" has a stated answer that is not "when
@@ -234,6 +323,28 @@ prescribes.
 >   alone.
 > - Neutral, because this amendment does not touch any ADR filed before it —
 >   nothing here relitigates whether an existing ADR should have existed.
+
+> **Amended 2026-11-13:**
+>
+> - Good, because a reader opening `docs/adr/` for the architecture reads
+>   architecture: the next design task writes a design record, and the visual
+>   ADRs already filed are grouped apart from the rest.
+> - Good, because a layout can change by amending its design record rather than
+>   by superseding an accepted ADR — a cost that suits a hard-to-reverse
+>   decision and not a page.
+> - Bad, because it is a fourth judgment call, and the borderline is real: a
+>   coding convention, or where a mapping both clients share lives
+>   ([ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md)),
+>   is significant to one reviewer and not to another. Nothing checks it.
+> - Bad, because fifteen accepted ADRs now fail the corpus's own bar and stay —
+>   the inconsistency ADR-0019 and the first test's Consequences already
+>   accept, for the same reason.
+> - Neutral, because decisions now have two directories, and the second is
+>   indexed by hand, with no `check-adrs.mjs` of its own.
+> - **Revisit trigger:** a design record that a later task needs as an
+>   architectural constraint, which means the split went wrong in that case; or
+>   a visual ADR filed after this amendment, which means the test is not being
+>   read.
 
 ## Evidence
 
@@ -286,3 +397,24 @@ for ADRs 0025, 0028, 0029 and 0030 — 659 combined, with iteration 4 task 10
 still to write. Inbound references, counted by matching `ADR-00NN` across
 `*.md`, `*.java`, `*.ts` and `*.tsx` excluding each ADR's own file: 8, 2, 4
 and 3 respectively, 17 in total.
+
+> **Amended 2026-11-13 — the corpus against the fourth test.** Measured on
+> 2026-11-13 at the tip of `dev`, over the 111 ADRs in `docs/adr/` (18,846
+> lines excluding `template.md` and `README.md`), each classed by its
+> Decision's opening sentence:
+>
+> | Class | ADRs | Count |
+> |---|---|---|
+> | How one surface looks and behaves | 0064, 0065, 0067–0072, 0074, 0082, 0105, 0106, 0109, 0110, 0112 | 15 |
+> | How the repository works on itself | 0017, 0019, 0020, 0026, 0027, 0032, 0035, 0038, 0039, 0046, 0047, 0048, 0051, 0062, 0063, 0076, 0084, 0108 | 18 |
+> | Architecture, conventions and product scope | the rest | 78 |
+>
+> The fifteen total 2,809 lines, 15 % of the corpus. All are dated 2026-10-03
+> to 2026-11-13, after ADR-0062 made every design task write one, and each
+> records a design task's choice.
+>
+> References, counted by matching `ADR-NNNN` and the file's name across
+> `*.md`, `*.ts`, `*.tsx`, `*.mjs`, `*.css` and `*.ftl`: the fifteen are cited
+> about 255 times from 86 files — 26 other ADRs, 27 task files and 24 web source
+> or end-to-end test files among them; the eighteen process ADRs about 810
+> times, from 135 task files among others.

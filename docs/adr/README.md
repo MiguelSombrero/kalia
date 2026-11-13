@@ -13,7 +13,10 @@ was rejected to get there ([ADR-0020](0020-documentation-roles.md)). For the
   was rejected and the reason would not survive in the code,
   `architecture.md` or a README; it binds work now, since a possibility being
   carried is a backlog item; and a reader who wasn't already going to open the
-  task file that made it would need to find it.
+  task file that made it would need to find it; and it is architecturally
+  significant — structure, a quality attribute, a dependency, an interface
+  or a construction technique, costly to reverse. How one surface looks and
+  behaves is a [design record](../design-records/README.md) instead.
 - **The authoritative index** — title, status and date for every ADR — is
   [All ADRs by number](#all-adrs-by-number), at the end of this file. The
   sections between group the same set by subject so a related run of
@@ -137,11 +140,6 @@ nobody has committed to becomes a constraint anyway.
   decision's facts. The contributor acknowledges each on its own and the row is
   deleted then; an unread one never expires; the web reads the unread count once
   per signed-in page render.
-- [ADR-0106](0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md)
-  — a contributor's unread notifications are one signal in the sticky bar on
-  every signed-in page, absent with nothing unread, which opens a panel over
-  the page where each is acknowledged on its own and an edit shows as the name
-  pair.
 
 ## Profiles and public cellars
 
@@ -200,18 +198,9 @@ and the third keeps that identifier from ever passing to someone else.
 
 ## Frontend structure and conventions
 
-- [ADR-0109](0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)
-  — mobile navigation keeps four destinations around a central Add action.
-- [ADR-0110](0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)
-  — the phone's identity is colour fields set light in a rounded face, with one
-  round corner and the style colour as each beer's card.
 - [ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md)
   — the beer-style-to-group mapping is one module in `@kalia/api`, which both
   clients import.
-- [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)
-  — the phone follows the system into a dark mode of neutral cards with the
-  style colour in a slab, and keeps the mark off dark pages.
-
 - [ADR-0008](0008-tanstack-query.md) — TanStack Query is the mandatory data
   layer for client components.
 - [ADR-0009](0009-zustand-ui-state.md) — three homes for client state: query
@@ -226,13 +215,6 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0021](0021-design-tokens-ui-primitives.md) — two-layer CSS tokens and
   shared primitives, with Radix's dialog and toast the only two UI
   dependencies. Its identity and contrast evidence are superseded by ADR-0064.
-- [ADR-0064](0064-visual-identity-can-art-square.md) — the identity is "Can
-  art, square": white, ink edges, cobalt, Archivo run wide, square, no
-  shadows; beer styles coloured by group; contrast checked in the build.
-- [ADR-0065](0065-imagery-icons-and-mark-specimen.md) — no beer pictures: a
-  beer is its ABV on its style colour, a person is initials, the mark is a
-  nine-cell cellar rack (since replaced by ADR-0072), and seven hand-drawn
-  icons cover what words cannot.
 - [ADR-0066](0066-token-only-styling-is-a-build-check.md) — a colour or
   typeface outside the semantic token layer fails the build, through a
   `scripts/` checker rather than an ESLint rule.
@@ -240,37 +222,12 @@ and the third keeps that identifier from ever passing to someone else.
   — one TypeScript token source in its own package generates the web's CSS, the
   app's theme and Keycloak's stylesheet through a generator of our own, drift
   fails `make check`, and ADR-0073 stands.
-- [ADR-0067](0067-page-shell-sticky-bar-and-page-component.md) — every page
-  sits in one sticky bar and one `Page` component with a Menu button on a
-  phone; header and pages share one frame and its left edge.
-- [ADR-0105](0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)
-  — the admin review page is a queue with the suggestion beside it; editing is
-  a mode of the suggestion, approving is one click, and rejecting asks in a
-  dialog where the mandatory reason is chosen.
-- [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)
-  — the front page is one column: the pitch or the visitor's cellar above a
-  feed of ruled rows, with "N new" laid over it and failures kept in the page.
-- [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)
-  — the catalog is one column of ruled rows beside a filter column that folds
-  on a phone under one Search button; a beer's page is its band and linked facts.
-- [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
-  — the cellar is a sortable list of beers beside their style band, every
-  bottle a tile headed by its vintage; the owner's read carries all bottles.
-- [ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)
-  — the profile is a name tag above two visibility choices that list what they
-  show, going public asks first, saves report in a toast; one error style app-wide.
-- [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md)
-  — the mark is a coral-lined bottle pouring beer into foam on a deep teal
-  tile, in colours of its own that nothing else in the app uses.
 - [ADR-0073](0073-components-ui-stays-the-apps-own-primitives-not-a-design-system.md)
   — no design system, package or component catalogue: `components/ui/` stays
   the web app's own, and a look that recurs becomes a primitive, not a rule.
 - [ADR-0075](0075-the-accessibility-bar-is-wcag-2-2-aa.md) — the bar is WCAG
   2.2 AA: axe scans at its tags, and Playwright asserts focus never hides
   under a sticky bar along three keyboard flows.
-- [ADR-0082](0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)
-  — a beer is added in a dialog over the search that missed it, landing on a
-  search that finds it; a button sending its form fades to 75 %, still AA.
 - [ADR-0022](0022-loading-error-empty-states.md) — per-route skeletons shaped
   like the page, one error boundary at the locale root.
 - [ADR-0023](0023-typed-api-failures.md) — every `kaliaFetch` failure is a
@@ -295,7 +252,7 @@ and the third keeps that identifier from ever passing to someone else.
 
 ## Authentication and identity
 
-Thirteen independent decisions, in the order they were made — later ones fix
+Twelve independent decisions, in the order they were made — later ones fix
 defects the earlier ones created, which is why they stay separate documents
 ([ADR-0032](0032-when-a-decision-earns-an-adr.md)). For the design as a whole
 in one place, read
@@ -331,10 +288,6 @@ in one place, read
 - [ADR-0061](0061-brute-force-lockout-is-temporary-and-disclosed.md) — repeated
   failed sign-ins lock an account temporarily, never permanently, and the
   kalia theme overrides Keycloak's own generic lockout message to say so.
-- [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
-  — Keycloak's pages drop the card for one narrow column under Kalia's lockup,
-  which links home; a `scripts/` check holds the theme's colours and mark to
-  the app's.
 - [ADR-0095](0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)
   — the mobile app signs in through the system browser as a public PKCE
   client, holds an offline token in secure storage and calls Spring directly
@@ -387,10 +340,73 @@ in one place, read
   and writes rows and cannot change the schema, and Keycloak's own; the
   superuser belongs to Postgres alone.
 
+## Design choices recorded as ADRs
+
+How one surface looks and behaves, each chosen by the product owner from built
+directions in a design task. From 2026-10-03 to 2026-11-13
+[ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md) required every
+design task to record its choice in an ADR; since then such a choice is not an
+ADR ([ADR-0032](0032-when-a-decision-earns-an-adr.md)'s fourth test) but a
+[design record](../design-records/README.md). These stay accepted and linked,
+and a later choice that changes one names it in its design record. A few also
+carry an architectural decision, which the gloss names.
+
+- [ADR-0064](0064-visual-identity-can-art-square.md) — the identity is "Can
+  art, square": white, ink edges, cobalt, Archivo run wide, square, no
+  shadows; beer styles coloured by group; contrast checked in the build.
+- [ADR-0065](0065-imagery-icons-and-mark-specimen.md) — no beer pictures: a
+  beer is its ABV on its style colour, a person is initials, the mark is a
+  nine-cell cellar rack (since replaced by ADR-0072), and seven hand-drawn
+  icons cover what words cannot.
+- [ADR-0067](0067-page-shell-sticky-bar-and-page-component.md) — every page
+  sits in one sticky bar and one `Page` component with a Menu button on a
+  phone; header and pages share one frame and its left edge.
+- [ADR-0068](0068-front-page-one-column-cellar-or-pitch-above-a-ruled-feed.md)
+  — the front page is one column: the pitch or the visitor's cellar above a
+  feed of ruled rows, with "N new" laid over it and failures kept in the page.
+- [ADR-0069](0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)
+  — the catalog is one column of ruled rows beside a filter column that folds
+  on a phone under one Search button; a beer's page is its band and linked facts.
+- [ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)
+  — the cellar is a sortable list of beers beside their style band, every
+  bottle a tile headed by its vintage; the owner's read carries all bottles.
+- [ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)
+  — the profile is a name tag above two visibility choices that list what they
+  show, going public asks first, saves report in a toast; one error style app-wide.
+- [ADR-0072](0072-the-mark-is-a-bottle-pouring-into-foam-on-a-teal-tile.md)
+  — the mark is a coral-lined bottle pouring beer into foam on a deep teal
+  tile, in colours of its own that nothing else in the app uses.
+- [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
+  — Keycloak's pages drop the card for one narrow column under Kalia's lockup,
+  which links home; a `scripts/` check holds the theme's colours and mark to
+  the app's.
+- [ADR-0082](0082-a-beer-is-added-over-the-search-that-missed-it-and-a-pending-button-stays-legible.md)
+  — a beer is added in a dialog over the search that missed it, landing on a
+  search that finds it; a button sending its form fades to 75 %, still AA.
+- [ADR-0105](0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md)
+  — the admin review page is a queue with the suggestion beside it; editing is
+  a mode of the suggestion, approving is one click, and rejecting asks in a
+  dialog where the mandatory reason is chosen.
+- [ADR-0106](0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md)
+  — a contributor's unread notifications are one signal in the sticky bar on
+  every signed-in page, absent with nothing unread, which opens a panel over
+  the page where each is acknowledged on its own and an edit shows as the name
+  pair.
+- [ADR-0109](0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)
+  — mobile navigation keeps four destinations around a central Add action.
+- [ADR-0110](0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)
+  — the phone's identity is colour fields set light in a rounded face, with one
+  round corner and the style colour as each beer's card.
+- [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)
+  — the phone follows the system into a dark mode of neutral cards with the
+  style colour in a slab, and keeps the mark off dark pages.
+
 ## Engineering process and documentation
 
-How the project works on itself. This project is process-first by design
-(`CLAUDE.md`), so these are on-mission rather than overhead — but they are the
+How the project works on itself. These are process records rather than
+architecture, admitted on purpose by ADR-0032's fourth test: this project is
+process-first by design (`CLAUDE.md`), so they are on-mission rather than
+overhead — but they are the
 category with no external limit on its growth, which is what ADR-0032 exists
 to bound.
 

@@ -104,7 +104,8 @@ omission.
 `Kind` is optional, and `design` is its only value; no line means an ordinary
 task. It marks a task whose outcome is a visual choice the product owner makes
 between built alternatives, which is run by the `design-task` skill rather than
-straight from `implement-task`
+straight from `implement-task`, and whose choice is kept in a
+[design record](../design-records/README.md), not an ADR
 ([ADR-0062](../adr/0062-a-design-task-is-a-skill-and-a-marker.md)).
 `scripts/check-tasks.mjs` fails an unknown value, and fails a `design` task
 none of whose acceptance criteria mentions built alternatives — one criterion

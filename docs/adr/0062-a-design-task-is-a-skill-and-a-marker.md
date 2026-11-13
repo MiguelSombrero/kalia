@@ -8,6 +8,9 @@
   [ADR-0108](0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)
   — mobile design tasks use framed Artifacts or native builds according to
   what the direction must prove
+- **Amended:** 2026-11-13 — a design task records its choice in a design
+  record under `docs/design-records/`, not in an ADR, by
+  [ADR-0032](0032-when-a-decision-earns-an-adr.md)'s fourth test
 
 ## Context
 
@@ -95,6 +98,26 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   are held against — goes where
   [task 14](../tasks/iteration-7.5/14-where-design-intent-lives.md) decides, not
   into those ADRs.
+
+  > **Amended 2026-11-13.** A design task's choice is how one surface looks
+  > and behaves, which [ADR-0032](0032-when-a-decision-earns-an-adr.md)'s
+  > fourth test, added the same day, places outside the ADRs. It is recorded
+  > instead in a **design record**: one file per design task under
+  > [`docs/design-records/`](../design-records/README.md), written to
+  > [its template](../design-records/template.md) and listed in that
+  > directory's README, holding the question, the directions shown across
+  > every round, the one chosen, why each other lost, the agreed departures and
+  > the sign-off. It holds a design choice's *why* the way an ADR holds an
+  > architectural one, so standing intent still goes to `docs/design.md`.
+  > Wherever this ADR says a design task's ADR, read its design record.
+  >
+  > Where a design task also makes an architectural decision — what a read
+  > returns, a check the build runs, a new dependency — that part is an ADR of
+  > its own, or an amendment of the ADR it touches, and the design record links
+  > it. The fifteen ADRs this bullet produced before the amendment stay as they
+  > are; a later design task that changes one of their choices names that ADR
+  > in its design record's `Departs from` line, and gives the ADR an `Amended`
+  > line pointing back.
 - **Web design-task evidence** keeps the shape iteration 7.5's design tasks
   already use: a criterion that the product owner chose from built
   alternatives, plus behavioural tests of what shipped — skeletons matching
@@ -166,6 +189,23 @@ alternatives. The built page is also the real check on a choice, so an ADR
 describing a chosen direction nobody has built is a decision made on the
 mockup's word alone.
 
+> **Amended 2026-11-13** — where a design task's choice is recorded, once it is
+> no longer an ADR:
+>
+> **A section of `docs/design.md`.** One file, already linked from the skill.
+> Rejected on [ADR-0063](0063-design-intent-has-its-own-document.md)'s own
+> boundary: that file is the standing brief and holds intent, never the
+> directions a choice turned down, and a section per design task would grow it
+> without limit.
+>
+> **The task file's Notes.** Rejected because
+> [ADR-0026](0026-task-file-format.md) freezes a task file as the request, and
+> the choice is made after the task is refined.
+>
+> **Number the records like ADRs.** Rejected: a record is one per design task,
+> so naming it after its task is unique without `make next-adr`'s scan of every
+> branch, and says which request it answers.
+
 ## Consequences
 
 - Good, because a design task cannot be written without its "the product owner
@@ -208,6 +248,18 @@ mockup's word alone.
   more than wording, or a task that is not a visual choice wanting the same
   marker — at which point whether `Kind` is the right vocabulary is worth
   asking again.
+
+> **Amended 2026-11-13:**
+>
+> - Good, because a design task still keeps what this ADR wanted kept — every
+>   direction and why it lost — in a lighter document a later change can amend
+>   without superseding an accepted ADR.
+> - Bad, because a design task whose choice carries an architectural part now
+>   writes two records, a design record and an ADR, and where the split falls is
+>   the author's judgment.
+> - Neutral, because `docs/design-records/` has no checker: its index and its
+>   template are kept by review, and `scripts/check-links.mjs` is the only
+>   mechanical guard on it.
 
 ## Evidence
 

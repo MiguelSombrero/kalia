@@ -1,6 +1,6 @@
 ---
 name: design-task
-description: Numbered procedure for a `- **Kind:** design` task whose outcome is a visual choice — building alternatives, putting them in front of the product owner, converging, and recording the choice in an ADR before implement-task builds it. Entry point for any design task; invoke before building anything the task could look like.
+description: Numbered procedure for a `- **Kind:** design` task whose outcome is a visual choice — building alternatives, putting them in front of the product owner, converging, and recording the choice in a design record before implement-task builds it. Entry point for any design task; invoke before building anything the task could look like.
 ---
 
 # Run a design task
@@ -24,14 +24,15 @@ rank them in a way that pre-empts the pick.
    has no `Kind` line gets the line added in a refinement pull request, not
    here — `CLAUDE.md` "Refine in one PR, implement in another".
 2. Read what binds the choice: the task's `Why` and `Constraints`, the audit
-   or problem statement it cites, the ADR that recorded any earlier design
-   choice it must sit with, and [`docs/design.md`](../../../docs/design.md),
-   where standing design intent lives. A direction that contradicts an
+   or problem statement it cites, the design record — or, for a choice made
+   before 2026-11-13, the ADR — of any earlier design choice it must sit
+   with, and [`docs/design.md`](../../../docs/design.md), where standing
+   design intent lives. A direction that contradicts an
    accepted choice is a new decision, not an option.
 3. Branch off up-to-date `dev` and write `.claude/session-checkpoint.md`, both
    exactly as `implement-task` steps 2–3 say. Add a line per round to the
    checkpoint as it happens. Record a textual account of every direction and
-   round and any Artifact links until the ADR records the choice.
+   round and any Artifact links until the design record holds the choice.
 4. Choose the procedure below from the app named in the task's `Scope`.
    `Kind: design` stays platform-neutral.
 
@@ -140,18 +141,30 @@ final direction.
 
 ## Record, build and verify
 
-10. **Record the choice in this task's own ADR** — `make next-adr`, then
-    [the ADR template](../../../docs/adr/template.md). It holds the directions
+10. **Record the choice in this task's own design record** —
+    `docs/design-records/iteration-N-NN-<slug>.md`, written to
+    [its template](../../../docs/design-records/template.md) and added to
+    [that directory's README](../../../docs/design-records/README.md). A
+    visual choice is not an ADR
+    ([ADR-0032](../../../docs/adr/0032-when-a-decision-earns-an-adr.md)'s
+    fourth test). It holds the directions
     shown, across every round, each described well enough that a reader who
     never saw the mockup or native prototype understands what it was; the one
     chosen; and why each other was rejected. For mobile, record both the
     framed and native rounds and the owner's sign-off. Standing intent — what
     later tasks are held against — goes in
-    [`docs/design.md`](../../../docs/design.md), not into this ADR, including
+    [`docs/design.md`](../../../docs/design.md), not into this record, including
     a meaning row for every semantic token the choice adds
     (`scripts/check-design-tokens.mjs` fails without one). The choice does
     **not** go in the task file: it is the request and is frozen at completion
     ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
+    - If the choice also makes an architectural decision — what a read
+      returns, a check the build runs, a new dependency — that part is an ADR
+      (`make next-adr`, [the ADR template](../../../docs/adr/template.md)) or
+      an amendment of the ADR it touches, and the record links it.
+    - If the choice changes one recorded as an ADR before 2026-11-13, the
+      record names that ADR in `Departs from`, and the ADR gets an `Amended`
+      line pointing back.
 11. **Hand off to `implement-task`**, resuming at its step 4 and running it
     through its step 11 — not its step 12, which opens the pull request and
     comes after step 12 here. Nothing about its gates changes: comment pass,
@@ -165,7 +178,7 @@ final direction.
       real components and data. If it did not, that is a finding for the
       product owner, not something to quietly adjust. Show the built page next
       to the chosen mockup and get the owner's live sign-off; a difference is
-      fixed and shown again, or recorded in the ADR as a deliberate departure
+      fixed and shown again, or recorded in the design record as a deliberate departure
       they agreed to — never left for a reviewer to notice.
     - For a mobile task, confirm the built direction in the native app and get
       final sign-off on the iPhone in phone mode. Record the owner's VoiceOver
@@ -188,7 +201,8 @@ final direction.
 ## Gates
 
 The gates report is `implement-task`'s, with two lines added: how many rounds
-ran and how many directions were shown in each, and the ADR that records the
-choice. For a mobile task, also report which framed directions were selected
+ran and how many directions were shown in each, and the design record that
+holds the choice, with any ADR its architectural part needed. For a mobile
+task, also report which framed directions were selected
 for native prototyping, the iOS Simulator and Android checks, the iPhone
 sign-off and VoiceOver walk, and the component-test coverage.

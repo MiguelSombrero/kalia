@@ -71,7 +71,7 @@ native prototypes on the real screens, since neither can be judged in a frame.
 
 - [ ] The product owner chose from built alternatives, at minimum the motion's
       amount and the set of felt actions, judged on a device or simulator on
-      the route task 01 chose; an ADR records the directions and the choice
+      the route task 01 chose; a design record holds the directions and the choice
 - [ ] A component test shows every animated primitive reaching its final state
       immediately when reduced motion is on
 - [ ] A test shows the haptic helper doing nothing, and not throwing, where the
