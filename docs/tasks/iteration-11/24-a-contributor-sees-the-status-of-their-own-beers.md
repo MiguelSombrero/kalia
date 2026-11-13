@@ -1,6 +1,6 @@
 # Task 24: A contributor sees the status of their own beers
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-3
 
@@ -62,16 +62,16 @@ are regenerated, and what the web shows is unchanged.
 
 ## Acceptance criteria
 
-- [ ] A backend integration test shows a catalog search returning `PENDING` for
+- [x] A backend integration test shows a catalog search returning `PENDING` for
       the contributor's own waiting beer and `APPROVED` for an approved one, and
       failed before the field existed
-- [ ] A backend integration test shows the details read answering the same for
+- [x] A backend integration test shows the details read answering the same for
       both, and no other reader, anonymous included, ever receiving `PENDING`
-- [ ] The committed spec is regenerated, `make openapi-spec` shows an additive
+- [x] The committed spec is regenerated, `make openapi-spec` shows an additive
       diff and no breaking one, and both clients' generated types are
       regenerated and compile
-- [ ] ADR-0091 carries an amendment saying the beer reads report the status
-- [ ] `make verify` is green
+- [x] ADR-0091 carries an amendment saying the beer reads report the status
+- [x] `make verify` is green
 
 ## Notes
 
