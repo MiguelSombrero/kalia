@@ -17,6 +17,9 @@ const lib = { element: { type: "lib" } };
 const testing = { element: { type: "testing" } };
 const sharedPackage = { element: { type: "shared-package" } };
 const generatedModels = { element: { type: "generated-models" } };
+// ADR-0093, ADR-0110. Their policies come last in the rule below: the last policy to match decides.
+const independentScreen = { file: { categories: "independent-screen" } };
+const independentFile = { file: { categories: ["independent-screen", "bundled-lib", "locales", "api-error"] } };
 const ownGeneratedTag = {
   element: { type: "generated-tag", captured: { tagName: "{{ from.element.captured.featureName }}" } },
 };
@@ -29,6 +32,12 @@ const codeStyleSyntax = [
     selector: "JSXAttribute[name.name='allowFontScaling'][value.expression.value=false]",
     message: "Text must scale with the system font size (ADR-0075); do not set allowFontScaling={false}.",
   },
+];
+
+const independentScreenFiles = [
+  "src/features/app-config/BlockedScreen.tsx",
+  "src/features/crash-recovery/CrashScreen.tsx",
+  "src/components/{ActionButton,BuildInfo,ErrorReference}.tsx",
 ];
 
 const eslintConfig = defineConfig([
@@ -64,6 +73,13 @@ const eslintConfig = defineConfig([
       "boundaries/files": [
         { category: "feature-index", pattern: "mobile/src/features/*/index.ts" },
         { category: "feature-api", pattern: "mobile/src/features/*/api.ts" },
+        {
+          category: "independent-screen",
+          pattern: independentScreenFiles.map((file) => `mobile/${file}`),
+        },
+        { category: "bundled-lib", pattern: "mobile/src/lib/{design,i18n,log,build,motion}/**" },
+        { category: "locales", pattern: "packages/locales/**" },
+        { category: "api-error", pattern: "packages/api/src/index.ts" },
       ],
     },
     rules: {
@@ -84,6 +100,35 @@ const eslintConfig = defineConfig([
             { from: components, allow: { to: [sharedPackage, lib, testing] } },
             { from: lib, allow: { to: [sharedPackage, lib, testing] } },
             { from: testing, allow: { to: [sharedPackage, lib, testing] } },
+            {
+              from: independentScreen,
+              disallow: { to: [{ element: { type: ["feature", "app", "lib", "testing", "shared-package", "generated-models", "generated-tag"] } }] },
+              message: "{{from.element.type}} {{from.file.path}} must work when nothing else does and depends on nothing that can change: it must not import {{dependency.source}} (ADR-0093, ADR-0110).",
+            },
+            { from: independentScreen, allow: { to: [independentFile] } },
+          ],
+        },
+      ],
+    },
+  },
+  // The names an import must not bring in: boundaries sees only the files the screens reach, not the packages.
+  {
+    files: independentScreenFiles,
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "@kalia/api", allowImportNames: ["isApiError", "ApiError"], message: "A screen that must work when nothing else does reads only the error's trace reference from the API package (ADR-0093)." },
+            { name: "@tanstack/react-query", message: "A screen that must work when nothing else does fetches nothing (ADR-0093)." },
+            { name: "expo-image", message: "A screen that must work when nothing else does shows no image from the network (ADR-0110)." },
+            { name: "react-native", importNames: ["Image", "ImageBackground"], message: "A screen that must work when nothing else does shows no image from the network (ADR-0110)." },
+          ],
+          patterns: [
+            {
+              regex: "^(\\.{1,2}|@/features)(/|$)",
+              message: "A screen that must work when nothing else does imports no data hook or other file of its feature, which can reach the API (ADR-0093).",
+            },
           ],
         },
       ],

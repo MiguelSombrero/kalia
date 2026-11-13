@@ -256,6 +256,17 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
   `@kalia/api`, never a `Record` keyed by the enum (ESLint,
   [packages/README.md](../packages/README.md)): an installed app outlives the
   backend build it was written against.
+- **The update-required, maintenance and crash screens depend on nothing that can
+  change under an installed build** ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md),
+  [ADR-0110](../docs/adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)):
+  `BlockedScreen`, `CrashScreen` and the `ActionButton`, `BuildInfo` and `ErrorReference` they
+  are built from import only `lib/{design,i18n,log,build,motion}`, `@kalia/locales`, each
+  other, and `isApiError` from `@kalia/api`: no data hook, no file of their feature, no API
+  client, no query hook and no image from the network. ESLint enforces it (the list of
+  files is `independentScreenFiles` in `eslint.config.js`); a file that must join the set goes
+  into that list, and a lib folder that must be reachable into the `bundled-lib` category.
+  Their strings come from `@kalia/locales`, and the one string from a failed request is the
+  trace reference, printed as it came.
 - **A route file never holds a test:** Expo Router makes every file under `src/app/` a route.
 - **Arrow functions, no classes, `type` over `interface`, no `console.*`**
   ([ADR-0037](../docs/adr/0037-functional-modules.md),

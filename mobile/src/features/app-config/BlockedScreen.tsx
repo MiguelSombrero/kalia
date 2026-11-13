@@ -1,7 +1,7 @@
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
-import { StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
@@ -23,11 +23,13 @@ export const BlockedScreen = ({
 
   return (
     <SafeAreaView testID="blocked-screen" style={styles.screen}>
-      <Text role="heading" {...titleScale} style={styles.title}>
-        {t(`appConfig.${reason}.title`)}
-      </Text>
-      <Text style={styles.body}>{t(`appConfig.${reason}.body`)}</Text>
-      <ActionButton label={checkAgain} onPress={onCheckAgain} busy={isChecking} />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text role="heading" {...titleScale} style={styles.title}>
+          {t(`appConfig.${reason}.title`)}
+        </Text>
+        <Text style={styles.body}>{t(`appConfig.${reason}.body`)}</Text>
+        <ActionButton label={checkAgain} onPress={onCheckAgain} busy={isChecking} />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -35,7 +37,8 @@ export const BlockedScreen = ({
 const useStyles = () => {
   const colors = useThemeColors();
   return StyleSheet.create({
-    screen: { flex: 1, justifyContent: "center", padding: theme.spacing.medium, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.background },
+    content: { flexGrow: 1, justifyContent: "center", padding: theme.spacing.medium },
     title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
     body: { marginTop: theme.spacing.medium, ...textStyle("body", "medium"), color: colors["muted-foreground"] },
   });

@@ -68,3 +68,39 @@ describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
     expect(await ruleIds(enumFixture("closed-record-lookup"), "src/features/catalog/probe.test.ts")).toEqual([]);
   });
 });
+
+describe("the screens that must work when nothing else does depend on nothing that can change (ADR-0093, ADR-0110)", () => {
+  const independentFixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixtures", "independent-screens", `${name}.ts`), "utf8");
+  const ruleIds = async (code: string, filePath: string) => (await messagesFor(code, filePath)).map(([ruleId]) => ruleId);
+  const screens = [
+    "src/features/app-config/BlockedScreen.tsx",
+    "src/features/crash-recovery/CrashScreen.tsx",
+    "src/components/ActionButton.tsx",
+    "src/components/ErrorReference.tsx",
+    "src/components/BuildInfo.tsx",
+  ];
+  const crossings = [
+    { fixture: "imports-a-data-hook", rule: "no-restricted-imports" },
+    { fixture: "imports-a-lib-that-reaches-the-api", rule: "boundaries/dependencies" },
+    { fixture: "imports-the-api-client", rule: "no-restricted-imports" },
+    { fixture: "imports-a-generated-endpoint", rule: "boundaries/dependencies" },
+    { fixture: "imports-a-query-hook", rule: "no-restricted-imports" },
+    { fixture: "imports-a-remote-image", rule: "no-restricted-imports" },
+    { fixture: "imports-an-image-library", rule: "no-restricted-imports" },
+  ];
+
+  describe.each(screens)("%s", (lintAs) => {
+    it.each(crossings)("rejects $fixture", async ({ fixture: name, rule }) => {
+      expect(await ruleIds(independentFixture(name), lintAs)).toContain(rule);
+    });
+  });
+
+  it.each(screens)("accepts %s as it stands", async (file) => {
+    expect(await messagesFor(readFileSync(path.join(__dirname, file), "utf8"), file)).toEqual([]);
+  });
+
+  it("leaves a feature's other screens free to use a data hook and the API client", async () => {
+    expect(await ruleIds(independentFixture("imports-a-data-hook"), "src/features/app-config/AppGate.tsx")).toEqual([]);
+    expect(await ruleIds(independentFixture("imports-the-api-client"), "src/features/app-config/AppGate.tsx")).toEqual([]);
+  });
+});
