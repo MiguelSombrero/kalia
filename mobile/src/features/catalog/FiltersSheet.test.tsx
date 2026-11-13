@@ -21,6 +21,7 @@ const serve = (breweries = [brewery("b1", "Maku Brewing", "FI", "Tuusula"), brew
     return answer({ content: [], page: 0, totalElements: 12, totalPages: 12 });
   });
 
+const choiceRows = () => screen.getAllByRole("button").filter((row) => row.props.accessibilityState?.selected !== undefined);
 const set = (patch: Partial<Filters> = {}): Filters => ({ ...emptyFilters(), ...patch });
 const renderSheet = async (initial = set(), locale: "en" | "fi" = "en") => {
   const onApply = jest.fn();
@@ -51,8 +52,8 @@ describe("FiltersSheet", () => {
     expect(screen.getByLabelText("Strength %: From")).toHaveDisplayValue("4");
     expect(screen.getByLabelText("Strength %: To")).toHaveDisplayValue("7");
     expect(screen.getByLabelText("Sort by")).toBeOnTheScreen();
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
-    expect(screen.getByRole("radio", { name: "Strength (high → low)", checked: true })).toBeOnTheScreen();
+    expect(choiceRows()).toHaveLength(5);
+    expect(screen.getByRole("button", { name: "Strength (high → low)", selected: true })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Show 12 beers" })).toBeOnTheScreen();
   });
 
@@ -69,16 +70,16 @@ describe("FiltersSheet", () => {
     const { onApply } = await renderSheet();
 
     await fireEvent.press(screen.getByRole("button", { name: "Style: Any style" }));
-    await fireEvent.press(await screen.findByRole("radio", { name: "Imperial Stout" }));
+    await fireEvent.press(await screen.findByRole("button", { name: "Imperial Stout" }));
     await fireEvent.press(await screen.findByRole("button", { name: "Brewery: Any brewery" }));
-    await fireEvent.press(await screen.findByRole("radio", { name: "Maku Brewing, Tuusula · Finland" }));
+    await fireEvent.press(await screen.findByRole("button", { name: "Maku Brewing, Tuusula · Finland" }));
     await fireEvent.press(await screen.findByRole("button", { name: "Country: All countries" }));
-    await fireEvent.press(await screen.findByRole("radio", { name: "Czechia" }));
+    await fireEvent.press(await screen.findByRole("button", { name: "Czechia" }));
     await screen.findByRole("button", { name: "Country: Czechia" });
     await fireEvent.changeText(screen.getByLabelText("Strength %: From"), "6,5");
     await fireEvent.changeText(screen.getByLabelText("Strength %: To"), "9");
-    await fireEvent.press(screen.getByRole("radio", { name: "Name (Z–A)" }));
-    await screen.findByRole("radio", { name: "Name (Z–A)", checked: true });
+    await fireEvent.press(screen.getByRole("button", { name: "Name (Z–A)" }));
+    await screen.findByRole("button", { name: "Name (Z–A)", selected: true });
     expect(onApply).not.toHaveBeenCalled();
 
     await fireEvent.press(screen.getByRole("button", { name: /^Show / }));
@@ -146,8 +147,8 @@ describe("FiltersSheet", () => {
     await fireEvent.press(screen.getByRole("button", { name: /^(Country|Maa): / }));
     await screen.findByRole("searchbox");
 
-    expect(await screen.findByRole("radio", { name: czechia })).toBeOnTheScreen();
-    const names = screen.getAllByRole("radio").map((row) => String(row.props.accessibilityLabel));
+    expect(await screen.findByRole("button", { name: czechia })).toBeOnTheScreen();
+    const names = choiceRows().map((row) => String(row.props.accessibilityLabel));
     expect(names.slice(1)).toEqual([...names.slice(1)].sort((a, b) => a.localeCompare(b, locale)));
     expect(names).toContain(albania);
   });
@@ -170,15 +171,60 @@ describe("FiltersSheet", () => {
     await waitFor(() => expect(pressBack).toBeUndefined());
   });
 
+  it.each([
+    ["en", /^Style: /, "Style"],
+    ["en", /^Brewery: /, "Brewery"],
+    ["en", /^Country: /, "Country"],
+    ["fi", /^Tyyli: /, "Tyyli"],
+  ] as const)("puts the screen reader on the %s picker's heading when it opens, not on a row", async (locale, field, title) => {
+    const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
+    focus.mockClear();
+    await renderSheet(set(), locale);
+    expect(focus).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByRole("button", { name: field }));
+    await screen.findByRole("searchbox");
+
+    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+    const [target, event] = focus.mock.calls[0] as unknown as [{ props: Record<string, unknown> }, string];
+    expect(event).toBe("focus");
+    expect(target.props).toMatchObject({ role: "heading", children: title });
+  });
+
+  it.each([
+    ["ios", "en", /^Style: /, ["Any style", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
+    ["ios", "fi", /^Tyyli: /, ["Kaikki tyylit", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
+    ["android", "en", /^Style: /, ["Any style", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
+    ["android", "fi", /^Tyyli: /, ["Kaikki tyylit", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
+  ] as const)("on %s in %s, gives a picker's rows their option name and a chosen state, with no state word of React Native's own", async (platform, locale, field, names) => {
+    jest.replaceProperty(ReactNative.Platform, "OS", platform);
+    await renderSheet(set({ style: "IPA" }), locale);
+
+    await fireEvent.press(screen.getByRole("button", { name: field }));
+    await screen.findByRole("searchbox");
+    await screen.findByText("Gose");
+
+    const rows = platform === "ios" ? choiceRows() : screen.getAllByRole("radio");
+    expect(rows.map((row) => row.props.accessibilityLabel)).toEqual(names);
+    const chosen = rows.map((row) => row.props.accessibilityState);
+    if (platform === "ios") {
+      expect(rows.map((row) => row.props.role)).toEqual(names.map(() => "button"));
+      expect(chosen).toEqual([{ selected: false }, { selected: false }, { selected: true }, { selected: false }, { selected: false }]);
+    } else {
+      expect(rows.map((row) => row.props.role)).toEqual(names.map(() => "radio"));
+      expect(chosen).toEqual([{ checked: false }, { checked: false }, { checked: true }, { checked: false }, { checked: false }]);
+    }
+  });
+
   it("narrows the styles by what is typed, ignoring case and accents", async () => {
     await renderSheet();
 
     await fireEvent.press(screen.getByRole("button", { name: "Style: Any style" }));
-    await screen.findByRole("radio", { name: "Gose" });
+    await screen.findByRole("button", { name: "Gose" });
     await fireEvent.changeText(screen.getByRole("searchbox", { name: "Find a style" }), "IMPÉRIAL");
 
-    expect(await screen.findByRole("radio", { name: "Imperial Stout" })).toBeOnTheScreen();
-    await waitFor(() => expect(screen.queryByRole("radio", { name: "Gose" })).not.toBeOnTheScreen());
+    expect(await screen.findByRole("button", { name: "Imperial Stout" })).toBeOnTheScreen();
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Gose" })).not.toBeOnTheScreen());
   });
 
   it("searches breweries on the server and goes back to the form with the pick", async () => {
@@ -201,7 +247,7 @@ describe("FiltersSheet", () => {
     expect(screen.getByText(LONG_STYLE)).toBeOnTheScreen();
     expect(screen.getByText(LONG_BREWERY)).toBeOnTheScreen();
     expect(screen.getByText("Iso-Britannia")).toBeOnTheScreen();
-    expect(screen.getByRole("radio", { name: "Tyyli (A–Ö)", checked: true })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Tyyli (A–Ö)", selected: true })).toBeOnTheScreen();
     expectScalesWithText();
   });
 });

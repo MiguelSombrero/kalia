@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
@@ -138,6 +138,12 @@ export const FieldRow = ({ title, value, empty, onPress, swatchStyle, accessibil
   );
 };
 
+// iOS has no radio trait: React Native fakes one by appending "radio button" and "checked" or "unchecked" to the
+// row's value, in its own translation table, which VoiceOver can speak in a voice of another language. Button plus
+// selected are traits iOS itself speaks in the voice's language. Android's radio role is announced by TalkBack.
+const choiceSemantics = (selected: boolean) =>
+  Platform.OS === "ios" ? ({ role: "button", accessibilityState: { selected } } as const) : ({ role: "radio", accessibilityState: { checked: selected } } as const);
+
 export const ChoiceRow = ({ label, sub, selected, onPress, swatchStyle, bordered }: { label: string; sub?: string; selected: boolean; onPress: () => void; swatchStyle?: string; bordered?: boolean }) => {
   const colors = useThemeColors();
   const styles = StyleSheet.create({
@@ -149,7 +155,7 @@ export const ChoiceRow = ({ label, sub, selected, onPress, swatchStyle, bordered
     tick: { ...textStyle("supporting", "bold"), color: colors.background },
   });
   return (
-    <Pressable role="radio" accessibilityLabel={sub ? `${label}, ${sub}` : label} accessibilityState={{ checked: selected }} onPress={onPress} style={styles.row}>
+    <Pressable {...choiceSemantics(selected)} accessibilityLabel={sub ? `${label}, ${sub}` : label} onPress={onPress} style={styles.row}>
       {swatchStyle ? <StyleSwatch style={swatchStyle} /> : null}
       <View style={styles.text}>
         <Text style={styles.label}>{label}</Text>
