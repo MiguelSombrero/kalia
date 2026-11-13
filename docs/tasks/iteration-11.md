@@ -38,7 +38,7 @@ browsing and searching the catalog.
 | [23](iteration-11/23-design-the-catalogs-search-and-filters.md) | Design the catalog's search and filters | refined |
 | [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | done |
 | [17](iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md) | The app's transport logs a failure only where a feature calls it one | done |
-| [24](iteration-11/24-a-contributor-sees-the-status-of-their-own-beers.md) | A contributor sees the status of their own beers | refined |
+| [24](iteration-11/24-a-contributor-sees-the-status-of-their-own-beers.md) | A contributor sees the status of their own beers | done |
 | [09](iteration-11/09-catalog-search-and-list.md) | A user searches and filters the catalog on their phone | refined |
 | [10](iteration-11/10-beer-details.md) | A user opens a beer and reads its details on their phone | refined |
 | [11](iteration-11/11-mobile-accessibility-conventions.md) | Mobile accessibility is written down and checked in tests | needs-refinement |

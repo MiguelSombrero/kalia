@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { BeerSummaryDtoStatus } from './beerSummaryDtoStatus';
 import type { BreweryRefDto } from './breweryRefDto';
 
 /**
@@ -15,5 +16,7 @@ export interface BeerSummaryDto {
   brewery: BreweryRefDto;
   id: string;
   name: string;
+  /** Whether the beer is approved or waiting for review; waiting is reported to its contributor alone */
+  status: BeerSummaryDtoStatus;
   style: string;
 }

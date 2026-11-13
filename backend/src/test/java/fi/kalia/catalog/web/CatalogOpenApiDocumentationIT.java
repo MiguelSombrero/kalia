@@ -56,7 +56,7 @@ class CatalogOpenApiDocumentationIT {
 		// springdoc does not infer "required" from Java non-nullability alone:
 		// every field defaulted to optional until requiredMode was set
 		// explicitly.
-		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "brewery");
+		assertThat(required).containsExactlyInAnyOrder("id", "name", "style", "abv", "brewery", "status");
 
 		Map<String, Object> summaryProperties =
 				JsonPath.read(body, "$.components.schemas.BeerSummaryDto.properties");
@@ -65,6 +65,18 @@ class CatalogOpenApiDocumentationIT {
 		assertThat(summaryProperties).doesNotContainKey("price");
 		assertThat(detailsProperties).doesNotContainKey("price").doesNotContainKey("description");
 		assertThat(body).doesNotContain("MoneyDto");
+	}
+
+	@Test
+	void beerReadsReportTheStatusAReadCanCarryNotTheStorageEnum() {
+		String body = apiDocs();
+
+		for (String dto : List.of("BeerSummaryDto", "BeerDetailsDto")) {
+			List<String> required = JsonPath.read(body, "$.components.schemas." + dto + ".required");
+			assertThat(required).as(dto).contains("status");
+			List<String> status = JsonPath.read(body, "$.components.schemas." + dto + ".properties.status.enum");
+			assertThat(status).as(dto).containsExactly("APPROVED", "PENDING");
+		}
 	}
 
 	@Test

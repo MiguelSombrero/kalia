@@ -11,11 +11,12 @@ public record BeerSummaryDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String style,
 		@Schema(description = "Alcohol by volume, percent", requiredMode = Schema.RequiredMode.REQUIRED) BigDecimal abv,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) BreweryRefDto brewery) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) BreweryRefDto brewery,
+		@Schema(description = "Whether the beer is approved or waiting for review; waiting is reported to its contributor alone", requiredMode = Schema.RequiredMode.REQUIRED) BeerStatus status) {
 
 	static BeerSummaryDto from(Beer beer) {
 		return new BeerSummaryDto(beer.getId(), beer.getName(), beer.getStyle(), beer.getAbv(),
-				BreweryRefDto.from(beer.getBrewery()));
+				BreweryRefDto.from(beer.getBrewery()), BeerStatus.from(beer.getModerationStatus()));
 	}
 
 }

@@ -10,6 +10,7 @@ const westvleteren12: BeerSummary = {
   style: "Quadrupel",
   abv: 10.2,
   brewery: { id: "br1", name: "Brouwerij Westvleteren" },
+  status: "APPROVED",
 };
 
 const orval: BeerSummary = {
@@ -18,6 +19,7 @@ const orval: BeerSummary = {
   style: "Belgian Pale Ale",
   abv: 6.2,
   brewery: { id: "br2", name: "Brasserie d'Orval" },
+  status: "APPROVED",
 };
 
 describe("BeerList", () => {

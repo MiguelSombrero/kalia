@@ -12,6 +12,7 @@ const beer = (style: string): BeerSummary => ({
   abv: 6.5,
   style,
   brewery: { id: "b1", name: "Test Brewery" },
+  status: "APPROVED",
 });
 
 describe("BeerCard", () => {

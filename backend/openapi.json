@@ -109,11 +109,16 @@
           "name" : {
             "type" : "string"
           },
+          "status" : {
+            "description" : "Whether the beer is approved or waiting for review; waiting is reported to its contributor alone",
+            "enum" : [ "APPROVED", "PENDING" ],
+            "type" : "string"
+          },
           "style" : {
             "type" : "string"
           }
         },
-        "required" : [ "abv", "brewery", "id", "name", "style" ],
+        "required" : [ "abv", "brewery", "id", "name", "status", "style" ],
         "type" : "object"
       },
       "BeerNotApprovedProblem" : {
@@ -202,11 +207,16 @@
           "name" : {
             "type" : "string"
           },
+          "status" : {
+            "description" : "Whether the beer is approved or waiting for review; waiting is reported to its contributor alone",
+            "enum" : [ "APPROVED", "PENDING" ],
+            "type" : "string"
+          },
           "style" : {
             "type" : "string"
           }
         },
-        "required" : [ "abv", "brewery", "id", "name", "style" ],
+        "required" : [ "abv", "brewery", "id", "name", "status", "style" ],
         "type" : "object"
       },
       "BottleDto" : {

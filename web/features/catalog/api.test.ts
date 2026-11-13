@@ -133,6 +133,7 @@ const westvleteren12: BeerDetails = {
   style: "Quadrupel",
   abv: 10.2,
   brewery: { id: "br1", name: "Brouwerij Westvleteren", countryCode: "BE", city: "Vleteren" },
+  status: "APPROVED",
 };
 
 describe("getBeer", () => {

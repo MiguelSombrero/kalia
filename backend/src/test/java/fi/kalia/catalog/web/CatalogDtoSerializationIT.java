@@ -24,7 +24,7 @@ class CatalogDtoSerializationIT {
 	void carriesNoDescriptionInBeerDetailsJson() throws Exception {
 		BeerDetailsDto beer = new BeerDetailsDto(UUID.randomUUID(), "Test Beer", "IPA",
 				new BigDecimal("5.0"),
-				new BreweryDto(UUID.randomUUID(), "Test Brewery", "FI", null));
+				new BreweryDto(UUID.randomUUID(), "Test Brewery", "FI", null), BeerStatus.APPROVED);
 
 		String json = beerDetailsJson.write(beer).getJson();
 
