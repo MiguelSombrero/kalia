@@ -87,6 +87,7 @@ describe("the screens that must work when nothing else does depend on nothing th
     { fixture: "imports-a-query-hook", rule: "no-restricted-imports" },
     { fixture: "imports-a-remote-image", rule: "no-restricted-imports" },
     { fixture: "imports-an-image-library", rule: "no-restricted-imports" },
+    { fixture: "imports-a-remote-image-by-namespace", rule: "no-restricted-imports" },
   ];
 
   describe.each(screens)("%s", (lintAs) => {

@@ -122,7 +122,7 @@ const eslintConfig = defineConfig([
             { name: "@kalia/api", allowImportNames: ["isApiError", "ApiError"], message: "A screen that must work when nothing else does reads only the error's trace reference from the API package (ADR-0093)." },
             { name: "@tanstack/react-query", message: "A screen that must work when nothing else does fetches nothing (ADR-0093)." },
             { name: "expo-image", message: "A screen that must work when nothing else does shows no image from the network (ADR-0110)." },
-            { name: "react-native", importNames: ["Image", "ImageBackground"], message: "A screen that must work when nothing else does shows no image from the network (ADR-0110)." },
+            { name: "react-native", allowImportNames: ["StyleSheet", "Text", "View", "ScrollView"], message: "A screen that must work when nothing else does shows no image from the network, so it takes only the text and layout primitives from react-native (ADR-0110)." },
           ],
           patterns: [
             {
