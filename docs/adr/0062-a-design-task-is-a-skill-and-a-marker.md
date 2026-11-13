@@ -114,7 +114,7 @@ enforces and `scripts/check-tasks.test.mjs` covers.**
   > Where a design task also makes an architectural decision — what a read
   > returns, a check the build runs, a new dependency — that part is an ADR of
   > its own, or an amendment of the ADR it touches, and the design record links
-  > it. The fifteen ADRs this bullet produced before the amendment stay as they
+  > it. The ADRs this bullet produced before the amendment stay as they
   > are; a later design task that changes one of their choices names that ADR
   > in its design record's `Departs from` line, and gives the ADR an `Amended`
   > line pointing back.

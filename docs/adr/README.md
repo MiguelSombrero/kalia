@@ -400,6 +400,9 @@ carry an architectural decision, which the gloss names.
 - [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)
   — the phone follows the system into a dark mode of neutral cards with the
   style colour in a slab, and keeps the mark off dark pages.
+- [ADR-0113](0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)
+  — the phone moves a little to explain a change and taps only for the result
+  of an action, both following the system's settings.
 
 ## Engineering process and documentation
 
@@ -610,3 +613,4 @@ reasons and its rate is worth watching independently
 | [ADR-0110](0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md) | The phone's identity is colour fields set light in a rounded face, where the web's is hairlines and square corners | accepted | 2026-11-11 |
 | [ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md) | The beer-style-to-group mapping lives in `@kalia/api`, so both clients colour a style alike | accepted | 2026-11-11 |
 | [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md) | The phone follows the system into a dark mode of neutral cards with the style colour in a slab, and keeps the mark off dark pages | accepted | 2026-11-13 |
+| [ADR-0113](0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md) | The phone moves a little to explain a change and taps only for the result of an action, both following the system's settings | accepted | 2026-11-13 |

@@ -179,7 +179,7 @@ in.
 >   check, puts the endpoint or the check in an ADR — or in an amendment of the
 >   ADR it touches — and the look in a design record.
 >
-> This changes nothing already written, as before. The fifteen ADRs filed under
+> This changes nothing already written, as before. The ADRs filed under
 > ADR-0062's every-design-task-writes-an-ADR rule stay where they are, accepted
 > and linked, and the index groups them under their own heading so a reader
 > looking for architecture can pass them by.
@@ -251,7 +251,7 @@ prescribes.
 > decision, and a repository practising a professional bar should mean by it
 > what the term means.
 >
-> **Delete the fifteen visual ADRs.** The cleanest log. Rejected because an ADR
+> **Delete the visual ADRs.** The cleanest log. Rejected because an ADR
 > log is append-only in the practice it would be aligning with, as ADR-0019's
 > "amend, do not rewrite" is here; because their rejected directions are
 > recorded nowhere else, `docs/design.md` holding intent only
@@ -260,7 +260,7 @@ prescribes.
 > comments among them — would each need repointing before
 > `scripts/check-links.mjs` passed.
 >
-> **Move the fifteen into `docs/design-records/` now.** Loses nothing, and the
+> **Move the visual ADRs into `docs/design-records/` now.** Loses nothing, and the
 > path rewrite is mechanical. Deferred rather than rejected: five of them carry
 > an architectural decision that has to find its ADR first — what the cellar
 > read returns ([ADR-0070](0070-cellar-sortable-beers-beside-their-band-with-bottle-tiles-headed-by-vintage.md)),
@@ -336,7 +336,7 @@ prescribes.
 >   coding convention, or where a mapping both clients share lives
 >   ([ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md)),
 >   is significant to one reviewer and not to another. Nothing checks it.
-> - Bad, because fifteen accepted ADRs now fail the corpus's own bar and stay —
+> - Bad, because sixteen accepted ADRs now fail the corpus's own bar and stay —
 >   the inconsistency ADR-0019 and the first test's Consequences already
 >   accept, for the same reason.
 > - Neutral, because decisions now have two directories, and the second is
@@ -411,7 +411,10 @@ and 3 respectively, 17 in total.
 >
 > The fifteen total 2,809 lines, 15 % of the corpus. All are dated 2026-10-03
 > to 2026-11-13, after ADR-0062 made every design task write one, and each
-> records a design task's choice.
+> records a design task's choice. A sixteenth,
+> [ADR-0113](0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)
+> on the phone's motion and haptics, reached `dev` the same day under the old
+> rule, before this amendment merged, and is grouped with them.
 >
 > References, counted by matching `ADR-NNNN` and the file's name across
 > `*.md`, `*.ts`, `*.tsx`, `*.mjs`, `*.css` and `*.ftl`: the fifteen are cited
