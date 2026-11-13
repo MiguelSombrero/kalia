@@ -1,6 +1,6 @@
 # Task 05: Design what moves and what is felt
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -69,16 +69,16 @@ native prototypes on the real screens, since neither can be judged in a frame.
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the motion's
+- [x] The product owner chose from built alternatives, at minimum the motion's
       amount and the set of felt actions, judged on a device or simulator on
       the route task 01 chose; an ADR records the directions and the choice
-- [ ] A component test shows every animated primitive reaching its final state
+- [x] A component test shows every animated primitive reaching its final state
       immediately when reduced motion is on
-- [ ] A test shows the haptic helper doing nothing, and not throwing, where the
+- [x] A test shows the haptic helper doing nothing, and not throwing, where the
       device has no haptic engine
-- [ ] The product owner signed off the built motion live, with the system's
+- [x] The product owner signed off the built motion live, with the system's
       reduce-motion setting on and off
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

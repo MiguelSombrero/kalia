@@ -11,7 +11,7 @@ const update = (next: boolean) => {
   listeners.forEach((notify) => notify());
 };
 
-/** Reads the system's reduce-motion setting once and follows it; call it at start-up so the first screen already knows. */
+// Started at app launch, not on first use, so a screen's first render already knows the setting rather than flashing its animation.
 export const watchReducedMotion = (): Promise<void> => {
   watching ??= (async () => {
     AccessibilityInfo.addEventListener("reduceMotionChanged", update);

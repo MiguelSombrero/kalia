@@ -5,7 +5,6 @@ import { useThemeColors } from "@/lib/design/useThemeColors";
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 
-/** A placeholder that breathes slowly while content loads; under reduced motion it holds still. */
 export const SkeletonBlock = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const reduced = useReducedMotion();
   const colors = useThemeColors();

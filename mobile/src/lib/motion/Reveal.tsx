@@ -4,7 +4,6 @@ import { theme } from "@/lib/design/theme.generated";
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 
-/** Fades its content in once when it first appears; under reduced motion it is simply there. */
 export const Reveal = ({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) => {
   const reduced = useReducedMotion();
   const [opacity] = useState(() => new Animated.Value(reduced ? 1 : 0));

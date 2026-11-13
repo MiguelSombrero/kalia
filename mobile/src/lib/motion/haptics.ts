@@ -9,7 +9,6 @@ const types = {
   error: Haptics.NotificationFeedbackType.Error,
 } as const;
 
-/** Taps the phone for the result of something the person asked for; does nothing where there is no motor, and never throws. */
 export const haptic = (outcome: Outcome): void => {
   if (Platform.OS === "web") return;
   try {

@@ -9,7 +9,6 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export const PRESS_SCALE = 0.98;
 const PRESSED_OPACITY = 0.85;
 
-/** A pressable that shrinks slightly while held; under reduced motion only its opacity changes, immediately. */
 export const PressFeedback = ({ style, onPressIn, onPressOut, ...rest }: PressableProps & { style?: StyleProp<ViewStyle> }) => {
   const reduced = useReducedMotion();
   const [scale] = useState(() => new Animated.Value(1));
@@ -33,7 +32,7 @@ export const PressFeedback = ({ style, onPressIn, onPressOut, ...rest }: Pressab
         scaleTo(1);
         onPressOut?.(event);
       }}
-      style={[style, { opacity: held ? PRESSED_OPACITY : 1, transform: [{ scale }] }]}
+      style={[style, held && { opacity: PRESSED_OPACITY }, { transform: [{ scale }] }]}
     />
   );
 };

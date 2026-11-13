@@ -2,7 +2,7 @@ import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
@@ -17,6 +17,11 @@ export const CatalogScreen = () => {
   const { t, i18n } = useTranslation();
   const beers = useBeers();
   const animateListChange = useAnimateListChange();
+  const [pulled, setPulled] = useState(false);
+  const pull = () => {
+    setPulled(true);
+    void beers.refetch().finally(() => setPulled(false));
+  };
   const shown = useRef<BeerSummary[] | undefined>(undefined);
 
   useLayoutEffect(() => {
@@ -46,13 +51,15 @@ export const CatalogScreen = () => {
       )}
       {beers.isSuccess && beers.data.length === 0 && <Text style={styles.notice}>{t("catalog.list.empty")}</Text>}
       {beers.isSuccess && beers.data.length > 0 && (
-        <FlatList
-          data={beers.data}
-          keyExtractor={(beer) => beer.id}
-          maintainVisibleContentPosition={{ minIndexForVisible: 0, autoscrollToTopThreshold: theme.spacing.medium }}
-          refreshControl={<RefreshControl refreshing={beers.isRefetching} onRefresh={() => void beers.refetch()} />}
-          renderItem={({ item }) => <Reveal><BeerCard beer={item} language={i18n.language} /></Reveal>}
-        />
+        <Reveal style={styles.list}>
+          <FlatList
+            data={beers.data}
+            keyExtractor={(beer) => beer.id}
+            maintainVisibleContentPosition={{ minIndexForVisible: 0, autoscrollToTopThreshold: theme.spacing.medium }}
+            refreshControl={<RefreshControl refreshing={pulled} onRefresh={pull} />}
+            renderItem={({ item }) => <BeerCard beer={item} language={i18n.language} />}
+          />
+        </Reveal>
       )}
     </SafeAreaView>
   );
@@ -63,6 +70,7 @@ const useStyles = () => {
   return StyleSheet.create({
     screen: { flex: 1, paddingHorizontal: theme.spacing.medium, backgroundColor: colors.background },
     heading: { ...textStyle("screen-title", "bold"), marginTop: theme.spacing.small, marginBottom: theme.spacing.medium, color: colors.foreground },
+    list: { flex: 1 },
     placeholders: { marginTop: theme.spacing.medium },
     placeholder: { height: theme.spacing.action * 1.5, marginBottom: theme.spacing.small, borderRadius: theme.radius.card },
     notice: { ...textStyle("body", "normal"), color: colors["muted-foreground"] },

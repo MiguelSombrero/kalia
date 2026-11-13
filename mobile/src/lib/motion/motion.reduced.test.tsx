@@ -47,7 +47,7 @@ describe("motion with the system's reduce-motion setting on", () => {
     expect(timing).not.toHaveBeenCalled();
     expect(button).toHaveStyle({ opacity: 0.85, transform: [{ scale: 1 }] });
     await fireEvent(button, "pressOut");
-    expect(button).toHaveStyle({ opacity: 1 });
+    expect(button).not.toHaveStyle({ opacity: 0.85 });
   });
 
   it("holds a placeholder still at its final opacity, with no looping", async () => {
