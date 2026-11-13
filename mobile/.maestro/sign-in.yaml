@@ -1,0 +1,45 @@
+appId: fi.kalia.app
+name: Sign in through Keycloak and read the profile from the stack
+---
+- launchApp:
+    clearState: true
+- tapOn: "Profile|Profiili"
+- tapOn: "Sign in|Kirjaudu sisään"
+- tapOn:
+    text: "Sign in|Kirjaudu sisään"
+    below: "Sign in to use your cellar and profile\\.|Kirjaudu sisään käyttääksesi kellaria ja profiilia\\."
+# iOS asks before an app opens a sign-in browser.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "Continue|Jatka"
+# A fresh Android device's Chrome shows its first-run screen before the page.
+- extendedWaitUntil:
+    visible: "Use without an account|Username or email|Käyttäjätunnus tai sähköposti|Signed in as testuser|Kirjautuneena käyttäjänä testuser"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Use without an account"
+    commands:
+      - tapOn: "Use without an account"
+# The browser keeps Keycloak's session after the app signs out, so a second
+# run on the same device returns signed in without showing the form.
+- extendedWaitUntil:
+    visible: "Username or email|Käyttäjätunnus tai sähköposti|Signed in as testuser|Kirjautuneena käyttäjänä testuser"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Username or email|Käyttäjätunnus tai sähköposti"
+    commands:
+      - tapOn: "Username or email|Käyttäjätunnus tai sähköposti"
+      - inputText: "testuser"
+      - tapOn: "Password|Salasana"
+      - inputText: "testuser123"
+      # Enter rather than the button, which the keyboard can cover.
+      - pressKey: Enter
+- extendedWaitUntil:
+    visible: "Signed in as testuser|Kirjautuneena käyttäjänä testuser"
+    timeout: 60000
+- tapOn: "Sign out|Kirjaudu ulos"
+- assertVisible: "Sign in to see your profile|Kirjaudu sisään nähdäksesi profiilisi"
