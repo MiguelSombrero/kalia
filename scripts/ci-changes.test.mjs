@@ -78,11 +78,34 @@ for (const file of [
   });
 }
 
-for (const file of ["web/next.config.ts", "docs/architecture.md", ".node-version", ".dockerignore", "README.md"]) {
+for (const file of [
+  "web/next.config.ts",
+  "docs/architecture.md",
+  ".node-version",
+  ".dockerignore",
+  "README.md",
+  "mobile/README.md",
+  "backend/README.md",
+  "packages/README.md",
+  "backend/src/test/java/fi/kalia/catalog/BeerControllerIT.java",
+  "mobile/src/features/catalog/CatalogScreen.test.tsx",
+  "packages/api/src/enumLookup.test.ts",
+  "scripts/mobile-e2e.test.mjs",
+]) {
   test(`${file} alone does not run the Android end-to-end job`, () => {
     expectOutputs([file], { "mobile-e2e": false });
   });
 }
+
+test("a test or README beside a file the app ships still runs the Android end-to-end job", () => {
+  expectOutputs(["mobile/src/features/catalog/CatalogScreen.test.tsx", "mobile/src/features/catalog/CatalogScreen.tsx"], { "mobile-e2e": true });
+  expectOutputs(["backend/README.md", "backend/src/main/java/fi/kalia/Application.java"], { "mobile-e2e": true });
+});
+
+test("a Markdown file or test under mobile/ still runs the mobile job, which lints and runs them", () => {
+  expectOutputs(["mobile/src/features/catalog/CatalogScreen.test.tsx"], { mobile: true });
+  expectOutputs(["mobile/README.md"], { mobile: true });
+});
 
 for (const file of [
   "mobile/src/app/index.tsx",

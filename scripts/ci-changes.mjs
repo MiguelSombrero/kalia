@@ -28,7 +28,8 @@
 // - mobile-e2e drives a release build against the stack's backend, so it also
 //   follows backend/ and every file that defines that stack, and the web's
 //   favicon, which the app's icon and splash are rendered from. It never runs
-//   on docs/ or the rest of web/ alone.
+//   on docs/ or the rest of web/ alone, nor on a change made only of files
+//   neither the app nor the stack is built from: Markdown, and tests (INERT).
 // - keycloak follows the services keycloak-realm-check starts and the scripts
 //   it runs.
 
@@ -66,6 +67,12 @@ const RULES = {
   ],
 };
 
+// What the release app and the stack's images are built without. Only the
+// end-to-end job skips them: the mobile job lints and runs these tests, and
+// the backend job runs its own.
+const INERT = /(\.md$|^backend\/src\/test\/|^(mobile|packages|scripts)\/.*\.test\.(ts|tsx|mjs)$)/;
+const SKIPS = { "mobile-e2e": INERT };
+
 const DEV = "dev";
 const ALWAYS_EVERYTHING = new Set(["main"]);
 const NO_COMMIT = /^0+$/;
@@ -81,7 +88,10 @@ const { GIT_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, ...ENV_WITHOUT_REPO } = process.
 export function decide(files) {
   const everything = files.some((file) => FILTER_ITSELF.test(file));
   return Object.fromEntries(
-    OUTPUTS.map((name) => [name, everything || files.some((file) => RULES[name].some((rule) => rule.test(file)))]),
+    OUTPUTS.map((name) => [
+      name,
+      everything || files.some((file) => !SKIPS[name]?.test(file) && RULES[name].some((rule) => rule.test(file))),
+    ]),
   );
 }
 
