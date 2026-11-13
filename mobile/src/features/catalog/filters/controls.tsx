@@ -23,7 +23,7 @@ export const SearchField = ({ value, onChange, label, placeholder, clearLabel, o
   const colors = useThemeColors();
   const styles = StyleSheet.create({
     field: { flex: 1, flexDirection: "row", alignItems: "center", minHeight: theme.spacing.touch, borderWidth: EDGE, borderColor: colors.border, borderRadius: theme.radius.card, backgroundColor: colors.surface, paddingLeft: theme.spacing.medium },
-    input: { flex: 1, ...textStyle("body", "medium"), color: colors.foreground, paddingVertical: theme.spacing.small },
+    input: { flexGrow: 1, flexShrink: 1, ...textStyle("body", "medium"), color: colors.foreground, paddingVertical: theme.spacing.small },
     clear: { minWidth: theme.spacing.touch, minHeight: theme.spacing.touch, alignItems: "center", justifyContent: "center" },
     clearText: { ...textStyle("body", "bold"), color: colors["muted-foreground"] },
   });
