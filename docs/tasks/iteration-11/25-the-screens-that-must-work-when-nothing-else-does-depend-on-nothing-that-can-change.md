@@ -1,6 +1,6 @@
 # Task 25: The update-required, maintenance and crash screens depend on nothing that can change under an installed build
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2, DW-3
 
