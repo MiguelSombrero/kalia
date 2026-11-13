@@ -28,17 +28,18 @@ export function validateTokens(source) {
     }
   }
   const primitives = new Map(source.primitives.map((token) => [token.name, token]));
-  const alias = (token, value, owner = token) => {
+  const alias = (token, value, owner = token, mode = "light") => {
     const primitive = primitives.get(value);
     if (typeof value !== "string" || !primitive) throw new Error(`${token.name}: invalid primitive alias ${value}`);
-    for (const platform of ["web", "mobile"].filter((p) => allowed(owner, p))) {
+    // only mobile emits a dark value, so a dark alias needs its primitive there alone
+    for (const platform of (mode === "dark" ? ["mobile"] : ["web", "mobile"]).filter((p) => allowed(owner, p))) {
       if (!allowed(primitive, platform)) throw new Error(`${token.name}: primitive ${value} is unavailable on ${platform}`);
     }
   };
   for (const token of source.primitives) {
     if (typeof token.value !== "string" || !/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(token.value)) throw new Error(`${token.name}: expected a hex color`);
   }
-  for (const token of source.colors) for (const mode of ["light", "dark"]) alias(token, token[mode]);
+  for (const token of source.colors) for (const mode of ["light", "dark"]) alias(token, token[mode], token, mode);
   for (const token of source.fonts) {
     for (const platform of ["web", "mobile", "keycloak"].filter((p) => allowed(token, p))) {
       if (typeof token.values?.[platform] !== "string" || !token.values[platform].trim()) throw new Error(`${token.name}: missing ${platform} font`);
@@ -58,8 +59,8 @@ export function validateTokens(source) {
       if (names.has(variant.name)) throw new Error(`${variant.name}: duplicate variant`);
       names.add(variant.name);
       for (const mode of ["light", "dark"]) {
-        alias(variant, variant[mode]?.background, group);
-        alias(variant, variant[mode]?.foreground, group);
+        alias(variant, variant[mode]?.background, group, mode);
+        alias(variant, variant[mode]?.foreground, group, mode);
       }
     }
   }

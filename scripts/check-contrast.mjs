@@ -9,6 +9,7 @@ import { validateTokens } from "./generate-tokens.mjs";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 const NEEDS = { text: 4.5, "non-text": 3 };
+const MODES = { both: ["light", "dark"], light: ["light"] };
 
 /**
  * @param {string} a hex colour, #rgb or #rrggbb
@@ -66,10 +67,14 @@ export function checkContrast(root, source = tokens) {
     if (ratio < needs) failures.push(`${label} is ${ratio.toFixed(2)}:1, needs ${needs}:1`);
   };
 
-  for (const { fg, bg, kind } of pairings) {
+  for (const { fg, bg, kind, modes } of pairings) {
     const label = `\`${fg}\` on \`${bg}\``;
     if (!(kind in NEEDS)) {
       failures.push(`docs/design.md: ${label} has kind "${kind}"; use "text" or "non-text"`);
+      continue;
+    }
+    if (!(modes in MODES)) {
+      failures.push(`docs/design.md: ${label} has modes "${modes}"; use "both" or "light"`);
       continue;
     }
     const missing = [fg, bg].filter((t) => !colors.has(t));
@@ -77,7 +82,7 @@ export function checkContrast(root, source = tokens) {
       failures.push(`docs/design.md: ${label} names \`${missing[0]}\`, which the token source does not declare`);
       continue;
     }
-    for (const mode of ["light", "dark"]) judge(`${label} (${mode})`, primitives.get(colors.get(fg)[mode]), primitives.get(colors.get(bg)[mode]), NEEDS[kind]);
+    for (const mode of MODES[modes]) judge(`${label} (${mode})`, primitives.get(colors.get(fg)[mode]), primitives.get(colors.get(bg)[mode]), NEEDS[kind]);
   }
 
   for (const group of source.variants) {
@@ -113,7 +118,8 @@ export function resolveColour(token, scope, seen = new Set()) {
 }
 
 // Table rows from "## Contrast pairings" to the next heading of level one or
-// two: | `--foreground-token` | `--background-token` | text or non-text |
+// two: | `--foreground-token` | `--background-token` | text or non-text | both or light |
+// A row with no fourth cell holds in both modes.
 function declaredPairings(design) {
   const lines = design.split("\n");
   const start = lines.findIndex((l) => /^##\s+Contrast pairings\s*$/.test(l));
@@ -122,8 +128,8 @@ function declaredPairings(design) {
   const pairings = [];
   for (let i = start + 1; i < lines.length; i++) {
     if (/^#{1,2}\s/.test(lines[i])) break;
-    const row = lines[i].match(/^\|\s*`(--[A-Za-z0-9-]+)`\s*\|\s*`(--[A-Za-z0-9-]+)`\s*\|\s*([^|]+?)\s*\|/);
-    if (row) pairings.push({ fg: row[1], bg: row[2], kind: row[3] });
+    const row = lines[i].match(/^\|\s*`(--[A-Za-z0-9-]+)`\s*\|\s*`(--[A-Za-z0-9-]+)`\s*\|\s*([^|]+?)\s*\|(?:\s*([^|]*?)\s*\|)?/);
+    if (row) pairings.push({ fg: row[1], bg: row[2], kind: row[3], modes: row[4] || "both" });
   }
   return pairings;
 }

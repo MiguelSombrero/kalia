@@ -1,6 +1,6 @@
 # Task 04: Design the app's dark mode
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -69,15 +69,15 @@ the real screens beside the light identity of [task 03](03-design-kalias-identit
 
 ## Acceptance criteria
 
-- [ ] The product owner chose the dark palette from built alternatives,
+- [x] The product owner chose the dark palette from built alternatives,
       judged in a dark room on the route task 01 chose; an ADR records the
       decision to follow the system, the directions and the choice
-- [ ] `scripts/check-contrast.mjs` covers every pairing of the dark palette
+- [x] `scripts/check-contrast.mjs` covers every pairing of the dark palette
       and fails on a pairing below AA — test
-- [ ] A component test renders a screen in both modes and shows it readable,
+- [x] A component test renders a screen in both modes and shows it readable,
       and the "update required" and "maintenance" screens in both
-- [ ] The product owner signed off the built result live
-- [ ] `make verify-fast` is green
+- [x] The product owner signed off the built result live
+- [x] `make verify-fast` is green
 
 ## Notes
 

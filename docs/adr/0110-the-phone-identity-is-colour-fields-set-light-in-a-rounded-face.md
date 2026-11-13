@@ -2,6 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-11
+- **Amended:** 2026-11-13 by [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md) — the phone follows the system into a dark mode; the light identity is unchanged
 
 ## Context
 
