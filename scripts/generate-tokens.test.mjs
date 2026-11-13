@@ -43,6 +43,19 @@ test("validates aliases, duplicate names, modes and value kinds with token names
   }
 });
 
+test("a dark value may alias a mobile-only primitive, because only mobile emits dark", () => {
+  const source = fixture();
+  source.primitives.push({ name: "graphite", value: "#101113", platforms: ["mobile"] });
+  source.colors[0].dark = "graphite";
+  const outputs = generate(source);
+  assert.match(outputs.mobile, /#101113/);
+  assert.doesNotMatch(outputs.web, /graphite|#101113/);
+  assert.doesNotMatch(outputs.keycloak, /graphite|#101113/);
+
+  source.colors[0].light = "graphite";
+  assert.throws(() => validateTokens(source), /background.*graphite.*web/);
+});
+
 test("generates deterministic, platform-scoped outputs with both mobile modes and converted units", () => {
   const outputs = generate(fixture());
   assert.deepEqual(outputs, generate(fixture()));

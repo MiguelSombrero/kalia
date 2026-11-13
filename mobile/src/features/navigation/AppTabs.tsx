@@ -26,7 +26,7 @@ export const AppTabs = () => {
       backgroundColor: colors.primary,
     },
     addText: { ...textStyle("item-title", "normal"), color: colors["primary-foreground"] },
-    bar: { backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border },
+    bar: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors["bar-edge"] },
     label: textStyle("supporting", "medium"),
     labelOn: { ...textStyle("supporting", "bold"), borderBottomWidth: 3, borderBottomColor: colors.primary },
   });

@@ -1,5 +1,8 @@
 import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import * as ReactNative from "react-native";
+import { contrastRatio } from "@/lib/design/contrast";
+import { theme } from "@/lib/design/theme.generated";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { CatalogScreen } from "./CatalogScreen";
@@ -17,6 +20,10 @@ const pageOf = (content: ReturnType<typeof beer>[]) => ({
   data: { content, page: 0, totalElements: content.length, totalPages: 1 },
   status: 200,
   headers: new Headers(),
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 beforeEach(() => {
@@ -39,6 +46,33 @@ describe("CatalogScreen", () => {
     expect(screen.getAllByText("IPA")).toHaveLength(2);
     expect(screen.getByText(abv)).toBeOnTheScreen();
     expect(screen.getByText("Stout")).toBeOnTheScreen();
+  });
+
+  it.each(["light", "dark"] as const)("is readable when the system is %s", async (mode) => {
+    jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
+    const colors = theme.colors[mode];
+    transport.mockResolvedValue(pageOf([{ ...beer("1", "Pale Ale", 5.2), style: "Gose" }, { ...beer("2", "Stout", 7), style: "Imperial Stout" }]));
+
+    await renderWithLocale(<CatalogScreen />);
+    await screen.findByText("Pale Ale");
+
+    expect(screen.getByRole("heading", { name: "Catalog" })).toHaveStyle({ color: colors.foreground });
+    expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
+    const [gose, stout] = screen.getAllByTestId("beer-row");
+    const sour = theme.variants["beer-style"].sour[mode];
+    const stoutPair = theme.variants["beer-style"].stout[mode];
+    if (mode === "dark") {
+      expect(gose).toHaveStyle({ backgroundColor: colors.surface });
+      expect(stout).toHaveStyle({ backgroundColor: colors.surface });
+      expect(screen.getAllByTestId("beer-slab")).toHaveLength(2);
+      expect(screen.getByText("Pale Ale")).toHaveStyle({ color: colors.foreground });
+      expect(contrastRatio(colors.foreground, colors.surface)).toBeGreaterThanOrEqual(4.5);
+    } else {
+      expect(gose).toHaveStyle({ backgroundColor: sour.background });
+      expect(stout).toHaveStyle({ backgroundColor: stoutPair.background });
+      expect(screen.getByText("Pale Ale")).toHaveStyle({ color: sour.foreground });
+      expect(contrastRatio(sour.foreground, sour.background)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it("lets the list grow with the system text size", async () => {

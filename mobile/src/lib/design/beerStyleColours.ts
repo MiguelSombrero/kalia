@@ -1,6 +1,6 @@
 import { beerStyleGroup, enumLookup, type BeerStyleGroup } from "@kalia/api";
-import { useColorScheme } from "react-native";
 import { theme } from "./theme.generated";
+import { useColorMode } from "./useThemeColors";
 
 export type StyleColours = { background: string; foreground: string };
 type Mode = "light" | "dark";
@@ -18,6 +18,6 @@ const lookups = {
 export const coloursOfStyleGroup = (group: string | undefined, mode: Mode): StyleColours => lookups[mode](group);
 
 export const useBeerStyleColours = () => {
-  const mode: Mode = useColorScheme() === "dark" ? "dark" : "light";
+  const mode = useColorMode();
   return (style: string) => coloursOfStyleGroup(beerStyleGroup(style), mode);
 };

@@ -1,3 +1,4 @@
+import { useThemeColors } from "@/lib/design/useThemeColors";
 import { AppGate } from "@/features/app-config";
 import { FontGate } from "@/lib/design/FontGate";
 import { CrashBoundary, installUncaughtErrorHandler, UncaughtErrorGate } from "@/features/crash-recovery";
@@ -15,14 +16,15 @@ export const ErrorBoundary = CrashBoundary;
 
 const RootLayout = () => {
   const locale = useDeviceLocale();
+  const colors = useThemeColors();
 
   return (
     <UncaughtErrorGate>
       <FontGate>
         <AppProviders locale={locale}>
-          <StatusBar style="dark" />
+          <StatusBar style="auto" />
           <AppGate>
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
               <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />

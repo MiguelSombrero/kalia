@@ -240,7 +240,9 @@ day-to-day rules ([web/README.md](../web/README.md),
   ([ADR-0109](adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)).
 - **The phone has an identity of its own,** colour fields set light in one rounded
   face, from the same token source as the web
-  ([ADR-0110](adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)).
+  ([ADR-0110](adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)),
+  and it follows the system into a dark mode of neutral cards with the style
+  colour in a slab ([ADR-0112](adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)).
 - **The web's conventions carry over** where they are not about the browser
   ([ADR-0094](adr/0094-the-mobile-app-is-expo-as-a-development-build-with-generated-native-projects-and-no-paid-service.md)); ESLint enforces the layers and the generated client's isolation
   ([ADR-0012](adr/0012-orval-api-client.md)).

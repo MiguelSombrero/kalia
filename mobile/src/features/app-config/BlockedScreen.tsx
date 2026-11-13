@@ -22,7 +22,7 @@ export const BlockedScreen = ({
   const checkAgain = t("appConfig.checkAgain");
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView testID="blocked-screen" style={styles.screen}>
       <Text role="heading" {...titleScale} style={styles.title}>
         {t(`appConfig.${reason}.title`)}
       </Text>

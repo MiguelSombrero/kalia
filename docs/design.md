@@ -89,8 +89,8 @@ and the density are the phone's own.
 ([ADR-0110](adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md))
 
 - **A light page.** A white ground, a white tab bar with an ink hairline above
-  it, and cobalt for the selected tab. Dark mode is its own decision and
-  follows the system ([task 04](tasks/iteration-11/04-decision-and-design-dark-mode.md)).
+  it, and cobalt for the selected tab. When the system is set to dark the phone
+  follows it with the identity below.
 - **One round corner.** Cards, buttons, fields and a person's slot share one
   radius, `--radius-card`; nothing on the phone is square and nothing is
   rounder. The web stays square.
@@ -115,6 +115,32 @@ and the density are the phone's own.
   ([task 22](tasks/iteration-11/22-design-mobile-tab-icons.md)), search and
   filters ([task 23](tasks/iteration-11/23-design-the-catalogs-search-and-filters.md)),
   motion ([task 05](tasks/iteration-11/05-design-motion-and-haptics.md)).
+
+### Dark
+
+The phone follows the system's setting and has no switch of its own. In dark a
+beer is a neutral raised card with its style colour carried by a slab down the
+card's leading edge, so the colour a user learned in light is the same colour
+in dark and the card itself does not glare.
+([ADR-0112](adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md))
+
+- **A graphite page.** The ground is near-black graphite and a card, the
+  person's panel and the tab bar are each a step lighter. The ink is a soft
+  white, the action is a lightened cobalt with ink on it, and the tab bar has a
+  quiet divider above it where light has an ink hairline.
+- **The slab carries the style.** Its colour is the group's colour exactly as
+  in light and it is as tall as the card. The name, the brewery, the style and
+  the strength are ordinary text on the card, so their contrast never depends
+  on the style. A slab that cannot stand off the card by 3:1 is outlined so it
+  stays visible.
+- **Only the card's surface differs.** A card is a style-coloured field in
+  light and a neutral card with a slab in dark; the corner, the face, the sizes,
+  the weights and the controls are the same in both.
+- **The splash and the mark are unchanged.** The splash keeps its teal in both
+  modes and the mark stays off dark pages. The first frame reads the system's
+  scheme, so no light frame flashes in dark.
+- **Not decided here.** A switch of the user's own, and a dark web
+  ([ADR-0112](adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)).
 
 ## Feel
 
@@ -151,7 +177,9 @@ directions that were rejected, and why, are
 What each token means and when to reach for it. These rows describe the
 identity [ADR-0064](adr/0064-visual-identity-can-art-square.md) chose; the
 two-layer rule they sit in is
-[ADR-0021](adr/0021-design-tokens-ui-primitives.md)'s.
+[ADR-0021](adr/0021-design-tokens-ui-primitives.md)'s. A token keeps its
+meaning in the phone's dark mode, where it has its own value; a phrase such as
+"ink" or "white" below names the role in light, not the value in dark.
 
 ### Colour
 
@@ -173,6 +201,7 @@ two-layer rule they sit in is
 | `--color-destructive` | Something is removed for good, or something failed. | The confirm button of a removal that cannot be undone, the red square of every error (see [Feedback and errors](#feedback-and-errors)), and the edge of a field whose value is wrong. Never for a merely cautious action, and never for the words of an error. |
 | `--color-destructive-foreground` | Text and icons placed on `--color-destructive`. | Whenever something sits on a destructive fill; never on its own. |
 | `--color-focus-ring` | Where keyboard focus is. | Only `:focus-visible` outlines. It carries no other meaning, so it is never reused for decoration. |
+| `--color-bar-edge` | The line above the phone's tab bar. | Only the tab bar's top edge. Ink in light, where it is the identity's hairline, and a quiet divider in dark, where an ink-bright line would shout. |
 | `--color-style` | The colour of a beer's style group. | A style badge, or anything else that labels a beer by its style. The element carries `data-beer-style` set from `beerStyleGroup()` in `@kalia/api`; without it, it takes the grey of *Anything else*. See [Style groups](#style-groups). |
 | `--color-style-foreground` | Text placed on `--color-style`. | Whenever something sits on a style fill; never on its own. Ink or white, whichever the group's colour needs. |
 | `--color-mark-tile` | The mark's ground: the square its scene is drawn on. | Only inside the mark. Never a page, surface or label colour. |
@@ -265,6 +294,10 @@ has no group, and `scripts/check-contrast.mjs` holds every block to AA.
 | `sour` | Sours, lambics, wild ales and fruit beers: Gueuze, Kriek, Fruit Lambic, Wild Ale, Brett Beer, Faro, Gose, Berliner Weisse, Fruit Beer. | Pink. |
 | `other` | Anything no keyword matches, including styles that name a strength or an ingredient rather than a colour: Low-Alcohol Beer, Chili Beer, Small Beer, Rye Beer. | Neutral grey, until the style is given a group. |
 
+On the phone in dark a group's colour is the slab on a neutral card, and the
+twelve colours and their pairs are the same as in light
+([Mobile identity](#dark)).
+
 Colours are expected to be tuned as the pages are laid out. Changing one is a
 `globals.css` edit that the contrast check guards; moving a style between
 groups, or adding a group, changes `beer-style.ts`, its test and this table
@@ -277,37 +310,40 @@ Every foreground-on-background pairing the app uses, which
 4.5:1 for `text`, 3:1 for `non-text` (a control's boundary or a focus
 indicator). Every `[data-beer-style]` block is checked as well, without being
 listed here. A new pairing gets a row in the pull request that introduces it.
+`Modes` says where it is held: `both` for the light and the dark phone, `light`
+for a pairing that only the light identity has (a row with no fourth cell is
+`both`).
 
-| Foreground | Background | Kind |
-|---|---|---|
-| `--color-foreground` | `--color-background` | text |
-| `--color-foreground` | `--color-surface` | text |
-| `--color-foreground` | `--color-surface-sunken` | text |
-| `--color-muted-foreground` | `--color-background` | text |
-| `--color-muted-foreground` | `--color-surface` | text |
-| `--color-muted-foreground` | `--color-surface-sunken` | text |
-| `--color-primary-foreground` | `--color-primary` | text |
-| `--color-accent-foreground` | `--color-accent` | text |
-| `--color-foreground` | `--color-accent` | text |
-| `--color-background` | `--color-foreground` | text |
-| `--color-muted-foreground` | `--color-accent` | text |
-| `--color-success-foreground` | `--color-success` | text |
-| `--color-destructive-foreground` | `--color-destructive` | text |
-| `--color-style-foreground` | `--color-style` | text |
-| `--color-primary` | `--color-background` | text |
-| `--color-primary` | `--color-surface` | text |
-| `--color-primary` | `--color-surface-sunken` | text |
-| `--color-primary` | `--color-background` | non-text |
-| `--color-destructive` | `--color-background` | non-text |
-| `--color-border` | `--color-background` | non-text |
-| `--color-border` | `--color-surface` | non-text |
-| `--color-focus-ring` | `--color-background` | non-text |
-| `--color-focus-ring` | `--color-surface` | non-text |
-| `--color-focus-ring` | `--color-surface-sunken` | non-text |
-| `--color-mark-tile` | `--color-background` | non-text |
-| `--color-mark-bottle` | `--color-mark-tile` | non-text |
-| `--color-mark-beer` | `--color-mark-tile` | non-text |
-| `--color-mark-foam` | `--color-mark-tile` | non-text |
+| Foreground | Background | Kind | Modes |
+|---|---|---|---|
+| `--color-foreground` | `--color-background` | text | both |
+| `--color-foreground` | `--color-surface` | text | both |
+| `--color-foreground` | `--color-surface-sunken` | text | both |
+| `--color-muted-foreground` | `--color-background` | text | both |
+| `--color-muted-foreground` | `--color-surface` | text | both |
+| `--color-muted-foreground` | `--color-surface-sunken` | text | both |
+| `--color-primary-foreground` | `--color-primary` | text | both |
+| `--color-accent-foreground` | `--color-accent` | text | both |
+| `--color-foreground` | `--color-accent` | text | both |
+| `--color-background` | `--color-foreground` | text | both |
+| `--color-muted-foreground` | `--color-accent` | text | both |
+| `--color-success-foreground` | `--color-success` | text | both |
+| `--color-destructive-foreground` | `--color-destructive` | text | both |
+| `--color-style-foreground` | `--color-style` | text | both |
+| `--color-primary` | `--color-background` | text | both |
+| `--color-primary` | `--color-surface` | text | both |
+| `--color-primary` | `--color-surface-sunken` | text | both |
+| `--color-primary` | `--color-background` | non-text | both |
+| `--color-destructive` | `--color-background` | non-text | both |
+| `--color-border` | `--color-background` | non-text | both |
+| `--color-border` | `--color-surface` | non-text | both |
+| `--color-focus-ring` | `--color-background` | non-text | both |
+| `--color-focus-ring` | `--color-surface` | non-text | both |
+| `--color-focus-ring` | `--color-surface-sunken` | non-text | both |
+| `--color-mark-tile` | `--color-background` | non-text | light |
+| `--color-mark-bottle` | `--color-mark-tile` | non-text | both |
+| `--color-mark-beer` | `--color-mark-tile` | non-text | both |
+| `--color-mark-foam` | `--color-mark-tile` | non-text | both |
 
 What the check cannot see: a fill drawn at reduced opacity (a primary or
 destructive button's hover, the dialog scrim, a button sending its form) is a
@@ -319,8 +355,11 @@ label, and [ADR-0082](adr/0082-a-beer-is-added-over-the-search-that-missed-it-an
 records the figures.
 
 The mark is held part by part against what each part is seen on: the tile
-against the page, and the bottle's edge, the beer and the foam against the
-tile. The darker runs in the beer, and the bottle's edge where it meets the
+against the page in light, and the bottle's edge, the beer and the foam against
+the tile in both. The tile cannot stand off a dark page by 3:1, since even a
+black page gives it under 2.6:1, so the mark stays off dark pages and the tile
+against the page is held in light only
+([ADR-0112](adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)). The darker runs in the beer, and the bottle's edge where it meets the
 beer inside it, are texture within one part and are not held.
 
 ## Typography across the two locales

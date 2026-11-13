@@ -208,6 +208,9 @@ and the third keeps that identifier from ever passing to someone else.
 - [ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md)
   — the beer-style-to-group mapping is one module in `@kalia/api`, which both
   clients import.
+- [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)
+  — the phone follows the system into a dark mode of neutral cards with the
+  style colour in a slab, and keeps the mark off dark pages.
 
 - [ADR-0008](0008-tanstack-query.md) — TanStack Query is the mandatory data
   layer for client components.
@@ -590,3 +593,4 @@ reasons and its rate is worth watching independently
 | [ADR-0109](0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md) | Mobile navigation uses four tabs and a central Add action | accepted | 2026-11-09 |
 | [ADR-0110](0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md) | The phone's identity is colour fields set light in a rounded face, where the web's is hairlines and square corners | accepted | 2026-11-11 |
 | [ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md) | The beer-style-to-group mapping lives in `@kalia/api`, so both clients colour a style alike | accepted | 2026-11-11 |
+| [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md) | The phone follows the system into a dark mode of neutral cards with the style colour in a slab, and keeps the mark off dark pages | accepted | 2026-11-13 |
