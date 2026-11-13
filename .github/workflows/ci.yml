@@ -380,10 +380,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
       # Same retry as the e2e job's pull: a registry outage is a wait, not a run.
+      # keycloak-config's base too, which the account seed below needs.
       - name: Pre-pull compose images
         run: |
           for attempt in 1 2 3; do
-            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"; then exit 0; fi
+            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/config-cli.Dockerfile)"; then exit 0; fi
             echo "::warning::docker pull failed (attempt $attempt/3), retrying"
             sleep $((attempt * 15))
           done

@@ -224,6 +224,18 @@ false: id: beer-row is visible` or a `Timeout`.** A real failure: the app
 started, the device was healthy, and the catalog screen rendered no row. Read
 the stack's logs the job prints, then `maestro-output/android/`.
 
+**`[Failed] Sign in through Keycloak and read the profile from the stack`.**
+Open the failing step's screenshot in `maestro-output/android/`. A browser
+screen that is not Keycloak's form is Chrome asking something new on a fresh
+device: the flow passes only its "Use without an account" first-run screen.
+Keycloak's form still showing, with "Invalid username or password": read the
+username the form kept first, as a busy emulator has typed `teestuser` for
+`testuser`; if it is right, the account was not seeded (the `Seed the demo
+account` step). The profile tab
+without "Signed in as testuser" is the app: the redirect back, the code exchange
+or the backend refusing the app's token on its profile read, which the stack's
+logs the job prints tell apart.
+
 **`Maestro's first command on the device failed before the flow ran` in a
 `::warning::`, followed by `Starting the emulator kalia-e2e (attempt 2)`.**
 Expected and handled. A healthy-looking emulator drops its adb connection to

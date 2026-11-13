@@ -36,7 +36,8 @@ name: Sign in through Keycloak and read the profile from the stack
       - inputText: "testuser"
       - tapOn: "Password|Salasana"
       - inputText: "testuser123"
-      - tapOn: "Sign In|Kirjaudu sisään"
+      # Enter rather than the button, which the keyboard can cover.
+      - pressKey: Enter
 - extendedWaitUntil:
     visible: "Signed in as testuser|Kirjautuneena käyttäjänä testuser"
     timeout: 60000

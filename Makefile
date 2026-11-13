@@ -185,13 +185,13 @@ trivy-scan: ## Fail on a fixable HIGH/CRITICAL CVE in package-lock.json or pom.x
 
 verify-fast: check lint web-test packages-test mobile-lint mobile-test api-drift api-breaking ## Everything CI checks that needs neither Docker nor a build (the pre-push gate; needs oasdiff)
 
-# Waits for the seed to exit, which `up -d` alone does not. Not `run`: on a
-# runner where keycloak-config had not yet run, it recreated postgres and
-# keycloak under the running backend (CI run 43440449766).
+# Waits for the seed to exit, which `up -d` alone does not. Not `run`, which
+# recreated postgres and keycloak under the running backend on one runner (CI
+# run 43440449766, cause not established); --no-recreate rules that out.
 .PHONY: seed-accounts
 seed-accounts: ## Create testuser and testadmin in the running stack and wait until they exist (needs Docker)
 	docker compose up -d --no-recreate keycloak-seed
-	@test "$$(docker wait $$(docker compose ps -aq keycloak-seed))" = 0 \
+	@docker compose wait keycloak-seed > /dev/null \
 	    || { docker compose logs --no-color keycloak-seed; exit 1; }
 
 # The flows in mobile/.maestro/ on every simulator or emulator this host has
