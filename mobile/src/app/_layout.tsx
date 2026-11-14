@@ -14,6 +14,8 @@ registerMobileTransport();
 void watchReducedMotion();
 installUncaughtErrorHandler();
 
+export const unstable_settings = { anchor: "(tabs)" };
+
 export const ErrorBoundary = CrashBoundary;
 
 const RootLayout = () => {
@@ -31,6 +33,7 @@ const RootLayout = () => {
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
               <Stack.Screen name="filters-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: [0.95] }} />
+              <Stack.Screen name="beers/[id]" options={{ presentation: "formSheet", sheetAllowedDetents: [0.95] }} />
               <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.OS === "android" ? [0.9] : [0.5, 0.9] }} />
             </Stack>
           </AppGate>
