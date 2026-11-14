@@ -56,7 +56,6 @@ export const searchParams = (filters: Filters) => {
   };
 };
 
-/** Whether anything but the sort narrows the list, which tells a search no beer matches from a catalog with no beer in it. */
 export const narrowsResults = (filters: Filters) => Object.keys(searchParams(filters)).some((key) => key !== "sort");
 
 export type ActiveFilterKey = "style" | "brewery" | "country" | "strength" | "sort";

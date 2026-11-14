@@ -1,0 +1,27 @@
+appId: fi.kalia.app
+name: The Catalog searches and filters the whole catalog, not only its first page
+---
+- launchApp:
+    clearState: true
+- tapOn: "Catalog|Oluet"
+- extendedWaitUntil:
+    visible:
+      id: "beer-row"
+    timeout: 60000
+- tapOn: "Search beers|Hae oluita"
+- inputText: "Savu Gose"
+- extendedWaitUntil:
+    visible: "Savu Gose"
+    timeout: 30000
+- hideKeyboard
+- tapOn: "Clear search|Tyhjennä haku"
+- tapOn: "Filters|Suodattimet"
+- tapOn: "Style: .*|Tyyli: .*"
+- tapOn: "Find a style|Etsi tyyliä"
+- inputText: "Fruit Lamb"
+- tapOn: "Fruit Lambic"
+- tapOn: "Show .*|Näytä .*"
+- extendedWaitUntil:
+    visible: "Rosé de Gambrinus"
+    timeout: 30000
+- assertVisible: "Remove filter: Fruit Lambic|Poista suodatin: Fruit Lambic"

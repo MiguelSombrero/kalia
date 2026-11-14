@@ -4,10 +4,9 @@ import { useFiltersStore } from "../filters/store";
 export const PAUSE_MS = 300;
 export const MIN_QUERY_LENGTH = 2;
 
-/** What a typed text asks the API: nothing until it has two characters. */
 export const settledQuery = (text: string) => (text.trim().length >= MIN_QUERY_LENGTH ? text.trim() : "");
 
-/** Typing does not send a request per keystroke, because the edge limits requests per address (ADR-0090): the query follows the text after a pause, or at once on `submit`. */
+/** The query follows the text after a pause, because the edge limits requests per address (ADR-0090). */
 export const useSearchDraft = () => {
   const text = useFiltersStore((state) => state.text);
   const setText = useFiltersStore((state) => state.setText);

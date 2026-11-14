@@ -8,7 +8,6 @@ export const nextBeerPage = (last: BeerPage): number | undefined => {
   return next < last.totalPages && next * BEER_PAGE_SIZE < MAX_RESULT_WINDOW ? next : undefined;
 };
 
-/** The beers the filters select, a page at a time; the query is the settled one, not what is being typed. */
 export const useBeers = (filters: Filters) => {
   const params = searchParams(filters);
   const queryKey = ["catalog", "beers", params] as const;
@@ -21,6 +20,7 @@ export const useBeers = (filters: Filters) => {
     placeholderData: keepPreviousData,
     retry: false,
   });
+  // refetch() on an infinite query reloads every loaded page; a pull to refresh reloads the first only.
   const refresh = () => {
     queryClient.setQueryData<InfiniteData<BeerPage, number>>(queryKey, (loaded) => loaded && { pages: loaded.pages.slice(0, 1), pageParams: loaded.pageParams.slice(0, 1) });
     return query.refetch();

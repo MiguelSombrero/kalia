@@ -12,7 +12,6 @@ type FiltersStore = {
   reset: () => void;
 };
 
-/** `applied` is what the list asks the API; `text` is what the search field shows, which `applied.query` follows once typing pauses. Both live as long as the app is open and start empty. */
 export const useFiltersStore = create<FiltersStore>((set) => ({
   applied: emptyFilters(),
   text: "",
