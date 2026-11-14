@@ -116,24 +116,24 @@ them):
 
 ## Acceptance criteria
 
-- [ ] A component test shows the loading, error and not-found states, and shows
+- [x] A component test shows the loading, error and not-found states, and shows
       that a `404` writes no error line
-- [ ] A component test shows a contributor's pending beer carrying its status
+- [x] A component test shows a contributor's pending beer carrying its status
       and an approved one not
-- [ ] A component test shows a long Finnish brewery and beer name at the
+- [x] A component test shows a long Finnish brewery and beer name at the
       largest font scale reading in full
-- [ ] A component test shows up to five similar beers of the same style, the
+- [x] A component test shows up to five similar beers of the same style, the
       beer itself left out, the section hidden when there are none or the read
       fails, and a tap replacing the sheet's content
-- [ ] A component test shows the brewery, style and country links each applying
+- [x] A component test shows the brewery, style and country links each applying
       one filter to the Catalog and closing the sheet
-- [ ] A Maestro flow opens a seeded beer from the list and returns on Android,
+- [x] A Maestro flow opens a seeded beer from the list and returns on Android,
       and was confirmed to fail without the screen
-- [ ] A test shows the deep link opening the beer, signed out, and dismissal
+- [x] A test shows the deep link opening the beer, signed out, and dismissal
       returning to the Catalog root
 - [ ] The product owner used the screen on the route task 01 chose and signed
       it off
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

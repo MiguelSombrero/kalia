@@ -751,5 +751,25 @@
     "noBeersMatch": "No beers match your search.",
     "clearSearchAndFilters": "Clear search and filters",
     "waitingForReview": "Waiting for review"
+  },
+  "beerDetails": {
+    "title": "Beer",
+    "loading": "Loading the beer…",
+    "error": "Couldn't load this beer.",
+    "notFound": {
+      "message": "This beer is not in the catalog",
+      "action": "Back to the catalog"
+    },
+    "status": {
+      "pending": "Waiting for review"
+    },
+    "style": "Style",
+    "brewery": "Brewery",
+    "city": "City",
+    "country": "Country",
+    "showStyle": "{{value}}, show beers of this style in the catalog",
+    "showBrewery": "{{value}}, show beers from this brewery in the catalog",
+    "showCountry": "{{value}}, show beers from this country in the catalog",
+    "similar": "More of this style"
   }
 }

@@ -51,10 +51,10 @@ port), returning once `/status` answers or failing with the log's tail after
 then `up ARGS="--clear"`). `make mobile-start` is the foreground Metro for a
 human's terminal. Waiting on anything else: [the worktree skill](../.claude/skills/worktree/SKILL.md#waiting-on-a-background-command).
 
-Feed, Catalog, Cellar and Profile are tabs; the central Add action opens a
-sheet and points to the catalog until scanning arrives. Signed-out Cellar and
-Profile open a sign-in sheet from their current context; credentials stay in
-the system browser ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)).
+Feed, Catalog, Cellar and Profile are tabs; the central Add action opens a sheet and points to the catalog until scanning arrives.
+Signed-out Cellar and Profile open a sign-in sheet from their current context; credentials stay in the system browser
+([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)). A beer is a sheet over Catalog at `/beers/{id}`;
+`kalia://beers/{id}` opens it signed out, and only `kalia://auth/callback` is rewritten.
 
 ### When it does not work
 

@@ -751,5 +751,25 @@
     "noBeersMatch": "Hakuehdoilla ei löytynyt oluita.",
     "clearSearchAndFilters": "Tyhjennä haku ja suodattimet",
     "waitingForReview": "Odottaa tarkistusta"
+  },
+  "beerDetails": {
+    "title": "Olut",
+    "loading": "Ladataan olutta…",
+    "error": "Oluen lataus ei onnistunut.",
+    "notFound": {
+      "message": "Tätä olutta ei ole valikoimassa",
+      "action": "Takaisin oluisiin"
+    },
+    "status": {
+      "pending": "Odottaa tarkistusta"
+    },
+    "style": "Tyyli",
+    "brewery": "Panimo",
+    "city": "Kaupunki",
+    "country": "Maa",
+    "showStyle": "{{value}}, näytä tämän tyylin oluet",
+    "showBrewery": "{{value}}, näytä tämän panimon oluet",
+    "showCountry": "{{value}}, näytä tämän maan oluet",
+    "similar": "Lisää samaa tyyliä"
   }
 }

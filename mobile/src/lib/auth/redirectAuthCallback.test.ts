@@ -16,6 +16,13 @@ describe("redirectAuthCallback", () => {
     },
   );
 
+  it.each(["kalia://beers/6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11", "/beers/6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11", "kalia://beers/auth/callback"])(
+    "leaves the beer link %s to the router, which the sign-in return never matches",
+    (path) => {
+      expect(redirectAuthCallback(path)).toBe(path);
+    },
+  );
+
   it("does not navigate on a callback while the browser request is active", async () => {
     let finish: (() => void) | undefined;
     const request = withAuthCallbackSuppressed(() => new Promise<void>((resolve) => { finish = resolve; }));

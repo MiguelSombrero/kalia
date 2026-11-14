@@ -1,8 +1,9 @@
 import { httpFailure } from "@kalia/api";
-import { listBreweries, listBreweryCountries, listStyles, searchBeers as generatedSearchBeers } from "@kalia/api/generated/catalog/catalog";
-import type { BeerSummaryDto, BreweryDto, PageDtoBeerSummaryDto, PageDtoBreweryDto, SearchBeersParams } from "@kalia/api/generated/models";
+import { getBeer, listBreweries, listBreweryCountries, listStyles, searchBeers as generatedSearchBeers } from "@kalia/api/generated/catalog/catalog";
+import type { BeerDetailsDto, BeerSummaryDto, BreweryDto, PageDtoBeerSummaryDto, PageDtoBreweryDto, SearchBeersParams } from "@kalia/api/generated/models";
 
 export type BeerSummary = BeerSummaryDto;
+export type BeerDetails = BeerDetailsDto;
 
 export type BeerPage = PageDtoBeerSummaryDto;
 
@@ -43,4 +44,24 @@ export const readResultCount = async (params: SearchBeersParams): Promise<number
   const response = await generatedSearchBeers({ ...params, page: 0, size: 1 });
   if (response.status !== 200) throw httpFailure("Beer count", response);
   return response.data.totalElements;
+};
+
+const BEER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** `null` is an answer, not a failure: a beer that is gone, withheld, someone else's pending one, or never there, and an id that cannot name one. */
+export const readBeer = async (id: string): Promise<BeerDetails | null> => {
+  if (!BEER_ID.test(id)) return null;
+  const response = await getBeer(id, { answers: [404] });
+  if (response.status === 404) return null;
+  if (response.status !== 200) throw httpFailure("Beer details", response);
+  return response.data;
+};
+
+export const SIMILAR_BEER_LIMIT = 5;
+
+/** One more than shown is asked for, so leaving the beer itself out still fills the section. */
+export const readSimilarBeers = async (style: string, exceptId: string): Promise<BeerSummary[]> => {
+  const response = await generatedSearchBeers({ style, page: 0, size: SIMILAR_BEER_LIMIT + 1 });
+  if (response.status !== 200) throw httpFailure("Similar beers", response);
+  return response.data.content.filter((beer) => beer.id !== exceptId).slice(0, SIMILAR_BEER_LIMIT);
 };

@@ -1,0 +1,44 @@
+appId: fi.kalia.app
+name: A beer opens from the catalog list and the sheet closes back to it
+---
+- launchApp:
+    clearState: true
+- tapOn: "Catalog|Oluet"
+- extendedWaitUntil:
+    visible:
+      id: "beer-row"
+    timeout: 60000
+- tapOn:
+    id: "beer-row"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "beer-headline"
+    timeout: 30000
+- assertVisible: "Style|Tyyli"
+- assertVisible: "Brewery|Panimo"
+- tapOn: "Close|Sulje"
+- extendedWaitUntil:
+    visible:
+      id: "beer-row"
+    timeout: 30000
+- assertNotVisible:
+    id: "beer-headline"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "beer-row"
+          index: 0
+      - extendedWaitUntil:
+          visible:
+            id: "beer-headline"
+          timeout: 30000
+      - back
+      - extendedWaitUntil:
+          visible:
+            id: "beer-row"
+          timeout: 30000
+      - assertNotVisible:
+          id: "beer-headline"
