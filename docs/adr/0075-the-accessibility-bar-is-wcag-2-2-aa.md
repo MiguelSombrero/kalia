@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-10-11
+- **Amended:** 2026-11-14 — the bar holds for the mobile app too; see the
+  mobile paragraph of Decision, which maps WCAG 2.2 AA onto its rules
 
 ## Context
 
@@ -60,6 +62,36 @@ the bar is named and enforced.**
 
 AAA criteria — 2.4.12, 2.4.13, 3.3.9 — are not part of the bar.
 
+**The mobile app (amended 2026-11-14).** The bar is the same on the phone, and the web's three
+layers have no equivalent there: there is no `axe` for React Native, and
+what VoiceOver or TalkBack speaks, or what the largest text size does to a
+screen, is invisible to a Jest render. The mobile README states each rule
+([Conventions](../../mobile/README.md#conventions)); this maps the criteria
+onto them. The test helper reads the rendered tree, so it judges structure
+only; the rest is walked by hand from
+[`mobile/accessibility-walk.md`](../../mobile/accessibility-walk.md), each walk
+recorded in the pull request in words, in a Finnish and an English voice.
+
+| WCAG 2.2 criterion | On the phone | Held by |
+|---|---|---|
+| 1.1.1 Non-text content, 4.1.2 Name, Role, Value | A pressable has a role and a name; a drawing beside a name is hidden from assistive technology; a state is `accessibilityState` | `expectAccessibleStructure()` over every route; the walk |
+| 1.3.1 Info and Relationships, 2.4.6 Headings and Labels | A title is `role="heading"`; a group of choices is a labelled `radiogroup` | the helper; the walk |
+| 1.4.3 / 1.4.11 Contrast | Unchanged: tokens | `scripts/check-contrast.mjs` |
+| 1.4.4 Resize Text | Text grows to the largest size (iOS size 5, Android 200 %): no `allowFontScaling={false}`, `numberOfLines` or fixed height on text | `expectScalesWithText()`, `largestText.app.test.tsx`; the walk at the largest size |
+| 2.4.3 Focus Order | The order is the reading order; a page swap in a sheet sends focus to the new page's heading, going in and coming back | `FiltersSheet.test.tsx`; the walk |
+| 2.5.8 Target Size (Minimum) | Raised to the identity's own 48 (`--spacing-touch`), not 24 | the helper, on the size a pressable declares |
+| 3.1.2 Language of Parts | A word a screen reader says is the platform's own or ours from `@kalia/locales`, never React Native's English table: on iOS a choice is `button` plus `selected`, with its place ("2 of 5") ours; Android keeps `radio` | the helper fails an iOS `radio` or `checkbox`; `ChoiceRow.test.tsx`; the walk in both voices |
+| 3.3.1 Error Identification | A strength error is `role="alert"` | `FiltersSheet.test.tsx`; the walk |
+| 4.1.3 Status Messages | A failure and an empty result are announced (`useAnnounce`) | `states.test.tsx`; the walk |
+| Beyond AA: 2.3.3 Animation from Interactions (AAA) | Motion stops under reduced motion, a courtesy the app already keeps | `motion.reduced.test.tsx` |
+| 2.1.1 Keyboard, 2.5.7 Dragging Movements | Every control is a single press; no drag exists. Switch and keyboard access go through the same roles | the walk |
+
+A role whose spoken words React Native supplies (`radio`, `checkbox`) is unsafe
+on iOS: the first walk of the catalog's filter pickers heard a Finnish voice
+read "checked" in English. 2.4.11 Focus Not Obscured and 3.2.6 Consistent Help
+are not mapped: a screen reader's focus is scrolled into view by the OS, and the
+app has no help link, so the first one added is walked.
+
 ## Alternatives considered
 
 **Stay at WCAG 2.1 AA.** No work, and the app already passed it. Rejected
@@ -92,6 +124,11 @@ every later reader has to reconstruct rather than look up.
 - Neutral, because the four walked criteria stay walked: nothing re-checks
   them, so a help link (3.2.6), a multi-step form (3.3.7) or a new sign-in
   step (3.3.8) has to be walked again when it is added.
+- Bad, because on the phone nothing automatic hears a screen reader: the
+  helper sees structure and a declared size, never speech or layout, so a
+  platform's spoken words, focus landing and the largest size are hand walks
+  that can be skipped, and the phone only reaches the product owner's own
+  device.
 - **Revisit trigger:** WCAG 3.0 becoming a recommendation, or a regulation
   Kalia is subject to naming a different version.
 

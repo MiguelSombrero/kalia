@@ -1,6 +1,6 @@
 # Task 09: A user searches and filters the catalog on their phone
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-3, DW-4
 
@@ -126,7 +126,7 @@ them):
       for review* and an approved one not
 - [x] A Maestro flow searches for a seeded beer and filters by style on
       Android, and was confirmed to fail against the one-page list
-- [ ] The product owner used the screen on the route task 01 chose, on both
+- [x] The product owner used the screen on the route task 01 chose, on both
       platforms' conventions, and signed it off
 - [x] `make verify-fast` is green
 

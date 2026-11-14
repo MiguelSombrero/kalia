@@ -1,7 +1,8 @@
 {
   "unknownValue": "Muu",
   "a11y": {
-    "skipToContent": "Siirry sisältöön"
+    "skipToContent": "Siirry sisältöön",
+    "positionInSet": "vaihtoehto {{position}}, yhteensä {{total}}"
   },
   "app": {
     "name": "Kalia",

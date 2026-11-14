@@ -2,6 +2,7 @@ import { Text, TextInput, View } from "react-native";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
+import { useInputHeight } from "@/lib/design/useInputHeight";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 
 const EDGE = 1.5;
@@ -12,6 +13,7 @@ type Labels = { group: string; from: string; to: string };
 export const StrengthFields = ({ from, to, onFrom, onTo, error, labels }: { from: string; to: string; onFrom: (text: string) => void; onTo: (text: string) => void; error: string | null; labels: Labels }) => {
   const colors = useThemeColors();
   const styles = useStyles();
+  const grown = useInputHeight();
   const field = (caption: string, value: string, onChange: (text: string) => void, placeholder: string) => (
     <View style={styles.cell}>
       <Text style={styles.caption}>{caption}</Text>
@@ -23,7 +25,7 @@ export const StrengthFields = ({ from, to, onFrom, onTo, error, labels }: { from
         onChangeText={onChange}
         placeholder={placeholder}
         placeholderTextColor={colors["muted-foreground"]}
-        style={[styles.input, error ? styles.inputInvalid : null]}
+        style={[styles.input, grown, error ? styles.inputInvalid : null]}
       />
     </View>
   );

@@ -1,6 +1,6 @@
 # Task 08: The app's screens are built from its own primitives
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2, DW-3
 
@@ -122,7 +122,7 @@ catalog's loading, error and empty states.
       outside the primitives and the theme — the token check passes
 - [x] The mobile README says where a primitive lives and when a control moves
       into `components/`
-- [ ] The product owner looked at every restyled screen on the route task 01
+- [x] The product owner looked at every restyled screen on the route task 01
       chose, in both modes and both locales, and signed them off
 - [x] `make verify-fast` is green
 

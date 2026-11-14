@@ -1,10 +1,12 @@
 import { useTranslation } from "react-i18next";
+import { useAnnounce } from "@/lib/a11y/useAnnounce";
 import { ActionButton } from "./ActionButton";
 import { BodyText } from "./BodyText";
 import { ErrorReference } from "./ErrorReference";
 
 export const ErrorAlert = ({ message, error, onRetry, retrying = false, spaced = false }: { message: string; error: unknown; onRetry: () => void; retrying?: boolean; spaced?: boolean }) => {
   const { t } = useTranslation();
+  useAnnounce(message);
   return (
     <>
       <BodyText tone="error" spaced={spaced}>

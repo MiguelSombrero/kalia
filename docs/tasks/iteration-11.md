@@ -34,15 +34,15 @@ browsing and searching the catalog.
 | [22](iteration-11/22-design-mobile-tab-icons.md) | Design the mobile tab icons | done |
 | [04](iteration-11/04-decision-and-design-dark-mode.md) | Design the app's dark mode | done |
 | [05](iteration-11/05-design-motion-and-haptics.md) | Design what moves and what is felt | done |
-| [25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md) | The update-required, maintenance and crash screens depend on nothing that can change under an installed build | refined |
-| [08](iteration-11/08-mobile-ui-primitives.md) | The app's screens are built from its own primitives | refined |
-| [23](iteration-11/23-design-the-catalogs-search-and-filters.md) | Design the catalog's search and filters | refined |
+| [25](iteration-11/25-the-screens-that-must-work-when-nothing-else-does-depend-on-nothing-that-can-change.md) | The update-required, maintenance and crash screens depend on nothing that can change under an installed build | done |
+| [08](iteration-11/08-mobile-ui-primitives.md) | The app's screens are built from its own primitives | done |
+| [23](iteration-11/23-design-the-catalogs-search-and-filters.md) | Design the catalog's search and filters | done |
 | [16](iteration-11/16-signing-in-or-out-clears-what-the-last-viewer-saw.md) | Signing in or out clears what the last viewer saw | done |
 | [17](iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md) | The app's transport logs a failure only where a feature calls it one | done |
 | [24](iteration-11/24-a-contributor-sees-the-status-of-their-own-beers.md) | A contributor sees the status of their own beers | done |
-| [09](iteration-11/09-catalog-search-and-list.md) | A user searches and filters the catalog on their phone | refined |
-| [10](iteration-11/10-beer-details.md) | A user opens a beer and reads its details on their phone | refined |
-| [11](iteration-11/11-mobile-accessibility-conventions.md) | Mobile accessibility is written down and checked in tests | refined |
+| [09](iteration-11/09-catalog-search-and-list.md) | A user searches and filters the catalog on their phone | done |
+| [10](iteration-11/10-beer-details.md) | A user opens a beer and reads its details on their phone | done |
+| [11](iteration-11/11-mobile-accessibility-conventions.md) | Mobile accessibility is written down and checked in tests | done |
 | [19](iteration-11/19-decision-how-far-the-admin-role-reaches.md) | Decide how far the admin role reaches | done |
 | [20](iteration-11/20-an-anticipated-failure-gets-the-documented-answer.md) | An anticipated failure gets the documented answer | done |
 | [21](iteration-11/21-reads-that-scan-history-are-indexed-and-their-plans-pinned.md) | Reads that scan history are indexed, and their plans are pinned | done |
@@ -162,3 +162,16 @@ made in [task 11](iteration-11/11-mobile-accessibility-conventions.md)'s walk,
 with the VoiceOver walks tasks 22 and 23 owe, and the product owner may waive it
 in the pull request. Task 23's own sign-off criterion stays open until the phone
 connects.
+
+**Closed 2026-11-14.** The product owner walked the iPhone and approved the
+visual work of tasks 08, 09, 10, 23 and 25, so each sign-off criterion is
+ticked and no iPhone leg is owed. The VoiceOver walk of task 11, which also
+carried the walks tasks 22 and 23 owed, was made once, in the Finnish voice and
+dark mode; **English, light mode, the largest text size, reduced motion and
+TalkBack were not walked on a device,** and the product owner accepted that.
+The Simulator (iOS accessibility size 5, light and dark) and an Android
+emulator at 200 % text stood in for the text size; nothing stood in for the
+rest. The walk found two focus defects in the filter sheet, filed as
+SHOULD-119 and SHOULD-120 in the [quality backlog](quality-backlog.md). The
+crash screen's live look was not observed: it has no trigger on a device, and
+the component tests hold it.

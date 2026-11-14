@@ -3,6 +3,7 @@ import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
+import { useInputHeight } from "@/lib/design/useInputHeight";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
 import { PressFeedback } from "@/lib/motion";
 import { EDGE, square } from "@/components/metrics";
@@ -25,8 +26,9 @@ const useSwatchStyles = createThemedStyles((colors) => ({
 export const SearchField = ({ value, onChange, label, placeholder, clearLabel, onSubmit }: { value: string; onChange: (text: string) => void; label: string; placeholder: string; clearLabel: string; onSubmit?: () => void }) => {
   const colors = useThemeColors();
   const styles = useSearchFieldStyles();
+  const grown = useInputHeight();
   return (
-    <View style={styles.field}>
+    <View style={[styles.field, grown]}>
       <TextInput
         role="searchbox"
         accessibilityLabel={label}
@@ -39,7 +41,7 @@ export const SearchField = ({ value, onChange, label, placeholder, clearLabel, o
         onSubmitEditing={onSubmit}
         autoCorrect={false}
         autoCapitalize="none"
-        style={styles.input}
+        style={[styles.input, grown]}
       />
       {value ? (
         <Pressable role="button" accessibilityLabel={clearLabel} onPress={() => onChange("")} style={styles.clear}>

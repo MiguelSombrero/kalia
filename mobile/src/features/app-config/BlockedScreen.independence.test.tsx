@@ -3,6 +3,7 @@ import { cleanup, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { StyleSheet } from "react-native";
 import { atLargestFontScale } from "@/testing/atLargestFontScale";
+import { expectAccessibleStructure } from "@/testing/expectAccessibleStructure";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { BlockedScreen } from "./BlockedScreen";
@@ -82,6 +83,7 @@ describe.each(reasons)("the %s screen depends on nothing that can change under a
       expect(StyleSheet.flatten(heading.props.style).height).toBeUndefined();
       expect(JSON.stringify(screen.toJSON())).toContain("RCTScrollView");
       expectScalesWithText();
+      expectAccessibleStructure();
     });
   });
 });

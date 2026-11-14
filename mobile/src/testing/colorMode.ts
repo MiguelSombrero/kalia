@@ -1,8 +1,8 @@
 import * as ReactNative from "react-native";
+import { LARGEST_FONT_SCALE } from "./atLargestFontScale";
 
 export const MODES = ["light", "dark"] as const;
 
-export const LARGEST_FONT_SCALE = 3.12;
 
 export const systemIs = (mode: (typeof MODES)[number]) => jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
 

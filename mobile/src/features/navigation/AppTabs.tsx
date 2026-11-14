@@ -11,7 +11,7 @@ import { easingFor } from "@/lib/motion/easing";
 import { AddIcon, TabIcon } from "./TabIcon";
 import { ICON_BOX, type TabIconName } from "./tabIcons";
 
-const BAR_CONTENT_HEIGHT = 64;
+export const BAR_CONTENT_HEIGHT = 64;
 
 const tabOptions = (title: string, icon: TabIconName) => ({
   title,

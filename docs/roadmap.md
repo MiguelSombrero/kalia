@@ -76,7 +76,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [9 — Mobile foundations](tasks/iteration-9.md) | An Expo app signs in and shows real data on both simulators | ✅ Done |
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ✅ Done |
 | [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ✅ Done |
-| [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | 🔄 In progress |
+| [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ✅ Done |
 | [11.5 — An agent can see what the stack did](tasks/iteration-11.5.md) | A local observability profile an agent can query, request by request | ⬜ Todo |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
 | [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |
@@ -141,3 +141,14 @@ meets, so they have no entry; the table above says what they were for.
   and the contributor sees what became of their suggestion in a signal in the
   sticky bar that opens a panel, where each notification stays until they
   acknowledge it.
+- **A mobile design of Kalia's own, proven on the catalog** *(iteration 11)*:
+  the app has four tabs and a central Add action, an identity of colour fields
+  in a rounded face, a dark mode that follows the system, and motion and haptics
+  for results; one token source generates the web's CSS, the app's theme and
+  Keycloak's stylesheet, and styling outside it fails the build; the catalog
+  searches, filters and pages on the phone, a beer opens as a sheet (or by
+  `kalia://beers/{id}`), a contributor's pending beer is marked; the update,
+  maintenance and crash screens depend on nothing that can change; and the
+  accessibility conventions are written in the mobile README and held by a
+  structure test on every screen and a largest-text test, with the hand walk
+  partly made (see the iteration index)
