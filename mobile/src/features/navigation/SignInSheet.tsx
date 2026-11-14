@@ -38,7 +38,7 @@ export const SignInSheet = () => {
     <Sheet title={t("profile.signIn.action")} closeLabel={t("mobileNavigation.close")} onClose={close} closeDisabled={busy}>
       <BodyText>{t("mobileNavigation.signInHint")}</BodyText>
       {failed ? <BodyText tone="error" spaced>{t("session.signInFailed")}</BodyText> : null}
-      <ActionButton label={t("profile.signIn.action")} onPress={() => void start()} busy={busy} />
+      <ActionButton testID="sign-in-sheet-action" label={t("profile.signIn.action")} onPress={() => void start()} busy={busy} />
     </Sheet>
   );
 };

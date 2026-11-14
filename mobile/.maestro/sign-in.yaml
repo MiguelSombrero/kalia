@@ -4,10 +4,12 @@ name: Sign in through Keycloak and read the profile from the stack
 - launchApp:
     clearState: true
 - tapOn: "Profile|Profiili"
-- tapOn: "Sign in|Kirjaudu sisään"
 - tapOn:
-    text: "Sign in|Kirjaudu sisään"
-    below: "Sign in to use your cellar and profile\\.|Kirjaudu sisään käyttääksesi kellaria ja profiilia\\."
+    id: "profile-sign-in"
+# By id: Profile's own "Sign in" stays in the view tree behind the sheet, and a
+# text or position selector can land on it, where a tap does nothing.
+- tapOn:
+    id: "sign-in-sheet-action"
 # iOS asks before an app opens a sign-in browser.
 - runFlow:
     when:

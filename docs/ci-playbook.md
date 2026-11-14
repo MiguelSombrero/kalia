@@ -225,7 +225,9 @@ started, the device was healthy, and the catalog screen rendered no row. Read
 the stack's logs the job prints, then `maestro-output/android/`.
 
 **`[Failed] Sign in through Keycloak and read the profile from the stack`.**
-Open the failing step's screenshot in `maestro-output/android/`. A browser
+Open the failing step's screenshot in `maestro-output/android/`. The app's own
+sign-in sheet still showing means the tap missed its button: the flow taps it
+by test id because Profile's button stays in the view tree behind it. A browser
 screen that is not Keycloak's form is Chrome asking something new on a fresh
 device: the flow passes only its "Use without an account" first-run screen.
 Keycloak's form still showing, with "Invalid username or password": read the
