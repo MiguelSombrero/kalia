@@ -1,9 +1,10 @@
 import { Tabs, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, type ColorValue } from "react-native";
+import { Text, type ColorValue } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { tabLabelScale, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { useReducedMotion } from "@/lib/motion";
 import { easingFor } from "@/lib/motion/easing";
@@ -24,11 +25,7 @@ export const AppTabs = () => {
   const colors = useThemeColors();
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
-  const styles = StyleSheet.create({
-    bar: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors["bar-edge"], height: BAR_CONTENT_HEIGHT + insets.bottom },
-    label: textStyle("supporting", "medium"),
-    labelOn: textStyle("supporting", "bold"),
-  });
+  const styles = useStyles();
 
   return (
     <Tabs
@@ -37,7 +34,7 @@ export const AppTabs = () => {
         headerShown: false,
         animation: reducedMotion ? "none" : "fade",
         transitionSpec: { animation: "timing", config: { duration: theme.duration.tab, easing: easingFor("in-out") } },
-        tabBarStyle: styles.bar,
+        tabBarStyle: [styles.bar, { height: BAR_CONTENT_HEIGHT + insets.bottom }],
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors["muted-foreground"],
         tabBarIconStyle: ICON_BOX,
@@ -64,3 +61,9 @@ export const AppTabs = () => {
     </Tabs>
   );
 };
+
+const useStyles = createThemedStyles((colors) => ({
+  bar: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors["bar-edge"] },
+  label: textStyle("supporting", "medium"),
+  labelOn: textStyle("supporting", "bold"),
+}));

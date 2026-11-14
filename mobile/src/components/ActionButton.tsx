@@ -1,7 +1,7 @@
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
-import { StyleSheet, Text } from "react-native";
+import { createThemedStyles } from "@/lib/design/themedStyles";
+import { Text } from "react-native";
 import { PressFeedback } from "@/lib/motion";
 
 export const ActionButton = ({
@@ -40,21 +40,18 @@ export const ActionButton = ({
   );
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    button: {
-      minHeight: theme.spacing.action,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: theme.spacing.large,
-      borderRadius: theme.radius.card,
-    },
-    buttonSpaced: { marginTop: theme.spacing.large },
-    primary: { backgroundColor: colors.primary },
-    secondary: { borderWidth: 2, borderColor: colors.border, backgroundColor: colors.background },
-    buttonBusy: { opacity: 0.5 },
-    buttonText: { ...textStyle("body", "bold"), textAlign: "center", color: colors["primary-foreground"] },
-    secondaryText: { color: colors.foreground },
-  });
-};
+const useStyles = createThemedStyles((colors) => ({
+  button: {
+    minHeight: theme.spacing.action,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.large,
+    borderRadius: theme.radius.card,
+  },
+  buttonSpaced: { marginTop: theme.spacing.large },
+  primary: { backgroundColor: colors.primary },
+  secondary: { borderWidth: 2, borderColor: colors.border, backgroundColor: colors.background },
+  buttonBusy: { opacity: 0.5 },
+  buttonText: { ...textStyle("body", "bold"), textAlign: "center", color: colors["primary-foreground"] },
+  secondaryText: { color: colors.foreground },
+}));

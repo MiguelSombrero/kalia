@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
 import { ChoiceRow } from "@/components/ChoiceRow";
@@ -8,7 +8,7 @@ import { Sheet } from "@/components/Sheet";
 import { TextButton } from "@/components/TextButton";
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { countryName } from "@/lib/i18n/countryNames";
 import { SearchField, StyleSwatch } from "./filters/controls";
 import { emptyFilters, SORTS, sheetFilterCount, strengthError, type Filters } from "./filters/model";
@@ -34,7 +34,7 @@ const normalise = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, ""
 
 export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; onApply: (filters: Filters) => void; onClose: () => void }) => {
   const { t, i18n } = useTranslation();
-  const colors = useThemeColors();
+  const styles = useStyles();
   const [draft, setDraft] = useState<Filters>(initial);
   const [page, setPage] = useState<Page>("form");
   const keyboard = useKeyboardHeight();
@@ -57,11 +57,6 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
   };
   const number = new Intl.NumberFormat(i18n.language);
   const applyLabel = count.data === undefined ? t("catalogFilters.apply.unknown") : t("catalogFilters.apply.count", { count: count.data, formatted: number.format(count.data) });
-  const styles = StyleSheet.create({
-    section: { marginTop: theme.spacing.large },
-    label: { ...textStyle("label", "bold"), textTransform: "uppercase", color: colors["muted-foreground"], marginBottom: theme.spacing.small },
-    doneBar: { flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: theme.spacing.small, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surface },
-  });
 
   if (page !== "form") {
     return (
@@ -105,20 +100,20 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
   );
 };
 
+const useStyles = createThemedStyles((colors) => ({
+  section: { marginTop: theme.spacing.large },
+  label: { ...textStyle("label", "bold"), textTransform: "uppercase", color: colors["muted-foreground"], marginBottom: theme.spacing.small },
+  doneBar: { flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: theme.spacing.small, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surface },
+}));
+
 const Picker = ({ page, draft, onPick }: { page: "style" | "brewery" | "country"; draft: Filters; onPick: (patch: Partial<Filters>) => void }) => {
   const { t, i18n } = useTranslation();
-  const colors = useThemeColors();
+  const styles = usePickerStyles();
   const [text, setText] = useState("");
   const query = normalise(text.trim());
   const styleOptions = useStyleOptions(page === "style");
   const countryOptions = useCountryOptions(page === "country");
   const breweryOptions = useBreweryOptions(text.trim(), page === "brewery");
-  const styles = StyleSheet.create({
-    search: { flexDirection: "row", paddingHorizontal: theme.spacing.medium, paddingTop: theme.spacing.small },
-    list: { paddingHorizontal: theme.spacing.medium, paddingBottom: theme.spacing.large },
-    note: { ...textStyle("body", "normal"), color: colors.foreground, paddingVertical: theme.spacing.medium },
-    muted: { ...textStyle("supporting", "medium"), color: colors["muted-foreground"], paddingTop: theme.spacing.medium },
-  });
   const noMatch = <Text style={styles.note}>{t("catalogFilters.noMatch", { query: text })}</Text>;
   let rows: ReactNode = null;
   let footer: ReactNode = null;
@@ -180,3 +175,10 @@ const Picker = ({ page, draft, onPick }: { page: "style" | "brewery" | "country"
     </>
   );
 };
+
+const usePickerStyles = createThemedStyles((colors) => ({
+  search: { flexDirection: "row", paddingHorizontal: theme.spacing.medium, paddingTop: theme.spacing.small },
+  list: { paddingHorizontal: theme.spacing.medium, paddingBottom: theme.spacing.large },
+  note: { ...textStyle("body", "normal"), color: colors.foreground, paddingVertical: theme.spacing.medium },
+  muted: { ...textStyle("supporting", "medium"), color: colors["muted-foreground"], paddingTop: theme.spacing.medium },
+}));

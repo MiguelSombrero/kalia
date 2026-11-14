@@ -1,7 +1,7 @@
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { createThemedStyles } from "@/lib/design/themedStyles";
+import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
@@ -34,12 +34,9 @@ export const BlockedScreen = ({
   );
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    content: { flexGrow: 1, justifyContent: "center", padding: theme.spacing.medium },
-    title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
-    body: { marginTop: theme.spacing.medium, ...textStyle("body", "medium"), color: colors["muted-foreground"] },
-  });
-};
+const useStyles = createThemedStyles((colors) => ({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { flexGrow: 1, justifyContent: "center", padding: theme.spacing.medium },
+  title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
+  body: { marginTop: theme.spacing.medium, ...textStyle("body", "medium"), color: colors["muted-foreground"] },
+}));

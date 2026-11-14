@@ -1,8 +1,8 @@
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
 import { BuildInfo } from "@/components/BuildInfo";
@@ -66,18 +66,15 @@ export const ProfileScreen = () => {
   );
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    who: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: theme.spacing.medium,
-      marginTop: theme.spacing.large,
-      padding: theme.spacing.medium,
-      borderRadius: theme.radius.card,
-      backgroundColor: colors["surface-sunken"],
-    },
-    lead: { flex: 1, ...textStyle("item-title", "bold"), color: colors.foreground },
-  });
-};
+const useStyles = createThemedStyles((colors) => ({
+  who: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.medium,
+    marginTop: theme.spacing.large,
+    padding: theme.spacing.medium,
+    borderRadius: theme.radius.card,
+    backgroundColor: colors["surface-sunken"],
+  },
+  lead: { flex: 1, ...textStyle("item-title", "bold"), color: colors.foreground },
+}));

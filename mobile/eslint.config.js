@@ -34,6 +34,13 @@ const codeStyleSyntax = [
   },
 ];
 
+const styleSheetInFunction = {
+  selector: ":function CallExpression[callee.property.name='create']:matches([callee.object.name='StyleSheet'], [callee.object.property.name='StyleSheet'])",
+  message: "Build a sheet once, outside the component: StyleSheet.create at module level, or createThemedStyles when it reads theme colours; a value that depends on props goes in the style array (mobile README).",
+};
+
+const themedStylesFile = "src/lib/design/themedStyles.ts";
+
 const independentScreenFiles = [
   "src/features/app-config/BlockedScreen.tsx",
   "src/features/crash-recovery/CrashScreen.tsx",
@@ -55,6 +62,11 @@ const eslintConfig = defineConfig([
   {
     files: ["**/*.ts", "**/*.tsx"],
     rules: { "@typescript-eslint/consistent-type-definitions": ["error", "type"] },
+  },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [themedStylesFile],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction] },
   },
   {
     plugins: { boundaries },
