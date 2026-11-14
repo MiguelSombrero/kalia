@@ -69,7 +69,6 @@ the system browser ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs
   adb shell am start -a android.intent.action.VIEW -d "exp+kalia://expo-development-client/?url=http%3A%2F%2Flocalhost%3A<METRO_PORT>"
   ```
 
-
 ### Reading an installed build's errors
 
 Read the device's own log ([ADR-0098](../docs/adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)):
