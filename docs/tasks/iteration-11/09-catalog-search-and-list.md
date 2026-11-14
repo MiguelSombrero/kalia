@@ -112,23 +112,23 @@ them):
 
 ## Acceptance criteria
 
-- [ ] A component test shows that typing sends one request after the pause and
+- [x] A component test shows that typing sends one request after the pause and
       not one per keystroke, and that a newer query replaces an older answer
       arriving late
-- [ ] A component test shows the next page loading at the end of the list, a
+- [x] A component test shows the next page loading at the end of the list, a
       failed page keeping the loaded ones and offering a retry, and the end of
       the list stopping
-- [ ] A component test shows each filter narrowing the request, clearing
+- [x] A component test shows each filter narrowing the request, clearing
       restoring it, and the no-match state shown with its clear action
-- [ ] A component test shows the query and filters surviving a beer opened and
+- [x] A component test shows the query and filters surviving a beer opened and
       closed, and starting empty on a fresh mount of the app
-- [ ] A component test shows a contributor's own pending beer marked *waiting
+- [x] A component test shows a contributor's own pending beer marked *waiting
       for review* and an approved one not
-- [ ] A Maestro flow searches for a seeded beer and filters by style on
+- [x] A Maestro flow searches for a seeded beer and filters by style on
       Android, and was confirmed to fail against the one-page list
 - [ ] The product owner used the screen on the route task 01 chose, on both
       platforms' conventions, and signed it off
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
