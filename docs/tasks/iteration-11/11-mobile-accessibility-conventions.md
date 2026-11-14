@@ -1,6 +1,6 @@
 # Task 11: Mobile accessibility is written down and checked in tests
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-4
 
