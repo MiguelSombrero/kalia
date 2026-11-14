@@ -73,6 +73,15 @@ to retrofit; set after, it costs two.
 - **A check per convention.** Each convention a tool can check fails
   `make verify-fast` when broken. One that no tool can check says so where
   it is written.
+- **Two known gaps in these areas close:**
+  - `src/testing/` (`fakeTokenStore.ts`, `renderWithLocale.tsx`) can be
+    imported only from test files. Today `mobile/eslint.config.js` lets
+    `app`, `feature`, `components` and `lib` import it, so a fake token store
+    could ship with no lint failure (COULD-121).
+  - One feature handing the user to another replaces the target's state
+    atomically. Today `showCatalogWith` records its request in a second store
+    that the Catalog applies in an effect, so the Catalog can render and
+    request once with the old filters first (COULD-143).
 - **Existing code conforms.** The code under `mobile/src/` follows every
   convention this task adopts, and no user-visible behaviour changes.
 - **The web where the rule is the same.** That covers the warning limit,
@@ -169,10 +178,6 @@ to retrofit; set after, it costs two.
 - **Non-functional: the README cap.** Where do the new conventions go:
   replacing existing lines, a raised cap, or a file of its own under
   `mobile/`?
-- **Module boundaries: COULD-121.** The
-  [quality backlog](../quality-backlog.md) finding that `src/testing/` is
-  importable from production code is the same kind of gap. Is it lifted into
-  this task?
 - **Completion signals: how far the refactor goes.** The app is about 9,000
   lines. Does all existing code conform in this task, or only code the task
   touches?
@@ -193,6 +198,9 @@ to retrofit; set after, it costs two.
 - [ ] `make mobile-lint` fails on a navigation target that does not exist
       and on a translation key `@kalia/locales` does not have. Verified with
       a misspelt route and key, unless refinement drops these checks.
+- [ ] An `eslint-fixtures/` case importing `src/testing/` from a non-test file
+      fails, and a test shows `showCatalogWith` reaching the Catalog with the
+      new filters on its first request. The second failed before the change.
 - [ ] The code under `mobile/src/` passes every new check. Any
       `eslint-disable` added carries a `--` reason.
 - [ ] `make mobile-test` and the Android Maestro flows pass unchanged. On
@@ -207,4 +215,8 @@ Drafted at the product owner's request on 2026-11-14, after an analysis of
 mobile's conventions against the web's. The file references in Why are from
 `dev` at `769b6afe`. Related:
 [COULD-119](../quality-backlog.md) (a web/mobile difference in how an API
-failure is built) and COULD-121, which is named above.
+failure is built), which is
+[task 13](13-the-shared-packages-export-what-both-apps-use-and-only-that.md)'s.
+COULD-121 and COULD-143 were lifted into this task when the iteration was
+scoped, on 2026-11-14. That answered the open question this file had asked
+about COULD-121.

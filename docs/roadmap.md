@@ -35,8 +35,9 @@ and on simulators against the local stack, and what a cost blocks is parked in
 exception: an admin page in the web app that replaces the SQL moderation
 script, before the mobile design work resumes. Iteration 11's task files are
 refined as the decisions they wait on land, and also carry quality-backlog
-findings. Iteration 11.5 starts with an opt-in local observability
-profile that agents can query; the rest of it is added later. Iterations 12–14 list planned tasks as one line each, their task
+findings. Iteration 11.5 builds an opt-in local observability
+profile that agents can query, and carries quality-backlog and backlog findings
+chosen for what the mobile iterations after it need. Iterations 12–14 list planned tasks as one line each, their task
 files written at refinement.
 
 **Definition of done (every issue):**
