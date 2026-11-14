@@ -41,6 +41,7 @@ around it — through every tier, reading it from a query rather than from
 | [08](iteration-11.5/08-one-command-prints-a-requests-trace-and-logs.md) | One command prints a request's trace and log lines as text | needs-refinement |
 | [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | needs-refinement |
 | [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | needs-refinement |
+| [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's code conventions are written down and checked | needs-refinement |
 
 Numbered 11.5 because it lands after [iteration 11](iteration-11.md) and
 before [iteration 12](iteration-12.md)'s offline cellar, whose sync failures
@@ -82,3 +83,9 @@ The table's order is the order of work:
 - **Last, the process** ([10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md)):
   the documents an agent works from say when to read the telemetry, written
   once what they describe exists.
+
+Task [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md)
+is outside the observability work and advances no criterion. It was added at
+the product owner's request on 2026-11-14 so the mobile app's code
+conventions are set before iteration 12's cellar becomes the second large
+feature written without them. Refinement may split it into several tasks.
