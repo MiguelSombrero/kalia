@@ -6,6 +6,7 @@ import { theme } from "@/lib/design/theme.generated";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { CatalogScreen } from "./CatalogScreen";
+import { showCatalogWith, useCatalogLink } from "@/lib/catalogLink";
 import { emptyFilters } from "./filters/model";
 import { useFiltersStore } from "./filters/store";
 
@@ -34,6 +35,7 @@ afterEach(() => {
 beforeEach(() => {
   mockPush.mockReset();
   useFiltersStore.getState().reset();
+  useCatalogLink.setState({ pending: null });
   transport.mockReset();
   registerTransport(transport as unknown as Transport);
 });
@@ -269,6 +271,37 @@ describe("CatalogScreen", () => {
       await screen.findByText("Pale Ale");
 
       expectScalesWithText();
+    });
+  });
+
+  describe("a link into the Catalog", () => {
+    it.each([
+      ["a brewery", { brewery: { id: "brewery-1", name: "Koskipanimo" } }, "Remove filter: Koskipanimo"],
+      ["a style", { style: "Gose" }, "Remove filter: Gose"],
+      ["a country", { country: "FI" }, "Remove filter: Finland"],
+    ] as const)("replaces the search, the other filters and the sort with %s alone", async (_name, link, chip) => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+      useFiltersStore.getState().apply({ ...emptyFilters(), style: "IPA", countryCode: "SE", min: "5", sort: "abv,desc" });
+      useFiltersStore.getState().setQuery("ipa");
+      await renderWithLocale(<CatalogScreen />);
+
+      await act(async () => showCatalogWith(link));
+
+      expect(await screen.findByRole("button", { name: chip })).toBeOnTheScreen();
+      expect(screen.getByRole("button", { name: "Filters, 1 in force" })).toBeOnTheScreen();
+      expect(screen.getByRole("searchbox", { name: "Search beers" })).toHaveDisplayValue("");
+      expect(screen.getAllByRole("button", { name: /^Remove filter/ })).toHaveLength(1);
+      await screen.findByText("Pale Ale");
+    });
+
+    it("is applied when the Catalog is first shown after the link was asked for", async () => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+      showCatalogWith({ style: "Gose" });
+
+      await renderWithLocale(<CatalogScreen />);
+
+      expect(await screen.findByRole("button", { name: "Remove filter: Gose" })).toBeOnTheScreen();
+      await screen.findByText("Pale Ale");
     });
   });
 });

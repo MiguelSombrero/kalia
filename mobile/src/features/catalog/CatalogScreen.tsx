@@ -15,10 +15,12 @@ import { FilterChips } from "./filters/FilterChips";
 import { emptyFilters, removeFilter, sheetFilterCount, type ActiveFilterKey } from "./filters/model";
 import { useFiltersStore } from "./filters/store";
 import type { BeerSummary } from "./api";
+import { useApplyCatalogLink } from "./hooks/useApplyCatalogLink";
 import { useBeers } from "./hooks/useBeers";
 
 export const CatalogScreen = () => {
   const { t, i18n } = useTranslation();
+  useApplyCatalogLink();
   const beers = useBeers();
   const router = useRouter();
   const { applied, apply, setQuery } = useFiltersStore();
