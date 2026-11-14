@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { EXIT, MAX_TIMEOUT_SECONDS, lastLines, waitFor } from "./wait-for.mjs";
+import { EXIT, MAX_TIMEOUT_SECONDS, failMatcher, lastLines, waitFor } from "./wait-for.mjs";
 
 const SCRIPT = fileURLToPath(new URL("./wait-for.mjs", import.meta.url));
 const wait = (...args) => spawnSync("node", [SCRIPT, ...args], { encoding: "utf8" });
@@ -48,9 +48,17 @@ test("the wait cannot be unbounded: --timeout is required and capped", () => {
   }
 });
 
-test("a missing probe command and a bad --fail pattern are usage errors", () => {
+test("a missing probe command is a usage error", () => {
   assert.equal(wait("--timeout", "5").status, EXIT.usage);
-  assert.equal(wait("--timeout", "5", "--fail", "(", ...sh("true")).status, EXIT.usage);
+});
+
+test("--fail is literal text with | between alternatives, never a regular expression", () => {
+  const { test: matches } = failMatcher("BUILD FAILED|error: (");
+  assert.equal(matches("... BUILD FAILED ..."), true);
+  assert.equal(matches("error: (x"), true);
+  assert.equal(matches("BUILD SUCCEEDED, 0 errors"), false);
+  assert.equal(failMatcher("a.c").test("abc"), false, "a dot is a dot");
+  assert.equal(wait("--timeout", "5", "--fail", "(", ...sh("echo '('")).status, EXIT.failed);
 });
 
 test("only the last lines of output are kept, blank ones dropped", () => {

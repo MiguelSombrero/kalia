@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Waits for a background command to be ready, with a ceiling and a failure
 // exit, so a session never blocks on something that will not happen:
-//   node scripts/wait-for.mjs --timeout <seconds> [--fail <regex>] [--interval <seconds>] [--lines <n>] -- <probe command...>
+//   node scripts/wait-for.mjs --timeout <seconds> [--fail <text>[|<text>...]] [--interval <seconds>] [--lines <n>] -- <probe command...>
 // The probe runs every interval. Exit 0 once it exits 0; exit 1 as soon as its
 // output matches --fail; exit 124 when --timeout passes first. The last lines
 // of the probe's output are printed on every exit, so the caller reports what
@@ -17,6 +17,14 @@ export const EXIT = { ready: 0, failed: 1, usage: 2, timeout: 124 };
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
+// `--fail` is literal text, `|` separating alternatives: it is never compiled
+// as a regular expression, so nothing typed on the command line can reach the
+// regex engine.
+export const failMatcher = (text) => {
+  const needles = text.split("|").filter((needle) => needle !== "");
+  return { test: (output) => needles.some((needle) => output.includes(needle)), toString: () => needles.map((needle) => `"${needle}"`).join(" or ") };
+};
+
 export const lastLines = (text, count) => text.split("\n").filter((line) => line.trim() !== "").slice(-count).join("\n");
 
 /**
@@ -24,7 +32,7 @@ export const lastLines = (text, count) => text.split("\n").filter((line) => line
  * @param {() => Promise<{ ok: boolean, output: string }> | { ok: boolean, output: string }} options.probe one look at the thing waited on
  * @param {number} options.timeoutMs the ceiling; required
  * @param {number} [options.intervalMs]
- * @param {RegExp} [options.failPattern] output that means it will never be ready
+ * @param {{ test: (output: string) => boolean, toString: () => string }} [options.failPattern] output that means it will never be ready
  * @param {() => string | undefined} [options.died] a reason the thing waited on has already ended
  * @returns {Promise<{ outcome: "ready" | "failed" | "timeout", output: string, reason?: string }>}
  */
@@ -60,12 +68,7 @@ const parse = (argv) => {
   const interval = Number(options.interval);
   const lines = Number(options.lines);
   if (!(interval > 0) || !(lines > 0)) return { problem: "--interval and --lines are positive numbers" };
-  let failPattern;
-  try {
-    failPattern = options.fail === undefined ? undefined : new RegExp(options.fail);
-  } catch {
-    return { problem: `--fail is not a regular expression: ${options.fail}` };
-  }
+  const failPattern = options.fail === undefined ? undefined : failMatcher(options.fail);
   return { timeoutMs: timeout * 1000, intervalMs: interval * 1000, lines, failPattern, command: argv.slice(split + 1) };
 };
 

@@ -49,7 +49,7 @@ output. So:
   that does not end by itself is started with `run_in_background`.
 - **Every wait is an until-loop with a ceiling and a failure exit**, never a
   bare success-pattern filter. `node scripts/wait-for.mjs --timeout <seconds>
-  --fail '<failure text>' -- <probe command>` is that loop: it exits 0 when the
+  --fail '<failure text>|<more>' -- <probe command>` is that loop: it exits 0 when the
   probe does, 1 when its output matches the failure text, 124 at the ceiling,
   and prints the probe's last lines on each. A Monitor does the same in its own
   words: `until <ready>; do <failure check && exit 1>; <ceiling check>; sleep 5;
