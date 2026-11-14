@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     gap: theme.spacing.small,
+    marginBottom: theme.spacing.small,
     paddingVertical: theme.spacing.medium,
     paddingHorizontal: theme.spacing.medium,
     borderRadius: theme.radius.card,
