@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-143
+**Highest issued:** MUST-25 · SHOULD-120 · COULD-143
 
 ## MUST
 
@@ -138,6 +138,27 @@ None open.
   on its own branch; have `check-pr-body` fail a PR that ticks every criterion
   of a task but leaves its `Status` short of `done` (which would have caught
   #523); or accept close-out PRs and amend task 20's decision.
+
+- **SHOULD-119** *(confirmed 2026-11-14)* — On an iPhone with VoiceOver in a
+  Finnish voice, the catalog's filter sheet does not put focus where
+  [mobile/README.md](../../mobile/README.md#conventions) says it goes. Opening
+  it from the Catalog lands on the "Sulje" (Close) button, not the "Suodattimet"
+  heading; coming back from a picker reads "Sulje" first and only then moves to
+  the heading, although `FiltersSheet` sends `sendAccessibilityEvent(heading,
+  "focus")` on every page change (`FiltersSheet.test.tsx` holds that it is
+  sent). Found by the product owner's walk of iteration 11 task 11; the Close
+  button is the first element of the sheet's header, and the event probably
+  loses to the sheet's own initial focus or runs before the page is on screen.
+  Not re-walked in English, in light mode or on Android.
+- **SHOULD-120** *(confirmed 2026-11-14)* — Opening a picker (Style, Brewery,
+  Country) from the filter sheet does not put VoiceOver's focus on the picker's
+  heading on an iPhone, in a Finnish voice and dark mode: it lands sometimes on
+  the first row ("Kaikki maat"), sometimes on the last row visible, so the
+  focus event of SHOULD-119's mechanism does not hold there either. The rows
+  are read correctly once touched. Found by the same walk; candidates to try
+  are sending the event after the page's layout rather than in an effect, or
+  moving focus with `accessibilityViewIsModal` or a `key`ed heading. Related:
+  SHOULD-119, whose fix settles both.
 
 ## COULD
 

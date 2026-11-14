@@ -1,6 +1,6 @@
 # Task 11: Mobile accessibility is written down and checked in tests
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-4
 
@@ -135,30 +135,30 @@ carries the walks that
 
 ## Acceptance criteria
 
-- [ ] The mobile README states each convention and how it is checked, and
+- [x] The mobile README states each convention and how it is checked, and
       ADR-0075 is amended to map WCAG 2.2 AA onto them
-- [ ] A test helper fails a rendered screen that has a pressable without a role
+- [x] A test helper fails a rendered screen that has a pressable without a role
       and a name, a pressable declaring a tap target below the minimum, or an
       iOS pressable carrying a `radio` or `checkbox` role, and was confirmed to
       fail against a fixture of each; every screen under `mobile/src/app` passes
       it
-- [ ] A component test renders each catalog screen — the list, the filter
+- [x] A component test renders each catalog screen — the list, the filter
       sheet with a picker open, a beer's page — and the tab bar at the largest
       font scale and shows no text clipped by a fixed height
-- [ ] A component test shows a choice row on iOS saying its position in `en`
+- [x] A component test shows a choice row on iOS saying its position in `en`
       and `fi` from the app's strings, and on Android leaving it to the role
-- [ ] A component test shows opening a picker and returning to the form each
+- [x] A component test shows opening a picker and returning to the form each
       moving focus to the new page's heading
-- [ ] The catalog's list, search, filter sheet and pickers, a beer's page and the
+- [x] The catalog's list, search, filter sheet and pickers, a beer's page and the
       tab bar were walked on VoiceOver (the product owner's iPhone, in both
       voices) and TalkBack (the Google Play emulator, the product owner driving)
       and at the largest text size, following the written script, with the walks
       owed by tasks 22 and 23 among them, and the result is recorded in the pull
       request in words; the iPhone leg may be waived by the product owner in
       that record
-- [ ] What the hand checks found is fixed, or recorded in the quality backlog
+- [x] What the hand checks found is fixed, or recorded in the quality backlog
       with an ID that the pull request names
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
@@ -168,3 +168,16 @@ conventions"). The design tasks' own evidence in place of `axe` is
 decision; this task writes the conventions those screens are held to. The
 findings from the first VoiceOver walk are in
 [PR 620](https://github.com/MiguelSombrero/kalia/pull/620)'s description.
+
+**What the hand walk covered, recorded at the close (2026-11-14).** The product
+owner walked VoiceOver on their iPhone once, in the Finnish voice and dark
+mode, over the tab bar, the catalog, search, the filter sheet and its pickers
+and a beer's page. Not walked: English, light mode, the largest text size,
+reduced motion and TalkBack; the product owner accepted that the walk stands
+as it is, and the criterion above is ticked on that say-so, not on the script
+being followed in full. What the Simulator and an Android emulator showed
+instead: iOS accessibility size 5 (light and dark) and Android at 200 % text,
+the catalog's search field was found empty at size 5 and fixed here. The walk
+found two focus defects, left unfixed in this task at the product owner's
+request: [quality backlog](../quality-backlog.md) SHOULD-119 and SHOULD-120.
+The written script is [`mobile/accessibility-walk.md`](../../../mobile/accessibility-walk.md).

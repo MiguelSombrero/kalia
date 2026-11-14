@@ -1,6 +1,6 @@
 # Task 25: The update-required, maintenance and crash screens depend on nothing that can change under an installed build
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-2, DW-3
 
@@ -99,7 +99,7 @@ and a test renders them with the API client failing.
 - [x] A lint test shows the import boundary rejecting a fixture in which one
       of the three screens imports a data hook, the API client or a remote
       image, and accepting the screens as they stand
-- [ ] The product owner looked at the three screens in both locales and both
+- [x] The product owner looked at the three screens in both locales and both
       modes on the route task 01 chose, and signed them off
 - [x] `make verify-fast` is green
 

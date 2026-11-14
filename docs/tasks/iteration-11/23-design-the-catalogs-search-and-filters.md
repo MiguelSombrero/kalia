@@ -1,6 +1,6 @@
 # Task 23: Design the catalog's search and filters
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-1, DW-3
 - **Kind:** design
@@ -107,7 +107,7 @@ platforms' conventions where they differ. Standing intent goes in
 - [x] `docs/design.md` carries the chosen search and filters as standing intent,
       and `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs`
       pass over them — test
-- [ ] The product owner signed off the built controls live, next to the chosen
+- [x] The product owner signed off the built controls live, next to the chosen
       direction
 - [x] `make verify-fast` is green
 

@@ -1,6 +1,6 @@
 # Task 10: A user opens a beer and reads its details on their phone
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11](../iteration-11.md)
 - **Covers:** DW-3, DW-4
 
@@ -131,7 +131,7 @@ them):
       and was confirmed to fail without the screen
 - [x] A test shows the deep link opening the beer, signed out, and dismissal
       returning to the Catalog root
-- [ ] The product owner used the screen on the route task 01 chose and signed
+- [x] The product owner used the screen on the route task 01 chose and signed
       it off
 - [x] `make verify-fast` is green
 
