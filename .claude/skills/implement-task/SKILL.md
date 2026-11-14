@@ -103,6 +103,10 @@ their own condition from that ADR before they apply.
    The pattern picks the tests up by name: a new documentation test that does
    not end in `OpenApiDocumentationIT` is skipped here without a word, so name
    it that way or add it to the list.
+
+   Any wait on a build, a stack or CI follows the `worktree` skill's
+   [Waiting on a background command](../worktree/SKILL.md#waiting-on-a-background-command):
+   detached, probed, with a ceiling and a failure exit, never a blocked call.
 10. **Run the change against a running stack and watch it work.** `make
    verify` proves the suites pass, which is a different claim: a Server
    Action that 404s after a re-export refactor, a quantity field cleared on
@@ -116,7 +120,8 @@ their own condition from that ADR before they apply.
    pull request's Gates section as what you saw, in words. Never commit,
    push or upload a screenshot of it (`CLAUDE.md`, `.claude/rules/no-screenshots.md`).
    "Nothing user-facing changed" is a verdict and a fine answer; silence is
-   not.
+   not. Metro and native builds start detached (`make mobile-metro-up`;
+   `mobile/README.md`), never in the foreground of a tool call.
 11. Go through the acceptance criteria one at a time and **run what each one
     says verifies it**, rather than ticking the list from memory of having
     done the work. A criterion states its own check — that is what

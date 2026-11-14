@@ -41,6 +41,9 @@ is the decision this file carries out.
      stack ports and use the local stack with phone mode off. A native build,
      simulator and emulator count as heavy work under `CLAUDE.md`'s
      two-session limit.
+     Start Metro and every native build detached and wait on a probe with a
+     ceiling, never in the foreground of a tool call (the `worktree` skill's
+     [Waiting on a background command](../../worktree/SKILL.md#waiting-on-a-background-command)).
    - Three distinct directions for a behaviour question may be one build with
      an in-app switch between them, so each is felt without a rebuild.
    - Show each native round in Device Hub's live iOS Simulator against the
