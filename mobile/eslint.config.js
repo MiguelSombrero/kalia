@@ -15,6 +15,7 @@ const featureIndex = { element: { type: "feature" }, file: { categories: "featur
 const components = { element: { type: "components" } };
 const lib = { element: { type: "lib" } };
 const testing = { element: { type: "testing" } };
+const appSuite = { file: { categories: "app-suite" } };
 const sharedPackage = { element: { type: "shared-package" } };
 const generatedModels = { element: { type: "generated-models" } };
 // ADR-0093, ADR-0110. Their policies come last in the rule below: the last policy to match decides.
@@ -85,6 +86,7 @@ const eslintConfig = defineConfig([
       "boundaries/files": [
         { category: "feature-index", pattern: "mobile/src/features/*/index.ts" },
         { category: "feature-api", pattern: "mobile/src/features/*/api.ts" },
+        { category: "app-suite", pattern: "mobile/src/testing/*.app.{ts,tsx,test.ts,test.tsx}" },
         {
           category: "independent-screen",
           pattern: independentScreenFiles.map((file) => `mobile/${file}`),
@@ -112,6 +114,7 @@ const eslintConfig = defineConfig([
             { from: components, allow: { to: [sharedPackage, lib, testing] } },
             { from: lib, allow: { to: [sharedPackage, lib, testing] } },
             { from: testing, allow: { to: [sharedPackage, lib, testing] } },
+            { from: appSuite, allow: { to: [app, featureIndex, components] } },
             {
               from: independentScreen,
               disallow: { to: [{ element: { type: ["feature", "app", "lib", "testing", "shared-package", "generated-models", "generated-tag"] } }] },

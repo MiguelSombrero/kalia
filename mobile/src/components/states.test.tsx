@@ -1,6 +1,6 @@
 import { apiError } from "@kalia/api";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { Text } from "react-native";
+import { AccessibilityInfo, Text } from "react-native";
 import { theme } from "@/lib/design/theme.generated";
 import { MODES, systemIs, withLargestFont } from "@/testing/colorMode";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
@@ -76,5 +76,22 @@ describe("EmptyState", () => {
     );
 
     expect(screen.getByText("add one")).toBeOnTheScreen();
+  });
+});
+
+describe("a state that replaces what was on the screen", () => {
+  it("is said by the screen reader when it appears, as the user has not moved to it: a failure and an empty result, not a load", async () => {
+    const announce = jest.spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation(() => undefined);
+    announce.mockClear();
+
+    await renderWithLocale(<LoadingState label="Loading beers…" />);
+    expect(announce).not.toHaveBeenCalled();
+
+    await renderWithLocale(<EmptyState message="No beers match your search." />);
+    expect(announce).toHaveBeenLastCalledWith("No beers match your search.");
+
+    await renderWithLocale(<ErrorAlert message="Couldn't load beers." error={new Error("x")} onRetry={jest.fn()} />);
+    expect(announce).toHaveBeenLastCalledWith("Couldn't load beers.");
+    expect(announce).toHaveBeenCalledTimes(2);
   });
 });

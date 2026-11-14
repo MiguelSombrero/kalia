@@ -1,7 +1,8 @@
 {
   "unknownValue": "Other",
   "a11y": {
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "positionInSet": "{{position}} of {{total}}"
   },
   "app": {
     "name": "Kalia",

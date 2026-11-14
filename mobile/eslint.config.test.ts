@@ -32,10 +32,18 @@ describe("import boundaries reject each crossing a fixture makes", () => {
       rejected: "feature must not import @kalia/api/generated/catalog/catalog",
     },
     { fixture: "lib-imports-upward", lintAs: "src/lib/probe.ts", rejected: "lib must not import @/components/ComingSoon" },
+    { fixture: "app-imports-feature-internals", lintAs: "src/testing/probe.app.test.ts", rejected: "testing must not import @/features/catalog/CatalogScreen" },
+    { fixture: "app-imports-feature-internals", lintAs: "src/testing/probe.ts", rejected: "testing must not import @/features/catalog/CatalogScreen" },
   ];
 
   it.each(crossings)("$fixture", async ({ fixture: name, lintAs, rejected }) => {
     expect(await messagesFor(fixture(name), lintAs)).toEqual([["boundaries/dependencies", expect.stringContaining(rejected)]]);
+  });
+
+  it("lets a suite named *.app.* render the app's routes and reach a feature by its index, and no other test helper", async () => {
+    const reach = 'import { CatalogScreen } from "@/features/catalog";\nexport const screen = CatalogScreen;\n';
+    expect(await messagesFor(reach, "src/testing/probe.app.test.ts")).toEqual([]);
+    expect(await messagesFor(reach, "src/testing/probe.ts")).toEqual([["boundaries/dependencies", expect.stringContaining("testing must not import @/features/catalog")]]);
   });
 
   it("lets a feature's api.ts reach its own generated tag", async () => {

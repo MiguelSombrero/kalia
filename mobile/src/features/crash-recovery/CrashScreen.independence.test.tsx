@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { StyleSheet } from "react-native";
 import { atLargestFontScale } from "@/testing/atLargestFontScale";
+import { expectAccessibleStructure } from "@/testing/expectAccessibleStructure";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { CrashScreen } from "./CrashScreen";
 
@@ -88,6 +89,7 @@ describe("the crash screen depends on nothing that can change under an installed
       expect(StyleSheet.flatten(heading.props.style).height).toBeUndefined();
       expect(JSON.stringify(screen.toJSON())).toContain("RCTScrollView");
       expectScalesWithText();
+      expectAccessibleStructure();
     });
   });
 });

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Platform, Pressable, Text, View } from "react-native";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
@@ -13,10 +14,12 @@ const CHECK_SIZE = 26;
 const choiceSemantics = (selected: boolean) =>
   Platform.OS === "ios" ? ({ role: "button", accessibilityState: { selected } } as const) : ({ role: "radio", accessibilityState: { checked: selected } } as const);
 
-export const ChoiceRow = ({ label, sub, selected, onPress, leading, bordered }: { label: string; sub?: string; selected: boolean; onPress: () => void; leading?: ReactNode; bordered?: boolean }) => {
+export const ChoiceRow = ({ label, sub, selected, onPress, leading, bordered, position }: { label: string; sub?: string; selected: boolean; onPress: () => void; leading?: ReactNode; bordered?: boolean; position: { index: number; count: number } }) => {
   const styles = useStyles();
+  const { t } = useTranslation();
+  const place = Platform.OS === "ios" ? { accessibilityValue: { text: t("a11y.positionInSet", { position: position.index, total: position.count }) } } : null;
   return (
-    <Pressable {...choiceSemantics(selected)} accessibilityLabel={sub ? `${label}, ${sub}` : label} onPress={onPress} style={[styles.row, bordered ? styles.bordered : styles.ruled, selected && styles.rowSelected]}>
+    <Pressable {...choiceSemantics(selected)} {...place} accessibilityLabel={sub ? `${label}, ${sub}` : label} onPress={onPress} style={[styles.row, bordered ? styles.bordered : styles.ruled, selected && styles.rowSelected]}>
       {leading}
       <View style={styles.text}>
         <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>

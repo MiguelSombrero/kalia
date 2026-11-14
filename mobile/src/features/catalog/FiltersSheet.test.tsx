@@ -203,6 +203,81 @@ describe("FiltersSheet", () => {
   });
 
   it.each([
+    ["going back", "Back to filters"],
+    ["choosing a row", "Gose"],
+  ] as const)("puts the screen reader on the form's heading when it comes back by %s, as it did on the picker's going in", async (_how, action) => {
+    const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
+    focus.mockClear();
+    await renderSheet();
+    await fireEvent.press(screen.getByRole("button", { name: /^Style: / }));
+    await screen.findByRole("searchbox");
+    await screen.findByRole("button", { name: "Gose" });
+    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+
+    await fireEvent.press(screen.getByRole("button", { name: action }));
+
+    await screen.findByRole("button", { name: /^Style: / });
+    await waitFor(() => expect(focus).toHaveBeenCalledTimes(2));
+    const [target, event] = focus.mock.calls[1] as unknown as [{ props: Record<string, unknown> }, string];
+    expect(event).toBe("focus");
+    expect(target.props).toMatchObject({ role: "heading", children: "Filters" });
+  });
+
+  it("puts the screen reader on the form's heading when the system Back button leaves a picker", async () => {
+    let pressBack: (() => unknown) | undefined;
+    jest.spyOn(BackHandler, "addEventListener").mockImplementation((_event, handler) => {
+      pressBack = () => handler({} as never);
+      return { remove: () => (pressBack = undefined) };
+    });
+    const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
+    focus.mockClear();
+    await renderSheet();
+    await fireEvent.press(screen.getByRole("button", { name: /^Style: / }));
+    await screen.findByRole("searchbox");
+    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+
+    await act(async () => void pressBack?.());
+
+    await waitFor(() => expect(focus).toHaveBeenCalledTimes(2));
+    expect((focus.mock.calls[1] as unknown as [{ props: Record<string, unknown> }])[0].props).toMatchObject({ role: "heading", children: "Filters" });
+  });
+
+  it.each([
+    ["en", /^Style: /, ["1 of 5", "2 of 5", "3 of 5", "4 of 5", "5 of 5"]],
+    ["fi", /^Tyyli: /, ["vaihtoehto 1, yhteensä 5", "vaihtoehto 2, yhteensä 5", "vaihtoehto 3, yhteensä 5", "vaihtoehto 4, yhteensä 5", "vaihtoehto 5, yhteensä 5"]],
+  ] as const)("on iOS, says each style's place in the set in %s, the Any row counted", async (locale, field, spoken) => {
+    jest.replaceProperty(ReactNative.Platform, "OS", "ios");
+    await renderSheet(set(), locale);
+
+    await fireEvent.press(screen.getByRole("button", { name: field }));
+    await screen.findByRole("searchbox");
+    await screen.findByText("Gose");
+
+    expect(choiceRows().map((row) => row.props.accessibilityValue?.text)).toEqual(spoken);
+  });
+
+  it("on iOS, counts a brewery's place against all the breweries the server has, not those loaded so far", async () => {
+    jest.replaceProperty(ReactNative.Platform, "OS", "ios");
+    transport.mockImplementation(async (url: string) => {
+      if (url.includes("/api/v1/breweries")) return answer({ content: [brewery("b1", "Maku Brewing"), brewery("b2", "Mikkeller")], page: 0, totalElements: 30, totalPages: 15 });
+      return answer({ content: [], page: 0, totalElements: 12, totalPages: 12 });
+    });
+    await renderSheet();
+
+    await fireEvent.press(screen.getByRole("button", { name: /^Brewery: / }));
+    await screen.findByText("Maku Brewing");
+
+    expect(choiceRows().map((row) => row.props.accessibilityValue?.text)).toEqual(["1 of 31", "2 of 31", "3 of 31"]);
+  });
+
+  it("on iOS, says each sort's place among the five", async () => {
+    jest.replaceProperty(ReactNative.Platform, "OS", "ios");
+    await renderSheet();
+
+    expect(choiceRows().map((row) => row.props.accessibilityValue?.text)).toEqual(["1 of 5", "2 of 5", "3 of 5", "4 of 5", "5 of 5"]);
+  });
+
+  it.each([
     ["ios", "en", /^Style: /, ["Any style", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
     ["ios", "fi", /^Tyyli: /, ["Kaikki tyylit", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
     ["android", "en", /^Style: /, ["Any style", "Gose", "IPA", "Imperial Stout", LONG_STYLE]],
