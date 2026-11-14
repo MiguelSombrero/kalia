@@ -248,8 +248,8 @@ a UDID) and `KALIA_E2E_AVD` pick the device. `maestro-output/` is gitignored.
 The app follows [web/README.md](../web/README.md) wherever a rule is not about the browser.
 
 - **Layers.** `src/app/` route files only re-export a screen from
-  `src/features/<feature>/index.ts`; a feature never imports another. ESLint
-  enforces it, and a new policy gets a fixture in `eslint-fixtures/` ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
+  `src/features/<feature>/index.ts`; a feature never imports another; the update, maintenance and
+  crash screens import nothing that can change under an installed build (`independentScreenFiles`, [ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)). ESLint enforces both; a new policy gets a fixture in `eslint-fixtures/` ([ADR-0012](../docs/adr/0012-orval-api-client.md)).
 - **A label or colour per API enum value comes from `enumLookup()`** in
   `@kalia/api`, never a `Record` keyed by the enum (ESLint,
   [packages/README.md](../packages/README.md)): an installed app outlives the

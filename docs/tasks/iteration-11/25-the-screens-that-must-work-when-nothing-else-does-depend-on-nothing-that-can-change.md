@@ -90,18 +90,18 @@ and a test renders them with the API client failing.
 
 ## Acceptance criteria
 
-- [ ] A component test renders "update required", "maintenance" and the crash
+- [x] A component test renders "update required", "maintenance" and the crash
       screen in `en` and `fi` with the API client mocked to fail, and shows
       each identical to its rendering with the client working
-- [ ] A component test renders each screen in light and dark, `en` and `fi`,
+- [x] A component test renders each screen in light and dark, `en` and `fi`,
       at the largest font scale, finds its heading and its action by role and
       accessible name, and shows its words in full
-- [ ] A lint test shows the import boundary rejecting a fixture in which one
+- [x] A lint test shows the import boundary rejecting a fixture in which one
       of the three screens imports a data hook, the API client or a remote
       image, and accepting the screens as they stand
 - [ ] The product owner looked at the three screens in both locales and both
       modes on the route task 01 chose, and signed them off
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
