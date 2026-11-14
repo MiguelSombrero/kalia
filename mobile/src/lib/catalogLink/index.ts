@@ -1,1 +1,1 @@
-export { showCatalogWith, useCatalogLink, type CatalogLinkFilter } from "./catalogLink";
+export { showCatalogWith, useCatalogLink, type CatalogLinkFilter } from "./store";

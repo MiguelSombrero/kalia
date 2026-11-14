@@ -1,4 +1,4 @@
-import { showCatalogWith, useCatalogLink } from "./catalogLink";
+import { showCatalogWith, useCatalogLink } from "./store";
 
 beforeEach(() => useCatalogLink.setState({ pending: null }));
 
