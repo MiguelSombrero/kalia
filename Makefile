@@ -6,7 +6,7 @@
 # vulnerability-scan.yml stay CI-only, since building the images costs
 # minutes per run (ADR-0046).
 
-.PHONY: help up down restart logs ps backend-test backend-verify repeat-it web-test packages-test mobile-lint mobile-test mobile-start mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
+.PHONY: help up down restart logs ps backend-test backend-verify repeat-it web-test packages-test mobile-lint mobile-test mobile-start mobile-metro-up mobile-metro-down mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check action-pins api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
         verify-fast install-hooks next-adr sync-indexes stack-env app-config
@@ -66,10 +66,16 @@ mobile-lint: ## Lint and type-check the mobile app (strict TypeScript; no Docker
 mobile-test: ## Run the mobile app's Jest unit tests (no network, no simulator)
 	npm test --workspace mobile
 
-mobile-start: ## Start Metro for the development build, on this worktree's METRO_PORT and with its stack as the origins; after a switch of mode add ARGS="--clear" (extra flags: ARGS="...")
+mobile-start: ## Start Metro in the FOREGROUND for the development build (it never returns: an agent uses mobile-metro-up), on this worktree's METRO_PORT and with its stack as the origins; after a switch of mode add ARGS="--clear" (extra flags: ARGS="...")
 	env $$(node scripts/mobile-env.mjs) npm start --workspace mobile -- $$(node scripts/phone-mode.mjs metro-args) $(ARGS)
 
-mobile-ios: ## Build the development build and run it on the iOS Simulator against this stack (extra flags: ARGS="--device 'iPhone 17e'")
+mobile-metro-up: ## Start this worktree's Metro detached on its own METRO_PORT and return once it answers (exit 0), or fail with its log after 120 s (extra expo flags: ARGS="--clear")
+	node scripts/mobile-metro.mjs up $(ARGS)
+
+mobile-metro-down: ## Stop the Metro mobile-metro-up started for this worktree, and no other process
+	node scripts/mobile-metro.mjs down
+
+mobile-ios: ## Build the development build and run it on the iOS Simulator against this stack, leaving Metro detached and returning (extra flags: ARGS="--device 'iPhone 17e'")
 	node scripts/mobile-native.mjs ios $(ARGS)
 
 mobile-ios-release: ## Build the release build (JavaScript inside, no dev menu, no Metro) and run it on the iOS Simulator (extra flags: ARGS="...")
@@ -81,7 +87,7 @@ mobile-ios-device: ## Build the development build and install it on the connecte
 mobile-ios-device-release: ## Build the release build and install it on the connected iPhone, so the app works with the Mac away; needs phone mode (make phone-mode HOST=...)
 	node scripts/mobile-native.mjs ios-device --release
 
-mobile-android: ## Build and run the development build on the Android emulator, with adb reverse for this stack's ports and the JDK the build needs; refuses in phone mode (extra flags: ARGS="...")
+mobile-android: ## Build and run the development build on the Android emulator, leaving Metro detached and returning, with adb reverse for this stack's ports and the JDK the build needs; refuses in phone mode (extra flags: ARGS="...")
 	node scripts/mobile-native.mjs android $(ARGS)
 
 mobile-android-release: ## Build the release build (the end-to-end one: JavaScript inside, cleartext to localhost only) and run it on the Android emulator; refuses in phone mode (extra flags: ARGS="...")

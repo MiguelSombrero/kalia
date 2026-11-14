@@ -3,7 +3,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { LAUNCH_REFUSED, REFUSALS, appPath, chooseDevice, installArgs, launchArgs, physicalPhones, xcodebuildArgs } from "./mobile-ios-device.mjs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import {
+  LAUNCH_REFUSED,
+  REFUSALS,
+  appPath,
+  chooseDevice,
+  installArgs,
+  keepAliveScript,
+  launchArgs,
+  physicalPhones,
+  startKeepAlive,
+  xcodebuildArgs,
+} from "./mobile-ios-device.mjs";
 
 const UDID = "00000000-FAKEFAKEFAKEFAKE";
 
@@ -86,4 +101,28 @@ test("a refused first launch is reported as the expected trust step, not a failu
   assert.match(LAUNCH_REFUSED, /expected/);
   assert.match(LAUNCH_REFUSED, /Trust/);
   assert.doesNotMatch(LAUNCH_REFUSED, /fail|error/i);
+});
+
+test("the keep-alive loop pokes the phone, passes the device as an argument, and ends with its parent", () => {
+  const script = keepAliveScript();
+  assert.match(script, /devicectl device info details --device "\$1"/);
+  assert.match(script, /kill -0 "\$PPID"/);
+  assert.doesNotMatch(script, new RegExp(UDID), "the device id is an argument, never spliced into the script");
+});
+
+test("the keep-alive loop runs until it is stopped, and stopping it ends it", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "kalia-keepalive-test-"));
+  const ticks = join(dir, "ticks");
+  try {
+    const stop = startKeepAlive(UDID, keepAliveScript(0.1, `{ echo "$1" >> ${ticks}; }`));
+    await new Promise((done) => setTimeout(done, 600));
+    stop();
+    const seen = readFileSync(ticks, "utf8").split("\n").filter(Boolean);
+    assert.ok(seen.length >= 2, "it keeps poking while the build runs");
+    assert.ok(seen.every((line) => line === UDID));
+    await new Promise((done) => setTimeout(done, 400));
+    assert.equal(readFileSync(ticks, "utf8").split("\n").filter(Boolean).length, seen.length, "nothing pokes the phone after the stop");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

@@ -24,7 +24,7 @@ const SignedOut = ({ expired }: { expired: boolean }) => {
       <ScreenTitle>{t("profile.signIn.title")}</ScreenTitle>
       <BodyText tone="muted" spaced>{t("profile.signIn.hint")}</BodyText>
       {expired ? <BodyText tone="error" spaced>{t("session.expired")}</BodyText> : null}
-      <ActionButton label={t("profile.signIn.action")} onPress={() => router.push("/sign-in-sheet")} />
+      <ActionButton testID="profile-sign-in" label={t("profile.signIn.action")} onPress={() => router.push("/sign-in-sheet")} />
     </View>
   );
 };

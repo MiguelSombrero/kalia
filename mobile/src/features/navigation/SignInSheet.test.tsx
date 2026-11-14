@@ -38,6 +38,12 @@ it("returns to the initiating screen after successful sign-in", async () => {
   expect(mockBack).toHaveBeenCalledTimes(1);
 });
 
+// The end-to-end flow taps this id: the Profile screen's own "Sign in" stays in the view tree behind the sheet.
+it("gives its sign-in action the id the end-to-end flow taps", async () => {
+  await renderWithLocale(<SignInSheet />, "en", fakeTokenStore({ status: "signedOut", expired: false }));
+  expect(screen.getByTestId("sign-in-sheet-action")).toBe(screen.getByRole("button", { name: "Sign in" }));
+});
+
 it("closes a directly opened sheet to Catalog when no history exists", async () => {
   mockCanGoBack.mockReturnValue(false);
   await renderWithLocale(<SignInSheet />, "en", fakeTokenStore({ status: "signedOut", expired: false }));

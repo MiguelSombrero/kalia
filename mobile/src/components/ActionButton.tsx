@@ -11,6 +11,7 @@ export const ActionButton = ({
   disabled = false,
   flush = false,
   maxFontSizeMultiplier,
+  testID,
   variant = "primary",
 }: {
   label: string;
@@ -19,6 +20,7 @@ export const ActionButton = ({
   disabled?: boolean;
   flush?: boolean;
   maxFontSizeMultiplier?: number;
+  testID?: string;
   variant?: "primary" | "secondary";
 }) => {
   const styles = useStyles();
@@ -26,6 +28,7 @@ export const ActionButton = ({
   return (
     <PressFeedback
       role="button"
+      testID={testID}
       accessibilityLabel={label}
       accessibilityState={{ busy, disabled: inert }}
       disabled={inert}

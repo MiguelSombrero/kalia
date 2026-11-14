@@ -58,6 +58,11 @@ describe("ProfileScreen signed out", () => {
     expect(store.signIn).not.toHaveBeenCalled();
   });
 
+  it("gives its sign-in action the id the end-to-end flow taps", async () => {
+    await renderWithLocale(<ProfileScreen />, "en", signedOut());
+    expect(screen.getByTestId("profile-sign-in")).toBe(screen.getByRole("button", { name: "Sign in" }));
+  });
+
   it("renders the sign-in action at the largest text scale", async () => {
     const scale = jest.spyOn(PixelRatio, "getFontScale").mockReturnValue(3.12);
     try {

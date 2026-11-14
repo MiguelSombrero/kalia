@@ -6,7 +6,7 @@
 // there, so the provisioning profile would never be created or renewed. This
 // builds with the flags itself, then installs and launches with devicectl.
 
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -96,14 +96,36 @@ const step = (command, args, env) => {
   if (status !== 0) throw new Error(`${command} ${args[0]} failed (exit ${status})`);
 };
 
-// The phone is chosen before the build, which takes minutes. The native project
-// is already prebuilt and checked.
-export const installOnDevice = ({ env, teamId, configuration = "Debug" }) => {
+// The phone's USB or tunnel link has dropped during a prebuild and a build,
+// each minutes of work for a build bound to fail, so the phone is chosen before
+// either and chosen again right before the install; a refusal in the first
+// takes seconds. `choosePhone` is both checks.
+export const choosePhone = () => {
   const choice = chooseDevice(listDevices());
   if (choice.refusal) throw new Error(choice.refusal);
-  step("xcodebuild", xcodebuildArgs({ udid: choice.udid, teamId, configuration }), env);
-  step("xcrun", installArgs(choice.udid, configuration), env);
+  return choice.udid;
+};
+
+// The link idles out while nothing talks to the phone. `devicectl device info
+// details` is a call that does, so a loop of it keeps the tunnel up for the
+// build. The loop ends with its parent, however the parent ends, as well as
+// when stopped.
+export const KEEP_ALIVE_SECONDS = 5;
+
+export const keepAliveScript = (seconds = KEEP_ALIVE_SECONDS, probe = `xcrun devicectl device info details --device "$1"`) =>
+  `while kill -0 "$PPID" 2>/dev/null; do ${probe} >/dev/null 2>&1; sleep ${seconds}; done`;
+
+export const startKeepAlive = (udid, script = keepAliveScript()) => {
+  const child = spawn("sh", ["-c", script, "keep-alive", udid], { stdio: "ignore" });
+  child.on("error", () => {});
+  return () => child.kill("SIGKILL");
+};
+
+export const installOnDevice = ({ env, teamId, udid, configuration = "Debug" }) => {
+  step("xcodebuild", xcodebuildArgs({ udid, teamId, configuration }), env);
+  if (choosePhone() !== udid) throw new Error("the iPhone that was connected for the build is no longer the one connected; reconnect it and run the target again");
+  step("xcrun", installArgs(udid, configuration), env);
   // A free Personal Team's developer is untrusted on first install, so the launch is refused; the install has still happened.
-  const launch = spawnSync("xcrun", launchArgs(choice.udid), { cwd: ROOT, env, stdio: "inherit" });
+  const launch = spawnSync("xcrun", launchArgs(udid), { cwd: ROOT, env, stdio: "inherit" });
   if (launch.status !== 0) console.log(LAUNCH_REFUSED);
 };
