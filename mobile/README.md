@@ -55,10 +55,7 @@ Feed, Catalog, Cellar and Profile are tabs; the central Add action opens a
 sheet and points to the catalog until scanning arrives. Signed-out Cellar and
 Profile open a sign-in sheet from their current context; credentials stay in
 the system browser ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)).
-
-A beer opens as a sheet over the Catalog at `/beers/{id}`, from a list row or the link
-`kalia://beers/{id}`, which works signed out and has the Catalog beneath it. Only
-`kalia://auth/callback` is rewritten (`redirectAuthCallback`); every other link goes to the router.
+A beer is a sheet over Catalog at `/beers/{id}`; `kalia://beers/{id}` opens it signed out, and only `kalia://auth/callback` is rewritten.
 
 ### When it does not work
 
