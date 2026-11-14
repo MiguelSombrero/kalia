@@ -745,6 +745,11 @@
       "abv,asc": "Alkoholi (matala → korkea)",
       "abv,desc": "Alkoholi (korkea → matala)",
       "style,asc": "Tyyli (A–Ö)"
-    }
+    },
+    "loadingMore": "Ladataan lisää oluita…",
+    "moreError": "Lisää oluita ei voitu ladata.",
+    "noBeersMatch": "Hakuehdoilla ei löytynyt oluita.",
+    "clearSearchAndFilters": "Tyhjennä haku ja suodattimet",
+    "waitingForReview": "Odottaa tarkistusta"
   }
 }

@@ -69,7 +69,6 @@ the system browser ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs
   adb shell am start -a android.intent.action.VIEW -d "exp+kalia://expo-development-client/?url=http%3A%2F%2Flocalhost%3A<METRO_PORT>"
   ```
 
-
 ### Reading an installed build's errors
 
 Read the device's own log ([ADR-0098](../docs/adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)):
@@ -290,6 +289,7 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **Motion and haptics:** use `src/lib/motion/`'s tokens and primitives, never a literal;
   `haptic()` is for an action's result, and needs the iPhone's System Haptics and
   Vibration both on ([ADR-0113](../docs/adr/0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)).
+- **A feature opens the Catalog on one filter through `showCatalogWith`** in `src/lib/catalogLink/` (its Zustand `store.ts`, in `lib` because a feature never imports another; a brewery with its name, a style, or a country code). The Catalog replaces its search, other filters and sort with that filter; the caller closes its own sheet. The search and filters live in a Zustand store for as long as the app is open and start empty on a cold start; the API's query follows the field's text after a 300 ms pause from two characters, or at once on the keyboard's search key.
 - **Primitives live in `src/components/`;** a control moves there when a second screen
   uses it, its tests with it. A feature-only one (the catalog's chips) stays.
 - **WCAG 2.2 AA** ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)):

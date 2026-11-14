@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-25 · SHOULD-118 · COULD-141
+**Highest issued:** MUST-25 · SHOULD-118 · COULD-143
 
 ## MUST
 
@@ -285,6 +285,8 @@ None open.
   does not have and sets no `fontWeight`, so the system face renders every
   title, name and button at regular weight; fall back to the system face with
   the matching `fontWeight` when the faces are not loaded.
+- **COULD-142** *(confirmed 2026-11-14)* — The catalog list tests (`CatalogList.test.tsx`) wait on real timers (450 ms against the 300 ms pause), so a loaded runner could make the debounce assertions flaky; Jest fake timers would make them deterministic.
+- **COULD-143** *(confirmed 2026-11-14)* — `showCatalogWith` records its ask in a second store that the Catalog applies in an effect, so the Catalog can render and request once with the old filters first; having the feature register its applier would make the replacement atomic.
 
 ## Retired
 
