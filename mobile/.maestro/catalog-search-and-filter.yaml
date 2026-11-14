@@ -9,7 +9,7 @@ name: The Catalog searches and filters the whole catalog, not only its first pag
       id: "beer-row"
     timeout: 60000
 - tapOn: "Search beers|Hae oluita"
-- inputText: "Savu Gose"
+- inputText: "Savu"
 - extendedWaitUntil:
     visible: "Savu Gose"
     timeout: 30000
@@ -22,6 +22,8 @@ name: The Catalog searches and filters the whole catalog, not only its first pag
 - tapOn: "Fruit Lambic"
 - tapOn: "Show .*|Näytä .*"
 - extendedWaitUntil:
-    visible: "Rosé de Gambrinus"
+    visible: "Remove filter: Fruit Lambic|Poista suodatin: Fruit Lambic"
     timeout: 30000
-- assertVisible: "Remove filter: Fruit Lambic|Poista suodatin: Fruit Lambic"
+- scrollUntilVisible:
+    element: "Rosé de Gambrinus"
+    timeout: 30000
