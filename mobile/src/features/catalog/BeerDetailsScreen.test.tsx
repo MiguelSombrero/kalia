@@ -3,6 +3,7 @@ import { fireEvent, screen } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { Stack } from "expo-router";
 import { Text } from "react-native";
+import { useCatalogLink } from "@/lib/catalogLink";
 import { AppProviders } from "@/lib/providers/AppProviders";
 import { redirectAuthCallback } from "@/lib/auth/redirectAuthCallback";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
@@ -78,5 +79,25 @@ describe("a beer's deep link", () => {
   it("is not taken for the sign-in return, which still goes to the Profile tab", () => {
     expect(redirectAuthCallback(`kalia://beers/${ID}`)).toBe(`kalia://beers/${ID}`);
     expect(redirectAuthCallback("kalia://auth/callback?code=abc")).toBe("/profile");
+  });
+});
+
+describe("a beer's links into the Catalog", () => {
+  beforeEach(() => {
+    useCatalogLink.setState({ pending: null });
+  });
+
+  it.each([
+    ["style", /^IPA, show beers of this style/, { style: "IPA" }],
+    ["brewery", /^Sinebrychoff, show beers from this brewery/, { brewery: { id: "b1", name: "Sinebrychoff" } }],
+    ["country", /^Finland, show beers from this country/, { country: "FI" }],
+  ])("asks the Catalog for the %s alone and closes the sheet onto it", async (_name, label, filter) => {
+    await renderApp(`/beers/${ID}`);
+    await screen.findByText("Pale Ale");
+
+    await fireEvent.press(screen.getByRole("button", { name: label }));
+
+    expect(useCatalogLink.getState().pending).toEqual(filter);
+    expect(await screen.findByRole("heading", { name: "Catalog root" })).toBeOnTheScreen();
   });
 });

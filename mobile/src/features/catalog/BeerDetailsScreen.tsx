@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { showCatalogWith, type CatalogLinkFilter } from "@/lib/catalogLink";
 import { BeerDetails } from "./details/BeerDetails";
 
 export const BeerDetailsScreen = () => {
@@ -9,15 +10,19 @@ export const BeerDetailsScreen = () => {
     if (router.canGoBack()) router.back();
     else router.replace("/catalog");
   };
+  const showAndClose = (filter: CatalogLinkFilter) => {
+    showCatalogWith(filter);
+    close();
+  };
   return (
     <BeerDetails
       key={id}
       id={id}
       onClose={close}
       onOpenBeer={(other) => router.setParams({ id: other })}
-      onShowStyle={() => undefined}
-      onShowBrewery={() => undefined}
-      onShowCountry={() => undefined}
+      onShowStyle={(style) => showAndClose({ style })}
+      onShowBrewery={({ id: breweryId, name }) => showAndClose({ brewery: { id: breweryId, name } })}
+      onShowCountry={(country) => showAndClose({ country })}
     />
   );
 };
