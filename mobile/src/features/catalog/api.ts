@@ -1,17 +1,20 @@
 import { httpFailure } from "@kalia/api";
 import { listBreweries, listBreweryCountries, listStyles, searchBeers as generatedSearchBeers } from "@kalia/api/generated/catalog/catalog";
-import type { BeerSummaryDto, BreweryDto, PageDtoBreweryDto, SearchBeersParams } from "@kalia/api/generated/models";
+import type { BeerSummaryDto, BreweryDto, PageDtoBeerSummaryDto, PageDtoBreweryDto, SearchBeersParams } from "@kalia/api/generated/models";
 
 export type BeerSummary = BeerSummaryDto;
 
-export const FIRST_PAGE_SIZE = 20;
+export type BeerPage = PageDtoBeerSummaryDto;
 
-export const readFirstBeerPage = async (): Promise<BeerSummary[]> => {
-  const response = await generatedSearchBeers({ page: 0, size: FIRST_PAGE_SIZE });
+export const BEER_PAGE_SIZE = 20;
+export const MAX_RESULT_WINDOW = 10_000;
+
+export const readBeerPage = async (params: SearchBeersParams, page: number): Promise<BeerPage> => {
+  const response = await generatedSearchBeers({ ...params, page, size: BEER_PAGE_SIZE });
   if (response.status !== 200) {
     throw httpFailure("Beer search", response);
   }
-  return response.data.content;
+  return response.data;
 };
 
 export type BreweryOption = BreweryDto;

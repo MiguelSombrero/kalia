@@ -283,6 +283,7 @@ describe("CatalogScreen", () => {
       transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
       useFiltersStore.getState().apply({ ...emptyFilters(), style: "IPA", countryCode: "SE", min: "5", sort: "abv,desc" });
       useFiltersStore.getState().setQuery("ipa");
+      useFiltersStore.getState().setText("ipa");
       await renderWithLocale(<CatalogScreen />);
 
       await act(async () => showCatalogWith(link));

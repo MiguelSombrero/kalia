@@ -745,6 +745,11 @@
       "abv,asc": "Strength (low → high)",
       "abv,desc": "Strength (high → low)",
       "style,asc": "Style (A–Z)"
-    }
+    },
+    "loadingMore": "Loading more beers…",
+    "moreError": "Couldn't load more beers.",
+    "noBeersMatch": "No beers match your search.",
+    "clearSearchAndFilters": "Clear search and filters",
+    "waitingForReview": "Waiting for review"
   }
 }

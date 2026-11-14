@@ -1,6 +1,30 @@
-import { useQuery } from "@tanstack/react-query";
-import { readFirstBeerPage } from "../api";
+import { useMemo } from "react";
+import { keepPreviousData, useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { BEER_PAGE_SIZE, MAX_RESULT_WINDOW, readBeerPage, type BeerPage } from "../api";
+import { searchParams, type Filters } from "../filters/model";
 
-export const beersKey = ["catalog", "beers", "first-page"] as const;
+export const nextBeerPage = (last: BeerPage): number | undefined => {
+  const next = last.page + 1;
+  return next < last.totalPages && next * BEER_PAGE_SIZE < MAX_RESULT_WINDOW ? next : undefined;
+};
 
-export const useBeers = () => useQuery({ queryKey: beersKey, queryFn: readFirstBeerPage, retry: false });
+/** The beers the filters select, a page at a time; the query is the settled one, not what is being typed. */
+export const useBeers = (filters: Filters) => {
+  const params = searchParams(filters);
+  const queryKey = ["catalog", "beers", params] as const;
+  const queryClient = useQueryClient();
+  const query = useInfiniteQuery({
+    queryKey,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => readBeerPage(params, pageParam),
+    getNextPageParam: nextBeerPage,
+    placeholderData: keepPreviousData,
+    retry: false,
+  });
+  const refresh = () => {
+    queryClient.setQueryData<InfiniteData<BeerPage, number>>(queryKey, (loaded) => loaded && { pages: loaded.pages.slice(0, 1), pageParams: loaded.pageParams.slice(0, 1) });
+    return query.refetch();
+  };
+  const beers = useMemo(() => query.data?.pages.flatMap((page) => page.content), [query.data]);
+  return { query, beers, refresh };
+};
