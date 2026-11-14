@@ -1,5 +1,5 @@
 import { fireEvent, screen, within } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { CatalogScreen } from "@/features/catalog";
 import { tabLabelScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
@@ -60,6 +60,27 @@ describe("at the largest text size, a jest font scale of 3.1", () => {
     await screen.findByText(LONG_BEER);
 
     expectScalesWithText();
+  });
+
+  describe("a single-line input, which keeps its line height in unscaled points", () => {
+    const window = Dimensions.get("window");
+    const room = theme.typography.body.lineHeight * LARGEST_FONT_SCALE;
+    beforeEach(() => Dimensions.set({ window: { ...window, fontScale: LARGEST_FONT_SCALE }, screen: Dimensions.get("screen") }));
+    afterEach(() => Dimensions.set({ window, screen: Dimensions.get("screen") }));
+
+    it("gives the strength fields room for a line of text at the largest size", async () => {
+      await renderAppRoute("/filters-sheet");
+
+      for (const input of [screen.getByLabelText("Strength %: From"), screen.getByLabelText("Strength %: To")]) {
+        expect(StyleSheet.flatten(input.props.style).minHeight).toBeGreaterThanOrEqual(room);
+      }
+    });
+
+    it("gives the search field the same", async () => {
+      await renderWithLocale(<CatalogScreen />);
+
+      expect(StyleSheet.flatten(screen.getByRole("searchbox", { name: "Search beers" }).props.style).minHeight).toBeGreaterThanOrEqual(room);
+    });
   });
 
   it.each([
