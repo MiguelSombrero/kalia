@@ -1,7 +1,7 @@
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
-import { StyleSheet, Text } from "react-native";
+import { createThemedStyles } from "@/lib/design/themedStyles";
+import { Text } from "react-native";
 import { useTranslation } from "react-i18next";
 import { ownBuildNumber, ownVersion } from "@/lib/build/buildInfo";
 
@@ -16,9 +16,6 @@ export const BuildInfo = () => {
   return <Text style={styles.build}>{build === null ? t("profile.about.version", { version }) : t("profile.about.versionBuild", { version, build })}</Text>;
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    build: { marginTop: theme.spacing.xlarge, ...textStyle("supporting", "normal"), color: colors["muted-foreground"] },
-  });
-};
+const useStyles = createThemedStyles((colors) => ({
+  build: { marginTop: theme.spacing.xlarge, ...textStyle("supporting", "normal"), color: colors["muted-foreground"] },
+}));

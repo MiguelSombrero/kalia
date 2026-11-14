@@ -18,7 +18,6 @@ import type { BeerSummary } from "./api";
 import { useBeers } from "./hooks/useBeers";
 
 export const CatalogScreen = () => {
-  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const beers = useBeers();
   const router = useRouter();
@@ -64,8 +63,7 @@ export const CatalogScreen = () => {
   );
 };
 
-const useStyles = () =>
-  StyleSheet.create({
-    list: { flex: 1 },
-    controls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.small, marginTop: theme.spacing.small, marginBottom: theme.spacing.small },
-  });
+const styles = StyleSheet.create({
+  list: { flex: 1 },
+  controls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.small, marginTop: theme.spacing.small, marginBottom: theme.spacing.small },
+});

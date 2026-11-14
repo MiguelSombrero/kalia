@@ -1,10 +1,10 @@
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import type { Locale } from "@kalia/locales";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActionButton } from "@/components/ActionButton";
@@ -51,13 +51,10 @@ export const CrashScreen = ({ locale, error, onRestart }: { locale: Locale; erro
   );
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    content: { flexGrow: 1, justifyContent: "center", padding: theme.spacing.medium },
-    title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
-    detail: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors.destructive },
-    body: { marginTop: theme.spacing.small, ...textStyle("body", "normal"), color: colors["muted-foreground"] },
-  });
-};
+const useStyles = createThemedStyles((colors) => ({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { flexGrow: 1, justifyContent: "center", padding: theme.spacing.medium },
+  title: { ...textStyle("screen-title", "bold"), color: colors.foreground },
+  detail: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors.destructive },
+  body: { marginTop: theme.spacing.small, ...textStyle("body", "normal"), color: colors["muted-foreground"] },
+}));

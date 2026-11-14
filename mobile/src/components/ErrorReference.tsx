@@ -1,8 +1,8 @@
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { isApiError } from "@kalia/api";
-import { StyleSheet, Text } from "react-native";
+import { Text } from "react-native";
 import { useTranslation } from "react-i18next";
 
 export const ErrorReference = ({ error }: { error: unknown }) => {
@@ -18,9 +18,6 @@ export const ErrorReference = ({ error }: { error: unknown }) => {
   );
 };
 
-const useStyles = () => {
-  const colors = useThemeColors();
-  return StyleSheet.create({
-    reference: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors["muted-foreground"] },
-  });
-};
+const useStyles = createThemedStyles((colors) => ({
+  reference: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors["muted-foreground"] },
+}));

@@ -4,10 +4,6 @@ import { SkeletonBlock } from "@/lib/motion";
 import { BodyText } from "./BodyText";
 
 export const LoadingState = ({ label, placeholders = 0, spaced = false }: { label: string; placeholders?: number; spaced?: boolean }) => {
-  const styles = StyleSheet.create({
-    placeholders: { marginTop: theme.spacing.medium },
-    placeholder: { height: theme.spacing.action * 1.5, marginBottom: theme.spacing.small, borderRadius: theme.radius.card },
-  });
   return (
     <>
       <BodyText tone="muted" spaced={spaced}>
@@ -23,3 +19,8 @@ export const LoadingState = ({ label, placeholders = 0, spaced = false }: { labe
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  placeholders: { marginTop: theme.spacing.medium },
+  placeholder: { height: theme.spacing.action * 1.5, marginBottom: theme.spacing.small, borderRadius: theme.radius.card },
+});

@@ -51,6 +51,29 @@ describe("font scaling", () => {
   });
 });
 
+describe("a style sheet is built once, outside the component", () => {
+  const inComponent = 'import { StyleSheet, View } from "react-native";\nexport const A = () => {\n  const styles = StyleSheet.create({ a: { flex: 1 } });\n  return <View style={styles.a} />;\n};\n';
+  const atModuleLevel = 'import { StyleSheet, View } from "react-native";\nconst styles = StyleSheet.create({ a: { flex: 1 } });\nexport const A = () => <View style={styles.a} />;\n';
+
+  it("rejects StyleSheet.create inside a component", async () => {
+    expect(await messagesFor(inComponent, "src/components/probe.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("createThemedStyles")]]);
+  });
+
+  it("rejects it reached through a namespace import too", async () => {
+    const code = 'import * as RN from "react-native";\nexport const A = () => {\n  const styles = RN.StyleSheet.create({ a: { flex: 1 } });\n  return <RN.View style={styles.a} />;\n};\n';
+
+    expect(await messagesFor(code, "src/components/probe.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("createThemedStyles")]]);
+  });
+
+  it("allows StyleSheet.create at module level", async () => {
+    expect(await messagesFor(atModuleLevel, "src/components/probe.tsx")).toEqual([]);
+  });
+
+  it("still holds the code-style rules in the file that builds themed sheets", async () => {
+    expect(await messagesFor("export function f() {}\n", "src/lib/design/themedStyles.ts")).toEqual([["no-restricted-syntax", expect.stringContaining("arrow functions")]]);
+  });
+});
+
 describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
   const enumFixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixtures", "enum-lookup", `${name}.ts`), "utf8");
   const ruleIds = async (code: string, filePath: string) => (await messagesFor(code, filePath)).map(([ruleId]) => ruleId);

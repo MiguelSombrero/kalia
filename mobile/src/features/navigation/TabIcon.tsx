@@ -1,7 +1,8 @@
 import { useId } from "react";
-import { StyleSheet, View, type ColorValue } from "react-native";
+import { View, type ColorValue } from "react-native";
 import Svg, { G, Mask, Path, Rect } from "react-native-svg";
 import { theme } from "@/lib/design/theme.generated";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { ADD_GLYPH, ICON_BOX, tabIcons, type TabIconName } from "./tabIcons";
 
@@ -15,13 +16,12 @@ const hidden = { accessible: false, importantForAccessibility: "no-hide-descenda
 type Props = { name: TabIconName; focused: boolean; color: ColorValue };
 
 export const TabIcon = ({ name, focused, color }: Props) => {
-  const colors = useThemeColors();
+  const styles = useStyles();
   const maskId = useId();
   const drawing = tabIcons[name];
-  const plate = focused ? { backgroundColor: colors.accent } : null;
 
   return (
-    <View testID={`tab-icon-${name}`} style={[styles.plate, plate]} {...hidden}>
+    <View testID={`tab-icon-${name}`} style={[styles.plate, focused && styles.plateOn]} {...hidden}>
       <Svg width={GRID} height={GRID} viewBox={`0 0 ${GRID} ${GRID}`}>
         {focused ? (
           <>
@@ -49,8 +49,9 @@ export const TabIcon = ({ name, focused, color }: Props) => {
 
 export const AddIcon = () => {
   const colors = useThemeColors();
+  const styles = useStyles();
   return (
-    <View testID="add-icon" style={[styles.add, { backgroundColor: colors.primary }]} {...hidden}>
+    <View testID="add-icon" style={styles.add} {...hidden}>
       <Svg width={GRID} height={GRID} viewBox={`0 0 ${GRID} ${GRID}`}>
         <Path d={ADD_GLYPH} fill="none" stroke={colors["primary-foreground"]} strokeWidth={ADD_STROKE} strokeLinecap="round" />
       </Svg>
@@ -58,8 +59,9 @@ export const AddIcon = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const useStyles = createThemedStyles((colors) => ({
   plate: { width: ICON_BOX.width, height: ICON_BOX.height, borderRadius: ICON_BOX.height / 2, alignItems: "center", justifyContent: "center" },
+  plateOn: { backgroundColor: colors.accent },
   // token-exception: the approved circular action needs a half-width radius.
-  add: { width: theme.spacing.touch, height: theme.spacing.touch, borderRadius: 24, alignItems: "center", justifyContent: "center" },
-});
+  add: { width: theme.spacing.touch, height: theme.spacing.touch, borderRadius: 24, alignItems: "center", justifyContent: "center", backgroundColor: colors.primary },
+}));

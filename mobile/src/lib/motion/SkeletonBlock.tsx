@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 import { theme } from "@/lib/design/theme.generated";
-import { useThemeColors } from "@/lib/design/useThemeColors";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 
 export const SkeletonBlock = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const reduced = useReducedMotion();
-  const colors = useThemeColors();
+  const styles = useStyles();
   const [breath] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
@@ -28,7 +28,11 @@ export const SkeletonBlock = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   return (
     <Animated.View
       accessible={false}
-      style={[{ backgroundColor: colors.divider, opacity: breath.interpolate({ inputRange: [0, 1], outputRange: [1, 0.5] }) }, style]}
+      style={[styles.block, { opacity: breath.interpolate({ inputRange: [0, 1], outputRange: [1, 0.5] }) }, style]}
     />
   );
 };
+
+const useStyles = createThemedStyles((colors) => ({
+  block: { backgroundColor: colors.divider },
+}));
