@@ -64,236 +64,20 @@ None open.
 
 ## SHOULD
 
-- **SHOULD-80** *(confirmed 2026-11-05)* **[needs decision]** — A rejected
-  suggestion leaves the pending count (`ContributionService.requireRoomForPending`),
-  so a contributor whose 20 suggestions are all rejected can suggest 20 more
-  at once, without end; open registration on a phone grows that queue. The
-  finding's other half, `make moderate` acting on a contributor's whole
-  output, is fixed by
-  [iteration 10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md).
-  Returned here at iteration 10.5's refinement: the product owner chose to
-  limit nothing on rejections yet. The decision left open is the shape of a
-  limit — rejections counting toward the cap for a period, a cooldown after
-  several, or none.
-- **SHOULD-101** **[needs decision]** *(confirmed 2026-11-04)* — A
-  [common-failures](../common-failures.md) row can record a live defect with
-  no owner. The 2026-10-31 row for run 41231274792 says "not fixed here" and
-  names nothing that will fix it, and the defect sat unfiled until this entry
-  (SHOULD-99). `check-pr-body.mjs` already refuses a PR body that defers a
-  finding without a quality-backlog ID; the log has no such rule, so a
-  deferral there is lost the way bare "follow-ups" were (SHOULD-90).
-  [ADR-0084](../adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)
-  would be amended to say that a row whose failure is a repository defect left
-  unfixed names a quality-backlog ID, a task or a playbook entry. The decision
-  left open is the enforcement: that sentence in the log's header and the
-  ADR, or a checker in `make check` (which has to tell "not fixed" apart from
-  a cause outside the repository, such as a registry outage, which needs no
-  owner).
-- **SHOULD-109** *(confirmed 2026-11-05)* **[needs decision]** — Keycloak's
-  missing "Back to application" link is still assigned to iteration 10, which
-  closed without it: `docs/architecture.md:1205-1210` ("…which is iteration
-  10's") and `docs/tasks/backlog.md:291-299` ("part of iteration 10's
-  distribution work", also carrying a Keycloak version number that belongs
-  only in `keycloak/Dockerfile`). Options: park it in the backlog's cost list,
-  since iOS universal links need the paid developer program, and point §6
-  there; or schedule the free Android App Link or a web bounce page to
-  `kalia://auth/callback` in a named iteration.
-- **SHOULD-112** *(confirmed 2026-11-05)* **[needs decision]** —
-  `docs/tasks/backlog.md`'s "Mobile client" section states decided things as
-  open, in the present tense: `frontend/app/api/` and `lib/api/generated/`
-  (`:187`, `:210-218`), "npm workspaces, which this repo does not have", "none
-  is decided" (`:222`), crash reporting "taken by Iteration 10" (`:122`, but
-  ADR-0098 deferred it), §5 "titled 'Frontend design'" and ADR-0012's spec
-  rejection "worth revisiting" (`:304-315`). ADR-0092–0098 have since decided
-  these. Options: prune the analysis to one-line pointers at those ADRs, or
-  keep it marked "as written 2026-08-08" and correct the table row and the
-  "worth knowing" items.
-- **SHOULD-116** *(confirmed 2026-11-05)* **[needs decision]** —
-  [common-failures](../common-failures.md) misses most failures seen only in
-  CI. Unlogged since 2026-10-27: the Gates "Range" failures on PRs 467 and 470
-  (four runs); the `check-pr-body` false positives on PRs 513 and 515
-  (SHOULD-117); `dev` run 41076206163 (`plexus-xml` not found); three
-  vulnerability-scan image builds on 2026-11-01 (`Non-resolvable parent POM`);
-  CodeQL on PR 541; a full disk on PR 534; and the `PluginError` that fix
-  branch #538 exists for. The backlog's counts come out low as a result:
-  COULD-110 cited three Range rows for five PRs, COULD-111 two CodeQL hits for
-  four. [ADR-0084](../adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)
-  relies on agents logging as they go, which holds for local failures and not
-  for workflows other than `CI` or for Dependabot branches. Options: widen the
-  `worktree` skill's Start step 2 to every workflow and to PR branches; have
-  the sweep collect red runs itself from `gh run list` and narrow the log to
-  local failures that leave no trace; or accept the undercount.
-- **SHOULD-118** *(confirmed 2026-11-05)* **[needs decision]** — Tasks still
-  close after their implementation merges, a regression of COULD-91, which
-  iteration 10 task 20 settled with "every criterion checkable before merge"
-  (`docs/tasks/template.md:210` and both refine skills). Iteration 10 task 22
-  was implemented in #525 and closed by #527, its criterion 4 needing a run its
-  own branch could not produce; task 07 ticked every criterion in #523 but
-  stayed `refined`, and #533 existed only to flip its status. Task 22 was
-  refined in #524, which skipped `/code-review`, as refinement PRs routinely
-  do (#464, #477, #478, #503, #504, #516, #517, #518, #524, #537), while
-  where review did run on a refinement it caught this class (#474, #476,
-  #540, #548). Neither refine skill has a review step. Options: add a review
-  step to both refine skills, aimed at whether each criterion can be checked
-  on its own branch; have `check-pr-body` fail a PR that ticks every criterion
-  of a task but leaves its `Status` short of `done` (which would have caught
-  #523); or accept close-out PRs and amend task 20's decision.
+None open.
 
 ## COULD
 
-- **COULD-26** *(confirmed 2026-10-11)* — Keycloak's password-reset page
-  marks its username field `autocomplete="off"`, so a browser or password
-  manager will not offer the username it already holds. Not a WCAG 2.2
-  failure — the page asks for nothing to be recalled that 3.3.8 protects, and
-  the login and registration fields carry proper `autocomplete` values — but
-  it is stock `keycloak.v2` markup the theme does not touch
-  ([ADR-0056](../adr/0056-branded-bilingual-keycloak-pages.md)).
-- **COULD-112** *(confirmed 2026-11-04)* — `docker compose up --wait` fails
-  when it names a one-shot service, or names none so that every one-shot is
-  included. Locally Compose races and exits `1` on a container that exited
-  `0` ([ci-playbook](../ci-playbook.md#not-ci-but-the-same-recognition-problem));
-  on the runner it failed every time (`container kalia-keycloak-seed-1
-  exited (0)`, the 2026-10-31 `mobile-e2e` row in
-  [common-failures](../common-failures.md)). `check-compose.mjs` could fail a
-  `--wait` in the `Makefile`, a workflow or a script that does not name only
-  long-running services.
-- **COULD-113** *(confirmed 2026-11-04)* — Trivy's Java DB mirror
-  (`mirror.gcr.io/aquasec/trivy-java-db:1`) 404ed twice on 2026-10-25, on
-  `dev` and on PR 421, failing the image scan without scanning anything; the
-  remedy is a manual re-run ([ci-playbook](../ci-playbook.md#vulnerability-scan)).
-  Configure a second Java DB repository (`ghcr.io/aquasecurity/trivy-java-db:1`)
-  for Trivy to fall back to, after confirming that the Trivy version the
-  pinned `trivy-action` runs accepts more than one.
-- **COULD-114** *(confirmed 2026-11-05)* — A full disk has three times failed
-  work with an error that does not say so at first sight: Postgres in
-  Testcontainers could not write its WAL (Docker's build cache, 2026-10-30), a
-  Gradle release build could not extract an AAR (several worktrees' Xcode
-  DerivedData, 2026-10-31; both in [common-failures](../common-failures.md)),
-  and `make verify`'s Android step hit `No space left on device` on PR 534,
-  unlogged, after the `worktree` skill had gained its "check free disk"
-  instruction — so a skill step alone did not prevent it. Every worktree adds
-  both caches. The SessionStart hook that runs
-  `prune-worktrees.mjs` could warn, in the session only, when free space is
-  low and name the two caches; the `worktree` skill's teardown could delete
-  the removed worktree's own DerivedData.
-- **COULD-108** *(confirmed 2026-11-04)* — Two worktrees, one in phone mode and
-  one not, have never been run beside each other. [Iteration 10 task 02](iteration-10/02-the-phone-reaches-the-stack.md)
-  built `make phone-mode` to replace the machine's `tailscale serve` forwards
-  with the calling worktree's four ports ([ADR-0097](../adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md)),
-  and shows it on one worktree (forwards made, replaced on a switch, removed);
-  the claim that a second worktree's switch leaves the first's forwards gone
-  rather than colliding is reasoned from `tailscale serve reset` and not shown.
-  To close it: stand up a second worktree's stack (`make stack-env`, `make up`),
-  run `make phone-mode` in each in turn, and read `tailscale serve status`
-  after each. If it shows a collision, the fix is in `scripts/phone-mode.mjs`,
-  and the ADR's last unverified point is amended either way.
-- **COULD-119** *(confirmed 2026-11-05)* **[needs decision]** — The web
-  hand-builds `apiError("http", …, { status })` at 17 sites
-  (`web/features/{catalog,cellar,profile}/api.ts`) where mobile uses
-  `@kalia/api`'s `httpFailure()`, which also carries the response's trace id;
-  and `isLocale` is written twice (`web/i18n/settings.ts:6`,
-  `mobile/src/lib/i18n/resolveLocale.ts:3`) beside the `locales` both import
-  from `@kalia/locales`. Options: move the web to `httpFailure` and `isLocale`
-  into `@kalia/locales`; or keep both, since the web logs the trace id in
-  `mutator.ts` and shows no error reference.
-- **COULD-120** *(confirmed 2026-11-05)* **[needs decision]** — `@kalia/api`
-  is generated with `client: "react-query"` (`packages/api/orval.config.ts:14`)
-  and so peer-depends on an exact React and on TanStack Query
-  (`packages/api/package.json`), yet neither app imports a generated hook —
-  only the plain functions. The "platform-neutral" package ties Next.js's
-  React and the Expo SDK's React together, and offers hooks that would bypass
-  the feature-owned hooks ADR-0041 requires. Options: generate `client:
-  "fetch"` and drop the peer dependencies, or keep the hooks for a planned use
-  and say so in `packages/README.md`.
-- **COULD-121** *(confirmed 2026-11-05)* — `mobile/eslint.config.js:77-85`
-  lets `app`, `feature`, `components` and `lib` import `src/testing/`
-  (`fakeTokenStore.ts`, `renderWithLocale.tsx`), so a fake token store could
-  ship in production code with no lint failure. Allow `testing` only from
-  `*.test.ts(x)` files, through a file category.
-- **COULD-123** *(confirmed 2026-11-05)* — How to regenerate the API client is
-  restated in `web/README.md:262`, `mobile/README.md:594-595`,
-  `docs/architecture.md:751-752` and `docs/ci-playbook.md:46-48`, away from its
-  home in `packages/README.md:18-23`; the web and mobile copies already drop
-  the `make openapi-spec` step that must come first after an API change.
-  Replace each with a one-line pointer.
-- **COULD-124** *(confirmed 2026-11-05)* — Facts restated away from their one
-  home: the API compatibility rules (the `openapi-breaking-ignore.txt` waiver,
-  a new `oneOf` member passing in a 4xx and failing in a 2xx) in both
-  `docs/architecture.md:670-678` and `packages/README.md:38-42`;
-  `mobile/README.md:495-498` repeating the Dependabot-ignored SDK packages of
-  `.github/dependabot.yml`, whose comment points back at the README;
-  `mobile/README.md:488-490` giving a narrower trigger for the `mobile` CI job
-  than `scripts/ci-changes.mjs`, which calls itself the one place that policy
-  is stated; and the Metro port 8082 reason in `mobile/README.md:118-120`,
-  `README.md:107-108` and `scripts/stack-ports.mjs`.
-- **COULD-127** *(confirmed 2026-11-05)* — Maven Central has failed
-  `dependency:go-offline` in four CI runs across jobs in about two days (`dev`
-  run 41076206163 on 2026-10-30; runs 41281600049, 41281630568, 41283077204 on
-  2026-11-01, `Non-resolvable parent POM`), but only `mobile-e2e` retries it
-  (`ci.yml:386-394`). `vulnerability-scan.yml:55-57`, a required check, runs
-  `docker compose build` with no retry, the playbook's vulnerability-scan
-  section has no entry, and its E2E entry's own condition ("fix something only
-  if the same artifact fails again") is met.
-- **COULD-129** *(confirmed 2026-11-05)* **[needs decision]** — A pull request
-  that completes no task has no defined gates: #490 (a `check-pr-body.mjs`
-  change) and #492 (a test fix) recorded `/code-review` "skipped — reviewed by
-  the product owner", though CLAUDE.md's Roles say the product owner does not
-  code, and agent code commits on Dependabot PRs (be3d9a8b on #513, 37c6c6d8
-  on #515) carry no gate record. `check-pr-body` gates only task-completing PRs.
-  The decision: which gates apply to a PR with no task file.
-- **COULD-134** *(confirmed 2026-11-06)* — CodeQL alert 8,
-  `js/clear-text-logging` on `scripts/mobile-native.mjs:121`
-  (`console.error(error.message)`), has been open on `dev` since 2026-11-04,
-  and the local stand-in `scripts/check-clear-text-logging.mjs` does not reach
-  it: the alert names no flow path, and the one candidate in that file, an
-  emulator name from `process.env.AVD` built into an Error, is a direct read
-  CodeQL passes elsewhere. It fails no pull request, being on `dev` already.
-  Find the flow (the alert's page shows it to the owner), make the message say
-  what failed without the value, and add the flow's shape to the stand-in's
-  fixtures if it can follow it.
-- **COULD-135** *(confirmed 2026-11-06)* — CodeQL alert 5,
-  `js/incomplete-sanitization` on `scripts/sync-indexes.mjs:26`, has been open
-  on `dev` since 2026-10-14: the index-cell writer escapes `|` and not `\`, so
-  a title holding `\|` is written as `\\|`, whose pipe then ends the cell. No local
-  check covers that query.
 - **COULD-136** *(confirmed 2026-11-06)* — `web/features/admin-suggestions/OutcomePanel.tsx`
   builds a success box (icon cell, ink edge, message) that `Toast` and `ErrorAlert`
   each build too; a success counterpart to `ErrorAlert` in `components/ui/` would
   leave one copy to keep in step.
-- **COULD-137** *(confirmed 2026-11-06)* — `web/e2e/admin-review.spec.ts`'s
-  `catalogShows` asserts a beer's absence after `networkidle`, which can pass
-  before the catalog's streamed results render, so "a rejected beer is withheld"
-  could pass vacuously; it needs a positive signal that the results are in.
-- **COULD-138** *(confirmed 2026-11-10)* — In the built mobile navigation on
-  the product owner's iPhone, a gray shape resembling parts of another tab
-  icon is visible beneath the central Add circle, with two small legs below it.
-  Reproduce the overlap on-device, identify its cause and remove it without
-  changing the approved navigation or the action's accessibility.
-- **COULD-139** *(confirmed 2026-11-11)* — `mobile/src/lib/design/FontGate.tsx`
-  renders nothing until `useFonts` resolves or errors and has no timeout, so a
-  font load that never settles keeps the splash screen up and hides the
-  "update required" and "maintenance" screens that must open when nothing else
-  does; give the gate a deadline after which it renders in the system face.
-- **COULD-140** *(confirmed 2026-11-11)* — `web/components/ui/beer-slot.tsx`,
-  `web/features/admin-suggestions/SuggestionHeader.tsx` and
-  `web/features/catalog/BeerDetailsView.tsx` import `beerStyleGroup` from the
-  `@kalia/api` root, which also exports the transport and error helpers; a
-  subpath export for the pure mapping would keep a client component from
-  depending on the whole barrel.
-- **COULD-141** *(confirmed 2026-11-11)* — When the bundled face fails to load,
-  `textStyle` in `mobile/src/lib/design/fonts.ts` names a family the device
-  does not have and sets no `fontWeight`, so the system face renders every
-  title, name and button at regular weight; fall back to the system face with
-  the matching `fontWeight` when the faces are not loaded.
-- **COULD-142** *(confirmed 2026-11-14)* — The catalog list tests (`CatalogList.test.tsx`) wait on real timers (450 ms against the 300 ms pause), so a loaded runner could make the debounce assertions flaky; Jest fake timers would make them deterministic.
-- **COULD-143** *(confirmed 2026-11-14)* — `showCatalogWith` records its ask in a second store that the Catalog applies in an effect, so the Catalog can render and request once with the old filters first; having the feature register its applier would make the replacement atomic.
 
 ## Retired
 
 Findings lifted into a task that is not yet `done`, each noting where it
 went; pruned as described above.
 
-- ~~SHOULD-80~~ (the SQL moderation script acting on a contributor's whole output, and rejections leaving the pending count) — the script half lifted into [iteration-10.5 task 08](iteration-10.5/08-the-sql-moderation-script-is-retired.md); the rejection half reopened under SHOULD above at that iteration's refinement, 2026-11-04.
 - ~~SHOULD-97~~ (a slow Keycloak delaying every app call by its own refresh timeout) — lifted into [iteration-10.5 task 19](iteration-10.5/19-a-slow-keycloak-delays-one-call-not-every-call.md).
 - ~~COULD-75~~ (the backend's per-address zone stepped around through the web) — lifted into [iteration-10.5 task 16](iteration-10.5/16-the-backend-limit-holds-for-calls-the-web-makes.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~COULD-77~~ (an empty first feed page polling with a backward cursor) — lifted into [iteration-10.5 task 17](iteration-10.5/17-an-empty-feed-polls-only-for-new-lines.md). Its `[needs decision]` is an open question there, settled at refinement.
@@ -336,3 +120,30 @@ went; pruned as described above.
 - ~~COULD-133~~ (`approveEdited` answering `500` on a unique-index race) — lifted into [iteration-11 task 20](iteration-11/20-an-anticipated-failure-gets-the-documented-answer.md).
 - ~~SHOULD-105~~ (the feed's window bounding what is served, not what is scanned) — lifted into [iteration-11 task 21](iteration-11/21-reads-that-scan-history-are-indexed-and-their-plans-pinned.md).
 - ~~COULD-131~~ (the review queue's `REJECTED` count scanning the catalog) — lifted into [iteration-11 task 21](iteration-11/21-reads-that-scan-history-are-indexed-and-their-plans-pinned.md).
+- ~~SHOULD-80~~ (rejected suggestions leaving the pending count) — lifted into [iteration-11.5 task 18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-101~~ (a common-failures row recording a defect with no owner) — lifted into [iteration-11.5 task 22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-109~~ (Keycloak's "Back to application" link assigned to a closed iteration) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-112~~ (the backlog's Mobile client section stating decided things as open) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-116~~ (common-failures missing most failures seen only in CI) — lifted into [iteration-11.5 task 22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~SHOULD-118~~ (tasks closing after their implementation merges) — lifted into [iteration-11.5 task 23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-26~~ (the password-reset page's `autocomplete="off"` username field) — lifted into [iteration-11.5 task 17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md).
+- ~~COULD-108~~ (two worktrees in and out of phone mode never run side by side) — lifted into [iteration-11.5 task 20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md).
+- ~~COULD-112~~ (`docker compose up --wait` naming a one-shot service) — lifted into [iteration-11.5 task 19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md).
+- ~~COULD-113~~ (Trivy's Java DB mirror with no fallback) — lifted into [iteration-11.5 task 19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md).
+- ~~COULD-114~~ (a full disk failing work with an error that does not say so) — lifted into [iteration-11.5 task 20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md).
+- ~~COULD-119~~ (the web hand-building HTTP failures and a second `isLocale`) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-120~~ (`@kalia/api` generated with React Query and its peer dependencies) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-121~~ (`src/testing/` importable from production code) — lifted into [iteration-11.5 task 11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md).
+- ~~COULD-123~~ (how to regenerate the API client restated away from its home) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md).
+- ~~COULD-124~~ (facts restated away from their one home) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md).
+- ~~COULD-127~~ (Maven Central failures retried only in `mobile-e2e`) — lifted into [iteration-11.5 task 19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md).
+- ~~COULD-129~~ (a pull request completing no task having no defined gates) — lifted into [iteration-11.5 task 23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md). Its `[needs decision]` is an open question there, settled at refinement.
+- ~~COULD-134~~ (CodeQL alert 8 on `scripts/mobile-native.mjs`) — lifted into [iteration-11.5 task 21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md).
+- ~~COULD-135~~ (CodeQL alert 5 on `scripts/sync-indexes.mjs`) — lifted into [iteration-11.5 task 21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md).
+- ~~COULD-137~~ (`catalogShows` asserting an absence after `networkidle`) — lifted into [iteration-11.5 task 12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md).
+- ~~COULD-138~~ (a gray shape beneath the central Add circle on the iPhone) — lifted into [iteration-11.5 task 15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md).
+- ~~COULD-139~~ (`FontGate` waiting on the fonts with no deadline) — lifted into [iteration-11.5 task 14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md).
+- ~~COULD-140~~ (`beerStyleGroup` imported from the `@kalia/api` root) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md).
+- ~~COULD-141~~ (the font fallback rendering every weight as regular) — lifted into [iteration-11.5 task 14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md).
+- ~~COULD-142~~ (the catalog list tests waiting on real timers) — lifted into [iteration-11.5 task 12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md).
+- ~~COULD-143~~ (`showCatalogWith` applying its filters in an effect) — lifted into [iteration-11.5 task 11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md).

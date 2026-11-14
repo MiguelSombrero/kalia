@@ -42,12 +42,25 @@ around it — through every tier, reading it from a query rather than from
 | [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | needs-refinement |
 | [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | needs-refinement |
 | [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's code conventions are written down and checked | needs-refinement |
+| [12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md) | A test waits on a signal, never on the clock | needs-refinement |
+| [13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md) | The shared packages export what both apps use, and only that | needs-refinement |
+| [14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md) | A font that fails or never loads leaves the app readable | needs-refinement |
+| [15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md) | Nothing is drawn beneath the central Add action | needs-refinement |
+| [16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md) | The seven-day signing expiry is watched, and what it does is written down | needs-refinement |
+| [17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) | Keycloak's pages ask only for what Kalia uses, and each says what it is | needs-refinement |
+| [18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md) | A contributor whose suggestions are rejected cannot refill the review queue without end | needs-refinement |
+| [19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md) | A known transient CI failure is retried or prevented, not re-run by hand | needs-refinement |
+| [20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md) | Two worktrees run side by side in phone mode, and a low disk is named before it fails a build | needs-refinement |
+| [21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md) | The CodeQL alerts open on `dev` are closed | needs-refinement |
+| [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | needs-refinement |
+| [23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md) | Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check | needs-refinement |
+| [24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md) | The backlog and the READMEs state a decided fact once, as decided | needs-refinement |
 
 Numbered 11.5 because it lands after [iteration 11](iteration-11.md) and
 before [iteration 12](iteration-12.md)'s offline cellar, whose sync failures
 are the first a log line alone will not explain. These ten tasks are the
 observability part of the iteration, drafted at the product owner's request on
-2026-11-06; the rest of the iteration is added later. Every task is seeded at
+2026-11-06. Every task is seeded at
 `needs-refinement`, to be refined together in one conversation
 ([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)).
 
@@ -89,3 +102,45 @@ is outside the observability work and advances no criterion. It was added at
 the product owner's request on 2026-11-14 so the mobile app's code
 conventions are set before iteration 12's cellar becomes the second large
 feature written without them. Refinement may split it into several tasks.
+
+Tasks 12–24 are outside the observability work too, and advance no
+criterion. On 2026-11-14 the product owner asked for the iteration to be
+scoped from the [quality backlog](quality-backlog.md) and the
+[backlog](backlog.md), favouring what most helps the mobile iterations to come.
+Related findings are merged into one task each, and each task's Notes name the
+findings it holds. Most of them are `[needs decision]`, so their open questions
+go on the same refinement agenda as the rest. They fall into three groups:
+
+- **The app and what it is built on**, ahead of iteration 12's cellar:
+  - tests that check what they claim on a slow runner
+    ([12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md));
+  - shared packages that do not tie the two apps' React versions together
+    ([13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md));
+  - fonts that cannot hold the blocked screens hostage
+    ([14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md));
+  - the navigation defect seen on the phone
+    ([15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md));
+  - what a free-signing expiry does to the data an offline cellar would keep
+    ([16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md)).
+- **What every client inherits from the server:**
+  - the Keycloak pages a phone signs up through
+    ([17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md));
+  - a limit on rejected suggestions, set before a scan makes suggesting one
+    tap away and before installed apps make a new refusal costly
+    ([18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md)).
+- **The pipeline and the process the next iterations run on:**
+  - CI failures that need a manual re-run
+    ([19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md));
+  - parallel worktrees
+    ([20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md));
+  - open CodeQL alerts
+    ([21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md));
+  - the failure log
+    ([22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md));
+  - gates for refinements and task-less pull requests
+    ([23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md));
+  - the backlog analysis that iterations 12–14 are refined against
+    ([24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md)).
+
+None of these depends on the observability tasks, so they can run alongside
+them.
