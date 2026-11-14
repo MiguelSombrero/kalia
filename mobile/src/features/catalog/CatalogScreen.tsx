@@ -23,7 +23,9 @@ import { useSearchDraft } from "./hooks/useSearchDraft";
 export const CatalogScreen = () => {
   const { t, i18n } = useTranslation();
   useApplyCatalogLink();
-  const { applied, apply, reset } = useFiltersStore();
+  const applied = useFiltersStore((state) => state.applied);
+  const apply = useFiltersStore((state) => state.apply);
+  const reset = useFiltersStore((state) => state.reset);
   const search = useSearchDraft();
   const { query: list, beers, refresh } = useBeers(applied);
   const router = useRouter();
@@ -72,8 +74,8 @@ export const CatalogScreen = () => {
       <FilterChips filters={applied} onRemove={remove} onClearAll={() => apply(emptyFilters())} />
       {list.isPending && <LoadingState label={t("catalog.loading")} placeholders={3} />}
       {list.isError && !list.data && <ErrorAlert message={t("catalog.list.error")} error={list.error} onRetry={() => void list.refetch()} retrying={list.isFetching} />}
-      {list.isSuccess && beers?.length === 0 && !narrowsResults(applied) && <EmptyState message={t("catalog.list.empty")} />}
-      {list.isSuccess && beers?.length === 0 && narrowsResults(applied) && (
+      {list.isSuccess && !list.isPlaceholderData && beers?.length === 0 && !narrowsResults(applied) && <EmptyState message={t("catalog.list.empty")} />}
+      {list.isSuccess && !list.isPlaceholderData && beers?.length === 0 && narrowsResults(applied) && (
         <EmptyState message={t("catalogFilters.noBeersMatch")}>
           <ActionButton variant="secondary" label={t("catalogFilters.clearSearchAndFilters")} onPress={reset} />
         </EmptyState>

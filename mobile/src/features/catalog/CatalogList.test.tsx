@@ -177,6 +177,20 @@ describe("a list of pages", () => {
     expect(screen.queryByText("Beta")).not.toBeOnTheScreen();
   });
 
+  it("keeps every loaded page when a pull to refresh fails", async () => {
+    transport.mockResolvedValueOnce(pageOf(["Alpha"], 0, 2)).mockResolvedValueOnce(pageOf(["Beta"], 1, 2)).mockRejectedValueOnce(apiError("network", "Could not reach the backend"));
+    await renderWithLocale(<CatalogScreen />);
+    await screen.findByText("Alpha");
+    await fireEvent(list(), "endReached");
+    await screen.findByText("Beta");
+
+    await act(async () => list().props.refreshControl.props.onRefresh());
+
+    await waitFor(() => expect(transport).toHaveBeenCalledTimes(3));
+    expect(screen.getByText("Alpha")).toBeOnTheScreen();
+    expect(await screen.findByText("Beta")).toBeOnTheScreen();
+  });
+
   it("opens a beer's page from its row", async () => {
     transport.mockResolvedValue(pageOf(["Alpha"]));
     await renderWithLocale(<CatalogScreen />);
