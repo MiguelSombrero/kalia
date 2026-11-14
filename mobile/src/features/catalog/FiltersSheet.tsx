@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "@/components/ActionButton";
+import { ChoiceRow } from "@/components/ChoiceRow";
+import { FieldRow } from "@/components/FieldRow";
+import { Sheet } from "@/components/Sheet";
+import { TextButton } from "@/components/TextButton";
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { countryName } from "@/lib/i18n/countryNames";
-import { ChoiceRow, FieldRow, SearchField, TextButton } from "./filters/controls";
+import { SearchField, StyleSwatch } from "./filters/controls";
 import { emptyFilters, SORTS, sheetFilterCount, strengthError, type Filters } from "./filters/model";
 import { StrengthFields } from "./filters/StrengthFields";
 import { useBreweryOptions, useCountryOptions, useResultCount, useStyleOptions } from "./hooks/useFilterOptions";
@@ -55,69 +58,50 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
   const number = new Intl.NumberFormat(i18n.language);
   const applyLabel = count.data === undefined ? t("catalogFilters.apply.unknown") : t("catalogFilters.apply.count", { count: count.data, formatted: number.format(count.data) });
   const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.surface },
-    header: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", paddingHorizontal: theme.spacing.small, paddingTop: theme.spacing.small },
-    title: { ...textStyle("item-title", "bold"), color: colors.foreground, paddingHorizontal: theme.spacing.small, flexBasis: "100%" },
-    body: { padding: theme.spacing.medium, paddingBottom: theme.spacing.large },
     section: { marginTop: theme.spacing.large },
     label: { ...textStyle("label", "bold"), textTransform: "uppercase", color: colors["muted-foreground"], marginBottom: theme.spacing.small },
     doneBar: { flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: theme.spacing.small, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surface },
-    footer: { padding: theme.spacing.medium, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surface },
   });
-
-  const header = (title: string, left: ReactNode, right?: ReactNode) => (
-    <View style={styles.header}>
-      {left}
-      {right}
-      <Text ref={heading} role="heading" {...titleScale} style={styles.title}>
-        {title}
-      </Text>
-    </View>
-  );
 
   if (page !== "form") {
     return (
-      <SafeAreaView edges={["top"]} style={styles.screen}>
-        {header(t(`catalogFilters.${page}`), <TextButton label={`‹ ${t("catalogFilters.title")}`} accessibilityLabel={t("catalogFilters.backToFilters")} onPress={() => setPage("form")} />)}
+      <Sheet title={t(`catalogFilters.${page}`)} closeLabel={`‹ ${t("catalogFilters.title")}`} closeAccessibilityLabel={t("catalogFilters.backToFilters")} onClose={() => setPage("form")} headingRef={heading} scroll={false}>
         <Picker page={page} draft={draft} onPick={pick} />
-      </SafeAreaView>
+      </Sheet>
     );
   }
 
   const countryLabel = draft.countryCode ? countryName(draft.countryCode, i18n.language) : t("catalogFilters.anyCountry");
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
-      <View style={{ flex: 1, paddingBottom: keyboard }}>
-        {header(
-          t("catalogFilters.title"),
-          <TextButton label={t("catalogFilters.close")} onPress={onClose} />,
-          sheetFilterCount(draft) > 0 ? <TextButton label={t("catalogFilters.clearAll")} onPress={() => setDraft({ ...emptyFilters(), query: draft.query })} /> : null,
-        )}
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <FieldRow title={t("catalogFilters.style")} value={draft.style || t("catalogFilters.anyStyle")} empty={!draft.style} swatchStyle={draft.style || undefined} accessibilityLabel={`${t("catalogFilters.style")}: ${draft.style || t("catalogFilters.anyStyle")}`} onPress={() => setPage("style")} />
-          <FieldRow title={t("catalogFilters.brewery")} value={draft.breweryName || t("catalogFilters.anyBrewery")} empty={!draft.breweryId} accessibilityLabel={`${t("catalogFilters.brewery")}: ${draft.breweryName || t("catalogFilters.anyBrewery")}`} onPress={() => setPage("brewery")} />
-          <FieldRow title={t("catalogFilters.country")} value={countryLabel} empty={!draft.countryCode} accessibilityLabel={`${t("catalogFilters.country")}: ${countryLabel}`} onPress={() => setPage("country")} />
-          <View style={styles.section}>
-            <Text style={styles.label}>{t("catalogFilters.strength")}</Text>
-            <StrengthFields from={draft.min} to={draft.max} onFrom={(min) => set({ min })} onTo={(max) => set({ max })} error={error ? t(`catalogFilters.error.${error}`) : null} labels={{ group: t("catalogFilters.strength"), from: t("catalogFilters.from"), to: t("catalogFilters.to") }} />
-          </View>
-          <View style={styles.section} role="radiogroup" accessibilityLabel={t("catalogFilters.sort")}>
-            <Text style={styles.label}>{t("catalogFilters.sort")}</Text>
-            {SORTS.map((value) => (
-              <ChoiceRow key={value} bordered label={t(`catalogFilters.sorts.${value}`)} selected={draft.sort === value} onPress={() => set({ sort: value })} />
-            ))}
-          </View>
-        </ScrollView>
-        {Platform.OS === "ios" && keyboard > 0 ? (
+    <Sheet
+      title={t("catalogFilters.title")}
+      closeLabel={t("catalogFilters.close")}
+      onClose={onClose}
+      trailing={sheetFilterCount(draft) > 0 ? <TextButton label={t("catalogFilters.clearAll")} onPress={() => setDraft({ ...emptyFilters(), query: draft.query })} /> : null}
+      bottomInset={keyboard}
+      bar={
+        Platform.OS === "ios" && keyboard > 0 ? (
           <View style={styles.doneBar}>
             <TextButton label={t("catalogFilters.done")} onPress={() => Keyboard.dismiss()} />
           </View>
-        ) : null}
-        <View style={styles.footer}>
-          <ActionButton flush maxFontSizeMultiplier={titleScale.maxFontSizeMultiplier} label={applyLabel} disabled={error !== null} onPress={() => onApply(draft)} />
-        </View>
+        ) : null
+      }
+      footer={<ActionButton flush maxFontSizeMultiplier={titleScale.maxFontSizeMultiplier} label={applyLabel} disabled={error !== null} onPress={() => onApply(draft)} />}
+    >
+      <FieldRow title={t("catalogFilters.style")} value={draft.style || t("catalogFilters.anyStyle")} empty={!draft.style} leading={draft.style ? <StyleSwatch style={draft.style} /> : undefined} accessibilityLabel={`${t("catalogFilters.style")}: ${draft.style || t("catalogFilters.anyStyle")}`} onPress={() => setPage("style")} />
+      <FieldRow title={t("catalogFilters.brewery")} value={draft.breweryName || t("catalogFilters.anyBrewery")} empty={!draft.breweryId} accessibilityLabel={`${t("catalogFilters.brewery")}: ${draft.breweryName || t("catalogFilters.anyBrewery")}`} onPress={() => setPage("brewery")} />
+      <FieldRow title={t("catalogFilters.country")} value={countryLabel} empty={!draft.countryCode} accessibilityLabel={`${t("catalogFilters.country")}: ${countryLabel}`} onPress={() => setPage("country")} />
+      <View style={styles.section}>
+        <Text style={styles.label}>{t("catalogFilters.strength")}</Text>
+        <StrengthFields from={draft.min} to={draft.max} onFrom={(min) => set({ min })} onTo={(max) => set({ max })} error={error ? t(`catalogFilters.error.${error}`) : null} labels={{ group: t("catalogFilters.strength"), from: t("catalogFilters.from"), to: t("catalogFilters.to") }} />
       </View>
-    </SafeAreaView>
+      <View style={styles.section} role="radiogroup" accessibilityLabel={t("catalogFilters.sort")}>
+        <Text style={styles.label}>{t("catalogFilters.sort")}</Text>
+        {SORTS.map((value) => (
+          <ChoiceRow key={value} bordered label={t(`catalogFilters.sorts.${value}`)} selected={draft.sort === value} onPress={() => set({ sort: value })} />
+        ))}
+      </View>
+    </Sheet>
   );
 };
 
@@ -144,7 +128,7 @@ const Picker = ({ page, draft, onPick }: { page: "style" | "brewery" | "country"
       <>
         {!query ? <ChoiceRow label={t("catalogFilters.anyStyle")} selected={!draft.style} onPress={() => onPick({ style: "" })} /> : null}
         {list.map((style) => (
-          <ChoiceRow key={style} label={style} swatchStyle={style} selected={draft.style === style} onPress={() => onPick({ style })} />
+          <ChoiceRow key={style} label={style} leading={<StyleSwatch style={style} />} selected={draft.style === style} onPress={() => onPick({ style })} />
         ))}
         {styleOptions.isSuccess && list.length === 0 ? noMatch : null}
       </>

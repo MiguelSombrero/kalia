@@ -2,7 +2,8 @@ import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/lib/design/theme.generated";
 import { countryName } from "@/lib/i18n/countryNames";
-import { Chip, TextButton } from "./controls";
+import { TextButton } from "@/components/TextButton";
+import { Chip } from "./controls";
 import { DEFAULT_SORT, hasStrength, strengthError, toNumber, type ActiveFilterKey, type Filters } from "./model";
 
 type Active = { key: ActiveFilterKey; label: string; plain: string; style?: string };

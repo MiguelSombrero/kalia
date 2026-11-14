@@ -42,9 +42,9 @@ make mobile-android   # the same on the Android emulator
 Extra `expo run` flags go in `ARGS`: `make mobile-ios ARGS="--device 'iPhone 17e'"`.
 Release targets: `mobile-ios-release`, `mobile-android-release`, `mobile-ios-device-release`.
 
-- **iOS** reaches the Mac's `localhost` directly.
-- **Android** gets `adb reverse` for the API's, Keycloak's and Metro's ports from
-  this worktree's `.env`; Keycloak must be `localhost:<port>` (the issuer is pinned).
+- **iOS** reaches the Mac's `localhost` directly; **Android** gets `adb reverse` for the
+  API's, Keycloak's and Metro's ports from this worktree's `.env` (Keycloak must be
+  `localhost:<port>`, the issuer is pinned).
 
 `make mobile-start` alone starts Metro for an installed build. Its port is its
 own because 8081 is Keycloak's: never type one.
@@ -67,8 +67,6 @@ the system browser ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs
   adb shell am start -a android.intent.action.VIEW -d "exp+kalia://expo-development-client/?url=http%3A%2F%2Flocalhost%3A<METRO_PORT>"
   ```
 
-- **Port clash on the emulator:** `adb reverse --list`; a duplicate means a port was pinned by hand.
-- **Disk:** `docker compose down` (no `-v`) in a finished worktree frees the stack's share.
 
 ### Reading an installed build's errors
 
@@ -292,6 +290,8 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
 - **Motion and haptics:** use `src/lib/motion/`'s tokens and primitives, never a literal;
   `haptic()` is for an action's result, and needs the iPhone's System Haptics and
   Vibration both on ([ADR-0113](../docs/adr/0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)).
+- **Primitives live in `src/components/`;** a control moves there when a second screen
+  uses it, its tests with it. A feature-only one (the catalog's chips) stays.
 - **WCAG 2.2 AA** ([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)):
   tabs have accessibility labels, headings the heading role, no `allowFontScaling={false}`.
 - **Use the generated semantic theme for static styling**, selecting colours
@@ -300,9 +300,9 @@ The app follows [web/README.md](../web/README.md) wherever a rule is not about t
   never a size or `fontWeight` by hand, because the face has one file per weight.
   A beer's colours come from `useBeerStyleColours`, which falls back to the
   neutral pair ([ADR-0110](../docs/adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)).
-  The app follows the system's light or dark setting with no switch of its own;
-  every colour is read through `useThemeColors`, never a mode's value by name,
-  and in dark a beer is a neutral card with its style colour as a slab
+  The app follows the system's light or dark setting; every colour is read
+  through `useThemeColors`, never a mode's value by name, and in dark a beer is a
+  neutral card with its style colour as a slab
   ([ADR-0112](../docs/adr/0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md)).
   Edit `packages/tokens/src/tokens.ts` and regenerate with
   `node scripts/generate-tokens.mjs`; never edit generated files. Runtime

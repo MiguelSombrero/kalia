@@ -6,6 +6,8 @@ import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 import { ProfileScreen } from "./ProfileScreen";
 import { PixelRatio } from "react-native";
+import * as ReactNative from "react-native";
+import { theme } from "@/lib/design/theme.generated";
 
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ ...jest.requireActual("expo-router"), useRouter: () => ({ push: mockPush }) }));
@@ -245,5 +247,29 @@ describe("ProfileScreen when the profile request fails", () => {
     expect(await screen.findByText(`${label}${sentTraceId}`)).toBeOnTheScreen();
     expect(screen.queryByText(/eyJ|miika|\?/)).not.toBeOnTheScreen();
     expect(error).not.toHaveBeenCalledWith(expect.stringMatching(/eyJ|miika/));
+  });
+});
+
+describe("ProfileScreen's loading and error blocks", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(["light", "dark"] as const)("says it is loading, quietly, when the system is %s", async (mode) => {
+    jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
+    transport.mockReturnValue(new Promise(() => undefined));
+
+    await renderWithLocale(<ProfileScreen />, "fi", signedIn());
+
+    expect(screen.getByText("Ladataan profiilia…")).toHaveStyle({ color: theme.colors[mode]["muted-foreground"] });
+  });
+
+  it.each(["light", "dark"] as const)("says what failed, names the request and offers a retry when the system is %s", async (mode) => {
+    jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
+    transport.mockRejectedValue(apiError("network", "Could not reach the backend", { traceId: "0af7651916cd43dd8448eb211c80319c" }));
+
+    await renderWithLocale(<ProfileScreen />, "fi", signedIn());
+
+    expect(await screen.findByText("Profiilin lataus ei onnistunut.")).toHaveStyle({ color: theme.colors[mode].destructive });
+    expect(screen.getByText("Viite: 0af7651916cd43dd8448eb211c80319c")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Yritä uudelleen" })).toBeOnTheScreen();
   });
 });

@@ -38,6 +38,38 @@ beforeEach(() => {
   registerTransport(transport as unknown as Transport);
 });
 
+describe("CatalogScreen's loading, error and empty blocks", () => {
+  it.each(["light", "dark"] as const)("says it is loading, quietly, with placeholders, when the system is %s", async (mode) => {
+    jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
+    transport.mockReturnValue(new Promise(() => undefined));
+
+    await renderWithLocale(<CatalogScreen />, "fi");
+
+    expect(screen.getByText("Ladataan oluita…")).toHaveStyle({ color: theme.colors[mode]["muted-foreground"] });
+    expect(screen.getByTestId("loading-placeholders").children).toHaveLength(3);
+  });
+
+  it.each(["light", "dark"] as const)("says what failed, names the request and offers a retry when the system is %s", async (mode) => {
+    jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
+    transport.mockRejectedValue(apiError("network", "Could not reach the backend", { traceId: "0af7651916cd43dd8448eb211c80319c" }));
+
+    await renderWithLocale(<CatalogScreen />, "fi");
+
+    expect(await screen.findByText("Oluiden lataus ei onnistunut.")).toHaveStyle({ color: theme.colors[mode].destructive });
+    expect(screen.getByText("Viite: 0af7651916cd43dd8448eb211c80319c")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Yritä uudelleen" })).toBeOnTheScreen();
+  });
+
+  it.each(["light", "dark"] as const)("says the catalog is empty, quietly, when the system is %s", async (mode) => {
+    jest.spyOn(ReactNative, "useColorScheme").mockReturnValue(mode);
+    transport.mockResolvedValue(pageOf([]));
+
+    await renderWithLocale(<CatalogScreen />, "fi");
+
+    expect(await screen.findByText("Oluita ei ole vielä lisätty.")).toHaveStyle({ color: theme.colors[mode]["muted-foreground"] });
+  });
+});
+
 describe("CatalogScreen", () => {
   it.each([
     ["en", "Catalog", "5.2 %"],

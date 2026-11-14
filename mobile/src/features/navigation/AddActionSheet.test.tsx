@@ -41,6 +41,7 @@ it.each([
   ["fi", "Lisää olut", "Sulje", "Etsi katalogista"],
 ] as const)("offers visible dismissal and catalog navigation in %s", async (locale, title, close, browse) => {
   await renderWithLocale(<AddActionSheet />, locale);
+  expect(screen.getByTestId("sheet")).toBeOnTheScreen();
   expect(screen.getByRole("heading", { name: title })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("button", { name: close }));
   expect(mockBack).toHaveBeenCalledTimes(1);

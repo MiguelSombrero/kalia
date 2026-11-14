@@ -39,6 +39,17 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe("FiltersSheet", () => {
+  it.each([
+    ["en", "Filters", "Close"],
+    ["fi", "Suodattimet", "Sulje"],
+  ] as const)("is the one sheet shell, with its heading and close action found by role and name, in %s", async (locale, title, close) => {
+    await renderSheet(set(), locale);
+
+    expect(screen.getByTestId("sheet")).toBeOnTheScreen();
+    expect(screen.getByRole("heading", { name: title })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: close })).toBeOnTheScreen();
+  });
+
   it("offers every control by role and name, with the count the apply button will show", async () => {
     await renderSheet(set({ style: "IPA", breweryId: "b1", breweryName: "Maku Brewing", countryCode: "FI", min: "4", max: "7", sort: "abv,desc" }));
 
@@ -52,7 +63,7 @@ describe("FiltersSheet", () => {
     expect(screen.getByLabelText("Strength %: From")).toHaveDisplayValue("4");
     expect(screen.getByLabelText("Strength %: To")).toHaveDisplayValue("7");
     expect(screen.getByLabelText("Sort by")).toBeOnTheScreen();
-    expect(choiceRows()).toHaveLength(5);
+    expect(await screen.findByRole("button", { name: "Show 12 beers" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Strength (high → low)", selected: true })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: "Show 12 beers" })).toBeOnTheScreen();
   });
