@@ -19,6 +19,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { fieldClasses, FieldError } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Locale } from "@/i18n/settings";
+import { formMessageKey, type TranslationKey } from "@/i18n/translationKey";
 
 import { AddBeerOutcomeAlert } from "./AddBeerOutcomeAlert";
 import { type AddBeerFormValues, addBeerSchema, toAddBeerRequest } from "./addBeerSchema";
@@ -89,7 +90,7 @@ export const AddBeerDialog = ({
   const errors = form.formState.errors;
   const errorText = (field: keyof AddBeerFormValues) => {
     const message = errors[field]?.message;
-    return message ? t(message) : undefined;
+    return message ? t(formMessageKey(message)) : undefined;
   };
   const describedBy = (field: keyof AddBeerFormValues) => (errors[field] ? `${ids}-${field}-error` : undefined);
 
@@ -132,7 +133,7 @@ export const AddBeerDialog = ({
     } else if (outcome.kind === "refused") {
       for (const refusal of outcome.fields) {
         const field = REFUSABLE[refusal.field];
-        if (field) form.setError(field, { type: "server", message: "catalog.add.error.refusedField" });
+        if (field) form.setError(field, { type: "server", message: "catalog.add.error.refusedField" satisfies TranslationKey });
       }
     }
   };

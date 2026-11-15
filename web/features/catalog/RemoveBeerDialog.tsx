@@ -16,18 +16,19 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import type { Locale } from "@/i18n/settings";
+import type { TranslationKey } from "@/i18n/translationKey";
 
 import { useRemoveBeer } from "./hooks/useRemoveBeer";
 import { catalogHref } from "./links";
 import { useBeerRemovedStore } from "./store";
 
-const REFUSAL_MESSAGES: Record<number, string> = {
+const REFUSAL_MESSAGES: Record<number, TranslationKey> = {
   403: "beer.remove.error.forbidden",
   404: "beer.remove.error.notFound",
   409: "beer.remove.error.notApproved",
 };
 
-const messageKey = (error: unknown): string => {
+const messageKey = (error: unknown): TranslationKey => {
   const refusal = isApiError(error) && error.kind === "http" && error.status ? REFUSAL_MESSAGES[error.status] : undefined;
   return refusal ?? "beer.remove.error.failed";
 };

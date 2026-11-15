@@ -37,6 +37,6 @@ describe("SignInPrompt", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() => expect(signInAction).toHaveBeenCalledTimes(1));
-    expect(signInAction.mock.calls[0][0].get("locale")).toBe("fi");
+    expect(signInAction.mock.calls[0]![0].get("locale")).toBe("fi");
   });
 });

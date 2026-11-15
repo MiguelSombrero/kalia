@@ -112,6 +112,16 @@ Engineering work:
     deletion handles it;
   - an admin who is deleted leaves the review records they decided in place
     with the admin id null.
+- **Type-aware lint in both apps** (`@typescript-eslint/no-floating-promises`
+  and its neighbours), parked by
+  [iteration 11.5 task 26](iteration-11.5/26-navigation-targets-translation-keys-and-strictness-are-checked.md).
+  Both apps compile with TypeScript 7.0, whose package exports only `version`
+  (no `createProgram`, no `sys`), and typescript-eslint 8.72 declares
+  `typescript >=4.8.4 <6.1.0`. The rules run only by loading the TypeScript
+  5.9.3 that `eslint-config-next` hoists, a second compiler that
+  is not the one `tsc` checks with; the product owner decided that is no
+  workaround worth having. It waits on a typescript-eslint release that
+  supports TypeScript 7.
 - Search engine — PostgreSQL substring matching on a trigram index is fine at
   this size ([ADR-0044](../adr/0044-catalog-search-indexes.md)); OpenSearch
   only if faceted search outgrows it

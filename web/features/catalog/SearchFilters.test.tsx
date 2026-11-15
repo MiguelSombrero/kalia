@@ -72,8 +72,8 @@ describe("SearchFilters", () => {
     expect(buttons[0]).toHaveAttribute("type", "submit");
     const fields = container.querySelectorAll("input, select");
     const lastField = fields[fields.length - 1];
-    expect(lastField.compareDocumentPosition(buttons[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(buttons[0].closest("details")).toBeNull();
+    expect(lastField!.compareDocumentPosition(buttons[0]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(buttons[0]!.closest("details")).toBeNull();
   });
 
   it("folds everything but the name search behind a disclosure that counts what is set", async () => {

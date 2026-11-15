@@ -1,5 +1,7 @@
 import type { z } from "zod";
 
+import type { TranslationKey } from "@/i18n/translationKey";
+
 // Local calendar date, not toISOString's UTC one: a caller east of UTC in the
 // first hours of their day would otherwise see their own "today" rejected as
 // a future brewedDate until UTC catches up.
@@ -20,14 +22,14 @@ export const applyBottleDateRules = (
     ctx.addIssue({
       code: "custom",
       path: ["brewedDate"],
-      message: "cellar.bottle.dateError.brewedInFuture",
+      message: "cellar.bottle.dateError.brewedInFuture" satisfies TranslationKey,
     });
   }
   if (values.brewedDate && values.bestBeforeDate && values.bestBeforeDate <= values.brewedDate) {
     ctx.addIssue({
       code: "custom",
       path: ["bestBeforeDate"],
-      message: "cellar.bottle.dateError.bestBeforeNotAfterBrewed",
+      message: "cellar.bottle.dateError.bestBeforeNotAfterBrewed" satisfies TranslationKey,
     });
   }
 };

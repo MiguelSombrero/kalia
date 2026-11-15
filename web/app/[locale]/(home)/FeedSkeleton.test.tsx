@@ -31,10 +31,10 @@ describe("FeedSkeleton", () => {
     for (const row of rows) {
       expect(row.className).toBe(feedRowFrame);
       const [slot, lines, count] = Array.from(row.children);
-      expect(slot.className).toContain("aspect-[16/7]");
-      expect(lines.children).toHaveLength(3);
-      expect(lines.firstElementChild?.firstElementChild?.className).toContain("size-6");
-      expect(count.className).toContain("self-center");
+      expect(slot!.className).toContain("aspect-[16/7]");
+      expect(lines!.children).toHaveLength(3);
+      expect(lines!.firstElementChild?.firstElementChild?.className).toContain("size-6");
+      expect(count!.className).toContain("self-center");
     }
   });
 
@@ -43,8 +43,8 @@ describe("FeedSkeleton", () => {
 
     const status = screen.getByRole("status");
     const [masthead, feed] = Array.from(status.children);
-    expect(masthead.firstElementChild?.className).toBe(mastheadGrid);
-    expect(feed.firstElementChild?.className).toBe(feedHeadingRow);
+    expect(masthead!.firstElementChild?.className).toBe(mastheadGrid);
+    expect(feed!.firstElementChild?.className).toBe(feedHeadingRow);
     expect(container.querySelector("ul")?.parentElement).toBe(feed);
   });
 });

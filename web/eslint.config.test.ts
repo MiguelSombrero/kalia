@@ -10,7 +10,7 @@ const eslint = new ESLint({ cwd: import.meta.dirname });
 
 const messagesFor = async (code: string, filePath: string) => {
   const [result] = await eslint.lintText(code, { filePath });
-  return result.messages.map((m) => m.message);
+  return result!.messages.map((m) => m.message);
 };
 
 describe("heading rule (ADR-0073)", () => {
@@ -124,7 +124,7 @@ describe("import boundaries reject each crossing a fixture makes (ADR-0012)", ()
     const source = readFileSync(`${import.meta.dirname}/eslint-fixtures/boundaries/${fixture}.ts`, "utf8");
     const [result] = await eslint.lintText(source, { filePath: lintAs });
 
-    expect(result.messages.map((m) => [m.ruleId, m.message])).toEqual([
+    expect(result!.messages.map((m) => [m.ruleId, m.message])).toEqual([
       ["boundaries/dependencies", expect.stringContaining(rejected)],
     ]);
   });
@@ -134,7 +134,7 @@ describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
   const fixture = (name: string) => readFileSync(`${import.meta.dirname}/eslint-fixtures/enum-lookup/${name}.ts`, "utf8");
   const ruleIds = async (code: string, filePath: string) => {
     const [result] = await eslint.lintText(code, { filePath });
-    return result.messages.map((m) => m.ruleId);
+    return result!.messages.map((m) => m.ruleId);
   };
 
   // The mapped-type fixture imports the generated models, which only a feature's types.ts may.

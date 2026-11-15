@@ -25,8 +25,8 @@ describe("CellarListSkeleton", () => {
 
     const beers = screen.getAllByTestId("beer-skeleton");
     expect(beers).toHaveLength(2);
-    expect(beers[0].className).toBe(beerBlock);
-    expect(within(beers[0]).getAllByTestId("tile-skeleton")).toHaveLength(3);
-    expect(within(beers[1]).getAllByTestId("tile-skeleton")).toHaveLength(2);
+    expect(beers[0]!.className).toBe(beerBlock);
+    expect(within(beers[0]!).getAllByTestId("tile-skeleton")).toHaveLength(3);
+    expect(within(beers[1]!).getAllByTestId("tile-skeleton")).toHaveLength(2);
   });
 });

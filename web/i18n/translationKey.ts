@@ -1,0 +1,15 @@
+import type { resources } from "@kalia/locales";
+import type { ParseKeys } from "i18next";
+
+declare module "i18next" {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- augmentation merges only an interface
+  interface CustomTypeOptions {
+    defaultNS: "common";
+    resources: (typeof resources)["en"];
+  }
+}
+
+export type TranslationKey = ParseKeys;
+
+// react-hook-form types a field error's message as `string`: the schemas that write it are typed with TranslationKey, so this is where it is read back as one.
+export const formMessageKey = (message: string | undefined): TranslationKey => (message ?? "") as TranslationKey;

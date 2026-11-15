@@ -9,7 +9,7 @@ import { defaultNamespace, getOptions, type Locale } from "./settings";
  * server components share no React context, and a singleton would not be
  * safe under concurrent requests.
  */
-export const getTranslation = async (locale: Locale, namespace: string = defaultNamespace) => {
+export const getTranslation = async (locale: Locale, namespace: typeof defaultNamespace = defaultNamespace) => {
   const instance = createInstance();
   await instance.use(resourcesToBackend(loadResource)).init(getOptions(locale, namespace));
   return {

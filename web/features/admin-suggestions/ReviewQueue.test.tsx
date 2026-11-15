@@ -58,17 +58,17 @@ describe("ReviewQueue", () => {
     await queueOf(2);
 
     expect(requests).toHaveLength(1);
-    expect(requests[0].pathname).toBe("/api/v1/admin/suggestions");
-    expect(requests[0].searchParams.get("page")).toBe("2");
+    expect(requests[0]!.pathname).toBe("/api/v1/admin/suggestions");
+    expect(requests[0]!.searchParams.get("page")).toBe("2");
   });
 
   it("names each brewery's place in the reader's language and words how long ago it was suggested", async () => {
     const en = (await queueOf(0, "en")).rows[0];
     const fi = (await queueOf(0, "fi")).rows[0];
 
-    expect(en.brewery.place).toBe("Sahalahti, Finland");
-    expect(fi.brewery.place).toBe("Sahalahti, Suomi");
-    expect(en.waited).not.toBe(fi.waited);
+    expect(en!.brewery.place).toBe("Sahalahti, Finland");
+    expect(fi!.brewery.place).toBe("Sahalahti, Suomi");
+    expect(en!.waited).not.toBe(fi!.waited);
     expect(en).toMatchObject({ username: "maltaanmies", pendingCount: 1, rejectedCount: 2, breweryIsNew: true });
   });
 
@@ -82,8 +82,8 @@ describe("ReviewQueue", () => {
 
     const { rows } = await queueOf();
 
-    expect(rows[0].username).toBeUndefined();
-    expect(rows[0].brewery.place).toBe("Belgium");
+    expect(rows[0]!.username).toBeUndefined();
+    expect(rows[0]!.brewery.place).toBe("Belgium");
   });
 
   it("says when the queue could not be loaded, with a way to try again", async () => {

@@ -25,6 +25,9 @@
         "backgroundColor": "#005b57"
       }
     },
+    "experiments": {
+      "typedRoutes": true
+    },
     "plugins": [
       "expo-router",
       [

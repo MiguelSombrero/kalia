@@ -17,6 +17,7 @@ import {
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { fieldClasses, FieldError } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
+import { formMessageKey } from "@/i18n/translationKey";
 import { cn } from "@/lib/cn";
 
 import {
@@ -154,7 +155,7 @@ export const AddBottleDialog = ({
             />
             {errors.brewedDate && (
               <FieldError id={`${ids}-brewedDate-error`}>
-                {t(errors.brewedDate.message ?? "")}
+                {t(formMessageKey(errors.brewedDate.message))}
               </FieldError>
             )}
           </div>
@@ -173,7 +174,7 @@ export const AddBottleDialog = ({
             />
             {errors.bestBeforeDate && (
               <FieldError id={`${ids}-bestBeforeDate-error`}>
-                {t(errors.bestBeforeDate.message ?? "")}
+                {t(formMessageKey(errors.bestBeforeDate.message))}
               </FieldError>
             )}
           </div>
@@ -215,7 +216,7 @@ export const AddBottleDialog = ({
             </div>
             {errors.quantity && (
               <FieldError id={`${ids}-quantity-error`}>
-                {t(errors.quantity.message ?? "")}
+                {t(formMessageKey(errors.quantity.message))}
               </FieldError>
             )}
           </div>

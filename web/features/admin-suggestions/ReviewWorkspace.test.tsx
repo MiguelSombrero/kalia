@@ -357,7 +357,7 @@ describe("editing before approving", () => {
     save();
 
     await screen.findByText(/^Approved as edited\./);
-    expect(posted()[0].body).toEqual({
+    expect(posted()[0]!.body).toEqual({
       name: "Hazy Hammer",
       style: "New England IPA",
       abv: 6.2,
@@ -376,7 +376,7 @@ describe("editing before approving", () => {
     save();
 
     await waitFor(() => expect(posted()).toHaveLength(1));
-    expect(posted()[0].body).toEqual({ name: "Hazy Hammer", style: "New England IPA", abv: 6.2, breweryId: "b-lervig" });
+    expect(posted()[0]!.body).toEqual({ name: "Hazy Hammer", style: "New England IPA", abv: 6.2, breweryId: "b-lervig" });
   });
 
   it("holds a value the add path would refuse in the form, sends nothing, and marks the field", async () => {

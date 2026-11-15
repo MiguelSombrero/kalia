@@ -16,8 +16,8 @@ const randomHex = (random: RandomBytes, bytes: number): string => {
 
 /** The trace id of a well-formed `traceparent`, else `undefined`. */
 export const traceIdOf = (header: string | null | undefined): string | undefined => {
-  const match = TRACEPARENT.exec(header?.trim().toLowerCase() ?? "");
-  return match && !ALL_ZEROS.test(match[1]) && !ALL_ZEROS.test(match[2]) ? match[1] : undefined;
+  const [, traceId, parentId] = TRACEPARENT.exec(header?.trim().toLowerCase() ?? "") ?? [];
+  return traceId && parentId && !ALL_ZEROS.test(traceId) && !ALL_ZEROS.test(parentId) ? traceId : undefined;
 };
 
 /** A `traceparent` that starts a new trace. */

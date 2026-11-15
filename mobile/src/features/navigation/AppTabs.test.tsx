@@ -64,7 +64,7 @@ describe("AppTabs", () => {
       ["Cellar", "Cellar"],
       ["Profile", "Profile"],
       ["Feed", "Feed"],
-    ]) {
+    ] as const) {
       await fireEvent.press(screen.getByLabelText(tab));
       expect(await screen.findByRole("heading", { name: heading })).toBeOnTheScreen();
     }

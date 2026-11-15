@@ -782,9 +782,9 @@ describe("FeedList revealing waiting entries", () => {
   // exist; these stand in for a list the reader has scrolled up past.
   const placeListAbovePinnedHeader = () => {
     const list = screen.getAllByRole("list")[0];
-    list.getBoundingClientRect = () => ({ top: -400 }) as DOMRect;
+    list!.getBoundingClientRect = () => ({ top: -400 }) as DOMRect;
     const scrollIntoView = vi.fn();
-    list.scrollIntoView = scrollIntoView;
+    list!.scrollIntoView = scrollIntoView;
     return scrollIntoView;
   };
 
@@ -816,8 +816,8 @@ describe("FeedList revealing waiting entries", () => {
 
       const [shown, earlier] = screen.getAllByRole("listitem");
       expect(shown).toHaveTextContent("bob");
-      expect(shown.className).toContain("motion-safe:animate-feed-reveal");
-      expect(earlier.className).not.toContain("motion-safe:animate-feed-reveal");
+      expect(shown!.className).toContain("motion-safe:animate-feed-reveal");
+      expect(earlier!.className).not.toContain("motion-safe:animate-feed-reveal");
     } finally {
       vi.useRealTimers();
     }
@@ -858,7 +858,7 @@ describe("FeedList revealing waiting entries", () => {
     try {
       renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
       const list = screen.getAllByRole("list")[0];
-      list.scrollIntoView = vi.fn();
+      list!.scrollIntoView = vi.fn();
       await revealOne();
 
       expect(screen.queryByRole("button", { name: "1 new event" })).not.toBeInTheDocument();
@@ -874,7 +874,7 @@ describe("FeedList revealing waiting entries", () => {
       renderList({ content: [line("c1", "alice")], nextCursor: undefined, startOver: false });
       const list = screen.getAllByRole("list")[0];
       const scrollIntoView = vi.fn();
-      list.scrollIntoView = scrollIntoView;
+      list!.scrollIntoView = scrollIntoView;
       await revealOne();
 
       expect(scrollIntoView).not.toHaveBeenCalled();

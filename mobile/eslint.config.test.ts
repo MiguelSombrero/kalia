@@ -16,7 +16,7 @@ const fixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixt
 
 const messagesFor = async (code: string, filePath: string) => {
   const [result] = await eslint.lintText(code, { filePath });
-  return result.messages.map((message) => [message.ruleId, message.message] as const);
+  return result!.messages.map((message) => [message.ruleId, message.message] as const);
 };
 
 describe("import boundaries reject each crossing a fixture makes", () => {

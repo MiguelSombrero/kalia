@@ -1,7 +1,11 @@
 import { z } from "zod";
 
+import type { TranslationKey } from "@/i18n/translationKey";
+
 import { applyBottleDateRules } from "./bottleDateRules";
 import { containerTypeValues } from "./types";
+
+const QUANTITY_RANGE = "cellar.add.error.quantityRange" satisfies TranslationKey;
 
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 24;
@@ -18,10 +22,10 @@ export const addBottleSchema = z
     quantity: z
       // The type-level message matters: clearing the input yields NaN, and
       // without it the user is shown Zod's own untranslated English text.
-      .number({ error: "cellar.add.error.quantityRange" })
-      .int("cellar.add.error.quantityRange")
-      .min(MIN_QUANTITY, "cellar.add.error.quantityRange")
-      .max(MAX_QUANTITY, "cellar.add.error.quantityRange"),
+      .number({ error: QUANTITY_RANGE })
+      .int(QUANTITY_RANGE)
+      .min(MIN_QUANTITY, QUANTITY_RANGE)
+      .max(MAX_QUANTITY, QUANTITY_RANGE),
   })
   .superRefine(applyBottleDateRules);
 

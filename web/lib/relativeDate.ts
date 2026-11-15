@@ -48,12 +48,14 @@ const formatUnit = (
   const parts = formatter.formatToParts(value, unit);
   const full = parts.map((part) => part.value).join("");
   const [first, ...rest] = parts;
+  const last = parts.at(-1);
+  if (first === undefined || last === undefined) return { full, core: full, prefix: "" };
 
   if (first.type === "literal") {
     return { full, core: rest.map((part) => part.value).join(""), prefix: first.value };
   }
 
-  const trailing = parts[parts.length - 1].value.trimStart();
+  const trailing = last.value.trimStart();
   const unitWord = trailing.slice(0, trailing.indexOf(" "));
   return { full, core: `${first.value} ${unitWord}`, prefix: "" };
 };

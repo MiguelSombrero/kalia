@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { TranslationKey } from "@/i18n/translationKey";
+
 import type { EditSuggestionRequest, SuggestionRow } from "./types";
 
 // Each bound mirrors EditSuggestionRequestDto / NewBreweryRequestDto in the
@@ -28,7 +30,7 @@ export type EditSuggestionValues = {
 
 const PREFIX = "admin.review.edit.error";
 
-const checkName = (value: string, messages: { required: string; tooLong: string }): string | undefined => {
+const checkName = (value: string, messages: { required: TranslationKey; tooLong: TranslationKey }): TranslationKey | undefined => {
   if (value.trim() === "") return messages.required;
   if (value.trim().length > MAX_NAME_LENGTH) return messages.tooLong;
   if (!HAS_LETTER_OR_DIGIT.test(value)) return `${PREFIX}.nameNeedsLetter`;
@@ -38,7 +40,7 @@ const checkName = (value: string, messages: { required: string; tooLong: string 
 
 const toNumber = (abv: string): number => Number(abv.trim().replace(",", "."));
 
-const checkAbv = (value: string): string | undefined => {
+const checkAbv = (value: string): TranslationKey | undefined => {
   const abv = value.trim();
   if (!ABV_FORMAT.test(abv) || toNumber(abv) > MAX_ABV) return `${PREFIX}.abvRange`;
   if (!ABV_ONE_DECIMAL.test(abv)) return `${PREFIX}.abvPrecision`;
@@ -57,7 +59,7 @@ export const editSuggestionSchema = z
     newBreweryCity: z.string(),
   })
   .superRefine((values, context) => {
-    const fail = (path: keyof EditSuggestionValues, message: string | undefined) => {
+    const fail = (path: keyof EditSuggestionValues, message: TranslationKey | undefined) => {
       if (message) context.addIssue({ code: "custom", path: [path], message });
     };
 

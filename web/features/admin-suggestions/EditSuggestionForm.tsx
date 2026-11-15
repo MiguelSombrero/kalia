@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { fieldClasses, FieldError } from "@/components/ui/field";
 import type { Locale } from "@/i18n/settings";
+import { formMessageKey, type TranslationKey } from "@/i18n/translationKey";
 import { cn } from "@/lib/cn";
 import { beerHref } from "@/lib/routes";
 
@@ -89,7 +90,7 @@ export const EditSuggestionForm = ({
         if (result.kind === "refused") {
           for (const { field } of result.fields) {
             const target = REFUSABLE[field];
-            if (target) form.setError(target, { type: "server", message: "admin.review.edit.error.refusedField" });
+            if (target) form.setError(target, { type: "server", message: "admin.review.edit.error.refusedField" satisfies TranslationKey });
           }
         }
         if (result.kind === "decided" || result.kind === "alreadyDecided" || result.kind === "gone") {
@@ -103,7 +104,7 @@ export const EditSuggestionForm = ({
 
   const message = (field: keyof EditSuggestionValues) => {
     const key = errors[field]?.message;
-    return key ? t(key) : undefined;
+    return key ? t(formMessageKey(key)) : undefined;
   };
   const describedBy = (field: keyof EditSuggestionValues, ...extra: string[]) =>
     [...extra, errors[field] ? `edit-${field}-error` : undefined].filter(Boolean).join(" ") || undefined;

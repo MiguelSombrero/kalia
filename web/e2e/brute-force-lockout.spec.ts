@@ -44,7 +44,7 @@ const submitBrowserSignIn = async (
   const html = await formPage.text();
   const actionMatch = html.match(/<form[^>]*\baction="([^"]*)"/);
   expect(actionMatch, "Keycloak's login page carried no form action").toBeTruthy();
-  const action = actionMatch![1].replace(/&amp;/g, "&");
+  const action = actionMatch![1]!.replace(/&amp;/g, "&");
 
   const response = await request.post(action, {
     form: { username, password, credentialId: "" },

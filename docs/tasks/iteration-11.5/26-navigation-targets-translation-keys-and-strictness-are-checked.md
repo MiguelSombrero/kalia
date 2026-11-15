@@ -1,6 +1,6 @@
 # Task 26: Navigation targets, translation keys and compiler strictness are checked in both apps
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -79,15 +79,15 @@ cellar adds routes, keys and lookups of every kind.
 
 ## Acceptance criteria
 
-- [ ] A misspelt route fails the mobile gate in `make verify-fast`, and a
+- [x] A misspelt route fails the mobile gate in `make verify-fast`, and a
       misspelt translation key fails type-checking in both apps — verified
       with one of each, and each was seen to pass before the change
-- [ ] Both apps' `tsconfig.json` turn on the two flags, and both apps'
+- [x] Both apps' `tsconfig.json` turn on the two flags, and both apps'
       type-check and test suites pass
-- [ ] Either a type-aware rule runs in both apps with an `eslint-fixtures/`
+- [x] Either a type-aware rule runs in both apps with an `eslint-fixtures/`
       case that its config test sees fail, or the backlog names what failed
       on TypeScript 7
-- [ ] Each app's `CONVENTIONS.md` states each check, and `make verify-fast`
+- [x] Each app's `CONVENTIONS.md` states each check, and `make verify-fast`
       is green
 
 ## Notes

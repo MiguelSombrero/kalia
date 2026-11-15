@@ -99,7 +99,7 @@ describe("bottle removal with an upfront confirmation", () => {
 
     expect(removeButtonsFor("Pihtiputaan Sahti")).toHaveLength(2);
 
-    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]!);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
     expect(removeBottleAction).not.toHaveBeenCalled();
     expect(confirmDialog().getByRole("button", { name: CONFIRM }).className).toBe(buttonVariants("destructive"));
@@ -116,7 +116,7 @@ describe("bottle removal with an upfront confirmation", () => {
   it("issues no DELETE and leaves the bottle untouched when canceled", async () => {
     renderCellar();
 
-    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]!);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
 
     fireEvent.click(confirmDialog().getByRole("button", { name: CANCEL }));
@@ -130,7 +130,7 @@ describe("bottle removal with an upfront confirmation", () => {
     removeBottleAction.mockRejectedValue(new Error("boom"));
     renderCellar();
 
-    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]!);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
     fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 
@@ -146,7 +146,7 @@ describe("bottle removal with an upfront confirmation", () => {
     try {
       renderCellar();
 
-      fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+      fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]!);
       await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
       fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 
@@ -180,7 +180,7 @@ describe("bottle removal with an upfront confirmation", () => {
   it("keeps focus on the beer's block once a bottle's own controls are gone", async () => {
     renderCellar();
 
-    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]);
+    fireEvent.click(removeButtonsFor("Pihtiputaan Sahti")[0]!);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
     fireEvent.click(confirmDialog().getByRole("button", { name: CONFIRM }));
 

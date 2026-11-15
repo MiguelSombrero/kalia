@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { TranslationKey } from "@/i18n/translationKey";
+
 import type { AddBeerRequest } from "./types";
 
 // Each bound mirrors AddBeerRequestDto / NewBreweryRequestDto in the backend's
@@ -26,9 +28,9 @@ export type AddBeerFormValues = {
   abv: string;
 };
 
-type NameMessages = { required: string; tooLong: string };
+type NameMessages = { required: TranslationKey; tooLong: TranslationKey };
 
-const checkName = (value: string, messages: NameMessages): string | undefined => {
+const checkName = (value: string, messages: NameMessages): TranslationKey | undefined => {
   if (value.trim() === "") return messages.required;
   if (value.trim().length > MAX_NAME_LENGTH) return messages.tooLong;
   if (!HAS_LETTER_OR_DIGIT.test(value)) return "catalog.add.error.nameNeedsLetter";
@@ -36,7 +38,7 @@ const checkName = (value: string, messages: NameMessages): string | undefined =>
   return undefined;
 };
 
-const checkAbv = (value: string): string | undefined => {
+const checkAbv = (value: string): TranslationKey | undefined => {
   const abv = value.trim();
   if (!ABV_FORMAT.test(abv) || toNumber(abv) > MAX_ABV) return "catalog.add.error.abvRange";
   if (!ABV_ONE_DECIMAL.test(abv)) return "catalog.add.error.abvPrecision";
@@ -57,7 +59,7 @@ export const addBeerSchema = z
     abv: z.string(),
   })
   .superRefine((values, context) => {
-    const fail = (path: keyof AddBeerFormValues, message: string | undefined) => {
+    const fail = (path: keyof AddBeerFormValues, message: TranslationKey | undefined) => {
       if (message) context.addIssue({ code: "custom", path: [path], message });
     };
 

@@ -104,7 +104,7 @@ describe("CellarBeerList", () => {
   it("gives the owner a named Edit and Remove per bottle, an Add bottle tile per beer and the way to the catalog", () => {
     renderList(true);
 
-    const firstTile = within(tilesOf("Westvleteren 12")[0]);
+    const firstTile = within(tilesOf("Westvleteren 12")[0]!);
     expect(firstTile.getByRole("button", { name: /^cellar\.bottle\.editFor/ })).toHaveAccessibleName(
       /"beer":"Westvleteren 12"/,
     );

@@ -112,7 +112,7 @@ describe("an error thrown inside a screen", () => {
 
     await renderApp();
 
-    const line = (error.mock.calls.concat(warn.mock.calls) as string[][]).map(([l]) => l).find((l) => l.startsWith('{"level"'));
+    const line = (error.mock.calls.concat(warn.mock.calls) as string[][]).map(([l]) => l).find((l) => l!.startsWith('{"level"'));
     expect(line!.length).toBeLessThan(1000);
     expect(line).not.toContain("someone");
   });
