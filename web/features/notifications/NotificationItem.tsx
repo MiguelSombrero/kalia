@@ -10,11 +10,12 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Icon } from "@/components/ui/icon";
 import { RelativeTime } from "@/components/ui/relative-time";
 import type { Locale } from "@/i18n/settings";
+import type { TranslationKey } from "@/i18n/translationKey";
 import { beerHref } from "@/lib/routes";
 
 import type { Notification, RejectionReason } from "./types";
 
-const reasonLabelKey = enumLookup<RejectionReason, string>(
+const reasonLabelKey = enumLookup<RejectionReason, TranslationKey>(
   {
     ALREADY_IN_CATALOG: "notifications.reason.ALREADY_IN_CATALOG",
     NOT_A_REAL_BEER: "notifications.reason.NOT_A_REAL_BEER",

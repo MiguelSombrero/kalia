@@ -21,6 +21,7 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   each group alphabetical (`simple-import-sort/imports`). `npx eslint --fix`
   sorts them; after it a moved `type` specifier may lose the space after its
   comma, which the rule does not flag: restore it by hand. Mobile follows the same order.
+- **The compiler adds `noUncheckedIndexedAccess` and `noFallthroughCasesInSwitch` to `strict`,** in both apps' `tsconfig.json`: an array or record read is `T | undefined` until narrowed (a test may assert with `!`), and a `case` that falls through needs a `break` or a `return`. The web is type-checked by `next build` (`make web-build`, in `make verify` and CI), mobile by `npm run lint`. No type-aware ESLint rule runs: typescript-eslint cannot use TypeScript 7 ([backlog](../docs/tasks/backlog.md#engineering-work)).
 - **Arrow functions only**, including page, layout and route exports (ESLint).
 - **No hand-written classes; `type` over `interface`.** Factory functions
   (`createX(dependency)`) replace constructors (ESLint,
@@ -79,6 +80,7 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   translated by Keycloak ([ADR-0011](../docs/adr/0011-i18next-localization.md),
   [ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)). Build
   locale-prefixed paths with `lib/routes.ts`.
+- **A translation key is checked by the type-checker:** `t("catalog.title")` fails to compile when `@kalia/locales` has no such key (`i18n/translationKey.ts` types `t` against `en`; `translationKey.test.ts` fails when that stops holding). A key chosen at run time is typed `TranslationKey` where it is written: an `enumLookup<…, TranslationKey>`, a schema's message, a lookup table. react-hook-form types a field error's message as `string`, so a form reads it with `formMessageKey(message)`. A `t` taking `namespace: string` loses the typing: pass `"common"`. Mobile uses the same file under `src/lib/i18n/`.
 - **The public cellar (`/cellars/{username}`) is the one page without a locale**;
   it and the front page are `noindex, nofollow`, and `metadataBase` comes from
   `AUTH_URL` ([ADR-0050](../docs/adr/0050-public-cellar-addressing.md)).

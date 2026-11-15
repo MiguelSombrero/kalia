@@ -98,7 +98,7 @@ test("an admin removes an approved beer from its page, and it is withheld from t
     const styles = (await (await api.get(`${BACKEND_ORIGIN}/api/v1/styles`)).json()) as string[];
     const suggested = await api.post(`${BACKEND_ORIGIN}/api/v1/beers`, {
       headers: contributorHeaders,
-      data: { name, style: styles[0], abv: 5.5, breweryId: brewery.id },
+      data: { name, style: styles[0], abv: 5.5, breweryId: brewery!.id },
     });
     expect(suggested.status(), "the contributor could not suggest the beer").toBe(201);
     const { id } = (await suggested.json()) as { id: string };

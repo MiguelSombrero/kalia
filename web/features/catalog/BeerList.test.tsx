@@ -58,8 +58,8 @@ describe("BeerList", () => {
     );
 
     const [first, second] = screen.getAllByRole("listitem");
-    expect(within(first).queryByText(/in your cellar/)).not.toBeInTheDocument();
-    expect(within(second).getByText("6 in your cellar")).toBeInTheDocument();
+    expect(within(first!).queryByText(/in your cellar/)).not.toBeInTheDocument();
+    expect(within(second!).getByText("6 in your cellar")).toBeInTheDocument();
   });
 
   it("renders a result set of exactly one as a single row", async () => {

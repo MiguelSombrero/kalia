@@ -151,6 +151,6 @@ describe("ending the previous session at the sign-in callback", () => {
     expect(sessions.has("previous")).toBe(false);
     expect(accounts.get("keycloak-sub")).not.toBe("user-0");
     const [issued] = [...sessions.values()];
-    expect(issued.userId).toBe(accounts.get("keycloak-sub"));
+    expect(issued!.userId).toBe(accounts.get("keycloak-sub"));
   });
 });

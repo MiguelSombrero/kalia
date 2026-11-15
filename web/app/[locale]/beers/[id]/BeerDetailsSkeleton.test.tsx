@@ -24,8 +24,8 @@ describe("BeerDetailsSkeleton", () => {
     render(await BeerDetailsSkeleton({ locale: "en" }));
 
     const [back, article] = Array.from(screen.getByRole("status").children);
-    expect(back.className).toContain("h-10");
-    const head = article.firstElementChild!;
+    expect(back!.className).toContain("h-10");
+    const head = article!.firstElementChild!;
     expect(head.className).toBe(detailsHead);
     expect(head.lastElementChild?.className).toContain("aspect-[16/7]");
   });

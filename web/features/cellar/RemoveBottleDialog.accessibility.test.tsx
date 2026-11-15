@@ -54,7 +54,7 @@ const renderCellar = async (locale: Locale) => {
 };
 
 const openConfirmDialog = async (removeLabel: RegExp) => {
-  fireEvent.click((await screen.findAllByRole("button", { name: removeLabel }))[0]);
+  fireEvent.click((await screen.findAllByRole("button", { name: removeLabel }))[0]!);
   return screen.findByRole("dialog");
 };
 

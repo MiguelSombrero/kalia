@@ -32,7 +32,7 @@ const linesMentioning = (logs: string, needle: string): string[] =>
 const addressSeenByEdge = (needle: string): string => {
   const [line] = linesMentioning(logsOf("edge"), needle);
   expect(line, `the edge logged no request for ${needle}`).toBeTruthy();
-  return line.split(" ")[0];
+  return line!.split(" ")[0]!;
 };
 
 test.describe("the client address", () => {
@@ -196,7 +196,7 @@ test.describe("the edge proxy's limits", () => {
     const answered = responses.length - refused.length;
 
     expect(refused.length, "no request was refused").toBeGreaterThan(0);
-    expect(refused[0].headers()["server"]).toBe("nginx");
+    expect(refused[0]!.headers()["server"]).toBe("nginx");
     expect(answered, "the limit let the whole burst through").toBeLessThan(responses.length / 2);
     // nginx's error log names the refused request line, so a refusal must not be logged there.
     expect(logsOf("edge"), "a refusal logged the query string").not.toContain(`canary-${id}`);

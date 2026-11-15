@@ -78,7 +78,8 @@ export const BreweryField = ({
     } else if (event.key === "Enter") {
       event.preventDefault();
       // Until the search answers, the one option is a new brewery: a quick Enter would add a duplicate.
-      if (answered) choose(choices[activeIndex]);
+      const active = choices[activeIndex];
+      if (answered && active) choose(active);
     } else if (event.key === "Escape") {
       setFocused(false);
     }

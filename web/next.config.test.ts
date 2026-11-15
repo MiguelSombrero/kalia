@@ -10,13 +10,13 @@ describe("next.config", () => {
     const rules = await nextConfig.headers!();
 
     expect(rules).toHaveLength(1);
-    expect(rules[0].source).toBe("/(.*)");
-    expect(Object.fromEntries(rules[0].headers.map(({ key, value }) => [key, value]))).toMatchObject({
+    expect(rules[0]!.source).toBe("/(.*)");
+    expect(Object.fromEntries(rules[0]!.headers.map(({ key, value }) => [key, value]))).toMatchObject({
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",
     });
-    expect(rules[0].headers.map(({ key }) => key)).toEqual(
+    expect(rules[0]!.headers.map(({ key }) => key)).toEqual(
       expect.arrayContaining(["Content-Security-Policy", "Strict-Transport-Security", "Permissions-Policy"]),
     );
   });

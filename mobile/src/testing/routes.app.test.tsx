@@ -58,7 +58,7 @@ describe.each(["ios", "android"] as const)("every screen under src/app on %s", (
       jest.replaceProperty(ReactNative.Platform, "OS", platform);
       serveApi(transport, case_.beers);
 
-      await renderAppRoute(SCREENS[case_.file], { locale, auth: case_.auth });
+      await renderAppRoute(SCREENS[case_.file]!, { locale, auth: case_.auth });
       await case_.ready();
       await case_.then?.();
 

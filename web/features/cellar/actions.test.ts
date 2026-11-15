@@ -20,7 +20,7 @@ const formData = (fields: Record<string, string>): FormData => {
   return data;
 };
 
-const redirectTo = (): unknown => (signIn.mock.calls[0][1] as { redirectTo: unknown }).redirectTo;
+const redirectTo = (): unknown => (signIn.mock.calls[0]![1] as { redirectTo: unknown }).redirectTo;
 
 describe("startCellarSignIn", () => {
   beforeEach(() => {

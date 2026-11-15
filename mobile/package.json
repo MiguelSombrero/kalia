@@ -14,7 +14,8 @@
     "android": "expo run:android",
     "preandroid:prebuild": "npm run assets",
     "android:prebuild": "expo prebuild --platform android --no-install",
-    "lint": "eslint --max-warnings 0 && tsc --noEmit",
+    "typegen": "expo customize tsconfig.json",
+    "lint": "npm run typegen && eslint --max-warnings 0 && tsc --noEmit",
     "test": "jest && node --test scripts/render-assets.test.mjs app.config.test.mjs scripts/check-cleartext.test.mjs plugins/withCleartextExceptions.test.mjs"
   },
   "dependencies": {

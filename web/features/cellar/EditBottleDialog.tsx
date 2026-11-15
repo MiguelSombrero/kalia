@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { fieldClasses, FieldError } from "@/components/ui/field";
+import { formMessageKey } from "@/i18n/translationKey";
 
 import { containerTypes } from "./addBottleSchema";
 import { todayIso } from "./bottleDateRules";
@@ -150,7 +151,7 @@ export const EditBottleDialog = ({
             />
             {errors.brewedDate && (
               <FieldError id={`${ids}-brewedDate-error`}>
-                {t(errors.brewedDate.message ?? "")}
+                {t(formMessageKey(errors.brewedDate.message))}
               </FieldError>
             )}
           </div>
@@ -169,7 +170,7 @@ export const EditBottleDialog = ({
             />
             {errors.bestBeforeDate && (
               <FieldError id={`${ids}-bestBeforeDate-error`}>
-                {t(errors.bestBeforeDate.message ?? "")}
+                {t(formMessageKey(errors.bestBeforeDate.message))}
               </FieldError>
             )}
           </div>

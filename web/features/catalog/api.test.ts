@@ -15,7 +15,7 @@ import type { BeerDetails, BeerPage } from "./types";
 const emptyPage: BeerPage = { content: [], totalElements: 0, totalPages: 0, page: 0 };
 
 const requestUrl = (fetchMock: ReturnType<typeof vi.fn>): URL =>
-  new URL(String(fetchMock.mock.calls[0][0]));
+  new URL(String(fetchMock.mock.calls[0]![0]));
 
 describe("searchBeers", () => {
   afterEach(() => {

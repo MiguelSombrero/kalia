@@ -2,7 +2,10 @@ import { routeTemplates } from "../generated/route-templates";
 
 export const UNMATCHED_ROUTE = "unmatched";
 
-export const pathOf = (url: string): string => url.split("?", 1)[0];
+export const pathOf = (url: string): string => {
+  const query = url.indexOf("?");
+  return query < 0 ? url : url.slice(0, query);
+};
 
 const isParameter = (segment: string): boolean => segment.startsWith("{");
 

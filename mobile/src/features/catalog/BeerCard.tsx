@@ -7,11 +7,12 @@ import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
+import type { TranslationKey } from "@/lib/i18n/translationKey";
 import { PressFeedback } from "@/lib/motion";
 
 import type { BeerSummary } from "./api";
 
-const statusLabelKey = enumLookup<BeerSummary["status"], string | null>({ APPROVED: null, PENDING: "catalogFilters.waitingForReview" }, UNKNOWN_VALUE_LABEL_KEY);
+const statusLabelKey = enumLookup<BeerSummary["status"], TranslationKey | null>({ APPROVED: null, PENDING: "catalogFilters.waitingForReview" }, UNKNOWN_VALUE_LABEL_KEY);
 
 export const BeerCard = ({ beer, language, onPress }: { beer: BeerSummary; language: string; onPress?: () => void }) => {
   const { t } = useTranslation();

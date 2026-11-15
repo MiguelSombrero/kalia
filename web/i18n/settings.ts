@@ -11,7 +11,7 @@ export const isLocale = (value: string): value is Locale =>
 // proxy.ts guarantees a valid segment in practice.
 export const toLocale = (value: string): Locale => (isLocale(value) ? value : defaultLocale);
 
-export const getOptions = (locale: Locale = defaultLocale, namespace: string = defaultNamespace) => ({
+export const getOptions = (locale: Locale = defaultLocale, namespace: typeof defaultNamespace = defaultNamespace) => ({
   supportedLngs: locales,
   fallbackLng: defaultLocale,
   lng: locale,

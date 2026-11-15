@@ -87,7 +87,7 @@ describe("heldBottlesOf", () => {
       ]),
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const url = new URL(fetchMock.mock.calls[0][0], "http://backend");
+    const url = new URL(fetchMock.mock.calls[0]![0], "http://backend");
     expect(url.pathname).toBe("/api/v1/cellar/holdings");
     expect(url.searchParams.get("beerIds")).toBe(`${beerId},${secondBeerId}`);
   });
@@ -114,7 +114,7 @@ describe("getCellarTotals", () => {
     const fetchMock = stubFetch(() => ({ totalBeers: 4, totalBottles: 9, held: [] }));
 
     await expect(getCellarTotals()).resolves.toEqual({ beers: 4, bottles: 9 });
-    expect(fetchMock.mock.calls[0][0]).toMatch(/\/api\/v1\/cellar\/holdings$/);
+    expect(fetchMock.mock.calls[0]![0]).toMatch(/\/api\/v1\/cellar\/holdings$/);
   });
 
   it("throws when the lookup fails", async () => {
@@ -153,7 +153,7 @@ describe("listCellarEntries", () => {
 
     const [withdrawn, listed] = await listCellarEntries();
 
-    expect(withdrawn.withdrawn).toBe(true);
+    expect(withdrawn!.withdrawn).toBe(true);
     expect(listed).not.toHaveProperty("withdrawn");
   });
 
@@ -219,7 +219,7 @@ describe("getPublicCellar", () => {
       style: "Quadrupel",
       abv: 10.2,
     });
-    expect(cellar?.beers[0].bottles.map((b) => b.id)).toEqual(["bottle-oldest", "bottle-recent"]);
+    expect(cellar?.beers[0]!.bottles.map((b) => b.id)).toEqual(["bottle-oldest", "bottle-recent"]);
   });
 
   it("asks for the page it is given, and for none at all on the first", async () => {
@@ -235,8 +235,8 @@ describe("getPublicCellar", () => {
     await getPublicCellar("testuser");
     await getPublicCellar("testuser", 2);
 
-    expect(fetchMock.mock.calls[0][0]).toMatch(/\/api\/v1\/cellars\/testuser$/);
-    expect(fetchMock.mock.calls[1][0]).toMatch(/\/api\/v1\/cellars\/testuser\?page=2$/);
+    expect(fetchMock.mock.calls[0]![0]).toMatch(/\/api\/v1\/cellars\/testuser$/);
+    expect(fetchMock.mock.calls[1]![0]).toMatch(/\/api\/v1\/cellars\/testuser\?page=2$/);
   });
 
   it("records the bottles a capped entry holds beyond those it lists", async () => {
@@ -251,7 +251,7 @@ describe("getPublicCellar", () => {
 
     const cellar = await getPublicCellar("testuser");
 
-    expect(cellar?.beers[0].unlistedBottles).toBe(46);
+    expect(cellar?.beers[0]!.unlistedBottles).toBe(46);
   });
 
   it("returns null for a 404 — unknown, private and profileless are one answer", async () => {
@@ -341,7 +341,7 @@ describe.each([
         expect(refused || outcome === null).toBe(true);
         return;
       }
-      const sent = new URL(fetchMock.mock.calls[0][0]);
+      const sent = new URL(fetchMock.mock.calls[0]![0]);
       expect(sent.search).toBe("");
       expect(sent.hash).toBe("");
       expect(sent.pathname.slice(0, sent.pathname.lastIndexOf("/"))).toBe(route);
