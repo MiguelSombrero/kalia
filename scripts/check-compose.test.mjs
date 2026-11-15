@@ -7,7 +7,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { ONE_SHOT_SERVICES, completedServices, oneShotProblems, repositoryWaitProblems, waitProblems, addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -367,4 +367,92 @@ test("edgeZoneProblems names the backend load the ADR must state", () => {
   const raised = { ...limits, backendCallsPerPageRender: limits.backendCallsPerPageRender + 1 };
   const problems = edgeZoneProblems({ nginxText, adrText, limits: raised });
   assert.deepEqual(problems, ["ADR-0090 does not state 900 backend calls a second for page renders, which edge/limits.json computes"]);
+});
+
+const waitFixture = (text) => waitProblems({ text, source: "fixture" });
+
+test("waitProblems fails a --wait with no service names", () => {
+  const problems = waitFixture("\tdocker compose up -d --build --wait --wait-timeout 300\n");
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /^fixture:1: .*names no service/);
+});
+
+test("waitProblems fails a --wait that names keycloak-seed", () => {
+  const problems = waitFixture("docker compose up -d --wait --wait-timeout 120 edge keycloak-seed");
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /names keycloak-seed, which exits when it is done/);
+});
+
+test("waitProblems fails each one-shot service a --wait names", () => {
+  assert.equal(waitFixture("docker compose up --wait keycloak-config keycloak-seed").length, 2);
+});
+
+test("waitProblems accepts a --wait that names only long-running services", () => {
+  assert.deepEqual(waitFixture("docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak"), []);
+});
+
+test("waitProblems reads a flag's value as no service, wherever the flag stands", () => {
+  assert.equal(waitFixture("docker compose up --wait-timeout 300 --wait -d").length, 1);
+  assert.deepEqual(waitFixture("docker compose up -t 5 --wait edge"), []);
+});
+
+test("waitProblems follows a command continued with a backslash", () => {
+  const text = "\tdocker compose up -d --build --wait --wait-timeout 300 \\\n\t    edge keycloak-seed\n";
+  assert.match(waitFixture(text)[0], /^fixture:1: .*names keycloak-seed/);
+});
+
+test("waitProblems stops at the end of one command, so the next one's words are not its services", () => {
+  assert.deepEqual(waitFixture("docker compose up -d --wait edge && docker compose run --rm keycloak-seed"), []);
+  assert.equal(waitFixture("docker compose up -d --wait && docker compose up -d keycloak").length, 1);
+  assert.equal(waitFixture("docker compose up -d --wait ; echo edge").length, 1);
+});
+
+test("waitProblems reads the arguments of a call in a script", () => {
+  assert.deepEqual(waitFixture('compose("up", "-d", "--wait", "--wait-timeout", "300", "edge", "backend", "keycloak");'), []);
+  assert.match(waitFixture('compose("up", "-d", "--wait", "--wait-timeout", "300");')[0], /names no service/);
+  assert.match(waitFixture('compose("up", "-d", "--wait", "keycloak-seed");')[0], /names keycloak-seed/);
+});
+
+test("waitProblems reads a command wrapped by the retry script", () => {
+  assert.equal(waitFixture("$(RETRY) docker compose up -d --build --wait --wait-timeout 300").length, 1);
+  assert.deepEqual(waitFixture("node scripts/retry-registry.mjs -- docker compose up -d --build --wait edge"), []);
+});
+
+test("waitProblems fails a service named by a variable it cannot read", () => {
+  assert.match(waitFixture("docker compose up -d --wait $SERVICES")[0], /names its service as \$SERVICES, which this check cannot read/);
+});
+
+test("waitProblems fails a --wait it cannot tie to an up, or a spread service list", () => {
+  assert.match(waitFixture('compose("up", "-d",\n  "--wait", "edge");')[0], /without `up` on the same line/);
+  assert.match(waitFixture('compose("up", "-d", "--wait", ...services);')[0], /cannot read/);
+});
+
+test("waitProblems ignores --wait-timeout on its own, a comment and an up without --wait", () => {
+  assert.deepEqual(waitFixture("docker compose up -d --wait-timeout 60 edge"), []);
+  assert.deepEqual(waitFixture("# docker compose up --wait\n// compose(\"up\", \"--wait\")\n"), []);
+  assert.deepEqual(waitFixture("docker compose up -d --build keycloak-seed"), []);
+  assert.deepEqual(waitFixture("docker compose wait keycloak-seed"), []);
+});
+
+test("waitProblems reports the line of the offending command", () => {
+  const problems = waitFixture("first\n# comment\ndocker compose up --wait\n");
+  assert.match(problems[0], /^fixture:3: /);
+});
+
+test("the repository's own Makefile, workflows and scripts pass waitProblems", () => {
+  assert.deepEqual(repositoryWaitProblems(), []);
+});
+
+test("completedServices and oneShotProblems follow what other services wait on to finish", () => {
+  const services = {
+    "keycloak-config": {},
+    "keycloak-seed": { depends_on: { "keycloak-config": { condition: "service_completed_successfully" } } },
+    web: { depends_on: { "keycloak-config": { condition: "service_completed_successfully" }, keycloak: { condition: "service_healthy" } } },
+    keycloak: {},
+  };
+  assert.deepEqual(completedServices(services), ["keycloak-config"]);
+  assert.deepEqual(oneShotProblems(services, ["keycloak-config", "keycloak-seed"]), []);
+  assert.match(oneShotProblems(services, ["keycloak-seed"])[0], /keycloak-config is waited on to complete/);
+  assert.match(oneShotProblems(services, ["keycloak-config", "keycloak-seed", "gone"])[0], /lists gone/);
+  assert.ok(ONE_SHOT_SERVICES.includes("keycloak-seed"));
 });
