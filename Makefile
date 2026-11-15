@@ -175,6 +175,7 @@ keycloak-check: ## Fail if Keycloak's realm rejects sign-in (web or mobile clien
 	    || { $(RETRY) docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge \
 	         && docker compose run --rm keycloak-config; }
 	node scripts/check-keycloak-realm-config.mjs
+	node scripts/check-keycloak-templates.mjs
 	$(RETRY) docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 	node scripts/check-keycloak-pkce-flow.mjs testuser testuser123

@@ -196,8 +196,6 @@ test.describe("Keycloak pages carry Kalia's identity at both widths", () => {
       await page.getByRole("link", { name: register, exact: true }).click();
       await page.locator("#username").fill(username);
       await page.locator("#email").fill(`${username}@example.com`);
-      await page.locator("#firstName").fill("Identity");
-      await page.locator("#lastName").fill("Check");
       await page.getByRole("button", { name: register }).click();
 
       await expect(page.getByRole("heading", { level: 1, name: verifyHeading })).toBeVisible();
@@ -248,8 +246,6 @@ test.describe("the verification email follows the same language", () => {
 
     await page.locator("#username").fill(username);
     await page.locator("#email").fill(email);
-    await page.locator("#firstName").fill("Fi");
-    await page.locator("#lastName").fill("Test");
     await page.getByRole("button", { name: "Rekisteröidy" }).click();
 
     const message = await waitForMessageTo(request, email);

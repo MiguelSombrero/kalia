@@ -89,8 +89,6 @@ export const createKeycloakUser = async (
       enabled: true,
       email: `${account.username}@example.com`,
       emailVerified: true,
-      firstName: "Test",
-      lastName: "User",
       credentials: [{ type: "password", value: account.password, temporary: false }],
     },
   });
@@ -113,8 +111,6 @@ export const createUnverifiedKeycloakUser = async (
       email,
       enabled: true,
       emailVerified: false,
-      firstName: "Mail",
-      lastName: "Test",
     },
   });
   expect(response.ok(), `could not create Keycloak user ${username}`).toBeTruthy();
