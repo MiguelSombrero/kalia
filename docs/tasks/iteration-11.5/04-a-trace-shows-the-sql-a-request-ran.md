@@ -1,6 +1,6 @@
 # Task 04: A trace shows the SQL a request ran
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-2
 
@@ -60,15 +60,15 @@ the request caused.
 
 ## Acceptance criteria
 
-- [ ] A cellar read's trace shows its statements as child spans of the request
+- [x] A cellar read's trace shows its statements as child spans of the request
       span, with their durations — verified against the running stack
-- [ ] A request that publishes an event shows the publication, its
+- [x] A request that publishes an event shows the publication, its
       listener's statements and the registry's statements in the request's
       trace — verified against the running stack
-- [ ] An integration test shows a statement's span carrying no bound value for
+- [x] An integration test shows a statement's span carrying no bound value for
       a search term and a username, and was seen to fail with values inlined
-- [ ] An integration test shows a deliberately repeated query in a test-only
+- [x] An integration test shows a deliberately repeated query in a test-only
       endpoint or repository call producing one span per execution, so an N+1
       is countable
-- [ ] `backend/README.md` says how to read a request's SQL from its trace, and
+- [x] `backend/README.md` says how to read a request's SQL from its trace, and
       `make verify-fast` is green
