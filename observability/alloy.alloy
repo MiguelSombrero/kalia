@@ -1,0 +1,40 @@
+// What the observability profile's shipper (docker-compose.override.yml)
+// reads: the stdout of this Compose project's containers, sent to Loki with the
+// Compose service as the `service` label.
+
+discovery.docker "stack" {
+  host = "unix:///var/run/docker.sock"
+
+  filter {
+    name   = "label"
+    values = ["com.docker.compose.project=" + sys.env("COMPOSE_PROJECT")]
+  }
+}
+
+discovery.relabel "stack" {
+  targets = discovery.docker.stack.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  // The store's own and the shipper's lines are not the stack's.
+  rule {
+    source_labels = ["service"]
+    regex         = "lgtm|alloy"
+    action        = "drop"
+  }
+}
+
+loki.source.docker "stack" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.stack.output
+  forward_to = [loki.write.lgtm.receiver]
+}
+
+loki.write "lgtm" {
+  endpoint {
+    url = "http://lgtm:3100/loki/api/v1/push"
+  }
+}

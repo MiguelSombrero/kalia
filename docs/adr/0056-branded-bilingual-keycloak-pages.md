@@ -10,6 +10,9 @@
   — Keycloak's pages are inside the app's accessibility enforcement, at WCAG 2.2 AA
 - **Amended:** 2026-10-23 by [ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)
   — the theme loads one script, and errors carry Kalia's error sign
+- **Amended:** 2026-11-15 by [iteration 11.5 task 17](../tasks/iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) —
+  the theme owns copies of two keycloak.v2 templates, each page's title says
+  what the page is, and a check holds the copies to the pinned Keycloak's
 
 ## Context
 
@@ -77,6 +80,26 @@ own and overrides none of Keycloak's.**
   > **Amended 2026-10-23 ([ADR-0074](0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).**
   > The theme also loads one script, which ties each field to its error line,
   > and errors carry Kalia's error sign. Still no FreeMarker.
+  > **Amended 2026-11-15 ([iteration 11.5 task 17](../tasks/iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md)).**
+  > Not still no FreeMarker: the theme holds `template.ftl` and
+  > `login-reset-password.ftl`, copies of keycloak.v2's. Every page was titled
+  > "Sign in to Kalia" because Keycloak's server sets the `title` it hands the
+  > template from the realm's one `loginTitle` message, for every page, and no
+  > message key per page exists to override. `template.ftl` therefore reads a
+  > `kaliaTitle-<page id>` message instead and falls back to Keycloak's own
+  > title for a page with none (`messages/`, six pages, both locales).
+  > `login-reset-password.ftl` passes `autocomplete="username"` to the field
+  > macro, which defaults to `off`, so a password manager offers the stored
+  > username. Each edit sits in a `kalia:begin` / `kalia:end` block whose first
+  > line holds the text it replaces, and `scripts/check-keycloak-templates.mjs`
+  > fails when putting the blocks back does not give the pinned image's own
+  > file. It runs in `make keycloak-check` and CI's Keycloak realm check, so a
+  > Keycloak bump that changes either template turns CI red instead of leaving
+  > the copy stale. The alternatives were a script setting `document.title` (a
+  > title that is wrong until it runs, and no better for a screen reader than
+  > none), and leaving the titles as they were. The copy-per-template cost is
+  > the standing one this ADR named for FreeMarker; it is kept to two files by
+  > copying only a template whose markup has to change.
 - **`loginTheme`, `internationalizationEnabled`, `supportedLocales`
   (`en`, `fi`) and `defaultLocale` (`en`) are realm settings** in
   `keycloak/realm-export.json`, so they inherit

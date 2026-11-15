@@ -158,8 +158,6 @@ const createUser = async (
       email: `${username}@example.com`,
       emailVerified: true,
       enabled: extra.enabled ?? true,
-      firstName: "Error",
-      lastName: "Sign",
       requiredActions: extra.requiredActions ?? [],
       credentials: [{ type: "password", value: password, temporary: false }],
     },
@@ -175,8 +173,6 @@ for (const l of LOCALES) {
       await page.getByRole("link", { name: l.register, exact: true }).click();
       await page.locator("#username").fill(account.username);
       await page.locator("#email").fill(`${uniqueUsername("taken")}@example.com`);
-      await page.locator("#firstName").fill("Taken");
-      await page.locator("#lastName").fill("Name");
       await page.getByRole("button", { name: l.register, exact: true }).click();
       await page.locator("#input-error-username").waitFor();
 

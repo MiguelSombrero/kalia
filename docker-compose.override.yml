@@ -41,6 +41,10 @@ services:
       # (ADR-0013) and Swagger UI, both off by default elsewhere
       LOG_LEVEL: DEBUG
       SPRINGDOC_ENABLED: "true"
+      # Where the observability profile's collector listens, set by `make
+      # observability-up` and empty without it: a tier with no endpoint exports
+      # nothing (ADR-0114).
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OBSERVABILITY_OTLP_ENDPOINT:-}
 
   keycloak:
     depends_on:
@@ -63,6 +67,8 @@ services:
       # Lets the dev AUTH_SECRET from docker-compose.dev.env through
       # verifyRequiredConfiguration, which refuses it everywhere else.
       KALIA_DEV_STACK: "true"
+      # As for the backend: the profile's collector, or nothing.
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OBSERVABILITY_OTLP_ENDPOINT:-}
 
   keycloak-config:
     environment:
@@ -114,3 +120,75 @@ services:
       - sh
       - -c
       - node /seed-keycloak-account.mjs testuser testuser123 && node /seed-keycloak-account.mjs testadmin "$$KALIA_DEV_ADMIN_PASSWORD" admin
+
+  # The observability profile (ADR-0114): started on request by `make
+  # observability-up`, and absent from a bare `docker compose up`, so the
+  # default stack runs exactly the containers it did before. Nothing here may
+  # be needed to run docker-compose.base.yml. Every service in it carries the
+  # profile; scripts/observability-profile.test.mjs fails if one does not.
+  lgtm:
+    # One container holds the OpenTelemetry collector, Prometheus, Loki, Tempo
+    # and Grafana. The image declares no volume, so /data is a named one:
+    # without it everything stored is lost with the container. Its first start
+    # downloads about 600 MB of Grafana plugins into /data, which the volume
+    # keeps; a stopped profile needs no network.
+    profiles: [observability]
+    image: grafana/otel-lgtm:0.41.0
+    ports:
+      # Grafana, bound to localhost only like every other published port. The
+      # collector's OTLP ports (4317, 4318) are reached in-network as lgtm:4318.
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+    environment:
+      # Anonymous visitors read and cannot write: the image's default role is
+      # Admin, which lets one edit the data sources.
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      # Three days of data, set by arguments to each store, which the image
+      # exposes and its configuration files do not. Loki's retention needs its
+      # compactor on, and Loki exits before it is ready, naming nothing, on a
+      # flag it does not accept: set ENABLE_LOGS_LOKI=true to read why.
+      PROMETHEUS_EXTRA_ARGS: --storage.tsdb.retention.time=3d
+      LOKI_EXTRA_ARGS: >-
+        -compactor.retention-enabled=true
+        -compactor.working-directory=/data/loki/compactor
+        -compactor.delete-request-store=filesystem
+        -store.retention=72h
+      TEMPO_EXTRA_ARGS: >-
+        -backend-worker.compaction.block-retention=72h
+        -backend-scheduler.provider.work.compaction.block-retention=72h
+    # The spike measured 1.0-1.2 GiB at work (ADR-0114).
+    mem_limit: 2g
+    volumes:
+      - lgtm-data:/data
+    healthcheck:
+      # Grafana up and the data sources it provisions answering; a plugin
+      # download on the first start can take minutes.
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  alloy:
+    # Ships every other container's stdout to Loki, so the edge, Keycloak,
+    # Postgres and Valkey are in the store without an exporter of their own.
+    # The Docker socket is mounted read-only, which does not stop it calling
+    # the daemon's write API: that is why it runs only with the profile
+    # (ADR-0114). The configuration finds only this Compose project's
+    # containers, so one worktree's profile never ships another's logs.
+    profiles: [observability]
+    image: grafana/alloy:v1.22.0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    environment:
+      COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
+    depends_on:
+      lgtm:
+        condition: service_healthy
+    volumes:
+      - ./observability/alloy.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  lgtm-data:

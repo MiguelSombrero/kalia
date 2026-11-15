@@ -5,6 +5,9 @@
 - **Amended:** 2026-10-30 — a red run on `dev` after a merge has no branch to
   be logged on; the session that starts work logs it, from the `worktree`
   skill's start step
+- **Amended:** 2026-11-15 — the sweep collects red CI runs itself and the log
+  holds local failures only; every row names a cause kind, and a repository
+  defect left unfixed names its owner
 
 ## Context
 
@@ -76,6 +79,35 @@ those rows.**
 > *Where*, which is what the next session matches against. Rejected: the
 > sweep reconstructing them from run history, which is too late, and a
 > scheduled workflow opening an issue, which is a second place to look.
+> The 2026-11-15 amendment below replaces this with the sweep collecting
+> the runs.
+
+> **Amended 2026-11-15.** The log missed most failures that only CI sees:
+> a workflow other than `CI`, a Dependabot branch, a pull request no agent was
+> watching. The 2026-10-30 amendment's fix, a session logging `dev`'s red runs
+> as it starts work, reached only `dev`'s `CI` runs. And a row could record a
+> live defect with no owner, as the row for run `41231274792` did until the
+> sweep found the defect unfiled. Two changes:
+>
+> - **The sweep collects red runs; the log holds local failures.** The
+>   `worktree` skill no longer logs `dev`'s runs at start. `/quality-sweep` runs
+>   `gh run list` across every workflow and every branch, Dependabot's
+>   included, from the previous sweep's date, and groups the red runs with the
+>   log's rows (step 2 of the skill holds the command). Rejected: a scheduled
+>   workflow that files each red run, which needs the same judgment about its
+>   cause and is a second place to look; and keeping agents on the duty, which
+>   fails exactly where no agent is watching. Not back-filled: the first
+>   collection reaches back to 2026-10-27, so the runs the log lacks are
+>   counted without being written into it.
+> - **Every row names a cause kind, and an unfixed defect names its owner.**
+>   The last column of a row is `external` (a registry outage, a runner or
+>   host fault, the agent's own slip), `defect, fixed`, or `defect, <owner>`
+>   where the owner is a quality-backlog ID, a task or a `ci-playbook` entry.
+>   `scripts/check-common-failures.mjs` runs in `make check` and fails a row
+>   that has none. An `external` row needs no owner: a rule that flagged a
+>   registry outage as an unowned defect would be ignored within a week. This
+>   amendment added the column to the existing rows once, the one edit of
+>   earlier rows the append-only rule above allows.
 
 **Not decided here:** a hook that prompts for a row when a tool call fails.
 That would be ADR-0039's answer to a rule that keeps being skipped, and it
@@ -125,8 +157,15 @@ wanted has already been lost by then.
 - Neutral, because two sessions that start before either has merged can both
   append a row for the same `dev` run. The union driver keeps both and the
   sweep counts one failure, as it does for any duplicate.
+- Bad, because a cause kind is the author's judgment and the checker reads
+  only the word: a defect filed as `external` passes. The sweep, which reads
+  the rows, is the only check on that.
+- Bad, because GitHub keeps a run for a limited time. A sweep that comes later
+  than that loses the older red runs, and the log, which keeps what it was
+  given, is no longer there to cover for them. The sweep states how far back
+  its list reaches.
 - **Revisit trigger:** a sweep finding failures in the history, such as a
-  fix commit or a red CI run, with no matching row. That shows the rule
+  fix commit, with no matching row. That shows the rule
   being skipped and earns the hook deferred above. Separately: a log too long
   for the sweep to read in one pass.
 

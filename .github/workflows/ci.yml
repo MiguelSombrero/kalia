@@ -257,6 +257,8 @@ jobs:
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
+      - name: Verify the theme's copies of keycloak.v2's templates still match the pinned Keycloak's
+        run: node scripts/check-keycloak-templates.mjs
       - name: Verify the mobile client signs in with PKCE and gets the backend audience
         run: node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
       - name: Verify the admin role reaches the web client's token and never the app's, which the API refuses at the admin routes
@@ -351,8 +353,8 @@ jobs:
     name: Mobile E2E (Maestro, Android)
     # The flows in mobile/.maestro/ against the whole stack on an Android
     # emulator (ADR-0096). A failed flow is not retried: a retry would hide a
-    # flaky required check, so a red run is read and logged instead
-    # (docs/common-failures.md).
+    # flaky required check, so a red run is read instead (the quality
+    # sweep counts it from the run history, ADR-0084).
     needs: [changes]
     if: needs.changes.outputs.mobile-e2e == 'true'
     runs-on: ubuntu-latest

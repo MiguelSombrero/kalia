@@ -11,6 +11,11 @@
   unthrottled `/registrations` bypass below no longer hold: registration
   submissions are limited per client address at the proxy. The counter stays
   global, protecting the shared mail budget
+- **Amended:** 2026-11-15 by [iteration 11.5 task 17](../tasks/iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) —
+  registration asks for a username and an email, and the password afterwards;
+  the first and last name are dropped from the form, and the realm's user
+  profile is now declarative, so the username-character gap below is closed to
+  a one-file change
 
 ## Context
 
@@ -73,6 +78,19 @@ registration endpoint instead of its login endpoint.
   segment a cellar is addressed by ([ADR-0050](0050-public-cellar-addressing.md));
   using the email as username would permanently publish a registrant's email
   address in every cellar link they ever share.
+- **Registration asks for what Kalia uses: a username and an email.**
+  `realm-export.json` carries the realm's declarative user profile
+  (`components`, `org.keycloak.userprofile.UserProfileProvider`), under the
+  drift check of `scripts/check-keycloak-realm-config.mjs`. `firstName` and
+  `lastName` stay on it, editable by an admin only and required of no one, so
+  no user-facing form shows them and no sign-in is held for them. Names already
+  stored are left alone: nothing in Kalia reads them
+  ([ADR-0071](0071-profile-a-name-tag-over-two-visibility-choices-and-one-error-style.md)).
+  The names were dropped, not kept optional, because personal data Kalia never
+  shows is not worth a visitor's typing on a phone. Keeping the two attributes
+  declared, rather than deleting them from the profile, leaves the names the
+  existing users carry in managed attributes, not in whatever Keycloak does with
+  a name its profile no longer declares.
 - **`passwordPolicy: "length(8)"`** — length over composition, matching
   current guidance and a deliberate improvement over today's no-minimum
   default.
@@ -141,12 +159,10 @@ non-goals defer, not a replacement for a Kalia-controlled email/password path.
   wrong shape of exhaustion while being trivially bypassable (see above).
 - Neutral, because the registration form's username field still accepts
   characters this task decided against (`@`, whitespace) — enforcing "URL-safe
-  characters only" needs a declarative user-profile change
-  (`realm.attributes.userProfileConfig`, a full replacement of Keycloak's
-  user-profile schema, not a merge) that was not built this session: getting
-  it wrong risks disabling registration entirely, worse than leaving the
-  constraint unenforced, and this session had no live Keycloak to verify the
-  correct schema against. Left as an explicit gap for the PR reviewer rather
+  characters only" is a validation on the `username` attribute of the
+  declarative user profile, which the realm file now carries (amended
+  2026-11-15); it is still not added, and getting it wrong risks disabling
+  registration entirely, worse than leaving the constraint unenforced. Left as an explicit gap for the PR reviewer rather
   than a guessed config; profile creation (which reads `preferred_username`)
   is unaffected either way since Kalia does not yet validate it itself.
 - **Revisit trigger:** if `/sign-up` ever needs to defend a public deployment

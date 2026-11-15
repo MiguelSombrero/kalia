@@ -170,7 +170,7 @@ The gates themselves:
   the technology without its number
   ([ADR-0020](docs/adr/0020-documentation-roles.md)).
 - **A CI vulnerability-scan failure is yours to fix on the open branch** — `implement-task` "A red check" ([ADR-0024](docs/adr/0024-dependency-vulnerability-scanning.md)).
-- **An unexpected failure gets a row in `docs/common-failures.md`; a known CI one is in `docs/ci-playbook.md`** — `implement-task` / `worktree` "A red check" ([ADR-0084](docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
+- **An unexpected local failure gets a row in `docs/common-failures.md`; a known CI one is in `docs/ci-playbook.md`** — `implement-task` / `worktree` "A red check" ([ADR-0084](docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
 
 ## Quality checks
 

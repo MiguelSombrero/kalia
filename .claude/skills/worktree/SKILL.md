@@ -71,19 +71,10 @@ output. So:
 1. Fetch first: `git fetch origin --prune`. A worktree branched off a local
    `dev` that has not moved in a week starts life behind, and every conflict
    that follows is a consequence of this one step being skipped.
-2. Read `dev`'s recent CI runs and log the red ones nobody has logged. A
-   run that goes red on `dev` after a merge has no session working on it, so
-   the session that starts work is the one that records it
-   ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)):
-   `gh run list --branch dev --workflow CI --status failure --limit 10
-   --json databaseId,createdAt,displayTitle`, and look at the runs from the
-   last seven days. A run is logged when a row in
-   [docs/common-failures.md](../../../docs/common-failures.md) names its id
-   or its pull request, or describes the same failure; for each that is not,
-   read `gh run view <id> --log-failed` and, once step 4 has made the
-   branch, append one row to it, naming the run id and the failing job in
-   *Where*. Only the `CI` workflow is read; the separate `Vulnerability
-   scan` and `CodeQL` workflows are not part of this step.
+2. Do not log a red CI run you did not see fail yourself, `dev`'s included.
+   The quality sweep collects them from the run history
+   ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)), so no session has to
+   read `dev`'s runs when it starts.
 3. Worktrees whose work has landed are removed for you:
    `scripts/prune-worktrees.mjs` runs from the `SessionStart` hook in
    `.claude/settings.json`, so it runs however the session was created, the
@@ -141,12 +132,13 @@ A check that goes red while you work in the worktree follows two rules, moved
 here whole from `CLAUDE.md`
 ([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)):
 
-- **An unexpected failure gets one appended row in
+- **An unexpected local failure gets one appended row in
   [docs/common-failures.md](../../../docs/common-failures.md)**, on the branch
   it happened on
   ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
-  A run that went red on `dev` after a merge belongs to no branch; Start
-  step 2 logs it.
+  A red CI run is not logged: the sweep reads the run history itself.
+  The row's last column names its cause: `external`, `defect, fixed` or
+  `defect, <owner>`, and `make check` fails a row without one.
 - **A CI check you have seen fail before is probably in
   [docs/ci-playbook.md](../../../docs/ci-playbook.md)**; add an entry when a
   failure costs real time to *recognise*, naming the run.

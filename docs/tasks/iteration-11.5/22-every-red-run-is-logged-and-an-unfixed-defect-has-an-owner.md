@@ -1,6 +1,6 @@
 # Task 22: Every red run is logged, and a defect left unfixed names who fixes it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -79,15 +79,15 @@ offline sync and its Maestro flows will add failure modes that only CI sees.
 
 ## Acceptance criteria
 
-- [ ] ADR-0084 is amended with the chosen collection route and the owner rule
-- [ ] The checker's test fails a fixture `defect` row left unfixed with no
+- [x] ADR-0084 is amended with the chosen collection route and the owner rule
+- [x] The checker's test fails a fixture `defect` row left unfixed with no
       owner, passes an `external` row for a registry outage, and fails a row
       with no cause kind; every existing row passes
-- [ ] The 2026-10-31 row for run 41231274792 names its owner
-- [ ] The sweep's skill names the command, and a dry run on this branch lists
+- [x] The 2026-10-31 row for run 41231274792 names its owner
+- [x] The sweep's skill names the command, and a dry run on this branch lists
       the red runs since 2026-10-27, the runs named in Why among those still
       inside GitHub's retention
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

@@ -13,10 +13,10 @@ RETRY := node scripts/retry-registry.mjs --
 .PHONY: help up down restart logs ps backend-test backend-verify repeat-it web-test packages-test mobile-lint mobile-test mobile-start mobile-metro-up mobile-metro-down mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check action-pins api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
-        verify-fast install-hooks next-adr sync-indexes stack-env app-config
+        verify-fast install-hooks next-adr sync-indexes stack-env app-config observability-up observability-down
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 stack-env: ## Give this worktree its own host ports for the stack, so it can run beside another's (writes the root .env)
 	node scripts/stack-env.mjs
@@ -28,8 +28,16 @@ app-config: ## Set what the server tells the app: make app-config [IOS=<build>] 
 up: ## Build and start the full stack in the background
 	docker compose up --build -d
 
-down: ## Stop the full stack
-	docker compose down
+down: ## Stop the full stack, the observability profile's containers included
+	docker compose --profile observability down
+
+observability-up: ## Start the observability profile beside the stack (Grafana at GRAFANA_PORT) and point the backend and the web at its collector; recreates only those two (needs Docker)
+	OBSERVABILITY_OTLP_ENDPOINT=http://lgtm:4318 docker compose --profile observability up -d
+	docker compose --profile observability up -d --no-recreate --wait --wait-timeout 600 lgtm alloy
+
+observability-down: ## Stop and remove the observability profile's containers, keeping its data, and recreate the backend and the web without the collector; the rest of the stack keeps running
+	docker compose --profile observability rm --stop --force lgtm alloy
+	docker compose up -d backend web
 
 restart: down up ## Restart the full stack
 
@@ -116,7 +124,7 @@ web-e2e: ## Run the web app's E2E tests (needs the stack up)
 lint: ## Lint the web app and the shared packages
 	npm run lint --workspace web --workspace @kalia/api --workspace @kalia/locales --workspace @kalia/tokens
 
-check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping/failure-doc-path checks and their self-tests
+check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping/failure-doc-path/common-failures-cause checks and their self-tests
 	node scripts/generate-tokens.mjs --check
 	node scripts/check-adrs.mjs
 	node scripts/check-doc-size.mjs
@@ -138,6 +146,7 @@ check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast
 	node scripts/check-clear-text-logging.mjs
 	node scripts/check-markup-stripping.mjs
 	node scripts/check-failure-doc-paths.mjs
+	node scripts/check-common-failures.mjs
 	node --test scripts/*.test.mjs
 
 compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only, or a `--wait` names no service or a one-shot (needs the docker CLI, no daemon)
@@ -175,6 +184,7 @@ keycloak-check: ## Fail if Keycloak's realm rejects sign-in (web or mobile clien
 	    || { $(RETRY) docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge \
 	         && docker compose run --rm keycloak-config; }
 	node scripts/check-keycloak-realm-config.mjs
+	node scripts/check-keycloak-templates.mjs
 	$(RETRY) docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 	node scripts/check-keycloak-pkce-flow.mjs testuser testuser123

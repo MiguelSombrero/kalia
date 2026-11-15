@@ -1,6 +1,6 @@
 # Task 17: Keycloak's pages ask only for what Kalia uses, and each says what it is
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -90,20 +90,20 @@ left all three out because it was a visual task
 
 ## Acceptance criteria
 
-- [ ] The Playwright sign-up spec registers with only a username, an email and
+- [x] The Playwright sign-up spec registers with only a username, an email and
       a password, and a test checks that the form has no name field
-- [ ] A test reads the page title of each of the six Keycloak pages in Constraints, in
+- [x] A test reads the page title of each of the six Keycloak pages in Constraints, in
       both languages, and each matches its agreed copy
-- [ ] A test finds the password-reset page's username field without
+- [x] A test finds the password-reset page's username field without
       `autocomplete="off"`
-- [ ] If the theme owns a copy of `template.ftl`, a test fails when the copy
+- [x] If the theme owns a copy of `template.ftl`, a test fails when the copy
       differs from the pinned Keycloak's upstream template it was taken from,
       and was seen to fail on an edited copy
-- [ ] The app's `sign-in.yaml` Maestro flow on Android passes, and a user
+- [x] The app's `sign-in.yaml` Maestro flow on Android passes, and a user
       registered through the shorter form signs in to the app
-- [ ] A user created before the change, with both names stored, still signs
+- [x] A user created before the change, with both names stored, still signs
       in, verified against the running stack
-- [ ] The theme's palette drift check and `make verify-fast` are green
+- [x] The theme's palette drift check and `make verify-fast` are green
 
 ## Notes
 

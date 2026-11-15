@@ -41,20 +41,14 @@ const kaliaUserId = async (page: Page, valkey: Redis): Promise<string> => {
   return (JSON.parse(raw!) as { userId: string }).userId;
 };
 
-// Fills the registration form's profile fields: the keycloak.v2 theme's
-// register.ftl asks for username/email/firstName/lastName but collects the
-// password separately, as a follow-up UPDATE_PASSWORD required action once
-// the address is verified (see setPasswordWhenPrompted below) — tolerate a
-// password field being present too, in case a differently themed realm adds
-// one back.
+// Fills the registration form's profile fields: Keycloak's form asks for a
+// username and an email and collects the password separately, as a follow-up
+// UPDATE_PASSWORD required action once the address is verified (see
+// setPasswordWhenPrompted below).
 const fillProfileFields = async (page: Page, fields: { username: string; email: string }) => {
   await page.locator("#username").waitFor();
   await page.locator("#username").fill(fields.username);
   await page.locator("#email").fill(fields.email);
-  if (await page.locator("#firstName").count()) {
-    await page.locator("#firstName").fill("E2E");
-    await page.locator("#lastName").fill("Test");
-  }
 };
 
 // Keycloak defers password collection to a separate UPDATE_PASSWORD required
@@ -254,8 +248,6 @@ test.describe("self-registration", () => {
         email: `${account.username}@example.com`,
         enabled: true,
         emailVerified: true,
-        firstName: "Admin",
-        lastName: "Duplicate",
       },
     });
 

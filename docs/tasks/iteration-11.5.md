@@ -32,7 +32,7 @@ around it — through every tier, reading it from a query rather than from
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-11.5/01-decision-the-local-observability-stack.md) | Decide the local observability stack and how an agent reads it | done |
-| [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | refined |
+| [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | done |
 | [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | refined |
 | [04](iteration-11.5/04-a-trace-shows-the-sql-a-request-ran.md) | A trace shows the SQL a request ran | refined |
 | [05](iteration-11.5/05-the-web-servers-telemetry-reaches-the-profile.md) | The web server's traces, metrics and logs reach the profile | refined |
@@ -51,12 +51,12 @@ around it — through every tier, reading it from a query rather than from
 | [14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md) | A font that fails or never loads leaves the app readable | refined |
 | [15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md) | Nothing is drawn beneath the central Add action | refined |
 | [16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md) | The seven-day signing expiry is watched, and what it does is written down | dropped |
-| [17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) | Keycloak's pages ask only for what Kalia uses, and each says what it is | refined |
+| [17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) | Keycloak's pages ask only for what Kalia uses, and each says what it is | done |
 | [18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md) | A contributor whose suggestions are rejected cannot refill the review queue without end | dropped |
 | [19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md) | A known transient CI failure is retried or prevented, not re-run by hand | done |
 | [20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md) | Two worktrees run side by side in phone mode, and a low disk is named before it fails a build | refined |
 | [21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md) | The CodeQL alerts open on `dev` are closed | done |
-| [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | refined |
+| [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | done |
 | [23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md) | Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check | refined |
 | [24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md) | The backlog and the READMEs state a decided fact once, as decided | refined |
 

@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { DEV_REALM_FILE, REALM_FILE, diffRealm, mergeRealmFiles, originProblems, resolvePlaceholders } from "./check-keycloak-realm-config.mjs";
+import { DEV_REALM_FILE, REALM_FILE, diffRealm, mergeRealmFiles, originProblems, resolvePlaceholders, userProfileOf } from "./check-keycloak-realm-config.mjs";
 
 const committedFixture = () => ({
   realm: "kalia",
@@ -412,4 +412,64 @@ test("diffRealm catches a realm role missing live, and one whose description was
   assert.match(missing.mismatches.join("\n"), /realm role "admin"/);
   const changed = diffRealm(committed, { ...liveFixture(), roles: [{ name: "admin", description: "Everyone" }] });
   assert.match(changed.mismatches.join("\n"), /description/);
+});
+
+const profileFixture = () => {
+  const attributes = [
+    { name: "username", permissions: { view: ["admin", "user"], edit: ["admin", "user"] } },
+    { name: "email", required: { roles: ["user"] }, permissions: { view: ["admin", "user"], edit: ["admin", "user"] } },
+    { name: "firstName", permissions: { view: ["admin"], edit: ["admin"] } },
+  ];
+  const committed = {
+    realm: "kalia",
+    components: {
+      "org.keycloak.userprofile.UserProfileProvider": [
+        { providerId: "declarative-user-profile", config: { "kc.user.profile.config": [JSON.stringify({ attributes })] } },
+      ],
+    },
+  };
+  // Keycloak adds a display name and a multivalued flag the file never pins.
+  const live = { ...liveFixture(), userProfile: { attributes: attributes.map((a) => ({ ...a, displayName: `\${${a.name}}`, multivalued: false })) } };
+  return { committed, live };
+};
+
+test("diffRealm passes when the live user profile matches the committed one", () => {
+  const { committed, live } = profileFixture();
+  const { mismatches, compared } = diffRealm(committed, live);
+  assert.deepEqual(mismatches, []);
+  assert.ok(compared > 0);
+});
+
+test("diffRealm catches a first name made required only in the admin console", () => {
+  const { committed, live } = profileFixture();
+  live.userProfile.attributes[2].required = { roles: ["user"] };
+  const { mismatches } = diffRealm(committed, live);
+  assert.ok(mismatches.some((m) => m.includes('"firstName".required')), mismatches.join("\n"));
+});
+
+test("diffRealm catches a name field the user may edit again", () => {
+  const { committed, live } = profileFixture();
+  live.userProfile.attributes[2].permissions.edit = ["admin", "user"];
+  const { mismatches } = diffRealm(committed, live);
+  assert.ok(mismatches.some((m) => m.includes('user profile attribute "firstName"')), mismatches.join("\n"));
+});
+
+test("diffRealm catches an attribute added to the user profile in the console", () => {
+  const { committed, live } = profileFixture();
+  live.userProfile.attributes.push({ name: "phone" });
+  const { mismatches } = diffRealm(committed, live);
+  assert.ok(mismatches.some((m) => m.includes('"phone": present live')), mismatches.join("\n"));
+});
+
+test("the committed realm asks registration for a username and an email only", () => {
+  const realm = JSON.parse(readFileSync(REALM_FILE, "utf8"));
+  const profile = userProfileOf(realm.components);
+  const askedOfUsers = profile.attributes
+    .filter((attribute) => attribute.permissions.edit.includes("user"))
+    .map((attribute) => attribute.name);
+  assert.deepEqual(askedOfUsers, ["username", "email"]);
+  assert.deepEqual(
+    profile.attributes.filter((attribute) => attribute.required).map((attribute) => attribute.name),
+    ["email"],
+  );
 });

@@ -241,7 +241,6 @@ test.describe("the edge proxy's limits", () => {
     await page.locator("#username").waitFor();
     await page.locator("#username").fill(username);
     await page.locator("#email").fill(`${username}@example.com`);
-    await fillNamesWhenAsked(page);
 
     const submit = `${KEYCLOAK_ORIGIN}/realms/kalia/login-actions/registration?session_code=x&execution=y&client_id=kalia-web&tab_id=z`;
     const responses = await Promise.all(
@@ -260,10 +259,3 @@ test.describe("the edge proxy's limits", () => {
     expect((await submitted).status()).toBe(429);
   });
 });
-
-const fillNamesWhenAsked = async (page: Page) => {
-  if (await page.locator("#firstName").count()) {
-    await page.locator("#firstName").fill("Edge");
-    await page.locator("#lastName").fill("Test");
-  }
-};

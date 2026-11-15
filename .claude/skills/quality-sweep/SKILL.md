@@ -22,7 +22,35 @@ until it is on disk, and re-exploring is what resuming costs without it
 ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 Update it as each dimension returns.
 
-## 2. Spawn subagents in parallel
+## 2. Collect the red CI runs
+
+The log of failures cannot hold what no agent watched: a workflow other than
+`CI`, a Dependabot branch, a run that went red after its author left
+([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
+So the sweep reads the red runs itself, from every workflow and every branch,
+before it dispatches anything. `SINCE` is the date of the previous sweep (the
+newest `docs/quality-sweep-*` pull request merged to `dev`); for the first
+collection it is **2026-10-27**, the earliest unlogged failure, and nothing
+before it is back-filled into the log.
+
+```bash
+gh run list --limit 1000 --created ">=SINCE" \
+  --json databaseId,workflowName,headBranch,event,createdAt,conclusion,displayTitle \
+  --jq '[.[] | select(.conclusion=="failure" or .conclusion=="timed_out" or .conclusion=="startup_failure")]'
+```
+
+Save the output outside the repository (the scratchpad) and name the path in
+the `process-quality` prompt. GitHub keeps runs for a limited time, so
+state in the pull request description the date of the oldest run the command
+returned: a run older than that is gone, not green. For each run the agent
+reads `gh run view <id> --log-failed`, groups runs that share a cause, and
+gives each group a cause kind — a repository `defect`, or `external` (a
+registry or mirror outage, a runner fault). A `defect` the history does not
+show fixed is a finding with a backlog entry of its own, which is the owner a
+row of the log would have had to name. An `external` cause is counted, not
+filed, unless it recurs often enough to need a retry or a pin.
+
+## 3. Spawn subagents in parallel
 
 Use the Agent tool with `subagent_type: Explore` for each dimension below
 (read-only audits — findings only, no fixes). Launch all five in a single
@@ -102,12 +130,15 @@ dimension: `.claude/` (skills, `rules/`, `settings.json`), `scripts/` and
 `scripts/hooks/`, the `Makefile`, `CLAUDE.md`, the merged pull
 requests and commits since the previous sweep
 ([ADR-0051](../../../docs/adr/0051-process-retrospection-belongs-to-the-sweep.md)),
+the red CI runs collected in step 2 (the prompt carries the path of that file),
 and the rows of `docs/common-failures.md` dated since then
 ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).
-That log is where agents record the failures the history hides. Grouping
-its rows into the same failure is this dimension's job: two rows from
-separate pull requests meet the recurrence bar below, and a fix commit or
-red CI run with no matching row is a finding against the log itself.
+The log is where agents record the local failures the history hides; the red
+runs are the ones CI shows. Grouping both into the same failure is this
+dimension's job: two occurrences in separate pull requests meet the
+recurrence bar below. A fix commit with no matching row or red run is a
+finding against the log itself, and a red run whose cause was a repository
+defect that no pull request fixed is a finding of its own.
 The two overlaps are `docs/PULL_REQUEST_TEMPLATE.md` and that log's
 header, which documentation-quality already reads for staleness — read
 them here only as gate mechanisms (what they make happen, and whether
@@ -152,7 +183,7 @@ the prompt must carry them:
   dimension is most prone to. Reporting that the process looks sound is a
   valid result.
 
-## 3. Categorize and merge into the backlog
+## 4. Categorize and merge into the backlog
 
 Collect all findings from all five subagents. Categorize each MoSCoW-style:
 
@@ -211,7 +242,7 @@ and file reference. If a sweep genuinely finds nothing new and nothing to
 reconfirm, make no changes to the file and say so in the PR description
 rather than inventing findings to fill one.
 
-## 4. Open a PR
+## 5. Open a PR
 
 Branch `docs/quality-sweep-<date>` off up-to-date `dev`. Commit the
 `docs/tasks/quality-backlog.md` change. Push and open a PR whose

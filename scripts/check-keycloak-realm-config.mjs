@@ -129,6 +129,15 @@ export const mergeRealmFiles = (specs) => ({
   clients: specs.flatMap((spec) => spec.clients ?? []),
 });
 
+const USER_PROFILE_PROVIDER = "org.keycloak.userprofile.UserProfileProvider";
+
+// The declarative user profile the realm file carries as a component whose one
+// config value is the profile's JSON, as keycloak-config-cli takes it.
+export const userProfileOf = (components) => {
+  const text = components?.[USER_PROFILE_PROVIDER]?.[0]?.config?.["kc.user.profile.config"]?.[0];
+  return text === undefined ? undefined : JSON.parse(text);
+};
+
 // Compares the committed realm (a partial spec) against observed live state.
 // The file is treated as a set of assertions: every scalar it pins must equal
 // the live value, every array it lists must match as a set (an entry added in
@@ -187,6 +196,34 @@ export const diffRealm = (spec, live) => {
       // of check-keycloak-admin.mjs.
       for (const role of value.realm ?? []) {
         compare(`realm role "${role.name}"`, role, (live.roles ?? []).find((candidate) => candidate.name === role.name));
+      }
+      continue;
+    }
+    if (key === "components") {
+      // Keycloak serves the user profile from its own endpoint, not in the
+      // realm representation. Every attribute is compared whole, and a
+      // `required` the file leaves out must be absent live too, because an
+      // omitted key is otherwise not checked (a first name made required in
+      // the console would put the name fields back on the registration form).
+      const wanted = userProfileOf(value);
+      if (wanted) {
+        const liveAttributes = live.userProfile?.attributes ?? [];
+        for (const attribute of wanted.attributes ?? []) {
+          const liveAttribute = liveAttributes.find((candidate) => candidate.name === attribute.name);
+          compare(`user profile attribute "${attribute.name}"`, attribute, liveAttribute);
+          compared++;
+          if (serialise(attribute.required ?? null) !== serialise(liveAttribute?.required ?? null)) {
+            mismatches.push(
+              `user profile attribute "${attribute.name}".required: committed ${serialise(attribute.required ?? null)} != live ${serialise(liveAttribute?.required ?? null)}`,
+            );
+          }
+        }
+        const wantedNames = (wanted.attributes ?? []).map((attribute) => attribute.name);
+        for (const liveAttribute of liveAttributes) {
+          if (!wantedNames.includes(liveAttribute.name)) {
+            mismatches.push(`user profile attribute "${liveAttribute.name}": present live, not in the committed file`);
+          }
+        }
       }
       continue;
     }
@@ -275,7 +312,8 @@ const fetchLiveRealm = async (clientIds) => {
     if (client) clients[clientId] = client;
   }
   const roles = await fetchJson(token, `/admin/realms/${REALM}/roles`);
-  return { realm, clients, roles };
+  const userProfile = await fetchJson(token, `/admin/realms/${REALM}/users/profile`);
+  return { realm, clients, roles, userProfile };
 };
 
 const run = async () => {
