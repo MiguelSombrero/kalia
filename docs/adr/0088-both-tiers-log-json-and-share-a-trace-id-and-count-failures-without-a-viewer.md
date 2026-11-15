@@ -9,6 +9,9 @@
 - **Amended:** 2026-11-07 — iteration 11 task 19: the network is the boundary
   for the whole actuator, so the backend answers it without a token and the
   counters need no credential to scrape (see Decision)
+- **Amended:** 2026-11-15 by [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md) — a local, opt-in observability
+  profile stores and shows what this ADR left unviewed; see the notes under
+  Decision, Alternatives considered and Consequences
 
 ## Context
 
@@ -89,6 +92,16 @@ view any of it.
 This does not add a hosted monitoring service, alerting, a log shipper or a
 dashboard, and does not cover mobile crash reporting.
 
+> **Amended 2026-11-15 ([ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)).** **A local, opt-in profile now
+> adds the store and viewer this ADR left out:** one `grafana/otel-lgtm`
+> container that both tiers' traces and the counters reach, with a shipper that
+> reads every service's stdout. The scope above stands for the stack without the
+> profile and for a deployment: the base compose file gains nothing, no hosted
+> service or alerting is added, and the JSON logs, the shared trace id and the
+> counters are unchanged. Tracing is no longer context only when the profile is
+> on: the OpenTelemetry bridge replaces Brave and exports over OTLP when an
+> endpoint is set.
+
 ## Alternatives considered
 
 - **OpenTelemetry with a local viewer** (a collector plus Grafana, Tempo or
@@ -97,6 +110,8 @@ dashboard, and does not cover mobile crash reporting.
   the iteration asks — what failed, how often, which request — are answered
   without a viewer. The `traceparent` header and the Micrometer bridge are the
   parts that would be kept, so this stays reachable.
+  *(Taken up 2026-11-15 as an opt-in profile in [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md); the
+  reasons for rejecting it as a default stand.)*
 - **Logs only, no metrics.** Rejected: the silent refresh failure is a
   *rate* question (is it one user's expired session or every user's Keycloak
   outage), which a line in a log answers only by someone reading all of them.
@@ -107,6 +122,8 @@ dashboard, and does not cover mobile crash reporting.
   Not chosen: both produce the same ids and propagate the same header, and
   nothing here depends on which. Brave was picked without a measured reason;
   swapping the bridge is a dependency change, not a redesign.
+  *(Swapped 2026-11-15 in [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md): the exporter that Brave's bridge
+  would also have needed is the OpenTelemetry one.)*
 - **`prom-client` instead of `@prometheus-io/client`.** Rejected: npm marks
   `prom-client` deprecated ("replaced by `@prometheus-io/client`"), the same
   repository's successor, and its API is the one used here.
@@ -132,6 +149,9 @@ dashboard, and does not cover mobile crash reporting.
 - Bad, because the counters are per process and reset on restart, with no
   aggregation across instances; a deployment that wants history has to bring a
   scraper.
+  *(Amended 2026-11-15: with the local profile on, a scraper keeps them for
+  three days and they survive a restart of the process that counted them;
+  [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md). A deployment still brings its own.)*
 - Bad, because the backend's token-protected endpoint cannot be scraped by a
   stock Prometheus without a Keycloak client for it; a local developer copies a
   token from Swagger UI instead. That is a deployment question this decision

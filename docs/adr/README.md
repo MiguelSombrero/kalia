@@ -318,6 +318,10 @@ in one place, read
   — both tiers log JSON and share a W3C trace id, and failures are counted by
   Micrometer and `@prometheus-io/client` behind a token, with no viewer added to the
   stack.
+- [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)
+  — an opt-in Compose profile runs one `grafana/otel-lgtm` container beside the
+  local stack, every tier sends to it, and an agent reads it through Grafana's
+  MCP server and a bounded `make` command; amends ADR-0088.
 - [ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)
   — `docker-compose.base.yml` is the deployable definition and requires every
   secret; the local stack adds the dev values, the seed service and the Swagger
@@ -614,3 +618,4 @@ reasons and its rate is worth watching independently
 | [ADR-0111](0111-the-beer-style-to-group-mapping-lives-in-kalia-api-so-both-clients-colour-a-style-alike.md) | The beer-style-to-group mapping lives in `@kalia/api`, so both clients colour a style alike | accepted | 2026-11-11 |
 | [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md) | The phone follows the system into a dark mode of neutral cards with the style colour in a slab, and keeps the mark off dark pages | accepted | 2026-11-13 |
 | [ADR-0113](0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md) | The phone moves a little to explain a change and taps only for the result of an action, both following the system's settings | accepted | 2026-11-13 |
+| [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md) | An opt-in profile stores traces, logs and metrics in one local Grafana container that an agent reads through a bounded interface | accepted | 2026-11-15 |

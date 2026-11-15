@@ -1,6 +1,6 @@
 # Task 01: Decide the local observability stack and how an agent reads it
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-6
 
@@ -100,26 +100,66 @@ An ADR records, and amends ADR-0088 to point at:
 
 ## Acceptance criteria
 
-- [ ] An ADR records the store, the switch, each tier's path to it, how an
+- [x] An ADR records the store, the switch, each tier's path to it, how an
       agent reads it and what CI runs, passes `node scripts/check-adrs.mjs`,
       and ADR-0088 carries an amendment pointing at it
-- [ ] `docs/architecture.md`'s observability bullet and trade-off name the
+- [x] `docs/architecture.md`'s observability bullet and trade-off name the
       decision, and `make check` is green
-- [ ] A throwaway spike ran the chosen store beside the stack and received one
+- [x] A throwaway spike ran the chosen store beside the stack and received one
       backend trace, and the ADR cites its memory and startup cost — nothing
       from it is committed
-- [ ] The ADR names each test the decision implies — no query string in a
+- [x] The ADR names each test the decision implies — no query string in a
       span, the stack unchanged without the profile, an agent's answer
       bounded in size — and each one is an acceptance criterion of one of
       tasks 02–09, as refined
-- [ ] Every new dependency the ADR implies — the `otel-lgtm` image, the log
+- [x] Every new dependency the ADR implies — the `otel-lgtm` image, the log
       shipper, the OpenTelemetry bridge, `datasource-micrometer`,
       `@vercel/otel`, Grafana's MCP server and the exporters task 06 adds —
       is listed with the version the product owner chose, in one batched
       question
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
+
+### Versions chosen
+
+The one batched question the iteration's tasks point at, answered by the
+product owner on 2026-11-15. The ADR names each technology and not its version
+([ADR-0020](../../adr/0020-documentation-roles.md)); the manifest that pins it
+is the version's one home once pinned, and this table is where tasks 02–09 read what to
+write into it. Versions were taken from each registry's own metadata, the
+newest stable release that day.
+
+| Dependency | Version | Pinned in | Task |
+|---|---|---|---|
+| `grafana/otel-lgtm` (image) | 0.41.0 | `docker-compose.override.yml` | 02 |
+| Grafana Alloy, `grafana/alloy` (image) | v1.22.0 | `docker-compose.override.yml` | 02, 06 |
+| `micrometer-tracing-bridge-otel`, `spring-boot-micrometer-tracing-opentelemetry` and `opentelemetry-exporter-otlp` | managed by Spring Boot 4.1.1 (Micrometer Tracing 1.7.1, OpenTelemetry 1.62.0); no version of their own | `backend/pom.xml` | 03 |
+| `datasource-micrometer-spring-boot` (`net.ttddyy.observation`) | 2.3.0, built against Spring Boot 4.1.1 | `backend/pom.xml` | 04 |
+| `@vercel/otel` | 2.3.0, with the `@opentelemetry/*` peers its ranges name, resolved by npm | `web/package.json` | 05 |
+| Grafana MCP server, `grafana/mcp-grafana` (image) | 2.3.0 | the wrapper `.mcp.json` runs | 07 |
+| `dhi.io/postgres-exporter` (image) | 0.20.1 | `docker-compose.override.yml` | 06 |
+| `dhi.io/redis-exporter` (image) | 1.97.0 | `docker-compose.override.yml` | 06 |
+
+Keycloak's metrics are its own built-in endpoint and add no dependency.
+
+The product owner chose the two exporters from Docker's hardened-image catalog
+over the community images first proposed (`prometheuscommunity/postgres-exporter`
+v0.20.1, `oliver006/redis_exporter` v1.97.0), preferring a publisher Docker
+stands behind. Both pulled without a login and are multi-architecture.
+
+### What the spike changed for the tasks
+
+The spike ([ADR-0114](../../adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md#evidence)) contradicted no decision: the
+profile's working set, about 1.0–1.2 GiB beside a stack of about 1.5 GiB,
+is the cost the decision accepted, and the container's limit is 2 GiB. It did
+add facts the tasks need, recorded in the tasks themselves:
+
+- [Task 02](02-the-observability-profile-starts-beside-the-stack.md): the image declares no
+  volume, its first start downloads about 600 MB of Grafana plugins, and
+  Prometheus has no scrape job until a file is mounted over its configuration.
+- [Task 06](06-the-other-services-logs-and-metrics-reach-the-profile.md): the exporters are the
+  hardened images, and the shipper must be scoped to its own Compose project.
 
 Provenance: the product owner's request on 2026-11-06, after a review of what
 production-grade infrastructure Kalia lacks, to give agents a stack they can

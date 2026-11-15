@@ -79,8 +79,11 @@ flowchart LR
   the cellar ([ADR-0006](adr/0006-cellar-first.md)).
 - **Polling, no persistent connection** anywhere in the stack
   ([ADR-0060](adr/0060-feed-delivery-is-polling.md)).
-- **One trace id, JSON logs and counters, no viewer**
-  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+- **One trace id, JSON logs and counters; a viewer only in an opt-in local
+  profile** that stores traces, logs and metrics in one Grafana container an
+  agent queries
+  ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md),
+  [ADR-0114](adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)).
 - **Only the edge proxy is published by the deployable stack**, with
   per-address limits; the dev overlay also publishes Postgres, Valkey, Mailpit
   and Keycloak's admin console on loopback
@@ -327,8 +330,11 @@ local gate and the CI gate: [ADR-0046](adr/0046-edit-time-checks-and-one-verify-
 - **No catalog read cache, measured:** indexes keep reads inside the budget, at
   the cost of re-measuring when the catalog's size or queries change
   ([ADR-0078](adr/0078-catalog-reads-over-budget-for-want-of-an-index-stay-uncached.md)); the method is in the ADR's Evidence.
-- **Built-in observability and no viewer:** counters are per process and reset
-  on restart ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+- **Built-in observability, and a viewer only on request:** without the local
+  profile, counters are per process and reset on restart; with it, they and the
+  traces and logs are kept, with retention set to three days, at about 1.2 GiB of memory beside the
+  stack ([ADR-0088](adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md),
+  [ADR-0114](adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)).
 - **Single instance, accepted where written down:** a second backend instance
   would reset the first's in-flight event deliveries. Revisit at the first
   multi-instance deployment ([ADR-0081](adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md)).
