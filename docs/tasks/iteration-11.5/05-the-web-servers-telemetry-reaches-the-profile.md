@@ -1,6 +1,6 @@
 # Task 05: The web server's traces, metrics and logs reach the profile
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-2, DW-3
 
@@ -61,17 +61,17 @@ With the profile off, it behaves as today.
 
 ## Acceptance criteria
 
-- [ ] With the profile on, loading a cellar page in a browser produces one
+- [x] With the profile on, loading a cellar page in a browser produces one
       trace holding the web server's request span and, under it, a span per
       backend call with the backend's spans beneath each — verified in the
       viewer against the running stack
-- [ ] A Vitest test shows that a request whose URL carries a query string or a
+- [x] A Vitest test shows that a request whose URL carries a query string or a
       session cookie, or whose path holds a username, exports no span
       attribute or log field containing any of them, and was seen to fail with
       the SDK's defaults
-- [ ] A Vitest test shows the web server starting and serving with no exporter
+- [x] A Vitest test shows the web server starting and serving with no exporter
       endpoint configured
-- [ ] The refresh-failure and backend-failure counters are queryable in the
+- [x] The refresh-failure and backend-failure counters are queryable in the
       store after the web container restarts
-- [ ] `web/README.md` says what is exported and when, and `make verify-fast` is
+- [x] `web/README.md` says what is exported and when, and `make verify-fast` is
       green

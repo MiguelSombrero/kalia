@@ -1,4 +1,5 @@
 import { kaliaFetch } from "@kalia/api";
+import { trace } from "@opentelemetry/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { currentTraceparent } from "@/lib/api/requestTrace";
@@ -58,6 +59,23 @@ describe("the web's wiring of the shared generated client", () => {
     expect(headers.get("Authorization")).toBe("Bearer token-abc");
     expect(headers.get("traceparent")).toBe(incoming);
   });
+
+  it.each([undefined, ""])(
+    "starts and serves with no collector configured (OTEL_EXPORTER_OTLP_ENDPOINT %j): no span, and the request's own trace",
+    async (endpoint) => {
+      vi.stubEnv("OTEL_EXPORTER_OTLP_ENDPOINT", endpoint);
+      const fetchMock = vi.fn(async () => Response.json([]));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(register()).resolves.toBeUndefined();
+      const response = await kaliaFetch("/api/v1/cellar", { method: "GET" });
+
+      expect(response).toMatchObject({ status: 200 });
+      const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+      expect(new Headers(init.headers).get("traceparent")).toBe(incoming);
+      expect(trace.getTracer("kalia-web").startSpan("probe").isRecording()).toBe(false);
+    },
+  );
 
   it("keeps logging every call under its trace id, and counting a server error", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
