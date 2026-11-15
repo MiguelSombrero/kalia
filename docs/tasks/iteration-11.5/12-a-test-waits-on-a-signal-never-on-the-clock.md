@@ -8,7 +8,7 @@
 
 Two tests check behaviour against the wall clock:
 
-- **`CatalogList.test.tsx` checks the debounce in real time.** Its `settle`
+- **`CatalogScreen.flow.test.tsx` checks the debounce in real time.** Its `settle`
   helper sleeps 450 ms against the screen's 300 ms pause. On a loaded runner the
   margin shrinks, and an assertion that no request was sent yet can pass or fail
   by timing alone. `FiltersSheet.test.tsx` and `AppGate.test.tsx` in the app,
@@ -79,7 +79,7 @@ test, because it shows a criterion as covered when it is not.
 
 ## Acceptance criteria
 
-- [ ] `CatalogList.test.tsx`, `FiltersSheet.test.tsx` and `AppGate.test.tsx`
+- [ ] `CatalogScreen.flow.test.tsx`, `FiltersSheet.test.tsx` and `AppGate.test.tsx`
       use fake timers, and each passes 50 runs in a row with
       `--runInBand` while the machine is under load from another suite
 - [ ] `admin-review.spec.ts`'s "a rejected beer is withheld" fails against a

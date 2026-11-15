@@ -49,8 +49,8 @@ The app follows [web/CONVENTIONS.md](../web/CONVENTIONS.md) wherever a rule is n
   | **A word a screen reader says is the platform's or ours (`@kalia/locales`),** never React Native's own table | the walk, in a Finnish and an English voice |
   | **Focus follows the page:** a page swap inside a sheet sends `AccessibilityInfo.sendAccessibilityEvent(ref, "focus")` to the new page's heading, going in and coming back | `FiltersSheet.test.tsx`; the walk |
   | **A group of choices is a labelled `radiogroup`;** a list's rows carry their own names | the helper; the walk |
-  | **A message the user did not move to is announced** (`useAnnounce`): a failure and an empty result, never a load | `states.test.tsx`; the walk |
-  | **Motion stops under reduced motion** ([ADR-0113](../docs/adr/0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)) | `motion.reduced.test.tsx` |
+  | **A message the user did not move to is announced** (`useAnnounce`): a failure and an empty result, never a load | `EmptyState.flow.test.tsx`; the walk |
+  | **Motion stops under reduced motion** ([ADR-0113](../docs/adr/0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md)) | `index.reduced.test.tsx` |
   | **Text grows to the largest size** (iOS size 5, Android 200 %, a Jest font scale of 3.1): no `allowFontScaling={false}`, `numberOfLines` or fixed height on text; the tab bar caps its labels (`tabLabelScale`), titles stop at twice (`titleScale`) | `expectScalesWithText()`; `largestText.app.test.tsx` |
 
   A test that renders the app's routes is `src/testing/*.app.test.tsx`, the one place a test may import across features (ESLint).
@@ -69,3 +69,22 @@ The app follows [web/CONVENTIONS.md](../web/CONVENTIONS.md) wherever a rule is n
   reasoned `token-exception` ([ADR-0066](../docs/adr/0066-token-only-styling-is-a-build-check.md),
   [ADR-0107](../docs/adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md)).
 - **A style sheet is built once, outside the component** (ESLint): `StyleSheet.create` at module level, or `createThemedStyles((colors) => ({…}))` from `src/lib/design/themedStyles.ts` when it reads a colour, which builds the light and dark sheets once. A variant a prop picks is an entry of its own in the style array (`[styles.label, selected && styles.labelSelected]`); only a value known at run time, such as an inset, the keyboard's height or a beer's colour, goes inline.
+
+## Tests
+
+Jest and React Native Testing Library; the web's rules in
+[web/CONVENTIONS.md](../web/CONVENTIONS.md) apply where they are not about the browser.
+
+- **A test queries as the user finds it:** `getByRole` with a name first, then `getByText` or `getByLabelText`; `getByTestId` only for what has neither (a placeholder block). A role is also what `expectAccessibleStructure()` holds (no check; review).
+- **A test mocks only the transport, the native modules and the clock:** `registerTransport(fake)` from `@kalia/api` for the network, `jest.mock("expo-…")` for a module with no JavaScript in it, a fake `TokenStore` (`src/testing/fakeTokenStore.ts`) for the keychain. Never a feature's hook, a screen, a store or `@/lib/…`: a test that mocks what the app wrote proves only the mock (no check; review).
+- **A component renders through `renderWithLocale()`** (`src/testing/`), which wraps the real `AppProviders`: the i18n, the query client and the token store the app runs with. A bare `render()` is for a primitive that reads no provider (no check).
+- **A test file is named after the source file beside it**, `Sheet.test.tsx` for `Sheet.tsx` (`index.test.tsx` for an `index.ts` barrel), **or after it plus one suffix**, `Sheet.appearance.test.tsx`. `scripts/check-test-names.mjs` fails any other name in `make verify-fast`; a new suffix is a line in its `APPS` table and a row here.
+
+  | Suffix | A test of | Needs a source beside it |
+  | --- | --- | --- |
+  | `.appearance` | how the source looks: each colour mode, the largest text size | yes |
+  | `.independence` | a screen that must import nothing an installed build can outgrow (`independentScreenFiles`) | yes |
+  | `.reduced` | the source under the system's reduce-motion setting | yes |
+  | `.session` | the source across a change of viewer: sign-in, sign-out, a refused refresh | yes |
+  | `.flow` | one behaviour across several sources, named after the one it is entered through | yes |
+  | `.app` | the whole app's routes (`src/testing/` only) | no |

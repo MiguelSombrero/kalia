@@ -293,7 +293,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   hooks are held by no test. `nextBeerPage`
   (`mobile/src/features/catalog/hooks/useBeers.ts`) stops paging at
   `MAX_RESULT_WINDOW`, the bound past which the backend answers `400`, and
-  `CatalogList.test.tsx` covers only the exhausted list; `useResultCount`
+  `CatalogScreen.flow.test.tsx` covers only the exhausted list; `useResultCount`
   (`hooks/useFilterOptions.ts`) hides a stale count by reference equality, and
   `FiltersSheet.test.tsx` exercises only its debounce.
 - **COULD-149** *(confirmed 2026-11-14)* **[needs decision]** — The page
