@@ -13,19 +13,20 @@ import { fileURLToPath } from "node:url";
 
 export const ATTEMPTS = 3;
 export const DELAY_SECONDS = 15;
+const OUTPUT_KEPT = 1_000_000;
 
 /**
  * What a registry outage prints, as each tool words it: Maven Central failing
  * a build's `dependency:go-offline`, a 5xx from quay.io, Docker Hub or Maven
- * Central, and a connection dropped mid-transfer. Anything else is the
+ * Central, and a connection reset, timed out or cut off mid-transfer. Anything else is the
  * command's own failure and ends the run at once.
  */
 export const REGISTRY_SIGNATURES = [
   /Non-resolvable parent POM/,
   /Could not transfer artifact/,
   /\b5\d\d (?:Internal Server Error|Bad Gateway|Service Unavailable|Gateway Time-?out)\b/i,
-  /(?:status(?: code)?|HTTP\/[\d.]+|Return code is:?)[: ]+5\d\d\b/i,
-  /connection reset|ECONNRESET/i,
+  /(?:status code|HTTP\/[\d.]+|Return code is:?)[: ]+5\d\d\b/i,
+  /connection reset|ECONNRESET|TLS handshake timeout|i\/o timeout|unexpected EOF/i,
 ];
 
 /** The signature in a command's output, or undefined when the failure is not a registry's. */
@@ -63,8 +64,9 @@ export const runCommand = ([command, ...args]) =>
     const child = spawn(command, args, { stdio: ["inherit", "pipe", "pipe"] });
     let output = "";
     for (const [stream, target] of [[child.stdout, process.stdout], [child.stderr, process.stderr]]) {
+      stream.setEncoding("utf8");
       stream.on("data", (chunk) => {
-        output += chunk;
+        output = (output + chunk).slice(-OUTPUT_KEPT);
         target.write(chunk);
       });
     }

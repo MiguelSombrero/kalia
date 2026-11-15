@@ -22,6 +22,8 @@ const FAILURES = {
   "a Maven transfer status": "Transfer failed ... status: 503 ... Return code is: 502, ReasonPhrase: Bad Gateway.",
   "a connection reset by the peer": "read tcp 10.0.0.2:44112->104.18.122.25:443: read: connection reset by peer",
   "a reset connection in Node's words": "Error: read ECONNRESET",
+  "a TLS handshake timeout": "Error response from daemon: Get \"https://registry-1.docker.io/v2/\": net/http: TLS handshake timeout",
+  "a dropped transfer": "error pulling image configuration: unexpected EOF",
 };
 
 const NOT_REGISTRY = {
@@ -30,6 +32,7 @@ const NOT_REGISTRY = {
   "a failed test": "Tests run: 52, Failures: 1, Errors: 0\n[ERROR] BeerServiceTest.rejectsBlankName:48 expected: <400> but was: <500>",
   "a missing image": "pull access denied for kalia/missing, repository does not exist or may require 'docker login'",
   "a finding": "Total: 1 (HIGH: 1, CRITICAL: 0)",
+  "a test's own status": "expected exit status 500 but was 1",
   "a 404": "unexpected status code 404 Not Found",
   "a Dockerfile typo": "failed to solve: dockerfile parse error on line 3: unknown instruction: RUNN",
   nothing: "",

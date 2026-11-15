@@ -299,10 +299,11 @@ download Java DB … mirror.gcr.io/aquasec/trivy-java-db:1 … unexpected status
 code 404 Not Found`.** Not a finding: Trivy could not fetch its own
 vulnerability database from the mirror, so the image was never scanned. It hit
 `dev` in run `40166251873` and PR #421 in run `40166341881`, hours apart, and
-passed on a re-run. The scan step now names `ghcr.io/aquasecurity/trivy-java-db:1`
+passed on a re-run. The scan step names `ghcr.io/aquasecurity/trivy-java-db:1`
 as a second repository after the mirror (`TRIVY_JAVA_DB_REPOSITORY` in
-`vulnerability-scan.yml`), so a 404 from the mirror falls through to GitHub's
-registry on its own. Only a failure that names both repositories needs a re-run
+`vulnerability-scan.yml`; the pinned Trivy defaults to the same pair, and
+spelling it out keeps a newer default from dropping it), so a 404 from the
+mirror should fall through to GitHub's registry on its own. Only a failure that names both repositories needs a re-run
 (`gh run rerun <id> --failed`); change nothing in the diff. One image scan runs
 per image the deployable stack runs (`scripts/scan-images.mjs`), so every leg
 of the matrix can hit this together.

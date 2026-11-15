@@ -277,6 +277,11 @@ export const waitProblems = ({ text, source, oneShots = ONE_SHOT_SERVICES }) => 
   for (const { number, text: line } of logicalLines(text)) {
     if (!/(?:^|[\s"'`,(\[])--wait(?=$|[\s"'`,)\]])/.test(line)) continue;
     const words = wordsOf(line);
+    if (!words.includes("up")) {
+      if (!/[\s,[]["']--wait["']\s*[,\]]/.test(line)) continue;
+      problems.push(`${source}:${number}: \`--wait\` without \`up\` on the same line, so the command it belongs to cannot be read`);
+      continue;
+    }
     for (let start = words.indexOf("up"); start >= 0; start = words.indexOf("up", start + 1)) {
       const args = [];
       for (let at = start + 1; at < words.length && !COMMAND_END.test(words[at]); at += 1) args.push(words[at]);
@@ -290,7 +295,7 @@ export const waitProblems = ({ text, source, oneShots = ONE_SHOT_SERVICES }) => 
       if (services.length === 0) problems.push(`${where}: \`docker compose up --wait\` names no service, so it waits on every one, the one-shot ones too`);
       for (const service of services) {
         if (oneShots.includes(service)) problems.push(`${where}: \`docker compose up --wait\` names ${service}, which exits when it is done; \`docker compose run --rm ${service}\` waits for it`);
-        else if (service.includes("$")) problems.push(`${where}: \`docker compose up --wait\` names its service as ${service}, which this check cannot read`);
+        else if (service.includes("$") || service.startsWith(".")) problems.push(`${where}: \`docker compose up --wait\` names its service as ${service}, which this check cannot read`);
       }
     }
   }

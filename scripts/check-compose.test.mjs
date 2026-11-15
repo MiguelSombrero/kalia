@@ -422,6 +422,11 @@ test("waitProblems fails a service named by a variable it cannot read", () => {
   assert.match(waitFixture("docker compose up -d --wait $SERVICES")[0], /names its service as \$SERVICES, which this check cannot read/);
 });
 
+test("waitProblems fails a --wait it cannot tie to an up, or a spread service list", () => {
+  assert.match(waitFixture('compose("up", "-d",\n  "--wait", "edge");')[0], /without `up` on the same line/);
+  assert.match(waitFixture('compose("up", "-d", "--wait", ...services);')[0], /cannot read/);
+});
+
 test("waitProblems ignores --wait-timeout on its own, a comment and an up without --wait", () => {
   assert.deepEqual(waitFixture("docker compose up -d --wait-timeout 60 edge"), []);
   assert.deepEqual(waitFixture("# docker compose up --wait\n// compose(\"up\", \"--wait\")\n"), []);
