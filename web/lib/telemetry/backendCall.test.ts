@@ -2,15 +2,14 @@ import { type Context, context, type ContextManager, ROOT_CONTEXT, SpanStatusCod
 import { BasicTracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { kaliaFetch } from "@/lib/api/mutator";
+import { currentTraceparent } from "@/lib/api/requestTrace";
 import { logger } from "@/lib/logger";
-
-import { kaliaFetch } from "./mutator";
-import { currentTraceparent } from "./requestTrace";
 
 vi.mock("@/lib/logger", () => ({
   logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
-vi.mock("./requestTrace", () => ({ currentTraceparent: vi.fn(async () => undefined) }));
+vi.mock("@/lib/api/requestTrace", () => ({ currentTraceparent: vi.fn(async () => undefined) }));
 
 // What `cache` does for one render: the same value on every call until the next test.
 let render = 0;
