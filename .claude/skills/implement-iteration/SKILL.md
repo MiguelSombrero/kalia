@@ -71,8 +71,10 @@ when one session works the tasks serially: it opens the two pull requests too.
    - linked sessions (`list_sessions` with `linked: true`) and any task
      marked `in-progress` with neither a session nor a pull request, which goes
      to the PO;
-   - whether the roadmap row already reads `🔄 In progress` (then step 4 is
-     skipped) or every task is `done` (then go straight to step 12).
+   - the roadmap row: already `🔄 In progress`, or an opening pull request
+     already open (then step 4 is skipped); every task `done` (then go straight
+     to step 12, unless a closing pull request is already open or the row reads
+     `✅ Done`, when only the PO's merge is left).
 
    At an iteration's start, suggest `/quality-sweep` once; it is the PO's to
    run (`CLAUDE.md` "Quality checks").
