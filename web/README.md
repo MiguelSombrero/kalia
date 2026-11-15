@@ -30,13 +30,16 @@ run scripts from `web/` or from the root with `--workspace web`. The stack:
 | `VALKEY_URL` | `redis://localhost:6379` | Session store; carries the password `redis://:<password>@host:6379` (dev: `docker-compose.dev.env`) |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 | `METRICS_TOKEN` | — | Bearer token for `/api/metrics`; unset answers 404. Optional |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | The OpenTelemetry collector spans are exported to; empty or unset exports nothing. Optional; `make observability-up` sets it |
 
 Compose sets all of them. One needed in production goes in `REQUIRED_IN_PRODUCTION`
 (`lib/config/requiredConfiguration.ts`).
 
 ## Observability
 
-Built in, with no viewer ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+Logs and counters are built in; spans and a viewer come with the opt-in profile
+([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md),
+[ADR-0114](../docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)).
 
 - **Logs**: `docker compose logs web --no-log-prefix | jq -c .`; each backend
   call carries a `traceId`: grep it in `docker compose logs --no-log-prefix`
@@ -45,6 +48,28 @@ Built in, with no viewer ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-sh
   `kalia_token_refresh_failures_total`, `kalia_backend_call_failures_total`,
   `kalia_request_errors_total`. Add one in `lib/metrics/metrics.ts`; label
   values must be a closed set, never an id or a URL.
+- **With the profile** (`make observability-up`), all three reach one store:
+  - *Spans* are exported over OTLP to the collector in `OTEL_EXPORTER_OTLP_ENDPOINT`
+    (`lib/telemetry/`). A browser request is a span, Next.js's render spans
+    sit under it, and each backend call (`lib/api/mutator.ts`) is a client span
+    under those that sends the backend its own `traceparent`, so the backend's
+    spans nest under it. A Server Action is a request like any other, and a
+    token refresh made while serving one is a `token refresh` span. Identical
+    GETs in one render share a span and a header, which keeps Next.js
+    memoizing them.
+  - *Counters* are scraped from `/api/metrics` by the profile's Prometheus
+    (`observability/prometheus.yaml`) with the dev `METRICS_TOKEN`, so they
+    outlive a restart of this container.
+  - *Logs* are read from stdout by the profile's shipper; the web has no log
+    exporter.
+- **Without it** the variable is empty, nothing is exported and every
+  tracing call is a no-op: a call sends the `traceparent` `proxy.ts` started.
+- **A span never carries a query string, a path, a cookie or a token**
+  ([ADR-0013](../docs/adr/0013-logging-conventions.md)): the exporter
+  (`lib/telemetry/redactSpan.ts`) keeps only an allow-list of attributes,
+  names a request by its route template and a backend call by its API
+  template, and drops event and status messages. A library that adds an
+  attribute is not exported until it is listed there.
 
 ## Test and checks
 

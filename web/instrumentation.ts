@@ -3,6 +3,7 @@ import type { Instrumentation } from "next";
 import { traceIdOf } from "@/lib/api/traceparent";
 import { verifyRequiredConfiguration } from "@/lib/config/requiredConfiguration";
 import { logger } from "@/lib/logger";
+import { activeTraceId } from "@/lib/telemetry/span";
 
 export const register = async () => {
   // Next.js also invokes register() for the edge runtime (proxy.ts), where
@@ -27,6 +28,9 @@ export const register = async () => {
   // transport reaches the session store and the metrics client.
   const { registerWebTransport } = await import("@/lib/api/registerTransport");
   registerWebTransport();
+
+  const { registerTelemetry } = await import("@/lib/telemetry/registerTelemetry");
+  registerTelemetry(process.env);
 };
 
 // ADR-0088. Next.js calls this for every error it caught serving a request;
@@ -43,7 +47,7 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
     route: context.routePath,
     routeType: context.routeType,
     method: request.method,
-    traceId: traceIdOf(headerValue(request.headers.traceparent)),
+    traceId: activeTraceId() ?? traceIdOf(headerValue(request.headers.traceparent)),
   });
 };
 

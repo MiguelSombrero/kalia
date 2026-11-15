@@ -173,6 +173,7 @@ a manifest; don't restate what the manifest says.
 - eslint-plugin-jsx-a11y, jest-axe, @axe-core/playwright (WCAG 2.2 AA, ADR-0075); eslint-plugin-boundaries (import boundaries, checked by `npm run lint`), eslint-plugin-simple-import-sort (import order)
 - next-auth 5, still a beta line (OIDC code flow with PKCE, ADR-0025); ioredis and a custom Valkey adapter for the session store; jose (back-channel logout token, ADR-0031)
 - @prometheus-io/client (the token-gated `/api/metrics`, ADR-0088)
+- @vercel/otel (OpenTelemetry spans over OTLP, only with the observability profile on, [ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md))
 - **No `package.json` `overrides`.** One stays only while `npm audit` is clean only with it, and comes out once it is clean without it. Re-test when an audit finding names a package an override once covered, or `next` pins a vulnerable one
 
 ### Mobile app

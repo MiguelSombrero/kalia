@@ -4,6 +4,7 @@ import { createFetchTransport, isAbortError, isApiError, routeTemplateOf, type T
 
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
+import { startBackendCall } from "@/lib/telemetry/backendCall";
 
 import { currentAccessToken } from "./accessToken";
 import { currentClientAddress } from "./requestClient";
@@ -24,16 +25,25 @@ const backendTransport = createFetchTransport({
  * address, metrics and logging.
  */
 export const kaliaFetch: Transport = async <T,>(url: string, options: RequestInit): Promise<T> => {
-  // One trace id per browser request, so every backend call a render makes
-  // shares it (proxy.ts starts it); a call outside any request starts its own.
-  const { header, traceId } = traceparentFor(await currentTraceparent());
-  const call = { traceId, method: options.method ?? "GET", path: routeTemplateOf(url) };
+  const method = options.method ?? "GET";
+  const route = routeTemplateOf(url);
+  // With a collector the call's own span is the backend's parent and carries
+  // the request's trace id; without one proxy.ts's header does (ADR-0114).
+  const span = startBackendCall(method, url, route);
+  const { header, traceId } = span
+    ? { header: span.traceparent, traceId: span.traceId }
+    : traceparentFor(await currentTraceparent());
+  const call = { traceId, method, path: route };
   const started = performance.now();
+  const send = async () => backendTransport<{ status: number }>(url, await withBffHeaders(options, header));
   try {
-    const result = await backendTransport<{ status: number }>(url, await withBffHeaders(options, header));
+    const result = await (span ? span.run(send) : send());
+    span?.finish({ status: result.status });
     recordCall(call, result.status, started);
     return result as T;
   } catch (cause) {
+    // A caller's abort is cancellation, not failure: the span ends without an error.
+    span?.finish(isAbortError(cause) ? {} : { failure: isApiError(cause) ? cause.kind : "unexpected" });
     if (!isAbortError(cause)) {
       recordFailure(call, cause, started);
     }

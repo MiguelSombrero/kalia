@@ -12,6 +12,17 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ["backend:8080"]
+  # The web's counters, which survive here the restart that resets them in the
+  # process (ADR-0088). The bearer is METRICS_TOKEN from
+  # docker-compose.dev.env, a dev-only value; scripts/observability-scrape.test.mjs
+  # fails if the two differ.
+  - job_name: web
+    metrics_path: /api/metrics
+    authorization:
+      type: Bearer
+      credentials: kalia-dev-metrics-token
+    static_configs:
+      - targets: ["web:3000"]
 otlp:
   keep_identifying_resource_attributes: true
   # Recommended attributes to be promoted to labels.

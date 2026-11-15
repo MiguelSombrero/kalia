@@ -1,5 +1,8 @@
+import { SpanStatusCode } from "@opentelemetry/api";
+
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
+import { inSpan } from "@/lib/telemetry/span";
 
 import { createInternalKeycloakFetch } from "./internalKeycloakFetch";
 
@@ -42,7 +45,17 @@ const failed = (
 
 // The one hand-written OAuth request in the codebase (RFC 6749 §6): Auth.js
 // exposes tokens but leaves renewal to the app (ADR-0025).
-export const refreshAccessToken = async (refreshToken: string): Promise<RefreshOutcome> => {
+export const refreshAccessToken = async (refreshToken: string): Promise<RefreshOutcome> =>
+  inSpan("token refresh", {}, async (span) => {
+    const outcome = await exchange(refreshToken);
+    span.setAttribute("kalia.token_refresh.outcome", outcome.status);
+    if (outcome.status !== "renewed") {
+      span.setStatus({ code: SpanStatusCode.ERROR });
+    }
+    return outcome;
+  });
+
+const exchange = async (refreshToken: string): Promise<RefreshOutcome> => {
   const issuer = process.env.AUTH_KEYCLOAK_ISSUER;
   const internalOrigin = process.env.AUTH_KEYCLOAK_INTERNAL_ORIGIN;
   const clientId = process.env.AUTH_KEYCLOAK_ID;
