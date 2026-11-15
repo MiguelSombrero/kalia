@@ -5,6 +5,9 @@
 // scanned without a second list to edit (ADR-0024). `service` names the
 // compose service whose image the stack builds, empty for a pulled one: the
 // scan job builds the first and lets Trivy fetch the second from its registry.
+// The local stack's observability profile (ADR-0114) is scanned too, though it
+// is never deployed: its images are what the local stack renders with the
+// profile and without it.
 // Needs the `docker compose` CLI but no daemon.
 
 import { execFileSync } from "node:child_process";
@@ -51,8 +54,32 @@ export const renderMatrix = (composeArgs, env) => {
   });
 };
 
+/** The images only the profile runs: those it adds to what the local stack renders without it. */
+export const profileOnlyImages = ({ without, withProfile }) => withProfile.filter((image) => !without.includes(image));
+
+/** The profile's pulled images, as matrix entries. */
+export const renderProfileMatrix = (env, profile = "observability") => {
+  const images = (...args) =>
+    imagesFromOutput(
+      execFileSync("docker", ["compose", ...args, "config", "--images"], {
+        cwd: ROOT,
+        env,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      }),
+    );
+  return profileOnlyImages({ without: images(), withProfile: images("--profile", profile) }).map((image) => ({ image, service: "" }));
+};
+
+/** The deployable stack's matrix followed by the profile's images that it does not already hold. */
+export const renderScanMatrix = (env) => {
+  const matrix = renderMatrix(["--env-file", "docker-compose.dev.env", "-f", "docker-compose.base.yml"], env);
+  const held = new Set(matrix.map((entry) => entry.image));
+  return [...matrix, ...renderProfileMatrix(env).filter((entry) => !held.has(entry.image))];
+};
+
 const run = () => {
-  const matrix = renderMatrix(["--env-file", "docker-compose.dev.env", "-f", "docker-compose.base.yml"], {
+  const matrix = renderScanMatrix({
     ...process.env,
     // Only rendered, never used: the base file requires it, the dev env file does not supply it.
     KALIA_WEB_CLIENT_SECRET: process.env.KALIA_WEB_CLIENT_SECRET || "scan-images-not-a-credential",

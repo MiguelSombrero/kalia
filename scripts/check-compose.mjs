@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { renderMatrix } from "./scan-images.mjs";
+import { renderMatrix, renderScanMatrix } from "./scan-images.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const ADR_0090 = "0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md";
@@ -462,6 +462,15 @@ const run = () => {
       }
     }
     problems.push(...localAdminProblems(local.services), ...localDevServiceProblems(local.services));
+
+    // The observability profile's images are scanned too (ADR-0114, ADR-0024).
+    const profiled = JSON.parse(compose(["--env-file", rootEnv, "--profile", "observability", "config", "--format", "json"], {}));
+    const scanned = new Set(renderScanMatrix(scanEnv).map((entry) => entry.image));
+    for (const [name, definition] of Object.entries(profiled.services)) {
+      if (definition.profiles?.includes("observability") && !scanned.has(definition.image)) {
+        problems.push(`the vulnerability scan's matrix omits ${name}, which the observability profile runs`);
+      }
+    }
     problems.push(...issuerProblems(local.services), ...addressProblems(local.services, "localhost"), ...loopbackProblems(local.services));
 
     // Phone mode (ADR-0097): the same stack with the one value set.

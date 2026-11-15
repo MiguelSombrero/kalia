@@ -86,7 +86,7 @@ flowchart LR
   [ADR-0114](adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)).
 - **Only the edge proxy is published by the deployable stack**, with
   per-address limits; the dev overlay also publishes Postgres, Valkey, Mailpit
-  and Keycloak's admin console on loopback
+  and Keycloak's admin console on loopback, and Grafana with the opt-in observability profile
   ([ADR-0090](adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)).
 
 Repository layout, plain npm workspaces ([ADR-0092](adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md)): the tree is in the
