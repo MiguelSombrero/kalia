@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-136 · COULD-164
+**Highest issued:** MUST-27 · SHOULD-136 · COULD-165
 
 ## MUST
 
@@ -399,6 +399,12 @@ repeats, so the recurrence stays visible once the old entry is gone.
   iteration, backlog ID or pull request, on task branches too (563a35ec in
   #619, 0a636ee0 in #630, 5fa17b7e in #633, d5cea5c7 in #595). The pull
   request body already links the task. The decision: check it, or drop it.
+- **COULD-165** *(found 2026-11-15, task 20 review)* — `node
+  scripts/phone-mode.mjs off` leaves the machine's `tailscale serve` forwards
+  in place whenever another worktree's `.env` still says phone mode, even if
+  that worktree's stack is down or abandoned. Its owner must run `off` there
+  before the forwards go. Decide whether `off` should check that the other
+  stack is running before it defers.
 
 ## Retired
 

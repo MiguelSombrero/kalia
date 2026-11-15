@@ -151,15 +151,20 @@ export const freeBytesAt = (path) => {
   }
 };
 
-const du = (path) => {
-  const result = spawnSync("du", ["-sk", path], { encoding: "utf8", timeout: 4000 });
-  const kilobytes = Number(result.stdout?.split("\t")[0]);
-  return Number.isFinite(kilobytes) ? kilobytes * 1024 : 0;
+// One du for every path: a timeout still keeps the sizes it printed, and the slowest, DerivedData, goes first. Measured at about 6 s for all four on a 90 GB set of caches, so 20 s is slack, not a target.
+const duSizes = (paths) => {
+  const result = spawnSync("du", ["-sk", ...paths], { encoding: "utf8", timeout: 20000 });
+  const sizes = new Map();
+  for (const line of (result.stdout ?? "").split("\n")) {
+    const [kilobytes, path] = line.split("\t");
+    if (path && Number.isFinite(Number(kilobytes))) sizes.set(path, Number(kilobytes) * 1024);
+  }
+  return (path) => sizes.get(path) ?? 0;
 };
 
 const UNITS = { B: 1, kB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
 const dockerBytes = () => {
-  const result = spawnSync("docker", ["system", "df", "--format", "{{.Type}}\t{{.Size}}"], { encoding: "utf8", timeout: 4000 });
+  const result = spawnSync("docker", ["system", "df", "--format", "{{.Type}}\t{{.Size}}"], { encoding: "utf8", timeout: 5000 });
   let total = 0;
   for (const line of (result.status === 0 ? result.stdout : "").split("\n")) {
     const [type, size] = line.split("\t");
@@ -171,12 +176,18 @@ const dockerBytes = () => {
 };
 
 // The caches that have filled this machine's disk before (docs/common-failures.md), by kind.
-export const measureCaches = (home = homedir()) => [
-  { name: "Xcode DerivedData", bytes: du(join(home, "Library", "Developer", "Xcode", "DerivedData")) },
-  { name: "Docker images, volumes and build cache", bytes: dockerBytes() },
-  { name: "Gradle caches", bytes: du(join(home, ".gradle")) },
-  { name: "Android emulators and SDK", bytes: du(join(home, ".android")) + du(join(home, "Library", "Android")) },
-];
+export const measureCaches = (home = homedir()) => {
+  const derived = join(home, "Library", "Developer", "Xcode", "DerivedData");
+  const gradle = join(home, ".gradle");
+  const android = [join(home, ".android"), join(home, "Library", "Android")];
+  const size = duSizes([derived, gradle, ...android]);
+  return [
+    { name: "Xcode DerivedData", bytes: size(derived) },
+    { name: "Docker images, volumes and build cache", bytes: dockerBytes() },
+    { name: "Gradle caches", bytes: size(gradle) },
+    { name: "Android emulators and SDK", bytes: android.reduce((sum, path) => sum + size(path), 0) },
+  ];
+};
 
 const gb = (bytes) => `${Math.round(bytes / GB)} GB`;
 

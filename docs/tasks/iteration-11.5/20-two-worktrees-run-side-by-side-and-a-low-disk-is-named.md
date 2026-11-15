@@ -73,13 +73,13 @@ are unproven or keep breaking:
 - [ ] The two-worktree run is done, and the pull request records in words what
       `tailscale serve status` showed after each switch. ADR-0097 is amended
       with the result
-- [ ] A `prune-worktrees.test.mjs` case, with free space faked below 20 GB,
+- [x] A `prune-worktrees.test.mjs` case, with free space faked below 20 GB,
       prints the warning and names the caches. A case above it prints nothing
-- [ ] A test shows the teardown removing the removed worktree's DerivedData
+- [x] A test shows the teardown removing the removed worktree's DerivedData
       and leaving another worktree's in place
-- [ ] A `phone-mode` test shows a switch that replaces another worktree's
+- [x] A `phone-mode` test shows a switch that replaces another worktree's
       forwards naming that worktree
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
