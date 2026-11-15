@@ -1,6 +1,6 @@
 # Task 01: Decide the local observability stack and how an agent reads it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-6
 
@@ -57,36 +57,46 @@ An ADR records, and amends ADR-0088 to point at:
   breaks this silently.
 - At most two sessions run heavy work at once ([`CLAUDE.md`](../../../CLAUDE.md));
   the profile's containers add to what "the Docker stack" weighs.
+- **Decided at refinement (2026-11-15):**
+  this list is the home of the iteration's shared observability decisions;
+  tasks 02–10 point here rather than repeat them. The ADR records them with
+  their reasons, and the spike confirms them. If it contradicts one, for
+  example on memory cost, the affected tasks are re-refined
+  ([refine-iteration](../../../.claude/skills/refine-iteration/SKILL.md),
+  "When a refined task has gone stale").
+  - **Store:** one `grafana/otel-lgtm` container (collector, Prometheus,
+    Loki, Tempo, Grafana), chosen over separate services for one image and
+    one version to pin and scan.
+  - **Switch:** a Compose profile in `docker-compose.override.yml`, so the
+    base file gains nothing. `make observability-up` starts it and recreates
+    the backend and the web with the exporter endpoint set, and
+    `make observability-down` reverses that without stopping the stack. Both
+    are listed in `make help`.
+  - **Traces:** Micrometer Tracing moves from the Brave bridge to the
+    OpenTelemetry bridge and exports over OTLP. The web exports over OTLP
+    too (task 05).
+  - **Metrics:** scraped, not pushed. The backend's `/actuator/prometheus`
+    is reached on the compose network without a credential (ADR-0088's
+    2026-11-07 amendment), and the web's `/api/metrics` with a dev-only
+    `METRICS_TOKEN`. The web keeps `@prometheus-io/client`.
+  - **Logs:** one shipper container, such as Grafana Alloy, reads every
+    service's stdout through the Docker socket. No tier gains a log
+    exporter, and each tier's JSON stdout is unchanged.
+  - **Sampling and size:** every request is sampled locally. The memory
+    limit is set from the spike's measurement, and retention is three days.
+  - **Viewer:** Grafana's anonymous access, with the Viewer role, on a
+    localhost-only port, and no sign-in.
+  - **Reading:** both an MCP server (task 07) and a `make` command (task
+    08). The server is Grafana's own MCP server, through a Viewer service
+    account, configured in a committed `.mcp.json`.
+  - **CI:** the Playwright end-to-end job runs with the profile on every
+    run, and uploads the store only when the job is red (task 09).
+  - **ADR shape:** one new ADR that amends ADR-0088. ADR-0088 is not
+    superseded, since its logs, trace id and counters all stand.
 
 ## Open questions
 
-- **Integrations.** One all-in-one container (`grafana/otel-lgtm`: an
-  OpenTelemetry collector, Prometheus, Loki, Tempo and Grafana, published for
-  development and testing) or separate services (a collector with Jaeger,
-  Prometheus and Loki). The first is one image and one version; the second
-  lets each part be pinned and swapped.
-- **Functional scope.** How it is switched on: a Compose profile in
-  `docker-compose.override.yml`, a separate `docker-compose.observability.yml`,
-  or a `make` target that wraps either.
-- **Integrations.** How the backend's metrics reach the store: Prometheus
-  scraping `/actuator/prometheus` — which needs a bearer token today, the
-  question [iteration 11 task 19](../iteration-11/19-decision-how-far-the-admin-role-reaches.md)
-  settles — or Micrometer pushing them over OTLP.
-- **Integrations.** Whether Micrometer Tracing moves from the Brave bridge to the
-  OpenTelemetry bridge; ADR-0088 recorded the choice as unmeasured and the swap
-  as a dependency change.
-- **Integrations.** How logs reach the store: each tier exporting them over
-  OTLP, or a collector reading every container's stdout, which also catches the
-  services Kalia does not write (task 06).
-- **Non-functional.** Sampling (every request locally?), and how much memory and
-  disk the profile may take on a laptop.
-- **Integrations.** How an agent reads it: an MCP server (task 07), a command
-  that prints text (task 08), or both, and what bounds an answer's size in each.
-- **Constraints.** Whether CI's end-to-end job runs the profile and uploads what
-  it stored (task 09); the repository is public, so its Actions minutes cost
-  nothing.
-- **Module boundaries.** Whether this is one ADR amending ADR-0088, or ADR-0088
-  is superseded.
+**None.**
 
 ## Acceptance criteria
 
@@ -98,11 +108,15 @@ An ADR records, and amends ADR-0088 to point at:
 - [ ] A throwaway spike ran the chosen store beside the stack and received one
       backend trace, and the ADR cites its memory and startup cost — nothing
       from it is committed
-- [ ] Each test the decision implies — no query string in a span, the stack
-      unchanged without the profile, an agent's answer bounded in size — is
-      named in the acceptance criteria of tasks 02–09 before they are refined
-- [ ] Every new dependency the ADR implies is listed with the version the
-      product owner chose, for the tasks that add them
+- [ ] The ADR names each test the decision implies — no query string in a
+      span, the stack unchanged without the profile, an agent's answer
+      bounded in size — and each one is an acceptance criterion of one of
+      tasks 02–09, as refined
+- [ ] Every new dependency the ADR implies — the `otel-lgtm` image, the log
+      shipper, the OpenTelemetry bridge, `datasource-micrometer`,
+      `@vercel/otel`, Grafana's MCP server and the exporters task 06 adds —
+      is listed with the version the product owner chose, in one batched
+      question
 - [ ] `make verify-fast` is green
 
 ## Notes

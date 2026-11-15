@@ -1,6 +1,6 @@
 # Task 14: A font that fails or never loads leaves the app readable
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -51,29 +51,33 @@ build. A gate in front of them that can wait forever undoes that.
   memory, because a wrong guess about when `useFonts` settles fails silently.
 - Styling is token-only. The fallback's weights come from the same tokens as
   the bundled faces.
+- **Decided at refinement (2026-11-15):**
+  - The deadline is three seconds, the same for a cold and a warm start.
+  - Faces that load after the deadline are used from the next launch on, so
+    text does not change face mid-session.
+  - The update-required, maintenance and crash screens sit outside the
+    font gate altogether, in the system face with each style's weight.
+  - A failed load, or one the deadline overtakes, writes one `WARN` line
+    through the app's logger
+    ([ADR-0098](../../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)).
 
 ## Open questions
 
-- **Non-functional.** How long is the deadline? Is it shorter for a cold start
-  than for a warm one?
-- **Edge cases.** The faces may load after the deadline has passed. Does the
-  text then switch to the bundled face mid-session, or stay in the system face
-  until the next launch?
-- **Edge cases.** Should the blocked screens sit outside the gate altogether,
-  so a font can never delay them?
-- **Completion signals.** Should a failed font load write a log line? A
-  device's own logs are the only place an installed build's errors are read
-  ([ADR-0098](../../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)).
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A `FontGate.test.tsx` case whose `useFonts` never settles renders the
-      children once the deadline passes, under fake timers, and hides the
-      splash screen. It failed before the change
+      children once the three-second deadline passes, under fake timers,
+      hides the splash screen and writes one `WARN` line. It failed before the
+      change
+- [ ] A test whose faces load after the deadline keeps the system face for
+      the rest of the session
 - [ ] A test shows `textStyle` with the faces not loaded returning the system
       family and the weight each style asks for
 - [ ] A test renders the update-required screen while the fonts are still
-      pending, and the screen is found by its heading's role
+      pending, with no deadline passed, and the screen is found by its
+      heading's role
 - [ ] On the iOS Simulator, with the bundled faces made to fail, the catalog's
       titles and buttons keep their weight, compared by the agent and
       described in words in the pull request

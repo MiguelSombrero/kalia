@@ -405,7 +405,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
 Findings lifted into a task that is not yet `done`, each noting where it
 went; pruned as described above.
 
-- ~~SHOULD-80~~ (rejected suggestions leaving the pending count) — lifted into [iteration-11.5 task 18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-101~~ (a common-failures row recording a defect with no owner) — lifted into [iteration-11.5 task 22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-109~~ (Keycloak's "Back to application" link assigned to a closed iteration) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md). Its `[needs decision]` is an open question there, settled at refinement.
 - ~~SHOULD-112~~ (the backlog's Mobile client section stating decided things as open) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md). Its `[needs decision]` is an open question there, settled at refinement.
@@ -431,4 +430,4 @@ went; pruned as described above.
 - ~~COULD-140~~ (`beerStyleGroup` imported from the `@kalia/api` root) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md).
 - ~~COULD-141~~ (the font fallback rendering every weight as regular) — lifted into [iteration-11.5 task 14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md).
 - ~~COULD-142~~ (the catalog list tests waiting on real timers) — lifted into [iteration-11.5 task 12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md).
-- ~~COULD-143~~ (`showCatalogWith` applying its filters in an effect) — lifted into [iteration-11.5 task 11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md).
+- ~~COULD-143~~ (`showCatalogWith` applying its filters in an effect) — lifted into [iteration-11.5 task 27](iteration-11.5/27-the-conventions-that-needed-a-choice-are-written-and-followed.md).

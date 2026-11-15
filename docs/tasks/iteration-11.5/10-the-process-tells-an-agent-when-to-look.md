@@ -1,6 +1,6 @@
 # Task 10: The process tells an agent when to read the telemetry
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-4
 
@@ -33,19 +33,27 @@ tasks 07 and 08's tools rather than restating them.
   ([ADR-0020](../../adr/0020-documentation-roles.md)).
 - The profile is heavy work under the two-session cap, and the guidance says
   so where it says to start it ([`CLAUDE.md`](../../../CLAUDE.md)).
+- **Decided at refinement (2026-11-15):**
+  - The guidance goes in five places, each a pointer at tasks 07 and 08
+    rather than a restatement:
+    - one `CLAUDE.md` bullet;
+    - the `implement-task` and `worktree` skills' "A red check" sections;
+    - the CI playbook's Playwright section;
+    - `docs/common-failures.md`'s header.
+  - No new skill.
+  - The quality sweep's `process-quality` dimension does not count rows a
+    trace would have explained. Such a count would be a judgement, not a
+    measure.
 
 ## Open questions
 
-- **Functional scope.** Which documents: `CLAUDE.md`, the `implement-task` and
-  `worktree` skills' "A red check" sections, the CI playbook, the failure log's
-  header.
-- **Completion signals.** Whether the `/quality-sweep`'s `process-quality`
-  dimension counts failure-log rows a trace would have explained.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `CLAUDE.md` and the skills that diagnose a failure point at the profile
-      and its tools, and `node --test scripts/` and `make check` are green
+- [ ] `CLAUDE.md`, both skills' "A red check" sections, the CI playbook's
+      Playwright section and the failure log's header point at the profile and
+      its tools, and `node --test scripts/` and `make check` are green
 - [ ] A fresh session given only a red end-to-end test's output finds its trace
       by following the documents — verified by doing it
 - [ ] `make verify-fast` is green

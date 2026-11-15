@@ -1,6 +1,6 @@
 # Task 23: Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -34,13 +34,12 @@ standalone, with no task file. Both kinds are getting more common.
 
 ## Scope
 
-- A refinement's criteria are reviewed for whether each can be checked on its
-  own branch before the task is marked `refined`, in the way refinement
-  chooses.
+- A refinement pull request is reviewed with `/code-review` for whether each
+  criterion can be checked on its own branch.
 - The gates for a pull request that completes no task are stated in one place
   and checked where a tool can check them.
 - `check-pr-body` fails a pull request that ticks every criterion of a task
-  but leaves its `Status` short of `done`, if refinement adopts this.
+  but leaves its `Status` short of `done`.
 
 ## Non-goals
 
@@ -59,33 +58,36 @@ standalone, with no task file. Both kinds are getting more common.
 - `scripts/check-pr-body.mjs` has fixtures. A new rule gets one that fails.
 - **Only the product owner moves a task to `refined`.** A review step informs
   that decision but does not replace it.
+- **Decided at refinement (2026-11-15):**
+  - **Both fixes are adopted (SHOULD-118):** both refine skills gain a
+    `/code-review` step on the refinement pull request, aimed at whether each
+    criterion can be checked on its own branch; and `check-pr-body` fails a
+    pull request that ticks every criterion of a task but leaves its
+    `Status` short of `done`. Close-out pull requests are not accepted, and
+    iteration 10 task 20's decision stands.
+  - **A pull request with no task file (COULD-129)** always records
+    `make verify-fast`, `/code-review` and the doc-sync statement. An agent's
+    commit on a Dependabot pull request records the same gates in a comment
+    on that pull request, since the body is Dependabot's.
+  - **"Reviewed by the product owner" never stands in for `/code-review`.**
+    The product owner does not code (CLAUDE.md's Roles).
 
 ## Open questions
 
-- **Functional scope.** Choose any of (SHOULD-118, `[needs decision]`):
-  - add a review step to both refine skills, aimed at whether each criterion
-    can be checked on its own branch;
-  - have `check-pr-body` fail a pull request that ticks every criterion of a
-    task but leaves its `Status` short of `done` (this would have caught
-    #523);
-  - accept close-out pull requests, and amend iteration 10 task 20's decision.
-- **Functional scope.** Which gates apply to a pull request with no task file
-  (COULD-129, `[needs decision]`)? `make verify-fast` and `/code-review`
-  always? The doc-sync statement? What about an agent's commit on a
-  Dependabot pull request?
-- **Completion signals.** Does "reviewed by the product owner" ever stand in
-  for `/code-review`, and if so, for which kinds of change?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] If refinement adopts the status rule, a `check-pr-body` test fails a
-      body for a pull request that ticks every criterion while the task file
-      stays `refined`, and passes one that sets `done`
-- [ ] If refinement adopts the no-task gates, a `check-pr-body` test fails a
-      no-task body missing a required gate and passes one that records it
-- [ ] Each refine skill states the review step refinement chooses, or the
-      pull request records the decision to accept close-outs and amends
-      iteration 10 task 20
+- [ ] A `check-pr-body` test fails a body for a pull request that ticks every
+      criterion while the task file stays `refined`, and passes one that sets
+      `done`
+- [ ] A `check-pr-body` test fails a no-task body missing `make verify-fast`,
+      `/code-review` or the doc-sync statement, fails one that records
+      "reviewed by the product owner" in place of `/code-review`, and passes
+      one that records all three
+- [ ] Both refine skills state the `/code-review` step, and the gate list for
+      a no-task pull request, Dependabot commits included, is stated in one
+      place
 - [ ] `make verify-fast` is green
 
 ## Notes

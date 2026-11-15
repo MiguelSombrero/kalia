@@ -1,6 +1,6 @@
 # Task 19: A known transient CI failure is retried or prevented, not re-run by hand
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -65,25 +65,30 @@ re-run instead of reading the failure.
   are the pattern. A second shape is a second thing to keep in step.
 - `scripts/check-compose.mjs` already parses Compose files and has a test
   file. The new rule goes there, with fixtures.
+- **Decided at refinement (2026-11-15):**
+  - The retry is one shared script with a `node --test` test beside it,
+    called by the workflows and the `Makefile`. It replaces the inline
+    `for attempt in 1 2 3` loops, so there is still one retry shape.
+  - It retries only when the build's output carries a registry signature:
+    `Non-resolvable parent POM`, `Could not transfer artifact`, a `5xx` from
+    the registry, or a reset connection. Any other failure, a compile error
+    among them, fails at once.
+  - `ghcr.io/aquasecurity/trivy-java-db:1` is the second Java DB repository,
+    tried after the mirror, if the pinned Trivy accepts it.
 
 ## Open questions
 
-- **Functional scope.** Should the retry be a shared script the workflows
-  call, which a test can drive, or inline loops like today's?
-- **Edge cases.** Should the retry tell a registry failure apart from a
-  compile error, which no retry fixes, or retry any failure of the build
-  step?
-- **Integrations.** Is `ghcr.io/aquasecurity/trivy-java-db:1` the second
-  repository, and is it tried after the mirror or before?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A `check-compose.test.mjs` case fails a `--wait` with no service names
       and one that names `keycloak-seed`, and the repository's own `Makefile`,
       workflows and scripts pass
-- [ ] Every step that builds the backend image retries a registry failure.
-      The retry is shown by a test or a branch run in which the first attempt
-      is made to fail
+- [ ] The retry script's test shows it retrying output that carries each
+      registry signature and failing at once on a compile error
+- [ ] Every step that builds the backend image calls the script, and no
+      inline retry loop is left in the workflows
 - [ ] The image scan names a second Java DB repository, confirmed accepted by
       the pinned Trivy from a run's output on this branch
 - [ ] `docs/ci-playbook.md`'s vulnerability-scan and E2E entries describe what

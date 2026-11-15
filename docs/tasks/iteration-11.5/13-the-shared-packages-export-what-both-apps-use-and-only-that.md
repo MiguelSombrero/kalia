@@ -1,6 +1,6 @@
 # Task 13: The shared packages export what both apps use, and only that
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -65,37 +65,35 @@ package, so its shape is cheapest to settle now.
   in its own documentation or generator output, never from memory.**
 - **The web's `mutator.ts` logs the trace id.** Moving to `httpFailure` must
   not log it a second time.
+- **Decided at refinement (2026-11-15):**
+  - `@kalia/api` is generated with `client: "fetch"`, and both peer
+    dependencies are dropped. ADR-0041's feature-owned hooks leave the
+    generated hooks no planned use (COULD-120).
+  - The web moves to `httpFailure`, logging the trace id once, in
+    `mutator.ts`. `isLocale` moves into `@kalia/locales` (COULD-119).
+  - The subpath is `@kalia/api/beer-style`. A web client component may not
+    import the package root at all. In the app, `beerStyleGroup` is
+    imported through the subpath.
+  - Whether a test or a fake relies on the generated hooks or on the peer
+    dependencies is found when the client is regenerated, and fixed in this
+    task.
 
 ## Open questions
 
-- **Integrations.** Should `@kalia/api` be generated with `client: "fetch"`,
-  dropping both peer dependencies? Or should it keep the React Query client
-  for a planned use, which `packages/README.md` would then name? (COULD-120,
-  `[needs decision]`.)
-- **Functional scope.** Should the web move to `httpFailure` and `isLocale`
-  move into `@kalia/locales`? Or should both stay as they are, given that the
-  web logs the trace id in `mutator.ts` and shows the user no error
-  reference? (COULD-119, `[needs decision]`.)
-- **Module boundaries.** What should the subpath be called (for example
-  `@kalia/api/beer-style`)? Should a lint rule stop client components from
-  importing the root barrel at all, or only stop them from importing the
-  transport?
-- **Edge cases.** Does any test or fake rely on the generated hooks or on the
-  peer dependencies being present?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] `packages/api/package.json` lists no peer dependency that refinement
       removes. `npm ci`, both apps' builds and `make api-drift` pass on the
       regenerated client
-- [ ] If the web moves to `httpFailure`, a test shows an HTTP failure from a
-      web feature's `api.ts` carrying the response's trace id. It failed
-      before the change
-- [ ] A lint fixture in each app that imports `beerStyleGroup` through the
-      root barrel from a client component fails, and the subpath import
-      passes
-- [ ] `isLocale` is defined once, or `packages/README.md` says why it is
-      defined twice
+- [ ] A test shows an HTTP failure from a web feature's `api.ts` carrying
+      the response's trace id, logged once. It failed before the change
+- [ ] A lint fixture in the web that imports the package root from a client
+      component fails, and one in the app that imports `beerStyleGroup`
+      through the root fails; the subpath import passes in both
+- [ ] `isLocale` is defined once, in `@kalia/locales`, and both apps import
+      it from there
 - [ ] `make verify-fast` is green, and the app's independence tests are
       unchanged
 

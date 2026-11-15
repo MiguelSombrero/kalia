@@ -1,6 +1,6 @@
 # Task 03: The backend's traces, metrics and logs reach the profile
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-2, DW-3
 
@@ -44,16 +44,22 @@ fails or retries because no store is listening.
 - Configuration is an environment variable, not a profile
   ([ADR-0015](../../adr/0015-configuration-strategy.md)).
 - Maven runs on JDK 25 ([backend/README.md](../../../backend/README.md)).
+- **Decided at refinement (2026-11-15):**
+  - The OpenTelemetry bridge replaces Brave and exports spans over OTLP;
+    metrics are scraped from `/actuator/prometheus`; logs are read from
+    stdout by the shipper, so the backend gains no log exporter. All three are
+    [task 01](01-decision-the-local-observability-stack.md)'s decisions, and
+    their versions come from its batched question.
+  - The readiness probe's spans are dropped, as its request line is logged
+    at `TRACE`.
+  - When the profile is on and the store then goes away, the batching
+    exporter drops its spans quietly: a request is neither slowed nor failed,
+    and the log gains no more than one warning per outage.
+    `make observability-down` recreates the backend without the endpoint.
 
 ## Open questions
 
-- **Integrations.** Task 01's answers on the bridge (Brave or OpenTelemetry), on
-  scraping or pushing metrics, and on whether logs go over OTLP or are read
-  from stdout; and the versions of what they add.
-- **Edge cases.** What the backend does when the profile is on and then
-  stopped.
-- **Non-functional.** Whether the readiness probe's spans are dropped, as its
-  request line is logged at `TRACE`.
+**None.**
 
 ## Acceptance criteria
 
@@ -66,6 +72,8 @@ fails or retries because no store is listening.
       and was seen to fail with the instrumentation's defaults
 - [ ] An integration test shows that with no exporter endpoint configured the
       backend starts and answers as before, and `ObservabilityIT` still passes
+- [ ] An integration test shows a request answering in time with an exporter
+      endpoint configured that nothing listens on
 - [ ] `http.server.requests` and the event-publication counters are queryable
       in the store after the backend restarts
 - [ ] `backend/README.md` and ADR-0088's consequences say what is exported and

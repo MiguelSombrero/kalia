@@ -1,6 +1,6 @@
 # Task 06: The edge, Keycloak, Postgres and Valkey reach the profile too
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-3
 
@@ -28,8 +28,7 @@ lines carry the trace id of the request they forwarded, when it had one.
 
 - Dashboards for each service.
 - Tracing inside Keycloak or Postgres.
-- Mailpit and the one-shot `keycloak-config` and `keycloak-seed` services,
-  unless refinement says otherwise.
+- Mailpit and the one-shot `keycloak-config` and `keycloak-seed` services.
 
 ## Constraints
 
@@ -45,25 +44,46 @@ lines carry the trace id of the request they forwarded, when it had one.
 - Every exporter image is pinned and scanned
   ([ADR-0024](../../adr/0024-dependency-vulnerability-scanning.md)), and runs
   only with the profile.
+- **Decided at refinement (2026-11-15):**
+  - All four services are in, for both logs and metrics. Their logs come
+    through the shipper that [task 01](01-decision-the-local-observability-stack.md)
+    chose. Mailpit and the one-shot `keycloak-config` and `keycloak-seed`
+    services stay out.
+  - The metrics come from:
+    - Keycloak's built-in metrics endpoint;
+    - `postgres_exporter`, on a role of its own granted `pg_monitor`. That
+      is a fourth role, so ADR-0100 is amended, and the role exists only
+      when the profile runs if that can be arranged;
+    - `redis_exporter` for Valkey;
+    - the edge's own access log, counted by status and service in the store,
+      so no `stub_status` and no exporter.
+
+    Their versions come from task 01's batched question.
+  - Keycloak's lines reach the store with their username and email fields
+    redacted by the shipper. A failed sign-in is still found by its event
+    type, client and time.
+  - The edge's access log becomes JSON, like both tiers' logs, and carries
+    the request's trace id when it has one. A browser request has none at
+    the edge, because `proxy.ts` starts it later. The path stays the route
+    template from iteration 11 task 17's path map, and `docker compose logs
+    edge` is read through `jq`, which the root README says.
 
 ## Open questions
 
-- **Functional scope.** Which services are in, and whether each needs metrics
-  or only logs.
-- **Integrations.** Keycloak's built-in metrics endpoint, `postgres_exporter`,
-  `redis_exporter` for Valkey, and nginx's `stub_status` or a log-derived
-  count: which, and their versions.
-- **Non-functional.** Whether Keycloak's lines that name a user reach the store
-  at all.
-- **Integrations.** Whether the edge's access log becomes JSON to carry the
-  trace id, which changes what a developer reads from `docker compose logs edge`.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] With the profile on, a request the edge refuses with `429` is found in
       the store by service and status — verified against the running stack
 - [ ] A failed sign-in's Keycloak line and a Postgres connection count are
-      queryable in the store, within what refinement decided about user names
+      queryable in the store, and the Keycloak line holds neither the username
+      nor the email it was given — verified against the running stack
+- [ ] A test in `scripts/` runs the shipper's redaction on a recorded
+      Keycloak failure line and finds neither field, and was seen to fail
+      without the rule
+- [ ] A request from the app carrying a `traceparent` is found by its trace
+      id in the edge's line and in the backend's
 - [ ] A test in `scripts/` fails if an exporter's service runs without the
       profile, and was seen to fail with one wired in unconditionally
 - [ ] The root README lists what each service sends, and `make verify-fast` is
