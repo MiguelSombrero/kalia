@@ -1,0 +1,54 @@
+# Replaces the lgtm image's /otel-lgtm/prometheus.yaml, which has no scrape job
+# (ADR-0114). Everything above `scrape_configs` is the image's own and is kept
+# as it ships; a job is added below for each service that exposes counters.
+---
+global:
+  scrape_native_histograms: true
+otlp:
+  keep_identifying_resource_attributes: true
+  # Recommended attributes to be promoted to labels.
+  promote_resource_attributes:
+    - service.instance.id
+    - service.name
+    - service.namespace
+    - service.version
+    - cloud.availability_zone
+    - cloud.region
+    - container.name
+    - deployment.environment # backward compatibility
+    - deployment.environment.name
+    - k8s.cluster.name
+    - k8s.container.name
+    - k8s.cronjob.name
+    - k8s.daemonset.name
+    - k8s.deployment.name
+    - k8s.job.name
+    - k8s.namespace.name
+    - k8s.node.name
+    - k8s.pod.name
+    - k8s.replicaset.name
+    - k8s.statefulset.name
+    - host.name
+    - postgresql.database.name
+    - postgresql.schema.name
+    - postgresql.table.name
+    - postgresql.index.name
+    - database # used by otelcol/receiver/mongodb
+    - kafka.cluster.alias
+storage:
+  tsdb:
+    # A 10min time window is enough because it can easily absorb retries and network delays.
+    out_of_order_time_window: 10m
+
+scrape_configs:
+  # The web's counters, which survive here the restart that resets them in the
+  # process (ADR-0088). The bearer is METRICS_TOKEN from
+  # docker-compose.dev.env, a dev-only value; scripts/observability-scrape.test.mjs
+  # fails if the two differ.
+  - job_name: web
+    metrics_path: /api/metrics
+    authorization:
+      type: Bearer
+      credentials: kalia-dev-metrics-token
+    static_configs:
+      - targets: ["web:3000"]
