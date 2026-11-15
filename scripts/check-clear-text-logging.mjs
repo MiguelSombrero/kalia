@@ -13,7 +13,12 @@
 // results, `new Error(...)` into every `.message`, and ends at console output
 // or process.stdout/stderr.write. An imported function's result is tainted only
 // when it is handed the whole environment object, so a flow through another
-// module is CodeQL's to find.
+// module is CodeQL's to find. So is one through an object parameter: a function
+// that destructures `{ teamId }` out of its argument is not handed the taint of
+// the field a caller wrote. Alert 8 (the team id, from stack-ports.mjs through
+// mobile-ios-device.mjs to mobile-native.mjs's `error.message`) is both, and
+// this check cannot follow it; the fixtures pin the same shape in one file with
+// positional parameters, which it can.
 
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";

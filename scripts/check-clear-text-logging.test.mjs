@@ -101,3 +101,20 @@ test("code inside a string or a comment is not code", () => {
   const source = lines("// console.log(process.env)", "const fixture = 'console.log(process.env)';", "console.log(fixture);");
   assert.deepEqual(clearTextLogs(source), []);
 });
+
+const stepFlow = (message) =>
+  lines(
+    "const build = (teamId) => ['-workspace', `DEVELOPMENT_TEAM=${teamId}`];",
+    `const step = (command, args) => { throw new Error(\`${message}\`); };`,
+    "const install = (teamId) => step('xcodebuild', build(teamId));",
+    "const run = (env = process.env) => install(env.TEAM);",
+    "try { run(); } catch (error) { console.error(error.message); }",
+  );
+
+test("fails an environment value that reaches a printed message through an argument array", () => {
+  assert.deepEqual(clearTextLogs(stepFlow("${command} ${args[0]} failed")), [5]);
+});
+
+test("passes the same flow once the message names the command and no argument", () => {
+  assert.deepEqual(clearTextLogs(stepFlow("${command} failed")), []);
+});

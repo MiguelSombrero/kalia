@@ -107,3 +107,28 @@ test("syncs a row however it is spaced, and keeps CRLF line endings", (t) => {
 
   assert.match(synced.text, /\| \[01\]\(iteration-1\/01-alpha\.md\) \| Alpha \| done \|\r\n/);
 });
+
+// A GFM table cell ends at the first pipe not escaped by a backslash, and a
+// backslash escapes itself, so this is what any renderer reads back.
+const readCell = (rowText) => {
+  let cell = "";
+  for (let i = rowText.indexOf(" | ") + 3; i < rowText.length; i++) {
+    if (rowText[i] === "\\" && "\\|".includes(rowText[i + 1])) cell += rowText[++i];
+    else if (rowText[i] === "|") break;
+    else cell += rowText[i];
+  }
+  return cell.trim();
+};
+
+test("a title holding a backslash survives a round trip through its cell", (t) => {
+  const root = fixture();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const title = "Escape \\| and a trailing \\";
+  writeFileSync(resolve(root, "docs/tasks/iteration-1/01-alpha.md"), lines(`# Task 01: ${title}`, "", "- **Status:** done"));
+
+  const synced = syncIndexes(root).find(({ path }) => path === "docs/tasks/iteration-1.md").text;
+  const written = synced.split("\n").find((line) => line.includes("01-alpha.md"));
+
+  assert.equal(written, String.raw`| [01](iteration-1/01-alpha.md) | Escape \\\| and a trailing \\ | done |`);
+  assert.equal(readCell(written), title);
+});
