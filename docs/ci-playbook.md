@@ -109,23 +109,29 @@ the mirror recovers; the scan logs distinguish this from a slow web build.
 rather than slowly. The cause is in the `[WebServer]` lines above it, not in
 Playwright's message. Search the log for `BUILD FAILURE`. One cause seen so
 far is the backend image's `mvn -B dependency:go-offline` failing with `Could
-not transfer artifact …` from Maven Central: a transient registry failure,
-unrelated to the diff. A Markdown-only PR hit it in run `38698155228`. Re-run
-the failed job (`gh run rerun <id> --failed`). Fix something only if the same
-artifact fails again, because then the cause is the dependency, not the
-network.
+not transfer artifact …` or `Non-resolvable parent POM` from Maven Central: a
+transient registry failure, unrelated to the diff. It hit a Markdown-only PR in
+run `38698155228` and `dev` in `41076206163`. The `Build the stack's images`
+step now builds first through `scripts/retry-registry.mjs`, which builds again
+(waits of 15 s and 30 s) on a registry signature and on nothing else, so a
+compile error still fails at once, and Playwright's own build then finds every
+layer cached. Nothing to do on a single occurrence. If the step ends with
+`::error::a registry failure … outlasted 3 attempts`, Maven Central is down:
+re-run the failed job later (`gh run rerun <id> --failed`). The same artifact
+failing past three attempts on several runs is the dependency, not the network.
 
 **`Process from config.webServer was not able to start`, and the
 `[WebServer]` lines end in `failed to resolve source metadata for
 quay.io/keycloak/keycloak:… 503 Service Unavailable`.** quay.io was down
 while the `keycloak` image's `FROM` was resolved; one outage turned the E2E
 job red on three PRs: runs `40059787067` (#386), `40061839941` (#390) and
-`40062800899` (#392). The E2E and Keycloak realm jobs now run a
-`Pre-pull compose images` step first, retried three times like the backend
-job's, and a build whose base image is already local does not contact the
-registry. If that step itself exhausts its three attempts, the registry is
-still down: re-run the failed job once quay.io's status recovers
-(`gh run rerun <id> --failed`), and change nothing in the diff.
+`40062800899` (#392). The E2E, Keycloak realm and mobile jobs now run a
+`Pre-pull compose images` step first, each pull retried three times by
+`scripts/retry-registry.mjs` on a `5xx` or a reset connection, and a build whose
+base image is already local does not contact the registry. If that step itself
+exhausts its three attempts, the registry is still down: re-run the failed job
+once quay.io's status recovers (`gh run rerun <id> --failed`), and change
+nothing in the diff.
 
 **Several registration specs time out waiting for `#username`, each passes in
 isolation, and which ones fail moves between runs.** The shared `/sign-up`
@@ -290,15 +296,26 @@ reproduces the manifest scan, and the image scan's invocation is in
 
 **An image scan fails with `Unable to initialize the Java DB … failed to
 download Java DB … mirror.gcr.io/aquasec/trivy-java-db:1 … unexpected status
-code 404 Not Found`.** Re-run, change nothing. Trivy could not fetch its own
-vulnerability database from the mirror, so the image was never scanned and the
-failure is not a finding; the filesystem scan of the same run found nothing.
-It hit `dev` in run `40166251873` and PR #421 in run `40166341881`, hours
-apart, and passed on a re-run. Re-run the failed jobs (`gh run rerun <id>
---failed`) and leave the diff alone; fix something only if the same download
-fails on several runs in a row, because then the mirror has moved, not the
-network blipped. One image scan runs per image the deployable stack runs
-(`scripts/scan-images.mjs`), so every leg of the matrix can hit this together.
+code 404 Not Found`.** Not a finding: Trivy could not fetch its own
+vulnerability database from the mirror, so the image was never scanned. It hit
+`dev` in run `40166251873` and PR #421 in run `40166341881`, hours apart, and
+passed on a re-run. The scan step names `ghcr.io/aquasecurity/trivy-java-db:1`
+as a second repository after the mirror (`TRIVY_JAVA_DB_REPOSITORY` in
+`vulnerability-scan.yml`; the pinned Trivy defaults to the same pair, and
+spelling it out keeps a newer default from dropping it), so a 404 from the
+mirror should fall through to GitHub's registry on its own. Only a failure that names both repositories needs a re-run
+(`gh run rerun <id> --failed`); change nothing in the diff. One image scan runs
+per image the deployable stack runs (`scripts/scan-images.mjs`), so every leg
+of the matrix can hit this together.
+
+**`Scan <image>` is red at `Build the image`, with `Non-resolvable parent POM`
+or `Could not transfer artifact` in the log.** Maven Central failed the backend
+image's `dependency:go-offline`; no scan ran. The step builds through
+`scripts/retry-registry.mjs`, which builds again on that signature up to three
+times, so one occurrence passes unseen. A red step ends with `::error::a
+registry failure … outlasted 3 attempts`: Maven Central stayed down for about
+45 s. Re-run the failed jobs and change nothing in the diff. A build error
+without a registry signature is a real one and is not retried.
 
 ## Not CI, but the same recognition problem
 
@@ -317,7 +334,9 @@ repeating `up -d --wait keycloak-config` against one stack. Name only
 long-running services in a `--wait` invocation; run a one-shot with
 `docker compose run --rm <service>`, which waits for it and returns its own
 exit code, or let the script that consumes it retry (each
-`scripts/check-keycloak-*.mjs` has its own retry loop). Cost ~10 min to spot
+`scripts/check-keycloak-*.mjs` has its own retry loop). `make check` now fails
+a `--wait` in the Makefile, a workflow or a script that names no service or
+names a one-shot, with the file and line (`scripts/check-compose.mjs`). Cost ~10 min to spot
 on the branch for iteration 6.5 task 03, because the failing line had been
 piped to `tail` — which also hid it (see `implement-task` step 9: read `make`
 output from a file, not a pager).
