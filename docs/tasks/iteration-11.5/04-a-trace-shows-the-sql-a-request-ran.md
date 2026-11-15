@@ -1,6 +1,6 @@
 # Task 04: A trace shows the SQL a request ran
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-2
 
@@ -40,21 +40,31 @@ the request caused.
 - Spring Modulith's event publication registry
   ([ADR-0081](../../adr/0081-incomplete-event-publications-are-resubmitted-five-times-and-completed-ones-deleted.md))
   writes its own statements; whether they show is a question, not an accident.
+- **Decided at refinement (2026-11-15):**
+  - The instrumentation is `datasource-micrometer`, which plugs into the
+    Micrometer observation the backend already uses, at the version from
+    [task 01](01-decision-the-local-observability-stack.md)'s batched
+    question.
+  - A span keeps the statement's text with `?` placeholders and its
+    duration, never a bound value.
+  - Statements run by an asynchronous event listener, and the event
+    publications themselves, sit in the request's trace, not in one of their
+    own.
+  - The event publication registry's own statements are shown, since they
+    are statements the request ran. Flyway's migrations at startup are not
+    traced as a request.
 
 ## Open questions
 
-- **Integrations.** Which instrumentation — a JDBC proxy around the data source,
-  Hibernate's own observation support, or the OpenTelemetry JDBC
-  instrumentation — and its version.
-- **Non-functional.** Whether the statement text is kept at all, or only its
-  operation and table.
-- **Edge cases.** Statements run by an asynchronous event listener: under the
-  request's trace, or in one of their own linked to it.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A cellar read's trace shows its statements as child spans of the request
       span, with their durations — verified against the running stack
+- [ ] A request that publishes an event shows the publication, its
+      listener's statements and the registry's statements in the request's
+      trace — verified against the running stack
 - [ ] An integration test shows a statement's span carrying no bound value for
       a search term and a username, and was seen to fail with values inlined
 - [ ] An integration test shows a deliberately repeated query in a test-only

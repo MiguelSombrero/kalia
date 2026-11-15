@@ -1,6 +1,6 @@
 # Task 08: One command prints a request's trace and log lines as text
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-4
 
@@ -33,20 +33,25 @@ it prints the most recent failed requests with their trace ids.
 - The ports it reads are this worktree's, from the root `.env`
   (`scripts/stack-ports.mjs`).
 - It prints nothing ADR-0013 keeps out of a log, whatever the store holds.
+- **Decided at refinement (2026-11-15):**
+  - Both this and task 07 are built
+    ([task 01](01-decision-the-local-observability-stack.md)).
+  - For the no-argument form, a "failed request" is one that answered `5xx`
+    or wrote a line at `ERROR`. It lists the ten most recent.
+  - The output is bounded at 150 lines. Over that, it first folds repeated
+    sibling spans into one line with a count (`× 37`), then drops log lines
+    below `WARN`, then cuts the tree and says how much it cut.
 
 ## Open questions
 
-- **Functional scope.** Whether both this and task 07 are needed, or one is
-  enough; task 01 answers it first.
-- **Interaction.** What a "failed request" is for the no-argument form — a 5xx,
-  any 4xx, an exception in a log — and how many it lists.
-- **Non-functional.** The length bound, and what is cut first when a trace is
-  over it.
+**None.**
 
 ## Acceptance criteria
 
-- [ ] `node --test` covers formatting a recorded trace into the tree, the length
-      bound cutting a trace with hundreds of spans, and the no-argument listing
+- [ ] `node --test` covers formatting a recorded trace into the tree, folding
+      repeated siblings into one counted line, the 150-line bound cutting a
+      trace with hundreds of spans in the order above, and the no-argument
+      listing of ten
 - [ ] Against the running profile, the target prints the tree of a request made
       a moment before, with its SQL statements and its log lines — verified by
       running it

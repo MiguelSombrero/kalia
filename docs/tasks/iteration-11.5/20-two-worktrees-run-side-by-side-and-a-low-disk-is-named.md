@@ -1,6 +1,6 @@
 # Task 20: Two worktrees run side by side in phone mode, and a low disk is named before it fails a build
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -35,8 +35,7 @@ are unproven or keep breaking:
   with the result. Any collision is fixed in `scripts/phone-mode.mjs`.
 - A session is warned, in the session only, when free disk space is low. The
   warning names the caches that use the most space.
-- Removing a worktree also removes the cache entries that only that worktree
-  used, if refinement chooses this.
+- Removing a worktree also removes that worktree's own Xcode DerivedData.
 
 ## Non-goals
 
@@ -57,27 +56,29 @@ are unproven or keep breaking:
   worktree's switch must leave the phone signed in to exactly one stack.
 - Ports are read from each worktree's `.env` (`make stack-env`), never
   hard-coded.
+- **Decided at refinement (2026-11-15):**
+  - The warning appears below a fixed 20 GB of free space.
+  - The `worktree` skill's teardown deletes the removed worktree's own Xcode
+    DerivedData, found by the workspace path Xcode records in it, and
+    nothing else.
+  - If phone mode does collide, a second worktree's switch takes over and
+    names the worktree it replaced, rather than refusing.
 
 ## Open questions
 
-- **Non-functional.** At what free space should the warning appear: a fixed
-  number of gigabytes, or a share of the disk?
-- **Functional scope.** Should the `worktree` skill's teardown delete the
-  removed worktree's DerivedData? Xcode names that folder by a hash of the
-  project's path, so it can be found per worktree.
-- **Edge cases.** If phone mode does collide, should the second worktree
-  refuse to switch while another is in phone mode, or take over and say so?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The two-worktree run is done, and the pull request records in words what
       `tailscale serve status` showed after each switch. ADR-0097 is amended
       with the result
-- [ ] A `prune-worktrees.test.mjs` case, with free space faked below the
-      threshold, prints the warning and names the caches. A case above the
-      threshold prints nothing
-- [ ] If refinement adopts the teardown step, a test shows it removing only
-      the removed worktree's DerivedData
+- [ ] A `prune-worktrees.test.mjs` case, with free space faked below 20 GB,
+      prints the warning and names the caches. A case above it prints nothing
+- [ ] A test shows the teardown removing the removed worktree's DerivedData
+      and leaving another worktree's in place
+- [ ] A `phone-mode` test shows a switch that replaces another worktree's
+      forwards naming that worktree
 - [ ] `make verify-fast` is green
 
 ## Notes

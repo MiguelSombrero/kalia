@@ -1,10 +1,16 @@
 # Task 18: A contributor whose suggestions are rejected cannot refill the review queue without end
 
-- **Status:** needs-refinement
+- **Status:** dropped
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
 ## Why
+
+**Dropped 2026-11-15 by the product owner at refinement: no limit on
+rejected suggestions.** Kalia is a hobby project and need not prepare for
+every case. A limit can be added if Kalia ever becomes a production app, so
+neither this task nor its finding (SHOULD-80) is kept open for it. The rest
+of this file is the request as it stood.
 
 A contributor may have at most 20 suggestions waiting for review
 (`ContributionService.MAX_PENDING_ENTRIES`,

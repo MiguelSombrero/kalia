@@ -1,6 +1,6 @@
 # Task 17: Keycloak's pages ask only for what Kalia uses, and each says what it is
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -35,7 +35,7 @@ left all three out because it was a visual task
 - Each Keycloak page is titled for what it does, in both languages, and the
   Finnish titles read correctly.
 - The password-reset page's username field offers the browser's stored
-  username, if refinement takes that in.
+  username.
 - The realm's seed, the sign-up restart check and every spec or flow that
   fills the form follow the change.
 
@@ -62,34 +62,47 @@ left all three out because it was a visual task
 - Existing users already have both names stored. They must still be able to
   sign in, and their stored names are left alone or removed as refinement
   decides.
+- **Decided at refinement (2026-11-15):**
+  - The first and last name are dropped from registration, not kept as
+    optional. Names already stored for existing users are left alone: only
+    local and test users exist, and Kalia never reads them.
+  - A title per page uses the narrowest override the pinned Keycloak offers,
+    such as a message key per page, if one exists. Otherwise the theme owns a
+    copy of `keycloak.v2`'s `template.ftl`, and a test fails when the copy no
+    longer matches the upstream template it was taken from, so an upgrade
+    cannot leave it stale.
+  - COULD-26's `autocomplete` fix is in, through the same override.
+  - ADR-0055 and ADR-0056 each get an amendment.
+  - The agreed titles (English / Finnish):
+
+    | Page | English | Finnish |
+    |---|---|---|
+    | Sign-in | Sign in to Kalia | Kirjaudu Kaliaan |
+    | Registration | Create a Kalia account | Luo Kalia-tili |
+    | Password reset | Forgot your password? | Unohtuiko salasana? |
+    | Update password | Choose a new password | Valitse uusi salasana |
+    | Verify email | Confirm your email address | Vahvista sähköpostiosoitteesi |
+    | Error | Something went wrong | Jotain meni vikaan |
 
 ## Open questions
 
-- **Functional scope.** Should the first and last name be dropped, or kept as
-  optional fields? Are the names already stored for existing users deleted,
-  given that Kalia never reads them?
-- **Constraints and trade-offs.** Is a per-page title worth owning a copy of
-  `template.ftl`, which has to be re-read on every Keycloak upgrade? Or is
-  there a narrower override at the pinned version, such as a message key per
-  page?
-- **Interaction and UX.** What should each page's title say, in English and
-  Finnish? The candidate pages are sign-in, registration, password reset,
-  update password, verify email and error.
-- **Functional scope.** Is COULD-26's `autocomplete` change in scope, given
-  that it needs the same template override?
-- **Module boundaries.** Should one amendment cover ADR-0055 and ADR-0056, or
-  should each get its own?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The Playwright sign-up spec registers with only a username, an email and
       a password, and a test checks that the form has no name field
-- [ ] A test reads the page title of each Keycloak page refinement lists, in
+- [ ] A test reads the page title of each of the six Keycloak pages in Constraints, in
       both languages, and each matches its agreed copy
+- [ ] A test finds the password-reset page's username field without
+      `autocomplete="off"`
+- [ ] If the theme owns a copy of `template.ftl`, a test fails when the copy
+      differs from the pinned Keycloak's upstream template it was taken from,
+      and was seen to fail on an edited copy
 - [ ] The app's `sign-in.yaml` Maestro flow on Android passes, and a user
       registered through the shorter form signs in to the app
-- [ ] A user created before the change still signs in, verified against the
-      running stack
+- [ ] A user created before the change, with both names stored, still signs
+      in, verified against the running stack
 - [ ] The theme's palette drift check and `make verify-fast` are green
 
 ## Notes

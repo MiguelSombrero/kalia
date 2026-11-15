@@ -1,10 +1,16 @@
 # Task 16: The seven-day signing expiry is watched, and what it does is written down
 
-- **Status:** needs-refinement
+- **Status:** dropped
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
 ## Why
+
+**Dropped 2026-11-15 by the product owner at refinement: a free-signing
+expiry is a development detail, not something the product depends on.** The
+product owner has re-installed a release build since the first install on
+2026-11-04, and the app opens. The rest of this file is the request as it
+stood.
 
 The app on the product owner's iPhone is signed with a free Apple ID, so the
 install stops opening seven days after its profile is issued.

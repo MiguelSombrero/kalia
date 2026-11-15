@@ -1,6 +1,6 @@
 # Task 15: Nothing is drawn beneath the central Add action
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -37,14 +37,16 @@ the cellar's entry point in iteration 12.
 - No screen capture leaves the machine
   ([rule](../../../.claude/rules/no-screenshots.md)). The pull request
   describes the before and after in words.
+- **Decided at refinement (2026-11-15):**
+  - Where the shape appears is found while reproducing it: the iOS
+    Simulator, Android, a development build, dark mode, the largest text
+    size. That is investigation, not a question for the product owner.
+  - The product owner signs off on a release build on the phone, where the
+    shape was seen.
 
 ## Open questions
 
-- **Edge cases.** Does it appear on the iOS Simulator, on Android, in a
-  development build, in dark mode, or at the largest text size? The answers
-  say whether this is the tab bar's default icon, a label, or something else.
-- **Completion signals.** Which build does the product owner sign off on: a
-  release build on the phone, or the Simulator once the cause is shown?
+**None.**
 
 ## Acceptance criteria
 
@@ -55,8 +57,8 @@ the cellar's entry point in iteration 12.
       It was seen to fail before the fix
 - [ ] The navigation's accessibility tests and the Android Maestro flows pass
       unchanged
-- [ ] The product owner confirms on the phone that the shape is gone and the
-      navigation is otherwise as approved
+- [ ] The product owner confirms on a release build on the phone that the
+      shape is gone and the navigation is otherwise as approved
 - [ ] `make verify-fast` is green
 
 ## Notes

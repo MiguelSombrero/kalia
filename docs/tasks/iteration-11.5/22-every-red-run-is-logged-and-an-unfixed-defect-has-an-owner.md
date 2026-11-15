@@ -1,6 +1,6 @@
 # Task 22: Every red run is logged, and a defect left unfixed names who fixes it
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -36,14 +36,13 @@ offline sync and its Maestro flows will add failure modes that only CI sees.
 
 ## Scope
 
-- Red runs in CI reach the log or the sweep, from every workflow and from
-  pull request branches, in the way refinement chooses.
+- The quality sweep collects red CI runs itself, from every workflow and
+  from pull request branches, and the log holds local failures.
 - A row whose failure is a repository defect left unfixed names a
   quality-backlog ID, a task or a playbook entry. A cause outside the
   repository, such as a registry outage, needs no owner.
 - ADR-0084 is amended to say both.
-- The failures listed above are backfilled, or left to the next sweep, as
-  refinement decides.
+- The existing rows gain their cause kind.
 
 ## Non-goals
 
@@ -61,31 +60,33 @@ offline sync and its Maestro flows will add failure modes that only CI sees.
   to the sweep is a change to `.claude/skills/quality-sweep/`.
 - **A check has to tell "not fixed" from "not ours".** A rule that flags a
   registry outage as an unowned defect would be ignored within a week.
+- **Decided at refinement (2026-11-15):**
+  - **Collection (SHOULD-116):** the quality sweep collects the red runs
+    since the last sweep itself with `gh run list`, across every workflow and
+    pull-request branch, Dependabot's included. `common-failures.md` narrows
+    to local failures that leave no trace in CI.
+  - **No backfill into the log.** The sweep's first collection reaches back
+    to 2026-10-27, the earliest unlogged run in Why, so the runs listed there
+    are counted. Later collections start from the previous sweep.
+  - **Owner rule (SHOULD-101):** a checker in `make check`. Each row names a
+    cause kind, `defect` or `external`. A `defect` row not marked fixed must
+    name a quality-backlog ID, a task or a playbook entry. An `external` row,
+    such as a registry outage, needs no owner.
 
 ## Open questions
 
-- **Functional scope.** Choose one (SHOULD-116, `[needs decision]`):
-  - widen the `worktree` skill's step that reads red runs to every workflow
-    and to pull request branches;
-  - have the sweep collect red runs itself with `gh run list`, and narrow the
-    log to local failures that leave no trace;
-  - accept the undercount.
-- **Completion signals.** Enforce the owner rule with a sentence in the log's
-  header and in the ADR, or with a checker in `make check` (SHOULD-101,
-  `[needs decision]`)? How would a checker tell a cause outside the
-  repository apart from a defect?
-- **Functional scope.** Are the listed CI failures backfilled into the log in
-  this task?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] ADR-0084 is amended with the chosen collection route and the owner rule
-- [ ] If refinement adopts a checker, its test fails a fixture row that leaves
-      a defect unfixed with no owner and passes a row whose cause is a
-      registry outage
+- [ ] The checker's test fails a fixture `defect` row left unfixed with no
+      owner, passes an `external` row for a registry outage, and fails a row
+      with no cause kind; every existing row passes
 - [ ] The 2026-10-31 row for run 41231274792 names its owner
-- [ ] If the sweep collects runs itself, its skill names the command and a
-      dry run on this branch lists the red runs since the last sweep
+- [ ] The sweep's skill names the command, and a dry run on this branch lists
+      the red runs since 2026-10-27, the runs named in Why among those still
+      inside GitHub's retention
 - [ ] `make verify-fast` is green
 
 ## Notes

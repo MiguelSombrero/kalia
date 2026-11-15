@@ -1,6 +1,6 @@
 # Task 07: An agent queries the telemetry through an MCP server
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-4
 
@@ -39,18 +39,23 @@ it for.
   and an MCP server run from a package registry is pinned to an exact version.
 - `.claude/settings.json` is shared configuration; a change to what agents may
   run there is reviewed like code.
+- **Decided at refinement (2026-11-15):**
+  - The server is Grafana's own MCP server, reaching Tempo, Loki and
+    Prometheus through Grafana's data sources, with a Viewer service
+    account ([task 01](01-decision-the-local-observability-stack.md)). It
+    runs as a pinned container image, so nothing is installed on the host,
+    at the version from task 01's batched question.
+  - It is configured in a committed `.mcp.json`, which you approve once. A
+    wrapper reads this worktree's Grafana port from its root `.env`.
+  - An answer's size is bounded first by the server's own limits and by
+    enabling only its read and query tools, checked at the pinned version.
+    Where those do not bound an answer, the wrapper truncates it and says so.
+  - With the profile stopped, the wrapper answers that the profile is not
+    running and names `make observability-up`.
 
 ## Open questions
 
-- **Integrations.** Which server — the viewer's own MCP server if task 01 chose
-  Grafana, or one per store — and how it is run: a pinned container, or a
-  pinned binary or package.
-- **Non-functional.** How an answer's size is bounded: by the server's own
-  limits, by the tools it exposes, or by a wrapper.
-- **Functional scope.** Whether it is configured in `.mcp.json` for every
-  session, or opted into per session.
-- **Edge cases.** The profile is not running: what the server answers, so an
-  agent reads "not started" rather than a stack trace.
+**None.**
 
 ## Acceptance criteria
 
@@ -61,6 +66,8 @@ it for.
       host other than localhost or an unpinned version, and was seen to fail
       against such a configuration
 - [ ] The server's credential cannot create a dashboard — verified by trying
+- [ ] A query whose raw answer is larger than the bound returns a truncated
+      answer that says it was cut — verified by running one
 - [ ] With the profile stopped, the server answers with a message naming how to
       start it
 - [ ] The root README says how the server is enabled, and `make verify-fast` is

@@ -1,6 +1,6 @@
 # Task 02: The observability profile starts beside the stack, and the stack without it is unchanged
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-1
 
@@ -41,17 +41,21 @@ container being recreated.
   ([ADR-0024](../../adr/0024-dependency-vulnerability-scanning.md)).
 - The viewer's own sign-in, if it has one, is a dev-only value in
   `docker-compose.dev.env`, never a `:-` default in a Compose file.
+- **Decided at refinement (2026-11-15):**
+  - The store, the switch, the shipper and the viewer's anonymous Viewer
+    access are [task 01](01-decision-the-local-observability-stack.md)'s
+    decisions. The profile holds `otel-lgtm` and the log shipper, and nothing
+    sends to them yet.
+  - `make observability-up` against a stack that is already up adds the
+    profile and recreates only the backend and the web.
+    `make observability-down` stops the profile's services and recreates
+    those two without the endpoint, and the rest of the stack keeps running.
+  - The volume has no size cap beyond the three-day retention.
+  - The image's version is the one task 01's batched question settled.
 
 ## Open questions
 
-- **Functional scope.** The command that starts it — a profile flag, a second
-  `-f` file, or a `make` target — as task 01 decided, and whether `make help`
-  lists it.
-- **Edge cases.** Starting the profile against a stack that is already up, and
-  stopping it without stopping the stack.
-- **Non-functional.** Whether the viewer needs a sign-in at all on a
-  localhost-only port, and the volume's size limit, if any.
-- **Integrations.** Which image version.
+**None.**
 
 ## Acceptance criteria
 
@@ -65,8 +69,11 @@ container being recreated.
 - [ ] `scripts/stack-ports.mjs` carries each new port, and two worktrees run
       the profile at once on different ports — verified by running both
 - [ ] Recreating the container keeps what it stored
-- [ ] The root README says how to start, open and stop it, and `make verify-fast`
-      is green
+- [ ] `make observability-down` leaves the rest of the stack's containers
+      running and the backend and web answering — verified against the
+      running stack
+- [ ] The root README says how to start, open and stop it, `make help` lists
+      both targets, and `make verify-fast` is green
 
 ## Notes
 

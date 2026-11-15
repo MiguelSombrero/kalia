@@ -1,6 +1,6 @@
 # Task 05: The web server's traces, metrics and logs reach the profile
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-2, DW-3
 
@@ -36,21 +36,28 @@ With the profile off, it behaves as today.
   separate bundles, which is why the registry is held on `globalThis`.
 - No span attribute, metric label or log field holds a token, a session id, a
   cookie or a query string ([ADR-0013](../../adr/0013-logging-conventions.md));
-  a locale-prefixed path with a username in it is the question
-  [iteration 11 task 17](../iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md)
-  settles, and its answer applies here.
+  a span names a route template, never a raw path, since a path can hold a
+  username
+  ([iteration 11 task 17](../iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md)).
 - The backend call's span must forward its own context, so the backend's span
   is its child, not the request's sibling.
 - `/api/metrics` and `METRICS_TOKEN` keep working as ADR-0088 describes.
+- **Decided at refinement (2026-11-15):**
+  - The SDK is `@vercel/otel`, which the pinned Next.js's own guide
+    (`node_modules/next/dist/docs/01-app/02-guides/open-telemetry.md`)
+    recommends, at the version from
+    [task 01](01-decision-the-local-observability-stack.md)'s batched
+    question. It exports spans over OTLP.
+  - The counters stay on `@prometheus-io/client` and are scraped from
+    `/api/metrics` with a dev-only `METRICS_TOKEN` in
+    `docker-compose.dev.env`. The logs are read from stdout by the shipper,
+    so the web gains no log exporter (task 01).
+  - A Server Action's request, and a token refresh made while serving a
+    page, are spans in that page's trace.
 
 ## Open questions
 
-- **Integrations.** Which SDK — Next.js's own OpenTelemetry support through a
-  wrapper package, or the OpenTelemetry Node SDK directly — and its versions.
-- **Integrations.** Whether the frontend's counters stay on
-  `@prometheus-io/client` and are scraped, or move to OpenTelemetry metrics.
-- **Edge cases.** A Server Action's request, and a token refresh made while
-  serving a page: spans of that page, or their own.
+**None.**
 
 ## Acceptance criteria
 
@@ -59,8 +66,9 @@ With the profile off, it behaves as today.
       backend call with the backend's spans beneath each — verified in the
       viewer against the running stack
 - [ ] A Vitest test shows that a request whose URL carries a query string or a
-      session cookie exports no span attribute or log field containing either,
-      and was seen to fail with the SDK's defaults
+      session cookie, or whose path holds a username, exports no span
+      attribute or log field containing any of them, and was seen to fail with
+      the SDK's defaults
 - [ ] A Vitest test shows the web server starting and serving with no exporter
       endpoint configured
 - [ ] The refresh-failure and backend-failure counters are queryable in the

@@ -1,6 +1,6 @@
 # Task 24: The backlog and the READMEs state a decided fact once, as decided
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -41,10 +41,11 @@ steps had already dropped the `make openapi-spec` step that has to come first.
 
 ## Scope
 
-- The backlog's Mobile client section says what is decided and links to where
-  it was decided, keeping only what is still open or parked.
-- The "Back to application" link has a home that is not a closed iteration:
-  either the backlog's cost list or a named iteration.
+- The backlog's Mobile client analysis is marked "as written 2026-08-08",
+  and its table row and "worth knowing" items point to where each question
+  was decided.
+- The "Back to application" link is assigned to iteration 13, and
+  `iteration-13.md` names it.
 - Each remaining restated fact is a one-line pointer to its home.
 - A check fails when the backlog's table assigns an item to an iteration that
   is `done`, so the next closed iteration cannot leave the same stale
@@ -65,30 +66,30 @@ steps had already dropped the `make openapi-spec` step that has to come first.
 - **A version is recorded in its manifest and nowhere else.**
 - `mobile/README.md` is at its 320-line cap. A pointer replaces the lines it
   points away from.
+- **Decided at refinement (2026-11-15):**
+  - **The Mobile client analysis stays (SHOULD-112)**, marked "as written
+    2026-08-08", as the record of why the mobile iterations were planned as
+    they were. Only its table row and its "worth knowing" items are
+    corrected, to pointers at ADR-0092–0098.
+  - **"Back to application" goes to [iteration 13](../iteration-13.md)
+    (SHOULD-109)**, with its deep links: an Android App Link or a web bounce
+    page to `kalia://auth/callback`, both free.
+  - The check on the table is kept.
 
 ## Open questions
 
-- **Functional scope.** For the Mobile client section, choose one
-  (SHOULD-112, `[needs decision]`):
-  - prune the analysis down to one-line pointers at ADR-0092–0098;
-  - keep it marked "as written 2026-08-08", and correct only the table row
-    and the "worth knowing" items.
-- **Functional scope.** Where does "Back to application" go (SHOULD-109,
-  `[needs decision]`)? One option is the backlog's cost list, since iOS
-  universal links need the paid developer program. The other is to schedule
-  the free Android App Link, or a web bounce page to `kalia://auth/callback`,
-  in a named iteration, such as 13 with its deep links.
-- **Completion signals.** Is the check on the table worth its upkeep? It reads
-  the iteration links in one table and their statuses in the roadmap.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A test in `scripts/` fails when the backlog's Mobile client table
       assigns an item to an iteration whose roadmap status is done. It was
-      seen to fail on today's table, unless refinement drops the check
-- [ ] The backlog's Mobile client section names no path that does not exist
-      and calls no decided question open, verified in review against
+      seen to fail on today's table
+- [ ] The Mobile client analysis carries its "as written 2026-08-08" mark,
+      and its table row and "worth knowing" items name no path that does not
+      exist and call no decided question open, verified in review against
       ADR-0092–0098
+- [ ] `iteration-13.md` names the "Back to application" link
 - [ ] `docs/ci-playbook.md`'s drift entry and `mobile/README.md`'s CI trigger
       and Dependabot list are one-line pointers, and `make verify-fast`'s
       link and doc-size checks pass

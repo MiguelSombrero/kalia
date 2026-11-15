@@ -31,30 +31,34 @@ around it — through every tier, reading it from a query rather than from
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-11.5/01-decision-the-local-observability-stack.md) | Decide the local observability stack and how an agent reads it | needs-refinement |
-| [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | needs-refinement |
-| [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | needs-refinement |
-| [04](iteration-11.5/04-a-trace-shows-the-sql-a-request-ran.md) | A trace shows the SQL a request ran | needs-refinement |
-| [05](iteration-11.5/05-the-web-servers-telemetry-reaches-the-profile.md) | The web server's traces, metrics and logs reach the profile | needs-refinement |
-| [06](iteration-11.5/06-the-other-services-logs-and-metrics-reach-the-profile.md) | The edge, Keycloak, Postgres and Valkey reach the profile too | needs-refinement |
-| [07](iteration-11.5/07-an-agent-queries-the-telemetry-through-an-mcp-server.md) | An agent queries the telemetry through an MCP server | needs-refinement |
-| [08](iteration-11.5/08-one-command-prints-a-requests-trace-and-logs.md) | One command prints a request's trace and log lines as text | needs-refinement |
-| [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | needs-refinement |
-| [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | needs-refinement |
-| [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's code conventions are written down and checked | needs-refinement |
-| [12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md) | A test waits on a signal, never on the clock | needs-refinement |
-| [13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md) | The shared packages export what both apps use, and only that | needs-refinement |
-| [14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md) | A font that fails or never loads leaves the app readable | needs-refinement |
-| [15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md) | Nothing is drawn beneath the central Add action | needs-refinement |
-| [16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md) | The seven-day signing expiry is watched, and what it does is written down | needs-refinement |
-| [17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) | Keycloak's pages ask only for what Kalia uses, and each says what it is | needs-refinement |
-| [18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md) | A contributor whose suggestions are rejected cannot refill the review queue without end | needs-refinement |
-| [19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md) | A known transient CI failure is retried or prevented, not re-run by hand | needs-refinement |
-| [20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md) | Two worktrees run side by side in phone mode, and a low disk is named before it fails a build | needs-refinement |
-| [21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md) | The CodeQL alerts open on `dev` are closed | needs-refinement |
-| [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | needs-refinement |
-| [23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md) | Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check | needs-refinement |
-| [24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md) | The backlog and the READMEs state a decided fact once, as decided | needs-refinement |
+| [01](iteration-11.5/01-decision-the-local-observability-stack.md) | Decide the local observability stack and how an agent reads it | refined |
+| [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | refined |
+| [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | refined |
+| [04](iteration-11.5/04-a-trace-shows-the-sql-a-request-ran.md) | A trace shows the SQL a request ran | refined |
+| [05](iteration-11.5/05-the-web-servers-telemetry-reaches-the-profile.md) | The web server's traces, metrics and logs reach the profile | refined |
+| [06](iteration-11.5/06-the-other-services-logs-and-metrics-reach-the-profile.md) | The edge, Keycloak, Postgres and Valkey reach the profile too | refined |
+| [07](iteration-11.5/07-an-agent-queries-the-telemetry-through-an-mcp-server.md) | An agent queries the telemetry through an MCP server | refined |
+| [08](iteration-11.5/08-one-command-prints-a-requests-trace-and-logs.md) | One command prints a request's trace and log lines as text | refined |
+| [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | refined |
+| [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | refined |
+| [25](iteration-11.5/25-each-apps-code-conventions-have-a-file-of-their-own.md) | Each app's code conventions have a file of their own, loaded with its subtree | refined |
+| [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's mechanical code rules fail the lint | refined |
+| [26](iteration-11.5/26-navigation-targets-translation-keys-and-strictness-are-checked.md) | Navigation targets, translation keys and compiler strictness are checked in both apps | refined |
+| [27](iteration-11.5/27-the-conventions-that-needed-a-choice-are-written-and-followed.md) | The conventions that needed a choice are written down, and the code follows them | refined |
+| [28](iteration-11.5/28-both-apps-test-conventions-are-written-down.md) | Both apps' test conventions are written down, and a test file is named after what it tests | refined |
+| [12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md) | A test waits on a signal, never on the clock | refined |
+| [13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md) | The shared packages export what both apps use, and only that | refined |
+| [14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md) | A font that fails or never loads leaves the app readable | refined |
+| [15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md) | Nothing is drawn beneath the central Add action | refined |
+| [16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md) | The seven-day signing expiry is watched, and what it does is written down | dropped |
+| [17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) | Keycloak's pages ask only for what Kalia uses, and each says what it is | refined |
+| [18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md) | A contributor whose suggestions are rejected cannot refill the review queue without end | dropped |
+| [19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md) | A known transient CI failure is retried or prevented, not re-run by hand | refined |
+| [20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md) | Two worktrees run side by side in phone mode, and a low disk is named before it fails a build | refined |
+| [21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md) | The CodeQL alerts open on `dev` are closed | refined |
+| [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | refined |
+| [23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md) | Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check | refined |
+| [24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md) | The backlog and the READMEs state a decided fact once, as decided | refined |
 
 Numbered 11.5 because it lands after [iteration 11](iteration-11.md) and
 before [iteration 12](iteration-12.md)'s offline cellar, whose sync failures
@@ -66,15 +70,16 @@ observability part of the iteration, drafted at the product owner's request on
 
 The profile is for local development and CI only. ADR-0088 rejected a local
 viewer because it added containers to a stack started on a laptop; an opt-in
-profile is the answer task 01 puts to the product owner, not a decision already
-made. What a deployment monitors — a hosted service, alerting, retention — stays
+profile is what the product owner chose at refinement on 2026-11-15, and task
+01's ADR records it as an amendment. What a deployment monitors — a hosted service, alerting, retention — stays
 behind ADR-0088's own revisit trigger, a deployment target, and is not here.
 
 The table's order is the order of work:
 
 - **First, the decision** ([01](iteration-11.5/01-decision-the-local-observability-stack.md)):
-  which stack, how each tier sends to it, and how an agent reads it. Every
-  task after it is refined against its ADR.
+  which stack, how each tier sends to it, and how an agent reads it. The
+  tasks after it were refined against the answers its Constraints hold, and
+  its spike confirms them.
 - **Then the ground:** the profile itself
   ([02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md)),
   with nothing yet sending to it.
@@ -97,11 +102,16 @@ The table's order is the order of work:
   the documents an agent works from say when to read the telemetry, written
   once what they describe exists.
 
-Task [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md)
-is outside the observability work and advances no criterion. It was added at
-the product owner's request on 2026-11-14 so the mobile app's code
+Tasks [25](iteration-11.5/25-each-apps-code-conventions-have-a-file-of-their-own.md),
+[11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md)
+and [26](iteration-11.5/26-navigation-targets-translation-keys-and-strictness-are-checked.md)–[28](iteration-11.5/28-both-apps-test-conventions-are-written-down.md)
+are outside the observability work and advance no criterion. Task 11 was
+added at the product owner's request on 2026-11-14 so the mobile app's code
 conventions are set before iteration 12's cellar becomes the second large
-feature written without them. Refinement may split it into several tasks.
+feature written without them. At refinement on 2026-11-15 the product owner
+split it into four tasks, 11 and 26–28, each with its web counterpart. Task
+25 goes first and gives each subtree a `CONVENTIONS.md` of its own for them
+to write into.
 
 Tasks 12–24 are outside the observability work too, and advance no
 criterion. On 2026-11-14 the product owner asked for the iteration to be
@@ -109,7 +119,8 @@ scoped from the [quality backlog](quality-backlog.md) and the
 [backlog](backlog.md), favouring what most helps the mobile iterations to come.
 Related findings are merged into one task each, and each task's Notes name the
 findings it holds. Most of them are `[needs decision]`, so their open questions
-go on the same refinement agenda as the rest. They fall into three groups:
+go on the same refinement agenda as the rest. Tasks 16 and 18 were dropped
+at refinement on 2026-11-15 and keep their rows. They fall into three groups:
 
 - **The app and what it is built on**, ahead of iteration 12's cellar:
   - tests that check what they claim on a slow runner
@@ -121,13 +132,15 @@ go on the same refinement agenda as the rest. They fall into three groups:
   - the navigation defect seen on the phone
     ([15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md));
   - what a free-signing expiry does to the data an offline cellar would keep
-    ([16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md)).
+    ([16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md),
+    dropped).
 - **What every client inherits from the server:**
   - the Keycloak pages a phone signs up through
     ([17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md));
   - a limit on rejected suggestions, set before a scan makes suggesting one
     tap away and before installed apps make a new refusal costly
-    ([18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md)).
+    ([18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md),
+    dropped).
 - **The pipeline and the process the next iterations run on:**
   - CI failures that need a manual re-run
     ([19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md));
