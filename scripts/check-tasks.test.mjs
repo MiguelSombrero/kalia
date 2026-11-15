@@ -217,8 +217,8 @@ test("fails an iteration the roadmap calls Done before every task is", () => {
   });
 });
 
-test("fails an iteration whose tasks are all done but the roadmap says in progress", () => {
-  checkRoadmap({ roadmapStatus: "🔄 In progress", taskStatuses: ["done", "done"] }, (f) => assert.equal(f.length, 1));
+test("passes an iteration whose tasks are all done while its closing pull request is still to come", () => {
+  checkRoadmap({ roadmapStatus: "🔄 In progress", taskStatuses: ["done", "done"] }, (f) => assert.deepEqual(f, []));
 });
 
 test("fails an iteration with task files that has no roadmap row", () => {

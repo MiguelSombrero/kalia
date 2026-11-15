@@ -63,8 +63,8 @@ here, and the app still builds). **Expo and React Native postdate it too —
 check docs.expo.dev at the SDK version in `mobile/package.json`, never
 memory.** Guessing fails silently there too.
 
-The repository tree is in [README.md](README.md); `.claude/settings.json` marks
-the generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md)).
+The tree is in [README.md](README.md); `.claude/settings.json` marks the
+generated API client read-only ([ADR-0012](docs/adr/0012-orval-api-client.md)).
 
 ## Commands
 
@@ -82,10 +82,10 @@ fails with an `EndPosTable` error naming neither ([README](backend/README.md)).
 
 ## Workflow
 
-Five skills under `.claude/skills/` are the entry points, each ordering gates
+Six skills under `.claude/skills/` are the entry points, each ordering gates
 into a numbered procedure without changing one: `implement-task` (a `refined`
-task, to pull request), `design-task`, `refine-task`, `refine-iteration` and
-`worktree`.
+task, to pull request), `implement-iteration`, `design-task`, `refine-task`,
+`refine-iteration` and `worktree`.
 
 The gates themselves:
 
@@ -119,14 +119,16 @@ The gates themselves:
 - **Open the PR automatically once a task is done** — don't wait to be asked.
   "Done" means every gate here is met; merging stays the product owner's
   explicit action. Follow [the template](docs/PULL_REQUEST_TEMPLATE.md).
-- **Doc-sync, code-review and iteration-DoD gates, and ticking acceptance
-  criteria:** `implement-task` states them in full — invoke it for any task
-  ([ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md)).
-  In short: update the docs the change touches, run `/code-review`, verify each
-  criterion by running its check, never close an iteration on its last tick.
-- **Reach for other skills only when this task needs them** — weighed against
-  the process-weight rule above. Don't hardcode plugin names as required steps;
-  most are not bundled.
+- **Doc-sync and code-review gates, and ticking acceptance criteria:**
+  `implement-task` states them in full — invoke it for any task
+  ([ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md)). In short:
+  update the docs the change touches, run `/code-review`, verify each
+  criterion by running its check.
+- **A task PR never edits its iteration's status:** an opening PR marks it
+  `🔄 In progress` before any task PR merges; a closing PR verifies each `Done
+  when` by running it. Implementing an iteration's tasks runs under an
+  orchestrating session that opens no PR itself — `implement-iteration`.
+- **Reach for other skills only when this task needs them**; no plugin name is a required step.
 - **Code review is a dialogue.** Analyse every review comment critically before
   acting. Agreeing: implement and reply with what changed. Disagreeing: reply
   in the thread with the concern and a concrete alternative, and make **no
@@ -179,11 +181,8 @@ and of this repository's own process; its mechanics live in the skill and in
 sets `disable-model-invocation`, so it is absent from an agent's skill list and
 cannot announce itself. Proactively *suggest* it at the start of a new
 iteration's first task; never trigger it or lift a finding into an iteration
-yourself. **Not adopted:** a subagent review on every task before every PR —
-the sweep's five dimensions need whole-codebase context, and `/code-review` is
-a single reviewer that stays a gate
-([ADR-0027](docs/adr/0027-process-weight.md)); and per-task process
-retrospection, the sweep's `process-quality` dimension
+yourself. **Not adopted:** a subagent review on every task before every PR
+([ADR-0027](docs/adr/0027-process-weight.md)); per-task process retrospection
 ([ADR-0051](docs/adr/0051-process-retrospection-belongs-to-the-sweep.md)).
 
 ## Environment notes

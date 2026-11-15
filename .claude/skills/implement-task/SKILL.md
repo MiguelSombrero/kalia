@@ -5,10 +5,11 @@ description: Numbered procedure for implementing one refined docs/tasks/iteratio
 
 # Implement a task
 
-`CLAUDE.md`'s `## Workflow` states most gates below. Three it leaves to this
-skill, which states them in full — doc-sync (step 7), code review (step 8) and
-the iteration definition of done (step 11)
-([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)).
+`CLAUDE.md`'s `## Workflow` states most gates below. Two it leaves to this
+skill, which states them in full — doc-sync (step 7) and code review (step 8)
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)). The
+third, the iteration definition of done, is the closing pull request's, in
+`implement-iteration` step 12.
 Nothing here changes a gate; this orders them, and gives the code-comment pass
 a step of its own — a moment to apply
 [ADR-0017](../../../docs/adr/0017-code-comment-policy.md)'s test to a comment
@@ -133,21 +134,11 @@ their own condition from that ADR before they apply.
     (`scripts/sync-indexes.mjs` copies it into the iteration index).
     Iterations 0–4 predate task files: tick in `docs/tasks/iteration-N.md`.
 
-    **Iteration DoD gate**, when this was the iteration's last task. Never
-    declare an iteration complete because its last task is ticked. Re-read its
-    "Done when" and verify each criterion by running it; if any is unmet, add
-    tasks to close the gap. The same coverage check applies when planning an
-    iteration ([ADR-0026](../../../docs/adr/0026-task-file-format.md)). Once it
-    is genuinely done, update every document that states the iteration's
-    status, in the same pull request: its `Status` in `docs/roadmap.md` and its
-    entry under "What each iteration built" there (finish it and drop its "in
-    progress" marker if an earlier task began it), the one home of the feature
-    list that `README.md` and `docs/architecture.md` §1 point to.
-    Missing these is how the close of 5.5, 6 and 7 drifted.
-
-    **When this was the iteration's first `done` task,** mark the iteration
-    `🔄 In progress` in `docs/roadmap.md`, the one place an iteration's status
-    is stated; `make check` fails while it still reads `⬜ Todo`.
+    **Never edit the iteration's status** (`docs/roadmap.md`'s row, its entry
+    under "What each iteration built"): the opening and closing pull requests do,
+    per [`implement-iteration`](../implement-iteration/SKILL.md). If `make
+    verify-fast` fails only on the `⬜ Todo` row, the opening pull request has
+    not merged: wait, merge `origin/dev`, push.
 12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 
@@ -171,7 +162,7 @@ naming a reason for each one skipped (in procedure order):
 - the change exercised against a running stack, with what was observed
 - each acceptance criterion re-verified by running its own check, then
   ticked, and the status set to `done`
-- iteration "Done when" re-verified, where this was the last task
+- iteration "Done when": not this pull request's — the closing pull request's
 
 A gate with no verdict counts as skipped. "All gates passed" without the two
 printed lines above is an assertion, not a report.

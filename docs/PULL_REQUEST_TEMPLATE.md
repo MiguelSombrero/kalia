@@ -75,7 +75,7 @@
 - **Local gate:** <!-- `make verify-fast` (or `make verify`, said explicitly) -->
 - **Running stack:** <!-- what you saw exercising the changed flow, or "nothing user-facing changed" -->
 - **Acceptance criteria:** <!-- each criterion's own check re-run, then ticked, status set to `done` -->
-- **Iteration Done when:** <!-- re-verified, if this was the iteration's last task; otherwise "not the last task" -->
+- **Iteration Done when:** <!-- a task pull request never closes its iteration: "not applicable — the closing pull request verifies it" (`implement-iteration`) -->
 
 <!-- Include only the signature for the tool used.
      Claude Code: 🤖 Generated with [Claude Code](https://claude.com/claude-code)
