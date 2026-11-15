@@ -1,6 +1,6 @@
 # Task 11: The mobile app's mechanical code rules fail the lint
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -116,7 +116,7 @@ retrofit; set after, it costs two.
 - [x] A test drives the catalog's one debounce under fake timers
 - [x] The code under `mobile/src/` and `web/` passes every new rule, and any
       `eslint-disable` added carries a `--` reason
-- [ ] `make mobile-test` and the Android Maestro flows pass unchanged. On
+- [x] `make mobile-test` and the Android Maestro flows pass unchanged. On
       the iOS Simulator, the catalog, filters sheet, profile and sign-in
       sheet look the same as before, as compared by the agent and described
       in words in the pull request
