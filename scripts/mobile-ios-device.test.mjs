@@ -17,6 +17,7 @@ import {
   launchArgs,
   physicalPhones,
   startKeepAlive,
+  step,
   xcodebuildArgs,
 } from "./mobile-ios-device.mjs";
 
@@ -125,4 +126,12 @@ test("the keep-alive loop runs until it is stopped, and stopping it ends it", as
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("a failed step names the command and its exit status and carries no argument", () => {
+  const secret = "TEAM-ID-SECRET";
+  assert.throws(
+    () => step("node", ["-e", "process.exit(3)", `DEVELOPMENT_TEAM=${secret}`], process.env),
+    (error) => error.message === "node failed (exit 3)" && !error.message.includes(secret) && !error.message.includes("-e"),
+  );
 });

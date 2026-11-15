@@ -23,7 +23,7 @@ const ADR_ROW = /^\|\s*(\[ADR-\d{4}\]\(([^)]+)\))\s*\|/;
 const TASK_ROW = /^\|\s*(\[\d{2}\]\((iteration-\d+(?:\.\d+)?\/[^)]+)\))\s*\|/;
 
 const field = (text, name) => text.match(new RegExp(`^- \\*\\*${name}:\\*\\* (.+)$`, "m"))?.[1]?.trim();
-const row = (link, cells) => `| ${link} | ${cells.map((c) => c.replace(/\|/g, "\\|")).join(" | ")} |`;
+const row = (link, cells) => `| ${link} | ${cells.map((c) => c.replace(/[\\|]/g, "\\$&")).join(" | ")} |`;
 
 /**
  * @param {string} root repository root to sync

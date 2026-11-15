@@ -91,9 +91,9 @@ export const listDevices = () => {
   }
 };
 
-const step = (command, args, env) => {
+export const step = (command, args, env) => {
   const { status } = spawnSync(command, args, { cwd: ROOT, env, stdio: "inherit" });
-  if (status !== 0) throw new Error(`${command} ${args[0]} failed (exit ${status})`);
+  if (status !== 0) throw new Error(`${command} failed (exit ${status})`);
 };
 
 // The phone's USB or tunnel link has dropped during a prebuild and a build,

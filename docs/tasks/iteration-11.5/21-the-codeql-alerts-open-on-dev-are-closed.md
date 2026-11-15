@@ -1,6 +1,6 @@
 # Task 21: The CodeQL alerts open on `dev` are closed
 
-- **Status:** refined
+- **Status:** in-progress
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -72,15 +72,15 @@ iteration 12 runs, and the index writer runs on every task-file edit.
 
 ## Acceptance criteria
 
-- [ ] A `sync-indexes` test writes and reads back a title holding `\|` and a
+- [x] A `sync-indexes` test writes and reads back a title holding `\|` and a
       trailing `\`, and the cell is intact. It failed before the change
-- [ ] A test shows `step()`'s error naming the command and its exit status
+- [x] A test shows `step()`'s error naming the command and its exit status
       and no argument
-- [ ] If the stand-in can follow alert 8's flow, a
+- [x] If the stand-in can follow alert 8's flow, a
       `check-clear-text-logging` fixture of that shape fails; if it cannot,
       its header says so
 - [ ] CodeQL on this branch's pull request reports alerts 5 and 8 as fixed
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
