@@ -14,14 +14,24 @@
 //   - it is not this session's own worktree, not locked, and no process has
 //     its working directory inside it.
 //
+// Two more jobs share the SessionStart hook and the removal: it warns, in the
+// session only, when free disk space is low, naming the caches by kind (never
+// by path); and removing a worktree removes that worktree's own Xcode
+// DerivedData, found by the workspace path Xcode records in it.
+//
 // usage: prune-worktrees.mjs [--no-fetch] [--dry-run]
+//        prune-worktrees.mjs --derived-data <removed-worktree-path>
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { realpathSync } from "node:fs";
-import { dirname, resolve, sep } from "node:path";
+import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statfsSync } from "node:fs";
+import { homedir } from "node:os";
+import { basename, dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const BASE = "origin/dev";
+const GB = 1024 ** 3;
+export const LOW_DISK_BYTES = 20 * GB;
+export const DERIVED_DATA = join(homedir(), "Library", "Developer", "Xcode", "DerivedData");
 
 function git(cwd, ...args) {
   return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
@@ -89,7 +99,116 @@ export function insideAny(path, directories) {
   return directories.some((dir) => dir === root || dir.startsWith(root + sep));
 }
 
-export function prune({ cwd, fetch = true, dryRun = false, directories = processDirectories() } = {}) {
+// A removed worktree's path no longer resolves, so its parent stands in for it.
+function canonicalPath(path) {
+  const absolute = resolve(path);
+  try {
+    return realpathSync(absolute);
+  } catch {
+    return join(realPath(dirname(absolute)), basename(absolute));
+  }
+}
+
+const workspacePathOf = (directory) => {
+  try {
+    return readFileSync(join(directory, "info.plist"), "utf8").match(/<key>WorkspacePath<\/key>\s*<string>([^<]*)<\/string>/)?.[1];
+  } catch {
+    return undefined;
+  }
+};
+
+// Only a directory whose recorded workspace is inside this worktree goes; Xcode's shared caches and every other worktree's build stay.
+export function removeDerivedData(worktreePath, { derivedData = DERIVED_DATA, remove = rmSync } = {}) {
+  const worktrees = [canonicalPath(worktreePath), resolve(worktreePath)];
+  let entries;
+  try {
+    entries = readdirSync(derivedData, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const removed = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const directory = join(derivedData, entry.name);
+    const workspace = workspacePathOf(directory);
+    if (workspace === undefined || !worktrees.some((worktree) => workspace === worktree || workspace.startsWith(worktree + sep))) continue;
+    try {
+      remove(directory, { recursive: true, force: true });
+      removed.push(directory);
+    } catch {
+      continue;
+    }
+  }
+  return removed;
+}
+
+export const freeBytesAt = (path) => {
+  try {
+    const stats = statfsSync(path);
+    return stats.bavail * stats.bsize;
+  } catch {
+    return undefined;
+  }
+};
+
+// One du for every path: a timeout still keeps the sizes it printed, and the slowest, DerivedData, goes first. Measured at about 6 s for all four on a 90 GB set of caches, so 20 s is slack, not a target.
+const duSizes = (paths) => {
+  const result = spawnSync("du", ["-sk", ...paths], { encoding: "utf8", timeout: 20000 });
+  const sizes = new Map();
+  for (const line of (result.stdout ?? "").split("\n")) {
+    const [kilobytes, path] = line.split("\t");
+    if (path && Number.isFinite(Number(kilobytes))) sizes.set(path, Number(kilobytes) * 1024);
+  }
+  return (path) => sizes.get(path) ?? 0;
+};
+
+const UNITS = { B: 1, kB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
+const dockerBytes = () => {
+  const result = spawnSync("docker", ["system", "df", "--format", "{{.Type}}\t{{.Size}}"], { encoding: "utf8", timeout: 5000 });
+  let total = 0;
+  for (const line of (result.status === 0 ? result.stdout : "").split("\n")) {
+    const [type, size] = line.split("\t");
+    if (type !== "Images" && type !== "Build Cache" && type !== "Local Volumes") continue;
+    const match = size?.match(/^([\d.]+)\s*([kMGT]?B)$/);
+    if (match) total += Number(match[1]) * UNITS[match[2]];
+  }
+  return total;
+};
+
+// The caches that have filled this machine's disk before (docs/common-failures.md), by kind.
+export const measureCaches = (home = homedir()) => {
+  const derived = join(home, "Library", "Developer", "Xcode", "DerivedData");
+  const gradle = join(home, ".gradle");
+  const android = [join(home, ".android"), join(home, "Library", "Android")];
+  const size = duSizes([derived, gradle, ...android]);
+  return [
+    { name: "Xcode DerivedData", bytes: size(derived) },
+    { name: "Docker images, volumes and build cache", bytes: dockerBytes() },
+    { name: "Gradle caches", bytes: size(gradle) },
+    { name: "Android emulators and SDK", bytes: android.reduce((sum, path) => sum + size(path), 0) },
+  ];
+};
+
+const gb = (bytes) => `${Math.round(bytes / GB)} GB`;
+
+// Undefined while there is room; the measurement runs only when there is not.
+export function lowDiskWarning(freeBytes, measure = measureCaches, threshold = LOW_DISK_BYTES) {
+  if (freeBytes === undefined || freeBytes >= threshold) return undefined;
+  const largest = measure()
+    .filter((cache) => cache.bytes > 0)
+    .sort((a, b) => b.bytes - a.bytes)
+    .slice(0, 3)
+    .map((cache) => `${cache.name} ${gb(cache.bytes)}`);
+  const caches = largest.length ? ` Largest caches: ${largest.join(", ")}.` : "";
+  return `Low disk: ${gb(freeBytes)} free, below ${gb(threshold)}. Builds fail with errors that do not name the disk (docs/common-failures.md).${caches} Free space before starting a build or the stack.`;
+}
+
+export function reportLowDisk(freeBytes, { measure = measureCaches, log = console.log } = {}) {
+  const warning = lowDiskWarning(freeBytes, measure);
+  if (warning) log(warning);
+}
+
+export function prune({ cwd, fetch = true, dryRun = false, directories = processDirectories(), derivedData = DERIVED_DATA } = {}) {
   const removed = [];
   const kept = [];
   const top = realPath(git(cwd, "rev-parse", "--show-toplevel").trim());
@@ -124,6 +243,7 @@ export function prune({ cwd, fetch = true, dryRun = false, directories = process
         keep(`git refused: ${String(error.stderr ?? error.message).trim()}`);
         continue;
       }
+      removeDerivedData(path, { derivedData });
       // -D is safe: the tip is a merged PR's, reachable from origin/dev.
       // -d would refuse whenever this session's own HEAD lacks that branch.
       if (worktree.branch) tryGit(cwd, "branch", "-D", worktree.branch);
@@ -138,6 +258,17 @@ export function prune({ cwd, fetch = true, dryRun = false, directories = process
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   try {
+    reportLowDisk(freeBytesAt(process.cwd()));
+  } catch (error) {
+    console.error(`prune-worktrees: ${error.message}`);
+  }
+  try {
+    if (args[0] === "--derived-data") {
+      if (!args[1]) throw new Error("--derived-data takes the removed worktree's path");
+      if (existsSync(args[1])) throw new Error("that worktree still exists; remove it first (git worktree remove)");
+      for (const directory of removeDerivedData(args[1])) console.log(`removed DerivedData ${basename(directory)}`);
+      process.exit(0);
+    }
     const { removed } = prune({
       cwd: process.cwd(),
       fetch: !args.includes("--no-fetch"),

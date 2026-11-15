@@ -20,6 +20,13 @@
   `make phone-mode-off` change it, recreate the services that carry it and
   replace the machine's `tailscale serve` forwards, which is where another
   worktree's are removed. The decision itself stands
+- **Amended:** 2026-11-15 — iteration 11.5
+  [task 20](../tasks/iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md)
+  ran two worktrees side by side, which settled the last point under **Not
+  verified** (see Evidence). **A switch now names the worktree whose forwards
+  it replaces, and `make phone-mode-off` leaves another worktree's forwards in
+  place:** the forwards belong to the machine, so a worktree's `off` must not
+  remove the ones the phone is using
 
 ## Context
 
@@ -286,5 +293,21 @@ tailnet host, not `localhost`. The session it held from before the switch ended
 with "You were signed out", as the Consequences say it would. With phone mode
 off, the same build listed the catalog and signed in on `localhost`.
 
-Not yet shown: two worktrees, one in phone mode and one not, running beside each
-other.
+**Shown by [task 20](../tasks/iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md),
+2026-11-15**, with two worktrees' stacks up on their own ports and
+`tailscale serve status --json` read after each switch:
+
+- With no forwards, one worktree's switch left exactly its four ports
+  (web, API, Keycloak, Metro) forwarded to loopback.
+- A second worktree's switch then left exactly the second's four ports and
+  none of the first's: `serve reset` removes the first worktree's forwards
+  rather than colliding with them. The forwards listed were never more than
+  four, so the phone reaches one stack. The first worktree's stack stays in
+  phone mode, with its issuer on the tailnet name, but nothing forwards to it.
+- Switching back to the first replaced the second's the same way, and the
+  switch printed which worktree it had replaced.
+- `make phone-mode-off` in a worktree that does not hold the forwards used to
+  run `serve reset` and take the other worktree's away; it now says whose
+  forwards they are and leaves them. The holder's `off` then removes them.
+- A real forward's `serve status --json` has `Web.<host>:<port>.Handlers./.Proxy`
+  per forward and a `TCP.<port>` entry; with none it is `{}`.

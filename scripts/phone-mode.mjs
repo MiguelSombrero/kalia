@@ -9,12 +9,12 @@
 // replaces the machine's `tailscale serve` forwards with this stack's ports.
 // The host name is printed nowhere: it belongs to the machine.
 
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { PHONE_HOST_VARIABLE, ROOT, phoneHostOf, portOf, stackEnv } from "./stack-ports.mjs";
+import { PHONE_HOST_VARIABLE, ROOT, phoneHostOf, portOf, readEnvFile, stackEnv } from "./stack-ports.mjs";
 import { tailscaleFacts } from "./tailscale.mjs";
 
 // The edge's three published ports, and Metro's, which only a Metro started by `make mobile-start` or `mobile-metro-up` listens on.
@@ -30,6 +30,42 @@ export const serveCalls = (env) => [
     return ["serve", "--bg", `--http=${port}`, `http://127.0.0.1:${port}`];
   }),
 ];
+
+// The loopback ports `tailscale serve status --json` says are forwarded: the targets of its web handlers, and its TCP listeners when it names no handler.
+export const forwardedPortsOf = (statusJson) => {
+  let status;
+  try {
+    status = JSON.parse(statusJson);
+  } catch {
+    return [];
+  }
+  const ports = new Set();
+  for (const site of Object.values(status?.Web ?? {})) {
+    for (const handler of Object.values(site?.Handlers ?? {})) {
+      const port = String(handler?.Proxy ?? "").match(/:(\d+)\/?$/)?.[1];
+      if (port) ports.add(port);
+    }
+  }
+  for (const port of Object.keys(status?.TCP ?? {})) ports.add(port);
+  return [...ports].sort((a, b) => Number(a) - Number(b));
+};
+
+// The checkouts in phone mode whose ports are among the forwarded ones, named by their directory so no path is printed. `checkouts` is [{ name, env }].
+export const forwardOwners = (forwarded, checkouts) =>
+  checkouts
+    .filter(({ env }) => phoneHostOf(env) && FORWARDED_PORTS.some((name) => forwarded.includes(String(portOf(env, name)))))
+    .map(({ name }) => name);
+
+// The other checkouts whose forwards are the machine's now.
+export const otherOwners = (forwarded, checkouts, self) => forwardOwners(forwarded, checkouts).filter((name) => name !== self);
+
+// What a switch says about the forwards it replaces, or undefined when there are none or they are this checkout's own.
+export const takeoverNotice = (forwarded, checkouts, self) => {
+  if (forwarded.length === 0) return undefined;
+  const others = otherOwners(forwarded, checkouts, self);
+  if (others.length) return `replacing the tailnet forwards of ${others.join(", ")}: its stack stays in phone mode, but the phone no longer reaches it`;
+  return forwardOwners(forwarded, checkouts).includes(self) ? undefined : "replacing tailnet forwards that no checkout in phone mode owns";
+};
 
 const BLOCK_HEADING = "# Phone mode (ADR-0097), written by `make phone-mode`";
 const LINE = new RegExp(`^\\s*${PHONE_HOST_VARIABLE}\\s*=.*$`, "m");
@@ -85,6 +121,20 @@ const recreate = () => {
   compose("up", "-d", "--wait", "--wait-timeout", "300", "edge", "backend", "keycloak");
 };
 
+const checkouts = () => {
+  const listing = execFileSync("git", ["worktree", "list", "--porcelain"], { cwd: ROOT, encoding: "utf8" });
+  return listing
+    .split("\n")
+    .filter((line) => line.startsWith("worktree "))
+    .map((line) => line.slice(9))
+    .map((path) => ({ name: basename(path), env: { ...readEnvFile(resolve(path, ".env")) } }));
+};
+
+const currentForwards = (facts) => {
+  const result = spawnSync(facts.command, ["serve", "status", "--json"], { encoding: "utf8" });
+  return result.status === 0 ? forwardedPortsOf(result.stdout) : [];
+};
+
 const tailscale = (facts, calls) => {
   for (const call of calls) execFileSync(facts.command, call, { stdio: "inherit" });
 };
@@ -100,6 +150,8 @@ const on = (host) => {
   writeFileSync(envFile, setPhoneHost(before, host));
   try {
     recreate();
+    const notice = takeoverNotice(currentForwards(facts), checkouts(), basename(ROOT));
+    if (notice) console.log(notice);
     tailscale(facts, serveCalls(stackEnv()));
   } catch (error) {
     writeFileSync(envFile, before);
@@ -115,6 +167,11 @@ const off = () => {
   writeFileSync(envFile, clearPhoneHost(readEnv()));
   recreate();
   const facts = tailscaleFacts();
+  const others = facts.installed ? otherOwners(currentForwards(facts), checkouts(), basename(ROOT)) : [];
+  if (others.length) {
+    console.log(`phone mode is off: the stack is localhost only; the tailnet forwards are ${others.join(", ")}'s and stay`);
+    return;
+  }
   if (facts.installed) tailscale(facts, [["serve", "reset"]]);
   console.log("phone mode is off: the stack is localhost only and the tailnet forwards are removed");
 };
