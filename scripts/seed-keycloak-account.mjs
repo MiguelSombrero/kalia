@@ -52,8 +52,6 @@ const createUser = async (token) => {
       enabled: true,
       email: `${username}@example.com`,
       emailVerified: true,
-      firstName: "Test",
-      lastName: "User",
       credentials: [{ type: "password", value: password, temporary: false }],
     }),
   });

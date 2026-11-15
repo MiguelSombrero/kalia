@@ -201,8 +201,6 @@ const run = async () => {
         enabled: true,
         email: `${fresh}@example.com`,
         emailVerified: true,
-        firstName: "Check",
-        lastName: "Admin",
         credentials: [{ type: "password", value: freshPassword, temporary: false }],
       }),
     });

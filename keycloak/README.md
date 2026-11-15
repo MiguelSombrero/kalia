@@ -20,8 +20,9 @@ file is applied and kept from drifting:
 `parent=keycloak.v2`, that theme's own `styles.css` kept on the list, one
 `login.css` layered after it, and one script ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md),
 laid out by [ADR-0074](../docs/adr/0074-keycloak-pages-one-open-column-under-the-lockup-with-a-palette-drift-check.md)).
-No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
-`messages/` overrides one key ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
+Two FreeMarker templates, copies of keycloak.v2's (below). Keycloak's own
+`en`/`fi` bundles translate the pages, and `messages/` adds the page titles and
+overrides one key ([ADR-0061](../docs/adr/0061-brute-force-lockout-is-temporary-and-disclosed.md)).
 
 | Piece | Where |
 |---|---|
@@ -30,6 +31,9 @@ No FreeMarker. Keycloak's own `en`/`fi` bundles translate the pages, and
 | The lockup, title, link heights, button labels, hidden language menu | `login.css`, through Keycloak's `kc-` element ids |
 | The error sign on field errors and error alerts | `login.css` `.kalia-field-error` / `.kalia-alert`, classes added through `theme.properties`' `kcInputErrorMessageClass` / `kcAlertClass` keys; the cross is `resources/img/error-cross*.svg`, used as a mask |
 | Each field's `aria-describedby` to its error line | `resources/js/field-errors.js`, loaded through `theme.properties`' `scripts` key |
+| The page `<title>` | `template.ftl` reads the message `kaliaTitle-<page id>` (`messages/`, one per page, both locales) and falls back to Keycloak's title for a page with none. Keycloak sets its own title from one message for every page, so no message key alone can differ per page |
+| The reset page's username field | `login-reset-password.ftl`, which passes `autocomplete="username"` to the field macro instead of its default `off` |
+| What registration asks for | the realm's user profile in `realm-export.json`: `username` and `email` are editable by a user, `firstName` and `lastName` by an admin only and required of no one ([ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md)). The file holds the profile's JSON as a string, as keycloak-config-cli takes it |
 | The mark | `resources/img/kalia-mark.svg`, a copy of `web/app/icon.svg` |
 | The wordmark and the link home | the realm's `displayNameHtml` in `realm-export.json` |
 
@@ -41,9 +45,18 @@ copy that no longer matches, on a colour literal anywhere else in the file,
 and on a mark that differs from the app's. A new colour gets a
 `--kalia-color-*` name that the app's `@theme` block also has.
 
+**A template copy.** Each edit to `template.ftl` or `login-reset-password.ftl`
+sits between `<#-- kalia:begin <the line it replaces> -->` and
+`<#-- kalia:end -->`; outside those blocks the file is keycloak.v2's byte for
+byte, and `scripts/check-keycloak-templates.mjs` fails when it is not. On a
+Keycloak bump it fails if either upstream template changed: copy the new file
+out of the image (`org.keycloak.keycloak-themes-<version>.jar`, under
+`theme/keycloak.v2/login/`), put the blocks back, and rerun it. Copy a further
+template only when its markup has to change, and give it a block.
+
 **On a Keycloak image bump** (`Dockerfile` `FROM` and `keycloak-config-cli` in
-`docker-compose.base.yml`), run `web/e2e/keycloak-branding.spec.ts` and
-`web/e2e/keycloak-errors.spec.ts`, and look at
+`docker-compose.base.yml`), run `web/e2e/keycloak-branding.spec.ts`,
+`web/e2e/keycloak-errors.spec.ts` and `web/e2e/keycloak-page-titles.spec.ts`, and look at
 the four pages at 375 and 1280 in both locales. The branding spec checks each page's
 language, the lockup and its mark, the column's width and position, the hidden
 language menu, sideways scroll, the axe scan and computed contrast. What it
@@ -63,6 +76,9 @@ the audience and the registration [ADR-0095](../docs/adr/0095-the-mobile-app-sig
 with `--backend`, that the API refuses the app's token at `/api/v1/admin/**`.
 All four run in `make keycloak-check` and in CI, whenever a push touches
 Keycloak's inputs.
+`scripts/check-keycloak-templates.mjs` reads the pinned image, so it runs with
+the checks above (`make keycloak-check`, CI's Keycloak realm check), and holds
+the theme's two template copies to the image's own.
 `scripts/check-keycloak-theme.mjs` needs no stack: it holds the theme's
 colours and mark to the app's, in `make check`, hence CI. See
 [docs/architecture.md §6](../docs/architecture.md#6-authentication-and-identity).
@@ -77,6 +93,14 @@ All of these are in `realm-export.json` under the drift check
   `baseUrl`; without one the page is a dead end, reached from an emailed link.
   Keycloak accepts only an `http` or `https` address there, so `kalia-mobile`'s
   link opens the website, not the app.
+- **The user profile is replaced whole, and lives in a string.** keycloak-config-cli
+  takes the `kc.user.profile.config` component value as JSON text, so an edit
+  is made to the parsed profile and written back minified, and a console edit to
+  it is undone at the next reconcile (and reported by the drift check first).
+  A profile that drops `username` or `email` breaks registration without an
+  error. `firstName` and `lastName` stay on it, admin-only and not required:
+  a name a user may edit puts the fields back on the registration form
+  ([ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md)).
 - **`kalia-mobile`'s one redirect URI is `kalia://auth/callback`,** exact and
   never a wildcard, with PKCE `S256` required and its own `kalia-backend`
   audience mapper, because the backend rejects a token without it

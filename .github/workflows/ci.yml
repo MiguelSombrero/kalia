@@ -257,6 +257,8 @@ jobs:
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
         run: node scripts/check-keycloak-realm-config.mjs
+      - name: Verify the theme's copies of keycloak.v2's templates still match the pinned Keycloak's
+        run: node scripts/check-keycloak-templates.mjs
       - name: Verify the mobile client signs in with PKCE and gets the backend audience
         run: node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
       - name: Verify the admin role reaches the web client's token and never the app's, which the API refuses at the admin routes

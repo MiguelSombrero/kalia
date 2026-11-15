@@ -185,6 +185,9 @@ wrong.
 - Neutral, because Keycloak still asks for a first and last name at
   registration that Kalia no longer shows anywhere. Removing them is a Keycloak
   user-profile change for task 11.
+
+  > **Amended 2026-11-15 ([ADR-0055](0055-self-registration-via-keycloak.md)).**
+  > No longer true: registration asks for a username and an email only.
 - Neutral, because an invalid field's red edge is a pairing the contrast list
   did not have: the destructive colour against the page, as a non-text
   boundary.
