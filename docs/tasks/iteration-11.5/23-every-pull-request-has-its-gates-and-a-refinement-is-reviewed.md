@@ -1,6 +1,6 @@
 # Task 23: Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -78,17 +78,17 @@ standalone, with no task file. Both kinds are getting more common.
 
 ## Acceptance criteria
 
-- [ ] A `check-pr-body` test fails a body for a pull request that ticks every
+- [x] A `check-pr-body` test fails a body for a pull request that ticks every
       criterion while the task file stays `refined`, and passes one that sets
       `done`
-- [ ] A `check-pr-body` test fails a no-task body missing `make verify-fast`,
+- [x] A `check-pr-body` test fails a no-task body missing `make verify-fast`,
       `/code-review` or the doc-sync statement, fails one that records
       "reviewed by the product owner" in place of `/code-review`, and passes
       one that records all three
-- [ ] Both refine skills state the `/code-review` step, and the gate list for
+- [x] Both refine skills state the `/code-review` step, and the gate list for
       a no-task pull request, Dependabot commits included, is stated in one
       place
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
