@@ -191,7 +191,7 @@ which now points at this section
   "New dependencies". Confirm the finding clears with `make trivy-scan` (CI's
   flags, manifests only; an image finding is
   [`backend/README.md`](../../../backend/README.md)) before pushing.
-- **An unexpected failure gets one appended row in
+- **An unexpected local failure gets one appended row in
   [docs/common-failures.md](../../../docs/common-failures.md)**, on the branch
   it happened on
   ([ADR-0084](../../../docs/adr/0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)).

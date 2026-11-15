@@ -359,8 +359,8 @@ jobs:
     name: Mobile E2E (Maestro, Android)
     # The flows in mobile/.maestro/ against the whole stack on an Android
     # emulator (ADR-0096). A failed flow is not retried: a retry would hide a
-    # flaky required check, so a red run is read and logged instead
-    # (docs/common-failures.md).
+    # flaky required check, so a red run is read instead (the quality
+    # sweep counts it from the run history, ADR-0084).
     needs: [changes]
     if: needs.changes.outputs.mobile-e2e == 'true'
     runs-on: ubuntu-latest

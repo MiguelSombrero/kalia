@@ -214,10 +214,9 @@ run.`** The emulator, or the SDK around it, never became healthy in two
 attempts, and each attempt is listed under the line with what adb or Android
 said. Nothing in the diff is implicated. Re-run the job (`gh run rerun <id>
 --failed`) and leave the branch alone; the emulator's own output is in the
-`maestro-output` artifact as `emulator-1.log` and `emulator-2.log`. Add a row to
-[common-failures.md](common-failures.md) when the attempts name something new,
-and if the same cause repeats across runs, it is the image or the runner that
-moved, not a blip.
+`maestro-output` artifact as `emulator-1.log` and `emulator-2.log`. The sweep counts the run from the run
+history; nothing is logged. If the same cause repeats across runs, it is the
+image or the runner that moved, not a blip.
 
 **`[Failed] The Catalog tab lists beers from the stack`, with `Assertion is
 false: id: beer-row is visible` or a `Timeout`.** A real failure: the app
@@ -254,14 +253,14 @@ the emulator's cores or load, and restarting the adb server did not remove it.
 
 **`Infrastructure failure, not the app` ending in that same sentence.** Both
 boot attempts dropped. Rare (the chance is the square of one in ten), and not
-the diff's fault: re-run the job (`gh run rerun <id> --failed`) and log the run
-id in [common-failures.md](common-failures.md). If it repeats, the pre-flight
+the diff's fault: re-run the job (`gh run rerun <id> --failed`); the sweep counts
+the run. If it repeats, the pre-flight
 no longer absorbs the drop and the cause is worth looking for again.
 
 **`Command failed (host:transport:emulator-5554): device offline` at the flow's
 first command, with no warning before it.** Should not happen any more: the
 pre-flight sits in front of it. If it does, the drop came after a pre-flight
-that passed; log it with the run id and do not retry the flow.
+that passed; do not retry the flow. The sweep counts the run.
 
 **`Cannot invoke "java.util.Map.values()" because "hwMap" is null` from
 `avdmanager create avd`.** Seen once, with the emulator action this job used to

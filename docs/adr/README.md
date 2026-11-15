@@ -455,8 +455,9 @@ to bound.
   evidence of recurrence, never as a self-review step at the end of each task.
 - [ADR-0084](0084-an-unexpected-failure-is-logged-as-it-happens-and-counted-by-the-sweep.md)
   — an unexpected failure is appended to `docs/common-failures.md` as it
-  happens, and only that sweep dimension groups and counts the rows; a red
-  run on `dev` is logged by the session that starts work.
+  happens, and only that sweep dimension groups and counts the rows; the
+  sweep collects red CI runs itself, every row names a cause kind, and an
+  unfixed defect names its owner.
 - [ADR-0062](0062-a-design-task-is-a-skill-and-a-marker.md) — a task whose
   outcome is a visual choice runs under the `design-task` skill and a
   `Kind: design` marker the task checker enforces; mockups are shown as
