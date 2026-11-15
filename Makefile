@@ -124,7 +124,7 @@ web-e2e: ## Run the web app's E2E tests (needs the stack up)
 lint: ## Lint the web app and the shared packages
 	npm run lint --workspace web --workspace @kalia/api --workspace @kalia/locales --workspace @kalia/tokens
 
-check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping/failure-doc-path/common-failures-cause checks and their self-tests
+check: ## Run doc/size/task/comment/test-file-name/glossary/design-token/token-styling/contrast/keycloak-theme/raster/host-path/text-block/index/catalog-import/link/script-import/clear-text-logging/markup-stripping/failure-doc-path/common-failures-cause checks and their self-tests
 	node scripts/generate-tokens.mjs --check
 	node scripts/check-adrs.mjs
 	node scripts/check-doc-size.mjs
@@ -143,6 +143,7 @@ check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast
 	node scripts/wikidata-migration.mjs --check
 	node scripts/check-links.mjs
 	node scripts/check-script-imports.mjs
+	node scripts/check-test-names.mjs
 	node scripts/check-clear-text-logging.mjs
 	node scripts/check-markup-stripping.mjs
 	node scripts/check-failure-doc-paths.mjs

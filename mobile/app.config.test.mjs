@@ -6,8 +6,8 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const appJson = require("../app.json");
-const { buildNumberAt, MAX_VERSION_CODE } = require("../buildNumber.js");
+const appJson = require("./app.json");
+const { buildNumberAt, MAX_VERSION_CODE } = require("./buildNumber.js");
 
 // app.config.js keeps the first evaluation's build number, so each build
 // starts from a fresh load of it, as each `expo prebuild` process does.
@@ -17,8 +17,8 @@ const evaluate = (at, teamId) => {
   try {
     if (teamId === undefined) delete process.env.KALIA_APPLE_TEAM_ID;
     else process.env.KALIA_APPLE_TEAM_ID = teamId;
-    delete require.cache[require.resolve("../app.config.js")];
-    const load = () => require("../app.config.js")({ config: structuredClone(appJson.expo) });
+    delete require.cache[require.resolve("./app.config.js")];
+    const load = () => require("./app.config.js")({ config: structuredClone(appJson.expo) });
     return { config: load(), load };
   } finally {
     mock.timers.reset();
