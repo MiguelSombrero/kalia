@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Fails when backend Java builds a multiline string by concatenation instead
-// of a text block (backend/README.md "Text blocks (`"""`), not string
+// of a text block (backend/CONVENTIONS.md "Text blocks (`"""`), not string
 // concatenation"). The rule was raised in review on #427 and #435 and
 // regressed in #450 and #452, which ADR-0039 says is the case for a checker
 // over another reminder. Sibling of the other check-*.mjs checkers: plain Node,
@@ -136,7 +136,7 @@ if (invokedDirectly) {
   console.log("Checking that backend Java builds no multiline string by concatenation\n");
   for (const f of failures) console.log(`  FAIL  ${f}`);
   if (failures.length > 0) {
-    console.log('\nUse a text block (""") — backend/README.md. A trailing \\ keeps a line break out of it.');
+    console.log('\nUse a text block (""") — backend/CONVENTIONS.md. A trailing \\ keeps a line break out of it.');
   }
   console.log(failures.length === 0 ? "\nOK\n" : `\n${failures.length} failure(s)\n`);
   process.exit(failures.length === 0 ? 0 : 1);

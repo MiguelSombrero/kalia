@@ -37,7 +37,7 @@ const codeStyleSyntax = [
 
 const styleSheetInFunction = {
   selector: ":function CallExpression[callee.property.name='create']:matches([callee.object.name='StyleSheet'], [callee.object.property.name='StyleSheet'])",
-  message: "Build a sheet once, outside the component: StyleSheet.create at module level, or createThemedStyles when it reads theme colours; a value that depends on props goes in the style array (mobile README).",
+  message: "Build a sheet once, outside the component: StyleSheet.create at module level, or createThemedStyles when it reads theme colours; a value that depends on props goes in the style array (mobile/CONVENTIONS.md).",
 };
 
 const themedStylesFile = "src/lib/design/themedStyles.ts";

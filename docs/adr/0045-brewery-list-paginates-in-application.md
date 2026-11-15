@@ -15,7 +15,7 @@ Rochefort`, `Põhjala`), and the API's brewery order must not shift with the
 deployment's locale.
 
 Quality finding COULD-4: there is no pagination contract on the endpoint, so
-`backend/README.md`'s "every request parameter is bounded" convention
+`backend/CONVENTIONS.md`'s "every request parameter is bounded" convention
 ([ADR-0042](0042-bounded-request-parameters.md)) has nothing to bound, and the
 full-table load is not a shape that scales. It is fine against the ~20 seed
 rows today; [iteration 8](../tasks/iteration-8.md) grows the catalog past seed

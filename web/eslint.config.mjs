@@ -15,7 +15,7 @@ const { plugin: enumLookupPlugin } = createRequire(import.meta.url)("../packages
 // element without its deprecated `mode` option.
 const app = [{ element: { type: "app" } }, { file: { categories: "app-root" } }];
 const feature = { element: { type: "feature" } };
-// A feature's public surface (web/README.md's Structure bullet) — the
+// A feature's public surface (web/CONVENTIONS.md's Structure bullet) — the
 // only part of `feature` an outside consumer may import.
 const featureIndex = { element: { type: "feature" }, file: { categories: "feature-index" } };
 const componentsUi = { element: { type: "components-ui" } };
@@ -53,13 +53,12 @@ const codeStyleSyntax = [
   },
 ];
 
-// A locale-prefixed address is built in lib/routes.ts (web/README.md
-// conventions), never as a template literal opening with `/${locale}`. Matches a bare
+// A locale-prefixed address is built in lib/routes.ts (web/CONVENTIONS.md), never as a template literal opening with `/${locale}`. Matches a bare
 // `locale` and `params.locale`.
 const handBuiltRoute = {
   selector:
     "TemplateLiteral[quasis.0.value.raw='/']:matches([expressions.0.name='locale'], [expressions.0.property.name='locale'])",
-  message: "Build locale-prefixed routes with a helper from lib/routes.ts, not by hand (web/README.md).",
+  message: "Build locale-prefixed routes with a helper from lib/routes.ts, not by hand (web/CONVENTIONS.md).",
 };
 
 const eslintConfig = defineConfig([
@@ -85,7 +84,7 @@ const eslintConfig = defineConfig([
     rules: {
       "no-restricted-syntax": ["error", ...codeStyleSyntax],
       // Call sites go through lib/logger.ts instead of console.* directly —
-      // see web/README.md.
+      // see web/CONVENTIONS.md.
       "no-console": "error",
       // Convention (ADR-0037): type over interface.
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
@@ -141,7 +140,7 @@ const eslintConfig = defineConfig([
     },
   },
   // Import boundaries between the web app's layers — the rules
-  // web/README.md's Structure and Data-and-state bullets state in prose
+  // web/CONVENTIONS.md's Structure and Data-and-state bullets state in prose
   // (ADR-0012).
   {
     plugins: { boundaries },

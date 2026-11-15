@@ -16,7 +16,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-// ADR-0014, backend/README.md: a module's advice is scoped to its own
+// ADR-0014, backend/CONVENTIONS.md: a module's advice is scoped to its own
 // module's controllers and must not answer outside that scope.
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

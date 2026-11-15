@@ -1,4 +1,5 @@
 @README.md
+@CONVENTIONS.md
 
 # This is NOT the Expo you know
 

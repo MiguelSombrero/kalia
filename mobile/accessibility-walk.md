@@ -2,7 +2,7 @@
 
 What no test can judge: how VoiceOver and TalkBack speak a screen, where focus
 lands, and what the largest text size does to it. The rules are in
-[README.md](README.md#conventions) and
+[CONVENTIONS.md](CONVENTIONS.md) and
 [ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md); the tests
 that hold the rest are named beside each rule there. This file is not loaded
 with the README: read it when a walk is owed.

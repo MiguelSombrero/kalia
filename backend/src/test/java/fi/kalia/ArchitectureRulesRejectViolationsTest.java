@@ -8,7 +8,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
 
 // Covers ArchitectureTest rules no production class ever triggers (see
-// backend/README.md). Each assertion names the offending fixture type, so a
+// backend/CONVENTIONS.md). Each assertion names the offending fixture type, so a
 // rule failing for an unrelated reason can't pass for one that bites.
 class ArchitectureRulesRejectViolationsTest {
 

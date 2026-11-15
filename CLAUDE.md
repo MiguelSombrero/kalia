@@ -49,10 +49,10 @@ changes:
   [its README](docs/adr/README.md); don't relitigate them silently, propose a
   new ADR instead ([template](docs/adr/template.md))
 - [backend/README.md](backend/README.md), [web/README.md](web/README.md),
-  [mobile/README.md](mobile/README.md) — run/test commands and conventions
+  [mobile/README.md](mobile/README.md) — run/test commands, and each's `CONVENTIONS.md`
 
 `backend/`, `web/` and `mobile/` each carry a `CLAUDE.md` importing their
-README, which loads once you touch the subtree
+README and `CONVENTIONS.md`, which load once you touch the subtree
 ([ADR-0035](docs/adr/0035-agent-context-layout.md)). A nested file is *not*
 re-injected after `/compact`, so the two rules that must never be lost are
 repeated here: **this Next.js version postdates model training — check

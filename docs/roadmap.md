@@ -77,7 +77,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [10 — Kalia on your own iPhone](tasks/iteration-10.md) | The app runs on a real iPhone at no cost | ✅ Done |
 | [10.5 — An admin reviews what users add](tasks/iteration-10.5.md) | An admin reviews suggested beers in the web app, and the contributor is told the outcome | ✅ Done |
 | [11 — Mobile design language](tasks/iteration-11.md) | A mobile design of Kalia's own, proven on the catalog | ✅ Done |
-| [11.5 — An agent can see what the stack did](tasks/iteration-11.5.md) | A local observability profile an agent can query, request by request | ⬜ Todo |
+| [11.5 — An agent can see what the stack did](tasks/iteration-11.5.md) | A local observability profile an agent can query, request by request | 🔄 In progress |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
 | [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |
 | [14 — Scan the bottle in your hand](tasks/iteration-14.md) | A barcode puts a beer in the cellar | ⬜ Todo |
@@ -149,6 +149,6 @@ meets, so they have no entry; the table above says what they were for.
   searches, filters and pages on the phone, a beer opens as a sheet (or by
   `kalia://beers/{id}`), a contributor's pending beer is marked; the update,
   maintenance and crash screens depend on nothing that can change; and the
-  accessibility conventions are written in the mobile README and held by a
+  accessibility conventions are written in the mobile conventions and held by a
   structure test on every screen and a largest-text test, with the hand walk
   partly made (see the iteration index)

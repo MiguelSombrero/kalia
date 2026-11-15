@@ -53,7 +53,7 @@ Run it locally before pushing either way: `make api-drift` (it regenerates from
 Test files are subject to the layer rules like any other file. The layers,
 the directions allowed between them, and the feature-barrel rule that makes
 `features/catalog/BeerList` illegal where `features/catalog` is fine, are in
-[web/README.md](../web/README.md)'s conventions; the choice of that
+[web/CONVENTIONS.md](../web/CONVENTIONS.md); the choice of that
 plugin and the verification of each rule is
 [ADR-0012](adr/0012-orval-api-client.md).
 

@@ -1,4 +1,5 @@
 @README.md
+@CONVENTIONS.md
 
 The conventions imported above are binding for every change under `backend/`.
 Each links the ADR holding its rationale — read that before proposing a change

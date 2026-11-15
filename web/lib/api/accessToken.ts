@@ -9,7 +9,7 @@ import { getSessionAccount, updateSessionAccount } from "@/lib/auth/valkeyAdapte
 const EXPIRY_LEEWAY_SECONDS = 10;
 
 // Renews the token first when expired; `undefined` when there is none
-// (ADR-0028, ADR-0029) — see web/README.md's "kaliaFetch attaches the
+// (ADR-0028, ADR-0029) — see web/CONVENTIONS.md's "kaliaFetch attaches the
 // bearer token" rule for why sending an expired one is wrong.
 export const currentAccessToken = async (): Promise<string | undefined> => {
   const sessionToken = await currentSessionToken();

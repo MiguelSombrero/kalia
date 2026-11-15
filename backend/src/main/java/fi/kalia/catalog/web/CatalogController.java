@@ -215,7 +215,7 @@ class CatalogController {
 		return catalog.listCountries();
 	}
 
-	// See backend/README.md's "Every request parameter is bounded" convention.
+	// See backend/CONVENTIONS.md's "Every request parameter is bounded" convention.
 	private static void requireOrderedAbvRange(@Nullable BigDecimal minAbv, @Nullable BigDecimal maxAbv) {
 		if (minAbv != null && maxAbv != null && minAbv.compareTo(maxAbv) > 0) {
 			throw new InvalidSearchParameterException(

@@ -16,7 +16,7 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 	Optional<Entry> findByUserIdAndBeerId(UUID userId, UUID beerId);
 
 	// Bottles eager-loaded: DTO mapping runs outside the service transaction
-	// (backend/README.md). Keyed on an already-resolved owner id — never relax
+	// (backend/CONVENTIONS.md). Keyed on an already-resolved owner id — never relax
 	// to load-then-filter, which turns a 404 into a 200 (ADR-0050).
 	@EntityGraph(attributePaths = "bottles")
 	@Query("select e from Entry e where e.userId = :userId order by e.createdAt")

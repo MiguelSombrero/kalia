@@ -57,8 +57,8 @@ anything a visitor sees; the `design-task` skill and
   [architecture.md §5](architecture.md#5-client-design), decided in
   [ADR-0021](adr/0021-design-tokens-ui-primitives.md).
 - **Rules for writing a component** —
-  [web/README.md](../web/README.md) conventions. This file says
-  which token to reach for; the README says how to reach.
+  [web/CONVENTIONS.md](../web/CONVENTIONS.md). This file says
+  which token to reach for; the conventions say how to reach.
 - **Component documentation.** There is none, by decision: `components/ui/`
   stays the web app's own primitives rather than a design system, a look that
   recurs becomes a primitive there rather than a rule here, and a primitive's

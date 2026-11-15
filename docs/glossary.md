@@ -255,7 +255,7 @@ its own type** — `BottleDtoContainerType`, `AddBottleRequestDtoContainerType`
 |---|---|---|
 | Domain event naming | Past participle on the thing whose state changed, never repeating the module name: `BottleAdded` (not `CellarBottleAddedEvent`) — the package `fi.kalia.cellar` already carries the module. Yields `BottleRemoved`, `EntryEmptied`, `CellarVisibilityChanged`. | [ADR-0053](adr/0053-cellar-domain-events-on-the-aggregate-root.md) |
 | Aggregate writes | A non-root entity (`Bottle`) is created, changed and removed only through its aggregate root (`Entry`), which is the only object in the aggregate with a repository. | [ADR-0052](adr/0052-cellar-aggregate-owns-its-writes.md) |
-| Timestamp columns | Every new table carries `created_at` and `updated_at`. `catalog.beer` predates the convention and has only `created_at`. | [backend/README.md](../backend/README.md#code-conventions) |
+| Timestamp columns | Every new table carries `created_at` and `updated_at`. `catalog.beer` predates the convention and has only `created_at`. | [backend/CONVENTIONS.md](../backend/CONVENTIONS.md) |
 
 ## Terms weighed and dropped
 
