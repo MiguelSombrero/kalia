@@ -1,6 +1,6 @@
 # Task 21: The CodeQL alerts open on `dev` are closed
 
-- **Status:** in-progress
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -79,7 +79,7 @@ iteration 12 runs, and the index writer runs on every task-file edit.
 - [x] If the stand-in can follow alert 8's flow, a
       `check-clear-text-logging` fixture of that shape fails; if it cannot,
       its header says so
-- [ ] CodeQL on this branch's pull request reports alerts 5 and 8 as fixed
+- [x] CodeQL on this branch's pull request reports alerts 5 and 8 as fixed
 - [x] `make verify-fast` is green
 
 ## Notes
