@@ -60,10 +60,10 @@ test, because it shows a criterion as covered when it is not.
   timers in their own way at the pinned versions. That is checked against the
   installed versions, never from memory.
 - **Decided at refinement (2026-11-15):**
-  - Both rules are lint rules, in both apps:
-    - a `setTimeout` promise in a test file fails;
-    - `networkidle` is banned in an end-to-end spec, so an absence follows a
-      positive signal.
+  - Both rules are lint rules:
+    - a `setTimeout` promise in a test file fails, in both apps;
+    - `networkidle` is banned in the web's end-to-end specs, so an absence
+      follows a positive signal. The app has no Playwright specs.
   - All of the web's roughly 40 end-to-end absence assertions are read, not
     only those in specs iteration 12 will extend.
   - A wait on a real external process, as in `signInContext.test.ts` and
@@ -89,7 +89,7 @@ test, because it shows a criterion as covered when it is not.
       and the pull request lists the ones read
 - [ ] Both apps' `CONVENTIONS.md` state the two rules and name their lint
       rules. In each app, a fixture holding a `setTimeout` promise in a test
-      and a spec using `networkidle` fails its config test
+      fails its config test, and in the web a spec using `networkidle` does
 - [ ] `make verify-fast` is green
 
 ## Notes

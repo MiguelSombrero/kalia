@@ -61,8 +61,9 @@ re-run instead of reading the failure.
   repository is confirmed from its own documentation or output, never from
   memory. If it needs a newer action, that is the batched dependency
   question ([CLAUDE.md](../../../CLAUDE.md)).
-- **One retry shape.** The existing `for attempt in 1 2 3` loops in `ci.yml`
-  are the pattern. A second shape is a second thing to keep in step.
+- **One retry shape.** Today's inline `for attempt in 1 2 3` loops in
+  `ci.yml` are replaced by the shared script decided below, never kept
+  beside it. A second shape is a second thing to keep in step.
 - `scripts/check-compose.mjs` already parses Compose files and has a test
   file. The new rule goes there, with fixtures.
 - **Decided at refinement (2026-11-15):**

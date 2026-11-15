@@ -37,7 +37,7 @@ package, so its shape is cheapest to settle now.
 
 - `@kalia/api` carries no peer dependency that neither app uses through it.
 - A failure from the API is built the same way in both apps. `isLocale` has
-  one home, either in `@kalia/locales` or in each app on purpose.
+  one home, in `@kalia/locales`.
 - A pure mapping such as `beerStyleGroup` can be imported without the
   transport. A boundary rule in each app holds that.
 - `packages/README.md` says what each package exports and why.

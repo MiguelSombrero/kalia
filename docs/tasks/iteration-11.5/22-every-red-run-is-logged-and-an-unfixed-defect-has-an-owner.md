@@ -65,7 +65,9 @@ offline sync and its Maestro flows will add failure modes that only CI sees.
     since the last sweep itself with `gh run list`, across every workflow and
     pull-request branch, Dependabot's included. `common-failures.md` narrows
     to local failures that leave no trace in CI.
-  - **No backfill.** The next sweep collects the runs listed in Why.
+  - **No backfill into the log.** The sweep's first collection reaches back
+    to 2026-10-27, the earliest unlogged run in Why, so the runs listed there
+    are counted. Later collections start from the previous sweep.
   - **Owner rule (SHOULD-101):** a checker in `make check`. Each row names a
     cause kind, `defect` or `external`. A `defect` row not marked fixed must
     name a quality-backlog ID, a task or a playbook entry. An `external` row,
@@ -83,8 +85,8 @@ offline sync and its Maestro flows will add failure modes that only CI sees.
       with no cause kind; every existing row passes
 - [ ] The 2026-10-31 row for run 41231274792 names its owner
 - [ ] The sweep's skill names the command, and a dry run on this branch lists
-      the red runs since the 2026-11-14 sweep, the runs named in Why among
-      those still inside GitHub's retention
+      the red runs since 2026-10-27, the runs named in Why among those still
+      inside GitHub's retention
 - [ ] `make verify-fast` is green
 
 ## Notes

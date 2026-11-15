@@ -34,10 +34,11 @@ tasks 07 and 08's tools rather than restating them.
 - The profile is heavy work under the two-session cap, and the guidance says
   so where it says to start it ([`CLAUDE.md`](../../../CLAUDE.md)).
 - **Decided at refinement (2026-11-15):**
-  - The guidance goes in five places, each a pointer at tasks 07 and 08
+  - The guidance goes in five documents, each a pointer at tasks 07 and 08
     rather than a restatement:
     - one `CLAUDE.md` bullet;
-    - the `implement-task` and `worktree` skills' "A red check" sections;
+    - the `implement-task` skill's "A red check" section;
+    - the `worktree` skill's "A red check" section;
     - the CI playbook's Playwright section;
     - `docs/common-failures.md`'s header.
   - No new skill.

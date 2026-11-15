@@ -52,8 +52,10 @@ lines carry the trace id of the request they forwarded, when it had one.
   - The metrics come from:
     - Keycloak's built-in metrics endpoint;
     - `postgres_exporter`, on a role of its own granted `pg_monitor`. That
-      is a fourth role, so ADR-0100 is amended, and the role exists only
-      when the profile runs if that can be arranged;
+      is a fourth role, so ADR-0100 is amended. The role is created by the
+      profile alone, so the deployable stack gains nothing; if that cannot be
+      done, the task stops and is re-refined rather than adding the role to
+      the base;
     - `redis_exporter` for Valkey;
     - the edge's own access log, counted by status and service in the store,
       so no `stub_status` and no exporter.
