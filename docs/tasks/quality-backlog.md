@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-136 · COULD-165
+**Highest issued:** MUST-27 · SHOULD-136 · COULD-166
 
 ## MUST
 
@@ -406,6 +406,12 @@ repeats, so the recurrence stays visible once the old entry is gone.
   Dependabot's. be3d9a8b on #513 and 37c6c6d8 on #515 carried no record. A
   `pr-body.yml` step could list the pull request's commits and comments and
   fail a non-bot commit with no comment naming the three gates.
+- **COULD-166** *(found 2026-11-15, task 20 review)* — `node
+  scripts/phone-mode.mjs off` leaves the machine's `tailscale serve` forwards
+  in place whenever another worktree's `.env` still says phone mode, even if
+  that worktree's stack is down or abandoned. Its owner must run `off` there
+  before the forwards go. Decide whether `off` should check that the other
+  stack is running before it defers.
 
 ## Retired
 

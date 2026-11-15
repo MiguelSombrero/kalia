@@ -30,7 +30,10 @@ does not count it.
   the holder to say it is done and leaves the emulator as it found it.
 - **Check free disk before creating a worktree** (`df -h .`): a worktree with
   its dependencies installed is several GB, and a full disk fails builds with
-  errors that do not name it.
+  errors that do not name it. A step in this skill did not stop the third such
+  failure, so the `SessionStart` hook also warns, in the session, below 20 GB
+  free and names the caches using the most (Xcode DerivedData, Docker, Gradle,
+  the Android SDK): act on it before starting a build or the stack.
 
 ## Waiting on a background command
 
@@ -82,7 +85,7 @@ output. So:
    only when a pull request merged exactly its work, its tree is clean and
    nothing is running in it, and keeps every other one. `git worktree list`
    shows what is left; `node scripts/prune-worktrees.mjs --dry-run` says what
-   it would remove. The Finish steps cannot do this: the merge happens after
+   it would remove. Removing a worktree removes its own Xcode DerivedData too. The Finish steps cannot do this: the merge happens after
    the session that would run them has ended.
 4. Create the worktree off the **remote** ref, never the local branch:
    `git worktree add .claude/worktrees/<name> -b <branch> origin/dev`.
@@ -118,8 +121,10 @@ output. So:
    say). Confirm the pull request actually merged — `gh pr view --json state` —
    before removing anything. A worktree still holding unpushed commits is
    the one case where removal loses work.
-10. `git worktree remove .claude/worktrees/<name>` and
-   `git branch -d <branch>`.
+10. `git worktree remove .claude/worktrees/<name>`, then
+   `node scripts/prune-worktrees.mjs --derived-data .claude/worktrees/<name>`
+   to delete that worktree's own Xcode DerivedData (found by the workspace path
+   Xcode records in it; no other build is touched), and `git branch -d <branch>`.
 11. `git worktree list` to confirm what is left. Claude Code's own sweep will
    not do this for you: it skips any worktree with uncommitted or unpushed
    work, which is every task worktree, and never touches one a session

@@ -133,7 +133,9 @@ root `.env` alone.
 
    The short name is required: ATS exempts single-label hosts, not `*.ts.net`.
    It replaces the machine's `tailscale serve` forwards with this stack's four
-   ports, so turning another worktree on replaces them.
+   ports, so turning another worktree on takes the phone over and prints the
+   worktree it replaced; that worktree stays in phone mode but the phone no
+   longer reaches it, and its `make phone-mode-off` leaves the new forwards alone.
 3. **Start Metro with the origins cleared:** `make mobile-start ARGS="--clear"`.
 4. **Open Kalia,** scan Metro's QR code or enter `http://<name>:<METRO_PORT>`;
    sign in as the seeded dev account, open Catalog, sign out.
