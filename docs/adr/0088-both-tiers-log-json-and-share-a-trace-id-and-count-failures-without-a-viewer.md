@@ -162,6 +162,15 @@ dashboard, and does not cover mobile crash reporting.
 - Neutral, because `@prometheus-io/client` is at 0.16, so a minor release may
   change its API; it is the Prometheus project's own successor to the
   deprecated `prom-client`, and the use here is a registry and three counters.
+- Neutral, because the backend exports only when asked
+  *(amended 2026-11-15, [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md))*:
+  with `OTEL_EXPORTER_OTLP_ENDPOINT` set its spans leave over OTLP, batched, and
+  with none nothing is exported and nothing retries. Its counters are scraped
+  from `/actuator/prometheus` and its logs are read from stdout, so neither has
+  an exporter in the process. A span carries the route template, status and
+  path and never a query string, token or body, which `TraceExportIT` reads off
+  the wire; the readiness probe's trace is dropped; and a collector that goes
+  away costs a request nothing and the log one error line.
 - Neutral, because every request now writes an `INFO` line, which ADR-0013 had
   withheld until a request could be reassembled; the backend's per-environment
   `LOG_LEVEL` still controls it.

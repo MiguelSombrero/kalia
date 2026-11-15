@@ -41,7 +41,7 @@ class RequestLogFilter extends OncePerRequestFilter {
 		} finally {
 			String route = routeOf(request);
 			long millis = Duration.ofNanos(System.nanoTime() - started).toMillis();
-			if (request.getRequestURI().startsWith("/actuator/health")) {
+			if (HealthProbeTracing.isHealthProbe(request)) {
 				log.trace("{} {} -> {} in {} ms from {}", request.getMethod(), route, status, millis,
 						request.getRemoteAddr());
 			} else {

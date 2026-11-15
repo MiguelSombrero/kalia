@@ -1,6 +1,6 @@
 # Task 03: The backend's traces, metrics and logs reach the profile
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-2, DW-3
 
@@ -63,18 +63,18 @@ fails or retries because no store is listening.
 
 ## Acceptance criteria
 
-- [ ] With the profile on, one request to `/api/v1/beers` appears in the store
+- [x] With the profile on, one request to `/api/v1/beers` appears in the store
       as a trace whose backend span names the route template and status, and
       its log lines are found there by that trace id — verified against the
       running stack
-- [ ] An integration test shows that a request carrying a query string
+- [x] An integration test shows that a request carrying a query string
       produces no exported span attribute, label or log field containing it,
       and was seen to fail with the instrumentation's defaults
-- [ ] An integration test shows that with no exporter endpoint configured the
+- [x] An integration test shows that with no exporter endpoint configured the
       backend starts and answers as before, and `ObservabilityIT` still passes
-- [ ] An integration test shows a request answering in time with an exporter
+- [x] An integration test shows a request answering in time with an exporter
       endpoint configured that nothing listens on
-- [ ] `http.server.requests` and the event-publication counters are queryable
+- [x] `http.server.requests` and the event-publication counters are queryable
       in the store after the backend restarts
-- [ ] `backend/README.md` and ADR-0088's consequences say what is exported and
+- [x] `backend/README.md` and ADR-0088's consequences say what is exported and
       when, and `make verify-fast` is green

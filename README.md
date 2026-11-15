@@ -157,7 +157,7 @@ a manifest; don't restate what the manifest says.
 - Lombok (version managed by Spring Boot's BOM)
 - springdoc-openapi (OpenAPI spec and Swagger UI)
 - Spring Security OAuth2 resource server (JWT validation against Keycloak, [ADR-0028](docs/adr/0028-resource-server-and-current-user.md))
-- Micrometer (Prometheus registry and tracing bridge, no exporter or viewer, [ADR-0088](docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md))
+- Micrometer (Prometheus registry and the OpenTelemetry tracing bridge, which exports spans over OTLP only with the observability profile on, [ADR-0088](docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md))
 - `pom.xml` overrides Tomcat and the two Jackson BOMs past Spring Boot's versions to clear a CVE; each carries an XML comment naming the CVE and when to drop it
 
 ### Web app
