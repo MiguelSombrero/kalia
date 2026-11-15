@@ -53,7 +53,7 @@ around it — through every tier, reading it from a query rather than from
 | [16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md) | The seven-day signing expiry is watched, and what it does is written down | dropped |
 | [17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md) | Keycloak's pages ask only for what Kalia uses, and each says what it is | refined |
 | [18](iteration-11.5/18-rejected-suggestions-cannot-fill-the-review-queue-without-end.md) | A contributor whose suggestions are rejected cannot refill the review queue without end | dropped |
-| [19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md) | A known transient CI failure is retried or prevented, not re-run by hand | refined |
+| [19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md) | A known transient CI failure is retried or prevented, not re-run by hand | done |
 | [20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md) | Two worktrees run side by side in phone mode, and a low disk is named before it fails a build | refined |
 | [21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md) | The CodeQL alerts open on `dev` are closed | refined |
 | [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | refined |

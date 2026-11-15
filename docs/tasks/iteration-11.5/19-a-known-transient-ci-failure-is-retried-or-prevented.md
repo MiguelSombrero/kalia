@@ -1,6 +1,6 @@
 # Task 19: A known transient CI failure is retried or prevented, not re-run by hand
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -83,16 +83,16 @@ re-run instead of reading the failure.
 
 ## Acceptance criteria
 
-- [ ] A `check-compose.test.mjs` case fails a `--wait` with no service names
+- [x] A `check-compose.test.mjs` case fails a `--wait` with no service names
       and one that names `keycloak-seed`, and the repository's own `Makefile`,
       workflows and scripts pass
-- [ ] The retry script's test shows it retrying output that carries each
+- [x] The retry script's test shows it retrying output that carries each
       registry signature and failing at once on a compile error
-- [ ] Every step that builds the backend image calls the script, and no
+- [x] Every step that builds the backend image calls the script, and no
       inline retry loop is left in the workflows
-- [ ] The image scan names a second Java DB repository, confirmed accepted by
+- [x] The image scan names a second Java DB repository, confirmed accepted by
       the pinned Trivy from a run's output on this branch
-- [ ] `docs/ci-playbook.md`'s vulnerability-scan and E2E entries describe what
+- [x] `docs/ci-playbook.md`'s vulnerability-scan and E2E entries describe what
       now happens on its own, and `make verify-fast` is green
 
 ## Notes

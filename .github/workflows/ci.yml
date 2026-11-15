@@ -104,6 +104,7 @@ jobs:
       # 2026-07-25 with the code unchanged. Pulling it up front lets a
       # transient registry failure be retried instead of failing CI.
       - name: Pre-pull Testcontainers images
+        working-directory: .
         run: node scripts/retry-registry.mjs -- docker pull postgres:18.4
       # Testcontainers uses the Docker daemon preinstalled on ubuntu-latest.
       # verify runs surefire (*Test units), failsafe (*IT integrations) and
