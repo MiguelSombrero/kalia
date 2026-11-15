@@ -150,6 +150,17 @@ describe("kaliaFetch with a collector configured", () => {
     expect(exporter.getFinishedSpans().filter((span) => span.name.startsWith("POST"))).toHaveLength(2);
   });
 
+  it("ends the span without an error when the caller aborts", async () => {
+    const abort = new DOMException("The operation was aborted", "AbortError");
+    vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(abort)));
+
+    await inRequest(() => kaliaFetch("/api/v1/beers", { method: "GET" })).catch(() => undefined);
+
+    const [call] = exporter.getFinishedSpans().filter((span) => span.name.startsWith("GET /api/v1"));
+    expect(call.status.code).toBe(SpanStatusCode.UNSET);
+    expect(call.attributes["kalia.backend.failure"]).toBeUndefined();
+  });
+
   it("marks the span failed when the backend answers with a server error or cannot be reached", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
     await inRequest(() => kaliaFetch("/api/v1/cellar", { method: "GET" }));

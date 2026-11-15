@@ -42,7 +42,8 @@ export const kaliaFetch: Transport = async <T,>(url: string, options: RequestIni
     recordCall(call, result.status, started);
     return result as T;
   } catch (cause) {
-    span?.finish({ failure: isAbortError(cause) ? "aborted" : isApiError(cause) ? cause.kind : "unexpected" });
+    // A caller's abort is cancellation, not failure: the span ends without an error.
+    span?.finish(isAbortError(cause) ? {} : { failure: isApiError(cause) ? cause.kind : "unexpected" });
     if (!isAbortError(cause)) {
       recordFailure(call, cause, started);
     }
