@@ -120,7 +120,8 @@ The gates themselves:
   "Done" means every gate here is met; merging stays the product owner's
   explicit action. Follow [the template](docs/PULL_REQUEST_TEMPLATE.md).
 - **Doc-sync and code-review gates, and ticking acceptance criteria:**
-  `implement-task` states them in full — invoke it for any task
+  `implement-task` states them in full — invoke it for any task, and for a PR
+  with no task file, which records them too; a refinement PR runs `/code-review`
   ([ADR-0048](docs/adr/0048-what-survives-a-claude-md-bullet.md)). In short:
   update the docs the change touches, run `/code-review`, verify each
   criterion by running its check.

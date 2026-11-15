@@ -60,7 +60,12 @@ merging them produces a long agenda with no theme.
    `needs-refinement` and says so, rather than being carried over the line by
    the ones around it. That is the failure this whole format exists to
    prevent.
-7. Run `node scripts/check-tasks.mjs`, then `make verify-fast`, and open one
+7. Run `node scripts/check-tasks.mjs`, then **one `/code-review` over the whole
+   diff**, however many task files it carries, aimed at whether each
+   acceptance criterion of each task can be checked on that task's own branch
+   (`refine-task` step 9). Reword what cannot, and record the verdict on the
+   pull request's `Code review` line. It informs the product owner's merge and
+   does not replace it. Then `make verify-fast`, and open one
    pull request for the iteration per `docs/PULL_REQUEST_TEMPLATE.md` —
    carrying task-file edits only, no code (`CLAUDE.md` "Refine in one PR,
    implement in another") — except an unrelated CVE fix, which `CLAUDE.md`

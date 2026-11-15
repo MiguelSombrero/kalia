@@ -115,3 +115,15 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   (`e2e/support/keyboard.ts`). **A sticky or fixed element needs a keyboard flow
   in `e2e/keyboard-flows.spec.ts`**, or nothing checks it hides no focused
   control.
+- **A test queries as the user finds it:** `getByRole` with a name first, then `getByText` or `getByLabelText`; `getByTestId` only for what has neither (no check; review).
+- **A test mocks only what the code under test calls out through:** the Next.js runtime a unit test cannot enter (`next/navigation`, `next/headers`, `next/cache`, `@/auth`, the session cookie; `vitest.setup.ts` stubs the last two for every test), the logger, and a feature's `api.ts` or `lib/api/` at the point it leaves for the backend. Never a component, hook or store the app wrote (no check; review).
+- **A component renders as the app does:** `render()` from React Testing Library inside the real i18next and TanStack Query providers it reads. `react-i18next` mocked to raw keys is for a test that asserts no wording; one that does asserts the real `@kalia/locales` text in `en` and `fi`.
+- **A test file is named after the source file beside it**, `BeerList.test.tsx` for `BeerList.tsx` (`globals.test.ts` for `globals.css`), **or after it plus one suffix**, `page.backendCalls.test.tsx`. `scripts/check-test-names.mjs` fails any other name in `make verify-fast`; a new suffix is a line in its `APPS` table and a row here. Playwright specs (`e2e/*.spec.ts`) are out of its reach.
+
+  | Suffix | A test of | Needs a source beside it |
+  | --- | --- | --- |
+  | `.accessibility` | the source's roles, names and `axe` result with real translated text in `en` and `fi` | yes |
+  | `.backendCalls` | how many backend calls rendering the source makes (`edge/limits.json`) | yes |
+  | `.flow` | one behaviour across several sources, named after the one it is entered through | yes |
+  | `.server` | the source under Node, not jsdom (`// @vitest-environment node`) | yes |
+  | `.app` | several pages or the whole app at once | no |

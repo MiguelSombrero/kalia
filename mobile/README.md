@@ -211,6 +211,7 @@ make mobile-test   # Jest + React Native Testing Library, and the icon render te
 Neither needs Docker or a native build: `make verify-fast` runs them, and the
 `mobile` CI job on a change under `mobile/` or `packages/`. Run the whole gate
 ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
+How a test is written and named: [CONVENTIONS.md](CONVENTIONS.md#tests).
 
 ## Upgrade the Expo SDK
 

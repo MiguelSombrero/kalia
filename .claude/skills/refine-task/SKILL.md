@@ -60,7 +60,15 @@ CLAUDE.md "Refine in one PR, implement in another".
 8. Set `Status` to `refined` and run `node scripts/check-tasks.mjs` to
    confirm the file is structurally valid and `Open questions` reads
    `**None.**`.
-9. Push the branch and open the pull request per
+9. Run `/code-review` on the diff, aimed at what refinement can get wrong: for
+   each acceptance criterion, **can its check run on this task's own branch**,
+   with no merge, deploy or later run needed
+   ([the template](../../../docs/tasks/template.md)'s rule)? A criterion that
+   cannot is reworded now; it is how iteration 10 task 22 was implemented in
+   one pull request and closed in another. Record the verdict on the pull
+   request's `Code review` line. It informs the product owner's merge and does
+   not replace it: only the product owner moves a task to `refined`.
+10. Push the branch and open the pull request per
    `docs/PULL_REQUEST_TEMPLATE.md`. The product owner's merge is the visible
    approval that grants the `refined` gate — the same reasoning
    [ADR-0026](../../../docs/adr/0026-task-file-format.md) gives for why the

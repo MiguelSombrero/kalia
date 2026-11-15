@@ -167,6 +167,35 @@ naming a reason for each one skipped (in procedure order):
 A gate with no verdict counts as skipped. "All gates passed" without the two
 printed lines above is an assertion, not a report.
 
+## A pull request with no task file
+
+A fix, a process change, a review follow-up or a maintenance change between
+iterations has no task file, so nothing above names its gates. It always
+records, in the Gates section's `Doc-sync`, `Code review` and `Local gate`
+lines:
+
+- **doc-sync**, as in step 7 ("not applicable" is a verdict; silence is not)
+- **`/code-review`** on the diff, as in step 8. "Reviewed by the product
+  owner" never stands in for it: the product owner does not code
+  (`CLAUDE.md` "Roles"), and #490 and #492 recorded `/code-review` as skipped
+  on that ground.
+- **`make verify-fast`** (or `make verify`, said explicitly), as in step 9
+
+`scripts/check-pr-body.mjs` fails a body that touches no task file under
+`docs/tasks/iteration-N/` and lacks any of them. The other four Gates lines
+(range, running stack, acceptance criteria, iteration "Done when") stay a
+task pull request's.
+
+**An agent's commit on a Dependabot pull request** records the same three in a
+comment on that pull request, because the body is Dependabot's and the checker
+exempts it. No tool reads that comment
+(filed as COULD-165 in [the quality backlog](../../../docs/tasks/quality-backlog.md)): the commit's author
+is the check.
+
+A pull request that **refines** tasks touches task files, so it is not one of
+these: its `/code-review` is `refine-task` step 9 and `refine-iteration`
+step 7.
+
 ## A red check
 
 Three rules for a check that goes red, moved here whole from `CLAUDE.md`,

@@ -1,4 +1,4 @@
-// Complements BottleRemoval.test.tsx's flow coverage: this checks the
+// Complements RemoveBottleDialog.flow.test.tsx's flow coverage: this checks the
 // remove control, the confirmation dialog and the outcome toast with real
 // translated text in both locales, since that file mocks react-i18next to
 // raw keys.

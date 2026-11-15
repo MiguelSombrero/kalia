@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-136 · COULD-165
+**Highest issued:** MUST-27 · SHOULD-136 · COULD-166
 
 ## MUST
 
@@ -293,7 +293,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   hooks are held by no test. `nextBeerPage`
   (`mobile/src/features/catalog/hooks/useBeers.ts`) stops paging at
   `MAX_RESULT_WINDOW`, the bound past which the backend answers `400`, and
-  `CatalogList.test.tsx` covers only the exhausted list; `useResultCount`
+  `CatalogScreen.flow.test.tsx` covers only the exhausted list; `useResultCount`
   (`hooks/useFilterOptions.ts`) hides a stale count by reference equality, and
   `FiltersSheet.test.tsx` exercises only its debounce.
 - **COULD-149** *(confirmed 2026-11-14)* **[needs decision]** — The page
@@ -399,7 +399,14 @@ repeats, so the recurrence stays visible once the old entry is gone.
   iteration, backlog ID or pull request, on task branches too (563a35ec in
   #619, 0a636ee0 in #630, 5fa17b7e in #633, d5cea5c7 in #595). The pull
   request body already links the task. The decision: check it, or drop it.
-- **COULD-165** *(found 2026-11-15, task 20 review)* — `node
+- **COULD-165** *(confirmed 2026-11-15)* — An agent's commit on a Dependabot
+  pull request records its gates in a comment on that pull request
+  (`implement-task` "A pull request with no task file"), and nothing reads
+  that comment: `scripts/check-pr-body.mjs` sees only the body, which is
+  Dependabot's. be3d9a8b on #513 and 37c6c6d8 on #515 carried no record. A
+  `pr-body.yml` step could list the pull request's commits and comments and
+  fail a non-bot commit with no comment naming the three gates.
+- **COULD-166** *(found 2026-11-15, task 20 review)* — `node
   scripts/phone-mode.mjs off` leaves the machine's `tailscale serve` forwards
   in place whenever another worktree's `.env` still says phone mode, even if
   that worktree's stack is down or abandoned. Its owner must run `off` there

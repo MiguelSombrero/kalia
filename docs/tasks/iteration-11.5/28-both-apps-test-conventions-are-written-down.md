@@ -1,6 +1,6 @@
 # Task 28: Both apps' test conventions are written down, and a test file is named after what it tests
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -53,11 +53,11 @@ position.
 
 ## Acceptance criteria
 
-- [ ] A test in `scripts/` fails a fixture test file named after no source
+- [x] A test in `scripts/` fails a fixture test file named after no source
       file and carrying no listed suffix, and passes one of each listed kind
-- [ ] Every test file in both apps passes that check, and their suites pass
+- [x] Every test file in both apps passes that check, and their suites pass
       after the renames
-- [ ] Each app's `CONVENTIONS.md` states how a test is written and named,
+- [x] Each app's `CONVENTIONS.md` states how a test is written and named,
       and `make verify-fast` is green
 
 ## Notes
