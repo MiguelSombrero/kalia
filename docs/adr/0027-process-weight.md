@@ -7,9 +7,6 @@
 - **Amended:** 2026-08-30 by [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md)
   — the sweep those four dimensions run in gained a fifth, `process-quality`;
   the rejection below is unchanged and still names four
-- **Amended:** 2026-11-15 by [ADR-0115](0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)
-  — an orchestrating session for a large iteration is a coordination mode, not
-  a fourth way to implement a task; each child still implements directly
 
 ## Context
 

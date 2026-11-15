@@ -7,9 +7,6 @@
 - **Amended:** 2026-10-24 — the trigger fired again (266 lines); the product
   owner chose moving whole gates into `implement-task` over an advisory
   checker or a raised budget, recorded at the end of Evidence
-- **Amended:** 2026-11-15 by [ADR-0115](0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)
-  — the iteration-DoD gate left `implement-task` for the closing pull request,
-  stated in `implement-iteration`; the doc-sync and code-review gates stay
 
 ## Context
 

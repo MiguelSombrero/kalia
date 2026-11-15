@@ -126,9 +126,8 @@ The gates themselves:
   criterion by running its check.
 - **A task PR never edits its iteration's status:** an opening PR marks it
   `🔄 In progress` before any task PR merges; a closing PR verifies each `Done
-  when` by running it. A large iteration runs under an orchestrating session
-  that opens no PR itself — `implement-iteration`
-  ([ADR-0115](docs/adr/0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)).
+  when` by running it. Implementing an iteration's tasks runs under an
+  orchestrating session that opens no PR itself — `implement-iteration`.
 - **Reach for other skills only when this task needs them**; no plugin name is a required step.
 - **Code review is a dialogue.** Analyse every review comment critically before
   acting. Agreeing: implement and reply with what changed. Disagreeing: reply

@@ -9,7 +9,7 @@ description: Numbered procedure for implementing one refined docs/tasks/iteratio
 skill, which states them in full — doc-sync (step 7) and code review (step 8)
 ([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)). The
 third, the iteration definition of done, is the closing pull request's, in
-`implement-iteration` step 11.
+`implement-iteration` step 12.
 Nothing here changes a gate; this orders them, and gives the code-comment pass
 a step of its own — a moment to apply
 [ADR-0017](../../../docs/adr/0017-code-comment-policy.md)'s test to a comment
@@ -134,17 +134,11 @@ their own condition from that ADR before they apply.
     (`scripts/sync-indexes.mjs` copies it into the iteration index).
     Iterations 0–4 predate task files: tick in `docs/tasks/iteration-N.md`.
 
-    **Never edit the iteration's status**: not `docs/roadmap.md`'s row, not its
-    entry under "What each iteration built", whether this was the iteration's
-    first `done` task or its last. Parallel tasks each believed they were the
-    first and made the same edit, and the author of the last task is the
-    wrong one to judge the iteration's `Done when`. The iteration's own
-    opening and closing pull requests edit them
-    ([`implement-iteration`](../implement-iteration/SKILL.md) steps 4 and 11,
-    [ADR-0115](../../../docs/adr/0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)).
-    `make verify-fast` still fails a done task while the roadmap reads
-    `⬜ Todo`: if only that fails, the opening pull request has not merged, so
-    wait for it, merge `origin/dev` and push; never edit the row to pass.
+    **Never edit the iteration's status** (`docs/roadmap.md`'s row, its entry
+    under "What each iteration built"): the opening and closing pull requests do,
+    per [`implement-iteration`](../implement-iteration/SKILL.md). If `make
+    verify-fast` fails only on the `⬜ Todo` row, the opening pull request has
+    not merged: wait, merge `origin/dev`, push.
 12. Push the branch and open the pull request per
     `docs/PULL_REQUEST_TEMPLATE.md` — `CLAUDE.md` "Open the PR automatically".
 

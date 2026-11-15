@@ -54,7 +54,7 @@ files written at refinement.
 
 **Iteration DoD gate:** run by the iteration's closing pull request, stated in
 full in the [`implement-iteration` skill](../.claude/skills/implement-iteration/SKILL.md)
-(step 11; [ADR-0115](adr/0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)); `scripts/check-tasks.mjs` checks its planning-time half
+(step 12); `scripts/check-tasks.mjs` checks its planning-time half
 mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 
 ## Iterations

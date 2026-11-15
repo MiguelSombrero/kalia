@@ -234,7 +234,7 @@ const ROADMAP_STATUS = { todo: "⬜ Todo", inProgress: "🔄 In progress", done:
  * it in step with the task rows of the iteration indexes. An iteration with a
  * task begun is not Todo, and one is Done only when every live task is. One
  * with every task done stays In progress until its Done when is verified
- * (ADR-0115).
+ * (the implement-iteration skill, step 12).
  * @param {string} root repository root to check
  * @returns {string[]} one message per failure; empty means OK
  */

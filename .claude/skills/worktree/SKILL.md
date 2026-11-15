@@ -15,8 +15,8 @@ removed ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.
 ## How many at once
 
 `CLAUDE.md` caps heavy sessions at two. A session is **heavy** while it runs
-the Docker stack, `make verify`, a native build, a simulator or an emulator;
-one that only reads, edits docs, reviews or waits on CI is light, and the cap
+the Docker stack, `make verify`, Metro, a native build, a simulator or an
+emulator; one that only reads, edits docs, reviews or waits on CI is light, and the cap
 does not count it.
 
 - **The session that starts others counts first** — `list_sessions` with
