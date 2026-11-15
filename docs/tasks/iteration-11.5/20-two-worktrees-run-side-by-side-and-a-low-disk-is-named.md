@@ -1,6 +1,6 @@
 # Task 20: Two worktrees run side by side in phone mode, and a low disk is named before it fails a build
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -70,7 +70,7 @@ are unproven or keep breaking:
 
 ## Acceptance criteria
 
-- [ ] The two-worktree run is done, and the pull request records in words what
+- [x] The two-worktree run is done, and the pull request records in words what
       `tailscale serve status` showed after each switch. ADR-0097 is amended
       with the result
 - [x] A `prune-worktrees.test.mjs` case, with free space faked below 20 GB,
