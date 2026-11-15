@@ -66,7 +66,12 @@
   (one that sets a task file's status to `done`) fails
   `scripts/check-pr-body.mjs` until every line below has a value, and any PR
   fails it that says "new task" or "follow-up" without naming a
-  quality-backlog ID. Keep the labels as written — the checker reads them.
+  quality-backlog ID. A PR that touches no task file fails it without a
+  verdict on the Doc-sync, Code review (naming `/code-review`) and Local gate
+  (naming `make verify-fast`) lines: `implement-task` "A pull request with no
+  task file". A PR that ticks every criterion of a task but leaves its Status
+  short of `done` fails too. Keep the labels as written — the checker reads
+  them.
 -->
 
 - **Range:** <!-- a one-line verdict on `git log --oneline origin/dev..HEAD`, such as "4 commits, all this task's". Write it on this line: `scripts/check-pr-body.mjs` reads only the label's own line, and a commit list below it does not count -->

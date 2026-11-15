@@ -8,8 +8,13 @@
 // template's Gates section (docs/PULL_REQUEST_TEMPLATE.md) is where it lives
 // now; this reads it.
 //
-// Only a PR that sets a task file to `done` is checked for gate verdicts: that
-// is the PR `implement-task` ends in, and the one whose gates all apply.
+// Only a PR that sets a task file to `done` is checked for all seven gate
+// verdicts: that is the PR `implement-task` ends in, and the one whose gates all
+// apply. A PR that touches no task file at all (a fix, a process change, an
+// agent's commit on a Dependabot PR) is checked for the three that always
+// apply (doc-sync, /code-review, make verify-fast), and a PR that ticks every
+// criterion of a task while leaving its Status short of `done` fails, because
+// a task closes in the PR that implements it (#525 closed by #527, #523 by #533).
 // Every PR is checked for a deferred finding with no home: "new task" and
 // "follow-up" in a body lived only there until SHOULD-90 found six findings
 // from #452 and the ones from #398, #400 and #425 lost, so a body that defers
@@ -20,7 +25,8 @@
 // not from `make check`.
 //
 // usage: check-pr-body.mjs --body-file <path> (--diff-file <path> | --merge-ref) [--author <login>]
-//   body: the PR description; diff: a unified diff of docs/tasks, or
+//   body: the PR description; diff: a unified diff of docs/tasks carrying whole
+//   files as context (`git diff --unified=100000`), or
 //   --merge-ref to take it from the checkout, which on a pull_request event
 //   is GitHub's merge ref; author: the PR author's login, which exempts a bot
 //   whose body quotes third-party text from the deferral rule (THIRD_PARTY_BODY_AUTHORS)
@@ -72,6 +78,62 @@ export function completesTask(diff) {
   return false;
 }
 
+const TASK_FILE = /^docs\/tasks\/iteration-[\d.]+\/[^/]+\.md$/;
+
+// Task files this diff touches, by the `diff --git` header, so a deletion or a
+// rename counts as touching one.
+export function touchesTaskFile(diff) {
+  return diff
+    .split("\n")
+    .some((line) => {
+      const header = line.match(/^diff --git a\/(.+) b\/(.+)$/);
+      return header !== null && (TASK_FILE.test(header[1]) || TASK_FILE.test(header[2]));
+    });
+}
+
+// The new side of each task file in a diff that carries the whole file as
+// context (`git diff --unified=<more than the file>`, as mergeRefTasksDiff
+// takes it): context and added lines, in order. A deleted file has none.
+function newTaskFiles(diff) {
+  const files = new Map();
+  let current = null;
+  let inHunk = false;
+  for (const line of diff.split("\n")) {
+    const header = line.match(/^diff --git a\/.+ b\/(.+)$/);
+    if (header) {
+      current = TASK_FILE.test(header[1]) ? { path: header[1], lines: [] } : null;
+      if (current) files.set(current.path, current);
+      inHunk = false;
+    } else if (current && line.startsWith("+++ /dev/null")) {
+      files.delete(current.path);
+      current = null;
+    } else if (current && line.startsWith("@@")) {
+      inHunk = true;
+    } else if (current && inHunk && (line.startsWith(" ") || line.startsWith("+"))) {
+      current.lines.push(line.slice(1));
+    }
+  }
+  return [...files.values()].map(({ path, lines }) => ({ path, text: lines.join("\n") }));
+}
+
+const OPEN_STATUSES = ["needs-refinement", "refined", "in-progress"];
+
+// Task files the diff leaves with every acceptance criterion ticked and a
+// Status short of `done`: the shape of a task whose implementation merged and
+// whose close-out was left for another PR (#525 and #527, #523 and #533).
+export function ticksEveryCriterionWithoutDone(diff) {
+  const found = [];
+  for (const { path, text } of newTaskFiles(diff)) {
+    const status = text.match(/^- \*\*Status:\*\* (\S+)\s*$/m)?.[1];
+    const section = text.match(/^## Acceptance criteria\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? "";
+    const boxes = [...section.matchAll(/^\s*- \[( |x)\]/gm)].map((m) => m[1]);
+    if (OPEN_STATUSES.includes(status) && boxes.length > 0 && !boxes.includes(" ")) {
+      found.push({ path, status });
+    }
+  }
+  return found;
+}
+
 // What this PR changes under docs/tasks, read from the merge ref the checkout
 // is on: the diff from its first parent, the base's current tip, to the merge.
 // `pull_request.base.sha` is the tip when the PR was opened or last pushed, so
@@ -83,7 +145,9 @@ export function mergeRefTasksDiff(cwd = ".") {
   if (parents.length !== 3) {
     throw new Error("HEAD is not a merge commit: --merge-ref needs the checkout a pull_request event makes (refs/pull/N/merge)");
   }
-  return git("diff", parents[1], "HEAD", "--", "docs/tasks");
+  // The whole file as context, so the criteria and the Status line of a task
+  // the PR edits are readable even where the edit is far from them.
+  return git("diff", "--unified=100000", parents[1], "HEAD", "--", "docs/tasks");
 }
 
 // Gate labels whose line is missing, or present with nothing after the label
@@ -115,6 +179,35 @@ export function defersWithoutBacklogId(body) {
 // have no backlog to be filed in. The login cannot be taken by a person.
 export const THIRD_PARTY_BODY_AUTHORS = new Set(["dependabot[bot]"]);
 
+// A PR that touches no task file has no task to say what applies, so these
+// always do. The Code review verdict must name /code-review: "reviewed by the
+// product owner" stood in for it on #490 and #492, and the product owner does
+// not code (CLAUDE.md "Roles").
+export const NO_TASK_GATES = [
+  { label: "Doc-sync" },
+  { label: "Code review", needs: /\/code-review/, hint: "name `/code-review`" },
+  { label: "Local gate", needs: /\bmake verify\b/, hint: "name `make verify-fast` (or `make verify`)" },
+];
+const PRODUCT_OWNER_REVIEW = /\breviewed by the product owner\b/i;
+
+export function noTaskGateProblems(body) {
+  const lines = stripComments(body).split("\n");
+  const problems = [];
+  for (const { label, needs, hint } of NO_TASK_GATES) {
+    const prefix = `- **${label}:**`;
+    const line = lines.find((l) => l.trimStart().startsWith(prefix));
+    const verdict = line === undefined ? "" : line.trimStart().slice(prefix.length).trim();
+    if (verdict === "") {
+      problems.push(`no task file: no verdict on a line starting "${prefix}" (a PR that touches no task file always records it)`);
+    } else if (needs && !needs.test(verdict)) {
+      problems.push(`no task file: the "${prefix}" line must ${hint}`);
+    } else if (label === "Code review" && PRODUCT_OWNER_REVIEW.test(verdict)) {
+      problems.push(`no task file: "reviewed by the product owner" never stands in for \`/code-review\`; run it and record the verdict`);
+    }
+  }
+  return problems;
+}
+
 export function checkPrBody({ body, diff, author = "" }) {
   const problems = [];
   if (!THIRD_PARTY_BODY_AUTHORS.has(author) && defersWithoutBacklogId(body)) {
@@ -129,6 +222,14 @@ export function checkPrBody({ body, diff, author = "" }) {
         `Gates section: no verdict on a line starting "- **${label}:**" (a gate with no verdict counts as skipped)`,
       );
     }
+  } else if (!touchesTaskFile(diff) && !THIRD_PARTY_BODY_AUTHORS.has(author)) {
+    problems.push(...noTaskGateProblems(body));
+  }
+  for (const { path, status } of ticksEveryCriterionWithoutDone(diff)) {
+    problems.push(
+      `${path}: every acceptance criterion is ticked but Status is "${status}", not "done" ` +
+        "(a task closes in the PR that implements it: set Status to done there)",
+    );
   }
   return problems;
 }
