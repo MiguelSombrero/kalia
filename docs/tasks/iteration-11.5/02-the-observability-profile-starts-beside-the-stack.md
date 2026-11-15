@@ -52,6 +52,17 @@ container being recreated.
     those two without the endpoint, and the rest of the stack keeps running.
   - The volume has no size cap beyond the three-day retention.
   - The image's version is the one task 01's batched question settled.
+  - The spike's findings ([ADR-0114](../../adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md#evidence)): the image
+    declares no volume, so `/data` is a named volume or nothing survives a
+    recreate; its first start downloads about 600 MB of Grafana plugins, so
+    the profile needs outbound network once and a stopped one needs none; its
+    Prometheus has no scrape job until a file of ours is mounted over
+    `/otel-lgtm/prometheus.yaml`, which the backend's and the web's scrape
+    jobs go in (tasks 03 and 05); the retention and the Viewer role are
+    `PROMETHEUS_EXTRA_ARGS`, `LOKI_EXTRA_ARGS`, `TEMPO_EXTRA_ARGS` and
+    `GF_AUTH_ANONYMOUS_ORG_ROLE`, as the ADR's Evidence gives them; and the
+    memory limit is 2 GiB. The image is 3.6 GB on disk, which task 20's
+    low-disk message may count.
 
 ## Open questions
 

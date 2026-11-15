@@ -60,7 +60,14 @@ lines carry the trace id of the request they forwarded, when it had one.
     - the edge's own access log, counted by status and service in the store,
       so no `stub_status` and no exporter.
 
-    Their versions come from task 01's batched question.
+    Their versions come from task 01's batched question, and the two
+    exporters are Docker's hardened images (`dhi.io/postgres-exporter` and
+    `dhi.io/redis-exporter`), which the product owner chose over the community
+    ones; they pull without a login, which the root README's list of what each
+    service sends says.
+  - The shipper discovers only the containers of its own Compose project: left
+    unscoped on the spike it read every container on the host, other worktrees'
+    stacks included ([ADR-0114](../../adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md#evidence)).
   - Keycloak's lines reach the store with their username and email fields
     redacted by the shipper. A failed sign-in is still found by its event
     type, client and time.
