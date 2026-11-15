@@ -52,8 +52,9 @@ files written at refinement.
 - task status set to `done` in the task file, and synced into its iteration
   index (`make sync-indexes`; the edit-time hook does it for an agent)
 
-**Iteration DoD gate:** stated in full in the
-[`implement-task` skill](../.claude/skills/implement-task/SKILL.md) (step 11); `scripts/check-tasks.mjs` checks its planning-time half
+**Iteration DoD gate:** run by the iteration's closing pull request, stated in
+full in the [`implement-iteration` skill](../.claude/skills/implement-iteration/SKILL.md)
+(step 11; [ADR-0115](adr/0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)); `scripts/check-tasks.mjs` checks its planning-time half
 mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 
 ## Iterations

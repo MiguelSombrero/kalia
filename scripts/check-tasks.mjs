@@ -232,7 +232,9 @@ const ROADMAP_STATUS = { todo: "⬜ Todo", inProgress: "🔄 In progress", done:
 /**
  * docs/roadmap.md is the one place an iteration's status is stated; this keeps
  * it in step with the task rows of the iteration indexes. An iteration with a
- * task begun is not Todo, and one is Done only when every live task is.
+ * task begun is not Todo, and one is Done only when every live task is. One
+ * with every task done stays In progress until its Done when is verified
+ * (ADR-0115).
  * @param {string} root repository root to check
  * @returns {string[]} one message per failure; empty means OK
  */
@@ -259,8 +261,6 @@ export function checkRoadmapStatus(root) {
       failures.push(`${file}: ${iteration} has a task begun but is marked "${stated}"; mark it "${ROADMAP_STATUS.inProgress}"`);
     } else if (stated === ROADMAP_STATUS.done && !finished) {
       failures.push(`${file}: ${iteration} is marked "${stated}" before every task is done`);
-    } else if (stated === ROADMAP_STATUS.inProgress && finished) {
-      failures.push(`${file}: ${iteration} has every task done but is marked "${stated}"; mark it "${ROADMAP_STATUS.done}" with its Done-when verified`);
     }
   }
   return failures;

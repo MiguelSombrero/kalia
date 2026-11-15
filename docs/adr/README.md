@@ -450,6 +450,11 @@ to bound.
   rules, compliance mechanics and silent-failure warnings; rationale leaves it
   only once an ADR holds it; the doc-sync, code-review and iteration-DoD
   gates are written in full in `implement-task`.
+- [ADR-0115](0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md)
+  — an iteration's status is edited only by its opening and closing pull
+  requests, never a task's, and a large iteration is run by an orchestrating
+  session that delegates every change and edits nothing itself; amends the
+  iteration-DoD gate of ADR-0048.
 - [ADR-0051](0051-process-retrospection-belongs-to-the-sweep.md) — the
   repository's own process is audited as a fifth `/quality-sweep` dimension on
   evidence of recurrence, never as a self-review step at the end of each task.
@@ -619,3 +624,4 @@ reasons and its rate is worth watching independently
 | [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md) | The phone follows the system into a dark mode of neutral cards with the style colour in a slab, and keeps the mark off dark pages | accepted | 2026-11-13 |
 | [ADR-0113](0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md) | The phone moves a little to explain a change and taps only for the result of an action, both following the system's settings | accepted | 2026-11-13 |
 | [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md) | An opt-in profile stores traces, logs and metrics in one local Grafana container that an agent reads through a bounded interface | accepted | 2026-11-15 |
+| [ADR-0115](0115-an-iterations-status-is-edited-only-by-its-opening-and-closing-pull-requests-and-a-large-iteration-is-run-by-an-orchestrator-that-writes-no-code.md) | An iteration's status is edited only by its opening and closing pull requests, and a large iteration is run by an orchestrator that writes no code | accepted | 2026-11-15 |
