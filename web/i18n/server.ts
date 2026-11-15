@@ -1,6 +1,7 @@
-import { createInstance } from "i18next";
 import { loadResource } from "@kalia/locales/load";
+import { createInstance } from "i18next";
 import resourcesToBackend from "i18next-resources-to-backend";
+
 import { defaultNamespace, getOptions, type Locale } from "./settings";
 
 /**

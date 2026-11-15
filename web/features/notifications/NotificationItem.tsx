@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
@@ -10,6 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { RelativeTime } from "@/components/ui/relative-time";
 import type { Locale } from "@/i18n/settings";
 import { beerHref } from "@/lib/routes";
+
 import type { Notification, RejectionReason } from "./types";
 
 const reasonLabelKey = enumLookup<RejectionReason, string>(

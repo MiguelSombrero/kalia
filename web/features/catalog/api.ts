@@ -1,4 +1,5 @@
 import { apiError } from "@kalia/api";
+import { remove as generatedRemoveBeer } from "@kalia/api/generated/admin-beers/admin-beers";
 import {
   addBeer as generatedAddBeer,
   getBeer as generatedGetBeer,
@@ -8,7 +9,7 @@ import {
   listStyles as generatedListStyles,
   searchBeers as generatedSearchBeers,
 } from "@kalia/api/generated/catalog/catalog";
-import { remove as generatedRemoveBeer } from "@kalia/api/generated/admin-beers/admin-beers";
+
 import { normalizeBeerSearchParams } from "./searchParams";
 import {
   type AddBeerRequest,

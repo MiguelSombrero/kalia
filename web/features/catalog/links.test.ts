@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { beerHref, buildBeerSearchParams, catalogHref, hasFilters, hasSearch } from "./links";
 
 describe("buildBeerSearchParams", () => {

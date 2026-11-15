@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
 import { EmptyState } from "@/components/EmptyState";
@@ -7,6 +8,7 @@ import { FieldRow } from "@/components/FieldRow";
 import { LoadingState } from "@/components/LoadingState";
 import { Sheet } from "@/components/Sheet";
 import { countryName } from "@/lib/i18n/countryNames";
+
 import type { BeerDetails as BeerDetailsData } from "../api";
 import { useBeer, useSimilarBeers } from "../hooks/useBeer";
 import { BeerHeadline } from "./BeerHeadline";
@@ -34,13 +36,13 @@ export const BeerDetails = ({ id, onClose, onOpenBeer, onShowStyle, onShowBrewer
 
   return (
     <Sheet title={t("beerDetails.title")} closeLabel={t("mobileNavigation.close")} onClose={onClose}>
-      {beer.isPending && <LoadingState label={t("beerDetails.loading")} placeholders={2} />}
-      {beer.isError && <ErrorAlert message={t("beerDetails.error")} error={beer.error} onRetry={() => void beer.refetch()} retrying={beer.isFetching} />}
-      {beer.isSuccess && beer.data === null && (
+      {beer.isPending ? <LoadingState label={t("beerDetails.loading")} placeholders={2} /> : null}
+      {beer.isError ? <ErrorAlert message={t("beerDetails.error")} error={beer.error} onRetry={() => void beer.refetch()} retrying={beer.isFetching} /> : null}
+      {beer.isSuccess && beer.data === null ? (
         <EmptyState message={t("beerDetails.notFound.message")}>
           <ActionButton label={t("beerDetails.notFound.action")} onPress={onClose} />
         </EmptyState>
-      )}
+      ) : null}
       {shown ? (
         <>
           <BeerHeadline name={shown.name} style={shown.style} abv={shown.abv} language={i18n.language} />

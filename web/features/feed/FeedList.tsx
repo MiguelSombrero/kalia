@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { surfaceVariants } from "@/components/ui/surface";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
-import { FeedLineRow } from "./FeedLineRow";
+
 import { FEED_LIST_CAP, STALLED_AFTER_FAILURES } from "./constants";
+import { FeedLineRow } from "./FeedLineRow";
 import { useOlderFeed, usePollFeed } from "./hooks/useFeed";
 import type { FeedLine, FeedPage } from "./types";
 

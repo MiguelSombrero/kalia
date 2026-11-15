@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { SignJWT } from "jose";
 import { describe, expect, it } from "vitest";
+
 import { sidFromIdToken } from "./sessionId";
 
 // jose's signing throws under the project's default jsdom environment

@@ -1,16 +1,17 @@
 // Exercises adding a beer from a search that found nothing (ADR-0082) against
 // the compose stack; credentials are an account of this spec's own, provisioned
 // by ./support/keycloakAccount.ts.
-import { request, type Page } from "@playwright/test";
+import { type Page, request } from "@playwright/test";
+
+import { expectNoA11yViolations } from "./support/a11y";
 import {
   createFreshAccount,
   expect,
+  type KeycloakAccount,
   signIn,
   test as baseTest,
   uniqueUsername,
-  type KeycloakAccount,
 } from "./support/keycloakAccount";
-import { expectNoA11yViolations } from "./support/a11y";
 
 // A worker account would carry its waiting suggestions into the next run, where
 // the backend's cap on them (20, ADR-0102) would answer 429 in the add dialog.

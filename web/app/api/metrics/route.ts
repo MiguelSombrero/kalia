@@ -1,5 +1,5 @@
-import { hasMetricsToken } from "@/lib/metrics/metricsToken";
 import { metrics } from "@/lib/metrics/metrics";
+import { hasMetricsToken } from "@/lib/metrics/metricsToken";
 
 export const runtime = "nodejs";
 

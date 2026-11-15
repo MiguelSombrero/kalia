@@ -1,6 +1,7 @@
 import { focusManager } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react-native";
 import { AppState, type AppStateStatus } from "react-native";
+
 import { useAppStateFocus } from "./useAppStateFocus";
 
 describe("useAppStateFocus", () => {

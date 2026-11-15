@@ -1,4 +1,5 @@
 import { origins } from "@/lib/config/origins";
+
 import { createKeycloakClient } from "./keycloakClient";
 import { createSecureTokens } from "./secureTokens";
 import { createTokenStore, type TokenStore } from "./tokenStore";

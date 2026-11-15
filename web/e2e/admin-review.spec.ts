@@ -1,6 +1,7 @@
 // The queue is shared by every worker and every run, so each test finds its own
 // suggestion by a name no one else has, made by a contributor account of its own.
-import { request, type Browser, type Page } from "@playwright/test";
+import { type Browser, type Page, request } from "@playwright/test";
+
 import { expectNoA11yViolations } from "./support/a11y";
 import { createFreshAccount, expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
 

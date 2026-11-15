@@ -1,5 +1,6 @@
 import { customFetch } from "@auth/core";
 import Keycloak, { type KeycloakProfile } from "next-auth/providers/keycloak";
+
 import { createInternalKeycloakFetch } from "./internalKeycloakFetch";
 
 // `issuer` must stay Keycloak's public `iss` (KC_HOSTNAME): oauth4webapi's

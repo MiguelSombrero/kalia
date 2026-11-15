@@ -2,6 +2,7 @@ import { act, screen } from "@testing-library/react";
 import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+
 import { AuthSubmitButton } from "./AuthSubmitButton";
 
 const button = (

@@ -1,6 +1,8 @@
 import { screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
+
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { ComingSoon } from "./ComingSoon";
 
 jest.mock("@/lib/design/theme.generated", () => {

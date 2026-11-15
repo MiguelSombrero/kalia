@@ -2,8 +2,8 @@
 // journey through a stranger's view of a public cellar belongs to the public
 // cellar page. Credentials are a per-worker account provisioned by
 // ./support/keycloakAccount.ts.
-import { expect, signIn, test } from "./support/keycloakAccount";
 import { expectNoA11yViolations } from "./support/a11y";
+import { expect, signIn, test } from "./support/keycloakAccount";
 import { setCellarVisibility } from "./support/visibility";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.

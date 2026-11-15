@@ -1,9 +1,10 @@
+import { useTranslation } from "react-i18next";
+import { Text } from "react-native";
+
+import { ownBuildNumber, ownVersion } from "@/lib/build/buildInfo";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
-import { Text } from "react-native";
-import { useTranslation } from "react-i18next";
-import { ownBuildNumber, ownVersion } from "@/lib/build/buildInfo";
 
 export const BuildInfo = () => {
   const styles = useStyles();

@@ -1,10 +1,11 @@
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
 import { Sheet } from "@/components/Sheet";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 export const SignInSheet = () => {
   const { t, i18n } = useTranslation();

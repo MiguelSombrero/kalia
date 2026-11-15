@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { formatRelativeInstant } from "./relativeInstant";
 
 const now = new Date("2026-09-13T12:00:00.000Z");

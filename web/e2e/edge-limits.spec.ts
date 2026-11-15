@@ -6,9 +6,11 @@
 import { execFileSync } from "node:child_process";
 import { randomBytes, randomUUID } from "node:crypto";
 import path from "node:path";
+
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { BACKEND_ORIGIN, WEB_ORIGIN, KEYCLOAK_ORIGIN, KEYCLOAK_ADMIN_ORIGIN } from "./support/origins";
+
+import { BACKEND_ORIGIN, KEYCLOAK_ADMIN_ORIGIN, KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
 
 const ROOT = path.resolve(__dirname, "../..");
 const FORGED_ADDRESS = "203.0.113.77";

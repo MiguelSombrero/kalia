@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+
 import { useDeviceLocale } from "@/lib/i18n/useDeviceLocale";
+
 import { CrashScreen } from "./CrashScreen";
 import { useUncaughtErrorStore } from "./store";
 

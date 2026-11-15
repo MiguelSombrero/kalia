@@ -1,5 +1,7 @@
 import { screen } from "@testing-library/react-native";
+
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { ComingSoon } from "./ComingSoon";
 
 describe("ComingSoon", () => {

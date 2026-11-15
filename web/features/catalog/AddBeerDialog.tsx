@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,11 +16,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
-import { FieldError, fieldClasses } from "@/components/ui/field";
+import { fieldClasses, FieldError } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Locale } from "@/i18n/settings";
+
 import { AddBeerOutcomeAlert } from "./AddBeerOutcomeAlert";
-import { addBeerSchema, type AddBeerFormValues, toAddBeerRequest } from "./addBeerSchema";
+import { type AddBeerFormValues, addBeerSchema, toAddBeerRequest } from "./addBeerSchema";
 import { BreweryField } from "./BreweryField";
 import { useAddBeer, useAddBeerOptions } from "./hooks/useAddBeer";
 import { beerHref, catalogHref } from "./links";

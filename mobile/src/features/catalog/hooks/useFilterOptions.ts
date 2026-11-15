@@ -1,22 +1,28 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+
 import { readBreweryCountries, readBreweryPage, readResultCount, readStyles } from "../api";
-import { searchParams, type Filters } from "../filters/model";
+import { type Filters, searchParams } from "../filters/model";
+import { useDebounced } from "./useDebounced";
 
-const PAUSE_MS = 300;
+const FILTER_OPTION_RETRIES = 3;
 
-export const useDebounced = <T,>(value: T): T => {
-  const [settled, setSettled] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setSettled(value), PAUSE_MS);
-    return () => clearTimeout(timer);
-  }, [value]);
-  return settled;
-};
+export const useStyleOptions = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["catalog", "styles"],
+    queryFn: readStyles,
+    enabled,
+    // eslint-disable-next-line no-restricted-syntax -- the sheet shows no error for a list that fails to load, so it retries quietly instead of failing at once
+    retry: FILTER_OPTION_RETRIES,
+  });
 
-export const useStyleOptions = (enabled: boolean) => useQuery({ queryKey: ["catalog", "styles"], queryFn: readStyles, enabled });
-
-export const useCountryOptions = (enabled: boolean) => useQuery({ queryKey: ["catalog", "countries"], queryFn: readBreweryCountries, enabled });
+export const useCountryOptions = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["catalog", "countries"],
+    queryFn: readBreweryCountries,
+    enabled,
+    // eslint-disable-next-line no-restricted-syntax -- as for the styles
+    retry: FILTER_OPTION_RETRIES,
+  });
 
 export const useBreweryOptions = (query: string, enabled: boolean) => {
   const settled = useDebounced(query);
@@ -27,6 +33,8 @@ export const useBreweryOptions = (query: string, enabled: boolean) => {
     getNextPageParam: (last) => (last.page + 1 < last.totalPages ? last.page + 1 : undefined),
     enabled,
     placeholderData: (previous) => previous,
+    // eslint-disable-next-line no-restricted-syntax -- as for the styles
+    retry: FILTER_OPTION_RETRIES,
   });
 };
 
@@ -34,6 +42,12 @@ export const useBreweryOptions = (query: string, enabled: boolean) => {
 export const useResultCount = (filters: Filters) => {
   const settled = useDebounced(filters);
   const params = searchParams(settled);
-  const count = useQuery({ queryKey: ["catalog", "count", params], queryFn: () => readResultCount(params), placeholderData: (previous) => previous });
+  const count = useQuery({
+    queryKey: ["catalog", "count", params],
+    queryFn: () => readResultCount(params),
+    placeholderData: (previous) => previous,
+    // eslint-disable-next-line no-restricted-syntax -- as for the styles
+    retry: FILTER_OPTION_RETRIES,
+  });
   return { data: settled === filters ? count.data : undefined };
 };

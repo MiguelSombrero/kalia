@@ -1,6 +1,7 @@
 // Exercises the whole stack against compose-run backend and Postgres
 // (docs/architecture.md §7).
 import { expect, test } from "@playwright/test";
+
 import { expectNoA11yViolations } from "./support/a11y";
 
 test("root redirects to the English catalog by default", async ({ page }) => {

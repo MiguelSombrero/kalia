@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+
 import { endingLocalSession, endPreviousSession } from "@/lib/auth/endingLocalSession";
 import { buildKeycloakProvider } from "@/lib/auth/keycloakOptions";
 import { sidFromIdToken } from "@/lib/auth/sessionId";

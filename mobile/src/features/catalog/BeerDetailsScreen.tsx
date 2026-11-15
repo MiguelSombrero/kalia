@@ -1,5 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { showCatalogWith, type CatalogLinkFilter } from "@/lib/catalogLink";
+
+import { type CatalogLinkFilter, showCatalogWith } from "@/lib/catalogLink";
+
 import { BeerDetails } from "./details/BeerDetails";
 
 export const BeerDetailsScreen = () => {

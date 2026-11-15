@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+
 import { auth } from "@/auth";
-import { CellarView, cellarHead, listCellarEntries, SignInPrompt } from "@/features/cellar";
+import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
+import { cellarHead, CellarView, listCellarEntries, SignInPrompt } from "@/features/cellar";
 import { getOwnProfileOrNull } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
-import { Page } from "@/components/ui/page";
-import { PageTitle } from "@/components/ui/page-title";
 
 type Props = { params: Promise<{ locale: string }> };
 

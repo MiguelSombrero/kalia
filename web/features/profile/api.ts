@@ -3,6 +3,7 @@ import {
   changeVisibility as generatedChangeVisibility,
   myProfile as generatedMyProfile,
 } from "@kalia/api/generated/profile/profile";
+
 import type { Profile } from "./types";
 
 export const getProfile = async (): Promise<Profile> => {

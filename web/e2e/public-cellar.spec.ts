@@ -3,10 +3,11 @@
 // nothing. Credentials are a per-worker account provisioned by
 // ./support/keycloakAccount.ts.
 import type { Page } from "@playwright/test";
-import { expect, signIn, test, type KeycloakAccount } from "./support/keycloakAccount";
-import { CATALOG_CARD } from "./support/catalog";
-import { setCellarVisibility } from "./support/visibility";
+
 import { expectNoA11yViolations } from "./support/a11y";
+import { CATALOG_CARD } from "./support/catalog";
+import { expect, type KeycloakAccount, signIn, test } from "./support/keycloakAccount";
+import { setCellarVisibility } from "./support/visibility";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });

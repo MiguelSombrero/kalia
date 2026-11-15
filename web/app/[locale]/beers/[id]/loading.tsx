@@ -1,6 +1,7 @@
-import { BeerDetailsSkeleton } from "./BeerDetailsSkeleton";
-import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { Page } from "@/components/ui/page";
+import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
+
+import { BeerDetailsSkeleton } from "./BeerDetailsSkeleton";
 
 const BeerLoading = async () => {
   const locale = await resolveLocaleFromHeaders();

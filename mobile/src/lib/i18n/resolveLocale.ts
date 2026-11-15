@@ -1,4 +1,4 @@
-import { defaultLocale, locales, type Locale } from "@kalia/locales";
+import { defaultLocale, type Locale, locales } from "@kalia/locales";
 
 const isLocale = (value: string): value is Locale => (locales as readonly string[]).includes(value);
 

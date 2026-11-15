@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { approveEditedSuggestion, approveSuggestion, rejectSuggestion } from "./api";
 import type { DecisionResult, EditResult, EditSuggestionRequest, RejectionReason } from "./types";
 

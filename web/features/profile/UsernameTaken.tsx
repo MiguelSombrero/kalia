@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import { PageTitle } from "@/components/ui/page-title";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";

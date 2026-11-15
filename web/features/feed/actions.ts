@@ -1,8 +1,9 @@
 "use server";
 
 import { isApiError } from "@kalia/api";
-import { FEED_PAGE_SIZE } from "./constants";
+
 import { readFeed } from "./api";
+import { FEED_PAGE_SIZE } from "./constants";
 import type { FeedPage } from "./types";
 
 // A Server Action's thrown error reaches the client stripped to

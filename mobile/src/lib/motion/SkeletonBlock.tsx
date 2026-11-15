@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
+
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 

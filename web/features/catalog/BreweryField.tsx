@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { type KeyboardEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FieldError, fieldClasses } from "@/components/ui/field";
+
+import { fieldClasses, FieldError } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { surfaceVariants } from "@/components/ui/surface";
 import { cn } from "@/lib/cn";
+
 import { useBreweryMatches } from "./hooks/useAddBeer";
 import type { BreweryOption } from "./types";
 

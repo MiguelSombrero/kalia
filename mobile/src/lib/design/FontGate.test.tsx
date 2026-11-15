@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react-native";
 import * as ExpoFont from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Text } from "react-native";
+
 import { FontGate } from "./FontGate";
 
 jest.mock("expo-font", () => ({ useFonts: jest.fn() }));

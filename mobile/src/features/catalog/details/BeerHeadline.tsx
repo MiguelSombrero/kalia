@@ -1,10 +1,11 @@
+import { Text, useWindowDimensions, View } from "react-native";
+
+import { BeerSlot, SLAB_WIDTH } from "@/components/BeerSlot";
+import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
-import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { useColorMode } from "@/lib/design/useThemeColors";
-import { Text, useWindowDimensions, View } from "react-native";
-import { BeerSlot, SLAB_WIDTH } from "@/components/BeerSlot";
 
 export const BeerHeadline = ({ name, style, abv, language }: { name: string; style: string; abv: number; language: string }) => {
   const { background, foreground } = useBeerStyleColours()(style);

@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react-native";
-import { Text } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Text } from "react-native";
+
 import { AppProviders } from "./AppProviders";
 
 const Home = () => {

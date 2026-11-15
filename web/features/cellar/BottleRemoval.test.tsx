@@ -4,9 +4,10 @@
 // (CellarBeerList beside the toast, as CellarView mounts them) rather than any
 // one component in isolation.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { buttonVariants } from "@/components/ui/button";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { buttonVariants } from "@/components/ui/button";
 
 const waitFor = vi.waitFor;
 

@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { validateLogoutToken } from "@/lib/auth/backchannelLogoutToken";
 import { endLocalSession } from "@/lib/auth/endLocalSession";
 import { getSessionTokenBySid } from "@/lib/auth/valkeyAdapter";
+
 import { POST } from "./route";
 
 vi.mock("@/lib/auth/backchannelLogoutToken", () => ({ validateLogoutToken: vi.fn() }));

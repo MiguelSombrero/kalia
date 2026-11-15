@@ -1,4 +1,5 @@
 import { Easing } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 
 type EasingName = keyof typeof theme.easing;

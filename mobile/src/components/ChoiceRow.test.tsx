@@ -1,10 +1,12 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { Text } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 import { MODES, systemIs, withLargestFont } from "@/testing/colorMode";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { ChoiceRow } from "./ChoiceRow";
 
 const ONE_OF_TWO = { index: 1, count: 2 };

@@ -1,12 +1,14 @@
-import { AppProviders } from "@/lib/providers/AppProviders";
 import { fireEvent, screen, within } from "@testing-library/react-native";
-import { renderRouter } from "expo-router/testing-library";
 import { Redirect, Stack, useRouter } from "expo-router";
+import { renderRouter } from "expo-router/testing-library";
 import { PixelRatio, Pressable, Text } from "react-native";
-import { AppTabs } from "./AppTabs";
-import { AddActionSheet } from "./AddActionSheet";
-import { SignInSheet } from "./SignInSheet";
+
+import { AppProviders } from "@/lib/providers/AppProviders";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
+
+import { AddActionSheet } from "./AddActionSheet";
+import { AppTabs } from "./AppTabs";
+import { SignInSheet } from "./SignInSheet";
 
 const Heading = ({ children }: { children: string }) => <Text role="heading">{children}</Text>;
 const Home = () => <Redirect href="/catalog" />;

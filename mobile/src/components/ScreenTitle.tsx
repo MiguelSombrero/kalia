@@ -1,4 +1,5 @@
 import { Text } from "react-native";
+
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";

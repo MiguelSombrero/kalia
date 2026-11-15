@@ -2,10 +2,12 @@ import { registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { BackHandler } from "react-native";
+
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
-import { FiltersSheet } from "./FiltersSheet";
+
 import { emptyFilters, type Filters } from "./filters/model";
+import { FiltersSheet } from "./FiltersSheet";
 
 const transport = jest.fn();
 const answer = (data: unknown) => ({ data, status: 200, headers: new Headers() });

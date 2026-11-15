@@ -1,8 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 import { MODES, systemIs, withLargestFont } from "@/testing/colorMode";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { TextButton } from "./TextButton";
 
 afterEach(() => jest.restoreAllMocks());

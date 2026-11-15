@@ -1,5 +1,7 @@
 import type { ErrorBoundaryProps } from "expo-router";
+
 import { useDeviceLocale } from "@/lib/i18n/useDeviceLocale";
+
 import { CrashScreen } from "./CrashScreen";
 import { useLogUncaughtRenderError } from "./uncaughtError";
 

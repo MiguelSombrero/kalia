@@ -1,9 +1,11 @@
 import type { ReactNode, Ref } from "react";
-import { ScrollView, Text, View, type HostInstance } from "react-native";
+import { type HostInstance, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
+
 import { TextButton } from "./TextButton";
 
 type SheetProps = {

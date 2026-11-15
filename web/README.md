@@ -51,7 +51,7 @@ Built in, with no viewer ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-sh
 ```bash
 npm test           # Vitest + React Testing Library (single run)
 npm run test:watch # watch mode
-npm run lint       # ESLint
+npm run lint       # ESLint; a warning fails, import order included
 npm run build      # production build (includes type checking)
 npm run test:e2e   # Playwright — starts the docker compose stack if not running
 ```

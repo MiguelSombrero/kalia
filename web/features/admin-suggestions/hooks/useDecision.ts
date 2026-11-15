@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+
 import { approveEditedSuggestionAction, approveSuggestionAction, rejectSuggestionAction } from "../actions";
 import type { EditSuggestionRequest, RejectionReason } from "../types";
 

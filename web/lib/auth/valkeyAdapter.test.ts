@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdapterUser } from "next-auth/adapters";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { createValkeyAdapter } from "./valkeyAdapter";
 
 const store = new Map<string, string>();

@@ -2,6 +2,7 @@ const pluginQuery = require("@tanstack/eslint-plugin-query");
 const { defineConfig, globalIgnores } = require("eslint/config");
 const expoConfig = require("eslint-config-expo/flat");
 const boundaries = require("eslint-plugin-boundaries");
+const simpleImportSort = require("eslint-plugin-simple-import-sort");
 const path = require("node:path");
 const { dependencies } = require("./package.json");
 const { plugin: enumLookupPlugin } = require("../packages/api/eslint/enum-lookup-rules.cjs");
@@ -16,6 +17,7 @@ const components = { element: { type: "components" } };
 const lib = { element: { type: "lib" } };
 const testing = { element: { type: "testing" } };
 const appSuite = { file: { categories: "app-suite" } };
+const testFile = { file: { categories: "test-file" } };
 const sharedPackage = { element: { type: "shared-package" } };
 const generatedModels = { element: { type: "generated-models" } };
 // ADR-0093, ADR-0110. Their policies come last in the rule below: the last policy to match decides.
@@ -32,6 +34,22 @@ const codeStyleSyntax = [
   {
     selector: "JSXAttribute[name.name='allowFontScaling'][value.expression.value=false]",
     message: "Text must scale with the system font size (ADR-0075); do not set allowFontScaling={false}.",
+  },
+  {
+    selector: ":matches(JSXElement, JSXFragment) > JSXExpressionContainer > LogicalExpression[operator='&&']",
+    message: "Write conditional JSX as a ternary, `cond ? <X /> : null`: on React Native `&&` renders a zero as a bare string outside <Text> and crashes (mobile/CONVENTIONS.md).",
+  },
+  {
+    selector: "JSXExpressionContainer :matches(MemberExpression[object.name='Platform'][property.name='OS'], MemberExpression[object.property.name='Platform'][property.name='OS'])",
+    message: "Write a platform difference as Platform.select for a value, or a .ios.tsx / .android.tsx file for a component, never Platform.OS inside JSX (mobile/CONVENTIONS.md).",
+  },
+  {
+    selector: "CallExpression[callee.name=/^use[A-Za-z0-9]*Store$/][arguments.length=0]",
+    message: "Read a Zustand store through a selector, useXStore((state) => state.field): a whole-store read re-renders on every change in it (mobile/CONVENTIONS.md).",
+  },
+  {
+    selector: "CallExpression:matches([callee.name='useQuery'], [callee.name='useInfiniteQuery'], [callee.name='useMutation']) > ObjectExpression > Property[key.name='retry']",
+    message: "Retries are set once, on the QueryClient (src/lib/query/createQueryClient.ts); a hook that needs another count says why in its eslint-disable, after `--` (mobile/CONVENTIONS.md).",
   },
 ];
 
@@ -62,7 +80,11 @@ const eslintConfig = defineConfig([
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
-    rules: { "@typescript-eslint/consistent-type-definitions": ["error", "type"] },
+    plugins: { "simple-import-sort": simpleImportSort },
+    rules: {
+      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+      "simple-import-sort/imports": "error",
+    },
   },
   {
     files: ["src/**/*.{ts,tsx}"],
@@ -84,6 +106,7 @@ const eslintConfig = defineConfig([
         { type: "app", pattern: "mobile/src/app", partialMatch: false },
       ],
       "boundaries/files": [
+        { category: "test-file", pattern: "mobile/src/**/*.test.{ts,tsx}" },
         { category: "feature-index", pattern: "mobile/src/features/*/index.ts" },
         { category: "feature-api", pattern: "mobile/src/features/*/api.ts" },
         { category: "app-suite", pattern: "mobile/src/testing/*.app.{ts,tsx,test.ts,test.tsx}" },
@@ -105,15 +128,16 @@ const eslintConfig = defineConfig([
             "{{from.element.type}} must not import {{dependency.source}} — mobile import boundaries, see ADR-0094 and web/eslint.config.mjs (ADR-0012).",
           checkUnknownLocals: true,
           policies: [
-            { from: app, allow: { to: [featureIndex, components, sharedPackage, lib, testing] } },
-            { from: feature, allow: { to: [components, sharedPackage, lib, testing] } },
+            { from: app, allow: { to: [featureIndex, components, sharedPackage, lib] } },
+            { from: feature, allow: { to: [components, sharedPackage, lib] } },
             {
               from: { element: { type: "feature" }, file: { categories: "feature-api" } },
               allow: { to: [generatedModels, ownGeneratedTag] },
             },
-            { from: components, allow: { to: [sharedPackage, lib, testing] } },
-            { from: lib, allow: { to: [sharedPackage, lib, testing] } },
+            { from: components, allow: { to: [sharedPackage, lib] } },
+            { from: lib, allow: { to: [sharedPackage, lib] } },
             { from: testing, allow: { to: [sharedPackage, lib, testing] } },
+            { from: testFile, allow: { to: [testing] } },
             { from: appSuite, allow: { to: [app, featureIndex, components] } },
             {
               from: independentScreen,

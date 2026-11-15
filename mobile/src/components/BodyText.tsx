@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Text } from "react-native";
+
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";

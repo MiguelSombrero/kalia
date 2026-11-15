@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cellarHead } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+
 import { CellarBeersSkeleton } from "../../cellar/CellarBeersSkeleton";
 
 export const PublicCellarSkeleton = async ({ locale }: { locale: Locale }) => {

@@ -1,5 +1,6 @@
 import type { AdapterSession } from "next-auth/adapters";
 import { describe, expect, it } from "vitest";
+
 import { createdSession, rememberCreatedSession, withSignInContext } from "./signInContext";
 
 const session = (sessionToken: string): AdapterSession => ({

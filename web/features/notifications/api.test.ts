@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { isApiError } from "@kalia/api";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { acknowledgeNotification, readNotifications, readUnreadCount } from "./api";
 
 const id = "9d3b7e0a-6f1c-4c52-8a57-0c1d2e3f4a5b";

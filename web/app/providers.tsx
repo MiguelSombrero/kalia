@@ -1,11 +1,12 @@
 "use client";
 
+import { resources } from "@kalia/locales";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createInstance } from "i18next";
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import { resources } from "@kalia/locales";
+
 import { getOptions, type Locale } from "@/i18n/settings";
 
 // Mounted once in the root layout (ADR-0008). Resources are imported

@@ -1,11 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Animated, LayoutAnimation, Text } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
+
 import { PRESS_SCALE, PressFeedback } from "./PressFeedback";
+import { watchReducedMotion } from "./reducedMotion";
 import { Reveal } from "./Reveal";
 import { SkeletonBlock } from "./SkeletonBlock";
 import { useAnimateListChange } from "./useAnimateListChange";
-import { watchReducedMotion } from "./reducedMotion";
 
 const timing = jest.spyOn(Animated, "timing");
 const configureNext = jest.spyOn(LayoutAnimation, "configureNext");

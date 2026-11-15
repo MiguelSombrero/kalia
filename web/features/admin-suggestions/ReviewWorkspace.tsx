@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Toast, ToastDescription, ToastProvider, ToastViewport } from "@/components/ui/toast";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+
 import { OutcomePanel } from "./OutcomePanel";
 import { QueueList } from "./QueueList";
 import { SuggestionView } from "./SuggestionView";

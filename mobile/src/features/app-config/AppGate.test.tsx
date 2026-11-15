@@ -1,12 +1,14 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiError, registerTransport, type Transport } from "@kalia/api";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { focusManager } from "@tanstack/react-query";
-import { Platform, Text } from "react-native";
-import { expectScalesWithText } from "@/testing/expectScalesWithText";
-import { renderWithLocale } from "@/testing/renderWithLocale";
-import { fakeTokenStore } from "@/testing/fakeTokenStore";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { useEffect } from "react";
+import { Platform, Text } from "react-native";
+
+import { expectScalesWithText } from "@/testing/expectScalesWithText";
+import { fakeTokenStore } from "@/testing/fakeTokenStore";
+import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { AppGate } from "./AppGate";
 
 jest.mock("expo-application", () => ({ nativeBuildVersion: "1" }));

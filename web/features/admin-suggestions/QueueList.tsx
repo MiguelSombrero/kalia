@@ -1,8 +1,10 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+
 import { BeerSlot } from "@/components/ui/beer-slot";
 import { cn } from "@/lib/cn";
+
 import type { SuggestionRow } from "./types";
 
 export const QueueList = ({

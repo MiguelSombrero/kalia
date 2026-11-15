@@ -1,4 +1,5 @@
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, type ReactNode, useContext, useSyncExternalStore } from "react";
+
 import type { AuthState, SignInResult, TokenStore } from "./tokenStore";
 
 const AuthContext = createContext<TokenStore | undefined>(undefined);

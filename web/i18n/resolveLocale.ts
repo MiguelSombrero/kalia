@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
-import { defaultLocale, isLocale, locales, type Locale } from "./settings";
+
+import { defaultLocale, isLocale, type Locale, locales } from "./settings";
 
 export const resolveLocaleFromAcceptLanguage = (header: string | null): Locale => {
   if (!header) {

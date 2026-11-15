@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+
 import { detailsHead, factRow } from "@/features/catalog";
+
 import { BEER_DETAILS_SKELETON_FACTS, BeerDetailsSkeleton } from "./BeerDetailsSkeleton";
 
 describe("BeerDetailsSkeleton", () => {

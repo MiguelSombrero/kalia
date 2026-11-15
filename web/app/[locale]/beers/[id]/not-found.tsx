@@ -1,11 +1,12 @@
 import Link from "next/link";
+
+import { buttonVariants } from "@/components/ui/button";
+import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { getTranslation } from "@/i18n/server";
 import { cn } from "@/lib/cn";
 import { catalogHref } from "@/lib/routes";
-import { buttonVariants } from "@/components/ui/button";
-import { Page } from "@/components/ui/page";
-import { PageTitle } from "@/components/ui/page-title";
 
 const BeerNotFound = async () => {
   const locale = await resolveLocaleFromHeaders();

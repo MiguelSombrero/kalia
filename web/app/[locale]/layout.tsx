@@ -1,11 +1,14 @@
+import "../globals.css";
+
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
+
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
+
 import { Providers } from "../providers";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
-import "../globals.css";
 
 const archivo = Archivo({
   variable: "--font-archivo",

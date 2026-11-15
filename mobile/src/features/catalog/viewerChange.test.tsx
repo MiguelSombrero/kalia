@@ -1,7 +1,9 @@
 import { registerTransport, type Transport } from "@kalia/api";
 import { act, screen, waitFor } from "@testing-library/react-native";
+
 import { createTokenStore, type OAuthClient, type StoredTokens, type TokenStorage } from "@/lib/auth/tokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { CatalogScreen } from "./CatalogScreen";
 
 const START = 1_700_000_000_000;

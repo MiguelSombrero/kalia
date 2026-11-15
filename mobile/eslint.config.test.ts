@@ -1,8 +1,10 @@
 /** @jest-environment node */
-import { ESLint } from "eslint";
-import eslintConfig from "./eslint.config.js";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
+import { ESLint } from "eslint";
+
+import eslintConfig from "./eslint.config.js";
 
 // The real tree passes these rules, so a rule that matched nothing would stay
 // green; linting fixture text as if it sat in a layer shows each still fires.
@@ -134,5 +136,50 @@ describe("the screens that must work when nothing else does depend on nothing th
   it("leaves a feature's other screens free to use a data hook and the API client", async () => {
     expect(await ruleIds(independentFixture("imports-a-data-hook"), "src/features/app-config/AppGate.tsx")).toEqual([]);
     expect(await ruleIds(independentFixture("imports-the-api-client"), "src/features/app-config/AppGate.tsx")).toEqual([]);
+  });
+});
+
+describe("the app's mechanical conventions (mobile/CONVENTIONS.md)", () => {
+  const conventionFixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixtures", "conventions", name), "utf8");
+  const ruleIds = async (name: string, filePath: string) => (await messagesFor(conventionFixture(name), filePath)).map(([ruleId]) => ruleId);
+
+  it("rejects && as conditional JSX, and leaves a style array's && alone", async () => {
+    expect(await messagesFor(conventionFixture("conditional-jsx-with-and.tsx"), "src/components/probe.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("ternary")]]);
+    expect(await ruleIds("conditional-jsx-with-ternary.tsx", "src/components/probe.tsx")).toEqual([]);
+  });
+
+  it.each(["platform-os-in-jsx.tsx", "platform-os-in-jsx-attribute.tsx"])("rejects Platform.OS inside JSX: %s", async (name) => {
+    expect(await messagesFor(conventionFixture(name), "src/components/probe.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("Platform.select")]]);
+  });
+
+  it("accepts Platform.select in JSX, and Platform.OS outside it", async () => {
+    expect(await ruleIds("platform-select-and-os-outside-jsx.tsx", "src/components/probe.tsx")).toEqual([]);
+  });
+
+  it("rejects reading a whole Zustand store, and accepts a selector", async () => {
+    expect(await messagesFor(conventionFixture("whole-store-read.ts"), "src/features/catalog/probe.ts")).toEqual([["no-restricted-syntax", expect.stringContaining("selector")]]);
+    expect(await ruleIds("store-read-through-selector.ts", "src/features/catalog/probe.ts")).toEqual([]);
+  });
+
+  it("rejects a query hook that sets retry, unless its eslint-disable gives the reason", async () => {
+    expect(await messagesFor(conventionFixture("query-hook-sets-retry.ts"), "src/features/catalog/probe.ts")).toEqual([["no-restricted-syntax", expect.stringContaining("QueryClient")]]);
+    expect(await ruleIds("query-hook-sets-retry-with-reason.ts", "src/features/catalog/probe.ts")).toEqual([]);
+  });
+
+  it("rejects imports out of order, and accepts packages, then the app's own, then siblings", async () => {
+    expect(await ruleIds("imports-out-of-order.ts", "src/lib/probe.ts")).toEqual(["simple-import-sort/imports"]);
+    expect(await ruleIds("imports-in-order.ts", "src/lib/probe.ts")).toEqual([]);
+  });
+
+  describe("src/testing/ is imported by test files only", () => {
+    it.each(["src/app/probe.ts", "src/features/catalog/probe.ts", "src/components/probe.ts", "src/lib/probe.ts"])("rejects an import from %s", async (lintAs) => {
+      expect(await messagesFor(conventionFixture("test-support-imported-by-the-app.ts"), lintAs)).toEqual([
+        ["boundaries/dependencies", expect.stringContaining("must not import @/testing/fakeTokenStore")],
+      ]);
+    });
+
+    it.each(["src/app/probe.test.ts", "src/features/catalog/probe.test.ts", "src/components/probe.test.ts", "src/lib/probe.test.ts"])("lets %s import it", async (lintAs) => {
+      expect(await ruleIds("test-support-imported-by-the-app.ts", lintAs)).toEqual([]);
+    });
   });
 });

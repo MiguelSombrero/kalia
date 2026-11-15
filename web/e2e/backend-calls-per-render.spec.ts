@@ -3,10 +3,12 @@
 // can drive through the web zone from: the edge sees one request, and a render
 // is several calls the backend's own zone never counts.
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+
 import type { Page, Route } from "@playwright/test";
+
 import { expect, signIn, test } from "./support/keycloakAccount";
 import { BACKEND_ORIGIN } from "./support/origins";
 

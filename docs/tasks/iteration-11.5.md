@@ -42,7 +42,7 @@ around it — through every tier, reading it from a query rather than from
 | [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | refined |
 | [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | refined |
 | [25](iteration-11.5/25-each-apps-code-conventions-have-a-file-of-their-own.md) | Each app's code conventions have a file of their own, loaded with its subtree | done |
-| [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's mechanical code rules fail the lint | refined |
+| [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's mechanical code rules fail the lint | done |
 | [26](iteration-11.5/26-navigation-targets-translation-keys-and-strictness-are-checked.md) | Navigation targets, translation keys and compiler strictness are checked in both apps | refined |
 | [27](iteration-11.5/27-the-conventions-that-needed-a-choice-are-written-and-followed.md) | The conventions that needed a choice are written down, and the code follows them | refined |
 | [28](iteration-11.5/28-both-apps-test-conventions-are-written-down.md) | Both apps' test conventions are written down, and a test file is named after what it tests | refined |

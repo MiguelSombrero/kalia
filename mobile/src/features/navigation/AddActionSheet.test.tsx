@@ -1,7 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react-native";
-import { renderWithLocale } from "@/testing/renderWithLocale";
-import { AddActionSheet } from "./AddActionSheet";
 import { PixelRatio } from "react-native";
+
+import { renderWithLocale } from "@/testing/renderWithLocale";
+
+import { AddActionSheet } from "./AddActionSheet";
 
 const mockBack = jest.fn();
 const mockDismiss = jest.fn();

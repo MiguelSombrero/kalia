@@ -1,9 +1,12 @@
-import { fireEvent, screen } from "@testing-library/react-native";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+
+import { fireEvent, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
+
 import type { AuthState } from "@/lib/auth/tokenStore";
-import { NOT_SCREENS, renderAppRoute, SCREENS, serveApi, type Beers } from "./appRoutes.app";
+
+import { type Beers, NOT_SCREENS, renderAppRoute, SCREENS, serveApi } from "./appRoutes.app";
 import { inspectStructure } from "./expectAccessibleStructure";
 
 const transport = jest.fn();

@@ -1,7 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
+
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { FilterChips } from "./FilterChips";
 import { emptyFilters, type Filters } from "./model";
 

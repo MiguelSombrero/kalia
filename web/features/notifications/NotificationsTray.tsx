@@ -3,12 +3,14 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Locale } from "@/i18n/settings";
+
 import { useAcknowledgeNotification, useNotificationList, useUnreadCount } from "./hooks/useNotifications";
 import { NotificationItem } from "./NotificationItem";
 

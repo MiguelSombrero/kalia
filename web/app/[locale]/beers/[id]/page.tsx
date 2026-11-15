@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
 import { auth } from "@/auth";
+import { buttonVariants } from "@/components/ui/button";
+import { Page } from "@/components/ui/page";
+import { SectionHeading } from "@/components/ui/section-heading";
 import {
   BeerDetailsView,
   BeerList,
-  CatalogToasts,
   catalogHref,
+  CatalogToasts,
   getBeer,
   hasSearch,
   JustAddedLanding,
@@ -18,9 +22,6 @@ import {
 import { AddToCellarButton, heldBottlesOfOrNone } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
-import { buttonVariants } from "@/components/ui/button";
-import { Page } from "@/components/ui/page";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { currentUserIsAdmin } from "@/lib/auth/adminRole";
 import { cn } from "@/lib/cn";
 

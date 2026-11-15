@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
-import { FieldError, fieldClasses } from "./field";
+
+import { fieldClasses, FieldError } from "./field";
 
 describe("FieldError", () => {
   it("reads as the field's description, with its red square hidden from assistive technology", async () => {

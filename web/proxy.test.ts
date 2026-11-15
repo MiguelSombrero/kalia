@@ -1,7 +1,9 @@
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
-import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import { describe, expect, it } from "vitest";
+
 import { traceIdOf } from "@/lib/api/traceparent";
+
 import { config, proxy } from "./proxy";
 
 const matches = (url: string): boolean => unstable_doesMiddlewareMatch({ config, url });

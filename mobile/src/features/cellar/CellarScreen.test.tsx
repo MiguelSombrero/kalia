@@ -1,8 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { PixelRatio } from "react-native";
+
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { CellarScreen } from "./CellarScreen";
-import { PixelRatio } from "react-native";
 
 const mockPush = jest.fn();
 const mockNavigate = jest.fn();

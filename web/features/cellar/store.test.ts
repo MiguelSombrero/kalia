@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+
 import { hiddenBottleCountForEntry, isBottleHidden, useBottleRemovalStore } from "./store";
 
 const removal = (bottleId: string, entryId: string) => ({ bottleId, entryId });

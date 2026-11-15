@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+
 import { logUncaught } from "./reportUncaught";
 import { useUncaughtErrorStore } from "./store";
 

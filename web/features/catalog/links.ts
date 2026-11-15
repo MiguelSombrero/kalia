@@ -1,5 +1,6 @@
 import type { Locale } from "@/i18n/settings";
 import * as routes from "@/lib/routes";
+
 import type { BeerSearchParams } from "./types";
 
 export const PARAM_KEYS = [

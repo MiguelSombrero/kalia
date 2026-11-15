@@ -1,9 +1,10 @@
+import { apiError } from "@kalia/api";
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { FeedPage } from "@/features/feed";
-import { apiError } from "@kalia/api";
 
 const line = (username: string, cursor: string) => ({
   username,

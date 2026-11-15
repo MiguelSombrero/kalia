@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+
 import { BeerSlot } from "@/components/ui/beer-slot";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
+
 import { useSimilarBeers } from "./hooks/useAddBeer";
 import { useDebouncedValue } from "./hooks/useDebouncedValue";
 import { beerHref } from "./links";

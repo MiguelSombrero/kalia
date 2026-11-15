@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { endLocalSession } from "./endLocalSession";
+
 import { endingLocalSession } from "./endingLocalSession";
+import { endLocalSession } from "./endLocalSession";
 import { currentSessionToken } from "./sessionCookie";
 
 vi.mock("./endLocalSession", () => ({ endLocalSession: vi.fn() }));

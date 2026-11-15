@@ -4,15 +4,17 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { buttonVariants } from "@/components/ui/button";
+
 import { BeerSlot } from "@/components/ui/beer-slot";
+import { buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { beerHref, catalogHref } from "@/lib/routes";
+
 import { AddBottleDialog } from "./AddBottleDialog";
 import { BottleTile } from "./BottleTile";
-import { cellarSorts, type CellarSort, sortCellar, toCellarSort } from "./cellarOrder";
+import { type CellarSort, cellarSorts, sortCellar, toCellarSort } from "./cellarOrder";
 import { beerBlock, bottleTiles, cellarTools } from "./layout";
 import { isBottleHidden, useBottleRemovalStore } from "./store";
 import type { CellarBeer } from "./types";

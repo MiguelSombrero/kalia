@@ -1,6 +1,8 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { ActionButton } from "./ActionButton";
 
 describe("ActionButton", () => {

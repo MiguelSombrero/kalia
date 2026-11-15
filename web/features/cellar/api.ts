@@ -1,5 +1,4 @@
 import { apiError, isApiError } from "@kalia/api";
-import { logger } from "@/lib/logger";
 import {
   addBottles as generatedAddBottles,
   listEntries as generatedListEntries,
@@ -9,6 +8,9 @@ import {
 } from "@kalia/api/generated/cellar/cellar";
 import type { EntryDto, HoldingsDto, PublicCellarEntryDto } from "@kalia/api/generated/models";
 import { read as generatedReadPublicCellar } from "@kalia/api/generated/public-cellar/public-cellar";
+
+import { logger } from "@/lib/logger";
+
 import { inVintageOrder } from "./cellarOrder";
 import type { CellarTotals } from "./cellarTotals";
 import type { AddBottlesRequest, Bottle, CellarBeer, PublicCellar, UpdateBottleRequest } from "./types";

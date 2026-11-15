@@ -1,18 +1,20 @@
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
+
+import { ActionButton } from "@/components/ActionButton";
+import { BodyText } from "@/components/BodyText";
+import { BuildInfo } from "@/components/BuildInfo";
+import { ErrorAlert } from "@/components/ErrorAlert";
+import { LoadingState } from "@/components/LoadingState";
+import { PersonSlot } from "@/components/PersonSlot";
+import { Screen } from "@/components/Screen";
+import { ScreenTitle } from "@/components/ScreenTitle";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
-import { useRouter } from "expo-router";
-import { Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
-import { ActionButton } from "@/components/ActionButton";
-import { BuildInfo } from "@/components/BuildInfo";
-import { BodyText } from "@/components/BodyText";
-import { ErrorAlert } from "@/components/ErrorAlert";
-import { LoadingState } from "@/components/LoadingState";
-import { Screen } from "@/components/Screen";
-import { ScreenTitle } from "@/components/ScreenTitle";
-import { PersonSlot } from "@/components/PersonSlot";
-import { useAuth } from "@/lib/auth/AuthProvider";
+
 import { useMyProfile } from "./hooks/useMyProfile";
 
 const SignedOut = ({ expired }: { expired: boolean }) => {

@@ -1,4 +1,5 @@
 import * as ReactNative from "react-native";
+
 import { LARGEST_FONT_SCALE } from "./atLargestFontScale";
 
 export const MODES = ["light", "dark"] as const;

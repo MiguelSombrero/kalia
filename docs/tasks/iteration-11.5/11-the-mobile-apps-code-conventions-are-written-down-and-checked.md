@@ -1,6 +1,6 @@
 # Task 11: The mobile app's mechanical code rules fail the lint
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -107,20 +107,20 @@ retrofit; set after, it costs two.
 
 ## Acceptance criteria
 
-- [ ] `make mobile-lint` fails on a lint warning, and so does the web's
+- [x] `make mobile-lint` fails on a lint warning, and so does the web's
       `npm run lint` — verified by seeing a deliberate warning fail each
-- [ ] Each lint rule this task adds has an `eslint-fixtures/` case that
+- [x] Each lint rule this task adds has an `eslint-fixtures/` case that
       `eslint.config.test.ts` sees fail: a whole-store read, `&&` in JSX,
       `Platform.OS` in JSX, `retry` set in a hook, imports out of order, and
       `src/testing/` imported from a non-test file
-- [ ] A test drives the catalog's one debounce under fake timers
-- [ ] The code under `mobile/src/` and `web/` passes every new rule, and any
+- [x] A test drives the catalog's one debounce under fake timers
+- [x] The code under `mobile/src/` and `web/` passes every new rule, and any
       `eslint-disable` added carries a `--` reason
-- [ ] `make mobile-test` and the Android Maestro flows pass unchanged. On
+- [x] `make mobile-test` and the Android Maestro flows pass unchanged. On
       the iOS Simulator, the catalog, filters sheet, profile and sign-in
       sheet look the same as before, as compared by the agent and described
       in words in the pull request
-- [ ] `mobile/CONVENTIONS.md` and `web/CONVENTIONS.md` state each rule with
+- [x] `mobile/CONVENTIONS.md` and `web/CONVENTIONS.md` state each rule with
       its check, and `make verify-fast` is green
 
 ## Notes

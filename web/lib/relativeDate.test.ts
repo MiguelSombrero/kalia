@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { formatRelativeDate } from "./relativeDate";
 
 const now = new Date("2026-08-16T00:00:00Z");

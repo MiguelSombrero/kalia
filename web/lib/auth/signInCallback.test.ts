@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { Auth, customFetch, type AuthConfig } from "@auth/core";
+import { Auth, type AuthConfig, customFetch } from "@auth/core";
 import type { Adapter, AdapterSession, AdapterUser } from "@auth/core/adapters";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

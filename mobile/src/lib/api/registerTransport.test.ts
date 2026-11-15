@@ -1,6 +1,8 @@
 import { isApiError, kaliaFetch, traceIdOf } from "@kalia/api";
+
 import { createTokenStore, type OAuthClient, type StoredTokens, type TokenStorage } from "@/lib/auth/tokenStore";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
+
 import { registerMobileTransport } from "./registerTransport";
 
 const SLOT = Symbol.for("@kalia/api.transport");

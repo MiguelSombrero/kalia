@@ -1,11 +1,12 @@
+import enCommon from "@kalia/locales/en/common.json";
+import fiCommon from "@kalia/locales/fi/common.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import enCommon from "@kalia/locales/en/common.json";
-import fiCommon from "@kalia/locales/fi/common.json";
+
 import { getOptions, type Locale } from "@/i18n/settings";
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));

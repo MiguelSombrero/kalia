@@ -6,6 +6,7 @@
 // account-linking decision — see its comments below.
 import type { Page } from "@playwright/test";
 import type Redis from "ioredis";
+
 import {
   createUnverifiedKeycloakUser,
   expect,
@@ -17,7 +18,7 @@ import {
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN, KEYCLOAK_ADMIN_ORIGIN } from "./support/origins";
+import { KEYCLOAK_ADMIN_ORIGIN, KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
 
 // Unprefixed on http, `__Secure-` prefixed on https (lib/auth/sessionCookie.ts
 // carries the same list for server-side reads) — this suite always runs

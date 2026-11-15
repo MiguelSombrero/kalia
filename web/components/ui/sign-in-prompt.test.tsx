@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
+
 import { SignInPrompt } from "./sign-in-prompt";
 
 const renderPrompt = (signInAction: (formData: FormData) => Promise<void> = async () => {}) =>

@@ -1,8 +1,9 @@
 // Deliberately locks a disposable account for real (ADR-0061) — never the shared per-worker account (./support/keycloakAccount.ts),
 // which every other spec on the same worker relies on staying signed-in-able.
-import { expect, test, type APIRequestContext } from "@playwright/test";
+import { type APIRequestContext, expect, test } from "@playwright/test";
+
 import { createKeycloakUser, keycloakAdminToken, uniqueUsername } from "./support/keycloakAccount";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
 
 const REALM = "kalia";
 const GOOD_PASSWORD = "brute-force-test-Pw1!";

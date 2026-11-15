@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+
 import { BeerDetailsView } from "./BeerDetailsView";
 import type { BeerDetails } from "./types";
 

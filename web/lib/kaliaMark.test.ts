@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
 import { describe, expect, it } from "vitest";
+
 import { markBeer, markBottle, markFoam, markShapes, markStreak, markSvg, markTile } from "./kaliaMark";
 
 const read = (file: string): string => readFileSync(path.resolve(__dirname, "..", file), "utf8");

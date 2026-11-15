@@ -1,4 +1,6 @@
 import { Pressable, Text, TextInput, View } from "react-native";
+
+import { EDGE, square } from "@/components/metrics";
 import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
@@ -6,7 +8,7 @@ import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useInputHeight } from "@/lib/design/useInputHeight";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
 import { PressFeedback } from "@/lib/motion";
-import { EDGE, square } from "@/components/metrics";
+
 import { MAX_FILTER_LENGTH } from "./model";
 
 const BADGE_SIZE = 22;

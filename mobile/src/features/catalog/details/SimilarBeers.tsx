@@ -1,10 +1,12 @@
-import { Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
+
+import { EDGE } from "@/components/metrics";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { PressFeedback } from "@/lib/motion";
-import { EDGE } from "@/components/metrics";
+
 import type { BeerSummary } from "../api";
 import { StyleSwatch } from "../filters/controls";
 

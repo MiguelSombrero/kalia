@@ -5,6 +5,7 @@ import {
   listSuggestions as generatedListSuggestions,
   reject as generatedReject,
 } from "@kalia/api/generated/admin-suggestions/admin-suggestions";
+
 import type { DecisionResult, EditResult, EditSuggestionRequest, RejectionReason, SuggestionPage } from "./types";
 
 export const QUEUE_PAGE_SIZE = 20;

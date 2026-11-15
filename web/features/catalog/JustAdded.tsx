@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/cn";
+
 import { useJustAddedStore } from "./store";
 
 /** A row of `BeerList`, highlighted once when it is the beer this browser just added. */

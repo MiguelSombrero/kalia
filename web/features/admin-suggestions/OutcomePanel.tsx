@@ -1,11 +1,13 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Icon } from "@/components/ui/icon";
 import { surfaceVariants } from "@/components/ui/surface";
 import type { Locale } from "@/i18n/settings";
+
 import { SuggestionHeader } from "./SuggestionHeader";
 import type { Outcome } from "./types";
 

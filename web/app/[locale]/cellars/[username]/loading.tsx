@@ -1,6 +1,7 @@
-import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
-import { PublicCellarSkeleton } from "./PublicCellarSkeleton";
 import { Page } from "@/components/ui/page";
+import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
+
+import { PublicCellarSkeleton } from "./PublicCellarSkeleton";
 
 const PublicCellarLoading = async () => {
   const locale = await resolveLocaleFromHeaders();

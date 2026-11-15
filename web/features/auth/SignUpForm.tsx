@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/icon";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
+
 import { startSignUp } from "./actions";
 import { AuthSubmitButton } from "./AuthSubmitButton";
 

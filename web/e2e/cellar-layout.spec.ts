@@ -3,6 +3,7 @@
 // sort kept in the URL. Credentials are a per-worker account provisioned by
 // ./support/keycloakAccount.ts; the beer it adds to is its own (support/catalog.ts).
 import type { Page } from "@playwright/test";
+
 import { CATALOG_CARD } from "./support/catalog";
 import { expect, signIn, test } from "./support/keycloakAccount";
 

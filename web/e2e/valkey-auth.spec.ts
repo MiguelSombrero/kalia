@@ -1,6 +1,7 @@
 // The session store keys each session by its cookie value, so what it answers
 // to an unauthenticated client is what an attacker on the network gets (ADR-0089).
 import net from "node:net";
+
 import { expect, test } from "./support/keycloakAccount";
 import { VALKEY_URL } from "./support/valkey";
 

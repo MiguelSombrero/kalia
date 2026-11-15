@@ -2,18 +2,19 @@
 // (ADR-0091, ADR-0101) — against the compose stack, through the edge. The beer
 // is made here: a contributor suggests it and the admin approves it through the
 // admin API, so no imported beer, which other specs search for, is touched.
-import { request, type Page } from "@playwright/test";
+import { type Page, request } from "@playwright/test";
 import Redis from "ioredis";
+
 import { expectNoA11yViolations } from "./support/a11y";
-import { BACKEND_ORIGIN } from "./support/origins";
 import {
   createFreshAccount,
   expect,
+  type KeycloakAccount,
   signIn,
   test as baseTest,
   uniqueUsername,
-  type KeycloakAccount,
 } from "./support/keycloakAccount";
+import { BACKEND_ORIGIN } from "./support/origins";
 import { VALKEY_URL } from "./support/valkey";
 
 // A contributor of its own per run: the backend caps waiting suggestions per

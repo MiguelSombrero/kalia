@@ -202,7 +202,7 @@ mobile` renders them before a hand prebuild. **After the mark, `app.json` or
 ## Test and checks
 
 ```bash
-make mobile-lint   # ESLint (module boundaries included) and strict tsc
+make mobile-lint   # ESLint (module boundaries and import order included; a warning fails) and strict tsc
 make mobile-test   # Jest + React Native Testing Library, and the icon render test; no simulator
 ```
 

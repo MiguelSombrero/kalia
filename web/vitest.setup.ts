@@ -1,5 +1,6 @@
-import { registerTransport } from "@kalia/api";
 import "@testing-library/jest-dom/vitest";
+
+import { registerTransport } from "@kalia/api";
 import { toHaveNoViolations } from "jest-axe";
 import { expect, vi } from "vitest";
 

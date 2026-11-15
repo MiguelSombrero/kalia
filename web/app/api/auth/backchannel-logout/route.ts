@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+
 import { validateLogoutToken } from "@/lib/auth/backchannelLogoutToken";
 import { endLocalSession } from "@/lib/auth/endLocalSession";
 import { getSessionTokenBySid } from "@/lib/auth/valkeyAdapter";

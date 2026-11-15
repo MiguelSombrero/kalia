@@ -1,10 +1,12 @@
 import Link from "next/link";
+
 import { buttonVariants } from "@/components/ui/button";
 import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { profileHref, signUpHref } from "@/lib/routes";
+
 import { startSignIn } from "./actions";
 import { AuthSubmitButton } from "./AuthSubmitButton";
 import { SignOutButton } from "./SignOutButton";

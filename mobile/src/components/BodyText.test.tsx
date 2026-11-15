@@ -1,7 +1,9 @@
 import { screen } from "@testing-library/react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 import { MODES, systemIs } from "@/testing/colorMode";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { BodyText } from "./BodyText";
 
 afterEach(() => jest.restoreAllMocks());

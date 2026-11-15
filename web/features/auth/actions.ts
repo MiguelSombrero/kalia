@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+
 import { signOut } from "@/auth";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { formLocale, signInReturningTo } from "@/lib/auth/signInReturningTo";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { homeHref, signUpHref } from "@/lib/routes";
+
 import { keycloakEndSessionUrl } from "./endSessionUrl";
 import { checkSignUpRateLimit } from "./signUpRateLimit";
 

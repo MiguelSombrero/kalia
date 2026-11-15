@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { signInReturningTo } from "@/lib/auth/signInReturningTo";
 import { profileHref } from "@/lib/routes";
+
 import { changeCellarVisibility } from "./api";
 import type { Profile } from "./types";
 

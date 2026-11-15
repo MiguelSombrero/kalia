@@ -1,7 +1,9 @@
+import { isApiError } from "@kalia/api";
 import { redirect } from "next/navigation";
+
 import type { Locale } from "@/i18n/settings";
 import { usernameTakenHref } from "@/lib/routes";
-import { isApiError } from "@kalia/api";
+
 import { getProfile } from "./api";
 import type { Profile } from "./types";
 

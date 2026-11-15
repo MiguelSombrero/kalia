@@ -2,6 +2,7 @@
 // icon, a new feed entry's highlight — stops when the visitor asks for reduced
 // motion. Computed from the rendered page, since jsdom applies no stylesheet.
 import type { Page } from "@playwright/test";
+
 import { createFreshAccount, expect, signIn, test } from "./support/keycloakAccount";
 
 test.use({ screenshot: "off", trace: "off", video: "off" });

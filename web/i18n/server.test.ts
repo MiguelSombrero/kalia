@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { getTranslation } from "./server";
 
 describe("getTranslation", () => {

@@ -3,12 +3,13 @@
 // on a different origin must appear in the locale the visitor was reading, in
 // Kalia's identity, and meet the app's WCAG 2.2 AA bar at both agreed widths.
 import type { Page } from "@playwright/test";
-import { expect, test, uniqueUsername } from "./support/keycloakAccount";
-import { waitForMessageTo } from "./support/mailpit";
+
 import { expectNoA11yViolations } from "./support/a11y";
-import { expectNoSidewaysScroll } from "./support/layout";
 import { contrast, rgbOf } from "./support/colour";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { expect, test, uniqueUsername } from "./support/keycloakAccount";
+import { expectNoSidewaysScroll } from "./support/layout";
+import { waitForMessageTo } from "./support/mailpit";
+import { KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
 
 // headerTop is where every Keycloak page's lockup starts (ADR-0074: the same
 // height on every page, never centred vertically).

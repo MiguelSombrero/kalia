@@ -1,15 +1,16 @@
-import { textStyle, titleScale } from "@/lib/design/fonts";
-import { theme } from "@/lib/design/theme.generated";
-import { createThemedStyles } from "@/lib/design/themedStyles";
 import type { Locale } from "@kalia/locales";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { ScrollView, Text } from "react-native";
 import { I18nextProvider, useTranslation } from "react-i18next";
+import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { ActionButton } from "@/components/ActionButton";
 import { BuildInfo } from "@/components/BuildInfo";
 import { ErrorReference } from "@/components/ErrorReference";
+import { textStyle, titleScale } from "@/lib/design/fonts";
+import { theme } from "@/lib/design/theme.generated";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { createI18n } from "@/lib/i18n/createI18n";
 import { scrub } from "@/lib/log/deviceLog";
 

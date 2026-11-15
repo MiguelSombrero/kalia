@@ -20,6 +20,7 @@ vi.mock("./bottleDateRules", async (importOriginal) => ({
 }));
 
 import type { Locale } from "@/i18n/settings";
+
 import { CellarBeerList } from "./CellarBeerList";
 import type { Bottle, CellarBeer } from "./types";
 

@@ -1,5 +1,5 @@
-import { countryNameData } from "./countryNames.data";
 import { countryName } from "./countryNames";
+import { countryNameData } from "./countryNames.data";
 
 describe("countryName", () => {
   it.each([

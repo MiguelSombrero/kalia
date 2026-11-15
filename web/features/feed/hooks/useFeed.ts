@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
-import { pollFeedAction, readOlderFeedAction, type OlderFeedPage } from "../actions";
+
+import { type OlderFeedPage, pollFeedAction, readOlderFeedAction } from "../actions";
 import { LIVE_POLL_INTERVAL_MS } from "../constants";
 import type { FeedPage } from "../types";
 

@@ -1,8 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
-import { isPastLastPage } from "./searchParams";
+
 import { IgnoredFilterNote, PastLastPage } from "./SearchNotes";
+import { isPastLastPage } from "./searchParams";
 import type { BeerPage } from "./types";
 
 const pastLast: BeerPage = { content: [], totalElements: 42, totalPages: 3, page: 40 };

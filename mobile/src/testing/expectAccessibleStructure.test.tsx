@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { Pressable, Text, View } from "react-native";
+
 import { PressFeedback } from "@/lib/motion";
+
 import { accessibilityOffences, expectAccessibleStructure } from "./expectAccessibleStructure";
 
 afterEach(() => jest.restoreAllMocks());

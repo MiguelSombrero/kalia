@@ -1,6 +1,8 @@
 import { StyleSheet, View } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 import { SkeletonBlock } from "@/lib/motion";
+
 import { BodyText } from "./BodyText";
 
 export const LoadingState = ({ label, placeholders = 0, spaced = false }: { label: string; placeholders?: number; spaced?: boolean }) => {

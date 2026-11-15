@@ -1,4 +1,5 @@
 import { useWindowDimensions } from "react-native";
+
 import { theme } from "./theme.generated";
 
 /** A single-line input keeps its lineHeight in unscaled points, so at a large text size its text would be cut by the field's fixed minimum. */

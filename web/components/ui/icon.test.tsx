@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+
 import { Icon, type IconName } from "./icon";
 
 const names: IconName[] = ["menu", "close", "search", "plus", "arrow", "back", "check", "mail"];
