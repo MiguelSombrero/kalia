@@ -1,11 +1,10 @@
 package fi.kalia.web;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Test-only endpoints for the observability tests: one that fails, one with a path variable. */
+/** Test-only endpoints for the observability tests: one that fails, one on a templated path. */
 @RestController
 @RequestMapping("/test/observability-probe")
 class ObservabilityProbeController {
@@ -16,8 +15,8 @@ class ObservabilityProbeController {
 	}
 
 	@GetMapping("/echo/{id}")
-	String echo(@PathVariable String id) {
-		return id;
+	String echo() {
+		return "ok";
 	}
 
 }
