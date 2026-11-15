@@ -104,14 +104,7 @@ jobs:
       # 2026-07-25 with the code unchanged. Pulling it up front lets a
       # transient registry failure be retried instead of failing CI.
       - name: Pre-pull Testcontainers images
-        run: |
-          for attempt in 1 2 3; do
-            if docker pull postgres:18.4; then exit 0; fi
-            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
-            sleep $((attempt * 15))
-          done
-          echo "::error::could not pull postgres:18.4 after 3 attempts"
-          exit 1
+        run: node scripts/retry-registry.mjs -- docker pull postgres:18.4
       # Testcontainers uses the Docker daemon preinstalled on ubuntu-latest.
       # verify runs surefire (*Test units), failsafe (*IT integrations) and
       # the merged JaCoCo report.
@@ -251,18 +244,14 @@ jobs:
       - name: Pre-pull compose images
         working-directory: .
         run: |
-          for attempt in 1 2 3; do
-            if docker compose pull --ignore-buildable postgres keycloak-config keycloak-seed && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"; then exit 0; fi
-            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
-            sleep $((attempt * 15))
-          done
-          echo "::error::could not pull the compose images after 3 attempts"
-          exit 1
+          node scripts/retry-registry.mjs -- docker compose pull --ignore-buildable postgres keycloak-config keycloak-seed
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"
       # The backend is up for the admin check, which sends the app's token to it.
       - name: Start Keycloak, Postgres and the backend
-        run: docker compose up -d --build --wait --wait-timeout 300 postgres keycloak backend edge
+        run: node scripts/retry-registry.mjs -- docker compose up -d --build --wait --wait-timeout 300 postgres keycloak backend edge
       - name: Seed the demo account
-        run: docker compose up -d --build keycloak-seed
+        run: node scripts/retry-registry.mjs -- docker compose up -d --build keycloak-seed
       - name: Verify the realm accepts sign-in, not just a healthy container
         run: node scripts/check-keycloak-signin.mjs testuser testuser123
       - name: Verify the imported realm matches every value keycloak/realm-export.json pins
@@ -321,13 +310,15 @@ jobs:
       - name: Pre-pull compose images
         working-directory: .
         run: |
-          for attempt in 1 2 3; do
-            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"; then exit 0; fi
-            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
-            sleep $((attempt * 15))
-          done
-          echo "::error::could not pull the compose images after 3 attempts"
-          exit 1
+          node scripts/retry-registry.mjs -- docker compose pull --ignore-buildable
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"
+      # Builds the images here so that a registry failure inside a build is
+      # retried; Playwright's own `docker compose up --build` below then finds
+      # every layer cached and cannot hit one.
+      - name: Build the stack's images
+        working-directory: .
+        run: node scripts/retry-registry.mjs -- docker compose build
       # Starts the full docker compose stack itself (playwright.config.ts);
       # GitHub Actions sets CI=true, so it always starts fresh. The last spec
       # to run, e2e/edge-limits.spec.ts, is the burst check against the edge
@@ -383,27 +374,14 @@ jobs:
       # keycloak-config's base too, which the account seed below needs.
       - name: Pre-pull compose images
         run: |
-          for attempt in 1 2 3; do
-            if docker compose pull --ignore-buildable && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)" && docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/config-cli.Dockerfile)"; then exit 0; fi
-            echo "::warning::docker pull failed (attempt $attempt/3), retrying"
-            sleep $((attempt * 15))
-          done
-          echo "::error::could not pull the compose images after 3 attempts"
-          exit 1
+          node scripts/retry-registry.mjs -- docker compose pull --ignore-buildable
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"
+          node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/config-cli.Dockerfile)"
       # Not the whole stack: the web app is no part of the flow, and a one-shot
       # service that exits (keycloak-seed) made `--wait` fail on the runner.
-      # Retried like the pull above: the backend image's `mvn dependency:go-offline`
-      # reaches Maven Central from inside the build, and one unreachable run
-      # failed the job with no app involved. A real build error fails all three.
       - name: Start the stack the app talks to
-        run: |
-          for attempt in 1 2 3; do
-            if docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak; then exit 0; fi
-            echo "::warning::starting the stack failed (attempt $attempt/3), retrying"
-            sleep $((attempt * 15))
-          done
-          echo "::error::could not start the stack after 3 attempts"
-          exit 1
+        run: node scripts/retry-registry.mjs -- docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
       # The sign-in flow's account, waited for (the Makefile says why).
       - name: Seed the demo account
         run: make seed-accounts

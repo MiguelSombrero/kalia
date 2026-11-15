@@ -9,10 +9,12 @@
 // required secrets, naming that variable; that it defaults none the dev env
 // file supplies and has no seed service or Swagger client; and that the local
 // stack renders from the root .env's one secret alone. It also proves that an
-// image added to the base file reaches the vulnerability scan's matrix.
+// image added to the base file reaches the vulnerability scan's matrix. It
+// also proves that no `docker compose up --wait` in the Makefile, a workflow
+// or a script leaves out its services or names a one-shot one.
 
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -228,6 +230,90 @@ export const edgeZoneProblems = ({ nginxText, limits, adrText }) => {
   return problems;
 };
 
+/**
+ * Services that run once and exit: `--wait` on one fails, on the runner every
+ * time and locally by racing the container's exit (docs/ci-playbook.md).
+ * `run` fails when a service another depends on to complete is missing here.
+ */
+export const ONE_SHOT_SERVICES = ["keycloak-config", "keycloak-seed"];
+
+const UP_FLAGS_WITH_VALUE = new Set(["--wait-timeout", "-t", "--timeout", "--scale", "--pull", "--attach", "--no-attach", "--exit-code-from", "--env-file"]);
+
+/** Words ending one shell command, or one JavaScript call, so the next one is not read as this one's service. */
+const COMMAND_END = /^(?:&&|\|\||\||;|\{|\})$/;
+
+/**
+ * The words of a logical line with quotes and the punctuation of a call
+ * stripped, `)` and `]` kept as ends so the next call's words stay its own.
+ */
+const wordsOf = (line) =>
+  [...line.matchAll(/&&|\|\||[|;{}()\]]|[^\s,()[\]{};|&"'`]+/g)].map((match) => (/^[()\]]$/.test(match[0]) ? ";" : match[0]));
+
+/** Logical lines of a file, a `\` at a line's end joining it to the next, with the line each one starts on and comment lines dropped. */
+const logicalLines = (text) => {
+  const lines = [];
+  let pending;
+  text.split("\n").forEach((raw, index) => {
+    const joined = pending ? { number: pending.number, text: `${pending.text} ${raw.trim()}` } : { number: index + 1, text: raw };
+    if (/\\\s*$/.test(joined.text)) {
+      pending = { number: joined.number, text: joined.text.replace(/\\\s*$/, "") };
+      return;
+    }
+    pending = undefined;
+    if (!/^\s*(#|\/\/)/.test(joined.text)) lines.push(joined);
+  });
+  return lines;
+};
+
+/**
+ * Problems with the `docker compose up --wait` commands in one file's text: a
+ * `--wait` that names no service waits on every one, a one-shot among them,
+ * and a `--wait` that names a one-shot waits on a container that has exited.
+ * The service names are read from the command itself, so a name held in a
+ * variable is a problem too: the check cannot see what it stands for.
+ */
+export const waitProblems = ({ text, source, oneShots = ONE_SHOT_SERVICES }) => {
+  const problems = [];
+  for (const { number, text: line } of logicalLines(text)) {
+    if (!/(?:^|[\s"'`,(\[])--wait(?=$|[\s"'`,)\]])/.test(line)) continue;
+    const words = wordsOf(line);
+    for (let start = words.indexOf("up"); start >= 0; start = words.indexOf("up", start + 1)) {
+      const args = [];
+      for (let at = start + 1; at < words.length && !COMMAND_END.test(words[at]); at += 1) args.push(words[at]);
+      if (!args.includes("--wait")) continue;
+      const services = [];
+      for (let at = 0; at < args.length; at += 1) {
+        if (UP_FLAGS_WITH_VALUE.has(args[at])) at += 1;
+        else if (!args[at].startsWith("-")) services.push(args[at]);
+      }
+      const where = `${source}:${number}`;
+      if (services.length === 0) problems.push(`${where}: \`docker compose up --wait\` names no service, so it waits on every one, the one-shot ones too`);
+      for (const service of services) {
+        if (oneShots.includes(service)) problems.push(`${where}: \`docker compose up --wait\` names ${service}, which exits when it is done; \`docker compose run --rm ${service}\` waits for it`);
+        else if (service.includes("$")) problems.push(`${where}: \`docker compose up --wait\` names its service as ${service}, which this check cannot read`);
+      }
+    }
+  }
+  return problems;
+};
+
+export const filesStartingAStack = () => [
+  "Makefile",
+  ...readdirSync(join(ROOT, ".github", "workflows")).filter((name) => /\.ya?ml$/.test(name)).map((name) => `.github/workflows/${name}`),
+  ...readdirSync(join(ROOT, "scripts")).filter((name) => name.endsWith(".mjs") && !name.endsWith(".test.mjs")).map((name) => `scripts/${name}`),
+];
+
+export const repositoryWaitProblems = () =>
+  filesStartingAStack().flatMap((source) => waitProblems({ text: readFileSync(join(ROOT, source), "utf8"), source }));
+
+export const completedServices = (services) =>
+  [...new Set(Object.values(services).flatMap((service) => Object.entries(service.depends_on ?? {}).filter(([, dependency]) => dependency.condition === "service_completed_successfully").map(([name]) => name)))];
+
+export const oneShotProblems = (services, oneShots = ONE_SHOT_SERVICES) => [
+  ...completedServices(services).filter((name) => !oneShots.includes(name)).map((name) => `${name} is waited on to complete, so it is a one-shot service ONE_SHOT_SERVICES does not list`),
+  ...oneShots.filter((name) => !(name in services)).map((name) => `ONE_SHOT_SERVICES lists ${name}, which the local stack does not define`),
+];
+
 /** Services that only development runs: the deployable definition must not (the mail catcher). */
 const DEV_ONLY_SERVICES = ["mailpit"];
 
@@ -419,6 +505,7 @@ const run = () => {
   if ("keycloak-seed" in base.services) problems.push("the base file defines keycloak-seed, a dev-only service");
   if (JSON.stringify(base).includes("kalia-swagger")) problems.push("the base file mentions the kalia-swagger client");
 
+  problems.push(...repositoryWaitProblems());
   problems.push(...deployableSeedProblems({ baseText, services: base.services }));
   problems.push(
     ...edgeZoneProblems({
@@ -461,7 +548,7 @@ const run = () => {
         problems.push("keycloak-seed's KEYCLOAK_ADMIN_PASSWORD differs from the admin password Keycloak starts with");
       }
     }
-    problems.push(...localAdminProblems(local.services), ...localDevServiceProblems(local.services));
+    problems.push(...localAdminProblems(local.services), ...localDevServiceProblems(local.services), ...oneShotProblems(local.services));
     problems.push(...issuerProblems(local.services), ...addressProblems(local.services, "localhost"), ...loopbackProblems(local.services));
 
     // Phone mode (ADR-0097): the same stack with the one value set.

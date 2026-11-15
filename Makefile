@@ -6,6 +6,10 @@
 # vulnerability-scan.yml stay CI-only, since building the images costs
 # minutes per run (ADR-0046).
 
+# Every gate that pulls or builds an image goes through this, so a registry
+# outage costs a wait and a compile error still fails at once.
+RETRY := node scripts/retry-registry.mjs --
+
 .PHONY: help up down restart logs ps backend-test backend-verify repeat-it web-test packages-test mobile-lint mobile-test mobile-start mobile-metro-up mobile-metro-down mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check action-pins api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
@@ -136,7 +140,7 @@ check: ## Run doc/size/task/comment/glossary/design-token/token-styling/contrast
 	node scripts/check-failure-doc-paths.mjs
 	node --test scripts/*.test.mjs
 
-compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only (needs the docker CLI, no daemon)
+compose-check: ## Fail if the deployable compose file renders without a secret, or carries anything dev-only, or a `--wait` names no service or a one-shot (needs the docker CLI, no daemon)
 	node scripts/check-compose.mjs
 
 action-pins: ## Fail if a workflow pins an Action to a commit SHA its repository does not have (asks GitHub; GITHUB_TOKEN optional)
@@ -166,15 +170,15 @@ api-breaking: ## Report a change in backend/openapi.json that would break an ins
 # (ADR-0054). With nothing running, a fresh realm is imported first so the
 # check has something to compare against.
 keycloak-check: ## Fail if Keycloak's realm rejects sign-in (web or mobile client), has drifted from keycloak/realm-export.json, lets anyone but testadmin hold the admin role or lets the app's token carry it, or loses an account to a fresh container (needs Docker)
-	@docker compose up -d --build --wait --wait-timeout 120 edge
+	@$(RETRY) docker compose up -d --build --wait --wait-timeout 120 edge
 	@docker compose ps --status running --quiet keycloak | grep -q . \
-	    || { docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge \
+	    || { $(RETRY) docker compose up -d --build --wait --wait-timeout 120 postgres keycloak edge \
 	         && docker compose run --rm keycloak-config; }
 	node scripts/check-keycloak-realm-config.mjs
-	docker compose up -d --build keycloak-seed
+	$(RETRY) docker compose up -d --build keycloak-seed
 	node scripts/check-keycloak-signin.mjs testuser testuser123
 	node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
-	docker compose up -d --build --wait --wait-timeout 300 backend
+	$(RETRY) docker compose up -d --build --wait --wait-timeout 300 backend
 	node scripts/check-keycloak-admin.mjs testadmin testuser testuser123 --backend
 	docker compose up -d --force-recreate --no-deps --wait --wait-timeout 120 keycloak
 	node scripts/check-keycloak-signin.mjs testuser testuser123
@@ -207,7 +211,7 @@ seed-accounts: ## Create testuser and testadmin in the running stack and wait un
 .PHONY: mobile-e2e
 mobile-e2e: ## Run the mobile end-to-end flows on the iOS Simulator and Android emulator this host has; fails if neither ran; refuses in phone mode (needs Docker and Maestro; one platform: ARGS="--platform ios")
 	@node scripts/phone-mode.mjs refuse "make mobile-e2e"
-	docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
+	$(RETRY) docker compose up -d --build --wait --wait-timeout 300 edge backend keycloak
 	$(MAKE) seed-accounts
 	node scripts/mobile-e2e.mjs $(ARGS)
 
