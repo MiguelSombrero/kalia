@@ -9,7 +9,7 @@ import { tokens } from "../../packages/tokens/src/tokens";
 
 describe("generated Tailwind tokens", () => {
   it("emits the semantic colors, text sizes and opacity utilities", async () => {
-    const root = resolve(import.meta.dirname, "../app");
+    const root = import.meta.dirname;
     const css = readFileSync(resolve(root, "globals.css"), "utf8");
     const require = createRequire(import.meta.url);
     const compiler = await compile(css, {

@@ -82,8 +82,8 @@ recorded in the pull request in words, in a Finnish and an English voice.
 | 2.5.8 Target Size (Minimum) | Raised to the identity's own 48 (`--spacing-touch`), not 24 | the helper, on the size a pressable declares |
 | 3.1.2 Language of Parts | A word a screen reader says is the platform's own or ours from `@kalia/locales`, never React Native's English table: on iOS a choice is `button` plus `selected`, with its place ("2 of 5") ours; Android keeps `radio` | the helper fails an iOS `radio` or `checkbox`; `ChoiceRow.test.tsx`; the walk in both voices |
 | 3.3.1 Error Identification | A strength error is `role="alert"` | `FiltersSheet.test.tsx`; the walk |
-| 4.1.3 Status Messages | A failure and an empty result are announced (`useAnnounce`) | `states.test.tsx`; the walk |
-| Beyond AA: 2.3.3 Animation from Interactions (AAA) | Motion stops under reduced motion, a courtesy the app already keeps | `motion.reduced.test.tsx` |
+| 4.1.3 Status Messages | A failure and an empty result are announced (`useAnnounce`) | `EmptyState.flow.test.tsx`; the walk |
+| Beyond AA: 2.3.3 Animation from Interactions (AAA) | Motion stops under reduced motion, a courtesy the app already keeps | `motion/index.reduced.test.tsx` |
 | 2.1.1 Keyboard, 2.5.7 Dragging Movements | Every control is a single press; no drag exists. Switch and keyboard access go through the same roles | the walk |
 
 A role whose spoken words React Native supplies (`radio`, `checkbox`) is unsafe

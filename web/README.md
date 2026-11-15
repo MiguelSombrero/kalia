@@ -132,7 +132,7 @@ Each fails silently or only in production, so the warning stays here
 - **End the previous session in `callbacks.signIn` (`endPreviousSession`),
   never the route handler.** The callback runs only after state, PKCE and nonce
   pass, so a cross-site link to `/api/auth/callback/keycloak` signs nobody out;
-  `lib/auth/signInCallback.test.ts` pins the order.
+  `lib/auth/endingLocalSession.flow.test.ts` pins the order.
 - **A caller never sets `Authorization`** (`kaliaFetch` throws kind `refused`).
   With no usable token it sends none: a bad one makes even a public route 401.
 - **Admin comes from the session token, never a cookie, header or query

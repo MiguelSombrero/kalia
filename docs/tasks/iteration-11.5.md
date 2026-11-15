@@ -33,7 +33,7 @@ around it — through every tier, reading it from a query rather than from
 |---|---|---|
 | [01](iteration-11.5/01-decision-the-local-observability-stack.md) | Decide the local observability stack and how an agent reads it | done |
 | [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | done |
-| [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | refined |
+| [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | done |
 | [04](iteration-11.5/04-a-trace-shows-the-sql-a-request-ran.md) | A trace shows the SQL a request ran | refined |
 | [05](iteration-11.5/05-the-web-servers-telemetry-reaches-the-profile.md) | The web server's traces, metrics and logs reach the profile | refined |
 | [06](iteration-11.5/06-the-other-services-logs-and-metrics-reach-the-profile.md) | The edge, Keycloak, Postgres and Valkey reach the profile too | refined |
@@ -45,7 +45,7 @@ around it — through every tier, reading it from a query rather than from
 | [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's mechanical code rules fail the lint | done |
 | [26](iteration-11.5/26-navigation-targets-translation-keys-and-strictness-are-checked.md) | Navigation targets, translation keys and compiler strictness are checked in both apps | refined |
 | [27](iteration-11.5/27-the-conventions-that-needed-a-choice-are-written-and-followed.md) | The conventions that needed a choice are written down, and the code follows them | refined |
-| [28](iteration-11.5/28-both-apps-test-conventions-are-written-down.md) | Both apps' test conventions are written down, and a test file is named after what it tests | refined |
+| [28](iteration-11.5/28-both-apps-test-conventions-are-written-down.md) | Both apps' test conventions are written down, and a test file is named after what it tests | done |
 | [12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md) | A test waits on a signal, never on the clock | refined |
 | [13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md) | The shared packages export what both apps use, and only that | refined |
 | [14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md) | A font that fails or never loads leaves the app readable | refined |
@@ -57,7 +57,7 @@ around it — through every tier, reading it from a query rather than from
 | [20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md) | Two worktrees run side by side in phone mode, and a low disk is named before it fails a build | refined |
 | [21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md) | The CodeQL alerts open on `dev` are closed | done |
 | [22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md) | Every red run is logged, and a defect left unfixed names who fixes it | done |
-| [23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md) | Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check | refined |
+| [23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md) | Every pull request knows its gates, and a refinement is reviewed for criteria its branch can check | done |
 | [24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md) | The backlog and the READMEs state a decided fact once, as decided | refined |
 
 Numbered 11.5 because it lands after [iteration 11](iteration-11.md) and

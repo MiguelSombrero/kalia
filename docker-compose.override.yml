@@ -159,7 +159,7 @@ services:
     mem_limit: 2g
     volumes:
       - lgtm-data:/data
-      # The image's Prometheus has no scrape job until this file replaces its own.
+      # The image has no scrape job until a file of ours replaces its own.
       - ./observability/prometheus.yaml:/otel-lgtm/prometheus.yaml:ro
     healthcheck:
       # Grafana up and the data sources it provisions answering; a plugin

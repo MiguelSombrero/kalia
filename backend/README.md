@@ -38,6 +38,7 @@ value is a `${ENV_VAR:default}` placeholder whose default fails safest
 | `LOG_LEVEL` | `INFO` | `fi.kalia` level; `DEBUG` in compose, `WARN` in tests |
 | `SPRINGDOC_ENABLED` | `false` | API documentation is an exposure surface |
 | `ACTUATOR_ENDPOINTS` | `health` | Compose sets `health,prometheus`; the actuator needs no token, so list only what the network may see ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | unset | Where spans are sent over OTLP/HTTP, read by Spring Boot itself; unset exports nothing. Compose sets it only while the observability profile runs |
 | `KEYCLOAK_ISSUER_URI` | `http://localhost:8081/realms/kalia` | The `iss` every accepted token must carry |
 | `KEYCLOAK_JWK_SET_URI` | `http://localhost:8081/realms/kalia/protocol/openid-connect/certs` | Signing keys; differs from the issuer under compose ([ADR-0028](../docs/adr/0028-resource-server-and-current-user.md)) |
 | `KEYCLOAK_AUDIENCE` | `kalia-backend` | Required `aud`; rejects tokens minted for another client |
@@ -114,11 +115,21 @@ Raising a minimum is what permits removing a deprecated API element, never befor
 
 ## Observability
 
-Logs, counters and trace ids exist; nothing views them ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)).
+Logs, counters and trace ids exist always; with the observability profile on
+(`make observability-up`, [root README](../README.md)) they are also stored and
+queryable ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md), [ADR-0114](../docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)).
+
+| | Without the profile | With it |
+|---|---|---|
+| **Spans** | none leave the process | OTLP/HTTP to `OTEL_EXPORTER_OTLP_ENDPOINT`, batched, every request sampled, stored as service `backend`. The readiness probe's are dropped |
+| **Counters** | `/actuator/prometheus` | scraped from the same path by the store's Prometheus (`observability/prometheus.yaml`), so they survive a restart |
+| **Logs** | JSON on stdout | the same stdout, read by the shipper; the backend has no log exporter |
 
 - **Logs**: JSON per line on stdout, `traceId`/`spanId` on each line written during a request. Read: `docker compose logs backend --no-log-prefix | jq -c '[.["@timestamp"], .log.level, .message, .traceId]'`. Follow a request across both tiers: `docker compose logs --no-log-prefix | grep <traceId>`.
 - **Counters** at `/actuator/prometheus` need no token and the edge answers `404` ([ADR-0090](../docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md)), so the network is what keeps them private ([ADR-0088](../docs/adr/0088-both-tiers-log-json-and-share-a-trace-id-and-count-failures-without-a-viewer.md)): read them inside it, `docker compose exec backend curl localhost:8080/actuator/prometheus`, and let a scraper join the compose network rather than publish the port. Natively set `ACTUATOR_ENDPOINTS=health,prometheus`. Never list `env`, `heapdump` or `beans`: nothing else guards them.
 - Ours: `kalia_events_publication_retries_total` and `kalia_events_publication_exhausted_total`.
+- **No exporter is configured by default, and a span never carries a query string, token or body.** `TraceExportIT` reads the exported bytes for both. An instrumentation that records a full URL (`url.full`, an HTTP client's `http.url`) breaks the second silently; that test is the guard.
+- **A collector that is down costs nothing**: the exporter drops spans in the background and the log gains at most one error line per ten minutes (`ExporterOutageThrottle`), however many batches fail. `make observability-down` recreates the backend without the endpoint.
 
 ## Traps — do not "fix" these
 
