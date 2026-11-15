@@ -1,13 +1,15 @@
 import { Tabs, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Text, type ColorValue } from "react-native";
+import { type ColorValue, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { tabLabelScale, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { useReducedMotion } from "@/lib/motion";
 import { easingFor } from "@/lib/motion/easing";
+
 import { AddIcon, TabIcon } from "./TabIcon";
 import { ICON_BOX, type TabIconName } from "./tabIcons";
 

@@ -1,11 +1,13 @@
+import enCommon from "@kalia/locales/en/common.json";
+import fiCommon from "@kalia/locales/fi/common.json";
 import { render, screen } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { describe, expect, it } from "vitest";
-import enCommon from "@kalia/locales/en/common.json";
-import fiCommon from "@kalia/locales/fi/common.json";
+
 import { getOptions, type Locale } from "@/i18n/settings";
+
 import { CellarSummary } from "./CellarSummary";
 
 const renderSummary = (

@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import type { Locale } from "@/i18n/settings";
+
 import { beerHref } from "./links";
 import type { AddBeerOutcome, BreweryOption } from "./types";
 

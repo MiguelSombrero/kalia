@@ -1,14 +1,16 @@
 import Link from "next/link";
+
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageTitle } from "@/components/ui/page-title";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { catalogHref, cellarHref, profileHref } from "@/lib/routes";
+
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
-import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import { cellarHead } from "./layout";
+import { RemovalOutcomeToast } from "./RemovalOutcomeToast";
 import type { CellarBeer } from "./types";
 
 const EMPTY_STEPS = ["cellar.empty.step1", "cellar.empty.step2", "cellar.empty.step3"] as const;

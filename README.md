@@ -154,7 +154,7 @@ a manifest; don't restate what the manifest says.
 - i18next, i18next-resources-to-backend and react-i18next (English and Finnish, ADR-0011)
 - orval (API client generated from the committed OpenAPI spec into `packages/api`, ADR-0012, ADR-0093); oasdiff (breaking-change diff of that spec against `dev`'s, ADR-0093)
 - Vitest and React Testing Library; Playwright (E2E, chromium only, against the compose stack)
-- eslint-plugin-jsx-a11y, jest-axe, @axe-core/playwright (WCAG 2.2 AA, ADR-0075); eslint-plugin-boundaries (import boundaries, checked by `npm run lint`)
+- eslint-plugin-jsx-a11y, jest-axe, @axe-core/playwright (WCAG 2.2 AA, ADR-0075); eslint-plugin-boundaries (import boundaries, checked by `npm run lint`), eslint-plugin-simple-import-sort (import order)
 - next-auth 5, still a beta line (OIDC code flow with PKCE, ADR-0025); ioredis and a custom Valkey adapter for the session store; jose (back-channel logout token, ADR-0031)
 - @prometheus-io/client (the token-gated `/api/metrics`, ADR-0088)
 - **No `package.json` `overrides`.** One stays only while `npm audit` is clean only with it, and comes out once it is clean without it. Re-test when an audit finding names a package an override once covered, or `next` pins a vulnerable one
@@ -167,7 +167,7 @@ a manifest; don't restate what the manifest says.
 - `@kalia/api` and `@kalia/locales`, shared with the web app: the generated API client and the en/fi strings (react-i18next, i18next, expo-localization)
 - TanStack Query, Zustand, react-hook-form with Zod and @hookform/resolvers, the same roles as on the web (@react-native-async-storage/async-storage persists client state)
 - Jest with jest-expo, `@react-native/jest-preset` and React Native Testing Library (unit); sharp (renders the app's icons and splash from the web app's mark, `mobile/scripts/render-assets.mjs`); Maestro (end-to-end, Android the only CI platform, [ADR-0096](docs/adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md))
-- eslint-config-expo, @tanstack/eslint-plugin-query, eslint-plugin-boundaries (checked by `npm run lint --workspace mobile`)
+- eslint-config-expo, @tanstack/eslint-plugin-query, eslint-plugin-boundaries, eslint-plugin-simple-import-sort (checked by `npm run lint --workspace mobile`)
 - Native toolchain pins: `.xcode-version` and `mobile/.java-version`, checked by `make mobile-doctor`
 
 ### Local infrastructure

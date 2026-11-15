@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+
 import { feedHeadingRow, feedRowFrame, mastheadGrid } from "@/features/feed";
+
 import { FEED_SKELETON_ROWS, FeedSkeleton } from "./FeedSkeleton";
 
 describe("FeedSkeleton", () => {

@@ -1,8 +1,9 @@
 import type { Locator, Page } from "@playwright/test";
+
 import { expectCoherentHeadings, expectNoA11yViolations } from "./support/a11y";
-import { copyFor, LOCALES, type Locale } from "./support/copy";
-import { expectNoSidewaysScroll } from "./support/layout";
+import { copyFor, type Locale, LOCALES } from "./support/copy";
 import { createFreshAccount, expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
+import { expectNoSidewaysScroll } from "./support/layout";
 import { KEYCLOAK_ORIGIN } from "./support/origins";
 import { expectShellTargetsReachable } from "./support/shell";
 import { escapeRegExp } from "./support/text";

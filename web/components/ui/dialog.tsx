@@ -2,7 +2,9 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type { ComponentProps } from "react";
+
 import { cn } from "@/lib/cn";
+
 import { surfaceVariants } from "./surface";
 
 export const Dialog = DialogPrimitive.Root;

@@ -1,17 +1,19 @@
 import {
   answersStatus,
+  type CallOptions,
   createFetchTransport,
   isApiError,
   registerTransport,
   routeTemplateOf,
   traceIdOfResponse,
-  type CallOptions,
   type Transport,
 } from "@kalia/api";
+
 import { getTokenStore } from "@/lib/auth/defaultTokenStore";
 import type { TokenStore } from "@/lib/auth/tokenStore";
 import { origins } from "@/lib/config/origins";
 import { logError } from "@/lib/log/deviceLog";
+
 import { startTrace } from "./traceparent";
 
 // A refresh that failed transiently must not fail a call that needs no token.

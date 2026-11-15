@@ -1,9 +1,11 @@
 import { View } from "react-native";
+
 import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { contrastRatio, NON_TEXT_CONTRAST } from "@/lib/design/contrast";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
+
 import { EDGE } from "./metrics";
 
 export const SLAB_WIDTH = 22;

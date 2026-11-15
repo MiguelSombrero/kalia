@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
+
 import { compile } from "tailwindcss";
 import { describe, expect, it } from "vitest";
+
 import { tokens } from "../../packages/tokens/src/tokens";
 
 describe("generated Tailwind tokens", () => {

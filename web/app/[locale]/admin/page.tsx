@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
-import { findBreweriesAction, loadAddBeerOptionsAction } from "@/features/catalog";
 import { ReviewQueue, ReviewSkeleton } from "@/features/admin-suggestions";
+import { findBreweriesAction, loadAddBeerOptionsAction } from "@/features/catalog";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { currentUserIsAdmin } from "@/lib/auth/adminRole";

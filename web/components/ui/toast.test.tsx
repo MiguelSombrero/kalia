@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
-import { Toast, ToastDescription, ToastProvider, ToastViewport, type ToastVariant } from "./toast";
+
+import { Toast, ToastDescription, ToastProvider, type ToastVariant, ToastViewport } from "./toast";
 
 vi.mock("./icon", () => ({
   Icon: ({ name }: { name: string }) => <span data-testid="icon" data-name={name} />,

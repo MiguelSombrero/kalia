@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { inVintageOrder, sortCellar, toCellarSort } from "./cellarOrder";
 import type { Bottle, CellarBeer } from "./types";
 

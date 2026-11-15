@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+
 import { expectFocusNotObscured } from "./keyboard";
 
 test.describe("expectFocusNotObscured", () => {

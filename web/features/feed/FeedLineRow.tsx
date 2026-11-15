@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import { BeerSlot } from "@/components/ui/beer-slot";
 import { PersonSlot } from "@/components/ui/person-slot";
@@ -10,6 +11,7 @@ import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { cn } from "@/lib/cn";
 import { beerHref, cellarHref } from "@/lib/routes";
+
 import type { FeedLine } from "./types";
 import { vintageYear } from "./vintage";
 

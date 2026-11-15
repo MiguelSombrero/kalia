@@ -1,13 +1,15 @@
 import { apiError, registerTransport, traceIdOf, type Transport } from "@kalia/api";
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { registerMobileTransport } from "@/lib/api/registerTransport";
-import { fakeTokenStore } from "@/testing/fakeTokenStore";
-import { expectScalesWithText } from "@/testing/expectScalesWithText";
-import { renderWithLocale } from "@/testing/renderWithLocale";
-import { ProfileScreen } from "./ProfileScreen";
-import { PixelRatio } from "react-native";
 import * as ReactNative from "react-native";
+import { PixelRatio } from "react-native";
+
+import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { theme } from "@/lib/design/theme.generated";
+import { expectScalesWithText } from "@/testing/expectScalesWithText";
+import { fakeTokenStore } from "@/testing/fakeTokenStore";
+import { renderWithLocale } from "@/testing/renderWithLocale";
+
+import { ProfileScreen } from "./ProfileScreen";
 
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ ...jest.requireActual("expo-router"), useRouter: () => ({ push: mockPush }) }));

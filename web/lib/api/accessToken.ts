@@ -1,4 +1,5 @@
 import type { AdapterAccount } from "next-auth/adapters";
+
 import { endLocalSession } from "@/lib/auth/endLocalSession";
 import { refreshAccessToken } from "@/lib/auth/refreshAccessToken";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";

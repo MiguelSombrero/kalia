@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiError } from "@kalia/api";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Throws like the real one, so code after it never runs.
 const { redirect } = vi.hoisted(() => ({

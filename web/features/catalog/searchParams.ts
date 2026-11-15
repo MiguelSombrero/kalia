@@ -1,4 +1,4 @@
-import { SORT_OPTIONS, type BeerPage, type BeerSearchParams } from "./types";
+import { type BeerPage, type BeerSearchParams, SORT_OPTIONS } from "./types";
 
 // The search API's own bounds (CatalogController); a value past one is a 400.
 export const MAX_ABV = 100;

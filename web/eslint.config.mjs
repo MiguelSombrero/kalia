@@ -6,6 +6,7 @@ import boundaries from "eslint-plugin-boundaries";
 import path from "node:path";
 import { createRequire } from "node:module";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 const { plugin: enumLookupPlugin } = createRequire(import.meta.url)("../packages/api/eslint/enum-lookup-rules.cjs");
 
@@ -92,6 +93,11 @@ const eslintConfig = defineConfig([
       // between sweeps, instead of relying on someone re-running it by hand.
       "react/no-danger": "error",
     },
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    plugins: { "simple-import-sort": simpleImportSort },
+    rules: { "simple-import-sort/imports": "error" },
   },
   // A page title is `PageTitle` and a section heading `SectionHeading`
   // (ADR-0073). A heading that is neither carries an

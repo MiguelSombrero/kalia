@@ -1,4 +1,4 @@
-import { defaultLocale, locales, resources, type Locale } from "@kalia/locales";
+import { defaultLocale, type Locale, locales, resources } from "@kalia/locales";
 import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 

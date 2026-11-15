@@ -1,4 +1,5 @@
 import { AuthRequest, exchangeCodeAsync, refreshAsync } from "expo-auth-session";
+
 import { createKeycloakClient, discoveryFor } from "./keycloakClient";
 import { redirectAuthCallback } from "./redirectAuthCallback";
 

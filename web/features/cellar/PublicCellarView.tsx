@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageTitle } from "@/components/ui/page-title";
@@ -6,6 +7,7 @@ import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { catalogHref, ownCellarHref, signUpHref } from "@/lib/routes";
+
 import { CellarBeerList } from "./CellarBeerList";
 import { CellarCounts } from "./CellarCounts";
 import { CellarPagination } from "./CellarPagination";

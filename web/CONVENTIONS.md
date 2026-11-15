@@ -14,6 +14,13 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   `eslint-plugin-boundaries` ([ADR-0012](../docs/adr/0012-orval-api-client.md));
   a new policy gets a breaking fixture in `eslint-fixtures/boundaries/`.
 - Server components by default; `'use client'` only where interactivity needs it.
+- **A lint warning fails the build:** `npm run lint` runs ESLint with
+  `--max-warnings 0`, so fix it or excuse it with an `eslint-disable-next-line
+  <rule> -- <why>`. Mobile's `npm run lint` does the same.
+- **Imports are sorted:** packages, then the app's own (`@/…`), then relative,
+  each group alphabetical (`simple-import-sort/imports`). `npx eslint --fix`
+  sorts them; after it a moved `type` specifier may lose the space after its
+  comma, which the rule does not flag: restore it by hand. Mobile follows the same order.
 - **Arrow functions only**, including page, layout and route exports (ESLint).
 - **No hand-written classes; `type` over `interface`.** Factory functions
   (`createX(dependency)`) replace constructors (ESLint,

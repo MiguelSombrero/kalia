@@ -1,6 +1,7 @@
 // Exercises the whole stack through the edge (ADR-0090): the `admin` realm role
 // reaching the web (ADR-0101).
 import type { Page } from "@playwright/test";
+
 import { expectNoA11yViolations } from "./support/a11y";
 import { expect, signIn, test } from "./support/keycloakAccount";
 

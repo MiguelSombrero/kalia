@@ -2,6 +2,7 @@ import { SignInPrompt as SignInPromptBlock } from "@/components/ui/sign-in-promp
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { signUpHref } from "@/lib/routes";
+
 import { startProfileSignIn } from "./actions";
 
 export const SignInPrompt = async ({ locale }: { locale: Locale }) => {

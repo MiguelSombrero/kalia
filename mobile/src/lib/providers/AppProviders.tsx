@@ -1,7 +1,8 @@
 import type { Locale } from "@kalia/locales";
-import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type ReactNode } from "react";
+import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type ReactNode, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
+
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { getTokenStore } from "@/lib/auth/defaultTokenStore";
 import type { TokenStore } from "@/lib/auth/tokenStore";

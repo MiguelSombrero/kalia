@@ -1,6 +1,7 @@
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
+
 import { fontSources } from "./fonts";
 
 void SplashScreen.preventAutoHideAsync();

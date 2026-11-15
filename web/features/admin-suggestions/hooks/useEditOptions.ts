@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
 import type { BreweryOption, EditOptions } from "../types";
 
 const adminKey = ["admin-suggestions"] as const;

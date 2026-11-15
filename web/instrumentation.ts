@@ -1,6 +1,7 @@
 import type { Instrumentation } from "next";
-import { verifyRequiredConfiguration } from "@/lib/config/requiredConfiguration";
+
 import { traceIdOf } from "@/lib/api/traceparent";
+import { verifyRequiredConfiguration } from "@/lib/config/requiredConfiguration";
 import { logger } from "@/lib/logger";
 
 export const register = async () => {

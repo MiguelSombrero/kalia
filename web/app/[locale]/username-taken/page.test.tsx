@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiError } from "@kalia/api";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
 vi.mock("@/auth", () => ({ auth, handlers: {}, signIn: vi.fn(), signOut: vi.fn() }));
@@ -15,6 +15,7 @@ vi.mock("next/navigation", () => ({ redirect }));
 vi.mock("@/features/profile/api", () => ({ getProfile: vi.fn() }));
 
 import { getProfile } from "@/features/profile";
+
 import UsernameTakenPage, { generateMetadata } from "./page";
 
 const params = (locale: string) => ({ params: Promise.resolve({ locale }) });

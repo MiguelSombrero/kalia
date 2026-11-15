@@ -2,8 +2,9 @@
 // beers on the page, not from the whole cellar; credentials are a per-worker
 // account provisioned by ./support/keycloakAccount.ts.
 import type { Page } from "@playwright/test";
-import { expect, signIn, test } from "./support/keycloakAccount";
+
 import { CATALOG_CARD } from "./support/catalog";
+import { expect, signIn, test } from "./support/keycloakAccount";
 import { escapeRegExp } from "./support/text";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.

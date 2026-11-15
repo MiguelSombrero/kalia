@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import { isCellarConflict } from "./conflict";
 import { useRemoveBottle } from "./hooks/useBottles";
 import { useBottleRemovalStore } from "./store";

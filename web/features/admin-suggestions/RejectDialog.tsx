@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/cn";
+
 import { REJECTION_REASONS, type RejectionReason, type SuggestionRow } from "./types";
 
 export const RejectDialog = ({

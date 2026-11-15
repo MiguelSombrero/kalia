@@ -1,5 +1,7 @@
 import { create } from "zustand";
+
 import type { CatalogLinkFilter } from "@/lib/catalogLink";
+
 import { emptyFilters, type Filters } from "./model";
 
 type FiltersStore = {

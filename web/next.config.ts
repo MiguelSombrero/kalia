@@ -1,5 +1,7 @@
 import path from "node:path";
+
 import type { NextConfig } from "next";
+
 import { buildCspHeader } from "./lib/config/cspHeader";
 
 const cspHeader = buildCspHeader(process.env.NODE_ENV);

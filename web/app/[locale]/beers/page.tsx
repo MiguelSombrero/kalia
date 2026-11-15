@@ -1,21 +1,24 @@
-import type { Metadata } from "next";
-import { auth } from "@/auth";
 import { isApiError } from "@kalia/api";
+import type { Metadata } from "next";
+
+import { auth } from "@/auth";
+import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 import {
   AddBeerEntry,
   BeerList,
-  CatalogToasts,
+  type BeerSearchParams,
   catalogColumns,
+  CatalogToasts,
   hasFilters,
   IgnoredFilterNote,
   isPastLastPage,
+  listBreweryCountries,
   normalizeBeerSearchParams,
   Pagination,
   parseBeerSearchParams,
   PastLastPage,
-  type BeerSearchParams,
   type RawSearchParams,
-  listBreweryCountries,
   ResultSummary,
   searchBeers,
   SearchFilters,
@@ -23,8 +26,6 @@ import {
 import { AddToCellarButton, heldBottlesOfOrNone } from "@/features/cellar";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
-import { Page } from "@/components/ui/page";
-import { PageTitle } from "@/components/ui/page-title";
 
 type Props = {
   params: Promise<{ locale: string }>;

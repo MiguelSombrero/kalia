@@ -4,6 +4,7 @@ import { isApiError } from "@kalia/api";
 import { useRouter } from "next/navigation";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import type { Locale } from "@/i18n/settings";
+
 import { useRemoveBeer } from "./hooks/useRemoveBeer";
 import { catalogHref } from "./links";
 import { useBeerRemovedStore } from "./store";

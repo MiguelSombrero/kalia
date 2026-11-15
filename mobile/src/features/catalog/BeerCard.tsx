@@ -1,12 +1,14 @@
+import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
+
+import { BeerSlot, SLAB_WIDTH } from "@/components/BeerSlot";
+import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
-import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api";
-import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { useTranslation } from "react-i18next";
-import { BeerSlot, SLAB_WIDTH } from "@/components/BeerSlot";
 import { PressFeedback } from "@/lib/motion";
+
 import type { BeerSummary } from "./api";
 
 const statusLabelKey = enumLookup<BeerSummary["status"], string | null>({ APPROVED: null, PENDING: "catalogFilters.waitingForReview" }, UNKNOWN_VALUE_LABEL_KEY);

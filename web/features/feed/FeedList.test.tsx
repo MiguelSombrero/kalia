@@ -1,3 +1,6 @@
+import { apiError } from "@kalia/api";
+import enCommon from "@kalia/locales/en/common.json";
+import fiCommon from "@kalia/locales/fi/common.json";
 import { focusManager, notifyManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { createInstance } from "i18next";
@@ -5,10 +8,9 @@ import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import enCommon from "@kalia/locales/en/common.json";
-import fiCommon from "@kalia/locales/fi/common.json";
+
 import { getOptions, type Locale } from "@/i18n/settings";
-import { apiError } from "@kalia/api";
+
 import { FEED_LIST_CAP, LIVE_POLL_INTERVAL_MS, STALLED_AFTER_FAILURES } from "./constants";
 import type { FeedPage } from "./types";
 

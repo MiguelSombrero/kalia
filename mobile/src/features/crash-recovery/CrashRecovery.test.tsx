@@ -1,14 +1,16 @@
+import { apiError } from "@kalia/api";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import * as ExpoFont from "expo-font";
 import { renderRouter } from "expo-router/testing-library";
 import * as SplashScreen from "expo-splash-screen";
 import { Text } from "react-native";
-import { apiError } from "@kalia/api";
+
 import { FontGate } from "@/lib/design/FontGate";
+
 import { CrashBoundary } from "./CrashBoundary";
-import { UncaughtErrorGate } from "./UncaughtErrorGate";
 import { useUncaughtErrorStore } from "./store";
 import { installUncaughtErrorHandler } from "./uncaughtError";
+import { UncaughtErrorGate } from "./UncaughtErrorGate";
 
 jest.mock("expo-application", () => ({ nativeApplicationVersion: "0.1.0", nativeBuildVersion: "26569207" }));
 jest.mock("expo-localization", () => ({ useLocales: jest.fn() }));

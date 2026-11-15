@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { verifyRequiredConfiguration } from "./requiredConfiguration";
 
 const ALL_REQUIRED = {

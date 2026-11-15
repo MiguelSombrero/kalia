@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Animated, Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
+
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 

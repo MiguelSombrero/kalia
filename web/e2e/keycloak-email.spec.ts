@@ -11,7 +11,7 @@ import {
 } from "./support/keycloakAccount";
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN } from "./support/origins";
+import { KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
 
 test("Keycloak sends a readable verification email whose link lands back on the web app", async ({
   page,

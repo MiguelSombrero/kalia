@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { endLocalSession } from "@/lib/auth/endLocalSession";
 import { refreshAccessToken } from "@/lib/auth/refreshAccessToken";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount, updateSessionAccount } from "@/lib/auth/valkeyAdapter";
+
 import { currentAccessToken } from "./accessToken";
 
 vi.mock("@/lib/auth/valkeyAdapter", () => ({

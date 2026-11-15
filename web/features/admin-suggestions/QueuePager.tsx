@@ -1,7 +1,7 @@
+import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { adminHref } from "@/lib/routes";
-import { buttonVariants } from "@/components/ui/button";
 
 // Plain anchors: query-only navigation does not commit through next/link in production builds (web/README.md).
 export const QueuePager = async ({ locale, page, totalPages }: { locale: Locale; page: number; totalPages: number }) => {

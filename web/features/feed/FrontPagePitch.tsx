@@ -2,6 +2,7 @@ import { PageTitle } from "@/components/ui/page-title";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+
 import { mastheadGrid } from "./frontPageLayout";
 
 const HOW_STEPS = ["find", "cellar", "share"] as const;

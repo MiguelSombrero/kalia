@@ -3,9 +3,10 @@
 // it fills a cellar with more beers than any other spec's shared account may
 // hold (./support/keycloakAccount.ts).
 import { request } from "@playwright/test";
+
+import { expectNoA11yViolations } from "./support/a11y";
 import { createFreshAccount, expect, signIn, test } from "./support/keycloakAccount";
 import { setCellarVisibility } from "./support/visibility";
-import { expectNoA11yViolations } from "./support/a11y";
 
 const PAGE_SIZE = 20;
 const BEERS = PAGE_SIZE + 1;

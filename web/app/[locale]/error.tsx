@@ -2,10 +2,11 @@
 
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
-import { logger } from "@/lib/logger";
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
+import { logger } from "@/lib/logger";
 
 const ErrorPage = ({
   error,

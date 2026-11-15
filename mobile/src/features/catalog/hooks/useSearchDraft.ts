@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { useFiltersStore } from "../filters/store";
 
-export const PAUSE_MS = 300;
+import { useFiltersStore } from "../filters/store";
+import { useDebounced } from "./useDebounced";
+
 export const MIN_QUERY_LENGTH = 2;
 
 export const settledQuery = (text: string) => (text.trim().length >= MIN_QUERY_LENGTH ? text.trim() : "");
@@ -17,11 +18,11 @@ export const useSearchDraft = () => {
     if (next !== useFiltersStore.getState().applied.query) setQuery(next);
   };
 
+  const settled = useDebounced(text);
   useEffect(() => {
-    const timer = setTimeout(() => send(text), PAUSE_MS);
-    return () => clearTimeout(timer);
+    send(settled);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- send reads the store and a stable setter only
-  }, [text]);
+  }, [settled]);
 
   return { text, setText, submit: () => send(text) };
 };

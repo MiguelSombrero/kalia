@@ -2,6 +2,7 @@ import { PageTitle } from "@/components/ui/page-title";
 import { PersonSlot } from "@/components/ui/person-slot";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+
 import { nameTag, nameTagSlot } from "./layout";
 import type { Profile } from "./types";
 import { type CellarTotals, VisibilityControl } from "./VisibilityControl";

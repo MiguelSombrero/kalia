@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/ui/empty-state";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+
 import { catalogHref } from "./links";
 import type { BeerPage, BeerSearchParams } from "./types";
 

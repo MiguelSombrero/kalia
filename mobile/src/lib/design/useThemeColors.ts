@@ -1,4 +1,5 @@
 import { useColorScheme } from "react-native";
+
 import { theme } from "./theme.generated";
 
 export type ThemeColors = (typeof theme.colors)[keyof typeof theme.colors];

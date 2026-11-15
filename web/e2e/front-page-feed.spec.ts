@@ -3,11 +3,12 @@
 // back to the cellar it names. Credentials are a per-worker account
 // provisioned by ./support/keycloakAccount.ts.
 import type { Page } from "@playwright/test";
-import { createFreshAccount, expect, signIn, test } from "./support/keycloakAccount";
+
+import { expectNoA11yViolations } from "./support/a11y";
 import { CATALOG_CARD } from "./support/catalog";
+import { createFreshAccount, expect, signIn, test } from "./support/keycloakAccount";
 import { escapeRegExp } from "./support/text";
 import { setCellarVisibility } from "./support/visibility";
-import { expectNoA11yViolations } from "./support/a11y";
 
 // Shares one account per worker with the other specs, which cycle sign-in/out.
 test.describe.configure({ mode: "serial" });

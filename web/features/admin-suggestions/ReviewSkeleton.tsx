@@ -1,6 +1,6 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
-import { Skeleton } from "@/components/ui/skeleton";
 
 /** The queue's shape while it loads: the page's own loading state, since the admin route has no loading.tsx. */
 export const ReviewSkeleton = async ({ locale }: { locale: Locale }) => {

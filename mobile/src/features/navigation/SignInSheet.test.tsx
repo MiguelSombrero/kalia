@@ -1,8 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { PixelRatio } from "react-native";
+
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { SignInSheet } from "./SignInSheet";
-import { PixelRatio } from "react-native";
 
 const mockBack = jest.fn();
 const mockReplace = jest.fn();

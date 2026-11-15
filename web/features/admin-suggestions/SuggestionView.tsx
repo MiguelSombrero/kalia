@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import type { Locale } from "@/i18n/settings";
+
 import { EditSuggestionForm } from "./EditSuggestionForm";
 import { useApproveSuggestion, useRejectSuggestion } from "./hooks/useDecision";
 import { RejectDialog } from "./RejectDialog";

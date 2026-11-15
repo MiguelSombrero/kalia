@@ -1,10 +1,11 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { AccessibilityInfo, Animated, LayoutAnimation, Text } from "react-native";
+
 import { PressFeedback } from "./PressFeedback";
+import { watchReducedMotion } from "./reducedMotion";
 import { Reveal } from "./Reveal";
 import { SkeletonBlock } from "./SkeletonBlock";
 import { useAnimateListChange } from "./useAnimateListChange";
-import { watchReducedMotion } from "./reducedMotion";
 
 const timing = jest.spyOn(Animated, "timing");
 const loop = jest.spyOn(Animated, "loop");

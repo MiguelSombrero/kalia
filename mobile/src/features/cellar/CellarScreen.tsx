@@ -1,11 +1,12 @@
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
 import { ComingSoon } from "@/components/ComingSoon";
 import { Screen } from "@/components/Screen";
 import { ScreenTitle } from "@/components/ScreenTitle";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useRouter } from "expo-router";
 
 export const CellarScreen = () => {
   const { t } = useTranslation();

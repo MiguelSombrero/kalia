@@ -1,10 +1,11 @@
 // Keycloak's errors in Kalia's error sign: ADR-0074, docs/design.md "Feedback and errors".
 import type { APIRequestContext, Page } from "@playwright/test";
-import { expect, keycloakAdminToken, test, uniqueUsername } from "./support/keycloakAccount";
+
 import { expectNoA11yViolations } from "./support/a11y";
 import { contrast, rgbOf } from "./support/colour";
+import { expect, keycloakAdminToken, test, uniqueUsername } from "./support/keycloakAccount";
 import { expectNoSidewaysScroll } from "./support/layout";
-import { WEB_ORIGIN, KEYCLOAK_ORIGIN, KEYCLOAK_ADMIN_ORIGIN } from "./support/origins";
+import { KEYCLOAK_ADMIN_ORIGIN, KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
 
 const VIEWPORTS = [
   { width: 375, height: 812 },

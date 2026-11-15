@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { Toast, ToastDescription, ToastProvider, ToastViewport, type ToastVariant } from "@/components/ui/toast";
+import { Toast, ToastDescription, ToastProvider, type ToastVariant, ToastViewport } from "@/components/ui/toast";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { cellarHref, shareableCellarHref } from "@/lib/routes";
+
 import { useChangeVisibility } from "./hooks/useProfile";
 import { visibilityTiles } from "./layout";
 

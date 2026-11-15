@@ -14,7 +14,7 @@
     "android": "expo run:android",
     "preandroid:prebuild": "npm run assets",
     "android:prebuild": "expo prebuild --platform android --no-install",
-    "lint": "eslint && tsc --noEmit",
+    "lint": "eslint --max-warnings 0 && tsc --noEmit",
     "test": "jest && node --test scripts/render-assets.test.mjs scripts/app-config.test.mjs scripts/check-cleartext.test.mjs plugins/withCleartextExceptions.test.mjs"
   },
   "dependencies": {
@@ -61,6 +61,7 @@
     "eslint": "^10",
     "eslint-config-expo": "~58.0.4",
     "eslint-plugin-boundaries": "7.4.0",
+    "eslint-plugin-simple-import-sort": "14.0.0",
     "jest": "^30.5.2",
     "jest-expo": "~58.0.13",
     "sharp": "^0.35.0",

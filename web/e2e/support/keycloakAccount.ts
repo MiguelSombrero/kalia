@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { expect, request, test as base, type APIRequestContext, type Page } from "@playwright/test";
+
+import { type APIRequestContext, expect, type Page, request, test as base } from "@playwright/test";
 import Redis from "ioredis";
+
 import { KEYCLOAK_ADMIN_ORIGIN } from "./origins";
 import { clearSignUpRateLimit, VALKEY_URL } from "./valkey";
 

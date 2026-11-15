@@ -1,8 +1,10 @@
 import { screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
+
 import { contrastRatio } from "@/lib/design/contrast";
 import { theme } from "@/lib/design/theme.generated";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import type { BeerSummary } from "./api";
 import { BeerCard } from "./BeerCard";
 

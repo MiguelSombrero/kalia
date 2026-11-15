@@ -1,4 +1,4 @@
-import { defaultLocale, locales, type Locale } from "@kalia/locales";
+import { defaultLocale, type Locale, locales } from "@kalia/locales";
 
 export { defaultLocale, locales, type Locale };
 export const defaultNamespace = "common";

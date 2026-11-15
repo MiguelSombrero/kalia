@@ -1,5 +1,5 @@
 import { signIn } from "@/auth";
-import { toLocale, type Locale } from "@/i18n/settings";
+import { type Locale, toLocale } from "@/i18n/settings";
 
 type SignInProvider = "keycloak" | "keycloak-register";
 

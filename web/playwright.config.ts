@@ -1,5 +1,7 @@
 import path from "node:path";
+
 import { defineConfig, devices } from "@playwright/test";
+
 import { STACK } from "./stackOrigins";
 
 const EDGE_SPEC = /edge-limits\.spec\.ts$/;

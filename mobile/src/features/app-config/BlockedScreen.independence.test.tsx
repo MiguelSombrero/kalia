@@ -2,10 +2,12 @@ import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { cleanup, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { StyleSheet } from "react-native";
+
 import { atLargestFontScale } from "@/testing/atLargestFontScale";
 import { expectAccessibleStructure } from "@/testing/expectAccessibleStructure";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { BlockedScreen } from "./BlockedScreen";
 
 const words = {

@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
+
 import { theme } from "@/lib/design/theme.generated";
 
 type Node = { type: string; props: Record<string, unknown>; children: (Node | string)[] | null };

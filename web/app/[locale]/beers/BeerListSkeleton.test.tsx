@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+
 import { beerRowFrame, beerRowSide, catalogColumns } from "@/features/catalog";
+
 import { BEER_LIST_SKELETON_ROWS, BeerListSkeleton } from "./BeerListSkeleton";
 
 describe("BeerListSkeleton", () => {

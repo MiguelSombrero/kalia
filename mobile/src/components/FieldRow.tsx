@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { Text, View } from "react-native";
+
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { PressFeedback } from "@/lib/motion";
+
 import { EDGE } from "./metrics";
 
 export const FieldRow = ({ title, value, empty, onPress, leading, accessibilityLabel }: { title: string; value: string; empty: boolean; onPress: () => void; leading?: ReactNode; accessibilityLabel: string }) => {

@@ -1,6 +1,6 @@
 import { httpFailure } from "@kalia/api";
-import { myProfile } from "@kalia/api/generated/profile/profile";
 import type { ProfileDto } from "@kalia/api/generated/models";
+import { myProfile } from "@kalia/api/generated/profile/profile";
 
 export type Profile = ProfileDto;
 

@@ -2,19 +2,21 @@ import { apiError, registerTransport, type Transport } from "@kalia/api";
 import type { Locale } from "@kalia/locales";
 import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
-import AddSheet from "@/app/add-sheet";
-import BeerPage from "@/app/beers/[id]";
-import FiltersSheetRoute from "@/app/filters-sheet";
-import SignInSheetRoute from "@/app/sign-in-sheet";
+
+import TabsLayout, { unstable_settings } from "@/app/(tabs)/_layout";
 import AddRoute from "@/app/(tabs)/add";
 import CatalogRoute from "@/app/(tabs)/catalog";
 import CellarRoute from "@/app/(tabs)/cellar";
 import FeedRoute from "@/app/(tabs)/feed";
 import TabsIndex from "@/app/(tabs)/index";
-import TabsLayout, { unstable_settings } from "@/app/(tabs)/_layout";
 import ProfileRoute from "@/app/(tabs)/profile";
+import AddSheet from "@/app/add-sheet";
+import BeerPage from "@/app/beers/[id]";
+import FiltersSheetRoute from "@/app/filters-sheet";
+import SignInSheetRoute from "@/app/sign-in-sheet";
 import type { AuthState } from "@/lib/auth/tokenStore";
 import { AppProviders } from "@/lib/providers/AppProviders";
+
 import { fakeTokenStore } from "./fakeTokenStore";
 
 export const BEER_ID = "6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11";

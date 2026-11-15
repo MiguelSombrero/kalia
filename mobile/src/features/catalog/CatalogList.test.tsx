@@ -2,7 +2,9 @@ import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react-native";
 import { useState } from "react";
 import { Keyboard } from "react-native";
+
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { CatalogScreen } from "./CatalogScreen";
 import { emptyFilters } from "./filters/model";
 import { useFiltersStore } from "./filters/store";

@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { buttonVariants } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";

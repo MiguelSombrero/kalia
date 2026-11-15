@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
 import { auth } from "@/auth";
+import { Page } from "@/components/ui/page";
 import { SignOutButton } from "@/features/auth";
 import { getProfile, isUsernameTaken, UsernameTaken } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { toLocale } from "@/i18n/settings";
 import { homeHref } from "@/lib/routes";
-import { Page } from "@/components/ui/page";
 
 type Props = { params: Promise<{ locale: string }> };
 

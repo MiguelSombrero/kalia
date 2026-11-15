@@ -1,10 +1,12 @@
 import { useId } from "react";
-import { View, type ColorValue } from "react-native";
+import { type ColorValue, View } from "react-native";
 import Svg, { G, Mask, Path, Rect } from "react-native-svg";
+
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useThemeColors } from "@/lib/design/useThemeColors";
-import { ADD_GLYPH, ICON_BOX, tabIcons, type TabIconName } from "./tabIcons";
+
+import { ADD_GLYPH, ICON_BOX, type TabIconName, tabIcons } from "./tabIcons";
 
 const GRID = 24;
 const STROKE = 2;

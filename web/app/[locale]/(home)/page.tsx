@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import { auth } from "@/auth";
 import { Page } from "@/components/ui/page";
 import { PageTitle } from "@/components/ui/page-title";
@@ -7,9 +8,9 @@ import { CellarSummary, getCellarTotals } from "@/features/cellar";
 import {
   FeedEmptyState,
   FeedError,
+  feedHeadingRow,
   FeedList,
   FrontPagePitch,
-  feedHeadingRow,
   readFeed,
 } from "@/features/feed";
 import { getOwnProfileOrNull } from "@/features/profile";

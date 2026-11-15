@@ -1,6 +1,7 @@
 // @vitest-environment node
-import { exportJWK, generateKeyPair, SignJWT, type CryptoKey } from "jose";
+import { type CryptoKey, exportJWK, generateKeyPair, SignJWT } from "jose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+
 import { validateLogoutToken } from "./backchannelLogoutToken";
 
 const ISSUER = "http://localhost:8081/realms/kalia";

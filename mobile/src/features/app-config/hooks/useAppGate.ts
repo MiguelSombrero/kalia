@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Platform } from "react-native";
+
 import { ownBuildNumber } from "@/lib/build/buildInfo";
+
 import { readAppConfig } from "../api";
-import { decideGate, minimumFor, type Gate } from "../gate";
+import { decideGate, type Gate, minimumFor } from "../gate";
 import { readRememberedMinimum, rememberMinimum } from "../rememberedMinimum";
 
 export const appConfigKey = ["app-config"] as const;
@@ -23,7 +25,6 @@ export const useAppGate = (): { gate: Gate | "loading"; checkAgain: () => void; 
     queryKey: appConfigKey,
     queryFn: readAppConfig,
     staleTime: CHECK_INTERVAL_MS,
-    retry: false,
     meta: { viewerIndependent: true },
   });
 

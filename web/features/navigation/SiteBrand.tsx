@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { KaliaMark } from "@/components/ui/kalia-mark";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";

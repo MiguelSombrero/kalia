@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { EditSuggestionRequest, SuggestionRow } from "./types";
 
 // Each bound mirrors EditSuggestionRequestDto / NewBreweryRequestDto in the

@@ -1,7 +1,8 @@
+import { type InfiniteData, keepPreviousData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { keepPreviousData, useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { BEER_PAGE_SIZE, MAX_RESULT_WINDOW, readBeerPage, type BeerPage } from "../api";
-import { searchParams, type Filters } from "../filters/model";
+
+import { BEER_PAGE_SIZE, type BeerPage, MAX_RESULT_WINDOW, readBeerPage } from "../api";
+import { type Filters, searchParams } from "../filters/model";
 
 export const nextBeerPage = (last: BeerPage): number | undefined => {
   const next = last.page + 1;
@@ -18,7 +19,6 @@ export const useBeers = (filters: Filters) => {
     queryFn: ({ pageParam }) => readBeerPage(params, pageParam),
     getNextPageParam: nextBeerPage,
     placeholderData: keepPreviousData,
-    retry: false,
   });
   // refetch() on an infinite query reloads every loaded page; a pull to refresh reloads the first only.
   const refresh = async () => {

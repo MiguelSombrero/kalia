@@ -21,10 +21,12 @@ vi.mock("@/features/cellar/api", async (importOriginal) => ({
   heldBottlesOfOrNone: vi.fn(async () => new Map([["b1", 2]])),
 }));
 
-import { auth } from "@/auth";
 import { apiError } from "@kalia/api";
+
+import { auth } from "@/auth";
 import { IgnoredFilterNote, PastLastPage, searchBeers } from "@/features/catalog";
 import { heldBottlesOfOrNone } from "@/features/cellar";
+
 import BeersPage, { generateMetadata } from "./page";
 
 type Element = ReactElement<Record<string, unknown> & { children?: unknown }>;

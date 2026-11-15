@@ -2,10 +2,12 @@
 
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import type { ComponentProps } from "react";
+
 import { cn } from "@/lib/cn";
-import { surfaceVariants } from "./surface";
+
 import { buttonVariants } from "./button";
 import { Icon } from "./icon";
+import { surfaceVariants } from "./surface";
 
 export const ToastProvider = ToastPrimitive.Provider;
 

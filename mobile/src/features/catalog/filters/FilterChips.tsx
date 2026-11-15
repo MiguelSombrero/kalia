@@ -1,10 +1,12 @@
-import { View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { View } from "react-native";
+
+import { TextButton } from "@/components/TextButton";
 import { theme } from "@/lib/design/theme.generated";
 import { countryName } from "@/lib/i18n/countryNames";
-import { TextButton } from "@/components/TextButton";
+
 import { Chip } from "./controls";
-import { DEFAULT_SORT, hasStrength, strengthError, toNumber, type ActiveFilterKey, type Filters } from "./model";
+import { type ActiveFilterKey, DEFAULT_SORT, type Filters, hasStrength, strengthError, toNumber } from "./model";
 
 type Active = { key: ActiveFilterKey; label: string; plain: string; style?: string };
 

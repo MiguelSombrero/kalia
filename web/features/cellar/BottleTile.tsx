@@ -1,8 +1,10 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import type { Locale } from "@/i18n/settings";
+
 import { containerLabelKey } from "./bottleFacts";
 import { formatBottleDate, isPastBestBefore, relativeToLocalDay, vintageOf } from "./bottleTime";
 import { EditBottleDialog } from "./EditBottleDialog";

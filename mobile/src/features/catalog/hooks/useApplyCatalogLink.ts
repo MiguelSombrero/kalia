@@ -1,5 +1,7 @@
 import { useEffect } from "react";
+
 import { useCatalogLink } from "@/lib/catalogLink";
+
 import { useFiltersStore } from "../filters/store";
 
 export const useApplyCatalogLink = () => {

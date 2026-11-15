@@ -1,7 +1,7 @@
+import { isApiError } from "@kalia/api";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { isApiError } from "@kalia/api";
 import { describe, expect, it, vi } from "vitest";
 
 const { addBottlesAction, updateBottleAction, removeBottleAction } = vi.hoisted(() => ({

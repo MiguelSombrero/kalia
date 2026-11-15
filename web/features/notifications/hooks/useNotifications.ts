@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { acknowledgeNotificationAction, readNotificationsAction, readUnreadCountAction } from "../actions";
 import type { NotificationPage } from "../types";
 

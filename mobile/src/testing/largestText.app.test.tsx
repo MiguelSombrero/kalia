@@ -1,9 +1,11 @@
 import { fireEvent, screen, within } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
+
 import { CatalogScreen } from "@/features/catalog";
 import { tabLabelScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
-import { BEER_ID, beer, renderAppRoute, serveApi } from "./appRoutes.app";
+
+import { beer, BEER_ID, renderAppRoute, serveApi } from "./appRoutes.app";
 import { atLargestFontScale, LARGEST_FONT_SCALE } from "./atLargestFontScale";
 import { expectScalesWithText } from "./expectScalesWithText";
 import { renderWithLocale } from "./renderWithLocale";

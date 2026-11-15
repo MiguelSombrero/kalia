@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+
 import { markSvg } from "./kaliaMark";
 
 export const kaliaMarkImage = (px: number) =>

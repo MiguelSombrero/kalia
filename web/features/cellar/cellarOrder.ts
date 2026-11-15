@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/settings";
+
 import type { CellarBeer } from "./types";
 
 export const cellarSorts = ["name", "style", "abv", "bottles", "bestBefore"] as const;

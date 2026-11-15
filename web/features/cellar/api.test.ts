@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { isApiError } from "@kalia/api";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import {
-  getPublicCellar,
   getCellarTotals,
+  getPublicCellar,
   heldBottlesOf,
   heldBottlesOfOrNone,
   listCellarEntries,

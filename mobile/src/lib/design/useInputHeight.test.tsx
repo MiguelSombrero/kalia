@@ -1,5 +1,6 @@
 import { renderHook } from "@testing-library/react-native";
 import { Dimensions } from "react-native";
+
 import { theme } from "./theme.generated";
 import { useInputHeight } from "./useInputHeight";
 

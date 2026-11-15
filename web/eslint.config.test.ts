@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
+
 import { ESLint } from "eslint";
 import { describe, expect, it } from "vitest";
 
@@ -80,8 +81,8 @@ describe("generated client boundary (ADR-0012)", () => {
   it("lets a feature's api.ts import its own generated tag and the shared models", async () => {
     const own =
       'import { listEntries } from "@kalia/api/generated/cellar/cellar";\n' +
-      'import { read } from "@kalia/api/generated/public-cellar/public-cellar";\n' +
       'import type { EntryDto } from "@kalia/api/generated/models";\n' +
+      'import { read } from "@kalia/api/generated/public-cellar/public-cellar";\n' +
       "export const probe = [listEntries, read] as unknown as EntryDto;\n";
     expect(await messagesFor(own, "features/cellar/api.ts")).toEqual([]);
 
@@ -163,8 +164,20 @@ describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
 
   it("accepts enumLookup()", async () => {
     const code =
-      'import { enumLookup } from "@kalia/api";\nimport type { ContainerType } from "./types";\n' +
+      'import { enumLookup } from "@kalia/api";\n\nimport type { ContainerType } from "./types";\n' +
       'export const labelKey = enumLookup<ContainerType, string>({ BOTTLE: "a", CAN: "b", KEG: "c" }, "other");\n';
     expect(await ruleIds(code, "features/cellar/probe.ts")).toEqual([]);
+  });
+});
+
+describe("import order", () => {
+  const conventionFixture = (name: string) => readFileSync(`${import.meta.dirname}/eslint-fixtures/conventions/${name}.ts`, "utf8");
+
+  it("rejects a relative import above a package import", async () => {
+    expect(await messagesFor(conventionFixture("imports-out-of-order"), "lib/probe.ts")).toEqual([expect.stringContaining("sort these imports")]);
+  });
+
+  it("accepts packages, then the app's own, then siblings", async () => {
+    expect(await messagesFor(conventionFixture("imports-in-order"), "lib/probe.ts")).toEqual([]);
   });
 });

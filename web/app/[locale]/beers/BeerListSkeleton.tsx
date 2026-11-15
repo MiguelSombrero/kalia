@@ -1,5 +1,5 @@
-import { beerRowFrame, beerRowSide, catalogColumns } from "@/features/catalog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { beerRowFrame, beerRowSide, catalogColumns } from "@/features/catalog";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 

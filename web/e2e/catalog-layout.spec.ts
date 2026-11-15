@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+
 import { expectNoA11yViolations } from "./support/a11y";
 import { expect, signIn, test } from "./support/keycloakAccount";
 

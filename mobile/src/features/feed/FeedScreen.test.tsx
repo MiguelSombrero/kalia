@@ -1,7 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react-native";
-import { renderWithLocale } from "@/testing/renderWithLocale";
-import { FeedScreen } from "./FeedScreen";
 import { PixelRatio } from "react-native";
+
+import { renderWithLocale } from "@/testing/renderWithLocale";
+
+import { FeedScreen } from "./FeedScreen";
 
 const mockNavigate = jest.fn();
 jest.mock("expo-router", () => ({ ...jest.requireActual("expo-router"), useRouter: () => ({ navigate: mockNavigate }) }));

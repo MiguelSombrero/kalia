@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { describe, expect, it, vi } from "vitest";
+
 import { currentSessionToken } from "./sessionCookie";
 
 // vitest.setup.ts stubs this module for every other test; this one is about

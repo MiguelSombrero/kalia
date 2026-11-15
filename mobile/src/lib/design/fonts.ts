@@ -1,4 +1,5 @@
 import type { TextStyle } from "react-native";
+
 import { theme } from "./theme.generated";
 
 type Weight = keyof typeof theme.weights;

@@ -4,18 +4,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
-import { FieldError, fieldClasses } from "@/components/ui/field";
+import { fieldClasses, FieldError } from "@/components/ui/field";
 import type { Locale } from "@/i18n/settings";
 import { cn } from "@/lib/cn";
 import { beerHref } from "@/lib/routes";
+
 import { BreweryPicker } from "./BreweryPicker";
 import {
   editSuggestionSchema,
+  type EditSuggestionValues,
   initialValues,
   toEditRequest,
-  type EditSuggestionValues,
 } from "./editSuggestionSchema";
 import { useApproveEditedSuggestion } from "./hooks/useDecision";
 import { useEditOptions } from "./hooks/useEditOptions";

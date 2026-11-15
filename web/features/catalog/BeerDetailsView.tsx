@@ -1,6 +1,7 @@
 import { beerStyleGroup } from "@kalia/api";
 import Link from "next/link";
 import type { ReactNode } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { BeerSlot } from "@/components/ui/beer-slot";
 import { PageTitle } from "@/components/ui/page-title";
@@ -8,6 +9,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { ownCellarHref } from "@/lib/routes";
+
 import { countryName } from "./country";
 import { detailsHead, factRow } from "./layout";
 import { catalogHref } from "./links";

@@ -32,8 +32,9 @@ vi.mock("@/lib/auth/adminRole", () => ({ currentUserIsAdmin: vi.fn(async () => f
 
 import { auth } from "@/auth";
 import { RemoveBeerDialog, searchBeers } from "@/features/catalog";
-import { currentUserIsAdmin } from "@/lib/auth/adminRole";
 import { heldBottlesOfOrNone } from "@/features/cellar";
+import { currentUserIsAdmin } from "@/lib/auth/adminRole";
+
 import BeerPage, { generateMetadata } from "./page";
 
 type Element = ReactElement<Record<string, unknown> & { children?: unknown }>;

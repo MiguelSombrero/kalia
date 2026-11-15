@@ -1,5 +1,7 @@
 import { renderHook } from "@testing-library/react-native";
+
 import { systemIs } from "@/testing/colorMode";
+
 import { theme } from "./theme.generated";
 import { createThemedStyles } from "./themedStyles";
 import type { ThemeColors } from "./useThemeColors";

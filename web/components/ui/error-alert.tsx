@@ -1,7 +1,9 @@
 import type { HTMLAttributes, ReactNode } from "react";
+
 import { cn } from "@/lib/cn";
-import { surfaceVariants } from "./surface";
+
 import { Icon } from "./icon";
+import { surfaceVariants } from "./surface";
 
 type ErrorAlertProps = Omit<HTMLAttributes<HTMLDivElement>, "children" | "role"> & {
   children: ReactNode;

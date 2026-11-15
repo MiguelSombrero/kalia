@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { keycloakEndSessionUrl } from "./endSessionUrl";
 
 const issuer = "http://localhost:8081/realms/kalia";

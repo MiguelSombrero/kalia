@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
+
 import { refreshAccessToken } from "./refreshAccessToken";
 
 vi.mock("@/lib/logger", () => ({

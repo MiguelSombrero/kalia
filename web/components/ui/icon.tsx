@@ -1,4 +1,5 @@
 import type { ReactNode, SVGProps } from "react";
+
 import { cn } from "@/lib/cn";
 
 export type IconName = "menu" | "close" | "search" | "plus" | "arrow" | "back" | "check" | "mail";

@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { locales } from "@/i18n/settings";
+import { NextResponse } from "next/server";
+
 import { resolveLocaleFromAcceptLanguage } from "@/i18n/resolveLocale";
+import { locales } from "@/i18n/settings";
 import { newTraceparent, traceIdOf } from "@/lib/api/traceparent";
 
 // Do not rename to middleware.ts: Next.js 16 renamed this file convention to

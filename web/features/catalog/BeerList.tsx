@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { BeerSlot } from "@/components/ui/beer-slot";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -7,6 +8,7 @@ import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
 import { formatAbv } from "@/lib/abv";
 import { cn } from "@/lib/cn";
+
 import { BeerRow, JustAddedBadge } from "./JustAdded";
 import { beerRowFrame, beerRowSide } from "./layout";
 import { beerHref, catalogHref } from "./links";

@@ -18,6 +18,7 @@ vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams("
 vi.mock("./actions", () => ({ addBottlesAction: vi.fn(), updateBottleAction: vi.fn(), removeBottleAction: vi.fn() }));
 
 import type { Locale } from "@/i18n/settings";
+
 import { CellarBeerList } from "./CellarBeerList";
 import type { CellarBeer } from "./types";
 

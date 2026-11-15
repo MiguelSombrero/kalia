@@ -1,5 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
+
 import { cn } from "@/lib/cn";
+
 import { SectionHeading } from "./section-heading";
 
 type EmptyStateProps = Omit<HTMLAttributes<HTMLElement>, "title"> & {

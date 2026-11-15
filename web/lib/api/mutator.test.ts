@@ -1,9 +1,11 @@
+import { isApiError } from "@kalia/api";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
-import { isApiError } from "@kalia/api";
+
 import { kaliaFetch } from "./mutator";
 import { currentClientAddress } from "./requestClient";
 import { currentTraceparent } from "./requestTrace";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { editSuggestionSchema, initialValues, toEditRequest, type EditSuggestionValues } from "./editSuggestionSchema";
+
+import { editSuggestionSchema, type EditSuggestionValues, initialValues, toEditRequest } from "./editSuggestionSchema";
 import type { SuggestionRow } from "./types";
 
 const valid: EditSuggestionValues = {

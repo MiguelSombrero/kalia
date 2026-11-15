@@ -1,12 +1,14 @@
 import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
+
+import { showCatalogWith, useCatalogLink } from "@/lib/catalogLink";
 import { contrastRatio } from "@/lib/design/contrast";
 import { theme } from "@/lib/design/theme.generated";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { CatalogScreen } from "./CatalogScreen";
-import { showCatalogWith, useCatalogLink } from "@/lib/catalogLink";
 import { emptyFilters } from "./filters/model";
 import { useFiltersStore } from "./filters/store";
 

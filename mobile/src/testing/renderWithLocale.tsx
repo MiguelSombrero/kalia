@@ -2,6 +2,7 @@ import type { Locale } from "@kalia/locales";
 import type { QueryClient } from "@tanstack/react-query";
 import { render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
+
 import type { TokenStore } from "@/lib/auth/tokenStore";
 import { AppProviders } from "@/lib/providers/AppProviders";
 import { createQueryClient } from "@/lib/query/createQueryClient";

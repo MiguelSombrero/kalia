@@ -4,9 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useId, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ErrorAlert } from "@/components/ui/error-alert";
-import { FieldError, fieldClasses } from "@/components/ui/field";
 import {
   Dialog,
   DialogClose,
@@ -15,8 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ErrorAlert } from "@/components/ui/error-alert";
+import { fieldClasses, FieldError } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
+
 import {
   type AddBottleFormValues,
   addBottleSchema,

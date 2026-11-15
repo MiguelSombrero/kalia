@@ -1,10 +1,12 @@
 import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+
 import { registerMobileTransport } from "@/lib/api/registerTransport";
-import { fakeTokenStore } from "@/testing/fakeTokenStore";
-import { expectScalesWithText } from "@/testing/expectScalesWithText";
 import { withLargestFont } from "@/testing/colorMode";
+import { expectScalesWithText } from "@/testing/expectScalesWithText";
+import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
+
 import { BeerDetails, type BeerDetailsProps } from "./BeerDetails";
 
 const ID = "6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11";

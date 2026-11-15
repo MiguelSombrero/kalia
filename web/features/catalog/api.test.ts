@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
 import {
   addBeer,
   findBreweries,
-  getBeer,
   findSimilarBeers,
+  getBeer,
   listCountries,
   listStyles,
   removeBeer,

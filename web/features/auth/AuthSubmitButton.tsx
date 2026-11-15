@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import { type ReactNode, useSyncExternalStore } from "react";
 
 const subscribeToNothing = () => () => {};
 

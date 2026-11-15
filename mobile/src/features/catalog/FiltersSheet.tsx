@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, Text, View } from "react-native";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, Text, View } from "react-native";
+
 import { ActionButton } from "@/components/ActionButton";
 import { ChoiceRow } from "@/components/ChoiceRow";
 import { FieldRow } from "@/components/FieldRow";
@@ -10,8 +11,9 @@ import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { countryName } from "@/lib/i18n/countryNames";
+
 import { SearchField, StyleSwatch } from "./filters/controls";
-import { emptyFilters, SORTS, sheetFilterCount, strengthError, type Filters } from "./filters/model";
+import { emptyFilters, type Filters, sheetFilterCount, SORTS, strengthError } from "./filters/model";
 import { StrengthFields } from "./filters/StrengthFields";
 import { useBreweryOptions, useCountryOptions, useResultCount, useStyleOptions } from "./hooks/useFilterOptions";
 
@@ -83,11 +85,15 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
       trailing={sheetFilterCount(draft) > 0 ? <TextButton label={t("catalogFilters.clearAll")} onPress={() => setDraft({ ...emptyFilters(), query: draft.query })} /> : null}
       bottomInset={keyboard}
       bar={
-        Platform.OS === "ios" && keyboard > 0 ? (
-          <View style={styles.doneBar}>
-            <TextButton label={t("catalogFilters.done")} onPress={() => Keyboard.dismiss()} />
-          </View>
-        ) : null
+        Platform.select({
+          ios:
+            keyboard > 0 ? (
+              <View style={styles.doneBar}>
+                <TextButton label={t("catalogFilters.done")} onPress={() => Keyboard.dismiss()} />
+              </View>
+            ) : null,
+          default: null,
+        })
       }
       footer={<ActionButton flush maxFontSizeMultiplier={titleScale.maxFontSizeMultiplier} label={applyLabel} disabled={error !== null} onPress={() => onApply(draft)} />}
     >

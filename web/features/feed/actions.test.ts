@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
 import { apiError } from "@kalia/api";
+import { describe, expect, it, vi } from "vitest";
+
 import type { FeedPage } from "./types";
 
 const { readFeed } = vi.hoisted(() => ({ readFeed: vi.fn() }));

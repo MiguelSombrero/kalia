@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
+
 import { nameTag, visibilityTiles } from "@/features/profile";
+
 import { ProfileViewSkeleton } from "./ProfileViewSkeleton";
 
 describe("ProfileViewSkeleton", () => {

@@ -1,10 +1,11 @@
 // A contributor is told what became of a suggestion. Each test's contributor is a
 // fresh account of its own, so the notifications it holds are exactly the ones its
 // own journey caused; the queue is shared, so each suggestion has a unique name.
-import { request, type Browser, type Page } from "@playwright/test";
+import { type Browser, type Page, request } from "@playwright/test";
+
 import { expectNoA11yViolations } from "./support/a11y";
 import { tabTo } from "./support/keyboard";
-import { createFreshAccount, expect, signIn, test, uniqueUsername, type KeycloakAccount } from "./support/keycloakAccount";
+import { createFreshAccount, expect, type KeycloakAccount, signIn, test, uniqueUsername } from "./support/keycloakAccount";
 
 test.describe.configure({ mode: "serial" });
 

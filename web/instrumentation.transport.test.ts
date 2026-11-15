@@ -1,10 +1,12 @@
 import { kaliaFetch } from "@kalia/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { currentTraceparent } from "@/lib/api/requestTrace";
 import { currentSessionToken } from "@/lib/auth/sessionCookie";
 import { getSessionAccount } from "@/lib/auth/valkeyAdapter";
-import { currentTraceparent } from "@/lib/api/requestTrace";
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
+
 import { register } from "./instrumentation";
 
 vi.mock("@/lib/auth/valkeyAdapter", () => ({ getSessionAccount: vi.fn() }));

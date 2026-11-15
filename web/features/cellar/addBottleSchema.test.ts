@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { addBottleSchema, MAX_QUANTITY, MIN_QUANTITY } from "./addBottleSchema";
 
 const base = { containerType: "BOTTLE" as const, quantity: 1 };

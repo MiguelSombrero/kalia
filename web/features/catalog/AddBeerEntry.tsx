@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 import { getTranslation } from "@/i18n/server";
 import type { Locale } from "@/i18n/settings";
+
 import { startCatalogSignIn } from "./actions";
 import { AddBeerDialog } from "./AddBeerDialog";
 import { PARAM_KEYS } from "./links";

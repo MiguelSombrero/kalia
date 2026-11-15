@@ -1,11 +1,12 @@
 import Link from "next/link";
+
+import { buttonVariants } from "@/components/ui/button";
+import { Page } from "@/components/ui/page";
+import { PageTitle } from "@/components/ui/page-title";
 import { resolveLocaleFromHeaders } from "@/i18n/resolveLocale";
 import { getTranslation } from "@/i18n/server";
 import { cn } from "@/lib/cn";
 import { homeHref } from "@/lib/routes";
-import { buttonVariants } from "@/components/ui/button";
-import { Page } from "@/components/ui/page";
-import { PageTitle } from "@/components/ui/page-title";
 
 // The generic not-found for the [locale] subtree: a `notFound()` with no
 // closer boundary lands here. It says nothing about what was missing — a

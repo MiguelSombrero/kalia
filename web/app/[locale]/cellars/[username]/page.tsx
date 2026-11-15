@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
 import { auth } from "@/auth";
-import { getPublicCellar, PublicCellarView, toPublicCellarPage, type PublicCellar } from "@/features/cellar";
+import { Page } from "@/components/ui/page";
+import { getPublicCellar, type PublicCellar, PublicCellarView, toPublicCellarPage } from "@/features/cellar";
 import { getProfile } from "@/features/profile";
 import { getTranslation } from "@/i18n/server";
 import { locales, toLocale } from "@/i18n/settings";
 import { cellarHref, shareableCellarHref } from "@/lib/routes";
-import { Page } from "@/components/ui/page";
 
 type Props = {
   params: Promise<{ locale: string; username: string }>;

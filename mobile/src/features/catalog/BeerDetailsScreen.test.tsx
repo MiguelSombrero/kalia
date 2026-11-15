@@ -1,12 +1,14 @@
 import { registerTransport, type Transport } from "@kalia/api";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { renderRouter } from "expo-router/testing-library";
 import { Stack } from "expo-router";
+import { renderRouter } from "expo-router/testing-library";
 import { Text } from "react-native";
+
+import { redirectAuthCallback } from "@/lib/auth/redirectAuthCallback";
 import { useCatalogLink } from "@/lib/catalogLink";
 import { AppProviders } from "@/lib/providers/AppProviders";
-import { redirectAuthCallback } from "@/lib/auth/redirectAuthCallback";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
+
 import { BeerDetailsScreen } from "./BeerDetailsScreen";
 
 const ID = "6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11";

@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { metrics } from "@/lib/metrics/metrics";
+
 import { GET } from "./route";
 
 const request = (authorization?: string) =>
