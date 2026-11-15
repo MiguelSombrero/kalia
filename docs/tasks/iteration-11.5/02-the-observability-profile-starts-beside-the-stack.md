@@ -1,6 +1,6 @@
 # Task 02: The observability profile starts beside the stack, and the stack without it is unchanged
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-1
 
@@ -70,20 +70,20 @@ container being recreated.
 
 ## Acceptance criteria
 
-- [ ] With the profile on, the viewer answers on its port and lists each data
+- [x] With the profile on, the viewer answers on its port and lists each data
       source as reachable — verified against the running stack, not a mocked
       config
-- [ ] A test in `scripts/` fails if the default stack's rendered service list
+- [x] A test in `scripts/` fails if the default stack's rendered service list
       differs from today's, and if `docker-compose.base.yml` names any of the
       profile's services; it was seen to fail with the profile wired in
       unconditionally
-- [ ] `scripts/stack-ports.mjs` carries each new port, and two worktrees run
+- [x] `scripts/stack-ports.mjs` carries each new port, and two worktrees run
       the profile at once on different ports — verified by running both
-- [ ] Recreating the container keeps what it stored
-- [ ] `make observability-down` leaves the rest of the stack's containers
+- [x] Recreating the container keeps what it stored
+- [x] `make observability-down` leaves the rest of the stack's containers
       running and the backend and web answering — verified against the
       running stack
-- [ ] The root README says how to start, open and stop it, `make help` lists
+- [x] The root README says how to start, open and stop it, `make help` lists
       both targets, and `make verify-fast` is green
 
 ## Notes

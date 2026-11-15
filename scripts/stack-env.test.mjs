@@ -20,6 +20,7 @@ test("slot 1 is the documented offset of 100 on every default", () => {
     POSTGRES_PORT: 5532,
     VALKEY_PORT: 6479,
     MAILPIT_PORT: 8125,
+    GRAFANA_PORT: 3101,
     METRO_PORT: 8182,
   });
 });

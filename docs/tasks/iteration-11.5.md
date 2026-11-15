@@ -32,7 +32,7 @@ around it — through every tier, reading it from a query rather than from
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-11.5/01-decision-the-local-observability-stack.md) | Decide the local observability stack and how an agent reads it | done |
-| [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | refined |
+| [02](iteration-11.5/02-the-observability-profile-starts-beside-the-stack.md) | The observability profile starts beside the stack, and the stack without it is unchanged | done |
 | [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | refined |
 | [04](iteration-11.5/04-a-trace-shows-the-sql-a-request-ran.md) | A trace shows the SQL a request ran | refined |
 | [05](iteration-11.5/05-the-web-servers-telemetry-reaches-the-profile.md) | The web server's traces, metrics and logs reach the profile | refined |

@@ -5,7 +5,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { imagesFromOutput, matrixFor } from "./scan-images.mjs";
+import { imagesFromOutput, matrixFor, profileOnlyImages } from "./scan-images.mjs";
 
 const config = {
   name: "kalia",
@@ -35,4 +35,10 @@ test("matrixFor scans an image added to the base file, with no list to edit", ()
   const scanned = matrixFor({ images, config: added }).map((entry) => entry.image);
   assert.ok(scanned.includes("valkey/valkey:9"));
   assert.equal(scanned.length, images.length);
+});
+
+test("profileOnlyImages keeps what the profile adds and drops what the stack already runs", () => {
+  const without = ["kalia-backend", "postgres:18.6"];
+  const withProfile = ["kalia-backend", "postgres:18.6", "grafana/otel-lgtm:1.0.0", "grafana/alloy:v1.0.0"];
+  assert.deepEqual(profileOnlyImages({ without, withProfile }), ["grafana/otel-lgtm:1.0.0", "grafana/alloy:v1.0.0"]);
 });

@@ -69,7 +69,7 @@ code and merges pull requests. Does not write code.
 echo "KALIA_WEB_CLIENT_SECRET=kalia-dev-secret" > .env   # once per checkout: a credential, so compose has no default
 make stack-env   # in a git worktree only: gives it its own ports
 make up          # docker compose up --build -d; `make down` stops it
-docker compose down -v   # reset: stops the stack and deletes its data
+docker compose --profile observability down -v   # reset: stops the stack and deletes its data, the observability profile's included
 ```
 
 | You reach | At |
@@ -80,6 +80,7 @@ docker compose down -v   # reset: stops the stack and deletes its data
 | Keycloak admin console | `localhost:8083` (admin/admin) |
 | Mailpit inbox (every email Keycloak sends) | `localhost:8025` |
 | Postgres / Valkey | `localhost:5432` / `localhost:6379` |
+| Grafana, with the observability profile on | `localhost:3001` |
 
 All are bound to localhost only. Sign in to Kalia as `testuser` / `testuser123`,
 or as `testadmin`, which holds the `admin` role; its password is
@@ -87,6 +88,21 @@ or as `testadmin`, which holds the `admin` role; its password is
 Every value in that file is dev-only: never reuse one outside local development.
 
 - `make stack-env` gives worktree slot *n* each default port + 100×*n*.
+- **Observability profile** ([ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)),
+  off unless asked for: `make observability-up` starts a Grafana container
+  that stores traces, logs and metrics, and a shipper that sends every other
+  container's stdout to it, beside the stack and on this worktree's
+  `GRAFANA_PORT`. It recreates the backend and the web with the collector's
+  address (`OTEL_EXPORTER_OTLP_ENDPOINT`) and leaves everything else running;
+  `make observability-down` stops it and recreates those two without; a plain
+  `make up` afterwards leaves the endpoint empty too. Open
+  Grafana at the port above: it needs no sign-in and cannot write. What it
+  stores lives in a volume that survives both and a recreate, for three days
+  at most, and in 2 GiB of memory at most. The first start downloads about
+  600 MB of Grafana plugins, so it needs the network once; the image is 3.6 GB
+  on disk. Without it the stack starts exactly the containers it did before.
+  Nothing sends telemetry to it yet: iteration 11.5's tasks 03–06 connect each
+  tier.
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next
@@ -174,6 +190,7 @@ a manifest; don't restate what the manifest says.
 
 - Keycloak 26 (identity provider; `keycloak/Dockerfile` also bakes in the login theme, [ADR-0056](docs/adr/0056-branded-bilingual-keycloak-pages.md))
 - keycloak-config-cli (the `keycloak-config` service reconciles the realm on every startup, [ADR-0054](docs/adr/0054-keycloak-config-cli-realm-management.md))
+- Grafana `otel-lgtm` and Grafana Alloy (the opt-in observability profile: one container stores and shows traces, logs and metrics, one ships the stack's stdout to it; `make observability-up`, [ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md))
 - Valkey (session store); Mailpit (catches Keycloak's email locally; a deployment uses SMTP, see [the email task](docs/tasks/iteration-6.5/04-send-email-from-kalia.md))
 - nginx (`edge/`, the only service the deployable stack publishes: per-client rate and body limits, [ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
 - Tailscale (a physical iPhone reaches the stack over the owner's tailnet, opt-in with `make phone-mode`, [ADR-0097](docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md))
