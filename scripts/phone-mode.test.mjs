@@ -4,7 +4,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { clearPhoneHost, hostProblem, metroArgs, phoneModeRefusal, serveCalls, setPhoneHost, validHost } from "./phone-mode.mjs";
+import { clearPhoneHost, forwardOwners, forwardedPortsOf, hostProblem, metroArgs, otherOwners, phoneModeRefusal, serveCalls, setPhoneHost, takeoverNotice, validHost } from "./phone-mode.mjs";
 import { meetsPin, parseStatus, parseVersion } from "./tailscale.mjs";
 
 const running = { installed: true, running: true, names: ["mac.example.ts.net", "mac"] };
@@ -61,6 +61,52 @@ test("phoneModeRefusal names the command and `make phone-mode-off` only when pho
 test("Metro listens on loopback only in phone mode, where the forward is what reaches it", () => {
   assert.deepEqual(metroArgs({ KALIA_PHONE_HOST: "mac.example.ts.net" }), ["--localhost"]);
   assert.deepEqual(metroArgs({}), []);
+});
+
+const serveStatus = (...ports) =>
+  JSON.stringify({
+    TCP: Object.fromEntries(ports.map((port) => [port, { HTTP: true }])),
+    Web: Object.fromEntries(ports.map((port) => [`mac.example.ts.net:${port}`, { Handlers: { "/": { Proxy: `http://127.0.0.1:${port}` } } }])),
+  });
+
+const PHONE = "mac.example.ts.net";
+const first = { name: "first-worktree", env: { KALIA_PHONE_HOST: PHONE, WEB_PORT: "3100", BACKEND_PORT: "8180", KEYCLOAK_PORT: "8181", METRO_PORT: "8182" } };
+const second = { name: "second-worktree", env: { KALIA_PHONE_HOST: PHONE, WEB_PORT: "3200", BACKEND_PORT: "8280", KEYCLOAK_PORT: "8281", METRO_PORT: "8282" } };
+const idle = { name: "idle-worktree", env: { WEB_PORT: "3300", BACKEND_PORT: "8380", KEYCLOAK_PORT: "8381", METRO_PORT: "8382" } };
+const firstForwards = forwardedPortsOf(serveStatus(3100, 8180, 8181, 8182));
+
+test("forwardedPortsOf reads the loopback ports `tailscale serve status --json` forwards, and nothing from no configuration", () => {
+  assert.deepEqual(forwardedPortsOf(serveStatus(8181, 3100)), ["3100", "8181"]);
+  assert.deepEqual(forwardedPortsOf("{}"), []);
+  assert.deepEqual(forwardedPortsOf("No serve config"), []);
+  assert.deepEqual(forwardedPortsOf(JSON.stringify({ TCP: { 3000: { HTTP: true } } })), ["3000"]);
+});
+
+test("a switch that replaces another worktree's forwards names that worktree", () => {
+  const notice = takeoverNotice(firstForwards, [first, second, idle], "second-worktree");
+  assert.match(notice, /replacing the tailnet forwards of first-worktree/);
+  assert.doesNotMatch(notice, /second-worktree|idle-worktree|example\.ts\.net/);
+});
+
+test("a switch over its own forwards, or over none, says nothing", () => {
+  assert.equal(takeoverNotice(firstForwards, [first, second], "first-worktree"), undefined);
+  assert.equal(takeoverNotice([], [first, second], "second-worktree"), undefined);
+});
+
+test("a switch over forwards that no worktree in phone mode owns says so without naming one", () => {
+  const notice = takeoverNotice(firstForwards, [idle, second], "second-worktree");
+  assert.match(notice, /no checkout in phone mode owns/);
+  assert.doesNotMatch(notice, /idle-worktree/, "a worktree that is not in phone mode owns no forward");
+});
+
+test("a worktree on the default ports owns forwards on the default ports", () => {
+  const main = { name: "main", env: { KALIA_PHONE_HOST: PHONE } };
+  assert.deepEqual(forwardOwners(["3000", "8080", "8081", "8082"], [main, first]), ["main"]);
+});
+
+test("turning phone mode off leaves another worktree's forwards in place", () => {
+  assert.deepEqual(otherOwners(firstForwards, [first, second], "second-worktree"), ["first-worktree"]);
+  assert.deepEqual(otherOwners(firstForwards, [first, second], "first-worktree"), []);
 });
 
 test("parseVersion reads the first line of `tailscale version`", () => {
