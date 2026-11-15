@@ -261,7 +261,7 @@
 				</executions>
 			</plugin>
 			<!-- Coverage is measured and reported, not gated: the >= 80 % aim
-			     (backend/README.md testing conventions) is met with valuable
+			     (backend/CONVENTIONS.md testing conventions) is met with valuable
 			     tests, not by appeasing a build-breaking threshold. -->
 			<plugin>
 				<groupId>org.jacoco</groupId>

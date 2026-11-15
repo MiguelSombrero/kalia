@@ -185,7 +185,7 @@ class ArchitectureTest {
 				.and().resideOutsideOfPackage(basePackage + ".web..")
 				.should(declareBasePackages())
 				.because("""
-						basePackages is the scoping convention (ADR-0014, backend/README.md); \
+						basePackages is the scoping convention (ADR-0014, backend/CONVENTIONS.md); \
 						without it an advice answers for every controller in the application""")
 				.allowEmptyShould(false);
 	}

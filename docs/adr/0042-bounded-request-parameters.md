@@ -5,7 +5,7 @@
 
 ## Context
 
-`backend/README.md`'s "Every request parameter is bounded" convention carried
+`backend/CONVENTIONS.md`'s "Every request parameter is bounded" convention carried
 multi-line "why" rationale with no ADR behind it — why a bound must be a named
 constant rather than a bare annotation value, and why a constraint spanning
 two parameters (`minAbv`/`maxAbv`) is checked in the handler and reported

@@ -86,7 +86,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
 
 - **SHOULD-119** *(confirmed 2026-11-14)* — On an iPhone with VoiceOver in a
   Finnish voice, the catalog's filter sheet does not put focus where
-  [mobile/README.md](../../mobile/README.md#conventions) says it goes. Opening
+  [mobile/CONVENTIONS.md](../../mobile/CONVENTIONS.md) says it goes. Opening
   it from the Catalog lands on the "Sulje" (Close) button, not the "Suodattimet"
   heading; coming back from a picker reads "Sulje" first and only then moves to
   the heading, although `FiltersSheet` sends `sendAccessibilityEvent(heading,
@@ -181,7 +181,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   names `tokens.ts` as the home of values. The edit it describes would be
   overwritten.
 - **SHOULD-129** *(confirmed 2026-11-14)* **[needs decision]** — The timestamp
-  rule contradicts the schema. `backend/README.md` "Code conventions" ("A new
+  rule contradicts the schema. `backend/CONVENTIONS.md` ("A new
   table carries `created_at` and `updated_at`") and `docs/glossary.md`'s
   Timestamp columns row (which names `catalog.beer` as the one exception) do
   not match four tables with no `updated_at`: `catalog.brewery` and

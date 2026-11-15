@@ -8,7 +8,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Test;
 
 // Covers HttpBoundaryTest's rules: neither has a production violator, so a
-// wrong condition would pass silently (see backend/README.md). Fixture lives
+// wrong condition would pass silently (see backend/CONVENTIONS.md). Fixture lives
 // at archfixture.httpboundary.EntityLeakingController; each assertion names
 // the offending method, so a rule failing for an unrelated reason can't pass
 // for one that bites.

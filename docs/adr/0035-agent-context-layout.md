@@ -6,6 +6,8 @@
   [ADR-0039](0039-mechanisms-for-recurring-rule-violations.md) — the
   `.claude/rules/` rejection below is scoped to area conventions, not to rules
   that bind a file type across both subtrees
+- **Amended:** 2026-11-15 — each subtree's conventions moved from its README
+  into a `CONVENTIONS.md` beside it, and the pointer file imports both
 
 ## Context
 
@@ -166,6 +168,27 @@ safe default in `application.properties` or compose
 > Claude Code 2.1.220 — see ADR-0039's Evidence. The `paths:` frontmatter this
 > turns on postdates the survey above, which is why it appears nowhere in the
 > alternatives.
+
+> **Amended 2026-11-15.** Each subtree's code conventions live in a
+> `CONVENTIONS.md` beside its README (`backend/`, `web/`, `mobile/`), and the
+> subtree's `CLAUDE.md` imports the README and that file. Wherever the Decision
+> above says a convention is written in "the README", read the subtree's
+> `CONVENTIONS.md`: it is now the single home of *how to write code* there, and
+> the README keeps how to run, test and build the app and its traps. The pointer
+> file still adds nothing either file says.
+>
+> The reason is size. The README is capped (`scripts/check-doc-size.mjs`) and
+> held run-and-test text and conventions under one cap, so a convention added
+> to a README that was at its cap displaced run-and-test text or was refused.
+> Splitting by *purpose* rather than by size keeps the property the Bad
+> consequence on all-or-nothing loading names: both files still load whenever
+> the subtree is touched, and each rule still has exactly one home. Rejected:
+> raising the cap, which only moves the next collision; and compressing the
+> conventions, which loses the rules whose violation fails silently. The traps
+> stay in the README beside the commands they warn about, because they warn
+> against "fixing" them, and that is read where the commands are. A test in
+> `scripts/` fails when a subtree's `CLAUDE.md` stops importing either file.
+> `packages/` has no `CONVENTIONS.md`: its README stays its one home.
 
 ## Evidence
 

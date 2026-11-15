@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Fails when a capped document grows past its cap. docs/architecture.md shows
 // the shape of the system and no more, and the root, backend, web and mobile
-// READMEs are the ones every session reads first (ADR-0020); every task's
+// READMEs, with each app's CONVENTIONS.md, are the ones every session reads first (ADR-0020, ADR-0035); every task's
 // doc-sync step had added what it built until they reached 1,667, 657 and 534
 // lines. A line count is the one regrowth signal that needs no judgement.
 // Plain Node, no dependencies.
@@ -15,6 +15,9 @@ export const CAPS = {
   "backend/README.md": 300,
   "web/README.md": 300,
   "mobile/README.md": 320,
+  "backend/CONVENTIONS.md": 80,
+  "web/CONVENTIONS.md": 200,
+  "mobile/CONVENTIONS.md": 150,
   "README.md": 300,
 };
 
@@ -22,11 +25,17 @@ const HINTS = {
   "docs/architecture.md":
     "It records shape only (ADR-0020): move behaviour to the README of the code it describes, and reasons to an ADR.",
   "backend/README.md":
-    "It is loaded into every backend session: keep commands, conventions and traps, and leave reasons to an ADR and per-suite detail to the test's Javadoc.",
+    "It is loaded into every backend session: keep commands and traps (conventions are in CONVENTIONS.md), and leave reasons to an ADR and per-suite detail to the test's Javadoc.",
   "web/README.md":
-    "It is loaded into every web session: keep commands, conventions and traps, and leave reasons to an ADR.",
+    "It is loaded into every web session: keep commands and traps (conventions are in CONVENTIONS.md), and leave reasons to an ADR.",
   "mobile/README.md":
-    "It is loaded into every mobile session: keep commands, conventions and traps, and leave reasons to an ADR and build detail to the scripts.",
+    "It is loaded into every mobile session: keep commands and traps (conventions are in CONVENTIONS.md), and leave reasons to an ADR and build detail to the scripts.",
+  "backend/CONVENTIONS.md":
+    "It is loaded into every backend session beside the README: keep each rule and the ADR or test holding its reasoning, and leave the reasoning itself to the ADR.",
+  "web/CONVENTIONS.md":
+    "It is loaded into every web session beside the README: keep each rule and the ADR or test holding its reasoning, and leave the reasoning itself to the ADR.",
+  "mobile/CONVENTIONS.md":
+    "It is loaded into every mobile session beside the README: keep each rule and the ADR or test holding its reasoning, and leave the reasoning itself to the ADR.",
   "README.md":
     "It is the front door and owns the stack's run instructions: keep commands, traps and what is said nowhere else, and leave reasons to an ADR and shape to docs/architecture.md.",
 };

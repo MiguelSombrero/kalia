@@ -200,9 +200,9 @@ Source of truth: `backend/openapi.json` and Swagger UI. Reasons:
 
 ## 5. Client design
 
-Both clients call the same API and share `packages/`; each README holds its
-day-to-day rules ([web/README.md](../web/README.md),
-[mobile/README.md](../mobile/README.md)).
+Both clients call the same API and share `packages/`; each app's `CONVENTIONS.md` holds its
+day-to-day rules ([web](../web/CONVENTIONS.md),
+[mobile](../mobile/CONVENTIONS.md)).
 
 ### The web app
 

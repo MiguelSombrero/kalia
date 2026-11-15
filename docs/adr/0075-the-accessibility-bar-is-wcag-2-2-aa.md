@@ -65,8 +65,8 @@ AAA criteria — 2.4.12, 2.4.13, 3.3.9 — are not part of the bar.
 **The mobile app (amended 2026-11-14).** The bar is the same on the phone, and the web's three
 layers have no equivalent there: there is no `axe` for React Native, and
 what VoiceOver or TalkBack speaks, or what the largest text size does to a
-screen, is invisible to a Jest render. The mobile README states each rule
-([Conventions](../../mobile/README.md#conventions)); this maps the criteria
+screen, is invisible to a Jest render. The mobile conventions state each rule
+([CONVENTIONS.md](../../mobile/CONVENTIONS.md)); this maps the criteria
 onto them. The test helper reads the rendered tree, so it judges structure
 only; the rest is walked by hand from
 [`mobile/accessibility-walk.md`](../../mobile/accessibility-walk.md), each walk

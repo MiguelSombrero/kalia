@@ -1,5 +1,6 @@
 @AGENTS.md
 @README.md
+@CONVENTIONS.md
 
 The conventions imported above are binding for every change under `web/`.
 Each links the ADR holding its rationale — read that before proposing a change

@@ -1,6 +1,6 @@
 # Task 25: Each app's code conventions have a file of their own, loaded with its subtree
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -59,15 +59,15 @@ once.
 
 ## Acceptance criteria
 
-- [ ] The three `CONVENTIONS.md` files exist, each README's Conventions
+- [x] The three `CONVENTIONS.md` files exist, each README's Conventions
       section is gone and replaced by a one-line pointer, and each README's
       Traps section is unchanged
-- [ ] A test in `scripts/` fails if a subtree's `CLAUDE.md` does not import
+- [x] A test in `scripts/` fails if a subtree's `CLAUDE.md` does not import
       both its README and its `CONVENTIONS.md`, and was seen to fail with one
       import removed
-- [ ] `scripts/check-doc-size.mjs` caps each new file, and its test covers one
-- [ ] ADR-0035 carries the amendment, and `make check`'s link check passes
-- [ ] `make verify-fast` is green
+- [x] `scripts/check-doc-size.mjs` caps each new file, and its test covers one
+- [x] ADR-0035 carries the amendment, and `make check`'s link check passes
+- [x] `make verify-fast` is green
 
 ## Notes
 

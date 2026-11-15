@@ -17,7 +17,7 @@ final class PageBounds {
 	private PageBounds() {
 	}
 
-	// See backend/README.md's "Every request parameter is bounded" convention.
+	// See backend/CONVENTIONS.md's "Every request parameter is bounded" convention.
 	static void requireBoundedOffset(int page, int size) {
 		if ((long) page * size > MAX_OFFSET) {
 			throw new InvalidSearchParameterException(

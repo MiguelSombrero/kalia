@@ -3,7 +3,7 @@
 Every decision in this directory records **why** something was chosen and what
 was rejected to get there ([ADR-0020](0020-documentation-roles.md)). For the
 *shape* of the system read [docs/architecture.md](../architecture.md); for
-*how* to work in an app read its README ([backend](../../backend/README.md),
+*how* to work in an app read its README and `CONVENTIONS.md` ([backend](../../backend/README.md),
 [web](../../web/README.md), [mobile](../../mobile/README.md)).
 
 - **Format:** [template.md](template.md), with the rules in
@@ -425,8 +425,8 @@ to bound.
   process must earn its place against the task.
 - [ADR-0032](0032-when-a-decision-earns-an-adr.md) — when a decision earns an
   ADR, and why related decisions are grouped by this index rather than merged.
-- [ADR-0035](0035-agent-context-layout.md) — `backend/` and `frontend/` each
-  carry a `CLAUDE.md` importing their README, so the conventions load with the
+- [ADR-0035](0035-agent-context-layout.md) — `backend/`, `web/` and `mobile/` each
+  carry a `CLAUDE.md` importing their README and `CONVENTIONS.md`, so the conventions load with the
   subtree; and which monorepo optimizations this repository declines.
 - [ADR-0038](0038-in-repo-spec-driven-process.md) — why an external
   spec-driven toolkit was examined and declined, and the two ideas taken from

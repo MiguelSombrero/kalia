@@ -135,7 +135,7 @@ defers full metrics/tracing).
 - A request rejected before a handler is chosen is logged without its route,
   so the backend's line for a `401` no longer says which endpoint was asked
   for; the trace id still ties it to the web's line, which does.
-- `backend/README.md`'s logging bullet summarizes the rules
+- `backend/CONVENTIONS.md`'s logging bullet summarizes the rules
   for day-to-day reference and links here; this ADR is the full statement and
   the record of why. It originally carried a full restatement instead — see
   the `Amended` field above.

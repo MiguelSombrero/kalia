@@ -35,7 +35,7 @@ arriving concurrently, both see no entry and both insert; the second commit
 trips the `UNIQUE (user_id, beer_id)` constraint
 (`V005__cellar_schema.sql:14`), and nothing maps the resulting
 `DataIntegrityViolationException` to a response — the backend's error-handling
-convention (`backend/README.md`) deliberately lets broad exception types fall
+convention (`backend/CONVENTIONS.md`) deliberately lets broad exception types fall
 through to a message-less 500. The losing request's whole transaction rolls
 back, so its bottles are never persisted: a 500 on a write that silently loses
 data, from a plausible double-click rather than a contrived race.
