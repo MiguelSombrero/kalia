@@ -75,7 +75,9 @@ describe("what leaves the process as a span", () => {
   });
 
   it("keeps what a trace needs: the names, route templates, status and timing", () => {
-    const [call, request] = recordedSpans().map(redactSpan);
+    const redacted = recordedSpans().map(redactSpan);
+    const call = redacted[0]!;
+    const request = redacted[1]!;
 
     expect(request.name).toBe("GET /[locale]/cellars/[username]");
     expect(request.attributes).toMatchObject({
@@ -112,7 +114,7 @@ describe("what leaves the process as a span", () => {
 
     expect(received).toHaveLength(1);
     for (const secret of SECRETS) {
-      expect(leaving(received[0])).not.toContain(secret);
+      expect(leaving(received[0]!)).not.toContain(secret);
     }
   });
 });
