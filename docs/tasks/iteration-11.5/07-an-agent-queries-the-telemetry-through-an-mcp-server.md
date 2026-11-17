@@ -62,13 +62,13 @@ it for.
 - [ ] In a fresh session in a worktree with the profile on, an agent finds the
       trace of a request it just made by its trace id, reads its spans, and
       reads its log lines — verified by doing it
-- [ ] A test in `scripts/` fails if the committed MCP configuration names a
+- [x] A test in `scripts/` fails if the committed MCP configuration names a
       host other than localhost or an unpinned version, and was seen to fail
       against such a configuration
-- [ ] The server's credential cannot create a dashboard — verified by trying
-- [ ] A query whose raw answer is larger than the bound returns a truncated
+- [x] The server's credential cannot create a dashboard — verified by trying
+- [x] A query whose raw answer is larger than the bound returns a truncated
       answer that says it was cut — verified by running one
-- [ ] With the profile stopped, the server answers with a message naming how to
+- [x] With the profile stopped, the server answers with a message naming how to
       start it
-- [ ] The root README says how the server is enabled, and `make verify-fast` is
+- [x] The root README says how the server is enabled, and `make verify-fast` is
       green

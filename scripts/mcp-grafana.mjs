@@ -3,7 +3,7 @@
 // Grafana's own server, run as a container. How an agent uses it is in the
 // README.
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
@@ -81,6 +81,16 @@ export const boundResult = (message, max = MAX_ANSWER_CHARS) => {
   return { ...message, result: { ...result, content: bounded } };
 };
 
+const idOf = (line) => {
+  try {
+    return JSON.parse(line).id;
+  } catch {
+    return undefined;
+  }
+};
+
+const textOf = (message) => (message.result.content ?? []).map((item) => item.text ?? "").join(" ");
+
 export const toolError = (id, text) => ({ jsonrpc: "2.0", id, result: { isError: true, content: [{ type: "text", text }] } });
 
 export const notRunningAnswer = (id, env) =>
@@ -150,9 +160,9 @@ export const createProxy = ({ env, startUpstream, writeToClient, isUp, mintToken
   const emit = (message) => writeToClient(JSON.stringify(message));
 
   const start = async () => {
-    upstream?.close();
     let token;
     if (await isUp()) token = await mintToken();
+    upstream?.close();
     upstream = startUpstream(token);
     hasToken = token !== undefined;
     if (initialize) {
@@ -202,7 +212,10 @@ export const createProxy = ({ env, startUpstream, writeToClient, isUp, mintToken
       return queue;
     },
     fromClient(line) {
-      queue = queue.then(() => handle(line));
+      queue = queue.then(() => handle(line)).catch((error) => {
+        const id = idOf(line);
+        if (id !== undefined) emit(toolError(id, `The telemetry server failed on this request: ${error.message}`));
+      });
       return queue;
     },
     fromUpstream(line) {
@@ -213,6 +226,7 @@ export const createProxy = ({ env, startUpstream, writeToClient, isUp, mintToken
         return writeToClient(line);
       }
       if (swallow.delete(message.id)) return;
+      if (message.result?.isError && /\b401\b|unauthori[sz]ed/i.test(textOf(message))) hasToken = false;
       emit(boundResult(message));
     },
     close: () => upstream?.close(),
@@ -220,6 +234,10 @@ export const createProxy = ({ env, startUpstream, writeToClient, isUp, mintToken
 };
 
 const main = async () => {
+  if (process.argv.includes("--pull")) {
+    const pulled = spawnSync("docker", ["pull", IMAGE], { stdio: "inherit" });
+    process.exit(pulled.status ?? 1);
+  }
   const env = stackEnv();
   const retired = new Set();
   let proxy;
@@ -234,6 +252,11 @@ const main = async () => {
         env: { ...process.env, GRAFANA_SERVICE_ACCOUNT_TOKEN: token ?? "" },
       });
       createInterface({ input: child.stdout }).on("line", (line) => proxy.fromUpstream(line));
+      child.stdin.on("error", () => {});
+      child.on("error", (error) => {
+        console.error(`mcp-grafana: could not run docker (${error.message}); start Docker Desktop and make sure \`docker\` is on the PATH`);
+        process.exit(1);
+      });
       child.on("exit", (code) => {
         if (!retired.has(child)) process.exit(code ?? 1);
       });

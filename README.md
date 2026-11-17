@@ -113,7 +113,9 @@ Every value in that file is dev-only: never reuse one outside local development.
   sent off the machine. An answer is cut at 12,000 characters and says so, so
   narrow the query rather than ask for more; with the profile stopped it
   answers that and names `make observability-up`. Follow one request with
-  `get_tempo_trace`, then `query_loki_logs` on `|= "<trace id>"`.
+  `get_tempo_trace`, then `query_loki_logs` on `|= "<trace id>"`. Run `node
+  scripts/mcp-grafana.mjs --pull` once first: the image is about 290 MB, and a
+  first connect that waits on the download times out.
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next

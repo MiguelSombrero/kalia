@@ -17,12 +17,11 @@ const read = (path) => readFileSync(resolve(ROOT, path), "utf8");
 const WRAPPER = ['const IMAGE = "grafana/mcp-grafana:2.3.0";', 'const url = `http://host.docker.internal:${port}`;', 'spawn("docker", args);'].join("\n");
 const local = (server) => JSON.stringify({ mcpServers: { telemetry: server } });
 const check = (server, wrapper = WRAPPER) =>
-  problemsIn({ mcpJson: local(server), files: { "scripts/wrapper.mjs": wrapper } });
+  problemsIn({ mcpJson: local(server), readFile: (path) => ({ "scripts/wrapper.mjs": wrapper })[path] });
 const NODE = { command: "node", args: ["scripts/wrapper.mjs"] };
 
 test("the committed configuration names only this machine and an exact version", () => {
-  const files = { "scripts/mcp-grafana.mjs": read("scripts/mcp-grafana.mjs") };
-  assert.deepEqual(problemsIn({ mcpJson: read(".mcp.json"), files }), []);
+  assert.deepEqual(problemsIn({ mcpJson: read(".mcp.json"), readFile: read }), []);
 });
 
 test("a local script that runs a pinned image is accepted", () => {
@@ -83,5 +82,5 @@ test("a script that is not in the repository, and a command it cannot pin, are r
 });
 
 test("a configuration that is not JSON is reported, not thrown", () => {
-  assert.match(problemsIn({ mcpJson: "{", files: {} })[0], /not JSON/);
+  assert.match(problemsIn({ mcpJson: "{", readFile: () => undefined })[0], /not JSON/);
 });

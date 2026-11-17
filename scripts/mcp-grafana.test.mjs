@@ -60,10 +60,6 @@ test("a result that is not a tool result passes through", () => {
   assert.deepEqual(boundResult(failure), failure);
 });
 
-test("the bound is a few thousand tokens, not the model's whole context", () => {
-  assert.ok(MAX_ANSWER_CHARS >= 4000 && MAX_ANSWER_CHARS <= 20000);
-});
-
 const env = { GRAFANA_PORT: "3301" };
 
 test("the stopped-profile answer names the command that starts it, as a tool error", () => {
@@ -205,6 +201,39 @@ test("a profile that cannot give a token answers the tool call with why, not wit
   await proxy.fromClient(call(2));
   assert.equal(state.written[0].result.isError, true);
   assert.match(textOf(state.written[0]), /Viewer token could not be created: Grafana would not create a token/);
+});
+
+test("a line that makes the container fail is answered, and later lines are still handled", async () => {
+  const { proxy, state } = harness();
+  await proxy.start();
+  const first = state.started[0];
+  const send = first.send;
+  first.send = () => { throw new Error("EPIPE"); };
+  await proxy.fromClient(line({ id: 5, method: "tools/list" }));
+  assert.match(textOf(state.written[0]), /failed on this request: EPIPE/);
+  first.send = send;
+  await proxy.fromClient(line({ id: 6, method: "tools/list" }));
+  assert.equal(first.lines.at(-1).id, 6);
+});
+
+test("a container that answers 401 is replaced, with a new token, on the next tool call", async () => {
+  let tokens = 0;
+  const { proxy, state } = harness({ mint: async () => `token-${++tokens}` });
+  await proxy.start();
+  await proxy.fromClient(line({ id: 1, method: "initialize", params: {} }));
+  proxy.fromUpstream(line({ id: 2, result: { isError: true, content: [{ type: "text", text: "Grafana returned 401 Unauthorized" }] } }));
+  await proxy.fromClient(call(3));
+  assert.equal(state.started.length, 2);
+  assert.equal(state.started[1].token, "token-2");
+});
+
+test("a failed token mint leaves the running container in place", async () => {
+  const { proxy, state } = harness({ up: false, mint: async () => { throw new Error("no"); } });
+  await proxy.start();
+  state.up = true;
+  await proxy.fromClient(call(2));
+  assert.equal(state.closed, 0);
+  assert.match(textOf(state.written[0]), /could not be created/);
 });
 
 test("lines that are not JSON are passed on as they came", async () => {

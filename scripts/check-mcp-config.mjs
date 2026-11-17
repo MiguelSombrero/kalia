@@ -33,11 +33,11 @@ const versionOf = (reference) => {
 };
 
 /**
- * @param {{ mcpJson: string, files: Record<string, string | undefined> }} input
- *   the text of `.mcp.json`, and the text of each repository file by its repo-relative path (undefined when missing)
+ * @param {{ mcpJson: string, readFile: (path: string) => string | undefined }} input
+ *   the text of `.mcp.json`, and a reader of repository files by repo-relative path (undefined when missing)
  * @returns {string[]} one message per problem; empty means the configuration is acceptable
  */
-export const problemsIn = ({ mcpJson, files }) => {
+export const problemsIn = ({ mcpJson, readFile }) => {
   let config;
   try {
     config = JSON.parse(mcpJson);
@@ -61,7 +61,7 @@ export const problemsIn = ({ mcpJson, files }) => {
 
     if (server.command === "node") {
       const script = args[0];
-      const source = script && files[script];
+      const source = script && readFile(script);
       if (!script || source === undefined) problems.push(`${where} runs node on "${script}", which is not a file in the repository`);
       else sources.set(script, source);
     } else if (["npx", "uvx", "bunx"].includes(server.command)) {
@@ -90,10 +90,8 @@ export const problemsIn = ({ mcpJson, files }) => {
 const main = () => {
   const path = resolve(ROOT, ".mcp.json");
   if (!existsSync(path)) return;
-  const files = new Proxy({}, {
-    get: (_, script) => (typeof script === "string" && existsSync(resolve(ROOT, script)) ? readFileSync(resolve(ROOT, script), "utf8") : undefined),
-  });
-  const problems = problemsIn({ mcpJson: readFileSync(path, "utf8"), files });
+  const readFile = (script) => (existsSync(resolve(ROOT, script)) ? readFileSync(resolve(ROOT, script), "utf8") : undefined);
+  const problems = problemsIn({ mcpJson: readFileSync(path, "utf8"), readFile });
   for (const problem of problems) console.error(`check-mcp-config: ${problem}`);
   if (problems.length > 0) process.exit(1);
 };
