@@ -109,7 +109,13 @@ export const buildTree = (spans) => {
   return roots.sort(byStart);
 };
 
-const signature = (node) => `${node.span.tier}|${labelOf(node.span)}|${node.span.failed}|(${node.children.map(signature).join(",")})`;
+const signatures = new WeakMap();
+const signature = (node) => {
+  if (!signatures.has(node)) {
+    signatures.set(node, `${node.span.tier}|${labelOf(node.span)}|${node.span.failed}|(${node.children.map(signature).join(",")})`);
+  }
+  return signatures.get(node);
+};
 
 /**
  * Sibling spans that are the same call with the same shape beneath it become
@@ -190,6 +196,11 @@ const logLines = (logs, minLevel) => {
   return logs.filter((log) => LEVELS.indexOf(log.level) >= floor).map((log) => `${clock(log.atMs)} ${log.level.padEnd(5)} ${log.service}  ${log.message}`);
 };
 
+const extent = (spans) => ({
+  first: spans.reduce((least, span) => Math.min(least, span.startMs), Infinity),
+  last: spans.reduce((most, span) => Math.max(most, span.startMs + span.durationMs), -Infinity),
+});
+
 const plural = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
 
 /**
@@ -200,13 +211,12 @@ const plural = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
  */
 export const formatTrace = (traceId, spans, logs, max = MAX_LINES) => {
   const roots = buildTree(spans);
-  const starts = spans.map((span) => span.startMs);
-  const ends = spans.map((span) => span.startMs + span.durationMs);
+  const { first, last } = extent(spans);
   const tiers = [...new Set(spans.map((span) => span.tier))];
   const header =
     spans.length === 0
       ? `Trace ${traceId}: no spans stored (a trace is exported in batches, and the store keeps three days)`
-      : `Trace ${traceId}  ${new Date(Math.min(...starts)).toISOString()}  ${plural(spans.length, "span")} in ${tiers.join(", ")}  ${formatMs(Math.max(...ends) - Math.min(...starts))} wall`;
+      : `Trace ${traceId}  ${new Date(first).toISOString()}  ${plural(spans.length, "span")} in ${tiers.join(", ")}  ${formatMs(last - first)} wall`;
   const compose = ({ fold, minLevel }) => {
     const shown = logLines(logs, minLevel);
     const hidden = logs.length - shown.length;
@@ -268,8 +278,8 @@ export const run = async ({ argv, env = stackEnv(), fetchImpl = fetch, now = Dat
   const tempo = "/api/datasources/proxy/uid/tempo";
   const loki = "/api/datasources/proxy/uid/loki/loki/api/v1/query_range";
   const startNs = (ms) => String(BigInt(Math.floor(ms)) * 1000000n);
-  const lokiQuery = async (query, fromMs, toMs, limit) => {
-    const response = await get(loki, { query, start: startNs(fromMs), end: startNs(toMs), limit: String(limit), direction: "forward" });
+  const lokiQuery = async (query, fromMs, toMs, limit, direction = "forward") => {
+    const response = await get(loki, { query, start: startNs(fromMs), end: startNs(toMs), limit: String(limit), direction });
     if (!response.ok) throw new Error(`Loki answered ${response.status}`);
     return parseLogs(await response.json());
   };
@@ -283,8 +293,9 @@ export const run = async ({ argv, env = stackEnv(), fetchImpl = fetch, now = Dat
   try {
     if (id) {
       const spans = await fetchSpans(id);
-      const from = spans.length > 0 ? Math.min(...spans.map((span) => span.startMs)) - 60000 : now - RETENTION_MS;
-      const to = spans.length > 0 ? Math.max(...spans.map((span) => span.startMs + span.durationMs)) + 3600000 : now;
+      const { first, last } = extent(spans);
+      const from = spans.length > 0 ? first - 60000 : now - RETENTION_MS;
+      const to = spans.length > 0 ? last + 3600000 : now;
       const logs = await lokiQuery(`{service=~".+"} |= "${id.toLowerCase()}"`, from, Math.min(to, now), 1000);
       if (spans.length === 0 && logs.length === 0) {
         print(`Nothing is stored for trace ${id}. The store keeps three days, and a request from the last few seconds may not have been exported yet.`);
@@ -304,7 +315,7 @@ export const run = async ({ argv, env = stackEnv(), fetchImpl = fetch, now = Dat
       failed.set(traceId, entry);
     };
     for (const found of (await search.json()).traces ?? []) note(found.traceID, nanosToMs(found.startTimeUnixNano), "5xx");
-    const errors = await lokiQuery('{service=~".+"} |~ "(?i)\\"level\\":\\"error\\""', now - RETENTION_MS, now, 1000);
+    const errors = await lokiQuery('{service=~".+"} |~ "(?i)\\"level\\":\\"error\\""', now - RETENTION_MS, now, 1000, "backward");
     for (const log of errors) if (log.level === "ERROR" && log.traceId && TRACE_ID.test(log.traceId)) note(log.traceId, log.atMs, "ERROR log");
     const recent = [...failed].sort(([, a], [, b]) => b.atMs - a.atMs).slice(0, FAILED_LISTED);
     if (recent.length === 0) {
@@ -323,5 +334,5 @@ export const run = async ({ argv, env = stackEnv(), fetchImpl = fetch, now = Dat
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  process.exit(await run({ argv: process.argv.slice(2) }));
+  process.exitCode = await run({ argv: process.argv.slice(2) });
 }
