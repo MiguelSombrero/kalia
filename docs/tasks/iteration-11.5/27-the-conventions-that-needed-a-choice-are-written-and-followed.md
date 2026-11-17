@@ -1,6 +1,6 @@
 # Task 27: The conventions that needed a choice are written down, and the code follows them
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -118,7 +118,7 @@ between the ways they are written:
       catalog, filters sheet, profile and sign-in sheet look the same as
       before, as compared by the agent and described in words in the pull
       request
-- [ ] `make mobile-test`, the web's tests and the Android Maestro flows pass
+- [x] `make mobile-test`, the web's tests and the Android Maestro flows pass
 - [x] `mobile/CONVENTIONS.md` states each convention with its check, and
       `make verify-fast` is green
 
