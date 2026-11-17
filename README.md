@@ -101,22 +101,21 @@ Every value in that file is dev-only: never reuse one outside local development.
   at most, and in 2 GiB of memory at most. The first start downloads about
   600 MB of Grafana plugins, so it needs the network once; the image is 3.6 GB
   on disk. Without it the stack starts exactly the containers it did before.
-  Nothing sends telemetry to it yet: iteration 11.5's tasks 03–06 connect each
-  tier.
-- **An agent reads the profile through an MCP server** (`kalia-telemetry`,
-  Grafana's own, [ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)):
-  `.mcp.json` declares it, so Claude Code offers it to an agent that opens
-  this repository and **you approve it once**; allowing `mcp__kalia-telemetry`
-  in your own settings stops the prompt on each call. It needs Docker and the
-  profile on (`make observability-up`), reaches this worktree's `GRAFANA_PORT`
-  and only reads: traces, logs and metrics, nothing it can write and nothing
-  sent off the machine. An answer is cut at 12,000 characters and says so, so
-  narrow the query rather than ask for more; with the profile stopped it
-  answers that and names `make observability-up`. Follow one request with
-  `search_tempo_traces` on `{ trace:id = "<id>" } | select(name, span:parentID)`
-  (`get_tempo_trace` returns about 30,000 characters for a web request and is
-  cut), then `query_loki_logs` on `|= "<id>"`. Run `node scripts/mcp-grafana.mjs
-  --pull` once first: the 290 MB image otherwise times out the first connect.
+- **Reading one request** (profile on): `make trace ID=<traceId>` prints that
+  request's span tree, with the SQL each statement ran, and the log lines
+  written under its trace id (a request's id is the `traceId` of its log lines
+  and of the web's `Backend call completed` lines), at most 150 lines. Over
+  that it folds repeated sibling spans into one line (`x 37`), then drops log
+  lines below `WARN`, then cuts the tree and says how much. `make trace` with
+  no `ID` lists the ten most recent requests that answered `5xx` or logged an
+  `ERROR`, each with its id. It reads Grafana on this worktree's `GRAFANA_PORT`,
+  prints no bound value, token or query string whatever the store holds, and
+  exits non-zero, naming `make observability-up`, when the profile is not
+  running. For a question it does not answer, use Grafana itself.
+- **An agent's MCP server** (`kalia-telemetry`, read-only): `.mcp.json` declares
+  it, so you approve it once when Claude Code asks, and run `node
+  scripts/mcp-grafana.mjs --pull` once; it needs the profile on
+  ([observability/README.md](observability/README.md)).
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next

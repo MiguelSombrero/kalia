@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The MCP server `.mcp.json` starts (ADR-0114): a stdio proxy in front of
-// Grafana's own server, run as a container. How an agent uses it is in the
-// README.
+// Grafana's own server, run as a container. How an agent uses it is in
+// observability/README.md.
 
 import { spawn, spawnSync } from "node:child_process";
 import { createInterface } from "node:readline";
