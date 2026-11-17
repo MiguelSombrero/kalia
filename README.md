@@ -102,7 +102,6 @@ Every value in that file is dev-only: never reuse one outside local development.
   600 MB of Grafana plugins, so it needs the network once; the image is 3.6 GB
   on disk. Without it the stack starts exactly the containers it did before.
   Every service below sends to it; nothing leaves the machine.
-
   | Service | Logs, by `service` label | Metrics (Prometheus job) | Traces |
   |---|---|---|---|
   | `backend` | its JSON lines | `/actuator/prometheus` (`backend`) | yes |
@@ -112,9 +111,9 @@ Every value in that file is dev-only: never reuse one outside local development.
   | `postgres` | its lines, with the value in a unique violation's `DETAIL: Key (…)=(…)` replaced | `postgres_exporter` as role `kalia_monitor`, which holds `pg_monitor` and is created by the profile alone, never by the init script (`postgres`; for example `pg_stat_database_numbackends`) | no |
   | `valkey` | its lines | `redis_exporter` (`valkey`; for example `redis_connected_clients`) | no |
 
-  `mailpit` and the one-shot `keycloak-config` and `keycloak-seed` are not
-  shipped. A statement typed into `psql` with its values spelled out is stored
-  as typed; both tiers bind theirs. The edge's log is JSON like both tiers':
+  `mailpit` and the one-shot services are not shipped. A statement typed into
+  `psql` with its values spelled out is stored as typed; both tiers bind
+  theirs. The edge's log is JSON like both tiers':
   `docker compose logs edge --no-log-prefix | jq -cR 'fromjson? | select(.status == 429)'`
   (`-R` and `fromjson?` skip nginx's plain-text error lines). Keycloak's
   counters are built into the local stack's image only, so a stack built

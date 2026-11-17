@@ -1,6 +1,6 @@
 # Task 06: The edge, Keycloak, Postgres and Valkey reach the profile too
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-3
 
@@ -83,17 +83,17 @@ lines carry the trace id of the request they forwarded, when it had one.
 
 ## Acceptance criteria
 
-- [ ] With the profile on, a request the edge refuses with `429` is found in
+- [x] With the profile on, a request the edge refuses with `429` is found in
       the store by service and status — verified against the running stack
-- [ ] A failed sign-in's Keycloak line and a Postgres connection count are
+- [x] A failed sign-in's Keycloak line and a Postgres connection count are
       queryable in the store, and the Keycloak line holds neither the username
       nor the email it was given — verified against the running stack
-- [ ] A test in `scripts/` runs the shipper's redaction on a recorded
+- [x] A test in `scripts/` runs the shipper's redaction on a recorded
       Keycloak failure line and finds neither field, and was seen to fail
       without the rule
-- [ ] A request from the app carrying a `traceparent` is found by its trace
+- [x] A request from the app carrying a `traceparent` is found by its trace
       id in the edge's line and in the backend's
-- [ ] A test in `scripts/` fails if an exporter's service runs without the
+- [x] A test in `scripts/` fails if an exporter's service runs without the
       profile, and was seen to fail with one wired in unconditionally
-- [ ] The root README lists what each service sends, and `make verify-fast` is
+- [x] The root README lists what each service sends, and `make verify-fast` is
       green
