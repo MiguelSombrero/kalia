@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-136 · COULD-166
+**Highest issued:** MUST-27 · SHOULD-137 · COULD-166
 
 ## MUST
 
@@ -256,6 +256,19 @@ repeats, so the recurrence stays visible once the old entry is gone.
   is no `AGENTS.md` or `.github/copilot-instructions.md`. The decision:
   whether the second tool is a supported author, and if so what its gates are
   and where it reads them.
+- **SHOULD-137** *(confirmed 2026-11-17)* **[needs decision]** — The web is
+  type-checked only by `next build`, which neither `make verify-fast` nor the
+  `make check on the merge ref` job runs. #648 (telemetry tests) and #652
+  (`noUncheckedIndexedAccess`) each passed `Web and packages (npm)` on their own
+  base, merged 15 minutes apart without the second being updated, and turned
+  `dev` red: 26 `TS18048` errors in three test files and one in
+  `redactSpan.ts`, failing the web image build and so the vulnerability scan,
+  E2E and every open pull request, Dependabot's seven among them (run
+  `43851999124`). The type-checker does include test files; nothing ran it on
+  the merged tree. ADR-0046 accepted the race when it reversed the up-to-date
+  requirement, and this is its third sighting after #447/#448 and #542/#543. The decision: add `npx tsc --noEmit` in `web/` (about
+  a second with TypeScript 7) to the merge-ref job and to `verify-fast`, or restore the
+  up-to-date requirement; the ruleset is the product owner's.
 
 ## COULD
 

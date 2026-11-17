@@ -82,8 +82,9 @@ const redactAttributes = (attributes: Attributes): Attributes => {
 // A name that already is a template, ours or Next's, is left alone.
 const redactName = (name: string, attributes: Attributes): string => {
   const fetched = /^fetch (\S+) (\S+)/.exec(name);
-  if (fetched) {
-    return `${fetched[1]} ${redactUrl(fetched[2])}`;
+  const [, fetchedMethod, fetchedUrl] = fetched ?? [];
+  if (fetchedMethod !== undefined && fetchedUrl !== undefined) {
+    return `${fetchedMethod} ${redactUrl(fetchedUrl)}`;
   }
   const method = HTTP_METHODS.exec(name)?.[1];
   const target = method ? name.slice(method.length).trim() : "";
