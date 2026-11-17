@@ -7,7 +7,9 @@ import { createThemedStyles } from "@/lib/design/themedStyles";
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 
-export const SkeletonBlock = ({ style }: { style?: StyleProp<ViewStyle> }) => {
+type SkeletonBlockProps = { style?: StyleProp<ViewStyle> };
+
+export const SkeletonBlock = ({ style }: SkeletonBlockProps) => {
   const reduced = useReducedMotion();
   const styles = useStyles();
   const [breath] = useState(() => new Animated.Value(0));

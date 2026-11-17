@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 
@@ -8,25 +8,28 @@ import { readAppConfig } from "../api";
 import { decideGate, type Gate, minimumFor } from "../gate";
 import { readRememberedMinimum, rememberMinimum } from "../rememberedMinimum";
 
-export const appConfigKey = ["app-config"] as const;
-export const rememberedMinimumKey = ["app-config", "remembered-minimum"] as const;
-
 export const CHECK_INTERVAL_MS = 30_000;
 
-export const useAppGate = (): { gate: Gate | "loading"; checkAgain: () => void; isChecking: boolean } => {
-  const remembered = useQuery({
-    queryKey: rememberedMinimumKey,
+export const rememberedMinimumQuery = () =>
+  queryOptions({
+    queryKey: ["app-config", "remembered-minimum"],
     queryFn: readRememberedMinimum,
     staleTime: Infinity,
     gcTime: Infinity,
     meta: { viewerIndependent: true },
   });
-  const config = useQuery({
-    queryKey: appConfigKey,
+
+export const appConfigQuery = () =>
+  queryOptions({
+    queryKey: ["app-config"],
     queryFn: readAppConfig,
     staleTime: CHECK_INTERVAL_MS,
     meta: { viewerIndependent: true },
   });
+
+export const useAppGate = (): { gate: Gate | "loading"; checkAgain: () => void; isChecking: boolean } => {
+  const remembered = useQuery(rememberedMinimumQuery());
+  const config = useQuery(appConfigQuery());
 
   const named = config.data ? minimumFor(Platform.OS, config.data.minimumBuild) : undefined;
   useEffect(() => {

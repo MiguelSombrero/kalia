@@ -10,7 +10,9 @@ import { AddActionSheet } from "./AddActionSheet";
 import { AppTabs } from "./AppTabs";
 import { SignInSheet } from "./SignInSheet";
 
-const Heading = ({ children }: { children: string }) => <Text role="heading">{children}</Text>;
+type HeadingProps = { children: string };
+
+const Heading = ({ children }: HeadingProps) => <Text role="heading">{children}</Text>;
 const Home = () => <Redirect href="/catalog" />;
 const Catalog = () => <Heading>Catalog</Heading>;
 const Cellar = () => {
@@ -22,7 +24,9 @@ const Feed = () => <Heading>Feed</Heading>;
 const Add = () => <Heading>Add</Heading>;
 
 const store = fakeTokenStore({ status: "signedOut", expired: false });
-const TabsInProviders = ({ locale }: { locale: "en" | "fi" }) => (
+type TabsInProvidersProps = { locale: "en" | "fi" };
+
+const TabsInProviders = ({ locale }: TabsInProvidersProps) => (
   <AppProviders locale={locale} tokenStore={store}>
     <Stack screenOptions={{ headerShown: false }} />
   </AppProviders>

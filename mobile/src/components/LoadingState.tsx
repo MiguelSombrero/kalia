@@ -1,16 +1,16 @@
 import { StyleSheet, View } from "react-native";
 
 import { theme } from "@/lib/design/theme.generated";
-import { SkeletonBlock } from "@/lib/motion";
+import { SkeletonBlock } from "@/lib/motion/SkeletonBlock";
 
 import { BodyText } from "./BodyText";
 
-export const LoadingState = ({ label, placeholders = 0, spaced = false }: { label: string; placeholders?: number; spaced?: boolean }) => {
+type LoadingStateProps = { label: string; placeholders?: number };
+
+export const LoadingState = ({ label, placeholders = 0 }: LoadingStateProps) => {
   return (
     <>
-      <BodyText tone="muted" spaced={spaced}>
-        {label}
-      </BodyText>
+      <BodyText tone="muted">{label}</BodyText>
       {placeholders > 0 ? (
         <View testID="loading-placeholders" style={styles.placeholders}>
           {Array.from({ length: placeholders }, (_, slot) => (

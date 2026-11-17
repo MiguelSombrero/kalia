@@ -11,7 +11,9 @@ const MIN_FIELD_WIDTH = 140;
 
 type Labels = { group: string; from: string; to: string };
 
-export const StrengthFields = ({ from, to, onFrom, onTo, error, labels }: { from: string; to: string; onFrom: (text: string) => void; onTo: (text: string) => void; error: string | null; labels: Labels }) => {
+type StrengthFieldsProps = { from: string; to: string; onFrom: (text: string) => void; onTo: (text: string) => void; error: string | null; labels: Labels };
+
+export const StrengthFields = ({ from, to, onFrom, onTo, error, labels }: StrengthFieldsProps) => {
   const colors = useThemeColors();
   const styles = useStyles();
   const grown = useInputHeight();

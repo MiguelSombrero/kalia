@@ -1,6 +1,11 @@
 /** The pill a selected tab's picture sits on, and so the box every tab's picture is laid out in. */
 export const ICON_BOX = { width: 56, height: 32 } as const;
 
+export const GRID = 24;
+
+/** Decorative: the tab's word beside it names it, so assistive technology never sees the picture. */
+export const hidden = { accessible: false, importantForAccessibility: "no-hide-descendants", accessibilityElementsHidden: true } as const;
+
 export type TabIconName = "feed" | "catalog" | "cellar" | "profile";
 
 /** One drawing on a 24-unit grid: the outline of an unselected tab, and the filled picture of the selected one with what is cut out of it. */

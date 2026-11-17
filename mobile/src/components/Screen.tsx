@@ -5,7 +5,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
-export const Screen = ({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) => {
+type ScreenProps = { children: ReactNode; scroll?: boolean };
+
+export const Screen = ({ children, scroll = true }: ScreenProps) => {
   const styles = useStyles();
   return (
     <SafeAreaView testID="screen" edges={["top"]} style={styles.screen}>

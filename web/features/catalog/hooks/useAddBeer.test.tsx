@@ -11,7 +11,7 @@ vi.mock("../actions", () => ({
   loadAddBeerOptionsAction: vi.fn(),
 }));
 
-import { useSimilarBeers } from "./useAddBeer";
+import { similarBeersQuery, useSimilarBeers } from "./useAddBeer";
 
 const oo = { id: "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f", name: "Öö", style: "Imperial Stout", abv: 10.5 };
 
@@ -29,6 +29,8 @@ describe("useSimilarBeers", () => {
       initialProps: { brewery: "a", name: "Öö" },
     });
     await waitFor(() => expect(result.current.data).toEqual([oo]));
+    expect(client.getQueryData(similarBeersQuery("a", "Öö").queryKey)).toEqual([oo]);
+    expect(client.getQueryData(similarBeersQuery("b", "Öö").queryKey)).toBeUndefined();
 
     rerender({ brewery: "a", name: "Öö B" });
     expect(result.current.data).toEqual([oo]);

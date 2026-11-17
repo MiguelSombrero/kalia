@@ -2,7 +2,7 @@ import { apiError, registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 
-import { showCatalogWith, useCatalogLink } from "@/lib/catalogLink";
+import { showCatalogWith, useCatalogLink } from "@/lib/catalogLink/store";
 import { contrastRatio } from "@/lib/design/contrast";
 import { theme } from "@/lib/design/theme.generated";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
@@ -305,6 +305,17 @@ describe("CatalogScreen", () => {
 
       expect(await screen.findByRole("button", { name: "Remove filter: Gose" })).toBeOnTheScreen();
       await screen.findByText("Pale Ale");
+    });
+
+    it("reaches the Catalog with its filters already in place, so its first request carries them", async () => {
+      transport.mockResolvedValue(pageOf([beer("1", "Pale Ale", 5.2)]));
+      showCatalogWith({ style: "Gose" });
+
+      await renderWithLocale(<CatalogScreen />);
+      await screen.findByText("Pale Ale");
+
+      expect(String(transport.mock.calls[0]?.[0])).toContain("style=Gose");
+      expect(useCatalogLink.getState().pending).toBeNull();
     });
   });
 });

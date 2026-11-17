@@ -4,7 +4,9 @@ import { textStyle, titleScale } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
-export const ScreenTitle = ({ children }: { children: string }) => {
+type ScreenTitleProps = { children: string };
+
+export const ScreenTitle = ({ children }: ScreenTitleProps) => {
   const styles = useStyles();
   return (
     <Text role="heading" {...titleScale} style={styles.title}>

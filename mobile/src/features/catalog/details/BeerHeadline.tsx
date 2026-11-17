@@ -7,7 +7,9 @@ import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useColorMode } from "@/lib/design/useThemeColors";
 
-export const BeerHeadline = ({ name, style, abv, language }: { name: string; style: string; abv: number; language: string }) => {
+type BeerHeadlineProps = { name: string; style: string; abv: number; language: string };
+
+export const BeerHeadline = ({ name, style, abv, language }: BeerHeadlineProps) => {
   const { background, foreground } = useBeerStyleColours()(style);
   const styles = useStyles();
   const dark = useColorMode() === "dark";
