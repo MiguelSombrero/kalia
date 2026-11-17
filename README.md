@@ -101,8 +101,24 @@ Every value in that file is dev-only: never reuse one outside local development.
   at most, and in 2 GiB of memory at most. The first start downloads about
   600 MB of Grafana plugins, so it needs the network once; the image is 3.6 GB
   on disk. Without it the stack starts exactly the containers it did before.
-  Nothing sends telemetry to it yet: iteration 11.5's tasks 03–06 connect each
-  tier.
+  Every service below sends to it; nothing leaves the machine.
+
+  | Service | Logs, by `service` label | Metrics (Prometheus job) | Traces |
+  |---|---|---|---|
+  | `backend` | its JSON lines | `/actuator/prometheus` (`backend`) | yes |
+  | `web` | its JSON lines | `/api/metrics` (`web`) | yes |
+  | `edge` | one JSON line per request, with `status` and `upstream` (`web`, `backend`, `keycloak`, `keycloak-admin`) as labels and the request's `trace_id` when it carried a `traceparent`; a refusal is `{service="edge", status="429"}` | the same lines counted by status and service in Loki, no exporter | no |
+  | `keycloak` | its text lines, with the `username` and `email` of an event replaced by `[redacted]`, so a failed sign-in is found by its event type, client and time | its own `/metrics` on the management port (`keycloak`) | no |
+  | `postgres` | its lines, with the value in a unique violation's `DETAIL: Key (…)=(…)` replaced | `postgres_exporter` as role `kalia_monitor`, which holds `pg_monitor` and is created by the profile alone, never by the init script (`postgres`; for example `pg_stat_database_numbackends`) | no |
+  | `valkey` | its lines | `redis_exporter` (`valkey`; for example `redis_connected_clients`) | no |
+
+  `mailpit` and the one-shot `keycloak-config` and `keycloak-seed` are not
+  shipped. A statement typed into `psql` with its values spelled out is stored
+  as typed; both tiers bind theirs. The edge's log is JSON like both tiers':
+  `docker compose logs edge --no-log-prefix | jq -cR 'fromjson? | select(.status == 429)'`
+  (`-R` and `fromjson?` skip nginx's plain-text error lines). Keycloak's
+  counters are built into the local stack's image only, so a stack built
+  before the profile needs `make observability-up`, which rebuilds it once.
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next

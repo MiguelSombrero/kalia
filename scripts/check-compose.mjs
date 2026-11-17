@@ -39,11 +39,30 @@ export const variablesWithDefault = (composeText) => [
 ];
 
 /**
- * What docker-compose.dev.env supplies for docker-compose.override.yml alone:
- * the development admin's password (ADR-0101), which the base file must never
- * read, since it seeds no account.
+ * What docker-compose.dev.env supplies for docker-compose.override.yml alone,
+ * which the base file must never read: the development admin's password
+ * (ADR-0101), since it seeds no account, and the password of the role the
+ * observability profile's Postgres exporter reads statistics as (ADR-0100),
+ * since the deployable stack has neither.
  */
-export const OVERRIDE_VARIABLES = ["KALIA_DEV_ADMIN_PASSWORD"];
+export const OVERRIDE_VARIABLES = ["KALIA_DEV_ADMIN_PASSWORD", "KALIA_MONITOR_PASSWORD"];
+
+/**
+ * Problems with a `${NAME:-default}` in docker-compose.override.yml for a NAME
+ * docker-compose.dev.env also gives a value: the override is interpolated
+ * without the dev env file, so it spells the value out, and a copy that drifts
+ * fails a login far from where it was edited.
+ */
+export const overrideDefaultProblems = ({ overrideText, devEnvText }) => {
+  const problems = [];
+  for (const [, name, spelled] of overrideText.matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*):-([^}$]+)\}/g)) {
+    const held = variableValue(devEnvText, name);
+    if (held !== undefined && held !== spelled) {
+      problems.push(`docker-compose.override.yml defaults ${name} to ${spelled}, but docker-compose.dev.env holds ${held}`);
+    }
+  }
+  return problems;
+};
 
 export const variableValue = (envText, name) =>
   envText.match(new RegExp(`^\\s*${name}\\s*=\\s*(.*?)\\s*$`, "m"))?.[1];
@@ -71,7 +90,7 @@ export const deployableSeedProblems = ({ baseText, services }) => {
   // The base file's comments may name the seed script; only a service running it seeds.
   for (const needle of ["seed-keycloak-account", "testadmin", ...OVERRIDE_VARIABLES]) {
     if ((needle !== "seed-keycloak-account" && baseText.includes(needle)) || rendered.includes(needle)) {
-      problems.push(`the base file mentions ${needle}, so a deployment would seed a development account`);
+      problems.push(`the base file mentions ${needle}, so a deployment would carry something only development has`);
     }
   }
   return problems;
@@ -493,7 +512,10 @@ const renderFails = (args, env) => {
 const run = () => {
   const baseText = readFileSync(join(ROOT, "docker-compose.base.yml"), "utf8");
   const devEnvText = readFileSync(join(ROOT, "docker-compose.dev.env"), "utf8");
-  const problems = consistencyProblems({ baseText, devEnvText });
+  const problems = [
+    ...consistencyProblems({ baseText, devEnvText }),
+    ...overrideDefaultProblems({ overrideText: readFileSync(join(ROOT, "docker-compose.override.yml"), "utf8"), devEnvText }),
+  ];
   const baseArgs = ["--env-file", "/dev/null", "-f", "docker-compose.base.yml", "config", "--format", "json"];
 
   const required = requiredVariables(baseText);

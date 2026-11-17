@@ -5,6 +5,8 @@
 - **Amended:** 2026-11-06 by [ADR-0102](0102-a-suggestion-is-a-pending-beer-with-its-new-brewery-and-an-admin-reviews-it-inside-catalog-which-publishes-one-event-per-decision.md) — `make moderate` was retired
   (iteration 10.5 task 08), so `make app-config` is the one operator command left
   that connects as the superuser
+- **Amended:** 2026-11-17 by [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md) — a fourth role, `kalia_monitor`,
+  exists only while the local stack's observability profile runs (see Decision)
 
 ## Context
 
@@ -35,6 +37,19 @@ its health check and an operator's `make app-config`.
   own schema.
 - **`keycloak`** owns the `keycloak` database. No other role may connect to
   that database, and `keycloak` may not connect to `kalia`.
+
+> **Amended 2026-11-17 (iteration 11.5 task 06).** **A fourth role,
+> `kalia_monitor`, belongs to the local observability profile and to nothing
+> else.** The profile's Postgres exporter reads statistics as it; it holds
+> `pg_monitor` and `CONNECT` on `kalia`, and cannot read a table. It is created
+> by a one-shot service of the profile that connects as the superuser, which
+> makes that service the one more user of the superuser the first paragraph
+> above leaves out, and runs on every start so an existing data directory gets
+> the role too. The init script and `docker-compose.base.yml` do not name it, so
+> the deployable stack has three roles still, and `scripts/observability-profile.test.mjs`
+> fails if either ever does. The role exists because the exporter must not
+> connect as the superuser, and the init script runs once against an empty
+> data directory, which a developer who turns the profile on later does not have.
 
 Each password is its own secret that `docker-compose.base.yml` requires, with
 a dev value in `docker-compose.dev.env` ([ADR-0089](0089-a-deployment-cannot-inherit-a-dev-credential-because-the-base-compose-file-demands-every-secret.md)).

@@ -2,6 +2,8 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-15
+- **Amended:** 2026-11-17 — iteration 11.5 task 06: how the other services
+  arrive (see Decision, Logs and Metrics)
 
 ## Context
 
@@ -63,12 +65,24 @@ was decided.
   exporters that run only with the profile, Keycloak through its built-in
   metrics endpoint, and the edge is counted from its own access log by status
   and service, so it gains no exporter.
+
+  > **Amended 2026-11-17 (task 06).** Keycloak's counters are a build-time
+  > option, so the local stack's `docker-compose.override.yml` builds the image
+  > with them (`KC_METRICS_ENABLED`) and the deployable image is built without.
+  > The Postgres exporter reads as a role of its own, `kalia_monitor`, which
+  > only the profile creates ([ADR-0100](0100-postgres-has-three-roles-one-that-owns-the-schema-for-flyway-one-that-reads-and-writes-rows-and-one-for-keycloak.md)).
 - **Logs:** one shipper container, Grafana Alloy, reads every service's stdout
   through the Docker socket, discovering only the containers of this
   Compose project so that one worktree's profile never ships another's logs.
   No tier gains a log exporter, each tier's JSON stdout is unchanged, and Keycloak, the edge, Postgres and Valkey, which have
   no exporter of their own, arrive by the same path. The shipper redacts
   Keycloak's username and email fields before a line reaches the store.
+
+  > **Amended 2026-11-17 (task 06).** The shipper also redacts the value in a
+  > Postgres unique violation's `DETAIL: Key (email)=(…)`, and labels the edge's
+  > lines by `status` and `upstream`, which the edge writes as JSON with the
+  > request's trace id. A statement a person typed into `psql` still carries its
+  > literals into the store, as `STATEMENT:` lines do; both tiers bind theirs.
 - **Sampling and size:** every request is sampled locally, since the store
   serves one developer's stack. The container's memory limit is 2 GiB, set
   from the spike's measured working set of 1.0–1.2 GiB with headroom for three

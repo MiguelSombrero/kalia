@@ -32,11 +32,12 @@ down: ## Stop the full stack, the observability profile's containers included
 	docker compose --profile observability down
 
 observability-up: ## Start the observability profile beside the stack (Grafana at GRAFANA_PORT) and point the backend and the web at its collector; recreates only those two (needs Docker)
+	docker compose build keycloak
 	OBSERVABILITY_OTLP_ENDPOINT=http://lgtm:4318 docker compose --profile observability up -d
-	docker compose --profile observability up -d --no-recreate --wait --wait-timeout 600 lgtm alloy
+	docker compose --profile observability up -d --no-recreate --wait --wait-timeout 600 lgtm alloy postgres-exporter redis-exporter
 
 observability-down: ## Stop and remove the observability profile's containers, keeping its data, and recreate the backend and the web without the collector; the rest of the stack keeps running
-	docker compose --profile observability rm --stop --force lgtm alloy
+	docker compose --profile observability rm --stop --force lgtm alloy postgres-exporter redis-exporter postgres-monitor-role
 	docker compose up -d backend web
 
 restart: down up ## Restart the full stack

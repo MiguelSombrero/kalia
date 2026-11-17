@@ -1,0 +1,27 @@
+[
+  {
+    "name": "a failed sign-in",
+    "service": "keycloak",
+    "line": "2026-11-17 05:07:27,322 WARN  [org.keycloak.events] (executor-thread-4) type=\"LOGIN_ERROR\", realmId=\"e6e7a175-6d12-4749-ab27-6748c5f5d656\", realmName=\"kalia\", clientId=\"kalia-web\", userId=\"null\", ipAddress=\"172.21.0.1\", error=\"user_not_found\", auth_method=\"openid-connect\", auth_type=\"code\", redirect_uri=\"http://localhost:3800/api/auth/callback/keycloak\", code_id=\"OhxkYZP7DRsy0Dl3TU4aKdxT\", username=\"someone.private@example.com\"",
+    "mustNotHold": [
+      "someone.private@example.com"
+    ]
+  },
+  {
+    "name": "a failed registration",
+    "service": "keycloak",
+    "line": "2026-11-17 05:07:54,662 WARN  [org.keycloak.events] (executor-thread-4) type=\"REGISTER_ERROR\", realmId=\"e6e7a175-6d12-4749-ab27-6748c5f5d656\", realmName=\"kalia\", clientId=\"kalia-web\", userId=\"null\", ipAddress=\"172.21.0.1\", error=\"username_in_use\", auth_method=\"openid-connect\", redirect_uri=\"http://localhost:3800/api/auth/callback/keycloak\", register_method=\"form\", code_id=\"mIWLudskG9dSUph9XosgOpgi\", email=\"dup.person@example.com\", username=\"testuser\"",
+    "mustNotHold": [
+      "dup.person@example.com",
+      "username=\"testuser\""
+    ]
+  },
+  {
+    "name": "a unique violation",
+    "service": "postgres",
+    "line": "2026-11-17 05:07:58.930 UTC [255] DETAIL:  Key (email)=(dup.person@example.com) already exists.",
+    "mustNotHold": [
+      "dup.person@example.com"
+    ]
+  }
+]
