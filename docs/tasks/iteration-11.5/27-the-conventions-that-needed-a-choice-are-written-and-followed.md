@@ -107,19 +107,19 @@ between the ways they are written:
 
 ## Acceptance criteria
 
-- [ ] `eslint-fixtures/` cases that `eslint.config.test.ts` sees fail: a deep
+- [x] `eslint-fixtures/` cases that `eslint.config.test.ts` sees fail: a deep
       import past a feature's `index.ts`, an `index.ts` under `src/lib/`, and
       `export default` outside `src/app/`
-- [ ] A test shows `showCatalogWith` reaching the Catalog with the new
+- [x] A test shows `showCatalogWith` reaching the Catalog with the new
       filters on its first request. It failed before the change
-- [ ] A test in each app reads a query's key through its factory, and
+- [x] A test in each app reads a query's key through its factory, and
       `useBeers.ts` holds no hand-written key or cache type
 - [ ] No primitive takes `spaced` or `flush`. On the iOS Simulator, the
       catalog, filters sheet, profile and sign-in sheet look the same as
       before, as compared by the agent and described in words in the pull
       request
 - [ ] `make mobile-test`, the web's tests and the Android Maestro flows pass
-- [ ] `mobile/CONVENTIONS.md` states each convention with its check, and
+- [x] `mobile/CONVENTIONS.md` states each convention with its check, and
       `make verify-fast` is green
 
 ## Notes

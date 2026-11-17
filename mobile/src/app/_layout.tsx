@@ -8,7 +8,7 @@ import { registerMobileTransport } from "@/lib/api/registerTransport";
 import { FontGate } from "@/lib/design/FontGate";
 import { useThemeColors } from "@/lib/design/useThemeColors";
 import { useDeviceLocale } from "@/lib/i18n/useDeviceLocale";
-import { useReducedMotion, watchReducedMotion } from "@/lib/motion";
+import { useReducedMotion, watchReducedMotion } from "@/lib/motion/reducedMotion";
 import { AppProviders } from "@/lib/providers/AppProviders";
 
 registerMobileTransport();

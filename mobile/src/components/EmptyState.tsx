@@ -1,17 +1,19 @@
 import type { ReactNode } from "react";
+import { View } from "react-native";
 
 import { useAnnounce } from "@/lib/a11y/useAnnounce";
 
 import { BodyText } from "./BodyText";
+import { spacing } from "./metrics";
 
-export const EmptyState = ({ message, spaced = false, children }: { message: string; spaced?: boolean; children?: ReactNode }) => {
+type EmptyStateProps = { message: string; children?: ReactNode };
+
+export const EmptyState = ({ message, children }: EmptyStateProps) => {
   useAnnounce(message);
   return (
-    <>
-      <BodyText tone="muted" spaced={spaced}>
-        {message}
-      </BodyText>
+    <View style={spacing.blocks}>
+      <BodyText tone="muted">{message}</BodyText>
       {children}
-    </>
+    </View>
   );
 };

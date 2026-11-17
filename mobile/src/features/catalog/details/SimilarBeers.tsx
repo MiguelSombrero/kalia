@@ -5,12 +5,14 @@ import { EDGE } from "@/components/metrics";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
-import { PressFeedback } from "@/lib/motion";
+import { PressFeedback } from "@/lib/motion/PressFeedback";
 
-import type { BeerSummary } from "../api";
-import { StyleSwatch } from "../filters/controls";
+import { StyleSwatch } from "../filters/StyleSwatch";
+import type { BeerSummary } from "../types";
 
-export const SimilarBeers = ({ beers, language, onOpen }: { beers: BeerSummary[]; language: string; onOpen: (id: string) => void }) => {
+type SimilarBeersProps = { beers: BeerSummary[]; language: string; onOpen: (id: string) => void };
+
+export const SimilarBeers = ({ beers, language, onOpen }: SimilarBeersProps) => {
   const { t } = useTranslation();
   const styles = useStyles();
   return (

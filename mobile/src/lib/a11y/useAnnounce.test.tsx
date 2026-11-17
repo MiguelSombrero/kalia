@@ -3,7 +3,9 @@ import { AccessibilityInfo } from "react-native";
 
 import { useAnnounce } from "./useAnnounce";
 
-const Probe = ({ message }: { message: string }) => {
+type ProbeProps = { message: string };
+
+const Probe = ({ message }: ProbeProps) => {
   useAnnounce(message);
   return null;
 };

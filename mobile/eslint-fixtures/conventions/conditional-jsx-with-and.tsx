@@ -1,3 +1,5 @@
 import { Text, View } from "react-native";
 
-export const Count = ({ count }: { count: number }) => <View>{count && <Text>{count}</Text>}</View>;
+type CountProps = { count: number };
+
+export const Count = ({ count }: CountProps) => <View>{count && <Text>{count}</Text>}</View>;

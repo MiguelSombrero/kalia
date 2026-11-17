@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { Pressable, Text, View } from "react-native";
 
-import { PressFeedback } from "@/lib/motion";
+import { PressFeedback } from "@/lib/motion/PressFeedback";
 
 import { accessibilityOffences, expectAccessibleStructure } from "./expectAccessibleStructure";
 

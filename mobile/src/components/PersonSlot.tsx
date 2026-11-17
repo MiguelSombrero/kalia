@@ -4,7 +4,9 @@ import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
-export const PersonSlot = ({ name }: { name: string }) => {
+type PersonSlotProps = { name: string };
+
+export const PersonSlot = ({ name }: PersonSlotProps) => {
   const styles = useStyles();
   return (
     <View accessible={false} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden style={styles.slot}>

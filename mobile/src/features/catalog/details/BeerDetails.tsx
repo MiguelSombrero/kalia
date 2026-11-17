@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { View } from "react-native";
 
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
@@ -6,11 +7,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { FieldRow } from "@/components/FieldRow";
 import { LoadingState } from "@/components/LoadingState";
+import { spacing } from "@/components/metrics";
 import { Sheet } from "@/components/Sheet";
 import { countryName } from "@/lib/i18n/countryNames";
 
-import type { BeerDetails as BeerDetailsData } from "../api";
 import { useBeer, useSimilarBeers } from "../hooks/useBeer";
+import type { BeerDetails as BeerDetailsData } from "../types";
 import { BeerHeadline } from "./BeerHeadline";
 import { CellarAction } from "./CellarAction";
 import { InfoRow } from "./InfoRow";
@@ -45,8 +47,10 @@ export const BeerDetails = ({ id, onClose, onOpenBeer, onShowStyle, onShowBrewer
       ) : null}
       {shown ? (
         <>
-          <BeerHeadline name={shown.name} style={shown.style} abv={shown.abv} language={i18n.language} />
-          {status ? <BodyText tone="muted" spaced>{t(status)}</BodyText> : null}
+          <View style={spacing.lines}>
+            <BeerHeadline name={shown.name} style={shown.style} abv={shown.abv} language={i18n.language} />
+            {status ? <BodyText tone="muted">{t(status)}</BodyText> : null}
+          </View>
           <FieldRow title={t("beerDetails.style")} value={shown.style} empty={false} accessibilityLabel={t("beerDetails.showStyle", { value: shown.style })} onPress={() => onShowStyle(shown.style)} />
           <FieldRow title={t("beerDetails.brewery")} value={shown.brewery.name} empty={false} accessibilityLabel={t("beerDetails.showBrewery", { value: shown.brewery.name })} onPress={() => onShowBrewery(shown.brewery)} />
           {shown.brewery.city ? <InfoRow title={t("beerDetails.city")} value={shown.brewery.city} /> : null}

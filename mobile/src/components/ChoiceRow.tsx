@@ -16,7 +16,9 @@ const CHECK_SIZE = 26;
 const choiceSemantics = (selected: boolean) =>
   Platform.OS === "ios" ? ({ role: "button", accessibilityState: { selected } } as const) : ({ role: "radio", accessibilityState: { checked: selected } } as const);
 
-export const ChoiceRow = ({ label, sub, selected, onPress, leading, bordered, position }: { label: string; sub?: string; selected: boolean; onPress: () => void; leading?: ReactNode; bordered?: boolean; position: { index: number; count: number } }) => {
+type ChoiceRowProps = { label: string; sub?: string; selected: boolean; onPress: () => void; leading?: ReactNode; bordered?: boolean; position: { index: number; count: number } };
+
+export const ChoiceRow = ({ label, sub, selected, onPress, leading, bordered, position }: ChoiceRowProps) => {
   const styles = useStyles();
   const { t } = useTranslation();
   const place = Platform.OS === "ios" ? { accessibilityValue: { text: t("a11y.positionInSet", { position: position.index, total: position.count }) } } : null;

@@ -10,7 +10,9 @@ import { EDGE } from "./metrics";
 
 export const SLAB_WIDTH = 22;
 
-export const BeerSlot = ({ beerStyle }: { beerStyle: string }) => {
+type BeerSlotProps = { beerStyle: string };
+
+export const BeerSlot = ({ beerStyle }: BeerSlotProps) => {
   const { background } = useBeerStyleColours()(beerStyle);
   const colors = useThemeColors();
   const outlined = useColorMode() === "dark" && contrastRatio(background, colors.surface) < NON_TEXT_CONTRAST;

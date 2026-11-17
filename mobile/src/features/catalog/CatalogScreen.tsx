@@ -10,21 +10,21 @@ import { LoadingState } from "@/components/LoadingState";
 import { Screen } from "@/components/Screen";
 import { ScreenTitle } from "@/components/ScreenTitle";
 import { theme } from "@/lib/design/theme.generated";
-import { Reveal, useAnimateListChange } from "@/lib/motion";
+import { Reveal } from "@/lib/motion/Reveal";
+import { useAnimateListChange } from "@/lib/motion/useAnimateListChange";
 
-import type { BeerPage } from "./api";
 import { BeerCard } from "./BeerCard";
-import { FiltersButton, SearchField } from "./filters/controls";
 import { FilterChips } from "./filters/FilterChips";
+import { FiltersButton } from "./filters/FiltersButton";
 import { type ActiveFilterKey, emptyFilters, narrowsResults, removeFilter, sheetFilterCount } from "./filters/model";
+import { SearchField } from "./filters/SearchField";
 import { useFiltersStore } from "./filters/store";
-import { useApplyCatalogLink } from "./hooks/useApplyCatalogLink";
 import { useBeers } from "./hooks/useBeers";
 import { useSearchDraft } from "./hooks/useSearchDraft";
+import type { BeerPage } from "./types";
 
 export const CatalogScreen = () => {
   const { t, i18n } = useTranslation();
-  useApplyCatalogLink();
   const applied = useFiltersStore((state) => state.applied);
   const apply = useFiltersStore((state) => state.apply);
   const reset = useFiltersStore((state) => state.reset);

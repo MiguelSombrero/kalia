@@ -1,8 +1,7 @@
 import { httpFailure } from "@kalia/api";
-import type { ProfileDto } from "@kalia/api/generated/models";
 import { myProfile } from "@kalia/api/generated/profile/profile";
 
-export type Profile = ProfileDto;
+import type { Profile } from "./types";
 
 export const readMyProfile = async (): Promise<Profile> => {
   const response = await myProfile();

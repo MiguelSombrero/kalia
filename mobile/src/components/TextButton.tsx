@@ -4,7 +4,9 @@ import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
-export const TextButton = ({ label, onPress, accessibilityLabel, disabled = false }: { label: string; onPress: () => void; accessibilityLabel?: string; disabled?: boolean }) => {
+type TextButtonProps = { label: string; onPress: () => void; accessibilityLabel?: string; disabled?: boolean };
+
+export const TextButton = ({ label, onPress, accessibilityLabel, disabled = false }: TextButtonProps) => {
   const styles = useStyles();
   return (
     <Pressable role="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.button, disabled && styles.inert]}>

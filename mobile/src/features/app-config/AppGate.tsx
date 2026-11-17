@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import { BlockedScreen } from "./BlockedScreen";
 import { useAppGate } from "./hooks/useAppGate";
 
-export const AppGate = ({ children }: { children: ReactNode }) => {
+type AppGateProps = { children: ReactNode };
+
+export const AppGate = ({ children }: AppGateProps) => {
   const { gate, checkAgain, isChecking } = useAppGate();
 
   switch (gate) {

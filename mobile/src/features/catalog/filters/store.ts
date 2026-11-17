@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { CatalogLinkFilter } from "@/lib/catalogLink";
+import { type CatalogLinkFilter, takeCatalogLink, useCatalogLink } from "@/lib/catalogLink/store";
 
 import { emptyFilters, type Filters } from "./model";
 
@@ -32,3 +32,11 @@ export const useFiltersStore = create<FiltersStore>((set) => ({
     }),
   reset: () => set({ applied: emptyFilters(), text: "" }),
 }));
+
+const applyCatalogLink = () => {
+  const filter = takeCatalogLink();
+  if (filter) useFiltersStore.getState().showOnly(filter);
+};
+
+applyCatalogLink();
+useCatalogLink.subscribe(applyCatalogLink);

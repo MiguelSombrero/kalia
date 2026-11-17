@@ -1,14 +1,23 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { type OlderFeedPage, pollFeedAction, readOlderFeedAction } from "../actions";
 import { LIVE_POLL_INTERVAL_MS } from "../constants";
 import type { FeedPage } from "../types";
 
-export const feedKey = ["feed"] as const;
-export const pollFeedKey = ["feed", "poll"] as const;
-
 const EMPTY_POLL_RESULT: FeedPage = { content: [], nextCursor: undefined, startOver: false };
+
+export const olderFeedQuery = (mountId: string, initialPage: FeedPage) =>
+  infiniteQueryOptions({
+    queryKey: ["feed", mountId],
+    queryFn: ({ pageParam }) => readOlderFeedAction(pageParam as string),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage: OlderFeedPage) => lastPage.nextCursor ?? undefined,
+    initialData: { pages: [initialPage], pageParams: [null] },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
 /**
  * Continues the server-rendered first page backward, one "before" cursor at a
@@ -29,16 +38,7 @@ const EMPTY_POLL_RESULT: FeedPage = { content: [], nextCursor: undefined, startO
  */
 export const useOlderFeed = (initialPage: FeedPage) => {
   const mountId = useId();
-  return useInfiniteQuery<OlderFeedPage>({
-    queryKey: [...feedKey, mountId],
-    queryFn: ({ pageParam }) => readOlderFeedAction(pageParam as string),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    initialData: { pages: [initialPage], pageParams: [null] },
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
+  return useInfiniteQuery(olderFeedQuery(mountId, initialPage));
 };
 
 /**
@@ -62,17 +62,10 @@ export const useOlderFeed = (initialPage: FeedPage) => {
  * advances `sinceCursor` from `poll.data` would rewind it behind the fresh
  * SSR page's own cursor.
  */
-export const usePollFeed = (since: string) => {
-  const mountId = useId();
-  const sinceRef = useRef(since);
-  useEffect(() => {
-    sinceRef.current = since;
-  }, [since]);
-
-  // eslint-disable-next-line @tanstack/query/exhaustive-deps -- since is deliberately kept out of the key, see the doc comment above
-  const query = useQuery({
-    queryKey: [...pollFeedKey, mountId],
-    queryFn: () => pollFeedAction(sinceRef.current),
+export const pollFeedQuery = (mountId: string, readSince: () => string) =>
+  queryOptions({
+    queryKey: ["feed", "poll", mountId],
+    queryFn: () => pollFeedAction(readSince()),
     initialData: EMPTY_POLL_RESULT,
     staleTime: 0,
     retry: false,
@@ -84,6 +77,16 @@ export const usePollFeed = (since: string) => {
     refetchOnWindowFocus: true,
     refetchOnReconnect: false,
   });
+
+export const usePollFeed = (since: string) => {
+  const mountId = useId();
+  const sinceRef = useRef(since);
+  useEffect(() => {
+    sinceRef.current = since;
+  }, [since]);
+
+  // eslint-disable-next-line react-hooks/refs -- the ref is read when a poll runs, never during render
+  const query = useQuery(pollFeedQuery(mountId, () => sinceRef.current));
 
   const [consecutiveFailures, setConsecutiveFailures] = useState(0);
   const lastErrorUpdatedAt = useRef(query.errorUpdatedAt);

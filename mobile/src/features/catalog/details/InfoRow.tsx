@@ -4,7 +4,9 @@ import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
-export const InfoRow = ({ title, value }: { title: string; value: string }) => {
+type InfoRowProps = { title: string; value: string };
+
+export const InfoRow = ({ title, value }: InfoRowProps) => {
   const styles = useStyles();
   return (
     <View accessible style={styles.row}>

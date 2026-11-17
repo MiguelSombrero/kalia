@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 
 import {
   addBeerAction,
@@ -8,33 +8,38 @@ import {
 } from "../actions";
 import type { AddBeerRequest } from "../types";
 
-const catalogKey = ["catalog"] as const;
-
-export const useAddBeerOptions = (locale: string, enabled: boolean) =>
-  useQuery({
-    queryKey: [...catalogKey, "addBeerOptions", locale],
+export const addBeerOptionsQuery = (locale: string) =>
+  queryOptions({
+    queryKey: ["catalog", "addBeerOptions", locale],
     queryFn: () => loadAddBeerOptionsAction(locale),
-    enabled,
     staleTime: Infinity,
   });
 
-export const useBreweryMatches = (query: string, locale: string) =>
-  useQuery({
-    queryKey: [...catalogKey, "breweries", locale, query],
+export const breweryMatchesQuery = (query: string, locale: string) =>
+  queryOptions({
+    queryKey: ["catalog", "breweries", locale, query],
     queryFn: () => findBreweriesAction(query, locale),
     enabled: query.trim() !== "",
     placeholderData: keepPreviousData,
   });
 
-export const useSimilarBeers = (breweryId: string, beerName: string) =>
-  useQuery({
-    queryKey: [...catalogKey, "similarBeers", breweryId, beerName],
+export const similarBeersQuery = (breweryId: string, beerName: string) =>
+  queryOptions({
+    queryKey: ["catalog", "similarBeers", breweryId, beerName],
     queryFn: () => findSimilarBeersAction(breweryId, beerName),
     enabled: breweryId !== "" && beerName.trim() !== "",
     // Across keystrokes only: another brewery's beers must never stand in under this one's heading.
     placeholderData: (previous, previousQuery) =>
       previousQuery?.queryKey[2] === breweryId ? previous : undefined,
   });
+
+export const useAddBeerOptions = (locale: string, enabled: boolean) =>
+  useQuery({ ...addBeerOptionsQuery(locale), enabled });
+
+export const useBreweryMatches = (query: string, locale: string) => useQuery(breweryMatchesQuery(query, locale));
+
+export const useSimilarBeers = (breweryId: string, beerName: string) =>
+  useQuery(similarBeersQuery(breweryId, beerName));
 
 export const useAddBeer = () =>
   useMutation({
