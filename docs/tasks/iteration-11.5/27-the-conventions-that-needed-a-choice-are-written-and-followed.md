@@ -114,7 +114,7 @@ between the ways they are written:
       filters on its first request. It failed before the change
 - [x] A test in each app reads a query's key through its factory, and
       `useBeers.ts` holds no hand-written key or cache type
-- [ ] No primitive takes `spaced` or `flush`. On the iOS Simulator, the
+- [x] No primitive takes `spaced` or `flush`. On the iOS Simulator, the
       catalog, filters sheet, profile and sign-in sheet look the same as
       before, as compared by the agent and described in words in the pull
       request
