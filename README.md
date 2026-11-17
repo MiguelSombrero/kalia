@@ -103,6 +103,17 @@ Every value in that file is dev-only: never reuse one outside local development.
   on disk. Without it the stack starts exactly the containers it did before.
   Nothing sends telemetry to it yet: iteration 11.5's tasks 03–06 connect each
   tier.
+- **An agent reads the profile through an MCP server** (`kalia-telemetry`,
+  Grafana's own, [ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)):
+  `.mcp.json` declares it, so Claude Code offers it to an agent that opens
+  this repository and **you approve it once**; allowing `mcp__kalia-telemetry`
+  in your own settings stops the prompt on each call. It needs Docker and the
+  profile on (`make observability-up`), reaches this worktree's `GRAFANA_PORT`
+  and only reads: traces, logs and metrics, nothing it can write and nothing
+  sent off the machine. An answer is cut at 12,000 characters and says so, so
+  narrow the query rather than ask for more; with the profile stopped it
+  answers that and names `make observability-up`. Follow one request with
+  `get_tempo_trace`, then `query_loki_logs` on `|= "<trace id>"`.
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next
@@ -192,6 +203,7 @@ a manifest; don't restate what the manifest says.
 - Keycloak 26 (identity provider; `keycloak/Dockerfile` also bakes in the login theme, [ADR-0056](docs/adr/0056-branded-bilingual-keycloak-pages.md))
 - keycloak-config-cli (the `keycloak-config` service reconciles the realm on every startup, [ADR-0054](docs/adr/0054-keycloak-config-cli-realm-management.md))
 - Grafana `otel-lgtm` and Grafana Alloy (the opt-in observability profile: one container stores and shows traces, logs and metrics, one ships the stack's stdout to it; `make observability-up`, [ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md))
+- Grafana's MCP server (`grafana/mcp-grafana`, an image pinned in `scripts/mcp-grafana.mjs`, run through `.mcp.json`: an agent's read-only access to the profile's traces, logs and metrics, [ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md))
 - Valkey (session store); Mailpit (catches Keycloak's email locally; a deployment uses SMTP, see [the email task](docs/tasks/iteration-6.5/04-send-email-from-kalia.md))
 - nginx (`edge/`, the only service the deployable stack publishes: per-client rate and body limits, [ADR-0090](docs/adr/0090-an-nginx-edge-proxy-bounds-the-anonymous-edges-and-names-the-client-address-the-services-trust.md))
 - Tailscale (a physical iPhone reaches the stack over the owner's tailnet, opt-in with `make phone-mode`, [ADR-0097](docs/adr/0097-a-phone-reaches-the-stack-over-the-owners-tailnet-in-an-opt-in-phone-mode-where-one-origin-is-the-issuer.md))
