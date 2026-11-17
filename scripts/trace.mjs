@@ -161,7 +161,8 @@ export const parseLogLine = (line) => {
   if (fields && typeof fields === "object") {
     const rawLevel = fields.log?.level ?? fields["log.level"] ?? fields.level;
     const level = String(rawLevel ?? "info").toUpperCase().replace("WARNING", "WARN").replace("FATAL", "ERROR");
-    const text = fields.message ?? fields.msg ?? "";
+    const call = fields.method && fields.path ? ` ${fields.method} ${fields.path}${fields.status ? ` -> ${fields.status}` : ""}` : "";
+    const text = `${fields.message ?? fields.msg ?? ""}${call}`;
     const type = fields.error?.type ?? fields["error.type"];
     return { level: LEVELS.includes(level) ? level : "INFO", message: scrub(type ? `${text} (${type})` : text) };
   }

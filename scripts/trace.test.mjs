@@ -153,6 +153,10 @@ test("prints no bound value, token, query string or address the store holds", ()
 test("reads a log line's level and message from either tier's JSON, and from plain text", () => {
   assert.deepEqual(parseLogLine('{"@timestamp":"t","log":{"level":"WARN","logger":"x"},"message":"slow","traceId":"a"}'), { level: "WARN", message: "slow" });
   assert.deepEqual(parseLogLine('{"level":"error","msg":"backend call failed","traceId":"a"}'), { level: "ERROR", message: "backend call failed" });
+  assert.deepEqual(parseLogLine('{"level":"info","msg":"Backend call completed","traceId":"a","method":"GET","path":"/api/v1/beers","status":200}'), {
+    level: "INFO",
+    message: "Backend call completed GET /api/v1/beers -> 200",
+  });
   assert.deepEqual(parseLogLine("2026-11-15 12:00:00 WARNING [org.keycloak] slow"), { level: "WARN", message: "2026-11-15 12:00:00 WARNING [org.keycloak] slow" });
   assert.equal(parseLogLine("plain line").level, "INFO");
   assert.equal(scrub("a /b?c=d e"), "a /b e");
