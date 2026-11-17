@@ -241,7 +241,7 @@ describe("refreshAccessToken's span", () => {
 
     await refreshAccessToken("old-refresh");
 
-    const [span] = exporter.getFinishedSpans();
+    const span = exporter.getFinishedSpans()[0]!;
     expect(span.name).toBe("token refresh");
     expect(span.attributes["kalia.token_refresh.outcome"]).toBe("renewed");
     expect(span.status.code).toBe(SpanStatusCode.UNSET);
@@ -253,7 +253,7 @@ describe("refreshAccessToken's span", () => {
 
     await refreshAccessToken("old-refresh");
 
-    const [span] = exporter.getFinishedSpans();
+    const span = exporter.getFinishedSpans()[0]!;
     expect(span.attributes["kalia.token_refresh.outcome"]).toBe("unavailable");
     expect(span.status.code).toBe(SpanStatusCode.ERROR);
     expect(JSON.stringify(span.attributes)).not.toContain("old-refresh");

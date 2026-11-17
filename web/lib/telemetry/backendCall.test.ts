@@ -91,7 +91,7 @@ describe("kaliaFetch with a collector configured", () => {
 
     const { requestSpanId, traceId } = await inRequest(() => kaliaFetch("/api/v1/cellar", { method: "GET" }));
 
-    const [call] = exporter.getFinishedSpans();
+    const call = exporter.getFinishedSpans()[0]!;
     expect(call.name).toBe("GET /api/v1/cellar");
     expect(call.parentSpanContext?.spanId).toBe(requestSpanId);
     expect(call.spanContext().traceId).toBe(traceId);
@@ -113,7 +113,7 @@ describe("kaliaFetch with a collector configured", () => {
 
     await inRequest(() => kaliaFetch("/api/v1/users/ada-lovelace/cellars?search=westvleteren", { method: "GET" }));
 
-    const [call] = exporter.getFinishedSpans();
+    const call = exporter.getFinishedSpans()[0]!;
     const recorded = JSON.stringify({ name: call.name, attributes: call.attributes, events: call.events });
     expect(recorded).not.toContain("ada-lovelace");
     expect(recorded).not.toContain("westvleteren");
@@ -155,7 +155,7 @@ describe("kaliaFetch with a collector configured", () => {
 
     await inRequest(() => kaliaFetch("/api/v1/beers", { method: "GET" })).catch(() => undefined);
 
-    const [call] = exporter.getFinishedSpans().filter((span) => span.name.startsWith("GET /api/v1"));
+    const call = exporter.getFinishedSpans().filter((span) => span.name.startsWith("GET /api/v1"))[0]!;
     expect(call.status.code).toBe(SpanStatusCode.UNSET);
     expect(call.attributes["kalia.backend.failure"]).toBeUndefined();
   });
@@ -166,7 +166,9 @@ describe("kaliaFetch with a collector configured", () => {
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("fetch failed"))));
     await inRequest(() => kaliaFetch("/api/v1/beers", { method: "GET" })).catch(() => undefined);
 
-    const [unavailable, unreachable] = exporter.getFinishedSpans().filter((span) => span.name.startsWith("GET /api/v1"));
+    const finished = exporter.getFinishedSpans().filter((span) => span.name.startsWith("GET /api/v1"));
+    const unavailable = finished[0]!;
+    const unreachable = finished[1]!;
     expect(unavailable.status.code).toBe(SpanStatusCode.ERROR);
     expect(unreachable.status.code).toBe(SpanStatusCode.ERROR);
     expect(unreachable.attributes["kalia.backend.failure"]).toBe("network");
