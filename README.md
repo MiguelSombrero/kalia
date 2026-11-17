@@ -101,23 +101,26 @@ Every value in that file is dev-only: never reuse one outside local development.
   at most, and in 2 GiB of memory at most. The first start downloads about
   600 MB of Grafana plugins, so it needs the network once; the image is 3.6 GB
   on disk. Without it the stack starts exactly the containers it did before.
-  Every service below sends to it; nothing leaves the machine.
-  | Service | Logs, by `service` label | Metrics (Prometheus job) | Traces |
-  |---|---|---|---|
-  | `backend` | its JSON lines | `/actuator/prometheus` (`backend`) | yes |
-  | `web` | its JSON lines | `/api/metrics` (`web`) | yes |
-  | `edge` | one JSON line per request, with `status` and `upstream` (`web`, `backend`, `keycloak`, `keycloak-admin`) as labels and the request's `trace_id` when it carried a `traceparent`; a refusal is `{service="edge", status="429"}` | the same lines counted by status and service in Loki, no exporter | no |
-  | `keycloak` | its text lines, with the `username` and `email` of an event replaced by `[redacted]`, so a failed sign-in is found by its event type, client and time | its own `/metrics` on the management port (`keycloak`) | no |
-  | `postgres` | its lines, with the value in a unique violation's `DETAIL: Key (…)=(…)` replaced | `postgres_exporter` as role `kalia_monitor`, which holds `pg_monitor` and is created by the profile alone, never by the init script (`postgres`; for example `pg_stat_database_numbackends`) | no |
-  | `valkey` | its lines | `redis_exporter` (`valkey`; for example `redis_connected_clients`) | no |
+  Every service's logs reach it by `service` label, and nothing leaves the machine:
+  - `backend`, `web`: traces, and counters scraped from `/actuator/prometheus` and `/api/metrics`.
+  - `edge`: one JSON line per request, labelled `status` and `upstream` (`web`, `backend`, `keycloak`, `keycloak-admin`), with the request's `trace_id` when it carried a `traceparent`; refusals are `{service="edge", status="429"}`. No exporter: the lines are counted.
+  - `keycloak`: its own `/metrics` (built into the local stack's image only: `make observability-up` rebuilds it once); each event's `username` and `email` are replaced by `[redacted]`, so a failed sign-in is found by event type, client and time.
+  - `postgres`: `postgres_exporter` as role `kalia_monitor` (`pg_monitor`, created by the profile alone; `pg_stat_database_numbackends`); a unique violation's `Key (…)=(…)` value is replaced.
+  - `valkey`: `redis_exporter` (`redis_connected_clients`).
 
-  `mailpit` and the one-shot services are not shipped. A statement typed into
-  `psql` with its values spelled out is stored as typed; both tiers bind
-  theirs. The edge's log is JSON like both tiers':
-  `docker compose logs edge --no-log-prefix | jq -cR 'fromjson? | select(.status == 429)'`
-  (`-R` and `fromjson?` skip nginx's plain-text error lines). Keycloak's
-  counters are built into the local stack's image only, so a stack built
-  before the profile needs `make observability-up`, which rebuilds it once.
+  Not shipped: `mailpit` and the one-shot services. A statement typed into `psql` with literals is stored as typed. Read the edge's log with
+  `docker compose logs edge --no-log-prefix | jq -cR 'fromjson? | select(.status == 429)'` (`fromjson?` skips its plain-text error lines).
+- **Reading one request** (profile on): `make trace ID=<traceId>` prints that
+  request's span tree, with the SQL each statement ran, and the log lines
+  written under its trace id (a request's id is the `traceId` of its log lines
+  and of the web's `Backend call completed` lines), at most 150 lines. Over
+  that it folds repeated sibling spans into one line (`x 37`), then drops log
+  lines below `WARN`, then cuts the tree and says how much. `make trace` with
+  no `ID` lists the ten most recent requests that answered `5xx` or logged an
+  `ERROR`, each with its id. It reads Grafana on this worktree's `GRAFANA_PORT`,
+  prints no bound value, token or query string whatever the store holds, and
+  exits non-zero, naming `make observability-up`, when the profile is not
+  running. For a question it does not answer, use Grafana itself.
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next

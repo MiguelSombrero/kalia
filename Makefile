@@ -13,7 +13,7 @@ RETRY := node scripts/retry-registry.mjs --
 .PHONY: help up down restart logs ps backend-test backend-verify repeat-it web-test packages-test mobile-lint mobile-test mobile-start mobile-metro-up mobile-metro-down mobile-ios mobile-ios-release mobile-ios-device mobile-ios-device-release mobile-android mobile-android-release mobile-doctor phone-mode phone-mode-off \
         web-build web-e2e lint check compose-check action-pins api-drift api-breaking openapi-spec \
         keycloak-check trivy-scan verify \
-        verify-fast install-hooks next-adr sync-indexes stack-env app-config observability-up observability-down
+        verify-fast install-hooks next-adr sync-indexes stack-env app-config observability-up observability-down trace
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -39,6 +39,9 @@ observability-up: ## Start the observability profile beside the stack (Grafana a
 observability-down: ## Stop and remove the observability profile's containers, keeping its data, and recreate the backend and the web without the collector; the rest of the stack keeps running
 	docker compose --profile observability rm --stop --force lgtm alloy postgres-exporter redis-exporter postgres-monitor-role
 	docker compose up -d backend web
+
+trace: ## Print one request's span tree, its SQL and its log lines as bounded text: make trace ID=<traceId>; with no ID, the ten most recent failed requests (needs the observability profile: make observability-up)
+	@node scripts/trace.mjs $${ID:+"$$ID"}
 
 restart: down up ## Restart the full stack
 

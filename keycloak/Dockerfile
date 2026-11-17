@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:26.8.2-0
+FROM quay.io/keycloak/keycloak:26.8.2-2
 
 ENV KC_DB=postgres
 ENV KC_HEALTH_ENABLED=true
