@@ -1,0 +1,612 @@
+{
+ "trace": {
+  "resourceSpans": [
+   {
+    "resource": {
+     "attributes": [
+      {
+       "key": "telemetry.sdk.language",
+       "value": {
+        "stringValue": "java"
+       }
+      },
+      {
+       "key": "telemetry.sdk.name",
+       "value": {
+        "stringValue": "opentelemetry"
+       }
+      },
+      {
+       "key": "telemetry.sdk.version",
+       "value": {
+        "stringValue": "1.62.0"
+       }
+      },
+      {
+       "key": "service.name",
+       "value": {
+        "stringValue": "backend"
+       }
+      }
+     ]
+    },
+    "scopeSpans": [
+     {
+      "scope": {
+       "name": "org.springframework.boot",
+       "version": "4.1.2"
+      },
+      "spans": [
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "HCMvr7dxCnQ=",
+        "parentSpanId": "GvtRsM7TGx4=",
+        "name": "query",
+        "kind": "SPAN_KIND_CLIENT",
+        "startTimeUnixNano": "1794887815918549673",
+        "endTimeUnixNano": "1794887815923316756",
+        "attributes": [
+         {
+          "key": "jdbc.datasource.driver",
+          "value": {
+           "stringValue": "org.postgresql.Driver"
+          }
+         },
+         {
+          "key": "jdbc.datasource.name",
+          "value": {
+           "stringValue": "kalia"
+          }
+         },
+         {
+          "key": "jdbc.datasource.pool",
+          "value": {
+           "stringValue": "HikariPool-1"
+          }
+         },
+         {
+          "key": "jdbc.query[0]",
+          "value": {
+           "stringValue": "select b1_0.id,b1_0.abv,b1_0.brewery_id,b2_0.id,b2_0.city,b2_0.contributor_id,b2_0.country_code,b2_0.created_at,b2_0.moderation_status,b2_0.name,b2_0.name_sort_key,b1_0.contributor_id,b1_0.created_at,b1_0.moderation_status,b1_0.name,b1_0.style from catalog.beer b1_0 join catalog.brewery b2_0 on b2_0.id=b1_0.brewery_id where b1_0.moderation_status=? and 1=1 order by lower(b1_0.name),b1_0.id offset ? rows fetch first ? rows only"
+          }
+         },
+         {
+          "key": "peer.service",
+          "value": {
+           "stringValue": "kalia"
+          }
+         }
+        ],
+        "status": {}
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "jn21Lbcbzms=",
+        "parentSpanId": "GvtRsM7TGx4=",
+        "name": "result-set",
+        "kind": "SPAN_KIND_CLIENT",
+        "startTimeUnixNano": "1794887815960688340",
+        "endTimeUnixNano": "1794887815961745715",
+        "attributes": [
+         {
+          "key": "jdbc.datasource.driver",
+          "value": {
+           "stringValue": "org.postgresql.Driver"
+          }
+         },
+         {
+          "key": "jdbc.datasource.name",
+          "value": {
+           "stringValue": "kalia"
+          }
+         },
+         {
+          "key": "jdbc.datasource.pool",
+          "value": {
+           "stringValue": "HikariPool-1"
+          }
+         },
+         {
+          "key": "jdbc.row-count",
+          "value": {
+           "stringValue": "1"
+          }
+         },
+         {
+          "key": "peer.service",
+          "value": {
+           "stringValue": "kalia"
+          }
+         }
+        ],
+        "status": {}
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "GvtRsM7TGx4=",
+        "parentSpanId": "89c13tb2txc=",
+        "name": "Catalog > f.k.c.web.CatalogController.searchBeers(j.l.String, j.l.String, j.u.UUID, j.l.String, j.m.BigDecimal, j.m.BigDecimal, int, int, j.l.String, j.l.String)",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1794887815810007548",
+        "endTimeUnixNano": "1794887815967567548",
+        "attributes": [
+         {
+          "key": "module.identifier",
+          "value": {
+           "stringValue": "catalog"
+          }
+         },
+         {
+          "key": "module.invocation-type",
+          "value": {
+           "stringValue": "bean"
+          }
+         },
+         {
+          "key": "module.name",
+          "value": {
+           "stringValue": "Catalog"
+          }
+         }
+        ],
+        "status": {
+         "code": "STATUS_CODE_OK"
+        }
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "2+1EtiS4p4E=",
+        "parentSpanId": "V7sPZPbXr8E=",
+        "name": "authorize request",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1794887815716365506",
+        "endTimeUnixNano": "1794887815716831173",
+        "attributes": [
+         {
+          "key": "spring.security.authentication.authorities",
+          "value": {
+           "stringValue": "n/a"
+          }
+         },
+         {
+          "key": "spring.security.authentication.type",
+          "value": {
+           "stringValue": "n/a"
+          }
+         },
+         {
+          "key": "spring.security.authorization.decision",
+          "value": {
+           "stringValue": "true"
+          }
+         },
+         {
+          "key": "spring.security.authorization.decision.details",
+          "value": {
+           "stringValue": "AuthorizationDecision [granted=true]"
+          }
+         },
+         {
+          "key": "spring.security.object",
+          "value": {
+           "stringValue": "request"
+          }
+         }
+        ],
+        "status": {
+         "code": "STATUS_CODE_OK"
+        }
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "rZXBgq9yzZY=",
+        "parentSpanId": "PwmYdst2dFw=",
+        "name": "security filterchain after",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1794887816018082881",
+        "endTimeUnixNano": "1794887816019273340",
+        "attributes": [
+         {
+          "key": "spring.security.filterchain.position",
+          "value": {
+           "stringValue": "13"
+          }
+         },
+         {
+          "key": "spring.security.filterchain.size",
+          "value": {
+           "stringValue": "13"
+          }
+         },
+         {
+          "key": "spring.security.reached.filter.name",
+          "value": {
+           "stringValue": "DisableEncodeUrlFilter"
+          }
+         },
+         {
+          "key": "spring.security.reached.filter.section",
+          "value": {
+           "stringValue": "after"
+          }
+         }
+        ],
+        "events": [
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after AuthorizationFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after ExceptionTranslationFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after SessionManagementFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after AnonymousAuthenticationFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after SecurityContextHolderAwareRequestFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after RequestCacheAwareFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after BearerTokenAuthenticationFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after OAuth2ProtectedResourceMetadataFilter"
+         },
+         {
+          "timeUnixNano": "1794887816018000000",
+          "name": "after LogoutFilter"
+         },
+         {
+          "timeUnixNano": "1794887816019000000",
+          "name": "after HeaderWriterFilter"
+         },
+         {
+          "timeUnixNano": "1794887816019000000",
+          "name": "after SecurityContextHolderFilter"
+         },
+         {
+          "timeUnixNano": "1794887816019000000",
+          "name": "after WebAsyncManagerIntegrationFilter"
+         },
+         {
+          "timeUnixNano": "1794887816019000000",
+          "name": "after DisableEncodeUrlFilter"
+         }
+        ],
+        "status": {
+         "code": "STATUS_CODE_OK"
+        }
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "V7sPZPbXr8E=",
+        "parentSpanId": "PwmYdst2dFw=",
+        "name": "security filterchain before",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1794887815715390839",
+        "endTimeUnixNano": "1794887815717079006",
+        "attributes": [
+         {
+          "key": "spring.security.filterchain.position",
+          "value": {
+           "stringValue": "13"
+          }
+         },
+         {
+          "key": "spring.security.filterchain.size",
+          "value": {
+           "stringValue": "13"
+          }
+         },
+         {
+          "key": "spring.security.reached.filter.name",
+          "value": {
+           "stringValue": "AuthorizationFilter"
+          }
+         },
+         {
+          "key": "spring.security.reached.filter.section",
+          "value": {
+           "stringValue": "before"
+          }
+         }
+        ],
+        "events": [
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before DisableEncodeUrlFilter"
+         },
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before WebAsyncManagerIntegrationFilter"
+         },
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before SecurityContextHolderFilter"
+         },
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before HeaderWriterFilter"
+         },
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before LogoutFilter"
+         },
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before OAuth2ProtectedResourceMetadataFilter"
+         },
+         {
+          "timeUnixNano": "1794887815715000000",
+          "name": "before BearerTokenAuthenticationFilter"
+         },
+         {
+          "timeUnixNano": "1794887815716000000",
+          "name": "before RequestCacheAwareFilter"
+         },
+         {
+          "timeUnixNano": "1794887815716000000",
+          "name": "before SecurityContextHolderAwareRequestFilter"
+         },
+         {
+          "timeUnixNano": "1794887815716000000",
+          "name": "before AnonymousAuthenticationFilter"
+         },
+         {
+          "timeUnixNano": "1794887815716000000",
+          "name": "before SessionManagementFilter"
+         },
+         {
+          "timeUnixNano": "1794887815716000000",
+          "name": "before ExceptionTranslationFilter"
+         },
+         {
+          "timeUnixNano": "1794887815716000000",
+          "name": "before AuthorizationFilter"
+         }
+        ],
+        "status": {
+         "code": "STATUS_CODE_OK"
+        }
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "BS/r6oHnn78=",
+        "parentSpanId": "GvtRsM7TGx4=",
+        "name": "query",
+        "kind": "SPAN_KIND_CLIENT",
+        "startTimeUnixNano": "1794887815956302131",
+        "endTimeUnixNano": "1794887815960443881",
+        "attributes": [
+         {
+          "key": "jdbc.datasource.driver",
+          "value": {
+           "stringValue": "org.postgresql.Driver"
+          }
+         },
+         {
+          "key": "jdbc.datasource.name",
+          "value": {
+           "stringValue": "kalia"
+          }
+         },
+         {
+          "key": "jdbc.datasource.pool",
+          "value": {
+           "stringValue": "HikariPool-1"
+          }
+         },
+         {
+          "key": "jdbc.query[0]",
+          "value": {
+           "stringValue": "select count(b1_0.id) from catalog.beer b1_0 where b1_0.moderation_status=? and 1=1"
+          }
+         },
+         {
+          "key": "peer.service",
+          "value": {
+           "stringValue": "kalia"
+          }
+         }
+        ],
+        "status": {}
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "Yf/EW6Y2ViE=",
+        "parentSpanId": "GvtRsM7TGx4=",
+        "name": "Identity > f.k.i.IdentityApi.findCurrentUserId()",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1794887815811040048",
+        "endTimeUnixNano": "1794887815811906506",
+        "attributes": [
+         {
+          "key": "module.identifier",
+          "value": {
+           "stringValue": "identity"
+          }
+         },
+         {
+          "key": "module.invocation-type",
+          "value": {
+           "stringValue": "bean"
+          }
+         },
+         {
+          "key": "module.name",
+          "value": {
+           "stringValue": "Identity"
+          }
+         }
+        ],
+        "status": {
+         "code": "STATUS_CODE_OK"
+        }
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "PwmYdst2dFw=",
+        "parentSpanId": "t61rcWkgMzE=",
+        "name": "http get /api/v1/beers",
+        "kind": "SPAN_KIND_SERVER",
+        "startTimeUnixNano": "1794887815714552131",
+        "endTimeUnixNano": "1794887816020220131",
+        "attributes": [
+         {
+          "key": "exception",
+          "value": {
+           "stringValue": "none"
+          }
+         },
+         {
+          "key": "method",
+          "value": {
+           "stringValue": "GET"
+          }
+         },
+         {
+          "key": "outcome",
+          "value": {
+           "stringValue": "SUCCESS"
+          }
+         },
+         {
+          "key": "status",
+          "value": {
+           "stringValue": "200"
+          }
+         },
+         {
+          "key": "uri",
+          "value": {
+           "stringValue": "/api/v1/beers"
+          }
+         },
+         {
+          "key": "http.url",
+          "value": {
+           "stringValue": "/api/v1/beers"
+          }
+         }
+        ],
+        "status": {}
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "ZeeEupUfYZA=",
+        "parentSpanId": "GvtRsM7TGx4=",
+        "name": "connection",
+        "kind": "SPAN_KIND_CLIENT",
+        "startTimeUnixNano": "1794887815812784798",
+        "endTimeUnixNano": "1794887815965774715",
+        "attributes": [
+         {
+          "key": "jdbc.datasource.driver",
+          "value": {
+           "stringValue": "org.postgresql.Driver"
+          }
+         },
+         {
+          "key": "jdbc.datasource.name",
+          "value": {
+           "stringValue": "kalia"
+          }
+         },
+         {
+          "key": "jdbc.datasource.pool",
+          "value": {
+           "stringValue": "HikariPool-1"
+          }
+         },
+         {
+          "key": "module.identifier",
+          "value": {
+           "stringValue": "catalog"
+          }
+         }
+        ],
+        "events": [
+         {
+          "timeUnixNano": "1794887815813446715",
+          "name": "acquired"
+         },
+         {
+          "timeUnixNano": "1794887815965233673",
+          "name": "commit"
+         }
+        ],
+        "status": {}
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "qJo/AhNGRkY=",
+        "parentSpanId": "GvtRsM7TGx4=",
+        "name": "result-set",
+        "kind": "SPAN_KIND_CLIENT",
+        "startTimeUnixNano": "1794887815935065923",
+        "endTimeUnixNano": "1794887815951316881",
+        "attributes": [
+         {
+          "key": "jdbc.datasource.driver",
+          "value": {
+           "stringValue": "org.postgresql.Driver"
+          }
+         },
+         {
+          "key": "jdbc.datasource.name",
+          "value": {
+           "stringValue": "kalia"
+          }
+         },
+         {
+          "key": "jdbc.datasource.pool",
+          "value": {
+           "stringValue": "HikariPool-1"
+          }
+         },
+         {
+          "key": "jdbc.row-count",
+          "value": {
+           "stringValue": "20"
+          }
+         },
+         {
+          "key": "peer.service",
+          "value": {
+           "stringValue": "kalia"
+          }
+         }
+        ],
+        "status": {}
+       },
+       {
+        "traceId": "CvdlGRbNQ92ESOshHIAxnQ==",
+        "spanId": "89c13tb2txc=",
+        "parentSpanId": "PwmYdst2dFw=",
+        "name": "secured request",
+        "kind": "SPAN_KIND_INTERNAL",
+        "startTimeUnixNano": "1794887815717132548",
+        "endTimeUnixNano": "1794887816017843923",
+        "status": {
+         "code": "STATUS_CODE_OK"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
