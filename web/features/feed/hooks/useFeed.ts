@@ -13,7 +13,7 @@ export const olderFeedQuery = (mountId: string, initialPage: FeedPage) =>
     queryFn: ({ pageParam }) => readOlderFeedAction(pageParam as string),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage: OlderFeedPage) => lastPage.nextCursor ?? undefined,
-    initialData: { pages: [initialPage], pageParams: [null] },
+    initialData: { pages: [initialPage as OlderFeedPage], pageParams: [null] },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
