@@ -59,6 +59,25 @@ plugin and the verification of each rule is
 
 `make verify-fast` runs this lint, so a pre-push hook catches it.
 
+## Frontend (npm) — build
+
+**`Web and packages (npm)`, `E2E (Playwright)` and `Scan kalia-web` are red on
+`dev` with `TS18048 … is possibly 'undefined'`, though both pull requests that
+merged were green.** Two branches that each passed on their own base conflict
+in behaviour once merged: one turned on a compiler flag
+(`noUncheckedIndexedAccess`), the other added tests that read an array
+unchecked. No check ran on the two together, because the ruleset does not
+require a branch to be up to date and the merge-ref check runs only `make
+check`, not the type-checker
+([ADR-0046](adr/0046-edit-time-checks-and-one-verify-gate.md)). Every web
+Docker build fails with it, so each open pull request, Dependabot's included,
+goes red on the same three checks plus `CI passed` and the vulnerability scan.
+Recognise it by the same error in the scan's `Build the image` step and in
+`make web-build`; `npx tsc --noEmit` in `web/` reproduces it in seconds, and
+`npm test` stays green because Vitest does not type-check. Fix the file the
+error names on a branch of its own (tests assert with `!`, source narrows), not
+on a Dependabot branch. Seen on `dev` runs `43734146899` and `43851999124`.
+
 ## Static checks — `check-comments.mjs`
 
 **A comment names a task, an iteration, a PR, or how the code used to be.**
