@@ -25,8 +25,8 @@ source; `node scripts/generate-tokens.mjs --check` detects drift without git.
   Three pure files also have a subpath of their own, which a client component
   or a shared primitive imports so that it takes none of the transport:
   `@kalia/api/api-error`, `@kalia/api/beer-style` (ADR-0111's mapping) and
-  `@kalia/api/enum-lookup`. The web's ESLint fails a `"use client"` file and
-  anything under `components/` that imports the root, and the app's fails
+  `@kalia/api/enum-lookup`. The web's ESLint fails a `"use client"` file, anything
+  under `components/` and a feature's `hooks/` that imports the root, and the app's fails
   `beerStyleGroup` imported from it (`eslint-fixtures/api-imports/`,
   `eslint-fixtures/conventions/beer-style-from-the-root.ts`). Beyond those,
   `@kalia/api/generated/<tag>/<tag>` and `@kalia/api/generated/models` are the
@@ -38,7 +38,8 @@ source; `node scripts/generate-tokens.mjs --check` detects drift without git.
   `@tanstack/react-query` and each app's React version is its own. The hooks
   are the features' own ([ADR-0041](../docs/adr/0041-tanstack-query-feature-owned-hooks.md)).
 - **An unexpected status is `httpFailure(what, response)`** in both apps, never
-  `apiError("http", …)` by hand: it names the call's trace id on the error,
+  `apiError("http", …)` by hand (a Server Action result that holds only a status,
+  `useRemoveBeer` and `unlessConflicted`, has no response to name): it names the call's trace id on the error,
   which the app's transport logs once, with the call.
 - **Regenerate** with `make api-drift` from the repository root, or
   `npm run generate --workspace @kalia/api`. It reads `backend/openapi.json`, so

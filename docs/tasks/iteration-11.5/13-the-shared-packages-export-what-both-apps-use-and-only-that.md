@@ -84,17 +84,17 @@ package, so its shape is cheapest to settle now.
 
 ## Acceptance criteria
 
-- [ ] `packages/api/package.json` lists no peer dependency that refinement
+- [x] `packages/api/package.json` lists no peer dependency that refinement
       removes. `npm ci`, both apps' builds and `make api-drift` pass on the
       regenerated client
-- [ ] A test shows an HTTP failure from a web feature's `api.ts` carrying
+- [x] A test shows an HTTP failure from a web feature's `api.ts` carrying
       the response's trace id, logged once. It failed before the change
-- [ ] A lint fixture in the web that imports the package root from a client
+- [x] A lint fixture in the web that imports the package root from a client
       component fails, and one in the app that imports `beerStyleGroup`
       through the root fails; the subpath import passes in both
-- [ ] `isLocale` is defined once, in `@kalia/locales`, and both apps import
+- [x] `isLocale` is defined once, in `@kalia/locales`, and both apps import
       it from there
-- [ ] `make verify-fast` is green, and the app's independence tests are
+- [x] `make verify-fast` is green, and the app's independence tests are
       unchanged
 
 ## Notes

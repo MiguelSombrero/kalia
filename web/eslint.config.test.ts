@@ -213,6 +213,12 @@ describe("the browser's code takes a @kalia/api subpath, never the root (package
     ]);
   });
 
+  it("rejects a feature hook that imports the package root", async () => {
+    expect(await messagesFor(apiImportFixture("server-code-imports-the-root.ts"), "features/catalog/hooks/useProbe.ts")).toEqual([
+      expect.stringContaining("never the package root"),
+    ]);
+  });
+
   it("accepts the same import through a subpath", async () => {
     expect(await messagesFor(apiImportFixture("client-component-imports-a-subpath.tsx"), "features/catalog/Probe.tsx")).toEqual([]);
   });

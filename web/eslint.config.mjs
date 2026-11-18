@@ -33,7 +33,7 @@ const ownGeneratedTag = {
 
 // packages/README.md: the browser's code imports a `@kalia/api` subpath, never the root.
 const rootImportMessage =
-  "A client component or a shared primitive imports from a @kalia/api subpath (@kalia/api/api-error, /beer-style, /enum-lookup), never the package root (packages/README.md).";
+  "A client component, a shared primitive or a feature hook imports from a @kalia/api subpath (@kalia/api/api-error, /beer-style, /enum-lookup), never the package root (packages/README.md).";
 const clientImportsApiRoot = {
   selector: "Program:has(> ExpressionStatement[directive='use client']) ImportDeclaration[source.value='@kalia/api']",
   message: rootImportMessage,
@@ -131,9 +131,9 @@ const eslintConfig = defineConfig([
       "no-restricted-syntax": ["error", ...codeStyleSyntax, handBuiltRoute],
     },
   },
-  // components/ is shared by server and client trees, so it takes no `"use client"` marker to be held to it.
+  // components/ and the hooks are shared by server and client trees, so they take no `"use client"` marker to be held to it.
   {
-    files: ["components/**/*.{ts,tsx}"],
+    files: ["components/**/*.{ts,tsx}", "features/*/hooks/**/*.{ts,tsx}"],
     ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
     rules: {
       "no-restricted-syntax": ["error", ...codeStyleSyntax, handBuiltRoute, primitiveImportsApiRoot],
