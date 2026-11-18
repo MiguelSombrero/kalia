@@ -326,6 +326,14 @@ mirror should fall through to GitHub's registry on its own. Only a failure that 
 per image the deployable stack runs (`scripts/scan-images.mjs`), so every leg
 of the matrix can hit this together.
 
+**`Scan dhi.io/<image>` fails with `FATAL … unable to find the specified image
+… remote error: GET https://dhi.io/token … 401 Unauthorized`.** Not a finding
+and not an outage: Trivy's own anonymous token request to `dhi.io` is refused,
+though `docker pull` of the same image is not (task 06's PR, run
+`44023384103`). The `Pull the hardened image` step pulls it first, so Trivy
+reads it from the daemon. A failure there that names the pull is the registry:
+re-run the failed jobs and change nothing in the diff.
+
 **`Scan <image>` is red at `Build the image`, with `Non-resolvable parent POM`
 or `Could not transfer artifact` in the log.** Maven Central failed the backend
 image's `dependency:go-offline`; no scan ran. The step builds through
