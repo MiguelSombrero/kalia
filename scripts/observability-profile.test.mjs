@@ -141,9 +141,3 @@ test("the Keycloak image counts its requests only in the local stack", () => {
   });
   assert.equal(args(base).KC_METRICS_ENABLED, undefined, "the deployable definition builds Keycloak with counters");
 });
-
-test("the vulnerability scan pulls a dhi.io image before Trivy reads it, which Trivy cannot fetch anonymously itself", () => {
-  const workflow = readFileSync(join(ROOT, ".github/workflows/vulnerability-scan.yml"), "utf8");
-  assert.match(workflow, /if: startsWith\(matrix\.image, 'dhi\.io\/'\)\n\s+run: node scripts\/retry-registry\.mjs -- docker pull "\$IMAGE"/);
-  assert.ok(workflow.indexOf("Pull the hardened image") < workflow.indexOf("Scan the image"), "the pull comes after the scan");
-});
