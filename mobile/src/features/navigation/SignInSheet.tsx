@@ -1,9 +1,11 @@
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { View } from "react-native";
 
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
+import { spacing } from "@/components/metrics";
 import { Sheet } from "@/components/Sheet";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
@@ -37,9 +39,13 @@ export const SignInSheet = () => {
   };
   return (
     <Sheet title={t("profile.signIn.action")} closeLabel={t("mobileNavigation.close")} onClose={close} closeDisabled={busy}>
-      <BodyText>{t("mobileNavigation.signInHint")}</BodyText>
-      {failed ? <BodyText tone="error" spaced>{t("session.signInFailed")}</BodyText> : null}
-      <ActionButton testID="sign-in-sheet-action" label={t("profile.signIn.action")} onPress={() => void start()} busy={busy} />
+      <View style={spacing.blocks}>
+        <View style={spacing.lines}>
+          <BodyText>{t("mobileNavigation.signInHint")}</BodyText>
+          {failed ? <BodyText tone="error">{t("session.signInFailed")}</BodyText> : null}
+        </View>
+        <ActionButton testID="sign-in-sheet-action" label={t("profile.signIn.action")} onPress={() => void start()} busy={busy} />
+      </View>
     </Sheet>
   );
 };

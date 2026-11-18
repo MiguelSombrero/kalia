@@ -48,15 +48,37 @@ const codeStyleSyntax = [
     message: "Read a Zustand store through a selector, useXStore((state) => state.field): a whole-store read re-renders on every change in it (mobile/CONVENTIONS.md).",
   },
   {
-    selector: "CallExpression:matches([callee.name='useQuery'], [callee.name='useInfiniteQuery'], [callee.name='useMutation']) > ObjectExpression > Property[key.name='retry']",
+    selector: "CallExpression:matches([callee.name='useQuery'], [callee.name='useInfiniteQuery'], [callee.name='useMutation'], [callee.name='queryOptions'], [callee.name='infiniteQueryOptions']) > ObjectExpression > Property[key.name='retry']",
     message: "Retries are set once, on the QueryClient (src/lib/query/createQueryClient.ts); a hook that needs another count says why in its eslint-disable, after `--` (mobile/CONVENTIONS.md).",
   },
 ];
+
+const queryKeyInHook = {
+  selector: "CallExpression:matches([callee.name='useQuery'], [callee.name='useInfiniteQuery']) > ObjectExpression > Property[key.name='queryKey']",
+  message: "A query key is written once, in the resource's factory built with queryOptions() or infiniteQueryOptions(), and the hook takes the factory: useQuery(beerQuery(id)) (mobile/CONVENTIONS.md).",
+};
+
+const defaultExport = {
+  selector: "ExportDefaultDeclaration",
+  message: "Only a route file under src/app/ has a default export, because Expo Router asks for it; everything else is a named export (mobile/CONVENTIONS.md).",
+};
+
+const inlinePropsType = {
+  selector: "VariableDeclarator[id.name=/^[A-Z]/] > ArrowFunctionExpression > :matches(ObjectPattern, Identifier) > TSTypeAnnotation > :matches(TSTypeLiteral, TSIntersectionType)",
+  message: "Type a component's props with a named type above it, type NameProps = { … }, never inline in the signature (mobile/CONVENTIONS.md).",
+};
+
+const libIndex = {
+  selector: "Program",
+  message: "src/lib/ has no index.ts: a module is imported file by file, as the screens that must work when nothing else does must import it (mobile/CONVENTIONS.md).",
+};
 
 const styleSheetInFunction = {
   selector: ":function CallExpression[callee.property.name='create']:matches([callee.object.name='StyleSheet'], [callee.object.property.name='StyleSheet'])",
   message: "Build a sheet once, outside the component: StyleSheet.create at module level, or createThemedStyles when it reads theme colours; a value that depends on props goes in the style array (mobile/CONVENTIONS.md).",
 };
+
+const srcSyntax = [queryKeyInHook, defaultExport, inlinePropsType];
 
 const themedStylesFile = "src/lib/design/themedStyles.ts";
 
@@ -88,8 +110,20 @@ const eslintConfig = defineConfig([
   },
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: [themedStylesFile],
-    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction] },
+    ignores: [themedStylesFile, "src/app/**"],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, ...srcSyntax] },
+  },
+  {
+    files: [themedStylesFile],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, ...srcSyntax] },
+  },
+  {
+    files: ["src/app/**/*.{ts,tsx}"],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, queryKeyInHook, inlinePropsType] },
+  },
+  {
+    files: ["src/lib/**/index.{ts,tsx}"],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, ...srcSyntax, libIndex] },
   },
   {
     plugins: { boundaries },
@@ -108,7 +142,7 @@ const eslintConfig = defineConfig([
       "boundaries/files": [
         { category: "test-file", pattern: "mobile/src/**/*.test.{ts,tsx}" },
         { category: "feature-index", pattern: "mobile/src/features/*/index.ts" },
-        { category: "feature-api", pattern: "mobile/src/features/*/api.ts" },
+        { category: "feature-api", pattern: "mobile/src/features/*/{api,types}.ts" },
         { category: "app-suite", pattern: "mobile/src/testing/*.app.{ts,tsx,test.ts,test.tsx}" },
         {
           category: "independent-screen",

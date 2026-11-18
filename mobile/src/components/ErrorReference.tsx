@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { Text } from "react-native";
 
 import { textStyle } from "@/lib/design/fonts";
-import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
-export const ErrorReference = ({ error }: { error: unknown }) => {
+type ErrorReferenceProps = { error: unknown };
+
+export const ErrorReference = ({ error }: ErrorReferenceProps) => {
   const styles = useStyles();
   const { t } = useTranslation();
   if (!isApiError(error) || !error.traceId) {
@@ -20,5 +21,5 @@ export const ErrorReference = ({ error }: { error: unknown }) => {
 };
 
 const useStyles = createThemedStyles((colors) => ({
-  reference: { marginTop: theme.spacing.small, ...textStyle("label", "normal"), color: colors["muted-foreground"] },
+  reference: { ...textStyle("label", "normal"), color: colors["muted-foreground"] },
 }));

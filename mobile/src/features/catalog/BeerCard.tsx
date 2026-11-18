@@ -8,13 +8,15 @@ import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
 import type { TranslationKey } from "@/lib/i18n/translationKey";
-import { PressFeedback } from "@/lib/motion";
+import { PressFeedback } from "@/lib/motion/PressFeedback";
 
-import type { BeerSummary } from "./api";
+import type { BeerSummary } from "./types";
 
 const statusLabelKey = enumLookup<BeerSummary["status"], TranslationKey | null>({ APPROVED: null, PENDING: "catalogFilters.waitingForReview" }, UNKNOWN_VALUE_LABEL_KEY);
 
-export const BeerCard = ({ beer, language, onPress }: { beer: BeerSummary; language: string; onPress?: () => void }) => {
+type BeerCardProps = { beer: BeerSummary; language: string; onPress?: () => void };
+
+export const BeerCard = ({ beer, language, onPress }: BeerCardProps) => {
   const { t } = useTranslation();
   const { background, foreground } = useBeerStyleColours()(beer.style);
   const colors = useThemeColors();

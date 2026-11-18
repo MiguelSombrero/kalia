@@ -1,8 +1,7 @@
 import { httpFailure } from "@kalia/api";
 import { readAppConfig as generatedReadAppConfig } from "@kalia/api/generated/app-config/app-config";
-import type { AppConfigDto } from "@kalia/api/generated/models";
 
-export type AppConfig = AppConfigDto;
+import type { AppConfig } from "./types";
 
 export const readAppConfig = async (): Promise<AppConfig> => {
   const response = await generatedReadAppConfig();

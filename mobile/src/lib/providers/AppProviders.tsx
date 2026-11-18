@@ -11,17 +11,19 @@ import { clearOnViewerChange } from "@/lib/query/clearOnViewerChange";
 import { createQueryClient } from "@/lib/query/createQueryClient";
 import { useAppStateFocus } from "@/lib/query/useAppStateFocus";
 
+type AppProvidersProps = {
+  children: ReactNode;
+  locale: Locale;
+  queryClient?: QueryClient;
+  tokenStore?: TokenStore;
+};
+
 export const AppProviders = ({
   children,
   locale,
   queryClient: provided,
   tokenStore = getTokenStore(),
-}: {
-  children: ReactNode;
-  locale: Locale;
-  queryClient?: QueryClient;
-  tokenStore?: TokenStore;
-}) => {
+}: AppProvidersProps) => {
   const [created] = useState(createQueryClient);
   const queryClient = provided ?? created;
   const [i18n] = useState(() => createI18n(locale));

@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
 import { theme } from "@/lib/design/theme.generated";
 import { renderWithLocale } from "@/testing/renderWithLocale";
@@ -16,13 +17,10 @@ describe("ActionButton", () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  it("keeps its top margin, and drops it when set flush so a footer can place it", async () => {
+  it("sets no space around itself: its parent places it with gap", async () => {
     await renderWithLocale(<ActionButton label="Show all" onPress={() => undefined} />);
-    expect(screen.getByRole("button", { name: "Show all" })).toHaveStyle({ marginTop: theme.spacing.large });
 
-    await renderWithLocale(<ActionButton label="Show beers" onPress={() => undefined} flush />);
-
-    expect(screen.getByRole("button", { name: "Show beers" })).not.toHaveStyle({ marginTop: theme.spacing.large });
+    expect(StyleSheet.flatten(screen.getByRole("button", { name: "Show all" }).props.style).marginTop).toBeUndefined();
   });
 
   it("fills the main action with the action colour", async () => {

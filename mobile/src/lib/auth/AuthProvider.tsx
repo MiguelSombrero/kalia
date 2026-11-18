@@ -4,7 +4,9 @@ import type { AuthState, SignInResult, TokenStore } from "./tokenStore";
 
 const AuthContext = createContext<TokenStore | undefined>(undefined);
 
-export const AuthProvider = ({ tokenStore, children }: { tokenStore: TokenStore; children: ReactNode }) => (
+type AuthProviderProps = { tokenStore: TokenStore; children: ReactNode };
+
+export const AuthProvider = ({ tokenStore, children }: AuthProviderProps) => (
   <AuthContext.Provider value={tokenStore}>{children}</AuthContext.Provider>
 );
 

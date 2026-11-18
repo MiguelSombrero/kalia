@@ -11,7 +11,9 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export const PRESS_SCALE = 0.98;
 const PRESSED_OPACITY = 0.85;
 
-export const PressFeedback = ({ style, onPressIn, onPressOut, ...rest }: PressableProps & { style?: StyleProp<ViewStyle> }) => {
+type PressFeedbackProps = PressableProps & { style?: StyleProp<ViewStyle> };
+
+export const PressFeedback = ({ style, onPressIn, onPressOut, ...rest }: PressFeedbackProps) => {
   const reduced = useReducedMotion();
   const [scale] = useState(() => new Animated.Value(1));
   const [held, setHeld] = useState(false);

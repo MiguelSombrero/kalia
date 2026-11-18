@@ -48,8 +48,9 @@ describe("import boundaries reject each crossing a fixture makes", () => {
     expect(await messagesFor(reach, "src/testing/probe.ts")).toEqual([["boundaries/dependencies", expect.stringContaining("testing must not import @/features/catalog")]]);
   });
 
-  it("lets a feature's api.ts reach its own generated tag", async () => {
+  it("lets a feature's api.ts and types.ts reach its own generated tag", async () => {
     expect(await messagesFor(fixture("feature-reaches-generated-client-outside-api"), "src/features/catalog/api.ts")).toEqual([]);
+    expect(await messagesFor(fixture("feature-reaches-generated-client-outside-api"), "src/features/catalog/types.ts")).toEqual([]);
   });
 });
 
@@ -164,6 +165,29 @@ describe("the app's mechanical conventions (mobile/CONVENTIONS.md)", () => {
   it("rejects a query hook that sets retry, unless its eslint-disable gives the reason", async () => {
     expect(await messagesFor(conventionFixture("query-hook-sets-retry.ts"), "src/features/catalog/probe.ts")).toEqual([["no-restricted-syntax", expect.stringContaining("QueryClient")]]);
     expect(await ruleIds("query-hook-sets-retry-with-reason.ts", "src/features/catalog/probe.ts")).toEqual([]);
+  });
+
+  it("rejects a query hook that writes its own key, and accepts one that takes its resource's factory", async () => {
+    expect(await messagesFor(conventionFixture("query-hook-writes-its-key.ts"), "src/features/catalog/probe.ts")).toEqual([["no-restricted-syntax", expect.stringContaining("queryOptions()")]]);
+    expect(await ruleIds("query-hook-takes-a-factory.ts", "src/features/catalog/probe.ts")).toEqual([]);
+  });
+
+  it("rejects export default outside src/app/, where Expo Router asks for it", async () => {
+    for (const lintAs of ["src/features/catalog/probe.tsx", "src/components/probe.tsx", "src/lib/probe.tsx", "src/testing/probe.tsx"]) {
+      expect(await messagesFor(conventionFixture("default-export.tsx"), lintAs)).toEqual([["no-restricted-syntax", expect.stringContaining("default export")]]);
+    }
+    expect(await ruleIds("default-export.tsx", "src/app/probe.tsx")).toEqual([]);
+  });
+
+  it("rejects an index.ts under src/lib/, and leaves a feature's alone", async () => {
+    expect(await messagesFor(conventionFixture("lib-index.ts"), "src/lib/motion/index.ts")).toEqual([["no-restricted-syntax", expect.stringContaining("src/lib/ has no index.ts")]]);
+    expect(await ruleIds("lib-index.ts", "src/lib/motion/easing.ts")).toEqual([]);
+    expect(await ruleIds("lib-index.ts", "src/features/cellar/index.ts")).toEqual([]);
+  });
+
+  it("rejects props typed inline in a component's signature, and accepts a named type", async () => {
+    expect(await messagesFor(conventionFixture("props-typed-inline.tsx"), "src/components/probe.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("named type")]]);
+    expect(await ruleIds("props-typed-by-name.tsx", "src/components/probe.tsx")).toEqual([]);
   });
 
   it("rejects imports out of order, and accepts packages, then the app's own, then siblings", async () => {

@@ -5,7 +5,9 @@ import { useDeviceLocale } from "@/lib/i18n/useDeviceLocale";
 import { CrashScreen } from "./CrashScreen";
 import { useUncaughtErrorStore } from "./store";
 
-export const UncaughtErrorGate = ({ children }: { children: ReactNode }) => {
+type UncaughtErrorGateProps = { children: ReactNode };
+
+export const UncaughtErrorGate = ({ children }: UncaughtErrorGateProps) => {
   const error = useUncaughtErrorStore((state) => state.error);
   const clear = useUncaughtErrorStore((state) => state.clear);
   const locale = useDeviceLocale();
