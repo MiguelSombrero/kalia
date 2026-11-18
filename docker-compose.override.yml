@@ -226,10 +226,10 @@ services:
   postgres-exporter:
     # Postgres's statistics as counters: the connection count, the transaction
     # rate and the size of each database. Read as a role of its own that holds
-    # pg_monitor and nothing else (ADR-0100). Docker's hardened image, which
-    # has no shell and so no healthcheck.
+    # pg_monitor and nothing else (ADR-0100). The image has no shell, so no
+    # healthcheck.
     profiles: [observability]
-    image: dhi.io/postgres-exporter:0.20.1
+    image: prometheuscommunity/postgres-exporter:v0.20.1
     depends_on:
       postgres-monitor-role:
         condition: service_completed_successfully
@@ -239,10 +239,10 @@ services:
       DATA_SOURCE_PASS: ${KALIA_MONITOR_PASSWORD:-kalia-dev-monitor-password}
 
   redis-exporter:
-    # Valkey's own INFO as counters: connected clients, memory, commands. Docker's
-    # hardened image, which has no shell and so no healthcheck.
+    # Valkey's own INFO as counters: connected clients, memory, commands. The image
+    # has no shell, so no healthcheck.
     profiles: [observability]
-    image: dhi.io/redis-exporter:1.97.0
+    image: oliver006/redis_exporter:v1.97.0
     depends_on:
       valkey:
         condition: service_healthy

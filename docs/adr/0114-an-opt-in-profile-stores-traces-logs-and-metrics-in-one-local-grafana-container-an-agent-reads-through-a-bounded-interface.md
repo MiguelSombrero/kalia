@@ -4,6 +4,9 @@
 - **Date:** 2026-11-15
 - **Amended:** 2026-11-17 — iteration 11.5 task 06: how the other services
   arrive (see Decision, Logs and Metrics)
+- **Amended:** 2026-11-18 — iteration 11.5 task 06: the Postgres and Valkey
+  exporters are the community images, because CI cannot pull from `dhi.io`
+  (see Decision, Alternatives considered and Consequences)
 
 ## Context
 
@@ -129,8 +132,17 @@ was decided.
   Micrometer Tracing and its OTLP exporter, whose versions Spring Boot manages;
   `datasource-micrometer`; `@vercel/otel`; and the Postgres and Valkey
   exporters, taken from Docker's hardened-image catalog (`dhi.io`) rather than
-  from a community publisher. Their versions are recorded in
+  from a community publisher (amended below: the community images after all). Their versions are recorded in
   [task 01](../tasks/iteration-11.5/01-decision-the-local-observability-stack.md#versions-chosen).
+
+  > **Amended 2026-11-18 (task 06).** The two exporters are
+  > `prometheuscommunity/postgres-exporter` and `oliver006/redis_exporter`, at
+  > the versions task 01 named for them, and not the `dhi.io` images. The
+  > revisit trigger below fired in effect: the scan job's runner is refused
+  > `dhi.io`'s anonymous token (`401`, in the scan's own log and in a plain
+  > `docker pull` from the runner) though a laptop is not, so Trivy could not
+  > scan them (ADR-0024). The product owner chose the community images over a
+  > registry login held as a repository secret or a waiver of their scan.
 
 This amends ADR-0088: it adds the store, the viewer and the exporters that ADR
 scoped out and replaces nothing else. Brave gives way to the OpenTelemetry
@@ -186,6 +198,8 @@ left it.
   Docker stands behind to a community maintainer's, for a container that holds
   a database credential. The hardened images are the same projects'
   exporters, and were pulled without a login at the time of writing.
+  *(Amended 2026-11-18: chosen after all. CI could not pull the hardened
+  images, so the community ones replaced them; see Decision.)*
 - **Running the profile in CI only on a red run, or never.** Rejected: a red
   run cannot be re-run with the profile on, and a trace of the failure is the
   point; every run carries the profile and the store is uploaded only when red.
@@ -213,12 +227,19 @@ left it.
   Tempo and Grafana move together, and an upgrade of one is an upgrade of all.
 - Bad, because the Postgres and Valkey exporters come from a registry
   (`dhi.io`) no other image in the stack uses, and a change to its anonymous
-  access would need a login in CI.
+  access would need a login in CI. *(Amended 2026-11-18: it did, and the
+  exporters moved to Docker Hub's community images, which every other pulled
+  image already comes from.)*
+- Bad, because the two exporters now come from community maintainers, whose
+  provenance Docker does not vouch for, and each holds a database or session
+  credential. The profile is local and opt-in, and the images are pinned and
+  scanned like the rest (ADR-0024).
 - Neutral, because retention is three days and a restart keeps the store only
   as long as its volume does; the store is a diagnostic aid, not a record.
 - **Revisit trigger:** a deployment target exists or a hosted monitoring
   service is wanted, as in ADR-0088; the profile's memory cost crowds out the
-  stack on the owner's machine; or `dhi.io` begins to require a login to pull.
+  stack on the owner's machine; or `dhi.io` begins to require a login to pull (it did for CI, 2026-11-18: the
+  hardened exporters can return if the scan can pull them without a secret).
 
 ## Evidence
 
@@ -275,6 +296,6 @@ it is committed.
   (`-max-loki-log-limit`) and guardrails for Loki and Prometheus query ranges
   and points, and no size limit on a Tempo trace. That is the part of an
   answer the wrapper has to bound itself.
-- **Hardened exporters.** `dhi.io/postgres-exporter` and `dhi.io/redis-exporter`
+- **Hardened exporters** *(no longer used; see the 2026-11-18 amendment)*. `dhi.io/postgres-exporter` and `dhi.io/redis-exporter`
   pulled with an empty Docker configuration, for `linux/amd64` and
   `linux/arm64`, at the versions in the task's table.

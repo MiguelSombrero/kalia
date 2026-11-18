@@ -98,13 +98,13 @@ test("the image is pinned to a version and the store has a volume and a memory l
   assert.equal(Number(lgtm.mem_limit), 2 * 1024 ** 3);
 });
 
-test("an exporter runs only with the profile, and is Docker's hardened image", () => {
+test("an exporter runs only with the profile, and is the community image CI can pull", () => {
   const without = renderLocal();
   const withProfile = renderLocal({ profile: true });
   for (const name of EXPORTERS) {
     assert.ok(!(name in without.services), `${name} runs without the profile`);
     assert.deepEqual(withProfile.services[name].profiles, ["observability"], name);
-    assert.match(withProfile.services[name].image, /^dhi\.io\//, `${name} is not the hardened image`);
+    assert.doesNotMatch(withProfile.services[name].image, /^dhi\.io\//, `${name} is a dhi.io image, which the scan job's runner cannot pull`);
   }
 });
 
