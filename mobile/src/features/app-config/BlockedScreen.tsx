@@ -1,3 +1,5 @@
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,6 +25,10 @@ export const BlockedScreen = ({
   const styles = useStyles();
   const { t } = useTranslation();
   const checkAgain = t("appConfig.checkAgain");
+
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => undefined);
+  }, []);
 
   return (
     <SafeAreaView testID="blocked-screen" style={styles.screen}>

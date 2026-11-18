@@ -26,10 +26,10 @@ const RootLayout = () => {
 
   return (
     <UncaughtErrorGate>
-      <FontGate>
-        <AppProviders locale={locale}>
-          <StatusBar style="auto" />
-          <AppGate>
+      <AppProviders locale={locale}>
+        <AppGate>
+          <FontGate>
+            <StatusBar style="auto" />
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? "fade" : "default", contentStyle: { backgroundColor: colors.background } }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="add-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.select({ android: [0.9], default: [0.5, 0.9] }) }} />
@@ -37,9 +37,9 @@ const RootLayout = () => {
               <Stack.Screen name="beers/[id]" options={{ presentation: "formSheet", sheetAllowedDetents: [0.95] }} />
               <Stack.Screen name="sign-in-sheet" options={{ presentation: "formSheet", sheetAllowedDetents: Platform.select({ android: [0.9], default: [0.5, 0.9] }) }} />
             </Stack>
-          </AppGate>
-        </AppProviders>
-      </FontGate>
+          </FontGate>
+        </AppGate>
+      </AppProviders>
     </UncaughtErrorGate>
   );
 };

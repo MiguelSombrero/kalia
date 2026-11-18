@@ -62,8 +62,15 @@ The app follows [web/CONVENTIONS.md](../web/CONVENTIONS.md) wherever a rule is n
 
   A test that renders the app's routes is `src/testing/*.app.test.tsx`, the one place a test may import across features (ESLint).
 - **Use the generated semantic theme for static styling.** The face is Bricolage Grotesque, bundled and loaded
-  behind the splash screen by `FontGate`; set text with `textStyle(token, weight)`,
-  never a size or `fontWeight` by hand, because the face has one file per weight.
+  behind the splash screen by `FontGate`, which gives it three seconds
+  (`FONT_DEADLINE_MS`) and then opens the app in the system face with each
+  style's weight, writing one `WARN` line; faces that arrive later wait for the
+  next launch. The update-required, maintenance and crash screens never wait
+  for it. Set text with `textStyle(token, weight)`, never a size or `fontWeight`
+  by hand, because the face has one file per weight. **Call `textStyle` inside
+  `createThemedStyles`, never at module level:** it reads which face settled
+  when it is called, a module's styles are built at import before that, and the
+  text then stays in the system face with no error.
   A beer's colours come from `useBeerStyleColours`, which falls back to the
   neutral pair ([ADR-0110](../docs/adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)).
   The app follows the system's light or dark setting; every colour is read
