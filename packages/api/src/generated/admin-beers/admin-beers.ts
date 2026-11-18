@@ -4,16 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import {
-  useMutation
-} from '@tanstack/react-query';
-import type {
-  MutationFunction,
-  QueryClient,
-  UseMutationOptions,
-  UseMutationResult
-} from '@tanstack/react-query';
-
 import type {
   BeerNotApprovedProblem,
   BeerRemovalDto,
@@ -21,11 +11,6 @@ import type {
 } from '../models';
 
 import { kaliaFetch } from '../../core/transport';
-
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 export type removeResponse200 = {
   data: BeerRemovalDto
@@ -95,53 +80,3 @@ export const remove = async (id: string, options?: Parameters<typeof kaliaFetch>
 );}
 
 
-
-
-
-export const getRemoveMutationKey = () => ['remove'] as const;
-
-export const getRemoveMutationOptions = <TError = Problem | BeerNotApprovedProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof remove>>, TError,RemoveMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof remove>>, TError,RemoveMutationVariables, TContext> => {
-
-const mutationKey = getRemoveMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof remove>>, RemoveMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  remove(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RemoveMutationResult = NonNullable<Awaited<ReturnType<typeof remove>>>
-
-    export type RemoveMutationError = Problem | BeerNotApprovedProblem
-    export type RemoveMutationVariables = {id: string}
-
-    /**
- * @summary Remove an approved beer
- */
-export const useRemove = <TError = Problem | BeerNotApprovedProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof remove>>, TError,RemoveMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof remove>>,
-        TError,
-        RemoveMutationVariables,
-        TContext
-      > => {
-      return useMutation(getRemoveMutationOptions(options), queryClient);
-    }

@@ -4,25 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   AddBottleRequestDto,
   BottleDto,
@@ -35,26 +16,6 @@ import type {
 } from '../models';
 
 import { kaliaFetch } from '../../core/transport';
-
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
 
 export type listEntriesResponse200 = {
   data: EntryDto[]
@@ -102,83 +63,6 @@ export const listEntries = async ( options?: Parameters<typeof kaliaFetch>[1]): 
 
   }
 );}
-
-
-
-
-
-export const getListEntriesQueryKey = () => {
-    return [
-    `/api/v1/cellar`
-    ] as const;
-    }
-
-
-export const getListEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListEntriesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEntries>>> = ({ signal }) => listEntries({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListEntriesQueryResult = NonNullable<Awaited<ReturnType<typeof listEntries>>>
-export type ListEntriesQueryError = Problem
-
-
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listEntries>>,
-          TError,
-          Awaited<ReturnType<typeof listEntries>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listEntries>>,
-          TError,
-          Awaited<ReturnType<typeof listEntries>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List the caller's cellar
- */
-
-export function useListEntries<TData = Awaited<ReturnType<typeof listEntries>>, TError = Problem>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listEntries>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListEntriesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
 
 
 export type addBottlesResponse201 = {
@@ -263,57 +147,7 @@ return kaliaFetch<addBottlesResponse>(getAddBottlesUrl(),
 );}
 
 
-
-
-
-export const getAddBottlesMutationKey = () => ['addBottles'] as const;
-
-export const getAddBottlesMutationOptions = <TError = ValidationProblem | Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext> => {
-
-const mutationKey = getAddBottlesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBottles>>, AddBottlesMutationVariables> = (props) => {
-          const {data} = props ?? {};
-
-          return  addBottles(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AddBottlesMutationResult = NonNullable<Awaited<ReturnType<typeof addBottles>>>
-    export type AddBottlesMutationBody = AddBottleRequestDto
-    export type AddBottlesMutationError = ValidationProblem | Problem
-    export type AddBottlesMutationVariables = {data: AddBottleRequestDto}
-
-    /**
- * @summary Add bottles
- */
-export const useAddBottles = <TError = ValidationProblem | Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBottles>>, TError,AddBottlesMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof addBottles>>,
-        TError,
-        AddBottlesMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAddBottlesMutationOptions(options), queryClient);
-    }
-    export type removeBottleResponse204 = {
+export type removeBottleResponse204 = {
   data: void
   status: 204
 }
@@ -376,57 +210,7 @@ export const removeBottle = async (id: string, options?: Parameters<typeof kalia
 );}
 
 
-
-
-
-export const getRemoveBottleMutationKey = () => ['removeBottle'] as const;
-
-export const getRemoveBottleMutationOptions = <TError = Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext> => {
-
-const mutationKey = getRemoveBottleMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeBottle>>, RemoveBottleMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  removeBottle(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RemoveBottleMutationResult = NonNullable<Awaited<ReturnType<typeof removeBottle>>>
-
-    export type RemoveBottleMutationError = Problem
-    export type RemoveBottleMutationVariables = {id: string}
-
-    /**
- * @summary Remove a bottle
- */
-export const useRemoveBottle = <TError = Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBottle>>, TError,RemoveBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof removeBottle>>,
-        TError,
-        RemoveBottleMutationVariables,
-        TContext
-      > => {
-      return useMutation(getRemoveBottleMutationOptions(options), queryClient);
-    }
-    export type updateBottleResponse200 = {
+export type updateBottleResponse200 = {
   data: BottleDto
   status: 200
 }
@@ -509,57 +293,7 @@ return kaliaFetch<updateBottleResponse>(getUpdateBottleUrl(id),
 );}
 
 
-
-
-
-export const getUpdateBottleMutationKey = () => ['updateBottle'] as const;
-
-export const getUpdateBottleMutationOptions = <TError = ValidationProblem | Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext> => {
-
-const mutationKey = getUpdateBottleMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBottle>>, UpdateBottleMutationVariables> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateBottle(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateBottleMutationResult = NonNullable<Awaited<ReturnType<typeof updateBottle>>>
-    export type UpdateBottleMutationBody = UpdateBottleRequestDto
-    export type UpdateBottleMutationError = ValidationProblem | Problem
-    export type UpdateBottleMutationVariables = {id: string;data: UpdateBottleRequestDto}
-
-    /**
- * @summary Update a bottle
- */
-export const useUpdateBottle = <TError = ValidationProblem | Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBottle>>, TError,UpdateBottleMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateBottle>>,
-        TError,
-        UpdateBottleMutationVariables,
-        TContext
-      > => {
-      return useMutation(getUpdateBottleMutationOptions(options), queryClient);
-    }
-    export type readHoldingsResponse200 = {
+export type readHoldingsResponse200 = {
   data: HoldingsDto
   status: 200
 }
@@ -617,82 +351,5 @@ export const readHoldings = async (params?: ReadHoldingsParams, options?: Parame
 
   }
 );}
-
-
-
-
-
-export const getReadHoldingsQueryKey = (params?: ReadHoldingsParams,) => {
-    return [
-    `/api/v1/cellar/holdings`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getReadHoldingsQueryOptions = <TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getReadHoldingsQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof readHoldings>>> = ({ signal }) => readHoldings(params, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ReadHoldingsQueryResult = NonNullable<Awaited<ReturnType<typeof readHoldings>>>
-export type ReadHoldingsQueryError = ValidationProblem | Problem
-
-
-export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
- params: undefined |  ReadHoldingsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof readHoldings>>,
-          TError,
-          Awaited<ReturnType<typeof readHoldings>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
- params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof readHoldings>>,
-          TError,
-          Awaited<ReturnType<typeof readHoldings>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
- params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Read what the caller holds of some beers
- */
-
-export function useReadHoldings<TData = Awaited<ReturnType<typeof readHoldings>>, TError = ValidationProblem | Problem>(
- params?: ReadHoldingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readHoldings>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getReadHoldingsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
 
 

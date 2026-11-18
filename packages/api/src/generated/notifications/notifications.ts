@@ -4,25 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   ListNotificationsParams,
   NotificationPageDto,
@@ -32,26 +13,6 @@ import type {
 } from '../models';
 
 import { kaliaFetch } from '../../core/transport';
-
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
 
 export type listNotificationsResponse200 = {
   data: NotificationPageDto
@@ -113,83 +74,6 @@ export const listNotifications = async (params?: ListNotificationsParams, option
 );}
 
 
-
-
-
-export const getListNotificationsQueryKey = (params?: ListNotificationsParams,) => {
-    return [
-    `/api/v1/notifications`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getListNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof listNotifications>>, TError = ValidationProblem | Problem>(params?: ListNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListNotificationsQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNotifications>>> = ({ signal }) => listNotifications(params, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof listNotifications>>>
-export type ListNotificationsQueryError = ValidationProblem | Problem
-
-
-export function useListNotifications<TData = Awaited<ReturnType<typeof listNotifications>>, TError = ValidationProblem | Problem>(
- params: undefined |  ListNotificationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listNotifications>>,
-          TError,
-          Awaited<ReturnType<typeof listNotifications>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListNotifications<TData = Awaited<ReturnType<typeof listNotifications>>, TError = ValidationProblem | Problem>(
- params?: ListNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listNotifications>>,
-          TError,
-          Awaited<ReturnType<typeof listNotifications>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListNotifications<TData = Awaited<ReturnType<typeof listNotifications>>, TError = ValidationProblem | Problem>(
- params?: ListNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List the caller's notifications
- */
-
-export function useListNotifications<TData = Awaited<ReturnType<typeof listNotifications>>, TError = ValidationProblem | Problem>(
- params?: ListNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotifications>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListNotificationsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
 export type unreadCountResponse200 = {
   data: UnreadCountDto
   status: 200
@@ -236,83 +120,6 @@ export const unreadCount = async ( options?: Parameters<typeof kaliaFetch>[1]): 
 
   }
 );}
-
-
-
-
-
-export const getUnreadCountQueryKey = () => {
-    return [
-    `/api/v1/notifications/unread-count`
-    ] as const;
-    }
-
-
-export const getUnreadCountQueryOptions = <TData = Awaited<ReturnType<typeof unreadCount>>, TError = Problem>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unreadCount>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getUnreadCountQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof unreadCount>>> = ({ signal }) => unreadCount({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof unreadCount>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type UnreadCountQueryResult = NonNullable<Awaited<ReturnType<typeof unreadCount>>>
-export type UnreadCountQueryError = Problem
-
-
-export function useUnreadCount<TData = Awaited<ReturnType<typeof unreadCount>>, TError = Problem>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof unreadCount>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof unreadCount>>,
-          TError,
-          Awaited<ReturnType<typeof unreadCount>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useUnreadCount<TData = Awaited<ReturnType<typeof unreadCount>>, TError = Problem>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unreadCount>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof unreadCount>>,
-          TError,
-          Awaited<ReturnType<typeof unreadCount>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useUnreadCount<TData = Awaited<ReturnType<typeof unreadCount>>, TError = Problem>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unreadCount>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Count the caller's unacknowledged notifications
- */
-
-export function useUnreadCount<TData = Awaited<ReturnType<typeof unreadCount>>, TError = Problem>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof unreadCount>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getUnreadCountQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
 
 
 export type acknowledgeResponse204 = {
@@ -373,53 +180,3 @@ export const acknowledge = async (id: string, options?: Parameters<typeof kaliaF
 );}
 
 
-
-
-
-export const getAcknowledgeMutationKey = () => ['acknowledge'] as const;
-
-export const getAcknowledgeMutationOptions = <TError = Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acknowledge>>, TError,AcknowledgeMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof acknowledge>>, TError,AcknowledgeMutationVariables, TContext> => {
-
-const mutationKey = getAcknowledgeMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof acknowledge>>, AcknowledgeMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  acknowledge(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AcknowledgeMutationResult = NonNullable<Awaited<ReturnType<typeof acknowledge>>>
-
-    export type AcknowledgeMutationError = Problem
-    export type AcknowledgeMutationVariables = {id: string}
-
-    /**
- * @summary Acknowledge a notification
- */
-export const useAcknowledge = <TError = Problem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof acknowledge>>, TError,AcknowledgeMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof acknowledge>>,
-        TError,
-        AcknowledgeMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAcknowledgeMutationOptions(options), queryClient);
-    }
