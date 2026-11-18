@@ -2,10 +2,13 @@
 import { readFileSync } from "node:fs";
 
 import { ESLint } from "eslint";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // The real tree passes these rules, so a selector that matched nothing would
 // stay green; linting fixture text is what shows each one still fires.
+// The first lint loads every plugin, which takes longer than the default under a loaded machine.
+vi.setConfig({ testTimeout: 20_000 });
+
 const eslint = new ESLint({ cwd: import.meta.dirname });
 
 const messagesFor = async (code: string, filePath: string) => {
@@ -179,5 +182,17 @@ describe("import order", () => {
 
   it("accepts packages, then the app's own, then siblings", async () => {
     expect(await messagesFor(conventionFixture("imports-in-order"), "lib/probe.ts")).toEqual([]);
+  });
+});
+
+describe("a query hook takes its resource's key factory (web/CONVENTIONS.md)", () => {
+  const conventionFixture = (name: string) => readFileSync(`${import.meta.dirname}/eslint-fixtures/conventions/${name}.ts`, "utf8");
+
+  it("rejects a hook that writes its own key", async () => {
+    expect(await messagesFor(conventionFixture("query-hook-writes-its-key"), "features/catalog/hooks/probe.ts")).toEqual([expect.stringContaining("queryOptions()")]);
+  });
+
+  it("accepts a hook that takes a factory", async () => {
+    expect(await messagesFor(conventionFixture("query-hook-takes-a-factory"), "features/catalog/hooks/probe.ts")).toEqual([]);
   });
 });

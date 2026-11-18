@@ -6,7 +6,9 @@ import { theme } from "@/lib/design/theme.generated";
 import { easingFor } from "./easing";
 import { useReducedMotion } from "./reducedMotion";
 
-export const Reveal = ({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) => {
+type RevealProps = { children: ReactNode; style?: StyleProp<ViewStyle> };
+
+export const Reveal = ({ children, style }: RevealProps) => {
   const reduced = useReducedMotion();
   const [opacity] = useState(() => new Animated.Value(reduced ? 1 : 0));
 

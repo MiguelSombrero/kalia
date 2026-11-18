@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-137 · COULD-166
+**Highest issued:** MUST-27 · SHOULD-138 · COULD-166
 
 ## MUST
 
@@ -269,6 +269,15 @@ repeats, so the recurrence stays visible once the old entry is gone.
   requirement, and this is its third sighting after #447/#448 and #542/#543. The decision: add `npx tsc --noEmit` in `web/` (about
   a second with TypeScript 7) to the merge-ref job and to `verify-fast`, or restore the
   up-to-date requirement; the ruleset is the product owner's.
+
+- **SHOULD-138** A web unit test fails by timeout under load because its 5 s
+  limit sits just above its cold-start time. `web/eslint.config.test.ts` "heading
+  rule (ADR-0073) > rejects a hand-written h1 and h2" starts ESLint cold and takes
+  4.4 s alone (about 6 s under load), against vitest's default `testTimeout` of
+  5000 ms; it failed `make verify-fast` and the pre-push hook twice in one
+  session and passed on a rerun. Give the ESLint-backed tests in that file a
+  timeout that holds under a loaded machine (or set one for the file) *(confirmed
+  2026-11-17)*
 
 ## COULD
 

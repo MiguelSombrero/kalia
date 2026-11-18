@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kalia-telemetry": {
+      "command": "node",
+      "args": ["scripts/mcp-grafana.mjs"]
+    }
+  }
+}

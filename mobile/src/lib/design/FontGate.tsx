@@ -6,7 +6,9 @@ import { fontSources } from "./fonts";
 
 void SplashScreen.preventAutoHideAsync();
 
-export const FontGate = ({ children }: { children: ReactNode }) => {
+type FontGateProps = { children: ReactNode };
+
+export const FontGate = ({ children }: FontGateProps) => {
   const [loaded, error] = useFonts(fontSources);
   const ready = loaded || error !== null;
 

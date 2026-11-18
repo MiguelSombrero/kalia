@@ -37,6 +37,7 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   (`useAddBottle`) that owns the query key, never a bare `useQuery`, never
   hand-rolled `fetch` ([ADR-0008](../docs/adr/0008-tanstack-query.md),
   [ADR-0041](../docs/adr/0041-tanstack-query-feature-owned-hooks.md)).
+- **A query key belongs to its resource's key factory,** built with TanStack's `queryOptions()` or `infiniteQueryOptions()` in that resource's hook file (`similarBeersQuery(breweryId, beerName)`), and the hook takes the factory: `useQuery(similarBeersQuery(id, name))`. A cache read or write names its key through it, `client.getQueryData(notificationListQuery().queryKey)`, so its type follows and is never spelled out. A `useQuery` or `useInfiniteQuery` that writes its own `queryKey` fails ESLint (`no-restricted-syntax`, fixture `query-hook-writes-its-key.ts`); `useAddBeer.test.tsx` reads the cache through a factory. Mobile does the same ([mobile/CONVENTIONS.md](../mobile/CONVENTIONS.md)).
 - **UI state goes in feature-scoped Zustand stores**, never API data or state
   that must survive a reload ([ADR-0009](../docs/adr/0009-zustand-ui-state.md)).
 - **Stateful forms use react-hook-form + Zod**; one that only navigates is a

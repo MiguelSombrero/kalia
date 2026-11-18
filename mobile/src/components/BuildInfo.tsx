@@ -3,7 +3,6 @@ import { Text } from "react-native";
 
 import { ownBuildNumber, ownVersion } from "@/lib/build/buildInfo";
 import { textStyle } from "@/lib/design/fonts";
-import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 
 export const BuildInfo = () => {
@@ -18,5 +17,5 @@ export const BuildInfo = () => {
 };
 
 const useStyles = createThemedStyles((colors) => ({
-  build: { marginTop: theme.spacing.xlarge, ...textStyle("supporting", "normal"), color: colors["muted-foreground"] },
+  build: { ...textStyle("supporting", "normal"), color: colors["muted-foreground"] },
 }));

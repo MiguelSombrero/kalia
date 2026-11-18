@@ -52,6 +52,12 @@ const codeStyleSyntax = [
     selector: "ClassDeclaration",
     message: "No classes: discriminated unions, type guards and factory functions instead (ADR-0037).",
   },
+  {
+    selector:
+      "CallExpression:matches([callee.name='useQuery'], [callee.name='useInfiniteQuery']) > ObjectExpression > Property[key.name='queryKey']",
+    message:
+      "A query key is written once, in the resource's factory built with queryOptions() or infiniteQueryOptions(), and the hook takes the factory: useQuery(similarBeersQuery(id)) (web/CONVENTIONS.md).",
+  },
 ];
 
 // A locale-prefixed address is built in lib/routes.ts (web/CONVENTIONS.md), never as a template literal opening with `/${locale}`. Matches a bare

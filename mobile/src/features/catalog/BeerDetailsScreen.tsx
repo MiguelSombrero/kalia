@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { type CatalogLinkFilter, showCatalogWith } from "@/lib/catalogLink";
+import { type CatalogLinkFilter, showCatalogWith } from "@/lib/catalogLink/store";
 
 import { BeerDetails } from "./details/BeerDetails";
 

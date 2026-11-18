@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
 import { theme } from "@/lib/design/theme.generated";
 import { MODES, systemIs } from "@/testing/colorMode";
@@ -25,15 +26,9 @@ describe("BodyText", () => {
     expect(screen.getByText("wrong")).toHaveStyle({ color: colors.destructive });
   });
 
-  it("sits flush unless it is asked to keep its distance", async () => {
-    await renderWithLocale(
-      <>
-        <BodyText>near</BodyText>
-        <BodyText spaced>apart</BodyText>
-      </>,
-    );
+  it("sets no space around itself: its parent places it with gap", async () => {
+    await renderWithLocale(<BodyText>near</BodyText>);
 
-    expect(screen.getByText("near")).not.toHaveStyle({ marginTop: theme.spacing.medium });
-    expect(screen.getByText("apart")).toHaveStyle({ marginTop: theme.spacing.medium });
+    expect(StyleSheet.flatten(screen.getByText("near").props.style).marginTop).toBeUndefined();
   });
 });
