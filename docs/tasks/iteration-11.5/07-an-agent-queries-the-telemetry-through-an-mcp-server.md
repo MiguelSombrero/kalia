@@ -1,6 +1,6 @@
 # Task 07: An agent queries the telemetry through an MCP server
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-4
 
@@ -59,7 +59,7 @@ it for.
 
 ## Acceptance criteria
 
-- [ ] In a fresh session in a worktree with the profile on, an agent finds the
+- [x] In a fresh session in a worktree with the profile on, an agent finds the
       trace of a request it just made by its trace id, reads its spans, and
       reads its log lines — verified by doing it
 - [x] A test in `scripts/` fails if the committed MCP configuration names a
