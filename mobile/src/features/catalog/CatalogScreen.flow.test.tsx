@@ -8,6 +8,7 @@ import { renderWithLocale } from "@/testing/renderWithLocale";
 import { CatalogScreen } from "./CatalogScreen";
 import { emptyFilters } from "./filters/model";
 import { useFiltersStore } from "./filters/store";
+import { PAUSE_MS } from "./hooks/useDebounced";
 
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
@@ -29,10 +30,11 @@ const pageOf = (names: string[], page = 0, totalPages = 1) => ({
 });
 const searchOf = (call: unknown[]) => new URL(String(call[0]), "http://api.test").searchParams;
 const requests = () => transport.mock.calls.map(searchOf);
-const settle = (ms = 450) => act(async () => void (await new Promise((resolve) => setTimeout(resolve, ms))));
+const settle = (ms = PAUSE_MS) => act(async () => void jest.advanceTimersByTime(ms));
 const list = () => screen.getByTestId("beer-list");
 
 beforeEach(() => {
+  jest.useFakeTimers();
   mockPush.mockReset();
   useFiltersStore.getState().reset();
   transport.mockReset();
@@ -40,6 +42,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  jest.useRealTimers();
   jest.restoreAllMocks();
 });
 
@@ -53,8 +56,9 @@ describe("searching as the user types", () => {
     await fireEvent.changeText(field, "ip");
     await fireEvent.changeText(field, "ipa");
     await fireEvent.changeText(field, "ipa ");
+    await settle(PAUSE_MS - 1);
     expect(transport).toHaveBeenCalledTimes(1);
-    await settle();
+    await settle(1);
 
     await waitFor(() => expect(transport).toHaveBeenCalledTimes(2));
     expect(requests()[1]?.get("query")).toBe("ipa");
@@ -139,7 +143,7 @@ describe("a list of pages", () => {
     expect(screen.getByText("Alpha")).toBeOnTheScreen();
     expect(requests().map((search) => search.get("page"))).toEqual(["0", "1"]);
     await fireEvent(list(), "endReached");
-    await settle(100);
+    await settle();
     expect(transport).toHaveBeenCalledTimes(2);
     expect(screen.queryByText(/Loading more|Ladataan lisää/)).not.toBeOnTheScreen();
   });
@@ -227,7 +231,7 @@ describe("filters in the request", () => {
     await act(async () => useFiltersStore.getState().apply({ ...emptyFilters(), style: "Gose", countryCode: "DE", min: "3", sort: "name,desc" }));
 
     await waitFor(() => expect(transport).toHaveBeenCalledTimes(2));
-    await settle(100);
+    await settle();
     expect(transport).toHaveBeenCalledTimes(2);
   });
 

@@ -195,6 +195,12 @@ describe("the app's mechanical conventions (mobile/CONVENTIONS.md)", () => {
     expect(await ruleIds("imports-in-order.ts", "src/lib/probe.ts")).toEqual([]);
   });
 
+  it("rejects a setTimeout promise in a test, accepts one that gives its reason, and leaves the app's own code alone", async () => {
+    expect(await messagesFor(conventionFixture("test-waits-on-the-clock.ts"), "src/features/catalog/probe.test.tsx")).toEqual([["no-restricted-syntax", expect.stringContaining("useFakeTimers")]]);
+    expect(await ruleIds("test-waits-on-a-real-process.ts", "src/features/catalog/probe.test.tsx")).toEqual([]);
+    expect(await ruleIds("test-waits-on-the-clock.ts", "src/lib/probe.ts")).toEqual([]);
+  });
+
   describe("src/testing/ is imported by test files only", () => {
     it.each(["src/app/probe.ts", "src/features/catalog/probe.ts", "src/components/probe.ts", "src/lib/probe.ts"])("rejects an import from %s", async (lintAs) => {
       expect(await messagesFor(conventionFixture("test-support-imported-by-the-app.ts"), lintAs)).toEqual([

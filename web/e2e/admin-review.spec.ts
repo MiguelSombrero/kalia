@@ -4,6 +4,7 @@ import { type Browser, type Page, request } from "@playwright/test";
 
 import { expectNoA11yViolations } from "./support/a11y";
 import { createFreshAccount, expect, signIn, test, uniqueUsername } from "./support/keycloakAccount";
+import { findQueueRow } from "./support/queue";
 
 test.describe.configure({ mode: "serial" });
 
@@ -39,31 +40,16 @@ const suggest = async (browser: Browser, baseURL: string | undefined, { name, ne
   }
 };
 
-// Clicking Next returns before the next page has rendered, so counting rows straight away counts the old page's.
-const goToNextQueuePage = async (page: Page, label: string) => {
-  const before = page.url();
-  await page.getByRole("link", { name: label }).click();
-  await page.waitForURL((url) => url.href !== before);
-  await page.waitForLoadState("networkidle");
-};
-
 const openSuggestion = async (page: Page, name: string) => {
   await page.goto("/en/admin");
-  const queue = page.getByRole("list", { name: "Queue" });
-  // The queue streams in below the title, after the document has loaded.
-  await expect(queue).toBeVisible();
-  const row = queue.getByRole("button", { name: new RegExp(name) });
-  for (let attempt = 0; attempt < 20 && (await row.count()) === 0; attempt++) {
-    await goToNextQueuePage(page, "Next");
-  }
-  await row.click();
+  await (await findQueueRow(page, name)).click();
   await expect(page.getByRole("heading", { level: 2, name, exact: true })).toBeVisible();
 };
 
 const catalogShows = async (page: Page, name: string) => {
   await page.goto(`/en/beers?query=${encodeURIComponent(name)}`);
-  // The results stream in after the document loads.
-  await page.waitForLoadState("networkidle");
+  // The result count is drawn with the results, so a beer's absence is read once they are in.
+  await expect(page.getByText(/^\d+ beers?$/)).toBeVisible();
   return page.getByRole("heading", { name, exact: true }).count();
 };
 
@@ -117,7 +103,7 @@ test("edits a suggestion and approves it in one action", async ({ page, browser,
 
   await expect(page.getByText(`Approved as edited. The contributor sees “${fixed}”.`)).toBeVisible();
   expect(await catalogShows(page, fixed), "the corrected beer is in the catalog").toBe(1);
-  expect(await catalogShows(page, typo + "$"), "the suggested spelling is not").toBe(0);
+  expect(await catalogShows(page, typo), "the suggested spelling is not").toBe(0);
 });
 
 for (const locale of ["en", "fi"] as const) {
@@ -134,12 +120,7 @@ for (const locale of ["en", "fi"] as const) {
         : { edit: "Muokkaa ja hyväksy", reject: "Hylkää", approve: "Hyväksy olut ja panimo", back: "Takaisin jonoon" };
 
       await page.goto(`/${locale}/admin`);
-      await expect(page.getByRole("list", { name: locale === "en" ? "Queue" : "Jono" })).toBeVisible();
-      const row = page.getByRole("button", { name: new RegExp(name) });
-      for (let attempt = 0; attempt < 20 && (await row.count()) === 0; attempt++) {
-        await goToNextQueuePage(page, locale === "en" ? "Next" : "Seuraava");
-      }
-      await row.click();
+      await (await findQueueRow(page, name, locale)).click();
       await expect(page.getByRole("button", { name: labels.approve })).toBeVisible();
       await expectNoA11yViolations(page);
 

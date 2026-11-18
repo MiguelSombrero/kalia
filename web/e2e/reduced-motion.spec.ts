@@ -18,6 +18,12 @@ const animating = (page: Page) =>
       .map((element) => `<${element.tagName.toLowerCase()} class="${element.className}">`);
   });
 
+// A page that has not drawn yet animates nothing, so the page is shown before it is judged still.
+const animatingOnceShown = async (page: Page) => {
+  await expect(page.getByRole("main")).toBeVisible();
+  return animating(page);
+};
+
 const SIGNED_OUT = ["/en", "/en/beers", "/en/beers?query=zzzzqq", "/en/cellar", "/en/profile", "/en/sign-up"];
 
 for (const viewport of [
@@ -38,7 +44,7 @@ for (const viewport of [
       await page.emulateMedia({ reducedMotion: "reduce" });
       for (const path of SIGNED_OUT) {
         await page.goto(path);
-        expect(await animating(page), path).toEqual([]);
+        expect(await animatingOnceShown(page), path).toEqual([]);
       }
 
       const account = await createFreshAccount(request, `e2e-motion-${viewport.name}`);
@@ -52,11 +58,11 @@ for (const viewport of [
       const beer = (await page.getByRole("main").getByRole("heading", { level: 2 }).first().textContent())!.trim();
       await page.getByRole("link", { name: beer, exact: true }).click();
       await expect(page.getByRole("heading", { level: 1, name: beer })).toBeVisible();
-      expect(await animating(page), "a beer's details").toEqual([]);
+      expect(await animatingOnceShown(page), "a beer's details").toEqual([]);
 
       for (const path of ["/en", "/en/cellar", "/en/profile"]) {
         await page.goto(path);
-        expect(await animating(page), `${path}, signed in`).toEqual([]);
+        expect(await animatingOnceShown(page), `${path}, signed in`).toEqual([]);
       }
     });
   });

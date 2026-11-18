@@ -108,12 +108,12 @@ test("signs in and out twice without Keycloak asking to confirm the logout", asy
     await page.getByRole("button", { name: "Sign out" }).click();
 
     // Never Keycloak's confirmation page, and never left stranded on Keycloak.
+    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
+    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
     await expect(
       page.getByText("Do you want to log out?"),
       `cycle ${cycle}: Keycloak asked to confirm the logout`,
     ).toHaveCount(0);
-    await expect(page, `cycle ${cycle}: did not return to Kalia`).toHaveURL(new RegExp(`^${WEB_ORIGIN}`));
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
 
     // The Keycloak SSO session must be gone too, or this skips the prompt.
     await page.getByRole("button", { name: "Sign in" }).click();
@@ -195,8 +195,8 @@ test("signing out on one device leaves the other's session intact", async ({
 
   // The phone signs out cleanly too — Keycloak still recognises its id_token_hint.
   await phone.getByRole("button", { name: "Sign out" }).click();
-  await expect(phone.getByText("Do you want to log out?")).toHaveCount(0);
   await expect(phone.getByRole("button", { name: "Sign in" })).toBeVisible();
+  await expect(phone.getByText("Do you want to log out?")).toHaveCount(0);
 
   await Promise.all(contexts.map((context) => context.close()));
 });

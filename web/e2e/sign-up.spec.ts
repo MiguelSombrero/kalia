@@ -205,6 +205,7 @@ test.describe("self-registration", () => {
 
     // Blocked from the application entirely: still on Keycloak, never
     // signed in to Kalia.
+    await expect(page.getByRole("heading", { level: 1, name: "Email verification" })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`^${KEYCLOAK_ORIGIN}`));
     await expect(page.getByRole("link", { name: /^Profile: /i })).not.toBeVisible();
   });

@@ -1,6 +1,6 @@
 # Task 12: A test waits on a signal, never on the clock
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -79,18 +79,18 @@ test, because it shows a criterion as covered when it is not.
 
 ## Acceptance criteria
 
-- [ ] `CatalogScreen.flow.test.tsx`, `FiltersSheet.test.tsx` and `AppGate.test.tsx`
+- [x] `CatalogScreen.flow.test.tsx`, `FiltersSheet.test.tsx` and `AppGate.test.tsx`
       use fake timers, and each passes 50 runs in a row with
       `--runInBand` while the machine is under load from another suite
-- [ ] `admin-review.spec.ts`'s "a rejected beer is withheld" fails against a
+- [x] `admin-review.spec.ts`'s "a rejected beer is withheld" fails against a
       build that shows the rejected beer. Seen failing that way before the fix,
       it waits on a positive signal that the results are in
-- [ ] Every other e2e absence assertion found with the same hole is fixed,
+- [x] Every other e2e absence assertion found with the same hole is fixed,
       and the pull request lists the ones read
-- [ ] Both apps' `CONVENTIONS.md` state the two rules and name their lint
+- [x] Both apps' `CONVENTIONS.md` state the two rules and name their lint
       rules. In each app, a fixture holding a `setTimeout` promise in a test
       fails its config test, and in the web a spec using `networkidle` does
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
