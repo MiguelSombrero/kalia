@@ -103,6 +103,20 @@ describe("API enum lookups go through the fallback helper (ADR-0093)", () => {
   });
 });
 
+describe("the beer-style mapping is imported through its subpath (packages/README.md)", () => {
+  const conventionFixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixtures", "conventions", `${name}.ts`), "utf8");
+
+  it("rejects beerStyleGroup imported from the package root", async () => {
+    expect(await messagesFor(conventionFixture("beer-style-from-the-root"), "src/lib/design/probe.ts")).toEqual([
+      ["no-restricted-imports", expect.stringContaining("@kalia/api/beer-style")],
+    ]);
+  });
+
+  it("accepts it imported through the subpath, and the rest of the root", async () => {
+    expect(await messagesFor(conventionFixture("beer-style-from-the-subpath"), "src/lib/design/probe.ts")).toEqual([]);
+  });
+});
+
 describe("the screens that must work when nothing else does depend on nothing that can change (ADR-0093, ADR-0110)", () => {
   const independentFixture = (name: string) => readFileSync(path.join(__dirname, "eslint-fixtures", "independent-screens", `${name}.ts`), "utf8");
   const ruleIds = async (code: string, filePath: string) => (await messagesFor(code, filePath)).map(([ruleId]) => ruleId);
@@ -122,6 +136,7 @@ describe("the screens that must work when nothing else does depend on nothing th
     { fixture: "imports-a-remote-image", rule: "no-restricted-imports" },
     { fixture: "imports-an-image-library", rule: "no-restricted-imports" },
     { fixture: "imports-a-remote-image-by-namespace", rule: "no-restricted-imports" },
+    { fixture: "imports-an-api-subpath", rule: "boundaries/dependencies" },
   ];
 
   describe.each(screens)("%s", (lintAs) => {

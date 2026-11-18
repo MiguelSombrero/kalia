@@ -196,3 +196,29 @@ describe("a query hook takes its resource's key factory (web/CONVENTIONS.md)", (
     expect(await messagesFor(conventionFixture("query-hook-takes-a-factory"), "features/catalog/hooks/probe.ts")).toEqual([]);
   });
 });
+
+describe("the browser's code takes a @kalia/api subpath, never the root (packages/README.md)", () => {
+  const apiImportFixture = (name: string) =>
+    readFileSync(`${import.meta.dirname}/eslint-fixtures/api-imports/${name}`, "utf8");
+
+  it("rejects a client component that imports the package root", async () => {
+    expect(await messagesFor(apiImportFixture("client-component-imports-the-root.tsx"), "features/catalog/Probe.tsx")).toEqual([
+      expect.stringContaining("never the package root"),
+    ]);
+  });
+
+  it("rejects a components/ file that imports the package root, client or not", async () => {
+    expect(await messagesFor(apiImportFixture("primitive-imports-the-root.tsx"), "components/ui/probe.tsx")).toEqual([
+      expect.stringContaining("never the package root"),
+    ]);
+  });
+
+  it("accepts the same import through a subpath", async () => {
+    expect(await messagesFor(apiImportFixture("client-component-imports-a-subpath.tsx"), "features/catalog/Probe.tsx")).toEqual([]);
+  });
+
+  it("leaves server code and a test alone", async () => {
+    expect(await messagesFor(apiImportFixture("server-code-imports-the-root.ts"), "features/catalog/probe.ts")).toEqual([]);
+    expect(await messagesFor(apiImportFixture("primitive-imports-the-root.tsx"), "components/ui/probe.test.tsx")).toEqual([]);
+  });
+});

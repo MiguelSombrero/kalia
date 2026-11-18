@@ -1,10 +1,11 @@
 "use client";
 
+import { isLocale } from "@kalia/locales";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-import { isLocale, type Locale, locales } from "@/i18n/settings";
+import { type Locale, locales } from "@/i18n/settings";
 
 const localeHref = (locale: Locale, pathname: string, query: string): string => {
   const segments = pathname.split("/");

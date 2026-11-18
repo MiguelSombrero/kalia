@@ -4,6 +4,9 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
+    "./api-error": "./src/core/api-error.ts",
+    "./beer-style": "./src/core/beer-style.ts",
+    "./enum-lookup": "./src/core/enum-lookup.ts",
     "./generated/index": null,
     "./generated/models": "./src/generated/models/index.ts",
     "./generated/*": "./src/generated/*.ts"
@@ -12,10 +15,6 @@
     "generate": "orval --config orval.config.ts && node scripts/generate-route-templates.mjs",
     "lint": "eslint && tsc --noEmit",
     "test": "vitest run"
-  },
-  "peerDependencies": {
-    "@tanstack/react-query": "^5.107.1",
-    "react": "19.3.1"
   },
   "devDependencies": {
     "eslint": "^10",

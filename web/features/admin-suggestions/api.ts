@@ -1,4 +1,4 @@
-import { apiError } from "@kalia/api";
+import { httpFailure } from "@kalia/api";
 import {
   approve as generatedApprove,
   approveEdited as generatedApproveEdited,
@@ -14,13 +14,10 @@ export const QUEUE_PAGE_SIZE = 20;
 export const listSuggestions = async (page: number): Promise<SuggestionPage> => {
   const response = await generatedListSuggestions({ page, size: QUEUE_PAGE_SIZE });
   if (response.status !== 200) {
-    throw apiError("http", `Listing suggestions failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Listing suggestions", response);
   }
   return response.data;
 };
-
-const decisionFailure = (action: string, status: number) =>
-  apiError("http", `${action} failed with status ${status}`, { status });
 
 /** A 401, a 403 or a 5xx is a failure to decide, not an answer about the suggestion, and throws. */
 export const approveSuggestion = async (id: string): Promise<DecisionResult> => {
@@ -33,7 +30,7 @@ export const approveSuggestion = async (id: string): Promise<DecisionResult> => 
     case 409:
       return { kind: "alreadyDecided", outcome: response.data.outcome, decidedAt: response.data.decidedAt };
     default:
-      throw decisionFailure("Approving a suggestion", response.status);
+      throw httpFailure("Approving a suggestion", response);
   }
 };
 
@@ -47,7 +44,7 @@ export const rejectSuggestion = async (id: string, reason: RejectionReason): Pro
     case 409:
       return { kind: "alreadyDecided", outcome: response.data.outcome, decidedAt: response.data.decidedAt };
     default:
-      throw decisionFailure("Rejecting a suggestion", response.status);
+      throw httpFailure("Rejecting a suggestion", response);
   }
 };
 
@@ -81,6 +78,6 @@ export const approveEditedSuggestion = async (id: string, request: EditSuggestio
       return { kind: "breweryApproved" };
     }
     default:
-      throw decisionFailure("Approving an edited suggestion", response.status);
+      throw httpFailure("Approving an edited suggestion", response);
   }
 };

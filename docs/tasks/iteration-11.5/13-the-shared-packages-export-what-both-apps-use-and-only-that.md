@@ -1,6 +1,6 @@
 # Task 13: The shared packages export what both apps use, and only that
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
