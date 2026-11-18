@@ -5,8 +5,8 @@ import { contrastRatio } from "@/lib/design/contrast";
 import { theme } from "@/lib/design/theme.generated";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 
-import type { BeerSummary } from "./api";
 import { BeerCard } from "./BeerCard";
+import type { BeerSummary } from "./types";
 
 const beer = (style: string): BeerSummary => ({
   id: "1",

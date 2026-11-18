@@ -4,11 +4,13 @@ import { Text, View } from "react-native";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
-import { PressFeedback } from "@/lib/motion";
+import { PressFeedback } from "@/lib/motion/PressFeedback";
 
 import { EDGE } from "./metrics";
 
-export const FieldRow = ({ title, value, empty, onPress, leading, accessibilityLabel }: { title: string; value: string; empty: boolean; onPress: () => void; leading?: ReactNode; accessibilityLabel: string }) => {
+type FieldRowProps = { title: string; value: string; empty: boolean; onPress: () => void; leading?: ReactNode; accessibilityLabel: string };
+
+export const FieldRow = ({ title, value, empty, onPress, leading, accessibilityLabel }: FieldRowProps) => {
   const styles = useStyles();
   return (
     <PressFeedback role="button" accessibilityLabel={accessibilityLabel} onPress={onPress} style={styles.row}>

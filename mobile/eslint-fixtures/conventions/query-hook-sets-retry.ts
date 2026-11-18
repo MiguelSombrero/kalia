@@ -1,3 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const useThing = () => useQuery({ queryKey: ["thing"], queryFn: async () => 1, retry: false });
+const thingQuery = () => queryOptions({ queryKey: ["thing"], queryFn: async () => 1, retry: false });
+
+export const useThing = () => useQuery(thingQuery());

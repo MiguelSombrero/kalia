@@ -103,6 +103,17 @@ Every value in that file is dev-only: never reuse one outside local development.
   on disk. Without it the stack starts exactly the containers it did before.
   Nothing sends telemetry to it yet: iteration 11.5's tasks 03–06 connect each
   tier.
+- **Reading one request** (profile on): `make trace ID=<traceId>` prints that
+  request's span tree, with the SQL each statement ran, and the log lines
+  written under its trace id (a request's id is the `traceId` of its log lines
+  and of the web's `Backend call completed` lines), at most 150 lines. Over
+  that it folds repeated sibling spans into one line (`x 37`), then drops log
+  lines below `WARN`, then cuts the tree and says how much. `make trace` with
+  no `ID` lists the ten most recent requests that answered `5xx` or logged an
+  `ERROR`, each with its id. It reads Grafana on this worktree's `GRAFANA_PORT`,
+  prints no bound value, token or query string whatever the store holds, and
+  exits non-zero, naming `make observability-up`, when the profile is not
+  running. For a question it does not answer, use Grafana itself.
 - Two stacks on `localhost` share session cookies in one browser: use a browser
   profile per worktree.
 - A realm change made in the Keycloak admin console is overwritten on the next

@@ -5,7 +5,7 @@ import { renderRouter } from "expo-router/testing-library";
 import { Text } from "react-native";
 
 import { redirectAuthCallback } from "@/lib/auth/redirectAuthCallback";
-import { useCatalogLink } from "@/lib/catalogLink";
+import { useCatalogLink } from "@/lib/catalogLink/store";
 import { AppProviders } from "@/lib/providers/AppProviders";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 

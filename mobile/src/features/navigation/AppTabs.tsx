@@ -7,10 +7,11 @@ import { tabLabelScale, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useThemeColors } from "@/lib/design/useThemeColors";
-import { useReducedMotion } from "@/lib/motion";
 import { easingFor } from "@/lib/motion/easing";
+import { useReducedMotion } from "@/lib/motion/reducedMotion";
 
-import { AddIcon, TabIcon } from "./TabIcon";
+import { AddIcon } from "./AddIcon";
+import { TabIcon } from "./TabIcon";
 import { ICON_BOX, type TabIconName } from "./tabIcons";
 
 export const BAR_CONTENT_HEIGHT = 64;

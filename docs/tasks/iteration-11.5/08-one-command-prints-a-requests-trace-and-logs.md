@@ -1,6 +1,6 @@
 # Task 08: One command prints a request's trace and log lines as text
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-4
 
@@ -48,13 +48,13 @@ it prints the most recent failed requests with their trace ids.
 
 ## Acceptance criteria
 
-- [ ] `node --test` covers formatting a recorded trace into the tree, folding
+- [x] `node --test` covers formatting a recorded trace into the tree, folding
       repeated siblings into one counted line, the 150-line bound cutting a
       trace with hundreds of spans in the order above, and the no-argument
       listing of ten
-- [ ] Against the running profile, the target prints the tree of a request made
+- [x] Against the running profile, the target prints the tree of a request made
       a moment before, with its SQL statements and its log lines — verified by
       running it
-- [ ] With the profile stopped, it exits non-zero naming how to start it
-- [ ] `make help` lists it, the root README says how to use it, and
+- [x] With the profile stopped, it exits non-zero naming how to start it
+- [x] `make help` lists it, the root README says how to use it, and
       `make verify-fast` is green

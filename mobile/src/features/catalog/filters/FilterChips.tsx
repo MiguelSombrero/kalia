@@ -5,7 +5,7 @@ import { TextButton } from "@/components/TextButton";
 import { theme } from "@/lib/design/theme.generated";
 import { countryName } from "@/lib/i18n/countryNames";
 
-import { Chip } from "./controls";
+import { Chip } from "./Chip";
 import { type ActiveFilterKey, DEFAULT_SORT, type Filters, hasStrength, strengthError, toNumber } from "./model";
 
 type Active = { key: ActiveFilterKey; label: string; plain: string; style?: string };
@@ -33,7 +33,9 @@ export const useActiveFilters = (filters: Filters): Active[] => {
   return active;
 };
 
-export const FilterChips = ({ filters, onRemove, onClearAll }: { filters: Filters; onRemove: (key: ActiveFilterKey) => void; onClearAll: () => void }) => {
+type FilterChipsProps = { filters: Filters; onRemove: (key: ActiveFilterKey) => void; onClearAll: () => void };
+
+export const FilterChips = ({ filters, onRemove, onClearAll }: FilterChipsProps) => {
   const { t } = useTranslation();
   const active = useActiveFilters(filters);
   if (active.length === 0) return null;

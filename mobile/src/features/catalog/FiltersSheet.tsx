@@ -1,6 +1,6 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, ScrollView, Text, View } from "react-native";
+import { AccessibilityInfo, BackHandler, type HostInstance, Keyboard, Platform, Text, View } from "react-native";
 
 import { ActionButton } from "@/components/ActionButton";
 import { ChoiceRow } from "@/components/ChoiceRow";
@@ -12,10 +12,11 @@ import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { countryName } from "@/lib/i18n/countryNames";
 
-import { SearchField, StyleSwatch } from "./filters/controls";
+import { FilterPicker } from "./filters/FilterPicker";
 import { emptyFilters, type Filters, sheetFilterCount, SORTS, strengthError } from "./filters/model";
 import { StrengthFields } from "./filters/StrengthFields";
-import { useBreweryOptions, useCountryOptions, useResultCount, useStyleOptions } from "./hooks/useFilterOptions";
+import { StyleSwatch } from "./filters/StyleSwatch";
+import { useResultCount } from "./hooks/useFilterOptions";
 
 type Page = "form" | "style" | "brewery" | "country";
 
@@ -32,9 +33,9 @@ const useKeyboardHeight = () => {
   return height;
 };
 
-const normalise = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+type FiltersSheetProps = { initial: Filters; onApply: (filters: Filters) => void; onClose: () => void };
 
-export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; onApply: (filters: Filters) => void; onClose: () => void }) => {
+export const FiltersSheet = ({ initial, onApply, onClose }: FiltersSheetProps) => {
   const { t, i18n } = useTranslation();
   const styles = useStyles();
   const [draft, setDraft] = useState<Filters>(initial);
@@ -70,7 +71,7 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
   if (page !== "form") {
     return (
       <Sheet title={t(`catalogFilters.${page}`)} closeLabel={`‹ ${t("catalogFilters.title")}`} closeAccessibilityLabel={t("catalogFilters.backToFilters")} onClose={() => show("form")} headingRef={heading} scroll={false}>
-        <Picker page={page} draft={draft} onPick={pick} />
+        <FilterPicker page={page} draft={draft} onPick={pick} />
       </Sheet>
     );
   }
@@ -95,7 +96,7 @@ export const FiltersSheet = ({ initial, onApply, onClose }: { initial: Filters; 
           default: null,
         })
       }
-      footer={<ActionButton flush maxFontSizeMultiplier={titleScale.maxFontSizeMultiplier} label={applyLabel} disabled={error !== null} onPress={() => onApply(draft)} />}
+      footer={<ActionButton maxFontSizeMultiplier={titleScale.maxFontSizeMultiplier} label={applyLabel} disabled={error !== null} onPress={() => onApply(draft)} />}
     >
       <FieldRow title={t("catalogFilters.style")} value={draft.style || t("catalogFilters.anyStyle")} empty={!draft.style} leading={draft.style ? <StyleSwatch style={draft.style} /> : undefined} accessibilityLabel={`${t("catalogFilters.style")}: ${draft.style || t("catalogFilters.anyStyle")}`} onPress={() => show("style")} />
       <FieldRow title={t("catalogFilters.brewery")} value={draft.breweryName || t("catalogFilters.anyBrewery")} empty={!draft.breweryId} accessibilityLabel={`${t("catalogFilters.brewery")}: ${draft.breweryName || t("catalogFilters.anyBrewery")}`} onPress={() => show("brewery")} />
@@ -118,85 +119,4 @@ const useStyles = createThemedStyles((colors) => ({
   section: { marginTop: theme.spacing.large },
   label: { ...textStyle("label", "bold"), textTransform: "uppercase", color: colors["muted-foreground"], marginBottom: theme.spacing.small },
   doneBar: { flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: theme.spacing.small, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surface },
-}));
-
-const Picker = ({ page, draft, onPick }: { page: "style" | "brewery" | "country"; draft: Filters; onPick: (patch: Partial<Filters>) => void }) => {
-  const { t, i18n } = useTranslation();
-  const styles = usePickerStyles();
-  const [text, setText] = useState("");
-  const query = normalise(text.trim());
-  const styleOptions = useStyleOptions(page === "style");
-  const countryOptions = useCountryOptions(page === "country");
-  const breweryOptions = useBreweryOptions(text.trim(), page === "brewery");
-  const noMatch = <Text style={styles.note}>{t("catalogFilters.noMatch", { query: text })}</Text>;
-  let rows: ReactNode = null;
-  let footer: ReactNode = null;
-  if (page === "style") {
-    const list = (styleOptions.data ?? []).filter((style) => !query || normalise(style).includes(query));
-    const lead = query ? 0 : 1;
-    rows = (
-      <>
-        {!query ? <ChoiceRow label={t("catalogFilters.anyStyle")} position={{ index: 1, count: lead + list.length }} selected={!draft.style} onPress={() => onPick({ style: "" })} /> : null}
-        {list.map((style, index) => (
-          <ChoiceRow key={style} position={{ index: lead + index + 1, count: lead + list.length }} label={style} leading={<StyleSwatch style={style} />} selected={draft.style === style} onPress={() => onPick({ style })} />
-        ))}
-        {styleOptions.isSuccess && list.length === 0 ? noMatch : null}
-      </>
-    );
-  } else if (page === "country") {
-    const list = (countryOptions.data ?? [])
-      .map((code) => ({ code, name: countryName(code, i18n.language) }))
-      .filter((country) => !query || normalise(country.name).includes(query))
-      .sort((a, b) => a.name.localeCompare(b.name, i18n.language));
-    const lead = query ? 0 : 1;
-    rows = (
-      <>
-        {!query ? <ChoiceRow label={t("catalogFilters.anyCountry")} position={{ index: 1, count: lead + list.length }} selected={!draft.countryCode} onPress={() => onPick({ countryCode: "" })} /> : null}
-        {list.map((country, index) => (
-          <ChoiceRow key={country.code} position={{ index: lead + index + 1, count: lead + list.length }} label={country.name} selected={draft.countryCode === country.code} onPress={() => onPick({ countryCode: country.code })} />
-        ))}
-        {countryOptions.isSuccess && list.length === 0 ? noMatch : null}
-      </>
-    );
-  } else {
-    const pages = breweryOptions.data?.pages ?? [];
-    const items = pages.flatMap((result) => result.content);
-    const total = pages[0]?.totalElements ?? 0;
-    const lead = text ? 0 : 1;
-    const count = lead + Math.max(total, items.length);
-    rows = (
-      <>
-        {!text ? <ChoiceRow label={t("catalogFilters.anyBrewery")} position={{ index: 1, count }} selected={!draft.breweryId} onPress={() => onPick({ breweryId: "", breweryName: "" })} /> : null}
-        {items.map((brewery, index) => (
-          <ChoiceRow key={brewery.id} position={{ index: lead + index + 1, count }} label={brewery.name} sub={[brewery.city, countryName(brewery.countryCode, i18n.language)].filter(Boolean).join(" · ")} selected={draft.breweryId === brewery.id} onPress={() => onPick({ breweryId: brewery.id, breweryName: brewery.name })} />
-        ))}
-        {breweryOptions.isSuccess && items.length === 0 ? noMatch : null}
-      </>
-    );
-    footer = breweryOptions.hasNextPage ? (
-      <View>
-        <Text style={styles.muted}>{t("catalogFilters.showing", { shown: new Intl.NumberFormat(i18n.language).format(items.length), total: new Intl.NumberFormat(i18n.language).format(total) })}</Text>
-        <ActionButton variant="secondary" label={t("catalogFilters.more")} onPress={() => void breweryOptions.fetchNextPage()} busy={breweryOptions.isFetchingNextPage} />
-      </View>
-    ) : null;
-  }
-  const label = t(`catalogFilters.find.${page}`);
-  return (
-    <>
-      <View style={styles.search}>
-        <SearchField value={text} onChange={setText} label={label} placeholder={label} clearLabel={t("catalogFilters.clearSearch")} />
-      </View>
-      <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets role="radiogroup" accessibilityLabel={t(`catalogFilters.${page}`)}>
-        {rows}
-        {footer}
-      </ScrollView>
-    </>
-  );
-};
-
-const usePickerStyles = createThemedStyles((colors) => ({
-  search: { flexDirection: "row", paddingHorizontal: theme.spacing.medium, paddingTop: theme.spacing.small },
-  list: { paddingHorizontal: theme.spacing.medium, paddingBottom: theme.spacing.large },
-  note: { ...textStyle("body", "normal"), color: colors.foreground, paddingVertical: theme.spacing.medium },
-  muted: { ...textStyle("supporting", "medium"), color: colors["muted-foreground"], paddingTop: theme.spacing.medium },
 }));
