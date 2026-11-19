@@ -233,7 +233,14 @@ A red E2E job leaves the stack's telemetry as an artifact named `telemetry`
 (`telemetry.tgz`, kept seven days) beside `playwright-report`; a green one
 uploads nothing. The job starts the observability profile on every run
 ([ADR-0114](adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)),
-so a green run pays for it: <COST>
+so a green run pays for it. Measured on the pull request that added it
+(run `44460836078` against `dev` run `44457557872` and three earlier green
+ones): the `Start the telemetry store` step takes 6 s, the
+pre-pull step goes from 10 s to 29 s for the profile's images, and `Run E2E
+tests` took 7 min 0 s against 5 min 11 s to 6 min 49 s on `dev`, inside its
+run-to-run spread. The whole job took 10 min 43 s against 7 min 38 s to 11 min
+1 s. Expect about half a minute of fixed cost and no billed minute beyond it. A
+red run adds the capture step, 10 to 30 s, and a 13 MB artifact.
 
 **Read a red run's telemetry.**
 
