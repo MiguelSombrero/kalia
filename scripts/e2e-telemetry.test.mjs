@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { capture, load, secretsIn, secretsInLiveStore, secretsInTree, STORE_DIRECTORIES } from "./e2e-telemetry.mjs";
 
+const LONG_ID = "a".repeat(32);
 const TOKEN = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4";
 const SESSION = "0f9c2b7e-6d1a-4c3e-9a55-3b1f6d2a7c80";
 
@@ -66,8 +67,23 @@ test("the live store is read for a credential in a log line, a span's header att
   const inSpan = await secretsInLiveStore({ origin, fetchImpl: grafana({ headerSearch: [{ traceID: "t" }] }) });
   assert.deepEqual(inSpan, [{ name: "an Authorization header or a cookie", where: "a span attribute" }]);
 
-  const inTrace = await secretsInLiveStore({ origin, fetchImpl: grafana({ traces: { abc: { note: `Authorization: Bearer ${TOKEN}` } } }) });
-  assert.ok(inTrace.every(({ where }) => where === "trace abc") && inTrace.length === 2);
+  const inTrace = await secretsInLiveStore({ origin, fetchImpl: grafana({ traces: { [LONG_ID]: { note: `Authorization: Bearer ${TOKEN}` } } }) });
+  assert.ok(inTrace.every(({ where }) => where === `trace ${LONG_ID}`) && inTrace.length === 2);
+});
+
+test("a trace id Tempo's search returned without its leading zero is asked for in full", async () => {
+  const asked = [];
+  const fetchImpl = async (url) => {
+    const { pathname, searchParams } = new URL(url);
+    asked.push(pathname);
+    const ok = (body) => ({ ok: true, status: 200, json: async () => body });
+    if (pathname.endsWith("/search")) return ok({ traces: searchParams.get("q") === "{}" ? [{ traceID: "b71b3a53de205c590b5e742d7505efa" }] : [] });
+    return ok({ data: { result: [] }, trace: {} });
+  };
+
+  await secretsInLiveStore({ origin: "http://localhost:3001", fetchImpl });
+
+  assert.ok(asked.some((path) => path.endsWith("/v2/traces/0b71b3a53de205c590b5e742d7505efa")), asked.join("\n"));
 });
 
 /** A `docker` that has a store container, and copies in the files each test gives it. */

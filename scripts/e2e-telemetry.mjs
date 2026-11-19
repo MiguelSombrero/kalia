@@ -97,7 +97,12 @@ export const secretsInLiveStore = async ({ origin, fetchImpl = fetch, now = Date
   if ((headers.traces ?? []).length > 0) found.push({ name: "an Authorization header or a cookie", where: "a span attribute" });
 
   const sampled = await get(`${tempo}/search`, { q: "{}", limit: String(SAMPLED_TRACES), ...window });
-  const traces = await Promise.all((sampled.traces ?? []).map(async ({ traceID }) => ({ traceID, trace: await get(`${tempo}/v2/traces/${traceID}`) })));
+  const traces = await Promise.all((sampled.traces ?? []).map(async ({ traceID: found }) => {
+      // Tempo's search drops a leading zero, and its trace endpoint answers 502 to a short id.
+      const traceID = found.padStart(32, "0");
+      return { traceID, trace: await get(`${tempo}/v2/traces/${traceID}`) };
+    }),
+  );
   for (const { traceID, trace } of traces) {
     for (const name of secretsIn(JSON.stringify(trace))) found.push({ name, where: `trace ${traceID}` });
   }
