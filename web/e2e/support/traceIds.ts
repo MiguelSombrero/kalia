@@ -73,7 +73,8 @@ export const test = base.extend<{ tracedRequests: TracedRequest[] }>({
       };
       await use(requests);
       browser.newContext = newContext;
-      if (testInfo.status === testInfo.expectedStatus || requests.length === 0) return;
+      const failed = testInfo.status === "failed" || testInfo.status === "timedOut";
+      if (!failed || testInfo.status === testInfo.expectedStatus || requests.length === 0) return;
       await testInfo.attach(TRACE_IDS_ATTACHMENT, {
         body: formatTracedRequests(requests),
         contentType: "text/plain",

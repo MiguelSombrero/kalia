@@ -119,7 +119,7 @@ was decided.
   > output. Sending each request a `traceparent` of its own was tried first:
   > Playwright's request interception switches the browser's HTTP cache off, and
   > a spec that read a page before its stylesheet had arrived then failed 39 of
-  > 117 runs on a strict-mode violation. The store's directories (not Grafana's
+  > the 245 tests on a strict-mode violation. The store's directories (not Grafana's
   > 600 MB of plugins) are packed by `scripts/e2e-telemetry.mjs`, which reads the
   > live store and the copied files for a credential and writes nothing when it
   > finds one; the artifact is kept seven days and loads back with the same

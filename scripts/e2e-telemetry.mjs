@@ -8,7 +8,7 @@
 // failure, 0 when there was nothing to keep.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,7 +37,6 @@ const WINDOW_MS = 4 * 24 * 3600 * 1000;
  */
 export const SECRET_PATTERNS = [
   { name: "an Authorization header", source: String.raw`\bauthorization\b["']?\s*[:=]\s*["']?(?:bearer|basic|digest|negotiate)\s+[^\s"']{8,}` },
-  { name: "an Authorization header", source: String.raw`\bauthorization\b["']?\s*[:=]\s*["']?[A-Za-z0-9._~+/=-]{24,}` },
   { name: "a bearer token", source: String.raw`\bbearer\s+[A-Za-z0-9._~+/=-]{20,}` },
   { name: "a JSON Web Token", source: String.raw`\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]*` },
   { name: "a session cookie", source: String.raw`\b(?:__Secure-|__Host-)?(?:authjs|next-auth)\.session-token\b` },
@@ -98,8 +97,8 @@ export const secretsInLiveStore = async ({ origin, fetchImpl = fetch, now = Date
   if ((headers.traces ?? []).length > 0) found.push({ name: "an Authorization header or a cookie", where: "a span attribute" });
 
   const sampled = await get(`${tempo}/search`, { q: "{}", limit: String(SAMPLED_TRACES), ...window });
-  for (const { traceID } of sampled.traces ?? []) {
-    const trace = await get(`${tempo}/v2/traces/${traceID}`);
+  const traces = await Promise.all((sampled.traces ?? []).map(async ({ traceID }) => ({ traceID, trace: await get(`${tempo}/v2/traces/${traceID}`) })));
+  for (const { traceID, trace } of traces) {
     for (const name of secretsIn(JSON.stringify(trace))) found.push({ name, where: `trace ${traceID}` });
   }
   return found;
@@ -224,7 +223,6 @@ export const load = ({ file, replace = false, docker = dockerRun, tar = run, env
 
   const staging = mkdtempSync(join(tmpdir(), "kalia-telemetry-"));
   try {
-    mkdirSync(staging, { recursive: true });
     const unpacked = tar("tar", ["-xzf", resolve(file), "-C", staging]);
     if (unpacked.status !== 0) throw new Error(`unpacking failed (${unpacked.stderr})`);
     const created = docker(["compose", ...PROFILE, "up", "--no-start", SERVICE]);
