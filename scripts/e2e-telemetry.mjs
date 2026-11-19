@@ -126,9 +126,18 @@ const containerOf = (docker) => {
 // live before it is copied.
 const ensureRunning = async ({ docker, container, origin, fetchImpl, sleep, timeoutMs }) => {
   if (docker(["inspect", "-f", "{{.State.Running}}", container]).stdout !== "true") docker(["start", container]);
+  // Grafana answers before Tempo and Loki behind it do: a trace asked for in
+  // that gap is a 502. A trace that does not exist is the probe, since only a
+  // store that is ready can say so with a 404.
+  const probes = [
+    { path: "/api/health", answers: (status) => status === 200 },
+    { path: "/api/datasources/proxy/uid/tempo/api/v2/traces/00000000000000000000000000000001", answers: (status) => status < 500 },
+    { path: "/api/datasources/proxy/uid/loki/loki/api/v1/labels", answers: (status) => status === 200 },
+  ];
   for (const deadline = Date.now() + timeoutMs; ; await sleep(2000)) {
     try {
-      if ((await fetchImpl(new URL("/api/health", origin), { signal: AbortSignal.timeout(5000) })).ok) return;
+      const statuses = await Promise.all(probes.map(async ({ path }) => (await fetchImpl(new URL(path, origin), { signal: AbortSignal.timeout(5000) })).status));
+      if (probes.every(({ answers }, index) => answers(statuses[index]))) return;
     } catch {
       // Keeps waiting: the store is still starting.
     }

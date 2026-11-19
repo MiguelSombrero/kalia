@@ -169,6 +169,24 @@ test("a store the run left stopped is started to be read, and answers before it 
   }
 });
 
+test("a store whose Tempo still answers 502 behind a healthy Grafana is waited for before it is read", async () => {
+  const directory = scratch();
+  let bad = 2;
+  const fetchImpl = async (url) => {
+    if (new URL(url).pathname.includes("/tempo/api/v2/traces/0000") && bad-- > 0) return { ok: false, status: 502, json: async () => ({}) };
+    return NOTHING_LIVE(url);
+  };
+  const slept = [];
+  try {
+    const status = await capture({ out: join(directory, "telemetry.tgz"), docker: fakeDocker({}), fetchImpl, env: {}, sleep: async (ms) => slept.push(ms), print: () => {} });
+
+    assert.equal(status, 0);
+    assert.equal(slept.length, 2);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("a store that never answers is a failure, not a hang", async () => {
   const lines = [];
   const down = async () => {
