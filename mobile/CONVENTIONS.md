@@ -70,7 +70,9 @@ The app follows [web/CONVENTIONS.md](../web/CONVENTIONS.md) wherever a rule is n
   by hand, because the face has one file per weight. **Call `textStyle` inside
   `createThemedStyles`, never at module level:** it reads which face settled
   when it is called, a module's styles are built at import before that, and the
-  text then stays in the system face with no error.
+  text then stays in the system face with no error. A call outside any function
+  fails ESLint (`no-restricted-syntax`, fixtures `text-style-at-module-level.tsx`
+  and `text-style-in-a-function.tsx`).
   A beer's colours come from `useBeerStyleColours`, which falls back to the
   neutral pair ([ADR-0110](../docs/adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)).
   The app follows the system's light or dark setting; every colour is read

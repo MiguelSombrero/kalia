@@ -201,6 +201,16 @@ describe("the app's mechanical conventions (mobile/CONVENTIONS.md)", () => {
     expect(await ruleIds("test-waits-on-the-clock.ts", "src/lib/probe.ts")).toEqual([]);
   });
 
+  it("rejects textStyle called at module level, and accepts it inside createThemedStyles or a component", async () => {
+    for (const lintAs of ["src/components/probe.tsx", "src/features/catalog/probe.tsx", "src/app/probe.tsx", "src/lib/design/themedStyles.ts"]) {
+      const messages = await messagesFor(conventionFixture("text-style-at-module-level.tsx"), lintAs);
+
+      expect(messages).toEqual(Array(3).fill(["no-restricted-syntax", expect.stringContaining("Call textStyle inside a function")]));
+    }
+    expect(await ruleIds("text-style-in-a-function.tsx", "src/components/probe.tsx")).toEqual([]);
+    expect(await ruleIds("text-style-in-a-function.tsx", "src/app/probe.tsx")).toEqual([]);
+  });
+
   describe("src/testing/ is imported by test files only", () => {
     it.each(["src/app/probe.ts", "src/features/catalog/probe.ts", "src/components/probe.ts", "src/lib/probe.ts"])("rejects an import from %s", async (lintAs) => {
       expect(await messagesFor(conventionFixture("test-support-imported-by-the-app.ts"), lintAs)).toEqual([

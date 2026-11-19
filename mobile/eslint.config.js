@@ -78,7 +78,12 @@ const styleSheetInFunction = {
   message: "Build a sheet once, outside the component: StyleSheet.create at module level, or createThemedStyles when it reads theme colours; a value that depends on props goes in the style array (mobile/CONVENTIONS.md).",
 };
 
-const srcSyntax = [queryKeyInHook, defaultExport, inlinePropsType];
+const textStyleAtModuleLevel = {
+  selector: "CallExpression:matches([callee.name='textStyle'], [callee.property.name='textStyle']):not(:function CallExpression)",
+  message: "Call textStyle inside a function, normally createThemedStyles((colors) => ({…})): it reads which font face settled when it is called, a call at module level runs at import before that, and the text stays in the system face with no error (mobile/CONVENTIONS.md).",
+};
+
+const srcSyntax = [queryKeyInHook, defaultExport, inlinePropsType, textStyleAtModuleLevel];
 
 const waitsOnTheClock = {
   selector: "NewExpression[callee.name='Promise'] CallExpression[callee.name='setTimeout']",
@@ -125,7 +130,7 @@ const eslintConfig = defineConfig([
   },
   {
     files: ["src/app/**/*.{ts,tsx}"],
-    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, queryKeyInHook, inlinePropsType] },
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, queryKeyInHook, inlinePropsType, textStyleAtModuleLevel] },
   },
   {
     files: ["src/**/*.test.{ts,tsx}"],
