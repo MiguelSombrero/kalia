@@ -6,6 +6,7 @@ import { type Browser, type Page, request } from "@playwright/test";
 import { expectNoA11yViolations } from "./support/a11y";
 import { tabTo } from "./support/keyboard";
 import { createFreshAccount, expect, type KeycloakAccount, signIn, test, uniqueUsername } from "./support/keycloakAccount";
+import { findQueueRow } from "./support/queue";
 
 test.describe.configure({ mode: "serial" });
 
@@ -43,13 +44,7 @@ const decide = async (browser: Browser, baseURL: string | undefined, admin: Keyc
     await page.goto("/en");
     await signIn(page, admin);
     await page.goto("/en/admin");
-    const queue = page.getByRole("list", { name: "Queue" });
-    await expect(queue).toBeVisible();
-    const row = queue.getByRole("button", { name: new RegExp(name) });
-    for (let attempt = 0; attempt < 20 && (await row.count()) === 0; attempt++) {
-      await page.getByRole("link", { name: "Next" }).click();
-    }
-    await row.click();
+    await (await findQueueRow(page, name)).click();
     await expect(page.getByRole("heading", { level: 2, name, exact: true })).toBeVisible();
 
     if (decision.kind === "editAndApprove") {
@@ -73,13 +68,19 @@ const decide = async (browser: Browser, baseURL: string | undefined, admin: Keyc
 const signal = (page: Page, count: number) =>
   page.getByRole("banner").getByRole("button", { name: count === 1 ? "1 unread notification" : `${count} unread notifications` });
 
+// The signal is drawn into the header on the server, so its absence is read once the header is shown signed in.
+const expectNothingUnread = async (page: Page, unread: RegExp, why?: string) => {
+  await expect(page.getByRole("link", { name: /^(Profile|Profiili): / })).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("button", { name: unread }), why).toHaveCount(0);
+};
+
 test("a contributor sees an edited approval, acknowledges it, and it is gone after a reload", async ({ page, browser, baseURL, adminAccount }) => {
   const contributor = await newContributor();
   const typo = uniqueName("Zzz notify typo");
   const fixed = `${typo} fixed`;
   await page.goto("/en");
   await signIn(page, contributor);
-  await expect(page.getByRole("banner").getByRole("button", { name: /unread/ }), "a new account has nothing unread").toHaveCount(0);
+  await expectNothingUnread(page, /unread/, "a new account has nothing unread");
   await suggest(page, typo, uniqueName("Zzz notify brewery"));
 
   await decide(browser, baseURL, adminAccount, typo, { kind: "editAndApprove", fixed });
@@ -97,7 +98,7 @@ test("a contributor sees an edited approval, acknowledges it, and it is gone aft
   await expect(dialog.getByText("Nothing new")).toBeVisible();
 
   await page.goto("/en");
-  await expect(page.getByRole("banner").getByRole("button", { name: /unread/ })).toHaveCount(0);
+  await expectNothingUnread(page, /unread/);
 });
 
 test("a contributor sees a rejection with its reason in their own language", async ({ page, browser, baseURL, adminAccount }) => {
@@ -124,7 +125,7 @@ test("a contributor sees a rejection with its reason in their own language", asy
   await expect(dialog.getByText("Ei uutta")).toBeVisible();
 
   await page.goto("/fi");
-  await expect(page.getByRole("banner").getByRole("button", { name: /lukematon/ })).toHaveCount(0);
+  await expectNothingUnread(page, /lukematon/);
 });
 
 test.describe("one contributor holding an approval after an edit and a rejection", () => {

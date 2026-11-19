@@ -71,13 +71,6 @@ const IntersectionObserverMock = vi.fn(function (callback: IntersectionObserverC
   return instance;
 });
 
-// A same-tick mockResolvedValue lets React and TanStack Query batch the
-// fetch's start and finish into one commit, which hides the isFetchingNextPage
-// transition an effect would otherwise see — a real network round trip never
-// resolves that fast. This is what makes the transition observable in a test.
-const resolveAfterATick = <T,>(value: T): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), 10));
-
 const line = (cursor: string, username: string) => ({
   username,
   beerId: "beer-1",
@@ -188,15 +181,18 @@ describe("FeedList", () => {
     // the fetch completes — exactly the state a real browser's observer
     // would report to a freshly re-created instance. Only a second, genuine
     // scroll (not modeled here) may fetch again.
-    readOlderFeedAction.mockImplementation(() =>
-      resolveAfterATick({ content: [line("c2", "bob")], nextCursor: "c2", startOver: false }),
-    );
+    // Answered by hand: a same-tick mockResolvedValue lets React and TanStack Query batch the
+    // fetch's start and finish into one commit, which hides the isFetchingNextPage transition
+    // an effect would otherwise see.
+    let answer: (page: FeedPage) => void = () => undefined;
+    readOlderFeedAction.mockImplementation(() => new Promise<FeedPage>((resolve) => (answer = resolve)));
     renderList({ content: [line("c1", "alice")], nextCursor: "c1", startOver: false });
 
     act(() => intersectionObserverInstances[0]!.trigger(true));
-    await waitFor(() => expect(screen.getByRole("link", { name: "bob" })).toBeInTheDocument());
-    // Give any runaway auto-fetch a chance to fire before asserting it didn't.
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await waitFor(() => expect(readOlderFeedAction).toHaveBeenCalledTimes(1));
+    await act(async () => answer({ content: [line("c2", "bob")], nextCursor: "c2", startOver: false }));
+    expect(await screen.findByRole("link", { name: "bob" })).toBeInTheDocument();
+    await act(async () => undefined);
 
     expect(readOlderFeedAction).toHaveBeenCalledTimes(1);
   });

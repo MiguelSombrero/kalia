@@ -68,6 +68,23 @@ const handBuiltRoute = {
   message: "Build locale-prefixed routes with a helper from lib/routes.ts, not by hand (web/CONVENTIONS.md).",
 };
 
+const waitsOnTheClock = {
+  selector: "NewExpression[callee.name='Promise'] CallExpression[callee.name='setTimeout']",
+  message:
+    "A test of elapsed time uses fake timers (vi.useFakeTimers), and a test that waits for work waits on what it produces; a wait on a real external process says so in an eslint-disable reason (web/CONVENTIONS.md).",
+};
+const endToEndWaits = [
+  {
+    selector: "Literal[value='networkidle']",
+    message:
+      "networkidle returns before streamed content has rendered, so an absence asserted after it can pass on a page that never drew: wait for a positive signal that the page or list is in (web/CONVENTIONS.md).",
+  },
+  {
+    selector: "CallExpression[callee.property.name='waitForTimeout']",
+    message: "Wait for a signal the page or process gives, never a fixed time; a wait on a real external process says so in an eslint-disable reason (web/CONVENTIONS.md).",
+  },
+];
+
 const eslintConfig = defineConfig([
   {
     linterOptions: { reportUnusedDisableDirectives: "error" },
@@ -144,6 +161,15 @@ const eslintConfig = defineConfig([
     ignores: ["**/*.test.ts", "**/*.test.tsx"],
     plugins: { kalia: enumLookupPlugin },
     rules: { "kalia/no-closed-enum-map": "error" },
+  },
+  // `no-restricted-syntax` is replaced, not added to, by a later block, so these repeat the code-style selectors.
+  {
+    files: ["**/*.test.{ts,tsx}"],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, waitsOnTheClock] },
+  },
+  {
+    files: ["e2e/**/*.ts"],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, waitsOnTheClock, ...endToEndWaits] },
   },
   {
     files: ["lib/logger.ts"],

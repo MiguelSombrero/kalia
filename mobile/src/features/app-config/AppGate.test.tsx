@@ -36,6 +36,7 @@ const renderGate = (locale: "en" | "fi" = "en") =>
 const originalOS = Platform.OS;
 
 beforeEach(async () => {
+  jest.useFakeTimers();
   transport.mockReset();
   registerTransport(transport as unknown as Transport);
   application.nativeBuildVersion = "1";
@@ -44,6 +45,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  jest.useRealTimers();
   Platform.OS = originalOS;
   jest.restoreAllMocks();
 });
@@ -66,7 +68,7 @@ describe("AppGate", () => {
     transport.mockImplementationOnce(() => new Promise((resolve) => { finishConfig = resolve; }));
     try {
       await act(async () => store.set({ status: "signedIn" }));
-      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 30)); });
+      await act(async () => void jest.advanceTimersByTime(30));
       expect(unmounted).not.toHaveBeenCalled();
       expect(screen.getByText("Kalia is open")).toBeOnTheScreen();
     } finally {

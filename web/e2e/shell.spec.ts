@@ -153,6 +153,7 @@ for (const viewport of VIEWPORTS) {
         await page.goto("/en");
         // Scoped to the header: an empty feed adds its own sign-up link to <main>.
         const createAccount = page.getByRole("banner").getByRole("link", { name: "Create an account" });
+        await expect(page.getByRole("button", { name: "Menu" })).toBeVisible();
         await expect(createAccount).toBeHidden();
 
         await page.getByRole("button", { name: "Menu" }).click();
@@ -166,9 +167,9 @@ for (const viewport of VIEWPORTS) {
       test("the destinations, Sign in and Create an account sit in the bar with no menu button", async ({ page }) => {
         await page.goto("/en");
 
+        await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
         await expect(page.getByRole("button", { name: "Menu" })).toBeHidden();
         await expect(page.getByRole("navigation", { name: MAIN_NAV.en }).getByRole("link")).toHaveCount(3);
-        await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
         await expect(page.getByRole("banner").getByRole("link", { name: "Create an account" })).toBeVisible();
       });
     }

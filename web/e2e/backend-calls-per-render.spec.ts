@@ -41,6 +41,7 @@ const callsMadeRendering = async (page: Page, route: string): Promise<number> =>
   await page.route("**/*", attach);
   try {
     await page.goto(route, { waitUntil: "load" });
+    // eslint-disable-next-line no-restricted-syntax -- the backend's log lines reach `docker compose logs` on Docker's schedule, and nothing signals the last one
     await page.waitForTimeout(1_000);
     return backendCallsUnder(traceId);
   } finally {

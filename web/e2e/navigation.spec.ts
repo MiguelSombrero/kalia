@@ -18,16 +18,9 @@ const NAV_LINKS = ["Home", "Catalog", "Cellar"] as const;
 // it is this one. Checking the others is the half that catches a stale
 // indicator left behind on the page navigated away from.
 const expectCurrentPage = async (page: Page, current: (typeof NAV_LINKS)[number]) => {
-  for (const name of NAV_LINKS) {
-    const link = navLink(page, name);
-    if (name === current) {
-      await expect(link, `${name} should be the current page`).toHaveAttribute(
-        "aria-current",
-        "page",
-      );
-    } else {
-      await expect(link, `${name} should not be current`).not.toHaveAttribute("aria-current");
-    }
+  await expect(navLink(page, current), `${current} should be the current page`).toHaveAttribute("aria-current", "page");
+  for (const name of NAV_LINKS.filter((link) => link !== current)) {
+    await expect(navLink(page, name), `${name} should not be current`).not.toHaveAttribute("aria-current");
   }
 };
 

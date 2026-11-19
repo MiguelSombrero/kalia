@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
 import { useBreweryMatches } from "./hooks/useAddBeer";
 import type { BreweryOption } from "./types";
 
-const SEARCH_DELAY_MS = 250;
+export const SEARCH_DELAY_MS = 250;
 
 type Choice = { kind: "existing"; brewery: BreweryOption } | { kind: "new"; name: string };
 

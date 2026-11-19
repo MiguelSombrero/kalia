@@ -196,3 +196,29 @@ describe("a query hook takes its resource's key factory (web/CONVENTIONS.md)", (
     expect(await messagesFor(conventionFixture("query-hook-takes-a-factory"), "features/catalog/hooks/probe.ts")).toEqual([]);
   });
 });
+
+describe("a test waits on a signal, never on the clock (web/CONVENTIONS.md)", () => {
+  const conventionFixture = (name: string) => readFileSync(`${import.meta.dirname}/eslint-fixtures/conventions/${name}.ts`, "utf8");
+
+  it("rejects a setTimeout promise in a unit test and in a spec, and accepts one that gives its reason", async () => {
+    for (const filePath of ["features/catalog/probe.test.tsx", "lib/probe.test.ts", "e2e/probe.spec.ts"]) {
+      expect(await messagesFor(conventionFixture("test-waits-on-the-clock"), filePath)).toEqual([expect.stringContaining("fake timers")]);
+      expect(await messagesFor(conventionFixture("test-waits-on-a-real-process"), filePath)).toEqual([]);
+    }
+  });
+
+  it("leaves a setTimeout promise in the app's own code alone", async () => {
+    expect(await messagesFor(conventionFixture("test-waits-on-the-clock"), "lib/probe.ts")).toEqual([]);
+  });
+
+  it("rejects networkidle and a fixed timeout in a spec, and leaves a unit test free of the Playwright rule", async () => {
+    expect(await messagesFor(conventionFixture("spec-waits-for-network-idle"), "e2e/probe.spec.ts")).toEqual([expect.stringContaining("networkidle")]);
+    expect(await messagesFor(conventionFixture("spec-waits-for-a-timeout"), "e2e/probe.spec.ts")).toEqual([expect.stringContaining("never a fixed time")]);
+    expect(await messagesFor(conventionFixture("spec-waits-for-network-idle"), "lib/probe.test.ts")).toEqual([]);
+  });
+
+  it("keeps the code-style selectors a test file has to repeat", async () => {
+    expect(await messagesFor("export function probe() {\n  return 1;\n}\n", "lib/probe.test.ts")).toEqual([expect.stringContaining("Prefer arrow functions")]);
+    expect(await messagesFor("export function probe() {\n  return 1;\n}\n", "e2e/probe.spec.ts")).toEqual([expect.stringContaining("Prefer arrow functions")]);
+  });
+});
