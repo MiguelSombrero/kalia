@@ -47,6 +47,12 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OBSERVABILITY_OTLP_ENDPOINT:-}
 
   keycloak:
+    build:
+      args:
+        # Built into the image, so the local stack's Keycloak serves counters
+        # on its management port for the observability profile to scrape
+        # (ADR-0114). The deployable image is built without them.
+        KC_METRICS_ENABLED: "true"
     depends_on:
       # Keycloak only dials mailpit when it actually sends a message, long
       # after startup — service_started is enough to order them.
@@ -191,6 +197,59 @@ services:
     volumes:
       - ./observability/alloy.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  postgres-monitor-role:
+    # Creates the role the Postgres exporter reads statistics as, on a database
+    # that already exists: postgres/init runs once, against an empty data
+    # directory, and a role in it would belong to the deployable stack too
+    # (ADR-0100). Connects as the bootstrap superuser, the one use of it beside
+    # Postgres's own start-up that the profile adds, and runs again on every
+    # start: it changes nothing a second time.
+    profiles: [observability]
+    image: postgres:18.6
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: kalia
+      PGDATABASE: kalia
+      # The values docker-compose.dev.env holds, spelled out because this file
+      # is interpolated without it; scripts/check-compose.mjs fails if they differ.
+      PGPASSWORD: ${POSTGRES_PASSWORD:-kalia}
+      KALIA_MONITOR_PASSWORD: ${KALIA_MONITOR_PASSWORD:-kalia-dev-monitor-password}
+    volumes:
+      - ./observability/monitor-role.sql:/monitor-role.sql:ro
+    entrypoint: ["psql", "--no-psqlrc", "--set", "ON_ERROR_STOP=1", "--file", "/monitor-role.sql"]
+    restart: "no"
+
+  postgres-exporter:
+    # Postgres's statistics as counters: the connection count, the transaction
+    # rate and the size of each database. Read as a role of its own that holds
+    # pg_monitor and nothing else (ADR-0100). The image has no shell, so no
+    # healthcheck.
+    profiles: [observability]
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    depends_on:
+      postgres-monitor-role:
+        condition: service_completed_successfully
+    environment:
+      DATA_SOURCE_URI: postgres:5432/kalia?sslmode=disable
+      DATA_SOURCE_USER: kalia_monitor
+      DATA_SOURCE_PASS: ${KALIA_MONITOR_PASSWORD:-kalia-dev-monitor-password}
+
+  redis-exporter:
+    # Valkey's own INFO as counters: connected clients, memory, commands. The image
+    # has no shell, so no healthcheck.
+    profiles: [observability]
+    image: oliver006/redis_exporter:v1.97.0
+    depends_on:
+      valkey:
+        condition: service_healthy
+    environment:
+      REDIS_ADDR: redis://valkey:6379
+      # As postgres-monitor-role's: the value docker-compose.dev.env holds.
+      REDIS_PASSWORD: ${VALKEY_PASSWORD:-kalia-dev-valkey-password}
 
 volumes:
   lgtm-data:

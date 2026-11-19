@@ -221,6 +221,15 @@ vulnerabilities:
   - id: GHSA-2m67-wjpj-xhg9
     statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
     expired_at: 2026-12-01
+  - id: CVE-2026-56854
+    statement: "golang.org/x/crypto in the postgres_exporter binary of prometheuscommunity/postgres-exporter (v0.20.1, checked 2026-11-18, is the newest tag; the fix is in x/crypto 0.55.0); the exporter runs no SSH server, and it runs only with the observability profile; ends when upstream ships a rebuilt image"
+    expired_at: 2026-12-15
+  - id: CVE-2026-56851
+    statement: "golang.org/x/text in the postgres_exporter binary of prometheuscommunity/postgres-exporter (v0.20.1, checked 2026-11-18, is the newest tag; the fix is in x/text 0.41.0); the exporter parses no Nickname profile input, and it runs only with the observability profile; ends when upstream ships a rebuilt image"
+    expired_at: 2026-12-15
+  - id: CVE-2026-56852
+    statement: "golang.org/x/text in the postgres_exporter binary of prometheuscommunity/postgres-exporter (v0.20.1, checked 2026-11-18, is the newest tag; the fix is in x/text 0.39.0); the exporter decodes only the database's own replies, on the stack's private network, and runs only with the observability profile; ends when upstream ships a rebuilt image"
+    expired_at: 2026-12-15
 
 # Debian's ssl-cert package ships this self-signed key in every image that
 # installs it, postgres included, so that a service can start with TLS before

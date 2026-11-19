@@ -32,7 +32,7 @@ const linesMentioning = (logs: string, needle: string): string[] =>
 const addressSeenByEdge = (needle: string): string => {
   const [line] = linesMentioning(logsOf("edge"), needle);
   expect(line, `the edge logged no request for ${needle}`).toBeTruthy();
-  return line!.split(" ")[0]!;
+  return (JSON.parse(line!) as { remote_addr: string }).remote_addr;
 };
 
 test.describe("the client address", () => {

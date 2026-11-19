@@ -1,6 +1,9 @@
 // What the observability profile's shipper (docker-compose.override.yml)
 // reads: the stdout of this Compose project's containers, sent to Loki with the
-// Compose service as the `service` label.
+// Compose service as the `service` label. Keycloak's and Postgres's lines name
+// a person on some failures, and are redacted here before they are stored
+// (ADR-0013); scripts/observability-redaction.test.mjs applies the rules below
+// to recorded lines.
 
 discovery.docker "stack" {
   host = "unix:///var/run/docker.sock"
@@ -30,7 +33,60 @@ discovery.relabel "stack" {
 loki.source.docker "stack" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.stack.output
+  forward_to = [loki.process.stack.receiver]
+}
+
+loki.process "stack" {
   forward_to = [loki.write.lgtm.receiver]
+
+  // The edge writes one JSON object per request (edge/nginx.conf). Its status
+  // and the service it fronted become labels, a handful of values each, so a
+  // refusal is counted by `count_over_time({service="edge", status="429"}[5m])`
+  // and not by reading lines. Only the edge's request lines are parsed: its
+  // error log is plain text.
+  stage.match {
+    selector = `{service="edge"} |= "remote_addr"`
+
+    stage.json {
+      expressions = {
+        status   = "status",
+        upstream = "upstream",
+      }
+    }
+
+    stage.labels {
+      values = {
+        status   = "",
+        upstream = "",
+      }
+    }
+  }
+
+  // A failed sign-in names the username or the email it was given. The event
+  // type, client and time stay, which is what finds it.
+  stage.match {
+    selector = `{service="keycloak"}`
+
+    stage.replace {
+      expression = `username="([^"]*)"`
+      replace    = "[redacted]"
+    }
+
+    stage.replace {
+      expression = `email="([^"]*)"`
+      replace    = "[redacted]"
+    }
+  }
+
+  // A unique violation names the value that collided: DETAIL: Key (email)=(...)
+  stage.match {
+    selector = `{service="postgres"}`
+
+    stage.replace {
+      expression = `Key \([^)]*\)=\(([^)]*)\)`
+      replace    = "[redacted]"
+    }
+  }
 }
 
 loki.write "lgtm" {

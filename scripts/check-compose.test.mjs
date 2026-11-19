@@ -7,7 +7,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { ONE_SHOT_SERVICES, completedServices, oneShotProblems, repositoryWaitProblems, waitProblems, addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { ONE_SHOT_SERVICES, overrideDefaultProblems, completedServices, oneShotProblems, repositoryWaitProblems, waitProblems, addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -455,4 +455,19 @@ test("completedServices and oneShotProblems follow what other services wait on t
   assert.match(oneShotProblems(services, ["keycloak-seed"])[0], /keycloak-config is waited on to complete/);
   assert.match(oneShotProblems(services, ["keycloak-config", "keycloak-seed", "gone"])[0], /lists gone/);
   assert.ok(ONE_SHOT_SERVICES.includes("keycloak-seed"));
+});
+
+test("overrideDefaultProblems accepts a default that spells the dev env file's value, and a variable it does not hold", () => {
+  const devEnvText = "VALKEY_PASSWORD=dev-valkey\nKALIA_MONITOR_PASSWORD=dev-monitor\n";
+  const overrideText = "REDIS_PASSWORD: ${VALKEY_PASSWORD:-dev-valkey}\nPORT: ${GRAFANA_PORT:-3001}\nURL: ${A:-http://x:${B:-1}}";
+  assert.deepEqual(overrideDefaultProblems({ overrideText, devEnvText }), []);
+});
+
+test("overrideDefaultProblems fails a default that drifted from the dev env file's value", () => {
+  const problems = overrideDefaultProblems({
+    overrideText: "PGPASSWORD: ${KALIA_MONITOR_PASSWORD:-old-monitor}",
+    devEnvText: "KALIA_MONITOR_PASSWORD=dev-monitor\n",
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /KALIA_MONITOR_PASSWORD/);
 });

@@ -89,18 +89,19 @@ Every value in that file is dev-only: never reuse one outside local development.
 
 - `make stack-env` gives worktree slot *n* each default port + 100×*n*.
 - **Observability profile** ([ADR-0114](docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)),
-  off unless asked for: `make observability-up` starts a Grafana container
-  that stores traces, logs and metrics, and a shipper that sends every other
-  container's stdout to it, beside the stack and on this worktree's
-  `GRAFANA_PORT`. It recreates the backend and the web with the collector's
-  address (`OTEL_EXPORTER_OTLP_ENDPOINT`) and leaves everything else running;
-  `make observability-down` stops it and recreates those two without; a plain
-  `make up` afterwards leaves the endpoint empty too. Open
-  Grafana at the port above: it needs no sign-in and cannot write. What it
-  stores lives in a volume that survives both and a recreate, for three days
-  at most, and in 2 GiB of memory at most. The first start downloads about
-  600 MB of Grafana plugins, so it needs the network once; the image is 3.6 GB
-  on disk. Without it the stack starts exactly the containers it did before.
+  off unless asked for: `make observability-up` starts Grafana with a store for
+  traces, logs and metrics, and a shipper for every other container's stdout, on
+  this worktree's `GRAFANA_PORT`. It recreates the backend and the web with the
+  collector's address (`OTEL_EXPORTER_OTLP_ENDPOINT`) and leaves the rest running;
+  `make observability-down` stops it and recreates those two without. Grafana
+  needs no sign-in; its first start downloads about 600 MB of plugins. Without it
+  the stack starts exactly the containers it did before. Every service's logs
+  reach it by `service` label and nothing leaves the machine; the backend and web
+  also send traces and their counters (`/actuator/prometheus`, `/api/metrics`):
+  - `edge`: one JSON line per request, labelled `status` and `upstream` (`web`, `backend`, `keycloak`, `keycloak-admin`), with the request's `trace_id` when it carried a `traceparent`; refusals are `{service="edge", status="429"}`. No exporter: the lines are counted.
+  - `keycloak`: its own `/metrics` (built into the local stack's image only: `make observability-up` rebuilds it once); each event's `username` and `email` are replaced by `[redacted]`, so a failed sign-in is found by event type, client and time.
+  - `postgres`, `valkey`: `postgres_exporter` as role `kalia_monitor` (`pg_monitor`, created by the profile alone; `pg_stat_database_numbackends`) and `redis_exporter` (`redis_connected_clients`); a unique violation's `Key (…)=(…)` value is replaced.
+  Not shipped: `mailpit` and the one-shot services; a `psql` statement with literals is stored as typed. Edge log: `docker compose logs edge --no-log-prefix | jq -cR 'fromjson? | select(.status == 429)'`.
 - **Reading one request** (profile on): `make trace ID=<traceId>` prints that
   request's span tree, with the SQL each statement ran, and the log lines
   written under its trace id (a request's id is the `traceId` of its log lines

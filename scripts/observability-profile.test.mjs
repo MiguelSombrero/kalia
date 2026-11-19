@@ -21,7 +21,10 @@ const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_SERVICES = ["backend", "edge", "keycloak", "keycloak-config", "keycloak-seed", "mailpit", "postgres", "valkey", "web"];
 
 /** What the profile adds, each defined in docker-compose.override.yml. */
-const PROFILE_SERVICES = ["alloy", "lgtm"];
+const PROFILE_SERVICES = ["alloy", "lgtm", "postgres-exporter", "postgres-monitor-role", "redis-exporter"];
+
+/** The exporters among them: each reads a service that has no metrics of its own, and none runs without the profile. */
+const EXPORTERS = ["postgres-exporter", "redis-exporter"];
 
 const withRootEnv = (extra, run) => {
   const dir = mkdtempSync(join(tmpdir(), "observability-profile-"));
@@ -88,8 +91,53 @@ test("the viewer's port is read from the environment and bound to the loopback i
 });
 
 test("the image is pinned to a version and the store has a volume and a memory limit", () => {
-  const { lgtm, alloy } = renderLocal({ profile: true }).services;
-  for (const image of [lgtm.image, alloy.image]) assert.match(image, /:v?\d+\.\d+\.\d+$/, `${image} is not pinned`);
+  const { lgtm, alloy, ...others } = renderLocal({ profile: true }).services;
+  const images = PROFILE_SERVICES.map((name) => (name === "lgtm" ? lgtm : name === "alloy" ? alloy : others[name]).image);
+  for (const image of images) assert.match(image, /:v?\d+\.\d+(\.\d+)?$/, `${image} is not pinned`);
   assert.ok(lgtm.volumes.some((volume) => volume.target === "/data" && volume.type === "volume"), "/data is not a named volume");
   assert.equal(Number(lgtm.mem_limit), 2 * 1024 ** 3);
+});
+
+test("an exporter runs only with the profile, and is the community image CI can pull", () => {
+  const without = renderLocal();
+  const withProfile = renderLocal({ profile: true });
+  for (const name of EXPORTERS) {
+    assert.ok(!(name in without.services), `${name} runs without the profile`);
+    assert.deepEqual(withProfile.services[name].profiles, ["observability"], name);
+    assert.doesNotMatch(withProfile.services[name].image, /^dhi\.io\//, `${name} is a dhi.io image, which the scan job's runner cannot pull`);
+  }
+});
+
+test("neither exporter publishes a port: Prometheus reaches it on the stack's network", () => {
+  const { services } = renderLocal({ profile: true });
+  for (const name of EXPORTERS) assert.equal(services[name].ports, undefined, `${name} publishes a port`);
+});
+
+test("the exporter's role belongs to the profile: neither the base file nor the init script creates it", () => {
+  const baseText = readFileSync(join(ROOT, "docker-compose.base.yml"), "utf8");
+  const initText = readFileSync(join(ROOT, "postgres/init/01-create-roles-and-databases.sql"), "utf8");
+  for (const [where, text] of [["docker-compose.base.yml", baseText], ["postgres/init", initText]]) {
+    assert.doesNotMatch(text, /kalia_monitor|pg_monitor|KALIA_MONITOR/, `${where} has the exporter's role`);
+  }
+  const { services } = renderLocal({ profile: true });
+  assert.equal(services["postgres-exporter"].environment.DATA_SOURCE_USER, "kalia_monitor");
+  assert.notEqual(services["postgres-exporter"].environment.DATA_SOURCE_USER, services.postgres.environment.POSTGRES_USER);
+});
+
+test("the exporter's role is granted pg_monitor and a connection to the database it reads, and nothing on a table", () => {
+  const sql = readFileSync(join(ROOT, "observability/monitor-role.sql"), "utf8");
+  assert.match(sql, /GRANT pg_monitor TO kalia_monitor;/);
+  assert.match(sql, /GRANT CONNECT ON DATABASE kalia TO kalia_monitor;/);
+  assert.doesNotMatch(sql, /SUPERUSER|CREATEROLE|CREATEDB|ON (ALL )?TABLES|GRANT (SELECT|INSERT|UPDATE|DELETE|ALL)/i);
+});
+
+test("the Keycloak image counts its requests only in the local stack", () => {
+  const dockerfile = readFileSync(join(ROOT, "keycloak/Dockerfile"), "utf8");
+  assert.match(dockerfile, /ARG KC_METRICS_ENABLED=false/);
+  const args = (config) => config.services.keycloak.build.args ?? {};
+  assert.equal(args(renderLocal()).KC_METRICS_ENABLED, "true");
+  const base = render(["--env-file", "docker-compose.dev.env", "-f", "docker-compose.base.yml"], {
+    KALIA_WEB_CLIENT_SECRET: "observability-profile-test",
+  });
+  assert.equal(args(base).KC_METRICS_ENABLED, undefined, "the deployable definition builds Keycloak with counters");
 });

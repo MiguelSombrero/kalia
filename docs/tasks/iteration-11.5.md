@@ -36,7 +36,7 @@ around it — through every tier, reading it from a query rather than from
 | [03](iteration-11.5/03-the-backends-telemetry-reaches-the-profile.md) | The backend's traces, metrics and logs reach the profile | done |
 | [04](iteration-11.5/04-a-trace-shows-the-sql-a-request-ran.md) | A trace shows the SQL a request ran | done |
 | [05](iteration-11.5/05-the-web-servers-telemetry-reaches-the-profile.md) | The web server's traces, metrics and logs reach the profile | done |
-| [06](iteration-11.5/06-the-other-services-logs-and-metrics-reach-the-profile.md) | The edge, Keycloak, Postgres and Valkey reach the profile too | refined |
+| [06](iteration-11.5/06-the-other-services-logs-and-metrics-reach-the-profile.md) | The edge, Keycloak, Postgres and Valkey reach the profile too | done |
 | [07](iteration-11.5/07-an-agent-queries-the-telemetry-through-an-mcp-server.md) | An agent queries the telemetry through an MCP server | done |
 | [08](iteration-11.5/08-one-command-prints-a-requests-trace-and-logs.md) | One command prints a request's trace and log lines as text | done |
 | [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | refined |
