@@ -1,4 +1,4 @@
-import { apiError } from "@kalia/api";
+import { httpFailure } from "@kalia/api";
 import { remove as generatedRemoveBeer } from "@kalia/api/generated/admin-beers/admin-beers";
 import {
   addBeer as generatedAddBeer,
@@ -35,7 +35,7 @@ export const searchBeers = async (search: BeerSearchParams): Promise<BeerPage> =
     sort: params.sort,
   });
   if (response.status !== 200) {
-    throw apiError("http", `Beer search failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Beer search", response);
   }
   return response.data;
 };
@@ -44,7 +44,7 @@ export const searchBeers = async (search: BeerSearchParams): Promise<BeerPage> =
 export const listBreweryCountries = async (): Promise<string[]> => {
   const response = await generatedListBreweryCountries();
   if (response.status !== 200) {
-    throw apiError("http", `Brewery country list failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Brewery country list", response);
   }
   return response.data;
 };
@@ -62,7 +62,7 @@ export const getBeer = async (id: string): Promise<BeerDetails | null> => {
     return null;
   }
   if (response.status !== 200) {
-    throw apiError("http", `Beer lookup failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Beer lookup", response);
   }
   return response.data;
 };
@@ -95,7 +95,7 @@ export const addBeer = async (request: AddBeerRequest): Promise<AddBeerResult> =
     case 429:
       return { kind: "pendingCap" };
     default:
-      throw apiError("http", `Adding a beer failed with status ${response.status}`, { status: response.status });
+      throw httpFailure("Adding a beer", response);
   }
 };
 
@@ -110,7 +110,7 @@ export const removeBeer = async (id: string): Promise<BeerRemovalResult> => {
     case 409:
       return { kind: "refused", status: response.status };
     default:
-      throw apiError("http", `Removing a beer failed with status ${response.status}`, { status: response.status });
+      throw httpFailure("Removing a beer", response);
   }
 };
 
@@ -119,7 +119,7 @@ const BREWERY_MATCHES = 8;
 export const findBreweries = async (query: string): Promise<Brewery[]> => {
   const response = await generatedListBreweries({ query, size: BREWERY_MATCHES });
   if (response.status !== 200) {
-    throw apiError("http", `Brewery search failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Brewery search", response);
   }
   return response.data.content;
 };
@@ -137,7 +137,7 @@ export const findSimilarBeers = async (breweryId: string, name: string): Promise
     size: SIMILAR_BEERS,
   });
   if (response.status !== 200) {
-    throw apiError("http", `Similar beer search failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Similar beer search", response);
   }
   return response.data.content;
 };
@@ -145,7 +145,7 @@ export const findSimilarBeers = async (breweryId: string, name: string): Promise
 export const listStyles = async (): Promise<string[]> => {
   const response = await generatedListStyles();
   if (response.status !== 200) {
-    throw apiError("http", `Style list failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Style list", response);
   }
   return response.data;
 };
@@ -154,7 +154,7 @@ export const listStyles = async (): Promise<string[]> => {
 export const listCountries = async (): Promise<string[]> => {
   const response = await generatedListCountries();
   if (response.status !== 200) {
-    throw apiError("http", `Country list failed with status ${response.status}`, { status: response.status });
+    throw httpFailure("Country list", response);
   }
   return response.data;
 };

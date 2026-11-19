@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { currentTraceparent } from "@/lib/api/requestTrace";
+import { logger } from "@/lib/logger";
+
 import {
   addBeer,
   findBreweries,
@@ -11,6 +14,10 @@ import {
   searchBeers,
 } from "./api";
 import type { BeerDetails, BeerPage } from "./types";
+
+vi.mock("@/lib/logger", () => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
 
 const emptyPage: BeerPage = { content: [], totalElements: 0, totalPages: 0, page: 0 };
 
@@ -61,7 +68,22 @@ describe("searchBeers", () => {
     const error = await searchBeers({}).catch((e: unknown) => e);
 
     expect(error).toMatchObject({ name: "ApiError", kind: "http", status: 503 });
-    expect((error as Error).message).toBe("Beer search failed with status 503");
+    expect((error as Error).message).toMatch(/^Beer search failed with status 503 \(trace [0-9a-f]{32}\)$/);
+  });
+
+  it("carries the failed call's trace id on the error, and the call is logged once, by the transport", async () => {
+    vi.mocked(currentTraceparent).mockResolvedValueOnce("00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01");
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
+    vi.mocked(logger.warn).mockClear();
+
+    const error = await searchBeers({}).catch((e: unknown) => e);
+
+    expect(error).toMatchObject({ kind: "http", status: 503, traceId: "4bf92f3577b34da6a3ce929d0e0e4736" });
+    expect(logger.warn).toHaveBeenCalledExactlyOnceWith(
+      "Backend answered with a server error",
+      expect.objectContaining({ traceId: "4bf92f3577b34da6a3ce929d0e0e4736", status: 503 }),
+    );
+    expect(logger.error).not.toHaveBeenCalled();
   });
 
   it.each(["name,asc", "name,desc", "abv,asc", "abv,desc", "style,asc"])(

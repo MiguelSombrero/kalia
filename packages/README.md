@@ -10,8 +10,8 @@ nothing of `web/` or `mobile/` and nothing from `react-dom`, `next` or
 
 | Package | Directory | Holds |
 | --- | --- | --- |
-| `@kalia/api` | `api/` | the API types and TanStack Query client generated from `backend/openapi.json`, and the platform-neutral fetch core |
-| `@kalia/locales` | `locales/` | every string, `en` and `fi`, in `src/{en,fi}/common.json` |
+| `@kalia/api` | `api/` | the API types and plain call functions generated from `backend/openapi.json`, and the platform-neutral fetch core |
+| `@kalia/locales` | `locales/` | every string, `en` and `fi`, in `src/{en,fi}/common.json`, and the locale list the apps share |
 | `@kalia/tokens` | `tokens/` | source values for the generated web, mobile and Keycloak themes |
 
 `node scripts/generate-tokens.mjs` regenerates the outputs from the token
@@ -19,6 +19,28 @@ source; `node scripts/generate-tokens.mjs --check` detects drift without git.
 
 ## `@kalia/api`
 
+- **What it exports.** The root (`@kalia/api`) is for server code and the
+  apps' transports: the typed failure (`apiError`, `isApiError`, `httpFailure`),
+  the fetch core, `registerTransport`, `enumLookup` and the beer-style mapping.
+  Three pure files also have a subpath of their own, which a client component
+  or a shared primitive imports so that it takes none of the transport:
+  `@kalia/api/api-error`, `@kalia/api/beer-style` (ADR-0111's mapping) and
+  `@kalia/api/enum-lookup`. The web's ESLint fails a `"use client"` file, anything
+  under `components/` and a feature's `hooks/` that imports the root, and the app's fails
+  `beerStyleGroup` imported from it (`eslint-fixtures/api-imports/`,
+  `eslint-fixtures/conventions/beer-style-from-the-root.ts`). Beyond those,
+  `@kalia/api/generated/<tag>/<tag>` and `@kalia/api/generated/models` are the
+  generated client, reached only from a feature's `api.ts` and `types.ts`; the
+  generated barrel has no export (`exports.test.ts`).
+- **The client is plain functions.** It is generated with `client: "fetch"`
+  (`orval.config.ts`): a function per operation returning `{ data, status,
+  headers }`, no hook, so the package has no peer dependency on `react` or
+  `@tanstack/react-query` and each app's React version is its own. The hooks
+  are the features' own ([ADR-0041](../docs/adr/0041-tanstack-query-feature-owned-hooks.md)).
+- **An unexpected status is `httpFailure(what, response)`** in both apps, never
+  `apiError("http", …)` by hand (a Server Action result that holds only a status,
+  `useRemoveBeer` and `unlessConflicted`, has no response to name): it names the call's trace id on the error,
+  which the app's transport logs once, with the call.
 - **Regenerate** with `make api-drift` from the repository root, or
   `npm run generate --workspace @kalia/api`. It reads `backend/openapi.json`, so
   it needs neither Docker nor a running backend
@@ -64,7 +86,8 @@ source; `node scripts/generate-tokens.mjs --check` detects drift without git.
 ## `@kalia/locales`
 
 `src/index.ts` exports `resources` (every language, for i18next's `resources`
-option), `locales` and `defaultLocale`. `@kalia/locales/load` exports
+option), `locales`, `defaultLocale` and `isLocale`, the one guard that narrows
+a string to a `Locale`. `@kalia/locales/load` exports
 `loadResource` (one language on demand, for a backend) and is a file of its own
 because Metro refuses its dynamic `import()`, so the app must not reach it
 through the index. Each app

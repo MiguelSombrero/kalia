@@ -1,4 +1,5 @@
-import { type BeerStyleGroup, beerStyleGroup, enumLookup } from "@kalia/api";
+import { enumLookup } from "@kalia/api";
+import { type BeerStyleGroup, beerStyleGroup } from "@kalia/api/beer-style";
 
 import { theme } from "./theme.generated";
 import { useColorMode } from "./useThemeColors";

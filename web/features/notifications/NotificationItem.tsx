@@ -1,6 +1,6 @@
 "use client";
 
-import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api";
+import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api/enum-lookup";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 

@@ -1,4 +1,4 @@
-import { apiError, isApiError } from "@kalia/api";
+import { httpFailure, isApiError } from "@kalia/api";
 import {
   addBottles as generatedAddBottles,
   listEntries as generatedListEntries,
@@ -20,9 +20,7 @@ const readEntries = async (): Promise<EntryDto[]> => {
   // Narrowed on `response.status` itself (a status literal per branch), not a
   // derived variable — that's what lets TS discriminate `response.data`.
   if (response.status !== 200) {
-    throw apiError("http", `Cellar entries lookup failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure("Cellar entries lookup", response);
   }
   return response.data;
 };
@@ -32,9 +30,7 @@ export const listCellarEntries = async (): Promise<CellarBeer[]> => (await readE
 const readHoldings = async (beerIds: readonly string[]): Promise<HoldingsDto> => {
   const response = await generatedReadHoldings(beerIds.length > 0 ? { beerIds: [...beerIds] } : undefined);
   if (response.status !== 200) {
-    throw apiError("http", `Cellar holdings lookup failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure("Cellar holdings lookup", response);
   }
   return response.data;
 };
@@ -99,15 +95,13 @@ export const getPublicCellar = async (username: string, page = 0): Promise<Publi
   if (status === 404 || status === 400) {
     return null;
   }
-  throw apiError("http", `Public cellar lookup failed with status ${status}`, { status });
+  throw httpFailure("Public cellar lookup", response);
 };
 
 export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bottle[]> => {
   const response = await generatedAddBottles(request);
   if (response.status !== 201) {
-    throw apiError("http", `Adding bottles failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure("Adding bottles", response);
   }
   return response.data;
 };
@@ -118,9 +112,7 @@ export const updateCellarBottle = async (
 ): Promise<Bottle> => {
   const response = await generatedUpdateBottle(id, request);
   if (response.status !== 200) {
-    throw apiError("http", `Updating bottle ${id} failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure(`Updating bottle ${id}`, response);
   }
   return response.data;
 };
@@ -128,8 +120,6 @@ export const updateCellarBottle = async (
 export const removeCellarBottle = async (id: string): Promise<void> => {
   const response = await generatedRemoveBottle(id);
   if (response.status !== 204) {
-    throw apiError("http", `Removing bottle ${id} failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure(`Removing bottle ${id}`, response);
   }
 };

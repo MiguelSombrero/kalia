@@ -4,21 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import {
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   FeedPageDto,
   Problem,
@@ -27,26 +12,6 @@ import type {
 } from '../models';
 
 import { kaliaFetch } from '../../core/transport';
-
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
 
 export type readFeedResponse200 = {
   data: FeedPageDto
@@ -101,82 +66,5 @@ export const readFeed = async (params?: ReadFeedParams, options?: Parameters<typ
 
   }
 );}
-
-
-
-
-
-export const getReadFeedQueryKey = (params?: ReadFeedParams,) => {
-    return [
-    `/api/v1/feed`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getReadFeedQueryOptions = <TData = Awaited<ReturnType<typeof readFeed>>, TError = ValidationProblem | Problem>(params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getReadFeedQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof readFeed>>> = ({ signal }) => readFeed(params, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ReadFeedQueryResult = NonNullable<Awaited<ReturnType<typeof readFeed>>>
-export type ReadFeedQueryError = ValidationProblem | Problem
-
-
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ValidationProblem | Problem>(
- params: undefined |  ReadFeedParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof readFeed>>,
-          TError,
-          Awaited<ReturnType<typeof readFeed>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ValidationProblem | Problem>(
- params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof readFeed>>,
-          TError,
-          Awaited<ReturnType<typeof readFeed>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ValidationProblem | Problem>(
- params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Read the feed
- */
-
-export function useReadFeed<TData = Awaited<ReturnType<typeof readFeed>>, TError = ValidationProblem | Problem>(
- params?: ReadFeedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof readFeed>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getReadFeedQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
 
 

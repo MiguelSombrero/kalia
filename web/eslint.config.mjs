@@ -31,6 +31,18 @@ const ownGeneratedTag = {
   element: { type: "generated-tag", captured: { tagName: "{{ from.element.captured.featureName }}" } },
 };
 
+// packages/README.md: the browser's code imports a `@kalia/api` subpath, never the root.
+const rootImportMessage =
+  "A client component, a shared primitive or a feature hook imports from a @kalia/api subpath (@kalia/api/api-error, /beer-style, /enum-lookup), never the package root (packages/README.md).";
+const clientImportsApiRoot = {
+  selector: "Program:has(> ExpressionStatement[directive='use client']) ImportDeclaration[source.value='@kalia/api']",
+  message: rootImportMessage,
+};
+const primitiveImportsApiRoot = {
+  selector: "ImportDeclaration[source.value='@kalia/api']",
+  message: rootImportMessage,
+};
+
 // Prefer arrow functions over function declarations/expressions — see
 // web/README.md. A const because a later config object that sets
 // `no-restricted-syntax` replaces these options rather than adding to them, so
@@ -58,6 +70,7 @@ const codeStyleSyntax = [
     message:
       "A query key is written once, in the resource's factory built with queryOptions() or infiniteQueryOptions(), and the hook takes the factory: useQuery(similarBeersQuery(id)) (web/CONVENTIONS.md).",
   },
+  clientImportsApiRoot,
 ];
 
 // A locale-prefixed address is built in lib/routes.ts (web/CONVENTIONS.md), never as a template literal opening with `/${locale}`. Matches a bare
@@ -133,6 +146,14 @@ const eslintConfig = defineConfig([
     ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
     rules: {
       "no-restricted-syntax": ["error", ...codeStyleSyntax, handBuiltRoute],
+    },
+  },
+  // components/ and the hooks are shared by server and client trees, so they take no `"use client"` marker to be held to it.
+  {
+    files: ["components/**/*.{ts,tsx}", "features/*/hooks/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", ...codeStyleSyntax, handBuiltRoute, primitiveImportsApiRoot],
     },
   },
   {

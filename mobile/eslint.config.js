@@ -194,6 +194,24 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // packages/README.md: the beer-style mapping has a subpath.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@kalia/api",
+              importNames: ["beerStyleGroup", "beerStyleGroups", "BeerStyleGroup"],
+              message: "Import the beer-style mapping from @kalia/api/beer-style, not the package root (packages/README.md).",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // The names an import must not bring in: boundaries sees only the files the screens reach, not the packages.
   {
     files: independentScreenFiles,

@@ -1,4 +1,4 @@
-import { apiError } from "@kalia/api";
+import { httpFailure } from "@kalia/api";
 import {
   acknowledge as generatedAcknowledge,
   listNotifications as generatedListNotifications,
@@ -9,17 +9,15 @@ import type { AcknowledgeResult, NotificationPage } from "./types";
 
 export const NOTIFICATION_PAGE_SIZE = 20;
 
-const failure = (what: string, status: number) => apiError("http", `${what} failed with status ${status}`, { status });
-
 export const readUnreadCount = async (): Promise<number> => {
   const response = await generatedUnreadCount();
-  if (response.status !== 200) throw failure("Reading the unread notification count", response.status);
+  if (response.status !== 200) throw httpFailure("Reading the unread notification count", response);
   return response.data.count;
 };
 
 export const readNotifications = async (): Promise<NotificationPage> => {
   const response = await generatedListNotifications({ page: 0, size: NOTIFICATION_PAGE_SIZE });
-  if (response.status !== 200) throw failure("Listing notifications", response.status);
+  if (response.status !== 200) throw httpFailure("Listing notifications", response);
   return response.data;
 };
 
@@ -31,6 +29,6 @@ export const acknowledgeNotification = async (id: string): Promise<AcknowledgeRe
     case 404:
       return "gone";
     default:
-      throw failure("Acknowledging a notification", response.status);
+      throw httpFailure("Acknowledging a notification", response);
   }
 };
