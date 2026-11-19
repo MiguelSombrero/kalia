@@ -6,6 +6,11 @@ import { STACK } from "./stackOrigins";
 
 const EDGE_SPEC = /edge-limits\.spec\.ts$/;
 
+// CI sets it: the stack then starts with the observability profile on, so a
+// red run leaves its telemetry to upload (ADR-0114, docs/ci-playbook.md). Set
+// it locally to run the suite with the profile too.
+const TELEMETRY = process.env.KALIA_E2E_TELEMETRY === "1";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -36,7 +41,8 @@ export default defineConfig({
   webServer: {
     // Playwright does not reliably stop this stack after the run — harmless
     // on CI's ephemeral runner, but run `docker compose down` locally.
-    command: "docker compose up --build",
+    command: `docker compose ${TELEMETRY ? "--profile observability " : ""}up --build${TELEMETRY ? " --no-attach lgtm --no-attach alloy" : ""}`,
+    env: TELEMETRY ? { OBSERVABILITY_OTLP_ENDPOINT: "http://lgtm:4318" } : {},
     cwd: path.resolve(__dirname, ".."),
     url: STACK.web,
     reuseExistingServer: !process.env.CI,

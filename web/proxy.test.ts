@@ -1,8 +1,8 @@
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { traceIdOf } from "@/lib/api/traceparent";
+import { TRACE_ID_HEADER, traceIdOf } from "@/lib/api/traceparent";
 
 import { config, proxy } from "./proxy";
 
@@ -44,5 +44,33 @@ describe("proxy trace context", () => {
 
   it("replaces a malformed traceparent", () => {
     expect(traceIdOf(forwardedTraceparent({ traceparent: "garbage" }))).toBeDefined();
+  });
+});
+
+describe("proxy trace id header", () => {
+  const sent = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+  const answerTo = (headers: Record<string, string>) =>
+    proxy(new NextRequest("http://localhost:3000/en/beers", { headers }));
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("names the trace of the request in the local stack", () => {
+    vi.stubEnv("KALIA_DEV_STACK", "true");
+
+    expect(answerTo({ traceparent: sent }).headers.get(TRACE_ID_HEADER)).toBe("4bf92f3577b34da6a3ce929d0e0e4736");
+  });
+
+  it("names the trace the proxy started when the caller sent none", () => {
+    vi.stubEnv("KALIA_DEV_STACK", "true");
+
+    expect(answerTo({}).headers.get(TRACE_ID_HEADER)).toMatch(/^[0-9a-f]{32}$/);
+  });
+
+  it("is absent anywhere but the local stack", () => {
+    vi.stubEnv("KALIA_DEV_STACK", "");
+
+    expect(answerTo({ traceparent: sent }).headers.get(TRACE_ID_HEADER)).toBeNull();
   });
 });

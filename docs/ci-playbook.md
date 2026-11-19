@@ -227,6 +227,50 @@ reloaded without that helper. Separately, axe once reported `document-title`
 on the profile page right after a save and has not been reproduced since;
 without a second occurrence there is no signature to write down.
 
+### A red run's telemetry
+
+A red E2E job leaves the stack's telemetry as an artifact named `telemetry`
+(`telemetry.tgz`, kept seven days) beside `playwright-report`; a green one
+uploads nothing. The job starts the observability profile on every run
+([ADR-0114](adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)),
+so a green run pays for it: <COST>
+
+**Read a red run's telemetry.**
+
+1. The failure output of the `Run E2E tests` step ends each failed test with
+   `Trace ids behind this failure: …`, and the `playwright-report` artifact's
+   `trace-ids` attachment lists every request the test made.
+2. Download the artifact (`gh run download <run id> -n telemetry`) and load it
+   into a local profile, which needs Docker and the worktree's root `.env`:
+
+   ```bash
+   node scripts/e2e-telemetry.mjs load telemetry.tgz --replace
+   ```
+
+   It replaces this worktree's store, starts it on `GRAFANA_PORT` (Grafana
+   downloads its plugins again on a first start, about 600 MB) and keeps the
+   data for eight days instead of three, so a run read on its sixth day is not
+   deleted by the stores' own compaction. A later `make observability-up`
+   recreates the store with the default retention unless
+   `TELEMETRY_RETENTION_HOURS=192` is exported.
+3. `make trace ID=<trace id>` prints that request, or an agent asks the MCP
+   server ([observability/README.md](../observability/README.md)). The store
+   holds the whole run, so `make trace` with no id lists the failed requests.
+
+The artifact holds the three stores' directories (traces, logs, counters) of the
+`grafana/otel-lgtm` version in `docker-compose.override.yml`; load it under the
+same one. **It holds no credential:** before writing the file, `capture` reads
+the live store and the copied files for an `Authorization` header, a bearer
+token, a JSON Web Token and a session cookie, and writes nothing when it finds
+one. That step is then red on its own, naming what it found and where but never
+the value: find the tier that logged it and stop it
+([ADR-0013](adr/0013-logging-conventions.md)) rather than loosening the check
+(`scripts/e2e-telemetry.mjs`, `SECRET_PATTERNS`).
+
+**`No telemetry kept` and no `telemetry` artifact on a red run.** The run
+failed before the store started (a build or a pull), or the store did not answer
+when the capture read it, which the step's last line says.
+
 ## Mobile E2E (Maestro, Android)
 
 The job boots its own emulator through `scripts/mobile-e2e.mjs`, which holds

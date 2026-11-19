@@ -1,8 +1,9 @@
 // Exercises the whole stack against compose-run backend and Postgres
 // (docs/architecture.md §7).
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 import { expectNoA11yViolations } from "./support/a11y";
+import { test } from "./support/traceIds";
 
 // The nav's own accessible name, which is localised — every lookup goes
 // through here so a spec cannot accidentally match some other navigation

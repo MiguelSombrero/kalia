@@ -169,7 +169,27 @@ const eslintConfig = defineConfig([
   },
   {
     files: ["e2e/**/*.ts"],
-    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, waitsOnTheClock, ...endToEndWaits] },
+    rules: {
+      "no-restricted-syntax": ["error", ...codeStyleSyntax, waitsOnTheClock, ...endToEndWaits],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@playwright/test",
+              importNames: ["test"],
+              message:
+                "Import `test` from ./support/keycloakAccount (or ./support/traceIds when no account is needed): Playwright's own `test` names no trace id when the spec fails.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // The one file that extends Playwright's own `test` with it.
+  {
+    files: ["e2e/support/traceIds.ts"],
+    rules: { "no-restricted-imports": "off" },
   },
   {
     files: ["lib/logger.ts"],
