@@ -1,6 +1,6 @@
 # Task 09: A failing end-to-end test names its trace, and CI keeps the telemetry
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-5
 
@@ -57,14 +57,14 @@ artifact that an agent can load into a local profile and query the same way.
 
 ## Acceptance criteria
 
-- [ ] A deliberately failing Playwright test's report names the trace id of
+- [x] A deliberately failing Playwright test's report names the trace id of
       the page's backend request, and task 08's command prints that request —
       verified by running both
-- [ ] A CI run on this branch with a deliberately failing test uploads the
+- [x] A CI run on this branch with a deliberately failing test uploads the
       telemetry, and loading it into a local profile shows that test's trace;
       a green run on this branch uploads nothing, and the pull request states
       the profile's startup cost from those runs
-- [ ] A test fails if the uploaded telemetry holds an `Authorization` header or
+- [x] A test fails if the uploaded telemetry holds an `Authorization` header or
       a session cookie, and was seen to fail on a capture that included one
-- [ ] The CI playbook says how to load a red run's telemetry, and
+- [x] The CI playbook says how to load a red run's telemetry, and
       `make verify-fast` is green

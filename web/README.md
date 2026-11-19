@@ -62,6 +62,11 @@ Logs and counters are built in; spans and a viewer come with the opt-in profile
     outlive a restart of this container.
   - *Logs* are read from stdout by the profile's shipper; the web has no log
     exporter.
+- **In the local stack** (`KALIA_DEV_STACK`, never deployed) the response to a
+  page, an RSC fetch or a Server Action carries `x-kalia-trace-id`, the trace
+  the request is in (`proxy.ts`), so a client can name the request it made
+  without sending a header of its own; the end-to-end suite does
+  ([E2E](#test-and-checks)).
 - **Without it** the variable is empty, nothing is exported and every
   tracing call is a no-op: a call sends the `traceparent` `proxy.ts` started.
 - **A span never carries a query string, a path, a cookie or a token**
@@ -106,6 +111,15 @@ npm run test:e2e   # Playwright — starts the docker compose stack if not runni
 - A spec that signs in takes the worker-scoped `account` fixture, or
   `adminAccount` for an admin, from `e2e/support/keycloakAccount.ts` — never a
   hardcoded username and never the seeded `testadmin` (ADR-0101).
+- **A failing spec names its requests' traces.** Every spec imports `test` from
+  `e2e/support/traceIds.ts` or `keycloakAccount.ts`, never from `@playwright/test`
+  (ESLint): its fixture notes the `x-kalia-trace-id` of each page, RSC fetch and
+  Server Action the browser made (prefetches excluded), and on a failure adds an
+  error whose message lists the last three, or the ones that answered 4xx or
+  5xx, and a `trace-ids` attachment in the report that lists all. Read one with
+  `make trace ID=<trace id>` while the profile runs (`make observability-up`;
+  `KALIA_E2E_TELEMETRY=1 npm run test:e2e` starts the stack with it). A red CI
+  run's telemetry is an artifact: [the playbook](../docs/ci-playbook.md#a-red-runs-telemetry).
 - A spec that registers names its account with `uniqueUsername`.
 - Nothing needs resetting between runs: Keycloak's realm persists.
 - **A spec that registers must import `test` from the support file, not

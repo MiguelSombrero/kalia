@@ -313,7 +313,7 @@ jobs:
       - name: Pre-pull compose images
         working-directory: .
         run: |
-          node scripts/retry-registry.mjs -- docker compose pull --ignore-buildable
+          node scripts/retry-registry.mjs -- docker compose --profile observability pull --ignore-buildable
           node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' keycloak/Dockerfile)"
           node scripts/retry-registry.mjs -- docker pull "$(awk '/^FROM/ {print $2; exit}' edge/Dockerfile)"
       # Builds the images here so that a registry failure inside a build is
@@ -322,11 +322,24 @@ jobs:
       - name: Build the stack's images
         working-directory: .
         run: node scripts/retry-registry.mjs -- docker compose build
-      # Starts the full docker compose stack itself (playwright.config.ts);
-      # GitHub Actions sets CI=true, so it always starts fresh. The last spec
-      # to run, e2e/edge-limits.spec.ts, is the burst check against the edge
-      # proxy's limits (ADR-0090).
+      # The observability profile's store, up before the stack so that no
+      # request of the run is exported to a collector that is not there yet.
+      # Its startup is the cost every run pays for a red one's telemetry
+      # (docs/ci-playbook.md); the step prints how long it took.
+      - name: Start the telemetry store
+        working-directory: .
+        run: |
+          started=$SECONDS
+          docker compose --profile observability up -d --wait --wait-timeout 600 lgtm
+          echo "::notice title=Telemetry store::healthy after $((SECONDS - started)) s"
+      # Starts the full docker compose stack itself (playwright.config.ts),
+      # with the observability profile on (KALIA_E2E_TELEMETRY); GitHub
+      # Actions sets CI=true, so it always starts fresh. The last spec to run,
+      # e2e/edge-limits.spec.ts, is the burst check against the edge proxy's
+      # limits (ADR-0090).
       - name: Run E2E tests
+        env:
+          KALIA_E2E_TELEMETRY: "1"
         run: npm run test:e2e
       # Playwright's own error-context.md is an ARIA-snapshot of the page at
       # the moment a locator timed out — printed straight into the job log
@@ -347,6 +360,24 @@ jobs:
           path: |
             web/playwright-report/
             web/test-results/
+          retention-days: 7
+      # What the stack stored while the red run happened, for an agent to load
+      # into a local profile and read with `make trace` (docs/ci-playbook.md).
+      # Only a red run gets here, and the capture refuses to write the file
+      # when the store holds a credential (ADR-0013), so a refusal is a red
+      # step of its own and nothing is uploaded.
+      - name: Capture the stack's telemetry
+        id: telemetry
+        if: failure()
+        working-directory: .
+        run: node scripts/e2e-telemetry.mjs capture --out telemetry.tgz
+      - name: Upload the stack's telemetry
+        if: failure() && steps.telemetry.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: telemetry
+          path: telemetry.tgz
+          if-no-files-found: ignore
           retention-days: 7
 
   mobile-e2e:

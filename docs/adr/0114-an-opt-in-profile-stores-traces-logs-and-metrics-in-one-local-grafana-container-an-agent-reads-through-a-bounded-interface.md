@@ -7,6 +7,8 @@
 - **Amended:** 2026-11-18 — iteration 11.5 task 06: the Postgres and Valkey
   exporters are the community images, because CI cannot pull from `dhi.io`
   (see Decision, Alternatives considered and Consequences)
+- **Amended:** 2026-11-19 — iteration 11.5 task 09: how a failing test names
+  its request and what a red run keeps (see Decision, CI)
 
 ## Context
 
@@ -108,6 +110,21 @@ was decided.
 - **CI:** the Playwright end-to-end job runs with the profile on every run, so
   a red run has a trace to read, and uploads the store as an artifact only
   when the job is red.
+
+  > **Amended 2026-11-19 (task 09).** A request is named by the trace the
+  > server put it in, not by one the test sent: the local stack's web server
+  > answers a page, an RSC fetch or a Server Action with `x-kalia-trace-id`
+  > (`proxy.ts`, set only where `KALIA_DEV_STACK` is `true`), and a Playwright
+  > fixture lists those ids for a failing test, in the report and in its failure
+  > output. Sending each request a `traceparent` of its own was tried first:
+  > Playwright's request interception switches the browser's HTTP cache off, and
+  > a spec that read a page before its stylesheet had arrived then failed 39 of
+  > the 245 tests on a strict-mode violation. The store's directories (not Grafana's
+  > 600 MB of plugins) are packed by `scripts/e2e-telemetry.mjs`, which reads the
+  > live store and the copied files for a credential and writes nothing when it
+  > finds one; the artifact is kept seven days and loads back with the same
+  > script, which raises the stores' retention from three days for the store it
+  > restores, so that a run read on its sixth day is not deleted by compaction.
 - **The tests this decision implies**, each an acceptance criterion of a task
   of the iteration rather than a promise here:
   - *no query string, token or bound value in a span, label or log field* —

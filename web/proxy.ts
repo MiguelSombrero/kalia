@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 
 import { resolveLocaleFromAcceptLanguage } from "@/i18n/resolveLocale";
 import { locales } from "@/i18n/settings";
-import { newTraceparent, traceIdOf } from "@/lib/api/traceparent";
+import { newTraceparent, TRACE_ID_HEADER, traceIdOf } from "@/lib/api/traceparent";
+import { activeTraceId } from "@/lib/telemetry/span";
 
 // Do not rename to middleware.ts: Next.js 16 renamed this file convention to
 // `proxy` and the old name is deprecated (web/AGENTS.md).
@@ -22,7 +23,14 @@ export const proxy = (request: NextRequest) => {
     if (!traceIdOf(request.headers.get("traceparent"))) {
       requestHeaders.set("traceparent", newTraceparent().header);
     }
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    // Tells an end-to-end test which trace its request is in (e2e/support/traceIds.ts).
+    // Only the local stack: nothing deployed answers with it.
+    if (process.env.KALIA_DEV_STACK === "true") {
+      const traceId = activeTraceId() ?? traceIdOf(requestHeaders.get("traceparent"));
+      if (traceId) response.headers.set(TRACE_ID_HEADER, traceId);
+    }
+    return response;
   }
 
   const locale = resolveLocaleFromAcceptLanguage(request.headers.get("accept-language"));

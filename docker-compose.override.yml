@@ -149,18 +149,20 @@ services:
       # Admin, which lets one edit the data sources.
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       # Three days of data, set by arguments to each store, which the image
-      # exposes and its configuration files do not. Loki's retention needs its
-      # compactor on, and Loki exits before it is ready, naming nothing, on a
-      # flag it does not accept: set ENABLE_LOGS_LOKI=true to read why.
-      PROMETHEUS_EXTRA_ARGS: --storage.tsdb.retention.time=3d
+      # exposes and its configuration files do not. `node
+      # scripts/e2e-telemetry.mjs load` raises TELEMETRY_RETENTION_HOURS for a
+      # store it restores. Loki's retention needs its compactor on, and Loki
+      # exits before it is ready, naming nothing, on a flag it does not
+      # accept: set ENABLE_LOGS_LOKI=true to read why.
+      PROMETHEUS_EXTRA_ARGS: --storage.tsdb.retention.time=${TELEMETRY_RETENTION_HOURS:-72}h
       LOKI_EXTRA_ARGS: >-
         -compactor.retention-enabled=true
         -compactor.working-directory=/data/loki/compactor
         -compactor.delete-request-store=filesystem
-        -store.retention=72h
+        -store.retention=${TELEMETRY_RETENTION_HOURS:-72}h
       TEMPO_EXTRA_ARGS: >-
-        -backend-worker.compaction.block-retention=72h
-        -backend-scheduler.provider.work.compaction.block-retention=72h
+        -backend-worker.compaction.block-retention=${TELEMETRY_RETENTION_HOURS:-72}h
+        -backend-scheduler.provider.work.compaction.block-retention=${TELEMETRY_RETENTION_HOURS:-72}h
     # The spike measured 1.0-1.2 GiB at work (ADR-0114).
     mem_limit: 2g
     volumes:

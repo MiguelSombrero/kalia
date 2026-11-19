@@ -249,6 +249,11 @@ describe("a test waits on a signal, never on the clock (web/CONVENTIONS.md)", ()
     expect(await messagesFor(conventionFixture("spec-waits-for-network-idle"), "lib/probe.test.ts")).toEqual([]);
   });
 
+  it("rejects Playwright's own test in a spec, so that a failure names its trace ids", async () => {
+    expect(await messagesFor(conventionFixture("spec-imports-playwrights-test"), "e2e/probe.spec.ts")).toEqual([expect.stringContaining("names no trace id")]);
+    expect(await messagesFor(conventionFixture("spec-imports-playwrights-test"), "e2e/support/traceIds.ts")).toEqual([]);
+  });
+
   it("keeps the code-style selectors a test file has to repeat", async () => {
     expect(await messagesFor("export function probe() {\n  return 1;\n}\n", "lib/probe.test.ts")).toEqual([expect.stringContaining("Prefer arrow functions")]);
     expect(await messagesFor("export function probe() {\n  return 1;\n}\n", "e2e/probe.spec.ts")).toEqual([expect.stringContaining("Prefer arrow functions")]);
