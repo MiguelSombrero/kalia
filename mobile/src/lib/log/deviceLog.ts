@@ -17,8 +17,8 @@ export const scrub = (text: string): string =>
  * a line is truncated at about 1 KB, so put what matters first. A development
  * build warns instead, so LogBox does not open its error overlay.
  */
-export const logError = (message: string, fields: Fields = {}): void => {
-  const line = JSON.stringify({ level: "error", message, ...fields });
+const write = (level: "error" | "warn", message: string, fields: Fields): void => {
+  const line = JSON.stringify({ level, message, ...fields });
   if (__DEV__) {
     // eslint-disable-next-line no-console -- the sanctioned log path
     console.warn(line);
@@ -27,3 +27,8 @@ export const logError = (message: string, fields: Fields = {}): void => {
     console.error(line);
   }
 };
+
+export const logError = (message: string, fields: Fields = {}): void => write("error", message, fields);
+
+/** `WARN` (ADR-0013), written through `console.error` too, because that is the level a release build's device log keeps. */
+export const logWarn = (message: string, fields: Fields = {}): void => write("warn", message, fields);

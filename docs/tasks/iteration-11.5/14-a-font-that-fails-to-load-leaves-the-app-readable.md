@@ -1,6 +1,6 @@
 # Task 14: A font that fails or never loads leaves the app readable
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -67,21 +67,21 @@ build. A gate in front of them that can wait forever undoes that.
 
 ## Acceptance criteria
 
-- [ ] A `FontGate.test.tsx` case whose `useFonts` never settles renders the
+- [x] A `FontGate.test.tsx` case whose `useFonts` never settles renders the
       children once the three-second deadline passes, under fake timers,
       hides the splash screen and writes one `WARN` line. It failed before the
       change
-- [ ] A test whose faces load after the deadline keeps the system face for
+- [x] A test whose faces load after the deadline keeps the system face for
       the rest of the session
-- [ ] A test shows `textStyle` with the faces not loaded returning the system
+- [x] A test shows `textStyle` with the faces not loaded returning the system
       family and the weight each style asks for
-- [ ] A test renders the update-required screen while the fonts are still
+- [x] A test renders the update-required screen while the fonts are still
       pending, with no deadline passed, and the screen is found by its
       heading's role
-- [ ] On the iOS Simulator, with the bundled faces made to fail, the catalog's
+- [x] On the iOS Simulator, with the bundled faces made to fail, the catalog's
       titles and buttons keep their weight, compared by the agent and
       described in words in the pull request
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

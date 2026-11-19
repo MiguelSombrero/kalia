@@ -1,11 +1,12 @@
 import { enumLookup, UNKNOWN_VALUE_LABEL_KEY } from "@kalia/api";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Text, useWindowDimensions, View } from "react-native";
 
 import { BeerSlot, SLAB_WIDTH } from "@/components/BeerSlot";
 import { useBeerStyleColours } from "@/lib/design/beerStyleColours";
 import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
+import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
 import type { TranslationKey } from "@/lib/i18n/translationKey";
 import { PressFeedback } from "@/lib/motion/PressFeedback";
@@ -17,6 +18,7 @@ const statusLabelKey = enumLookup<BeerSummary["status"], TranslationKey | null>(
 type BeerCardProps = { beer: BeerSummary; language: string; onPress?: () => void };
 
 export const BeerCard = ({ beer, language, onPress }: BeerCardProps) => {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { background, foreground } = useBeerStyleColours()(beer.style);
   const colors = useThemeColors();
@@ -48,7 +50,7 @@ export const BeerCard = ({ beer, language, onPress }: BeerCardProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const useStyles = createThemedStyles(() => ({
   card: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -69,4 +71,4 @@ const styles = StyleSheet.create({
   status: { ...textStyle("label", "bold"), alignSelf: "flex-start", marginTop: theme.spacing.small, paddingHorizontal: theme.spacing.small, borderWidth: 1, borderRadius: theme.radius.card },
   strength: textStyle("strength", "bold"),
   unit: textStyle("supporting", "bold"),
-});
+}));
