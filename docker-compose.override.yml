@@ -229,7 +229,7 @@ services:
     # pg_monitor and nothing else (ADR-0100). The image has no shell, so no
     # healthcheck.
     profiles: [observability]
-    image: prometheuscommunity/postgres-exporter:v0.20.1
+    image: prometheuscommunity/postgres-exporter:v0.21.1
     depends_on:
       postgres-monitor-role:
         condition: service_completed_successfully
