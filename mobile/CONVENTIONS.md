@@ -63,8 +63,15 @@ The app follows [web/CONVENTIONS.md](../web/CONVENTIONS.md) wherever a rule is n
 
   A test that renders the app's routes is `src/testing/*.app.test.tsx`, the one place a test may import across features (ESLint).
 - **Use the generated semantic theme for static styling.** The face is Bricolage Grotesque, bundled and loaded
-  behind the splash screen by `FontGate`; set text with `textStyle(token, weight)`,
-  never a size or `fontWeight` by hand, because the face has one file per weight.
+  behind the splash screen by `FontGate`, which gives it three seconds
+  (`FONT_DEADLINE_MS`) and then opens the app in the system face with each
+  style's weight, writing one `WARN` line; faces that arrive later wait for the
+  next launch. The update-required, maintenance and crash screens never wait
+  for it. Set text with `textStyle(token, weight)`, never a size or `fontWeight`
+  by hand, because the face has one file per weight. **Call `textStyle` inside
+  `createThemedStyles`, never at module level:** it reads which face settled
+  when it is called, a module's styles are built at import before that, and the
+  text then stays in the system face with no error.
   A beer's colours come from `useBeerStyleColours`, which falls back to the
   neutral pair ([ADR-0110](../docs/adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md)).
   The app follows the system's light or dark setting; every colour is read
@@ -85,6 +92,8 @@ Jest and React Native Testing Library; the web's rules in
 
 - **A test queries as the user finds it:** `getByRole` with a name first, then `getByText` or `getByLabelText`; `getByTestId` only for what has neither (a placeholder block). A role is also what `expectAccessibleStructure()` holds (no check; review).
 - **A test mocks only the transport, the native modules and the clock:** `registerTransport(fake)` from `@kalia/api` for the network, `jest.mock("expo-…")` for a module with no JavaScript in it, a fake `TokenStore` (`src/testing/fakeTokenStore.ts`) for the keychain. Never a feature's hook, a screen, a store or `@/lib/…`: a test that mocks what the app wrote proves only the mock (no check; review).
+- **A test of elapsed time uses fake timers:** `jest.useFakeTimers()` and `jest.advanceTimersByTime(ms)` inside `act`, stepping to one millisecond short of the pause and then over it (`useDebounced.test.ts`, `CatalogScreen.flow.test.tsx`), never a `setTimeout` promise that sleeps past it. A wait on a real external process says so in its `eslint-disable` reason. A `new Promise` wrapping `setTimeout` in a test file fails ESLint (`no-restricted-syntax`, fixtures `test-waits-on-the-clock.ts` and `test-waits-on-a-real-process.ts`).
+- **A test that something is absent follows a positive signal that the screen has drawn:** `await screen.findByText(…)` for what the screen shows once its data is in, then `queryBy…` for what must not be there. Asserted first, an absence passes on a screen that has not rendered (no check; review).
 - **A component renders through `renderWithLocale()`** (`src/testing/`), which wraps the real `AppProviders`: the i18n, the query client and the token store the app runs with. A bare `render()` is for a primitive that reads no provider (no check).
 - **A test file is named after the source file beside it**, `Sheet.test.tsx` for `Sheet.tsx` (`index.test.tsx` for an `index.ts` barrel), **or after it plus one suffix**, `Sheet.appearance.test.tsx`. `scripts/check-test-names.mjs` fails any other name in `make verify-fast`; a new suffix is a line in its `APPS` table and a row here.
 

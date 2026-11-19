@@ -31,12 +31,13 @@ up: ## Build and start the full stack in the background
 down: ## Stop the full stack, the observability profile's containers included
 	docker compose --profile observability down
 
-observability-up: ## Start the observability profile beside the stack (Grafana at GRAFANA_PORT) and point the backend and the web at its collector; recreates only those two (needs Docker)
+observability-up: ## Start the observability profile beside the stack (Grafana at GRAFANA_PORT) and point the backend and the web at its collector; recreates only those two, and Keycloak once if its image lacks counters (needs Docker)
+	docker compose build keycloak
 	OBSERVABILITY_OTLP_ENDPOINT=http://lgtm:4318 docker compose --profile observability up -d
-	docker compose --profile observability up -d --no-recreate --wait --wait-timeout 600 lgtm alloy
+	docker compose --profile observability up -d --no-recreate --wait --wait-timeout 600 lgtm alloy postgres-exporter redis-exporter
 
 observability-down: ## Stop and remove the observability profile's containers, keeping its data, and recreate the backend and the web without the collector; the rest of the stack keeps running
-	docker compose --profile observability rm --stop --force lgtm alloy
+	docker compose --profile observability rm --stop --force lgtm alloy postgres-exporter redis-exporter postgres-monitor-role
 	docker compose up -d backend web
 
 trace: ## Print one request's span tree, its SQL and its log lines as bounded text: make trace ID=<traceId>; with no ID, the ten most recent failed requests (needs the observability profile: make observability-up)

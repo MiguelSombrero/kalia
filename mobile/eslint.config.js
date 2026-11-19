@@ -80,6 +80,12 @@ const styleSheetInFunction = {
 
 const srcSyntax = [queryKeyInHook, defaultExport, inlinePropsType];
 
+const waitsOnTheClock = {
+  selector: "NewExpression[callee.name='Promise'] CallExpression[callee.name='setTimeout']",
+  message:
+    "A test of elapsed time uses jest.useFakeTimers() and advances the clock itself, and a test that waits for work waits on what it produces; a wait on a real external process says so in an eslint-disable reason (mobile/CONVENTIONS.md).",
+};
+
 const themedStylesFile = "src/lib/design/themedStyles.ts";
 
 const independentScreenFiles = [
@@ -120,6 +126,10 @@ const eslintConfig = defineConfig([
   {
     files: ["src/app/**/*.{ts,tsx}"],
     rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, queryKeyInHook, inlinePropsType] },
+  },
+  {
+    files: ["src/**/*.test.{ts,tsx}"],
+    rules: { "no-restricted-syntax": ["error", ...codeStyleSyntax, styleSheetInFunction, ...srcSyntax, waitsOnTheClock] },
   },
   {
     files: ["src/lib/**/index.{ts,tsx}"],

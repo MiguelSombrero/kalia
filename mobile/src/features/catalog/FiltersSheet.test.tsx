@@ -8,6 +8,7 @@ import { renderWithLocale } from "@/testing/renderWithLocale";
 
 import { emptyFilters, type Filters } from "./filters/model";
 import { FiltersSheet } from "./FiltersSheet";
+import { PAUSE_MS } from "./hooks/useDebounced";
 
 const transport = jest.fn();
 const answer = (data: unknown) => ({ data, status: 200, headers: new Headers() });
@@ -34,11 +35,15 @@ const renderSheet = async (initial = set(), locale: "en" | "fi" = "en") => {
 };
 
 beforeEach(() => {
+  jest.useFakeTimers();
   transport.mockReset();
   registerTransport(transport as unknown as Transport);
   serve();
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 describe("FiltersSheet", () => {
   it.each([
@@ -144,8 +149,11 @@ describe("FiltersSheet", () => {
 
     for (const text of ["4", "4,", "4,5"]) await fireEvent.changeText(screen.getByLabelText("Strength %: From"), text);
     expect(countCalls()).toBe(before);
+    await act(async () => void jest.advanceTimersByTime(PAUSE_MS - 1));
+    expect(countCalls()).toBe(before);
+    await act(async () => void jest.advanceTimersByTime(1));
     await waitFor(() => expect(countCalls()).toBe(before + 1));
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 450)));
+    await act(async () => void jest.advanceTimersByTime(PAUSE_MS));
 
     expect(countCalls()).toBe(before + 1);
     expect(String(transport.mock.calls.at(-1)?.[0])).toContain("minAbv=4.5");

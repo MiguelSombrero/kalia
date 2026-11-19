@@ -10,7 +10,7 @@ file is applied and kept from drifting:
 
 | Path | What |
 |---|---|
-| `Dockerfile` | `quay.io/keycloak/keycloak` + `kc.sh build`, then the `kalia` theme copied to `/opt/keycloak/themes/` |
+| `Dockerfile` | `quay.io/keycloak/keycloak` + `kc.sh build`, then the `kalia` theme copied to `/opt/keycloak/themes/`. Counters at `/metrics` on the management port are a build argument, off here and on in `docker-compose.override.yml`, for the observability profile ([ADR-0114](../docs/adr/0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md)) |
 | `realm-export.json` | the whole realm — clients, SMTP, registration, i18n, `loginTheme`; every value is a literal or a `$(env:…)` placeholder, no credential ([ADR-0054](../docs/adr/0054-keycloak-config-cli-realm-management.md)) |
 | `realm-swagger.json` | the Swagger UI's client, in the dev overlay only: `docker-compose.override.yml` hands it to keycloak-config-cli beside `realm-export.json` |
 | `themes/kalia/login/` | the login theme ([ADR-0056](../docs/adr/0056-branded-bilingual-keycloak-pages.md)) |

@@ -23,6 +23,21 @@ scrape_configs:
       credentials: kalia-dev-metrics-token
     static_configs:
       - targets: ["web:3000"]
+  # Keycloak's own counters, on the management port its healthcheck uses. No
+  # host port reaches it. Built in only for the local stack
+  # (docker-compose.override.yml).
+  - job_name: keycloak
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["keycloak:9000"]
+  # Postgres and Valkey are read through exporters that run only with the
+  # profile, so there is a job for each rather than a port on either service.
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+  - job_name: valkey
+    static_configs:
+      - targets: ["redis-exporter:9121"]
 otlp:
   keep_identifying_resource_attributes: true
   # Recommended attributes to be promoted to labels.

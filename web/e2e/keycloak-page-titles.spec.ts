@@ -190,7 +190,7 @@ test.describe("the password-reset page offers the stored username", () => {
     await page.getByRole("link", { name: LOCALES[0].forgot }).click();
     await page.locator("#kc-reset-password-form").waitFor();
 
-    await expect(page.locator("#username")).not.toHaveAttribute("autocomplete", "off");
     await expect(page.locator("#username")).toHaveAttribute("autocomplete", "username");
+    await expect(page.locator("#username")).not.toHaveAttribute("autocomplete", "off");
   });
 });

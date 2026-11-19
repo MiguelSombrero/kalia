@@ -19,10 +19,32 @@ export const fontSources: Record<string, number> = Object.fromEntries(
 
 type Metrics = { size: number; lineHeight: number; letterSpacing?: number };
 
+let settled = false;
+let bundledFaces = false;
+
+/** The first call wins, so a face that arrives after the gate's deadline is not used until the next launch. */
+export const facesSettled = () => settled;
+
+export const settleFaces = (loaded: boolean) => {
+  if (!settled) {
+    settled = true;
+    bundledFaces = loaded;
+  }
+};
+
+export const unsettleFaces = () => {
+  settled = false;
+  bundledFaces = false;
+};
+
+export const facesKey = () => (bundledFaces ? "bundled" : "system");
+
+/** Reads the settled face when called: call it inside `createThemedStyles`, never at module level, where it runs at import and the text stays in the system face. */
 export const textStyle = (name: TypeName, weight: Weight): TextStyle => {
   const { size, lineHeight, letterSpacing }: Metrics = theme.typography[name];
-  // token-exception: the face is named per weight from the font token, which the platform cannot select by weight.
-  return { fontFamily: family(weight), fontSize: size, lineHeight, ...(letterSpacing === undefined ? {} : { letterSpacing }) };
+  const metrics = { fontSize: size, lineHeight, ...(letterSpacing === undefined ? {} : { letterSpacing }) };
+  // token-exception: the bundled face is named per weight from the font token, which the platform cannot select by weight.
+  return bundledFaces ? { fontFamily: family(weight), ...metrics } : { fontWeight: theme.weights[weight], ...metrics };
 };
 
 /** A screen's title stops growing at twice its size, so one word still fits a phone's width; reading text never stops. */

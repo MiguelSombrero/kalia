@@ -28,3 +28,16 @@ test("the profile mounts the scrape file over the image's own", () => {
     /\.\/observability\/prometheus\.yaml:\/otel-lgtm\/prometheus\.yaml:ro/,
   );
 });
+
+test("every scrape job names a service the profile runs, on the port that service listens on", () => {
+  const targets = [...read("observability/prometheus.yaml").matchAll(/- targets: \["([^:"]+):(\d+)"\]/g)].map((match) => ({
+    service: match[1],
+    port: Number(match[2]),
+  }));
+  assert.deepEqual(
+    targets.map((target) => target.service).sort(),
+    ["backend", "keycloak", "postgres-exporter", "redis-exporter", "web"],
+  );
+  const listens = { "postgres-exporter": 9187, "redis-exporter": 9121, keycloak: 9000, backend: 8080, web: 3000 };
+  for (const { service, port } of targets) assert.equal(port, listens[service], `${service}'s port`);
+});

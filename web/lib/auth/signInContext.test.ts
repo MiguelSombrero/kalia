@@ -30,14 +30,19 @@ describe("withSignInContext", () => {
   // store, and a leak between them files one browser's tokens under the
   // other's session (ADR-0030).
   it("keeps concurrent sign-ins from seeing each other's session", async () => {
-    const signInAs = (sessionToken: string, delayMs: number) =>
+    let phoneFinished: () => void = () => undefined;
+    const phoneDone = new Promise<void>((resolve) => (phoneFinished = resolve));
+    const signInAs = (sessionToken: string, until?: Promise<void>) =>
       withSignInContext(async () => {
         rememberCreatedSession(session(sessionToken));
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        await until;
         return createdSession();
       });
 
-    const [laptop, phone] = await Promise.all([signInAs("tok-laptop", 5), signInAs("tok-phone", 0)]);
+    const laptopSignIn = signInAs("tok-laptop", phoneDone);
+    const phone = await signInAs("tok-phone");
+    phoneFinished();
+    const laptop = await laptopSignIn;
 
     expect(laptop?.sessionToken).toBe("tok-laptop");
     expect(phone?.sessionToken).toBe("tok-phone");

@@ -1,7 +1,7 @@
 import enCommon from "@kalia/locales/en/common.json";
 import fiCommon from "@kalia/locales/fi/common.json";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createInstance } from "i18next";
 import { axe } from "jest-axe";
 import { I18nextProvider, initReactI18next } from "react-i18next";
@@ -15,6 +15,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/auth", () => ({ signIn: vi.fn() }));
 
 import { AddBeerDialog } from "./AddBeerDialog";
+import { SEARCH_DELAY_MS } from "./BreweryField";
 import { useJustAddedStore } from "./store";
 
 // The real chain runs — dialog, hooks, Server Actions, api.ts, kaliaFetch —
@@ -438,13 +439,18 @@ describe("AddBeerDialog", () => {
   });
 
   it("searches the breweries no further once one is picked", async () => {
-    await openForm();
-    await pickPohjala();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      await openForm();
+      await pickPohjala();
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
+      await act(() => vi.advanceTimersByTimeAsync(SEARCH_DELAY_MS * 2));
 
-    const searched = requests.filter((request) => request.url.pathname === "/api/v1/breweries");
-    expect(searched.map((request) => request.url.searchParams.get("query"))).toEqual(["Põh"]);
+      const searched = requests.filter((request) => request.url.pathname === "/api/v1/breweries");
+      expect(searched.map((request) => request.url.searchParams.get("query"))).toEqual(["Põh"]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it.each(["en", "fi"] as const)("has no a11y violations with every state on screen, in %s", async (locale) => {

@@ -20,6 +20,9 @@ const LOCKOUT_RECOVERY_WAIT_MS = 65_000;
 
 test.setTimeout(150_000);
 
+// eslint-disable-next-line no-restricted-syntax -- the lockout runs on Keycloak's own clock, which no fake timer in this process moves
+const waitOnKeycloaksClock = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // admin-cli is a built-in client with direct access grants enabled, so this
 // drives a real password check against the realm without a browser.
 const attemptDirectSignIn = async (request: APIRequestContext, username: string, password: string) =>
@@ -69,7 +72,7 @@ test("locks the account after repeated failed sign-ins, says so, and recovers on
   for (let attempt = 1; attempt <= 9; attempt++) {
     const response = await attemptDirectSignIn(request, username, BAD_PASSWORD);
     expect(response.status(), `attempt ${attempt} of 9 unexpectedly succeeded`).toBe(400);
-    await new Promise((resolve) => setTimeout(resolve, ATTEMPT_GAP_MS));
+    await waitOnKeycloaksClock(ATTEMPT_GAP_MS);
   }
 
   // The 10th failure crosses failureFactor; Keycloak still answers this exact
@@ -77,7 +80,7 @@ test("locks the account after repeated failed sign-ins, says so, and recovers on
   // for the *next* attempt onward.
   const tenth = await attemptDirectSignIn(request, username, BAD_PASSWORD);
   expect(tenth.status(), "the 10th failed attempt unexpectedly succeeded").toBe(400);
-  await new Promise((resolve) => setTimeout(resolve, ATTEMPT_GAP_MS));
+  await waitOnKeycloaksClock(ATTEMPT_GAP_MS);
 
   // Locked out now — told so directly, even supplying the *correct*
   // password, which proves the message is the lockout speaking rather than
@@ -87,7 +90,7 @@ test("locks the account after repeated failed sign-ins, says so, and recovers on
   expect(lockedAttempt.feedback).toContain("Too many failed sign-in attempts");
 
   // Recovers on its own once the wait elapses — no administrator action.
-  await new Promise((resolve) => setTimeout(resolve, LOCKOUT_RECOVERY_WAIT_MS));
+  await waitOnKeycloaksClock(LOCKOUT_RECOVERY_WAIT_MS);
   const recovered = await attemptDirectSignIn(request, username, GOOD_PASSWORD);
   expect(recovered.ok(), "did not recover after the lockout wait elapsed").toBeTruthy();
   const { access_token: accessToken } = (await recovered.json()) as { access_token?: string };

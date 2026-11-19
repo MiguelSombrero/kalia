@@ -54,6 +54,7 @@ test.describe("the admin area", () => {
 
   test("shows an admin the entry and the page, in both locales", async ({ page, adminAccount }) => {
     await page.goto("/en");
+    await expect(page.getByRole("navigation", { name: NAV_NAME.en })).toBeVisible();
     await expect(adminLink(page, "en")).toHaveCount(0);
 
     await signIn(page, adminAccount);

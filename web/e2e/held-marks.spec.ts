@@ -13,6 +13,7 @@ test.describe.configure({ mode: "serial" });
 const heldMark = /(\d+) in your cellar/;
 
 const heldBottles = async (card: ReturnType<Page["getByRole"]>): Promise<number> => {
+  await expect(card.getByRole("heading")).toBeVisible();
   const mark = card.getByText(heldMark);
   return (await mark.count()) === 0 ? 0 : Number(heldMark.exec((await mark.textContent()) ?? "")?.[1]);
 };
