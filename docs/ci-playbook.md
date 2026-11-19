@@ -363,6 +363,18 @@ first is in the `implement-task` skill's "A red check"; `make trivy-scan`
 reproduces the manifest scan, and the image scan's invocation is in
 `backend/README.md`.
 
+**Several `Scan <image>` legs go red together and `gh run view --log-failed`
+prints nothing.** The run is still going: a job's log is not served until the
+whole run completes, so a slow job elsewhere (the mobile end-to-end one) hides
+the scan's findings for minutes. Do not wait; pull each failing image and run
+the scan's flags on it, `trivy image --severity HIGH,CRITICAL --ignore-unfixed
+--ignorefile .trivyignore.yaml --exit-code 1 <image>` (add `--format json` and
+read `.Results[].Vulnerabilities[]` for the path of each hit). One new Go
+standard-library advisory lands in every image with a Go binary at once — six
+legs on CVE-2026-97054, run `44458816192` — so look for the single ID before
+treating it as six findings. A patched upstream tag is the fix; with none, a
+waiver in `.trivyignore.yaml` for each image's own newest tag.
+
 **An image scan fails with `Unable to initialize the Java DB … failed to
 download Java DB … mirror.gcr.io/aquasec/trivy-java-db:1 … unexpected status
 code 404 Not Found`.** Not a finding: Trivy could not fetch its own
