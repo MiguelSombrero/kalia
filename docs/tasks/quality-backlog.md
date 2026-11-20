@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-138 · COULD-166
+**Highest issued:** MUST-27 · SHOULD-139 · COULD-166
 
 ## MUST
 
@@ -278,6 +278,19 @@ repeats, so the recurrence stays visible once the old entry is gone.
   session and passed on a rerun. Give the ESLint-backed tests in that file a
   timeout that holds under a loaded machine (or set one for the file) *(confirmed
   2026-11-17)*
+
+- **SHOULD-139** *(confirmed 2026-11-20)* **[needs decision]** — Every task
+  pull request flips its own row in its iteration index, so each merge turned
+  the next open pull requests `DIRTY` and the orchestrating session sent a "merge
+  `dev`" message to each: about fifteen rounds in iteration 11.5
+  (`implement-iteration` step 10 sends them as one batch meanwhile). The status
+  cell is a copy of the task file's `Status` that `scripts/sync-indexes.mjs`
+  rewrites, so the conflicting hunk is a cell nobody decides (likely
+  adjacent rows; not confirmed against the merge conflicts themselves). The decision: a merge
+  driver for the index rows, an index sync that does not conflict (the cell
+  written after the merge, or computed where it is read), or leaving it. Asked
+  for directly by the product owner as a retrospective, not found by a sweep
+  ([ADR-0051](../adr/0051-process-retrospection-belongs-to-the-sweep.md)).
 
 ## COULD
 
