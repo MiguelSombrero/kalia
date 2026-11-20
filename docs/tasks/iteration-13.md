@@ -26,8 +26,12 @@ Task files are written at refinement
 - **Public cellar view.**
 - **Deep-link routing** — the custom scheme into a public cellar, including
   arriving signed out.
+- **Keycloak's "Back to Application" link opening the app** — after signing up
+  from the app, the verification mail's page returns to the app instead of the
+  website: an Android App Link or a web bounce page to `kalia://auth/callback`,
+  both free ([backlog](backlog.md#product-gaps-mobile-makes-urgent)).
 
-Universal links (an `https://` link opening the app) and sharing a link others
+iOS universal links (an `https://` link opening the app) and sharing a link others
 can open both need what this plan does not pay for — an Apple Developer
 account and a reachable host — so they are parked in the
 [backlog](backlog.md#mobile-client) rather than left half-built here.

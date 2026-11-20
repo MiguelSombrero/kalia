@@ -1,6 +1,6 @@
 # Task 24: The backlog and the READMEs state a decided fact once, as decided
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -82,15 +82,15 @@ steps had already dropped the `make openapi-spec` step that has to come first.
 
 ## Acceptance criteria
 
-- [ ] A test in `scripts/` fails when the backlog's Mobile client table
+- [x] A test in `scripts/` fails when the backlog's Mobile client table
       assigns an item to an iteration whose roadmap status is done. It was
       seen to fail on today's table
-- [ ] The Mobile client analysis carries its "as written 2026-08-08" mark,
+- [x] The Mobile client analysis carries its "as written 2026-08-08" mark,
       and its table row and "worth knowing" items name no path that does not
       exist and call no decided question open, verified in review against
       ADR-0092–0098
-- [ ] `iteration-13.md` names the "Back to application" link
-- [ ] `docs/ci-playbook.md`'s drift entry and `mobile/README.md`'s CI trigger
+- [x] `iteration-13.md` names the "Back to application" link
+- [x] `docs/ci-playbook.md`'s drift entry and `mobile/README.md`'s CI trigger
       and Dependabot list are one-line pointers, and `make verify-fast`'s
       link and doc-size checks pass
 
