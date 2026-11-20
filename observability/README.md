@@ -4,6 +4,23 @@ How an agent queries the local profile ([ADR-0114](../docs/adr/0114-an-opt-in-pr
 beside `make trace`, which prints one request's trace and logs
 ([README](../README.md#run-locally)).
 
+## Nothing leaves the machine
+
+The images report usage to their maker and ask it about updates unless told
+not to, so the profile turns that off in `docker-compose.override.yml`: Alloy's
+`--disable-reporting`, Grafana's `GF_ANALYTICS_REPORTING_ENABLED`,
+`GF_ANALYTICS_CHECK_FOR_UPDATES` and `GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES`,
+and `-reporting.enabled=false` for Loki and Tempo and `-usage-stats.enabled=false`
+for Pyroscope, all inside `otel-lgtm`. `scripts/observability-profile.test.mjs`
+fails if one is missing. A new component in an upgraded image is not covered
+until someone reads its flags: check `-help` of each binary under `/otel-lgtm`.
+
+What still dials out is Grafana's plugin installer: at each start it contacts
+grafana.com (and the host serving the plugin archives) to install or check the
+plugins the image preinstalls, about 90 seconds on one connection, and
+downloads only on a fresh volume. That is a fetch of plugins, not a report;
+it needs the network at every start, not only the first.
+
 ## The MCP server
 
 `.mcp.json` declares `kalia-telemetry`: Grafana's own MCP server, run as a
