@@ -55,7 +55,7 @@ the cellar's entry point in iteration 12.
 - [x] A test that would have failed on the defect holds the fix, for example
       by showing that the Add route's tab renders no default icon or label.
       It was seen to fail before the fix
-- [ ] The navigation's accessibility tests and the Android Maestro flows pass
+- [x] The navigation's accessibility tests and the Android Maestro flows pass
       unchanged
 - [ ] The product owner confirms on a release build on the phone that the
       shape is gone and the navigation is otherwise as approved
