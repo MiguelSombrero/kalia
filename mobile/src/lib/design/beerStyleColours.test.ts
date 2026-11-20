@@ -1,4 +1,4 @@
-import { beerStyleGroups } from "@kalia/api";
+import { beerStyleGroups } from "@kalia/api/beer-style";
 
 import { coloursOfStyleGroup } from "./beerStyleColours";
 import { contrastRatio } from "./contrast";

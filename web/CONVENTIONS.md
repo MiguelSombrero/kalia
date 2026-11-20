@@ -49,6 +49,7 @@ Each rule links the ADR holding its reasoning ([ADR-0020](../docs/adr/0020-docum
   (`@kalia/api`), never a `Record` keyed by the enum: a value a newer backend
   adds then reads "Other" instead of `undefined` (ESLint,
   [packages/README.md](../packages/README.md)).
+- **A `"use client"` file, anything under `components/` and a feature's `hooks/` import a `@kalia/api` subpath** (`@kalia/api/api-error`, `/beer-style`, `/enum-lookup`), never the package root, which carries the transport (ESLint, fixtures in `eslint-fixtures/api-imports/`, [packages/README.md](../packages/README.md)).
 - **API failures are a tagged `ApiError`**: branch on `e.kind`, never a message.
   A non-2xx status is not raised ([ADR-0023](../docs/adr/0023-typed-api-failures.md)).
 

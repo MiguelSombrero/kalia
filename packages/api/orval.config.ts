@@ -11,8 +11,7 @@ export default defineConfig({
     },
     output: {
       mode: "tags-split",
-      client: "react-query",
-      httpClient: "fetch",
+      client: "fetch",
       target: "./src/generated",
       schemas: "./src/generated/models",
       clean: true,

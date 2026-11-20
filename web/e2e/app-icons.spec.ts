@@ -1,7 +1,9 @@
 // The favicon, its PNG fallback and the apple-touch icon are served from URLs
 // the locale proxy could swallow (the generated ones have no extension); this
 // follows the links the page itself emits rather than assuming their paths.
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
+
+import { test } from "./support/traceIds";
 
 test("serves every icon the page links to", async ({ page, request }) => {
   await page.goto("/en");

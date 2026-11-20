@@ -1,4 +1,4 @@
-import { beerStyleGroup } from "@kalia/api";
+import { beerStyleGroup } from "@kalia/api/beer-style";
 import Link from "next/link";
 import type { ReactNode } from "react";
 

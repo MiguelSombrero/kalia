@@ -39,7 +39,7 @@ around it — through every tier, reading it from a query rather than from
 | [06](iteration-11.5/06-the-other-services-logs-and-metrics-reach-the-profile.md) | The edge, Keycloak, Postgres and Valkey reach the profile too | done |
 | [07](iteration-11.5/07-an-agent-queries-the-telemetry-through-an-mcp-server.md) | An agent queries the telemetry through an MCP server | done |
 | [08](iteration-11.5/08-one-command-prints-a-requests-trace-and-logs.md) | One command prints a request's trace and log lines as text | done |
-| [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | refined |
+| [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | done |
 | [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | refined |
 | [25](iteration-11.5/25-each-apps-code-conventions-have-a-file-of-their-own.md) | Each app's code conventions have a file of their own, loaded with its subtree | done |
 | [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's mechanical code rules fail the lint | done |
@@ -47,7 +47,7 @@ around it — through every tier, reading it from a query rather than from
 | [27](iteration-11.5/27-the-conventions-that-needed-a-choice-are-written-and-followed.md) | The conventions that needed a choice are written down, and the code follows them | done |
 | [28](iteration-11.5/28-both-apps-test-conventions-are-written-down.md) | Both apps' test conventions are written down, and a test file is named after what it tests | done |
 | [12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md) | A test waits on a signal, never on the clock | done |
-| [13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md) | The shared packages export what both apps use, and only that | refined |
+| [13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md) | The shared packages export what both apps use, and only that | done |
 | [14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md) | A font that fails or never loads leaves the app readable | done |
 | [15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md) | Nothing is drawn beneath the central Add action | refined |
 | [16](iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md) | The seven-day signing expiry is watched, and what it does is written down | dropped |

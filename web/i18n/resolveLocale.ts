@@ -1,6 +1,7 @@
+import { isLocale } from "@kalia/locales";
 import { headers } from "next/headers";
 
-import { defaultLocale, isLocale, type Locale, locales } from "./settings";
+import { defaultLocale, type Locale, locales } from "./settings";
 
 export const resolveLocaleFromAcceptLanguage = (header: string | null): Locale => {
   if (!header) {

@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { expectNoA11yViolations } from "./support/a11y";
+import { test } from "./support/traceIds";
 
 const ignoredNote = "Part of this search wasn't valid, so it was ignored.";
 

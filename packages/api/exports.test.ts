@@ -15,4 +15,16 @@ describe("@kalia/api exports", () => {
     expect(resolve.resolve("@kalia/api/generated/catalog/catalog")).toMatch(/generated\/catalog\/catalog\.ts$/);
     expect(resolve.resolve("@kalia/api/generated/models")).toMatch(/generated\/models\/index\.ts$/);
   });
+
+  it.each([
+    ["api-error", /core\/api-error\.ts$/],
+    ["beer-style", /core\/beer-style\.ts$/],
+    ["enum-lookup", /core\/enum-lookup\.ts$/],
+  ])("expose %s without the transport", (subpath, file) => {
+    expect(resolve.resolve(`@kalia/api/${subpath}`)).toMatch(file);
+  });
+
+  it("declare no peer dependency: neither app imports a generated hook", () => {
+    expect(resolve("./package.json").peerDependencies).toBeUndefined();
+  });
 });

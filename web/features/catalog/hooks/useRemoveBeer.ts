@@ -1,4 +1,4 @@
-import { apiError } from "@kalia/api";
+import { apiError } from "@kalia/api/api-error";
 import { useMutation } from "@tanstack/react-query";
 
 import { removeBeerAction } from "../actions";

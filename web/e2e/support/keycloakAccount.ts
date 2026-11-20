@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 
-import { type APIRequestContext, expect, type Page, request, test as base } from "@playwright/test";
+import { type APIRequestContext, expect, type Page, request } from "@playwright/test";
 import Redis from "ioredis";
 
 import { KEYCLOAK_ADMIN_ORIGIN } from "./origins";
+import { test as base } from "./traceIds";
 import { clearSignUpRateLimit, VALKEY_URL } from "./valkey";
 
 const REALM = "kalia";

@@ -1,7 +1,7 @@
 // Exercises the mail path end to end against the compose stack: Keycloak
 // sends over SMTP to the mailpit container (keycloak/README.md), and the
 // message is read back over mailpit's HTTP API — no real mailbox involved.
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import {
   createUnverifiedKeycloakUser,
@@ -12,6 +12,7 @@ import {
 import { clickThroughKeycloakAction } from "./support/keycloakFlow";
 import { linkFromMessage, waitForMessageTo } from "./support/mailpit";
 import { KEYCLOAK_ORIGIN, WEB_ORIGIN } from "./support/origins";
+import { test } from "./support/traceIds";
 
 test("Keycloak sends a readable verification email whose link lands back on the web app", async ({
   page,

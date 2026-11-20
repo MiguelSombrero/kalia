@@ -39,3 +39,9 @@ is cut before the web's own spans. List them instead with
 
 then read the log lines of every tier with `query_loki_logs` on
 `{service_name=~".+"} |= "<id>"`.
+
+## After a red CI run
+
+A red end-to-end job uploads the stack's telemetry; loading it gives the same
+profile, and so the same queries, as a local run
+([how](../docs/ci-playbook.md#a-red-runs-telemetry)).

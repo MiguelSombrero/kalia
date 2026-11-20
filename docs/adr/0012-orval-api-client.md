@@ -31,6 +31,11 @@
   committed and the clients generate from the file, reversing the rejection
   of a committed spec below; built by iteration 9 task 09, so until it lands
   the live-backend flow above is what runs (iteration 9 task 04)
+- **Amended:** 2026-11-18 — the client is generated with `client: "fetch"`, so
+  it carries no TanStack Query hooks and the package no peer dependency; the
+  feature-owned hooks of [ADR-0041](0041-tanstack-query-feature-owned-hooks.md)
+  are the only hooks, and the tool bullet below no longer holds in that
+  respect (iteration 11.5 task 13)
 
 ## Context
 

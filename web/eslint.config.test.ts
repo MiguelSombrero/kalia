@@ -197,6 +197,38 @@ describe("a query hook takes its resource's key factory (web/CONVENTIONS.md)", (
   });
 });
 
+describe("the browser's code takes a @kalia/api subpath, never the root (packages/README.md)", () => {
+  const apiImportFixture = (name: string) =>
+    readFileSync(`${import.meta.dirname}/eslint-fixtures/api-imports/${name}`, "utf8");
+
+  it("rejects a client component that imports the package root", async () => {
+    expect(await messagesFor(apiImportFixture("client-component-imports-the-root.tsx"), "features/catalog/Probe.tsx")).toEqual([
+      expect.stringContaining("never the package root"),
+    ]);
+  });
+
+  it("rejects a components/ file that imports the package root, client or not", async () => {
+    expect(await messagesFor(apiImportFixture("primitive-imports-the-root.tsx"), "components/ui/probe.tsx")).toEqual([
+      expect.stringContaining("never the package root"),
+    ]);
+  });
+
+  it("rejects a feature hook that imports the package root", async () => {
+    expect(await messagesFor(apiImportFixture("server-code-imports-the-root.ts"), "features/catalog/hooks/useProbe.ts")).toEqual([
+      expect.stringContaining("never the package root"),
+    ]);
+  });
+
+  it("accepts the same import through a subpath", async () => {
+    expect(await messagesFor(apiImportFixture("client-component-imports-a-subpath.tsx"), "features/catalog/Probe.tsx")).toEqual([]);
+  });
+
+  it("leaves server code and a test alone", async () => {
+    expect(await messagesFor(apiImportFixture("server-code-imports-the-root.ts"), "features/catalog/probe.ts")).toEqual([]);
+    expect(await messagesFor(apiImportFixture("primitive-imports-the-root.tsx"), "components/ui/probe.test.tsx")).toEqual([]);
+  });
+});
+
 describe("a test waits on a signal, never on the clock (web/CONVENTIONS.md)", () => {
   const conventionFixture = (name: string) => readFileSync(`${import.meta.dirname}/eslint-fixtures/conventions/${name}.ts`, "utf8");
 
@@ -215,6 +247,11 @@ describe("a test waits on a signal, never on the clock (web/CONVENTIONS.md)", ()
     expect(await messagesFor(conventionFixture("spec-waits-for-network-idle"), "e2e/probe.spec.ts")).toEqual([expect.stringContaining("networkidle")]);
     expect(await messagesFor(conventionFixture("spec-waits-for-a-timeout"), "e2e/probe.spec.ts")).toEqual([expect.stringContaining("never a fixed time")]);
     expect(await messagesFor(conventionFixture("spec-waits-for-network-idle"), "lib/probe.test.ts")).toEqual([]);
+  });
+
+  it("rejects Playwright's own test in a spec, so that a failure names its trace ids", async () => {
+    expect(await messagesFor(conventionFixture("spec-imports-playwrights-test"), "e2e/probe.spec.ts")).toEqual([expect.stringContaining("names no trace id")]);
+    expect(await messagesFor(conventionFixture("spec-imports-playwrights-test"), "e2e/support/traceIds.ts")).toEqual([]);
   });
 
   it("keeps the code-style selectors a test file has to repeat", async () => {

@@ -1,10 +1,7 @@
-import { defaultLocale, type Locale, locales } from "@kalia/locales";
+import { defaultLocale, isLocale, type Locale, locales } from "@kalia/locales";
 
 export { defaultLocale, locales, type Locale };
 export const defaultNamespace = "common";
-
-export const isLocale = (value: string): value is Locale =>
-  (locales as readonly string[]).includes(value);
 
 // Next.js's generated route types type `params.locale` as plain `string`,
 // so every [locale] page narrows via this; the fallback is defensive, since

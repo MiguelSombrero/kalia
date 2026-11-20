@@ -1,4 +1,4 @@
-import { beerStyleGroup } from "@kalia/api";
+import { beerStyleGroup } from "@kalia/api/beer-style";
 import type { HTMLAttributes } from "react";
 
 import type { Locale } from "@/i18n/settings";

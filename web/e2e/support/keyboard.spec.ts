@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { expectFocusNotObscured } from "./keyboard";
+import { test } from "./traceIds";
 
 test.describe("expectFocusNotObscured", () => {
   test("passes a focused list taller than ten viewports whose top is in view", async ({ page }) => {

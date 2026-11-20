@@ -2,6 +2,9 @@ import { newTraceparent as startTrace, traceIdOf, type Traceparent } from "@kali
 
 export { traceIdOf, type Traceparent };
 
+/** The response header that names a request's trace in the local stack (proxy.ts). */
+export const TRACE_ID_HEADER = "x-kalia-trace-id";
+
 const randomBytes = (bytes: number): Uint8Array => crypto.getRandomValues(new Uint8Array(bytes));
 
 /** A `traceparent` that starts a new trace. */

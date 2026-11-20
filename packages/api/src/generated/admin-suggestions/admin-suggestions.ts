@@ -4,25 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
-import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
-
 import type {
   ApproveSuggestionRequestDto,
   DuplicateBeerProblem,
@@ -39,26 +20,6 @@ import type {
 } from '../models';
 
 import { kaliaFetch } from '../../core/transport';
-
-
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
 
 export type listSuggestionsResponse200 = {
   data: PageDtoSuggestionDto
@@ -125,83 +86,6 @@ export const listSuggestions = async (params?: ListSuggestionsParams, options?: 
 );}
 
 
-
-
-
-export const getListSuggestionsQueryKey = (params?: ListSuggestionsParams,) => {
-    return [
-    `/api/v1/admin/suggestions`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getListSuggestionsQueryOptions = <TData = Awaited<ReturnType<typeof listSuggestions>>, TError = ValidationProblem | Problem>(params?: ListSuggestionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuggestions>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListSuggestionsQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSuggestions>>> = ({ signal }) => listSuggestions(params, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSuggestions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListSuggestionsQueryResult = NonNullable<Awaited<ReturnType<typeof listSuggestions>>>
-export type ListSuggestionsQueryError = ValidationProblem | Problem
-
-
-export function useListSuggestions<TData = Awaited<ReturnType<typeof listSuggestions>>, TError = ValidationProblem | Problem>(
- params: undefined |  ListSuggestionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuggestions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listSuggestions>>,
-          TError,
-          Awaited<ReturnType<typeof listSuggestions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListSuggestions<TData = Awaited<ReturnType<typeof listSuggestions>>, TError = ValidationProblem | Problem>(
- params?: ListSuggestionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuggestions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listSuggestions>>,
-          TError,
-          Awaited<ReturnType<typeof listSuggestions>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListSuggestions<TData = Awaited<ReturnType<typeof listSuggestions>>, TError = ValidationProblem | Problem>(
- params?: ListSuggestionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuggestions>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List the suggestions waiting for review
- */
-
-export function useListSuggestions<TData = Awaited<ReturnType<typeof listSuggestions>>, TError = ValidationProblem | Problem>(
- params?: ListSuggestionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSuggestions>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getListSuggestionsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
 export type getSuggestionResponse200 = {
   data: SuggestionDto
   status: 200
@@ -263,83 +147,6 @@ export const getSuggestion = async (id: string, options?: Parameters<typeof kali
 
   }
 );}
-
-
-
-
-
-export const getGetSuggestionQueryKey = (id: string,) => {
-    return [
-    `/api/v1/admin/suggestions/${id}`
-    ] as const;
-    }
-
-
-export const getGetSuggestionQueryOptions = <TData = Awaited<ReturnType<typeof getSuggestion>>, TError = Problem>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuggestion>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSuggestionQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSuggestion>>> = ({ signal }) => getSuggestion(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSuggestion>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSuggestionQueryResult = NonNullable<Awaited<ReturnType<typeof getSuggestion>>>
-export type GetSuggestionQueryError = Problem
-
-
-export function useGetSuggestion<TData = Awaited<ReturnType<typeof getSuggestion>>, TError = Problem>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuggestion>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSuggestion>>,
-          TError,
-          Awaited<ReturnType<typeof getSuggestion>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSuggestion<TData = Awaited<ReturnType<typeof getSuggestion>>, TError = Problem>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuggestion>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSuggestion>>,
-          TError,
-          Awaited<ReturnType<typeof getSuggestion>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSuggestion<TData = Awaited<ReturnType<typeof getSuggestion>>, TError = Problem>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuggestion>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get a suggestion waiting for review
- */
-
-export function useGetSuggestion<TData = Awaited<ReturnType<typeof getSuggestion>>, TError = Problem>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuggestion>>, TError, TData>>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetSuggestionQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
 
 
 export type approveResponse200 = {
@@ -430,57 +237,7 @@ return kaliaFetch<approveResponse>(getApproveUrl(id),
 );}
 
 
-
-
-
-export const getApproveMutationKey = () => ['approve'] as const;
-
-export const getApproveMutationOptions = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approve>>, TError,ApproveMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof approve>>, TError,ApproveMutationVariables, TContext> => {
-
-const mutationKey = getApproveMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approve>>, ApproveMutationVariables> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  approve(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ApproveMutationResult = NonNullable<Awaited<ReturnType<typeof approve>>>
-    export type ApproveMutationBody = ApproveSuggestionRequestDto | undefined
-    export type ApproveMutationError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem
-    export type ApproveMutationVariables = {id: string;data?: ApproveSuggestionRequestDto}
-
-    /**
- * @summary Approve a suggestion as it is
- */
-export const useApprove = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approve>>, TError,ApproveMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof approve>>,
-        TError,
-        ApproveMutationVariables,
-        TContext
-      > => {
-      return useMutation(getApproveMutationOptions(options), queryClient);
-    }
-    export type approveEditedResponse200 = {
+export type approveEditedResponse200 = {
   data: SuggestionDecisionDto
   status: 200
 }
@@ -568,57 +325,7 @@ return kaliaFetch<approveEditedResponse>(getApproveEditedUrl(id),
 );}
 
 
-
-
-
-export const getApproveEditedMutationKey = () => ['approveEdited'] as const;
-
-export const getApproveEditedMutationOptions = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEdited>>, TError,ApproveEditedMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof approveEdited>>, TError,ApproveEditedMutationVariables, TContext> => {
-
-const mutationKey = getApproveEditedMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveEdited>>, ApproveEditedMutationVariables> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  approveEdited(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ApproveEditedMutationResult = NonNullable<Awaited<ReturnType<typeof approveEdited>>>
-    export type ApproveEditedMutationBody = EditSuggestionRequestDto
-    export type ApproveEditedMutationError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem
-    export type ApproveEditedMutationVariables = {id: string;data: EditSuggestionRequestDto}
-
-    /**
- * @summary Edit a suggestion and approve it
- */
-export const useApproveEdited = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem | DuplicateBeerProblem | DuplicateBreweryProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveEdited>>, TError,ApproveEditedMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof approveEdited>>,
-        TError,
-        ApproveEditedMutationVariables,
-        TContext
-      > => {
-      return useMutation(getApproveEditedMutationOptions(options), queryClient);
-    }
-    export type rejectResponse200 = {
+export type rejectResponse200 = {
   data: SuggestionDecisionDto
   status: 200
 }
@@ -706,53 +413,3 @@ return kaliaFetch<rejectResponse>(getRejectUrl(id),
 );}
 
 
-
-
-
-export const getRejectMutationKey = () => ['reject'] as const;
-
-export const getRejectMutationOptions = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reject>>, TError,RejectMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof reject>>, TError,RejectMutationVariables, TContext> => {
-
-const mutationKey = getRejectMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reject>>, RejectMutationVariables> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  reject(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RejectMutationResult = NonNullable<Awaited<ReturnType<typeof reject>>>
-    export type RejectMutationBody = RejectSuggestionRequestDto
-    export type RejectMutationError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem
-    export type RejectMutationVariables = {id: string;data: RejectSuggestionRequestDto}
-
-    /**
- * @summary Reject a suggestion
- */
-export const useReject = <TError = ValidationProblem | Problem | SuggestionAlreadyDecidedProblem,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reject>>, TError,RejectMutationVariables, TContext>, request?: SecondParameter<typeof kaliaFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof reject>>,
-        TError,
-        RejectMutationVariables,
-        TContext
-      > => {
-      return useMutation(getRejectMutationOptions(options), queryClient);
-    }

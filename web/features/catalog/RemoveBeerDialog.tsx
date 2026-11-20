@@ -1,6 +1,6 @@
 "use client";
 
-import { isApiError } from "@kalia/api";
+import { isApiError } from "@kalia/api/api-error";
 import { useRouter } from "next/navigation";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";

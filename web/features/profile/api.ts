@@ -1,4 +1,4 @@
-import { apiError } from "@kalia/api";
+import { httpFailure } from "@kalia/api";
 import {
   changeVisibility as generatedChangeVisibility,
   myProfile as generatedMyProfile,
@@ -9,9 +9,7 @@ import type { Profile } from "./types";
 export const getProfile = async (): Promise<Profile> => {
   const response = await generatedMyProfile();
   if (response.status !== 200) {
-    throw apiError("http", `Profile lookup failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure("Profile lookup", response);
   }
   return response.data;
 };
@@ -19,9 +17,7 @@ export const getProfile = async (): Promise<Profile> => {
 export const changeCellarVisibility = async (cellarPublic: boolean): Promise<Profile> => {
   const response = await generatedChangeVisibility({ cellarPublic });
   if (response.status !== 200) {
-    throw apiError("http", `Changing cellar visibility failed with status ${response.status}`, {
-      status: response.status,
-    });
+    throw httpFailure("Changing cellar visibility", response);
   }
   return response.data;
 };
