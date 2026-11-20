@@ -209,15 +209,16 @@ make mobile-test   # Jest + React Native Testing Library, and the icon render te
 ```
 
 Neither needs Docker or a native build: `make verify-fast` runs them, and the
-`mobile` CI job on a change under `mobile/` or `packages/`. Run the whole gate
+`mobile` CI job when [`scripts/ci-changes.mjs`](../scripts/ci-changes.mjs) says the change
+reaches the app. Run the whole gate
 ([ADR-0046](../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 How a test is written and named: [CONVENTIONS.md](CONVENTIONS.md#tests).
 
 ## Upgrade the Expo SDK
 
-Dependabot ignores the SDK's set (`expo`, `expo-*`, `jest-expo`, `eslint-config-expo`,
-`react-native`, `react-native-screens`, `react-native-safe-area-context`,
-`@react-native-async-storage/async-storage`); they move one SDK at a time, per
+Dependabot ignores the SDK's set (the `ignore` list in
+[`.github/dependabot.yml`](../.github/dependabot.yml)); a lone bump breaks the native
+build, so they move one SDK at a time, per
 [Expo's walkthrough](https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/):
 
 ```bash

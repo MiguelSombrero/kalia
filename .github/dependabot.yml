@@ -23,10 +23,10 @@ updates:
           - "react"
           - "react-dom"
     # The packages mobile/ takes from the Expo SDK work only as that SDK's
-    # set, which a lone bump breaks in the native build (mobile/README.md
-    # "Upgrade the Expo SDK"). A CVE in one still fails the vulnerability scan
-    # (ADR-0024). react and typescript are deliberately not here: both follow
-    # the web.
+    # set, which a lone bump breaks in the native build. This list is its one
+    # home; the upgrade is mobile/README.md "Upgrade the Expo SDK". A CVE in
+    # one still fails the vulnerability scan (ADR-0024). react and typescript
+    # are deliberately not here: both follow the web.
     ignore:
       - dependency-name: "expo"
       - dependency-name: "expo-*"
@@ -64,6 +64,14 @@ updates:
       interval: "weekly"
   - package-ecosystem: "docker"
     directory: "/edge"
+    schedule:
+      interval: "weekly"
+  # The stack builds this Dockerfile, not the compose `image:` line the
+  # docker-compose entry below bumps, so that entry alone leaves the built
+  # image on the old tag. No major ignore: Postgres majors are ones the
+  # project wants to take (ADR-0085).
+  - package-ecosystem: "docker"
+    directory: "/postgres"
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker-compose"
