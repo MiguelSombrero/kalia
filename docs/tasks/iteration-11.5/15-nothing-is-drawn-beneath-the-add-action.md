@@ -1,6 +1,6 @@
 # Task 15: Nothing is drawn beneath the central Add action
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** none
 
@@ -57,8 +57,10 @@ the cellar's entry point in iteration 12.
       It was seen to fail before the fix
 - [x] The navigation's accessibility tests and the Android Maestro flows pass
       unchanged
-- [ ] The product owner confirms on a release build on the phone that the
+- [x] The product owner confirms on a release build on the phone that the
       shape is gone and the navigation is otherwise as approved
+      (confirmed 2026-11-20 by the product owner, on a release build on an
+      iPhone)
 - [x] `make verify-fast` is green
 
 ## Notes
@@ -73,4 +75,5 @@ never focused, so its `tabBarShowLabel: false` never applied. It reproduced on
 the iOS Simulator in a release build of the layout as it stood on 2026-11-10,
 and not on the layout since 2026-11-11, whose `tabBarLabel: () => null`
 already hides it. The product owner's phone check on a release build of the
-current code is the one criterion left.
+current code was the one criterion left; the product owner gave it on
+2026-11-20.
