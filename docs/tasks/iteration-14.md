@@ -1,43 +1,31 @@
-# Iteration 14 — Scan the bottle in your hand
+# Iteration 14 — Scan the bottle in your hand (dropped)
 
-Goal: the first feature only a phone can do — scan a bottle's barcode and that
-beer goes into the cellar.
+**Dropped 2026-11-20 by the product owner.** The iteration was to scan a bottle's
+barcode and put that beer in the cellar. A barcode carries only a number: none of
+the name, brewery or strength Kalia would need arrives with it. Turning the number
+into a beer takes a source that maps barcodes to beers, and the catalog's source,
+[Wikidata](../adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md),
+has almost none (3 of about 19.8k beers on 2026-10-15). The one evaluated source
+that has them has no brewery field and is French-heavy, so a scan would find few
+of the beers people cellar and would often lead to a form to fill in by hand,
+which is the add-a-beer flow the user could have started from. The camera, its
+permissions and a barcode table would be built for that.
 
-## Done when
+Nothing was built, and no task files were written. The files and records that
+mention this iteration are left as they were: they say what was planned when
+they were written.
 
-- **DW-1:** On a phone, scanning the barcode of a beer the catalog knows opens
-  that beer with adding it to the cellar one step away.
-- **DW-2:** Scanning a barcode the catalog does not know leads into
-  [iteration 8](iteration-8.md)'s add-a-beer flow with the barcode carried
-  into it.
-- **DW-3:** Refusing camera access, now or permanently, leaves the user a way
-  forward rather than a dead screen.
-- **DW-4:** How barcodes are modelled in the catalog is a recorded decision.
+## What replaced it
 
-## Planned tasks
+The tab bar's central Add action, which was to carry the scan, is one way to
+add a bottle by finding the beer in the catalog: iteration 12's
+[task 07](iteration-12/07-design-the-add-action-and-finding-the-beer-to-add.md)
+designs it and
+[task 09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md)
+builds it.
 
-Task files are written at refinement
-([ADR-0047](../adr/0047-refinement-is-batched-per-iteration.md)).
+## If it returns
 
-- **Decision: the barcode data model** — a column on `catalog.beer` or a table
-  of its own (one beer, many barcodes across sizes and markets), and how
-  barcodes enter the catalog.
-- **Look up a beer by barcode**, and capture a barcode in the add-a-beer API.
-- **Design: the scan flow** — the viewfinder; found, not found and ambiguous.
-- **Camera permission** — the rationale, a refusal, a permanent refusal and the
-  way to Settings.
-- **Scan, then add to the cellar.**
-- **Scan an unknown beer, then add it to the catalog**, prefilled.
-- **Barcodes for the imported catalog.** The source chosen in
-  [iteration 8 task 01](iteration-8/01-catalog-data-source.md), Wikidata,
-  carries almost none: 3 of about 19.8k beers on 2026-10-15. Imported beers
-  therefore gain barcodes only as users scan them. The candidate route
-  recorded at that refinement is one lookup per scan against Open Food Facts,
-  the one evaluated source with barcodes. It would pre-fill the add-a-beer form
-  and store the barcode in a table of its own. Open Food Facts is ODbL, so
-  attribution and share-alike apply to what is taken from it; that is this
-  iteration's decision to weigh.
-
-The product owner chose a source without barcodes knowingly. The trap the
-[backlog](backlog.md#product-gaps-mobile-makes-urgent) names, a catalog nobody
-re-scans staying half-covered, is the accepted cost of that choice.
+The first step is a source of barcodes with names, not a camera. The route the
+iteration recorded was one lookup per scan against Open Food Facts, which is
+under the ODbL; it would be decided again then, from a new evaluation.

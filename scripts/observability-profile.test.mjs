@@ -141,3 +141,29 @@ test("the Keycloak image counts its requests only in the local stack", () => {
   });
   assert.equal(args(base).KC_METRICS_ENABLED, undefined, "the deployable definition builds Keycloak with counters");
 });
+
+// "Nothing leaves the machine" (DW-4) is a promise about every container the
+// profile runs, and the images report usage and ask their makers about updates
+// unless told not to. Each assertion reads the rendered profile, so a flag
+// dropped from the file or renamed by an upgrade fails here and not in a
+// network trace.
+test("Alloy is told not to report the components it runs to Grafana", () => {
+  const { command } = renderLocal({ profile: true }).services.alloy;
+  assert.ok(command.includes("--disable-reporting"), "alloy is started without --disable-reporting");
+  assert.equal(command[0], "run", "the flag belongs to `alloy run`, after the subcommand");
+});
+
+test("Grafana reports no usage and checks for no update or plugin update", () => {
+  const { environment } = renderLocal({ profile: true }).services.lgtm;
+  for (const name of ["GF_ANALYTICS_REPORTING_ENABLED", "GF_ANALYTICS_CHECK_FOR_UPDATES", "GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES"]) {
+    assert.equal(environment[name], "false", `${name} is not "false"`);
+  }
+});
+
+test("Loki, Tempo and Pyroscope report no usage", () => {
+  const { environment } = renderLocal({ profile: true }).services.lgtm;
+  const args = (name) => (environment[name] ?? "").split(/\s+/);
+  assert.ok(args("LOKI_EXTRA_ARGS").includes("-reporting.enabled=false"), "Loki's usage report is on");
+  assert.ok(args("TEMPO_EXTRA_ARGS").includes("-reporting.enabled=false"), "Tempo's usage report is on");
+  assert.ok(args("PYROSCOPE_EXTRA_ARGS").includes("-usage-stats.enabled=false"), "Pyroscope's usage report is on");
+});

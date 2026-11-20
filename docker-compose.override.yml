@@ -148,6 +148,14 @@ services:
       # Anonymous visitors read and cannot write: the image's default role is
       # Admin, which lets one edit the data sources.
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      # Nothing leaves the machine (DW-4): the image's components report usage
+      # to their maker and ask it about updates by default. Grafana's three
+      # settings are environment variables; Loki's, Tempo's and Pyroscope's
+      # are the arguments below. scripts/observability-profile.test.mjs fails
+      # if any is missing.
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
       # Three days of data, set by arguments to each store, which the image
       # exposes and its configuration files do not. `node
       # scripts/e2e-telemetry.mjs load` raises TELEMETRY_RETENTION_HOURS for a
@@ -160,9 +168,12 @@ services:
         -compactor.working-directory=/data/loki/compactor
         -compactor.delete-request-store=filesystem
         -store.retention=${TELEMETRY_RETENTION_HOURS:-72}h
+        -reporting.enabled=false
       TEMPO_EXTRA_ARGS: >-
         -backend-worker.compaction.block-retention=${TELEMETRY_RETENTION_HOURS:-72}h
         -backend-scheduler.provider.work.compaction.block-retention=${TELEMETRY_RETENTION_HOURS:-72}h
+        -reporting.enabled=false
+      PYROSCOPE_EXTRA_ARGS: -usage-stats.enabled=false
     # The spike measured 1.0-1.2 GiB at work (ADR-0114).
     mem_limit: 2g
     volumes:
@@ -188,6 +199,9 @@ services:
     image: grafana/alloy:v1.22.0
     command:
       - run
+      # Alloy reports the components it runs to Grafana unless told not to
+      # (nothing leaves the machine, DW-4).
+      - --disable-reporting
       - --server.http.listen-addr=0.0.0.0:12345
       - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy

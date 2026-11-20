@@ -50,7 +50,9 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   7.5's task 04, which shipped only the favicon and touch icon.
 - **Adding a beer from the cellar** — a search-and-add flow inside the cellar,
   rather than only a route into the catalog
-  ([iteration 7.5 task 09](iteration-7.5/09-cellar-layout.md)).
+  ([iteration 7.5 task 09](iteration-7.5/09-cellar-layout.md)). The phone's is
+  [iteration 12 task 09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md);
+  the web's stays here.
 - **A cellar's oldest vintage and last addition on the front page.** The chosen
   front page showed both in *My cellar*, but they were left out while they
   needed one request per beer in the cellar on every visit
@@ -136,7 +138,7 @@ lockstep with the backend. Choices that are reversible before then stop being
 reversible after. Written up 2026-08-08 from an architecture analysis the
 product owner asked for.
 
-**Scheduled 2026-10-04 as iterations [9](iteration-9.md)–[14](iteration-14.md)**,
+**Scheduled 2026-10-04 as iterations [9](iteration-9.md)–[14](iteration-14.md)**, the last [since dropped](iteration-14.md),
 with mobile as Kalia's primary UI and the web maintained without being held at
 feature parity. **The analysis from "What already works in mobile's favour"
 to the end of this section is kept as written 2026-08-08**, the record of why
@@ -157,7 +159,6 @@ holds it:
 | Crash reporting | [ADR-0098](../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) deferred a crash service until a second user |
 | Decision 6, offline behaviour | [Iteration 12](iteration-12.md) |
 | Keycloak's "Back to Application" link | [Iteration 13](iteration-13.md), with its deep links |
-| Barcode scanning | [Iteration 14](iteration-14.md) |
 | Decisions 7 and 9, push notifications and public API exposure | Parked — they need money, below |
 | Beer images | Unscheduled — storage can stay free, but it is the heaviest item left |
 
@@ -325,16 +326,6 @@ required.
 - **Beers have no images, and nothing in the roadmap adds them.** A cellar
   without bottle photos reads as a spreadsheet on a phone. Needs storage, a
   CDN, responsive variants — and moderation, once users upload.
-- **Barcode scanning** is the one thing a mobile cellar app does that the web
-  cannot: scan the bottle in your hand and it is in your cellar. It needs an
-  EAN/UPC column on `catalog.beer`, which is why
-  [iteration 8 task 01](iteration-8/01-catalog-data-source.md) asked whether
-  a candidate data source carries barcodes. **The trap:** the column itself can
-  be migrated in at any time, so this looks deferrable — but nobody re-scans a
-  catalog of beers that already exist, so a source chosen without barcodes
-  leaves the feature permanently half-covered. Task 01 chose Wikidata, which
-  has almost no barcodes, knowingly; [iteration 14](iteration-14.md) records
-  the route by which scanning fills the gap.
 - **Keycloak's "Back to Application" link cannot open the app.** A user who
   signs up from the app leaves for their mail, and the page the verification
   link reaches links back to the website, because Keycloak accepts only an

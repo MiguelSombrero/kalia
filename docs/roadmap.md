@@ -81,7 +81,7 @@ mechanically ([ADR-0026](adr/0026-task-file-format.md)).
 | [11.5 — An agent can see what the stack did](tasks/iteration-11.5.md) | A local observability profile an agent can query, request by request | 🔄 In progress |
 | [12 — The cellar in your pocket](tasks/iteration-12.md) | The cellar, natively, readable with no signal | ⬜ Todo |
 | [13 — Social on mobile](tasks/iteration-13.md) | Feed, profile and public cellars on the phone | ⬜ Todo |
-| [14 — Scan the bottle in your hand](tasks/iteration-14.md) | A barcode puts a beer in the cellar | ⬜ Todo |
+| [14 — Scan the bottle in your hand](tasks/iteration-14.md) | A barcode puts a beer in the cellar | ❌ Dropped |
 
 Unscheduled work: [Backlog](tasks/backlog.md) · [Quality backlog](tasks/quality-backlog.md)
 
