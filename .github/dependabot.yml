@@ -36,6 +36,14 @@ updates:
       - dependency-name: "react-native-safe-area-context"
       - dependency-name: "react-native-screens"
       - dependency-name: "@react-native-async-storage/async-storage"
+      # The OpenTelemetry family moves only together, and the web's span
+      # redaction (web/lib/telemetry/) is built on @vercel/otel 2.3.0, whose
+      # peer ranges stop below `@opentelemetry/api` 1.10 and the 0.3xx / 3.x
+      # lines: a lone bump leaves two copies of `api` and fails the web's type
+      # check and tests. Revisit when a @vercel/otel release's peer ranges
+      # cover them; @vercel/otel itself is not ignored, so that release
+      # arrives as a PR.
+      - dependency-name: "@opentelemetry/*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
