@@ -211,8 +211,8 @@ fourth for reading its cause:
   dependency your diff does not touch (a new advisory, a changed base layer)
   fails every open PR at once, so it gets one PR of its own off `dev`, not a
   copy on each branch: raise it, and merge `dev` into your branch once it
-  lands. No asking first *only* while the fix stays inside the vulnerable package's
-  declared semver range (a lockfile-only bump); crossing it, or bumping a
+  lands. Either fix needs no asking first *only* while it stays inside the
+  vulnerable package's declared semver range (a lockfile-only bump); crossing it, or bumping a
   *direct* dependency past its pin, is a version choice under `CLAUDE.md`'s
   "New dependencies". Confirm the finding clears with `make trivy-scan` (CI's
   flags, manifests only; an image finding is
