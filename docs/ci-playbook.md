@@ -366,7 +366,9 @@ retries three times; a build that still fails is a real one.
 design: the scan is diff-agnostic, so any open PR can go red the moment a CVE
 is disclosed against something already in `dev`
 ([ADR-0024](adr/0024-dependency-vulnerability-scanning.md)). It is fixed in
-place on the branch that is open, not in a second PR. Whether it needs asking
+its own PR off `dev`, not on the open branch: it fails every open PR at once,
+so a copy on each would conflict. A finding your own diff introduced is fixed
+on your branch. Whether it needs asking
 first is in the `implement-task` skill's "A red check"; `make trivy-scan`
 reproduces the manifest scan, and the image scan's invocation is in
 `backend/README.md`.

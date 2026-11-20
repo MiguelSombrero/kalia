@@ -68,9 +68,8 @@ merging them produces a long agenda with no theme.
    does not replace it. Then `make verify-fast`, and open one
    pull request for the iteration per `docs/PULL_REQUEST_TEMPLATE.md` —
    carrying task-file edits only, no code (`CLAUDE.md` "Refine in one PR,
-   implement in another") — except an unrelated CVE fix, which `CLAUDE.md`
-   says goes in place on the open branch as its own commit, never a second
-   PR. Name in the description which tasks moved to `refined` and which
+   implement in another"). An unrelated CVE fix is not part of it: it gets its
+   own PR off `dev` (ADR-0024). Name in the description which tasks moved to `refined` and which
    deliberately did not.
 
 ## When a refined task has gone stale
