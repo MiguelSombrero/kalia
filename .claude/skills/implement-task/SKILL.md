@@ -203,11 +203,16 @@ which now points at this section
 ([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)), and a
 fourth for reading its cause:
 
-- **A CI vulnerability-scan failure unrelated to your diff is still your
-  problem** — fix it in place as its own commit on the open branch, never a
-  second PR ([ADR-0024](../../../docs/adr/0024-dependency-vulnerability-scanning.md)).
-  No asking first *only* while the fix stays inside the vulnerable package's
-  declared semver range (a lockfile-only bump); crossing it, or bumping a
+- **A CI vulnerability-scan failure is still your problem, and where it is
+  fixed depends on whose it is**
+  ([ADR-0024](../../../docs/adr/0024-dependency-vulnerability-scanning.md)). A
+  finding your diff introduces (its own new dependency or image) is fixed in
+  place, as its own commit on the open branch. A finding in an image or
+  dependency your diff does not touch (a new advisory, a changed base layer)
+  fails every open PR at once, so it gets one PR of its own off `dev`, not a
+  copy on each branch: raise it, and merge `dev` into your branch once it
+  lands. Either fix needs no asking first *only* while it stays inside the
+  vulnerable package's declared semver range (a lockfile-only bump); crossing it, or bumping a
   *direct* dependency past its pin, is a version choice under `CLAUDE.md`'s
   "New dependencies". Confirm the finding clears with `make trivy-scan` (CI's
   flags, manifests only; an image finding is
