@@ -1,6 +1,6 @@
 # Task 10: The process tells an agent when to read the telemetry
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [11.5](../iteration-11.5.md)
 - **Covers:** DW-4
 
@@ -52,9 +52,9 @@ tasks 07 and 08's tools rather than restating them.
 
 ## Acceptance criteria
 
-- [ ] `CLAUDE.md`, both skills' "A red check" sections, the CI playbook's
+- [x] `CLAUDE.md`, both skills' "A red check" sections, the CI playbook's
       Playwright section and the failure log's header point at the profile and
       its tools, and `node --test scripts/` and `make check` are green
-- [ ] A fresh session given only a red end-to-end test's output finds its trace
+- [x] A fresh session given only a red end-to-end test's output finds its trace
       by following the documents — verified by doing it
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green

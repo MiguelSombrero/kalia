@@ -200,7 +200,8 @@ step 7.
 
 Three rules for a check that goes red, moved here whole from `CLAUDE.md`,
 which now points at this section
-([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)):
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)), and a
+fourth for reading its cause:
 
 - **A CI vulnerability-scan failure unrelated to your diff is still your
   problem** — fix it in place as its own commit on the open branch, never a
@@ -218,3 +219,13 @@ which now points at this section
 - **A CI check you have seen fail before is probably in
   [docs/ci-playbook.md](../../../docs/ci-playbook.md)**; add an entry when a
   failure costs real time to *recognise*, naming the run.
+- **A red end-to-end test, a `5xx` or a slow request has its cause in the
+  stack's telemetry, so read it before a second guess.** The failure output
+  ends with `Trace ids behind this failure: …`; `make trace ID=<trace id>`
+  prints that request's spans, SQL and logs, or ask the `kalia-telemetry` MCP
+  server ([README](../../../README.md#run-locally),
+  [observability/README.md](../../../observability/README.md)). A red CI run's
+  stack is an artifact
+  ([ci-playbook](../../../docs/ci-playbook.md#a-red-runs-telemetry)). Starting
+  the profile (`make observability-up`) is heavy work under `CLAUDE.md`'s
+  two-session cap, and `make verify` does not run it.

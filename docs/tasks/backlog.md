@@ -140,18 +140,27 @@ product owner asked for.
 
 **Scheduled 2026-10-04 as iterations [9](iteration-9.md)–[14](iteration-14.md)**, the last [since dropped](iteration-14.md),
 with mobile as Kalia's primary UI and the web maintained without being held at
-feature parity. The analysis below stays as the reasoning those iterations
-draw on; what each takes from it:
+feature parity. **The analysis from "What already works in mobile's favour"
+to the end of this section is kept as written 2026-08-08**, the record of why
+the mobile iterations were planned the way they were, except where a note
+below says what was decided since: the paths, the layout and the "none is
+decided" it names are the repository's then, not its now. The
+table says where each question was decided since, or which iteration still
+holds it:
 
-| Item below | Taken by |
+| Item below | Decided in, or taken by |
 |---|---|
-| Decisions 1–5 and 8: direct calls, compatibility policy, Keycloak client, repo layout, testing strategy | [Iteration 9](iteration-9.md), except the token format (5), which is [iteration 11](iteration-11.md)'s |
+| Decisions 1 and 3, direct calls and the Keycloak client | [ADR-0095](../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) |
+| Decision 2, the compatibility policy; the minimum-supported-version check and kill switch; ADR-0012 revisited | [ADR-0093](../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md), with the app-config endpoint it names |
+| Decision 4, the repo layout | [ADR-0092](../adr/0092-the-repository-is-plain-npm-workspaces-of-web-mobile-and-two-packages-that-ship-typescript-source.md) |
+| The process scaling to a third codebase | [Iteration 9 task 07](iteration-9/07-process-carries-a-third-codebase.md) |
+| Decision 5, the design token format | [ADR-0107](../adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md) |
+| Decision 8, the testing strategy | [ADR-0096](../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md) |
+| Crash reporting | [ADR-0098](../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) deferred a crash service until a second user |
 | Decision 6, offline behaviour | [Iteration 12](iteration-12.md) |
+| Keycloak's "Back to Application" link | [Iteration 13](iteration-13.md), with its deep links |
 | Decisions 7 and 9, push notifications and public API exposure | Parked — they need money, below |
-| Minimum-supported-version check and kill switch | [Iteration 9](iteration-9.md)'s app-config endpoint |
 | Beer images | Unscheduled — storage can stay free, but it is the heaviest item left |
-| Crash reporting | [Iteration 10](iteration-10.md), within the no-cost constraint |
-| Process scaling to a third codebase; ADR-0012 revisited | [Iteration 9](iteration-9.md) |
 
 **The plan adds no cost** — the project-wide rule in
 [`CLAUDE.md`](../../CLAUDE.md). Iteration 10 therefore installs the app on the
@@ -258,7 +267,7 @@ of it needs npm workspaces, which this repo does not have;
 
 ### Decisions to make when mobile begins
 
-Each is ADR-shaped and none is decided:
+Each was ADR-shaped and none was decided when this was written; the table above says where each was decided since:
 
 1. **Does mobile call Spring directly, or through a BFF of its own?** Directly
    is the expected answer — the BFF exists to keep secrets out of a *browser*,
@@ -319,27 +328,30 @@ required.
   CDN, responsive variants — and moderation, once users upload.
 - **Keycloak's "Back to Application" link cannot open the app.** A user who
   signs up from the app leaves for their mail, and the page the verification
-  link reaches links back to the website, because Keycloak 26.8.1 accepts only
-  an `http(s)` `baseUrl` ([task 13](iteration-9/13-keycloak-mobile-client.md)).
+  link reaches links back to the website, because Keycloak accepts only an
+  `http(s)` `baseUrl` ([task 13](iteration-9/13-keycloak-mobile-client.md)).
   Opening the app from there takes either a web page that bounces to
   `kalia://auth/callback`, or an `https` address the phone hands to the app.
-  Parked, and part of [iteration 10](iteration-10.md)'s distribution work, not
-  iteration 9's: iOS universal links need a paid Apple developer team, so a
-  free personal team may not support them, while Android App Links are free.
-- **Crash reporting**, which the [observability baseline](iteration-8.5/16-observability-baseline.md) does not cover — that
-  one is server-shaped. Device identifiers and push tokens are personal data,
-  so this lands on the GDPR item too.
+  **[Iteration 13](iteration-13.md) builds it with its deep links**: an
+  Android App Link or a web bounce page, both free. iOS universal links need a
+  paid Apple developer team, so they stay parked above.
+- **Crash reporting.** [ADR-0098](../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)
+  reads an installed build's errors from the device's own logs and defers a
+  crash service until a second user. The [observability baseline](iteration-8.5/16-observability-baseline.md)
+  does not cover it — that one is server-shaped. Device identifiers and push
+  tokens are personal data, so a crash service lands on the GDPR item too.
 
 ### Worth knowing, not mobile's to fix
 
-- **Does the project's own process scale to a third codebase?** CLAUDE.md,
-  [ADR-0020](../adr/0020-documentation-roles.md)'s three homes, the doc-sync
-  gate, `check-tasks.mjs` and the `api-client-drift` CI job all assume two
-  apps, and [architecture.md §5](../architecture.md) is titled "Frontend
-  design", singular. In a project whose first goal is the process, this ranks
-  above the feature.
+- **Does the project's own process scale to a third codebase?** The analysis
+  worried that CLAUDE.md, [ADR-0020](../adr/0020-documentation-roles.md)'s three
+  homes, the doc-sync gate, `check-tasks.mjs` and the drift check all assumed
+  two apps. In a project whose first goal is the process, that ranked above
+  the feature; [iteration 9 task 07](iteration-9/07-process-carries-a-third-codebase.md)
+  settled it.
 - **[ADR-0012](../adr/0012-orval-api-client.md)'s rejection of a committed
-  OpenAPI spec is worth revisiting, not reversing.** Its reasoning holds, but
-  with two generated clients each regenerating against a live backend, the
-  drift check costs Docker-in-CI per client, and a mobile CI runner may not
-  have one.
+  OpenAPI spec was worth revisiting, not reversing**, because with two
+  generated clients each regenerating against a live backend the drift check
+  costs Docker-in-CI per client.
+  [ADR-0093](../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)
+  revisited it and commits the spec.

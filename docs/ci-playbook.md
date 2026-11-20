@@ -43,9 +43,9 @@ synthesising the success response from the return type, and drop it from
 failure. The rule, and the `@ResponseStatus` that fixes it, is in
 [backend/README.md](../backend/README.md)'s Traps.
 
-Run it locally before pushing either way: `make api-drift` (it regenerates from
-`backend/openapi.json`, needing neither Docker nor a backend). An orval bump is
-`npm run generate --workspace @kalia/api`, then the same read of the diff.
+Run it locally before pushing either way: how to regenerate, an orval bump
+included, is [packages/README.md](../packages/README.md) ("Regenerate"), then
+the same read of the diff.
 
 ## Frontend (npm) — lint
 
@@ -108,6 +108,14 @@ section, conflict first: resolve by keeping both and renumbering yours the
 same way.
 
 ## E2E (Playwright)
+
+**A test ran and failed, and no entry below matches its message.** The failure
+output ends each failed test with `Trace ids behind this failure: …`, and the
+stack's own account of that request, the span tree, its SQL and its log lines,
+is in the run's telemetry artifact ([A red run's
+telemetry](#a-red-runs-telemetry)), read with `make trace ID=<trace id>` or the
+`kalia-telemetry` MCP server. Loading it starts the profile, which is heavy work
+under `CLAUDE.md`'s two-session cap.
 
 **`Error: Timed out waiting 300000ms from config.webServer` — no test ran.**
 Not a test failure: Playwright's `webServer` starts `docker compose up --build`,
