@@ -12,7 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@hookform/resolvers": "^6.0.2",
+    "@hookform/resolvers": "^7.0.6",
     "@kalia/api": "*",
     "@kalia/locales": "*",
     "@opentelemetry/api": "^1.9.1",
