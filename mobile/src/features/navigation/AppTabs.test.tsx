@@ -98,6 +98,15 @@ describe("AppTabs", () => {
     expect(screen.queryByTestId("add-icon")).toBeNull();
   });
 
+  it.each(["en", "fi"] as const)("draws no word or default icon on Add beside its circle, with another tab focused, in %s", async (locale) => {
+    await renderApp(locale);
+    await screen.findByRole("heading", { name: "Catalog" });
+
+    const addTab = screen.getByLabelText(locale === "en" ? "Add a beer" : "Lisää olut");
+    const words = within(addTab).queryAllByText(/\S/, { includeHiddenElements: true }).map((word) => word.props.children);
+    expect(words).toEqual([]);
+  });
+
   it("keeps all actions accessible at the largest text scale", async () => {
     const scale = jest.spyOn(PixelRatio, "getFontScale").mockReturnValue(3.12);
     try {

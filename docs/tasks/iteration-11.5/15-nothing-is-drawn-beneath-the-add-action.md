@@ -50,18 +50,27 @@ the cellar's entry point in iteration 12.
 
 ## Acceptance criteria
 
-- [ ] The cause is named in the pull request, reproduced on a build where the
+- [x] The cause is named in the pull request, reproduced on a build where the
       shape appears
-- [ ] A test that would have failed on the defect holds the fix, for example
+- [x] A test that would have failed on the defect holds the fix, for example
       by showing that the Add route's tab renders no default icon or label.
       It was seen to fail before the fix
 - [ ] The navigation's accessibility tests and the Android Maestro flows pass
       unchanged
 - [ ] The product owner confirms on a release build on the phone that the
       shape is gone and the navigation is otherwise as approved
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
 Provenance: [quality backlog](../quality-backlog.md) COULD-138, reported by
 the product owner from the phone on 2026-11-10.
+
+Finding (2026-11-20): the shape was the word "Add", drawn in the inactive tint
+beneath the 48 pt circle, so only the lower parts of its letters showed. The
+tab bar reads `tabBarShowLabel` from the focused tab's options only, and Add is
+never focused, so its `tabBarShowLabel: false` never applied. It reproduced on
+the iOS Simulator in a release build of the layout as it stood on 2026-11-10,
+and not on the layout since 2026-11-11, whose `tabBarLabel: () => null`
+already hides it. The product owner's phone check on a release build of the
+current code is the one criterion left.
