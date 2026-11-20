@@ -166,9 +166,10 @@ meets, so they have no entry; the table above says what they were for.
   read-only `kalia-telemetry` MCP server answers the same questions, and the
   counters around them, for an agent without a browser. A failing Playwright
   test names the trace ids of its requests, and a red CI run uploads its
-  telemetry as an artifact that loads into a local profile. Nothing leaves the
+  telemetry as an artifact that loads into a local profile. No telemetry leaves the
   machine: no tier exports beyond the profile, and the usage reports and
-  update checks of its Grafana components are off. The iteration also gave each
+  update checks of its Grafana components are off (Grafana's plugin installer
+  still fetches plugins at start). The iteration also gave each
   app a conventions file with its mechanical rules checked by lint, made tests
   wait on a signal rather than the clock, cut the shared packages' exports to
   what both apps use, made a font that never loads leave the app readable,
