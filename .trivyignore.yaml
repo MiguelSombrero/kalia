@@ -90,7 +90,7 @@ vulnerabilities:
     statement: "the gosu binary in postgres (postgres:18.6 is the pinned tag and 18.7, the newest, still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
     expired_at: 2026-12-01
   - id: CVE-2026-102554
-    statement: "Keycloak's bundled guava (Keycloak 26.8.1-2 is the newest tag and still ships the vulnerable guava); ends when upstream ships a fixed image"
+    statement: "Keycloak's bundled guava (Keycloak 26.8.2-3 is the pinned and newest tag and still ships the vulnerable guava 33.6.0-jre; fixed in 33.7.2); ends when upstream ships a fixed image"
     expired_at: 2026-12-01
   - id: CVE-2026-111497
     statement: "keycloak-config-cli's Ubuntu packages (6.5.1-26.5.5 is the newest tag and its Ubuntu layer predates the fixed packages); ends when upstream ships a fixed image"
