@@ -38,7 +38,7 @@ class DatabaseRolesIT {
 
 	private static final String KEYCLOAK_PASSWORD = "keycloak-password";
 
-	private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(DockerImageName.parse("postgres:18.4"))
+	private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(DockerImageName.parse("postgres:18.6"))
 			.withDatabaseName("kalia")
 			.withUsername("kalia")
 			.withPassword("bootstrap-password")
