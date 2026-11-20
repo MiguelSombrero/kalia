@@ -11,7 +11,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { checkQualityBacklog, checkRoadmapStatus, checkTasks } from "./check-tasks.mjs";
+import { checkBacklogMobileTable, checkQualityBacklog, checkRoadmapStatus, checkTasks } from "./check-tasks.mjs";
 
 const TEST_CRITERION = "- [ ] `npm test` covers the new behaviour\n";
 const ALTERNATIVES_CRITERION =
@@ -231,4 +231,75 @@ test("fails an iteration with task files that has no roadmap row", () => {
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+function backlogFixture(rows) {
+  const root = mkdtempSync(resolve(tmpdir(), "tasks-check-"));
+  mkdirSync(resolve(root, "docs/tasks"), { recursive: true });
+  writeFileSync(
+    resolve(root, "docs/roadmap.md"),
+    [
+      "# Roadmap",
+      "",
+      "| Iteration | Goal | Status |",
+      "|---|---|---|",
+      "| [9 — Foundations](tasks/iteration-9.md) | A goal | ✅ Done |",
+      "| [10.5 — Admin](tasks/iteration-10.5.md) | A goal | ✅ Done |",
+      "| [12 — Cellar](tasks/iteration-12.md) | A goal | ⬜ Todo |",
+      "",
+    ].join("\n"),
+  );
+  writeFileSync(
+    resolve(root, "docs/tasks/backlog.md"),
+    [
+      "# Backlog",
+      "",
+      "| Elsewhere | Taken by |",
+      "|---|---|",
+      "| An item of another section | [Iteration 9](iteration-9.md) |",
+      "",
+      "## Mobile client",
+      "",
+      "| Item below | Taken by |",
+      "|---|---|",
+      ...rows,
+      "",
+      "## Another section",
+      "",
+    ].join("\n"),
+  );
+  return root;
+}
+
+function checkMobileTable(rows, assertions) {
+  const root = backlogFixture(rows);
+  try {
+    assertions(checkBacklogMobileTable(root));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+test("fails a Mobile client table row assigned to an iteration the roadmap calls done", () => {
+  checkMobileTable(["| Crash reporting | [Iteration 9](iteration-9.md) |"], (f) => {
+    assert.equal(f.length, 1);
+    assert.match(f[0], /"Crash reporting".*iteration-9.*✅ Done/);
+  });
+  checkMobileTable(["| Admin | [iteration 10.5](iteration-10.5.md), with more |"], (f) => assert.equal(f.length, 1));
+});
+
+test("passes a Mobile client table whose rows name a todo iteration, an ADR or a done iteration's task file", () => {
+  checkMobileTable(
+    [
+      "| Offline | [Iteration 12](iteration-12.md) |",
+      "| Direct calls | [ADR-0095](../adr/0095-a.md) |",
+      "| Process | [Iteration 9 task 07](iteration-9/07-process.md) |",
+      "| Images | Unscheduled |",
+    ],
+    (f) => assert.deepEqual(f, []),
+  );
+});
+
+test("reads only the Mobile client section's table", () => {
+  checkMobileTable([], (f) => assert.deepEqual(f, []));
 });

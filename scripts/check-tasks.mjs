@@ -24,6 +24,10 @@
 //     moves it on — which no script can verify, since it cannot see who wrote
 //     the line; the PR that changes it is what does.
 //
+// Two documents are checked beside the task files: docs/roadmap.md's statuses
+// against the iteration indexes, and the backlog's Mobile client table, which
+// may not assign an item to an iteration that is already done.
+//
 // Coverage (ADR-0026's 2026-08-15 amendment): an
 // iteration's `## Done when` may enumerate criteria as `- **DW-N:** ...`
 // instead of prose. It is opt-in per iteration, the same way the whole file
@@ -229,6 +233,14 @@ const BACKLOG_CATEGORIES = ["MUST", "SHOULD", "COULD"];
 
 const ROADMAP_STATUS = { todo: "⬜ Todo", inProgress: "🔄 In progress", done: "✅ Done" };
 
+/** @returns {Map<string, string>} iteration slug ("iteration-9") to its status cell in docs/roadmap.md */
+const roadmapStatuses = (root) =>
+  new Map(
+    [...readFileSync(resolve(root, "docs/roadmap.md"), "utf8").matchAll(
+      /^\| \[[^\]]*\]\(tasks\/(iteration-\d+(?:\.\d+)?)\.md\) \|.*\| ([^|]+?) \|$/gm,
+    )].map((m) => [m[1], m[2]]),
+  );
+
 /**
  * docs/roadmap.md is the one place an iteration's status is stated; this keeps
  * it in step with the task rows of the iteration indexes. An iteration with a
@@ -240,10 +252,7 @@ const ROADMAP_STATUS = { todo: "⬜ Todo", inProgress: "🔄 In progress", done:
  */
 export function checkRoadmapStatus(root) {
   const file = "docs/roadmap.md";
-  const roadmap = readFileSync(resolve(root, file), "utf8");
-  const statusOf = new Map(
-    [...roadmap.matchAll(/^\| \[[^\]]*\]\(tasks\/(iteration-\d+(?:\.\d+)?)\.md\) \|.*\| ([^|]+?) \|$/gm)].map((m) => [m[1], m[2]]),
-  );
+  const statusOf = roadmapStatuses(root);
   const failures = [];
   for (const iteration of templatedIterations(root)) {
     const index = readFileSync(resolve(root, `docs/tasks/${iteration}.md`), "utf8");
@@ -266,6 +275,33 @@ export function checkRoadmapStatus(root) {
   return failures;
 }
 
+/**
+ * The backlog's Mobile client table says which iteration takes each item, so
+ * a row that still names an iteration after it is done states a plan that has
+ * already happened: the decision it records moved to an ADR or the item went
+ * unscheduled, and the row has to say so. Only a link to the iteration's own
+ * index counts as assigning; a link to one of its task files is a record.
+ * @param {string} root repository root to check
+ * @returns {string[]} one message per failure; empty means OK
+ */
+export function checkBacklogMobileTable(root) {
+  const file = "docs/tasks/backlog.md";
+  const text = readFileSync(resolve(root, file), "utf8");
+  const section = sectionOf(text, "Mobile client");
+  if (section === null) return [`${file}: has no '## Mobile client' section`];
+  const statusOf = roadmapStatuses(root);
+  const failures = [];
+  for (const row of section.split("\n").filter((line) => line.startsWith("|"))) {
+    for (const [, iteration] of row.matchAll(/\]\((iteration-\d+(?:\.\d+)?)\.md\)/g)) {
+      if (statusOf.get(iteration) === ROADMAP_STATUS.done) {
+        failures.push(
+          `${file}: the Mobile client table assigns "${row.split("|")[1].trim()}" to ${iteration}, which is ${ROADMAP_STATUS.done}; point it at where it was decided`,
+        );
+      }
+    }
+  }
+  return failures;
+}
 
 /**
  * The ID rule it enforces is docs/tasks/quality-backlog.md's header.
@@ -322,6 +358,7 @@ if (invokedDirectly) {
   const failures = [
     ...checkTasks(root),
     ...checkRoadmapStatus(root),
+    ...checkBacklogMobileTable(root),
     ...checkQualityBacklog(readFileSync(resolve(root, "docs/tasks/quality-backlog.md"), "utf8")),
   ];
   for (const f of failures) console.log(`  FAIL  ${f}`);

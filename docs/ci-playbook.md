@@ -43,9 +43,9 @@ synthesising the success response from the return type, and drop it from
 failure. The rule, and the `@ResponseStatus` that fixes it, is in
 [backend/README.md](../backend/README.md)'s Traps.
 
-Run it locally before pushing either way: `make api-drift` (it regenerates from
-`backend/openapi.json`, needing neither Docker nor a backend). An orval bump is
-`npm run generate --workspace @kalia/api`, then the same read of the diff.
+Run it locally before pushing either way: how to regenerate, an orval bump
+included, is [packages/README.md](../packages/README.md) ("Regenerate"), then
+the same read of the diff.
 
 ## Frontend (npm) — lint
 
