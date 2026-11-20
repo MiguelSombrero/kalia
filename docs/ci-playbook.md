@@ -109,13 +109,13 @@ same way.
 
 ## E2E (Playwright)
 
-**A test ran and failed.** Match nothing below yet: the failure output ends each
-failed test with `Trace ids behind this failure: …`, and the stack's own account
-of that request, the span tree, its SQL and its log lines, is in the run's
-telemetry artifact ([A red run's telemetry](#a-red-runs-telemetry)), read with
-`make trace ID=<trace id>` or the `kalia-telemetry` MCP server. Loading it
-starts the profile, which is heavy work under `CLAUDE.md`'s two-session cap. The
-entries below are for a run where no test ran, or a failure already known.
+**A test ran and failed, and no entry below matches its message.** The failure
+output ends each failed test with `Trace ids behind this failure: …`, and the
+stack's own account of that request, the span tree, its SQL and its log lines,
+is in the run's telemetry artifact ([A red run's
+telemetry](#a-red-runs-telemetry)), read with `make trace ID=<trace id>` or the
+`kalia-telemetry` MCP server. Loading it starts the profile, which is heavy work
+under `CLAUDE.md`'s two-session cap.
 
 **`Error: Timed out waiting 300000ms from config.webServer` — no test ran.**
 Not a test failure: Playwright's `webServer` starts `docker compose up --build`,
