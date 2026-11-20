@@ -10,7 +10,7 @@
     "lint": "eslint && tsc --noEmit"
   },
   "devDependencies": {
-    "eslint": "10.13.0",
+    "eslint": "10.15.0",
     "eslint-config-next": "16.4.6",
     "typescript": "^7.0.2"
   }
