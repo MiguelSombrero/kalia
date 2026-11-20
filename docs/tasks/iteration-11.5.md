@@ -40,7 +40,7 @@ around it — through every tier, reading it from a query rather than from
 | [07](iteration-11.5/07-an-agent-queries-the-telemetry-through-an-mcp-server.md) | An agent queries the telemetry through an MCP server | done |
 | [08](iteration-11.5/08-one-command-prints-a-requests-trace-and-logs.md) | One command prints a request's trace and log lines as text | done |
 | [09](iteration-11.5/09-a-failing-e2e-test-names-its-trace.md) | A failing end-to-end test names its trace, and CI keeps the telemetry | done |
-| [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | refined |
+| [10](iteration-11.5/10-the-process-tells-an-agent-when-to-look.md) | The process tells an agent when to read the telemetry | done |
 | [25](iteration-11.5/25-each-apps-code-conventions-have-a-file-of-their-own.md) | Each app's code conventions have a file of their own, loaded with its subtree | done |
 | [11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md) | The mobile app's mechanical code rules fail the lint | done |
 | [26](iteration-11.5/26-navigation-targets-translation-keys-and-strictness-are-checked.md) | Navigation targets, translation keys and compiler strictness are checked in both apps | done |

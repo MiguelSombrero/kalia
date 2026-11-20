@@ -18,6 +18,12 @@ red on purpose, a failure that is normal operation (`grep` finding no match),
 or a problem with the machine itself (a full disk, an emulator that will not
 boot) that is no defect of the repository.
 
+**Before you write a row for a failure of the stack itself** (a `5xx`, a slow
+request, a red end-to-end test), read its trace with `make trace ID=<trace id>`
+or the `kalia-telemetry` MCP server ([README](../README.md#run-locally)), so the
+row's **Why** is what the trace showed rather than `unknown`. Starting the
+profile is heavy work under `CLAUDE.md`'s two-session cap.
+
 **How to write a row:**
 
 - Append it to the end of the table, on the branch you are working on. Never

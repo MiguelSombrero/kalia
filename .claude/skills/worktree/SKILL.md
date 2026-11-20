@@ -135,8 +135,16 @@ output. So:
 
 A check that goes red while you work in the worktree follows two rules, moved
 here whole from `CLAUDE.md`
-([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)):
+([ADR-0048](../../../docs/adr/0048-what-survives-a-claude-md-bullet.md)), and a
+third for reading the cause:
 
+- **A stack that failed a request — a `5xx`, a slow page, a red end-to-end
+  test — is read through its trace before a row is written.** `make trace
+  ID=<trace id>` or the `kalia-telemetry` MCP server
+  ([README](../../../README.md#run-locally)), with the profile started in this
+  worktree (`make observability-up`). It is heavy work
+  that counts under [How many at once](#how-many-at-once), and `make down`
+  stops it with the stack before a long wait.
 - **An unexpected local failure gets one appended row in
   [docs/common-failures.md](../../../docs/common-failures.md)**, on the branch
   it happened on
