@@ -9,6 +9,9 @@
   (see Decision, Alternatives considered and Consequences)
 - **Amended:** 2026-11-19 — iteration 11.5 task 09: how a failing test names
   its request and what a red run keeps (see Decision, CI)
+- **Amended:** 2026-11-20 — maintenance: the images' usage reports and update
+  checks are switched off, and Grafana's plugin fetch at each start is recorded
+  (see Consequences)
 
 ## Context
 
@@ -251,6 +254,13 @@ left it.
   provenance Docker does not vouch for, and each holds a database or session
   credential. The profile is local and opt-in, and the images are pinned and
   scanned like the rest (ADR-0024).
+- Neutral, because the images report usage to their maker unless told not to
+  (Alloy, Grafana, Loki, Tempo and Pyroscope did), which the profile now turns
+  off in `docker-compose.override.yml` and a test keeps off; what still dials
+  out is Grafana's plugin installer, which contacts grafana.com at every start
+  (the Evidence's "once" is the download; the check recurs) to fetch plugins,
+  not to report anything. Stopping that too would leave a fresh volume without
+  the Drilldown apps.
 - Neutral, because retention is three days and a restart keeps the store only
   as long as its volume does; the store is a diagnostic aid, not a record.
 - **Revisit trigger:** a deployment target exists or a hosted monitoring
