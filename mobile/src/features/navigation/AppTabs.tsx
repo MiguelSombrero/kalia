@@ -53,7 +53,7 @@ export const AppTabs = () => {
         options={{
           title: t("mobileNavigation.add"),
           tabBarAccessibilityLabel: t("mobileNavigation.addTitle"),
-          tabBarShowLabel: false,
+          // Do not hide the label with tabBarShowLabel: the bar reads it from the focused tab only, so Add's title is drawn beneath the circle.
           tabBarLabel: () => null,
           tabBarIcon: () => <AddIcon />,
           tabBarIconStyle: { width: theme.spacing.touch, height: theme.spacing.touch },
