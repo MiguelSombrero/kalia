@@ -16,6 +16,10 @@ implemented or reviewed.
 
 ## When it applies
 
+If the Skill tool does not list this skill (it was `Unknown skill` in the first
+use, with the file on disk), read this file and
+[`child-brief.md`](child-brief.md) directly; nothing else changes.
+
 Whenever the PO wants tasks of an iteration implemented, whatever is left of
 it. The PO may do what time allows today and continue days later in a new
 session, or another session may already have done most of it, so the skill takes
@@ -52,8 +56,14 @@ when one session works the tasks serially: it opens the two pull requests too.
   approval.** Merging is the PO's. A decision is the PO's words, forwarded as
   written.
 - **It does not poll CI.** Auto-fix wakes the child on a red check
-  (`CLAUDE.md`); the orchestrator reads a pull request's checks once, when a
-  child reports.
+  (`CLAUDE.md`) where it works (step 6); the orchestrator reads a pull
+  request's checks twice, at the report and before the merge order (step 8).
+- **An event that changes nothing gets one line or no message**, and the
+  PO's open list is never restated unless it changed. A stale watcher's exit
+  woke the first use for "nothing to do" and cost the PO a message each time.
+- **A cause is a hypothesis until a child confirms it.** Say "likely", and have
+  the child check before stating it as fact: the first use called a Dependabot
+  branch stale and the child's check showed it was not.
 - **"The PO follows only the orchestrator" is a goal, not a guarantee.** A
   permission prompt or an app-level card can still surface in a child session.
   Say so when the PO first asks, and relay what surfaces rather than guess.
@@ -91,21 +101,39 @@ when one session works the tasks serially: it opens the two pull requests too.
    - **Tasks that edit the same file are one lane and run serially** — every
      task touching `mobile/eslint.config.js` waits for the one before it,
      whatever the order says.
+   - **A task that changes a global check** (compiler flags, lint rules, CI) is
+     serial with every task that adds code under it. The lane rule names shared
+     files, not shared checks: `noUncheckedIndexedAccess` (task 26) merged
+     fifteen minutes after new web tests (task 05), each green on its own base,
+     and broke `dev` together (SHOULD-137).
+   - **Maintenance sessions count** (a `dev` fix, a Dependabot repair, a CVE
+     fix) toward the four and the two heavy.
    - **If a child reports load-related flakiness** (task 17 saw a load average
      of 10 to 50), start fewer sessions until it clears.
    - **Waves** are only how the plan is shown: tasks that can start together.
      Re-plan after every merge round and after any refinement change.
 
    Put the plan to the PO: lanes, waves, heavy or cheap, what blocks what, and
-   what you could not decide. Offer the **autonomy choice**: *approve each
-   start* or *advance within the approved plan* (recommended: the PO approves
-   once, and a start the plan already names needs no second yes; anything the
-   plan does not name does). The PO decides what starts.
+   what you could not decide. The PO decides what starts. Three things to say
+   with it:
+
+   - **Starts happen on the PO's turn.** The app refuses `start_session` on a
+     turn that a child's report or a monitor event began, so every wave after the
+     first waited for the PO to say "start X". On each of their turns, start
+     everything unblocked in one go; the plan's approval does not start a later
+     wave by itself.
+   - **Parallel children spend the usage budget quickly**: several died together
+     on the 5-hour limit. A child that failed on it is resumed by message after
+     the reset.
+   - **Auto-archive on PR close archives the child**, and a message to an
+     archived session fails (step 10). Ask whether to turn the Code tab's
+     auto-archive off for the iteration.
 3. **Write the checkpoint** `.claude/iteration-checkpoint.md` (gitignored by
    `.claude/*.md`): the plan as a table (task, heavy or cheap, files, blockers,
-   session id, branch, PR, state), the autonomy choice and the decisions
-   waiting on the PO. It is **a cache and never the source of truth**: a new
-   session, in another worktree, will not have it, and one that does must still
+   session id, worktree, branch, PR, state; the worktree and branch from
+   `get_session`, since directory names are recycled and do not match the task),
+   whether Auto-fix works (step 6) and the decisions waiting on the PO. It is
+   **a cache and never the source of truth**: a new session, in another worktree, will not have it, and one that does must still
    redo step 1, because the file can be stale
    ([ADR-0046](../../../docs/adr/0046-edit-time-checks-and-one-verify-gate.md)).
 4. **Opening pull request**, unless the roadmap row already reads `🔄 In
@@ -115,47 +143,77 @@ when one session works the tasks serially: it opens the two pull requests too.
    task is done. So the PO merges this one **before any task pull request**, and
    a child ready sooner waits for the orchestrator's word and then merges
    `origin/dev` (the child brief says so).
-5. **Start the children** the plan allows, one session per task, each with the
-   standard brief below, `initiation: user_asked` once the PO approved the
-   plan, its own worktree, a fresh context. **Omit `permission_mode`, so each
-   inherits the orchestrator's own**: the PO is asked no more often than the
-   orchestrator's mode asks. Tell the PO in one line which started and which are
-   held and why.
-6. **Check Auto-fix.** The PO wants it on for every pull request, so the brief
-   tells each child to switch it on right after opening its own. The limit: the
-   switch is per session, so only the child can set it, and the app asks the PO
-   to approve each call unless that session is in auto or bypass permission mode.
-   When a child reports its pull request, read `get_status` with its
-   `session_id` and tell the PO which pull requests still lack `auto_fix`.
+5. **Start the children** the plan allows, one session per task, each pointed
+   at [`child-brief.md`](child-brief.md) and told only what differs (below),
+   `initiation: user_asked`, its own worktree, a fresh context. **Omit
+   `permission_mode`, so each inherits the orchestrator's own**: the PO is asked
+   no more often than the orchestrator's mode asks. Tell the PO in one line which
+   started and which are held and why.
+6. **Check Auto-fix once, then stop asking.** The PO wants it on for every
+   pull request, and only the child can set it: the switch is per session, and
+   the auto-mode classifier may deny `set_monitor` (it did for almost every
+   child in the first use, and asking the PO to switch it on a dozen times
+   changed nothing). At the first child's report read `get_status` with its
+   `session_id`. If `auto_fix` is off, write "Auto-fix unavailable" in the
+   checkpoint and ask the PO once: a permission rule for the tool, or they
+   switch it on per pull request. Then do not ask again. Without it nothing
+   wakes a child on a red check, so the orchestrator reads the checks at the
+   report and again before the merge order (step 8), and the brief has the child
+   say if its checks were still pending.
 7. **Relay.** A child asks the orchestrator, never the PO. Batch the questions
    of a round, merge duplicates, put them to the PO with the options and a
    recommendation, and answer the child with the PO's words verbatim. A child
    whose answer would change a task's premise stops (step 11).
 8. **Verify every report before relaying it.** A child's "done" is a claim:
 
-   - `gh pr view <n> --json state,body,files,statusCheckRollup` and `gh pr
-     checks <n>`: every required check green, or failing for a reason the
-     child names. Read them once at the report, never in a loop.
+   - `.claude/skills/implement-iteration/scripts/pr-report.sh <n>...`
+     (read-only): state, merge state, check counts with the failing names,
+     whether the diff touches `docs/roadmap.md`, and the task file's status and
+     unticked criteria on the branch. Every required check green, or failing for
+     a reason the child names. Read once at the report and once before the merge
+     order (step 9), never in a loop.
    - The task file's `Status` on the branch (`git show origin/<branch>:<path>`),
      the ticked criteria and the pull request body's Gates all say the same
      thing. A body that says `in-progress` over a task marked done is not done.
    - **A pull request that cannot tick every criterion names an owner for the
      rest** (the PO on the phone, another session, a later run) and the task
      stays `refined`; say that to the PO, not "implemented".
+   - **A body that promises something "once task N has merged" is an unfiled
+     deferral**: send it back to file an ID or to wait. Task 14's lint ban was
+     lost that way and needed a pull request of its own.
    - The diff touches no iteration status and no file another in-flight task
      owns.
 
-   Three reports from iteration 11.5 that this catches: "marked done" over a
-   body saying `in-progress`; a child that stopped waiting on a CI run that had
-   already failed; "implemented" with the native-run criteria unmet. Send a
-   child back with what is wrong, in the words of the evidence.
+   This caught about ten real problems in 11.5, among them "marked done" over a
+   body saying `in-progress`, a Maestro run nobody had read, red scans,
+   unticked criteria and a lost deferral. Send a child back with what is wrong,
+   in the words of the evidence.
 9. **Digest to the PO**, one message and only when something needs them: what
    is in flight, what waits for review or merge, **the order to merge** (small
    pull requests that touch shared files first, the opening pull request before
-   all), and which sessions need a `dev` merge after each. The PO merges.
+   all), and which sessions need a `dev` merge after each. The PO merges. Also:
+   - **A pull request that carries a criterion only the PO can give** is marked
+     "do the check before you merge this", and its child holds the task
+     `refined` with the owner named until then. After the merge it costs more
+     pull requests: task 15's tick commit stranded after #679, then #686 and
+     #693 ticked and closed it. Task 07's fresh-session run, done before the
+     merge, needed none.
+   - **A merge that changes a global check** (step 2) is named, with what it
+     obliges the rest (step 10).
+   - **The last line names what to say to start the next wave** ("say
+     `start 12, 14`"), since starts need the PO's turn (step 2).
 10. **After a merge round**, fetch, confirm the merges with `gh pr view --json
     state`, update the checkpoint, tell the sessions that need `dev` merged,
     re-plan (step 2) and start what is now unblocked.
+    - **Tell them in one batch message.** Every task pull request flips its own
+      row in the iteration index, so each merge turns the next pull requests
+      `DIRTY`: about fifteen rounds in 11.5 (filed as SHOULD-139).
+    - **After a merge of a task that changed a global check, every open pull
+      request merges `dev` and re-verifies before the next merge**; the digest
+      says which.
+    - **A follow-up on a merged task goes to a fresh child** pointed at the
+      brief file, not to the old one, which auto-archive has probably archived;
+      its worktree directory may already be recycled.
 11. **New or stale work.** A child may draft a task file at `needs-refinement`
     through a pull request, only when the PO approved it, and the task then goes
     through `refine-task` or `refine-iteration` — only the PO moves it to
@@ -177,6 +235,12 @@ when one session works the tasks serially: it opens the two pull requests too.
     roadmap entry is how the close of 5.5, 6 and 7 drifted. The PO merges it;
     the orchestrator never says the iteration is done.
 
+    **It cannot open while a live task is not `done`**: `scripts/check-tasks.mjs`
+    fails a `✅ Done` row then, so the 11.5 close waited on task 15 while its
+    criterion belonged to the PO. Criteria only the PO can give land before the
+    closing pull request, or the PO decides to drop or move the task. Closing
+    with an open item is an ADR-0026 change, not a workaround.
+
     `scripts/check-tasks.mjs` does not fail an iteration with every task done
     and the row still `🔄 In progress`, because this pull request follows the
     last task's. Nothing mechanical prompts the close, so start it as soon as the
@@ -185,36 +249,33 @@ when one session works the tasks serially: it opens the two pull requests too.
 13. **Tear down**: the children's worktrees follow the `worktree` skill's
     Finish; offer to archive the sessions, only on the PO's yes.
 
+## When `dev` is red, or a check fails on something the PR does not touch
+
+`dev` went red three times in 11.5 with no task pull request at fault: a merged
+pair of tasks that broke the web type-check together (#661), then two new CVE
+advisories in images no pull request touched. A red `dev` blocks every child's
+`pre-push` `make verify-fast` and every open pull request, and a few children
+pushed their own copy of the fix before a hold reached them.
+
+1. **Read `gh run list --branch dev`** for the head's state before anything.
+2. **Start one maintenance child** for the fix, counted in the caps (step 2).
+3. **Broadcast to every child**: do not fix it in your pull request, hold the
+   push, and merge `dev` when told.
+4. **A new vulnerability gets its own pull request, and each proposed pin is one
+   batched question to the PO** (`CLAUDE.md` "New dependencies"). This is the
+   case [ADR-0024](../../../docs/adr/0024-dependency-vulnerability-scanning.md)'s
+   "fixed on whatever branch is open" does not reach: it weighs one open branch
+   against a second pull request, and here every open branch would carry the
+   same fix.
+
 ## The child brief
 
-Every child gets the same brief, so none improvises its own process:
-
-- **The task** — its file path and the skill to invoke: `implement-task`
-  (`design-task` is not delegated, above).
-- **Where from** — a worktree off a freshly fetched `origin/dev`, on branch
-  `iteration-N/<topic>`; the `worktree` skill.
-- **Weight** — heavy or cheap, and whether it needs the emulator.
-- **Overlaps** — the files other in-flight tasks name, which it must not touch,
-  and the tasks whose merge it waits for.
-- **The opening pull request may not have merged yet.** If `make verify-fast`
-  fails only on the roadmap row, wait for the orchestrator, merge `origin/dev`,
-  and push; do not edit the row.
-- **Do not edit iteration status.** `docs/roadmap.md` rows and "What each
-  iteration built" belong to the opening and closing pull requests; a task pull
-  request that touches them is sent back.
-- **Turn Auto-fix on** for its own pull request right after opening it:
-  `get_status`, `bind_pr` with the URL if it does not report the PR, then
-  `set_monitor` with `auto_fix: true` and the URL. The PO asked for this on every
-  pull request; the report says whether it is on.
-- **Ask the orchestrator, not the PO.** One short question by `SendMessage` to
-  the orchestrator's session id, then end the turn.
-- **No deferral without an ID.** The pull request body says "follow-up" or "new
-  task" only with the quality-backlog ID it filed
-  (`implement-task` step 8).
-- **The report** — pull request link first, then each gate's verdict, each
-  criterion ticked or its named owner, whether Auto-fix is on, and anything the
-  orchestrator must tell the PO. The orchestrator verifies it (step 8); the
-  report is not the proof.
+[`child-brief.md`](child-brief.md) is the one brief every child gets, so none
+improvises its own process and no start retypes it (the first use typed about
+900 words fifteen times, and the first wave lacked what later ones learned).
+Each start names only: the task file, the files other in-flight tasks name, its
+weight and whether it needs the emulator, the tasks whose merge it waits for,
+and the orchestrator's session id.
 
 ## What this does not cover
 
