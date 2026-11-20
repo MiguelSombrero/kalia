@@ -66,6 +66,14 @@ updates:
     directory: "/edge"
     schedule:
       interval: "weekly"
+  # The stack builds this Dockerfile, not the compose `image:` line the
+  # docker-compose entry below bumps, so that entry alone leaves the built
+  # image on the old tag. No major ignore: Postgres majors are ones the
+  # project wants to take (ADR-0085).
+  - package-ecosystem: "docker"
+    directory: "/postgres"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
