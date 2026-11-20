@@ -15,11 +15,13 @@ for n in "$@"; do
   pr=$(gh pr view "$n" --json state,mergeStateStatus,title,files,statusCheckRollup)
   echo "== #$n $(jq -r '.title' <<<"$pr")"
   jq -r '"state: \(.state)   merge state: \(.mergeStateStatus)"' <<<"$pr"
-  # Required checks and the rest alike; a check run's result is conclusion, a status context's is state.
+  # A check run's result is its conclusion, a status context's its state; anything
+  # finished that is not a pass or a skip counts as failed, so the counts add up.
   jq -r '
-    [.statusCheckRollup[] | {name: (.name // .context), result: (if .status == "COMPLETED" or .status == null then (.conclusion // .state) else "PENDING" end)}] as $c
-    | "checks: \([$c[] | select(.result == "SUCCESS")] | length) passed, \([$c[] | select(.result == "FAILURE" or .result == "ERROR" or .result == "TIMED_OUT" or .result == "CANCELLED")] | length) failed, \([$c[] | select(.result == "PENDING")] | length) pending, \([$c[] | select(.result == "SKIPPED" or .result == "NEUTRAL")] | length) skipped"
-    , ($c[] | select(.result == "FAILURE" or .result == "ERROR" or .result == "TIMED_OUT" or .result == "CANCELLED") | "  failing: \(.name)")
+    def failed: . != "SUCCESS" and . != "PENDING" and . != "SKIPPED" and . != "NEUTRAL";
+    [.statusCheckRollup[] | {name: (.name // .context), result: (if .status == "COMPLETED" or .status == null then (.conclusion // .state // "PENDING") else "PENDING" end)}] as $c
+    | "checks: \([$c[] | select(.result == "SUCCESS")] | length) passed, \([$c[] | select(.result | failed)] | length) failed, \([$c[] | select(.result == "PENDING")] | length) pending, \([$c[] | select(.result == "SKIPPED" or .result == "NEUTRAL")] | length) skipped"
+    , ($c[] | select(.result | failed) | "  failing: \(.name)")
   ' <<<"$pr"
   if jq -e '.files[] | select(.path == "docs/roadmap.md")' <<<"$pr" >/dev/null; then
     echo "touches docs/roadmap.md: yes"
