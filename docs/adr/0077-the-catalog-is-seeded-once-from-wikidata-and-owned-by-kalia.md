@@ -14,6 +14,12 @@
 - **Amended:** 2026-11-06 — `V004` is no longer left unchanged around the
   schema: it states each seeded row's country code, sort key and source
   itself, and `V008` carries no `ALTER` or `UPDATE` to repair it
+- **Amended:** 2026-11-20 — scanning a bottle is dropped with
+  [iteration 14](../tasks/iteration-14.md): a barcode is a number that carries
+  no name, brewery or strength, so scanning would need a lookup source Kalia
+  does not have. The barcode coverage this ADR weighs and the Open Food Facts
+  route it keeps for iteration 14 are therefore moot; the source's choice and
+  the rest of the decision stand
 
 ## Context
 
