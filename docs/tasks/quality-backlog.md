@@ -56,12 +56,12 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-27 · SHOULD-139 · COULD-166
+**Highest issued:** MUST-28 · SHOULD-143 · COULD-168
 
 ## MUST
 
-- **MUST-26** *(confirmed 2026-11-14)* — `keycloak/README.md` "Changing a
-  colour" (lines 36–42) says each colour is declared at the top of `login.css`
+- **MUST-26** *(confirmed 2026-11-22)* — `keycloak/README.md` "Changing a
+  colour" (lines 40–46) says each colour is declared at the top of `login.css`
   as `--kalia-color-<name>`, a hand-kept copy of the app's token.
   `scripts/check-keycloak-theme.mjs` now fails any `--kalia-color-*` declared
   there ("belongs in the generated stylesheet"): the colours are generated into
@@ -71,16 +71,28 @@ repeats, so the recurrence stays visible once the old entry is gone.
   who follows the README edits the wrong file and the check fails. The same
   README's line 21 ("one `login.css` layered after it") and its Checks section
   ("the theme's colours … to the app's") describe the old arrangement too.
-- **MUST-27** *(confirmed 2026-11-14)* **[needs decision]** — The branch-naming
+- **MUST-27** *(confirmed 2026-11-22)* **[needs decision]** — The branch-naming
   rule (`CLAUDE.md` "Never commit directly to `dev`": `iteration-N/<topic>`,
   `docs/<topic>`, `fix/<topic>`) has no enforcer and keeps reaching `dev`
   broken. The `worktree` skill's step 4 gained a warning about
   `claude/<name>-<hash>` names in #587, citing #416, #476 and #522; since then
-  #629, #630 and #633 merged from `claude/…` branches. Nothing in `scripts/`,
+  #629, #630 and #633 merged from `claude/…` branches, and since the
+  2026-11-14 sweep #637, #640, #642 and #643. Nothing in `scripts/`,
   `.github/workflows/`, `scripts/hooks/pre-push` or `.claude/settings.json`
   reads the head ref. Repeats COULD-128, whose documentation-only fix did not
   hold. The decision: check the name (in `pre-push` or the PR-body workflow),
   or drop the rule.
+- **MUST-28** *(confirmed 2026-11-22)* — The vulnerability scan is red on `dev`
+  and on every push until it is fixed: the scheduled run of 2026-11-21 (run
+  44895867207) failed `Scan grafana/otel-lgtm:0.41.0` on eight HIGH advisories
+  in the image's `curl-minimal` and `libcurl` (CVE-2026-8286, CVE-2026-8458,
+  CVE-2026-8927, CVE-2026-9547 among them), all marked fixed in
+  `7.76.1-44.el9_9.1`. `ci.yml` calls the scan on every push, unconditionally,
+  so the next pull request fails `ci-passed` on an image it did not touch; the
+  run of 2026-11-20 was green and nothing has merged since. CLAUDE.md makes the
+  fix its own pull request off `dev` (ADR-0024): a newer `otel-lgtm` tag in
+  `docker-compose.override.yml`, or, with none, one waiver per advisory in
+  `.trivyignore.yaml` beside the 17 it already has.
 
 ## SHOULD
 
@@ -104,7 +116,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   are sending the event after the page's layout rather than in an effect, or
   moving focus with `accessibilityViewIsModal` or a `key`ed heading. Related:
   SHOULD-119, whose fix settles both.
-- **SHOULD-121** *(confirmed 2026-11-14)* — The web's Keycloak token refresh
+- **SHOULD-121** *(confirmed 2026-11-22)* — The web's Keycloak token refresh
   has no timeout. `web/lib/auth/refreshAccessToken.ts` calls
   `fetchViaInternalKeycloak`, a plain `fetch`
   (`web/lib/auth/internalKeycloakFetch.ts`), and `currentAccessToken()` awaits
@@ -113,7 +125,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   Keycloak that accepts the connection and never answers holds every backend
   call of a render whose token has expired. The mobile app bounds the same call
   (`mobile/src/lib/auth/keycloakClient.ts`); SHOULD-97 fixed it there only.
-- **SHOULD-122** *(confirmed 2026-11-14)* — `web/features/catalog/addBeerSchema.ts`
+- **SHOULD-122** *(confirmed 2026-11-22)* — `web/features/catalog/addBeerSchema.ts`
   and `web/features/admin-suggestions/editSuggestionSchema.ts` are near-copies:
   the same seven bounds and patterns (`MAX_NAME_LENGTH`, `MAX_CITY_LENGTH`,
   `MAX_ABV`, `HAS_LETTER_OR_DIGIT`, `NO_CONTROL_OR_INVISIBLE_CHARACTERS`,
@@ -121,7 +133,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   `toNumber`, differing only in the message-key prefix and the form's value
   type. Both mirror the same backend constraints, so a bound changed in one
   lets the admin form accept what the add form refuses, or the reverse.
-- **SHOULD-123** *(confirmed 2026-11-14)* **[needs decision]** — Nothing bounds
+- **SHOULD-123** *(confirmed 2026-11-22)* **[needs decision]** — Nothing bounds
   a cellar on either side. `docs/architecture.md` "Trade-offs made explicit"
   accepts that `GET /api/v1/cellar` answers every entry uncapped until
   iteration 12, but no cap on entries or bottles per user exists on the write
@@ -130,7 +142,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   cellar read, and every add (which loads the whole entry aggregate),
   arbitrarily expensive now, not only once the offline cache arrives. The
   decision: cap the writes, page the read, or accept it and say so.
-- **SHOULD-124** *(confirmed 2026-11-14)* **[needs decision]** — The domain
+- **SHOULD-124** *(confirmed 2026-11-22)* **[needs decision]** — The domain
   layer depends on its module's root package, a cycle no rule sees.
   `catalog/domain/Beer.java`, `catalog/domain/Review.java` and
   `cellar/domain/Entry.java` import root types (`BeerRemoved`,
@@ -144,7 +156,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   Modulith" claims more than the rules hold. The decision: document root event
   and value types as a sanctioned kernel beneath `domain` and write the rules
   to match, or move the types.
-- **SHOULD-125** *(confirmed 2026-11-14)* — `notification`'s entity persists
+- **SHOULD-125** *(confirmed 2026-11-22)* — `notification`'s entity persists
   `catalog`'s enum: `notification/domain/Notification.java` maps `reason_code`
   as `fi.kalia.catalog.RejectionReason`, and
   `db/migration/notification/V010__notification_schema.sql` repeats the `CHECK`
@@ -153,7 +165,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   retried five times (ADR-0081) and the notification is lost. The module
   already keeps its own copy of the outcome (`Notification.Outcome`, mapped by
   name in `NotificationService`); the reason needs the same.
-- **SHOULD-126** *(confirmed 2026-11-14)* **[needs decision]** — The backend's
+- **SHOULD-126** *(confirmed 2026-11-22)* **[needs decision]** — The backend's
   request bounds are copied by hand into both clients.
   `web/features/catalog/searchParams.ts` (`MAX_ABV`, `MAX_FILTER_LENGTH`,
   `MAX_PAGE_SIZE`, `MAX_OFFSET`), `mobile/src/features/catalog/filters/model.ts`
@@ -165,14 +177,14 @@ repeats, so the recurrence stays visible once the old entry is gone.
   `400` or stopping its paging early on its own. The decision: generate
   constants or schemas from the spec, or export hand-kept ones from
   `@kalia/api`.
-- **SHOULD-127** *(confirmed 2026-11-14)* — `keycloak/README.md` leaves out
+- **SHOULD-127** *(confirmed 2026-11-22)* — `keycloak/README.md` leaves out
   `keycloak/config-cli.Dockerfile`: its Layout table has no row for it, and
   "On a Keycloak image bump" (line 44) names the `Dockerfile` `FROM` and
   `keycloak-config-cli` in `docker-compose.base.yml`, while that service is
   built from `config-cli.Dockerfile`, whose own `FROM` carries the tag. A bump
   that follows the README leaves the line that is actually built at the old
   version.
-- **SHOULD-128** *(confirmed 2026-11-14)* — `docs/design.md` (beer-style
+- **SHOULD-128** *(confirmed 2026-11-22)* — `docs/design.md` (beer-style
   colours, lines 400–401) says changing a style colour "is a `globals.css`
   edit that the contrast check guards". The `[data-beer-style]` blocks are
   generated into `web/app/tokens.generated.css` from
@@ -180,7 +192,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   `scripts/check-contrast.mjs` reads, and the same document's opening already
   names `tokens.ts` as the home of values. The edit it describes would be
   overwritten.
-- **SHOULD-129** *(confirmed 2026-11-14)* **[needs decision]** — The timestamp
+- **SHOULD-129** *(confirmed 2026-11-22)* **[needs decision]** — The timestamp
   rule contradicts the schema. `backend/CONVENTIONS.md` ("A new
   table carries `created_at` and `updated_at`") and `docs/glossary.md`'s
   Timestamp columns row (which names `catalog.beer` as the one exception) do
@@ -190,13 +202,13 @@ repeats, so the recurrence stays visible once the old entry is gone.
   `notification.notification` (`V010__notification_schema.sql`, created after
   the rule). The decision: word the rule for mutable tables and list the
   append-only and one-row exceptions, or add the columns.
-- **SHOULD-130** *(confirmed 2026-11-14)* — `docs/ci-playbook.md` files its
+- **SHOULD-130** *(confirmed 2026-11-22)* — `docs/ci-playbook.md` files its
   lint entry under "Frontend (npm) — lint", a job that does not exist: the job
   is `Web and packages (npm)` in `.github/workflows/ci.yml`, and the lint of
   `Mobile app (npm)` has no entry at all. The playbook is found by the red
   job's name, so the entry is missed. Repeats MUST-25: the rename drift in
   this file survived iteration 11 task 12 in this heading.
-- **SHOULD-131** *(confirmed 2026-11-14)* **[needs decision]** — ADR-0016's
+- **SHOULD-131** *(confirmed 2026-11-22)* **[needs decision]** — ADR-0016's
   revisit trigger has fired and the decision has not been revisited.
   `web/lib/config/cspHeader.ts` keeps `script-src 'unsafe-inline'`, which the
   ADR accepts because the app has "no user-generated content" and says to
@@ -207,13 +219,17 @@ repeats, so the recurrence stays visible once the old entry is gone.
   `web/` — so this is a missing second line of defence, not a hole. The
   decision: a nonce-based policy at the cost of static rendering, or reaffirm
   the trade-off in the ADR against the features that exist.
-- **SHOULD-132** *(confirmed 2026-11-14)* **[needs decision]** — Two pull
+- **SHOULD-132** *(confirmed 2026-11-22)* **[needs decision]** — Two pull
   requests each green on their own base broke `dev` a third time, in a job the
   merge-ref check leaves out. #623 and #624 merged and the Android sign-in
   flow went red on `dev` and on every pull request based on it (#627, #629)
   until #628 (`docs/common-failures.md`, the 2026-11-13 row); the earlier
   occurrences are PR 450 and #542/#543. `.github/workflows/merge-ref-check.yml`
-  runs only `make check` on the merge ref. Repeats SHOULD-115, whose task
+  runs only `make check` on the merge ref. A fourth time on 2026-11-15, in
+  the lint: #643 turned on `simple-import-sort/imports` for the web while #644
+  added `web/e2e/keycloak-page-titles.spec.ts` unsorted; both were green, and
+  `dev` went red at #643's merge (run 43711373729) until #649. `make lint` is
+  not in `make check`. Repeats SHOULD-115, whose task
   closed the static-check sub-class. The decision: require up-to-date
   branches, run more jobs on the merge ref, or accept the race ADR-0046
   accepted and say it covers E2E.
@@ -227,7 +243,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   that changes stay at the end of the table. The decision: allow a repointed
   dead path as the rule's one exception, or exempt old rows from the checker —
   and whether append-only gets a check of its own.
-- **SHOULD-134** *(confirmed 2026-11-14)* **[needs decision]** — The Android
+- **SHOULD-134** *(confirmed 2026-11-22)* **[needs decision]** — The Android
   SDK licence failure in `Mobile E2E (Maestro, Android)` has happened twice
   from separate pull requests — run 41323371145 (the merge of PR 523) and run
   43448275019 (#623), both logged in `docs/common-failures.md` as "cause not
@@ -236,16 +252,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
   licence prompt and names no next step, and `scripts/mobile-e2e.mjs` already
   answers `sdkmanager --licenses`. Nothing owns finding the cause. Not covered
   by iteration 11.5 task 19, which retries registry and mirror failures.
-- **SHOULD-135** *(confirmed 2026-11-14)* **[needs decision]** — The "run it
-  against a running stack" gate (`implement-task` step 10) is recorded as
-  skipped or not exercised in 11 of about 45 gate reports since the last
-  sweep: #554, #555, #557, #566 and #573 (no emulator), #593, #594 and #595
-  (skipped by the starting session, or unattended), #624 and #627 (nothing
-  seen on a simulator) and #628 (the heavy-session limit). `CLAUDE.md` caps
-  heavy sessions at two and counts a simulator or emulator as heavy, so for
-  mobile UI work the gate and the cap collide. A step skipped this often is
-  designed wrong (ADR-0027). The decision: say when component tests stand in
-  for the run, or how a capped session gets a device.
 - **SHOULD-136** *(confirmed 2026-11-14)* **[needs decision]** — A second
   agent tool writes pull requests under a process that only Claude Code runs.
   #598, #600 and #610 are attributed to GitHub Copilot, and the pull request
@@ -256,7 +262,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   is no `AGENTS.md` or `.github/copilot-instructions.md`. The decision:
   whether the second tool is a supported author, and if so what its gates are
   and where it reads them.
-- **SHOULD-137** *(confirmed 2026-11-17)* **[needs decision]** — The web is
+- **SHOULD-137** *(confirmed 2026-11-22)* **[needs decision]** — The web is
   type-checked only by `next build`, which neither `make verify-fast` nor the
   `make check on the merge ref` job runs. #648 (telemetry tests) and #652
   (`noUncheckedIndexedAccess`) each passed `Web and packages (npm)` on their own
@@ -266,19 +272,13 @@ repeats, so the recurrence stays visible once the old entry is gone.
   E2E and every open pull request, Dependabot's seven among them (run
   `43851999124`). The type-checker does include test files; nothing ran it on
   the merged tree. ADR-0046 accepted the race when it reversed the up-to-date
-  requirement, and this is its third sighting after #447/#448 and #542/#543. The decision: add `npx tsc --noEmit` in `web/` (about
-  a second with TypeScript 7) to the merge-ref job and to `verify-fast`, or restore the
-  up-to-date requirement; the ruleset is the product owner's.
-
-- **SHOULD-138** A web unit test fails by timeout under load because its 5 s
-  limit sits just above its cold-start time. `web/eslint.config.test.ts` "heading
-  rule (ADR-0073) > rejects a hand-written h1 and h2" starts ESLint cold and takes
-  4.4 s alone (about 6 s under load), against vitest's default `testTimeout` of
-  5000 ms; it failed `make verify-fast` and the pre-push hook twice in one
-  session and passed on a rerun. Give the ESLint-backed tests in that file a
-  timeout that holds under a loaded machine (or set one for the file) *(confirmed
-  2026-11-17)*
-
+  requirement, and this is its third sighting after #447/#448 and #542/#543.
+  `dev` stayed red from #652's merge until #661 the next day but one, through
+  eleven red runs. Still no web `tsc` in `make verify-fast` or the merge-ref
+  job (`web/CONVENTIONS.md`: "The web is type-checked by `next build`"). The
+  decision: add `npx tsc --noEmit` in `web/` (about a second with TypeScript 7)
+  to the merge-ref job and to `verify-fast`, or restore the up-to-date
+  requirement; the ruleset is the product owner's.
 - **SHOULD-139** *(confirmed 2026-11-20)* **[needs decision]** — Every task
   pull request flips its own row in its iteration index, so each merge turned
   the next open pull requests `DIRTY` and the orchestrating session sent a "merge
@@ -291,25 +291,69 @@ repeats, so the recurrence stays visible once the old entry is gone.
   written after the merge, or computed where it is read), or leaving it. Asked
   for directly by the product owner as a retrospective, not found by a sweep
   ([ADR-0051](../adr/0051-process-retrospection-belongs-to-the-sweep.md)).
+- **SHOULD-140** *(confirmed 2026-11-22)* **[needs decision]** — The
+  observability profile's images, which are never deployed, are now most of
+  what the required vulnerability scan blocks on. ADR-0114 scans them "like
+  the rest" and the scan runs on every push; since they arrived (#642, #666),
+  `grafana/otel-lgtm` alone is the subject of 17 of the 66 vulnerability
+  waivers in `.trivyignore.yaml` (14 for its Red Hat `krb5-libs`), it and
+  `grafana/alloy` were two of the six legs red on CVE-2026-97054 (runs 44455105822, 44457177695, 44457557872,
+  44458816192, until #670), and `otel-lgtm` alone turned `dev` red on
+  2026-11-21 (MUST-28). Each time the remedy is a waiver or a bump that changes
+  nothing a user runs. The decision: keep the profile's images as blocking
+  legs, scan them on the schedule only, or let their legs report without
+  failing `ci-passed`; ADR-0024 and ADR-0114 would be amended either way.
+- **SHOULD-141** *(confirmed 2026-11-22)* — The Android flow "Navigate the
+  tabs and dismiss the sheets" failed twice from separate branches with the
+  same signature, `Assertion is false: "Coming soon|Tulossa pian" is visible`
+  after `tapOn: "Feed|Syöte"` (`mobile/.maestro/navigation.yaml` line 7): run
+  44680232369 on Dependabot's eslint branch and run 44690324281 on `dev` at
+  #688's merge, neither touching the app, and the next run on `dev` passed. The
+  other four flows passed both times, so the device was healthy.
+  `docs/ci-playbook.md` "Mobile E2E (Maestro, Android)" has no entry for it,
+  and nothing owns finding the cause. The step's screenshot is in each run's
+  `maestro-output` artifact.
+- **SHOULD-142** *(confirmed 2026-11-22)* — `make check`, and so `make
+  verify-fast` and the `pre-push` hook, fails in any shell that exports
+  `GITHUB_TOKEN`. `commitExists` in `scripts/check-action-pins.mjs` (line 38)
+  takes `token = process.env.GITHUB_TOKEN` as a default parameter, so the test
+  "asks GitHub for the commit in that repository, with the token when there is
+  one" (`scripts/check-action-pins.test.mjs` line 65) passes `undefined` to mean
+  "no token" and gets the environment's token instead: `Expected undefined,
+  got 'Bearer …'`. A caller cannot ask for an unauthenticated request either.
+  Reading the environment once at the call site, and passing it in, fixes both
+  (`docs/common-failures.md`, the 2026-11-22 row).
+- **SHOULD-143** *(confirmed 2026-11-22)* — `FeedRedeliveryIT` stubs a spy that
+  the application's own threads are calling. Run 43736551445 (`dev`, #653's
+  merge) failed `redeliveringAnAlreadyRecordedEventAddsNoSecondLine` with
+  `UnfinishedStubbingException` at
+  `backend/src/test/java/fi/kalia/feed/FeedRedeliveryIT.java` line 107:
+  `willThrow(...).willCallRealMethod().given(registry).markCompleted(...)` runs
+  on the `@MockitoSpyBean EventPublicationRegistry` while event publication
+  and resubmission threads, some left by the class's earlier tests, call
+  `markCompleted` on it, and Mockito's stubbing is not thread-safe. Once in
+  the history, and the same shape will fail again under load. Stubbing before
+  any event is in flight, or through a seam no background thread touches,
+  removes the race.
 
 ## COULD
 
-- **COULD-136** *(confirmed 2026-11-06)* — `web/features/admin-suggestions/OutcomePanel.tsx`
+- **COULD-136** *(confirmed 2026-11-22)* — `web/features/admin-suggestions/OutcomePanel.tsx`
   builds a success box (icon cell, ink edge, message) that `Toast` and `ErrorAlert`
   each build too; a success counterpart to `ErrorAlert` in `components/ui/` would
   leave one copy to keep in step.
-- **COULD-144** *(confirmed 2026-11-14)* — The shared transport's timeout
+- **COULD-144** *(confirmed 2026-11-22)* — The shared transport's timeout
   covers the response headers, not the body.
   `packages/api/src/core/fetch-transport.ts` races only the `fetch(...)`
   promise against `withTimeout`; `readBody` awaits `response.text()` with no
   limit, so a backend or proxy that sends headers and stalls mid-body hangs
   the caller on web and mobile, against the file's own "bounds the wait".
-- **COULD-145** *(confirmed 2026-11-14)* — The UUID pattern guarding "can this
+- **COULD-145** *(confirmed 2026-11-22)* — The UUID pattern guarding "can this
   id name a row" is written four times: `web/features/catalog/api.ts`,
   `web/features/catalog/actions.ts`, `web/features/cellar/actions.ts` and
   `mobile/src/features/catalog/api.ts`. One export from `@kalia/api`'s core
   would leave one copy. Related: SHOULD-126 and COULD-119.
-- **COULD-146** *(confirmed 2026-11-14)* **[needs decision]** — On the web,
+- **COULD-146** *(confirmed 2026-11-22)* **[needs decision]** — On the web,
   removing or updating a bottle that is already gone shows the generic failure
   and puts the stale bottle back. `web/features/cellar/api.ts` throws on any
   non-2xx, `404` included, so `removeBottleAction` never reaches
@@ -317,21 +361,21 @@ repeats, so the recurrence stays visible once the old entry is gone.
   un-hides the bottle; a bottle removed in another tab or on the phone stays
   on screen until a reload. The decision: treat `404` as already removed, or
   show a message of its own.
-- **COULD-147** *(confirmed 2026-11-14)* — `useAnimateListChange`
+- **COULD-147** *(confirmed 2026-11-22)* — `useAnimateListChange`
   (`mobile/src/lib/motion/useAnimateListChange.ts`) returns a new function on
   every render, and `CatalogScreen` lists it as a `useLayoutEffect` dependency,
   so the effect re-runs on every render. The screen's own
   `shown.current !== firstPage` guard keeps the behaviour right; the next
   caller without one would animate on every render. A `useCallback` keyed on
   `reduced` fixes it.
-- **COULD-148** *(confirmed 2026-11-14)* — Two rules in the mobile catalog's
+- **COULD-148** *(confirmed 2026-11-22)* — Two rules in the mobile catalog's
   hooks are held by no test. `nextBeerPage`
   (`mobile/src/features/catalog/hooks/useBeers.ts`) stops paging at
   `MAX_RESULT_WINDOW`, the bound past which the backend answers `400`, and
   `CatalogScreen.flow.test.tsx` covers only the exhausted list; `useResultCount`
   (`hooks/useFilterOptions.ts`) hides a stale count by reference equality, and
   `FiltersSheet.test.tsx` exercises only its debounce.
-- **COULD-149** *(confirmed 2026-11-14)* **[needs decision]** — The page
+- **COULD-149** *(confirmed 2026-11-22)* **[needs decision]** — The page
   envelope and offset bound of `docs/architecture.md` §4 are implemented once
   per module — `catalog/web/PageDto.java` and `PageBounds.java`,
   `notification/web/NotificationPageDto.java` with `NotificationController`'s
@@ -340,7 +384,7 @@ repeats, so the recurrence stays visible once the old entry is gone.
   exception advice and error types. The spec carries three unrelated envelope
   schemas, and a fourth paginated module will copy it again. The decision:
   widen what `fi.kalia.web` may hold, or accept per-module envelopes and say so.
-- **COULD-150** *(confirmed 2026-11-14)* **[needs decision]** —
+- **COULD-150** *(confirmed 2026-11-22)* **[needs decision]** —
   `ArchitectureDocumentationTest` checks which modules §3's dependency table
   names, not the kind each edge is given ("(event: …)" or "(read: …)"): its
   `BACKTICKED_MODULE` pattern extracts module names only. A module that began
@@ -348,26 +392,26 @@ repeats, so the recurrence stays visible once the old entry is gone.
   wrong and the test green, and nothing else holds "writes cross modules as
   events". The decision: verify the kinds, or narrow §7's claim that the test
   holds §2 and §3 to the code.
-- **COULD-151** *(confirmed 2026-11-14)* — The data-model sketch in
+- **COULD-151** *(confirmed 2026-11-22)* — The data-model sketch in
   `docs/architecture.md` §3 leaves out `catalog.review`, the review record of
   ADR-0102 that the invariants beneath it rely on and that holds user ids
   (`decided_by`), and `brewery.name_sort_key`; both are in
   `backend/src/main/resources/db/migration/catalog/V003__catalog_schema.sql`.
   The sketch lists every other table, so the omission reads as "no such
   table".
-- **COULD-152** *(confirmed 2026-11-14)* — `docs/architecture.md` "Domain
+- **COULD-152** *(confirmed 2026-11-22)* — `docs/architecture.md` "Domain
   invariants" says a brewery's country is "named in the reader's language at
   runtime". That holds for the web only: the mobile app bundles a table
   (`mobile/src/lib/i18n/countryNames.data.ts`), as ADR-0079's amendment of
   2026-11-13 records.
-- **COULD-153** *(confirmed 2026-11-14)* **[needs decision]** — Strength
+- **COULD-153** *(confirmed 2026-11-22)* **[needs decision]** — Strength
   formatting is a display rule both clients show and each keeps its own.
   `web/lib/abv.ts` (`formatAbv`) is one helper; the mobile app inlines the same
   `Intl.NumberFormat` expression in `BeerCard.tsx`, `details/BeerHeadline.tsx`,
   `details/SimilarBeers.tsx` and `filters/FilterChips.tsx`, appending " %" in
   some and not others. ADR-0111 put the style-to-group rule in `@kalia/api`
   for the same reason. The decision: share it, or accept per-client formatting.
-- **COULD-154** *(confirmed 2026-11-14)* **[needs decision]** —
+- **COULD-154** *(confirmed 2026-11-22)* **[needs decision]** —
   `docs/glossary.md` "Terms decided in iteration 10.5, built by its tasks"
   still says its terms are "Not yet types … Each moves into the table in the
   task that builds it." Iteration 10.5 is done: `Review` is in the table
@@ -375,22 +419,22 @@ repeats, so the recurrence stays visible once the old entry is gone.
   under `backend/src/main/java/fi/kalia/catalog/`. The decision: fold the rows
   into the Domain types table, or keep the section as a permanent table of
   terms that are not types.
-- **COULD-155** *(confirmed 2026-11-14)* — ADR-0107's amendment of 2026-11-08
+- **COULD-155** *(confirmed 2026-11-22)* — ADR-0107's amendment of 2026-11-08
   still says the app "uses the platform's default system font provisionally;
   task 03 decides whether to bundle a font". ADR-0110 decided one bundled
   face, and neither record points at the other.
-- **COULD-156** *(confirmed 2026-11-14)* — The root `README.md`'s repository
+- **COULD-156** *(confirmed 2026-11-22)* — The root `README.md`'s repository
   tree lists `api/` and `locales/` under `packages/` and leaves out
   `packages/tokens/` (`@kalia/tokens`), a workspace `make lint` covers and
   `packages/README.md` lists. The tree is the layout's one home
   (`docs/architecture.md` §2 points to it).
-- **COULD-157** *(confirmed 2026-11-14)* — The pull request template's
+- **COULD-157** *(confirmed 2026-11-22)* — The pull request template's
   Doc-sync prompt (`docs/PULL_REQUEST_TEMPLATE.md`, the Gates list) asks which
   of `docs/architecture.md`, the iteration index and the ADRs were checked;
   `implement-task` step 7 also requires the README of each subtree the change
   touches. The template is what makes the verdict recorded the same way every
   time, and it prompts for less than the gate checks.
-- **COULD-158** *(confirmed 2026-11-14)* **[needs decision]** — Password
+- **COULD-158** *(confirmed 2026-11-22)* **[needs decision]** — Password
   guessing is bounded per account, not per address. Keycloak's lockout counts
   failures per user (`keycloak/realm-export.json`: `failureFactor` 10,
   temporary), and its sign-in and token endpoints sit in the edge's general
@@ -398,18 +442,18 @@ repeats, so the recurrence stays visible once the old entry is gone.
   the registration paths have a tighter one. One address can try a common
   password across many usernames without any account reaching its threshold.
   The decision: a tighter per-address zone on the sign-in paths, or accept it.
-- **COULD-159** *(confirmed 2026-11-14)* — The web client's `redirectUris` and
+- **COULD-159** *(confirmed 2026-11-22)* — The web client's `redirectUris` and
   `post.logout.redirect.uris` in `keycloak/realm-export.json` are the wildcard
   `WEB_URL/*`. The app uses two callback paths
   (`/api/auth/callback/keycloak`, `/api/auth/callback/keycloak-register`) and
   `/` after sign-out (`web/features/auth/actions.ts`), so naming those three
   narrows what a same-origin leak could collect.
-- **COULD-160** *(confirmed 2026-11-14)* — Keycloak does not require PKCE of
+- **COULD-160** *(confirmed 2026-11-22)* — Keycloak does not require PKCE of
   `kalia-web`: `kalia-mobile` sets `pkce.code.challenge.method: S256` in
   `keycloak/realm-export.json` and the web client sets nothing. Auth.js sends
   PKCE, but a request without it would be accepted, so the protection holds
   only while the client remembers to send it.
-- **COULD-161** *(confirmed 2026-11-14)* — A comment in
+- **COULD-161** *(confirmed 2026-11-22)* — A comment in
   `web/app/api/auth/backchannel-logout/route.ts` says "the edge proxy applies
   the same cap to this route". The edge answers `404` for that path
   (`edge/nginx.conf`), since Keycloak posts to it over the compose network, so
@@ -421,61 +465,55 @@ repeats, so the recurrence stays visible once the old entry is gone.
   request, …". Such rows cannot be counted against ADR-0051's separate-pull-request
   bar. The log's "How to write a row" does not ask for one and no checker reads
   the column.
-- **COULD-163** *(confirmed 2026-11-14)* **[needs decision]** — The 320-line
-  cap on `mobile/README.md` (`scripts/check-doc-size.mjs`) was reached within
-  a week, and each mobile pull request since carries a commit that only makes
-  the file fit: 6a6e6edd (#625), 5482a529 "Trim a blank line …" (#629),
-  c2b952b8 and 794c057b "Fold …" / "Reflow … to fit the README cap" (#630).
-  The cap is meant to push content to its home; it is buying reflows. The
-  decision: raise it, split the README, or keep it as it is.
-- **COULD-164** *(confirmed 2026-11-14)* **[needs decision]** — `CLAUDE.md`'s
+- **COULD-164** *(confirmed 2026-11-22)* **[needs decision]** — `CLAUDE.md`'s
   rule that a commit message references the roadmap task has no checker, and
-  35 of the 159 non-merge commits since the last sweep name no task,
-  iteration, backlog ID or pull request, on task branches too (563a35ec in
-  #619, 0a636ee0 in #630, 5fa17b7e in #633, d5cea5c7 in #595). The pull
+  of the non-merge commits by agents since the 2026-11-14 sweep, 15 of 90
+  name no task, iteration, backlog ID, ADR or pull request (35 of 159 the
+  sweep before), on task branches too (d7bb92c in #674, ad54e64 and 775aaa9
+  in #671, cecb541 in #669; earlier 563a35ec in #619, 0a636ee0 in #630). The pull
   request body already links the task. The decision: check it, or drop it.
-- **COULD-165** *(confirmed 2026-11-15)* — An agent's commit on a Dependabot
+- **COULD-165** *(confirmed 2026-11-22)* — An agent's commit on a Dependabot
   pull request records its gates in a comment on that pull request
   (`implement-task` "A pull request with no task file"), and nothing reads
   that comment: `scripts/check-pr-body.mjs` sees only the body, which is
-  Dependabot's. be3d9a8b on #513 and 37c6c6d8 on #515 carried no record. A
+  Dependabot's. be3d9a8b on #513 and 37c6c6d8 on #515 carried no record, and
+  0072f148 on #660 a comment that names a local run and no Doc-sync or Code
+  review verdict. A
   `pr-body.yml` step could list the pull request's commits and comments and
   fail a non-bot commit with no comment naming the three gates.
-- **COULD-166** *(found 2026-11-15, task 20 review)* — `node
-  scripts/phone-mode.mjs off` leaves the machine's `tailscale serve` forwards
+- **COULD-166** *(confirmed 2026-11-22)* — Filed from the review of iteration
+  11.5 task 20. `node scripts/phone-mode.mjs off` leaves the machine's `tailscale serve` forwards
   in place whenever another worktree's `.env` still says phone mode, even if
   that worktree's stack is down or abandoned. Its owner must run `off` there
-  before the forwards go. Decide whether `off` should check that the other
-  stack is running before it defers.
+  before the forwards go (`otherOwners` in `off`, which reads the checkouts'
+  `.env`, not their running stacks). Decide whether `off` should check that
+  the other stack is running before it defers.
+- **COULD-167** *(confirmed 2026-11-22)* — The backend exports a request's raw
+  path in its traces, where the web exports only a route template. ADR-0013
+  logs "a route template, never its path", because `/api/v1/cellars/{username}`
+  carries a user's name, and `web/lib/telemetry/redactSpan.ts` holds spans to
+  the same rule (`web/README.md`: "A span never carries a query string, a
+  path…"). The backend's server span keeps Spring's `http.url`, which ADR-0114's
+  spike records as "the path alone", so `GET /api/v1/cellars/ada` reaches the
+  profile's store under the same trace id as the request's log lines.
+  `backend/README.md` (line 131) promises only "a query string, token or
+  body", and `TraceExportIT.noQueryStringTokenOrBodyReachesASpanAMetricOrALogLine`
+  asserts nothing about a path. An `ObservationFilter` that keeps the handler's
+  `uri` template, and a test beside the existing one, would match the web.
+- **COULD-168** *(confirmed 2026-11-22)* **[needs decision]** — `fi.kalia.web`
+  holds more than `docs/architecture.md` §3 allows. §3 calls it "the one
+  module-neutral exception: shared exception advice and error types" and its
+  `package-info.java` says "web-layer advice", but it now holds
+  `RequestLogFilter`, `HealthProbeTracing` (a servlet filter and the tracing
+  `Sampler` bean) and `ExporterOutageThrottle` (a Logback `TurboFilter`), the
+  last two added by iteration 11.5. No ArchUnit rule says what the package may
+  hold, so the next cross-cutting class lands there too. The decision: widen
+  §3 and the package's sentence to "module-neutral web infrastructure", or move
+  the request-logging and telemetry classes beside `ApplicationConfig` in
+  `fi.kalia`. Related: COULD-149, which asks the same question for the page
+  envelope.
 
 ## Retired
 
 Findings lifted into a task that is not yet `done`, each noting where it
 went; pruned as described above.
-
-- ~~SHOULD-101~~ (a common-failures row recording a defect with no owner) — lifted into [iteration-11.5 task 22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-109~~ (Keycloak's "Back to application" link assigned to a closed iteration) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-112~~ (the backlog's Mobile client section stating decided things as open) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-116~~ (common-failures missing most failures seen only in CI) — lifted into [iteration-11.5 task 22](iteration-11.5/22-every-red-run-is-logged-and-an-unfixed-defect-has-an-owner.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~SHOULD-118~~ (tasks closing after their implementation merges) — lifted into [iteration-11.5 task 23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-26~~ (the password-reset page's `autocomplete="off"` username field) — lifted into [iteration-11.5 task 17](iteration-11.5/17-keycloaks-pages-ask-only-what-kalia-uses-and-say-what-each-is.md).
-- ~~COULD-108~~ (two worktrees in and out of phone mode never run side by side) — lifted into [iteration-11.5 task 20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md).
-- ~~COULD-112~~ (`docker compose up --wait` naming a one-shot service) — lifted into [iteration-11.5 task 19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md).
-- ~~COULD-113~~ (Trivy's Java DB mirror with no fallback) — lifted into [iteration-11.5 task 19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md).
-- ~~COULD-114~~ (a full disk failing work with an error that does not say so) — lifted into [iteration-11.5 task 20](iteration-11.5/20-two-worktrees-run-side-by-side-and-a-low-disk-is-named.md).
-- ~~COULD-119~~ (the web hand-building HTTP failures and a second `isLocale`) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-120~~ (`@kalia/api` generated with React Query and its peer dependencies) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-121~~ (`src/testing/` importable from production code) — lifted into [iteration-11.5 task 11](iteration-11.5/11-the-mobile-apps-code-conventions-are-written-down-and-checked.md).
-- ~~COULD-123~~ (how to regenerate the API client restated away from its home) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md).
-- ~~COULD-124~~ (facts restated away from their one home) — lifted into [iteration-11.5 task 24](iteration-11.5/24-the-backlog-and-the-readmes-state-a-decided-fact-once-as-decided.md).
-- ~~COULD-127~~ (Maven Central failures retried only in `mobile-e2e`) — lifted into [iteration-11.5 task 19](iteration-11.5/19-a-known-transient-ci-failure-is-retried-or-prevented.md).
-- ~~COULD-129~~ (a pull request completing no task having no defined gates) — lifted into [iteration-11.5 task 23](iteration-11.5/23-every-pull-request-has-its-gates-and-a-refinement-is-reviewed.md). Its `[needs decision]` is an open question there, settled at refinement.
-- ~~COULD-134~~ (CodeQL alert 8 on `scripts/mobile-native.mjs`) — lifted into [iteration-11.5 task 21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md).
-- ~~COULD-135~~ (CodeQL alert 5 on `scripts/sync-indexes.mjs`) — lifted into [iteration-11.5 task 21](iteration-11.5/21-the-codeql-alerts-open-on-dev-are-closed.md).
-- ~~COULD-137~~ (`catalogShows` asserting an absence after `networkidle`) — lifted into [iteration-11.5 task 12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md).
-- ~~COULD-138~~ (a gray shape beneath the central Add circle on the iPhone) — lifted into [iteration-11.5 task 15](iteration-11.5/15-nothing-is-drawn-beneath-the-add-action.md).
-- ~~COULD-139~~ (`FontGate` waiting on the fonts with no deadline) — lifted into [iteration-11.5 task 14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md).
-- ~~COULD-140~~ (`beerStyleGroup` imported from the `@kalia/api` root) — lifted into [iteration-11.5 task 13](iteration-11.5/13-the-shared-packages-export-what-both-apps-use-and-only-that.md).
-- ~~COULD-141~~ (the font fallback rendering every weight as regular) — lifted into [iteration-11.5 task 14](iteration-11.5/14-a-font-that-fails-to-load-leaves-the-app-readable.md).
-- ~~COULD-142~~ (the catalog list tests waiting on real timers) — lifted into [iteration-11.5 task 12](iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md).
-- ~~COULD-143~~ (`showCatalogWith` applying its filters in an effect) — lifted into [iteration-11.5 task 27](iteration-11.5/27-the-conventions-that-needed-a-choice-are-written-and-followed.md).
