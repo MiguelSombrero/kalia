@@ -21,15 +21,20 @@ cellar is used in a cellar.
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-12/01-decision-how-the-cellar-behaves-offline.md) | Decide how the cellar behaves offline | needs-refinement |
+| [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md) | A cellar has a size limit the server enforces | needs-refinement |
 | [02](iteration-12/02-design-the-cellar-list.md) | Design the cellar list | needs-refinement |
 | [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | needs-refinement |
+| [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | needs-refinement |
 | [04](iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) | A user sees their cellar on their phone | needs-refinement |
 | [05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md) | A user opens a beer in their cellar and sees its bottles | needs-refinement |
+| [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md) | A sheet puts VoiceOver's focus on its heading | needs-refinement |
 | [06](iteration-12/06-design-the-bottle-form.md) | Design the bottle form | needs-refinement |
 | [07](iteration-12/07-design-the-add-action-and-finding-the-beer-to-add.md) | Design the Add action and finding the beer to add | needs-refinement |
+| [22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md) | The clients take the backend's bounds from one place | needs-refinement |
 | [08](iteration-12/08-a-user-adds-bottles-of-a-beer-from-its-page.md) | A user adds bottles of a beer from its page | needs-refinement |
 | [09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md) | A user finds a beer to add from the Add action or from the cellar | needs-refinement |
 | [10](iteration-12/10-design-acting-on-a-bottle-edit-and-remove.md) | Design acting on a bottle — edit and remove | needs-refinement |
+| [21](iteration-12/21-a-bottle-that-is-already-gone-is-not-a-failure.md) | A bottle that is already gone is not a failure | needs-refinement |
 | [11](iteration-12/11-a-user-edits-a-bottle.md) | A user edits a bottle | needs-refinement |
 | [12](iteration-12/12-a-user-removes-a-bottle.md) | A user removes a bottle | needs-refinement |
 | [13](iteration-12/13-design-the-cellar-offline-and-a-write-that-fails.md) | Design the cellar offline and a write that fails | needs-refinement |
@@ -37,6 +42,8 @@ cellar is used in a cellar.
 | [15](iteration-12/15-the-app-knows-when-it-is-offline.md) | The app knows when it is offline | needs-refinement |
 | [16](iteration-12/16-a-write-attempted-offline-says-so.md) | A write attempted offline says so | needs-refinement |
 | [17](iteration-12/17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md) | A write the server rejects leaves the screen as it was | needs-refinement |
+| [24](iteration-12/24-a-rejection-reason-added-in-catalog-cannot-lose-a-notification.md) | A rejection reason added in catalog cannot lose a notification | needs-refinement |
+| [25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md) | Keycloak holds the web client to the redirects and the PKCE it uses | needs-refinement |
 | [18](iteration-12/18-the-cellars-flows-run-end-to-end-on-both-platforms.md) | The cellar's flows run end to end on both platforms | needs-refinement |
 
 The table's order is the order of work, and every task was seeded at
@@ -85,6 +92,34 @@ build tasks after it only wire it to the API.
   after the writes exist, and the whole journey on both platforms
   ([18](iteration-12/18-the-cellars-flows-run-end-to-end-on-both-platforms.md)),
   which reads the `Done when` against the built app.
+
+Tasks 19–25 were lifted from the [quality backlog](quality-backlog.md) on
+2026-11-22, chosen as the findings with the most effect on what a user of the
+cellar meets, and each takes the place in the table that its dependants need
+rather than the end. They advance no `Done when` criterion of their own
+(`Covers: none`) but make the ones above hold:
+
+- **A bound before the cellar is written to.** [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md)
+  caps what one account can hold while no client writes yet, so the refusal is
+  not a new error for an installed app; it follows the offline decision it
+  constrains. [22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md)
+  gives the clients one home for the backend's bounds before the bottle form
+  adds one more copy.
+- **A phone that does not freeze.** [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md)
+  gives every request a deadline before the first screen that reads the cellar
+  is built, and [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md)
+  settles where a sheet puts a screen reader's focus before the cellar's sheets
+  are designed.
+- **Writes that agree across clients.** [21](iteration-12/21-a-bottle-that-is-already-gone-is-not-a-failure.md)
+  decides what a bottle that is already gone means before the phone builds
+  [edit](iteration-12/11-a-user-edits-a-bottle.md) and
+  [removal](iteration-12/12-a-user-removes-a-bottle.md); both follow it, as does
+  [17](iteration-12/17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)'s
+  `404`.
+- **Silent failures, closed.** [24](iteration-12/24-a-rejection-reason-added-in-catalog-cannot-lose-a-notification.md)
+  and [25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md)
+  are independent of the cellar and sit before the closing task, which still
+  reads the whole iteration last.
 
 Scanning a bottle was dropped on 2026-11-20 with [iteration 14](iteration-14.md),
 so nothing here leaves room for it: the Add action is a way to add a bottle
