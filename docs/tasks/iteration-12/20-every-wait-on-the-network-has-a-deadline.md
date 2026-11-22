@@ -1,6 +1,6 @@
 # Task 20: Every wait on the network has a deadline
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -63,14 +63,21 @@ task can say anything about it.
 - A test of a deadline moves a fake clock; it does not wait on the real one
   ([iteration 11.5 task 12](../iteration-11.5/12-a-test-waits-on-a-signal-never-on-the-clock.md)).
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The deadline covers the whole response,** from sending to the last byte of
+  the body, in one budget; it is not reset per chunk.
+- **A refresh that times out is counted with a reason of its own, `timeout`,**
+  added to the closed set; one that cannot reach Keycloak stays `network`.
+- **The web's other calls to Keycloak** (its admin and back-channel paths) are
+  among the waits Scope's third bullet lists, each bounded or justified there.
+- **What the user is told of a write the deadline cuts off** is
+  [task 16](16-a-write-attempted-offline-says-so.md)'s: not confirmed. This task
+  makes the deadline hold.
+
 ## Open questions
 
-- **Edge cases.** A body that starts and then trickles forever: is the deadline
-  for the whole body, or for the gap between chunks?
-- **Domain.** Whether the refresh's timeout is a `reason` of its own in the
-  failure metric (`timeout`) or counted as `network`.
-- **Integrations.** Whether the same deadline applies to the web's other calls
-  to Keycloak (its admin and back-channel paths), once they are listed.
+**None.**
 
 ## Acceptance criteria
 
@@ -78,7 +85,7 @@ task can say anything about it.
       with the transport's timeout `ApiError` once the deadline passes, under
       fake timers. It failed before the change
 - [ ] A test of `refreshAccessToken` whose Keycloak never answers returns
-      `unavailable`, counts the failure, and leaves the session's token and
+      `unavailable`, counts the failure with reason `timeout`, and leaves the session's token and
       refresh token as they were. It failed before the change
 - [ ] A test shows a render with an expired token and a hung Keycloak sending
       its backend call after the deadline, with no token, not waiting on it

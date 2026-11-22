@@ -1,6 +1,6 @@
 # Task 06: Design the bottle form
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -55,17 +55,25 @@ conventions where they differ. Standing intent goes in
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **A date is a whole day.** A month or a year alone is not accepted, since the
+  API and [ADR-0034](../../adr/0034-cellar-two-level-bottle-model.md)'s model
+  take a day; partial dates are a [backlog](../backlog.md) item.
+- **No shortcuts** such as "a year from the brewed date".
+- **The container defaults to bottle,** as on the web.
+- **This form is the bottle part of [task 07](07-design-the-add-action-and-finding-the-beer-to-add.md)'s
+  Add form,** which puts the beer first and fills it in on a beer's page; an edit
+  opens it with the beer fixed and no quantity.
+- **Its bounds are imported** from [task 22](22-the-clients-take-the-backends-bounds-from-one-place.md)'s
+  home in `@kalia/api`, never written out.
+- **Which is the product owner's choice between alternatives:** the quantity
+  control (a stepper, a number field, a choice of common counts) and how each
+  date is entered and cleared, felt on both platforms.
+
 ## Open questions
 
-- **Dates a bottle does not have.** Many bottles carry only a best-before
-  date, or only a year. Does the form accept a month or year, or a day only?
-  The API takes a day.
-- **Shortcuts.** Does the form offer "a year from the brewed date" or similar,
-  or is that out of scope?
-- **How many.** A stepper, a number field or a choice of common counts (a
-  six-pack, a case)?
-- **The container's default,** and whether a can or a keg is a visual
-  choice at all or a field the user rarely touches.
+**None.**
 
 ## Acceptance criteria
 

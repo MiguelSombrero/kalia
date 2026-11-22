@@ -1,6 +1,6 @@
 # Task 25: Keycloak holds the web client to the redirects and the PKCE it uses
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -60,15 +60,21 @@ user's data.
   it; the checks read the running realm, not the file
   (`scripts/check-keycloak-realm-config.mjs`).
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **Every return path is found by running the flows,** as Constraints require:
+  sign-in, registration and sign-out, and email verification, password reset and
+  the account page's "Back to application" link; each path found gets its own
+  exact entry.
+- **`post.logout.redirect.uris` lists each home the web returns to after
+  sign-out** — `/`, and a locale-prefixed home only if a flow is found using one.
+- **`webOrigins` is already exact and stays as it is.** A `WEB_URL` with a path
+  prefix needs no change of its own, since each entry is `WEB_URL` followed by
+  its path.
+
 ## Open questions
 
-- **Integrations.** Whether any flow returns to a path beyond the three —
-  email verification, password reset, the account page's "Back to application"
-  link — and so needs its own entry.
-- **Edge cases.** The `webOrigins` list, which is already exact, and whether a
-  deployed `WEB_URL` with a path prefix changes any of the three paths.
-- **Non-functional.** Whether `post.logout.redirect.uris` keeps a locale-prefixed
-  home (`/fi`, `/en`) as well as `/`.
+**None.**
 
 ## Acceptance criteria
 

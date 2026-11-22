@@ -1,6 +1,6 @@
 # Task 23: A sheet puts VoiceOver's focus on its heading
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -64,16 +64,21 @@ are designed on top of it.
   layout rather than in an effect, `accessibilityViewIsModal`, a `key`ed
   heading.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The fix lives in the `Sheet` primitive,** as Scope says, so `FiltersSheet`
+  and every cellar sheet take it without a copy of their own.
+- **TalkBack is walked in this task,** as Scope says.
+- **Both voices, Finnish and English, and both light and dark mode are walked on
+  the iPhone,** since the Simulator has no VoiceOver.
+- **A lapsed free signing does not excuse the walk:** the phone is re-signed with
+  `make mobile-ios-device`, as the
+  [mobile README](../../../mobile/README.md#re-signing-after-seven-days) says,
+  and walked.
+
 ## Open questions
 
-- **Module boundaries.** Whether the fix lives in `FiltersSheet` or in the
-  `Sheet` primitive it builds on, so the cellar's sheets reuse it.
-- **Non-functional.** Whether Android's TalkBack is walked in this task or
-  already behaves, and whether English and light mode are walked on an iPhone
-  or only on the Simulator, which has no VoiceOver.
-- **Completion signals.** Whether the walk on an iPhone is owed if the free
-  signing has lapsed, as the iteration 11 sign-off was handled
-  ([iteration 11.5 task 16](../iteration-11.5/16-the-free-signing-expiry-is-watched-and-written-down.md)).
+**None.**
 
 ## Acceptance criteria
 
@@ -81,12 +86,14 @@ are designed on top of it.
       heading when the sheet opens, and to the picker's heading on going in and
       coming back, once that heading is on screen. The opening case failed
       before the change
+- [ ] A `Sheet` test shows a sheet with a single page sending the focus request
+      to its heading on opening, with no focus code of its own
 - [ ] On an iPhone with VoiceOver in Finnish, following
       `mobile/accessibility-walk.md`, opening the sheet, going into each of
       the three pickers and coming back each read the heading first, recorded
       in words in the pull request
-- [ ] The same walk in an English voice and in the other of light and dark
-      mode, recorded in words
+- [ ] The same walk on the iPhone in an English voice and in the other of light
+      and dark mode, recorded in words
 - [ ] The same walk with TalkBack on Android, recorded in words
 - [ ] `mobile/CONVENTIONS.md`'s "Focus follows the page" row names the check
       that holds it

@@ -1,6 +1,6 @@
 # Task 03: Design a cellar entry and its bottles
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -61,17 +61,21 @@ conventions where they differ. Standing intent goes in
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **Which is the product owner's choice between alternatives,** with no answer
+  fixed beforehand: bottles that are alike as one row with a count or a row each
+  (removing one stays possible either way); the bottles' order, by vintage as on
+  the web or by best-before; what a bottle with no recorded date says instead of
+  a blank; and how a bottle past its best-before date is marked, without colour
+  alone and without reading as spoiled.
+- An edit and a removal show at once
+  ([task 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)); the
+  room left for them assumes no wait.
+
 ## Open questions
 
-- **Bottles that are alike.** Twelve bottles of one beer with one set of dates
-  are twelve identical rows or one row with a count? The data keeps them
-  separate, so removing one must stay possible either way.
-- **How the order reads.** By vintage as on the web, by best-before, or the
-  user's choice.
-- **Dates a user did not record,** which most bottles will not have: what a
-  bottle with no date says rather than a blank.
-- **What "past its best-before date" looks like,** given that colour alone
-  cannot carry it and that the bottle is not necessarily bad.
+**None.**
 
 ## Acceptance criteria
 

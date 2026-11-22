@@ -1,6 +1,6 @@
 # Task 08: A user adds bottles of a beer from its page
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -15,8 +15,9 @@ dates and a quantity of up to twenty-four.
 ## Scope
 
 On a beer's page: what the signed-in user already holds of it, and an action
-that opens the bottle form of [task 06](06-design-the-bottle-form.md) for that
-beer and adds the bottles. The cellar and what is held are read again after the
+that opens [task 07](07-design-the-add-action-and-finding-the-beer-to-add.md)'s
+Add form with that beer filled in and adds the bottles. On this page the tab
+bar's Add action opens the same form, its label naming the beer. The cellar and what is held are read again after the
 add, and the user is told it was added. A signed-out visitor is offered sign-in
 from the page, as the Cellar tab does.
 
@@ -24,9 +25,9 @@ from the page, as the Cellar tab does.
 
 - Finding a beer from the Add action or from inside the cellar —
   [task 09](09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md).
-- An add that shows at once and rolls back on failure —
-  [task 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md); this
-  task waits for the server.
+- An add shown before the server answers: an add always waits, as
+  [task 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)'s
+  decisions record.
 - A mark on the catalog's list rows for beers held.
 - Editing and removing — tasks [11](11-a-user-edits-a-bottle.md) and
   [12](12-a-user-removes-a-bottle.md).
@@ -47,30 +48,45 @@ from the page, as the Cellar tab does.
   ([iteration 11 task 17](../iteration-11/17-the-transport-logs-a-failure-only-where-a-feature-calls-it-one.md)).
 - Roles, names and tap targets; every string in `en` and `fi`.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The action opens [task 07](07-design-the-add-action-and-finding-the-beer-to-add.md)'s
+  Add form with this beer filled in,** from the page's cellar action and from the
+  tab bar's Add action on this page alike.
+- **A `409` leaves the form open with a message and a retry:** the cellar was
+  changed somewhere else at the same moment and nothing was saved, as the web
+  says it. Nothing is repeated without the user. This binds
+  [task 11](11-a-user-edits-a-bottle.md) and [task 26](26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md) too.
+- **A double tap sends one request:** the submit is disabled while a write is in
+  flight, and nothing more is wanted.
+- **A contributor's own pending beer offers the action** and takes bottles, as
+  the API allows; if an operator later rejects it, the bottles stay and the
+  entry shows as withdrawn
+  ([ADR-0083](../../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)).
+- **An add past the cellar's limit** shows
+  [task 19](19-a-cellar-has-a-size-limit-the-server-enforces.md)'s refusal,
+  naming how many bottles still fit.
+- **What the user sees after the add** is task 07's choice; **a write whose
+  answer never arrives** ends as [task 16](16-a-write-attempted-offline-says-so.md)
+  decided.
+
 ## Open questions
 
-- **What the user is told after an add** — a confirmation on the page, a
-  toast, the sheet closing onto the cellar; the answer follows
-  [task 07](07-design-the-add-action-and-finding-the-beer-to-add.md)'s.
-- **A double tap on the submit.** Sending twice adds two sets of bottles; the
-  form is disabled while a write is in flight, and the question is only
-  whether anything more is wanted.
-- **The `409`.** A message and a retry, or a silent single retry before the
-  user is told?
-- **A pending beer.** Does a contributor's own beer, still waiting for an
-  operator, offer the action at all, given that the cellar then holds a beer
-  that may be rejected and becomes withdrawn?
+**None.**
 
 ## Acceptance criteria
 
+- [ ] A component test shows the page's action and the tab bar's Add action on
+      the page each opening the form with the beer filled in, the Add action's
+      accessible name naming the beer
 - [ ] A component test shows the form for a beer submitting once with the
       chosen container, dates and quantity, and the cellar and the held count
       read again after it
 - [ ] A component test shows a double tap sending one request, a `409` leaving
-      the form open with its message and a retry, and a `404` shown as an
-      answer
-- [ ] A component test shows a contributor's own pending beer treated as the
-      refinement decides, and a signed-out visitor offered sign-in
+      the form open with its message and a retry, a `404` shown as an
+      answer, and an add past the cellar's limit naming how many still fit
+- [ ] A component test shows a contributor's own pending beer offering the
+      action and taking bottles, and a signed-out visitor offered sign-in
 - [ ] A Maestro flow adds bottles of a seeded beer from its page and finds them
       in the cellar on Android, and was confirmed to fail without the action
 - [ ] The product owner used the flow on both platforms and signed it off

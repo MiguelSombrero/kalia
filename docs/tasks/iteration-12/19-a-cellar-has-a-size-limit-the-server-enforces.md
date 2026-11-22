@@ -1,6 +1,6 @@
 # Task 19: A cellar has a size limit the server enforces
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -27,8 +27,8 @@ The limit is cheapest to add before the first client that writes ships.
 - The server refuses an add that would take a cellar past a documented limit,
   with a documented answer of its own, on both the add that creates an entry
   and the add that only raises an existing entry's bottles.
-- The limits' shape and numbers are settled at refinement; what is decided is
-  that the writes are capped and the read stays whole, bounded by the cap.
+- The limit is 2,000 bottles in a cellar (below): the writes are capped and the
+  read stays whole, bounded by the cap.
 - The web's add-bottle form shows the refusal in `en` and `fi`. The phone's
   form ([task 08](08-a-user-adds-bottles-of-a-beer-from-its-page.md)) reads the
   same documented answer.
@@ -64,23 +64,34 @@ The limit is cheapest to add before the first client that writes ships.
 - **Decided when the finding was lifted (2026-11-22):** cap the writes; do not
   page the read; do not accept it as is.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **One limit: 2,000 bottles in a cellar.** It bounds the beers too, since an
+  entry is never empty, and an add that only raises an existing entry counts
+  against it the same way.
+- **An add that would pass it is refused whole,** and the message says the
+  cellar holds its 2,000 bottles at most and how many more still fit, zero
+  included. Nothing is added in part.
+- **The refusal carries the limit and how many still fit,** so a client reads
+  both from the answer, and the spec states the limit so
+  [task 22](22-the-clients-take-the-backends-bounds-from-one-place.md)'s guard
+  covers the copy in `@kalia/api`.
+- **The refusal is not a `409`,** which the clients read as "repeat it"; its
+  status and problem type follow the documented-answer convention of iteration
+  11 task 20.
+- **Why the read stays whole is [task 01](01-decision-how-the-cellar-behaves-offline.md)'s
+  ADR to record;** this task documents the limit in `docs/architecture.md` and
+  the spec and amends no ADR.
+
 ## Open questions
 
-- **Functional scope and data model.** What is counted — beers in the cellar,
-  bottles in all, or both — and the numbers. Does an add that only raises an
-  existing entry count against the bottle limit alone?
-- **Interaction and UX.** What a user reads when the limit refuses them, in
-  `en` and `fi`, and whether it says how far over they would have gone.
-- **Edge cases.** What happens to a cellar already over a limit; and what the
-  quantity field does when only some of the requested bottles would fit.
-- **Module boundaries.** An amendment to ADR-0083, or the limit documented in
-  `docs/architecture.md` alone?
+**None.**
 
 ## Acceptance criteria
 
-- [ ] A backend integration test shows an add that would exceed each limit
-      refused with its documented status and an add up to the limit accepted. It
-      failed before the change
+- [ ] A backend integration test shows an add that would exceed the limit
+      refused with its documented status, the limit and how many still fit, and
+      an add up to the limit accepted. It failed before the change
 - [ ] A backend test forces two adds interleaving at one bottle below the limit
       and shows the total never passing it
 - [ ] A test shows a cellar already over the limit still read, edited and
@@ -88,7 +99,7 @@ The limit is cheapest to add before the first client that writes ships.
 - [ ] The committed OpenAPI spec lists the new response, and the breaking-diff
       check passes
 - [ ] A web component test shows the add-bottle form's message for the refusal,
-      in `en` and `fi`
+      naming how many bottles still fit, in `en` and `fi`
 - [ ] `docs/architecture.md` no longer calls the read uncapped
 - [ ] `make verify-fast` is green
 

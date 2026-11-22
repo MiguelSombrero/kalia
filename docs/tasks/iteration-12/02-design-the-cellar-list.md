@@ -1,6 +1,6 @@
 # Task 02: Design the cellar list
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -17,8 +17,8 @@ choice the product owner wants to make from built alternatives.
 ## Scope
 
 The signed-in Cellar tab: a row for each beer — what it says of the beer and of
-the bottles held — the cellar's totals, the order of the rows and whether the
-user can change it, the empty cellar and the way it offers to add a bottle, and
+the bottles held — the cellar's totals, the order of the rows and how the user
+changes it, a field that finds a beer in the cellar, the empty cellar and the way it offers to add a bottle, and
 the row of a beer an operator has since withdrawn. Built as working components
 over local sample data, in both locales and at the largest text size, on both
 platforms' conventions where they differ. Standing intent goes in
@@ -28,7 +28,8 @@ platforms' conventions where they differ. Standing intent goes in
 
 - Reading the cellar from the API — [task 04](04-a-user-sees-their-cellar-on-their-phone.md).
 - What opens from a row — [task 03](03-design-a-cellar-entry-and-its-bottles.md).
-- Searching or filtering inside the cellar, unless refinement adds it.
+- Filtering the cellar by style, strength or any facet; the find field matches
+  names only.
 - Beer images, which the product does not have.
 
 ## Constraints
@@ -54,24 +55,31 @@ platforms' conventions where they differ. Standing intent goes in
 - Every string in `en` and `fi`
   ([ADR-0011](../../adr/0011-i18next-localization.md)).
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The phone offers the web's five orders** — name, style, strength, bottles
+  held, soonest best-before — **with name first by default.** How the order is
+  chosen is a direction to build.
+- **A "find in my cellar" field is in scope.** It narrows the loaded list by beer
+  or brewery name on the phone, sends nothing, and so works from the offline
+  cache ([task 01](01-decision-how-the-cellar-behaves-offline.md)). A find with
+  no match is a state of its own, not the empty cellar.
+- **Which is the product owner's choice between alternatives:** where the order
+  control and the find field sit; what a row says beyond the count (the soonest
+  best-before, a bottle already past it); a flat list or beers grouped by
+  style; and where the totals sit and whether they stay in view.
+- A cellar holds at most 2,000 bottles
+  ([task 19](19-a-cellar-has-a-size-limit-the-server-enforces.md)); the list is
+  built to stay fluid at that size.
+
 ## Open questions
 
-- **Sorting.** The web sorts five ways (name, style, strength, bottles held,
-  soonest best-before). Does the phone offer sorting at all, and which
-  orders, or one fixed order?
-- **What a row says beyond the count.** Whether the soonest best-before, or a
-  bottle already past it, is shown on the row — the web shows it in the
-  bottle tiles, not on the beer.
-- **Grouping.** A flat list, or beers grouped by style?
-- **Where the totals sit,** and whether they are a header that scrolls away or
-  stay in view.
-- **Finding a beer in a long cellar.** A thousand-bottle cellar is not
-  scrollable by eye; is a search field in scope here or a later task?
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The product owner chose from built alternatives, at minimum the row, the
-      order and the empty cellar, each judged at the largest text size in both
+      order, the find field and the empty cellar, each judged at the largest text size in both
       locales; a design record holds the directions and the choice
 - [ ] A component test finds every row, the totals and the empty state's action
       by role and accessible name
@@ -79,6 +87,9 @@ platforms' conventions where they differ. Standing intent goes in
       at the largest font scale, reading in full
 - [ ] A component test shows a withdrawn beer's row marked as withdrawn and a
       style the app does not know drawn rather than dropped
+- [ ] A component test shows each of the five orders, the find field narrowing
+      the rows by beer and by brewery name, and a find with no match shown
+      apart from the empty cellar
 - [ ] `docs/design.md` carries the chosen list as standing intent, and
       `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs` pass
       over it

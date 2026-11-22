@@ -1,6 +1,6 @@
 # Task 22: The clients take the backend's bounds from one place
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -39,8 +39,10 @@ to 24, two dates. Without one home, that is a fifth copy.
 - The web's two beer-form schemas share one definition of the bounds, the
   patterns and the checks, and differ only in their message keys and value
   type.
-- The cellar's quantity bound is in it, so the phone's form
-  ([task 08](08-a-user-adds-bottles-of-a-beer-from-its-page.md)) imports it.
+- The cellar's quantity bound and its 2,000-bottle limit, and the add-beer
+  bounds the phone's suggestion uses, are in it, so the phone's form
+  ([task 08](08-a-user-adds-bottles-of-a-beer-from-its-page.md),
+  [task 26](26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md)) imports them.
 
 ## Non-goals
 
@@ -70,16 +72,25 @@ to 24, two dates. Without one home, that is a fifth copy.
   `@kalia/api`, guarded by a test against the spec; not generated, not left as
   per-client copies.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The web's add-beer bounds now have two clients:** the phone's suggestion
+  ([task 26](26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md)) takes the same fields, so those bounds move into
+  `@kalia/api` with the others, and the web's two beer-form schemas build on
+  them.
+- **The cellar's limit of 2,000 bottles**
+  ([task 19](19-a-cellar-has-a-size-limit-the-server-enforces.md)) is a bound in
+  the same home, which task 26's check before a suggestion reads.
+- **The guard test fails only when a constant disagrees with the spec,** not
+  for a bound the spec gains that no client imports.
+- **Which bounds only a Java annotation holds is found while building** and
+  listed in the pull request, each named as unguarded; the constants' file and
+  subpath follow the iteration 11.5 narrowest-path rule and are chosen while
+  building.
+
 ## Open questions
 
-- **Domain and data model.** Which bounds the spec states (`maximum`,
-  `maxLength`, `pattern`) and which only a Java annotation holds, so the guard
-  test can cover the first and the second is named as unguarded.
-- **Module boundaries.** The constants' file and name inside `@kalia/api`, and
-  whether the import goes through its root or a subpath, given the iteration
-  11.5 rule that a consumer imports the narrowest path.
-- **Completion signals.** Whether the guard test also fails for a bound the spec
-  gains that no client yet imports, or only for one that disagrees.
+**None.**
 
 ## Acceptance criteria
 

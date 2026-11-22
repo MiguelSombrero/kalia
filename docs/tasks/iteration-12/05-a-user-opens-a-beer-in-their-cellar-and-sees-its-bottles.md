@@ -1,6 +1,6 @@
 # Task 05: A user opens a beer in their cellar and sees its bottles
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -40,13 +40,19 @@ withdrawn beer, which has none.
   ([mobile conventions](../../../mobile/CONVENTIONS.md)); every string in `en`
   and `fi`.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **An entry whose last bottle goes while it is open** is
+  [task 12](12-a-user-removes-a-bottle.md)'s to build, as
+  [task 10](10-design-acting-on-a-bottle-edit-and-remove.md) chooses; nothing
+  here removes a bottle.
+- **An entry opened while the list's refresh fails shows what the list holds,**
+  as [task 14](14-the-last-loaded-cellar-is-kept-on-the-phone.md) keeps a
+  cellar on screen when a refresh fails; nothing newer is asked for.
+
 ## Open questions
 
-- **An entry whose beer has just been removed from the cellar,** by the
-  last bottle's removal while its sheet is open: what the sheet shows and where
-  it goes — the answer is shared with [task 12](12-a-user-removes-a-bottle.md).
-- **An entry opened while the list is being refreshed,** where the list read
-  fails and the entry has nothing newer to show.
+**None.**
 
 ## Acceptance criteria
 
@@ -56,7 +62,8 @@ withdrawn beer, which has none.
       bottles at the largest font scale, reading in full
 - [ ] A component test shows a withdrawn entry with its bottles and no catalog
       link, and an approved one's link opening the beer's page
-- [ ] A component test shows the sheet issuing no request of its own
+- [ ] A component test shows the sheet issuing no request of its own, and still
+      showing its bottles when the list's refresh fails
 - [ ] A Maestro flow opens a seeded beer from the cellar and returns on
       Android, and was confirmed to fail without the screen
 - [ ] The product owner used the screen on both platforms and signed it off
