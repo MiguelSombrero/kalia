@@ -85,52 +85,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
 
 ## SHOULD
 
-- **SHOULD-119** *(confirmed 2026-11-14)* — On an iPhone with VoiceOver in a
-  Finnish voice, the catalog's filter sheet does not put focus where
-  [mobile/CONVENTIONS.md](../../mobile/CONVENTIONS.md) says it goes. Opening
-  it from the Catalog lands on the "Sulje" (Close) button, not the "Suodattimet"
-  heading; coming back from a picker reads "Sulje" first and only then moves to
-  the heading, although `FiltersSheet` sends `sendAccessibilityEvent(heading,
-  "focus")` on every page change (`FiltersSheet.test.tsx` holds that it is
-  sent). Found by the product owner's walk of iteration 11 task 11; the Close
-  button is the first element of the sheet's header, and the event probably
-  loses to the sheet's own initial focus or runs before the page is on screen.
-  Not re-walked in English, in light mode or on Android.
-- **SHOULD-120** *(confirmed 2026-11-14)* — Opening a picker (Style, Brewery,
-  Country) from the filter sheet does not put VoiceOver's focus on the picker's
-  heading on an iPhone, in a Finnish voice and dark mode: it lands sometimes on
-  the first row ("Kaikki maat"), sometimes on the last row visible, so the
-  focus event of SHOULD-119's mechanism does not hold there either. The rows
-  are read correctly once touched. Found by the same walk; candidates to try
-  are sending the event after the page's layout rather than in an effect, or
-  moving focus with `accessibilityViewIsModal` or a `key`ed heading. Related:
-  SHOULD-119, whose fix settles both.
-- **SHOULD-121** *(confirmed 2026-11-22)* — The web's Keycloak token refresh
-  has no timeout. `web/lib/auth/refreshAccessToken.ts` calls
-  `fetchViaInternalKeycloak`, a plain `fetch`
-  (`web/lib/auth/internalKeycloakFetch.ts`), and `currentAccessToken()` awaits
-  it before the transport's `send()` (`packages/api/src/core/fetch-transport.ts`,
-  `config.accessToken?.()`), so the transport's 10 s timer does not cover it: a
-  Keycloak that accepts the connection and never answers holds every backend
-  call of a render whose token has expired. The mobile app bounds the same call
-  (`mobile/src/lib/auth/keycloakClient.ts`); SHOULD-97 fixed it there only.
-- **SHOULD-122** *(confirmed 2026-11-22)* — `web/features/catalog/addBeerSchema.ts`
-  and `web/features/admin-suggestions/editSuggestionSchema.ts` are near-copies:
-  the same seven bounds and patterns (`MAX_NAME_LENGTH`, `MAX_CITY_LENGTH`,
-  `MAX_ABV`, `HAS_LETTER_OR_DIGIT`, `NO_CONTROL_OR_INVISIBLE_CHARACTERS`,
-  `ABV_FORMAT`, `ABV_ONE_DECIMAL`) and the same `checkName`, `checkAbv` and
-  `toNumber`, differing only in the message-key prefix and the form's value
-  type. Both mirror the same backend constraints, so a bound changed in one
-  lets the admin form accept what the add form refuses, or the reverse.
-- **SHOULD-123** *(confirmed 2026-11-22)* **[needs decision]** — Nothing bounds
-  a cellar on either side. `docs/architecture.md` "Trade-offs made explicit"
-  accepts that `GET /api/v1/cellar` answers every entry uncapped until
-  iteration 12, but no cap on entries or bottles per user exists on the write
-  side either: `Entry.addBottles` has no total, and `AddBottleRequestDto`'s
-  `MAX_QUANTITY = 24` limits one request only. One account can make every
-  cellar read, and every add (which loads the whole entry aggregate),
-  arbitrarily expensive now, not only once the offline cache arrives. The
-  decision: cap the writes, page the read, or accept it and say so.
 - **SHOULD-124** *(confirmed 2026-11-22)* **[needs decision]** — The domain
   layer depends on its module's root package, a cycle no rule sees.
   `catalog/domain/Beer.java`, `catalog/domain/Review.java` and
@@ -145,27 +99,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
   Modulith" claims more than the rules hold. The decision: document root event
   and value types as a sanctioned kernel beneath `domain` and write the rules
   to match, or move the types.
-- **SHOULD-125** *(confirmed 2026-11-22)* — `notification`'s entity persists
-  `catalog`'s enum: `notification/domain/Notification.java` maps `reason_code`
-  as `fi.kalia.catalog.RejectionReason`, and
-  `db/migration/notification/V010__notification_schema.sql` repeats the `CHECK`
-  list of `catalog/V003__catalog_schema.sql`. A fifth reason added in `catalog`
-  looks additive there, fails V010's `CHECK` in the notification listener, is
-  retried five times (ADR-0081) and the notification is lost. The module
-  already keeps its own copy of the outcome (`Notification.Outcome`, mapped by
-  name in `NotificationService`); the reason needs the same.
-- **SHOULD-126** *(confirmed 2026-11-22)* **[needs decision]** — The backend's
-  request bounds are copied by hand into both clients.
-  `web/features/catalog/searchParams.ts` (`MAX_ABV`, `MAX_FILTER_LENGTH`,
-  `MAX_PAGE_SIZE`, `MAX_OFFSET`), `mobile/src/features/catalog/filters/model.ts`
-  (`MAX_ABV`, `MAX_FILTER_LENGTH`) and `mobile/src/features/catalog/api.ts`
-  (`MAX_RESULT_WINDOW`) restate `PageBounds` and `CatalogController`, and both
-  clients carry the same decimal pattern. `backend/openapi.json` states the
-  bounds (`maxLength`, `maximum`), but the generated models keep them only as
-  JSDoc, so a changed bound drifts in two places, each client then answering
-  `400` or stopping its paging early on its own. The decision: generate
-  constants or schemas from the spec, or export hand-kept ones from
-  `@kalia/api`.
 - **SHOULD-127** *(confirmed 2026-11-22)* — `keycloak/README.md` leaves out
   `keycloak/config-cli.Dockerfile`: its Layout table has no row for it, and
   "On a Keycloak image bump" (line 44) names the `Dockerfile` `FROM` and
@@ -332,25 +265,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
   builds a success box (icon cell, ink edge, message) that `Toast` and `ErrorAlert`
   each build too; a success counterpart to `ErrorAlert` in `components/ui/` would
   leave one copy to keep in step.
-- **COULD-144** *(confirmed 2026-11-22)* — The shared transport's timeout
-  covers the response headers, not the body.
-  `packages/api/src/core/fetch-transport.ts` races only the `fetch(...)`
-  promise against `withTimeout`; `readBody` awaits `response.text()` with no
-  limit, so a backend or proxy that sends headers and stalls mid-body hangs
-  the caller on web and mobile, against the file's own "bounds the wait".
-- **COULD-145** *(confirmed 2026-11-22)* — The UUID pattern guarding "can this
-  id name a row" is written four times: `web/features/catalog/api.ts`,
-  `web/features/catalog/actions.ts`, `web/features/cellar/actions.ts` and
-  `mobile/src/features/catalog/api.ts`. One export from `@kalia/api`'s core
-  would leave one copy. Related: SHOULD-126 and COULD-119.
-- **COULD-146** *(confirmed 2026-11-22)* **[needs decision]** — On the web,
-  removing or updating a bottle that is already gone shows the generic failure
-  and puts the stale bottle back. `web/features/cellar/api.ts` throws on any
-  non-2xx, `404` included, so `removeBottleAction` never reaches
-  `revalidatePath`, and `RemoveBottleDialog` reports `{ failed: true }` and
-  un-hides the bottle; a bottle removed in another tab or on the phone stays
-  on screen until a reload. The decision: treat `404` as already removed, or
-  show a message of its own.
 - **COULD-147** *(confirmed 2026-11-22)* — `useAnimateListChange`
   (`mobile/src/lib/motion/useAnimateListChange.ts`) returns a new function on
   every render, and `CatalogScreen` lists it as a `useLayoutEffect` dependency,
@@ -432,17 +346,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
   the registration paths have a tighter one. One address can try a common
   password across many usernames without any account reaching its threshold.
   The decision: a tighter per-address zone on the sign-in paths, or accept it.
-- **COULD-159** *(confirmed 2026-11-22)* — The web client's `redirectUris` and
-  `post.logout.redirect.uris` in `keycloak/realm-export.json` are the wildcard
-  `WEB_URL/*`. The app uses two callback paths
-  (`/api/auth/callback/keycloak`, `/api/auth/callback/keycloak-register`) and
-  `/` after sign-out (`web/features/auth/actions.ts`), so naming those three
-  narrows what a same-origin leak could collect.
-- **COULD-160** *(confirmed 2026-11-22)* — Keycloak does not require PKCE of
-  `kalia-web`: `kalia-mobile` sets `pkce.code.challenge.method: S256` in
-  `keycloak/realm-export.json` and the web client sets nothing. Auth.js sends
-  PKCE, but a request without it would be accepted, so the protection holds
-  only while the client remembers to send it.
 - **COULD-161** *(confirmed 2026-11-22)* — A comment in
   `web/app/api/auth/backchannel-logout/route.ts` says "the edge proxy applies
   the same cap to this route". The edge answers `404` for that path
@@ -507,3 +410,16 @@ repeats, so the recurrence stays visible once the old entry is gone.
 
 Findings lifted into a task that is not yet `done`, each noting where it
 went; pruned as described above.
+
+- ~~SHOULD-119~~ (the filter sheet not putting VoiceOver's focus on its heading on opening and coming back) — lifted into [iteration-12 task 23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md).
+- ~~SHOULD-120~~ (a picker not putting VoiceOver's focus on its heading) — lifted into [iteration-12 task 23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md).
+- ~~SHOULD-121~~ (the web's Keycloak token refresh with no timeout) — lifted into [iteration-12 task 20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md).
+- ~~SHOULD-122~~ (the web's two beer-form schemas as near-copies) — lifted into [iteration-12 task 22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md).
+- ~~SHOULD-123~~ (nothing bounding a cellar on either side) — lifted into [iteration-12 task 19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md). Its `[needs decision]` was settled when it was lifted.
+- ~~SHOULD-125~~ (`notification` persisting `catalog`'s rejection reason) — lifted into [iteration-12 task 24](iteration-12/24-a-rejection-reason-added-in-catalog-cannot-lose-a-notification.md).
+- ~~SHOULD-126~~ (the backend's request bounds copied by hand into both clients) — lifted into [iteration-12 task 22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md). Its `[needs decision]` was settled when it was lifted.
+- ~~COULD-144~~ (the transport's timeout covering the headers and not the body) — lifted into [iteration-12 task 20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md).
+- ~~COULD-145~~ (the UUID pattern written four times) — lifted into [iteration-12 task 22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md).
+- ~~COULD-146~~ (the web showing a failure when a bottle is already gone) — lifted into [iteration-12 task 21](iteration-12/21-a-bottle-that-is-already-gone-is-not-a-failure.md). Its `[needs decision]` was settled when it was lifted.
+- ~~COULD-159~~ (`kalia-web`'s wildcard redirect URIs) — lifted into [iteration-12 task 25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md).
+- ~~COULD-160~~ (PKCE not required of `kalia-web`) — lifted into [iteration-12 task 25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md).
