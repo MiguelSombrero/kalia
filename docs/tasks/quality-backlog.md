@@ -82,17 +82,6 @@ repeats, so the recurrence stays visible once the old entry is gone.
   reads the head ref. Repeats COULD-128, whose documentation-only fix did not
   hold. The decision: check the name (in `pre-push` or the PR-body workflow),
   or drop the rule.
-- **MUST-28** *(confirmed 2026-11-22)* — The vulnerability scan is red on `dev`
-  and on every push until it is fixed: the scheduled run of 2026-11-21 (run
-  44895867207) failed `Scan grafana/otel-lgtm:0.41.0` on eight HIGH advisories
-  in the image's `curl-minimal` and `libcurl` (CVE-2026-8286, CVE-2026-8458,
-  CVE-2026-8927, CVE-2026-9547 among them), all marked fixed in
-  `7.76.1-44.el9_9.1`. `ci.yml` calls the scan on every push, unconditionally,
-  so the next pull request fails `ci-passed` on an image it did not touch; the
-  run of 2026-11-20 was green and nothing has merged since. CLAUDE.md makes the
-  fix its own pull request off `dev` (ADR-0024): a newer `otel-lgtm` tag in
-  `docker-compose.override.yml`, or, with none, one waiver per advisory in
-  `.trivyignore.yaml` beside the 17 it already has.
 
 ## SHOULD
 
@@ -295,11 +284,12 @@ repeats, so the recurrence stays visible once the old entry is gone.
   observability profile's images, which are never deployed, are now most of
   what the required vulnerability scan blocks on. ADR-0114 scans them "like
   the rest" and the scan runs on every push; since they arrived (#642, #666),
-  `grafana/otel-lgtm` alone is the subject of 17 of the 66 vulnerability
-  waivers in `.trivyignore.yaml` (14 for its Red Hat `krb5-libs`), it and
+  `grafana/otel-lgtm` alone is the subject of 21 of the 70 vulnerability
+  waivers in `.trivyignore.yaml` (14 for its Red Hat `krb5-libs`, 4 for its
+  `curl`), it and
   `grafana/alloy` were two of the six legs red on CVE-2026-97054 (runs 44455105822, 44457177695, 44457557872,
   44458816192, until #670), and `otel-lgtm` alone turned `dev` red on
-  2026-11-21 (MUST-28). Each time the remedy is a waiver or a bump that changes
+  2026-11-21 on four `curl` advisories (MUST-28, waived in #698). Each time the remedy is a waiver or a bump that changes
   nothing a user runs. The decision: keep the profile's images as blocking
   legs, scan them on the schedule only, or let their legs report without
   failing `ci-passed`; ADR-0024 and ADR-0114 would be amended either way.
