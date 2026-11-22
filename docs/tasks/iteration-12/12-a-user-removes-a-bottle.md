@@ -1,6 +1,6 @@
 # Task 12: A user removes a bottle
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -34,16 +34,22 @@ entry when its last bottle goes. The entry and the cellar show the removal.
 - The last bottle removed removes the entry, and the sheet that showed it goes
   with it
   ([ADR-0034](../../adr/0034-cellar-two-level-bottle-model.md)).
-- `404` — the bottle is already gone — is an answer the user is told, and a
+- `404` — the bottle is already gone — is the removal done ([task 21](21-a-bottle-that-is-already-gone-is-not-a-failure.md)), and a
   removal repeated by a double tap must not report an error for the second
   request.
 - Roles, names and tap targets; every string in `en` and `fi`.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **A removal answered `404` has succeeded,** as [task 21](21-a-bottle-that-is-already-gone-is-not-a-failure.md) rules, and a
+  double tap's second request ends the same way.
+- **An undo, if task 10 chose one, whose beer was withdrawn in the meantime**
+  fails with a message of its own: the bottle could not be put back because the
+  beer is no longer in the catalog. The bottle stays gone.
+
 ## Open questions
 
-- **A removal already done elsewhere.** The `404` of a bottle removed on the
-  web: is the removal treated as having succeeded or does the user hear of it?
-- **An undo whose beer was withdrawn in the meantime,** which the add refuses.
+**None.**
 
 ## Acceptance criteria
 
@@ -51,9 +57,11 @@ entry when its last bottle goes. The entry and the cellar show the removal.
       visible alternative, each removing the bottle and the entry's count
 - [ ] A component test shows the last bottle's removal closing the sheet and
       leaving the cellar without the beer
-- [ ] A component test shows an undo adding the bottle back once, and a double
-      tap sending one request
-- [ ] A component test shows a `404` told to the user and no error logged
+- [ ] A component test shows a double tap sending one request and, if task 10
+      chose an undo, the undo adding the bottle back once and an undo of a
+      withdrawn beer's bottle ending in its own message
+- [ ] A component test shows a removal answered `404` leaving the bottle gone,
+      with no failure shown and no error logged
 - [ ] A Maestro flow removes a seeded bottle and reads the lowered count on
       Android, and was confirmed to fail without the action
 - [ ] The product owner used the flow on both platforms and signed it off

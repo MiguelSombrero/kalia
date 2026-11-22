@@ -1,6 +1,6 @@
 # Task 10: Design acting on a bottle — edit and remove
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -56,16 +56,23 @@ Standing intent goes in [`docs/design.md`](../../design.md).
 - Identity per [ADR-0110](../../adr/0110-the-phone-identity-is-colour-fields-set-light-in-a-rounded-face.md);
   every string in `en` and `fi`.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **Which is the product owner's choice between alternatives,** with none fixed
+  beforehand: undo, confirmation, or each platform its own (the directions
+  include the web's undo and a confirmation); how long an undo lasts and whether
+  it survives leaving the screen; whether a tap on a bottle opens its edit; and
+  what the user is told when the last bottle goes, and whether an undo then
+  restores the entry.
+- **An edit opens [task 06](06-design-the-bottle-form.md)'s form** with the beer
+  fixed and no quantity.
+- **An edit and a removal show at once** and are put back if the server rejects
+  them ([task 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)),
+  so the directions show them done with no wait.
+
 ## Open questions
 
-- **Undo or confirmation.** The web chose undo. Does the phone, given that iOS
-  favours a confirmation for a destructive swipe and Material favours a
-  snackbar with undo, or does each platform follow its own?
-- **How long an undo lasts,** and whether it survives leaving the screen.
-- **A tap on a bottle** opens its edit, or does nothing until an action is
-  chosen.
-- **The last bottle.** Removing it empties the entry and closes the sheet; what
-  the user is told, and whether the undo then restores the entry.
+**None.**
 
 ## Acceptance criteria
 

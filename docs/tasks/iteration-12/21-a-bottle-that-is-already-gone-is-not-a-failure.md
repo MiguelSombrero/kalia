@@ -1,6 +1,6 @@
 # Task 21: A bottle that is already gone is not a failure
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -17,7 +17,8 @@ Once the phone can remove and edit bottles
 ([task 11](11-a-user-edits-a-bottle.md),
 [task 12](12-a-user-removes-a-bottle.md)), a user with both clients will meet
 this every time they use one after the other, and [task 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)
-lists the `404` among the rejections it rolls back. The rule is cheapest to
+shows an edit and a removal before the server answers, so a `404` read as a
+rejection would put a gone bottle back. The rule is cheapest to
 decide once, before the phone builds it a second way.
 
 ## Scope
@@ -26,8 +27,8 @@ decide once, before the phone builds it a second way.
   the user asked for. The screen shows it gone and no failure is shown.
 - An edit that gets `404` shows a message of its own, that the bottle no longer
   exists, and the entry is read again so the screen shows what is there.
-- The rule is written once where [tasks 11, 12 and 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)
-  will read it, and the web follows it.
+- The rule is written once, in `docs/architecture.md`, and the web follows it;
+  the phone follows it in [tasks 11, 12 and 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md).
 
 ## Non-goals
 
@@ -49,28 +50,37 @@ decide once, before the phone builds it a second way.
   bottle is a success; an edit of a gone bottle shows its own message and
   refreshes the entry.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **An edit answered `404` closes the form and discards what was typed.** A
+  notice on the entry says "This bottle had already been removed." / "Tämä pullo
+  oli jo poistettu.", announced to a screen reader, and the entry is read again
+  so the bottle disappears.
+- **The rule's home is `docs/architecture.md` §4 (API design),** beside the
+  other things a client reads from a status;
+  `web/CONVENTIONS.md` and `mobile/CONVENTIONS.md` each point at it in one line,
+  and tasks [11](11-a-user-edits-a-bottle.md), [12](12-a-user-removes-a-bottle.md)
+  and [17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md) point
+  at this task.
+
 ## Open questions
 
-- **Interaction and UX.** The wording of the message for an edit of a gone
-  bottle, in `en` and `fi`, and where it is shown: in the edit dialog, or as a
-  toast after the dialog closes.
-- **Edge cases.** What the user's typed edit does when the bottle is gone:
-  discarded, or kept in the form for a moment.
-- **Module boundaries.** Where the rule is written so the phone's tasks find
-  it — a line in `web/CONVENTIONS.md` and `mobile/CONVENTIONS.md`, or the
-  tasks' own Constraints.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A web component test shows a removal answered `404` leaving the bottle
       gone, showing no failure message and reading the entry again. It failed
       before the change
-- [ ] A web component test shows an edit answered `404` showing its own message
-      in `en` and `fi`, and the entry read again
+- [ ] A web component test shows an edit answered `404` closing the dialog,
+      showing its notice in `en` and `fi` to a screen reader, and the entry read
+      again
 - [ ] A Playwright test removes a bottle in one browser context that another
       context has already removed and finds it gone with no error, and was
       confirmed to fail before the change
-- [ ] The rule is written once, and tasks 11, 12 and 17 point at it
+- [ ] The rule is written once in `docs/architecture.md` §4, and
+      `web/CONVENTIONS.md` and `mobile/CONVENTIONS.md` each point at it in one
+      line
 - [ ] `make verify-fast` is green
 
 ## Notes

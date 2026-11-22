@@ -1,6 +1,6 @@
 # Task 24: A rejection reason added in catalog cannot lose a notification
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -31,7 +31,7 @@ is worth closing now.
   from the event the way the outcome is, with no `RejectionReason` import in its
   `domain` or `web` packages.
 - A reason `catalog` publishes that the module has no copy of is stored and
-  listed, with a defined fallback, rather than failing the write.
+  listed under its own name, rather than failing the write.
 - A change to `catalog`'s reasons that the module has not caught up with fails a
   test, not a listener in production.
 
@@ -63,22 +63,30 @@ is worth closing now.
 - A row is frozen when written, so a stored reason is never recomputed from
   `catalog`'s current list.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The module stores the reason's name as text, with V010's `CHECK` removed,**
+  frozen when written. A name it knows maps to its own reason, whose values are
+  `catalog`'s today, so the spec's enum is unchanged. One it does not know is
+  stored and listed as it came — reachable only past the mapping test below —
+  and sent as that name, deliberately outside the spec's enum, which the
+  clients' fallback for a value they do not know
+  ([iteration 11 task 18](../iteration-11/18-a-client-falls-back-on-an-enum-value-it-does-not-know.md))
+  exists for; ADR-0093's additive rule is unaffected, since no value is removed.
+- **V010 is edited,** since Kalia has not been deployed (ADR-0036); the rows
+  already stored need nothing else.
+- **ADR-0103 gets an `Amended` line** for the module owning the reason it
+  stores, rather than the package documentation alone.
+
 ## Open questions
 
-- **Domain and data model.** What the fallback is for a reason the module does
-  not know — a stored `OTHER`, the raw name kept as text, or no `CHECK` on the
-  column at all — and what the contributor reads for it.
-- **Edge cases.** Whether the rows already stored need the new column shape or
-  the migration only relaxes the constraint, and whether the first deployment
-  has happened by then (ADR-0036).
-- **Module boundaries.** An amendment to ADR-0103, or the module's package
-  documentation alone.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A backend integration test publishes a `SuggestionReviewed` carrying a
       reason the notification module has no copy of and finds the notification
-      stored and listed with the fallback. It failed before the change
+      stored and listed with the reason's name as it came. It failed before the change
 - [ ] A unit test enumerates `RejectionReason.values()` and shows each has a
       mapping in the notification module, so a new reason fails here and not in a
       listener

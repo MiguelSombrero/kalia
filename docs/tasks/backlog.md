@@ -53,6 +53,13 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   ([iteration 7.5 task 09](iteration-7.5/09-cellar-layout.md)). The phone's is
   [iteration 12 task 09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md);
   the web's stays here.
+- **A bottle date of a month or a year.** Many bottles carry only "best before
+  end 2027" or a month, and a bottle's dates are whole days
+  ([ADR-0034](../adr/0034-cellar-two-level-bottle-model.md)), so the user picks
+  a day such as 31.12.2027. A date's precision is a domain and API change (an
+  additive one) and a display rule on both clients; the phone's bottle form
+  takes a day only, as decided when
+  [iteration 12 task 06](iteration-12/06-design-the-bottle-form.md) was refined.
 - **A cellar's oldest vintage and last addition on the front page.** The chosen
   front page showed both in *My cellar*, but they were left out while they
   needed one request per beer in the cellar on every visit
@@ -69,6 +76,9 @@ has an ADR ([ADR-0032](../adr/0032-when-a-decision-earns-an-adr.md)):
   that [iteration 7.5 task 08](iteration-7.5/08-catalog-layout.md) left out of
   a layout task
   ([ADR-0069](../adr/0069-catalog-one-ruled-column-beside-a-filter-column-with-one-search-button.md)).
+  The phone's is
+  [iteration 12 task 09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md);
+  the web's stays here.
 
 Engineering work:
 

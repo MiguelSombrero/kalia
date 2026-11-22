@@ -1,6 +1,6 @@
 # Task 07: Design the Add action and finding the beer to add
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -22,11 +22,12 @@ the backlog's "adding a beer from the cellar" is that flow, mobile first.
 
 ## Scope
 
-What the Add action does and how a beer is found from it: whether it opens a
-search straight away or a short choice, how the search reads and shows its
-results, what a result says about what the user already holds, what picking one
-leads to (the form of [task 06](06-design-the-bottle-form.md)), what the user
-sees when it is added, and what the search says when nothing is found. How the
+What the Add action opens — one Add form, beer first and the bottles of
+[task 06](06-design-the-bottle-form.md) after it — and how a beer is found in
+it: how the beer field searches and shows its results, what a result says about
+what the user already holds, the form filled in from a beer's page, what the
+user sees when the bottles are added, and how a search with no match goes on to
+suggesting the beer ([task 26](26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md) builds that part). How the
 same flow starts from inside the cellar, from its header and its empty state,
 and how the button behaves signed out. Built as working components over local
 sample data, in both locales and at the largest text size, on both platforms'
@@ -35,7 +36,8 @@ standing intent goes in [`docs/design.md`](../../design.md).
 
 ## Non-goals
 
-- Wiring the search and the add — [task 09](09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md).
+- Wiring the search and the add — [task 09](09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md);
+  sending a suggestion — [task 26](26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md).
 - The add from a beer's own page — [task 08](08-a-user-adds-bottles-of-a-beer-from-its-page.md).
 - Scanning, which is dropped, and any other way to find a beer.
 - The button's icon, and the shape beneath it that
@@ -69,34 +71,54 @@ standing intent goes in [`docs/design.md`](../../design.md).
   ([ADR-0075](../../adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)); every
   string in `en` and `fi`.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The Add action opens one Add form, beer first and bottles after.** A beer
+  field searches the catalog as the user types, and picking a result fills in
+  its name, brewery and strength; the bottle fields of
+  [task 06](06-design-the-bottle-form.md) follow in the same form.
+- **On a beer's page the form opens with that beer filled in, and the action's
+  label names it;** everywhere else the beer field starts empty. This answers the
+  walk's "Add should identify the beer" and is the amendment to ADR-0109.
+- **A search with no match goes on to suggesting the beer.** The user enters its
+  details — the web's suggestion fields: name, an existing or a new brewery with
+  its country, style and strength — and saving suggests it and adds the bottles
+  to it as a pending beer, which the API allows. That part of the form is
+  designed here and built by [task 26](26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md).
+- **A result says what the user holds of it,** and picking a beer already held
+  adds more bottles of it.
+- **A contributor's own pending beer is in the results,** marked as waiting for
+  review, and takes bottles
+  ([ADR-0091](../../adr/0091-a-contributed-catalog-entry-waits-for-an-operator-and-no-catalog-row-is-ever-deleted.md)).
+- **A signed-out visitor who signs in from the Add action comes back to the form
+  where they left it**
+  ([task 09](09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md)).
+- **An add waits for the server** and is not shown before its answer
+  ([task 17](17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md)).
+- **Which is the product owner's choice between alternatives:** whether the form
+  is one sheet or steps; what the beer field shows before anything is typed
+  (nothing, the beers held, the beers last added); how a result and the end of
+  an add are shown, and whether the sheet then closes, returns to where it was
+  opened or offers another add; and the action's label on each screen and what
+  a screen reader hears from it.
+
 ## Open questions
 
-- **Does Add ever add something other than a bottle?** A beer the catalog does
-  not hold can be suggested on the web
-  ([iteration 8](../iteration-8.md)); the phone has no such flow, and the scan
-  that was to lead into it is dropped. Does a search with no result offer to
-  suggest the beer, here or in a task of its own, or leave it to the web?
-- **On a beer's page, what the Add action adds.** The owner asked in the
-  VoiceOver walk that Add identify the beer; does it add that beer, or always
-  open the search?
-- **Before anything is typed,** does the search show something — the beers last
-  added, the beers held — or nothing?
-- **After an add,** does the sheet close, return to where it was opened, or
-  offer to add another?
-- **Whether the button's label changes** between screens, and what a screen
-  reader hears from it.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] The product owner chose from built alternatives, at minimum what the Add
-      action opens and how a result and the end of the add are shown, each
+      action opens and how a result, the way on from no match to a
+      suggestion and the end of the add are shown, each
       judged at the largest text size in both locales; a design record holds
       the directions and the choice and names ADR-0109 in `Departs from`
 - [ ] ADR-0109 carries an `Amended` line pointing to the record, and the
       scan-not-yet-available copy and its `en` and `fi` strings are gone
-- [ ] A component test finds the Add action, the search field, a result and the
-      close action by role and accessible name, and shows the sheet's empty,
-      no-match and signed-out states
+- [ ] A component test finds the Add action, the beer field, a result and the
+      close action by role and accessible name, and shows the form's empty,
+      no-match-going-on-to-suggest, beer-already-held, pending-beer,
+      filled-in-from-a-beer's-page and signed-out states
 - [ ] A component test renders a result with a long Finnish beer and brewery
       name at the largest font scale, reading in full
 - [ ] `docs/design.md` carries the chosen behaviour as standing intent, and

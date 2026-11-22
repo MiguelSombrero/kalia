@@ -1,6 +1,6 @@
 # Task 01: Decide how the cellar behaves offline
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-4
 
@@ -27,10 +27,11 @@ An ADR records how the cellar behaves with no signal and why:
   [ADR-0083](../../adr/0083-a-cellar-read-is-joined-with-its-beers-in-the-backend.md)
   returns it), where, for whom, for how long, and when it is thrown away;
 - what a write does with no signal;
-- whether `GET /api/v1/cellar` stays uncapped, measured on a large cellar;
+- why `GET /api/v1/cellar` stays whole, bounded by task 19's cap, measured on
+  a large cellar;
 - the signal that reopens the decision.
 
-The ADR lists each test its choice implies, for tasks 14–17 to carry into their
+The ADR lists each test its choice implies, which tasks 14–17 carry in their
 acceptance criteria.
 
 ## Non-goals
@@ -62,28 +63,36 @@ acceptance criteria.
 - A new dependency is asked about, not researched
   ([`CLAUDE.md`](../../../CLAUDE.md)); the decision lists the ones it implies.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **A persisted read cache, with writes refused rather than queued.** Offline
+  writes with a sync, and a read cache now with a sync later, are the rejected
+  alternatives the ADR records.
+- **The cache lives in `AsyncStorage`, unencrypted,** relying on the phone's own
+  storage protection: it holds no token, belongs to one viewer, and is wiped on
+  sign-out ([task 14](14-the-last-loaded-cellar-is-kept-on-the-phone.md)).
+- **It is shown however old it is, with its age always visible**
+  ([task 13](13-design-the-cellar-offline-and-a-write-that-fails.md),
+  [task 15](15-the-app-knows-when-it-is-offline.md)).
+- **`GET /api/v1/cellar` stays whole, bounded by the write cap** that
+  [task 19](19-a-cellar-has-a-size-limit-the-server-enforces.md) adds next: 2,000
+  bottles in a cellar. The ADR records why the read is not paged; the measurement covers
+  a cellar at the cap.
+- **The revisit trigger:** a user reports a write they could not make offline
+  and then lost or forgot, or the product owner asks. Kalia has one user today,
+  so a number would be invented.
+- **An offline cold start already reaches the cellar signed in:** the token
+  store loads the stored tokens with no network, and a refresh that fails on the
+  network does not sign the user out (`mobile/src/lib/auth/tokenStore.ts`). The
+  ADR states it and task 14 tests it.
+- **A write that was sent and whose answer never arrives is "not confirmed",
+  never "not saved"** ([task 16](16-a-write-attempted-offline-says-so.md)).
+- These answers came before the ADR, so tasks 13–17 were refined against them
+  in the same pull request; the ADR records them and their reasoning.
+
 ## Open questions
 
-- **Which of the three.** A persisted read cache with writes deferred, offline
-  writes with sync, or a read cache now and sync later. The sweep recommends
-  the first: DW-3 presumes it, and a sync needs conflict rules and idempotent
-  writes the API does not have. Is that the choice?
-- **The revisit trigger.** What would make offline writes worth building — a
-  second user, a report of a bottle lost to a refused write, a number?
-- **Where the cache lives and how private it is.** `AsyncStorage` is already in
-  the app; a database or a file are the alternatives. A private cellar then
-  sits unencrypted on the phone. Is that acceptable, given that the phone's
-  own storage protection applies?
-- **How old a cache may be shown.** Indefinitely, with its age visible, or only
-  for a limit after which the screen asks for a connection?
-- **Does the cap on `GET /cellar` stay off.** A cellar has no overall limit
-  today, only twenty-four bottles per add. If the read is too large to
-  re-fetch on a phone, capping it is a breaking change under ADR-0093; what
-  size is "too large"?
-- **Whether sign-in itself survives a cold start with no signal.** The token
-  store leaves the user signed in when a refresh fails for any reason but a
-  refusal; the decision confirms the offline cold start reaches the cellar
-  signed in, or records what it does instead.
+**None.**
 
 ## Acceptance criteria
 
@@ -91,10 +100,11 @@ acceptance criteria.
       and discard rules, the revisit trigger and the rejected alternatives, and
       passes `node scripts/check-adrs.mjs`
 - [ ] The ADR records the size of `GET /api/v1/cellar` for a cellar of a
-      hundred beers and one of a thousand bottles, measured with a throwaway
-      that is not committed
-- [ ] The ADR lists each test the decision implies, for tasks 14–17's
-      refinement to carry into their acceptance criteria
+      hundred beers and a thousand bottles and for one at the 2,000-bottle cap,
+      measured with a throwaway that is not committed
+- [ ] The ADR lists each test the decision implies, and each is among tasks
+      14–17's acceptance criteria; one that is not is raised with the product
+      owner before the ADR merges
 - [ ] The architecture note on the uncapped read and the backlog's sixth
       decision each point to the ADR, and `node scripts/check-links.mjs` is
       green

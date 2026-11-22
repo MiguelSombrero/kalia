@@ -1,6 +1,6 @@
 # Task 14: The last-loaded cellar is kept on the phone
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-2
 
@@ -38,8 +38,8 @@ signs out, and when the build that wrote it is not the build that reads it.
   checked against the current one before it is shown, and is wiped on sign-out.
 - Tokens never enter the cache
   ([ADR-0095](../../adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md)).
-- The decision of task 01 binds the storage, the lifetime and the discard rules;
-  its list of implied tests is carried into the criteria below at refinement.
+- Task 01's decisions bind the storage, the lifetime and the discard rules, and
+  the tests they imply are among the criteria below.
 - The generated shape can change across builds
   ([ADR-0093](../../adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md));
   a cache from another build is abandoned, never read as the new shape.
@@ -49,16 +49,22 @@ signs out, and when the build that wrote it is not the build that reads it.
 - A cache that fails to read or write leaves the app working with an empty one
   and logs it ([ADR-0098](../../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md)).
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **[Task 01](01-decision-how-the-cellar-behaves-offline.md)'s decisions bind it:**
+  `AsyncStorage`, shown however old, bound to one viewer, and wiped on sign-out —
+  also for the same person signing back in, since the guarantee is simplest so.
+- **An offline cold start reaches the cellar signed in with no change to the
+  token store,** which already keeps a user signed in when a refresh fails on the
+  network; a test holds it.
+- **When the cache is written** is chosen while building, measured on a cellar
+  at the 2,000-bottle cap
+  ([task 19](19-a-cellar-has-a-size-limit-the-server-enforces.md)), and stated
+  in the pull request.
+
 ## Open questions
 
-- **A cold start with no signal.** The token store keeps the user signed in
-  when a refresh fails for a reason other than a refusal; this task shows that
-  the app then reaches the cellar signed in and not the sign-in invitation, and
-  whether that needs a change to the token store.
-- **When the cache is written** — after each successful read, or on the app
-  going to the background — and how much of a hit that is for a large cellar.
-- **What a sign-out does to the cache of a user who signs back in** as the same
-  person: wiped, as the guarantee is simplest, or kept.
+**None.**
 
 ## Acceptance criteria
 
@@ -71,6 +77,10 @@ signs out, and when the build that wrote it is not the build that reads it.
 - [ ] A test shows a cache written by another build abandoned rather than
       read, and an unreadable cache leaving the cellar empty and logged
 - [ ] A test shows no token or credential in what is written
+- [ ] A test shows a cold start with stored tokens and every request failing
+      reaching the cellar signed in, not the sign-in invitation
+- [ ] The pull request states the time to write and to restore the cache of a
+      cellar at the 2,000-bottle cap, measured on the Android emulator
 - [ ] The cellar renders on Android with the emulator in airplane mode after
       a cold start, and was confirmed to fail with the cache off
 - [ ] `make verify-fast` is green

@@ -1,6 +1,6 @@
 # Task 15: The app knows when it is offline
 
-- **Status:** needs-refinement
+- **Status:** refined
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-2, DW-3
 
@@ -44,21 +44,26 @@ how old what it shows is.
   ([ADR-0075](../../adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md)); every
   string in `en` and `fi`.
 
+**Decided at refinement, 2026-11-22** (product owner):
+
+- **The notice shows when the device reports no connection, or when the last
+  read of the cellar failed on the network,** whatever the device reports; it
+  hides on a successful read.
+- **Returning online reads the cellar again at once.**
+- **The age is always shown with the notice**
+  ([task 01](01-decision-how-the-cellar-behaves-offline.md)).
+- **On Android the tests and the sign-off switch the connection with the
+  emulator's airplane mode;** the iOS Simulator has no switch of its own, so the
+  iOS sign-off is on the iPhone.
+
 ## Open questions
 
-- **Whether the connection state is trusted or verified,** for example by the
-  last read's outcome, when the two disagree.
-- **What returning online does:** refresh the cellar at once, or leave it until
-  the next focus.
-- **The simulators and emulators.** An emulator's connectivity is toggled
-  differently from a phone's; how the tests and the sign-off switch the
-  connection off on each platform.
+**None.**
 
 ## Acceptance criteria
 
 - [ ] A test shows the data layer paused when the connection is lost, reads
-      resuming when it returns, and the cellar refreshing as the answer to
-      "returning online" chose
+      resuming when it returns, and the cellar read again at once
 - [ ] A component test shows the cellar with its notice and its age while
       offline and without them when online, announced to a screen reader
 - [ ] A test shows the notice shown when the connection is reported on but the
