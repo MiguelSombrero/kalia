@@ -30,43 +30,43 @@
 # rest (ADR-0024).
 vulnerabilities:
   - id: CVE-2026-107364
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112315
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112316
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112317
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112318
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112319
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112320
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112321
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112322
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-112323
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-116587
     statement: "go-jose in the tempo and tempo-cli binaries of grafana/otel-lgtm (0.41.0, published 2026-11-13, is the newest tag); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-118380
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-119079
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-21728
     statement: "the Tempo data source plugin bundled in grafana/otel-lgtm (0.41.0, published 2026-11-13, is the newest tag) vendors github.com/grafana/tempo at a Go pseudo-version Trivy reads as older than the fix; ends when a newer tag ships or Trivy stops reporting it"
@@ -75,10 +75,22 @@ vulnerabilities:
     statement: "the tempo-query binary in grafana/otel-lgtm (0.41.0, published 2026-11-13, is the newest tag): Trivy reads its Go pseudo-version as older than the fix in 2.10.3, though the binary is Tempo 3.1.1, and its storage is `backend: local`, so no S3 key exists to disclose; ends when a newer tag ships or Trivy stops reporting it"
     expired_at: 2026-12-15
   - id: CVE-2026-71199
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-71200
-    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0, published 2026-11-13, is the newest tag and its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
+  - id: CVE-2026-8286
+    statement: "curl-minimal and libcurl in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still ships 7.76.1-43.el9 against the fixed 7.76.1-44.el9_9.1: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
+  - id: CVE-2026-8458
+    statement: "curl-minimal and libcurl in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still ships 7.76.1-43.el9 against the fixed 7.76.1-44.el9_9.1: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
+  - id: CVE-2026-8927
+    statement: "curl-minimal and libcurl in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still ships 7.76.1-43.el9 against the fixed 7.76.1-44.el9_9.1: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
+  - id: CVE-2026-9547
+    statement: "curl-minimal and libcurl in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still ships 7.76.1-43.el9 against the fixed 7.76.1-44.el9_9.1: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2025-61726
     statement: "the gosu binary in postgres (postgres:18.6 is the pinned tag and 18.7, the newest, still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
