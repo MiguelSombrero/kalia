@@ -3,7 +3,9 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as ReactNative from "react-native";
 import { BackHandler } from "react-native";
 
+import { SHEET_PRESENTED_MS } from "@/components/Sheet";
 import { expectScalesWithText } from "@/testing/expectScalesWithText";
+import { layOut } from "@/testing/layOut";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 
 import { emptyFilters, type Filters } from "./filters/model";
@@ -192,64 +194,91 @@ describe("FiltersSheet", () => {
     await waitFor(() => expect(pressBack).toBeUndefined());
   });
 
+  const headingNow = async (title: string) => {
+    await layOut(await screen.findByRole("heading", { name: title }));
+    await act(async () => void jest.advanceTimersByTime(SHEET_PRESENTED_MS));
+  };
+  const lastFocus = (focus: jest.Mock) => {
+    const [target, event] = focus.mock.calls.at(-1) as unknown as [{ props: Record<string, unknown> }, string];
+    return { event, ...target.props };
+  };
+
   it.each([
-    ["en", /^Style: /, "Style"],
-    ["en", /^Brewery: /, "Brewery"],
-    ["en", /^Country: /, "Country"],
-    ["fi", /^Tyyli: /, "Tyyli"],
-  ] as const)("puts the screen reader on the %s picker's heading when it opens, not on a row", async (locale, field, title) => {
+    ["en", "Filters"],
+    ["fi", "Suodattimet"],
+  ] as const)("puts the screen reader on the form's heading when the sheet opens, in %s, not on its Close button", async (locale, title) => {
     const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
     focus.mockClear();
     await renderSheet(set(), locale);
     expect(focus).not.toHaveBeenCalled();
 
+    await headingNow(title);
+
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(lastFocus(focus)).toMatchObject({ event: "focus", role: "heading", children: title });
+  });
+
+  it.each([
+    ["en", /^Style: /, "Style"],
+    ["en", /^Brewery: /, "Brewery"],
+    ["en", /^Country: /, "Country"],
+    ["fi", /^Tyyli: /, "Tyyli"],
+  ] as const)("puts the screen reader on the %s picker's heading once it is on screen, not on a row", async (locale, field, title) => {
+    const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
+    await renderSheet(set(), locale);
+    await headingNow(locale === "fi" ? "Suodattimet" : "Filters");
+    focus.mockClear();
+
     await fireEvent.press(screen.getByRole("button", { name: field }));
     await screen.findByRole("searchbox");
+    expect(focus).not.toHaveBeenCalled();
+    await headingNow(title);
 
-    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
-    const [target, event] = focus.mock.calls[0] as unknown as [{ props: Record<string, unknown> }, string];
-    expect(event).toBe("focus");
-    expect(target.props).toMatchObject({ role: "heading", children: title });
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(lastFocus(focus)).toMatchObject({ event: "focus", role: "heading", children: title });
   });
 
   it.each([
     ["going back", "Back to filters"],
     ["choosing a row", "Gose"],
-  ] as const)("puts the screen reader on the form's heading when it comes back by %s, as it did on the picker's going in", async (_how, action) => {
+  ] as const)("puts the screen reader on the form's heading once it is back on screen after %s, as it did on the picker's going in", async (_how, action) => {
     const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
-    focus.mockClear();
     await renderSheet();
+    await headingNow("Filters");
     await fireEvent.press(screen.getByRole("button", { name: /^Style: / }));
     await screen.findByRole("searchbox");
     await screen.findByRole("button", { name: "Gose" });
-    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+    await headingNow("Style");
+    focus.mockClear();
 
     await fireEvent.press(screen.getByRole("button", { name: action }));
-
     await screen.findByRole("button", { name: /^Style: / });
-    await waitFor(() => expect(focus).toHaveBeenCalledTimes(2));
-    const [target, event] = focus.mock.calls[1] as unknown as [{ props: Record<string, unknown> }, string];
-    expect(event).toBe("focus");
-    expect(target.props).toMatchObject({ role: "heading", children: "Filters" });
+    expect(focus).not.toHaveBeenCalled();
+    await headingNow("Filters");
+
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(lastFocus(focus)).toMatchObject({ event: "focus", role: "heading", children: "Filters" });
   });
 
-  it("puts the screen reader on the form's heading when the system Back button leaves a picker", async () => {
+  it("puts the screen reader on the form's heading once it is back on screen after the system Back button leaves a picker", async () => {
     let pressBack: (() => unknown) | undefined;
     jest.spyOn(BackHandler, "addEventListener").mockImplementation((_event, handler) => {
       pressBack = () => handler({} as never);
       return { remove: () => (pressBack = undefined) };
     });
     const focus = jest.mocked(ReactNative.AccessibilityInfo.sendAccessibilityEvent);
-    focus.mockClear();
     await renderSheet();
+    await headingNow("Filters");
     await fireEvent.press(screen.getByRole("button", { name: /^Style: / }));
     await screen.findByRole("searchbox");
-    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+    await headingNow("Style");
+    focus.mockClear();
 
     await act(async () => void pressBack?.());
+    await headingNow("Filters");
 
-    await waitFor(() => expect(focus).toHaveBeenCalledTimes(2));
-    expect((focus.mock.calls[1] as unknown as [{ props: Record<string, unknown> }])[0].props).toMatchObject({ role: "heading", children: "Filters" });
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(lastFocus(focus)).toMatchObject({ role: "heading", children: "Filters" });
   });
 
   it.each([

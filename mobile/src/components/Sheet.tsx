@@ -1,5 +1,5 @@
-import type { ReactNode, Ref } from "react";
-import { type HostInstance, ScrollView, Text, View } from "react-native";
+import { type ReactNode, useCallback, useRef } from "react";
+import { AccessibilityInfo, type HostInstance, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { textStyle, titleScale } from "@/lib/design/fonts";
@@ -15,7 +15,6 @@ type SheetProps = {
   onClose: () => void;
   closeDisabled?: boolean;
   trailing?: ReactNode;
-  headingRef?: Ref<HostInstance>;
   bar?: ReactNode;
   footer?: ReactNode;
   scroll?: boolean;
@@ -23,15 +22,41 @@ type SheetProps = {
   children: ReactNode;
 };
 
-export const Sheet = ({ title, closeLabel, closeAccessibilityLabel, onClose, closeDisabled, trailing, headingRef, bar, footer, scroll = true, bottomInset = 0, children }: SheetProps) => {
+// A focus request sent while the sheet is still sliding in is lost to the platform's own first focus on its window (measured with TalkBack); a page swapped in later needs no wait.
+export const SHEET_PRESENTED_MS = 500;
+
+const useFocusOnShow = () => {
+  const node = useRef<HostInstance | null>(null);
+  const sent = useRef(false);
+  const opened = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const ref = useCallback((instance: HostInstance | null) => {
+    node.current = instance;
+    sent.current = false;
+    clearTimeout(timer.current);
+  }, []);
+  const onLayout = useCallback(() => {
+    const target = node.current;
+    if (sent.current || !target) return;
+    sent.current = true;
+    const focus = () => AccessibilityInfo.sendAccessibilityEvent(target, "focus");
+    if (opened.current) return focus();
+    opened.current = true;
+    timer.current = setTimeout(focus, SHEET_PRESENTED_MS);
+  }, []);
+  return { ref, onLayout };
+};
+
+export const Sheet = ({ title, closeLabel, closeAccessibilityLabel, onClose, closeDisabled, trailing, bar, footer, scroll = true, bottomInset = 0, children }: SheetProps) => {
   const styles = useStyles();
+  const focus = useFocusOnShow();
   return (
     <SafeAreaView testID="sheet" edges={["top"]} style={styles.screen}>
       <View style={[styles.frame, { paddingBottom: bottomInset }]}>
         <View style={styles.header}>
           <TextButton label={closeLabel} accessibilityLabel={closeAccessibilityLabel} onPress={onClose} disabled={closeDisabled} />
           {trailing}
-          <Text ref={headingRef} role="heading" {...titleScale} style={styles.title}>
+          <Text key={title} {...focus} role="heading" {...titleScale} style={styles.title}>
             {title}
           </Text>
         </View>
