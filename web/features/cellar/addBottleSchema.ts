@@ -1,3 +1,4 @@
+import { MAX_BOTTLE_QUANTITY as MAX_QUANTITY, MIN_BOTTLE_QUANTITY as MIN_QUANTITY } from "@kalia/api/bounds";
 import { z } from "zod";
 
 import type { TranslationKey } from "@/i18n/translationKey";
@@ -7,8 +8,7 @@ import { containerTypeValues } from "./types";
 
 const QUANTITY_RANGE = "cellar.add.error.quantityRange" satisfies TranslationKey;
 
-export const MIN_QUANTITY = 1;
-export const MAX_QUANTITY = 24;
+export { MAX_QUANTITY, MIN_QUANTITY };
 
 // Derived from the generated client, so a container type added backend-side
 // reaches the form by regenerating rather than by remembering to edit a list.

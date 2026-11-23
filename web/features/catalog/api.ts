@@ -1,4 +1,5 @@
 import { httpFailure } from "@kalia/api";
+import { isUuid, MAX_FILTER_LENGTH } from "@kalia/api/bounds";
 import { remove as generatedRemoveBeer } from "@kalia/api/generated/admin-beers/admin-beers";
 import {
   addBeer as generatedAddBeer,
@@ -49,12 +50,10 @@ export const listBreweryCountries = async (): Promise<string[]> => {
   return response.data;
 };
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** Resolves to null when no beer exists for the id — including malformed ids
  *  from user-typed URLs, which the backend would reject with a 400. */
 export const getBeer = async (id: string): Promise<BeerDetails | null> => {
-  if (!UUID_PATTERN.test(id)) {
+  if (!isUuid(id)) {
     return null;
   }
   const response = await generatedGetBeer(id);
@@ -126,14 +125,11 @@ export const findBreweries = async (query: string): Promise<Brewery[]> => {
 
 const SIMILAR_BEERS = 5;
 
-// The API's bound on a search term (CatalogController.MAX_FILTER_LENGTH).
-const MAX_NAME_LENGTH = 100;
-
 /** The brewery's beers whose name contains a word of `name` (ADR-0082), as many as the hint shows. */
 export const findSimilarBeers = async (breweryId: string, name: string): Promise<BeerSummary[]> => {
   const response = await generatedSearchBeers({
     breweryId,
-    similarTo: name.slice(0, MAX_NAME_LENGTH),
+    similarTo: name.slice(0, MAX_FILTER_LENGTH),
     size: SIMILAR_BEERS,
   });
   if (response.status !== 200) {

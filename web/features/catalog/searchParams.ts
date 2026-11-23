@@ -1,13 +1,9 @@
+import { COUNTRY_CODE_PATTERN, MAX_ABV, MAX_FILTER_LENGTH, MAX_OFFSET, MAX_PAGE_SIZE } from "@kalia/api/bounds";
+
 import { type BeerPage, type BeerSearchParams, SORT_OPTIONS } from "./types";
 
-// The search API's own bounds (CatalogController); a value past one is a 400.
-export const MAX_ABV = 100;
-export const MAX_FILTER_LENGTH = 100;
-export const MAX_PAGE_SIZE = 100;
-const MAX_OFFSET = 10_000;
 const DEFAULT_PAGE_SIZE = 20;
 
-const COUNTRY_CODE = /^[A-Z]{2}$/;
 const DECIMAL = /^(\d+\.?\d*|\.\d+)$/;
 const WHOLE_NUMBER = /^\d+$/;
 
@@ -46,7 +42,7 @@ export const isPastLastPage = (result: BeerPage): boolean => {
 const CHECKS: Record<ParamKey, (value: string, size: number | undefined) => boolean> = {
   query: isText,
   style: isText,
-  countryCode: (value) => COUNTRY_CODE.test(value),
+  countryCode: (value) => COUNTRY_CODE_PATTERN.test(value),
   minAbv: isAbv,
   maxAbv: isAbv,
   page: (value, size) => WHOLE_NUMBER.test(value) && isReachablePage(Number(value), size),

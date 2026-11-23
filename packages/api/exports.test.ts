@@ -19,6 +19,7 @@ describe("@kalia/api exports", () => {
   it.each([
     ["api-error", /core\/api-error\.ts$/],
     ["beer-style", /core\/beer-style\.ts$/],
+    ["bounds", /core\/bounds\.ts$/],
     ["enum-lookup", /core\/enum-lookup\.ts$/],
   ])("expose %s without the transport", (subpath, file) => {
     expect(resolve.resolve(`@kalia/api/${subpath}`)).toMatch(file);

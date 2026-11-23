@@ -6,6 +6,7 @@
     ".": "./src/index.ts",
     "./api-error": "./src/core/api-error.ts",
     "./beer-style": "./src/core/beer-style.ts",
+    "./bounds": "./src/core/bounds.ts",
     "./enum-lookup": "./src/core/enum-lookup.ts",
     "./generated/index": null,
     "./generated/models": "./src/generated/models/index.ts",

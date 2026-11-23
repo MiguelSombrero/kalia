@@ -30,7 +30,7 @@ cellar is used in a cellar.
 | [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md) | A sheet puts VoiceOver's focus on its heading | done |
 | [06](iteration-12/06-design-the-bottle-form.md) | Design the bottle form | refined |
 | [07](iteration-12/07-design-the-add-action-and-finding-the-beer-to-add.md) | Design the Add action and finding the beer to add | refined |
-| [22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md) | The clients take the backend's bounds from one place | refined |
+| [22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md) | The clients take the backend's bounds from one place | done |
 | [08](iteration-12/08-a-user-adds-bottles-of-a-beer-from-its-page.md) | A user adds bottles of a beer from its page | refined |
 | [09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md) | A user finds a beer to add from the Add action or from the cellar | refined |
 | [26](iteration-12/26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md) | A user suggests a beer the catalog lacks while adding bottles of it | refined |

@@ -22,16 +22,29 @@ source; `node scripts/generate-tokens.mjs --check` detects drift without git.
 - **What it exports.** The root (`@kalia/api`) is for server code and the
   apps' transports: the typed failure (`apiError`, `isApiError`, `httpFailure`),
   the fetch core, `registerTransport`, `enumLookup` and the beer-style mapping.
-  Three pure files also have a subpath of their own, which a client component
+  Four pure files also have a subpath of their own, which a client component
   or a shared primitive imports so that it takes none of the transport:
-  `@kalia/api/api-error`, `@kalia/api/beer-style` (ADR-0111's mapping) and
-  `@kalia/api/enum-lookup`. The web's ESLint fails a `"use client"` file, anything
+  `@kalia/api/api-error`, `@kalia/api/beer-style` (ADR-0111's mapping),
+  `@kalia/api/bounds` and `@kalia/api/enum-lookup`. The web's ESLint fails a `"use client"` file, anything
   under `components/` and a feature's `hooks/` that imports the root, and the app's fails
   `beerStyleGroup` imported from it (`eslint-fixtures/api-imports/`,
   `eslint-fixtures/conventions/beer-style-from-the-root.ts`). Beyond those,
   `@kalia/api/generated/<tag>/<tag>` and `@kalia/api/generated/models` are the
   generated client, reached only from a feature's `api.ts` and `types.ts`; the
   generated barrel has no export (`exports.test.ts`).
+- **The backend's request bounds and the id pattern have one home,
+  `@kalia/api/bounds`,** which both apps import: the search's filter length,
+  strength, page size and result window, the add-beer fields, the cellar's
+  quantity and its 2,000-bottle limit, and the UUID pattern. They are hand-kept,
+  not generated (ADR-0012 keeps the client read-only). `bounds.test.ts` reads the
+  committed `backend/openapi.json` and fails when a constant differs from the
+  bound the spec states, so a changed bound fails there before a client answers
+  `400`; `single-home.test.ts` fails when `web/` or `mobile/` declares one again.
+  **Not in the spec, so not guarded against it:** a name needs a letter or a
+  digit, a strength has at most one decimal, and a page times its size is at most
+  the result window (Java annotations and code); `bounds.test.ts` pins those
+  patterns to what the server accepts instead. A new bound a client reads goes in
+  that file with a line in the test.
 - **The client is plain functions.** It is generated with `client: "fetch"`
   (`orval.config.ts`): a function per operation returning `{ data, status,
   headers }`, no hook, so the package has no peer dependency on `react` or

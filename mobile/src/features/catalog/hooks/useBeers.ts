@@ -1,13 +1,14 @@
+import { MAX_OFFSET } from "@kalia/api/bounds";
 import { infiniteQueryOptions, keepPreviousData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BEER_PAGE_SIZE, MAX_RESULT_WINDOW, readBeerPage } from "../api";
+import { BEER_PAGE_SIZE, readBeerPage } from "../api";
 import { type Filters, searchParams } from "../filters/model";
 import type { BeerPage } from "../types";
 
 export const nextBeerPage = (last: BeerPage): number | undefined => {
   const next = last.page + 1;
-  return next < last.totalPages && next * BEER_PAGE_SIZE <= MAX_RESULT_WINDOW ? next : undefined;
+  return next < last.totalPages && next * BEER_PAGE_SIZE <= MAX_OFFSET ? next : undefined;
 };
 
 export const beersQuery = (filters: Filters) => {

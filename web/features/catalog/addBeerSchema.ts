@@ -1,19 +1,8 @@
 import { z } from "zod";
 
-import type { TranslationKey } from "@/i18n/translationKey";
+import { beerFormIssues, type BeerFormMessages, toBeerRequest } from "@/lib/beerForm";
 
 import type { AddBeerRequest } from "./types";
-
-// Each bound mirrors AddBeerRequestDto / NewBreweryRequestDto in the backend's
-// catalog.web; the server stays the authority (ADR-0010).
-export const MAX_NAME_LENGTH = 200;
-export const MAX_CITY_LENGTH = 100;
-const MAX_ABV = 100;
-
-const HAS_LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
-const NO_CONTROL_OR_INVISIBLE_CHARACTERS = /^[^\p{Cc}\p{Cf}]*$/u;
-const ABV_FORMAT = /^\d{1,3}(?:[.,]\d+)?$/;
-const ABV_ONE_DECIMAL = /^\d{1,3}(?:[.,]\d)?$/;
 
 export type BreweryMode = "unset" | "existing" | "new";
 
@@ -28,24 +17,21 @@ export type AddBeerFormValues = {
   abv: string;
 };
 
-type NameMessages = { required: TranslationKey; tooLong: TranslationKey };
-
-const checkName = (value: string, messages: NameMessages): TranslationKey | undefined => {
-  if (value.trim() === "") return messages.required;
-  if (value.trim().length > MAX_NAME_LENGTH) return messages.tooLong;
-  if (!HAS_LETTER_OR_DIGIT.test(value)) return "catalog.add.error.nameNeedsLetter";
-  if (!NO_CONTROL_OR_INVISIBLE_CHARACTERS.test(value)) return "catalog.add.error.nameInvalid";
-  return undefined;
+const messages: BeerFormMessages = {
+  nameRequired: "catalog.add.error.nameRequired",
+  nameTooLong: "catalog.add.error.nameTooLong",
+  nameNeedsLetter: "catalog.add.error.nameNeedsLetter",
+  nameInvalid: "catalog.add.error.nameInvalid",
+  breweryRequired: "catalog.add.error.breweryRequired",
+  breweryNameRequired: "catalog.add.error.breweryNameRequired",
+  breweryNameTooLong: "catalog.add.error.breweryNameTooLong",
+  countryRequired: "catalog.add.error.countryRequired",
+  cityTooLong: "catalog.add.error.cityTooLong",
+  cityInvalid: "catalog.add.error.cityInvalid",
+  styleRequired: "catalog.add.error.styleRequired",
+  abvRange: "catalog.add.error.abvRange",
+  abvPrecision: "catalog.add.error.abvPrecision",
 };
-
-const checkAbv = (value: string): TranslationKey | undefined => {
-  const abv = value.trim();
-  if (!ABV_FORMAT.test(abv) || toNumber(abv) > MAX_ABV) return "catalog.add.error.abvRange";
-  if (!ABV_ONE_DECIMAL.test(abv)) return "catalog.add.error.abvPrecision";
-  return undefined;
-};
-
-const toNumber = (abv: string): number => Number(abv.trim().replace(",", "."));
 
 export const addBeerSchema = z
   .object({
@@ -59,44 +45,9 @@ export const addBeerSchema = z
     abv: z.string(),
   })
   .superRefine((values, context) => {
-    const fail = (path: keyof AddBeerFormValues, message: TranslationKey | undefined) => {
-      if (message) context.addIssue({ code: "custom", path: [path], message });
-    };
-
-    fail("name", checkName(values.name, {
-      required: "catalog.add.error.nameRequired",
-      tooLong: "catalog.add.error.nameTooLong",
-    }));
-
-    if (values.breweryMode === "new") {
-      fail("newBreweryName", checkName(values.newBreweryName, {
-        required: "catalog.add.error.breweryNameRequired",
-        tooLong: "catalog.add.error.breweryNameTooLong",
-      }));
-      fail("newBreweryCountry", values.newBreweryCountry === "" ? "catalog.add.error.countryRequired" : undefined);
-      fail("newBreweryCity", values.newBreweryCity.trim().length > MAX_CITY_LENGTH
-        ? "catalog.add.error.cityTooLong"
-        : NO_CONTROL_OR_INVISIBLE_CHARACTERS.test(values.newBreweryCity) ? undefined : "catalog.add.error.cityInvalid");
-    } else if (values.breweryMode === "unset" || values.breweryId === "") {
-      fail("breweryId", "catalog.add.error.breweryRequired");
+    for (const { path, message } of beerFormIssues(values, values.breweryMode, messages)) {
+      context.addIssue({ code: "custom", path: [path], message });
     }
-
-    fail("style", values.style === "" ? "catalog.add.error.styleRequired" : undefined);
-    fail("abv", checkAbv(values.abv));
   });
 
-export const toAddBeerRequest = (values: AddBeerFormValues): AddBeerRequest => {
-  const beer = { name: values.name.trim(), style: values.style, abv: toNumber(values.abv) };
-  if (values.breweryMode !== "new") {
-    return { ...beer, breweryId: values.breweryId };
-  }
-  const city = values.newBreweryCity.trim();
-  return {
-    ...beer,
-    newBrewery: {
-      name: values.newBreweryName.trim(),
-      countryCode: values.newBreweryCountry,
-      ...(city ? { city } : {}),
-    },
-  };
-};
+export const toAddBeerRequest = (values: AddBeerFormValues): AddBeerRequest => toBeerRequest(values, values.breweryMode);

@@ -1,8 +1,8 @@
+import { MAX_ABV, MAX_FILTER_LENGTH } from "@kalia/api/bounds";
+
 export const SORTS = ["name,asc", "name,desc", "abv,asc", "abv,desc", "style,asc"] as const;
 export type Sort = (typeof SORTS)[number];
 export const DEFAULT_SORT: Sort = "name,asc";
-export const MAX_ABV = 100;
-export const MAX_FILTER_LENGTH = 100;
 
 export type Filters = {
   query: string;
