@@ -7,6 +7,7 @@ import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,6 +55,13 @@ class ErrorBodyShapesIT {
 				.expectBody(String.class).returnResult().getResponseBody();
 	}
 
+	// Spring Framework 7.0 added `instance` to a framework-built problem and 7.1 does not; no client reads it.
+	private static Map<String, Object> membersOf(String body) {
+		Map<String, Object> problem = new HashMap<>(JsonPath.<Map<String, Object>>read(body, "$"));
+		problem.remove("instance");
+		return problem;
+	}
+
 	private String postRefusedBeer(String json) {
 		String body = postBeer(json);
 		assertThat((Integer) JsonPath.read(body, "$.status")).isGreaterThanOrEqualTo(400);
@@ -69,8 +77,8 @@ class ErrorBodyShapesIT {
 				{"name": "", "style": "Quadrupel", "abv": 5.0, "breweryId": "%s"}""".formatted(brewery));
 
 		for (String body : List.of(catalogRefusal, beanValidation)) {
-			Map<String, Object> problem = JsonPath.read(body, "$");
-			assertThat(problem).containsOnlyKeys("title", "status", "detail", "instance", "errors");
+			Map<String, Object> problem = membersOf(body);
+			assertThat(problem).containsOnlyKeys("title", "status", "detail", "errors");
 			assertThat((Integer) JsonPath.read(body, "$.status")).isEqualTo(400);
 			assertThat((String) JsonPath.read(body, "$.detail")).isEqualTo(ValidationProblem.DETAIL);
 			List<Map<String, Object>> errors = JsonPath.read(body, "$.errors");
@@ -104,8 +112,8 @@ class ErrorBodyShapesIT {
 		String body = postRefusedBeer("""
 				{"name": "%s", "style": "Quadrupel", "abv": 5.0, "breweryId": "%s"}""".formatted(name, breweryId));
 
-		Map<String, Object> problem = JsonPath.read(body, "$");
-		assertThat(problem).containsOnlyKeys("title", "status", "detail", "instance", "existingBeerId");
+		Map<String, Object> problem = membersOf(body);
+		assertThat(problem).containsOnlyKeys("title", "status", "detail", "existingBeerId");
 		assertThat((Integer) JsonPath.read(body, "$.status")).isEqualTo(409);
 		assertThat((String) JsonPath.read(body, "$.existingBeerId")).isEqualTo(beerId);
 	}
@@ -122,8 +130,8 @@ class ErrorBodyShapesIT {
 				{"name": "Shape Porter", "style": "Quadrupel", "abv": 5.0,
 				 "newBrewery": {"name": "%s.", "countryCode": "FI"}}""".formatted(breweryName.toUpperCase(Locale.ROOT)));
 
-		Map<String, Object> problem = JsonPath.read(body, "$");
-		assertThat(problem).containsOnlyKeys("title", "status", "detail", "instance", "existingBreweryId",
+		Map<String, Object> problem = membersOf(body);
+		assertThat(problem).containsOnlyKeys("title", "status", "detail", "existingBreweryId",
 				"existingBreweryName", "existingBreweryCountryCode");
 		assertThat((Integer) JsonPath.read(body, "$.status")).isEqualTo(409);
 		assertThat((String) JsonPath.read(body, "$.existingBreweryId")).isEqualTo(breweryId);
