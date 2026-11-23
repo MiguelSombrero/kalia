@@ -10,7 +10,7 @@ import {
   removeCellarBottle,
   updateCellarBottle,
 } from "./api";
-import { isCellarFull, type CellarFull } from "./cellarFull";
+import { type CellarFull,isCellarFull } from "./cellarFull";
 import { type CellarConflict, isConflictResult, lostToConcurrentChange } from "./conflict";
 import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 

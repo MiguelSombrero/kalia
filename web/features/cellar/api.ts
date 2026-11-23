@@ -11,8 +11,8 @@ import { read as generatedReadPublicCellar } from "@kalia/api/generated/public-c
 
 import { logger } from "@/lib/logger";
 
-import { inVintageOrder } from "./cellarOrder";
 import type { CellarFull } from "./cellarFull";
+import { inVintageOrder } from "./cellarOrder";
 import type { CellarTotals } from "./cellarTotals";
 import type { AddBottlesRequest, Bottle, CellarBeer, PublicCellar, UpdateBottleRequest } from "./types";
 
