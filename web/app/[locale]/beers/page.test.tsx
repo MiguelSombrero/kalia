@@ -11,13 +11,13 @@ const westvleteren12 = {
 };
 
 vi.mock("@/features/catalog/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/features/catalog/api")>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   searchBeers: vi.fn(async () => ({ content: [], totalElements: 0, totalPages: 0, page: 0 })),
   listBreweryCountries: vi.fn(async () => ["SE", "BE"]),
 }));
 
 vi.mock("@/features/cellar/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/features/cellar/api")>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   heldBottlesOfOrNone: vi.fn(async () => new Map([["b1", 2]])),
 }));
 

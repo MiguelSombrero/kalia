@@ -18,7 +18,7 @@ const { auth } = vi.hoisted(() => ({ auth: vi.fn() }));
 vi.mock("@/features/cellar", async () => ({
   getPublicCellar,
   PublicCellarView: () => null,
-  toPublicCellarPage: (await vi.importActual<typeof import("@/features/cellar/publicCellarPages")>("@/features/cellar/publicCellarPages")).toPublicCellarPage,
+  toPublicCellarPage: (await vi.importActual<Record<string, unknown>>("@/features/cellar/publicCellarPages")).toPublicCellarPage,
 }));
 vi.mock("@/features/profile", () => ({ getProfile }));
 vi.mock("@/auth", () => ({ auth }));
