@@ -1,5 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { PixelRatio } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 import { renderWithLocale } from "@/testing/renderWithLocale";
@@ -15,7 +16,13 @@ describe("CellarScreen", () => {
     ["en", "Cellar", "17 beers · 50 bottles"],
     ["fi", "Kellari", "17 olutta · 50 pulloa"],
   ] as const)("shows a signed-in user's cellar with its totals in %s", async (locale, heading, totals) => {
-    await renderWithLocale(<CellarScreen />, locale, fakeTokenStore({ status: "signedIn" }));
+    await renderWithLocale(
+      <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}>
+        <CellarScreen />
+      </SafeAreaProvider>,
+      locale,
+      fakeTokenStore({ status: "signedIn" }),
+    );
 
     expect(screen.getByRole("heading", { name: heading })).toBeOnTheScreen();
     expect(screen.getByRole("summary", { name: totals })).toBeOnTheScreen();

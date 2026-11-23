@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { atLargestFontScale } from "@/testing/atLargestFontScale";
 import { entryOf } from "@/testing/cellarEntries";
@@ -17,7 +18,14 @@ const entries = [
 
 const onAdd = jest.fn();
 const onBrowse = jest.fn();
-const renderList = (list = entries, locale: "en" | "fi" = "en") => renderWithLocale(<CellarList entries={list} onAdd={onAdd} onBrowse={onBrowse} />, locale);
+const METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } };
+const renderList = (list = entries, locale: "en" | "fi" = "en") =>
+  renderWithLocale(
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <CellarList entries={list} onAdd={onAdd} onBrowse={onBrowse} />
+    </SafeAreaProvider>,
+    locale,
+  );
 const rowNames = () => screen.getAllByRole("listitem").map((row) => String(row.props.accessibilityLabel).split(",")[0]);
 
 afterEach(() => {
