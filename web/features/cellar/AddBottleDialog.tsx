@@ -91,7 +91,13 @@ export const AddBottleDialog = ({
         brewedDate: values.brewedDate || undefined,
         bestBeforeDate: values.bestBeforeDate || undefined,
       },
-      { onSuccess: (result) => !isCellarFull(result) && onOpenChange(false) },
+      {
+        onSuccess: (result) => {
+          if (!isCellarFull(result)) {
+            onOpenChange(false);
+          }
+        },
+      },
     );
   });
 
