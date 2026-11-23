@@ -71,10 +71,13 @@ accepts a sign-in, and again after Keycloak's container is recreated, which
 proves accounts live in Postgres rather than the container;
 `scripts/check-keycloak-pkce-flow.mjs` signs in as `kalia-mobile` and asserts
 the audience and the registration [ADR-0095](../docs/adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md) promises;
+`scripts/check-keycloak-web-registration.mjs` asks as `kalia-web` and asserts
+the refusals of the bullet below: no PKCE challenge, the plain method, a
+redirect or post-logout address off the three;
 `scripts/check-keycloak-admin.mjs` asserts the `admin` role reaches
 `testadmin`'s `kalia-web` token and no one else's, never `kalia-mobile`'s, and,
 with `--backend`, that the API refuses the app's token at `/api/v1/admin/**`.
-All four run in `make keycloak-check` and in CI, whenever a push touches
+All five run in `make keycloak-check` and in CI, whenever a push touches
 Keycloak's inputs.
 `scripts/check-keycloak-templates.mjs` reads the pinned image, so it runs with
 the checks above (`make keycloak-check`, CI's Keycloak realm check), and holds
@@ -101,6 +104,16 @@ All of these are in `realm-export.json` under the drift check
   error. `firstName` and `lastName` stay on it, admin-only and not required:
   a name a user may edit puts the fields back on the registration form
   ([ADR-0055](../docs/adr/0055-self-registration-via-keycloak.md)).
+- **`kalia-web` accepts three addresses and no wildcard:** the callbacks
+  `/api/auth/callback/keycloak` and `/api/auth/callback/keycloak-register`
+  (redirect URIs) and `/` (post-logout), each on `WEB_URL`, with PKCE `S256`
+  required. A flow that sends Keycloak another address, a locale-prefixed
+  return path say, fails in Keycloak's error page and nothing in the app
+  says so: add the path to `realm-export.json` and to `WEB_REDIRECT_PATHS` /
+  `WEB_POST_LOGOUT_PATHS` in `scripts/check-keycloak-realm-config.mjs`
+  together. A locale-prefixed path the app returns to after sign-in is Auth.js's
+  own `redirectTo` and never reaches Keycloak. An admin-sent action email
+  carries no `redirect_uri` for the same reason.
 - **`kalia-mobile`'s one redirect URI is `kalia://auth/callback`,** exact and
   never a wildcard, with PKCE `S256` required and its own `kalia-backend`
   audience mapper, because the backend rejects a token without it

@@ -1,6 +1,6 @@
 # Task 25: Keycloak holds the web client to the redirects and the PKCE it uses
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -78,18 +78,18 @@ user's data.
 
 ## Acceptance criteria
 
-- [ ] A test of the realm file fails for a wildcard in either client's
+- [x] A test of the realm file fails for a wildcard in either client's
       `redirectUris` or `post.logout.redirect.uris`, and for a missing
       `pkce.code.challenge.method` on `kalia-web`. It failed before the change
-- [ ] Against the running stack, an authorization request from `kalia-web`
+- [x] Against the running stack, an authorization request from `kalia-web`
       without a `code_challenge` is refused, and one with a redirect URI outside
       the registered paths is refused
-- [ ] The web's Playwright sign-in, registration and sign-out flows pass against
+- [x] The web's Playwright sign-in, registration and sign-out flows pass against
       the tightened realm, and the pull request names the redirect paths they
       exercised
-- [ ] `make keycloak-check` reports no drift between the file and the running
+- [x] `make keycloak-check` reports no drift between the file and the running
       realm
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

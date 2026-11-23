@@ -63,7 +63,7 @@ const RULES = {
   "mobile-e2e": [STACK, /^(mobile\/|packages\/|backend\/|package(-lock)?\.json$|Makefile$|scripts\/(mobile-|stack-ports)|web\/app\/icon\.svg$)/],
   keycloak: [
     STACK,
-    /^(\.github\/workflows\/|scripts\/(check-keycloak-signin|check-keycloak-realm-config|check-keycloak-templates|check-keycloak-pkce-flow|check-keycloak-admin)\.mjs$)/,
+    /^(\.github\/workflows\/|scripts\/(check-keycloak-signin|check-keycloak-realm-config|check-keycloak-templates|check-keycloak-pkce-flow|check-keycloak-web-registration|check-keycloak-admin)\.mjs$)/,
   ],
 };
 

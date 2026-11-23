@@ -23,7 +23,7 @@ test("Keycloak sends a readable verification email whose link lands back on the 
   const email = `${username}@example.com`;
   const userId = await createUnverifiedKeycloakUser(request, adminToken, username, email);
 
-  await sendActionsEmail(request, adminToken, userId, ["VERIFY_EMAIL"], `${WEB_ORIGIN}/en`);
+  await sendActionsEmail(request, adminToken, userId, ["VERIFY_EMAIL"]);
 
   const message = await waitForMessageTo(request, email);
 
