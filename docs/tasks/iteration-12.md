@@ -20,7 +20,7 @@ cellar is used in a cellar.
 
 | ID | Task | Status |
 |---|---|---|
-| [01](iteration-12/01-decision-how-the-cellar-behaves-offline.md) | Decide how the cellar behaves offline | refined |
+| [01](iteration-12/01-decision-how-the-cellar-behaves-offline.md) | Decide how the cellar behaves offline | done |
 | [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md) | A cellar has a size limit the server enforces | refined |
 | [02](iteration-12/02-design-the-cellar-list.md) | Design the cellar list | refined |
 | [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | refined |

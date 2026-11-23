@@ -1,6 +1,6 @@
 # Task 01: Decide how the cellar behaves offline
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-4
 
@@ -96,19 +96,19 @@ acceptance criteria.
 
 ## Acceptance criteria
 
-- [ ] An ADR records the choice, the cache's storage, viewer binding, lifetime
+- [x] An ADR records the choice, the cache's storage, viewer binding, lifetime
       and discard rules, the revisit trigger and the rejected alternatives, and
       passes `node scripts/check-adrs.mjs`
-- [ ] The ADR records the size of `GET /api/v1/cellar` for a cellar of a
+- [x] The ADR records the size of `GET /api/v1/cellar` for a cellar of a
       hundred beers and a thousand bottles and for one at the 2,000-bottle cap,
       measured with a throwaway that is not committed
-- [ ] The ADR lists each test the decision implies, and each is among tasks
+- [x] The ADR lists each test the decision implies, and each is among tasks
       14–17's acceptance criteria; one that is not is raised with the product
       owner before the ADR merges
-- [ ] The architecture note on the uncapped read and the backlog's sixth
+- [x] The architecture note on the uncapped read and the backlog's sixth
       decision each point to the ADR, and `node scripts/check-links.mjs` is
       green
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
