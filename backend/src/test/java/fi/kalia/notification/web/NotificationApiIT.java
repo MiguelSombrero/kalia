@@ -6,7 +6,6 @@ import static org.mockito.BDDMockito.given;
 import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestTokens;
 import fi.kalia.TestcontainersConfiguration;
-import fi.kalia.catalog.RejectionReason;
 import fi.kalia.notification.domain.Notification;
 import fi.kalia.notification.domain.Notification.Outcome;
 import fi.kalia.notification.domain.NotificationRepository;
@@ -70,7 +69,7 @@ class NotificationApiIT {
 	@Test
 	void aCallerReadsTheirOwnNotificationsNewestDecisionFirstAndNoOneElses() {
 		Notification older = approval(me, "Older", DECIDED_AT);
-		Notification newer = rejection(me, "Newer", DECIDED_AT.plusSeconds(60), RejectionReason.INAPPROPRIATE);
+		Notification newer = rejection(me, "Newer", DECIDED_AT.plusSeconds(60), Notification.Reason.INAPPROPRIATE.name());
 		approval(someoneElse, "Not Mine", DECIDED_AT.plusSeconds(120));
 
 		String body = get(BASE + "?page=0&size=20", "me").expectStatus().isOk().expectBody(String.class)
@@ -86,7 +85,7 @@ class NotificationApiIT {
 	void aNotificationCarriesCodesAndNamesNoSentenceAndNoRecipient() {
 		Notification edited = notifications.save(Notification.reviewed(UUID.randomUUID(), me, Outcome.APPROVED, true,
 				UUID.randomUUID(), "As Decided", "as suggested", null, DECIDED_AT, Clock.systemUTC()));
-		Notification rejected = rejection(me, "Rejected", DECIDED_AT.minusSeconds(10), RejectionReason.NOT_A_REAL_BEER);
+		Notification rejected = rejection(me, "Rejected", DECIDED_AT.minusSeconds(10), Notification.Reason.NOT_A_REAL_BEER.name());
 
 		String body = get(BASE, "me").expectStatus().isOk().expectHeader().contentType(MediaType.APPLICATION_JSON)
 				.expectBody(String.class).returnResult().getResponseBody();
@@ -105,6 +104,17 @@ class NotificationApiIT {
 				.containsEntry("edited", false);
 		assertThat(body).doesNotContain(me.toString()).doesNotContain(edited.getEventId().toString())
 				.doesNotContain(rejected.getEventId().toString());
+	}
+
+	// Sent as it was stored, outside the spec's enum: the clients' fallback for an unknown value covers it.
+	@Test
+	void aReasonThisModuleHasNoCopyOfIsListedUnderItsOwnName() {
+		rejection(me, "Newer Reason", DECIDED_AT, "BREWERY_CLOSED");
+
+		String body = get(BASE, "me").expectStatus().isOk().expectBody(String.class).returnResult()
+				.getResponseBody();
+
+		assertThat((String) JsonPath.read(body, "$.content[0].reason")).isEqualTo("BREWERY_CLOSED");
 	}
 
 	@Test
@@ -258,7 +268,7 @@ class NotificationApiIT {
 				UUID.randomUUID(), beerName, null, null, decidedAt, Clock.systemUTC()));
 	}
 
-	private Notification rejection(UUID recipient, String beerName, Instant decidedAt, RejectionReason reason) {
+	private Notification rejection(UUID recipient, String beerName, Instant decidedAt, String reason) {
 		return notifications.save(Notification.reviewed(UUID.randomUUID(), recipient, Outcome.REJECTED, false,
 				UUID.randomUUID(), beerName, null, reason, decidedAt, Clock.systemUTC()));
 	}

@@ -96,7 +96,11 @@ class CellarController {
 					Adds the requested quantity of identical bottles, each its own independently \
 					editable row. Extends the entry for this catalog beer if the caller already has \
 					one, otherwise creates it. Bottle ids are always server-assigned. A beer an operator \
-					rejected or removed cannot be added to, even by a caller who already holds it.\
+					rejected or removed cannot be added to, even by a caller who already holds it. A cellar \
+					holds\s""" + CellarService.MAX_BOTTLES + """
+					\sbottles at most: an add that would pass that is refused whole with 422, naming the \
+					limit and how many bottles still fit. A cellar already over it still reads, edits and \
+					removes.\
 					""")
 	@ApiResponses({
 			@ApiResponse(responseCode = "400", description = "The bottle's dates or quantity are invalid",
@@ -111,7 +115,11 @@ class CellarController {
 							schema = @Schema(implementation = Problem.class))),
 			@ApiResponse(responseCode = "409", description = CONCURRENT_WRITE,
 					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-							schema = @Schema(implementation = Problem.class)))})
+							schema = @Schema(implementation = Problem.class))),
+			@ApiResponse(responseCode = "422",
+					description = "The add would take the cellar past its limit; none of it was added",
+					content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+							schema = @Schema(implementation = CellarFullProblem.class)))})
 	List<BottleDto> addBottles(@Valid @RequestBody AddBottleRequestDto request) {
 		return cellar.addBottles(identity.requireCurrentUserId(), request.beerId(), request.quantityOrDefault(),
 				request.containerType(), request.brewedDate(), request.bestBeforeDate())

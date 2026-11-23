@@ -25,6 +25,7 @@ export * from './bottleDtoContainerType';
 export * from './breweryDto';
 export * from './breweryRefDto';
 export * from './cellarBeerDto';
+export * from './cellarFullProblem';
 export * from './changeVisibilityRequestDto';
 export * from './duplicateBeerProblem';
 export * from './duplicateBreweryProblem';

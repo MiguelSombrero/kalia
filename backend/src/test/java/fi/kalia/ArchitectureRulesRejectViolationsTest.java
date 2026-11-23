@@ -40,6 +40,18 @@ class ArchitectureRulesRejectViolationsTest {
 	}
 
 	@Test
+	void notificationDomainDependingOnCatalog() {
+		assertRejects(ArchitectureTest.notificationKeepsNothingOfCatalogsInItsDomainOrWeb(FIXTURE),
+				"NotificationDomainReachingIntoCatalog");
+	}
+
+	@Test
+	void notificationWebDependingOnCatalog() {
+		assertRejects(ArchitectureTest.notificationKeepsNothingOfCatalogsInItsDomainOrWeb(FIXTURE),
+				"NotificationWebReachingIntoCatalog");
+	}
+
+	@Test
 	void anAdviceWithNoBasePackages() {
 		assertRejects(ArchitectureTest.moduleAdviceDeclaresBasePackages(FIXTURE), "UnscopedModuleAdvice");
 	}

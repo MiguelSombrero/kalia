@@ -21,7 +21,7 @@ cellar is used in a cellar.
 | ID | Task | Status |
 |---|---|---|
 | [01](iteration-12/01-decision-how-the-cellar-behaves-offline.md) | Decide how the cellar behaves offline | done |
-| [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md) | A cellar has a size limit the server enforces | refined |
+| [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md) | A cellar has a size limit the server enforces | done |
 | [02](iteration-12/02-design-the-cellar-list.md) | Design the cellar list | refined |
 | [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | refined |
 | [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | done |
@@ -43,7 +43,7 @@ cellar is used in a cellar.
 | [15](iteration-12/15-the-app-knows-when-it-is-offline.md) | The app knows when it is offline | refined |
 | [16](iteration-12/16-a-write-attempted-offline-says-so.md) | A write attempted offline says so | refined |
 | [17](iteration-12/17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md) | A write the server rejects leaves the screen as it was | refined |
-| [24](iteration-12/24-a-rejection-reason-added-in-catalog-cannot-lose-a-notification.md) | A rejection reason added in catalog cannot lose a notification | refined |
+| [24](iteration-12/24-a-rejection-reason-added-in-catalog-cannot-lose-a-notification.md) | A rejection reason added in catalog cannot lose a notification | done |
 | [25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md) | Keycloak holds the web client to the redirects and the PKCE it uses | done |
 | [18](iteration-12/18-the-cellars-flows-run-end-to-end-on-both-platforms.md) | The cellar's flows run end to end on both platforms | refined |
 

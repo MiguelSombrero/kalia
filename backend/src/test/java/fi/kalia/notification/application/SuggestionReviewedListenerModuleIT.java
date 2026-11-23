@@ -39,6 +39,9 @@ class SuggestionReviewedListenerModuleIT {
 	private NotificationRepository notifications;
 
 	@Autowired
+	private NotificationService service;
+
+	@Autowired
 	private JdbcTemplate jdbc;
 
 	@Autowired
@@ -71,9 +74,23 @@ class SuggestionReviewedListenerModuleIT {
 		Notification written = publishAndAwait(scenario, event);
 
 		assertThat(written.getOutcome()).isEqualTo(Notification.Outcome.REJECTED);
-		assertThat(written.getReason()).isEqualTo(RejectionReason.NOT_A_REAL_BEER);
+		assertThat(written.getReason()).isEqualTo("NOT_A_REAL_BEER");
 		assertThat(written.isEdited()).isFalse();
 		assertThat(written.getBeerName()).isEqualTo("Rejected Name");
+	}
+
+	// catalog's enum cannot carry a name this module lacks until someone adds one, so the name a
+	// fifth reason would publish is handed to the service as the listener hands it.
+	@Test
+	void aReasonThisModuleHasNoCopyOfIsStoredUnderItsOwnName() {
+		SuggestionReviewed event = new SuggestionReviewed(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+				Outcome.REJECTED, "Rejected For A New Reason", false, null, RejectionReason.INAPPROPRIATE,
+				DECIDED_AT);
+
+		service.recordReviewed(event, "BREWERY_CLOSED");
+
+		assertThat(notificationsOf(event.eventId())).singleElement()
+				.satisfies(written -> assertThat(written.getReason()).isEqualTo("BREWERY_CLOSED"));
 	}
 
 	@Test

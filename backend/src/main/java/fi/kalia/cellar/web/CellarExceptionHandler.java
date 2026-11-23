@@ -2,6 +2,7 @@ package fi.kalia.cellar.web;
 
 import fi.kalia.cellar.application.BeerNotFoundException;
 import fi.kalia.cellar.application.BottleNotFoundException;
+import fi.kalia.cellar.application.CellarFullException;
 import fi.kalia.cellar.application.PublicCellarNotFoundException;
 import fi.kalia.cellar.domain.InvalidBottleException;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,11 @@ class CellarExceptionHandler {
 	@ExceptionHandler(InvalidBottleException.class)
 	ProblemDetail invalidBottle(InvalidBottleException e) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+	}
+
+	@ExceptionHandler(CellarFullException.class)
+	CellarFullProblem cellarFull(CellarFullException e) {
+		return new CellarFullProblem(e.getMessage(), e.getLimit(), e.getRemaining());
 	}
 
 	@ExceptionHandler(ObjectOptimisticLockingFailureException.class)
