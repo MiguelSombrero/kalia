@@ -1,6 +1,6 @@
 # Task 21: A bottle that is already gone is not a failure
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -69,19 +69,19 @@ decide once, before the phone builds it a second way.
 
 ## Acceptance criteria
 
-- [ ] A web component test shows a removal answered `404` leaving the bottle
+- [x] A web component test shows a removal answered `404` leaving the bottle
       gone, showing no failure message and reading the entry again. It failed
       before the change
-- [ ] A web component test shows an edit answered `404` closing the dialog,
+- [x] A web component test shows an edit answered `404` closing the dialog,
       showing its notice in `en` and `fi` to a screen reader, and the entry read
       again
-- [ ] A Playwright test removes a bottle in one browser context that another
+- [x] A Playwright test removes a bottle in one browser context that another
       context has already removed and finds it gone with no error, and was
       confirmed to fail before the change
-- [ ] The rule is written once in `docs/architecture.md` §4, and
+- [x] The rule is written once in `docs/architecture.md` §4, and
       `web/CONVENTIONS.md` and `mobile/CONVENTIONS.md` each point at it in one
       line
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

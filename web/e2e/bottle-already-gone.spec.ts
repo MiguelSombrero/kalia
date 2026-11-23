@@ -41,13 +41,13 @@ test("removing a bottle that another context already removed leaves it gone, wit
 
     await other.page.goto("/en/cellar");
     await removeLast(other.page);
-    await expect(other.page.getByText(/Bottle removed\./)).toBeVisible();
+    await expect(other.page.getByText(/Bottle removed\./).first()).toBeVisible();
 
     // The stale page still shows the bottle the other context removed.
     await expect(bottles(stale.page).getByRole("button", { name: /^Remove / })).toHaveCount(before);
     await removeLast(stale.page);
 
-    await expect(stale.page.getByText(/Bottle removed\./)).toBeVisible();
+    await expect(stale.page.getByText(/Bottle removed\./).first()).toBeVisible();
     await expect(stale.page.getByText("Could not remove the bottle. Please try again.")).toHaveCount(0);
     await stale.page.reload();
     await expect(
