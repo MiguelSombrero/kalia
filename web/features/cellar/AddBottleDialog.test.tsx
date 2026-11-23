@@ -188,6 +188,23 @@ describe("AddBottleDialog", () => {
   });
 
   it.each([
+    ["en", 1, "A cellar holds 2000 bottles at most, and only 1 more fits. Nothing was added."],
+    ["en", 5, "A cellar holds 2000 bottles at most, and only 5 more fit. Nothing was added."],
+    ["en", 0, "A cellar holds 2000 bottles at most, and yours is full. Nothing was added."],
+    ["fi", 1, "Kellariin mahtuu enintään 2000 pulloa, ja vielä mahtuu vain 1 pullo. Mitään ei lisätty."],
+    ["fi", 5, "Kellariin mahtuu enintään 2000 pulloa, ja vielä mahtuu vain 5 pulloa. Mitään ei lisätty."],
+    ["fi", 0, "Kellariin mahtuu enintään 2000 pulloa, ja kellarisi on täynnä. Mitään ei lisätty."],
+  ])("names the cellar's limit and how many bottles still fit when the add is refused, in %s with %i left", async (locale, remaining, message) => {
+    addBottlesAction.mockResolvedValue({ cellarFull: true, limit: 2000, remaining });
+    await openDialog(locale as Locale);
+
+    submit(locale === "en" ? "Add" : "Lisää");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it.each([
     ["en", "Your cellar was changed somewhere else at the same moment, so this was not saved. Reload to see it as it is now, then try again.", "Reload page"],
     ["fi", "Kellariasi muutettiin samaan aikaan toisaalla, joten muutosta ei tallennettu. Päivitä sivu nähdäksesi sen nykytilan ja yritä sitten uudelleen.", "Päivitä sivu"],
   ])("tells a lost concurrent add apart from any other failure, with a reload, in %s", async (locale, message, reload) => {

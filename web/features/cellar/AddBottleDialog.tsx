@@ -29,6 +29,7 @@ import {
 } from "./addBottleSchema";
 import { todayIso } from "./bottleDateRules";
 import { CellarConflictAlert } from "./CellarConflictAlert";
+import { isCellarFull } from "./cellarFull";
 import { isCellarConflict } from "./conflict";
 import { useAddBottle } from "./hooks/useBottles";
 
@@ -90,7 +91,13 @@ export const AddBottleDialog = ({
         brewedDate: values.brewedDate || undefined,
         bestBeforeDate: values.bestBeforeDate || undefined,
       },
-      { onSuccess: () => onOpenChange(false) },
+      {
+        onSuccess: (result) => {
+          if (!isCellarFull(result)) {
+            onOpenChange(false);
+          }
+        },
+      },
     );
   });
 
@@ -221,6 +228,11 @@ export const AddBottleDialog = ({
             )}
           </div>
 
+          {addBottle.data && isCellarFull(addBottle.data) && (
+            <ErrorAlert>
+              {t("cellar.add.error.cellarFull", { count: addBottle.data.remaining, limit: addBottle.data.limit })}
+            </ErrorAlert>
+          )}
           {addBottle.isError &&
             (isCellarConflict(addBottle.error) ? (
               <CellarConflictAlert />

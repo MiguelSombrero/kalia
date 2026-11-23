@@ -1,6 +1,6 @@
 # Task 19: A cellar has a size limit the server enforces
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -89,19 +89,19 @@ The limit is cheapest to add before the first client that writes ships.
 
 ## Acceptance criteria
 
-- [ ] A backend integration test shows an add that would exceed the limit
+- [x] A backend integration test shows an add that would exceed the limit
       refused with its documented status, the limit and how many still fit, and
       an add up to the limit accepted. It failed before the change
-- [ ] A backend test forces two adds interleaving at one bottle below the limit
+- [x] A backend test forces two adds interleaving at one bottle below the limit
       and shows the total never passing it
-- [ ] A test shows a cellar already over the limit still read, edited and
+- [x] A test shows a cellar already over the limit still read, edited and
       removed from
-- [ ] The committed OpenAPI spec lists the new response, and the breaking-diff
+- [x] The committed OpenAPI spec lists the new response, and the breaking-diff
       check passes
-- [ ] A web component test shows the add-bottle form's message for the refusal,
+- [x] A web component test shows the add-bottle form's message for the refusal,
       naming how many bottles still fit, in `en` and `fi`
-- [ ] `docs/architecture.md` no longer calls the read uncapped
-- [ ] `make verify-fast` is green
+- [x] `docs/architecture.md` no longer calls the read uncapped
+- [x] `make verify-fast` is green
 
 ## Notes
 

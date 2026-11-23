@@ -567,7 +567,10 @@
       "submitting": "Lisätään…",
       "error": {
         "quantityRange": "Valitse 1–24 pulloa.",
-        "failed": "Kellariin lisääminen epäonnistui. Yritä uudelleen."
+        "failed": "Kellariin lisääminen epäonnistui. Yritä uudelleen.",
+      "cellarFull_zero": "Kellariin mahtuu enintään {{limit}} pulloa, ja kellarisi on täynnä. Mitään ei lisätty.",
+      "cellarFull_one": "Kellariin mahtuu enintään {{limit}} pulloa, ja vielä mahtuu vain {{count}} pullo. Mitään ei lisätty.",
+      "cellarFull_other": "Kellariin mahtuu enintään {{limit}} pulloa, ja vielä mahtuu vain {{count}} pulloa. Mitään ei lisätty."
       },
       "actionShort": "Lisää",
       "actionFor": "Lisää kellariin: {{beer}}",

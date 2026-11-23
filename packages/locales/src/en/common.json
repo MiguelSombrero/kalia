@@ -567,7 +567,10 @@
       "submitting": "Adding…",
       "error": {
         "quantityRange": "Choose between 1 and 24 bottles.",
-        "failed": "Could not add to your cellar. Please try again."
+        "failed": "Could not add to your cellar. Please try again.",
+      "cellarFull_zero": "A cellar holds {{limit}} bottles at most, and yours is full. Nothing was added.",
+      "cellarFull_one": "A cellar holds {{limit}} bottles at most, and only {{count}} more fits. Nothing was added.",
+      "cellarFull_other": "A cellar holds {{limit}} bottles at most, and only {{count}} more fit. Nothing was added."
       },
       "actionShort": "Add",
       "actionFor": "Add to cellar: {{beer}}",

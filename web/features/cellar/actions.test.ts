@@ -9,7 +9,8 @@ const { addBottlesToCellar, updateCellarBottle, removeCellarBottle } = vi.hoiste
 }));
 
 vi.mock("@/auth", () => ({ signIn }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+const { revalidatePath } = vi.hoisted(() => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("./api", () => ({ addBottlesToCellar, updateCellarBottle, removeCellarBottle }));
 
 const beerId = "5f9a0a3e-1f2b-4c3d-8e4f-5a6b7c8d9e0f";
@@ -92,6 +93,15 @@ describe("a cellar write that lost to a concurrent change", () => {
     api.mockRejectedValue(lost());
 
     await expect(run()).resolves.toEqual({ conflict: true });
+  });
+
+  it("returns the cellar's limit as an answer, and leaves the pages as they were", async () => {
+    const { addBottlesAction } = await import("./actions");
+    const full = { cellarFull: true, limit: 2000, remaining: 0 };
+    addBottlesToCellar.mockResolvedValue(full);
+
+    await expect(addBottlesAction(request)).resolves.toEqual(full);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 
   it("still throws any other failure", async () => {
