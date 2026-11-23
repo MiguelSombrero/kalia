@@ -104,17 +104,43 @@ loading, error or offline states, or the Add form. The standing intent is
 
 - **The orders are named as the web names them,** "Bottles" and "Best before", not
   the frame's "Bottles held" and "Soonest best-before": the strings already exist
-  in both languages and one name serves both clients. The owner has not seen this
-  wording.
+  in both languages and one name serves both clients.
 - **A find shows the cellar's totals unchanged,** where the frame of B counted the
   matches. Counting matches belongs to B's bar, which was not chosen.
+- **The sort menu ends in a visible Close.** The frame closed it by tapping outside
+  or choosing; on the iPhone the owner's VoiceOver walk found nothing visible to
+  press to leave it without choosing, so the menu carries a Close and its backdrop
+  is hidden from screen readers.
+- **The list makes room for the keyboard.** The frame did not show the keyboard; on
+  the iPhone it covered the find field at the foot of the screen, so the list pads
+  its bottom by the keyboard's overlap and the field stays in view while typing.
+- **A long name wraps beside the strength.** On the iPhone a beer whose name nearly
+  filled the row lost its strength, pushed off the card; the name now wraps and the
+  strength keeps its width.
+- **The controls stack at the largest text size.** With the bar scrolling with the
+  list, the find field and the Sort button sit one above the other at full width
+  rather than side by side.
 
 ## Sign-off
 
 The product owner named D from the second framed round on 2026-11-23, after
 choosing A in the first and asking for the changes that made D.
 
-Not yet done, owed before this record is final: the built list on the product
-owner's iPhone in phone mode and their VoiceOver walk, which
-[ADR-0108](../adr/0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)
-makes the final sign-off.
+The built list ran on the iOS Simulator (default and largest text size) and on the
+product owner's iPhone in phone mode, over the sample cellar of 17 beers. Their use
+of it on the iPhone found three faults, each fixed and then confirmed fixed by the
+owner on the phone: a strength missing from a row with a long name, the keyboard
+covering the find field, and a sort menu with nothing visible to press to leave it
+without choosing, which they found in a Finnish VoiceOver walk (the backdrop was read
+last as "close sort menu" and a tap elsewhere only read it). After those, the owner
+confirmed the fixes and raised nothing further.
+
+The agent also checked the list once on the Android emulator (Pixel, default text
+size, signed in as the seeded dev account): the list, the totals, the find field,
+the no-match state and the sort menu with its Close drew as on iOS. There the
+keyboard covered the bar until the list padded for it on Android as well, because
+the app draws edge to edge, so the same padding is applied on both platforms. The
+largest text size and Finnish were not run on Android.
+
+Not done: a separate, explicit pass of the whole list in a VoiceOver walk after the
+fixes, and TalkBack, which nobody has walked.

@@ -222,14 +222,18 @@ to the entry that opens from the row.
   The field narrows by a beer's or a brewery's name and nothing else; it sends
   nothing. The order button names the current order and opens a menu upward of the
   five orders as radio rows, name first. A tap on a row applies and closes it, and
-  a backdrop with a name closes it without choosing, so no control needs a gesture.
+  a visible Close ends it without choosing; a tap outside also closes it, but that
+  backdrop is hidden from assistive technology, so the one control that closes the
+  menu is the one a person can see. The bar rides above the keyboard, so the field
+  stays in view while typing.
 - **A find that matches nothing is not an empty cellar.** It names the words
   searched and offers to clear them; the empty cellar says so, says what fills it,
   and offers adding a bottle as its main action and the catalog beside it. The empty
   cellar draws no totals, find or order.
 - **At the largest text size the bar scrolls with the list** instead of staying
-  pinned, so a control never takes a screen of its own, and a row stacks its
-  strength under its text. No text sits in a fixed height.
+  pinned, so a control never takes a screen of its own; the field and the order
+  button take a full-width line each, and a row stacks its strength under its text.
+  At every size a long name wraps beside the strength and never pushes it off. No text sits in a fixed height.
 - **Not decided here.** What opens from a row and a bottle's dates
   ([task 03](tasks/iteration-12/03-design-a-cellar-entry-and-its-bottles.md)), and
   the list's loading, error and offline states.

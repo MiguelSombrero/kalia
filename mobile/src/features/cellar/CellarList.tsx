@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, FlatList, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { BackHandler, FlatList, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionButton } from "@/components/ActionButton";
@@ -19,8 +19,6 @@ import { CellarRow } from "./CellarRow";
 import { type CellarOrder, findEntries, ORDER_LABEL_KEYS, sortEntries, totalsOf } from "./model";
 import { SortMenu } from "./SortMenu";
 import type { CellarEntry } from "./types";
-
-const KEYBOARD_BEHAVIOUR = Platform.select({ ios: "padding" as const });
 
 type CellarListProps = { entries: CellarEntry[]; onAdd: () => void; onBrowse: () => void };
 
@@ -114,7 +112,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
     );
 
   return (
-    <KeyboardAvoidingView behavior={KEYBOARD_BEHAVIOUR} keyboardVerticalOffset={insets.top} style={styles.root}>
+    <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={insets.top} style={styles.root}>
       <FlatList
         role="list"
         accessibilityLabel={t("nav.cellar")}
