@@ -13,7 +13,7 @@ const westvleteren12 = {
 const rochefort10 = { ...westvleteren12, id: "r10", name: "Rochefort 10", abv: 11.3 };
 
 vi.mock("@/features/catalog/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/features/catalog/api")>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   getBeer: vi.fn(async (id: string) => (id === westvleteren12.id ? westvleteren12 : null)),
   searchBeers: vi.fn(async () => ({
     content: [rochefort10, westvleteren12],
@@ -24,7 +24,7 @@ vi.mock("@/features/catalog/api", async (importOriginal) => ({
 }));
 
 vi.mock("@/features/cellar/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/features/cellar/api")>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   heldBottlesOfOrNone: vi.fn(async () => new Map([[westvleteren12.id, 3]])),
 }));
 
