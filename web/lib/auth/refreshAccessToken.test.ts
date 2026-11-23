@@ -5,6 +5,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { logger } from "@/lib/logger";
 import { metrics } from "@/lib/metrics/metrics";
 
+import { KEYCLOAK_DEADLINE_MS } from "./internalKeycloakFetch";
 import { refreshAccessToken } from "./refreshAccessToken";
 
 vi.mock("@/lib/logger", () => ({
@@ -28,6 +29,15 @@ const stubFetch = (response: Response | Error) => {
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 };
+
+/** A fetch whose request never completes unless its signal aborts it, as a real one does. */
+const hungUntilAborted = () =>
+  vi.fn(
+    (_url: unknown, init?: RequestInit) =>
+      new Promise<Response>((_, reject) => {
+        init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+      }),
+  );
 
 describe("refreshAccessToken", () => {
   beforeEach(() => {
@@ -163,6 +173,50 @@ describe("refreshAccessToken", () => {
       expect(await failureCounts()).toEqual([
         { labels: { outcome: "unavailable", reason: "network" }, value: 1 },
       ]);
+    });
+
+    it("counts a Keycloak that never answers as a timeout, not as unreachable", async () => {
+      vi.useFakeTimers();
+      try {
+        vi.stubGlobal("fetch", hungUntilAborted());
+
+        const outcome = refreshAccessToken("old-refresh");
+        await vi.advanceTimersByTimeAsync(KEYCLOAK_DEADLINE_MS);
+
+        await expect(outcome).resolves.toEqual({ status: "unavailable" });
+        expect(await failureCounts()).toEqual([
+          { labels: { outcome: "unavailable", reason: "timeout" }, value: 1 },
+        ]);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("counts a token response that stalls part-way through its body as a timeout", async () => {
+      vi.useFakeTimers();
+      try {
+        vi.stubGlobal(
+          "fetch",
+          vi.fn(async (_url: unknown, init?: RequestInit) => {
+            const stalled = new ReadableStream({
+              start: (controller) => {
+                init?.signal?.addEventListener("abort", () => controller.error(init.signal?.reason));
+              },
+            });
+            return new Response(stalled, { status: 200 });
+          }),
+        );
+
+        const outcome = refreshAccessToken("old-refresh");
+        await vi.advanceTimersByTimeAsync(KEYCLOAK_DEADLINE_MS);
+
+        await expect(outcome).resolves.toEqual({ status: "unavailable" });
+        expect(await failureCounts()).toEqual([
+          { labels: { outcome: "unavailable", reason: "timeout" }, value: 1 },
+        ]);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it.each([

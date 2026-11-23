@@ -58,7 +58,8 @@ source; `node scripts/generate-tokens.mjs --check` detects drift without git.
   ([ADR-0093](../docs/adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **The generated client calls a transport the app registers once at startup**,
   with `registerTransport()`; a call before that throws. `createFetchTransport()`
-  is the core: base URL, timeout, JSON parsing, a non-2xx status returned
+  is the core: base URL, one timeout over the headers and the body together,
+  JSON parsing, a non-2xx status returned
   rather than thrown, and the typed `ApiError` of
   [ADR-0023](../docs/adr/0023-typed-api-failures.md). The app supplies where the
   access token comes from and, optionally, how a call without its own
