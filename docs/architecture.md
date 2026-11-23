@@ -323,7 +323,8 @@ local gate and the CI gate: [ADR-0046](adr/0046-edit-time-checks-and-one-verify-
   bounds it:** the offline cache needs the whole cellar, so a cellar holds at
   most 2,000 bottles and an add past that is refused whole with a `422`. A
   cellar already over the limit still reads, edits and removes. Everything
-  else is bounded too.
+  else is bounded too. Why the read stays whole:
+  [ADR-0115](adr/0115-the-phone-keeps-the-last-loaded-cellar-for-its-viewer-and-shows-it-however-old-and-a-write-with-no-signal-is-refused-not-queued.md).
 - **The catalog is owned and seeded once from Wikidata,** not read live: no
   runtime dependency, at the cost of an ageing snapshot and an accepted
   provenance risk ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).

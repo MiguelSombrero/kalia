@@ -110,6 +110,11 @@ nobody has committed to becomes a constraint anyway.
   — both cellar reads arrive with each entry joined to its beer through
   `CatalogApi`, empty and unresolvable entries left out in one place, and a
   feature's `api.ts` reaches only its own generated tag.
+- [ADR-0115](0115-the-phone-keeps-the-last-loaded-cellar-for-its-viewer-and-shows-it-however-old-and-a-write-with-no-signal-is-refused-not-queued.md)
+  — the phone keeps the whole last-loaded cellar in `AsyncStorage` as one
+  record per viewer and shows it however old with its age, wiped on sign-out,
+  a change of viewer and a new build; a write with no signal is refused, never
+  queued; the cellar read stays whole under the 2,000-bottle cap.
 
 ## Feed
 
@@ -620,3 +625,4 @@ reasons and its rate is worth watching independently
 | [ADR-0112](0112-the-phone-follows-the-system-into-a-dark-mode-of-neutral-cards-with-the-style-colour-in-a-slab.md) | The phone follows the system into a dark mode of neutral cards with the style colour in a slab, and keeps the mark off dark pages | accepted | 2026-11-13 |
 | [ADR-0113](0113-the-phone-moves-a-little-to-explain-a-change-and-is-felt-only-for-the-result-of-an-action.md) | The phone moves a little to explain a change and taps only for the result of an action, both following the system's settings | accepted | 2026-11-13 |
 | [ADR-0114](0114-an-opt-in-profile-stores-traces-logs-and-metrics-in-one-local-grafana-container-an-agent-reads-through-a-bounded-interface.md) | An opt-in profile stores traces, logs and metrics in one local Grafana container that an agent reads through a bounded interface | accepted | 2026-11-15 |
+| [ADR-0115](0115-the-phone-keeps-the-last-loaded-cellar-for-its-viewer-and-shows-it-however-old-and-a-write-with-no-signal-is-refused-not-queued.md) | The phone keeps the last-loaded cellar for its viewer and shows it however old, and a write with no signal is refused, not queued | accepted | 2026-11-23 |
