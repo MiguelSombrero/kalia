@@ -5,7 +5,9 @@ CREATE SCHEMA IF NOT EXISTS notification;
 -- recipient_id and beer_id are cross-module references by id only, no foreign key
 -- (docs/architecture.md §3). event_id is the idempotency key for the at-least-once event
 -- registry. A row exists until the recipient acknowledges it, so unread is existence:
--- no read flag, no timestamp, and nothing sweeps old rows.
+-- no read flag, no timestamp, and nothing sweeps old rows. reason_code is the name catalog
+-- published, frozen as written and deliberately unchecked: a reason added in catalog must not
+-- be refused here and lost (ADR-0103).
 CREATE TABLE notification.notification (
     id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id       uuid NOT NULL UNIQUE,
@@ -15,8 +17,7 @@ CREATE TABLE notification.notification (
     beer_id        uuid NOT NULL,
     beer_name      text NOT NULL,
     suggested_name text,
-    reason_code    text CHECK (reason_code IN
-        ('ALREADY_IN_CATALOG', 'NOT_A_REAL_BEER', 'INAPPROPRIATE', 'INCORRECT_DETAILS')),
+    reason_code    text,
     decided_at     timestamptz NOT NULL,
     created_at     timestamptz NOT NULL DEFAULT now(),
     -- Only a rejection has a reason, and every rejection has one.

@@ -2,6 +2,10 @@
 
 - **Status:** accepted
 - **Date:** 2026-11-05
+- **Amended:** 2026-11-23 — the module owns the rejection reason it stores, as text
+  mapped by name from the event, so a reason added in `catalog` is kept and listed
+  under its own name and cannot fail the write (iteration 12 task 24); see the
+  frozen-facts bullet of Decision
 
 ## Context
 
@@ -59,8 +63,10 @@ the suggestion's contributor, written by an idempotent listener on
   recipient, the outcome, the beer's id, the beer's name as decided, the name
   as suggested when the admin edited it, the reason code when the outcome is a
   rejection, and when the decision was made. It stores codes and names, never a
-  sentence, and the client renders them in the reader's language. A later edit
-  to the beer, or its removal, does not rewrite a notification already written.
+  sentence, and the client renders them in the reader's language. The reason is
+  the name `catalog` published, kept as it came and deliberately unchecked. A
+  later edit to the beer, or its removal, does not rewrite a notification
+  already written.
 - **"Read" means the contributor acknowledged that one notification,** an
   explicit act on it alone. Acknowledging deletes its row: no read flag, no read
   timestamp, no list of read notifications. Opening the list, or seeing the
