@@ -107,6 +107,7 @@ class ErrorBodyShapesIT {
 		Map<String, Object> problem = JsonPath.read(body, "$");
 		assertThat(problem).containsOnlyKeys("title", "status", "detail", "instance", "existingBeerId");
 		assertThat((Integer) JsonPath.read(body, "$.status")).isEqualTo(409);
+		assertThat((String) JsonPath.read(body, "$.instance")).isEqualTo("/api/v1/beers");
 		assertThat((String) JsonPath.read(body, "$.existingBeerId")).isEqualTo(beerId);
 	}
 
