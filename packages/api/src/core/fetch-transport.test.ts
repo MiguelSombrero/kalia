@@ -255,6 +255,64 @@ describe("createFetchTransport", () => {
     await assertion;
   });
 
+  it("maps a body that never completes to the typed timeout failure, in the same budget as the headers", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        status: 200,
+        headers: new Headers(),
+        text: () => new Promise<string>(() => {}),
+      })),
+    );
+
+    const pending = createFetchTransport({ baseUrl, timeoutMs: 2_000 })("/api/v1/beers", {});
+    const assertion = expect(pending).rejects.toMatchObject({ kind: "timeout" });
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    await assertion;
+  });
+
+  it("does not reset the deadline when the headers arrive late", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) =>
+            setTimeout(
+              () => resolve({ status: 200, headers: new Headers(), text: () => new Promise<string>(() => {}) } as Response),
+              1_500,
+            ),
+          ),
+      ),
+    );
+
+    const pending = createFetchTransport({ baseUrl, timeoutMs: 2_000 })("/api/v1/beers", {});
+    const assertion = expect(pending).rejects.toMatchObject({ kind: "timeout" });
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    await assertion;
+  });
+
+  it("rethrows a caller abort that interrupts the body unchanged", async () => {
+    const abort = new DOMException("The operation was aborted.", "AbortError");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        status: 200,
+        headers: new Headers(),
+        text: async () => {
+          throw abort;
+        },
+      })),
+    );
+
+    const error = await createFetchTransport({ baseUrl })("/api/v1/beers", {}).catch((e: unknown) => e);
+
+    expect(error).toBe(abort);
+  });
+
   it("rethrows a caller abort unchanged, so query cancellation is not read as failure", async () => {
     const abort = new DOMException("The operation was aborted.", "AbortError");
     vi.stubGlobal(
