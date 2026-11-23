@@ -320,8 +320,8 @@ local gate and the CI gate: [ADR-0046](adr/0046-edit-time-checks-and-one-verify-
   asks Keycloak nothing per request; introspection would make every write
   depend on Keycloak ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md), [ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
 - **`GET /api/v1/cellar` answers every entry, uncapped:** the offline cache
-  needs the whole cellar. Everything else is bounded. Revisit in
-  [iteration 12](tasks/iteration-12.md).
+  needs the whole cellar. Everything else is bounded. Why the read
+  stays whole: [ADR-0115](adr/0115-the-phone-keeps-the-last-loaded-cellar-for-its-viewer-and-shows-it-however-old-and-a-write-with-no-signal-is-refused-not-queued.md).
 - **The catalog is owned and seeded once from Wikidata,** not read live: no
   runtime dependency, at the cost of an ageing snapshot and an accepted
   provenance risk ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).
