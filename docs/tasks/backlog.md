@@ -167,7 +167,7 @@ holds it:
 | Decision 5, the design token format | [ADR-0107](../adr/0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md) |
 | Decision 8, the testing strategy | [ADR-0096](../adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md) |
 | Crash reporting | [ADR-0098](../adr/0098-an-installed-builds-errors-are-read-from-the-devices-own-logs-and-a-crash-service-waits-for-a-second-user.md) deferred a crash service until a second user |
-| Decision 6, offline behaviour | [Iteration 12](iteration-12.md) |
+| Decision 6, offline behaviour | [ADR-0115](../adr/0115-the-phone-keeps-the-last-loaded-cellar-for-its-viewer-and-shows-it-however-old-and-a-write-with-no-signal-is-refused-not-queued.md), built in [iteration 12](iteration-12.md) |
 | Keycloak's "Back to Application" link | [Iteration 13](iteration-13.md), with its deep links |
 | Decisions 7 and 9, push notifications and public API exposure | Parked — they need money, below |
 | Beer images | Unscheduled — storage can stay free, but it is the heaviest item left |
