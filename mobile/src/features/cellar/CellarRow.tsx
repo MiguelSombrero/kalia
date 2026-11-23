@@ -59,6 +59,7 @@ const useStyles = createThemedStyles(() => ({
   },
   cardWithSlab: { paddingLeft: theme.spacing.medium + SLAB_WIDTH },
   cardStacked: { flexDirection: "column", alignItems: "flex-start" },
+  // token-exception: lets the name column shrink below its longest line, so a long name wraps instead of pushing the strength off the card.
   text: { flex: 1, minWidth: 0 },
   textStacked: { alignSelf: "stretch" },
   name: textStyle("item-title", "bold"),
