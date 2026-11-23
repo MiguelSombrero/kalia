@@ -68,6 +68,12 @@ describe("CellarRow", () => {
     expectScalesWithText();
   });
 
+  it("keeps the strength at its full width beside a long name, which wraps instead of pushing it off the card", async () => {
+    await renderWithLocale(<CellarRow entry={entryOf({ id: "1", name: "Old Foghorn Barleywine", abv: 10 })} language="en" />);
+
+    expect(screen.getByText("10 %")).toHaveStyle({ flexShrink: 0 });
+  });
+
   it.each([
     ["en", "6.5 %"],
     ["fi", "6,5 %"],
