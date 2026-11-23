@@ -1,6 +1,6 @@
 # Task 02: Design the cellar list
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -78,25 +78,25 @@ platforms' conventions where they differ. Standing intent goes in
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the row, the
+- [x] The product owner chose from built alternatives, at minimum the row, the
       order, the find field and the empty cellar, each judged at the largest text size in both
       locales; a design record holds the directions and the choice
-- [ ] A component test finds every row, the totals and the empty state's action
+- [x] A component test finds every row, the totals and the empty state's action
       by role and accessible name
-- [ ] A component test renders a row with a long Finnish beer and brewery name
+- [x] A component test renders a row with a long Finnish beer and brewery name
       at the largest font scale, reading in full
-- [ ] A component test shows a withdrawn beer's row marked as withdrawn and a
+- [x] A component test shows a withdrawn beer's row marked as withdrawn and a
       style the app does not know drawn rather than dropped
-- [ ] A component test shows each of the five orders, the find field narrowing
+- [x] A component test shows each of the five orders, the find field narrowing
       the rows by beer and by brewery name, and a find with no match shown
       apart from the empty cellar
-- [ ] `docs/design.md` carries the chosen list as standing intent, and
+- [x] `docs/design.md` carries the chosen list as standing intent, and
       `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs` pass
       over it
-- [ ] The product owner signed off the built list live, on the route
+- [x] The product owner signed off the built list live, on the route
       [ADR-0108](../../adr/0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)
       names
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

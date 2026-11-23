@@ -4,11 +4,13 @@ import { View } from "react-native";
 
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
-import { ComingSoon } from "@/components/ComingSoon";
 import { spacing } from "@/components/metrics";
 import { Screen } from "@/components/Screen";
 import { ScreenTitle } from "@/components/ScreenTitle";
 import { useAuth } from "@/lib/auth/AuthProvider";
+
+import { CellarList } from "./CellarList";
+import { sampleCellar } from "./sampleCellar";
 
 export const CellarScreen = () => {
   const { t } = useTranslation();
@@ -38,5 +40,9 @@ export const CellarScreen = () => {
       </Screen>
     );
   }
-  return <ComingSoon heading={t("nav.cellar")} onBrowse={() => router.navigate("/catalog")} />;
+  return (
+    <Screen scroll={false}>
+      <CellarList entries={sampleCellar} onAdd={() => router.push("/add-sheet")} onBrowse={() => router.navigate("/catalog")} />
+    </Screen>
+  );
 };

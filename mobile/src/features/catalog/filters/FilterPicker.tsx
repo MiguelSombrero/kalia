@@ -5,6 +5,7 @@ import { ScrollView, Text, View } from "react-native";
 import { ActionButton } from "@/components/ActionButton";
 import { ChoiceRow } from "@/components/ChoiceRow";
 import { spacing } from "@/components/metrics";
+import { SearchField } from "@/components/SearchField";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
@@ -12,7 +13,6 @@ import { countryName } from "@/lib/i18n/countryNames";
 
 import { useBreweryOptions, useCountryOptions, useStyleOptions } from "../hooks/useFilterOptions";
 import type { Filters } from "./model";
-import { SearchField } from "./SearchField";
 import { StyleSwatch } from "./StyleSwatch";
 
 const normalise = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

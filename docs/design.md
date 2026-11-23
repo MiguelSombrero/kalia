@@ -202,6 +202,42 @@ control is a plain, labelled tap: none needs a drag or a gesture.
   empty and no-match states, and what the screen remembers
   ([task 09](tasks/iteration-11/09-catalog-search-and-list.md)).
 
+## Mobile cellar list
+
+The Cellar tab is the beers a person holds, one row each, in the order they chose,
+with the controls that find and order them in reach of a thumb. A row says what the
+beer is and how many bottles are held; nothing about a bottle's dates, which belong
+to the entry that opens from the row.
+([design record](design-records/iteration-12-02-cellar-list.md))
+
+- **A flat list of colour fields.** One row per beer, the colour field of
+  [Mobile identity](#mobile-identity) and its dark card with a slab: name,
+  brewery, style, bottles held, and the strength large at the end. No best-before
+  and no past-best-before mark on a row. A beer an operator withdrew keeps its row
+  and its bottles and carries a bordered label saying so; a style or container the
+  app does not know takes the neutral grey and is shown, never dropped.
+- **One totals line under the title,** beers and bottles, scrolling away with the
+  list. It counts the cellar, not what a find leaves.
+- **The find field and the order sit in a bar above the tab bar,** under the thumb.
+  The field narrows by a beer's or a brewery's name and nothing else; it sends
+  nothing. The order button names the current order and opens a menu upward of the
+  five orders as radio rows, name first. A tap on a row applies and closes it, and
+  a visible Close ends it without choosing; a tap outside also closes it, but that
+  backdrop is hidden from assistive technology, so the one control that closes the
+  menu is the one a person can see. The bar rides above the keyboard, so the field
+  stays in view while typing.
+- **A find that matches nothing is not an empty cellar.** It names the words
+  searched and offers to clear them; the empty cellar says so, says what fills it,
+  and offers adding a bottle as its main action and the catalog beside it. The empty
+  cellar draws no totals, find or order.
+- **At the largest text size the bar scrolls with the list** instead of staying
+  pinned, so a control never takes a screen of its own; the field and the order
+  button take a full-width line each, and a row stacks its strength under its text.
+  At every size a long name wraps beside the strength and never pushes it off. No text sits in a fixed height.
+- **Not decided here.** What opens from a row and a bottle's dates
+  ([task 03](tasks/iteration-12/03-design-a-cellar-entry-and-its-bottles.md)), and
+  the list's loading, error and offline states.
+
 ## Mobile motion
 
 Motion on the phone explains a change and never decorates one, and the amount
