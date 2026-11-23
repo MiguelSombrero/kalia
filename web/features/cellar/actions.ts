@@ -10,6 +10,7 @@ import {
   removeCellarBottle,
   updateCellarBottle,
 } from "./api";
+import { isCellarFull, type CellarFull } from "./cellarFull";
 import { type CellarConflict, isConflictResult, lostToConcurrentChange } from "./conflict";
 import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
 
@@ -34,9 +35,9 @@ const beerIdFrom = (formData?: FormData): string | undefined => {
   return typeof beerId === "string" && UUID_PATTERN.test(beerId) ? beerId : undefined;
 };
 
-export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[] | CellarConflict> => {
+export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[] | CellarConflict | CellarFull> => {
   const created = await lostToConcurrentChange(() => addBottlesToCellar(request));
-  if (isConflictResult(created)) {
+  if (isConflictResult(created) || isCellarFull(created)) {
     return created;
   }
   revalidatePath("/[locale]/cellar", "page");

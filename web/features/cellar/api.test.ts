@@ -2,6 +2,7 @@ import { isApiError } from "@kalia/api";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  addBottlesToCellar,
   getCellarTotals,
   getPublicCellar,
   heldBottlesOf,
@@ -277,6 +278,30 @@ describe("getPublicCellar", () => {
     stubFetch(() => 500);
 
     await expect(getPublicCellar("testuser")).rejects.toThrow("status 500");
+  });
+});
+
+describe("addBottlesToCellar", () => {
+  const request = { beerId, containerType: "BOTTLE" as const };
+
+  it("answers the limit and what still fits when the cellar is full, rather than throwing", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json(
+          { status: 422, title: "Unprocessable Content", detail: "full", limit: 2000, remaining: 3 },
+          { status: 422, headers: { "content-type": "application/problem+json" } },
+        ),
+      ),
+    );
+
+    await expect(addBottlesToCellar(request)).resolves.toEqual({ cellarFull: true, limit: 2000, remaining: 3 });
+  });
+
+  it("still throws any other refusal", async () => {
+    stubFetch(() => 500);
+
+    await expect(addBottlesToCellar(request)).rejects.toThrow("status 500");
   });
 });
 

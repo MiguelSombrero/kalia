@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.JsonPath;
 import fi.kalia.TestcontainersConfiguration;
+import fi.kalia.cellar.application.CellarService;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -144,6 +145,19 @@ class CellarOpenApiDocumentationIT {
 			assertThat((Object) JsonPath.read(body, operation + ".responses.409.content['application/problem+json']"))
 					.as(operation).isNotNull();
 		}
+	}
+
+	@Test
+	void theAddDocumentsItsRefusalPastTheCellarLimitWithTheLimitAndWhatStillFits() {
+		String body = apiDocs();
+
+		assertThat((String) JsonPath.read(body,
+				"$.paths['/api/v1/cellar/bottles'].post.responses.422.content['application/problem+json'].schema.$ref"))
+				.isEqualTo("#/components/schemas/CellarFullProblem");
+		assertThat((Integer) JsonPath.read(body, "$.components.schemas.CellarFullProblem.properties.limit.example"))
+				.isEqualTo(CellarService.MAX_BOTTLES);
+		List<String> required = JsonPath.read(body, "$.components.schemas.CellarFullProblem.required");
+		assertThat(required).contains("limit", "remaining");
 	}
 
 	@Test

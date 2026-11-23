@@ -319,9 +319,11 @@ local gate and the CI gate: [ADR-0046](adr/0046-edit-time-checks-and-one-verify-
 - **A token outlives sign-out by up to its 5-minute lifespan:** the backend
   asks Keycloak nothing per request; introspection would make every write
   depend on Keycloak ([ADR-0095](adr/0095-the-mobile-app-signs-in-as-a-public-pkce-client-holds-an-offline-token-and-calls-spring-directly-through-the-edge.md), [ADR-0101](adr/0101-an-admin-is-a-realm-role-in-the-access-token-which-the-backend-enforces-on-one-path-prefix-and-the-web-reads-in-its-bff.md)).
-- **`GET /api/v1/cellar` answers every entry, uncapped:** the offline cache
-  needs the whole cellar. Everything else is bounded. Revisit in
-  [iteration 12](tasks/iteration-12.md).
+- **`GET /api/v1/cellar` answers every entry, unpaged, and the cellar's size
+  bounds it:** the offline cache needs the whole cellar, so a cellar holds at
+  most 2,000 bottles and an add past that is refused whole with a `422`. A
+  cellar already over the limit still reads, edits and removes. Everything
+  else is bounded too.
 - **The catalog is owned and seeded once from Wikidata,** not read live: no
   runtime dependency, at the cost of an ageing snapshot and an accepted
   provenance risk ([ADR-0077](adr/0077-the-catalog-is-seeded-once-from-wikidata-and-owned-by-kalia.md)).

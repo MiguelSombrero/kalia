@@ -7,6 +7,7 @@
 import type {
   AddBottleRequestDto,
   BottleDto,
+  CellarFullProblem,
   EntryDto,
   HoldingsDto,
   Problem,
@@ -95,6 +96,11 @@ export type addBottlesResponse415 = {
   status: 415
 }
 
+export type addBottlesResponse422 = {
+  data: CellarFullProblem
+  status: 422
+}
+
 export type addBottlesResponse500 = {
   data: Problem
   status: 500
@@ -103,7 +109,7 @@ export type addBottlesResponse500 = {
 export type addBottlesResponseSuccess = (addBottlesResponse201) & {
   headers: Headers;
 };
-export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409 | addBottlesResponse415 | addBottlesResponse500) & {
+export type addBottlesResponseError = (addBottlesResponse400 | addBottlesResponse401 | addBottlesResponse404 | addBottlesResponse409 | addBottlesResponse415 | addBottlesResponse422 | addBottlesResponse500) & {
   headers: Headers;
 };
 
@@ -118,7 +124,7 @@ export const getAddBottlesUrl = () => {
 }
 
 /**
- * Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned. A beer an operator rejected or removed cannot be added to, even by a caller who already holds it.
+ * Adds the requested quantity of identical bottles, each its own independently editable row. Extends the entry for this catalog beer if the caller already has one, otherwise creates it. Bottle ids are always server-assigned. A beer an operator rejected or removed cannot be added to, even by a caller who already holds it. A cellar holds 2000 bottles at most: an add that would pass that is refused whole with 422, naming the limit and how many bottles still fit. A cellar already over it still reads, edits and removes.
  * @summary Add bottles
  */
 export const addBottles = async (addBottleRequestDto: AddBottleRequestDto, options?: Parameters<typeof kaliaFetch>[1]): Promise<addBottlesResponse> => {

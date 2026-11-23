@@ -82,6 +82,10 @@ public interface EntryRepository extends JpaRepository<Entry, UUID> {
 			where b.entry.userId = :userId and b.entry.beerId in :beerIds group by b.entry.beerId""")
 	List<HeldBeer> countHeldOfBeers(@Param("userId") UUID userId, @Param("beerIds") Collection<UUID> beerIds);
 
+	// Held to the end of the transaction. The select wraps the call because it returns void.
+	@Query(value = "SELECT 1 FROM (SELECT pg_advisory_xact_lock(:namespace, :key)) AS locked", nativeQuery = true)
+	int lockCellarAdds(@Param("namespace") int namespace, @Param("key") int key);
+
 	@Query("""
 			select new fi.kalia.cellar.domain.CellarCounts(count(distinct b.entry.beerId), count(b)) from Bottle b
 			where b.entry.userId = :userId""")

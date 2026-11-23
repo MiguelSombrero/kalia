@@ -12,6 +12,7 @@ import { read as generatedReadPublicCellar } from "@kalia/api/generated/public-c
 import { logger } from "@/lib/logger";
 
 import { inVintageOrder } from "./cellarOrder";
+import type { CellarFull } from "./cellarFull";
 import type { CellarTotals } from "./cellarTotals";
 import type { AddBottlesRequest, Bottle, CellarBeer, PublicCellar, UpdateBottleRequest } from "./types";
 
@@ -98,8 +99,12 @@ export const getPublicCellar = async (username: string, page = 0): Promise<Publi
   throw httpFailure("Public cellar lookup", response);
 };
 
-export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bottle[]> => {
+/** A 422, the cellar's limit, is an answer rather than a failure. */
+export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bottle[] | CellarFull> => {
   const response = await generatedAddBottles(request);
+  if (response.status === 422) {
+    return { cellarFull: true, limit: response.data.limit, remaining: response.data.remaining };
+  }
   if (response.status !== 201) {
     throw httpFailure("Adding bottles", response);
   }

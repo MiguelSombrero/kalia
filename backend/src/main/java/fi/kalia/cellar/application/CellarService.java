@@ -52,6 +52,12 @@ public class CellarService {
 	/** A public read shows at most this many bottles of one beer; the entry still reports how many are held. */
 	public static final int MAX_PUBLIC_BOTTLES_PER_ENTRY = 25;
 
+	/** Most bottles one cellar holds; an add past it is refused whole. A cellar already over it still reads, edits and shrinks. */
+	public static final int MAX_BOTTLES = 2000;
+
+	// Namespaces the advisory lock below, so another module's lock on a user id never queues behind it.
+	private static final int CELLAR_LOCK_NAMESPACE = 0x43454C4C;
+
 	@Transactional(readOnly = true)
 	public List<EntryView> listEntries(UUID userId) {
 		return joined(entries.findWithBottlesByUserId(userId), userId);
@@ -99,6 +105,7 @@ public class CellarService {
 	public List<Bottle> addBottles(UUID userId, UUID beerId, int quantity, ContainerType containerType,
 			@Nullable LocalDate brewedDate, @Nullable LocalDate bestBeforeDate) {
 		Entry entry = entryFor(userId, beerId);
+		requireRoomFor(userId, quantity);
 		entry.addBottles(quantity, containerType, brewedDate, bestBeforeDate, clock);
 		return entries.save(entry).lastBottles(quantity);
 	}
@@ -160,6 +167,15 @@ public class CellarService {
 
 	private static Bottle bottleIn(Entry entry, UUID bottleId) {
 		return entry.findBottle(bottleId).orElseThrow(() -> new BottleNotFoundException(bottleId));
+	}
+
+	private void requireRoomFor(UUID userId, int quantity) {
+		// Two adds by one user queue here, so the count below cannot be read by both.
+		entries.lockCellarAdds(CELLAR_LOCK_NAMESPACE, userId.hashCode());
+		int remaining = Math.max(0, MAX_BOTTLES - (int) entries.countOf(userId).bottles());
+		if (quantity > remaining) {
+			throw new CellarFullException(MAX_BOTTLES, remaining);
+		}
 	}
 
 	// Asks the catalog even when an entry exists: a holder keeps their bottles of a beer an
