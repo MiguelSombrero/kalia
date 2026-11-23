@@ -1,6 +1,5 @@
 package fi.kalia.notification.domain;
 
-import fi.kalia.catalog.RejectionReason;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * What became of a user's suggestion, frozen when the decision was written and never changed
@@ -32,6 +32,23 @@ public class Notification {
 		APPROVED,
 
 		REJECTED
+
+	}
+
+	/**
+	 * The rejection reasons this module knows, one per name {@code catalog} publishes today. A row
+	 * stores the name as text, so a reason added in {@code catalog} before this list catches up is
+	 * kept and listed under its own name; a test fails first (ADR-0103).
+	 */
+	public enum Reason {
+
+		ALREADY_IN_CATALOG,
+
+		NOT_A_REAL_BEER,
+
+		INAPPROPRIATE,
+
+		INCORRECT_DETAILS
 
 	}
 
@@ -54,16 +71,15 @@ public class Notification {
 
 	private @Nullable String suggestedName;
 
-	@Enumerated(EnumType.STRING)
 	@Column(name = "reason_code")
-	private @Nullable RejectionReason reason;
+	private @Nullable String reason;
 
 	private Instant decidedAt;
 
 	private Instant createdAt;
 
 	private Notification(UUID eventId, UUID recipientId, Outcome outcome, boolean edited, UUID beerId,
-			String beerName, @Nullable String suggestedName, @Nullable RejectionReason reason, Instant decidedAt,
+			String beerName, @Nullable String suggestedName, @Nullable String reason, Instant decidedAt,
 			Instant createdAt) {
 		this.eventId = eventId;
 		this.recipientId = recipientId;
@@ -78,7 +94,7 @@ public class Notification {
 	}
 
 	public static Notification reviewed(UUID eventId, UUID recipientId, Outcome outcome, boolean edited, UUID beerId,
-			String beerName, @Nullable String suggestedName, @Nullable RejectionReason reason, Instant decidedAt,
+			String beerName, @Nullable String suggestedName, @Nullable String reason, Instant decidedAt,
 			Clock clock) {
 		Assert.notNull(eventId, "eventId must not be null");
 		Assert.notNull(recipientId, "recipientId must not be null");
@@ -88,6 +104,7 @@ public class Notification {
 		Assert.notNull(decidedAt, "decidedAt must not be null");
 		Assert.isTrue((outcome == Outcome.REJECTED) == (reason != null),
 				"a rejection has a reason and an approval has none");
+		Assert.isTrue(reason == null || StringUtils.hasText(reason), "a reason must not be blank");
 		Assert.isTrue(suggestedName == null || edited, "a suggested name is kept only for an edited approval");
 		return new Notification(eventId, recipientId, outcome, edited, beerId, beerName, suggestedName, reason,
 				decidedAt, clock.instant());

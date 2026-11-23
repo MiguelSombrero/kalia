@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import fi.kalia.TestcontainersConfiguration;
-import fi.kalia.catalog.RejectionReason;
 import fi.kalia.notification.domain.Notification.Outcome;
 import java.time.Clock;
 import java.time.Instant;
@@ -55,13 +54,13 @@ class NotificationPersistenceIT {
 	void aRejectionKeepsItsReasonAndAnEditedApprovalBothNames() {
 		Notification rejection = notifications.saveAndFlush(Notification.reviewed(UUID.randomUUID(),
 				UUID.randomUUID(), Outcome.REJECTED, false, UUID.randomUUID(), "Name", null,
-				RejectionReason.ALREADY_IN_CATALOG, DECIDED_AT, Clock.systemUTC()));
+				Notification.Reason.ALREADY_IN_CATALOG.name(), DECIDED_AT, Clock.systemUTC()));
 		Notification edited = notifications.saveAndFlush(Notification.reviewed(UUID.randomUUID(),
 				UUID.randomUUID(), Outcome.APPROVED, true, UUID.randomUUID(), "Decided", "Suggested", null,
 				DECIDED_AT, Clock.systemUTC()));
 
 		assertThat(notifications.findById(rejection.getId()).orElseThrow().getReason())
-				.isEqualTo(RejectionReason.ALREADY_IN_CATALOG);
+				.isEqualTo("ALREADY_IN_CATALOG");
 		Notification reread = notifications.findById(edited.getId()).orElseThrow();
 		assertThat(reread.getBeerName()).isEqualTo("Decided");
 		assertThat(reread.getSuggestedName()).isEqualTo("Suggested");

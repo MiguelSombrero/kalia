@@ -79,6 +79,10 @@ class ArchitectureTest {
 	static final ArchRule moduleAdviceDeclaresBasePackages = moduleAdviceDeclaresBasePackages(BASE_PACKAGE);
 
 	@ArchTest
+	static final ArchRule notificationKeepsNothingOfCatalogsInItsDomainOrWeb =
+			notificationKeepsNothingOfCatalogsInItsDomainOrWeb(BASE_PACKAGE);
+
+	@ArchTest
 	static final ArchRule entitiesLiveInDomain = classes()
 			.that().areAnnotatedWith(Entity.class)
 			.should().resideInAPackage(BASE_PACKAGE + ".*.domain..")
@@ -175,6 +179,17 @@ class ArchitectureTest {
 				.that().resideInAPackage(basePackage + ".*.application..")
 				.should().dependOnClassesThat().resideInAPackage(basePackage + ".*.web..")
 				.because("dependencies point inward: web → application → domain (ADR-0007)")
+				.allowEmptyShould(false);
+	}
+
+	/** Parameterised for the reason {@link #domainDependsOnNoOuterLayer(String)} gives. */
+	static ArchRule notificationKeepsNothingOfCatalogsInItsDomainOrWeb(String basePackage) {
+		return noClasses()
+				.that().resideInAnyPackage(basePackage + ".notification.domain..", basePackage + ".notification.web..")
+				.should().dependOnClassesThat().resideInAPackage(basePackage + ".catalog..")
+				.because("""
+						notification stores and sends its own copy of what an event carries, so a change \
+						in catalog cannot reach what is stored or what the API says (ADR-0103)""")
 				.allowEmptyShould(false);
 	}
 

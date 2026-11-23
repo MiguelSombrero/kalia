@@ -1,6 +1,5 @@
 package fi.kalia.notification.web;
 
-import fi.kalia.catalog.RejectionReason;
 import fi.kalia.notification.domain.Notification;
 import fi.kalia.notification.domain.Notification.Outcome;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,7 +22,8 @@ record NotificationDto(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The beer's name as decided")
 		String beerName,
 		@Schema(description = "The name as suggested, present only when the admin changed it") @Nullable String suggestedName,
-		@Schema(description = "Why it was rejected, present only on a rejection") @Nullable RejectionReason reason,
+		@Schema(description = "Why it was rejected, present only on a rejection", implementation = Notification.Reason.class)
+		@Nullable String reason,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant decidedAt) {
 
 	static NotificationDto from(Notification notification) {
