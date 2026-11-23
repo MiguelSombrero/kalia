@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-28 · SHOULD-144 · COULD-168
+**Highest issued:** MUST-28 · SHOULD-144 · COULD-169
 
 ## MUST
 
@@ -417,6 +417,14 @@ repeats, so the recurrence stays visible once the old entry is gone.
   the request-logging and telemetry classes beside `ApplicationConfig` in
   `fi.kalia`. Related: COULD-149, which asks the same question for the page
   envelope.
+- **COULD-169** *(confirmed 2026-11-23)* — The Catalog's `BeerCard` has the
+  layout that pushed a cellar row's strength off its card. Its text column is
+  `flex: 1` with no minimum width, so a name nearly as wide as the card, such as
+  "Old Foghorn Barleywine", can leave the strength clipped. Found on the
+  owner's iPhone in [iteration 12 task 02](iteration-12/02-design-the-cellar-list.md),
+  where `CellarRow` was fixed with a shrinking text column and a strength that
+  never shrinks. Not reproduced in the Catalog; the fix is the same two styles
+  and a test beside `BeerCard.test.tsx`.
 
 ## Retired
 
