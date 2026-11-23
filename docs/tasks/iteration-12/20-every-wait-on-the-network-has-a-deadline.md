@@ -1,6 +1,6 @@
 # Task 20: Every wait on the network has a deadline
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -81,17 +81,17 @@ task can say anything about it.
 
 ## Acceptance criteria
 
-- [ ] A `fetch-transport` test whose response body never completes rejects
+- [x] A `fetch-transport` test whose response body never completes rejects
       with the transport's timeout `ApiError` once the deadline passes, under
       fake timers. It failed before the change
-- [ ] A test of `refreshAccessToken` whose Keycloak never answers returns
+- [x] A test of `refreshAccessToken` whose Keycloak never answers returns
       `unavailable`, counts the failure with reason `timeout`, and leaves the session's token and
       refresh token as they were. It failed before the change
-- [ ] A test shows a render with an expired token and a hung Keycloak sending
+- [x] A test shows a render with an expired token and a hung Keycloak sending
       its backend call after the deadline, with no token, not waiting on it
-- [ ] The pull request lists every `fetch` in the repository found with no
+- [x] The pull request lists every `fetch` in the repository found with no
       deadline and what was done about each
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

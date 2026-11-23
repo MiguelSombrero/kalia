@@ -68,18 +68,22 @@ export const createFetchTransport = (config: FetchTransportConfig): Transport =>
     const traced = withTrace(options, config);
     const traceId = traceIdOf(new Headers(traced.headers).get("traceparent"));
     const token = await config.accessToken?.();
+    const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-    let response = await send(url, traced, token, config, traceId);
+    let withinDeadline = startDeadline(url, timeoutMs, traceId);
+    let response = await send(url, traced, token, config, traceId, withinDeadline);
     if (response.status === 401 && config.refreshAccessToken) {
       const renewed = await config.refreshAccessToken(token);
+      // The renewal is the app's to bound; the answer gets a budget of its own.
+      withinDeadline = startDeadline(url, timeoutMs, traceId);
       if (renewed && renewed !== token) {
         void response.body?.cancel();
-        response = await send(url, traced, renewed, config, traceId);
+        response = await send(url, traced, renewed, config, traceId, withinDeadline);
       }
     }
 
     const result: BackendResult = {
-      data: await readBody(url, response, traceId),
+      data: await readBody(url, response, traceId, withinDeadline),
       status: response.status,
       headers: response.headers,
     };
@@ -105,15 +109,11 @@ const send = async (
   token: string | undefined,
   config: FetchTransportConfig,
   traceId: string | undefined,
+  withinDeadline: WithinDeadline,
 ): Promise<Response> => {
   const request = withBearer(options, token);
   try {
-    return await withTimeout(
-      fetch(`${config.baseUrl()}${url}`, request),
-      url,
-      config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-      traceId,
-    );
+    return await withinDeadline(fetch(`${config.baseUrl()}${url}`, request));
   } catch (cause) {
     // TanStack Query recognises the original AbortError and would treat a
     // wrapper as a real error, retrying a query the user already left.
@@ -124,14 +124,22 @@ const send = async (
   }
 };
 
-const readBody = async (url: string, response: Response, traceId: string | undefined): Promise<unknown> => {
+const readBody = async (
+  url: string,
+  response: Response,
+  traceId: string | undefined,
+  withinDeadline: WithinDeadline,
+): Promise<unknown> => {
   if ([204, 205, 304].includes(response.status)) {
     return null;
   }
   let text: string;
   try {
-    text = await response.text();
+    text = await withinDeadline(response.text());
   } catch (cause) {
+    if (isAbortError(cause) || isApiError(cause)) {
+      throw cause;
+    }
     // The connection dropped part-way through the body.
     throw apiError("network", `Response body from ${routeTemplateOf(url)} could not be read`, {
       status: response.status,
@@ -200,28 +208,30 @@ const refuseCallerAuthorization = (url: string, options: RequestInit): void => {
  * detail-page request. The trade-off is that a timed-out request is
  * abandoned rather than cancelled; the caller's own signal passes through
  * untouched, so TanStack Query cancellation still works.
+ *
+ * One budget covers the headers and the body: a late body gets what is left.
  */
-const withTimeout = async (
-  request: Promise<Response>,
-  url: string,
-  timeoutMs: number,
-  traceId: string | undefined,
-): Promise<Response> => {
-  // The race leaves this promise unobserved when the timer wins; without a
-  // handler its eventual rejection surfaces as an unhandled rejection.
-  request.catch(() => {});
+type WithinDeadline = <T>(pending: Promise<T>) => Promise<T>;
 
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const expiry = new Promise<never>((_, reject) => {
-    timer = setTimeout(
-      () => reject(apiError("timeout", `Request to ${routeTemplateOf(url)} timed out after ${timeoutMs} ms`, { traceId })),
-      timeoutMs,
-    );
-  });
+const startDeadline = (url: string, timeoutMs: number, traceId: string | undefined): WithinDeadline => {
+  const startedAt = Date.now();
+  return async (pending) => {
+    // The race leaves this promise unobserved when the timer wins; without a
+    // handler its eventual rejection surfaces as an unhandled rejection.
+    pending.catch(() => {});
 
-  try {
-    return await Promise.race([request, expiry]);
-  } finally {
-    clearTimeout(timer);
-  }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const expiry = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(apiError("timeout", `Request to ${routeTemplateOf(url)} timed out after ${timeoutMs} ms`, { traceId })),
+        Math.max(0, timeoutMs - (Date.now() - startedAt)),
+      );
+    });
+
+    try {
+      return await Promise.race([pending, expiry]);
+    } finally {
+      clearTimeout(timer);
+    }
+  };
 };

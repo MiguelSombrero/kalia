@@ -28,6 +28,7 @@ export type RefreshOutcome =
 type FailureReason =
   | "not_configured"
   | "network"
+  | "timeout"
   | "invalid_grant"
   | "http_error"
   | "unreadable_response"
@@ -81,7 +82,7 @@ const exchange = async (refreshToken: string): Promise<RefreshOutcome> => {
       }),
     });
   } catch (error) {
-    return failed("unavailable", "network", { error });
+    return failed("unavailable", isTimeout(error) ? "timeout" : "network", { error });
   }
 
   if (!response.ok) {
@@ -93,8 +94,10 @@ const exchange = async (refreshToken: string): Promise<RefreshOutcome> => {
   let payload: Record<string, unknown>;
   try {
     payload = (await response.json()) as Record<string, unknown>;
-  } catch {
-    return failed("unavailable", "unreadable_response");
+  } catch (error) {
+    return isTimeout(error)
+      ? failed("unavailable", "timeout", { error })
+      : failed("unavailable", "unreadable_response");
   }
 
   const { access_token: accessToken, expires_in: expiresIn } = payload;
@@ -112,6 +115,9 @@ const exchange = async (refreshToken: string): Promise<RefreshOutcome> => {
     expiresAt: Math.floor(Date.now() / 1000) + expiresIn,
   };
 };
+
+const isTimeout = (error: unknown): boolean =>
+  typeof error === "object" && error !== null && "name" in error && error.name === "TimeoutError";
 
 // Only `invalid_grant` is fatal (RFC 6749 §5.2); `invalid_client` and
 // friends are our own misconfiguration, not grounds to sign users out.

@@ -165,7 +165,10 @@ Each fails silently or only in production, so the warning stays here
   commit on the catalog route, in production builds only.
 - **`kaliaFetch` never passes its own `AbortSignal`**: a signal drops the request
   from Next's per-render memoization, and the detail route fetches one beer
-  twice. The 10 s timeout is a raced timer; a caller's signal passes through.
+  twice. The 10 s timeout is a raced timer over the headers and the body; a
+  caller's signal passes through. Calls to Keycloak are the opposite: they take a
+  signal (`internalKeycloakFetch.ts`), which frees the socket, and a timeout there
+  is `unavailable`, never a sign-out.
 - **A new external origin goes in `buildCspHeader` (`lib/config/cspHeader.ts`)
   in the same PR**, or the browser silently blocks it. Check the console
   ([ADR-0016](../docs/adr/0016-security-response-headers.md)).

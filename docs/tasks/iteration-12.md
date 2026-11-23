@@ -24,7 +24,7 @@ cellar is used in a cellar.
 | [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md) | A cellar has a size limit the server enforces | refined |
 | [02](iteration-12/02-design-the-cellar-list.md) | Design the cellar list | refined |
 | [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | refined |
-| [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | refined |
+| [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | done |
 | [04](iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) | A user sees their cellar on their phone | refined |
 | [05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md) | A user opens a beer in their cellar and sees its bottles | refined |
 | [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md) | A sheet puts VoiceOver's focus on its heading | refined |
