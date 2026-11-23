@@ -82,11 +82,11 @@ are designed on top of it.
 
 ## Acceptance criteria
 
-- [ ] A `FiltersSheet.test.tsx` case shows the focus request sent to the form's
+- [x] A `FiltersSheet.test.tsx` case shows the focus request sent to the form's
       heading when the sheet opens, and to the picker's heading on going in and
       coming back, once that heading is on screen. The opening case failed
       before the change
-- [ ] A `Sheet` test shows a sheet with a single page sending the focus request
+- [x] A `Sheet` test shows a sheet with a single page sending the focus request
       to its heading on opening, with no focus code of its own
 - [ ] On an iPhone with VoiceOver in Finnish, following
       `mobile/accessibility-walk.md`, opening the sheet, going into each of
@@ -94,10 +94,10 @@ are designed on top of it.
       in words in the pull request
 - [ ] The same walk on the iPhone in an English voice and in the other of light
       and dark mode, recorded in words
-- [ ] The same walk with TalkBack on Android, recorded in words
-- [ ] `mobile/CONVENTIONS.md`'s "Focus follows the page" row names the check
+- [x] The same walk with TalkBack on Android, recorded in words
+- [x] `mobile/CONVENTIONS.md`'s "Focus follows the page" row names the check
       that holds it
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
