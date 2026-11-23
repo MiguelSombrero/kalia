@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, type HostInstance, View } from "react-native";
+import { AccessibilityInfo, type HostInstance, ScrollView, View } from "react-native";
 
 import { ChoiceRow } from "@/components/ChoiceRow";
 import { EDGE } from "@/components/metrics";
@@ -24,12 +24,14 @@ export const SortMenu = ({ order, onChoose, onClose, bottom }: SortMenuProps) =>
       style={[styles.menu, { bottom }]}
       onLayout={() => menu.current && AccessibilityInfo.sendAccessibilityEvent(menu.current, "focus")}
     >
+      <ScrollView>
       {CELLAR_ORDERS.map((option, index) => (
         <ChoiceRow key={option} label={t(ORDER_LABEL_KEYS[option])} selected={option === order} position={{ index: index + 1, count: CELLAR_ORDERS.length }} onPress={() => onChoose(option)} />
       ))}
       <View style={styles.close}>
         <TextButton label={t("mobileNavigation.close")} accessibilityLabel={t("cellarList.closeSort")} onPress={onClose} />
       </View>
+      </ScrollView>
     </View>
   );
 };
@@ -40,6 +42,7 @@ const useStyles = createThemedStyles((colors) => ({
     right: 0,
     minWidth: "70%",
     maxWidth: "100%",
+    maxHeight: "100%",
     padding: theme.spacing.small,
     borderWidth: EDGE,
     borderColor: colors.border,

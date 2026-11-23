@@ -4,43 +4,22 @@ import { BackHandler, FlatList, Keyboard, KeyboardAvoidingView, Pressable, Style
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionButton } from "@/components/ActionButton";
-import { BodyText } from "@/components/BodyText";
 import { EmptyState } from "@/components/EmptyState";
-import { EDGE, spacing } from "@/components/metrics";
+import { EDGE } from "@/components/metrics";
 import { ScreenTitle } from "@/components/ScreenTitle";
 import { SearchField } from "@/components/SearchField";
-import { useAnnounce } from "@/lib/a11y/useAnnounce";
-import { STACK_FROM_FONT_SCALE, textStyle, titleScale } from "@/lib/design/fonts";
+import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { PressFeedback } from "@/lib/motion/PressFeedback";
 
 import { CellarRow } from "./CellarRow";
+import { EmptyCellar } from "./EmptyCellar";
 import { type CellarOrder, findEntries, ORDER_LABEL_KEYS, sortEntries, totalsOf } from "./model";
 import { SortMenu } from "./SortMenu";
 import type { CellarEntry } from "./types";
 
 type CellarListProps = { entries: CellarEntry[]; onAdd: () => void; onBrowse: () => void };
-
-type EmptyCellarProps = { onAdd: () => void; onBrowse: () => void };
-
-const EmptyCellar = ({ onAdd, onBrowse }: EmptyCellarProps) => {
-  const styles = useStyles();
-  const { t } = useTranslation();
-  useAnnounce(t("cellarList.empty.title"));
-  return (
-    <View style={spacing.blocks}>
-      <View style={spacing.tight}>
-        <Text role="heading" {...titleScale} style={styles.emptyTitle}>
-          {t("cellarList.empty.title")}
-        </Text>
-        <BodyText tone="muted">{t("cellarList.empty.hint")}</BodyText>
-      </View>
-      <ActionButton label={t("cellarList.empty.add")} onPress={onAdd} />
-      <ActionButton label={t("cellar.empty.action")} onPress={onBrowse} variant="secondary" />
-    </View>
-  );
-};
 
 export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
   const styles = useStyles();
@@ -145,7 +124,6 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
 
 const useStyles = createThemedStyles((colors) => ({
   root: { flex: 1 },
-  emptyTitle: { ...textStyle("item-title", "bold"), color: colors.foreground },
   totals: { ...textStyle("body", "medium"), color: colors.foreground, marginBottom: theme.spacing.medium },
   bar: { flexDirection: "row", alignItems: "stretch", gap: theme.spacing.small, paddingVertical: theme.spacing.small, marginBottom: theme.spacing.small },
   barStacked: { flexDirection: "column" },

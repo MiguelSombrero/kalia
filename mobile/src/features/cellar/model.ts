@@ -19,7 +19,7 @@ const soonestBestBefore = (entry: CellarEntry) =>
     .filter((date): date is string => Boolean(date))
     .sort()[0];
 
-const fold = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 export const findEntries = (entries: CellarEntry[], text: string) => {
   const wanted = fold(text.trim());
