@@ -1,6 +1,6 @@
 # Task 24: A rejection reason added in catalog cannot lose a notification
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -84,18 +84,18 @@ is worth closing now.
 
 ## Acceptance criteria
 
-- [ ] A backend integration test publishes a `SuggestionReviewed` carrying a
+- [x] A backend integration test publishes a `SuggestionReviewed` carrying a
       reason the notification module has no copy of and finds the notification
       stored and listed with the reason's name as it came. It failed before the change
-- [ ] A unit test enumerates `RejectionReason.values()` and shows each has a
+- [x] A unit test enumerates `RejectionReason.values()` and shows each has a
       mapping in the notification module, so a new reason fails here and not in a
       listener
-- [ ] An ArchUnit rule or the existing module checks show `notification`'s
+- [x] An ArchUnit rule or the existing module checks show `notification`'s
       `domain` and `web` packages importing nothing from `fi.kalia.catalog`
       other than the event
-- [ ] The committed OpenAPI spec is unchanged on the wire, and the
+- [x] The committed OpenAPI spec is unchanged on the wire, and the
       breaking-diff check passes
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 
