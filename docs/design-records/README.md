@@ -29,3 +29,4 @@ Add a line when adding a record: its link, then the choice in one clause.
 
 - [Iteration 11 task 22, mobile tab icons](iteration-11-22-mobile-tab-icons.md) — Shine bubbles, a bottle and a barrel, filled on a soft pill when selected
 - [Iteration 11 task 23: the Catalog's search and filters](iteration-11-23-catalog-search-and-filters.md) — a search field and Filters button with removable chips, and a sheet whose style, brewery and country are pushed, searchable pickers (direction A).
+- [Iteration 12 task 02: the Cellar tab's list](iteration-12-02-cellar-list.md) — a flat list of colour-field rows with one totals line, and a find field and Sort button in a bar above the tab bar (direction D).

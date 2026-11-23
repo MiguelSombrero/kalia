@@ -776,5 +776,26 @@
     "showBrewery": "{{value}}, show beers from this brewery in the catalog",
     "showCountry": "{{value}}, show beers from this country in the catalog",
     "similar": "More of this style"
+  },
+  "cellarList": {
+    "totals": {
+      "beers_one": "{{count}} beer",
+      "beers_other": "{{count}} beers"
+    },
+    "find": {
+      "label": "Find in my cellar",
+      "placeholder": "Beer or brewery",
+      "clear": "Clear find"
+    },
+    "sort": "Sort",
+    "sortLabel": "Sort, {{order}}",
+    "closeSort": "Close sort menu",
+    "withdrawn": "Withdrawn from the catalog",
+    "empty": {
+      "title": "Your cellar is empty",
+      "hint": "Add the bottles you keep and they show up here.",
+      "add": "Add a bottle"
+    },
+    "noMatch": "No beer in your cellar matches “{{query}}”."
   }
 }

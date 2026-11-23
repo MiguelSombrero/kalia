@@ -776,5 +776,26 @@
     "showBrewery": "{{value}}, näytä tämän panimon oluet",
     "showCountry": "{{value}}, näytä tämän maan oluet",
     "similar": "Lisää samaa tyyliä"
+  },
+  "cellarList": {
+    "totals": {
+      "beers_one": "{{count}} olut",
+      "beers_other": "{{count}} olutta"
+    },
+    "find": {
+      "label": "Etsi kellaristani",
+      "placeholder": "Olut tai panimo",
+      "clear": "Tyhjennä haku"
+    },
+    "sort": "Järjestä",
+    "sortLabel": "Järjestä, {{order}}",
+    "closeSort": "Sulje järjestysvalikko",
+    "withdrawn": "Poistettu katalogista",
+    "empty": {
+      "title": "Kellarisi on tyhjä",
+      "hint": "Lisää pullot, jotka säilytät, niin näet ne täällä.",
+      "add": "Lisää pullo"
+    },
+    "noMatch": "Kellarisi oluet eivät vastaa hakua ”{{query}}”."
   }
 }

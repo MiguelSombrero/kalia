@@ -1,12 +1,13 @@
 import { MAX_FILTER_LENGTH } from "@kalia/api/bounds";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-import { EDGE } from "@/components/metrics";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useInputHeight } from "@/lib/design/useInputHeight";
 import { useThemeColors } from "@/lib/design/useThemeColors";
+
+import { EDGE } from "./metrics";
 
 type SearchFieldProps = { value: string; onChange: (text: string) => void; label: string; placeholder: string; clearLabel: string; onSubmit?: () => void };
 

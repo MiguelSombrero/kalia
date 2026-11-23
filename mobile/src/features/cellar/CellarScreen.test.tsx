@@ -12,13 +12,13 @@ jest.mock("expo-router", () => ({ ...jest.requireActual("expo-router"), useRoute
 
 describe("CellarScreen", () => {
   it.each([
-    ["en", "Cellar", "Coming soon"],
-    ["fi", "Kellari", "Tulossa pian"],
-  ] as const)("shows its heading and the notice in %s", async (locale, heading, notice) => {
+    ["en", "Cellar", "17 beers · 50 bottles"],
+    ["fi", "Kellari", "17 olutta · 50 pulloa"],
+  ] as const)("shows a signed-in user's cellar with its totals in %s", async (locale, heading, totals) => {
     await renderWithLocale(<CellarScreen />, locale, fakeTokenStore({ status: "signedIn" }));
 
     expect(screen.getByRole("heading", { name: heading })).toBeOnTheScreen();
-    expect(screen.getByText(notice)).toBeOnTheScreen();
+    expect(screen.getByRole("summary", { name: totals })).toBeOnTheScreen();
   });
 
   it.each([
