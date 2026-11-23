@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-28 · SHOULD-144 · COULD-169
+**Highest issued:** MUST-28 · SHOULD-144 · COULD-170
 
 ## MUST
 
@@ -425,6 +425,13 @@ repeats, so the recurrence stays visible once the old entry is gone.
   where `CellarRow` was fixed with a shrinking text column and a strength that
   never shrinks. Not reproduced in the Catalog; the fix is the same two styles
   and a test beside `BeerCard.test.tsx`.
+- **COULD-170** *(confirmed 2026-11-23)* — A cellar entry reads today's date once
+  per render (`localToday()` in `CellarEntryView.tsx`), so a screen left open across
+  midnight keeps showing the last day's "Past best before" tags until something
+  re-renders it. Found in the `/code-review` of
+  [iteration 12 task 03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md);
+  the fix is to recompute on the app returning to the foreground, with a test beside
+  `CellarEntryView.test.tsx`.
 
 ## Retired
 
