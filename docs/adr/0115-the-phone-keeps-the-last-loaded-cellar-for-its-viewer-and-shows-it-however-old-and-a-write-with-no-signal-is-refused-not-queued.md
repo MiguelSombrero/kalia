@@ -194,7 +194,7 @@ Rejected.
 - Bad, because the record is unencrypted on the phone and readable by whatever
   can read the app's storage.
 - Bad, because the record grows with the cellar and with every field the API
-  adds, and at the cap, with the longest names, it is within a factor of two of
+  adds, and at the cap, with the longest names, it reaches about 80% of
   Android's documented per-entry limit (Evidence). The test of that size is what
   keeps a new field from crossing it silently.
 - Neutral, because every build starts with no cache: a user who updates the app
