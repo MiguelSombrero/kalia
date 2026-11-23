@@ -11,6 +11,7 @@ import { read as generatedReadPublicCellar } from "@kalia/api/generated/public-c
 
 import { logger } from "@/lib/logger";
 
+import type { BottleGone } from "./bottleGone";
 import type { CellarFull } from "./cellarFull";
 import { inVintageOrder } from "./cellarOrder";
 import type { CellarTotals } from "./cellarTotals";
@@ -111,20 +112,25 @@ export const addBottlesToCellar = async (request: AddBottlesRequest): Promise<Bo
   return response.data;
 };
 
+/** A 404, a bottle that is no longer there, is an answer rather than a failure. */
 export const updateCellarBottle = async (
   id: string,
   request: UpdateBottleRequest,
-): Promise<Bottle> => {
+): Promise<Bottle | BottleGone> => {
   const response = await generatedUpdateBottle(id, request);
+  if (response.status === 404) {
+    return { gone: true };
+  }
   if (response.status !== 200) {
     throw httpFailure(`Updating bottle ${id}`, response);
   }
   return response.data;
 };
 
+/** A 404 is a removal already done, which is what was asked for. */
 export const removeCellarBottle = async (id: string): Promise<void> => {
   const response = await generatedRemoveBottle(id);
-  if (response.status !== 204) {
+  if (response.status !== 204 && response.status !== 404) {
     throw httpFailure(`Removing bottle ${id}`, response);
   }
 };

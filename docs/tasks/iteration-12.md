@@ -35,7 +35,7 @@ cellar is used in a cellar.
 | [09](iteration-12/09-a-user-finds-a-beer-to-add-from-the-add-action-or-the-cellar.md) | A user finds a beer to add from the Add action or from the cellar | refined |
 | [26](iteration-12/26-a-user-suggests-a-beer-the-catalog-lacks-while-adding-bottles-of-it.md) | A user suggests a beer the catalog lacks while adding bottles of it | refined |
 | [10](iteration-12/10-design-acting-on-a-bottle-edit-and-remove.md) | Design acting on a bottle — edit and remove | refined |
-| [21](iteration-12/21-a-bottle-that-is-already-gone-is-not-a-failure.md) | A bottle that is already gone is not a failure | refined |
+| [21](iteration-12/21-a-bottle-that-is-already-gone-is-not-a-failure.md) | A bottle that is already gone is not a failure | done |
 | [11](iteration-12/11-a-user-edits-a-bottle.md) | A user edits a bottle | refined |
 | [12](iteration-12/12-a-user-removes-a-bottle.md) | A user removes a bottle | refined |
 | [13](iteration-12/13-design-the-cellar-offline-and-a-write-that-fails.md) | Design the cellar offline and a write that fails | refined |

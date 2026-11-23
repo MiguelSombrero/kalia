@@ -21,10 +21,12 @@ export const RemovalOutcomeToast = () => {
   const outcome = useBottleRemovalStore((state) => state.outcome);
   const dismissOutcome = useBottleRemovalStore((state) => state.dismissOutcome);
 
+  const gone = outcome !== null && "gone" in outcome;
   const failed = outcome !== null && "failed" in outcome;
   const conflicted = outcome !== null && "conflict" in outcome;
-  const message =
-    outcome && "failed" in outcome
+  const message = gone
+    ? t("cellar.bottle.gone")
+    : outcome && "failed" in outcome
       ? t(conflicted ? "cellar.conflict.message" : "cellar.bottle.remove.error")
       : outcome?.lastBottle
         ? t("cellar.bottle.remove.toastLastBottle")
@@ -33,7 +35,7 @@ export const RemovalOutcomeToast = () => {
   return (
     <ToastProvider swipeDirection="right">
       <Toast
-        variant={failed ? "destructive" : "success"}
+        variant={failed || gone ? "destructive" : "success"}
         open={outcome !== null}
         duration={conflicted ? CONFLICT_TOAST_MS : undefined}
         onOpenChange={(open) => {

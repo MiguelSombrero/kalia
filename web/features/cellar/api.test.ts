@@ -322,10 +322,16 @@ describe("updateCellarBottle", () => {
     await expect(updateCellarBottle("bottle-1", request)).resolves.toEqual(updated);
   });
 
-  it("throws when the update fails", async () => {
+  it("returns a bottle that is no longer there as an answer, not a failure", async () => {
     stubFetch(() => 404);
 
-    await expect(updateCellarBottle("bottle-1", request)).rejects.toThrow("status 404");
+    await expect(updateCellarBottle("bottle-1", request)).resolves.toEqual({ gone: true });
+  });
+
+  it("throws when the update fails", async () => {
+    stubFetch(() => 500);
+
+    await expect(updateCellarBottle("bottle-1", request)).rejects.toThrow("status 500");
   });
 });
 
@@ -336,10 +342,16 @@ describe("removeCellarBottle", () => {
     await expect(removeCellarBottle("bottle-1")).resolves.toBeUndefined();
   });
 
-  it("throws when the removal fails", async () => {
+  it("resolves for a bottle that is already gone: the removal asked for is done", async () => {
     stubFetch(() => 404);
 
-    await expect(removeCellarBottle("bottle-1")).rejects.toThrow("status 404");
+    await expect(removeCellarBottle("bottle-1")).resolves.toBeUndefined();
+  });
+
+  it("throws when the removal fails", async () => {
+    stubFetch(() => 500);
+
+    await expect(removeCellarBottle("bottle-1")).rejects.toThrow("status 500");
   });
 });
 
