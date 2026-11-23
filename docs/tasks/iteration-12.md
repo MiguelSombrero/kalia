@@ -27,7 +27,7 @@ cellar is used in a cellar.
 | [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | refined |
 | [04](iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) | A user sees their cellar on their phone | refined |
 | [05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md) | A user opens a beer in their cellar and sees its bottles | refined |
-| [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md) | A sheet puts VoiceOver's focus on its heading | refined |
+| [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md) | A sheet puts VoiceOver's focus on its heading | done |
 | [06](iteration-12/06-design-the-bottle-form.md) | Design the bottle form | refined |
 | [07](iteration-12/07-design-the-add-action-and-finding-the-beer-to-add.md) | Design the Add action and finding the beer to add | refined |
 | [22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md) | The clients take the backend's bounds from one place | refined |

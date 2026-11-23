@@ -1,6 +1,6 @@
 # Task 23: A sheet puts VoiceOver's focus on its heading
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -88,12 +88,16 @@ are designed on top of it.
       before the change
 - [x] A `Sheet` test shows a sheet with a single page sending the focus request
       to its heading on opening, with no focus code of its own
-- [ ] On an iPhone with VoiceOver in Finnish, following
+- [x] On an iPhone with VoiceOver in Finnish, following
       `mobile/accessibility-walk.md`, opening the sheet, going into each of
       the three pickers and coming back each read the heading first, recorded
-      in words in the pull request
-- [ ] The same walk on the iPhone in an English voice and in the other of light
-      and dark mode, recorded in words
+      in words in the pull request. **Deviation, accepted by the product owner
+      on 2026-11-23:** every step reached the heading, but VoiceOver first
+      reads the first selection of the dropdown ("Kaikki tyylit") and then the
+      header (SHOULD-144)
+- [x] The same walk on the iPhone in an English voice and in the other of light
+      and dark mode, recorded in words. **Same deviation, accepted the same
+      day** (SHOULD-144)
 - [x] The same walk with TalkBack on Android, recorded in words
 - [x] `mobile/CONVENTIONS.md`'s "Focus follows the page" row names the check
       that holds it

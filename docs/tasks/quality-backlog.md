@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-28 · SHOULD-143 · COULD-168
+**Highest issued:** MUST-28 · SHOULD-144 · COULD-168
 
 ## MUST
 
@@ -258,6 +258,18 @@ repeats, so the recurrence stays visible once the old entry is gone.
   the history, and the same shape will fail again under load. Stubbing before
   any event is in flight, or through a seam no background thread touches,
   removes the race.
+
+- **SHOULD-144** *(confirmed 2026-11-23)* — On the iPhone, VoiceOver first reads
+  the first selection of a filter dropdown ("Kaikki tyylit") and only then the
+  heading, so the heading is not the first word heard.
+  `Sheet` sends its focus request at the heading's layout
+  (`mobile/src/components/Sheet.tsx`, `useFocusOnShow`), and the platform
+  probably focuses the selected row first and the request then moves it to the
+  heading. Found by the product owner's walk of iteration 12 task 23, who
+  accepted it as it is. A fix probably sends the request a beat after layout on
+  a page swap too (as opening already waits `SHEET_PRESENTED_MS`), or marks
+  the pages' rows so the platform has no row to land on; either needs the phone
+  to verify.
 
 ## COULD
 
