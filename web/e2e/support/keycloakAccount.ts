@@ -123,20 +123,19 @@ export const createUnverifiedKeycloakUser = async (
 };
 
 // Asks Keycloak to email the user a link that runs `actions` (e.g.
-// ["VERIFY_EMAIL"]); client_id/redirect_uri decide where the link lands the
-// browser once the action is done.
+// ["VERIFY_EMAIL"]). No redirect_uri: kalia-web registers only the app's own
+// return paths, so the link ends on a Keycloak page that offers "Back to application".
 export const sendActionsEmail = async (
   apiRequest: APIRequestContext,
   adminToken: string,
   userId: string,
   actions: string[],
-  redirectUri: string,
 ): Promise<void> => {
   const response = await apiRequest.put(
     `${KEYCLOAK_ADMIN_ORIGIN}/admin/realms/${REALM}/users/${userId}/execute-actions-email`,
     {
       headers: { Authorization: `Bearer ${adminToken}` },
-      params: { client_id: "kalia-web", redirect_uri: redirectUri },
+      params: { client_id: "kalia-web" },
       data: actions,
     },
   );

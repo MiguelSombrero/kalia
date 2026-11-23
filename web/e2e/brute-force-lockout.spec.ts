@@ -11,6 +11,8 @@ const GOOD_PASSWORD = "brute-force-test-Pw1!";
 const BAD_PASSWORD = "wrong-password";
 const CLIENT_ID = "kalia-web";
 const REDIRECT_URI = `${WEB_ORIGIN}/api/auth/callback/keycloak`;
+// The realm requires PKCE of kalia-web, and checks only the challenge's shape here: the form is never exchanged for a code.
+const CODE_CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
 
 // realm-export.json: failureFactor 10, waitIncrementSeconds 60,
 // quickLoginCheckMilliSeconds 1000. Spacing attempts past the quick-check
@@ -43,7 +45,8 @@ const submitBrowserSignIn = async (
 ): Promise<{ redirected: boolean; feedback?: string }> => {
   const authUrl =
     `${KEYCLOAK_ORIGIN}/realms/${REALM}/protocol/openid-connect/auth` +
-    `?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=openid`;
+    `?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=openid` +
+    `&code_challenge=${CODE_CHALLENGE}&code_challenge_method=S256`;
   const formPage = await request.get(authUrl);
   const html = await formPage.text();
   const actionMatch = html.match(/<form[^>]*\baction="([^"]*)"/);

@@ -9,7 +9,16 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { DEV_REALM_FILE, REALM_FILE, diffRealm, mergeRealmFiles, originProblems, resolvePlaceholders, userProfileOf } from "./check-keycloak-realm-config.mjs";
+import {
+  DEV_REALM_FILE,
+  REALM_FILE,
+  diffRealm,
+  mergeRealmFiles,
+  originProblems,
+  registrationProblems,
+  resolvePlaceholders,
+  userProfileOf,
+} from "./check-keycloak-realm-config.mjs";
 
 const committedFixture = () => ({
   realm: "kalia",
@@ -342,7 +351,8 @@ const clientOf = (realm, id) => realm.clients.find(({ clientId }) => clientId ==
 
 test("resolvePlaceholders builds the web app's address from the phone host and the stack's web port", () => {
   const web = clientOf(phoneRealm(), "kalia-web");
-  assert.deepEqual(web.redirectUris, [`${PHONE_ORIGIN}/*`]);
+  assert.deepEqual(web.redirectUris, [`${PHONE_ORIGIN}/api/auth/callback/keycloak`, `${PHONE_ORIGIN}/api/auth/callback/keycloak-register`]);
+  assert.equal(web.attributes["post.logout.redirect.uris"], `${PHONE_ORIGIN}/`);
   assert.deepEqual(web.webOrigins, [PHONE_ORIGIN]);
   assert.equal(web.rootUrl, PHONE_ORIGIN);
 });
@@ -360,9 +370,67 @@ test("originProblems passes the committed realm in phone mode and with it off", 
 
 test("originProblems fails a phone-mode realm whose kalia-web redirect URIs do not name the origin", () => {
   const realm = phoneRealm();
-  clientOf(realm, "kalia-web").redirectUris = ["http://localhost:3300/*"];
+  clientOf(realm, "kalia-web").redirectUris = ["http://localhost:3300/api/auth/callback/keycloak", "http://localhost:3300/api/auth/callback/keycloak-register"];
   assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), /kalia-web"\.redirectUris/);
 });
+
+for (const [label, redirectUris] of [
+  ["a wildcard", [`${PHONE_ORIGIN}/*`]],
+  ["only the sign-in callback", [`${PHONE_ORIGIN}/api/auth/callback/keycloak`]],
+  ["a path the app does not use", [`${PHONE_ORIGIN}/api/auth/callback/keycloak`, `${PHONE_ORIGIN}/api/auth/callback/keycloak-register`, `${PHONE_ORIGIN}/en`]],
+]) {
+  test(`originProblems fails kalia-web redirect URIs of ${label}`, () => {
+    const realm = phoneRealm();
+    clientOf(realm, "kalia-web").redirectUris = redirectUris;
+    assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), /kalia-web"\.redirectUris/);
+  });
+}
+
+for (const [label, uris] of [
+  ["a wildcard", `${PHONE_ORIGIN}/*`],
+  ["a locale-prefixed home", `${PHONE_ORIGIN}/en`],
+  ["none", undefined],
+]) {
+  test(`originProblems fails kalia-web post-logout redirect URIs of ${label}`, () => {
+    const realm = phoneRealm();
+    clientOf(realm, "kalia-web").attributes["post.logout.redirect.uris"] = uris;
+    assert.match(originProblems(realm.clients, PHONE_ORIGIN).join("\n"), /kalia-web"\.attributes\.post\.logout\.redirect\.uris/);
+  });
+}
+
+test("originProblems accepts the web redirect URIs in the order Keycloak returns them", () => {
+  const realm = phoneRealm();
+  clientOf(realm, "kalia-web").redirectUris.reverse();
+  assert.deepEqual(originProblems(realm.clients, PHONE_ORIGIN), []);
+});
+
+test("registrationProblems passes the committed realm", () => {
+  assert.deepEqual(registrationProblems(phoneRealm().clients), []);
+});
+
+for (const id of ["kalia-web", "kalia-mobile"]) {
+  test(`registrationProblems fails a wildcard in ${id}'s redirect URIs`, () => {
+    const realm = phoneRealm();
+    clientOf(realm, id).redirectUris.push("https://app.example/*");
+    assert.match(registrationProblems(realm.clients).join("\n"), new RegExp(`${id}".*redirectUris.*wildcard`, "s"));
+  });
+
+  test(`registrationProblems fails a wildcard in ${id}'s post-logout redirect URIs`, () => {
+    const realm = phoneRealm();
+    const client = clientOf(realm, id);
+    client.attributes = { ...client.attributes, "post.logout.redirect.uris": `https://app.example/##https://app.example/*` };
+    assert.match(registrationProblems(realm.clients).join("\n"), new RegExp(`${id}".*post\\.logout.*wildcard`, "s"));
+  });
+
+  for (const [label, method] of [["no", undefined], ["the plain", "plain"]]) {
+    test(`registrationProblems fails ${id} with ${label} PKCE method`, () => {
+      const realm = phoneRealm();
+      const client = clientOf(realm, id);
+      client.attributes = { ...client.attributes, "pkce.code.challenge.method": method };
+      assert.match(registrationProblems(realm.clients).join("\n"), new RegExp(`${id}".*pkce\\.code\\.challenge\\.method`, "s"));
+    });
+  }
+}
 
 test("originProblems fails a phone-mode realm whose kalia-web web origins do not name the origin", () => {
   const realm = phoneRealm();

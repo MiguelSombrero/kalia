@@ -23,9 +23,15 @@ export const newVerifier = () => base64url(randomBytes(32));
 
 export const challengeFor = (verifier) => base64url(createHash("sha256").update(verifier).digest());
 
-export const authorizationUrl = ({ redirectUri = REDIRECT_URI, scope = "openid", challenge, method = "S256" }) => {
+export const authorizationUrl = ({
+  clientId = CLIENT_ID,
+  redirectUri = REDIRECT_URI,
+  scope = "openid",
+  challenge,
+  method = "S256",
+}) => {
   const url = new URL(`${OIDC}/auth`);
-  url.searchParams.set("client_id", CLIENT_ID);
+  url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", scope);
@@ -48,10 +54,10 @@ export const audiencesOf = (claims) => [claims.aud ?? []].flat();
 
 const cookiesFrom = (response) => response.headers.getSetCookie().map((cookie) => cookie.split(";")[0]);
 
-const get = (url, cookies = []) =>
+export const get = (url, cookies = []) =>
   fetch(url, { redirect: "manual", headers: cookies.length ? { Cookie: cookies.join("; ") } : {} });
 
-const locationOf = (response) => {
+export const locationOf = (response) => {
   const location = response.headers.get("location");
   return location ? new URL(location) : undefined;
 };

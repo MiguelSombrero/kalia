@@ -140,6 +140,11 @@ Each fails silently or only in production, so the warning stays here
 - **Export `signIn` from `auth.ts`, never Auth.js's own.** With a live session
   Auth.js links the Keycloak account to the signed-in user, so a second person
   on the browser inherits the first one's identity and tokens. Nothing fails.
+- **A new address Keycloak sends the browser back to is registered in
+  `keycloak/realm-export.json` first** ([keycloak/README.md](../keycloak/README.md#realm-settings-that-fail-silently)):
+  `kalia-web` names its two callbacks and its post-logout home exactly, so any
+  other fails on Keycloak's error page and the app only sees a sign-in that
+  does not finish.
 - **Keep `handlers` in `app/api/auth/[...nextauth]/route.ts` wrapped in
   `withSignInContext`**: unwrapped, sign-in succeeds but the session later
   reaches no protected endpoint.

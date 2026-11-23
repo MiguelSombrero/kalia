@@ -44,7 +44,7 @@ cellar is used in a cellar.
 | [16](iteration-12/16-a-write-attempted-offline-says-so.md) | A write attempted offline says so | refined |
 | [17](iteration-12/17-a-write-the-server-rejects-leaves-the-screen-as-it-was.md) | A write the server rejects leaves the screen as it was | refined |
 | [24](iteration-12/24-a-rejection-reason-added-in-catalog-cannot-lose-a-notification.md) | A rejection reason added in catalog cannot lose a notification | done |
-| [25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md) | Keycloak holds the web client to the redirects and the PKCE it uses | refined |
+| [25](iteration-12/25-keycloak-holds-the-web-client-to-the-redirects-and-the-pkce-it-uses.md) | Keycloak holds the web client to the redirects and the PKCE it uses | done |
 | [18](iteration-12/18-the-cellars-flows-run-end-to-end-on-both-platforms.md) | The cellar's flows run end to end on both platforms | refined |
 
 The table's order is the order of work, and every task was seeded at

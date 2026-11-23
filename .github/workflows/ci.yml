@@ -261,6 +261,8 @@ jobs:
         run: node scripts/check-keycloak-templates.mjs
       - name: Verify the mobile client signs in with PKCE and gets the backend audience
         run: node scripts/check-keycloak-pkce-flow.mjs testuser testuser123
+      - name: Verify the web client refuses a request without PKCE and every redirect outside its three paths
+        run: node scripts/check-keycloak-web-registration.mjs
       - name: Verify the admin role reaches the web client's token and never the app's, which the API refuses at the admin routes
         run: node scripts/check-keycloak-admin.mjs testadmin testuser testuser123 --backend
       # Recreated rather than restarted: a restart keeps the container's own

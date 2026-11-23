@@ -73,7 +73,8 @@
       "rootUrl": "$(env:WEB_URL)",
       "baseUrl": "$(env:WEB_URL)",
       "redirectUris": [
-        "$(env:WEB_URL)/*"
+        "$(env:WEB_URL)/api/auth/callback/keycloak",
+        "$(env:WEB_URL)/api/auth/callback/keycloak-register"
       ],
       "webOrigins": [
         "$(env:WEB_URL)"
@@ -83,7 +84,8 @@
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "attributes": {
-        "post.logout.redirect.uris": "$(env:WEB_URL)/*",
+        "post.logout.redirect.uris": "$(env:WEB_URL)/",
+        "pkce.code.challenge.method": "S256",
         "backchannel.logout.url": "http://web:3000/api/auth/backchannel-logout",
         "backchannel.logout.session.required": "true",
         "backchannel.logout.revoke.offline.tokens": "false"

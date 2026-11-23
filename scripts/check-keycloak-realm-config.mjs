@@ -99,6 +99,41 @@ export const resolvePlaceholders = (value, env) => {
 
 export const MOBILE_REDIRECT_URI = "kalia://auth/callback";
 
+// The web app's return paths, found by running its flows (keycloak/README.md);
+// a new one goes here and in the realm file together.
+export const WEB_REDIRECT_PATHS = ["/api/auth/callback/keycloak", "/api/auth/callback/keycloak-register"];
+export const WEB_POST_LOGOUT_PATHS = ["/"];
+
+const POST_LOGOUT_ATTRIBUTE = "post.logout.redirect.uris";
+// Keycloak keeps a client's post-logout redirect URIs in one attribute, joined by this.
+const POST_LOGOUT_SEPARATOR = "##";
+const PKCE_ATTRIBUTE = "pkce.code.challenge.method";
+
+// What both clients' registrations hold whatever the origin: no wildcard in an
+// accepted redirect URI, and PKCE required with S256 (read off a realm spec's
+// clients, as originProblems is).
+export const registrationProblems = (clients) => {
+  const byId = Object.fromEntries(clients.map((client) => [client.clientId, client]));
+  const problems = [];
+  for (const id of ["kalia-web", "kalia-mobile"]) {
+    const client = byId[id];
+    const postLogout = (client?.attributes?.[POST_LOGOUT_ATTRIBUTE] ?? "").split(POST_LOGOUT_SEPARATOR).filter(Boolean);
+    for (const [label, uris] of [
+      ["redirectUris", client?.redirectUris ?? []],
+      [`attributes.${POST_LOGOUT_ATTRIBUTE}`, postLogout],
+    ]) {
+      for (const uri of uris.filter((candidate) => candidate.includes("*"))) {
+        problems.push(`client "${id}".${label} holds the wildcard ${JSON.stringify(uri)}; name each path exactly`);
+      }
+    }
+    const method = client?.attributes?.[PKCE_ATTRIBUTE];
+    if (method !== "S256") {
+      problems.push(`client "${id}".attributes.${PKCE_ATTRIBUTE} is ${JSON.stringify(method)}, not "S256"`);
+    }
+  }
+  return problems;
+};
+
 // What the realm must say about the stack's one web origin, whichever mode it
 // is in, read off a realm spec's clients (the committed file once its
 // placeholders are resolved, or the live realm). The diff below says whether
@@ -107,8 +142,10 @@ export const MOBILE_REDIRECT_URI = "kalia://auth/callback";
 export const originProblems = (clients, origin) => {
   const byId = Object.fromEntries(clients.map((client) => [client.clientId, client]));
   const problems = [];
+  // Keycloak keeps redirect URIs as a set and returns them in no fixed order.
+  const unordered = (value) => (Array.isArray(value) ? [...value].sort() : value);
   const names = (label, value, expected) => {
-    if (JSON.stringify(value ?? null) !== JSON.stringify(expected)) {
+    if (JSON.stringify(unordered(value) ?? null) !== JSON.stringify(unordered(expected))) {
       problems.push(`${label} is ${JSON.stringify(value)}, not ${JSON.stringify(expected)}`);
     }
   };
@@ -116,7 +153,12 @@ export const originProblems = (clients, origin) => {
     names(`client "${id}".rootUrl`, byId[id]?.rootUrl, origin);
     names(`client "${id}".baseUrl`, byId[id]?.baseUrl, origin);
   }
-  names('client "kalia-web".redirectUris', byId["kalia-web"]?.redirectUris, [`${origin}/*`]);
+  names('client "kalia-web".redirectUris', byId["kalia-web"]?.redirectUris, WEB_REDIRECT_PATHS.map((path) => `${origin}${path}`));
+  names(
+    'client "kalia-web".attributes.post.logout.redirect.uris',
+    byId["kalia-web"]?.attributes?.[POST_LOGOUT_ATTRIBUTE],
+    WEB_POST_LOGOUT_PATHS.map((path) => `${origin}${path}`).join(POST_LOGOUT_SEPARATOR),
+  );
   names('client "kalia-web".webOrigins', byId["kalia-web"]?.webOrigins, [origin]);
   names('client "kalia-mobile".redirectUris', byId["kalia-mobile"]?.redirectUris, [MOBILE_REDIRECT_URI]);
   return problems;
@@ -342,8 +384,12 @@ const run = async () => {
     const live = await fetchWithRetry();
     const result = diffRealm(committed, live);
     const found = [
-      ...originProblems(committed.clients ?? [], origin).map((problem) => `committed file: ${problem}`),
-      ...originProblems(Object.values(live.clients), origin).map((problem) => `live realm: ${problem}`),
+      ...[...originProblems(committed.clients ?? [], origin), ...registrationProblems(committed.clients ?? [])].map(
+        (problem) => `committed file: ${problem}`,
+      ),
+      ...[...originProblems(Object.values(live.clients), origin), ...registrationProblems(Object.values(live.clients))].map(
+        (problem) => `live realm: ${problem}`,
+      ),
     ];
     return { mismatches: [...result.mismatches, ...found], compared: result.compared };
   };
