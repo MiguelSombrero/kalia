@@ -796,6 +796,8 @@
       "hint": "Add the bottles you keep and they show up here.",
       "add": "Add a bottle"
     },
-    "noMatch": "No beer in your cellar matches “{{query}}”."
+    "noMatch": "No beer in your cellar matches “{{query}}”.",
+    "loadFailed": "Couldn't load your cellar.",
+    "refreshFailed": "Couldn't refresh your cellar. What you see may be out of date."
   }
 }

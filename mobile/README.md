@@ -54,7 +54,7 @@ then `up ARGS="--clear"`). `make mobile-start` is the foreground Metro for a
 human's terminal. Waiting on anything else: [the worktree skill](../.claude/skills/worktree/SKILL.md#waiting-on-a-background-command).
 
 Feed, Catalog, Cellar and Profile are tabs; the central Add action opens a sheet and points to the catalog until scanning arrives.
-Until [iteration 12 task 04](../docs/tasks/iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) reads the API, the signed-in Cellar lists the sample cellar in `features/cellar/sampleCellar.ts`, whatever the account.
+The signed-in Cellar reads `GET /api/v1/cellar` whole through `features/cellar/hooks/useCellar.ts` and sorts and narrows it on the phone; a pull down reads it again, and so does the app's return to the foreground once the data is older than the client's 60 seconds, but not a tab being focused. A failed first read shows the shared error state with its retry, and a failed refresh keeps the list with a notice that it may be out of date. The list is a virtualised `FlatList`, as the API bounds a cellar at 2,000 bottles ([task 19](../docs/tasks/iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md)).
 Signed-out Cellar and Profile open a sign-in sheet from their current context; credentials stay in the system browser
 ([ADR-0109](../docs/adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md)). A beer is a sheet over Catalog at `/beers/{id}`;
 `kalia://beers/{id}` opens it signed out, and only `kalia://auth/callback` is rewritten.
@@ -238,6 +238,7 @@ node scripts/mobile-e2e.mjs install-maestro   # once: the pinned Maestro, checks
 make mobile-e2e                               # starts and seeds the stack, then runs the flows on every platform this host has
 ```
 
+It first replaces the seeded account's cellar with a known one through the API (`scripts/seed-cellar.mjs`), as a flow that reads the cellar needs; shared steps such as signing in are subflows under `.maestro/subflows/`, which Maestro does not run on its own.
 It builds a release app and runs `.maestro/` on each platform present, failing
 when none ran ([ADR-0096](../docs/adr/0096-mobile-unit-tests-run-on-jest-and-end-to-end-flows-on-maestro-with-android-the-only-ci-platform.md)).
 `--platform ios|android` picks one; `KALIA_E2E_IOS_DEVICE` (default `iPhone 17`, or

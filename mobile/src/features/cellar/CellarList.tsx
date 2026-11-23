@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, FlatList, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { BackHandler, FlatList, Keyboard, KeyboardAvoidingView, Pressable, RefreshControl, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionButton } from "@/components/ActionButton";
@@ -19,9 +19,9 @@ import { type CellarOrder, findEntries, ORDER_LABEL_KEYS, sortEntries, totalsOf 
 import { SortMenu } from "./SortMenu";
 import type { CellarEntry } from "./types";
 
-type CellarListProps = { entries: CellarEntry[]; onAdd: () => void; onBrowse: () => void };
+type CellarListProps = { entries: CellarEntry[]; refreshing: boolean; onRefresh: () => void; notice?: ReactNode; onAdd: () => void; onBrowse: () => void };
 
-export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
+export const CellarList = ({ entries, refreshing, onRefresh, notice, onAdd, onBrowse }: CellarListProps) => {
   const styles = useStyles();
   const { t, i18n } = useTranslation();
   const [order, setOrder] = useState<CellarOrder>("name");
@@ -72,6 +72,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
   const header = (
     <View>
       <ScreenTitle>{t("nav.cellar")}</ScreenTitle>
+      {notice}
       {entries.length > 0 ? (
         <Text role="summary" style={styles.totals}>
           {`${t("cellarList.totals.beers", { count: totals.beers })} · ${t("cellar.entry.bottleCount", { count: totals.bottles })}`}
@@ -101,6 +102,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
         keyboardDismissMode="on-drag"
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         renderItem={({ item }) => <CellarRow entry={item} language={i18n.language} />}
       />
       {entries.length > 0 && pinned ? bar : null}

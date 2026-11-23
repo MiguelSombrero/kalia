@@ -796,6 +796,8 @@
       "hint": "Lisää pullot, jotka säilytät, niin näet ne täällä.",
       "add": "Lisää pullo"
     },
-    "noMatch": "Kellarisi oluet eivät vastaa hakua ”{{query}}”."
+    "noMatch": "Kellarisi oluet eivät vastaa hakua ”{{query}}”.",
+    "loadFailed": "Kellarisi lataaminen ei onnistunut.",
+    "refreshFailed": "Kellarisi päivittäminen ei onnistunut. Näkyvät tiedot voivat olla vanhentuneita."
   }
 }

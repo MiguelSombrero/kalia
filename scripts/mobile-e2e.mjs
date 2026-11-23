@@ -25,6 +25,7 @@ import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 
 import { buildEnv, projectSteps, runSteps } from "./mobile-build.mjs";
+import { seedCellar } from "./seed-cellar.mjs";
 import { ROOT, originOf, stackEnv } from "./stack-ports.mjs";
 
 export const MAESTRO_VERSION = "2.12.0";
@@ -505,6 +506,10 @@ const main = async () => {
     if (!existsSync(maestroBinary())) {
       throw new Error(`Maestro ${MAESTRO_VERSION} is not installed — run: node scripts/mobile-e2e.mjs install-maestro`);
     }
+  }
+  if (command !== "build") {
+    const { beers, bottles } = await seedCellar();
+    console.log(`Seeded the cellar the flows read: ${beers} beers, ${bottles} bottles`);
   }
   const results = [];
   for (const each of platform === "all" ? PLATFORMS : [platform]) {
