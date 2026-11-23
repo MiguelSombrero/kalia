@@ -30,14 +30,14 @@ describe("CellarRow", () => {
   });
 
   it("is one button named by the beer, its brewery, style, strength and bottles", async () => {
-    await renderWithLocale(<CellarRow entry={entryOf({ id: "1", name: "Hazy", brewery: "Kolmas Linja", style: "IPA", abv: 6.5, bestBefore: [undefined, undefined] })} language="fi" />, "fi");
+    await renderWithLocale(<CellarRow entry={entryOf({ id: "1", name: "Hazy", brewery: "Kolmas Linja", style: "IPA", abv: 6.5, bestBefore: [undefined, undefined] })} language="fi" onPress={jest.fn()} />, "fi");
 
     expect(screen.getByRole("button", { name: "Hazy, Kolmas Linja, IPA, 6,5 %, 2 pulloa" })).toBeOnTheScreen();
   });
 
   it("marks a withdrawn beer's row, in both languages, and keeps its bottles", async () => {
     const entry = entryOf({ id: "1", name: "Gone", withdrawn: true, bestBefore: [undefined] });
-    await renderWithLocale(<CellarRow entry={entry} language="en" />);
+    await renderWithLocale(<CellarRow entry={entry} language="en" onPress={jest.fn()} />);
 
     expect(screen.getByText("Withdrawn from the catalog")).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: /Gone.*1 bottle, Withdrawn from the catalog$/ })).toBeOnTheScreen();
@@ -51,6 +51,12 @@ describe("CellarRow", () => {
     await fireEvent.press(screen.getByRole("button", { name: /^Open me/ }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("is not announced as a button when it opens nothing", async () => {
+    await renderWithLocale(<CellarRow entry={entryOf({ id: "1", name: "Inert" })} language="en" />);
+
+    expect(screen.queryByRole("button")).not.toBeOnTheScreen();
   });
 
   it("does not mark a beer that is still in the catalog", async () => {

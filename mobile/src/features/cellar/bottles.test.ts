@@ -38,6 +38,10 @@ describe("a bottle's dates", () => {
   });
 });
 
+it("shows a date it cannot read as it was written, rather than failing", () => {
+  expect(formatBottleDate("not-a-date", "en")).toBe("not-a-date");
+});
+
 describe("inVintageOrder", () => {
   it("puts the oldest brew first and the bottles with no brewed date last, earlier best-before first among equals", () => {
     const ordered = inVintageOrder([

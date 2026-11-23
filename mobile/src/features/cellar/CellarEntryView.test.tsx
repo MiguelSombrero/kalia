@@ -157,7 +157,7 @@ describe("CellarEntryView", () => {
     expect(screen.getByText(LONG_BREWERY)).toBeOnTheScreen();
     expect(screen.getAllByTestId("bottle-row")).toHaveLength(24);
     expect(screen.getAllByRole("listitem")).toHaveLength(24);
-    expect(screen.getAllByText(locale === "en" ? "Vintage unknown" : "Vuosikerta ei tiedossa")).toHaveLength(5 + 0);
+    expect(screen.getAllByText(locale === "en" ? "Vintage unknown" : "Vuosikerta ei tiedossa")).toHaveLength(5);
     expect(screen.getAllByTestId("past-best-before")).toHaveLength(6);
     expect(screen.getByRole("button", { name: locale === "en" ? "Add a bottle" : "Lisää pullo" })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: locale === "en" ? "See in the catalog" : "Näytä katalogissa" })).toBeOnTheScreen();

@@ -30,7 +30,7 @@ export const CellarRow = ({ entry, language, onPress }: CellarRowProps) => {
   const spoken = [beer.name, beer.brewery, beer.style, `${strength} %`, bottles, withdrawn].filter(Boolean).join(", ");
 
   return (
-    <PressFeedback testID="cellar-row" role="button" accessibilityLabel={spoken} onPress={onPress} style={[styles.card, stacked && styles.cardStacked, { backgroundColor: fill }, dark && styles.cardWithSlab]}>
+    <PressFeedback testID="cellar-row" role={onPress ? "button" : undefined} accessibilityLabel={onPress ? spoken : undefined} disabled={!onPress} onPress={onPress} style={[styles.card, stacked && styles.cardStacked, { backgroundColor: fill }, dark && styles.cardWithSlab]}>
       {dark ? <BeerSlot beerStyle={beer.style} /> : null}
       <View style={stacked ? styles.textStacked : styles.text}>
         <Text style={[styles.name, { color: ink }]}>{beer.name}</Text>
