@@ -42,7 +42,7 @@ export const CellarScreen = () => {
   }
   return (
     <Screen scroll={false}>
-      <CellarList entries={sampleCellar} onAdd={() => router.push("/add-sheet")} onBrowse={() => router.navigate("/catalog")} />
+      <CellarList entries={sampleCellar} onOpen={(entry) => router.push({ pathname: "/cellar/[id]", params: { id: entry.id } })} onAdd={() => router.push("/add-sheet")} onBrowse={() => router.navigate("/catalog")} />
     </Screen>
   );
 };

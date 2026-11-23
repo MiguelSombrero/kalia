@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
 
 import { contrastRatio } from "@/lib/design/contrast";
 import { theme } from "@/lib/design/theme.generated";
@@ -29,10 +29,10 @@ describe("CellarRow", () => {
     expect(screen.queryByText(/best/i)).not.toBeOnTheScreen();
   });
 
-  it("is one list item named by the beer, its brewery, style, strength and bottles", async () => {
+  it("is one button named by the beer, its brewery, style, strength and bottles", async () => {
     await renderWithLocale(<CellarRow entry={entryOf({ id: "1", name: "Hazy", brewery: "Kolmas Linja", style: "IPA", abv: 6.5, bestBefore: [undefined, undefined] })} language="fi" />, "fi");
 
-    expect(screen.getByRole("listitem", { name: "Hazy, Kolmas Linja, IPA, 6,5 %, 2 pulloa" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Hazy, Kolmas Linja, IPA, 6,5 %, 2 pulloa" })).toBeOnTheScreen();
   });
 
   it("marks a withdrawn beer's row, in both languages, and keeps its bottles", async () => {
@@ -40,8 +40,17 @@ describe("CellarRow", () => {
     await renderWithLocale(<CellarRow entry={entry} language="en" />);
 
     expect(screen.getByText("Withdrawn from the catalog")).toBeOnTheScreen();
-    expect(screen.getByRole("listitem", { name: /Gone.*1 bottle, Withdrawn from the catalog$/ })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: /Gone.*1 bottle, Withdrawn from the catalog$/ })).toBeOnTheScreen();
     expect(screen.getByText("1 bottle")).toBeOnTheScreen();
+  });
+
+  it("opens its entry when pressed", async () => {
+    const onPress = jest.fn();
+    await renderWithLocale(<CellarRow entry={entryOf({ id: "1", name: "Open me" })} language="en" onPress={onPress} />);
+
+    await fireEvent.press(screen.getByRole("button", { name: /^Open me/ }));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 
   it("does not mark a beer that is still in the catalog", async () => {

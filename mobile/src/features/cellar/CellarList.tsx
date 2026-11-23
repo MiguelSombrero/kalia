@@ -19,9 +19,9 @@ import { type CellarOrder, findEntries, ORDER_LABEL_KEYS, sortEntries, totalsOf 
 import { SortMenu } from "./SortMenu";
 import type { CellarEntry } from "./types";
 
-type CellarListProps = { entries: CellarEntry[]; onAdd: () => void; onBrowse: () => void };
+type CellarListProps = { entries: CellarEntry[]; onOpen: (entry: CellarEntry) => void; onAdd: () => void; onBrowse: () => void };
 
-export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
+export const CellarList = ({ entries, onOpen, onAdd, onBrowse }: CellarListProps) => {
   const styles = useStyles();
   const { t, i18n } = useTranslation();
   const [order, setOrder] = useState<CellarOrder>("name");
@@ -101,7 +101,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
         keyboardDismissMode="on-drag"
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
-        renderItem={({ item }) => <CellarRow entry={item} language={i18n.language} />}
+        renderItem={({ item }) => <CellarRow entry={item} language={i18n.language} onPress={() => onOpen(item)} />}
       />
       {entries.length > 0 && pinned ? bar : null}
       {menuOpen ? (

@@ -797,5 +797,14 @@
       "add": "Lisää pullo"
     },
     "noMatch": "Kellarisi oluet eivät vastaa hakua ”{{query}}”."
+  },
+  "cellarEntry": {
+    "back": "Takaisin kellariin",
+    "add": "Lisää pullo",
+    "seeInCatalog": "Näytä katalogissa",
+    "brewedOn": "Panopäivä {{date}}",
+    "brewedMissing": "Panopäivä: ei kirjattu",
+    "notFound": "Tämä olut ei ole enää kellarissasi.",
+    "bestBeforeMissing": "Parasta ennen: ei kirjattu"
   }
 }

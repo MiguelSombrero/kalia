@@ -16,20 +16,23 @@ const entries = [
   entryOf({ id: "4", name: "Gone Beer", brewery: "Closed Brewery", style: "Mead", abv: 11, bestBefore: [undefined], withdrawn: true }),
 ];
 
+const onOpen = jest.fn();
 const onAdd = jest.fn();
 const onBrowse = jest.fn();
 const METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } };
 const renderList = (list = entries, locale: "en" | "fi" = "en") =>
   renderWithLocale(
     <SafeAreaProvider initialMetrics={METRICS}>
-      <CellarList entries={list} onAdd={onAdd} onBrowse={onBrowse} />
+      <CellarList entries={list} onOpen={onOpen} onAdd={onAdd} onBrowse={onBrowse} />
     </SafeAreaProvider>,
     locale,
   );
-const rowNames = () => screen.getAllByRole("listitem").map((row) => String(row.props.accessibilityLabel).split(",")[0]);
+const rows = () => screen.getAllByTestId("cellar-row");
+const rowNames = () => rows().map((row) => String(row.props.accessibilityLabel).split(",")[0]);
 
 afterEach(() => {
   jest.restoreAllMocks();
+  onOpen.mockReset();
   onAdd.mockReset();
   onBrowse.mockReset();
 });
@@ -45,9 +48,17 @@ describe("CellarList", () => {
     expect(screen.getByRole("summary", { name: totals })).toBeOnTheScreen();
     expect(screen.getByRole("searchbox", { name: find })).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: sort })).toBeOnTheScreen();
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(rows()).toHaveLength(4);
     expect(screen.getByLabelText(title)).toBeOnTheScreen();
     expectAccessibleStructure();
+  });
+
+  it("opens the entry of the row that is pressed", async () => {
+    await renderList();
+
+    await fireEvent.press(screen.getByRole("button", { name: /^Pimeä Portteri/ }));
+
+    expect(onOpen).toHaveBeenCalledWith(entries[1]);
   });
 
   it("starts in name order and states the order on the sort button", async () => {
@@ -138,16 +149,16 @@ describe("CellarList", () => {
     expect(screen.getByText(message)).toBeOnTheScreen();
     expect(screen.queryByText(emptyTitle)).not.toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: locale === "en" ? "Add a bottle" : "Lisää pullo" })).not.toBeOnTheScreen();
-    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+    expect(screen.queryAllByTestId("cellar-row")).toHaveLength(0);
 
     await fireEvent.press(screen.getAllByRole("button", { name: locale === "en" ? "Clear find" : "Tyhjennä haku" })[1]!);
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(rows()).toHaveLength(4);
   });
 
   it("marks a withdrawn beer's row and draws a style it does not know, rather than dropping either", async () => {
     await renderList();
 
-    expect(screen.getByRole("listitem", { name: "Gone Beer, Closed Brewery, Mead, 11 %, 1 bottle, Withdrawn from the catalog" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Gone Beer, Closed Brewery, Mead, 11 %, 1 bottle, Withdrawn from the catalog" })).toBeOnTheScreen();
     expect(screen.getByText("Mead")).toBeOnTheScreen();
   });
 
@@ -174,7 +185,7 @@ describe("CellarList", () => {
 
     expect(screen.getByRole("searchbox")).toBeOnTheScreen();
     expect(screen.getByRole("button", { name: locale === "en" ? "Sort, Name" : "Järjestä, Nimi" })).toBeOnTheScreen();
-    expect(screen.getAllByRole("listitem").length).toBeGreaterThan(0);
+    expect(rows().length).toBeGreaterThan(0);
     expectScalesWithText();
     expectAccessibleStructure();
   });

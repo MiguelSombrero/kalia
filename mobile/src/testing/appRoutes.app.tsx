@@ -6,7 +6,9 @@ import { renderRouter } from "expo-router/testing-library";
 import TabsLayout, { unstable_settings } from "@/app/(tabs)/_layout";
 import AddRoute from "@/app/(tabs)/add";
 import CatalogRoute from "@/app/(tabs)/catalog";
-import CellarRoute from "@/app/(tabs)/cellar";
+import CellarLayout, { unstable_settings as cellarSettings } from "@/app/(tabs)/cellar/_layout";
+import CellarEntryRoute from "@/app/(tabs)/cellar/[id]";
+import CellarRoute from "@/app/(tabs)/cellar/index";
 import FeedRoute from "@/app/(tabs)/feed";
 import TabsIndex from "@/app/(tabs)/index";
 import ProfileRoute from "@/app/(tabs)/profile";
@@ -24,14 +26,15 @@ export const BEER_ID = "6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11";
 export const SCREENS: Record<string, string> = {
   "(tabs)/feed.tsx": "/feed",
   "(tabs)/catalog.tsx": "/catalog",
-  "(tabs)/cellar.tsx": "/cellar",
+  "(tabs)/cellar/index.tsx": "/cellar",
+  "(tabs)/cellar/[id].tsx": "/cellar/1",
   "(tabs)/profile.tsx": "/profile",
   "add-sheet.tsx": "/add-sheet",
   "filters-sheet.tsx": "/filters-sheet",
   "sign-in-sheet.tsx": "/sign-in-sheet",
   "beers/[id].tsx": `/beers/${BEER_ID}`,
 };
-export const NOT_SCREENS = ["_layout.tsx", "(tabs)/_layout.tsx", "(tabs)/index.tsx", "(tabs)/add.tsx", "+native-intent.ts"];
+export const NOT_SCREENS = ["_layout.tsx", "(tabs)/_layout.tsx", "(tabs)/cellar/_layout.tsx", "(tabs)/index.tsx", "(tabs)/add.tsx", "+native-intent.ts"];
 
 const reply = (status: number, data: unknown) => ({ status, data, headers: new Headers() });
 export const beer = (id: string, name: string, over: Record<string, unknown> = {}) => ({ id, name, abv: 5.2, style: "IPA", status: "APPROVED", brewery: { id: "b1", name: "Sinebrychoff", countryCode: "FI", city: "Helsinki" }, ...over });
@@ -69,7 +72,9 @@ export const renderAppRoute = async (url: string, { locale = "en", auth = { stat
       "(tabs)/add": AddRoute,
       "(tabs)/feed": FeedRoute,
       "(tabs)/catalog": CatalogRoute,
-      "(tabs)/cellar": CellarRoute,
+      "(tabs)/cellar/_layout": { default: CellarLayout, unstable_settings: cellarSettings },
+      "(tabs)/cellar/index": CellarRoute,
+      "(tabs)/cellar/[id]": CellarEntryRoute,
       "(tabs)/profile": ProfileRoute,
       "add-sheet": AddSheet,
       "filters-sheet": FiltersSheetRoute,
