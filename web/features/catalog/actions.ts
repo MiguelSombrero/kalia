@@ -1,5 +1,6 @@
 "use server";
 
+import { isUuid, MAX_FILTER_LENGTH } from "@kalia/api/bounds";
 import { revalidatePath } from "next/cache";
 
 import { type Locale, toLocale } from "@/i18n/settings";
@@ -17,19 +18,13 @@ import type {
   BreweryOption,
 } from "./types";
 
-// The catalog API's bound on a search term (CatalogController.MAX_FILTER_LENGTH):
-// a longer one is a 400, not an empty answer.
-const MAX_QUERY_LENGTH = 100;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 // Do not re-export this from a shared lib/ module instead of defining it here:
 // a Server Action re-exported through a second "use server" file fails at
 // runtime with UnrecognizedActionError (web/README.md traps).
 export const startCatalogSignIn = async (formData?: FormData) => {
   const field = (name: string) => {
     const value = formData?.get(name);
-    return typeof value === "string" ? value.slice(0, MAX_QUERY_LENGTH) : undefined;
+    return typeof value === "string" ? value.slice(0, MAX_FILTER_LENGTH) : undefined;
   };
   const search = parseBeerSearchParams(Object.fromEntries(PARAM_KEYS.map((key) => [key, field(key)])));
   await signInReturningTo(formData, (locale) => catalogHref(locale, search));
@@ -52,7 +47,7 @@ export const loadAddBeerOptionsAction = async (locale: string): Promise<AddBeerO
 };
 
 export const findBreweriesAction = async (query: string, locale: string): Promise<BreweryOption[]> => {
-  const term = query.trim().slice(0, MAX_QUERY_LENGTH);
+  const term = query.trim().slice(0, MAX_FILTER_LENGTH);
   if (term === "") {
     return [];
   }
@@ -64,7 +59,7 @@ export const findSimilarBeersAction = async (
   breweryId: string,
   beerName: string,
 ): Promise<{ id: string; name: string; style: string; abv: number }[]> => {
-  if (!UUID_PATTERN.test(breweryId) || beerName.trim() === "") {
+  if (!isUuid(breweryId) || beerName.trim() === "") {
     return [];
   }
   const beers = await findSimilarBeers(breweryId, beerName);

@@ -1,5 +1,6 @@
 "use server";
 
+import { isUuid } from "@kalia/api/bounds";
 import { revalidatePath } from "next/cache";
 
 import { signInReturningTo } from "@/lib/auth/signInReturningTo";
@@ -28,11 +29,9 @@ export const startCellarSignIn = async (formData?: FormData) => {
   });
 };
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 const beerIdFrom = (formData?: FormData): string | undefined => {
   const beerId = formData?.get("beerId");
-  return typeof beerId === "string" && UUID_PATTERN.test(beerId) ? beerId : undefined;
+  return typeof beerId === "string" && isUuid(beerId) ? beerId : undefined;
 };
 
 export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bottle[] | CellarConflict | CellarFull> => {

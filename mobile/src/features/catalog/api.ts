@@ -1,11 +1,11 @@
 import { httpFailure } from "@kalia/api";
+import { isUuid } from "@kalia/api/bounds";
 import { getBeer, listBreweries, listBreweryCountries, listStyles, searchBeers as generatedSearchBeers } from "@kalia/api/generated/catalog/catalog";
 import type { SearchBeersParams } from "@kalia/api/generated/models";
 
 import type { BeerDetails, BeerPage, BeerSummary, BreweryPage } from "./types";
 
 export const BEER_PAGE_SIZE = 20;
-export const MAX_RESULT_WINDOW = 10_000;
 
 export const readBeerPage = async (params: SearchBeersParams, page: number): Promise<BeerPage> => {
   const response = await generatedSearchBeers({ ...params, page, size: BEER_PAGE_SIZE });
@@ -41,11 +41,9 @@ export const readResultCount = async (params: SearchBeersParams): Promise<number
   return response.data.totalElements;
 };
 
-const BEER_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** `null` is an answer, not a failure: a beer that is gone, withheld, someone else's pending one, or never there, and an id that cannot name one. */
 export const readBeer = async (id: string): Promise<BeerDetails | null> => {
-  if (!BEER_ID.test(id)) return null;
+  if (!isUuid(id)) return null;
   const response = await getBeer(id, { answers: [404] });
   if (response.status === 404) return null;
   if (response.status !== 200) throw httpFailure("Beer details", response);

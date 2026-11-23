@@ -1,6 +1,6 @@
 # Task 22: The clients take the backend's bounds from one place
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** none
 
@@ -94,13 +94,13 @@ to 24, two dates. Without one home, that is a fifth copy.
 
 ## Acceptance criteria
 
-- [ ] A test compares each exported bound to `backend/openapi.json` and fails
+- [x] A test compares each exported bound to `backend/openapi.json` and fails
       when one is changed, confirmed by changing a constant and watching it fail
-- [ ] A grep of `web/` and `mobile/` finds none of the bounds and no UUID
+- [x] A grep of `web/` and `mobile/` finds none of the bounds and no UUID
       pattern written out outside `@kalia/api`, checked by a lint rule or a test
-- [ ] The web's add-beer and admin edit-suggestion forms share one
+- [x] The web's add-beer and admin edit-suggestion forms share one
       definition, and their existing tests pass unchanged
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

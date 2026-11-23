@@ -1,3 +1,5 @@
+import { MAX_ABV, MAX_FILTER_LENGTH } from "@kalia/api/bounds";
+
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { getTranslation } from "@/i18n/server";
@@ -5,7 +7,6 @@ import type { Locale } from "@/i18n/settings";
 
 import { countriesByName } from "./country";
 import { catalogHref, hasFilters } from "./links";
-import { MAX_ABV, MAX_FILTER_LENGTH } from "./searchParams";
 import { type BeerSearchParams, DEFAULT_SORT, SORT_OPTIONS } from "./types";
 
 const labelClasses = "mb-1 block text-label font-semibold uppercase text-foreground";
