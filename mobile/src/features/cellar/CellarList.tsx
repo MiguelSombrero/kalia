@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, FlatList, Keyboard, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { BackHandler, FlatList, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActionButton } from "@/components/ActionButton";
 import { BodyText } from "@/components/BodyText";
@@ -18,6 +19,8 @@ import { CellarRow } from "./CellarRow";
 import { type CellarOrder, findEntries, ORDER_LABEL_KEYS, sortEntries, totalsOf } from "./model";
 import { SortMenu } from "./SortMenu";
 import type { CellarEntry } from "./types";
+
+const KEYBOARD_BEHAVIOUR = Platform.select({ ios: "padding" as const });
 
 type CellarListProps = { entries: CellarEntry[]; onAdd: () => void; onBrowse: () => void };
 
@@ -48,6 +51,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
   const [text, setText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [barHeight, setBarHeight] = useState(0);
+  const insets = useSafeAreaInsets();
   const pinned = useWindowDimensions().fontScale < STACK_FROM_FONT_SCALE;
   const shown = useMemo(() => sortEntries(findEntries(entries, text), order, i18n.language), [entries, text, order, i18n.language]);
   const totals = totalsOf(entries);
@@ -76,7 +80,10 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
         role="button"
         accessibilityLabel={t("cellarList.sortLabel", { order: orderLabel })}
         accessibilityState={{ expanded: menuOpen }}
-        onPress={() => setMenuOpen((open) => !open)}
+        onPress={() => {
+          Keyboard.dismiss();
+          setMenuOpen((open) => !open);
+        }}
         style={styles.sort}
       >
         <Text style={styles.sortLabel}>{t("cellarList.sort")}</Text>
@@ -107,7 +114,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
     );
 
   return (
-    <View style={styles.root}>
+    <KeyboardAvoidingView behavior={KEYBOARD_BEHAVIOUR} keyboardVerticalOffset={insets.top} style={styles.root}>
       <FlatList
         role="list"
         accessibilityLabel={t("nav.cellar")}
@@ -122,10 +129,11 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
       {entries.length > 0 && pinned ? bar : null}
       {menuOpen ? (
         <View style={StyleSheet.absoluteFill} accessibilityViewIsModal onAccessibilityEscape={() => setMenuOpen(false)}>
-          <Pressable role="button" accessibilityLabel={t("cellarList.closeSort")} onPress={() => setMenuOpen(false)} style={StyleSheet.absoluteFill} />
+          <Pressable accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" onPress={() => setMenuOpen(false)} style={StyleSheet.absoluteFill} />
           <SortMenu
             order={order}
             bottom={pinned ? barHeight : 0}
+            onClose={() => setMenuOpen(false)}
             onChoose={(choice) => {
               setOrder(choice);
               setMenuOpen(false);
@@ -133,7 +141,7 @@ export const CellarList = ({ entries, onAdd, onBrowse }: CellarListProps) => {
           />
         </View>
       ) : null}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -73,9 +73,23 @@ describe("CellarList", () => {
     expect(screen.getAllByRole("button", { name: /^(Name|Style|Strength|Bottles|Best before)$/ })).toHaveLength(5);
     expect(screen.getByRole("button", { name: "Sort, Name", hidden: true })).toHaveProp("accessibilityState", { expanded: true });
 
+    expect(screen.getByText("Close")).toBeOnTheScreen();
+    expect(screen.getAllByRole("button", { name: "Close sort menu" })).toHaveLength(1);
+    expectAccessibleStructure();
+
     await fireEvent.press(screen.getByRole("button", { name: "Close sort menu" }));
     expect(screen.queryByLabelText("Sort by")).not.toBeOnTheScreen();
     expect(rowNames()[0]).toBe("Gone Beer");
+  });
+
+  it("closes the menu with a visible Close in Finnish, the only control that says so", async () => {
+    await renderList(entries, "fi");
+
+    await fireEvent.press(screen.getByRole("button", { name: "Järjestä, Nimi" }));
+
+    expect(screen.getByText("Sulje")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "Sulje järjestysvalikko" }));
+    expect(screen.queryByLabelText("Järjestys")).not.toBeOnTheScreen();
   });
 
   it("narrows the rows by a beer's name, ignoring accents, and keeps the cellar's totals", async () => {
