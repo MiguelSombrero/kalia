@@ -165,7 +165,7 @@ a manifest; don't restate what the manifest says.
 ### Backend
 
 - Java 25, Spring Boot 4, Spring Modulith
-- PostgreSQL 18 (persistence), Flyway (migrations and seed data)
+- PostgreSQL 19 (persistence), Flyway (migrations and seed data)
 - Maven; JUnit 6, Testcontainers, surefire/failsafe (`*Test` / `*IT`), JaCoCo,
   ArchUnit
 - Lombok (version managed by Spring Boot's BOM)

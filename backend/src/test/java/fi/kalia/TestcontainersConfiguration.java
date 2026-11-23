@@ -13,7 +13,7 @@ public class TestcontainersConfiguration {
 	@ServiceConnection
 	PostgreSQLContainer postgresContainer() {
 		// Same version as docker-compose.base.yml so tests run against what dev runs.
-		return new PostgreSQLContainer(DockerImageName.parse("postgres:18.6"));
+		return new PostgreSQLContainer(DockerImageName.parse("postgres:19.0"));
 	}
 
 }
